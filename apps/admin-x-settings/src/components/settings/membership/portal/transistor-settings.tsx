@@ -36,7 +36,7 @@ const TransistorSettings: React.FC<{
     const urlTemplate = transistorPortalUrlTemplate as string;
 
     return (
-        <Stack className='[&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted' gap='xl'>
+        <Stack gap='xl'>
             <Separator />
             <Stack gap='md'>
                 <Text as='h5' className='md:text-lg' leading='supertight' weight='bold'>Transistor</Text>

@@ -3,7 +3,7 @@ import {Page} from '@playwright/test';
 import newsletterStatsFixture from './responses/newsletter_stats.json';
 import topPostsFixture from './responses/top_posts.json';
 
-import {NewsletterStatsResponseType, TopPostsStatsResponseType} from '../api/stats';
+import type {NewsletterStatsResponseType, TopPostsStatsResponseType} from '../api/stats';
 
 interface MockRequestConfig {
     method: string;
@@ -21,8 +21,11 @@ interface RequestRecord {
 }
 
 export const responseFixtures = {
-    newsletterStats: newsletterStatsFixture as NewsletterStatsResponseType,
-    topPosts: topPostsFixture as TopPostsStatsResponseType
+    newsletterStats: newsletterStatsFixture,
+    topPosts: topPostsFixture
+} satisfies {
+    newsletterStats: NewsletterStatsResponseType;
+    topPosts: TopPostsStatsResponseType;
 };
 
 export async function mockApi<Requests extends Record<string, MockRequestConfig>>({page, requests, options = {}}: {page: Page, requests: Requests, options?: {useActivityPub?: boolean}}) {

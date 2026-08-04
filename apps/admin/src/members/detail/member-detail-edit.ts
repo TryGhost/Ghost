@@ -263,43 +263,31 @@ export function buildCustomFieldSavePayload(
     return {id: memberId, custom_fields: {[fieldKey]: normalized ?? null}};
 }
 
-// What to do about a missing or malformed address sub-field, in plain words.
-// Schema messages (zod's "Invalid input: expected string…") never reach the
-// screen — the schema decides WHETHER a value is valid, this copy says what
-// to do about it.
-const ADDRESS_SUBFIELD_MESSAGES: Record<typeof ADDRESS_SUBFIELD_KEYS[number], string> = {
-    line1: 'Enter a street address.',
-    line2: 'Enter a shorter address line.',
-    city: 'Enter a city.',
-    state: 'Enter a shorter state.',
-    postal_code: 'Enter a postal code.',
-    country: 'Enter a 2-letter country code, like US.'
-};
-
-// Required free-text sub-fields fail as too_small when missing and too_big when
-// over the limit, but their copy above only fits the missing case — so an
-// over-long value defers to the length message. The others already read
-// correctly for their over-long case (line2/state say "shorter"; country is a
-// format hint that fits a too-long code too), so they keep their copy.
-const ADDRESS_SUBFIELDS_LENGTH_ON_TOO_BIG: ReadonlySet<string> = new Set(['line1', 'city', 'postal_code']);
+// What to do about a malformed address sub-field, in plain words. Schema messages
+// (zod's "Invalid input: expected string…") never reach the screen — the schema
+// decides WHETHER a value is valid, this copy says what to do about it.
+//
+// Country is the only sub-field that needs its own copy, because it is the only
+// one whose rule is not a length bound. No sub-field is required, so every other
+// one can fail only by being too long, and the generic length message says that
+// better than a per-sub-field phrasing could: it names the limit.
+const COUNTRY_CODE_MESSAGE = 'Enter a 2-letter country code, like US.';
 
 /** A schema issue translated into copy a person can act on. */
 function friendlyValidationMessage(
     field: MemberCustomField,
     issue: {code?: string; path: ReadonlyArray<PropertyKey>; maximum?: unknown}
 ): string {
-    const tooBigMaximum = issue.code === 'too_big' && typeof issue.maximum === 'number' ? issue.maximum : undefined;
-    if (field.type === 'address') {
-        const subfield = issue.path[0];
-        if (typeof subfield === 'string') {
-            if (tooBigMaximum !== undefined && ADDRESS_SUBFIELDS_LENGTH_ON_TOO_BIG.has(subfield)) {
-                return `Use ${tooBigMaximum} characters or fewer.`;
-            }
-            if (subfield in ADDRESS_SUBFIELD_MESSAGES) {
-                return ADDRESS_SUBFIELD_MESSAGES[subfield as typeof ADDRESS_SUBFIELD_KEYS[number]];
-            }
-        }
+    if (field.type === 'address' && issue.path[0] === 'country') {
+        return COUNTRY_CODE_MESSAGE;
     }
+    // The composite's own rule, which names no sub-field: an address has to say
+    // something. The editor normalizes an all-blank address to a clear before it
+    // validates, so this is a backstop rather than a message the screen shows.
+    if (field.type === 'address' && issue.path.length === 0) {
+        return 'Enter at least one part of the address.';
+    }
+    const tooBigMaximum = issue.code === 'too_big' && typeof issue.maximum === 'number' ? issue.maximum : undefined;
     if (tooBigMaximum !== undefined) {
         return `Use ${tooBigMaximum} characters or fewer.`;
     }

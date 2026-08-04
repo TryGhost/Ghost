@@ -68,7 +68,11 @@ For a **one-off endpoint** (stats subpaths, settings chrome, a mutation the spec
 
 ## Faking Tinybird (web analytics)
 
-The analytics views fetch a JWT from the Admin API (`GET /tinybird/token/`) and then query Tinybird pipe endpoints on an external origin directly — both legs are faked (`tinybird.ts`). Boot with `renderAdminApp(route, {boot: webAnalyticsBootOverrides()})` to switch web analytics on (`config.stats` + the `web_analytics_enabled` setting move in lockstep, like the `labs` sugar), declare the token with `fakeTinybirdToken()` and each pipe the view queries with `fakeTinybirdPipe("api_kpis", rows)`. The pipe capture exposes each request's query params (`site_uuid`, `date_from`, filters) for outgoing-query assertions; THE RULE applies — pipes serve the declared rows unfiltered. Undeclared pipes 418 via the `TINYBIRD_ORIGIN` blocklist entry.
+The analytics views fetch a JWT from the Admin API (`GET /tinybird/token/`) and then query Tinybird pipe endpoints on an external origin directly — both legs are faked (`tinybird.ts`). Boot with `renderAdminApp(route, {boot: webAnalyticsBootOverrides()})` to switch web analytics on (`config.stats` + the `web_analytics_enabled` setting move in lockstep, like the `labs` sugar), declare the token with `fakeTinybirdToken()` and each pipe the view queries with `fakeTinybirdPipe("api_kpis", inputs)`. Admin stats endpoints use the matching `fakeAdminStats` methods.
+
+Both interfaces build complete response rows from `@tryghost/test-data`: tests supply scenario-defining context (for example a KPI's `date`, top content's `pathname`, or a post's ID) and only the metric overrides they exercise. Incidental fields default to neutral values and correlated fields such as rates are derived when the API contract makes that relationship authoritative. Time, path, identity, and filter dimensions are deliberately never invented because they determine whether a row belongs in the requested analytics window.
+
+The pipe capture exposes each request's query params (`site_uuid`, `date_from`, filters) for outgoing-query assertions; THE RULE applies — these are aggregate response fakes, so pipes serve the declared rows unfiltered rather than trying to reimplement Tinybird. Event-level fixtures such as a future page-hit builder must require their timestamp and pathname and would need a request-aware resolver before they could exercise lookback behavior. Undeclared pipes 418 via the `TINYBIRD_ORIGIN` blocklist entry.
 
 ## Screen helpers
 

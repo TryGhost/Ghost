@@ -8,7 +8,7 @@ module.exports = {
     },
 
     get rss() {
-        return require('./rss');
+        return require('./rss').rssController;
     },
 
     get previews() {

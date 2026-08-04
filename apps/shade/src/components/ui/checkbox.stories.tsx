@@ -1,7 +1,8 @@
 import type {Meta, StoryObj} from '@storybook/react-vite';
 import * as React from 'react';
+import {Stack, Text} from '@/components/primitives';
 import {Checkbox} from './checkbox';
-import {Label} from './label';
+import {Field, FieldContent, FieldDescription, FieldLabel} from './field';
 
 const meta = {
     title: 'Components / Checkbox',
@@ -39,10 +40,10 @@ export const Default: Story = {
 
 export const WithLabel: Story = {
     render: () => (
-        <div className="flex items-center space-x-2">
+        <Field orientation="horizontal">
             <Checkbox id="terms" />
-            <Label htmlFor="terms">Accept terms and conditions</Label>
-        </div>
+            <FieldLabel htmlFor="terms">Accept terms and conditions</FieldLabel>
+        </Field>
     ),
     parameters: {
         docs: {
@@ -55,10 +56,10 @@ export const WithLabel: Story = {
 
 export const Checked: Story = {
     render: () => (
-        <div className="flex items-center space-x-2">
+        <Field orientation="horizontal">
             <Checkbox id="checked" defaultChecked />
-            <Label htmlFor="checked">Checked by default</Label>
-        </div>
+            <FieldLabel htmlFor="checked">Checked by default</FieldLabel>
+        </Field>
     ),
     parameters: {
         docs: {
@@ -71,10 +72,10 @@ export const Checked: Story = {
 
 export const Disabled: Story = {
     render: () => (
-        <div className="flex items-center space-x-2">
+        <Field data-disabled="true" orientation="horizontal">
             <Checkbox id="disabled" disabled />
-            <Label htmlFor="disabled">Disabled checkbox</Label>
-        </div>
+            <FieldLabel htmlFor="disabled">Disabled checkbox</FieldLabel>
+        </Field>
     ),
     parameters: {
         docs: {
@@ -87,10 +88,10 @@ export const Disabled: Story = {
 
 export const DisabledChecked: Story = {
     render: () => (
-        <div className="flex items-center space-x-2">
+        <Field data-disabled="true" orientation="horizontal">
             <Checkbox id="disabled-checked" defaultChecked disabled />
-            <Label htmlFor="disabled-checked">Disabled (Checked)</Label>
-        </div>
+            <FieldLabel htmlFor="disabled-checked">Disabled (Checked)</FieldLabel>
+        </Field>
     ),
     parameters: {
         docs: {
@@ -101,26 +102,74 @@ export const DisabledChecked: Story = {
     }
 };
 
+export const Hover: Story = {
+    render: () => (
+        <Field orientation="horizontal">
+            <Checkbox className="bg-interactive-hover" id="hovered" />
+            <FieldLabel htmlFor="hovered">Hovered checkbox</FieldLabel>
+        </Field>
+    ),
+    parameters: {
+        docs: {
+            description: {
+                story: 'Hover retains the stronger unchecked border while adding the interactive surface treatment.'
+            }
+        }
+    }
+};
+
+export const FocusVisible: Story = {
+    render: () => (
+        <Field orientation="horizontal">
+            <Checkbox id="focused" autoFocus />
+            <FieldLabel htmlFor="focused">Keyboard focused checkbox</FieldLabel>
+        </Field>
+    ),
+    parameters: {
+        docs: {
+            description: {
+                story: 'Keyboard focus uses the shared form-control focus border and ring.'
+            }
+        }
+    }
+};
+
+export const Invalid: Story = {
+    render: () => (
+        <Field orientation="horizontal">
+            <Checkbox id="invalid" aria-invalid />
+            <FieldLabel htmlFor="invalid">Invalid checkbox</FieldLabel>
+        </Field>
+    ),
+    parameters: {
+        docs: {
+            description: {
+                story: 'Invalid checkboxes replace the stronger default border with the destructive treatment.'
+            }
+        }
+    }
+};
+
 export const Controlled: Story = {
     render: () => {
         const [checked, setChecked] = React.useState(false);
 
         return (
-            <div className="space-y-4">
-                <div className="flex items-center space-x-2">
+            <Stack gap="md">
+                <Field orientation="horizontal">
                     <Checkbox
                         checked={checked}
                         id="controlled"
                         onCheckedChange={value => setChecked(value === true)}
                     />
-                    <Label htmlFor="controlled">
+                    <FieldLabel htmlFor="controlled">
                         {checked ? 'Checked' : 'Unchecked'}
-                    </Label>
-                </div>
-                <div className="text-sm text-muted-foreground">
+                    </FieldLabel>
+                </Field>
+                <Text size="sm" tone="secondary">
                     Current state: {checked ? 'Checked' : 'Unchecked'}
-                </div>
-            </div>
+                </Text>
+            </Stack>
         );
     },
     parameters: {
@@ -134,15 +183,15 @@ export const Controlled: Story = {
 
 export const WithDescription: Story = {
     render: () => (
-        <div className="flex items-start space-x-2">
+        <Field orientation="horizontal">
             <Checkbox id="terms-desc" />
-            <div className="grid gap-1.5 leading-none">
-                <Label htmlFor="terms-desc">Accept terms and conditions</Label>
-                <p className="text-sm text-muted-foreground">
+            <FieldContent>
+                <FieldLabel htmlFor="terms-desc">Accept terms and conditions</FieldLabel>
+                <FieldDescription>
                     You agree to our Terms of Service and Privacy Policy.
-                </p>
-            </div>
-        </div>
+                </FieldDescription>
+            </FieldContent>
+        </Field>
     ),
     parameters: {
         docs: {

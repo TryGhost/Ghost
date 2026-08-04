@@ -198,5 +198,17 @@ describe('UNIT - services/routing/CollectionRouter', function () {
                 limit: 19
             });
         });
+
+        it('passes route data through in domain form', function () {
+            const collectionRouter = new CollectionRouter('/podcast/', {
+                permalink: '/podcast/{slug}/',
+                data: {'my-tag': 'tag.podcast'}
+            }, RESOURCE_CONFIG, routerCreatedSpy);
+
+            collectionRouter._prepareEntriesContext(req, res, next);
+
+            sinon.assert.calledOnce(next);
+            assert.deepEqual(res.routerOptions.data, {'my-tag': 'tag.podcast'});
+        });
     });
 });

@@ -11,6 +11,7 @@ import {
     AlertDialogAction
 } from './alert-dialog';
 import {Button} from './button';
+import {LoadingIndicator} from './loading-indicator';
 
 const meta = {
     title: 'Components / Alert Dialog',
@@ -72,3 +73,33 @@ export const Default: Story = {
     }
 };
 
+export const Loading: Story = {
+    parameters: {
+        docs: {
+            description: {
+                story:
+                    'Keep all actions disabled and pair a meaningful progress label with a visible loading indicator while confirmation work is running.'
+            }
+        }
+    },
+    args: {
+        open: true,
+        children: (
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Delete this item?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This action cannot be undone.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <Button variant="outline" disabled>Cancel</Button>
+                    <Button aria-busy="true" variant="destructive" disabled>
+                        <LoadingIndicator color="current" size="sm" />
+                        Deleting...
+                    </Button>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        )
+    }
+};

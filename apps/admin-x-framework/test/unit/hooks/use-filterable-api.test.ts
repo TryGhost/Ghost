@@ -500,8 +500,11 @@ describe('useFilterableApi', () => {
 
             await result.current.loadData('test"ing\\stuff');
 
+            // both quote characters are escaped and the lone backslash is left
+            // alone: NQL rejects a bare " even inside a single-quoted string, so
+            // `name:~'test"ing\stuff'` is a parse error rather than a match
             expect(mockApiUrl).toHaveBeenCalledWith('/users', {
-                filter: 'name:~\'test"ing\\stuff\'',
+                filter: String.raw`name:~'test\"ing\stuff'`,
                 limit: '20'
             });
         });

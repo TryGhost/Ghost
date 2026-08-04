@@ -1,5 +1,6 @@
 import ColorPickerField from '../../../color-picker-field';
 import ConfirmationModal from '../../../confirmation-modal';
+import HeaderImageField from '../../email-design/header-image-field';
 import HtmlField from '../../../html-field';
 import LimitModal from '../../../limit-modal';
 import NewsletterPreview from './newsletter-preview';
@@ -11,14 +12,11 @@ import validator from 'validator';
 import {Button, Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldSet, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Separator, Switch, Tabs, TabsContent, TabsList, TabsTrigger, Textarea, ToggleGroup, ToggleGroupItem, Tooltip, TooltipContent, TooltipTrigger} from '@tryghost/shade/components';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {HostLimitError, useLimiter} from '../../../../hooks/use-limiter';
-import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
-import {Inline, Stack, Text} from '@tryghost/shade/primitives';
-import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
+import {Inline, Stack} from '@tryghost/shade/primitives';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {type Newsletter, useBrowseNewsletters, useEditNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {PreviewModalContent} from '../../preview-modal';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
-import {Trash2} from 'lucide-react';
-import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {getSettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {hasSendingDomain, isManagedEmail, sendingDomain} from '@tryghost/admin-x-framework/api/config';
 import {renderReplyToEmail, renderSenderEmail} from '../../../../utils/newsletter-emails';
@@ -104,7 +102,6 @@ const Sidebar: React.FC<{
     const limiter = useLimiter();
     const {settings, config, siteData} = useGlobalData();
     const [icon, defaultEmailAddress] = getSettingValues<string>(settings, ['icon', 'default_email_address']);
-    const {mutateAsync: uploadImage} = useUploadImage();
     const [selectedTab, setSelectedTab] = useState('generalSettings');
     const {localSettings} = useSettingGroup();
     const [siteTitle] = getSettingValues(localSettings, ['title']) as string[];
@@ -265,9 +262,9 @@ const Sidebar: React.FC<{
             title: 'General',
             contents:
             <>
-                <FieldSet className='mt-8 gap-4'>
-                    <FieldLegend className='mb-0 text-md! leading-supertight font-bold md:text-lg!'>Name and description</FieldLegend>
-                    <FieldGroup className='gap-6 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+                <FieldSet className='mt-8'>
+                    <FieldLegend className='text-lg! font-semibold'>Name and description</FieldLegend>
+                    <FieldGroup>
                     <Field data-invalid={Boolean(errors.name) || undefined}>
                         <FieldLabel htmlFor='newsletter-detail-name'>Name</FieldLabel>
                         <Input aria-invalid={Boolean(errors.name) || undefined} id='newsletter-detail-name' maxLength={191} placeholder='Weekly Roundup' value={newsletter.name || ''} onChange={e => updateNewsletter({name: e.target.value})} onKeyDown={() => clearError('name')} />
@@ -275,13 +272,13 @@ const Sidebar: React.FC<{
                     </Field>
                     <Field>
                         <FieldLabel htmlFor='newsletter-description'>Description</FieldLabel>
-                        <Textarea className='border-transparent bg-muted' id='newsletter-description' maxLength={2000} rows={2} value={newsletter.description || ''} onChange={e => updateNewsletter({description: e.target.value})} />
+                        <Textarea id='newsletter-description' maxLength={2000} rows={2} value={newsletter.description || ''} onChange={e => updateNewsletter({description: e.target.value})} />
                     </Field>
                     </FieldGroup>
                 </FieldSet>
-                <FieldSet className='mt-8 gap-4'>
-                    <FieldLegend className='mb-0 text-md! leading-supertight font-bold md:text-lg!'>Email info</FieldLegend>
-                    <FieldGroup className='gap-6 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+                <FieldSet className='mt-8'>
+                    <FieldLegend className='text-lg! font-semibold'>Email info</FieldLegend>
+                    <FieldGroup>
                     <Field>
                         <FieldLabel htmlFor='newsletter-sender-name'>Sender name</FieldLabel>
                         <Input id='newsletter-sender-name' maxLength={191} placeholder={siteTitle} value={newsletter.sender_name || ''} onChange={e => updateNewsletter({sender_name: e.target.value})} />
@@ -290,9 +287,9 @@ const Sidebar: React.FC<{
                     <ReplyToEmailField clearError={clearError} errors={errors} newsletter={newsletter} updateNewsletter={updateNewsletter} validate={validate} />
                     </FieldGroup>
                 </FieldSet>
-                <FieldSet className='mt-8 gap-4'>
-                    <FieldLegend className='mb-0 text-md! leading-supertight font-bold md:text-lg!'>Member settings</FieldLegend>
-                    <FieldGroup className='gap-6'>
+                <FieldSet className='mt-8'>
+                    <FieldLegend className='text-lg! font-semibold'>Member settings</FieldLegend>
+                    <FieldGroup>
                     <Field orientation='horizontal'>
                         <FieldLabel htmlFor='newsletter-subscribe-on-signup'>Subscribe new members on signup</FieldLabel>
                         <Switch checked={Boolean(newsletter.subscribe_on_signup)} id='newsletter-subscribe-on-signup' onCheckedChange={checked => updateNewsletter({subscribe_on_signup: checked})} />
@@ -309,40 +306,15 @@ const Sidebar: React.FC<{
             title: 'Content',
             contents:
             <>
-                <FieldSet className='mt-8 gap-4'>
-                    <FieldLegend className='mb-0 text-md! leading-supertight font-bold md:text-lg!'>Header</FieldLegend>
-                    <FieldGroup className='gap-6'>
-                    <div>
-                        <div>
-                            <Text as='h6' className="mb-2 text-base" weight='semibold'>Header image</Text>
-                        </div>
-                        <div className='flex-column flex gap-1'>
-                            <ImageUpload className='h-16.5'>
-                                {newsletter.header_image ? (
-                                    <ImageUploadPreview>
-                                        <ImageUploadImage id='logo' src={newsletter.header_image} />
-                                        <ImageUploadActions>
-                                            <ImageUploadAction aria-label='Remove header image' onClick={() => updateNewsletter({header_image: null})}>
-                                                <Trash2 />
-                                            </ImageUploadAction>
-                                        </ImageUploadActions>
-                                    </ImageUploadPreview>
-                                ) : (
-                                    <ImageUploadDropzone inputId='logo' onDropAccepted={async ([file]) => {
-                                        try {
-                                            const imageUrl = getImageUrl(await uploadImage({file}));
-                                            updateNewsletter({header_image: imageUrl});
-                                        } catch (e) {
-                                            handleError(e);
-                                        }
-                                    }}>
-                                        <LucideIcon.Image className='size-5 text-muted-foreground' />
-                                    </ImageUploadDropzone>
-                                )}
-                            </ImageUpload>
-                            <FieldDescription>{formatNumber(1200)}×{formatNumber(600)} recommended. Use a transparent PNG for best results on any background.</FieldDescription>
-                        </div>
-                    </div>
+                <FieldSet className='mt-8'>
+                    <FieldLegend className='text-lg! font-semibold'>Header</FieldLegend>
+                    <FieldGroup>
+                    <HeaderImageField
+                        inputId='newsletter-header-image'
+                        value={newsletter.header_image || ''}
+                        onChange={headerImage => updateNewsletter({header_image: headerImage || null})}
+                        onUploadError={handleError}
+                    />
                     <Stack gap='md'>
                         {icon && <Field orientation='horizontal'>
                             <FieldLabel htmlFor='newsletter-show-header-icon'>Publication icon</FieldLabel>
@@ -360,9 +332,9 @@ const Sidebar: React.FC<{
                     </FieldGroup>
                 </FieldSet>
 
-                <FieldSet className='mt-8 gap-4'>
-                    <FieldLegend className='mb-0 text-md! leading-supertight font-bold md:text-lg!'>Title section</FieldLegend>
-                    <FieldGroup className='gap-4'>
+                <FieldSet className='mt-8'>
+                    <FieldLegend className='text-lg! font-semibold'>Title section</FieldLegend>
+                    <FieldGroup>
                     <Field orientation='horizontal'>
                         <FieldLabel htmlFor='newsletter-show-post-title'>Post title</FieldLabel>
                         <Switch checked={Boolean(newsletter.show_post_title_section)} id='newsletter-show-post-title' onCheckedChange={checked => updateNewsletter({show_post_title_section: checked})} />
@@ -380,9 +352,9 @@ const Sidebar: React.FC<{
                     </FieldGroup>
                 </FieldSet>
 
-                <FieldSet className='mt-8 gap-4'>
-                    <FieldLegend className='mb-0 text-md! leading-supertight font-bold md:text-lg!'>Footer</FieldLegend>
-                    <FieldGroup className='gap-6'>
+                <FieldSet className='mt-8'>
+                    <FieldLegend className='text-lg! font-semibold'>Footer</FieldLegend>
+                    <FieldGroup>
                     <Stack gap='lg'>
                         <Field orientation='horizontal'>
                             <FieldLabel htmlFor='newsletter-feedback-enabled'>Ask your readers for feedback</FieldLabel>
@@ -437,9 +409,9 @@ const Sidebar: React.FC<{
             title: 'Design',
             contents:
             <>
-                <FieldSet className='mt-8 gap-4'>
-                    <FieldLegend className='mb-0 pb-2 text-md! leading-supertight font-bold md:text-lg!'>Global</FieldLegend>
-                    <FieldGroup className='gap-5'>
+                <FieldSet className='mt-8'>
+                    <FieldLegend className='text-lg! font-semibold'>Global</FieldLegend>
+                    <FieldGroup>
                     <div className='mb-1'>
                         <ColorPickerField
                             direction='rtl'
@@ -494,9 +466,9 @@ const Sidebar: React.FC<{
                     </Inline>
                     </FieldGroup>
                 </FieldSet>
-                <FieldSet className='mt-8 gap-4'>
-                    <FieldLegend className='mb-0 pb-2 text-md! leading-supertight font-bold md:text-lg!'>Header</FieldLegend>
-                    <FieldGroup className='gap-5'>
+                <FieldSet className='mt-8'>
+                    <FieldLegend className='text-lg! font-semibold'>Header</FieldLegend>
+                    <FieldGroup>
                     <div className='mb-1'>
                         <ColorPickerField
                             direction='rtl'
@@ -549,9 +521,9 @@ const Sidebar: React.FC<{
                     </FieldGroup>
                 </FieldSet>
 
-                <FieldSet className='mt-8 gap-4'>
-                    <FieldLegend className='mb-0 pb-2 text-md! leading-supertight font-bold md:text-lg!'>Body</FieldLegend>
-                    <FieldGroup className='gap-5'>
+                <FieldSet className='mt-8'>
+                    <FieldLegend className='text-lg! font-semibold'>Body</FieldLegend>
+                    <FieldGroup>
                     <div className='mb-1'>
                         <ColorPickerField
                             direction='rtl'

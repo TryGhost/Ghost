@@ -81,15 +81,6 @@ Object {
       "status": "alert",
       "type": "info",
     },
-    Object {
-      "custom": true,
-      "dismissible": true,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "location": "bottom",
-      "message": "test notification",
-      "status": "alert",
-      "type": "info",
-    },
   ],
 }
 `;
@@ -98,7 +89,7 @@ exports[`Notifications API As Editor Read notifications 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "463",
+  "content-length": "315",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,

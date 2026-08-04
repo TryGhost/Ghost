@@ -98,7 +98,7 @@ const TipsAndDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
             <SettingGroupContent columns={1}>
                     <Field className='max-w-[180px]' data-invalid={Boolean(errors.donationsSuggestedAmount) || undefined}>
                         <FieldLabel htmlFor='donations-suggested-amount'>Suggested amount</FieldLabel>
-                        <InputGroup className='h-[var(--control-height)] border-transparent bg-muted' data-invalid={Boolean(errors.donationsSuggestedAmount) || undefined}>
+                        <InputGroup data-invalid={Boolean(errors.donationsSuggestedAmount) || undefined}>
                             <InputGroupInput
                                 ref={focusRef}
                                 aria-invalid={Boolean(errors.donationsSuggestedAmount) || undefined}
@@ -113,7 +113,7 @@ const TipsAndDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
                                 onChange={event => suggestedAmountInput.onChange(event.target.value)}
                                 onKeyDown={() => clearError('donationsSuggestedAmount')}
                             />
-                            <InputGroupAddon align='inline-end'>
+                            <InputGroupAddon align='inline-end' className='pr-1.75'>
                                 <Popover open={currencyOpen} onOpenChange={setCurrencyOpen}>
                                     <PopoverTrigger asChild>
                                         <InputGroupButton aria-expanded={currencyOpen} aria-label='Currency' role='combobox'>

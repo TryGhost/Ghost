@@ -57,7 +57,7 @@ const AddIntegrationModal: React.FC<RoutingModalProps> = () => {
         }}
     >
         <div className='mt-5'>
-            <FieldGroup className='gap-8 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+            <FieldGroup className='gap-8'>
                 <Field data-invalid={Boolean(errors.name) || undefined}>
                     <FieldLabel htmlFor='integration-name'>Name</FieldLabel>
                     <Input aria-invalid={Boolean(errors.name) || undefined} id='integration-name' maxLength={191} placeholder='Custom integration' value={name} autoFocus onChange={e => setName(e.target.value)} onInput={() => errors.name && setErrors({name: ''})} />

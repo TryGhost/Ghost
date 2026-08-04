@@ -23,12 +23,13 @@ class GiftServiceWrapper {
             return;
         }
 
-        const {Gift: GiftModel} = require('../../models');
+        const {Gift: GiftModel, MemberStripeCustomer: StripeCustomerModel} = require('../../models');
         const {GiftBookshelfRepository} = require('./gift-bookshelf-repository');
         const {GiftService} = require('./gift-service');
         const {GiftReminderScheduler} = require('./gift-reminder-scheduler');
         const {GiftEmailService} = require('./gift-email-service');
         const {GiftController} = require('./gift-controller');
+        const GiftCheckoutAdapter = require('./gift-checkout-adapter');
         const membersService = require('../members');
         const tiersService = require('../tiers');
         const staffService = require('../staff');
@@ -41,6 +42,7 @@ class GiftServiceWrapper {
 
         const {GhostMailer} = require('../mail');
         const settingsCache = require('../../../shared/settings-cache');
+        const labsService = require('../../../shared/labs');
         const urlUtils = require('../../../shared/url-utils').default;
         const settingsHelpers = require('../settings-helpers');
         const EmailAddressParser = require('../email-address/email-address-parser');
@@ -49,6 +51,10 @@ class GiftServiceWrapper {
 
         const repository = new GiftBookshelfRepository({
             GiftModel
+        });
+        const checkoutAdapter = new GiftCheckoutAdapter({
+            StripeCustomerModel,
+            getStripeApi: () => require('../stripe').api
         });
 
         const giftEmailService = new GiftEmailService({
@@ -77,23 +83,19 @@ class GiftServiceWrapper {
             get staffServiceEmails() {
                 return staffService.api.emails;
             },
-            giftReminderScheduler
+            giftReminderScheduler,
+            checkoutAdapter,
+            labsService,
+            settingsCache
         });
 
         this.controller = new GiftController({
-            service: this.service,
-            tiersService
+            service: this.service
         });
 
         DomainEvents.subscribe(SubscriptionActivatedEvent, async (event) => {
             try {
-                const gift = await this.service.getActiveByMember(event.data.memberId);
-
-                if (!gift) {
-                    return;
-                }
-
-                await this.service.consume(gift.token);
+                await this.service.handlePaidSubscriptionActivation(event.data.memberId);
             } catch (err) {
                 logging.error(err, 'Failed to consume gift on paid subscription activation');
             }

@@ -90,6 +90,7 @@ export type AutomatedEmailEvents = {
 
 export type RecordEmailSentOptions = Readonly<{
     automationActionRevisionId: string;
+    automationRunStepId: string;
     mailgunMessageId?: string;
     memberEmail: string;
     memberId: string;

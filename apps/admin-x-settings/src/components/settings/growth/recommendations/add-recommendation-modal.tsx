@@ -192,7 +192,7 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
         onOk={onOk}
     >
         <p className="mt-4">You can recommend <strong>any site</strong> your audience will find valuable, not just those published on Ghost.</p>
-        <FieldGroup className='mt-10 gap-8 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+        <FieldGroup className='mt-10 gap-8'>
             <Field data-invalid={Boolean(errors.url) || undefined}>
                 <FieldLabel htmlFor='recommendation-url'>URL</FieldLabel>
                 <Input

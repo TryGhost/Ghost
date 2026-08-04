@@ -3,6 +3,7 @@ import { page } from "vitest/browser";
 
 import {
     currentRoute,
+    fakeAdminStats,
     fakeAdminEndpoint,
     fakePosts,
     fakeTinybirdPipe,
@@ -47,17 +48,11 @@ function seededPost() {
  */
 function seedPostAnalyticsWorld() {
     const postsApi = fakePosts([seededPost()]);
-    fakeAdminEndpoint("GET", new RegExp(`^/stats/posts/${POST_ID}/top-referrers`), {
-        stats: [{ source: "Google", referrer_url: "https://google.com", free_members: 80, paid_members: 20, mrr: 1000 }],
-        meta: {},
-    });
-    fakeAdminEndpoint("GET", new RegExp(`^/stats/posts/${POST_ID}/growth`), {
-        stats: [{ post_id: POST_ID, free_members: 100, paid_members: 25, mrr: 1250 }],
-        meta: {},
-    });
-    fakeAdminEndpoint("GET", /^\/stats\/mrr\//, {
-        stats: [{ date: daysAgo(1), mrr: 50000, currency: "usd" }],
-        meta: { totals: [{ currency: "usd", mrr: 50000 }] },
+    fakeAdminStats.postReferrers(POST_ID, [{ source: "Google", referrer_url: "https://google.com", free_members: 80, paid_members: 20, mrr: 1000 }]);
+    fakeAdminStats.postGrowth(POST_ID, { free_members: 100, paid_members: 25, mrr: 1250 });
+    fakeAdminStats.mrr({
+        stats: [{ date: daysAgo(1), mrr: 50000 }],
+        totals: [{ currency: "usd", mrr: 50000 }],
     });
     fakeAdminEndpoint("GET", /^\/links\//, {
         links: [
@@ -78,8 +73,8 @@ function seedPostAnalyticsWorld() {
         topSourcesApi,
         topLocationsApi,
         kpisApi: fakeTinybirdPipe("api_kpis", [
-            { date: daysAgo(2), visits: 100, pageviews: 240, bounce_rate: 0.4, avg_session_sec: 30 },
-            { date: daysAgo(1), visits: 150, pageviews: 320, bounce_rate: 0.5, avg_session_sec: 40 },
+            { date: daysAgo(2), visits: 100 },
+            { date: daysAgo(1), visits: 150 },
         ]),
     };
 }
@@ -132,6 +127,27 @@ describe("Post analytics web", () => {
         await expect.poll(() => topLocationsApi.lastRequest?.params.get("post_uuid")).toBe(POST_UUID);
         await expect.poll(() => topSourcesApi.lastRequest?.params.get("post_uuid")).toBe(POST_UUID);
     });
+
+    it("filters the post analytics pipes when a location row is clicked", async () => {
+        const { kpisApi, topLocationsApi, topSourcesApi } = seedPostAnalyticsWorld();
+        await renderAdminApp(`/posts/analytics/${POST_ID}/web`, { boot: webAnalyticsBootOverrides() });
+
+        await expect.element(postAnalyticsScreen.locationRow("US")).toHaveTextContent("United States");
+        const initialKpiRequestCount = kpisApi.requests.length;
+        const initialLocationsRequestCount = topLocationsApi.requests.length;
+        const initialSourcesRequestCount = topSourcesApi.requests.length;
+
+        await postAnalyticsScreen.locationRow("US").click();
+
+        await expect.poll(currentRoute).toBe(`/posts/analytics/${POST_ID}/web?location=US`);
+        await expect.element(postAnalyticsScreen.filterContainer()).toHaveTextContent("Location");
+        await expect.poll(() => kpisApi.requests.length).toBeGreaterThan(initialKpiRequestCount);
+        await expect.poll(() => topLocationsApi.requests.length).toBeGreaterThan(initialLocationsRequestCount);
+        await expect.poll(() => topSourcesApi.requests.length).toBeGreaterThan(initialSourcesRequestCount);
+        expect(kpisApi.lastRequest?.params.get("location")).toBe("US");
+        expect(topLocationsApi.lastRequest?.params.get("location")).toBe("US");
+        expect(topSourcesApi.lastRequest?.params.get("location")).toBe("US");
+    });
 });
 
 describe("Post analytics growth", () => {
@@ -150,36 +166,19 @@ describe("Post analytics newsletter", () => {
     it("renders the seeded email performance", async () => {
         seedPostAnalyticsWorld();
         fakeAdminEndpoint("GET", new RegExp(`^/posts/${POST_ID}/`), { posts: [seededPost()] });
-        fakeAdminEndpoint("GET", /^\/stats\/newsletter-basic-stats\//, {
-            stats: [
-                {
-                    post_id: POST_ID,
-                    post_title: "Attack of the Clones",
-                    send_date: `${daysAgo(10)}T10:00:00.000Z`,
-                    sent_to: 1000,
-                    total_opens: 400,
-                    open_rate: 0.4,
-                    total_clicks: 0,
-                    click_rate: 0,
-                },
-            ],
-            meta: {},
-        });
-        fakeAdminEndpoint("GET", /^\/stats\/newsletter-click-stats\//, {
-            stats: [
-                {
-                    post_id: POST_ID,
-                    post_title: "Attack of the Clones",
-                    send_date: `${daysAgo(10)}T10:00:00.000Z`,
-                    sent_to: 1000,
-                    total_opens: 400,
-                    open_rate: 0.4,
-                    total_clicks: 60,
-                    click_rate: 0.06,
-                },
-            ],
-            meta: {},
-        });
+        const basicStats = {
+            post_id: POST_ID,
+            post_title: "Attack of the Clones",
+            send_date: `${daysAgo(10)}T10:00:00.000Z`,
+            sent_to: 1000,
+            total_opens: 400,
+        };
+        fakeAdminStats.newsletterBasic([basicStats]);
+        fakeAdminStats.newsletterClicks([{
+            post_id: POST_ID,
+            total_clicks: 60,
+            email_count: 1000,
+        }]);
         await renderAdminApp(`/posts/analytics/${POST_ID}/newsletter`, { boot: webAnalyticsBootOverrides() });
 
         await expect.element(postAnalyticsScreen.postTitle("Attack of the Clones")).toBeVisible();

@@ -66,7 +66,7 @@ const WebhookModal: React.FC<WebhookModalProps> = ({webhook, integrationId}) => 
         }}
     >
         <div className='mt-5'>
-            <FieldGroup className='gap-8 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+            <FieldGroup className='gap-8'>
                 <Field data-invalid={Boolean(errors.name) || undefined}>
                     <FieldLabel htmlFor='webhook-name'>Name</FieldLabel>
                     <Input aria-invalid={Boolean(errors.name) || undefined} id='webhook-name' maxLength={191} placeholder='Custom webhook' value={formState.name ?? ''} onChange={e => updateForm(state => ({...state, name: e.target.value}))} onKeyDown={() => clearError('name')} />

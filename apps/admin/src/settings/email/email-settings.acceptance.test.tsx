@@ -1,9 +1,25 @@
 import {describe, expect, it} from "vitest";
+import {userEvent} from "vitest/browser";
 
-import {fakeAdminEndpoint, fakeSettingsScreens, newsletter, renderAdminApp, settingsResponse} from "@test-utils/acceptance";
+import {currentRoute, fakeAdminEndpoint, fakeSettingsScreens, newsletter, renderAdminApp, settingsResponse} from "@test-utils/acceptance";
 import {settingsScreen} from "@/settings/settings.screen";
 
 describe("Email settings", () => {
+    it("closes the newsletter status dropdown with Escape without closing Settings", async () => {
+        fakeSettingsScreens();
+        await renderAdminApp("/settings/emails", {labs: {automations: true}});
+
+        const filter = settingsScreen.emails().getByTestId("newsletters-filter");
+        await filter.click();
+        await expect.element(settingsScreen.selectOptionExact("Archived")).toBeVisible();
+
+        await userEvent.keyboard("{Escape}");
+
+        await expect(settingsScreen.selectOptionExact("Archived")).toHaveCount(0);
+        await expect.element(filter).toBeVisible();
+        await expect.poll(currentRoute).toBe("/settings/emails");
+    });
+
     it("renders newsletter sections in their expected order", async () => {
         fakeSettingsScreens();
         await renderAdminApp("/settings/newsletters");
