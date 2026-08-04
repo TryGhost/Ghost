@@ -131,10 +131,11 @@ describe('LinkClickTrackingService', function () {
             const updatedUrl = await service.addAutomationTrackingToUrl(
                 new URL('https://example.com/destination'),
                 'revision-id',
+                'run-step-id',
                 '00000000-0000-4000-8000-000000000001'
             );
 
-            assert.equal(updatedUrl.href, 'https://example.com/r/uniqueslug?m=00000000-0000-4000-8000-000000000001');
+            assert.equal(updatedUrl.href, 'https://example.com/r/uniqueslug?m=00000000-0000-4000-8000-000000000001&step=run-step-id');
             sinon.assert.calledOnceWithExactly(
                 getOrAddAutomationRedirect,
                 'revision-id',
@@ -155,12 +156,16 @@ describe('LinkClickTrackingService', function () {
         const createRedirectEvent = ({
             memberUuid = 'memberUuid',
             automationActionRevisionId,
+            automationRunStepId = 'run-step-id',
             linkId = new ObjectID(),
             timestamp = CLICKED_AT
         } = {}) => {
             const url = new URL('https://example.com/destination');
             if (memberUuid) {
                 url.searchParams.set('m', memberUuid);
+            }
+            if (automationRunStepId) {
+                url.searchParams.set('step', automationRunStepId);
             }
 
             return RedirectEvent.create({
@@ -229,9 +234,23 @@ describe('LinkClickTrackingService', function () {
             sinon.assert.calledOnceWithExactly(save, sinon.match.object, {transacting});
             sinon.assert.calledOnceWithExactly(trackEmailClicked, {
                 automationActionRevisionId: 'revision-id',
+                automationRunStepId: 'run-step-id',
                 memberId: 'member-id',
                 clickedAt: CLICKED_AT
             }, {transacting});
+        });
+
+        it('Saves automation clicks without a step ID but skips recipient analytics', async function () {
+            const event = createRedirectEvent({
+                automationActionRevisionId: 'revision-id',
+                automationRunStepId: null
+            });
+
+            await subscriber(event);
+
+            sinon.assert.calledOnceWithExactly(save, sinon.match.object);
+            sinon.assert.notCalled(runInTransaction);
+            sinon.assert.notCalled(trackEmailClicked);
         });
 
         it('Propagates raw click persistence failures', async function () {

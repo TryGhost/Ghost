@@ -374,10 +374,11 @@ class MemberWelcomeEmailService {
      * @param {boolean} [options.trackOpens]
      * @param {boolean} [options.trackClicks]
      * @param {string | null} [options.automationActionRevisionId]
+     * @param {string | null} [options.automationRunStepId]
      * @param {null | {url: string, oneClickUrl: string}} [options.unsubscribe] - When set, the footer links to an unsubscribe URL and the email carries one-click List-Unsubscribe headers
      * @returns {Promise<unknown>}
      */
-    async #sendEmail({member, memberStatus, email, emailType, trackOpens, trackClicks = false, automationActionRevisionId = null, unsubscribe = null}) {
+    async #sendEmail({member, memberStatus, email, emailType, trackOpens, trackClicks = false, automationActionRevisionId = null, automationRunStepId = null, unsubscribe = null}) {
         if (!member.email) {
             throw new errors.IncorrectUsageError({
                 message: MESSAGES.MISSING_RECIPIENT_EMAIL
@@ -404,7 +405,8 @@ class MemberWelcomeEmailService {
             siteSettings: this.#getSiteSettings(),
             unsubscribeUrl: unsubscribe?.url,
             trackClicks,
-            automationActionRevisionId
+            automationActionRevisionId,
+            automationRunStepId
         });
 
         const senderOptions = await this.#getEffectiveSenderOptions(
@@ -541,9 +543,10 @@ class MemberWelcomeEmailService {
      * @param {boolean} options.trackOpens
      * @param {boolean} options.trackClicks
      * @param {string} options.automationActionRevisionId
+     * @param {string} options.automationRunStepId
      * @returns {Promise<unknown>}
      */
-    async sendAutomationEmail({email, member, memberStatus, trackOpens, trackClicks, automationActionRevisionId}) {
+    async sendAutomationEmail({email, member, memberStatus, trackOpens, trackClicks, automationActionRevisionId, automationRunStepId}) {
         const designSettings = email.designSettingId ?
             await EmailDesignSetting.findOne({id: email.designSettingId}) :
             null;
@@ -571,6 +574,7 @@ class MemberWelcomeEmailService {
             trackOpens,
             trackClicks,
             automationActionRevisionId,
+            automationRunStepId,
             unsubscribe
         });
     }

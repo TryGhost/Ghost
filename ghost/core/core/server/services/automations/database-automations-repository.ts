@@ -351,7 +351,7 @@ export function createDatabaseAutomationsRepository({
             });
         },
 
-        async trackEmailClicked({automationActionRevisionId, memberId, clickedAt}, {transacting} = {}) {
+        async trackEmailClicked({automationActionRevisionId, automationRunStepId, memberId, clickedAt}, {transacting} = {}) {
             const trackClick = async (trx: Knex.Transaction) => {
                 await lockActionRevisions(trx, [automationActionRevisionId]);
 
@@ -359,12 +359,10 @@ export function createDatabaseAutomationsRepository({
                     .select('id', 'clicked_at')
                     .where({
                         automation_action_revision_id: automationActionRevisionId,
+                        automation_run_step_id: automationRunStepId,
                         member_id: memberId,
                         track_clicks: true
                     })
-                    .where('created_at', '<=', toDatabaseDate(clickedAt))
-                    .orderBy('created_at', 'desc')
-                    .orderBy('id', 'desc')
                     .forUpdate()
                     .first();
 
