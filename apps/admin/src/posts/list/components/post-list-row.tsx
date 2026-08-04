@@ -21,20 +21,21 @@ interface PostListRowProps {
     isContributor?: boolean;
 }
 
-/** Status colour follows Ember: drafts pink, scheduled green, failures red. */
+/**
+ * Status colour follows Ember (`app/styles/layouts/content.css`): drafts pink,
+ * everything live green, failures red.
+ *
+ * Green and red go through Shade's semantic state tokens. Draft-pink has no
+ * semantic equivalent — it isn't success, warning or danger — so it uses the
+ * `pink` alias, which resolves to the same `pink-500` Ember's `var(--pink)`
+ * does.
+ */
 function statusTone(post: PostListItem): string {
     if (post.email?.status === 'failed') {
-        return 'text-red';
+        return 'text-state-danger';
     }
 
-    switch (post.status) {
-    case 'draft':
-        return 'text-pink';
-    case 'scheduled':
-        return 'text-green';
-    default:
-        return 'text-green';
-    }
+    return post.status === 'draft' ? 'text-pink' : 'text-state-success';
 }
 
 function FeatureImage({post}: {post: PostListItem}) {
