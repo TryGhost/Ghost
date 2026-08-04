@@ -122,6 +122,11 @@ describe('{{link}} helper', function () {
             assert.equal(compile('{{#link href="#myheading" title="Hello "}}text{{/link}}')
                 .with({}), '<a href="#myheading" title="Hello ">text</a>');
         });
+
+        it('preserves existing cleanup when an attribute value contains a space before >', function () {
+            assert.equal(compile('{{#link href="#myheading" title="Hello > world"}}text{{/link}}')
+                .with({}), '<a href="#myheading" title="Hello> world">text</a>');
+        });
     });
 
     describe('dynamic behavior: advanced links using context', function () {
