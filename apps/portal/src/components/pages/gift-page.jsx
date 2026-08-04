@@ -107,6 +107,16 @@ export const GiftPageStyles = `
     text-wrap: pretty;
 }
 
+.gh-portal-gift-checkout-promo-image {
+    display: block;
+    max-width: 100%;
+    max-height: 88px;
+    object-fit: contain;
+    object-position: left;
+    border-radius: 12px;
+    margin: 0 0 14px;
+}
+
 .gh-portal-gift-checkout-section {
     margin-top: 24px;
 }
@@ -811,6 +821,9 @@ const GiftPage = () => {
 
     const siteIcon = site.icon;
     const siteTitle = site.title || '';
+    const giftPageHeading = typeof site.gift_page_heading === 'string' ? site.gift_page_heading.trim() : '';
+    const giftPageDescription = typeof site.gift_page_description === 'string' ? site.gift_page_description.trim() : '';
+    const giftPageImage = typeof site.gift_page_image === 'string' ? site.gift_page_image : '';
 
     if (products.length === 0) {
         return (
@@ -903,9 +916,12 @@ const GiftPage = () => {
                         <div className='gh-portal-gift-checkout-bg' aria-hidden='true' />
                         <div className='gh-portal-gift-checkout-inner' ref={innerRef}>
                             <header className='gh-portal-gift-checkout-header'>
-                                <h1 className='gh-portal-main-title'>{t('Gift a membership')}</h1>
+                                {giftPageImage && (
+                                    <img alt='' className='gh-portal-gift-checkout-promo-image' src={giftPageImage} />
+                                )}
+                                <h1 className='gh-portal-main-title'>{giftPageHeading || t('Gift a membership')}</h1>
                                 <p className='gh-portal-gift-checkout-subtitle'>
-                                    {t('Share a full membership to {siteTitle} with a friend or colleague', {siteTitle})}
+                                    {giftPageDescription || t('Share a full membership to {siteTitle} with a friend or colleague', {siteTitle})}
                                 </p>
                             </header>
 

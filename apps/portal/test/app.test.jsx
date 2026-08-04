@@ -381,7 +381,7 @@ describe('App', function () {
     });
 
     test('parses a valid preview hash', () => {
-        window.location.hash = '#/portal/preview?button=true&isFree=true&isMonthly=true&isYearly=false&signupCheckboxRequired=false&previewTheme=dark';
+        window.location.hash = '#/portal/preview?button=true&isFree=true&isMonthly=true&isYearly=false&signupCheckboxRequired=false&previewTheme=dark&giftPageHeading=Local%2520heading&giftPageDescription=Local%2520description&giftPageImage=https%253A%252F%252Fexample.com%252Fgift.jpg';
 
         const app = new App({siteUrl: 'http://example.com'});
         const data = app.fetchPreviewData();
@@ -393,5 +393,8 @@ describe('App', function () {
         expect(data.site.portal_plans).not.toContain('yearly');
         expect(data.site.portal_signup_checkbox_required).toBe(false);
         expect(data.site.preview_theme).toBe('dark');
+        expect(data.site.gift_page_heading).toBe('Local heading');
+        expect(data.site.gift_page_description).toBe('Local description');
+        expect(data.site.gift_page_image).toBe('https://example.com/gift.jpg');
     });
 });

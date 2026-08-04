@@ -497,6 +497,12 @@ export default class App extends React.Component {
                 data.site.portal_default_plan = value;
             } else if (key === 'transistorPortalSettings' && value) {
                 data.site.transistor_portal_settings = JSON.parse(value);
+            } else if (key === 'giftPageHeading') {
+                data.site.gift_page_heading = value || null;
+            } else if (key === 'giftPageDescription') {
+                data.site.gift_page_description = value || null;
+            } else if (key === 'giftPageImage') {
+                data.site.gift_page_image = value || null;
             }
         }
         data.site.portal_plans = allowedPlans;

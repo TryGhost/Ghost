@@ -1,5 +1,7 @@
 /* eslint-disable camelcase */
 
+const emptyGiftPageSetting = /** @type {string | null} */ (null);
+
 export const sites = {
     singleProduct: getSiteData({
         products: getProductsData({numOfProducts: 1})
@@ -48,6 +50,9 @@ export function getSiteData({
     portalButtonStyle: portal_button_style = 'icon-and-text',
     membersSupportAddress: members_support_address = 'support@example.com',
     editorDefaultEmailRecipients: editor_default_email_recipients = 'visibility',
+    giftPageImage: gift_page_image = emptyGiftPageSetting,
+    giftPageHeading: gift_page_heading = emptyGiftPageSetting,
+    giftPageDescription: gift_page_description = emptyGiftPageSetting,
     newsletters = [],
     posts = getPostsData(),
     commentsEnabled,
@@ -83,6 +88,9 @@ export function getSiteData({
         recommendations_enabled: !!recommendationsEnabled,
         labs,
         editor_default_email_recipients,
+        gift_page_image,
+        gift_page_heading,
+        gift_page_description,
         posts
     };
 }

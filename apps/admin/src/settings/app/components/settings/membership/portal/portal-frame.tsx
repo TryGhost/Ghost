@@ -57,6 +57,9 @@ const PortalFrame: React.FC<PortalFrameProps> = ({href, onDestroyed, selectedTab
     if (portalParent === 'preview') {
         loaderClassNames = 'pointer-events-none absolute inset-0 z-50';
         loaderVisibility = 'invisible';
+    } else if (portalParent === 'gift-preview') {
+        loaderClassNames = 'pointer-events-none absolute inset-0 z-50';
+        loaderVisibility = 'invisible';
     } else if (portalParent === 'offers') {
         loaderClassNames = 'absolute inset-0 z-50';
         loaderVisibility = 'invisible';

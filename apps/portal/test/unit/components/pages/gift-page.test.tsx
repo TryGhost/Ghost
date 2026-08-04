@@ -33,6 +33,35 @@ function setup(site: SiteData) {
 }
 
 describe('GiftPage', () => {
+    test('renders default copy when gift page customization is unset or cleared', () => {
+        const defaultPage = setup(buildSite());
+
+        expect(defaultPage.getByRole('heading', {level: 1, name: 'Gift a membership'})).toBeInTheDocument();
+        expect(defaultPage.getByText('Share a full membership to The Blueprint with a friend or colleague')).toBeInTheDocument();
+        defaultPage.unmount();
+
+        const clearedPage = setup(buildSite({
+            giftPageHeading: '   ',
+            giftPageDescription: '   '
+        }));
+
+        expect(clearedPage.getByRole('heading', {level: 1, name: 'Gift a membership'})).toBeInTheDocument();
+        expect(clearedPage.getByText('Share a full membership to The Blueprint with a friend or colleague')).toBeInTheDocument();
+    });
+
+    test('renders the saved gift page image, heading and description', () => {
+        const {container, getByRole, getByText, queryByText} = setup(buildSite({
+            giftPageImage: 'https://example.com/content/images/gift-promo.jpg',
+            giftPageHeading: 'Give the gift of great journalism',
+            giftPageDescription: 'Our members get everything we publish.'
+        }));
+
+        expect(getByRole('heading', {level: 1, name: 'Give the gift of great journalism'})).toBeInTheDocument();
+        expect(getByText('Our members get everything we publish.')).toBeInTheDocument();
+        expect(queryByText(/Share a full membership/)).not.toBeInTheDocument();
+        expect(container.querySelector('.gh-portal-gift-checkout-promo-image')).toHaveAttribute('src', 'https://example.com/content/images/gift-promo.jpg');
+    });
+
     test('preserves the cadence selector and cadence-only checkout when customization is disabled', () => {
         const {getByRole, mockDoActionFn, queryByRole} = setup(buildSite());
 

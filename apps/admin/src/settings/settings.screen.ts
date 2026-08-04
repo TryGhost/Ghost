@@ -71,6 +71,7 @@ export const settingsScreen = {
     confirmationModal: () => page.getByTestId(sel.confirmationModal),
     confirmationAction: (name: "Leave" | "Stay") => settingsScreen.confirmationModal().getByRole("button", { name }),
     portalModal: () => page.getByTestId(sel.portalModal),
+    giftModal: () => page.getByTestId(sel.giftModal),
     userDetailModal: () => page.getByTestId(sel.userDetailModal),
     exploreToggle: () => page.getByTestId(sel.exploreToggle),
     exploreGrowthToggle: () => page.getByTestId(sel.exploreGrowthToggle),

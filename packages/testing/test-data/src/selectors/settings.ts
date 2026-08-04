@@ -8,6 +8,7 @@ export const settingsSidebar = "sidebar";
 export const exitSettings = "exit-settings";
 export const confirmationModal = "confirmation-modal";
 export const portalModal = "portal-modal";
+export const giftModal = "gift-modal";
 export const userDetailModal = "user-detail-modal";
 export const exploreToggle = "explore-toggle";
 export const exploreGrowthToggle = "explore-growth-toggle";
