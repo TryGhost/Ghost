@@ -1,5 +1,5 @@
 import type {Meta, StoryObj} from '@storybook/react-vite';
-import {Tabs, TabsContent, TabsList, TabsTrigger} from './tabs';
+import {Tabs, TabsContent, TabsList, TabsTrigger, TabsTriggerCount} from './tabs';
 
 const meta = {
     title: 'Components / Tabs',
@@ -124,10 +124,10 @@ export const Underline: Story = {
         variant: 'underline',
         children: [
             <TabsList key="list">
-                <TabsTrigger value="home">Home</TabsTrigger>
-                <TabsTrigger value="about">About</TabsTrigger>
-                <TabsTrigger value="services">Services</TabsTrigger>
-                <TabsTrigger value="contact">Contact</TabsTrigger>
+                <TabsTrigger value="home">Home<TabsTriggerCount>12</TabsTriggerCount></TabsTrigger>
+                <TabsTrigger value="about">About<TabsTriggerCount>4</TabsTriggerCount></TabsTrigger>
+                <TabsTrigger value="services">Services<TabsTriggerCount>28</TabsTriggerCount></TabsTrigger>
+                <TabsTrigger value="contact">Contact<TabsTriggerCount>2</TabsTriggerCount></TabsTrigger>
             </TabsList>,
 
             <TabsContent key="home" value="home">
@@ -151,6 +151,37 @@ export const Underline: Story = {
         docs: {
             description: {
                 story: 'Underline style tabs commonly used for website navigation sections.'
+            }
+        }
+    }
+};
+
+export const CountBackgrounds: Story = {
+    render: () => (
+        <div className="flex flex-col gap-6">
+            {(['segmented', 'button', 'underline', 'pill'] as const).map(variant => (
+                <div key={variant}>
+                    <div className="mb-2 text-sm font-semibold capitalize">{variant}</div>
+                    <Tabs defaultValue="active" variant={variant}>
+                        <TabsList>
+                            <TabsTrigger value="active">
+                                Active
+                                <TabsTriggerCount>12</TabsTriggerCount>
+                            </TabsTrigger>
+                            <TabsTrigger value="inactive">
+                                Inactive
+                                <TabsTriggerCount>4</TabsTriggerCount>
+                            </TabsTrigger>
+                        </TabsList>
+                    </Tabs>
+                </div>
+            ))}
+        </div>
+    ),
+    parameters: {
+        docs: {
+            description: {
+                story: 'Count pills retain a distinct semantic background across common tab variants and selection states.'
             }
         }
     }

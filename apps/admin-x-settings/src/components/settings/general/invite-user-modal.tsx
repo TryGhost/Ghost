@@ -222,7 +222,6 @@ const InviteUserModal = NiceModal.create(() => {
                     <Input
                         aria-invalid={Boolean(errors.email) || undefined}
                         autoComplete='off'
-                        className='h-[var(--control-height)] border-transparent bg-muted'
                         id='invite-email'
                         placeholder='jamie@example.com'
                         value={email}

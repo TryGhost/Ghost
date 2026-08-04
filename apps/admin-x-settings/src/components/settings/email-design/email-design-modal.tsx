@@ -94,7 +94,7 @@ const EmailDesignModal: React.FC<EmailDesignModalProps> = ({
                         <div className="flex items-center justify-between px-6 py-5">
                             <DialogTitle>{title}</DialogTitle>
                             <div className="flex items-center gap-2">
-                                <Button className='font-semibold' type='button' variant='ghost' onClick={() => handleClose()}>Close</Button>
+                                <Button type='button' variant='outline' onClick={() => handleClose()}>Close</Button>
                                 <Button
                                     disabled={isLoading || okProps?.disabled}
                                     type='button'

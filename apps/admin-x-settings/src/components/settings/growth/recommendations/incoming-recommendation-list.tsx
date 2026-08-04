@@ -5,7 +5,7 @@ import {Button} from '@tryghost/shade/components';
 import {type IncomingRecommendation} from '@tryghost/admin-x-framework/api/recommendations';
 import {Inline} from '@tryghost/shade/primitives';
 import {type ReferrerHistoryItem} from '@tryghost/admin-x-framework/api/referrers';
-import {formatNumber} from '@tryghost/shade/utils';
+import {cn, formatNumber} from '@tryghost/shade/utils';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 interface IncomingRecommendationListProps {
@@ -56,7 +56,7 @@ const IncomingRecommendationItem: React.FC<{incomingRecommendation: IncomingReco
                                 <span className='line-clamp-1 font-medium'>{incomingRecommendation.title || incomingRecommendation.url}</span>
                             </Inline>
                         </div>
-                        <div className='hidden py-3 pr-6 text-left whitespace-nowrap md:block'>
+                        <div className={cn('hidden py-3 pr-6 text-left whitespace-nowrap md:block md:transition-opacity', !incomingRecommendation.recommending_back && 'md:group-focus-within/action-list-item:opacity-0 md:group-hover/action-list-item:opacity-0')}>
                             {(signups === 0) ? (
                                 <span className="text-muted-foreground">-</span>
                             ) : (
@@ -65,7 +65,7 @@ const IncomingRecommendationItem: React.FC<{incomingRecommendation: IncomingReco
                                 </div>
                             )}
                         </div>
-                        <div className='hidden w-[1%] py-3 pr-6 whitespace-nowrap md:block'>
+                        <div className={cn('hidden w-[1%] py-3 pr-6 whitespace-nowrap md:block md:transition-opacity', !incomingRecommendation.recommending_back && 'md:group-focus-within/action-list-item:opacity-0 md:group-hover/action-list-item:opacity-0')}>
                             {(signups === 0) ? (null) : (
                                 <div className='-mt-px text-left'>
                                     <span className='-mb-px inline-block min-w-[60px] text-left whitespace-nowrap text-muted-foreground lowercase'>{freeMembersLabel}</span>

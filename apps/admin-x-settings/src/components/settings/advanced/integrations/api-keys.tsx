@@ -12,7 +12,7 @@ export interface APIKeyFieldProps {
 
 const APIKeyField: React.FC<APIKeyFieldProps> = ({id, label, text = '', hint, onRegenerate}) => {
     return (
-        <CopyField className='mb-3' data-testid={id} value={text}>
+        <CopyField data-testid={id} value={text}>
             {label && <CopyFieldLabel>{label}</CopyFieldLabel>}
             <CopyFieldContent>
                 <Stack className='min-w-0' gap='none'>
@@ -30,7 +30,7 @@ const APIKeyField: React.FC<APIKeyFieldProps> = ({id, label, text = '', hint, on
 
 const APIKeys: React.FC<{hasLabel?: boolean; keys: APIKeyFieldProps[];}> = ({keys}) => {
     return (
-        <Stack data-testid='api-keys' gap='none'>
+        <Stack data-testid='api-keys' gap='md'>
             {keys.map(key => <APIKeyField key={key.id} {...key} />)}
         </Stack>
     );

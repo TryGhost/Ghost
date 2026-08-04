@@ -33,7 +33,7 @@ const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({baseUrl, ite
                     <FieldLabel className='sr-only' htmlFor={`navigation-label-${item.id}`}>Label</FieldLabel>
                     <Input
                         aria-invalid={Boolean(item.errors.label) || undefined}
-                        className={clsx(!unstyled && 'h-[var(--control-height)] rounded-lg border-transparent bg-muted py-2 focus-visible:border-green focus-visible:bg-surface-elevated focus-visible:ring-green/25', unstyled && 'border-0 bg-transparent shadow-none focus-visible:ring-0', textFieldClasses)}
+                        className={clsx(unstyled && 'border-0 bg-transparent shadow-none focus-visible:ring-0', textFieldClasses)}
                         id={`navigation-label-${item.id}`}
                         placeholder={labelPlaceholder}
                         value={item.label}
@@ -54,7 +54,7 @@ const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({baseUrl, ite
                 <FieldLabel className='sr-only' htmlFor={`navigation-url-${item.id}`}>URL</FieldLabel>
                 <Input
                     aria-invalid={Boolean(item.errors.url) || undefined}
-                    className={clsx('h-[var(--control-height)] rounded-lg border-transparent bg-muted py-2 focus-visible:border-green focus-visible:bg-surface-elevated focus-visible:ring-green/25', textFieldClasses)}
+                    className={textFieldClasses}
                     id={`navigation-url-${item.id}`}
                     value={urlInput.displayValue}
                     onBlur={urlInput.commitValue}

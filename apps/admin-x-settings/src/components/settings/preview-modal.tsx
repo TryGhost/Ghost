@@ -3,7 +3,7 @@ import {ExternalLink} from 'lucide-react';
 import {useModal} from '@ebay/nice-modal-react';
 
 import {Box, Inline, Text, type TextElement, type TextLeading, type TextSize} from '@tryghost/shade/primitives';
-import {Button, type ButtonProps} from '@tryghost/shade/components';
+import {Button, type ButtonProps, Separator} from '@tryghost/shade/components';
 import {DirtyConfirmDialog, SettingsModal, type SettingsModalSize, useDirtyConfirmation} from '@tryghost/shade/patterns';
 import {cn, useGlobalDirtyState} from '@tryghost/shade/utils';
 
@@ -156,27 +156,26 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
             previewBgClass
         );
 
-        let viewSiteButton;
-        if (siteLink) {
-            viewSiteButton = (
-                <Box className='ml-3 border-l border-border-strong'>
-                    <a className='ml-3 flex items-center gap-1' href={siteLink} rel='noopener noreferrer' target='_blank'>View site <ExternalLink className='size-3' /></a>
-                </Box>
-            );
-        }
-
         preview = (
             <Box className={containerClasses}>
                 {previewToolbar && <Inline as='header' className='relative h-[80px] shrink-0 px-8 py-5' data-testid='design-toolbar' justify='center'>
                     {leftToolbar && <Inline align='center' className='absolute left-8 h-full'>
                         {toolbarLeft}
                     </Inline>}
-                    {rightToolbar && <Inline align='center' className='absolute right-8 h-full'>
+                    {rightToolbar && <Inline align='center' className='absolute right-8 h-full' gap='md'>
                         {deviceSelector}
-                        {viewSiteButton}
+                        {siteLink && (
+                            <>
+                                {deviceSelector && <Separator className='h-5!' orientation='vertical' />}
+                                <a className='inline-flex items-center gap-1 rounded-sm text-control font-medium text-foreground transition-colors hover:text-primary focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden' href={siteLink} rel='noopener noreferrer' target='_blank'>
+                                    View site
+                                    <ExternalLink className='size-3' />
+                                </a>
+                            </>
+                        )}
                     </Inline>}
                 </Inline>}
-                <Inline align='center' className='grow text-muted-foreground' justify='center'>
+                <Inline align='center' className='relative grow text-muted-foreground' justify='center'>
                     {preview}
                 </Inline>
             </Box>
@@ -228,7 +227,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
                                 </Text>
                                 {sidebarButtons || (
                                     <Inline gap='md'>
-                                        <Button className='font-semibold' disabled={buttonsDisabled} type='button' variant='ghost' onClick={handleCancel}>{cancelLabel}</Button>
+                                        <Button disabled={buttonsDisabled} type='button' variant='outline' onClick={handleCancel}>{cancelLabel}</Button>
                                         <Button disabled={buttonsDisabled} type='button' variant={okVariant} onClick={onOk}>{okLabel}</Button>
                                     </Inline>
                                 )}
