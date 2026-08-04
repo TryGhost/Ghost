@@ -159,7 +159,6 @@ describe('automations poll', function () {
         settingsCacheGet.withArgs('email_track_clicks').returns(false);
         settingsCacheGet.withArgs('email_track_opens').returns(false);
         labsIsSet = sinon.stub(labs, 'isSet');
-        labsIsSet.withArgs('automationAnalytics').returns(true);
         sinon.stub(Member, 'findOne').resolves(buildMember());
     });
 
@@ -470,7 +469,6 @@ describe('automations poll', function () {
         const step = buildEmailStep();
         automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
         settingsCacheGet.withArgs('email_track_clicks').returns(true);
-        labsIsSet.withArgs('automationAnalytics').returns(false);
 
         await poll(options);
 

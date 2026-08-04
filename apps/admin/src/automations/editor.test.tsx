@@ -141,18 +141,6 @@ vi.mock('@tryghost/admin-x-framework/api/automations', async () => {
     };
 });
 
-const mockLabs = vi.hoisted((): {current: Record<string, boolean>} => ({current: {}}));
-
-vi.mock('@tryghost/admin-x-framework/api/config', async () => {
-    const actual = await vi.importActual<typeof import('@tryghost/admin-x-framework/api/config')>(
-        '@tryghost/admin-x-framework/api/config'
-    );
-    return {
-        ...actual,
-        useBrowseConfig: () => ({data: {config: {labs: mockLabs.current}}})
-    };
-});
-
 // xyflow's ReactFlow needs a sized container; stub it out for unit tests.
 type StubNode = {id: string; data?: Record<string, unknown>; type?: string};
 type StubEdge = {id: string; source: string; target: string; type?: string; data?: Record<string, unknown>};
@@ -348,7 +336,6 @@ describe('AutomationEditor', () => {
         mockEditMutation.isLoading = false;
         mockEditMutation.variables = undefined;
         mockToastError.mockReset();
-        mockLabs.current = {};
         mockAppSettings = createAppSettings();
     });
 
@@ -437,14 +424,9 @@ describe('AutomationEditor', () => {
         ]);
     });
 
-    it('renders send-email node stats only when the automationAnalytics labs flag is enabled', () => {
+    it('renders send-email node stats', () => {
         mockAutomationWithEmailStats();
 
-        const {unmount} = renderEditor();
-        expect(screen.queryByText('Sent')).not.toBeInTheDocument();
-        unmount();
-
-        mockLabs.current = {automationAnalytics: true};
         renderEditor();
 
         const emailStep = screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'});
@@ -459,7 +441,6 @@ describe('AutomationEditor', () => {
         {emailTrackOpens: false, emailTrackClicks: true},
         {emailTrackOpens: false, emailTrackClicks: false}
     ])('shows a muted Off for untracked email metrics when opens=$emailTrackOpens and clicks=$emailTrackClicks', ({emailTrackOpens, emailTrackClicks}) => {
-        mockLabs.current = {automationAnalytics: true};
         mockAppSettings = createAppSettings({emailTrackOpens, emailTrackClicks});
         mockAutomationWithEmailStats();
 
@@ -481,7 +462,6 @@ describe('AutomationEditor', () => {
     });
 
     it('treats unresolved app settings as untracked', () => {
-        mockLabs.current = {automationAnalytics: true};
         mockAppSettings = undefined;
         mockAutomationWithEmailStats();
 
@@ -499,7 +479,6 @@ describe('AutomationEditor', () => {
     });
 
     it('does not render send-email node stats when the action has no stats', () => {
-        mockLabs.current = {automationAnalytics: true};
         mockUseReadAutomation.mockReturnValue({
             data: {automations: [automationDetail]},
             isLoading: false,
@@ -513,7 +492,6 @@ describe('AutomationEditor', () => {
     });
 
     it('renders clicked performance in the send-email sidebar', () => {
-        mockLabs.current = {automationAnalytics: true};
         mockAutomationWithEmailStats();
 
         renderEditor();
@@ -527,7 +505,6 @@ describe('AutomationEditor', () => {
     });
 
     it('renders zero sends and unavailable email rates when there are no sends', () => {
-        mockLabs.current = {automationAnalytics: true};
         mockAutomationWithEmailStats({
             email_clicked_count: 0,
             email_sent_count: 0,
@@ -550,7 +527,6 @@ describe('AutomationEditor', () => {
     });
 
     it('renders a tracked zero click rate and count', () => {
-        mockLabs.current = {automationAnalytics: true};
         mockAutomationWithEmailStats({
             email_clicked_count: 0,
             email_sent_count: 10,
@@ -572,7 +548,6 @@ describe('AutomationEditor', () => {
     });
 
     it('renders up to ten top clicked links with counts, clamped percentages, and full destinations', async () => {
-        mockLabs.current = {automationAnalytics: true};
         mockAutomationWithEmailStats({
             email_clicked_count: 5,
             email_sent_count: 10,
@@ -617,7 +592,6 @@ describe('AutomationEditor', () => {
     });
 
     it('renders top clicked link loading, error, and empty states', () => {
-        mockLabs.current = {automationAnalytics: true};
         mockAutomationWithEmailStats({
             email_clicked_count: 2,
             email_sent_count: 10,
@@ -645,7 +619,6 @@ describe('AutomationEditor', () => {
     });
 
     it('disables the links request and shows a no-sends state when no emails were sent', () => {
-        mockLabs.current = {automationAnalytics: true};
         mockAutomationWithEmailStats({
             email_clicked_count: 0,
             email_sent_count: 0,
@@ -662,7 +635,6 @@ describe('AutomationEditor', () => {
     });
 
     it('hides clicked links and skips the request when click tracking is off', () => {
-        mockLabs.current = {automationAnalytics: true};
         mockAppSettings = createAppSettings({emailTrackClicks: false});
         mockAutomationWithEmailStats();
 
@@ -675,7 +647,6 @@ describe('AutomationEditor', () => {
     });
 
     it('does not request clicked links for a closed or non-email sidebar', () => {
-        mockLabs.current = {automationAnalytics: true};
         mockAutomationWithEmailStats();
 
         renderEditor();

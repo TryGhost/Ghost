@@ -15,7 +15,6 @@ Object {
     "labs": Object {
       "additionalPaymentMethods": true,
       "adminUIRefresh": true,
-      "automationAnalytics": true,
       "automations": true,
       "commentsPinning": true,
       "commentsThreads": true,

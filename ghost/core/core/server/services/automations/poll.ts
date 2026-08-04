@@ -8,7 +8,6 @@ import {MAX_ATTEMPTS, MAX_STEPS_PER_BATCH, RETRY_DELAY_MS} from './constants';
 import {Member} from '../../models';
 
 const settingsCache = require('../../../shared/settings-cache');
-const labs = require('../../../shared/labs');
 
 type MemberWelcomeEmailService = {
     init: () => unknown;
@@ -187,7 +186,7 @@ const processStep = async ({
                 break;
             }
             memberWelcomeEmailService.init();
-            const trackClicks = labs.isSet('automationAnalytics') && Boolean(settingsCache.get('email_track_clicks'));
+            const trackClicks = Boolean(settingsCache.get('email_track_clicks'));
             const trackOpens = Boolean(settingsCache.get('email_track_opens'));
             const sendResult = await memberWelcomeEmailService.api.sendAutomationEmail({
                 email: {
