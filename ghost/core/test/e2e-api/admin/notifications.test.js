@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
-const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
+const {agentProvider, fixtureManager, matchers, resetRateLimits} = require('../../utils/e2e-framework');
+const testUtils = require('../../utils');
 const {anyContentVersion, anyObjectId, anyEtag, anyLocationFor} = matchers;
 
 const matchNotification = {
@@ -12,7 +13,8 @@ describe('Notifications API', function () {
     beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('users');
-        await agent.loginAsOwner();
+        await resetRateLimits();
+        await agent.loginAsAdmin();
     });
 
     it('Can add notification', async function () {
@@ -89,10 +91,11 @@ describe('Notifications API', function () {
 
     describe('As Editor', function () {
         beforeAll(async function () {
+            await resetRateLimits();
             await agent.loginAsEditor();
         });
 
-        it('Add notification', async function () {
+        it('Cannot add notification', async function () {
             const newNotification = {
                 type: 'info',
                 message: 'test notification',
@@ -104,15 +107,7 @@ describe('Notifications API', function () {
                 .body({
                     notifications: [newNotification]
                 })
-                .expectStatus(201)
-                .matchBodySnapshot({
-                    notifications: [matchNotification]
-                })
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag,
-                    location: anyLocationFor('notifications')
-                });
+                .expectStatus(403);
         });
 
         it('Read notifications', async function () {
@@ -120,20 +115,42 @@ describe('Notifications API', function () {
                 .get('notifications')
                 .expectStatus(200)
                 .matchBodySnapshot({
-                    notifications: new Array(3).fill(matchNotification)
+                    notifications: new Array(2).fill(matchNotification)
                 })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
                     etag: anyEtag
                 })
                 .expect(({body}) => {
-                    assert.equal(body.notifications.length, 3);
+                    assert.equal(body.notifications.length, 2);
                 });
+        });
+    });
+
+    describe('As Super Editor', function () {
+        beforeAll(async function () {
+            const {email, password} = testUtils.DataGenerator.Content.users[9];
+            await resetRateLimits();
+            await agent.loginAs(email, password);
+        });
+
+        it('Cannot add notification', async function () {
+            await agent
+                .post('notifications')
+                .body({
+                    notifications: [{
+                        type: 'info',
+                        message: 'test notification',
+                        custom: true
+                    }]
+                })
+                .expectStatus(403);
         });
     });
 
     describe('As Author', function () {
         beforeAll(async function () {
+            await resetRateLimits();
             await agent.loginAsAuthor();
         });
 
@@ -163,8 +180,8 @@ describe('Notifications API', function () {
         let notification;
 
         beforeAll(async function () {
-            // First editor creates a notification
-            await agent.loginAsEditor();
+            await resetRateLimits();
+            await agent.loginAsAdmin();
 
             const newNotification = {
                 type: 'info',
@@ -180,6 +197,8 @@ describe('Notifications API', function () {
                 .expectStatus(201);
 
             notification = body.notifications[0];
+            await resetRateLimits();
+            await agent.loginAsEditor();
         });
 
         it('if one user dismisses a notification, it is still visible to other users', async function () {
@@ -210,6 +229,7 @@ describe('Notifications API', function () {
 
         it('second user can dismiss the notification', async function () {
             // Switch to a second user and check the notification is still visible
+            await resetRateLimits();
             await agent.loginAsAdmin();
             await agent
                 .get('notifications')
