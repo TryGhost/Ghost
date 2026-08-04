@@ -77,6 +77,20 @@ describe("Posts list filters", () => {
         await expect.poll(currentRoute).toBe("/posts?tag=deleted-tag");
     });
 
+    // Each field maps to one URL param, which holds one value. Shade defaults
+    // to allowing several chips per field, and the serializer keeps the last —
+    // so without allowMultiple={false} a user could sit looking at two "Post
+    // type" chips while only one of them was in the URL or a saved view.
+    it("does not offer a field that already has a chip", async () => {
+        fakePosts([]);
+        await renderAdminApp("/posts?type=draft", FLAG_ON);
+
+        await postsListScreen.addFilterButton().click();
+
+        await expect.element(postsListScreen.filterFieldOption("Tag")).toBeVisible();
+        await expect(postsListScreen.filterFieldOption("Post type")).toHaveCount(0);
+    });
+
     describe("the sort control", () => {
         it("shows the default when no order is set", async () => {
             fakePosts([post({ title: "One", status: "published" })]);
