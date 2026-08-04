@@ -476,7 +476,7 @@ describe('AutomationEditor', () => {
         expect(within(sidebar).queryAllByText('65%').length > 0).toBe(emailTrackOpens);
         expect(within(sidebar).queryAllByText('20%').length > 0).toBe(emailTrackClicks);
         expect(within(sidebar).queryAllByText('Off')).toHaveLength(Number(!emailTrackOpens) + Number(!emailTrackClicks));
-        expect(within(sidebar).getByTestId('email-performance-sent-ring')).toHaveAttribute('data-tracked', 'true');
+        expect(within(sidebar).queryByTestId('email-performance-sent-ring')).not.toBeInTheDocument();
         expect(within(sidebar).getByTestId('email-performance-opened-ring')).toHaveAttribute('data-tracked', String(emailTrackOpens));
         expect(within(sidebar).getByTestId('email-performance-clicked-ring')).toHaveAttribute('data-tracked', String(emailTrackClicks));
     });
@@ -521,6 +521,7 @@ describe('AutomationEditor', () => {
         fireEvent.click(screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'}));
 
         const sidebar = screen.getByRole('complementary', {name: 'Step details'});
+        expect(within(sidebar).getByText('Sent').nextElementSibling).toHaveTextContent('1,247');
         const clickedKpi = within(sidebar).getByText('Clicked').parentElement;
         expect(within(clickedKpi!).getByText('20%')).toBeInTheDocument();
         expect(within(clickedKpi!).getByText('249')).toBeInTheDocument();

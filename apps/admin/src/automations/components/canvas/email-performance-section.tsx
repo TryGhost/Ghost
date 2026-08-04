@@ -1,6 +1,6 @@
 import React from 'react';
 import {useEmailTrackingSettings} from '@/automations/hooks/use-email-tracking-settings';
-import {ChartContainer, DataList, DataListBar, DataListBody, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, HoverCard, HoverCardContent, HoverCardTrigger, LoadingIndicator, Separator, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
+import {ChartContainer, DataList, DataListBar, DataListBody, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, EmptyIndicator, HoverCard, HoverCardContent, HoverCardTrigger, LoadingIndicator, Separator, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
 import type {ChartConfig} from '@tryghost/shade/components';
 import {Inline, Stack, Text} from '@tryghost/shade/primitives';
 import type {AutomationActionLink, AutomationEmailStats} from '@tryghost/admin-x-framework/api/automations';
@@ -53,26 +53,19 @@ const EmailPerformanceRing: React.FC<{
                     fill={`url(#${gradientId})`}
                     minPointSize={-2}
                     background
-                >
-                    <Recharts.LabelList
-                        className='fill-foreground opacity-60'
-                        dataKey='datatype'
-                        fontSize={11}
-                        position='insideStart'
-                    />
-                </Recharts.RadialBar>
+                />
             </Recharts.RadialBarChart>
         </ChartContainer>
     );
 };
 
-// Per-ring radii in px, calibrated for a 240×240 chart container. Each ring is 22px thick with a
+// Per-ring radii in px, calibrated for a 260×260 chart container. Each ring is 22px thick with a
 // 3px gap. Recharts' <RadialBar> doesn't accept innerRadius/outerRadius (those live on the parent
-// <RadialBarChart>), so we draw each ring with its own absolutely-positioned chart.
+// <RadialBarChart>), so we draw each ring with its own absolutely-positioned chart. The two rings
+// hug the outer edge, leaving the centre clear for the total-sent figure.
 const EMAIL_CHART_RINGS = {
-    sent: {innerRadius: 88, outerRadius: 110},
-    opened: {innerRadius: 63, outerRadius: 85},
-    clicked: {innerRadius: 38, outerRadius: 60}
+    opened: {innerRadius: 98, outerRadius: 120},
+    clicked: {innerRadius: 73, outerRadius: 95}
 };
 
 const EmailPerformanceChart: React.FC<{
@@ -80,15 +73,9 @@ const EmailPerformanceChart: React.FC<{
     openRate: number;
     clicksTracked: boolean;
     opensTracked: boolean;
-}> = ({clickRate, openRate, clicksTracked, opensTracked}) => (
-    <div className='relative mx-auto aspect-square size-[240px]'>
-        <EmailPerformanceRing
-            color='purple'
-            datatype='Sent'
-            innerRadius={EMAIL_CHART_RINGS.sent.innerRadius}
-            outerRadius={EMAIL_CHART_RINGS.sent.outerRadius}
-            value={1}
-        />
+    sentCount: number;
+}> = ({clickRate, openRate, clicksTracked, opensTracked, sentCount}) => (
+    <div className='relative mx-auto aspect-square size-[260px]'>
         <EmailPerformanceRing
             color='blue'
             datatype='Opened'
@@ -105,6 +92,10 @@ const EmailPerformanceChart: React.FC<{
             tracked={clicksTracked}
             value={clickRate}
         />
+        <div className='pointer-events-none absolute inset-0 flex -translate-y-1.5 flex-col items-center justify-center gap-1 text-center'>
+            <span className='text-sm text-text-secondary'>Sent</span>
+            <span className='text-2xl leading-none font-semibold tracking-tight text-foreground tabular-nums'>{formatNumber(sentCount)}</span>
+        </div>
     </div>
 );
 
@@ -125,7 +116,7 @@ const Kpi: React.FC<{
             </span>
             {tracked
                 ? (
-                    <span className='text-xl font-semibold tracking-tight tabular-nums'>
+                    <span className='text-xl font-semibold tracking-tight text-foreground tabular-nums'>
                         <span className='group-hover/kpi:hidden'>{value}</span>
                         <span className='hidden group-hover/kpi:inline'>{hoverValue ?? value}</span>
                     </span>
@@ -154,7 +145,11 @@ const TopClickedLinksContent: React.FC<{
     sentCount: number;
 }> = ({clickedCount, isError, isLoading, links, sentCount}) => {
     if (sentCount === 0) {
-        return <Text className='py-6 text-center' size='sm' tone='secondary'>No emails sent yet.</Text>;
+        return (
+            <EmptyIndicator className='py-6' title='No emails sent yet.'>
+                <LucideIcon.Mail strokeWidth={1.5} />
+            </EmptyIndicator>
+        );
     }
 
     if (isLoading) {
@@ -166,7 +161,11 @@ const TopClickedLinksContent: React.FC<{
     }
 
     if (links.length === 0) {
-        return <Text className='py-6 text-center' size='sm' tone='secondary'>No link data to show.</Text>;
+        return (
+            <EmptyIndicator className='py-6' title='No link data to show.'>
+                <LucideIcon.Link strokeWidth={1.5} />
+            </EmptyIndicator>
+        );
     }
 
     return (
@@ -242,16 +241,18 @@ export const EmailPerformanceSection: React.FC<{actionId: string; automationId: 
     return (
         <div className='flex flex-col gap-5'>
             <Separator />
-            <div className='flex flex-col gap-5'>
+            <div className='flex flex-col gap-2.5'>
                 <h3 className='text-sm font-medium tracking-normal text-text-secondary'>
                     Email performance
                 </h3>
-                <div className='grid grid-cols-3 gap-4'>
-                    <Kpi
-                        color='var(--chart-purple)'
-                        label='Sent'
-                        value={formatNumber(stats.email_sent_count)}
-                    />
+                <EmailPerformanceChart
+                    clickRate={(stats.clicked_rate ?? 0) / 100}
+                    clicksTracked={emailTrackClicks}
+                    openRate={(stats.opened_rate ?? 0) / 100}
+                    opensTracked={emailTrackOpens}
+                    sentCount={stats.email_sent_count}
+                />
+                <div className='grid grid-cols-2 gap-4'>
                     <Kpi
                         color='var(--chart-blue)'
                         hoverValue={stats.email_sent_count > 0 ? formatNumber(stats.email_opened_count) : '--'}
@@ -267,12 +268,6 @@ export const EmailPerformanceSection: React.FC<{actionId: string; automationId: 
                         value={formatRate(stats.clicked_rate)}
                     />
                 </div>
-                <EmailPerformanceChart
-                    clickRate={(stats.clicked_rate ?? 0) / 100}
-                    clicksTracked={emailTrackClicks}
-                    openRate={(stats.opened_rate ?? 0) / 100}
-                    opensTracked={emailTrackOpens}
-                />
             </div>
             {emailTrackClicks && (
                 <TopClickedLinks
