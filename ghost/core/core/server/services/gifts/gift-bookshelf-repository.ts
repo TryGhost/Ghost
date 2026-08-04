@@ -5,7 +5,7 @@ import {Gift} from './gift';
 import {decodeGiftRow, encodeGift} from './gift-codec';
 import type {GiftCadence, GiftRow} from './gift-schema';
 
-type MongoFilter = unknown;
+type ParsedNqlFilter = unknown;
 
 export interface GiftEventBrowseOptions {
     filter?: string;
@@ -68,8 +68,8 @@ export interface GiftRepository {
     findUnsentReminders(): Promise<Gift[]>;
     getActiveByMember(memberId: string, options?: RepositoryTransactionOptions): Promise<Gift | null>;
     getActiveByMembers(memberIds: string[], options?: RepositoryTransactionOptions): Promise<Map<string, Gift>>;
-    browsePurchaseEvents(options?: GiftEventBrowseOptions, filter?: MongoFilter): Promise<GiftEventPage>;
-    browseRedemptionEvents(options?: GiftEventBrowseOptions, filter?: MongoFilter): Promise<GiftEventPage>;
+    browsePurchaseEvents(options?: GiftEventBrowseOptions, filter?: ParsedNqlFilter): Promise<GiftEventPage>;
+    browseRedemptionEvents(options?: GiftEventBrowseOptions, filter?: ParsedNqlFilter): Promise<GiftEventPage>;
     create(gift: Gift, options?: RepositoryTransactionOptions): Promise<void>;
     update(gift: Gift, options?: RepositoryTransactionOptions): Promise<void>;
     transaction<T>(callback: (transacting: Knex.Transaction) => Promise<T>): Promise<T>;
@@ -85,7 +85,7 @@ type GiftEventQueryOptions = GiftEventBrowseOptions & {
     withRelated: Array<'buyer' | 'redeemer' | 'tier'>;
     filter: string;
     useBasicCount: boolean;
-    mongoTransformer: (filter: MongoFilter) => MongoFilter;
+    mongoTransformer: (filter: ParsedNqlFilter) => ParsedNqlFilter;
 };
 
 type BookshelfFindOptions = RepositoryTransactionOptions & {
@@ -202,7 +202,7 @@ export class GiftBookshelfRepository implements GiftRepository {
         return map;
     }
 
-    browsePurchaseEvents(options: GiftEventBrowseOptions = {}, filter?: MongoFilter): Promise<GiftEventPage> {
+    browsePurchaseEvents(options: GiftEventBrowseOptions = {}, filter?: ParsedNqlFilter): Promise<GiftEventPage> {
         return this.browseEvents({
             options,
             filter,
@@ -213,7 +213,7 @@ export class GiftBookshelfRepository implements GiftRepository {
         });
     }
 
-    browseRedemptionEvents(options: GiftEventBrowseOptions = {}, filter?: MongoFilter): Promise<GiftEventPage> {
+    browseRedemptionEvents(options: GiftEventBrowseOptions = {}, filter?: ParsedNqlFilter): Promise<GiftEventPage> {
         return this.browseEvents({
             options,
             filter,
@@ -308,13 +308,13 @@ export class GiftBookshelfRepository implements GiftRepository {
         dateColumn
     }: {
         options: GiftEventBrowseOptions;
-        filter?: MongoFilter;
+        filter?: ParsedNqlFilter;
         type: 'gift_purchase_event' | 'gift_redemption_event';
         relation: 'buyer' | 'redeemer';
         memberIdColumn: 'buyer_member_id' | 'redeemer_member_id';
         dateColumn: 'purchased_at' | 'redeemed_at';
     }): Promise<GiftEventPage> {
-        const replaceCustomFilter = (existingFilter: MongoFilter): MongoFilter => replaceFilters(existingFilter, {
+        const replaceCustomFilter = (existingFilter: ParsedNqlFilter): ParsedNqlFilter => replaceFilters(existingFilter, {
             custom: filter
         });
         const queryOptions: GiftEventQueryOptions = {
