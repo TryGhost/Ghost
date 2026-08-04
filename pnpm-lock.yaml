@@ -650,9 +650,6 @@ importers:
       '@codemirror/search':
         specifier: 'catalog:'
         version: 6.7.1
-      '@codemirror/state':
-        specifier: 'catalog:'
-        version: 6.7.1
       '@codemirror/theme-one-dark':
         specifier: 'catalog:'
         version: 6.1.3
