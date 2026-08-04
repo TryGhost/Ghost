@@ -52,7 +52,6 @@ export class MemberDetailsPage extends AdminPage {
 
     readonly saveButton: Locator;
     readonly savedButton: Locator;
-    readonly retryButton: Locator;
     readonly membersBackLink: Locator;
 
     readonly copyLinkButton: Locator;
@@ -61,14 +60,13 @@ export class MemberDetailsPage extends AdminPage {
     readonly confirmLeaveButton: Locator;
     readonly settingsSection: SettingsSection;
 
-    readonly activityHeading: Locator;
+    readonly activityFeed: Locator;
 
     readonly disableCommentingModal: Locator;
     readonly disableCommentingConfirmButton: Locator;
     readonly disableCommentingCancelButton: Locator;
     readonly hideCommentsCheckbox: Locator;
     readonly commentingDisabledIndicator: Locator;
-    readonly enableCommentingLink: Locator;
 
     readonly screenTitle: Locator;
     readonly logoutConfirmModal: Locator;
@@ -104,21 +102,19 @@ export class MemberDetailsPage extends AdminPage {
 
         this.saveButton = page.getByRole('button', {name: 'Save'});
         this.savedButton = page.getByRole('button', {name: 'Saved'});
-        this.retryButton = page.getByRole('button', {name: 'Retry'});
         this.membersBackLink = page.locator('[data-test-link="members-back"]').filter({visible: true});
         this.copyLinkButton = page.getByRole('button', {name: 'Copy link'});
         this.magicLinkInput = page.getByTestId('member-signin-url').filter({visible: true});
         this.confirmLeaveButton = page.getByRole('button', {name: 'Leave'});
         this.settingsSection = new SettingsSection(page);
 
-        this.activityHeading = page.getByRole('heading', {name: 'Activity', level: 4});
+        this.activityFeed = page.getByRole('region', {name: 'Activity'});
 
         this.disableCommentingModal = page.getByRole('dialog');
         this.disableCommentingConfirmButton = this.disableCommentingModal.getByRole('button', {name: 'Disable commenting'});
         this.disableCommentingCancelButton = this.disableCommentingModal.getByRole('button', {name: 'Cancel'});
-        this.hideCommentsCheckbox = this.disableCommentingModal.getByText('Hide all previous comments');
+        this.hideCommentsCheckbox = this.disableCommentingModal.getByRole('switch', {name: 'Hide all previous comments'});
         this.commentingDisabledIndicator = page.getByText('Comments disabled');
-        this.enableCommentingLink = page.getByRole('button', {name: 'Enable', exact: true});
 
         this.screenTitle = page.locator('[data-test-screen-title]')
             .or(page.getByTestId('member-detail-title'))
@@ -227,6 +223,6 @@ export class MemberDetailsPage extends AdminPage {
     }
 
     getActivityEventByText(text: string | RegExp): Locator {
-        return this.activityHeading.locator('..').getByText(text);
+        return this.activityFeed.getByText(text);
     }
 }
