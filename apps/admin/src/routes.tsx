@@ -12,8 +12,8 @@ import MyProfileRedirect from "./my-profile-redirect";
 import { EmberFallback, ForceUpgradeGuard } from "./ember-bridge";
 import type { RouteHandle } from "./ember-bridge";
 import HomeRedirect from "./home-redirect";
-import { EmberListWithGiftLinks } from "./gift-link-modal-host";
 import { MemberDetailGate } from "./member-detail-gate";
+import { PagesListGate, PostsListGate } from "./posts-list-gate";
 import { OnboardingRedirect } from "./onboarding/onboarding-redirect";
 import { type AccessRouteHandle, RouteAccessGuard } from "./route-access-guard";
 import { canAccessSettingsRoute } from "./settings/settings-access";
@@ -189,8 +189,11 @@ const appRoutes: RouteObject[] = [
             requiresAccess: canAccessSettingsRoute
         } satisfies RouteHandle & AdminRouteHandle & AccessRouteHandle,
     },
-    {path: "/posts", Component: EmberListWithGiftLinks, handle: emberFallbackHandle},
-    {path: "/pages", Component: EmberListWithGiftLinks, handle: emberFallbackHandle},
+    // Served by React or Ember depending on the `postsListReact` Labs flag.
+    // The handle stays emberFallbackHandle so force-upgrade behaves the same
+    // on both sides of the flag.
+    {path: "/posts", Component: PostsListGate, handle: emberFallbackHandle},
+    {path: "/pages", Component: PagesListGate, handle: emberFallbackHandle},
     // Ember-handled routes
     ...emberFallbackRoutes,
     {
