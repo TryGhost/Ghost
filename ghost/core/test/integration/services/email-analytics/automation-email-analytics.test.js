@@ -120,7 +120,7 @@ describe('Automation email analytics', function () {
             updated_at: now
         });
 
-        return insert('automation_run_steps', {
+        return await insert('automation_run_steps', {
             id: ObjectId().toHexString(),
             automation_run_id: run.id,
             automation_action_revision_id: revision.id,
