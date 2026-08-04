@@ -6,11 +6,11 @@ import {SettingsModal} from '@tryghost/shade/patterns';
 import {Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useCallback, useMemo, useState} from 'react';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 
 const NavigationModal = NiceModal.create(() => {
     const modal = useModal();
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const {
         localSettings,
         updateSetting,

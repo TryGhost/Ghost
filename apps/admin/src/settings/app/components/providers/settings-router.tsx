@@ -1,7 +1,8 @@
 import React, {useEffect} from 'react';
 import {staffProfileModalPaths} from './routing/staff-profile-paths';
-import {useRouteChangeCallback, useRouting} from '@tryghost/admin-x-framework/routing';
+import {useRouteChangeCallback} from '@tryghost/admin-x-framework/routing';
 import {useScrollSectionContext} from '@/settings/app/hooks/use-scroll-section';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 import type {ModalName} from './routing/modals';
 
 const staffProfilePaths = Object.fromEntries(
@@ -49,7 +50,7 @@ export const loadModals = () => import('./routing/modals');
 
 const SettingsRouter: React.FC = () => {
     const {updateNavigatedSection, scrollToSection} = useScrollSectionContext();
-    const {route, updateRoute} = useRouting();
+    const {route, updateRoute} = useSettingsNavigation();
     // get current route
     useRouteChangeCallback((newPath, oldPath) => {
         if (newPath === oldPath) {

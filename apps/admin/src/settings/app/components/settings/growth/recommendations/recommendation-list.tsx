@@ -7,7 +7,7 @@ import {ActionList, ActionListItem, ActionListItemContent, Button, LoadingIndica
 import {Inline} from '@tryghost/shade/primitives';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {type Recommendation} from '@tryghost/admin-x-framework/api/recommendations';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 
 interface RecommendationListProps {
     recommendations: Recommendation[],
@@ -16,7 +16,7 @@ interface RecommendationListProps {
 }
 
 const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recommendation}) => {
-    const {route} = useRouting();
+    const {route} = useSettingsNavigation();
 
     // Navigate to the edit page, without changing the route
     // This helps to avoid fetching the recommendation
@@ -71,7 +71,7 @@ const RecommendationList: React.FC<RecommendationListProps> = ({recommendations,
     } = useSettingGroup();
     const recommendationsURL = `${siteData?.url.replace(/\/$/, '')}/#/portal/recommendations`;
 
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const openAddNewRecommendationModal = () => {
         updateRoute('recommendations/add');
     };

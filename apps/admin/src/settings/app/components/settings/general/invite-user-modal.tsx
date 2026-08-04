@@ -12,7 +12,7 @@ import {useBrowseUsers} from '@tryghost/admin-x-framework/api/users';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 
 type RoleType = 'administrator' | 'editor' | 'author' | 'contributor' | 'super editor';
 
@@ -27,7 +27,7 @@ const InviteUserModal = NiceModal.create(() => {
     });
     const limiter = useLimiter();
 
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const {config} = useGlobalData();
     const editorBeta = config.labs.superEditors;
     const [email, setEmail] = useState<string>('');

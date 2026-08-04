@@ -13,7 +13,7 @@ import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'sonner';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 import {withErrorBoundary} from '@/settings/app/components/error-boundary';
 
 interface IntegrationItemProps {
@@ -49,7 +49,7 @@ const IntegrationItem: React.FC<IntegrationItemProps> = ({
     testId,
     custom = false
 }) => {
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
 
     const handleClick = (e?: React.MouseEvent<HTMLElement>) => {
         // Prevent the click event from bubbling up when clicking the delete button
@@ -94,7 +94,7 @@ const IntegrationItem: React.FC<IntegrationItemProps> = ({
 
 const BuiltInIntegrations: React.FC = () => {
     const {config} = useGlobalData();
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
 
     const openModal = (modal: string) => {
         updateRoute(modal);
@@ -198,7 +198,7 @@ const BuiltInIntegrations: React.FC = () => {
 };
 
 const CustomIntegrations: React.FC<{integrations: Integration[]}> = ({integrations}) => {
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const {mutateAsync: deleteIntegration} = useDeleteIntegration();
     const handleError = useHandleError();
 
@@ -251,7 +251,7 @@ const CustomIntegrations: React.FC<{integrations: Integration[]}> = ({integratio
 const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const [selectedTab, setSelectedTab] = useState<'built-in' | 'custom'>('built-in');
     const {data: {integrations} = {integrations: []}} = useBrowseIntegrations();
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
 
     const buttons = (
         <Button

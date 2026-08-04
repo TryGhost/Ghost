@@ -13,10 +13,10 @@ import {useEffect, useState} from 'react';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRefreshAPIKey} from '@tryghost/admin-x-framework/api/api-keys';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 
 const TransistorModal = NiceModal.create(() => {
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const {config, settings} = useGlobalData();
     const {mutateAsync: editSettings} = useEditSettings();
     const {data: {integrations} = {integrations: []}} = useBrowseIntegrations();

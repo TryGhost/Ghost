@@ -13,7 +13,7 @@ import {downloadFile, getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {toast} from 'sonner';
 import {useCheckThemeLimitError} from '@/settings/app/hooks/use-check-theme-limit-error';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 
 interface ThemeActionProps {
     theme: Theme;
@@ -58,7 +58,7 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
     const {mutateAsync: deleteTheme} = useDeleteTheme();
     const {refreshActiveThemeData} = useCustomFonts();
     const handleError = useHandleError();
-    const {route, updateRoute} = useRouting();
+    const {route, updateRoute} = useSettingsNavigation();
     const {checkThemeLimitError} = useCheckThemeLimitError();
 
     const handleActivate = async () => {

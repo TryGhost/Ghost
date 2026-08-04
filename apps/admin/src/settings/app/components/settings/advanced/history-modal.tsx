@@ -4,7 +4,8 @@ import {type Action, getActionTitle, getContextResource, getLinkTarget, isBulkAc
 import {ActionList, ActionListItem, ActionListItemContent, Avatar, Button, Field, FieldLabel, LoadingIndicator, MultiSelectCombobox, NoValueLabel, NoValueLabelIcon, Popover, PopoverContent, PopoverTrigger, Switch, inputSurface} from '@tryghost/shade/components';
 import {ChevronDown, History, Pen, Plus, Trash2, X} from 'lucide-react';
 import {Inline, Stack} from '@tryghost/shade/primitives';
-import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {type RoutingModalProps} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {type User} from '@tryghost/admin-x-framework/api/users';
 import {formatNumber} from '@tryghost/shade/utils';
@@ -69,7 +70,7 @@ const HistoryFilter: React.FC<{
     toggleEventType: (event: string, included: boolean) => void;
     toggleResourceType: (resource: string, included: boolean) => void;
 }> = ({userId, excludedEvents, excludedResources, toggleEventType, toggleResourceType}) => {
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const usersApi = useFilterableApi<User, 'users', 'name'>({path: '/users/', filterKey: 'name', responseKey: 'users'});
 
     const [staffOptions, setStaffOptions] = useState<Array<{label: string; value: string}>>([]);
@@ -222,7 +223,7 @@ const HistoryFilter: React.FC<{
 };
 
 const HistoryActionDescription: React.FC<{action: Action}> = ({action}) => {
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const contextResource = getContextResource(action);
 
     if (action.resource_type === 'security_action' && action.context?.action_name === 'reset_authentication') {
@@ -276,7 +277,7 @@ const PAGE_SIZE = 200;
 
 const HistoryModal = NiceModal.create<RoutingModalProps>(({params}) => {
     const modal = useModal();
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
 
     const [excludedEvents, setExcludedEvents] = useState<string[]>([]);
     const [excludedResources, setExcludedResources] = useState<string[]>(['label']);

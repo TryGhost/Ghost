@@ -4,7 +4,7 @@ import EditRetentionOfferModal from './edit-retention-offer-modal';
 import NiceModal from '@ebay/nice-modal-react';
 import OfferSuccess from './offer-success';
 import {OffersIndexModal} from './offers-index';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 
 type OffersRouteHandlerProps = {
     route: string;
@@ -30,7 +30,7 @@ const OffersRouteHandler: React.FC<OffersRouteHandlerProps> = ({route}) => {
 };
 
 const OffersContainerModal = () => {
-    const {route} = useRouting();
+    const {route} = useSettingsNavigation();
     return <OffersRouteHandler route={route} />;
 };
 
