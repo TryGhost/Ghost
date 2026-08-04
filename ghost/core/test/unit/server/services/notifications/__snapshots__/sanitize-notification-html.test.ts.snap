@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
-exports[`sanitizeEmailHtml preserves safe formatting and neutralises dangerous content 1 1`] = `
+exports[`sanitizeNotificationHtml preserves safe formatting and neutralises dangerous content 1 1`] = `
 Object {
   "output": "
     <h2>Ghost 6.50.0 is now available</h2>

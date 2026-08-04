@@ -1,9 +1,14 @@
 import sanitizeHtml from 'sanitize-html';
 
-// Even though the upstream feed is operated by Ghost org, the resulting HTML
-// is rendered into admin inboxes on the receiving install. A compromised or
-// malformed feed entry must not be able to ship scripts, event handlers, or
-// non-http(s) URLs to recipients via this path.
+// Notification bodies reach admin users as *rendered HTML*, both in email and
+// in Ghost Admin itself (the client marks server notifications `htmlSafe`).
+// Two untrusted sources feed this: the upstream update-check feed, and any API
+// client permitted to POST /notifications/. Neither must be able to ship
+// scripts, event handlers, or non-http(s) URLs to an admin's browser.
+//
+// This is the single enforced trust boundary for notification HTML - the
+// clients deliberately render it unescaped so release notes can carry links,
+// so the guarantee has to hold here.
 const ALLOWED_TAGS = [
     'p', 'br', 'hr',
     'strong', 'b', 'em', 'i', 'u', 'code',
@@ -30,6 +35,6 @@ const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
     }
 };
 
-export function sanitizeEmailHtml(html: string): string {
+export function sanitizeNotificationHtml(html: string): string {
     return sanitizeHtml(html, SANITIZE_OPTIONS);
 }

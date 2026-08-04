@@ -47,6 +47,67 @@ describe('Notifications Service', function () {
             assert.equal(createdNotification.message, 'Hello test world!');
             assert.equal(createdNotification.createdAtVersion, '4.1.0');
         });
+
+        it('strips scripts and event handlers from the message before storing', function () {
+            const settingsCache = {
+                get: sinon.fake.returns([])
+            };
+
+            const notificationsSvc = new Notifications({settingsCache});
+
+            const {notificationsToAdd} = notificationsSvc.add({
+                notifications: [{
+                    custom: true,
+                    status: 'alert',
+                    message: '<b>ok</b><img src=x onerror="alert(1)"><script>alert(2)</script>'
+                }]
+            });
+
+            const message = notificationsToAdd[0].message;
+
+            assert.equal(message.includes('onerror'), false);
+            assert.equal(message.includes('<script'), false);
+            assert.equal(message.includes('<img'), false);
+            assert.equal(message.includes('<b>ok</b>'), true);
+        });
+
+        it('leaves a non-string message untouched for the caller to reject', function () {
+            const settingsCache = {
+                get: sinon.fake.returns([])
+            };
+
+            const notificationsSvc = new Notifications({settingsCache});
+
+            const {notificationsToAdd} = notificationsSvc.add({
+                notifications: [{custom: true, status: 'alert', message: {nested: 'object'}}]
+            });
+
+            assert.deepEqual(notificationsToAdd[0].message, {nested: 'object'});
+        });
+    });
+
+    describe('fetchAllNotifications', function () {
+        it('sanitises unsafe HTML that is already stored in settings', function () {
+            // Installs upgrading from a version without write-side sanitisation
+            // can hold unsafe HTML in the `notifications` setting already, and
+            // Ghost Admin renders notification bodies unescaped.
+            const settingsCache = {
+                get: sinon.fake.returns([{
+                    id: '130f7c24-113a-4768-a698-12a8b34223f1',
+                    dismissible: true,
+                    status: 'alert',
+                    message: '<b>stored</b><img src=x onerror="alert(1)">',
+                    addedAt: '2026-08-04T10:00:00.000Z'
+                }])
+            };
+
+            const notificationsSvc = new Notifications({settingsCache});
+            const [notification] = notificationsSvc.fetchAllNotifications();
+
+            assert.equal(notification.message.includes('onerror'), false);
+            assert.equal(notification.message.includes('<img'), false);
+            assert.equal(notification.message.includes('<b>stored</b>'), true);
+        });
     });
 
     describe('browse', function () {

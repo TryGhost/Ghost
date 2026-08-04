@@ -1,5 +1,5 @@
 const {assertMatchSnapshot} = require('../../../../utils/assertions');
-const {sanitizeEmailHtml} = require('../../../../../core/server/services/notifications/sanitize-email-html');
+const {sanitizeNotificationHtml} = require('../../../../../core/server/services/notifications/sanitize-notification-html');
 
 // The script tag, on* handler, and javascript: URL are deliberate negative
 // cases — the snapshot must show them stripped.
@@ -15,8 +15,8 @@ const FIXTURE_MESSAGE_HTML = `
     <p><a href="javascript:alert(1)" onclick="alert(1)">do not click</a></p>
 `;
 
-describe('sanitizeEmailHtml', function () {
+describe('sanitizeNotificationHtml', function () {
     it('preserves safe formatting and neutralises dangerous content', function () {
-        assertMatchSnapshot({output: sanitizeEmailHtml(FIXTURE_MESSAGE_HTML)});
+        assertMatchSnapshot({output: sanitizeNotificationHtml(FIXTURE_MESSAGE_HTML)});
     });
 });

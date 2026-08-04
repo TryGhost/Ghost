@@ -1066,7 +1066,7 @@
                     "gift_link": "manage"
                 },
                 "Super Editor": {
-                    "notification": "all",
+                    "notification": ["browse", "destroy"],
                     "post": "all",
                     "setting": ["browse", "read"],
                     "slug": "all",
@@ -1091,7 +1091,7 @@
                     "gift_link": "manage"
                 },
                 "Editor": {
-                    "notification": "all",
+                    "notification": ["browse", "destroy"],
                     "post": "all",
                     "setting": ["browse", "read"],
                     "slug": "all",

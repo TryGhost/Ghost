@@ -5,11 +5,29 @@ const errors = require('@tryghost/errors');
 const ghostVersion = require('@tryghost/version');
 const tpl = require('@tryghost/tpl');
 const ObjectId = require('bson-objectid').default;
+const {sanitizeNotificationHtml} = require('./sanitize-notification-html');
 
 const messages = {
     noPermissionToDismissNotif: 'You do not have permission to dismiss this notification.',
     notificationDoesNotExist: 'Notification does not exist.'
 };
+
+/**
+ * Notification bodies are rendered as HTML by Ghost Admin, so every value that
+ * can reach a client goes through the shared sanitiser first. Non-string
+ * messages are passed through untouched for the caller's own validation to
+ * reject - coercing them here would mask malformed records.
+ *
+ * @param {unknown} message
+ * @returns {unknown} sanitised message when it is a string, otherwise the input
+ */
+function sanitizeMessage(message) {
+    if (typeof message !== 'string') {
+        return message;
+    }
+
+    return sanitizeNotificationHtml(message);
+}
 
 class Notifications {
     /**
@@ -42,6 +60,11 @@ class Notifications {
 
         allNotifications.forEach((notification) => {
             notification.addedAt = moment(notification.addedAt).toDate();
+            // Sanitise on read as well as on write. Installs upgrading from a
+            // version without write-side sanitisation may already hold unsafe
+            // HTML in the `notifications` setting, and clients render this
+            // unescaped - so the read path has to be safe on its own.
+            notification.message = sanitizeMessage(notification.message);
         });
 
         return allNotifications;
@@ -145,7 +168,13 @@ class Notifications {
             });
 
             if (!isDuplicate) {
-                notificationsToAdd.push(Object.assign({}, defaults, notification, overrides));
+                const toAdd = Object.assign({}, defaults, notification, overrides);
+                // Sanitise before the notification is persisted, so untrusted
+                // HTML never reaches the `notifications` setting in the first
+                // place. Sources include the update-check feed and any API
+                // client holding the "Add notifications" permission.
+                toAdd.message = sanitizeMessage(toAdd.message);
+                notificationsToAdd.push(toAdd);
             }
         });
 

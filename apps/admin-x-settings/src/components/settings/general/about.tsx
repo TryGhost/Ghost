@@ -67,7 +67,11 @@ const AboutModal = NiceModal.create<RoutingModalProps>(() => {
                         upgradeStatus?.message && (
                             <div className='gh-prose-links mb-4 rounded-sm border border-green p-5'>
                                 <strong>Update available!</strong>
-                                <div dangerouslySetInnerHTML={{__html: upgradeStatus.message}}/>
+                                {/* Rendered as text, not HTML. Notification bodies are
+                                    attacker-influenced, and nothing currently supplies this
+                                    prop - so there is no markup to preserve here. Anything
+                                    reinstating rich rendering must sanitise first. */}
+                                <div>{upgradeStatus.message}</div>
                             </div>
                         )
                     }

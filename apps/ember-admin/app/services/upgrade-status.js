@@ -1,3 +1,4 @@
+import DOMPurify from 'dompurify';
 import Service, {inject as service} from '@ember/service';
 import classic from 'ember-classic-decorator';
 import {get, set} from '@ember/object';
@@ -14,7 +15,9 @@ export default class UpgradeStatusService extends Service {
     // where the `location` is not 'top' and `custom` is false
     handleUpgradeNotification(notification) {
         let message = get(notification, 'message');
-        set(this, 'message', htmlSafe(message));
+        // Rendered unescaped by the About modal, so purify before trusting it.
+        // The server sanitises this too - this is the second layer, not the only one.
+        set(this, 'message', htmlSafe(DOMPurify.sanitize(message ?? '')));
     }
 
     // called when a MaintenanceError is encountered

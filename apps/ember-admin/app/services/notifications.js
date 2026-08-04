@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/ember';
+import DOMPurify from 'dompurify';
 import Service, {inject as service} from '@ember/service';
 import {TrackedArray} from 'tracked-built-ins';
 import {dasherize} from '@ember/string';
@@ -68,9 +69,11 @@ export default class NotificationsService extends Service {
             }
         }
 
-        // If this is an alert message from the server, treat it as html safe
+        // Server notifications are rendered unescaped so release notes can carry
+        // links. Purify before marking them html safe - the server sanitises on
+        // write and on read, and this is the second layer behind that.
         if (message.constructor.modelName === 'notification' && message.status === 'alert') {
-            message.message = htmlSafe(message.message);
+            message.message = htmlSafe(DOMPurify.sanitize(message.message ?? ''));
         }
 
         if (!message.status) {
