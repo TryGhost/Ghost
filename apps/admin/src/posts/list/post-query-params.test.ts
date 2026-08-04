@@ -151,9 +151,14 @@ describe('getBucketSearchParams', () => {
         });
     });
 
-    // Ember sends formats=mobiledoc,lexical here, which drags whole post bodies
-    // into a 30-row list. Omitting it is invisible to the user.
-    it('does not request post content formats', () => {
-        expect(getBucketSearchParams('draft', {})).not.toHaveProperty('formats');
+    // Omitting these is not an optimisation - the server fills both in
+    // (defaultFormat, defaultRelations). Sending `columns` would actively hurt:
+    // it suppresses the default relations the list needs.
+    it('sends neither formats nor include, leaving the server defaults', () => {
+        const params = getBucketSearchParams('draft', {});
+
+        expect(params).not.toHaveProperty('formats');
+        expect(params).not.toHaveProperty('include');
+        expect(params).not.toHaveProperty('columns');
     });
 });
