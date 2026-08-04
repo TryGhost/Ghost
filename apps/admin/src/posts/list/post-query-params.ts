@@ -149,10 +149,18 @@ export function getBucketOrder(bucket: PostBucket, order?: string | null): strin
 }
 
 /**
- * Search params for one bucket's request. Deliberately omits `include` and
- * `formats`: the server's default relations already attach tags, authors,
- * email, tiers and click counts, and Ember's `formats=mobiledoc,lexical`
- * drags entire post bodies into a 30-row list for no visible benefit.
+ * Search params for one bucket's request.
+ *
+ * `include` is omitted on purpose: with neither `include` nor `columns` set,
+ * the server's `defaultRelations` attaches exactly what the list renders -
+ * tags, authors, authors.roles, email, tiers, newsletter, count.clicks
+ * (`ghost/core/.../serializers/input/posts.js:81`). Sending `columns` would
+ * *disable* that, so don't.
+ *
+ * `formats` is omitted because it makes no difference: `defaultFormat` fills
+ * in `mobiledoc,lexical` server-side when the client leaves it out, so this
+ * matches Ember byte for byte. Trimming the post bodies out of a 30-row list
+ * would need an explicit narrower `formats`, which is a separate change.
  */
 export function getBucketSearchParams(
     bucket: PostBucket,
