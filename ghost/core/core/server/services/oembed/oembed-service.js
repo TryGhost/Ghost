@@ -44,33 +44,14 @@ const messages = {
     unconvertibleSvg: 'SVG image is too large or compressed to convert.'
 };
 
-// Matches the `icon` entry in imageOptimization.internalImageSizes. Bounding
-// both dimensions matters: given only a width, a few hundred bytes declaring an
-// extreme aspect ratio render to tens of megabytes.
 const SVG_RASTER_SIZE = 256;
 const SVG_RASTER_TIMEOUT_SECONDS = 10;
-
-// Render cost tracks the markup libvips sees, not the bytes we were sent, and
-// neither the timeout above nor a byte cap alone bounds it — filter primitives
-// cost output-area time, and gzip hides its true size until libvips inflates it.
 const MAX_SVG_BYTES = 32 * 1024;
 const GZIP_MAGIC = [0x1f, 0x8b];
 
 const SVG_EXTENSIONS = new Set(['.svg', '.svgz']);
 const SVG_SNIFF_BYTES = 1024;
 
-/**
- * Whether these bytes should be rasterized rather than stored as they are.
- *
- * Local storage types a file from its name, so an SVG only reaches a browser as
- * a document when stored under a `.svg` name. Treating the URL's extension as a
- * trigger means every such name is converted or not stored, which is what makes
- * a missed sniff harmless rather than a stored script.
- *
- * @param {Buffer} buffer
- * @param {string} ext
- * @returns {boolean}
- */
 const shouldRasterize = (buffer, ext) => {
     if (SVG_EXTENSIONS.has(ext.toLowerCase())) {
         return true;
@@ -222,10 +203,6 @@ class OEmbedService {
         const baseName = ext ? path.basename(fileName, ext) : fileName;
         const name = this.imageStore.getSanitizedFileName(baseName);
 
-        // An SVG under our own origin is a document that can carry script, and
-        // these bytes come from whatever site the author bookmarked. A PNG
-        // carries nothing, and browsers sniff it where they will not sniff SVG,
-        // which is why only SVG icons render broken today.
         if (shouldRasterize(imageBuffer, ext)) {
             if (imageBuffer.length > MAX_SVG_BYTES || GZIP_MAGIC.every((byte, index) => imageBuffer[index] === byte)) {
                 throw new errors.ValidationError({
