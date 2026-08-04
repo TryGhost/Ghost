@@ -42,19 +42,37 @@ export function composePostBuckets<TItem>(results: PostBucketResult<TItem>[]): C
     const totalItems = results.reduce((total, result) => total + result.total, 0);
     const isError = results.some(result => result.isError);
 
-    // Walk in order, taking buckets until one isn't finished. Only *later*
-    // buckets depend on earlier ones, so an earlier bucket shows as soon as it
-    // has answered - holding the list until every bucket replies would let one
-    // slow query hide everything. Conversely a bucket whose predecessor hasn't
-    // answered stays hidden, or drafts flash in above scheduled.
+    // Nothing renders until every bucket's first page has landed. This mirrors
+    // Ember, whose route returns `RSVP.hash` of all three models and shows a
+    // skeleton until they all resolve (`routes/posts.js:177`,
+    // `templates/posts-loading.hbs`).
+    //
+    // Releasing earlier looks tempting - one slow query then can't hide the
+    // rest - but it is wrong in a way that bites on nearly every site: most
+    // have zero scheduled posts, so that bucket answers first and instantly.
+    // Releasing there renders an empty list, and once the real empty state
+    // exists it would flash "Start creating content" on almost every page
+    // load, while also reporting the list complete with two queries still in
+    // flight. Progressive rendering would need a "settled" signal distinct
+    // from "complete", not an earlier release here.
+    if (results.some(result => result.isLoading)) {
+        return {
+            items: [],
+            totalItems,
+            hasNextPage: false,
+            isFetchingNextPage: false,
+            isLoading: true,
+            isError,
+            fetchNextPage: noop
+        };
+    }
+
+    // Everything has answered; now apply the sequential-drain rule - a bucket
+    // only opens once every earlier one has loaded all of its pages.
     const visible: PostBucketResult<TItem>[] = [];
     let paging: PostBucketResult<TItem> | undefined;
 
     for (const result of results) {
-        if (result.isLoading) {
-            break;
-        }
-
         visible.push(result);
 
         // A bucket that failed never drained, so nothing after it may open -
@@ -74,8 +92,7 @@ export function composePostBuckets<TItem>(results: PostBucketResult<TItem>[]): C
         totalItems,
         hasNextPage: Boolean(paging),
         isFetchingNextPage: paging?.isFetchingNextPage ?? false,
-        // Only "loading" while there is genuinely nothing to show yet.
-        isLoading: visible.length === 0 && results.some(result => result.isLoading),
+        isLoading: false,
         isError,
         fetchNextPage: paging?.fetchNextPage ?? noop
     };

@@ -68,12 +68,20 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
                                 <Text tone='secondary'>Error loading {copy.title.toLowerCase()}</Text>
                             </Stack>
                         ) : (
-                            // Deliberately the same testids the Ember list uses
-                            // — including on pages, which shares the Ember
-                            // component — so the e2e page objects and
-                            // visual-regression baselines work against both
-                            // implementations. They can never collide: the
-                            // Ember route aborts when this screen renders.
+                            // Deliberately the same testids the Ember list
+                            // uses — including on pages, which shares the
+                            // Ember component — so the e2e page objects can
+                            // eventually target both implementations. They
+                            // can never collide: the Ember route aborts when
+                            // this screen renders.
+                            //
+                            // Not yet interchangeable, though: PostsPage's
+                            // getPostByTitle matches an h3 inside the row, and
+                            // waitForPageToFullyLoad expects `posts-list` to
+                            // exist in the empty state too (Ember renders it
+                            // unconditionally). Phase 2 brings the real row
+                            // markup; Phase 10 reconciles the page object and
+                            // re-baselines the visual-regression shots.
                             <Stack gap='md'>
                                 <ul data-testid='posts-list'>
                                     {items.map(item => (

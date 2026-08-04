@@ -31,7 +31,7 @@ describe('composePostBuckets', () => {
         expect(result.isLoading).toBe(false);
     });
 
-    it('reports loading only while nothing can be shown yet', () => {
+    it('reports loading while any bucket is still on its first page', () => {
         const result = composePostBuckets<Item>([
             bucketResult({bucket: 'scheduled', isLoading: true}),
             bucketResult({bucket: 'draft', isLoading: true})
@@ -41,20 +41,36 @@ describe('composePostBuckets', () => {
         expect(result.items).toEqual([]);
     });
 
-    // Only *later* buckets depend on earlier ones. Holding the whole list until
-    // every bucket has answered would let one slow query hide everything.
-    it('shows an earlier bucket while a later one is still loading', () => {
+    // Ember's route returns RSVP.hash of all three models, so its template
+    // doesn't render until every first page has landed - it shows a skeleton
+    // instead. Matching that matters most in the common case below.
+    it('keeps loading when an earlier bucket has answered but a later one has not', () => {
         const result = composePostBuckets<Item>([
             bucketResult({bucket: 'scheduled', items: [item('s1')], total: 1}),
             bucketResult({bucket: 'draft', isLoading: true})
         ]);
 
-        expect(result.isLoading).toBe(false);
-        expect(result.items.map(entry => entry.id)).toEqual(['s1']);
+        expect(result.isLoading).toBe(true);
+        expect(result.items).toEqual([]);
     });
 
-    // ...but a later bucket must never jump ahead of one that hasn't answered,
-    // or drafts flash in above scheduled.
+    // The regression this guards, and why it matters: almost every site has
+    // zero scheduled posts, so that bucket answers first and instantly. If the
+    // composer called the list settled at that point, the screen would render
+    // an empty list - and, once Phase 2 lands the real empty state, flash
+    // "Start creating content" on nearly every page load.
+    it('does not claim to be complete while a bucket is still in flight', () => {
+        const result = composePostBuckets<Item>([
+            bucketResult({bucket: 'scheduled', items: [], total: 0}),
+            bucketResult({bucket: 'draft', isLoading: true}),
+            bucketResult({bucket: 'publishedAndSent', isLoading: true})
+        ]);
+
+        expect(result.isLoading).toBe(true);
+        expect(result.items).toEqual([]);
+        expect(result.hasNextPage).toBe(false);
+    });
+
     it('hides a later bucket while an earlier one is still loading', () => {
         const result = composePostBuckets<Item>([
             bucketResult({bucket: 'scheduled', isLoading: true}),
