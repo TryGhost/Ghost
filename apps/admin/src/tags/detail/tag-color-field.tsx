@@ -1,5 +1,5 @@
 import React from 'react';
-import {Input, Label} from '@tryghost/shade/components';
+import {InputGroup, InputGroupAddon, InputGroupInput, InputGroupText, Label} from '@tryghost/shade/components';
 
 interface TagColorFieldProps {
     value: string;
@@ -12,8 +12,9 @@ interface TagColorFieldProps {
 const HEX_COLOR_REGEX = /#[0-9A-Fa-f]{6}$/;
 
 /**
- * The tag accent colour control: a hex text input (no leading `#`) plus a
- * native colour picker swatch, porting Ember `tag-form.js`
+ * The tag accent colour control, arranged like Ember's `.input-color`: one
+ * bordered control with the swatch (the native colour-picker trigger) on the
+ * left, a static `#` prefix, and the hex text input. Ports `tag-form.js`
  * `updateAccentColor` — immediate normalization keeps the form draft in sync
  * before keyboard saves, with the same error copy for a malformed hex value.
  */
@@ -61,12 +62,35 @@ const TagColorField: React.FC<TagColorFieldProps> = ({value, disabled, errorId, 
     return (
         <div className='flex flex-col gap-1.5'>
             <Label htmlFor='tag-accent-color'>Color</Label>
-            <div className='flex items-center gap-2'>
-                <Input
+            <InputGroup className='w-36' data-disabled={disabled ? 'true' : undefined}>
+                <InputGroupAddon align='inline-start'>
+                    <div
+                        className='relative size-6 shrink-0 overflow-hidden rounded-sm border border-border'
+                        style={{backgroundColor: value || '#ffffff'}}
+                        // Keep the addon's focus-the-text-input click handler
+                        // from hijacking the native colour-picker trigger.
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <input
+                            aria-label='Accent color picker'
+                            className='absolute inset-0 size-full cursor-pointer opacity-0'
+                            disabled={disabled}
+                            type='color'
+                            value={value || '#ffffff'}
+                            onChange={(e) => {
+                                setText(e.target.value.replace(/^#/, ''));
+                                applyColor(e.target.value);
+                            }}
+                        />
+                    </div>
+                    <InputGroupText className='font-mono'>#</InputGroupText>
+                </InputGroupAddon>
+                <InputGroupInput
                     aria-describedby={errorId}
                     aria-invalid={!!errorId}
                     aria-label='Accent color hex value'
                     autoCorrect='off'
+                    className='font-mono'
                     disabled={disabled}
                     id='tag-accent-color'
                     maxLength={6}
@@ -78,23 +102,7 @@ const TagColorField: React.FC<TagColorFieldProps> = ({value, disabled, errorId, 
                         applyColor(e.target.value);
                     }}
                 />
-                <div
-                    className='relative size-9 shrink-0 overflow-hidden rounded-md border border-input'
-                    style={{backgroundColor: value || '#ffffff'}}
-                >
-                    <input
-                        aria-label='Accent color picker'
-                        className='absolute inset-0 size-full cursor-pointer opacity-0'
-                        disabled={disabled}
-                        type='color'
-                        value={value || '#ffffff'}
-                        onChange={(e) => {
-                            setText(e.target.value.replace(/^#/, ''));
-                            applyColor(e.target.value);
-                        }}
-                    />
-                </div>
-            </div>
+            </InputGroup>
         </div>
     );
 };
