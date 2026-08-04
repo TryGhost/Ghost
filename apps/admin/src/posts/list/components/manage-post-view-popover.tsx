@@ -1,28 +1,68 @@
 import {Button, Input, Popover, PopoverContent, PopoverTrigger} from '@tryghost/shade/components';
 import {Inline, Stack, Text} from '@tryghost/shade/primitives';
-import {LucideIcon} from '@tryghost/shade/utils';
-import {type PostViewColor, pickPostViewColor} from '@/posts/list/post-views';
+import {LucideIcon, cn} from '@tryghost/shade/utils';
+import {POST_VIEW_COLORS, type PostViewColor, pickPostViewColor} from '@/posts/list/post-views';
+import {getColorHex} from '@/layout/app-sidebar/shared-views';
 import {useDeletePostView, useSavePostView} from '@/posts/list/hooks/use-post-views';
+import {useNavigate} from '@tryghost/admin-x-framework';
 import {useState} from 'react';
 import type {PostListParams} from '@/posts/list/post-query-params';
+import type {PostResource} from '@/posts/list/post-resource';
 import type {SharedView} from '@/members/shared-views';
 
 interface ManagePostViewPopoverProps {
+    resource: PostResource;
     params: PostListParams;
     /** The saved view matching the current params, if the user is on one. */
     activeView?: SharedView;
 }
 
-function PopoverBody({params, activeView, onClose}: ManagePostViewPopoverProps & {onClose: () => void}) {
+function isPostViewColor(value: string | undefined): value is PostViewColor {
+    return POST_VIEW_COLORS.includes(value as PostViewColor);
+}
+
+function ColorPicker({value, onChange}: {value: PostViewColor; onChange: (color: PostViewColor) => void}) {
+    return (
+        <Inline gap='sm' role='radiogroup'>
+            {POST_VIEW_COLORS.map(color => (
+                <button
+                    key={color}
+                    aria-checked={color === value}
+                    aria-label={color}
+                    className={cn(
+                        'size-5 rounded-full border-2',
+                        color === value ? 'border-foreground' : 'border-transparent'
+                    )}
+                    role='radio'
+                    style={{backgroundColor: getColorHex(color)}}
+                    type='button'
+                    onClick={() => {
+                        onChange(color);
+                    }}
+                />
+            ))}
+        </Inline>
+    );
+}
+
+function PopoverBody({resource, params, activeView, onClose}: ManagePostViewPopoverProps & {onClose: () => void}) {
     const [name, setName] = useState(activeView?.name ?? '');
+    const [color, setColor] = useState<PostViewColor>(
+        isPostViewColor(activeView?.color) ? activeView.color : pickPostViewColor()
+    );
     const [error, setError] = useState('');
     const [busy, setBusy] = useState(false);
     const savePostView = useSavePostView();
     const deletePostView = useDeletePostView();
+    const navigate = useNavigate();
 
     const isEditing = Boolean(activeView);
 
     const handleSave = async () => {
+        if (busy) {
+            return;
+        }
+
         const trimmed = name.trim();
 
         if (!trimmed) {
@@ -33,10 +73,6 @@ function PopoverBody({params, activeView, onClose}: ManagePostViewPopoverProps &
         setBusy(true);
 
         try {
-            // Editing keeps the view's colour; a new one gets a random one, as
-            // Ember does.
-            const color = (activeView?.color as PostViewColor | undefined) ?? pickPostViewColor();
-
             await savePostView(trimmed, params, color, activeView);
             onClose();
         } catch (saveError) {
@@ -47,7 +83,7 @@ function PopoverBody({params, activeView, onClose}: ManagePostViewPopoverProps &
     };
 
     const handleDelete = async () => {
-        if (!activeView) {
+        if (!activeView || busy) {
             return;
         }
 
@@ -56,6 +92,11 @@ function PopoverBody({params, activeView, onClose}: ManagePostViewPopoverProps &
         try {
             await deletePostView(activeView);
             onClose();
+            // Ember navigates back to the clean route after deleting. Staying
+            // put would leave you on the deleted view's URL, watching its
+            // sidebar entry vanish while the button flips back to "Save as
+            // view" — where saving would simply re-create it.
+            navigate(`/${resource}`);
         } catch (deleteError) {
             setError(deleteError instanceof Error ? deleteError.message : 'Failed to delete view');
         } finally {
@@ -80,7 +121,8 @@ function PopoverBody({params, activeView, onClose}: ManagePostViewPopoverProps &
                     }
                 }}
             />
-            {error && <Text size='sm' tone='secondary'>{error}</Text>}
+            <ColorPicker value={color} onChange={setColor} />
+            {error && <Text className='text-state-danger' role='alert' size='sm'>{error}</Text>}
             <Inline gap='sm' justify={isEditing ? 'between' : 'end'}>
                 {isEditing && (
                     <Button disabled={busy} variant='destructive' onClick={() => void handleDelete()}>
@@ -100,7 +142,7 @@ function PopoverBody({params, activeView, onClose}: ManagePostViewPopoverProps &
  * decided by `canSavePostView` — admins only, posts only, not on a default
  * view, and something actually filtered.
  */
-export function ManagePostViewPopover({params, activeView}: ManagePostViewPopoverProps) {
+export function ManagePostViewPopover({resource, params, activeView}: ManagePostViewPopoverProps) {
     const [open, setOpen] = useState(false);
 
     return (
@@ -120,6 +162,7 @@ export function ManagePostViewPopover({params, activeView}: ManagePostViewPopove
                     key={activeView?.name ?? 'new'}
                     activeView={activeView}
                     params={params}
+                    resource={resource}
                     onClose={() => {
                         setOpen(false);
                     }}

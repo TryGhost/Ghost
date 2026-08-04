@@ -1,38 +1,78 @@
-import {buildPostViewsForDelete, buildPostViewsForSave, type PostViewColor} from '@/posts/list/post-views';
+import {applyPostViewDelete, applyPostViewSave} from '@/posts/list/post-views-storage';
 import {getSettingValue, useBrowseSettings, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {parseAllSharedViewsJSON, type SharedView} from '@/members/shared-views';
 import {useCallback} from 'react';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import type {PostListParams} from '@/posts/list/post-query-params';
+import type {PostViewColor} from '@/posts/list/post-views';
 
 /**
  * Reading and writing saved views for the posts list.
  *
- * Views for every screen share one `shared_views` setting, so a save has to
- * round-trip the *whole* list — dropping the members' or pages' entries would
- * delete them.
+ * Reads go through the tolerant parser (unreadable entries are simply not
+ * shown); writes go through `post-views-storage`, which works on the raw array
+ * so it can never drop an entry it didn't understand. See that file for why.
  */
 
-const SHARED_VIEWS_INVALID_ERROR = 'Saved views could not be read';
+const SETTINGS_NOT_LOADED_ERROR = 'Settings are still loading, so nothing was changed';
 
 type SettingsData = {settings: Array<{key: string; value: string | boolean | null}>} | undefined;
 
-function getSharedViewsJSON(settingsData: SettingsData): string {
-    return getSettingValue<string>(settingsData?.settings ?? null, 'shared_views') ?? '[]';
+/**
+ * Returns `undefined` — not `'[]'` — while settings are still loading. An
+ * empty-list default here would let a save replace every existing view with
+ * just the new one.
+ */
+function getSharedViewsJSON(settingsData: SettingsData): string | undefined {
+    if (!settingsData) {
+        return undefined;
+    }
+
+    return getSettingValue<string>(settingsData.settings, 'shared_views') ?? '[]';
 }
 
 /** Just the posts views, for the filter bar's edit/save affordance. */
 export function usePostViews(): SharedView[] {
     const {data: settingsData} = useBrowseSettings();
-    const parsed = parseAllSharedViewsJSON(getSharedViewsJSON(settingsData));
+    const json = getSharedViewsJSON(settingsData);
+
+    if (json === undefined) {
+        return [];
+    }
+
+    const parsed = parseAllSharedViewsJSON(json);
 
     return parsed.ok ? parsed.views.filter(view => view.route === 'posts') : [];
 }
 
-export function useSavePostView() {
+function useWriteSharedViews() {
     const {data: settingsData} = useBrowseSettings();
     const {mutateAsync: editSettings} = useEditSettings();
     const handleError = useHandleError();
+
+    return useCallback(async (transform: (json: string) => string) => {
+        const json = getSharedViewsJSON(settingsData);
+
+        if (json === undefined) {
+            const error = new Error(SETTINGS_NOT_LOADED_ERROR);
+            handleError(error, {withToast: false});
+            throw error;
+        }
+
+        // Throws rather than writing if the stored value is unreadable.
+        const updated = transform(json);
+
+        try {
+            await editSettings([{key: 'shared_views', value: updated}]);
+        } catch (error) {
+            handleError(error, {withToast: false});
+            throw error;
+        }
+    }, [settingsData, editSettings, handleError]);
+}
+
+export function useSavePostView() {
+    const writeSharedViews = useWriteSharedViews();
 
     return useCallback(async (
         name: string,
@@ -40,46 +80,14 @@ export function useSavePostView() {
         color: PostViewColor,
         originalView?: SharedView
     ) => {
-        const parsed = parseAllSharedViewsJSON(getSharedViewsJSON(settingsData));
-
-        if (!parsed.ok) {
-            const error = new Error(SHARED_VIEWS_INVALID_ERROR, {cause: parsed.error});
-            handleError(error, {withToast: false});
-            throw error;
-        }
-
-        const updatedViews = buildPostViewsForSave(parsed.views, name, params, color, originalView);
-
-        try {
-            await editSettings([{key: 'shared_views', value: JSON.stringify(updatedViews)}]);
-        } catch (error) {
-            handleError(error, {withToast: false});
-            throw error;
-        }
-    }, [settingsData, editSettings, handleError]);
+        await writeSharedViews(json => applyPostViewSave(json, name, params, color, originalView));
+    }, [writeSharedViews]);
 }
 
 export function useDeletePostView() {
-    const {data: settingsData} = useBrowseSettings();
-    const {mutateAsync: editSettings} = useEditSettings();
-    const handleError = useHandleError();
+    const writeSharedViews = useWriteSharedViews();
 
     return useCallback(async (view: SharedView) => {
-        const parsed = parseAllSharedViewsJSON(getSharedViewsJSON(settingsData));
-
-        if (!parsed.ok) {
-            const error = new Error(SHARED_VIEWS_INVALID_ERROR, {cause: parsed.error});
-            handleError(error, {withToast: false});
-            throw error;
-        }
-
-        const updatedViews = buildPostViewsForDelete(parsed.views, view);
-
-        try {
-            await editSettings([{key: 'shared_views', value: JSON.stringify(updatedViews)}]);
-        } catch (error) {
-            handleError(error, {withToast: false});
-            throw error;
-        }
-    }, [settingsData, editSettings, handleError]);
+        await writeSharedViews(json => applyPostViewDelete(json, view));
+    }, [writeSharedViews]);
 }
