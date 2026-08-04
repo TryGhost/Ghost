@@ -1,4 +1,5 @@
 import {buildPostViewUrl, getDefaultPostViews, isPostViewActive} from './post-sidebar-views';
+import {getStickyPostFilterUrl} from '@/posts/list/posts-sticky-filters';
 import {isContributorUser} from '@tryghost/admin-x-framework/api/users';
 import {type NavSavedView} from './nav-saved-views';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
@@ -48,11 +49,22 @@ function useReactPostNavigation(route: PostResource): PostNavigation {
 
         const customViews = sharedViews.map(view => toNavView(view.name, view.filter, view.color));
 
+        const allViews = [...defaultViews, ...customViews];
+
         return {
-            mainUrl: route,
+            // Sticky filters: returns you to the filters you last had, unless
+            // you are already here or those filters are just a view.
+            mainUrl: getStickyPostFilterUrl(
+                route,
+                location.pathname,
+                [
+                    ...getDefaultPostViews(isContributor).map(view => view.filter),
+                    ...sharedViews.map(view => view.filter)
+                ]
+            ),
             // Ember highlights the parent only when no view underneath is.
             isMainActive: location.pathname === `/${route}`
-                && ![...defaultViews, ...customViews].some(view => view.isActive),
+                && !allViews.some(view => view.isActive),
             defaultViews,
             customViews
         };
