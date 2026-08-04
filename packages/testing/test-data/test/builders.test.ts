@@ -1,4 +1,4 @@
-import {analyticsKpi, analyticsLocation, automation, buildLexical, buildLexicalParagraph, comment, commentThread, defaultThemesResponse, label, member, newsletterStat, newsletterSubscriberStat, newsletterSubscriberValue, post, postGrowthStat, postStats, reply, subscriptionStat, tag, theme, tier, topPostStat, topPostViewsStat} from "../src/index";
+import {analyticsKpi, analyticsLocation, automation, buildLexical, buildLexicalParagraph, comment, commentThread, defaultThemesResponse, label, member, newsletterBasicStat, newsletterClickStat, newsletterSubscriberStat, newsletterSubscriberValue, post, postGrowthStat, postStats, reply, subscriptionStat, tag, theme, tier, topPostStat, topPostViewsStat} from "../src/index";
 import type {AnalyticsKpi, RequiredBuilderInput} from "../src/index";
 import {describe, expect, expectTypeOf, it} from "vitest";
 
@@ -90,7 +90,20 @@ describe("builders", () => {
         ]);
         expect(analyticsLocation({location: "GB", visits: 42})).toEqual({location: "GB", visits: 42});
         expect(postGrowthStat({post_id: "post-id", free_members: 3})).toMatchObject({post_id: "post-id", free_members: 3, paid_members: 0});
-        expect(newsletterStat({post_id: "post-id", post_title: "Weekly digest", send_date: "2026-07-29", sent_to: 1000})).toMatchObject({post_title: "Weekly digest", sent_to: 1000, total_opens: 0});
+        expect(newsletterBasicStat({post_id: "post-id", post_title: "Weekly digest", send_date: "2026-07-29", sent_to: 1000})).toEqual({
+            post_id: "post-id",
+            post_title: "Weekly digest",
+            send_date: "2026-07-29",
+            sent_to: 1000,
+            total_opens: 0,
+            open_rate: 0
+        });
+        expect(newsletterClickStat({post_id: "post-id", email_count: 1000, total_clicks: 60})).toEqual({
+            post_id: "post-id",
+            email_count: 1000,
+            total_clicks: 60,
+            click_rate: 0.06
+        });
 
         const topPost = topPostStat({post_id: "post-id", attribution_url: "/post/", attribution_type: "post", attribution_id: "post-id", published_at: "2026-07-29"});
         expect(topPost).toMatchObject({post_id: "post-id", attribution_id: "post-id", attribution_type: "post", title: "Analytics post"});
@@ -106,13 +119,18 @@ describe("builders", () => {
             avg_session_sec: 0
         });
 
-        expect(newsletterStat({
+        expect(newsletterBasicStat({
             post_id: "post-id",
             send_date: "2026-07-29",
             sent_to: 1000,
-            total_opens: 400,
+            total_opens: 400
+        })).toMatchObject({open_rate: 0.4});
+        expect(newsletterBasicStat({
+            post_id: "post-id",
+            send_date: "2026-07-29",
+            sent_to: 1000,
             total_clicks: 60
-        })).toMatchObject({open_rate: 0.4, click_rate: 0.06});
+        })).toMatchObject({total_clicks: 60, click_rate: 0.06});
 
         expect(topPostViewsStat({
             post_id: "post-id",

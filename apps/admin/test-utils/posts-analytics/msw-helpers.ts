@@ -2,7 +2,7 @@ import React from 'react';
 import {type FeedbackItem} from '@tryghost/admin-x-framework/api/feedback';
 import {HttpResponse, http, type JsonBodyType, type RequestHandler} from 'msw';
 import {type LinkItem} from '@tryghost/admin-x-framework/api/links';
-import {type NewsletterStatItem} from '@tryghost/admin-x-framework/api/stats';
+import {type NewsletterBasicStatItem, type NewsletterClickStatItem} from '@tryghost/admin-x-framework/api/stats';
 import {type Post} from '@tryghost/admin-x-framework/api/posts';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {setupMswServer} from '@tryghost/admin-x-framework/test/msw-utils';
@@ -62,14 +62,20 @@ export const mockData = {
         ...overrides
     }),
     
-    newsletterStat: (overrides: Partial<NewsletterStatItem> = {}): NewsletterStatItem => ({
+    newsletterBasicStat: (overrides: Partial<NewsletterBasicStatItem> = {}): NewsletterBasicStatItem => ({
         post_id: 'test-post-id',
         post_title: 'Test Newsletter Post',
         send_date: '2023-01-01T00:00:00.000Z',
         sent_to: 1000,
         total_opens: 300,
         open_rate: 0.3,
+        ...overrides
+    }),
+
+    newsletterClickStat: (overrides: Partial<NewsletterClickStatItem> = {}): NewsletterClickStatItem => ({
+        post_id: 'test-post-id',
         total_clicks: 50,
+        email_count: 1000,
         click_rate: 0.05,
         ...overrides
     }),
@@ -115,7 +121,8 @@ export const mockData = {
     posts: (items: Partial<Post>[] = []) => ({posts: items.map(item => mockData.post(item))}),
     feedbackList: (items: Partial<FeedbackItem>[] = []) => ({feedback: items.map(item => mockData.feedback(item))}),
     linksList: (items: Partial<LinkItem>[] = []) => ({links: items.map(item => mockData.link(item))}),
-    newsletterStatsList: (stats: Partial<NewsletterStatItem>[] = []) => ({stats: stats.map(item => mockData.newsletterStat(item))}),
+    newsletterBasicStatsList: (stats: Partial<NewsletterBasicStatItem>[] = []) => ({stats: stats.map(item => mockData.newsletterBasicStat(item))}),
+    newsletterClickStatsList: (stats: Partial<NewsletterClickStatItem>[] = []) => ({stats: stats.map(item => mockData.newsletterClickStat(item))}),
     postReferrersList: (stats: Partial<import('@tryghost/admin-x-framework/api/stats').PostReferrerStatItem>[] = []) => ({
         stats: stats.map(item => mockData.postReferrer(item)),
         meta: {pagination: {page: 1, limit: 10, pages: 1, total: stats.length, next: null, prev: null}}
@@ -150,8 +157,8 @@ type MockServerConfig = {
     posts?: Partial<Post>[];
     feedback?: Partial<FeedbackItem>[];
     links?: Partial<LinkItem>[];
-    newsletterBasicStats?: Partial<NewsletterStatItem>[];
-    newsletterClickStats?: Partial<NewsletterStatItem>[];
+    newsletterBasicStats?: Partial<NewsletterBasicStatItem>[];
+    newsletterClickStats?: Partial<NewsletterClickStatItem>[];
     postReferrers?: Partial<import('@tryghost/admin-x-framework/api/stats').PostReferrerStatItem>[];
     postGrowthStats?: Partial<import('@tryghost/admin-x-framework/api/stats').PostGrowthStatItem>[];
     mrrHistory?: {
@@ -202,11 +209,11 @@ export const mockServer = {
         }
         
         if (config.newsletterBasicStats !== undefined) {
-            handlers.push(createGhostHandler('get', '/ghost/api/admin/stats/newsletter-basic-stats/', mockData.newsletterStatsList(config.newsletterBasicStats)));
+            handlers.push(createGhostHandler('get', '/ghost/api/admin/stats/newsletter-basic-stats/', mockData.newsletterBasicStatsList(config.newsletterBasicStats)));
         }
         
         if (config.newsletterClickStats !== undefined) {
-            handlers.push(createGhostHandler('get', '/ghost/api/admin/stats/newsletter-click-stats/', mockData.newsletterStatsList(config.newsletterClickStats)));
+            handlers.push(createGhostHandler('get', '/ghost/api/admin/stats/newsletter-click-stats/', mockData.newsletterClickStatsList(config.newsletterClickStats)));
         }
         
         if (config.postReferrers !== undefined) {

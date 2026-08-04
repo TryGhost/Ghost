@@ -67,16 +67,21 @@ describe('usePostNewsletterStats', () => {
     });
 
     it('calculates average newsletter performance correctly', async () => {
-        const newsletterStats = [
-            {post_id: 'post1', open_rate: 0.25, click_rate: 0.03},
-            {post_id: 'post2', open_rate: 0.35, click_rate: 0.07},
-            {post_id: 'post3', open_rate: 0.30, click_rate: 0.05}
+        const newsletterBasicStats = [
+            {post_id: 'post1', open_rate: 0.25},
+            {post_id: 'post2', open_rate: 0.35},
+            {post_id: 'post3', open_rate: 0.30}
+        ];
+        const newsletterClickStats = [
+            {post_id: 'post1', click_rate: 0.03},
+            {post_id: 'post2', click_rate: 0.07},
+            {post_id: 'post3', click_rate: 0.05}
         ];
 
         mockServer.setup({
             posts: [mockData.post({id: testPostId})],
-            newsletterBasicStats: newsletterStats,
-            newsletterClickStats: newsletterStats
+            newsletterBasicStats,
+            newsletterClickStats
         });
 
         const {result} = renderHook(() => usePostNewsletterStats(testPostId), {

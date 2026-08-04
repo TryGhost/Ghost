@@ -193,8 +193,9 @@ describe("Analytics newsletters", () => {
         };
         fakeAdminStats.newsletterBasic([basicStats]);
         fakeAdminStats.newsletterClicks([{
-            ...basicStats,
+            post_id: LATEST_POST_ID,
             total_clicks: 50,
+            email_count: 1000,
         }]);
         await renderAdminApp("/analytics/newsletters", { boot: webAnalyticsBootOverrides() });
 

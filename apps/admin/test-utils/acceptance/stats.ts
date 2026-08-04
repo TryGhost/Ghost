@@ -1,7 +1,8 @@
 import {
     memberStatusStat,
     mrrHistoryStat,
-    newsletterStat,
+    newsletterBasicStat,
+    newsletterClickStat,
     newsletterSubscriberStat,
     newsletterSubscriberValue,
     postGrowthStat,
@@ -15,7 +16,8 @@ import {
 import type {
     MemberCountHistoryResponseType,
     MrrHistoryResponseType,
-    NewsletterStatsResponseType,
+    NewsletterBasicStatsResponseType,
+    NewsletterClickStatsResponseType,
     NewsletterSubscriberStatsResponseType,
     PostGrowthStatsResponseType,
     PostReferrersResponseType,
@@ -135,13 +137,13 @@ export const fakeAdminStats = {
         return fakeAdminEndpoint("GET", endpoint("/stats/subscriber-count/"), response);
     },
 
-    newsletterBasic(stats: Array<InputOf<typeof newsletterStat>> = []): EndpointCapture {
-        const response = { stats: newsletterStat.many(stats), meta: {} } satisfies NewsletterStatsResponseType;
+    newsletterBasic(stats: Array<InputOf<typeof newsletterBasicStat>> = []): EndpointCapture {
+        const response = { stats: newsletterBasicStat.many(stats), meta: {} } satisfies NewsletterBasicStatsResponseType;
         return fakeAdminEndpoint("GET", endpoint("/stats/newsletter-basic-stats/"), response);
     },
 
-    newsletterClicks(stats: Array<InputOf<typeof newsletterStat>> = []): EndpointCapture {
-        const response = { stats: newsletterStat.many(stats), meta: {} } satisfies NewsletterStatsResponseType;
+    newsletterClicks(stats: Array<InputOf<typeof newsletterClickStat>> = []): EndpointCapture {
+        const response = { stats: newsletterClickStat.many(stats), meta: {} } satisfies NewsletterClickStatsResponseType;
         return fakeAdminEndpoint("GET", endpoint("/stats/newsletter-click-stats/"), response);
     },
 };

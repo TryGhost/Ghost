@@ -143,17 +143,17 @@ export interface TopContentStat {
 }
 
 export interface TopPostStat {
-    post_id?: string;
+    post_id: string | null;
     attribution_url: string;
-    attribution_type: string;
-    attribution_id: string;
+    attribution_type: string | null;
+    attribution_id: string | null;
     title: string;
     free_members: number;
     paid_members: number;
     mrr: number;
-    published_at?: string;
-    post_type?: string | null;
-    url_exists?: boolean;
+    published_at: string | null;
+    post_type: string | null;
+    url_exists: boolean;
 }
 
 export interface PostReferrerStat {
@@ -171,14 +171,21 @@ export interface PostGrowthStat {
     mrr: number;
 }
 
-export interface NewsletterStat {
+export interface NewsletterBasicStat {
     post_id: string;
     post_title: string;
     send_date: string;
     sent_to: number;
     total_opens: number;
     open_rate: number;
+    total_clicks?: number;
+    click_rate?: number;
+}
+
+export interface NewsletterClickStat {
+    post_id: string;
     total_clicks: number;
+    email_count: number;
     click_rate: number;
 }
 
@@ -308,12 +315,18 @@ export const topContentStat = createRequiredBuilder<TopContentStat, "pathname">(
     visits: 0
 }));
 
-export const topPostStat = createRequiredBuilder<TopPostStat, "attribution_url" | "attribution_type" | "attribution_id">(() => {
+export const topPostStat = createRequiredBuilder<TopPostStat, "attribution_url">(() => {
     return {
+        post_id: null,
+        attribution_type: null,
+        attribution_id: null,
         title: "Analytics post",
         free_members: 0,
         paid_members: 0,
-        mrr: 0
+        mrr: 0,
+        published_at: null,
+        post_type: null,
+        url_exists: true
     };
 });
 
@@ -329,18 +342,32 @@ export const postGrowthStat = createRequiredBuilder<PostGrowthStat, "post_id">((
     mrr: 0
 }));
 
-export const newsletterStat = createRequiredBuilder<NewsletterStat, "post_id" | "send_date">((input) => {
+export const newsletterBasicStat = createRequiredBuilder<NewsletterBasicStat, "post_id" | "send_date">((input) => {
     const sentTo = input.sent_to ?? 0;
     const totalOpens = input.total_opens ?? 0;
     const totalClicks = input.total_clicks ?? 0;
+    const includesClicks = input.total_clicks !== undefined || input.click_rate !== undefined;
 
     return {
         post_title: "Newsletter post",
         sent_to: 0,
         total_opens: 0,
         open_rate: sentTo ? totalOpens / sentTo : 0,
+        ...(includesClicks ? {
+            total_clicks: totalClicks,
+            click_rate: sentTo ? totalClicks / sentTo : 0
+        } : {})
+    };
+});
+
+export const newsletterClickStat = createRequiredBuilder<NewsletterClickStat, "post_id">((input) => {
+    const emailCount = input.email_count ?? 0;
+    const totalClicks = input.total_clicks ?? 0;
+
+    return {
         total_clicks: 0,
-        click_rate: sentTo ? totalClicks / sentTo : 0
+        email_count: 0,
+        click_rate: emailCount ? totalClicks / emailCount : 0
     };
 });
 
