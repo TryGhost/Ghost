@@ -46,14 +46,16 @@ describe('UNIT: DynamicRoutingService (store-backed)', function () {
         assert.equal(await service.download(), CUSTOM_YAML);
     });
 
-    it('loadRouteSettings expands the domain model into the router array format', async function () {
-        await store.replace(fromYaml(CUSTOM_YAML));
+    it('loadRouteSettings returns the domain model from the store untransformed', async function () {
+        const stored = fromYaml(CUSTOM_YAML);
+        await store.replace(stored);
 
-        const expanded = await service.loadRouteSettings();
+        const settings = await service.loadRouteSettings();
 
-        assert.deepEqual(expanded.routes, [{path: '/about/', type: 'template', templates: ['about']}]);
-        assert.deepEqual(expanded.collections, [{path: '/', permalink: '/{slug}/', templates: ['index']}]);
-        assert.deepEqual(expanded.taxonomies, [{key: 'tag', permalink: '/tag/{slug}/'}]);
+        assert.deepEqual(settings, stored);
+        // Taxonomies stay the domain `{tag, author}` map rather than the
+        // `{key, permalink}` entries the activation bridge used to build.
+        assert.deepEqual(settings.taxonomies, {tag: '/tag/{slug}/'});
     });
 
     describe('loadRouteSettings validation failure', function () {
@@ -103,7 +105,7 @@ describe('UNIT: DynamicRoutingService (store-backed)', function () {
 
             const settings = await service.loadRouteSettings();
 
-            assert.deepEqual(settings.routes, [{path: '/about/', type: 'template', templates: ['about']}]);
+            assert.deepEqual(settings.routes, [{type: 'template', path: '/about/', templates: ['about']}]);
             assert.equal(errorStub.called, false);
         });
     });
