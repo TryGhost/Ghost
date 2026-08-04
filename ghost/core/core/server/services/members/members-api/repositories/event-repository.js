@@ -37,7 +37,7 @@ module.exports = class EventRepository {
         urlService,
         MemberEmailChangeEvent,
         AutomatedEmailRecipient,
-        Gift
+        giftSubscriptions
     }) {
         this._DonationPaymentEvent = DonationPaymentEvent;
         this._MemberSubscribeEvent = MemberSubscribeEvent;
@@ -57,7 +57,7 @@ module.exports = class EventRepository {
         this._memberAttributionService = memberAttributionService;
         this._MemberEmailChangeEvent = MemberEmailChangeEvent;
         this._AutomatedEmailRecipient = AutomatedEmailRecipient;
-        this._Gift = Gift;
+        this._giftSubscriptions = giftSubscriptions;
         this._knex = db.knex;
     }
 
@@ -462,101 +462,11 @@ module.exports = class EventRepository {
     }
 
     async getGiftPurchaseEvents(options = {}, filter) {
-        options = {
-            ...options,
-            withRelated: ['buyer', 'tier'],
-            filter: 'buyer_member_id:-null+custom:true',
-            useBasicCount: true,
-            mongoTransformer: chainTransformers(
-                // First set the filter manually
-                replaceCustomFilterTransformer(filter),
-
-                // Map the used keys in that filter
-                ...mapKeys({
-                    'data.created_at': 'purchased_at',
-                    'data.member_id': 'buyer_member_id'
-                })
-            )
-        };
-
-        if (options.order) {
-            options.order = options.order.replace(/created_at/g, 'purchased_at');
-        }
-
-        const {data: models, meta} = await this._Gift.findPage(options);
-
-        const data = models.map((model) => {
-            const json = model.toJSON(options);
-
-            return {
-                type: 'gift_purchase_event',
-                data: {
-                    id: json.id,
-                    member: json.buyer || null,
-                    member_id: json.buyer_member_id,
-                    tier_name: json.tier?.name,
-                    cadence: json.cadence,
-                    duration: json.duration,
-                    amount: json.amount,
-                    currency: json.currency,
-                    created_at: json.purchased_at
-                }
-            };
-        });
-
-        return {
-            data,
-            meta
-        };
+        return this._giftSubscriptions.service.browsePurchaseEvents(options, filter);
     }
 
     async getGiftRedemptionEvents(options = {}, filter) {
-        options = {
-            ...options,
-            withRelated: ['redeemer', 'tier'],
-            filter: 'redeemer_member_id:-null+custom:true',
-            useBasicCount: true,
-            mongoTransformer: chainTransformers(
-                // First set the filter manually
-                replaceCustomFilterTransformer(filter),
-
-                // Map the used keys in that filter
-                ...mapKeys({
-                    'data.created_at': 'redeemed_at',
-                    'data.member_id': 'redeemer_member_id'
-                })
-            )
-        };
-
-        if (options.order) {
-            options.order = options.order.replace(/created_at/g, 'redeemed_at');
-        }
-
-        const {data: models, meta} = await this._Gift.findPage(options);
-
-        const data = models.map((model) => {
-            const json = model.toJSON(options);
-
-            return {
-                type: 'gift_redemption_event',
-                data: {
-                    id: json.id,
-                    member: json.redeemer || null,
-                    member_id: json.redeemer_member_id,
-                    tier_name: json.tier?.name,
-                    cadence: json.cadence,
-                    duration: json.duration,
-                    amount: json.amount,
-                    currency: json.currency,
-                    created_at: json.redeemed_at
-                }
-            };
-        });
-
-        return {
-            data,
-            meta
-        };
+        return this._giftSubscriptions.service.browseRedemptionEvents(options, filter);
     }
 
     async getGiftEndedEvents(options = {}, filter) {

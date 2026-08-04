@@ -39,7 +39,6 @@ function escapeHtml(str) {
 
 async function giftPreview(req, res) {
     const giftService = require('../../services/gifts').service;
-    const tiersService = require('../../services/tiers');
     const urlUtils = require('../../../shared/url-utils').default;
     const settingsCache = require('../../../shared/settings-cache');
 
@@ -48,20 +47,13 @@ async function giftPreview(req, res) {
     const {token} = req.params;
     const siteTitle = settingsCache.get('title') || 'Ghost';
 
-    let gift;
-    let tier;
+    let preview;
 
     try {
-        gift = await giftService.getByToken(token);
+        preview = await giftService.getPreview(token);
 
-        if (!gift) {
+        if (!preview) {
             throw new errors.NotFoundError({message: `Gift not found for token`});
-        }
-
-        tier = await tiersService.api.read(gift.tierId);
-
-        if (!tier) {
-            throw new errors.NotFoundError({message: `Tier not found for gift: ${gift.id}`});
         }
     } catch (err) {
         logging.warn(`Gift preview: failed to load required gift data, redirecting to homepage`, err);
@@ -70,9 +62,9 @@ async function giftPreview(req, res) {
     }
 
     const ogTitle = getOgTitle({
-        cadence: gift.cadence,
-        duration: gift.duration,
-        tierName: tier.name,
+        cadence: preview.cadence,
+        duration: preview.duration,
+        tierName: preview.tier.name,
         siteTitle
     });
     const ogDescription = t('Open this link to redeem your gift.');
@@ -120,33 +112,26 @@ async function giftPreview(req, res) {
 async function giftPreviewImage(req, res) {
     const giftService = require('../../services/gifts').service;
     const settingsCache = require('../../../shared/settings-cache');
-    const tiersService = require('../../services/tiers');
 
     const accentColor = settingsCache.get('accent_color') || '#15171A';
     const siteTitle = settingsCache.get('title') || 'Ghost';
     const {token} = req.params;
 
     try {
-        const gift = await giftService.getByToken(token);
+        const preview = await giftService.getPreview(token);
 
-        if (!gift) {
+        if (!preview) {
             throw new errors.NotFoundError({message: `Gift not found for token`});
-        }
-
-        const tier = await tiersService.api.read(gift.tierId);
-
-        if (!tier) {
-            throw new errors.NotFoundError({message: `Tier not found for gift: ${gift.id}`});
         }
 
         const png = await generateGiftPreviewImage({
             accentColor,
             siteTitle,
             tierLabel: t('{tierName} membership', {
-                tierName: tier.name,
+                tierName: preview.tier.name,
                 interpolation: {escapeValue: false}
             }),
-            cadenceLabel: getCadenceLabel(gift.cadence, gift.duration)
+            cadenceLabel: getCadenceLabel(preview.cadence, preview.duration)
         });
 
         res.set('Content-Type', 'image/png');
