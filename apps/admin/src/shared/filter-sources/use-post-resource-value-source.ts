@@ -3,7 +3,7 @@ import {type Post, type PostsResponseType, useBrowsePostsInfinite} from '@trygho
 import {type ValueSource} from '@tryghost/shade/patterns';
 import {createCombinedValueSource} from './create-combined-value-source';
 import {createGhostBrowseValueSource} from './create-ghost-browse-value-source';
-import {escapeNqlString} from '@/shared/filters/filter-normalization';
+import {escapeNqlString} from '@tryghost/nql-string';
 import {keepPreviousData} from '@tanstack/react-query';
 
 function buildPublishedFilter(query: string) {
