@@ -26,8 +26,8 @@ describe('activation-bridge', function () {
         // Characterisation tests for the router-facing array output. Each item
         // carries its own `path`; routes use the domain `type`/`contentType`
         // names; permalinks stay in domain `{slug}` notation (the routers convert
-        // to `:slug` via the permalink adapter) and `data` is still expanded to
-        // `{query, router}` (peeled off in later cleanup PRs).
+        // to `:slug` via the permalink adapter) and `data` is passed through
+        // untouched (the api adapter resolves it at request time).
         describe('produces the expected array output', function () {
             const cases: Array<{name: string; raw: unknown; expected: object}> = [
                 {
@@ -51,18 +51,10 @@ describe('activation-bridge', function () {
                     expected: {routes: [{path: '/featured/', type: 'channel', templates: [], filter: 'featured:true', rss: false}], collections: [], taxonomies: []}
                 },
                 {
-                    name: 'route with shortform data expands to {query, router}',
+                    name: 'route data is passed through in domain form',
                     raw: {routes: {'/food/': {template: 'food', data: 'tag.food'}}, collections: {}, taxonomies: {}},
                     expected: {
-                        routes: [{
-                            path: '/food/',
-                            type: 'template',
-                            templates: ['food'],
-                            data: {
-                                query: {tag: {controller: 'tagsPublic', type: 'read', resource: 'tags', options: {slug: 'food', visibility: 'public'}}},
-                                router: {tags: [{slug: 'food', redirect: true}]}
-                            }
-                        }],
+                        routes: [{path: '/food/', type: 'template', templates: ['food'], data: 'tag.food'}],
                         collections: [],
                         taxonomies: []
                     }
@@ -81,10 +73,7 @@ describe('activation-bridge', function () {
                             path: '/podcast/',
                             permalink: '/podcast/{slug}/',
                             templates: ['podcast'],
-                            data: {
-                                query: {tag: {controller: 'tagsPublic', type: 'read', resource: 'tags', options: {slug: 'podcast', visibility: 'public'}}},
-                                router: {tags: [{slug: 'podcast', redirect: true}]}
-                            },
+                            data: 'tag.podcast',
                             filter: 'tag:podcast'
                         }],
                         taxonomies: []

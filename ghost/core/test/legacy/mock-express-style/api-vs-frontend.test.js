@@ -782,19 +782,7 @@ describe('Frontend behavior tests', function () {
                     routes: {
                         '/my-page/': {
                             data: {
-                                query: {
-                                    page: {
-                                        controller: 'pagesPublic',
-                                        resource: 'pages',
-                                        type: 'read',
-                                        options: {
-                                            slug: 'static-page-test'
-                                        }
-                                    }
-                                },
-                                router: {
-                                    pages: [{redirect: true, slug: 'static-page-test'}]
-                                }
+                                page: {type: 'read', resource: 'pages', slug: 'static-page-test'}
                             },
                             templates: ['page']
                         }
@@ -805,38 +793,14 @@ describe('Frontend behavior tests', function () {
                             permalink: '/food/{slug}/',
                             filter: 'tag:bacon+tag:-chorizo',
                             data: {
-                                query: {
-                                    tag: {
-                                        controller: 'tagsPublic',
-                                        resource: 'tags',
-                                        type: 'read',
-                                        options: {
-                                            slug: 'bacon'
-                                        }
-                                    }
-                                },
-                                router: {
-                                    tags: [{redirect: true, slug: 'bacon'}]
-                                }
+                                tag: {type: 'read', resource: 'tags', slug: 'bacon'}
                             }
                         },
                         '/sport/': {
                             permalink: '/sport/{slug}/',
                             filter: 'tag:chorizo+tag:-bacon',
                             data: {
-                                query: {
-                                    apollo: {
-                                        controller: 'tagsPublic',
-                                        resource: 'tags',
-                                        type: 'read',
-                                        options: {
-                                            slug: 'chorizo'
-                                        }
-                                    }
-                                },
-                                router: {
-                                    tags: [{redirect: false, slug: 'chorizo'}]
-                                }
+                                apollo: {type: 'read', resource: 'tags', slug: 'chorizo', redirect: false}
                             }
                         }
                     },
@@ -1122,19 +1086,7 @@ describe('Frontend behavior tests', function () {
                             type: 'channel',
                             filter: 'tag:kitchen-sink',
                             data: {
-                                query: {
-                                    tag: {
-                                        controller: 'tagsPublic',
-                                        resource: 'tags',
-                                        type: 'read',
-                                        options: {
-                                            slug: 'kitchen-sink'
-                                        }
-                                    }
-                                },
-                                router: {
-                                    tags: [{redirect: true, slug: 'kitchen-sink'}]
-                                }
+                                tag: {type: 'read', resource: 'tags', slug: 'kitchen-sink'}
                             }
                         },
 
@@ -1142,19 +1094,7 @@ describe('Frontend behavior tests', function () {
                             type: 'channel',
                             filter: 'tag:bacon',
                             data: {
-                                query: {
-                                    tag: {
-                                        controller: 'tagsPublic',
-                                        resource: 'tags',
-                                        type: 'read',
-                                        options: {
-                                            slug: 'bacon'
-                                        }
-                                    }
-                                },
-                                router: {
-                                    tags: [{redirect: true, slug: 'bacon'}]
-                                }
+                                tag: {type: 'read', resource: 'tags', slug: 'bacon'}
                             },
                             templates: ['default']
                         },
@@ -1163,20 +1103,7 @@ describe('Frontend behavior tests', function () {
                             type: 'channel',
                             filter: 'author:joe-bloggs',
                             data: {
-                                query: {
-                                    joe: {
-                                        controller: 'authorsPublic',
-                                        resource: 'authors',
-                                        type: 'read',
-                                        options: {
-                                            slug: 'joe-bloggs',
-                                            redirect: false
-                                        }
-                                    }
-                                },
-                                router: {
-                                    authors: [{redirect: false, slug: 'joe-bloggs'}]
-                                }
+                                joe: {type: 'read', resource: 'authors', slug: 'joe-bloggs', redirect: false}
                             }
                         },
 
@@ -1188,40 +1115,14 @@ describe('Frontend behavior tests', function () {
                         '/channel5/': {
                             type: 'channel',
                             data: {
-                                query: {
-                                    tag: {
-                                        controller: 'authorsPublic',
-                                        resource: 'authors',
-                                        type: 'read',
-                                        options: {
-                                            slug: 'joe-bloggs',
-                                            redirect: false
-                                        }
-                                    }
-                                },
-                                router: {
-                                    authors: [{redirect: false, slug: 'joe-bloggs'}]
-                                }
+                                tag: {type: 'read', resource: 'authors', slug: 'joe-bloggs', redirect: false}
                             }
                         },
 
                         '/channel6/': {
                             type: 'channel',
                             data: {
-                                query: {
-                                    post: {
-                                        controller: 'postsPublic',
-                                        resource: 'posts',
-                                        type: 'read',
-                                        options: {
-                                            slug: 'html-ipsum',
-                                            redirect: true
-                                        }
-                                    }
-                                },
-                                router: {
-                                    posts: [{redirect: true, slug: 'html-ipsum'}]
-                                }
+                                post: {type: 'read', resource: 'posts', slug: 'html-ipsum'}
                             }
                         }
                     },

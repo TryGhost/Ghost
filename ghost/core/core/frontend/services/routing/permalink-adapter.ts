@@ -12,7 +12,7 @@ export function toExpressNotation(permalink: string): string {
 /**
  * Convert an Express / URL-service permalink back into domain-model notation.
  * Will be used on the download path when serialising the canonical shape back
- * to YAML (wired up in HKG-1897) — no production caller yet.
+ * to YAML — no production caller yet.
  *
  * @example toDomainNotation('/:slug/')               // => '/{slug}/'
  * @example toDomainNotation('/:primary_tag/:slug/')  // => '/{primary_tag}/{slug}/'

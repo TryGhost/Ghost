@@ -36,7 +36,7 @@ class CollectionRouter extends ParentRouter {
         this.templates = (object.templates || []).reverse();
 
         this.filter = object.filter;
-        this.data = object.data || {query: {}, router: {}};
+        this.data = object.data || {};
         this.order = object.order;
         this.limit = object.limit;
 
@@ -118,7 +118,7 @@ class CollectionRouter extends ParentRouter {
             templates: this.templates,
             identifier: this.identifier,
             name: this.routerName,
-            data: this.data.query
+            data: this.data
         };
 
         next();
