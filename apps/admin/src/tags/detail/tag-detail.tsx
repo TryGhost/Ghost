@@ -13,7 +13,7 @@ import {dequal} from 'dequal';
 import {getTagBySlug, useAddTag, useEditTag} from '@tryghost/admin-x-framework/api/tags';
 import {toast} from 'sonner';
 import {useBlocker} from 'react-router';
-import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
+import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 import {useHashLinkNavigationGuard} from '@/hooks/use-hash-link-navigation-guard';
 import type {TagsResponseType} from '@tryghost/admin-x-framework/api/tags';
 import type {TagEditableFields, TagFieldName} from './tag-detail-edit';
@@ -44,8 +44,10 @@ const TagDetail: React.FC = () => {
     const notFound = !isCreating && !isLoading && (error as {response?: Response} | null)?.response?.status === 404;
     const loadError = !isCreating && !isLoading && !!error && !notFound;
 
-    const {data: configData} = useBrowseConfig();
-    const blogUrl = configData?.config?.blogUrl ?? '';
+    // `blogUrl` is not part of the config API response — Ember derives it
+    // client-side from the site endpoint's `url` (`config-manager.js`).
+    const {data: siteData} = useBrowseSite();
+    const blogUrl = siteData?.site.url.replace(/\/$/, '') ?? '';
 
     const editMutation = useEditTag();
     const addMutation = useAddTag();
@@ -313,7 +315,9 @@ const TagDetail: React.FC = () => {
         saveLabel = 'Saved';
     }
 
-    const showEditor = !!draft && (isCreating || !!tag);
+    // Holding on `blogUrl` keeps host-less URL previews from ever painting;
+    // the shell's sidebar has normally warmed the site query already.
+    const showEditor = !!draft && !!blogUrl && (isCreating || !!tag);
     let title = '';
     if (isCreating) {
         title = 'New tag';

@@ -30,6 +30,9 @@ describe('Tag detail (tagDetailsReact on)', () => {
         await expect.element(page.getByTestId('tag-detail-title')).toHaveTextContent('News');
         await expect.element(page.getByLabelText('Name', {exact: true})).toHaveValue('News');
         await expect.element(page.getByLabelText('Slug', {exact: true})).toHaveValue('news');
+        // The host comes from the site endpoint's `url` (config has no
+        // blogUrl), scheme-stripped — never a bare `/tag/news/` path.
+        await expect.element(page.getByTestId('tag-slug-preview')).toHaveTextContent('test.com/tag/news/');
         await expect.element(page.getByLabelText('Description', {exact: true})).toHaveValue('All the news');
         await expect.element(page.getByRole('button', {name: 'Delete tag', exact: true})).toBeVisible();
     });
