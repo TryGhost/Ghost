@@ -107,10 +107,10 @@ module.exports = {
         // ============================================================
         {
             name: 'framework-not-feature-apps',
-            comment: 'admin-x-framework/ must not depend on feature apps (activitypub, admin-x-settings). The framework layer sits below the feature layer.',
+            comment: 'admin-x-framework/ must not depend on feature apps (activitypub). The framework layer sits below the feature layer.',
             severity: 'error',
             from: {path: '^apps/admin-x-framework/'},
-            to: {path: '^@tryghost/(activitypub|admin-x-settings)'}
+            to: {path: '^@tryghost/activitypub'}
         },
         // ============================================================
         // apps/ — public UMD apps must not depend on admin-only libraries
