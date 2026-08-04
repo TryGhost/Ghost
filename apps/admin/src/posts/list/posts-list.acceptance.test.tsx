@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { fakePages, fakePosts, renderAdminApp } from "@test-utils/acceptance";
+import { fakePages, fakePosts, renderAdminApp , fakeAdminEndpoint} from "@test-utils/acceptance";
 import { postsListScreen } from "./posts-list.screen";
 
 const FLAG_ON = { labs: { postsListReact: true } };
@@ -21,6 +21,9 @@ describe("Posts and pages list flag", () => {
     // content is irrelevant here, this file is only about which implementation
     // serves the route.
     beforeEach(() => {
+        // The metric columns batch these for the rows on screen.
+        fakeAdminEndpoint("POST", "/stats/posts-visitor-counts/", {stats: [{data: {visitor_counts: {}}}]});
+        fakeAdminEndpoint("POST", "/stats/posts-member-counts/", {stats: [{data: {member_counts: {}}}]});
         fakePosts([]);
         fakePages([]);
     });

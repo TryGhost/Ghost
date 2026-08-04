@@ -15,15 +15,18 @@ export type Email = {
     track_clicks?: boolean;
 };
 
+// Every field optional: these are supertypes of the narrower author/tag shapes
+// already declared around the analytics screens, so widening `Post` doesn't
+// invalidate them. The list only reads names and slugs.
 export type PostAuthor = {
-    id: string;
+    id?: string;
     name?: string;
     email?: string;
     slug?: string;
 };
 
 export type PostTag = {
-    id: string;
+    id?: string;
     name?: string;
     slug?: string;
     visibility?: string;
@@ -44,7 +47,7 @@ export type PostListFields = {
     primary_author?: PostAuthor | null;
     tags?: PostTag[];
     primary_tag?: PostTag | null;
-    tiers?: Array<{id: string; name?: string}>;
+    tiers?: object[];
 };
 
 export type Post = {

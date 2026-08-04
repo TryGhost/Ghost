@@ -41,6 +41,9 @@ describe("Posts list data", () => {
     // The filter bar mounts with the screen and probes these to resolve any
     // author/tag slug in the URL into a name.
     beforeEach(() => {
+        // The metric columns batch these for the rows on screen.
+        fakeAdminEndpoint("POST", "/stats/posts-visitor-counts/", {stats: [{data: {visitor_counts: {}}}]});
+        fakeAdminEndpoint("POST", "/stats/posts-member-counts/", {stats: [{data: {member_counts: {}}}]});
         fakeTags([]);
         fakeUsers([]);
         fakeAdminEndpoint("GET", /^\/tags\/\?.*slug/, { tags: [] });
