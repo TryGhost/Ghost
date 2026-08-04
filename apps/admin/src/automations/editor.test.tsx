@@ -114,7 +114,7 @@ type MockEditMutationOptions = {
     onSuccess?: (data: AutomationDetailResponseType) => void;
     onError?: (error?: unknown) => void;
 };
-const mockUseReadAutomation = vi.fn<(...args: unknown[]) => {data?: AutomationDetailResponseType; isLoading?: boolean; isFetching?: boolean; isError?: boolean}>();
+const mockUseReadAutomation = vi.fn<(...args: unknown[]) => {data?: AutomationDetailResponseType; isLoading?: boolean; isFetching?: boolean; isError?: boolean; isFetchedAfterMount?: boolean}>();
 const mockUseBrowseAutomationActionLinks = vi.fn<(...args: unknown[]) => {data?: AutomationActionLinksResponseType; isLoading: boolean; isError: boolean}>();
 const mockEditMutation = {
     mutate: vi.fn<(payload: EditAutomationPayload, options: MockEditMutationOptions) => void>(),
@@ -135,7 +135,10 @@ vi.mock('@tryghost/admin-x-framework/api/automations', async () => {
     );
     return {
         ...actual,
-        useReadAutomation: (...args: unknown[]) => mockUseReadAutomation(...args),
+        useReadAutomation: (...args: unknown[]) => ({
+            isFetchedAfterMount: true,
+            ...mockUseReadAutomation(...args)
+        }),
         useBrowseAutomationActionLinks: (...args: unknown[]) => mockUseBrowseAutomationActionLinks(...args),
         useEditAutomation: () => mockEditMutation
     };
@@ -379,7 +382,8 @@ describe('AutomationEditor', () => {
         mockUseReadAutomation.mockReturnValue({
             data: {automations: [cachedAutomation]},
             isLoading: false,
-            isFetching: true,
+            isFetching: false,
+            isFetchedAfterMount: false,
             isError: false
         });
 
@@ -396,6 +400,7 @@ describe('AutomationEditor', () => {
             data: {automations: [automationDetail]},
             isLoading: false,
             isFetching: false,
+            isFetchedAfterMount: true,
             isError: false
         });
         await rerenderEditorRoute(router);
@@ -442,6 +447,7 @@ describe('AutomationEditor', () => {
                     data: {automations: [automationB]},
                     isLoading: false,
                     isFetching: true,
+                    isFetchedAfterMount: false,
                     isError: false
                 };
             }
@@ -450,6 +456,7 @@ describe('AutomationEditor', () => {
                 data: {automations: [aResponse === 'fresh' ? freshA : initialA]},
                 isLoading: false,
                 isFetching: aResponse === 'fetching',
+                isFetchedAfterMount: aResponse !== 'fetching',
                 isError: false
             };
         });

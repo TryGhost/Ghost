@@ -1,8 +1,9 @@
 import AutomationCanvas, {EMAIL_STEP_QUERY_PARAM} from './components/canvas/automation-canvas';
 import AutomationHeader from './components/automation-header';
+import {useAutomationForEditing} from './hooks/use-automation-for-editing';
 import React from 'react';
 import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Button, type ButtonProps, LoadingIndicator} from '@tryghost/shade/components';
-import {useEditAutomation, useReadAutomation} from '@tryghost/admin-x-framework/api/automations';
+import {useEditAutomation} from '@tryghost/admin-x-framework/api/automations';
 import type {AutomationDetail, AutomationStatus} from '@tryghost/admin-x-framework/api/automations';
 import {dequal} from 'dequal';
 import {isEmptyEmailLexical} from './utils';
@@ -49,12 +50,7 @@ const getActionErrors = (automation: AutomationDetail): Record<string, string> =
 };
 
 const AutomationEditor: React.FC<{id: string}> = ({id}) => {
-    const {data, isFetching: isFetchingAutomation, isError} = useReadAutomation(id, {
-        defaultErrorHandler: false,
-        refetchOnMount: 'always'
-    });
-    const automation = data?.automations[0];
-    const freshAutomation = !isFetchingAutomation && !isError && automation?.id === id ? automation : undefined;
+    const {automation, isError} = useAutomationForEditing(id);
 
     const editMutation = useEditAutomation();
     const [editState, setEditState] = React.useState<AutomationEditState>({phase: 'idle'});
@@ -64,16 +60,16 @@ const AutomationEditor: React.FC<{id: string}> = ({id}) => {
     const navigationBlockerReasonRef = React.useRef<'automation' | 'email' | null>(null);
     const isBlockedEmailNavigationLeavingEditorRef = React.useRef(false);
 
-    // Draft is the user-facing, locally mutable copy. Wait for the mount refetch to finish before
-    // seeding it so cached automation data can never become an editable stale draft.
+    // Draft is the user-facing, locally mutable copy. Seed it once so later query updates cannot
+    // overwrite edits made during this editing session.
     const [draft, setDraft] = React.useState<AutomationDetail | undefined>(undefined);
     React.useEffect(() => {
-        if (!freshAutomation) {
+        if (!automation) {
             return;
         }
 
-        setDraft(currentDraft => currentDraft ?? freshAutomation);
-    }, [freshAutomation]);
+        setDraft(currentDraft => currentDraft ?? automation);
+    }, [automation]);
     const isEditorLoading = !draft && !isError;
 
     // Only compare the fields the user can edit; server-stamped fields like `updated_at` would
