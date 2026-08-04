@@ -47,6 +47,9 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
     // Scheduled times read in the site's timezone, not the browser's.
     const timezone = getSettingValue<string>(settingsData?.settings, 'timezone') ?? undefined;
     const isContributor = Boolean(currentUser && isContributorUser(currentUser));
+    // Ember's `isAdmin` — Owner or Administrator. Decides whether a row's
+    // trailing button offers Analytics, and whether views can be saved.
+    const isAdmin = Boolean(currentUser && hasAdminAccess(currentUser));
 
     const settings = settingsData?.settings ?? null;
     const metricsSettings = {
@@ -58,6 +61,7 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
         isMembersInviteOnly: getSettingValue<string>(settings, 'members_signup_access') === 'invite',
         isContributor
     };
+    const paidMembersEnabled = getSettingValue<boolean>(settings, 'paid_members_enabled') === true;
 
     // The save/edit-view affordance: admins only, posts only, not while a
     // default view is active, and only with something actually filtered.
@@ -69,8 +73,7 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
         ...view, route: 'posts'
     }], params));
     const canManageView = canSavePostView({
-        // hasAdminAccess, not isAdminUser: Ember's isAdmin includes the Owner.
-        isAdmin: Boolean(currentUser && hasAdminAccess(currentUser)),
+        isAdmin,
         resource,
         params,
         isDefaultView: isOnDefaultView
@@ -165,9 +168,11 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
                                     {items.map(item => (
                                         <PostListRow
                                             key={item.id}
+                                            hasAdminAccess={isAdmin}
                                             isContributor={isContributor}
                                             memberCounts={memberCounts}
                                             metricsSettings={metricsSettings}
+                                            paidMembersEnabled={paidMembersEnabled}
                                             post={item}
                                             resource={resource}
                                             timezone={timezone}

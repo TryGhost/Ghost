@@ -54,7 +54,10 @@ export interface Post {
     authors?: unknown[];
     count?: {clicks: number; positive_feedback: number; negative_feedback: number};
     /** Only present when the request includes `email`; set for posts sent as an email. */
-    email?: {email_count: number; opened_count: number; status?: string} | null;
+    // `track_opens`/`track_clicks` are per-email, not per-site: an email sent
+    // before the setting changed keeps the flags it went out with, and that is
+    // what decides whether the Opens/Clicks columns show.
+    email?: {email_count: number; opened_count: number; status?: string; track_opens?: boolean; track_clicks?: boolean} | null;
     /** Only present when the request includes `newsletter`; the newsletter the email went to. */
     newsletter?: {id: string; feedback_enabled?: boolean} | null;
     created_at: string;

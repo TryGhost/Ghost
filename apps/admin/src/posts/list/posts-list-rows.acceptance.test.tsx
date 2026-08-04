@@ -85,7 +85,7 @@ describe("Posts list rows", () => {
         fakePosts([target]);
         await renderAdminApp("/posts", FLAG_ON);
 
-        await expect.element(postsListScreen.listItems().first().getByRole("link"))
+        await expect.element(postsListScreen.rowLink().first())
             .toHaveAttribute("href", `#/editor/post/${target.id}`);
     });
 
@@ -106,7 +106,7 @@ describe("Posts list rows", () => {
             fakePosts([target]);
             await renderAdminApp("/posts?type=published", asContributor());
 
-            const link = postsListScreen.listItems().first().getByRole("link");
+            const link = postsListScreen.rowLink().first();
             await expect.element(link).toHaveAttribute("href", "https://example.com/live-post/");
             await expect.element(link).toHaveAttribute("target", "_blank");
         });
@@ -118,7 +118,7 @@ describe("Posts list rows", () => {
             fakePosts([target]);
             await renderAdminApp("/posts?type=sent", asContributor());
 
-            await expect.element(postsListScreen.listItems().first().getByRole("link"))
+            await expect.element(postsListScreen.rowLink().first())
                 .toHaveAttribute("href", `#/editor/post/${target.id}`);
         });
 
@@ -127,7 +127,7 @@ describe("Posts list rows", () => {
             fakePosts([target]);
             await renderAdminApp("/posts?type=draft", asContributor());
 
-            await expect.element(postsListScreen.listItems().first().getByRole("link"))
+            await expect.element(postsListScreen.rowLink().first())
                 .toHaveAttribute("href", `#/editor/post/${target.id}`);
         });
     });
@@ -137,7 +137,7 @@ describe("Posts list rows", () => {
         fakePages([target]);
         await renderAdminApp("/pages", FLAG_ON);
 
-        await expect.element(postsListScreen.listItems().first().getByRole("link"))
+        await expect.element(postsListScreen.rowLink().first())
             .toHaveAttribute("href", `#/editor/page/${target.id}`);
     });
 });
@@ -197,5 +197,128 @@ describe("Posts list empty states", () => {
         await renderAdminApp("/posts?order=published_at+asc", FLAG_ON);
 
         await expect.element(postsListScreen.emptyCold()).toBeVisible();
+    });
+
+    /**
+     * The trailing button. Which of the three it is depends on the post *and*
+     * the signed-in role, and getting it wrong sends people somewhere they
+     * can't act — a contributor into an editor they have no rights to, or an
+     * author to an analytics screen they can't open.
+     */
+});
+
+describe("Posts list trailing action button", () => {
+    beforeEach(() => {
+        fakeAdminEndpoint("POST", "/stats/posts-visitor-counts/", {stats: [{data: {visitor_counts: {}}}]});
+        fakeAdminEndpoint("POST", "/stats/posts-member-counts/", {stats: [{data: {member_counts: {}}}]});
+        fakeTags([]);
+        fakeUsers([]);
+        fakeAdminEndpoint("GET", /^\/tags\/\?.*slug/, { tags: [] });
+        fakeAdminEndpoint("GET", /^\/users\/\?.*slug/, { users: [] });
+    });
+
+    const settingsWithTracking = {
+        settings: [
+            { key: "email_track_opens", value: true },
+            { key: "members_signup_access", value: "all" }
+        ]
+    };
+
+    const emailedPost = post({
+        title: "A sent post",
+        status: "published",
+        email: { opened_count: 5, email_count: 10, track_opens: true, track_clicks: false }
+    });
+
+    function asRole(name: "Administrator" | "Author" | "Contributor", slug: string) {
+        const me = currentUserResponse();
+        me.users[0].roles = [staffRole({ name })];
+        me.users[0].slug = slug;
+        return { ...FLAG_ON, boot: { browseMe: { response: me } } };
+    }
+
+    it("goes to analytics for an admin on a post with newsletter engagement", async () => {
+        fakeAdminEndpoint("GET", /^\/settings\//, settingsWithTracking);
+        fakePosts([emailedPost]);
+        await renderAdminApp("/posts?type=published", asRole("Administrator", "admin-user"));
+
+        const action = postsListScreen.rowAction().first();
+        await expect.element(action).toHaveAccessibleName("Go to Analytics");
+        await expect.element(action).toHaveAttribute("href", `#/posts/analytics/${emailedPost.id}`);
+    });
+
+    // Same post, lesser role: Ember gates the analytics screen on isAdmin.
+    it("falls back to the editor for an author", async () => {
+        fakeAdminEndpoint("GET", /^\/settings\//, settingsWithTracking);
+        fakePosts([emailedPost]);
+        await renderAdminApp("/posts?type=published", asRole("Author", "an-author"));
+
+        const action = postsListScreen.rowAction().first();
+        await expect.element(action).toHaveAccessibleName("Go to Editor");
+        await expect.element(action).toHaveAttribute("href", `#/editor/post/${emailedPost.id}`);
+    });
+
+    it("links a contributor out to the live post", async () => {
+        const published = post({ title: "Live one", status: "published", url: "https://example.com/live/" });
+        fakePosts([published]);
+        await renderAdminApp("/posts?type=published", asRole("Contributor", "a-contributor"));
+
+        const action = postsListScreen.rowAction().first();
+        await expect.element(action).toHaveAccessibleName("View post");
+        await expect.element(action).toHaveAttribute("href", "https://example.com/live/");
+        await expect.element(action).toHaveAttribute("target", "_blank");
+    });
+
+    it("goes to the editor on a page, which has no analytics screen", async () => {
+        const page = post({ title: "About", status: "published" });
+        fakePages([page]);
+        await renderAdminApp("/pages?type=published", asRole("Administrator", "admin-user"));
+
+        const action = postsListScreen.rowAction().first();
+        await expect.element(action).toHaveAccessibleName("Go to Editor");
+        await expect.element(action).toHaveAttribute("href", `#/editor/page/${page.id}`);
+    });
+});
+
+/**
+ * The hover panel is the whole visible half of the metrics feature, and until
+ * now nothing rendered it: the contents were asserted against the pure
+ * `getPostMetricTooltip`, so the trigger could have stopped cloning onto the
+ * anchor, or the portal could have broken, with every test still green.
+ */
+describe("Posts list metric hover panels", () => {
+    beforeEach(() => {
+        fakeAdminEndpoint("POST", "/stats/posts-visitor-counts/", {stats: [{data: {visitor_counts: {}}}]});
+        fakeAdminEndpoint("POST", "/stats/posts-member-counts/", {stats: [{data: {member_counts: {}}}]});
+        fakeTags([]);
+        fakeUsers([]);
+        fakeAdminEndpoint("GET", /^\/tags\/\?.*slug/, { tags: [] });
+        fakeAdminEndpoint("GET", /^\/users\/\?.*slug/, { users: [] });
+    });
+
+    it("opens the newsletter breakdown on hovering a metric", async () => {
+        fakeAdminEndpoint("GET", /^\/settings\//, {
+            settings: [
+                { key: "email_track_opens", value: true },
+                { key: "members_signup_access", value: "all" }
+            ]
+        });
+        fakePosts([post({
+            title: "A sent post",
+            status: "published",
+            email: { opened_count: 60, email_count: 200, track_opens: true, track_clicks: false }
+        })]);
+        await renderAdminApp("/posts?type=published", FLAG_ON);
+
+        // The column shows the rate; the panel underneath shows raw counts.
+        await expect.element(postsListScreen.metricCell("Opens")).toHaveTextContent("30%");
+        await postsListScreen.metricCell("Opens").hover();
+
+        const panel = postsListScreen.metricPanel();
+        await expect.element(panel).toBeVisible();
+        await expect.element(panel).toHaveTextContent("Newsletter performance");
+        await expect.element(panel).toHaveTextContent("Sent");
+        await expect.element(panel).toHaveTextContent("200");
+        await expect.element(panel).toHaveTextContent("60");
     });
 });
