@@ -10,37 +10,48 @@ export type AutomationRequestState = 'idle' | 'loading' | 'error';
 interface AutomationHeaderProps {
     automation: AutomationDetail | undefined;
     isLoadingAutomation: boolean;
+    hasUnsavedChanges: boolean;
     isSaveButtonEnabled: boolean;
     isPublishButtonEnabled: boolean;
+    isUnpublishButtonEnabled: boolean;
+    isDiscardButtonEnabled: boolean;
     saveButtonVariant: ButtonProps['variant'];
-    publishButtonVariant: ButtonProps['variant'];
-    isTurnOffButtonEnabled: boolean;
     saveButtonChildren: React.ReactNode;
-    publishButtonChildren: React.ReactNode;
     onSave: () => void;
     onPublish: () => void;
-    onTurnOff: () => void;
+    onUnpublish: () => void;
+    onDiscard: () => void;
 }
 
 const AutomationHeader: React.FC<AutomationHeaderProps> = ({
     automation,
     isLoadingAutomation,
+    hasUnsavedChanges,
     isSaveButtonEnabled,
     isPublishButtonEnabled,
+    isUnpublishButtonEnabled,
+    isDiscardButtonEnabled,
     saveButtonVariant,
-    publishButtonVariant,
-    isTurnOffButtonEnabled,
     saveButtonChildren,
-    publishButtonChildren,
     onSave,
     onPublish,
-    onTurnOff
+    onUnpublish,
+    onDiscard
 }) => {
     const name = automation?.name;
     const status = automation?.status;
+    const isActive = status === 'active';
+    const isInactive = status === 'inactive';
 
+    // Which actions belong in the header is driven purely by status × unsaved changes:
+    //   LIVE  · clean   → Unpublish
+    //   LIVE  · unsaved → Unsaved indicator · Discard · Publish
+    //   OFF   · clean   → Publish
+    //   OFF   · unsaved → Unsaved indicator · Discard · Save · Publish
+    // The disabled placeholder button the old header always rendered (e.g. a greyed "Published")
+    // is gone; each state now shows only the actions it can actually perform.
     return (
-        <header className='relative z-10 flex h-14 shrink-0 items-center justify-between bg-surface-elevated px-4 shadow-sm dark:border-b dark:border-gray-950'>
+        <header className='relative z-10 flex shrink-0 items-center justify-between bg-surface-elevated px-6 py-5 shadow-sm dark:border-b dark:border-gray-950'>
             <div className='flex min-w-0 items-center gap-3'>
                 <Button variant='ghost' asChild>
                     <Link aria-label='Back to automations' to='/automations'>
@@ -57,17 +68,34 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
                 )}
             </div>
             <div className='flex shrink-0 items-center gap-3'>
-                {status === 'active' && (
-                    <Button
-                        disabled={!isTurnOffButtonEnabled}
-                        variant='outline'
-                        onClick={onTurnOff}
+                {hasUnsavedChanges && (
+                    <span
+                        className='flex items-center gap-1.5 text-sm text-text-secondary'
+                        data-testid='automation-unsaved-indicator'
                     >
-                        <LucideIcon.Power />
-                        Turn off
+                        <LucideIcon.AlertTriangle className='size-4 shrink-0' strokeWidth={2} />
+                        Unsaved changes
+                    </span>
+                )}
+                {isActive && !hasUnsavedChanges && (
+                    <Button
+                        disabled={!isUnpublishButtonEnabled}
+                        variant='outline'
+                        onClick={onUnpublish}
+                    >
+                        Unpublish
                     </Button>
                 )}
-                {status === 'inactive' && (
+                {hasUnsavedChanges && (
+                    <Button
+                        disabled={!isDiscardButtonEnabled}
+                        variant='outline'
+                        onClick={onDiscard}
+                    >
+                        Discard
+                    </Button>
+                )}
+                {isInactive && hasUnsavedChanges && (
                     <Button
                         disabled={!isSaveButtonEnabled}
                         variant={saveButtonVariant}
@@ -76,13 +104,15 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
                         {saveButtonChildren}
                     </Button>
                 )}
-                <Button
-                    disabled={!isPublishButtonEnabled}
-                    variant={publishButtonVariant}
-                    onClick={onPublish}
-                >
-                    {publishButtonChildren}
-                </Button>
+                {(isInactive || hasUnsavedChanges) && (
+                    <Button
+                        disabled={!isPublishButtonEnabled}
+                        variant='default'
+                        onClick={onPublish}
+                    >
+                        Publish
+                    </Button>
+                )}
             </div>
         </header>
     );

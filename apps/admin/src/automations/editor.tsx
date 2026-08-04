@@ -197,25 +197,25 @@ const AutomationEditor: React.FC = () => {
     let saveButtonVariant: ButtonProps['variant'] = 'outline';
     let saveButtonChildren: React.ReactNode = 'Save';
     let isPublishButtonEnabled = !!draft && draft.actions.length > 0 && (draft.status === 'inactive' || hasUnsavedChanges);
-    const publishButtonVariant: ButtonProps['variant'] = 'default';
-    const publishButtonChildren: React.ReactNode = draft?.status === 'active'
-        ? (hasUnsavedChanges ? 'Publish changes' : 'Published')
-        : 'Publish';
-    let isTurnOffButtonEnabled = true;
-    let turnOffButtonChildren: React.ReactNode = 'Turn off';
+    let isUnpublishButtonEnabled = true;
+    let isDiscardButtonEnabled = hasUnsavedChanges;
     let isPublishConfirmButtonEnabled = true;
     let publishConfirmButtonVariant: ButtonProps['variant'] = 'default';
     let publishConfirmButtonChildren: React.ReactNode = 'Publish';
     let isRepublishButtonEnabled = true;
     let republishButtonVariant: ButtonProps['variant'] = 'default';
     let republishButtonChildren: React.ReactNode = 'Publish changes';
+    let isUnpublishConfirmButtonEnabled = true;
+    let unpublishConfirmButtonVariant: ButtonProps['variant'] = 'default';
+    let unpublishConfirmButtonChildren: React.ReactNode = 'Unpublish';
     switch (editState.phase) {
     case 'idle':
         break;
     case 'submitting':
         isSaveButtonEnabled = false;
         isPublishButtonEnabled = false;
-        isTurnOffButtonEnabled = false;
+        isUnpublishButtonEnabled = false;
+        isDiscardButtonEnabled = false;
 
         switch (editState.action) {
         case 'save':
@@ -245,10 +245,11 @@ const AutomationEditor: React.FC = () => {
             );
             break;
         case 'unpublish':
-            turnOffButtonChildren = (
+            isUnpublishConfirmButtonEnabled = false;
+            unpublishConfirmButtonChildren = (
                 <>
                     <LoadingIndicator color='light' size='sm' />
-                    <span className='sr-only'>Turning off...</span>
+                    <span className='sr-only'>Unpublishing...</span>
                 </>
             );
             break;
@@ -259,15 +260,18 @@ const AutomationEditor: React.FC = () => {
         case 'publish':
             isSaveButtonEnabled = false;
             isPublishButtonEnabled = false;
+            isDiscardButtonEnabled = false;
             break;
         case 'republish':
             isPublishButtonEnabled = false;
-            isTurnOffButtonEnabled = false;
+            isUnpublishButtonEnabled = false;
+            isDiscardButtonEnabled = false;
             break;
         case 'unpublish':
             isSaveButtonEnabled = false;
             isPublishButtonEnabled = false;
-            isTurnOffButtonEnabled = false;
+            isUnpublishButtonEnabled = false;
+            isDiscardButtonEnabled = false;
             break;
         }
         break;
@@ -285,13 +289,13 @@ const AutomationEditor: React.FC = () => {
             break;
         case 'republish':
             isPublishButtonEnabled = false;
-            isTurnOffButtonEnabled = false;
+            isUnpublishButtonEnabled = false;
             republishButtonVariant = 'destructive';
             republishButtonChildren = 'Retry';
             break;
         case 'unpublish':
-            isTurnOffButtonEnabled = true;
-            turnOffButtonChildren = 'Retry';
+            unpublishConfirmButtonVariant = 'destructive';
+            unpublishConfirmButtonChildren = 'Retry';
             break;
         }
         break;
@@ -368,6 +372,29 @@ const AutomationEditor: React.FC = () => {
         }
     };
 
+    const onDiscard = (): void => {
+        if (!automation || !hasUnsavedChanges) {
+            return;
+        }
+
+        // Revert to server truth (last published config when live, last saved draft when off) and
+        // offer a one-tap undo rather than an interstitial confirm — the click is already deliberate.
+        const discardedDraft = draft;
+        setDraft(automation);
+        setActionErrors({});
+        setEditState({phase: 'idle'});
+        toast('Changes discarded', {
+            action: {
+                label: 'Undo',
+                onClick: () => {
+                    if (discardedDraft) {
+                        setDraft(discardedDraft);
+                    }
+                }
+            }
+        });
+    };
+
     useConfirmUnload(isEditRequestActive || hasUnsavedChanges || isEmailModalDirty);
     const navigationBlocker = useBlocker(({currentLocation, nextLocation}) => {
         const currentEmailStep = new URLSearchParams(currentLocation.search).get(EMAIL_STEP_QUERY_PARAM);
@@ -406,17 +433,18 @@ const AutomationEditor: React.FC = () => {
         <div className='fixed inset-0 z-50 flex flex-col bg-background' data-testid='automation-editor'>
             <AutomationHeader
                 automation={draft}
+                hasUnsavedChanges={hasUnsavedChanges}
+                isDiscardButtonEnabled={isDiscardButtonEnabled}
                 isLoadingAutomation={isEditorLoading}
                 isPublishButtonEnabled={isPublishButtonEnabled}
                 isSaveButtonEnabled={isSaveButtonEnabled}
-                isTurnOffButtonEnabled={isTurnOffButtonEnabled}
-                publishButtonChildren={publishButtonChildren}
-                publishButtonVariant={publishButtonVariant}
+                isUnpublishButtonEnabled={isUnpublishButtonEnabled}
                 saveButtonChildren={saveButtonChildren}
                 saveButtonVariant={saveButtonVariant}
+                onDiscard={onDiscard}
                 onPublish={onPublish}
                 onSave={() => save()}
-                onTurnOff={() => setEditState({phase: 'confirming', action: 'unpublish'})}
+                onUnpublish={() => setEditState({phase: 'confirming', action: 'unpublish'})}
             />
 
             <AutomationCanvas
@@ -498,7 +526,7 @@ const AutomationEditor: React.FC = () => {
             >
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Turn off automation?</AlertDialogTitle>
+                        <AlertDialogTitle>Unpublish automation?</AlertDialogTitle>
                         <AlertDialogDescription>
                             Your automation will no longer run, and any members currently in progress will be removed.
                         </AlertDialogDescription>
@@ -506,11 +534,11 @@ const AutomationEditor: React.FC = () => {
                     <AlertDialogFooter>
                         <AlertDialogCancel disabled={isEditRequestActive}>Cancel</AlertDialogCancel>
                         <Button
-                            disabled={isEditRequestActive}
-                            variant={editState.phase === 'failed' && editState.action === 'unpublish' ? 'destructive' : 'default'}
+                            disabled={!isUnpublishConfirmButtonEnabled}
+                            variant={unpublishConfirmButtonVariant}
                             onClick={() => save('inactive')}
                         >
-                            {turnOffButtonChildren}
+                            {unpublishConfirmButtonChildren}
                         </Button>
                     </AlertDialogFooter>
                 </AlertDialogContent>

@@ -5,7 +5,10 @@ import {Controls, useReactFlow, useViewport} from '@xyflow/react';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 
 const VIEWPORT_ANIMATION_DURATION = 180;
-const ZOOM_PRESETS = [1.5, 1, 0.75, 0.5, 0.25];
+// Zoom is capped at 100% (default view) down to 50% on the canvas — there's no need to zoom past the
+// default, only to pull back slightly. Keep these presets within that range so the menu never offers
+// a level the canvas will silently clamp.
+const ZOOM_PRESETS = [1, 0.75, 0.5];
 
 export const AutomationCanvasControls: React.FC = () => {
     const [open, setOpen] = useState(false);

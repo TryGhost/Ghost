@@ -10,9 +10,11 @@ import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {createRoot} from 'react-dom/client';
 import {flushSync} from 'react-dom';
 
-const {mockToastError} = vi.hoisted(() => ({
-    mockToastError: vi.fn()
-}));
+const {mockToast, mockToastError} = vi.hoisted(() => {
+    const toastError = vi.fn();
+    const toast = Object.assign(vi.fn(), {error: toastError});
+    return {mockToast: toast, mockToastError: toastError};
+});
 
 const NON_EMPTY_EMAIL_LEXICAL = '{"root":{"children":[{"type":"paragraph","children":[{"type":"text","text":"Welcome email body"}]}]}}';
 
@@ -32,9 +34,7 @@ const createAppSettings = (analyticsOverrides: Partial<AppSettings['analytics']>
 let mockAppSettings: AppSettings | undefined;
 
 vi.mock('sonner', () => ({
-    toast: {
-        error: mockToastError
-    }
+    toast: mockToast
 }));
 
 // Stub the email content editor modal — its real internals (Koenig + email API
@@ -347,6 +347,7 @@ describe('AutomationEditor', () => {
         mockViewportZoom = 1;
         mockEditMutation.isLoading = false;
         mockEditMutation.variables = undefined;
+        mockToast.mockReset();
         mockToastError.mockReset();
         mockLabs.current = {};
         mockAppSettings = createAppSettings();
@@ -362,7 +363,7 @@ describe('AutomationEditor', () => {
         renderEditor();
 
         expect(screen.getByTestId('automation-canvas-loading')).toBeInTheDocument();
-        expect(screen.getByRole('button', {name: 'Publish'})).toBeDisabled();
+        expect(screen.queryByRole('button', {name: 'Publish'})).not.toBeInTheDocument();
     });
 
     it('renders the error banner when the read query fails', () => {
@@ -733,11 +734,11 @@ describe('AutomationEditor', () => {
 
         fireEvent.pointerDown(screen.getByRole('button', {name: 'Zoom level 75%'}), {button: 0, ctrlKey: false});
 
-        expect(screen.getByRole('menuitem', {name: '150%'})).toBeInTheDocument();
         expect(screen.getByRole('menuitem', {name: '100%'})).toBeInTheDocument();
         expect(screen.getByRole('menuitem', {name: '75%'})).toBeInTheDocument();
         expect(screen.getByRole('menuitem', {name: '50%'})).toBeInTheDocument();
-        expect(screen.getByRole('menuitem', {name: '25%'})).toBeInTheDocument();
+        expect(screen.queryByRole('menuitem', {name: '150%'})).not.toBeInTheDocument();
+        expect(screen.queryByRole('menuitem', {name: '25%'})).not.toBeInTheDocument();
         expect(screen.getByRole('menuitem', {name: 'Fit to view'})).toBeInTheDocument();
         expect(screen.getByRole('menuitem', {name: '75%'}).querySelector('svg')).toBeInTheDocument();
     });
@@ -752,9 +753,9 @@ describe('AutomationEditor', () => {
         renderEditor();
 
         fireEvent.pointerDown(screen.getByRole('button', {name: 'Zoom level 100%'}), {button: 0, ctrlKey: false});
-        fireEvent.click(screen.getByRole('menuitem', {name: '150%'}));
+        fireEvent.click(screen.getByRole('menuitem', {name: '50%'}));
 
-        expect(mockReactFlow.zoomTo).toHaveBeenCalledWith(1.5, {duration: 180});
+        expect(mockReactFlow.zoomTo).toHaveBeenCalledWith(0.5, {duration: 180});
 
         fireEvent.pointerDown(screen.getByRole('button', {name: 'Zoom level 100%'}), {button: 0, ctrlKey: false});
         fireEvent.click(screen.getByRole('menuitem', {name: 'Fit to view'}));
@@ -1089,7 +1090,7 @@ describe('AutomationEditor', () => {
         fireEvent.change(subjectInput, {target: {value: 'Updated subject'}});
         fireEvent.blur(subjectInput);
 
-        const publish = screen.getByRole('button', {name: 'Publish changes'});
+        const publish = screen.getByRole('button', {name: 'Publish'});
         expect(publish).toBeEnabled();
         fireEvent.click(publish);
 
@@ -1139,7 +1140,7 @@ describe('AutomationEditor', () => {
         fireEvent.click(screen.getByTestId('modal-close'));
 
         // Publishing persists the edited content.
-        fireEvent.click(screen.getByRole('button', {name: 'Publish changes'}));
+        fireEvent.click(screen.getByRole('button', {name: 'Publish'}));
         const dialog = screen.getByRole('alertdialog', {name: 'Update your automation?'});
         fireEvent.click(within(dialog).getByRole('button', {name: 'Publish changes'}));
         expect(mockEditMutation.mutate).toHaveBeenCalledWith(
@@ -1226,9 +1227,9 @@ describe('AutomationEditor', () => {
         fireEvent.change(waitInput, {target: {value: '3'}});
 
         expect(screen.getByRole('button', {name: 'Wait: 3 days'})).toBeInTheDocument();
-        expect(screen.getByRole('button', {name: 'Publish changes'})).toBeEnabled();
+        expect(screen.getByRole('button', {name: 'Publish'})).toBeEnabled();
 
-        fireEvent.click(screen.getByRole('button', {name: 'Publish changes'}));
+        fireEvent.click(screen.getByRole('button', {name: 'Publish'}));
         const dialog = screen.getByRole('alertdialog', {name: 'Update your automation?'});
         fireEvent.click(within(dialog).getByRole('button', {name: 'Publish changes'}));
 
@@ -1289,7 +1290,7 @@ describe('AutomationEditor', () => {
             expect(waitInput).toHaveAttribute('aria-invalid', 'true');
             expect(waitInput).toHaveAttribute('aria-describedby', 'automation-wait-days-error');
             expect(within(sidebar).getByText('Enter a delay between 1 and 30 days')).toBeInTheDocument();
-            expect(screen.getByRole('button', {name: 'Published'})).toBeDisabled();
+            expect(screen.queryByRole('button', {name: 'Publish'})).not.toBeInTheDocument();
         }
     });
 
@@ -1330,7 +1331,7 @@ describe('AutomationEditor', () => {
         expect(waitStep).toHaveAttribute('aria-pressed', 'false');
     });
 
-    it('disables the publish button when the read query fails', () => {
+    it('hides the publish button when the read query fails', () => {
         mockUseReadAutomation.mockReturnValue({
             data: undefined,
             isLoading: false,
@@ -1339,7 +1340,7 @@ describe('AutomationEditor', () => {
 
         renderEditor();
 
-        expect(screen.getByRole('button', {name: 'Publish'})).toBeDisabled();
+        expect(screen.queryByRole('button', {name: 'Publish'})).not.toBeInTheDocument();
     });
 
     it('disables the publish button when the automation has no actions', () => {
@@ -1475,7 +1476,7 @@ describe('AutomationEditor', () => {
         expect(screen.queryByText('Add a subject line and email body.')).not.toBeInTheDocument();
     });
 
-    it('shows the Turn off button for active automations', () => {
+    it('shows the Unpublish button for active automations', () => {
         mockUseReadAutomation.mockReturnValue({
             data: {automations: [automationDetail]},
             isLoading: false,
@@ -1484,12 +1485,12 @@ describe('AutomationEditor', () => {
 
         renderEditor();
 
-        expect(screen.getByRole('button', {name: 'Turn off'})).toBeInTheDocument();
-        expect(screen.getByRole('button', {name: 'Published'})).toBeDisabled();
+        expect(screen.getByRole('button', {name: 'Unpublish'})).toBeInTheDocument();
+        expect(screen.queryByRole('button', {name: 'Publish'})).not.toBeInTheDocument();
         expect(screen.queryByRole('button', {name: 'Save'})).not.toBeInTheDocument();
     });
 
-    it('hides the Turn off button for inactive automations', () => {
+    it('hides the Unpublish button for inactive automations', () => {
         mockUseReadAutomation.mockReturnValue({
             data: {automations: [{...automationDetail, status: 'inactive'}]},
             isLoading: false,
@@ -1498,7 +1499,7 @@ describe('AutomationEditor', () => {
 
         renderEditor();
 
-        expect(screen.queryByRole('button', {name: 'Turn off'})).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', {name: 'Unpublish'})).not.toBeInTheDocument();
     });
 
     it('disables the modal button and shows loading UI while a publish request is in flight', async () => {
@@ -1530,12 +1531,12 @@ describe('AutomationEditor', () => {
 
         renderEditor();
 
-        fireEvent.click(screen.getByRole('button', {name: 'Turn off'}));
+        fireEvent.click(screen.getByRole('button', {name: 'Unpublish'}));
         const dialog = await screen.findByRole('alertdialog');
-        fireEvent.click(within(dialog).getByRole('button', {name: 'Turn off'}));
+        fireEvent.click(within(dialog).getByRole('button', {name: 'Unpublish'}));
 
         expect(screen.getByRole('button', {name: 'Cancel'})).toBeDisabled();
-        const turnOff = screen.getByRole('button', {name: 'Turning off...'});
+        const turnOff = screen.getByRole('button', {name: 'Unpublishing...'});
         expect(turnOff).toBeDisabled();
         expect(turnOff.querySelector('.animate-spin')).toBeInTheDocument();
     });
@@ -1576,11 +1577,11 @@ describe('AutomationEditor', () => {
 
         renderEditor();
 
-        fireEvent.click(screen.getByRole('button', {name: 'Turn off'}));
+        fireEvent.click(screen.getByRole('button', {name: 'Unpublish'}));
 
         const dialog = await screen.findByRole('alertdialog');
-        expect(within(dialog).getByText('Turn off automation?')).toBeInTheDocument();
-        fireEvent.click(within(dialog).getByRole('button', {name: 'Turn off'}));
+        expect(within(dialog).getByText('Unpublish automation?')).toBeInTheDocument();
+        fireEvent.click(within(dialog).getByRole('button', {name: 'Unpublish'}));
 
         expect(mockEditMutation.mutate).toHaveBeenCalledWith(
             {
@@ -1593,7 +1594,7 @@ describe('AutomationEditor', () => {
         );
     });
 
-    it('disables the Turn off confirmation button and shows loading UI while unpublishing', async () => {
+    it('disables the Unpublish confirmation button and shows loading UI while unpublishing', async () => {
         mockUseReadAutomation.mockReturnValue({
             data: {automations: [automationDetail]},
             isLoading: false,
@@ -1602,11 +1603,11 @@ describe('AutomationEditor', () => {
 
         renderEditor();
 
-        fireEvent.click(screen.getByRole('button', {name: 'Turn off'}));
+        fireEvent.click(screen.getByRole('button', {name: 'Unpublish'}));
         const dialog = await screen.findByRole('alertdialog');
-        fireEvent.click(within(dialog).getByRole('button', {name: 'Turn off'}));
+        fireEvent.click(within(dialog).getByRole('button', {name: 'Unpublish'}));
 
-        const button = screen.getByRole('button', {name: 'Turning off...'});
+        const button = screen.getByRole('button', {name: 'Unpublishing...'});
         expect(button).toBeDisabled();
         expect(button.querySelector('.animate-spin')).toBeInTheDocument();
     });
@@ -1623,14 +1624,14 @@ describe('AutomationEditor', () => {
 
         renderEditor();
 
-        fireEvent.click(screen.getByRole('button', {name: 'Turn off'}));
+        fireEvent.click(screen.getByRole('button', {name: 'Unpublish'}));
         const dialog = await screen.findByRole('alertdialog');
-        fireEvent.click(within(dialog).getByRole('button', {name: 'Turn off'}));
+        fireEvent.click(within(dialog).getByRole('button', {name: 'Unpublish'}));
 
         const button = await screen.findByRole('button', {name: 'Retry'});
         expect(button).not.toBeDisabled();
         expect(button).toHaveClass('bg-destructive');
-        expect(screen.getByText('Turn off automation?')).toBeInTheDocument();
+        expect(screen.getByText('Unpublish automation?')).toBeInTheDocument();
         expect(screen.queryByText(/Couldn.t turn off automation/)).not.toBeInTheDocument();
     });
 
@@ -1646,13 +1647,67 @@ describe('AutomationEditor', () => {
 
         renderEditor();
 
-        fireEvent.click(screen.getByRole('button', {name: 'Turn off'}));
+        fireEvent.click(screen.getByRole('button', {name: 'Unpublish'}));
         const dialog = await screen.findByRole('alertdialog');
-        fireEvent.click(within(dialog).getByRole('button', {name: 'Turn off'}));
+        fireEvent.click(within(dialog).getByRole('button', {name: 'Unpublish'}));
 
         await waitFor(() => {
-            expect(screen.queryByText('Turn off automation?')).not.toBeInTheDocument();
+            expect(screen.queryByText('Unpublish automation?')).not.toBeInTheDocument();
         });
+    });
+
+    it('shows an unsaved-changes indicator and Discard when an active automation has local edits', async () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        await stageLocalEdit();
+
+        expect(screen.getByTestId('automation-unsaved-indicator')).toBeInTheDocument();
+        expect(screen.getByRole('button', {name: 'Discard'})).toBeInTheDocument();
+        expect(screen.getByRole('button', {name: 'Publish'})).toBeInTheDocument();
+        expect(screen.queryByRole('button', {name: 'Unpublish'})).not.toBeInTheDocument();
+    });
+
+    it('shows Discard, Save, and Publish when an inactive automation has local edits', async () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [{...automationDetail, status: 'inactive'}]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        await stageLocalEdit();
+
+        expect(screen.getByTestId('automation-unsaved-indicator')).toBeInTheDocument();
+        expect(screen.getByRole('button', {name: 'Discard'})).toBeInTheDocument();
+        expect(screen.getByRole('button', {name: 'Save'})).toBeInTheDocument();
+        expect(screen.getByRole('button', {name: 'Publish'})).toBeInTheDocument();
+    });
+
+    it('discards local edits and shows an undo toast when Discard is clicked', async () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        await stageLocalEdit();
+        expect(screen.getByTestId('automation-unsaved-indicator')).toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('button', {name: 'Discard'}));
+
+        expect(mockToast).toHaveBeenCalledWith('Changes discarded', expect.objectContaining({
+            action: expect.objectContaining({label: 'Undo'}) as unknown
+        }));
+        expect(screen.queryByTestId('automation-unsaved-indicator')).not.toBeInTheDocument();
     });
 
     it('links the back button to the automations list', () => {
@@ -1903,7 +1958,7 @@ describe('AutomationEditor', () => {
         expect(insertedNode).toHaveAttribute('aria-pressed', 'true');
         expect(screen.getAllByText('1 day')).toHaveLength(2);
         // Adding a step flips the editor into a dirty state.
-        expect(screen.getByRole('button', {name: 'Publish changes'})).toBeEnabled();
+        expect(screen.getByRole('button', {name: 'Publish'})).toBeEnabled();
     });
 
     it('inserts a send_email step with default values when picked from the tail', async () => {
@@ -1931,7 +1986,7 @@ describe('AutomationEditor', () => {
         expect(within(sidebar).getByRole('heading', {name: 'Untitled'})).toHaveClass('opacity-50');
         expect(within(sidebar).getByPlaceholderText('Subject line')).toHaveFocus();
         expect(within(sidebar).getByPlaceholderText('Subject line')).toHaveValue('');
-        expect(screen.getByRole('button', {name: 'Publish changes'})).toBeEnabled();
+        expect(screen.getByRole('button', {name: 'Publish'})).toBeEnabled();
     });
 
     it('shows a toast and highlights email steps with missing content when publishing fails validation', async () => {
@@ -2118,8 +2173,8 @@ describe('AutomationEditor', () => {
         // Sidebar closes after delete.
         expect(screen.queryByRole('complementary', {name: 'Step details'})).not.toBeInTheDocument();
 
-        // Active automation with a structural change → "Publish changes" enabled.
-        expect(screen.getByRole('button', {name: 'Publish changes'})).toBeEnabled();
+        // Active automation with a structural change → "Publish" enabled.
+        expect(screen.getByRole('button', {name: 'Publish'})).toBeEnabled();
     });
 
     it('asks for confirmation before deleting a send email step', () => {
@@ -2223,7 +2278,7 @@ describe('AutomationEditor', () => {
         expect(edgePairs).toEqual([['__trigger__', '__tail__']]);
     });
 
-    it('enables Publish changes when the user adds a step locally', async () => {
+    it('enables Publish when the user adds a step locally', async () => {
         mockUseReadAutomation.mockReturnValue({
             data: {automations: [automationDetail]},
             isLoading: false,
@@ -2232,13 +2287,13 @@ describe('AutomationEditor', () => {
 
         renderEditor();
 
-        expect(screen.getByRole('button', {name: 'Published'})).toBeDisabled();
+        expect(screen.queryByRole('button', {name: 'Publish'})).not.toBeInTheDocument();
 
         fireEvent.click(screen.getByTestId('add-step-tail-button'));
         const picker = await screen.findByTestId('step-picker');
         fireEvent.click(within(picker).getByText('Wait'));
 
-        expect(screen.getByRole('button', {name: 'Publish changes'})).toBeEnabled();
+        expect(screen.getByRole('button', {name: 'Publish'})).toBeEnabled();
     });
 
     it('publishes structural changes and clears dirty state when Publish succeeds', async () => {
@@ -2289,8 +2344,10 @@ describe('AutomationEditor', () => {
         // Three actions now: the original wait + send_email + the locally-added wait.
         expect(mutateCall.actions).toHaveLength(3);
 
-        // After publish the draft matches the response, so the button settles on Published + disabled.
-        expect(screen.getByRole('button', {name: 'Published'})).toBeDisabled();
+        // After publish the draft matches the response (now active + clean), so the header settles on
+        // Unpublish with no Publish button.
+        expect(screen.getByRole('button', {name: 'Unpublish'})).toBeInTheDocument();
+        expect(screen.queryByRole('button', {name: 'Publish'})).not.toBeInTheDocument();
     });
 
     it('replaces the tail + affordance with limit text when the action limit is reached', () => {
@@ -2361,8 +2418,9 @@ describe('AutomationEditor', () => {
 
         const {rerender, router} = renderEditor();
 
-        // Baseline: clean active automation → Published, disabled.
-        expect(screen.getByRole('button', {name: 'Published'})).toBeDisabled();
+        // Baseline: clean active automation → Unpublish shown, no Publish button.
+        expect(screen.getByRole('button', {name: 'Unpublish'})).toBeInTheDocument();
+        expect(screen.queryByRole('button', {name: 'Publish'})).not.toBeInTheDocument();
 
         // Simulate a focus-refetch that updates only `updated_at` (server-stamped, not user-editable).
         mockUseReadAutomation.mockReturnValue({
@@ -2372,7 +2430,9 @@ describe('AutomationEditor', () => {
         });
         rerender(<RouterProvider router={router} />);
 
-        expect(screen.getByRole('button', {name: 'Published'})).toBeDisabled();
+        // Still clean → Unpublish shown, no Publish button.
+        expect(screen.getByRole('button', {name: 'Unpublish'})).toBeInTheDocument();
+        expect(screen.queryByRole('button', {name: 'Publish'})).not.toBeInTheDocument();
     });
 
     it('adds three steps locally and publishes them all in the mutate payload', async () => {
@@ -2402,7 +2462,7 @@ describe('AutomationEditor', () => {
         await pickWaitAtTail();
         await pickWaitAtTail();
 
-        fireEvent.click(screen.getByRole('button', {name: 'Publish changes'}));
+        fireEvent.click(screen.getByRole('button', {name: 'Publish'}));
         const dialog = screen.getByRole('alertdialog', {name: 'Update your automation?'});
         fireEvent.click(within(dialog).getByRole('button', {name: 'Publish changes'}));
 
@@ -2430,7 +2490,7 @@ describe('AutomationEditor', () => {
 
         await stageLocalEdit();
 
-        fireEvent.click(screen.getByRole('button', {name: 'Publish changes'}));
+        fireEvent.click(screen.getByRole('button', {name: 'Publish'}));
 
         const dialog = screen.getByRole('alertdialog', {name: 'Update your automation?'});
         expect(within(dialog).getByText(/apply immediately/)).toBeInTheDocument();
@@ -2459,14 +2519,14 @@ describe('AutomationEditor', () => {
         renderEditor();
 
         await stageLocalEdit();
-        fireEvent.click(screen.getByRole('button', {name: 'Publish changes'}));
+        fireEvent.click(screen.getByRole('button', {name: 'Publish'}));
 
         expect(screen.queryByRole('alertdialog', {name: 'Update your automation?'})).not.toBeInTheDocument();
         expect(mockEditMutation.mutate).not.toHaveBeenCalled();
         expect(mockToastError).toHaveBeenCalledWith('Automation needs a few details', {
             description: 'Fix the highlighted steps and try again.'
         });
-        expect(screen.getByRole('button', {name: 'Publish changes'})).toBeEnabled();
+        expect(screen.getByRole('button', {name: 'Publish'})).toBeEnabled();
 
         const emailStep = screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'});
         expect(emailStep).toHaveAttribute('aria-invalid', 'true');
@@ -2483,7 +2543,7 @@ describe('AutomationEditor', () => {
         renderEditor();
 
         await stageLocalEdit();
-        fireEvent.click(screen.getByRole('button', {name: 'Publish changes'}));
+        fireEvent.click(screen.getByRole('button', {name: 'Publish'}));
 
         let dialog = screen.getByRole('alertdialog', {name: 'Update your automation?'});
         fireEvent.click(within(dialog).getByRole('button', {name: 'Publish changes'}));
@@ -2507,7 +2567,7 @@ describe('AutomationEditor', () => {
         renderEditor();
 
         await stageLocalEdit();
-        fireEvent.click(screen.getByRole('button', {name: 'Publish changes'}));
+        fireEvent.click(screen.getByRole('button', {name: 'Publish'}));
 
         const dialog = screen.getByRole('alertdialog', {name: 'Update your automation?'});
         fireEvent.click(within(dialog).getByRole('button', {name: 'Publish changes'}));
@@ -2547,17 +2607,18 @@ describe('AutomationEditor', () => {
         expect(screen.getByRole('button', {name: 'Publish'})).toBeEnabled();
     });
 
-    it('publish-button label: active + clean reads "Published" and is disabled', () => {
+    it('publish-button label: active + clean shows Unpublish and no Publish button', () => {
         mockUseReadAutomation.mockReturnValue({
             data: {automations: [automationDetail]},
             isLoading: false,
             isError: false
         });
         renderEditor();
-        expect(screen.getByRole('button', {name: 'Published'})).toBeDisabled();
+        expect(screen.getByRole('button', {name: 'Unpublish'})).toBeInTheDocument();
+        expect(screen.queryByRole('button', {name: 'Publish'})).not.toBeInTheDocument();
     });
 
-    it('publish-button label: active + dirty reads "Publish changes" and is enabled', async () => {
+    it('publish-button label: active + dirty reads "Publish" and is enabled', async () => {
         mockUseReadAutomation.mockReturnValue({
             data: {automations: [automationDetail]},
             isLoading: false,
@@ -2565,7 +2626,7 @@ describe('AutomationEditor', () => {
         });
         renderEditor();
         await stageLocalEdit();
-        expect(screen.getByRole('button', {name: 'Publish changes'})).toBeEnabled();
+        expect(screen.getByRole('button', {name: 'Publish'})).toBeEnabled();
     });
 
     it('clears the failed publish state when the confirmation modal is dismissed', async () => {
