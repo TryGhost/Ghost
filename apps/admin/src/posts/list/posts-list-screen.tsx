@@ -47,6 +47,17 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
     const timezone = getSettingValue<string>(settingsData?.settings, 'timezone') ?? undefined;
     const isContributor = Boolean(currentUser && isContributorUser(currentUser));
 
+    const settings = settingsData?.settings ?? null;
+    const metricsSettings = {
+        webAnalyticsEnabled: getSettingValue<boolean>(settings, 'web_analytics_enabled') === true,
+        membersTrackSources: getSettingValue<boolean>(settings, 'members_track_sources') === true,
+        emailTrackOpens: getSettingValue<boolean>(settings, 'email_track_opens') === true,
+        emailTrackClicks: getSettingValue<boolean>(settings, 'email_track_clicks') === true,
+        membersSignupAccess: getSettingValue<string>(settings, 'members_signup_access') ?? 'all',
+        isMembersInviteOnly: getSettingValue<string>(settings, 'members_signup_access') === 'invite',
+        isContributor
+    };
+
     // The save/edit-view affordance: admins only, posts only, not while a
     // default view is active, and only with something actually filtered.
     const savedViews = usePostViews();
@@ -146,6 +157,7 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
                                         <PostListRow
                                             key={item.id}
                                             isContributor={isContributor}
+                                            metricsSettings={metricsSettings}
                                             post={item}
                                             resource={resource}
                                             timezone={timezone}
