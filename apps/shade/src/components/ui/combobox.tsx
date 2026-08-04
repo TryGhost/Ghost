@@ -2,7 +2,7 @@ import * as React from 'react';
 import {ChevronDown} from 'lucide-react';
 
 import {Popover, PopoverContent, PopoverTrigger} from '@/components/ui/popover';
-import {inputSurface} from '@/components/ui/input-surface';
+import {inputSurface, inputSurfaceClasses} from '@/components/ui/input-surface';
 import {cn} from '@/lib/utils';
 
 const Combobox = Popover;
@@ -16,6 +16,7 @@ const ComboboxTrigger = React.forwardRef<
             ref={ref}
             className={cn(
                 inputSurface('self'),
+                inputSurfaceClasses.disabledFieldSelf,
                 'flex h-(--control-height) w-full min-w-0 items-center justify-between px-3 text-control hover:bg-button-hover',
                 className
             )}

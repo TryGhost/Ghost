@@ -12,6 +12,8 @@ describe('Input Component', () => {
         
         assert.ok(input, 'Input should be rendered');
         assert.equal(input.tagName.toLowerCase(), 'input', 'Should be an input element');
+        assert.ok(input.className.includes('h-(--control-height)'), 'Should use the shared control height');
+        assert.ok(!input.className.includes('h-9'), 'Should not use a fixed height');
     });
 
     it('applies custom className correctly', () => {
@@ -36,7 +38,8 @@ describe('Input Component', () => {
         const input = screen.getByTestId('input');
         
         assert.ok(input.hasAttribute('disabled'), 'Input should be disabled');
-        assert.ok(input.className.includes('disabled:opacity-50'), 'Should have disabled styling');
+        assert.ok(input.className.includes('disabled:bg-control-disabled-surface'), 'Should have a disabled surface');
+        assert.ok(input.className.includes('disabled:text-muted-foreground'), 'Should keep disabled values readable');
     });
 
     it('passes type attribute correctly', () => {
@@ -69,4 +72,4 @@ describe('Input Component', () => {
         // Check that the component rendered
         assert.ok(input, 'Input should be rendered');
     });
-}); 
+});

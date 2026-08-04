@@ -2,6 +2,8 @@ import ConfirmationModal from '../../../confirmation-modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import {Button, Dropzone} from '@tryghost/shade/components';
+import {ExternalLink} from 'lucide-react';
+import {Inline} from '@tryghost/shade/primitives';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useImportContent} from '@tryghost/admin-x-framework/api/db';
@@ -16,10 +18,13 @@ const UniversalImportModal: React.FC = () => {
         <SettingsModal
             backDropClick={false}
             footer={
-                <div className='flex w-full items-center justify-between p-8'>
-                    <a className='text-green hover:text-green-400' href="https://docs.ghost.org/migration/ghost" rel='noopener noreferrer' target="_blank">Learn about importing</a>
-                    <Button className='font-semibold' disabled={uploading} type='button' variant='ghost' onClick={() => modal.remove()}>Cancel</Button>
-                </div>
+                <Inline align='center' className='w-full p-8' justify='between'>
+                    <a className='inline-flex items-center gap-1 text-green transition-colors hover:text-green-400' href="https://docs.ghost.org/migration/ghost" rel='noopener noreferrer' target="_blank">
+                        Learn more
+                        <ExternalLink aria-hidden='true' className='size-3' />
+                    </a>
+                    <Button disabled={uploading} type='button' variant='outline' onClick={() => modal.remove()}>Cancel</Button>
+                </Inline>
             }
             okLabel=''
             size='sm'

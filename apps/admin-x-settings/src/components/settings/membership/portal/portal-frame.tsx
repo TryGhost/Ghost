@@ -1,4 +1,5 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {Inline} from '@tryghost/shade/primitives';
 import {LoadingIndicator} from '@tryghost/shade/components';
 
 type PortalFrameProps = {
@@ -54,15 +55,15 @@ const PortalFrame: React.FC<PortalFrameProps> = ({href, onDestroyed, selectedTab
     let loaderVisibility = 'hidden';
 
     if (portalParent === 'preview') {
-        loaderClassNames = 'absolute z-50 mt-[-7%] flex h-screen items-center justify-center';
+        loaderClassNames = 'pointer-events-none absolute inset-0 z-50';
         loaderVisibility = 'invisible';
     } else if (portalParent === 'offers') {
-        loaderClassNames = 'absolute z-50 flex w-full h-full items-center justify-center';
+        loaderClassNames = 'absolute inset-0 z-50';
         loaderVisibility = 'invisible';
     }
 
     return (
-        <>{isInvisible && <div className={loaderClassNames}><span><LoadingIndicator size='lg' /></span></div>}
+        <>{isInvisible && <Inline align='center' className={loaderClassNames} justify='center'><LoadingIndicator size='lg' /></Inline>}
             <iframe
                 ref={iframeRef}
                 className={!isInvisible && hasLoaded ? '' : loaderVisibility}

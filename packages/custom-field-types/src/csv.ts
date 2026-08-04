@@ -1,5 +1,4 @@
-import {z} from 'zod';
-import {FIELD_TYPES, type FieldType} from './index.ts';
+import {subFieldsOf, type FieldType} from './index.ts';
 
 /**
  * How a field's value maps onto CSV columns.
@@ -34,13 +33,16 @@ export interface CsvField {
     type: FieldType;
 }
 
-function subFieldsOf(type: FieldType): string[] | null {
-    const {value} = FIELD_TYPES[type];
-    return value instanceof z.ZodObject ? Object.keys(value.shape) : null;
-}
-
 function toCell(value: unknown): string {
     return value === undefined || value === null ? '' : String(value);
+}
+
+// A cell holding nothing but whitespace carries no more data than an empty one, so both
+// read as blank. Without this a stray space is a value: it would be stored as one on a
+// scalar, and on a composite it would make an otherwise untouched address fail its "at
+// least one part filled in" rule and take the whole member row down with it.
+function isBlank(cell: string): boolean {
+    return cell.trim() === '';
 }
 
 // Shares csvCellsForFields' column derivation, so a field is written, read, and offered
@@ -99,7 +101,10 @@ export function csvCellsForFields(fields: readonly CsvField[], values: Record<st
  * note, so re-importing a partly-filled export can't wipe values a publisher didn't
  * touch. A composite whose every cell is blank is omitted too, because the export writes
  * "no address" and an all-blank address identically; one with any filled cell is read
- * from its non-blank cells and validated whole (a missing required sub-field fails).
+ * from its non-blank cells and validated whole (a malformed sub-field fails the row).
+ * No sub-field is required, so a row carrying only some of an address reads as only
+ * those sub-fields. A blank sub-field cell reads as no data for that sub-field, the
+ * same way a blank cell reads as no data for a whole field.
  */
 export function fieldValuesFromCsvRow(
     fields: readonly CsvField[],
@@ -118,7 +123,7 @@ export function fieldValuesFromCsvRow(
             const cell = row[column];
             if (typeof cell === 'string') {
                 const decoded = decodeCell(cell);
-                if (decoded !== '') {
+                if (!isBlank(decoded)) {
                     values[field.key] = decoded;
                 }
             }
@@ -129,12 +134,13 @@ export function fieldValuesFromCsvRow(
         const composite: Record<string, string> = {};
         for (const sub of subFields) {
             const cell = row[`${column}${SEPARATOR}${sub}`];
-            if (typeof cell === 'string') {
-                anyColumnPresent = true;
-                const decoded = decodeCell(cell);
-                if (decoded !== '') {
-                    composite[sub] = decoded;
-                }
+            if (typeof cell !== 'string') {
+                continue;
+            }
+            anyColumnPresent = true;
+            const decoded = decodeCell(cell);
+            if (!isBlank(decoded)) {
+                composite[sub] = decoded;
             }
         }
 

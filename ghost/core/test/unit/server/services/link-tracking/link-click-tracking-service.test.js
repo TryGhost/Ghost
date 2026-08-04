@@ -5,6 +5,8 @@ const ObjectID = require('bson-objectid').default;
 const PostLink = require('../../../../../core/server/services/link-tracking/post-link');
 const RedirectEvent = require('../../../../../core/server/services/link-redirection/redirect-event');
 const errors = require('@tryghost/errors');
+const nql = require('@tryghost/nql');
+const {escapeNqlString} = require('@tryghost/nql-string');
 
 describe('LinkClickTrackingService', function () {
     it('exists', function () {
@@ -402,6 +404,60 @@ describe('LinkClickTrackingService', function () {
 
             const [filterOptions] = linkRedirectServiceStub.getFilteredIds.firstCall.args;
             assert.equal(filterOptions.filter, 'post_id:\'1\'+to:\'https://example.com/path%2Ftestpath\'');
+        });
+
+        // A single quote is legal in a URL path and is the one hostile character
+        // that survives `new URL()` normalisation. The url is deserialised from
+        // NQL and then re-serialised back into NQL for getFilteredIds, so both
+        // hops have to escape it - otherwise the filter fails to parse and the
+        // edit silently no-ops.
+        //
+        // Only the two single-quote cases regress without the escaping. The `"`
+        // and `\` cases pass either way and are here to pin the normalisation
+        // that makes them harmless (`"` -> %22, `\` -> `/`), so if that ever
+        // changes it surfaces as a failure here rather than as a new way to
+        // break the filter in production.
+        [
+            {name: 'a single quote', url: 'https://example.com/foo-bar-baz/\'?ref=Test-newsletter'},
+            {name: 'several single quotes', url: 'https://example.com/a\'b\'c?ref=Test-newsletter'},
+            {name: 'a quote normalised out of the path', url: 'https://example.com/say"hi?ref=Test-newsletter'},
+            {name: 'a backslash normalised out of the path', url: 'https://example.com/path\\?ref=Test-newsletter'}
+        ].forEach(function ({name, url}) {
+            it(`rebuilds a parseable filter for a url containing ${name}`, async function () {
+                const linkRedirectServiceStub = {
+                    getFilteredIds: sinon.stub().resolves(['id1'])
+                };
+
+                const service = new LinkClickTrackingService({
+                    urlUtils: {
+                        absoluteToTransformReady: sinon.stub().returnsArg(0),
+                        isSiteUrl: sinon.stub().returns(false)
+                    },
+                    postLinkRepository: {
+                        updateLinks: sinon.stub().resolves({
+                            successful: 1,
+                            unsuccessful: 0,
+                            errors: [],
+                            unsuccessfulData: []
+                        })
+                    },
+                    linkRedirectService: linkRedirectServiceStub
+                });
+
+                await service.bulkEdit({
+                    action: 'updateLink',
+                    meta: {link: {to: 'https://example.com/fixed'}}
+                }, {
+                    filter: `post_id:'1'+to:${escapeNqlString(url)}`
+                });
+
+                const [filterOptions] = linkRedirectServiceStub.getFilteredIds.firstCall.args;
+
+                // the rebuilt filter must still parse, and must still select the
+                // url the service resolved rather than a truncated prefix of it
+                const parsed = nql(filterOptions.filter).parse();
+                assert.equal(parsed.$and[1].to, new URL(url).href);
+            });
         });
 
         //test for #parseLinkFilter method

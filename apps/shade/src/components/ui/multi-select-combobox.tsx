@@ -327,7 +327,7 @@ export function MultiSelectCombobox<T = unknown>({
                 {searchable && (
                     <div className="relative">
                         <CommandInput
-                            className={cn('h-(--control-height) pr-8 text-sm', searchInputClassName)}
+                            className={cn('h-(--control-height) pr-8', searchInputClassName)}
                             placeholder={i18n.searchPlaceholder}
                             value={searchInput}
                             onValueChange={updateSearchInput}

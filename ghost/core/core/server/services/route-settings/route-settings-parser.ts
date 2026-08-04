@@ -202,8 +202,8 @@ const routeObjectSchema = (path: PathSegment[]) => z.object({
             templates
         };
         // Preserve rss only when the author set it explicitly — the domain model
-        // mirrors user intent (unset vs true vs false), so the activation bridge
-        // reproduces validate.js output byte-for-byte.
+        // mirrors user intent (unset vs true vs false), so serializing never
+        // writes back an `rss` key the author never wrote.
         if (val.rss !== undefined) {
             route.rss = val.rss;
         }

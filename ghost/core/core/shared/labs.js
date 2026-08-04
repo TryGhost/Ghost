@@ -64,7 +64,6 @@ const PRIVATE_FEATURES = [
     'getHelperDeduplication',
     'memberDetailsReact',
     'membersCustomFields',
-    'previewByTier',
     'paywallImprovements',
     'giftSubCustomization'
 ];

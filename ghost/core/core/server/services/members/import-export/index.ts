@@ -31,7 +31,7 @@ interface ImporterServices {
         definitions: {browse(): Promise<CsvField[]>};
         values: {
             planWrite(values: Record<string, unknown>): Promise<unknown[]>;
-            applyWrite(memberId: string, plan: unknown[], executor: Knex): Promise<void>;
+            applyWrite(memberId: string, plan: unknown[], executor: Knex, options?: {mergeComposites?: boolean}): Promise<void>;
         };
     };
 }
@@ -81,7 +81,11 @@ export function makeImporter(deps: ImporterServices) {
     const customFields: CustomFieldsImport = {
         activeFields: async () => (labs.isSet('membersCustomFields') ? deps.customFields.definitions.browse() : []),
         planWrite: values => deps.customFields.values.planWrite(values),
-        applyWrite: (memberId, plan, executor) => deps.customFields.values.applyWrite(memberId, plan, executor)
+        // mergeComposites: a sub-field is a field, so a row writes the sub-fields it fills
+        // and leaves the rest alone, the same rule a blank `name` column follows. Without
+        // it a file naming one address column would replace the whole address, clearing
+        // five sub-fields it never mentioned.
+        applyWrite: (memberId, plan, executor) => deps.customFields.values.applyWrite(memberId, plan, executor, {mergeComposites: true})
     };
 
     return new MembersCSVImporter({

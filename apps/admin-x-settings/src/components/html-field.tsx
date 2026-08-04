@@ -2,6 +2,7 @@ import HtmlEditor, {type HtmlEditorProps} from './html-editor';
 import React from 'react';
 import clsx from 'clsx';
 import {FieldDescription, FieldLabel, inputSurface} from '@tryghost/shade/components';
+import {Stack} from '@tryghost/shade/primitives';
 
 export type HtmlFieldProps = HtmlEditorProps & {
     title?: string;
@@ -42,13 +43,13 @@ const HtmlField: React.FC<HtmlFieldProps> = ({
     );
 
     return (
-        <div className={`flex flex-col ${containerClassName}`}>
+        <Stack className={containerClassName} gap='none'>
             {title && <FieldLabel className={hideTitle ? 'sr-only' : undefined}>{title}</FieldLabel>}
             <div className={textFieldClasses}>
                 <HtmlEditor {...props} value={value} />
             </div>
-            {hint && <FieldDescription className={clsx('mt-1', error && 'text-destructive', hintClassName)}>{hint}</FieldDescription>}
-        </div>
+            {hint && <FieldDescription className={clsx('last:mt-2', error && 'text-destructive', hintClassName)}>{hint}</FieldDescription>}
+        </Stack>
     );
 };
 

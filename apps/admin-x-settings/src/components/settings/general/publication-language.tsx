@@ -83,7 +83,6 @@ const PublicationLanguage: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 <FieldLabel htmlFor='custom-locale'>Site language</FieldLabel>
                 <Input
                     aria-invalid={Boolean(errors.publicationLanguage || validationError) || undefined}
-                    className='border-transparent bg-muted'
                     data-testid='locale-select'
                     id='custom-locale'
                     placeholder='e.g. pt-BR, sr-Cyrl, en'

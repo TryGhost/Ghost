@@ -4,63 +4,9 @@ import {Check, ChevronDown, ChevronUp} from 'lucide-react';
 
 import {cn} from '@/lib/utils';
 import {SHADE_APP_NAMESPACES} from '@/shade-app';
-import {inputSurface} from '@/components/ui/input-surface';
-
-// Radix's Select dismisses via a document-level Escape listener. Legacy Admin
-// modals also listen on document, and their listener can run first because the
-// modal mounts before the Select content. Capture Escape while the Select is
-// open, close only the Select, and prevent the event reaching ancestor layers.
-type SelectRootProps = React.ComponentPropsWithoutRef<typeof SelectPrimitive.Root>;
-
-const Select: React.FC<SelectRootProps> = ({
-    open: controlledOpen,
-    defaultOpen,
-    onOpenChange,
-    children,
-    ...rest
-}) => {
-    const isControlled = controlledOpen !== undefined;
-    const [internalOpen, setInternalOpen] = React.useState(defaultOpen ?? false);
-    const open = isControlled ? controlledOpen : internalOpen;
-
-    const handleOpenChange = React.useCallback((next: boolean) => {
-        if (!isControlled) {
-            setInternalOpen(next);
-        }
-        onOpenChange?.(next);
-    }, [isControlled, onOpenChange]);
-
-    const handleOpenChangeRef = React.useRef(handleOpenChange);
-    React.useEffect(() => {
-        handleOpenChangeRef.current = handleOpenChange;
-    }, [handleOpenChange]);
-
-    React.useEffect(() => {
-        if (!open) {
-            return;
-        }
-        const handleEscape = (event: KeyboardEvent) => {
-            if (event.key !== 'Escape') {
-                return;
-            }
-            event.preventDefault();
-            event.stopPropagation();
-            handleOpenChangeRef.current(false);
-        };
-        document.addEventListener('keydown', handleEscape, {capture: true});
-        return () => document.removeEventListener('keydown', handleEscape, {capture: true});
-    }, [open]);
-
-    return (
-        <SelectPrimitive.Root
-            {...rest}
-            open={open}
-            onOpenChange={handleOpenChange}
-        >
-            {children}
-        </SelectPrimitive.Root>
-    );
-};
+import {inputSurface, inputSurfaceClasses} from '@/components/ui/input-surface';
+import {consumeOverlayEscape} from '@/lib/overlay-escape';
+const Select = SelectPrimitive.Root;
 
 const SelectGroup = SelectPrimitive.Group;
 
@@ -74,6 +20,7 @@ const SelectTrigger = React.forwardRef<
         ref={ref}
         className={cn(
             inputSurface('self'),
+            inputSurfaceClasses.disabledFieldSelf,
             'flex h-(--control-height) w-full items-center justify-between px-3 py-2 text-control whitespace-nowrap hover:bg-button-hover data-[placeholder]:text-muted-foreground [&>span]:line-clamp-1',
             className
         )}
@@ -124,7 +71,7 @@ SelectScrollDownButton.displayName = SelectPrimitive.ScrollDownButton.displayNam
 const SelectContent = React.forwardRef<
     React.ElementRef<typeof SelectPrimitive.Content>,
     React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
->(({className, children, position = 'popper', ...props}, ref) => (
+>(({className, children, onEscapeKeyDown, position = 'popper', ...props}, ref) => (
     <SelectPrimitive.Portal>
         <div className={SHADE_APP_NAMESPACES}>
             <SelectPrimitive.Content
@@ -135,6 +82,7 @@ const SelectContent = React.forwardRef<
                     className
                 )}
                 position={position}
+                onEscapeKeyDown={event => consumeOverlayEscape(event, onEscapeKeyDown)}
                 {...props}
             >
                 <SelectScrollUpButton />

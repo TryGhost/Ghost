@@ -2,8 +2,8 @@ import EmbedSignupPreview from './embed-signup-preview';
 import EmbedSignupSidebar, {type SelectedLabelTypes} from './embed-signup-sidebar';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import useSettingGroup from '../../../../hooks/use-setting-group';
+import {type EmbedSignupLayout, generateCode} from '../../../../utils/generate-embed-code';
 import {SettingsModal} from '@tryghost/shade/patterns';
-import {generateCode} from '../../../../utils/generate-embed-code';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/global-data-provider';
@@ -14,7 +14,7 @@ const EmbedSignupFormModal = NiceModal.create(() => {
 
     const [selectedColor, setSelectedColor] = useState<string>('#08090c');
     const [selectedLabels, setSelectedLabels] = useState<SelectedLabelTypes[]>([]);
-    const [selectedLayout, setSelectedLayout] = useState<string>('all-in-one');
+    const [selectedLayout, setSelectedLayout] = useState<EmbedSignupLayout>('all-in-one');
     const [previewScript, setPreviewScript] = useState<string>('');
     const [generatedScript, setGeneratedScript] = useState<string>('');
     const [isCopied, setIsCopied] = useState(false);
@@ -98,6 +98,7 @@ const EmbedSignupFormModal = NiceModal.create(() => {
                 updateRoute('embed-signup-form');
             }}
             cancelLabel=''
+            className='max-lg:h-auto!'
             footer={false}
             height={645}
             padding={false}
