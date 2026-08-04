@@ -18,6 +18,11 @@ export type Page = {
     count?: {
         clicks?: number;
     };
+    // Pages are never emailed, but the list reads these off both resources
+    // through one type, so they have to be addressable here too.
+    email_only?: boolean;
+    email_segment?: string;
+    newsletter?: object;
 } & PostListFields;
 
 export interface PagesResponseType {
