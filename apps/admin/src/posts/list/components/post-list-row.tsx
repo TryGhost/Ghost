@@ -7,7 +7,9 @@ import {
     getPostStatusDetail,
     getPostStatusLabel
 } from '@/posts/list/post-row-copy';
+import {PostMetricsCells} from '@/posts/list/components/post-metrics-cells';
 import {useState} from 'react';
+import type {PostMetricsSettings} from '@/posts/list/post-metrics';
 import type {PostListItem} from '@/posts/list/hooks/use-posts-list';
 import type {PostResource} from '@/posts/list/post-resource';
 
@@ -20,6 +22,7 @@ interface PostListRowProps {
      * published posts they can no longer edit.
      */
     isContributor?: boolean;
+    metricsSettings: PostMetricsSettings;
 }
 
 /**
@@ -72,7 +75,7 @@ function FeatureImage({post}: {post: PostListItem}) {
     );
 }
 
-export function PostListRow({post, resource, timezone, isContributor}: PostListRowProps) {
+export function PostListRow({post, resource, timezone, isContributor, metricsSettings}: PostListRowProps) {
     const [isHovered, setIsHovered] = useState(false);
 
     const metaParts = getPostMetaParts(post, {timezone});
@@ -137,6 +140,11 @@ export function PostListRow({post, resource, timezone, isContributor}: PostListR
                         {isHovered && statusDetail && <span> {statusDetail}</span>}
                     </Text>
                 </Stack>
+                <PostMetricsCells
+                    post={post}
+                    resource={resource}
+                    settings={metricsSettings}
+                />
             </a>
         </li>
     );
