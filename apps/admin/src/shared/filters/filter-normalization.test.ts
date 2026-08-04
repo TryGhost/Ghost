@@ -1,6 +1,7 @@
 import nqlLang from '@tryghost/nql-lang';
 import {describe, expect, it} from 'vitest';
-import {escapeNqlString, formatDateInTimezone, getDayBoundsInUtc} from './filter-normalization';
+import {escapeNqlString} from '@tryghost/nql-string';
+import {formatDateInTimezone, getDayBoundsInUtc} from './filter-normalization';
 
 describe('filter-normalization', () => {
     it('escapes single quotes for NQL strings', () => {
