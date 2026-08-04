@@ -1,5 +1,6 @@
 import {DATE_FILTER_OPERATORS} from './filter-date';
-import {escapeNqlString, formatDateInTimezone, getDayBoundsInUtc} from './filter-normalization';
+import {escapeNqlString} from '@tryghost/nql-string';
+import {formatDateInTimezone, getDayBoundsInUtc} from './filter-normalization';
 import {extractComparator} from './filter-ast';
 import type {FilterCodec} from './filter-types';
 

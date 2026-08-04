@@ -4,6 +4,7 @@ const PostLink = require('./post-link');
 const ObjectID = require('bson-objectid').default;
 const errors = require('@tryghost/errors');
 const nql = require('@tryghost/nql');
+const {escapeNqlString} = require('@tryghost/nql-string');
 const _ = require('lodash');
 const tpl = require('@tryghost/tpl');
 const moment = require('moment');
@@ -174,7 +175,11 @@ class LinkClickTrackingService {
 
         // manages transformation of current url to relative for comparision
         const transformedOldUrl = this.#urlUtils.absoluteToTransformReady(redirectUrl.href);
-        const filterQuery = `post_id:'${postId}'+to:'${transformedOldUrl}'`;
+        // the url is re-serialised into NQL here, so it needs escaping again -
+        // quotes are legal in a URL and would otherwise break the filter.
+        // postId is String()d because nql parses an unquoted `post_id:123` to a
+        // number, and escapeNqlString operates on strings
+        const filterQuery = `post_id:${escapeNqlString(String(postId))}+to:${escapeNqlString(transformedOldUrl)}`;
 
         const updatedFilterOptions = {
             ...filterOptions,

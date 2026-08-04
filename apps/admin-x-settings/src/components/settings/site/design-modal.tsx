@@ -181,7 +181,7 @@ const DesignModal: React.FC = () => {
         <PreviewChrome data-testid='preview-mobile' device='mobile'>{rawPreviewContent}</PreviewChrome>
     );
     const previewTabs = latestPost ? (
-        <Tabs value={selectedPreviewTab} variant='button-sm' onValueChange={onSelectURL}>
+        <Tabs value={selectedPreviewTab} variant='button' onValueChange={onSelectURL}>
             <TabsList>
                 <TabsTrigger value='homepage'>Homepage</TabsTrigger>
                 <TabsTrigger value='post'>Post</TabsTrigger>
@@ -189,7 +189,7 @@ const DesignModal: React.FC = () => {
         </Tabs>
     ) : undefined;
     const deviceSelector = (
-        <ToggleGroup type='single' value={previewDevice} onValueChange={(value) => {
+        <ToggleGroup size='default' type='single' value={previewDevice} onValueChange={(value) => {
             if (value === 'desktop' || value === 'mobile') {
                 setPreviewDevice(value);
             }

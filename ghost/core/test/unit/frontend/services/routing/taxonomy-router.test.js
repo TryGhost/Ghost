@@ -66,6 +66,17 @@ describe('UNIT - services/routing/TaxonomyRouter', function () {
         assert(taxonomyRouter.mountRoute.args[2][1].name.includes('_redirectEditOption'));
     });
 
+    it('converts a domain {slug} permalink to :slug notation', function () {
+        const taxonomyRouter = new TaxonomyRouter('tag', '/tag/{slug}/', {}, routerCreatedSpy);
+
+        // the router owns the {slug} -> :slug conversion via the permalink adapter
+        assert.equal(taxonomyRouter.getPermalinks().getValue(), '/tag/:slug/');
+
+        // and the express routes are mounted with :slug
+        assert.equal(taxonomyRouter.mountRoute.args[0][0], '/tag/:slug/');
+        assert.equal(taxonomyRouter.mountRoute.args[1][0], '/tag/:slug/page/:page(\\d+)');
+    });
+
     it('_prepareContext behaves as expected', function () {
         const taxonomyRouter = new TaxonomyRouter('tag', '/tag/:slug/', RESOURCE_CONFIG, routerCreatedSpy);
         taxonomyRouter._prepareContext(req, res, next);
@@ -76,7 +87,7 @@ describe('UNIT - services/routing/TaxonomyRouter', function () {
             name: 'tag',
             permalinks: '/tag/:slug/',
             resourceType: RESOURCE_CONFIG.QUERY.tag.resource,
-            data: {tag: RESOURCE_CONFIG.QUERY.tag},
+            data: {tag: {type: 'read', resource: RESOURCE_CONFIG.TAXONOMIES.tag.resource, slug: '%s'}},
             filter: RESOURCE_CONFIG.TAXONOMIES.tag.filter,
             context: ['tag'],
             slugTemplate: true,

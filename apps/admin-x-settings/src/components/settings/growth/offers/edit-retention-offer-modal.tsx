@@ -205,7 +205,7 @@ const RetentionOfferSidebar: React.FC<{
 
     return (
         <div className='flex grow flex-col pt-2'>
-            <FieldGroup className='mb-10 grow gap-8 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+            <FieldGroup className='mb-10 grow gap-8'>
                 <section>
                     <div className='flex flex-col gap-5 rounded-md border border-grey-300 p-4 pb-3.5 dark:border-grey-800'>
                         <div className='flex flex-col gap-1.5'>
@@ -255,7 +255,6 @@ const RetentionOfferSidebar: React.FC<{
                                 <Field>
                                     <FieldLabel htmlFor='retention-display-description'>Display description</FieldLabel>
                                     <Textarea
-                                        className='border-transparent bg-muted'
                                         id='retention-display-description'
                                         maxLength={MAX_DISPLAY_TEXT_LENGTH}
                                         placeholder='We&#39;d hate to see you leave. How about a special offer to stay?'
@@ -285,7 +284,7 @@ const RetentionOfferSidebar: React.FC<{
                                             const id = `${cadence}-retention-type-${option.value}`;
                                             return (
                                                 <Field key={option.value} orientation='horizontal'>
-                                                    <RadioGroupItem id={id} indicator='check' value={option.value} />
+                                                    <RadioGroupItem id={id} value={option.value} />
                                                     <FieldContent>
                                                         <FieldLabel className='cursor-pointer' htmlFor={id}>{option.title}</FieldLabel>
                                                         <FieldDescription>{option.description}</FieldDescription>
@@ -299,7 +298,7 @@ const RetentionOfferSidebar: React.FC<{
                                     <>
                                         <Field data-invalid={Boolean(errors.amount) || undefined}>
                                             <FieldLabel htmlFor='retention-amount'>Amount off</FieldLabel>
-                                            <InputGroup className='h-[var(--control-height)] border-transparent bg-muted' data-invalid={Boolean(errors.amount) || undefined}>
+                                            <InputGroup data-invalid={Boolean(errors.amount) || undefined}>
                                                 <InputGroupInput aria-invalid={Boolean(errors.amount) || undefined} id='retention-amount' type='number' value={formState.percentAmount === 0 ? '' : String(formState.percentAmount)} onChange={(e) => {
                                                 const nextValue = Number(e.target.value);
                                                 const safeValue = Number.isNaN(nextValue) ? 0 : nextValue;
@@ -324,7 +323,7 @@ const RetentionOfferSidebar: React.FC<{
                                         {formState.duration === 'repeating' && (
                                             <div className='-mt-4'>
                                                 <Field data-invalid={Boolean(errors.durationInMonths) || undefined}>
-                                                    <InputGroup className='h-[var(--control-height)] border-transparent bg-muted' data-invalid={Boolean(errors.durationInMonths) || undefined}>
+                                                    <InputGroup data-invalid={Boolean(errors.durationInMonths) || undefined}>
                                                         <InputGroupInput aria-invalid={Boolean(errors.durationInMonths) || undefined} data-testid='duration-months-input' type='number' value={formState.durationInMonths === 0 ? '' : String(formState.durationInMonths)} onChange={(e) => {
                                                         const nextValue = Number(e.target.value);
                                                         updateForm(state => ({...state, durationInMonths: Number.isNaN(nextValue) ? 0 : nextValue}));
@@ -340,7 +339,7 @@ const RetentionOfferSidebar: React.FC<{
                                 {formState.type === 'free_months' && (
                                     <Field data-invalid={Boolean(errors.amount) || undefined}>
                                         <FieldLabel htmlFor='retention-free-months'>Free months</FieldLabel>
-                                        <InputGroup className='h-[var(--control-height)] border-transparent bg-muted' data-invalid={Boolean(errors.amount) || undefined}>
+                                        <InputGroup data-invalid={Boolean(errors.amount) || undefined}>
                                             <InputGroupInput aria-invalid={Boolean(errors.amount) || undefined} id='retention-free-months' type='number' value={formState.freeMonths === 0 ? '' : String(formState.freeMonths)} onChange={(e) => {
                                             const nextValue = Number(e.target.value);
                                             updateForm(state => ({...state, freeMonths: Number.isNaN(nextValue) ? 0 : nextValue}));

@@ -14,6 +14,7 @@ import {transformPortalAnchorToRelative} from './utils/transform-portal-anchor-t
 import {getActivePage, isAccountPage, isOfferPage} from './pages';
 import ActionHandler from './actions';
 import {getGiftRedemptionErrorMessage} from './utils/gift-redemption-notification';
+import {GIFT_DURATION_CATALOGUE} from './utils/gift-subscriptions';
 import './app.css';
 import {hasRecommendations, arePaidMembersEnabled, createNotification, createPopupNotification, hasAvailablePrices, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isRetentionOffer, isComplimentaryMember, isInviteOnly, isPaidMember, isRecentMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
 import {validateHexColor} from './utils/sanitize-html';
@@ -597,7 +598,8 @@ export default class App extends React.Component {
             const token = qParams.get('gift_token');
             const tierId = qParams.get('gift_tier');
             const cadence = qParams.get('gift_cadence');
-            clearURLParams(['stripe', 'gift_token', 'gift_tier', 'gift_cadence']);
+            const duration = Number(qParams.get('gift_duration'));
+            clearURLParams(['stripe', 'gift_token', 'gift_tier', 'gift_cadence', 'gift_duration']);
             if (token) {
                 return {
                     showPopup: true,
@@ -605,7 +607,8 @@ export default class App extends React.Component {
                     pageData: {
                         token,
                         tierId,
-                        cadence
+                        cadence,
+                        duration: GIFT_DURATION_CATALOGUE.includes(duration) ? duration : null
                     }
                 };
             }

@@ -62,7 +62,7 @@ const SlackModal = NiceModal.create(() => {
             <div className='mt-7'>
                 <FieldSet className='gap-0'>
                     <FieldLegend className='mb-3 text-md! leading-supertight font-bold md:text-lg!'>Slack configuration</FieldLegend>
-                    <FieldGroup className='gap-8 rounded-sm border border-border-default p-4 md:p-7 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+                    <FieldGroup className='gap-8 rounded-sm border border-border-default p-4 md:p-7'>
                     <Field data-invalid={Boolean(errors.slackUrl) || undefined}>
                         <FieldLabel htmlFor='slack-webhook-url'>Webhook URL</FieldLabel>
                         <Input aria-invalid={Boolean(errors.slackUrl) || undefined} id='slack-webhook-url' placeholder='https://hooks.slack.com/services/...' value={slackUrl} onBlur={validate} onChange={e => updateSetting('slack_url', e.target.value)} onKeyDown={() => clearError('slackUrl')} />

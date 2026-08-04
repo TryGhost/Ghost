@@ -49,8 +49,8 @@ export interface GlobalSettingValues {
 const DEFAULT_FONT = 'Theme default';
 
 const FontOption: React.FC<{option: FontSelectOption, selected?: boolean}> = ({option, selected}) => (
-    <span className={`flex w-full gap-4 ${option.className ?? ''}`} data-testid={selected ? 'select-current-option' : 'select-option'} data-value={option.value}>
-        <span className='flex size-12 shrink-0 items-center justify-center rounded-md bg-surface-elevated text-2xl font-bold'>Aa</span>
+    <span className={`flex w-full items-center gap-4 ${option.className ?? ''}`} data-testid={selected ? 'select-current-option' : 'select-option'} data-value={option.value}>
+        <span className='flex size-12 shrink-0 items-center justify-center rounded-md border border-border-default bg-surface-elevated text-2xl font-bold shadow-xs'>Aa</span>
         <span className='flex min-w-0 flex-col'>
             <span className='text-md'>{option.label}</span>
             <span className='truncate font-sans text-sm font-normal text-muted-foreground'>{option.hint}</span>
@@ -304,7 +304,7 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
                             updateSetting('heading_font', value);
                         }
                     }}>
-                        <SelectTrigger aria-label='Heading font' className={`h-16 pl-2 ${selectFont(selectedHeadingFont.label, true)}`} data-testid='heading-font-select'>
+                        <SelectTrigger aria-label='Heading font' className={`h-16 pl-2 text-left ${selectFont(selectedHeadingFont.label, true)}`} data-testid='heading-font-select'>
                             <SelectValue><FontOption option={selectedHeadingFont} selected /></SelectValue>
                         </SelectTrigger>
                         <SelectContent>
@@ -323,7 +323,7 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
                             updateSetting('body_font', value);
                         }
                     }}>
-                        <SelectTrigger aria-label='Body font' className={`h-16 pl-2 ${selectFont(selectedBodyFont.label, false)}`} data-testid='body-font-select'>
+                        <SelectTrigger aria-label='Body font' className={`h-16 pl-2 text-left ${selectFont(selectedBodyFont.label, false)}`} data-testid='body-font-select'>
                             <SelectValue><FontOption option={selectedBodyFont} selected /></SelectValue>
                         </SelectTrigger>
                         <SelectContent className='max-h-52'>

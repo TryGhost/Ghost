@@ -45,7 +45,7 @@ export const WithAdditionalAction: Story = {
             <CopyFieldLabel>Admin API key</CopyFieldLabel>
             <CopyFieldContent>
                 <CopyFieldValue />
-                <CopyFieldActions>
+                <CopyFieldActions className="md:pointer-events-auto md:opacity-100">
                     <Button size="sm" type="button" variant="outline">Regenerate</Button>
                     <CopyFieldCopyButton />
                 </CopyFieldActions>

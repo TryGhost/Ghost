@@ -23,6 +23,12 @@ const SEARCH_MODE_RATE_LIMIT = isTesting ? 10_000 : 100;
 
 const STRIPE_API_VERSION = '2020-08-27';
 
+// Stripe's Managed Payments does not support Connect, and some Stripe
+// accounts have it enabled by default for all Checkout Sessions.
+// On those accounts, session creation fails with "Managed Payments cannot be
+// used with Connect" unless it is explicitly disabled per session.
+const MANAGED_PAYMENTS_DISABLED = {enabled: false};
+
 /**
  * @typedef {import('stripe').Stripe.Customer} ICustomer
  * @typedef {import('stripe').Stripe.DeletedCustomer} IDeletedCustomer
@@ -584,6 +590,7 @@ module.exports = class StripeAPI {
 
         let stripeSessionOptions = {
             payment_method_types: this.PAYMENT_METHOD_TYPES,
+            managed_payments: MANAGED_PAYMENTS_DISABLED,
             success_url: options.successUrl || this._config.checkoutSessionSuccessUrl,
             cancel_url: options.cancelUrl || this._config.checkoutSessionCancelUrl,
             // @ts-ignore - we need to update to latest stripe library to correctly use newer features
@@ -649,6 +656,7 @@ module.exports = class StripeAPI {
 
         const stripeSessionOptions = {
             mode: 'payment',
+            managed_payments: MANAGED_PAYMENTS_DISABLED,
             success_url: successUrl || this._config.checkoutSessionSuccessUrl,
             cancel_url: cancelUrl || this._config.checkoutSessionCancelUrl,
             automatic_tax: {
@@ -715,6 +723,7 @@ module.exports = class StripeAPI {
 
         const stripeSessionOptions = {
             mode: 'payment',
+            managed_payments: MANAGED_PAYMENTS_DISABLED,
             success_url: successUrl,
             cancel_url: cancelUrl,
             automatic_tax: {
@@ -761,6 +770,7 @@ module.exports = class StripeAPI {
         await this._rateLimitBucket.throttle();
         const session = await this._stripe.checkout.sessions.create({
             mode: 'setup',
+            managed_payments: MANAGED_PAYMENTS_DISABLED,
             payment_method_types: this.PAYMENT_METHOD_TYPES,
             success_url: options.successUrl || this._config.checkoutSetupSessionSuccessUrl,
             cancel_url: options.cancelUrl || this._config.checkoutSetupSessionCancelUrl,

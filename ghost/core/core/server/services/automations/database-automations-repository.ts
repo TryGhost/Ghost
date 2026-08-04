@@ -301,6 +301,15 @@ export function createDatabaseAutomationsRepository({
             }
 
             await knex.transaction(async (trx) => {
+                const revisionIds = new Set<string>();
+                for (const {openedAt, automationActionRevisionId} of eventsByAutomatedEmailRecipientId.values()) {
+                    if (openedAt) {
+                        revisionIds.add(automationActionRevisionId);
+                    }
+                }
+
+                const orderedRevisionIds = await lockActionRevisions(trx, revisionIds);
+
                 const notYetOpened = await lockNotYetOpened(trx, eventsByAutomatedEmailRecipientId);
                 const newOpensPerRevision = new Map<string, number>();
 
@@ -327,11 +336,11 @@ export function createDatabaseAutomationsRepository({
                     }
                 }
 
-                // Keep lock acquisition order consistent across concurrent transactions to avoid deadlocks.
-                const revisions = [...newOpensPerRevision.entries()]
-                    .sort(([left], [right]) => left.localeCompare(right));
-
-                for (const [id, opens] of revisions) {
+                for (const id of orderedRevisionIds) {
+                    const opens = newOpensPerRevision.get(id);
+                    if (!opens) {
+                        continue;
+                    }
                     await trx('automation_action_revisions')
                         .where({id})
                         .update({
@@ -343,12 +352,7 @@ export function createDatabaseAutomationsRepository({
 
         async trackEmailClicked({automationActionRevisionId, memberId, clickedAt}, {transacting} = {}) {
             const trackClick = async (trx: Knex.Transaction) => {
-                // Match recordEmailSent's lock order to avoid deadlocks.
-                await trx('automation_action_revisions')
-                    .select('id')
-                    .where({id: automationActionRevisionId})
-                    .forUpdate()
-                    .first();
+                await lockActionRevisions(trx, [automationActionRevisionId]);
 
                 const recipient = await trx('automated_email_recipients')
                     .select('id', 'clicked_at')
@@ -392,6 +396,29 @@ export function createDatabaseAutomationsRepository({
             await knex.transaction(trackClick);
         }
     };
+}
+
+/**
+ * Lock revisions before recipients because inserting a recipient takes a shared
+ * foreign-key lock on its revision. Updating that revision later can deadlock
+ * with another transaction that has already locked the revision and is waiting
+ * for the recipient. Keep multi-revision lock acquisition deterministic.
+ */
+async function lockActionRevisions(
+    trx: Knex.Transaction,
+    revisionIds: Iterable<string>
+): Promise<string[]> {
+    const sortedRevisionIds = [...new Set(revisionIds)]
+        .sort((left, right) => left.localeCompare(right));
+
+    if (sortedRevisionIds.length > 0) {
+        await trx('automation_action_revisions')
+            .select('id')
+            .whereIn('id', sortedRevisionIds)
+            .forUpdate();
+    }
+
+    return sortedRevisionIds;
 }
 
 /**

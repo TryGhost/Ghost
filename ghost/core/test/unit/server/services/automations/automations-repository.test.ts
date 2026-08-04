@@ -2109,6 +2109,40 @@ describe('automations repository', function () {
             assert.equal(updatedRevision.email_sent_count, 1);
         });
 
+        it('updates the action revision before inserting the recipient', async function () {
+            const revision = await knex('automation_action_revisions').select('id').first();
+            assert(revision);
+
+            const queries: string[] = [];
+            const recordQuery = ({sql}: {sql: string}) => queries.push(sql);
+            knex.on('query', recordQuery);
+
+            try {
+                await repo.recordEmailSent({
+                    automationActionRevisionId: revision.id,
+                    memberEmail: 'member@example.com',
+                    memberId: 'member-id',
+                    memberName: 'Test Member',
+                    memberUuid: '00000000-0000-4000-8000-000000000001',
+                    trackClicks: true,
+                    trackOpens: true
+                });
+            } finally {
+                knex.off('query', recordQuery);
+            }
+
+            const revisionUpdateIndex = queries.findIndex(sql => (
+                sql.startsWith('update') && sql.includes('automation_action_revisions')
+            ));
+            const recipientInsertIndex = queries.findIndex(sql => (
+                sql.startsWith('insert') && sql.includes('automated_email_recipients')
+            ));
+
+            assert.notEqual(revisionUpdateIndex, -1);
+            assert.notEqual(recipientInsertIndex, -1);
+            assert(revisionUpdateIndex < recipientInsertIndex);
+        });
+
         it('supports recipients without a Mailgun message ID', async function () {
             const revision = await knex('automation_action_revisions').select('id').first();
             assert(revision);
@@ -2266,8 +2300,8 @@ describe('automations repository', function () {
         });
 
         it('locks the action revision before selecting the recipient', async function () {
-            const queries: string[] = [];
-            const recordQuery = ({sql}: {sql: string}) => queries.push(sql);
+            const queries: Array<{sql: string; bindings: unknown[]}> = [];
+            const recordQuery = (query: {sql: string; bindings: unknown[]}) => queries.push(query);
             knex.on('query', recordQuery);
 
             try {
@@ -2276,14 +2310,16 @@ describe('automations repository', function () {
                 knex.off('query', recordQuery);
             }
 
-            const revisionSelect = queries.findIndex(query => (
-                query.startsWith('select') && query.includes('automation_action_revisions')
+            const revisionSelect = queries.findIndex(({sql}) => (
+                sql.startsWith('select') && sql.includes('automation_action_revisions')
             ));
-            const recipientSelect = queries.findIndex(query => (
-                query.startsWith('select') && query.includes('automated_email_recipients')
+            const recipientSelect = queries.findIndex(({sql}) => (
+                sql.startsWith('select') && sql.includes('automated_email_recipients')
             ));
 
             assert.notEqual(revisionSelect, -1);
+            assert.equal(queries[revisionSelect].sql.includes('where `id` in (?)'), true);
+            assert.deepEqual(queries[revisionSelect].bindings, [firstRevisionId]);
             assert.notEqual(recipientSelect, -1);
             assert(revisionSelect < recipientSelect);
         });
@@ -2503,6 +2539,51 @@ describe('automations repository', function () {
             }]);
             assert.equal(await getOpenedCount(firstRevisionId), null);
             assert.equal(await getOpenedCount(secondRevisionId), null);
+        });
+
+        it('locks unique action revisions in sorted order before locking recipients for opens', async function () {
+            const queries: Array<{sql: string; bindings: unknown[]}> = [];
+            const recordQuery = (query: {sql: string; bindings: unknown[]}) => queries.push(query);
+            knex.on('query', recordQuery);
+
+            try {
+                await repo.trackEmailDeliveredAndOpened(new Map([
+                    ['recipient-2', open(EARLIER, secondRevisionId)],
+                    ['recipient-3', open(EARLIER, firstRevisionId)],
+                    ['recipient-1', open(EARLIER, firstRevisionId)]
+                ]));
+            } finally {
+                knex.off('query', recordQuery);
+            }
+
+            const revisionLocks = queries.filter(({sql}) => (
+                sql.startsWith('select') && sql.includes('automation_action_revisions')
+            ));
+            const recipientLockIndex = queries.findIndex(({sql}) => (
+                sql.startsWith('select') && sql.includes('automated_email_recipients')
+            ));
+
+            assert.equal(revisionLocks.length, 1);
+            assert.equal(revisionLocks[0].sql.includes('where `id` in (?, ?)'), true);
+            assert.deepEqual(revisionLocks[0].bindings, [firstRevisionId, secondRevisionId]);
+            assert.notEqual(recipientLockIndex, -1);
+            assert(queries.indexOf(revisionLocks[0]) < recipientLockIndex);
+        });
+
+        it('does not lock action revisions for delivery-only events', async function () {
+            const queries: string[] = [];
+            const recordQuery = ({sql}: {sql: string}) => queries.push(sql);
+            knex.on('query', recordQuery);
+
+            try {
+                await repo.trackEmailDeliveredAndOpened(new Map([
+                    ['recipient-1', delivered(EARLIER, firstRevisionId)]
+                ]));
+            } finally {
+                knex.off('query', recordQuery);
+            }
+
+            assert.equal(queries.some(query => query.includes('automation_action_revisions')), false);
         });
 
         it('tracks delivers and opens, leaving untouched recipients alone', async function () {

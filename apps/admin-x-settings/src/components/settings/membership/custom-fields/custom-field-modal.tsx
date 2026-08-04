@@ -201,7 +201,7 @@ const CustomFieldModal = NiceModal.create<{field?: MemberCustomField}>(({field})
                 }
             }}
         >
-            <FieldGroup className='mt-10 gap-8 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+            <FieldGroup className='mt-10 gap-8'>
                 <Field data-invalid={Boolean(errors.name) || undefined}>
                     <FieldLabel htmlFor='custom-field-name'>Name</FieldLabel>
                     <Input aria-invalid={Boolean(errors.name) || undefined} autoComplete='off' id='custom-field-name' placeholder='Enter custom field name' value={formState.name} autoFocus onChange={e => updateForm(state => ({...state, name: e.target.value}))} onKeyDown={() => clearError('name')} />
