@@ -14,7 +14,15 @@ const VALUES_TABLE = 'members_custom_field_values';
 /** Matches the `members_custom_fields.key` column, so no key a site could hold is refused. */
 const MAX_KEY_LENGTH = 191;
 
-/** SQLite compiles a multi-row upsert into a compound SELECT and stops at 500 terms. */
+/**
+ * Rows per insert statement, bounded by knex rather than by either database. SQLite takes
+ * a multi-row `VALUES` perfectly well; knex's SQLite dialect emits that form only for a
+ * single row and compiles anything longer into `INSERT ... SELECT ? UNION ALL SELECT ?`,
+ * which SQLite refuses past 500 terms.
+ *
+ * Open as knex#721 since 2015, with an approved but unmerged fix in knex#5780. This can
+ * go when that lands; until then the alternative is hand-written upsert SQL per engine.
+ */
 const UPSERT_CHUNK = 400;
 
 /** Derived, not restated, so a column changing shape in `schema.ts` changes here too. */

@@ -4,8 +4,8 @@ const {addColumn, dropColumn, addUnique, dropUnique, addIndex, dropIndex} = requ
 
 const TABLE = 'members_custom_field_values';
 
-// Named because knex derives one from the table and all three columns, which comes to 65
-// characters, and MySQL stops at 64.
+// Named explicitly; the derived name would overrun MySQL's identifier limit, which
+// schema.test.js checks for every table.
 const LEAF_UNIQUE = 'members_custom_field_values_leaf_unique';
 
 // Values are discarded rather than converted: custom fields sit behind a private flag and

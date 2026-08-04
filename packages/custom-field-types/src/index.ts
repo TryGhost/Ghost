@@ -74,9 +74,9 @@ const postalCode = () => text().max(32);
 
 /**
  * The shape of an ISO 3166-1 alpha-2 code, deliberately not checked against the list of
- * them: a closed list would make Ghost the arbiter of whose country is real, and there is
- * no defensible answer for Kosovo, Taiwan, Palestine or Western Sahara. The collection
- * form can offer a list to pick from without this deciding what exists.
+ * them. Membership of that list is contested, and a closed list here would make Ghost the
+ * arbiter of it for every member of every site. The collection form can offer countries to
+ * pick from without this deciding which ones exist.
  *
  * Case is normalised so that `gb` and `GB` are not two values for one place, which a
  * filter for either would silently half-miss.
