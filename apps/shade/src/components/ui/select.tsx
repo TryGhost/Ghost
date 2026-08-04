@@ -5,6 +5,7 @@ import {Check, ChevronDown, ChevronUp} from 'lucide-react';
 import {cn} from '@/lib/utils';
 import {SHADE_APP_NAMESPACES} from '@/shade-app';
 import {inputSurface, inputSurfaceClasses} from '@/components/ui/input-surface';
+import {consumeOverlayEscape} from '@/lib/overlay-escape';
 const Select = SelectPrimitive.Root;
 
 const SelectGroup = SelectPrimitive.Group;
@@ -70,7 +71,7 @@ SelectScrollDownButton.displayName = SelectPrimitive.ScrollDownButton.displayNam
 const SelectContent = React.forwardRef<
     React.ElementRef<typeof SelectPrimitive.Content>,
     React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
->(({className, children, position = 'popper', ...props}, ref) => (
+>(({className, children, onEscapeKeyDown, position = 'popper', ...props}, ref) => (
     <SelectPrimitive.Portal>
         <div className={SHADE_APP_NAMESPACES}>
             <SelectPrimitive.Content
@@ -81,6 +82,7 @@ const SelectContent = React.forwardRef<
                     className
                 )}
                 position={position}
+                onEscapeKeyDown={event => consumeOverlayEscape(event, onEscapeKeyDown)}
                 {...props}
             >
                 <SelectScrollUpButton />

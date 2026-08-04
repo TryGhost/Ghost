@@ -4,6 +4,7 @@ import {useState} from 'react';
 import {beforeAll, describe, expect, it, vi} from 'vitest';
 
 import {SettingsModal} from '@/components/patterns/settings-modal';
+import {Combobox, ComboboxContent, ComboboxTrigger} from '@/components/ui/combobox';
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from '@/components/ui/dropdown-menu';
 import {Popover, PopoverContent, PopoverTrigger} from '@/components/ui/popover';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
@@ -37,6 +38,12 @@ const overlayCases = [
             <PopoverTrigger>Open popover</PopoverTrigger>
             <PopoverContent onEscapeKeyDown={onEscapeKeyDown}>Popover content</PopoverContent>
         </Popover>
+    )],
+    ['Combobox', ({onEscapeKeyDown, ...props}: OverlayProps) => (
+        <Combobox {...props}>
+            <ComboboxTrigger>Open combobox</ComboboxTrigger>
+            <ComboboxContent onEscapeKeyDown={onEscapeKeyDown}>Combobox content</ComboboxContent>
+        </Combobox>
     )]
 ] as const;
 
@@ -60,7 +67,7 @@ describe('nested overlay Escape behavior', () => {
             void NiceModal.show(TestModal);
         });
 
-        await screen.findByText(/Menu item|Option one|Popover content/);
+        await screen.findByText(/Menu item|Option one|Popover content|Combobox content/);
         fireEvent.keyDown(document, {key: 'Escape'});
 
         await waitFor(() => {
@@ -162,11 +169,43 @@ describe('nested overlay Escape behavior', () => {
         const onEscapeKeyDown = vi.fn();
 
         render(<Overlay defaultOpen onEscapeKeyDown={onEscapeKeyDown} onOpenChange={vi.fn()} />);
-        await screen.findByText(/Menu item|Option one|Popover content/);
+        await screen.findByText(/Menu item|Option one|Popover content|Combobox content/);
         fireEvent.keyDown(document, {key: 'Escape'});
 
         await waitFor(() => {
             expect(onEscapeKeyDown).toHaveBeenCalledOnce();
         });
+    });
+
+    it('keeps the modal open when a later document listener handles Escape', async () => {
+        const onCancel = vi.fn();
+        const TestModal = NiceModal.create(() => (
+            <SettingsModal title="Test modal" onCancel={onCancel}>
+                Modal content
+            </SettingsModal>
+        ));
+
+        render(<NiceModal.Provider />);
+        act(() => {
+            void NiceModal.show(TestModal);
+        });
+        await screen.findByText('Modal content');
+
+        const handleNestedEscape = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                event.preventDefault();
+            }
+        };
+        document.addEventListener('keydown', handleNestedEscape);
+        try {
+            fireEvent.keyDown(document, {key: 'Escape'});
+
+            await new Promise((resolve) => {
+                setTimeout(resolve);
+            });
+            expect(onCancel).not.toHaveBeenCalled();
+        } finally {
+            document.removeEventListener('keydown', handleNestedEscape);
+        }
     });
 });

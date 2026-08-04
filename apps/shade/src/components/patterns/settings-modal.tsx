@@ -176,7 +176,7 @@ const SettingsModal = forwardRef<HTMLElement, SettingsModalProps>(({
 
     useEffect(() => {
         const handleEscapeKey = (event: KeyboardEvent) => {
-            if (event.key !== 'Escape' || event.defaultPrevented) {
+            if (event.key !== 'Escape') {
                 return;
             }
 
@@ -185,19 +185,24 @@ const SettingsModal = forwardRef<HTMLElement, SettingsModalProps>(({
                 return;
             }
 
-            if (activeElement instanceof HTMLElement) {
-                activeElement.blur();
-            }
-
             setTimeout(() => {
+                // Radix layers may handle Escape from a document listener that
+                // was registered after this modal. Wait until propagation is
+                // complete before deciding whether the modal should close.
+                if (event.defaultPrevented) {
+                    return;
+                }
+
+                if (activeElement instanceof HTMLElement && document.activeElement === activeElement) {
+                    activeElement.blur();
+                }
+
                 if (onCancel) {
                     onCancel();
                 } else {
                     removeModal();
                 }
             });
-
-            event.stopPropagation();
         };
 
         document.addEventListener('keydown', handleEscapeKey);
