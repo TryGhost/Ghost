@@ -51,8 +51,9 @@ const getActionErrors = (automation: AutomationDetail): Record<string, string> =
 const AutomationEditor: React.FC = () => {
     const {id = ''} = useParams<{id: string}>();
 
-    const {data, isLoading: isLoadingAutomation, isError} = useReadAutomation(id, {
-        defaultErrorHandler: false
+    const {data, isLoading: isLoadingAutomation, isFetching: isFetchingAutomation, isError} = useReadAutomation(id, {
+        defaultErrorHandler: false,
+        refetchOnMount: 'always'
     });
     const automation = data?.automations[0];
 
@@ -64,18 +65,18 @@ const AutomationEditor: React.FC = () => {
     const navigationBlockerReasonRef = React.useRef<'automation' | 'email' | null>(null);
     const isBlockedEmailNavigationLeavingEditorRef = React.useRef(false);
 
-    // Draft is the user-facing, locally mutable copy. The React Query cache stays as server truth;
-    // staged edits (adding steps, etc.) live here until the user publishes. Seeded once when the
-    // automation first loads, and reset to the response after every successful edit.
-    const [draft, setDraft] = React.useState<AutomationDetail | undefined>(undefined);
+    // Draft is the user-facing, locally mutable copy. Wait for the mount refetch to finish before
+    // seeding it so cached automation data can never become an editable stale draft.
+    const [draftState, setDraft] = React.useState<AutomationDetail | undefined>(undefined);
     React.useEffect(() => {
-        if (automation) {
+        if (automation && !isFetchingAutomation && !isError) {
             setDraft((oldDraft) => {
                 return oldDraft?.id === automation.id ? oldDraft : automation;
             });
         }
-    }, [automation]);
-    const isInitializingDraft = !!automation && !draft;
+    }, [automation, isError, isFetchingAutomation]);
+    const draft = draftState?.id === id ? draftState : undefined;
+    const isInitializingDraft = !draft && !isError && (isLoadingAutomation || isFetchingAutomation || !!automation);
     const isEditorLoading = isLoadingAutomation || isInitializingDraft;
 
     // Only compare the fields the user can edit; server-stamped fields like `updated_at` would

@@ -114,7 +114,7 @@ type MockEditMutationOptions = {
     onSuccess?: (data: AutomationDetailResponseType) => void;
     onError?: (error?: unknown) => void;
 };
-const mockUseReadAutomation = vi.fn<(...args: unknown[]) => {data?: AutomationDetailResponseType; isLoading?: boolean; isError?: boolean}>();
+const mockUseReadAutomation = vi.fn<(...args: unknown[]) => {data?: AutomationDetailResponseType; isLoading?: boolean; isFetching?: boolean; isError?: boolean}>();
 const mockUseBrowseAutomationActionLinks = vi.fn<(...args: unknown[]) => {data?: AutomationActionLinksResponseType; isLoading: boolean; isError: boolean}>();
 const mockEditMutation = {
     mutate: vi.fn<(payload: EditAutomationPayload, options: MockEditMutationOptions) => void>(),
@@ -290,6 +290,10 @@ const renderEditor = (initialEntries = ['/automations/automation-id-1']) => {
     };
 };
 
+const rerenderEditorRoute = (router: ReturnType<typeof createMemoryRouter>) => act(async () => {
+    await router.navigate('/automations/automation-id-1', {replace: true});
+});
+
 const withEmptyEmailBodies = (fixture: AutomationDetail): AutomationDetail => ({
     ...fixture,
     actions: fixture.actions.map(action => (
@@ -363,6 +367,56 @@ describe('AutomationEditor', () => {
 
         expect(screen.getByTestId('automation-canvas-loading')).toBeInTheDocument();
         expect(screen.getByRole('button', {name: 'Publish'})).toBeDisabled();
+    });
+
+    it('waits for a fresh response before cached automation data becomes editable', async () => {
+        const cachedAutomation = {
+            ...automationDetail,
+            actions: automationDetail.actions.map(action => action.type === 'send_email'
+                ? {...action, data: {...action.data, email_subject: 'Cached subject'}}
+                : action)
+        };
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [cachedAutomation]},
+            isLoading: false,
+            isFetching: true,
+            isError: false
+        });
+
+        const {router} = renderEditor();
+
+        expect(mockUseReadAutomation).toHaveBeenCalledWith('automation-id-1', {
+            defaultErrorHandler: false,
+            refetchOnMount: 'always'
+        });
+        expect(screen.getByTestId('automation-canvas-loading')).toBeInTheDocument();
+        expect(screen.queryByText('Cached subject')).not.toBeInTheDocument();
+
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isFetching: false,
+            isError: false
+        });
+        await rerenderEditorRoute(router);
+
+        expect(screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'})).toBeInTheDocument();
+        expect(screen.queryByTestId('automation-canvas-loading')).not.toBeInTheDocument();
+    });
+
+    it('does not fall back to cached automation data when the fresh request fails', () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isFetching: false,
+            isError: true
+        });
+
+        renderEditor();
+
+        expect(screen.getByRole('alert')).toHaveTextContent('Couldn\'t load automation');
+        expect(screen.queryByTestId('automation-canvas')).not.toBeInTheDocument();
+        expect(screen.queryByText('Welcome to The Blueprint')).not.toBeInTheDocument();
     });
 
     it('renders the error banner when the read query fails', () => {
@@ -596,7 +650,7 @@ describe('AutomationEditor', () => {
         fireEvent.click(screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'}));
 
         const sidebar = screen.getByRole('complementary', {name: 'Step details'});
-        expect(mockUseBrowseAutomationActionLinks).toHaveBeenCalledWith('automation-id-1', 'action-email', {defaultErrorHandler: false, enabled: true});
+        expect(mockUseBrowseAutomationActionLinks).toHaveBeenCalledWith('automation-id-1', 'action-email', {defaultErrorHandler: false, enabled: true, refetchOnMount: 'always'});
         expect(within(sidebar).getAllByRole('link')).toHaveLength(10);
 
         const firstLink = within(sidebar).getByRole('link', {name: 'example.com/link-1'});
@@ -658,7 +712,7 @@ describe('AutomationEditor', () => {
         fireEvent.click(screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'}));
 
         expect(screen.getByText('No emails sent yet.')).toBeInTheDocument();
-        expect(mockUseBrowseAutomationActionLinks).toHaveBeenCalledWith('automation-id-1', 'action-email', {defaultErrorHandler: false, enabled: false});
+        expect(mockUseBrowseAutomationActionLinks).toHaveBeenCalledWith('automation-id-1', 'action-email', {defaultErrorHandler: false, enabled: false, refetchOnMount: 'always'});
     });
 
     it('hides clicked links and skips the request when click tracking is off', () => {
