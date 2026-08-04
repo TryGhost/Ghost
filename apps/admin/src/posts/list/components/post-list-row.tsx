@@ -1,3 +1,4 @@
+import {Button} from '@tryghost/shade/components';
 import {Inline, Stack, Text} from '@tryghost/shade/primitives';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {
@@ -7,9 +8,9 @@ import {
     getPostStatusDetail,
     getPostStatusLabel
 } from '@/posts/list/post-row-copy';
+import {hasPostAnalyticsPage, type PostMetricsSettings} from '@/posts/list/post-metrics';
 import {PostMetricsCells} from '@/posts/list/components/post-metrics-cells';
 import {useState} from 'react';
-import type {PostMetricsSettings} from '@/posts/list/post-metrics';
 import type {PostListItem} from '@/posts/list/hooks/use-posts-list';
 import type {PostResource} from '@/posts/list/post-resource';
 
@@ -22,6 +23,9 @@ interface PostListRowProps {
      * published posts they can no longer edit.
      */
     isContributor?: boolean;
+    /** Owner or Administrator — the roles Ember's `isAdmin` covers. */
+    hasAdminAccess?: boolean;
+    paidMembersEnabled?: boolean;
     metricsSettings: PostMetricsSettings;
     visitorCounts?: Record<string, number>;
     memberCounts?: Record<string, {free: number; paid: number}>;
@@ -77,7 +81,10 @@ function FeatureImage({post}: {post: PostListItem}) {
     );
 }
 
-export function PostListRow({post, resource, timezone, isContributor, metricsSettings, visitorCounts, memberCounts}: PostListRowProps) {
+export function PostListRow({
+    post, resource, timezone, isContributor, hasAdminAccess, paidMembersEnabled,
+    metricsSettings, visitorCounts, memberCounts
+}: PostListRowProps) {
     const [isHovered, setIsHovered] = useState(false);
 
     const metaParts = getPostMetaParts(post, {timezone});
@@ -93,6 +100,15 @@ export function PostListRow({post, resource, timezone, isContributor, metricsSet
     const linksOffsite = Boolean(isContributor && isPublished);
     const href = linksOffsite ? post.url : `#/editor/${editorType}/${post.id}`;
 
+    const goesToAnalytics = hasPostAnalyticsPage(post, metricsSettings, resource, Boolean(hasAdminAccess));
+    const action = goesToAnalytics
+        ? {href: `#/posts/analytics/${post.id}`, label: 'Go to Analytics', external: false, Icon: LucideIcon.ChartNoAxesColumn}
+        : linksOffsite
+            // "View post" on both resources, as Ember hardcodes it. Only ever
+            // reached by a contributor, who has no page access anyway.
+            ? {href: post.url, label: 'View post', external: true, Icon: LucideIcon.ArrowUpRight}
+            : {href, label: 'Go to Editor', external: false, Icon: LucideIcon.Pen};
+
     return (
         <li
             className='group border-b border-border-default'
@@ -104,52 +120,80 @@ export function PostListRow({post, resource, timezone, isContributor, metricsSet
                 setIsHovered(false);
             }}
         >
-            <a
-                className='flex items-start gap-4 px-2 py-4 no-underline transition-colors hover:bg-surface-elevated'
-                href={href}
-                rel={linksOffsite ? 'noopener noreferrer' : undefined}
-                target={linksOffsite ? '_blank' : undefined}
-            >
-                <FeatureImage post={post} />
-                <Stack className='min-w-0 flex-1' gap='xs'>
-                    <Inline align='center' gap='xs'>
-                        {post.featured && (
-                            <LucideIcon.Star
-                                aria-label='Featured'
-                                className='size-4 shrink-0 fill-state-warning text-state-warning'
-                                data-testid='post-featured'
-                            />
+            {/* `center`, not `start`: Ember centres everything on the right
+                against the 60px feature image. */}
+            <Inline align='center' className='gap-4 pr-2 transition-colors group-hover:bg-surface-elevated'>
+                <a
+                    className='flex min-w-0 flex-1 items-start gap-4 py-4 pl-2 no-underline'
+                    data-testid='post-list-item-link'
+                    href={href}
+                    rel={linksOffsite ? 'noopener noreferrer' : undefined}
+                    target={linksOffsite ? '_blank' : undefined}
+                >
+                    <FeatureImage post={post} />
+                    <Stack className='min-w-0 flex-1' gap='xs'>
+                        <Inline align='center' gap='xs'>
+                            {post.featured && (
+                                <LucideIcon.Star
+                                    aria-label='Featured'
+                                    className='size-4 shrink-0 fill-state-warning text-state-warning'
+                                    data-testid='post-featured'
+                                />
+                            )}
+                            <Text as='h3' className='truncate' weight='semibold'>
+                                {post.title}
+                            </Text>
+                        </Inline>
+
+                        {metaParts.length > 0 && (
+                            // Joined from parts so a missing piece takes its
+                            // separator with it — no dangling " – date".
+                            <Text size='sm' title={dateTooltip} tone='secondary'>
+                                {metaParts.join(' - ')}
+                            </Text>
                         )}
-                        <Text as='h3' className='truncate' weight='semibold'>
-                            {post.title}
-                        </Text>
-                    </Inline>
 
-                    {metaParts.length > 0 && (
-                        // Joined from parts so a missing piece takes its
-                        // separator with it — no dangling " – date".
-                        <Text size='sm' title={dateTooltip} tone='secondary'>
-                            {metaParts.join(' - ')}
+                        <Text className={statusTone(post, isFailed)} size='sm'>
+                            {statusLabel}
+                            {/* Mounted only while hovered, as Ember does. A CSS
+                                opacity fade would keep it in the DOM, so a screen
+                                reader would read every scheduled row's full
+                                dispatch details aloud, always. */}
+                            {isHovered && statusDetail && <span> {statusDetail}</span>}
                         </Text>
-                    )}
-
-                    <Text className={statusTone(post, isFailed)} size='sm'>
-                        {statusLabel}
-                        {/* Mounted only while hovered, as Ember does. A CSS
-                            opacity fade would keep it in the DOM, so a screen
-                            reader would read every scheduled row's full
-                            dispatch details aloud, always. */}
-                        {isHovered && statusDetail && <span> {statusDetail}</span>}
-                    </Text>
-                </Stack>
+                    </Stack>
+                </a>
                 <PostMetricsCells
+                    className='py-4'
                     memberCounts={memberCounts}
+                    paidMembersEnabled={paidMembersEnabled}
                     post={post}
                     resource={resource}
                     settings={metricsSettings}
                     visitorCounts={visitorCounts}
                 />
-            </a>
+                {/* Always visible, as in Ember: `.gh-post-list-cta` is a
+                    bordered white button and `.is-hovered` only changes its
+                    border colour. Revealing it on hover would make it
+                    undiscoverable, and an invisible target on touch. */}
+                <Button
+                    className='my-4 shrink-0 px-4'
+                    variant='outline'
+                    asChild
+                >
+                    <a
+                        aria-label={action.label}
+                        data-testid='post-list-item-action'
+                        href={action.href}
+                        rel={action.external ? 'noopener noreferrer' : undefined}
+                        target={action.external ? '_blank' : undefined}
+                        title={action.label}
+                        data-ignore-select
+                    >
+                        <action.Icon />
+                    </a>
+                </Button>
+            </Inline>
         </li>
     );
 }

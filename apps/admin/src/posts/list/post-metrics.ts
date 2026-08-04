@@ -43,56 +43,91 @@ const COLUMNS: Record<PostMetricKey, Omit<PostMetricColumn, 'key'>> = {
     members: {label: 'Members', tab: 'growth'}
 };
 
-function wasEmailed(post: PostListItem): boolean {
-    const status = post.status;
-
-    return (status === 'published' || status === 'sent')
+/**
+ * Ember's `hasBeenEmailed` — a post (never a page) that went out and didn't
+ * fail. Gates the *rate* columns; the Sent column has a weaker gate, below.
+ */
+function hasBeenEmailed(post: PostListItem, resource: PostResource): boolean {
+    return resource === 'posts'
+        && (post.status === 'published' || post.status === 'sent')
         && Boolean(post.email)
         && post.email?.status !== 'failed';
 }
 
+/**
+ * `showEmailOpenAnalytics` / `showEmailClickAnalytics`. Tracking must be on
+ * both site-wide and on the individual email, because an email sent before the
+ * setting changed keeps the flags it went out with.
+ */
+function showsOpens(post: PostListItem, settings: PostMetricsSettings, resource: PostResource): boolean {
+    return hasBeenEmailed(post, resource)
+        && !settings.isContributor
+        && settings.membersSignupAccess !== 'none'
+        && settings.emailTrackOpens
+        && post.email?.track_opens === true;
+}
+
+function showsClicks(post: PostListItem, settings: PostMetricsSettings, resource: PostResource): boolean {
+    return hasBeenEmailed(post, resource)
+        && !settings.isContributor
+        && settings.membersSignupAccess !== 'none'
+        && settings.emailTrackClicks
+        && post.email?.track_clicks === true;
+}
+
+/** `showAttributionAnalytics`. Note this is *not* the Members column's gate. */
+function showsAttribution(post: PostListItem, settings: PostMetricsSettings, resource: PostResource): boolean {
+    return (resource === 'pages' || !post.email_only)
+        && post.status === 'published'
+        && settings.membersTrackSources
+        && !settings.isMembersInviteOnly
+        && !settings.isContributor;
+}
+
+/**
+ * Which columns a row shows.
+ *
+ * These conditions come from `list-item-analytics.hbs`, **not** from the
+ * `show*Analytics` computeds above — Ember deliberately renders two of the
+ * columns under weaker conditions than the computeds that gate the trailing
+ * button, and collapsing the two loses real columns:
+ *
+ * - the Members column asks only "is source tracking on and is this
+ *   published?", so an invite-only site still gets it;
+ * - the email block renders whenever the post has an `email` at all, so a
+ *   *failed* send still shows its Sent count.
+ */
 export function getPostMetricColumns(
     post: PostListItem,
     settings: PostMetricsSettings,
     resource: PostResource
 ): PostMetricColumn[] {
-    // Contributors get no analytics at all.
-    if (settings.isContributor) {
-        return [];
-    }
-
     const keys: PostMetricKey[] = [];
     const isPublished = post.status === 'published';
-    const membersEnabled = settings.membersSignupAccess !== 'none';
 
     if (settings.webAnalyticsEnabled && isPublished) {
         keys.push('visitors');
     }
 
-    if (wasEmailed(post)) {
-        // Both the site setting and the email's own flag, since an email sent
-        // before the setting changed keeps the flags it was sent with.
-        const showOpens = membersEnabled && settings.emailTrackOpens && post.email?.track_opens === true;
-        const showClicks = membersEnabled && settings.emailTrackClicks && post.email?.track_clicks === true;
+    if (post.email) {
+        const opens = showsOpens(post, settings, resource);
+        const clicks = showsClicks(post, settings, resource);
 
-        if (showOpens) {
+        if (opens) {
             keys.push('opens');
         }
 
-        if (showClicks) {
+        if (clicks) {
             keys.push('clicks');
         }
 
         // Fallback only — the raw count stands in when neither rate is shown.
-        if (!showOpens && !showClicks) {
+        if (!opens && !clicks) {
             keys.push('sent');
         }
     }
 
-    // Pages are never email-only, so that exclusion doesn't apply to them.
-    const notEmailOnly = resource === 'pages' || !post.email_only;
-
-    if (settings.membersTrackSources && isPublished && notEmailOnly && !settings.isMembersInviteOnly) {
+    if (settings.membersTrackSources && isPublished) {
         keys.push('members');
     }
 
@@ -121,4 +156,27 @@ export function getPostOpenRate(post: PostListItem): number {
     }
 
     return Math.round((opened / sent) * 100);
+}
+
+/**
+ * Whether the row's trailing button goes to the post's analytics screen, per
+ * `hasAnalyticsPage` in `apps/ember-admin/app/models/post.js`.
+ *
+ * Note what it is *not*: web analytics ("Visitors") does not count. A post can
+ * show a Visitors column and still have no analytics page — the button falls
+ * back to the editor. Pages never have one.
+ */
+export function hasPostAnalyticsPage(
+    post: PostListItem,
+    settings: PostMetricsSettings,
+    resource: PostResource,
+    isAdmin: boolean
+): boolean {
+    if (resource !== 'posts' || !isAdmin) {
+        return false;
+    }
+
+    return showsOpens(post, settings, resource)
+        || showsClicks(post, settings, resource)
+        || showsAttribution(post, settings, resource);
 }

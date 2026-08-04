@@ -21,6 +21,14 @@ export const postsListScreen = {
     newLink: (resource: "posts" | "pages", name: string) =>
         page.getByTestId(`${resource}-page`).getByRole("link", { name, exact: true }),
     listItems: () => page.getByTestId("posts-list-item"),
+    /** The row's main link — the image and title region. */
+    rowLink: () => page.getByTestId("post-list-item-link"),
+    /** A metric column, found by its label ("Opens", "Members", …). */
+    metricCell: (label: string) => page.getByTestId("posts-list-item").getByRole("link", { name: new RegExp(label) }).first(),
+    /** The hover breakdown, which Radix portals out of the row. */
+    metricPanel: () => page.getByTestId("post-metric-panel"),
+    /** The trailing button at a row's end — Analytics, View, or Editor. */
+    rowAction: () => page.getByTestId("post-list-item-action"),
     featuredMarkers: () => page.getByTestId("post-featured"),
     emptyCold: () => page.getByTestId("posts-empty-cold"),
     emptyFiltered: () => page.getByTestId("posts-empty-filtered"),

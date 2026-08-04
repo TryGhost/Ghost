@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {getPostMetricColumns, type PostMetricsSettings} from './post-metrics';
+import {getPostMetricColumns, hasPostAnalyticsPage, type PostMetricsSettings} from './post-metrics';
 import type {PostListItem} from './hooks/use-posts-list';
 
 /**
@@ -116,32 +116,62 @@ describe('the Members column', () => {
         expect(keys(post(), settings({membersTrackSources: true}), 'posts')).toContain('members');
     });
 
-    it('hides on an invite-only site', () => {
-        expect(keys(post(), settings({membersTrackSources: true, isMembersInviteOnly: true}), 'posts'))
-            .not.toContain('members');
+    // The column's gate in the template is only "source tracking on, and
+    // published". The invite-only and email-only exclusions belong to
+    // `showAttributionAnalytics`, which decides the *trailing button*, not this
+    // column — Ember shows a Members number here on an invite-only site.
+    it('shows on an invite-only site, where the analytics button does not', () => {
+        const inviteOnly = settings({membersTrackSources: true, isMembersInviteOnly: true});
+
+        expect(keys(post(), inviteOnly, 'posts')).toContain('members');
+        expect(hasPostAnalyticsPage(post(), inviteOnly, 'posts', true)).toBe(false);
     });
 
-    it('hides for an email-only post', () => {
-        expect(keys(post({status: 'sent', email_only: true}), settings({membersTrackSources: true}), 'posts'))
-            .not.toContain('members');
+    it('shows for an email-only post, where the analytics button does not', () => {
+        const emailOnly = post({status: 'published', email_only: true});
+        const tracking = settings({membersTrackSources: true});
+
+        expect(keys(emailOnly, tracking, 'posts')).toContain('members');
+        expect(hasPostAnalyticsPage(emailOnly, tracking, 'posts', true)).toBe(false);
     });
 
-    // A page is never email-only, so the exclusion doesn't apply to it.
     it('shows for a published page', () => {
         expect(keys(post(), settings({membersTrackSources: true}), 'pages')).toContain('members');
+    });
+
+    it('hides for an unpublished post', () => {
+        expect(keys(post({status: 'draft'}), settings({membersTrackSources: true}), 'posts'))
+            .not.toContain('members');
     });
 });
 
 describe('contributors', () => {
-    // Contributors see no analytics at all.
-    it('see no metric columns', () => {
-        expect(keys(emailed(), settings({
+    // Ember gates opens/clicks on `!isContributor` inside the computeds, but
+    // the Visitors and Members columns are gated in the template on the site
+    // settings alone — a contributor does see those on their own posts.
+    it('see no newsletter rates, but do see the site-level columns', () => {
+        const shown = keys(emailed(), settings({
             webAnalyticsEnabled: true,
             membersTrackSources: true,
             emailTrackOpens: true,
             emailTrackClicks: true,
             isContributor: true
-        }), 'posts')).toEqual([]);
+        }), 'posts');
+
+        expect(shown).not.toContain('opens');
+        expect(shown).not.toContain('clicks');
+        // Sent is the fallback, and it depends only on there being an email.
+        expect(shown).toEqual(['visitors', 'sent', 'members']);
+    });
+
+    it('never get an analytics page', () => {
+        expect(hasPostAnalyticsPage(emailed(), settings({
+            webAnalyticsEnabled: true,
+            membersTrackSources: true,
+            emailTrackOpens: true,
+            emailTrackClicks: true,
+            isContributor: true
+        }), 'posts', false)).toBe(false);
     });
 });
 
@@ -153,5 +183,62 @@ describe('column order', () => {
             emailTrackOpens: true,
             emailTrackClicks: true
         }), 'posts')).toEqual(['visitors', 'opens', 'clicks', 'members']);
+    });
+});
+
+describe('hasPostAnalyticsPage', () => {
+    const emailedPost = {
+        id: '1',
+        status: 'published',
+        email: {opened_count: 5, email_count: 10, track_opens: true, track_clicks: true}
+    } as PostListItem;
+
+    const tracked = settings({emailTrackOpens: true});
+
+    it('is true for an admin on a post with newsletter engagement', () => {
+        expect(hasPostAnalyticsPage(emailedPost, tracked, 'posts', true)).toBe(true);
+    });
+
+    it('is false for a non-admin, however the post is configured', () => {
+        expect(hasPostAnalyticsPage(emailedPost, tracked, 'posts', false)).toBe(false);
+    });
+
+    it('is false for pages, which have no analytics screen', () => {
+        expect(hasPostAnalyticsPage(emailedPost, tracked, 'pages', true)).toBe(false);
+    });
+
+    // The distinction the Ember computed makes and the columns don't: web
+    // analytics alone does not earn a post an analytics page.
+    it('is false when only the Visitors column shows', () => {
+        const webOnlyPost = {id: '1', status: 'published'} as PostListItem;
+        const onlyWeb = settings({webAnalyticsEnabled: true, membersTrackSources: false});
+
+        expect(getPostMetricColumns(webOnlyPost, onlyWeb, 'posts').map(column => column.key)).toEqual(['visitors']);
+        expect(hasPostAnalyticsPage(webOnlyPost, onlyWeb, 'posts', true)).toBe(false);
+    });
+
+    // The most common real configuration — source tracking on, newsletter
+    // tracking off — and the one the email-shaped cases above would miss.
+    it('is true on the attribution path alone, with no email at all', () => {
+        const published = {id: '1', status: 'published'} as PostListItem;
+
+        expect(hasPostAnalyticsPage(published, settings({membersTrackSources: true}), 'posts', true)).toBe(true);
+    });
+
+    // An emailed post with tracking off shows a Sent column but earns no page.
+    it('is false when the only email column is the Sent fallback', () => {
+        const untracked = settings();
+
+        expect(getPostMetricColumns(emailedPost, untracked, 'posts').map(column => column.key))
+            .toEqual(['sent']);
+        expect(hasPostAnalyticsPage(emailedPost, untracked, 'posts', true)).toBe(false);
+    });
+
+    it('is false for a contributor even where the settings would allow it', () => {
+        const asContributor = settings({
+            emailTrackOpens: true, membersTrackSources: true, isContributor: true
+        });
+
+        expect(hasPostAnalyticsPage(emailedPost, asContributor, 'posts', true)).toBe(false);
     });
 });
