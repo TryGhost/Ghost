@@ -6,6 +6,7 @@ const {mockManager} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 const db = require('../../../core/server/data/db');
 const MailgunClient = require('../../../core/server/services/lib/mailgun-client');
+const mailService = require('../../../core/server/services/mail');
 const settingsHelpers = require('../../../core/server/services/settings-helpers');
 const {MEMBER_WELCOME_EMAIL_SLUGS, MESSAGES} = require('../../../core/server/services/member-welcome-emails/constants');
 const memberWelcomeEmailService = require('../../../core/server/services/member-welcome-emails/service');
@@ -190,6 +191,7 @@ describe('Member Welcome Emails Integration', function () {
     describe('Sending welcome emails', function () {
         beforeEach(function () {
             sinon.stub(MailgunClient.prototype, 'send').resolves({id: '<bulk-mailgun-message-id>'});
+            sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail sent');
         });
 
         afterEach(function () {
@@ -262,7 +264,7 @@ describe('Member Welcome Emails Integration', function () {
                 message: MESSAGES.memberWelcomeEmailInactive('free')
             });
 
-            sinon.assert.notCalled(MailgunClient.prototype.send);
+            sinon.assert.notCalled(mailService.GhostMailer.prototype.send);
         });
 
         it('does not send email when no template exists', async function () {
@@ -280,7 +282,7 @@ describe('Member Welcome Emails Integration', function () {
                 message: MESSAGES.NO_MEMBER_WELCOME_EMAIL
             });
 
-            sinon.assert.notCalled(MailgunClient.prototype.send);
+            sinon.assert.notCalled(mailService.GhostMailer.prototype.send);
         });
 
         it('does not send email when paid template is inactive', async function () {
@@ -301,7 +303,7 @@ describe('Member Welcome Emails Integration', function () {
                 message: MESSAGES.memberWelcomeEmailInactive('paid')
             });
 
-            sinon.assert.notCalled(MailgunClient.prototype.send);
+            sinon.assert.notCalled(mailService.GhostMailer.prototype.send);
         });
 
         it('does not send email when no paid template exists', async function () {
@@ -320,7 +322,7 @@ describe('Member Welcome Emails Integration', function () {
                 message: MESSAGES.NO_MEMBER_WELCOME_EMAIL
             });
 
-            sinon.assert.notCalled(MailgunClient.prototype.send);
+            sinon.assert.notCalled(mailService.GhostMailer.prototype.send);
         });
 
         it('sends email to member email', async function () {
@@ -334,9 +336,9 @@ describe('Member Welcome Emails Integration', function () {
                 }
             });
 
-            sinon.assert.calledOnce(MailgunClient.prototype.send);
-            const sendCall = MailgunClient.prototype.send.firstCall;
-            assert.deepEqual(sendCall.args[1], {[memberEmail]: {}});
+            sinon.assert.calledOnce(mailService.GhostMailer.prototype.send);
+            const sendCall = mailService.GhostMailer.prototype.send.firstCall;
+            assert.equal(sendCall.args[0].to, memberEmail);
             assert.deepEqual(sendCall.args[0].tags, ['member-welcome-email']);
         });
 
@@ -361,8 +363,8 @@ describe('Member Welcome Emails Integration', function () {
                 }
             });
 
-            sinon.assert.calledOnce(MailgunClient.prototype.send);
-            const sendCall = MailgunClient.prototype.send.firstCall;
+            sinon.assert.calledOnce(mailService.GhostMailer.prototype.send);
+            const sendCall = mailService.GhostMailer.prototype.send.firstCall;
             assert.equal(sendCall.args[0].replyTo, senderReplyTo);
             assert.ok(sendCall.args[0].from.includes(senderEmail));
         });
@@ -406,8 +408,8 @@ describe('Member Welcome Emails Integration', function () {
                 }
             });
 
-            sinon.assert.calledOnce(MailgunClient.prototype.send);
-            const sendCall = MailgunClient.prototype.send.firstCall;
+            sinon.assert.calledOnce(mailService.GhostMailer.prototype.send);
+            const sendCall = mailService.GhostMailer.prototype.send.firstCall;
             assert.equal(sendCall.args[0].from, '"Design Sender" <design@example.com>');
             assert.equal(sendCall.args[0].replyTo, 'design-reply@example.com');
         });
@@ -451,10 +453,10 @@ describe('Member Welcome Emails Integration', function () {
                 }
             });
 
-            sinon.assert.calledOnceWithExactly(MailgunClient.prototype.send, sinon.match({
+            sinon.assert.calledOnceWithExactly(mailService.GhostMailer.prototype.send, sinon.match({
                 from: '"Newsletter Sender" <newsletter@example.com>',
                 replyTo: 'newsletter-reply@example.com'
-            }), sinon.match.object, []);
+            }));
         });
 
         it('uses newsletter sender details for automation emails', async function () {
@@ -610,8 +612,8 @@ describe('Member Welcome Emails Integration', function () {
                 automatedEmailId: automation.id
             });
 
-            sinon.assert.calledOnce(MailgunClient.prototype.send);
-            const sendCall = MailgunClient.prototype.send.firstCall;
+            sinon.assert.calledOnce(mailService.GhostMailer.prototype.send);
+            const sendCall = mailService.GhostMailer.prototype.send.firstCall;
             assert.ok(sendCall.args[0].html.includes('00000000-0000-4000-8000-000000000000'));
             assert(!sendCall.args[0].html.includes('{uuid}'));
             assert(!sendCall.args[0].html.includes('%7Buuid%7D'));
@@ -659,8 +661,8 @@ describe('Member Welcome Emails Integration', function () {
                 automatedEmailId: automation.id
             });
 
-            sinon.assert.calledOnce(MailgunClient.prototype.send);
-            const sendCall = MailgunClient.prototype.send.firstCall;
+            sinon.assert.calledOnce(mailService.GhostMailer.prototype.send);
+            const sendCall = mailService.GhostMailer.prototype.send.firstCall;
             assert.equal(sendCall.args[0].from, '"Design Sender" <design@example.com>');
             assert.equal(sendCall.args[0].replyTo, 'design-reply@example.com');
         });
@@ -717,8 +719,8 @@ describe('Member Welcome Emails Integration', function () {
                 automatedEmailId: automation.id
             });
 
-            sinon.assert.calledOnce(MailgunClient.prototype.send);
-            const sendCall = MailgunClient.prototype.send.firstCall;
+            sinon.assert.calledOnce(mailService.GhostMailer.prototype.send);
+            const sendCall = mailService.GhostMailer.prototype.send.firstCall;
             assert.equal(sendCall.args[0].from, '"Newsletter Sender" <newsletter@example.com>');
             assert.equal(sendCall.args[0].replyTo, 'newsletter-reply@example.com');
         });
@@ -729,6 +731,7 @@ describe('Member Welcome Emails Integration', function () {
             memberWelcomeEmailService.api = null;
             memberWelcomeEmailService.init();
             sinon.stub(MailgunClient.prototype, 'send').resolves({id: '<bulk-mailgun-message-id>'});
+            sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail sent');
         });
 
         it('uses cached design settings after welcome emails are loaded', async function () {
@@ -750,8 +753,8 @@ describe('Member Welcome Emails Integration', function () {
                 memberStatus: 'free'
             });
 
-            sinon.assert.calledOnce(MailgunClient.prototype.send);
-            const sendCall = MailgunClient.prototype.send.firstCall;
+            sinon.assert.calledOnce(mailService.GhostMailer.prototype.send);
+            const sendCall = mailService.GhostMailer.prototype.send.firstCall;
             assert.equal(sendCall.args[0].html.includes('Fresh footer content</p>'), false);
             assert.equal(sendCall.args[0].html.includes('https://ghost.org/?via=pbg-newsletter'), true);
         });

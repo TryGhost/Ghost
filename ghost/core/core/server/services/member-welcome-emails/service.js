@@ -412,12 +412,15 @@ class MemberWelcomeEmailService {
         );
 
         /** @type {string[]} */ let tags;
+        let sendEmail;
         switch (emailType) {
         case 'welcome':
             tags = [MEMBER_WELCOME_EMAIL_TAG];
+            sendEmail = this.#sendTransactionalEmail.bind(this);
             break;
         case 'automation':
             tags = [AUTOMATION_EMAIL_TAG];
+            sendEmail = this.#sendBulkEmail.bind(this);
             break;
         default: {
             /** @type {never} */ const _exhaustive = emailType;
@@ -427,7 +430,7 @@ class MemberWelcomeEmailService {
         }
         }
 
-        return await this.#sendBulkEmail({
+        return await sendEmail({
             to: member.email,
             subject,
             html,
@@ -436,6 +439,39 @@ class MemberWelcomeEmailService {
             trackOpens,
             listUnsubscribe: unsubscribe?.oneClickUrl,
             ...senderOptions
+        });
+    }
+
+    /**
+     * @param {object} options
+     * @param {string} options.to
+     * @param {string} options.subject
+     * @param {string} options.html
+     * @param {string} options.text
+     * @param {string} options.from
+     * @param {string} [options.replyTo]
+     * @param {string[]} [options.tags]
+     * @param {boolean} [options.trackOpens]
+     * @param {string} [options.listUnsubscribe]
+     * @returns {Promise<unknown>}
+     */
+    async #sendTransactionalEmail({to, subject, html, text, from, replyTo, tags, trackOpens, listUnsubscribe}) {
+        const headers = listUnsubscribe ? {
+            'List-Unsubscribe': `<${listUnsubscribe}>`,
+            'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click'
+        } : undefined;
+
+        return await this.#transactionalMailer.send({
+            to,
+            subject,
+            html,
+            text,
+            forceTextContent: true,
+            tags,
+            ...(headers ? {headers} : {}),
+            ...(typeof trackOpens === 'boolean' ? {trackOpens} : {}),
+            from,
+            replyTo
         });
     }
 
@@ -672,7 +708,7 @@ class MemberWelcomeEmailService {
             getSenderDetails(designSettingsJson)
         );
 
-        await this.#sendBulkEmail({
+        await this.#sendTransactionalEmail({
             to: email,
             subject: `[Test] ${renderedSubject}`,
             html,
