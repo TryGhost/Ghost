@@ -42,6 +42,7 @@
         "@tryghost/nql-lang": "catalog:",
         "@tryghost/nql-string": "workspace:*",
         "@tryghost/shade": "workspace:*",
+        "@tryghost/string": "catalog:",
         "@tryghost/timezone-data": "catalog:",
         "@uiw/react-codemirror": "catalog:",
         "@xyflow/react": "12.11.1",

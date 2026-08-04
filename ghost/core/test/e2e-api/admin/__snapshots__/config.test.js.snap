@@ -41,6 +41,7 @@ Object {
       "smarterCounts": true,
       "stripeAutomaticTax": true,
       "superEditors": true,
+      "tagDetailsReact": true,
       "tagsX": true,
       "themeTranslation": true,
       "urlCache": true,
