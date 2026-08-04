@@ -21,6 +21,7 @@ import {usePostsFilterState} from './hooks/use-posts-filter-state';
 import {rememberStickyPostFilters} from './posts-sticky-filters';
 import {useEffect} from 'react';
 import {useLocation} from '@tryghost/admin-x-framework';
+import {usePostAnalyticsCounts} from './hooks/use-post-analytics-counts';
 import {usePostsList} from './hooks/use-posts-list';
 
 /**
@@ -89,6 +90,12 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
         isFetchingNextPage,
         fetchNextPage
     } = usePostsList({resource, params, context: {ownAuthorSlug}});
+
+    const {visitorCounts, memberCounts} = usePostAnalyticsCounts({
+        items,
+        webAnalyticsEnabled: metricsSettings.webAnalyticsEnabled,
+        membersTrackSources: metricsSettings.membersTrackSources
+    });
 
     return (
         <Box className='size-full'>
@@ -159,10 +166,12 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
                                         <PostListRow
                                             key={item.id}
                                             isContributor={isContributor}
+                                            memberCounts={memberCounts}
                                             metricsSettings={metricsSettings}
                                             post={item}
                                             resource={resource}
                                             timezone={timezone}
+                                            visitorCounts={visitorCounts}
                                         />
                                     ))}
                                 </ul>

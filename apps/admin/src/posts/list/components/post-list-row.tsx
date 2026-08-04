@@ -23,6 +23,8 @@ interface PostListRowProps {
      */
     isContributor?: boolean;
     metricsSettings: PostMetricsSettings;
+    visitorCounts?: Record<string, number>;
+    memberCounts?: Record<string, {free: number; paid: number}>;
 }
 
 /**
@@ -75,7 +77,7 @@ function FeatureImage({post}: {post: PostListItem}) {
     );
 }
 
-export function PostListRow({post, resource, timezone, isContributor, metricsSettings}: PostListRowProps) {
+export function PostListRow({post, resource, timezone, isContributor, metricsSettings, visitorCounts, memberCounts}: PostListRowProps) {
     const [isHovered, setIsHovered] = useState(false);
 
     const metaParts = getPostMetaParts(post, {timezone});
@@ -141,9 +143,11 @@ export function PostListRow({post, resource, timezone, isContributor, metricsSet
                     </Text>
                 </Stack>
                 <PostMetricsCells
+                    memberCounts={memberCounts}
                     post={post}
                     resource={resource}
                     settings={metricsSettings}
+                    visitorCounts={visitorCounts}
                 />
             </a>
         </li>

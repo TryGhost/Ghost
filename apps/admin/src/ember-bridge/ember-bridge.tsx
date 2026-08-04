@@ -84,6 +84,10 @@ const EMBER_TO_REACT_TYPE_MAPPING: Record<string, string> = {
     'tier': 'TiersResponseType',
     'user': 'UsersResponseType',
     'post': 'PostsResponseType',
+    // Without this, saving a page in the (Ember) editor never invalidates the
+    // React pages list, so a newly created page only appears after a manual
+    // refresh. Harmless while Ember owned /pages; visible as soon as React does.
+    'page': 'PagesResponseType',
     'member': 'MembersResponseType',
     'comment': 'CommentsResponseType',
     'tag': 'TagsResponseType',
