@@ -20,6 +20,12 @@ import {z} from 'zod';
  *
  * Behaviour is proven where it matters, in the members custom-fields and member
  * export HTTP API integration tests, rather than in isolated unit tests here.
+ *
+ * One rule spans both tiers and both depths: a name nobody recognises is an error, never
+ * a silent drop. A misspelled field key is refused by the values service, which is the
+ * only thing that knows which fields a site has defined; a misspelled part is refused
+ * here, because a type's parts are declared in this file and nowhere else. Each is
+ * enforced where the names are known, and neither quietly discards what it was given.
  */
 
 /**
@@ -188,7 +194,10 @@ function record<F extends Record<string, PartSchema>>(fields: F) {
         Object.entries(fields).map(([key, part]) => [key, clearable(part)])
     ) as {[K in keyof F]: ReturnType<typeof clearable<F[K]>>};
 
-    const value = z.object(shape).refine(
+    // Strict, so a part nobody declared is refused rather than dropped on the floor. The
+    // values service refuses an unrecognised field key for the same reason: a typo that
+    // silently loses what a member typed is worse than a save that fails and says so.
+    const value = z.strictObject(shape).refine(
         parts => Object.values(parts).some(part => typeof part === 'string'),
         {message: 'A value must name at least one part.'}
     );

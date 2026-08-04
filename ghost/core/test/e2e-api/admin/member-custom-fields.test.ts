@@ -1144,13 +1144,21 @@ describe('Member Custom Fields Admin API', function () {
             assert.equal(body.errors[0].property, `custom_fields.${field.key}`);
         });
 
-        it('strips unknown sub-fields of a composite value', async function () {
+        it('refuses a part of a composite value it does not recognise', async function () {
             const field = await createField({name: 'Home address', type: 'address'});
             const memberId = await createMember();
             const address = {line1: '62 Ghost Lane', city: 'Dublin', postal_code: 'D02', country: 'IE'};
 
-            await setValues(memberId, {[field.key]: {...address, sneaky: 'x'}});
+            await setValues(memberId, {[field.key]: address});
 
+            // The same answer an unknown field key gets, one level down. A misspelled part
+            // used to be dropped in silence, which loses what somebody typed and tells
+            // them it saved.
+            const body = await setValues(memberId, {[field.key]: {...address, city: 'Cork', citty: 'Dublin'}}, 422);
+            assert.equal(body.errors[0].property, `custom_fields.${field.key}`);
+
+            // The parts it named alongside the typo are not written either: a refused write
+            // leaves what was already stored exactly as it was.
             assert.deepEqual(await readValues(memberId), {[field.key]: address});
         });
 
