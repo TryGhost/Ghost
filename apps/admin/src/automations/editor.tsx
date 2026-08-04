@@ -50,7 +50,7 @@ const getActionErrors = (automation: AutomationDetail): Record<string, string> =
 };
 
 const AutomationEditor: React.FC<{id: string}> = ({id}) => {
-    const {automation, isError} = useAutomationForEditing(id);
+    const {automation, isError: isReadError} = useAutomationForEditing(id);
 
     const editMutation = useEditAutomation();
     const [editState, setEditState] = React.useState<AutomationEditState>({phase: 'idle'});
@@ -60,23 +60,26 @@ const AutomationEditor: React.FC<{id: string}> = ({id}) => {
     const navigationBlockerReasonRef = React.useRef<'automation' | 'email' | null>(null);
     const isBlockedEmailNavigationLeavingEditorRef = React.useRef(false);
 
-    // Draft is the user-facing, locally mutable copy. Seed it once so later query updates cannot
-    // overwrite edits made during this editing session.
+    // Keep the saved snapshot separate from the live query result. Later query updates or errors
+    // must not redefine the dirty state or overwrite edits made during this editing session.
+    const [savedAutomation, setSavedAutomation] = React.useState<AutomationDetail | undefined>(undefined);
     const [draft, setDraft] = React.useState<AutomationDetail | undefined>(undefined);
     React.useEffect(() => {
         if (!automation) {
             return;
         }
 
+        setSavedAutomation(currentAutomation => currentAutomation ?? automation);
         setDraft(currentDraft => currentDraft ?? automation);
     }, [automation]);
-    const isEditorLoading = !draft && !isError;
+    const isEditorLoading = !draft && !isReadError;
+    const isEditorError = !draft && isReadError;
 
     // Only compare the fields the user can edit; server-stamped fields like `updated_at` would
     // otherwise flip the dirty flag immediately after every successful publish.
     const hasUnsavedChanges = !!draft
-        && !!automation
-        && !dequal(editableSlice(draft), editableSlice(automation));
+        && !!savedAutomation
+        && !dequal(editableSlice(draft), editableSlice(savedAutomation));
 
     const onDraftChange = (next: AutomationDetail) => {
         setDraft(next);
@@ -158,7 +161,9 @@ const AutomationEditor: React.FC<{id: string}> = ({id}) => {
             },
             {
                 onSuccess: (response) => {
-                    setDraft(response.automations[0]);
+                    const savedDraft = response.automations[0];
+                    setSavedAutomation(savedDraft);
+                    setDraft(savedDraft);
                     setActionErrors({});
                     setEditState({phase: 'idle'});
                 },
@@ -417,7 +422,7 @@ const AutomationEditor: React.FC<{id: string}> = ({id}) => {
                 actionErrors={actionErrors}
                 automation={draft}
                 isEmailNavigationBlocked={isEmailNavigationBlocked}
-                isError={isError}
+                isError={isEditorError}
                 isLoading={isEditorLoading}
                 onChange={onDraftChange}
                 onDiscardBlockedEmailNavigation={(closeEmailModal) => {

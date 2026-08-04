@@ -424,6 +424,39 @@ describe('AutomationEditor', () => {
         expect(screen.queryByText('Welcome to The Blueprint')).not.toBeInTheDocument();
     });
 
+    it('keeps a dirty editing session intact when a later read refresh fails', async () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        const {router} = renderEditor();
+
+        fireEvent.click(screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'}));
+        const sidebar = screen.getByRole('complementary', {name: 'Step details'});
+        const subjectInput = within(sidebar).getByDisplayValue('Welcome to The Blueprint');
+        fireEvent.change(subjectInput, {target: {value: 'Locally edited subject'}});
+        fireEvent.blur(subjectInput);
+        expect(screen.getByRole('button', {name: 'Publish changes'})).toBeEnabled();
+
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isFetchedAfterMount: true,
+            isError: true
+        });
+        await rerenderEditorRoute(router);
+
+        expect(screen.getByTestId('automation-canvas')).toBeInTheDocument();
+        expect(screen.queryByText('Couldn\'t load automation')).not.toBeInTheDocument();
+        expect(screen.getByRole('button', {name: 'Publish changes'})).toBeEnabled();
+
+        fireEvent.click(screen.getByRole('link', {name: 'Back to automations'}));
+        expect(screen.getByRole('alertdialog', {name: 'Discard unsaved changes?'})).toBeInTheDocument();
+        expect(screen.queryByTestId('automations-list-route')).not.toBeInTheDocument();
+    });
+
     it('does not reuse an old draft when navigating from A to B and back to A', async () => {
         const withSubject = (automation: AutomationDetail, emailSubject: string): AutomationDetail => ({
             ...automation,
