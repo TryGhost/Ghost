@@ -1,6 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 
-import { renderAdminApp } from "@test-utils/acceptance";
+import { fakePages, fakePosts, renderAdminApp } from "@test-utils/acceptance";
 import { postsListScreen } from "./posts-list.screen";
 
 const FLAG_ON = { labs: { postsListReact: true } };
@@ -17,6 +17,14 @@ const FLAG_OFF = { labs: { postsListReact: false } };
  * in apps/ember-admin/tests/acceptance/posts-list-react-flag-test.js.
  */
 describe("Posts and pages list flag", () => {
+    // The screen queries once per status bucket as soon as it mounts; the
+    // content is irrelevant here, this file is only about which implementation
+    // serves the route.
+    beforeEach(() => {
+        fakePosts([]);
+        fakePages([]);
+    });
+
     describe.each([
         { resource: "posts", route: "/posts", title: "Posts", newLabel: "New post" },
         { resource: "pages", route: "/pages", title: "Pages", newLabel: "New page" }
@@ -34,16 +42,9 @@ describe("Posts and pages list flag", () => {
             await expect.element(postsListScreen.newLink(resource, newLabel)).toBeVisible();
         });
 
-        // The Ember list must not exist alongside the React one, or the two
-        // trees fight over the same testids and Ember fetches for a screen
-        // nobody sees.
-        it("does not render the Ember list alongside it", async () => {
-            await renderAdminApp(route, FLAG_ON);
-
-            await expect.element(postsListScreen.page(resource)).toBeVisible();
-            await expect(postsListScreen.emberList()).toHaveCount(0);
-            await expect(postsListScreen.emberFilters()).toHaveCount(0);
-        });
+        // That the *Ember* list isn't mounted alongside this one is asserted in
+        // apps/ember-admin/tests/acceptance/posts-list-react-flag-test.js —
+        // there is no Ember app in this harness, so it can't be checked here.
 
         it("defers to Ember when the flag is off", async () => {
             await renderAdminApp(route, FLAG_OFF);

@@ -5,6 +5,40 @@ export type Email = {
     opened_count: number;
     email_count: number;
     status?: string;
+    track_opens?: boolean;
+    track_clicks?: boolean;
+};
+
+export type PostAuthor = {
+    id: string;
+    name?: string;
+    email?: string;
+    slug?: string;
+};
+
+export type PostTag = {
+    id: string;
+    name?: string;
+    slug?: string;
+    visibility?: string;
+};
+
+/**
+ * Fields the list screens need on top of the analytics-shaped core. All
+ * optional: the analytics endpoints don't return them, and the list gets them
+ * from the server's default relations rather than an explicit `include`.
+ */
+export type PostListFields = {
+    featured?: boolean;
+    updated_at?: string;
+    created_at?: string;
+    excerpt?: string;
+    custom_excerpt?: string;
+    authors?: PostAuthor[];
+    primary_author?: PostAuthor | null;
+    tags?: PostTag[];
+    primary_tag?: PostTag | null;
+    tiers?: Array<{id: string; name?: string}>;
 };
 
 export type Post = {
@@ -30,7 +64,7 @@ export type Post = {
     email_recipient_filter?: string;
     send_email_when_published?: boolean;
     email_stats?: object;
-};
+} & PostListFields;
 
 export interface PostsResponseType {
     meta?: Meta
