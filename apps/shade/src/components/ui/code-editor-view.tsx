@@ -1,8 +1,8 @@
 import CodeMirror, {type BasicSetupOptions, type ReactCodeMirrorProps, type ReactCodeMirrorRef} from '@uiw/react-codemirror';
 import React, {type FocusEventHandler, forwardRef, useEffect, useId, useRef, useState} from 'react';
-import clsx from 'clsx';
-import {FieldDescription, FieldLabel} from '@tryghost/shade/components';
-import {useFocusContext} from '@tryghost/shade/app';
+import {FieldDescription, FieldLabel} from './field';
+import {cn} from '@/lib/utils';
+import {useFocusContext} from '@/providers/shade-provider';
 import type {Extension} from '@codemirror/state';
 
 export interface CodeEditorProps extends Omit<ReactCodeMirrorProps, 'value' | 'onChange' | 'extensions'> {
@@ -93,7 +93,7 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
         return () => resizeObserver.disconnect();
     }, []);
 
-    const styles = clsx(
+    const styles = cn(
         'peer order-2 w-full max-w-full overflow-hidden rounded-sm border',
         clearBg ? 'bg-transparent' : 'bg-muted',
         error ? 'border-destructive' : 'border-border',
@@ -120,7 +120,7 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
                 {...props}
             />
             {title && <FieldLabel className='order-1' htmlFor={id}>{title}</FieldLabel>}
-            {hint && <FieldDescription className={clsx('order-3 mt-1', error && 'text-destructive')}>{hint}</FieldDescription>}
+            {hint && <FieldDescription className={cn('order-3 mt-1', error && 'text-destructive')}>{hint}</FieldDescription>}
         </div>
     </>;
 });

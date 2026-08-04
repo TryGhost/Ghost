@@ -108,6 +108,7 @@
         "vitest": "catalog:"
     },
     "dependencies": {
+        "@codemirror/state": "catalog:",
         "@ebay/nice-modal-react": "catalog:",
         "@dnd-kit/core": "catalog:",
         "@dnd-kit/sortable": "catalog:",
@@ -135,6 +136,7 @@
         "@radix-ui/react-toggle-group": "1.1.14",
         "@radix-ui/react-tooltip": "catalog:",
         "@types/react": "catalog:",
+        "@uiw/react-codemirror": "catalog:",
         "@types/react-dom": "catalog:",
         "@types/validator": "catalog:",
         "class-variance-authority": "0.7.1",

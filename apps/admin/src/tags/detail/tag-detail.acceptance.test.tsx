@@ -37,6 +37,16 @@ describe('Tag detail (tagDetailsReact on)', () => {
         await expect.element(page.getByRole('button', {name: 'Delete tag', exact: true})).toBeVisible();
     });
 
+    it('renders seeded code injection in the CodeMirror editors', async () => {
+        const t = tag({name: 'News', slug: 'news', codeinjection_head: '<script>head()</script>', codeinjection_foot: '<style>.f{}</style>'});
+        fakeTagWorld(t);
+        await renderAdminApp(`/tags/${t.slug}`, FLAGS);
+
+        await page.getByRole('button', {name: /Code injection/}).click();
+        await expect.element(page.getByTestId('codeinjection-head')).toHaveTextContent('<script>head()</script>');
+        await expect.element(page.getByTestId('codeinjection-foot')).toHaveTextContent('<style>.f{}</style>');
+    });
+
     it('redirects to billing during a force upgrade', async () => {
         const config = configResponse(FLAGS);
         config.config.hostSettings = {forceUpgrade: true};
