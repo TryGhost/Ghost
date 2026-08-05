@@ -7,6 +7,7 @@ export type ExternalLink = {
     isExternal: true;
     route: string;
     models?: string[] | null;
+    replace?: boolean;
 };
 
 export type InternalLink = {

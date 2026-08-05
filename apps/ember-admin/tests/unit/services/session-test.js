@@ -1,4 +1,5 @@
 import sinon from 'sinon';
+import windowProxy from 'ghost-admin/utils/window-proxy';
 import {afterEach, beforeEach, describe, it} from 'mocha';
 import {expect} from 'chai';
 import {setupTest} from 'ember-mocha';
@@ -93,6 +94,16 @@ describe('Unit: Service: session', function () {
 
             expect(service.postAuthPreparation.calledOnce, 'postAuthPreparation').to.be.true;
             expect(callback.calledOnce, 'callback').to.be.true;
+        });
+    });
+
+    describe('#handleAuthentication', function () {
+        it('uses a browser-observable hash replacement for the React root route', async function () {
+            const replaceHash = sinon.stub(windowProxy, 'replaceHash');
+
+            await service.handleAuthentication();
+
+            expect(replaceHash.calledOnceWith('/')).to.be.true;
         });
     });
 

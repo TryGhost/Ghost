@@ -7,6 +7,10 @@ export default {
         window.location.replace(url);
     },
 
+    replaceHash(route) {
+        window.location.replace(`#${route}`);
+    },
+
     replaceState(params, title, url) {
         window.history.replaceState(params, title, url);
     },

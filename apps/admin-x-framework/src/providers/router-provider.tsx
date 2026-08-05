@@ -157,7 +157,7 @@ export function useNavigate() {
         }
 
         if (options?.crossApp) {
-            externalNavigate({route: to, isExternal: true});
+            externalNavigate({route: to, isExternal: true, replace: options.replace});
             return;
         }
 
@@ -186,7 +186,7 @@ export function Navigate({to, replace, state, crossApp}: CustomNavigateProps) {
     const {externalNavigate} = useFramework();
 
     if (crossApp) {
-        externalNavigate({route: to, isExternal: true});
+        externalNavigate({route: to, isExternal: true, replace});
         return null;
     }
 
