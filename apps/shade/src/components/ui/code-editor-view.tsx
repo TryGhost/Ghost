@@ -57,19 +57,29 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
     });
     const {darkMode, setFocusState} = useFocusContext();
 
+    // Tooltips (autocomplete) escape this component's overflow-hidden container
+    // by rendering into a viewport-covering parent on document.body. The parent
+    // must span the viewport because CodeMirror demotes fixed tooltips to
+    // absolute (positioned against the parent's rect) whenever its offsetParent
+    // heuristics trip — reliably in Safari under page zoom — and it must carry
+    // the `shade` class so token-based tooltip styles resolve outside the app
+    // root (`.dark` lives on <html>, so dark mode inherits). Tooltip styling is
+    // global in styles.css; wrapper-scoped classes cannot reach it.
+    const [tooltipParent] = useState(() => document.createElement('div'));
+    useEffect(() => {
+        tooltipParent.className = 'shade pointer-events-none fixed inset-0 z-[60]';
+        document.body.appendChild(tooltipParent);
+        return () => {
+            tooltipParent.remove();
+        };
+    }, [tooltipParent]);
+
     const editorExtensions = useMemo(() => {
-        // Tooltips (autocomplete) render into document.body: inside the editor
-        // they get clipped by this component's overflow-hidden container, and
-        // plain position:fixed gets demoted to absolute by CodeMirror whenever
-        // an ancestor is a fixed-position containing block (its offsetParent
-        // check). CodeMirror mirrors the editor's theme classes onto the
-        // detached container, so tooltip styling must be global, not wrapper-
-        // scoped (see .cm-tooltip rules in styles.css).
-        const base = [...resolvedExtensions, tooltips({position: 'fixed', parent: document.body})];
+        const base = [...resolvedExtensions, tooltips({position: 'fixed', parent: tooltipParent})];
         return ariaLabel
             ? [...base, EditorView.contentAttributes.of({'aria-label': ariaLabel})]
             : base;
-    }, [resolvedExtensions, ariaLabel]);
+    }, [resolvedExtensions, ariaLabel, tooltipParent]);
 
     const handleFocus: FocusEventHandler<HTMLDivElement> = (e) => {
         onFocus?.(e);
