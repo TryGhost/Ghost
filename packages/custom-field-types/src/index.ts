@@ -26,12 +26,28 @@ import {z} from 'zod';
  * site has defined; a misspelled part is refused here, because a type's parts are declared
  * in this file and nowhere else. Each is enforced where the names are known.
  *
+ * ## What a failure says
+ *
+ * A rule carries the sentence shown when it is broken, so the two cannot drift. Each
+ * states what is expected rather than what went wrong, so one sentence covers every way
+ * of breaking that rule.
+ *
+ * The sentences are plain literals with no interpolation, so each is usable as a
+ * translation key. Nothing here translates: Ghost's parser reads `t()` calls out of the
+ * app that renders a string, so that app owns the step. Admin, the only one today, is not
+ * translated at all.
+ *
+ * Two failures keep zod's own wording, both reachable only by a client sending the wrong
+ * JSON shape: a composite handed something that is not an object, and a part nobody
+ * declared. Naming the offending key serves whoever has to fix that client.
+ *
  * ## What this package will not do
  *
- * No presentation: labels, icons and input controls belong to the frontend. No storage:
- * columns and codecs belong to the backend. One exception lives in `./csv` — how a value
- * maps onto CSV columns — because both tiers need the same answer and a disagreement
- * between them is a file that silently stops round-tripping.
+ * No presentation beyond that sentence: labels, icons and input controls belong to the
+ * frontend, and so does any wording that depends on where it appears rather than on which
+ * rule was broken. No storage: columns and codecs belong to the backend. One exception
+ * lives in `./csv` — how a value maps onto CSV columns — because both tiers need the same
+ * answer and a disagreement between them is a file that silently stops round-tripping.
  */
 
 /** The source for the union type, the zod enum and the `FIELD_TYPES` keys alike. */
@@ -56,12 +72,12 @@ const byteLength = (value: string): number => new TextEncoder().encode(value).le
  * Builders are named after what a value is rather than taking a size, so that a bound
  * lives with everything else true of that thing instead of as a number at the call site.
  */
-const text = () => z.string().trim();
+const text = () => z.string({error: 'Enter text.'}).trim();
 
-const shortText = () => text().max(255);
+const shortText = () => text().max(255, {error: 'Use 255 characters or fewer.'});
 
 const longText = () => text().refine(value => byteLength(value) <= MAX_LONG_TEXT_BYTES, {
-    message: `Value must be at most ${MAX_LONG_TEXT_BYTES} bytes.`
+    error: 'This text is too long to save. Shorten it a little.'
 });
 
 /**
@@ -70,7 +86,7 @@ const longText = () => text().refine(value => byteLength(value) <= MAX_LONG_TEXT
  * countries to check the shape of one without knowing which country it is for, and the
  * country is a sibling part rather than something this can see.
  */
-const postalCode = () => text().max(32);
+const postalCode = () => text().max(32, {error: 'Use 32 characters or fewer.'});
 
 /**
  * The shape of an ISO 3166-1 alpha-2 code, deliberately not checked against the list of
@@ -84,7 +100,7 @@ const postalCode = () => text().max(32);
  * Checked as two ASCII letters on the way in rather than by length on the way out, because
  * uppercasing does not preserve length: `ß` becomes `SS` and `aß` becomes `ASS`.
  */
-const countryCode = () => text().regex(/^[A-Za-z]{2}$/).toUpperCase();
+const countryCode = () => text().regex(/^[A-Za-z]{2}$/, {error: 'Enter a 2-letter country code, like US.'}).toUpperCase();
 
 /**
  * Both ends are pinned to a string because storage keeps one string per leaf: a type
@@ -133,17 +149,18 @@ function defineFieldTypes<D extends Record<FieldType, FieldTypeDeclaration>>(dec
  * explicitly undefined survives parsing as a key holding undefined, and a bare presence
  * check would let `{line1: undefined}` through as if it named something.
  */
-function record<F extends Record<string, PartSchema>>(fields: F) {
+function record<F extends Record<string, PartSchema>>(fields: F, {error}: {error: string}) {
     // Restated for the type system, which loses the key-to-schema mapping through
     // `Object.fromEntries`; without it every type built on a record infers as `unknown`.
     const shape = Object.fromEntries(
         Object.entries(fields).map(([key, part]) => [key, clearable(part)])
     ) as {[K in keyof F]: ReturnType<typeof clearable<F[K]>>};
 
-    // Strict, so a part nobody declared is refused rather than dropped.
+    // Strict, so a part nobody declared is refused rather than dropped. That refusal keeps
+    // zod's wording, which names the offending key.
     const value = z.strictObject(shape).refine(
         parts => Object.values(parts).some(part => typeof part === 'string'),
-        {message: 'A value must name at least one part.'}
+        {error}
     );
 
     return {value, fields};
@@ -161,7 +178,7 @@ export const FIELD_TYPES = defineFieldTypes({
         state: shortText(),
         postal_code: postalCode(),
         country: countryCode()
-    })
+    }, {error: 'Enter at least one part of the address.'})
 });
 
 /** Named for the admin types built on it, which speak of an address rather than a record. */
