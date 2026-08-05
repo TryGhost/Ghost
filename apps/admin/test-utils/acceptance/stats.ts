@@ -29,7 +29,6 @@ import type {
 } from "@tryghost/admin-x-framework/api/stats";
 
 import { fakeAdminEndpoint, type EndpointCapture } from "./worker";
-import { fakePosts } from "./resources";
 
 type InputOf<TBuilder> = TBuilder extends (input: infer TInput) => unknown ? NonNullable<TInput> : never;
 
@@ -148,19 +147,3 @@ export const fakeAdminStats = {
         return fakeAdminEndpoint("GET", endpoint("/stats/newsletter-click-stats/"), response);
     },
 };
-
-/** Minimal valid request graph for the Analytics overview destination. */
-export function fakeAnalyticsOverview(): void {
-    const today = new Date().toISOString().slice(0, 10);
-    fakeAdminStats.memberCount({
-        stats: [{ date: today }],
-        totals: { paid: 0, free: 0, comped: 0, gift: 0 },
-    });
-    fakeAdminStats.mrr({
-        stats: [{ date: today }],
-        totals: [{ currency: "usd", mrr: 0 }],
-    });
-    fakeAdminStats.subscriptions();
-    fakeAdminStats.topPostViews();
-    fakePosts([]);
-}

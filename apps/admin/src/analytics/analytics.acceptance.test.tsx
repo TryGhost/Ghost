@@ -4,6 +4,7 @@ import {
     TINYBIRD_SITE_UUID,
     currentRoute,
     fakeAdminStats,
+    fakeAnalyticsOverview,
     fakeNewsletters,
     fakePosts,
     fakeTinybirdPipe,
@@ -87,11 +88,7 @@ function seedTopPostsViews() {
 
 describe("Analytics overview", () => {
     it("renders zero KPIs when growth history is empty", async () => {
-        fakeAdminStats.memberCount();
-        fakeAdminStats.mrr();
-        fakeAdminStats.subscriptions();
-        fakeAdminStats.topPostViews();
-        fakePosts([]);
+        fakeAnalyticsOverview();
         await renderAdminApp("/analytics");
 
         await expect.element(analyticsScreen.membersValue()).toHaveTextContent(/^0$/);
