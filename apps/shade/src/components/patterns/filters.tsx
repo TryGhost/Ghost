@@ -915,6 +915,11 @@ export interface CustomRendererProps<T = unknown> {
     values: T[];
     onChange: (values: T[]) => void;
     operator: string;
+    // Set the predicate's operator from inside the renderer. Provided when the
+    // field opts into `renderOperatorInValue`, so a renderer whose operator set
+    // depends on a choice made in the value area (e.g. a custom field whose type
+    // is picked here) can own the operator control itself.
+    onOperatorChange?: (operator: string) => void;
 }
 
 // Grouped field configuration interface
@@ -1006,6 +1011,12 @@ export interface FilterFieldConfig<T = unknown> {
     defaultValue?: T;
     // Hide the operator dropdown and only show the operator as text
     hideOperatorSelect?: boolean;
+    // Suppress the framework's operator control entirely and let a customRenderer
+    // render its own, positioned after the value area's own selections. Used when
+    // the valid operator set depends on a choice made inside the renderer (e.g. a
+    // custom field whose type is picked there). The renderer receives
+    // `onOperatorChange` to drive the predicate operator.
+    renderOperatorInValue?: boolean;
     // Controlled values support for this field
     value?: T[];
     onValueChange?: (values: T[]) => void;
@@ -1234,11 +1245,93 @@ function FilterOperatorDropdown<T = unknown>({field, operator, values, onChange}
     );
 }
 
+export interface FilterSegmentOption {
+    value: string;
+    label: string;
+}
+
+export interface FilterSegmentSelectProps {
+    value: string;
+    options: FilterSegmentOption[];
+    onChange: (value: string) => void;
+    placeholder?: string;
+    ariaLabel?: string;
+    testId?: string;
+}
+
+// A dropdown segment styled like the built-in operator control, so a custom
+// renderer can compose its own choices (e.g. a custom field's field / sub-field /
+// operator) that read as native filter segments rather than standalone selects.
+export function FilterSegmentSelect({value, options, onChange, placeholder, ariaLabel, testId}: FilterSegmentSelectProps) {
+    const context = useFilterContext();
+    const selected = options.find(option => option.value === value);
+
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger
+                aria-label={ariaLabel}
+                className={filterOperatorVariants({variant: context.variant, size: context.size})}
+                data-testid={testId}
+            >
+                <span className={selected ? undefined : 'text-muted-foreground'}>
+                    {selected ? selected.label : placeholder}
+                </span>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-fit min-w-fit">
+                {options.map(option => (
+                    <DropdownMenuItem
+                        key={option.value}
+                        className="flex items-center justify-between"
+                        onClick={() => onChange(option.value)}
+                    >
+                        <span>{option.label}</span>
+                        <Check className={`ms-auto text-primary ${option.value === value ? 'opacity-100' : 'opacity-0'}`} />
+                    </DropdownMenuItem>
+                ))}
+            </DropdownMenuContent>
+        </DropdownMenu>
+    );
+}
+
+export interface FilterSegmentInputProps {
+    value: string;
+    onChange: (value: string) => void;
+    placeholder?: string;
+    ariaLabel?: string;
+    className?: string;
+    testId?: string;
+}
+
+// A text-input segment styled like the built-in value input, for the value part
+// of a custom renderer composed from segments.
+export function FilterSegmentInput({value, onChange, placeholder, ariaLabel, className, testId}: FilterSegmentInputProps) {
+    const context = useFilterContext();
+
+    return (
+        <div
+            className={cn('w-36', filterInputVariants({variant: context.variant, size: context.size}), className)}
+            data-slot="filters-input-wrapper"
+        >
+            <input
+                aria-label={ariaLabel}
+                autoComplete="off"
+                className="w-full bg-transparent outline-hidden dark:!bg-transparent"
+                data-slot="filters-input"
+                data-testid={testId}
+                placeholder={placeholder}
+                value={value}
+                onChange={event => onChange(event.target.value)}
+            />
+        </div>
+    );
+}
+
 interface FilterValueSelectorProps<T = unknown> {
     field: FilterFieldConfig<T>;
     values: T[];
     onChange: (values: T[]) => void;
     operator: string;
+    onOperatorChange?: (operator: string) => void;
 }
 
 interface SelectOptionsPopoverProps<T = unknown> {
@@ -1750,7 +1843,7 @@ function SelectOptionsPopover<T = unknown>({
     );
 }
 
-function FilterValueSelector<T = unknown>({field, values, onChange, operator}: FilterValueSelectorProps<T>) {
+function FilterValueSelector<T = unknown>({field, values, onChange, operator, onOperatorChange}: FilterValueSelectorProps<T>) {
     const [open, setOpen] = useState(false);
     const [searchInput, setSearchInput] = useState('');
     const context = useFilterContext();
@@ -1775,6 +1868,13 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
 
     // Use custom renderer if provided
     if (field.customRenderer) {
+        // A field that renders its own operator also composes its own segments, so
+        // it sits directly in the filter item rather than inside a single value box
+        // — otherwise its segments would nest inside one bordered value pill.
+        if (field.renderOperatorInValue) {
+            return <>{field.customRenderer({field, values, onChange, operator, onOperatorChange})}</>;
+        }
+
         return (
             <div
                 className={filterFieldValueVariants({
@@ -1783,7 +1883,7 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
                     cursorPointer: context.cursorPointer
                 })}
             >
-                {field.customRenderer({field, values, onChange, operator})}
+                {field.customRenderer({field, values, onChange, operator, onOperatorChange})}
             </div>
         );
     }
@@ -2250,12 +2350,14 @@ export const FiltersContent = <T = unknown,>({filters, fields, onChange}: Filter
                         </div>
 
                         {/* Operator Dropdown */}
-                        <FilterOperatorDropdown<T>
-                            field={field}
-                            operator={filter.operator}
-                            values={filter.values}
-                            onChange={operator => updateFilter(filter.id, {operator})}
-                        />
+                        {!field.renderOperatorInValue && (
+                            <FilterOperatorDropdown<T>
+                                field={field}
+                                operator={filter.operator}
+                                values={filter.values}
+                                onChange={operator => updateFilter(filter.id, {operator})}
+                            />
+                        )}
 
                         {/* Value Selector */}
                         <FilterValueSelector<T>
@@ -2263,6 +2365,7 @@ export const FiltersContent = <T = unknown,>({filters, fields, onChange}: Filter
                             operator={filter.operator}
                             values={filter.values}
                             onChange={values => updateFilter(filter.id, {values})}
+                            onOperatorChange={operator => updateFilter(filter.id, {operator})}
                         />
 
                         {/* Remove Button */}
@@ -2551,12 +2654,14 @@ export function Filters<T = unknown>({
                             </div>
 
                             {/* Operator Dropdown */}
-                            <FilterOperatorDropdown<T>
-                                field={field}
-                                operator={filter.operator}
-                                values={filter.values}
-                                onChange={operator => updateFilter(filter.id, {operator})}
-                            />
+                            {!field.renderOperatorInValue && (
+                                <FilterOperatorDropdown<T>
+                                    field={field}
+                                    operator={filter.operator}
+                                    values={filter.values}
+                                    onChange={operator => updateFilter(filter.id, {operator})}
+                                />
+                            )}
 
                             {/* Value Selector */}
                             <FilterValueSelector<T>
@@ -2564,6 +2669,7 @@ export function Filters<T = unknown>({
                                 operator={filter.operator}
                                 values={filter.values}
                                 onChange={values => updateFilter(filter.id, {values})}
+                                onOperatorChange={operator => updateFilter(filter.id, {operator})}
                             />
 
                             {/* Remove Button */}
