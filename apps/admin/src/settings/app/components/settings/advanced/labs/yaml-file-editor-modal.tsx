@@ -1,4 +1,4 @@
-import CodeEditor from '@/settings/app/components/code-editor';
+import {CodeEditor} from '@tryghost/shade/components';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useMemo, useState} from 'react';
 import {APIError, JSONError} from '@tryghost/admin-x-framework/errors';
