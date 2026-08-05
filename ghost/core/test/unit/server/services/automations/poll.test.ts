@@ -8,7 +8,6 @@ import {MEMBER_WELCOME_EMAIL_SLUGS} from '../../../../../core/server/services/me
 import {Member} from '../../../../../core/server/models';
 
 const settingsCache = require('../../../../../core/shared/settings-cache');
-const labs = require('../../../../../core/shared/labs');
 
 const MAX_STEPS_PER_BATCH = 100;
 const RETRY_DELAY_MS = 10 * 60 * 1000;
@@ -125,7 +124,6 @@ describe('automations poll', function () {
     let scheduleAutomationEmailAnalyticsJob: sinon.SinonStub;
     let options: PollOptionsStubs;
     let settingsCacheGet: sinon.SinonStub;
-    let labsIsSet: sinon.SinonStub;
 
     beforeEach(function () {
         sinon.useFakeTimers({now: new Date('2026-01-01T12:00:00.000Z'), shouldAdvanceTime: true});
@@ -158,7 +156,6 @@ describe('automations poll', function () {
         settingsCacheGet = sinon.stub(settingsCache, 'get');
         settingsCacheGet.withArgs('email_track_clicks').returns(false);
         settingsCacheGet.withArgs('email_track_opens').returns(false);
-        labsIsSet = sinon.stub(labs, 'isSet');
         sinon.stub(Member, 'findOne').resolves(buildMember());
     });
 
@@ -451,24 +448,6 @@ describe('automations poll', function () {
         const step = buildEmailStep();
         automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
         settingsCacheGet.withArgs('email_track_clicks').returns(false);
-
-        await poll(options);
-
-        sinon.assert.calledOnceWithExactly(automationsApi.recordEmailSent, sinon.match({
-            automationRunStepId: step.id,
-            trackClicks: false
-        }));
-        sinon.assert.calledOnceWithExactly(memberWelcomeEmailService.api.sendAutomationEmail, sinon.match({
-            trackClicks: false,
-            automationActionRevisionId: step.automation_action_revision_id,
-            automationRunStepId: step.id
-        }));
-    });
-
-    it('disables click tracking when automation analytics are disabled', async function () {
-        const step = buildEmailStep();
-        automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
-        settingsCacheGet.withArgs('email_track_clicks').returns(true);
 
         await poll(options);
 
