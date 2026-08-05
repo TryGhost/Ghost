@@ -1,5 +1,5 @@
-import {getPost} from '@tryghost/admin-x-framework/api/posts';
 import {readPublishCelebration, type PublishCelebration} from '@/posts/list/post-publish-celebration';
+import {useBrowsePages} from '@tryghost/admin-x-framework/api/pages';
 import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {useEffect, useRef, useState} from 'react';
 
@@ -40,7 +40,31 @@ export function usePostPublishCelebration() {
         setCelebration(readPublishCelebration());
     }, []);
 
-    const {data: postData} = getPost(celebration?.id ?? '', {enabled: Boolean(celebration)});
+    /**
+     * Browsed by id rather than read as a single post, and keyed on the type
+     * the *editor* recorded — Ember does `store.query(post.type, {filter:
+     * \`id:${post.id}\`})`, where the type is 'post' or 'page'.
+     *
+     * Reading it back off the posts endpoint regardless would 404 for a page,
+     * so publishing a page would never celebrate at all. `include` matters too:
+     * without it the modal has no author to show.
+     */
+    const isPage = celebration?.type === 'page';
+    const searchParams = {
+        filter: `id:${celebration?.id ?? ''}`,
+        limit: '1',
+        include: 'authors,newsletter,email'
+    };
+
+    // Both called unconditionally and picked by type — hooks can't be branched.
+    const {data: postData} = useBrowsePosts({
+        searchParams,
+        enabled: Boolean(celebration) && !isPage
+    });
+    const {data: pageData} = useBrowsePages({
+        searchParams,
+        enabled: Boolean(celebration) && isPage
+    });
 
     /**
      * The total published count, for "That's 47 posts published."
@@ -54,7 +78,7 @@ export function usePostPublishCelebration() {
         enabled: celebration?.wasPublished === true
     });
 
-    const post = postData?.posts?.[0];
+    const post = isPage ? pageData?.pages?.[0] : postData?.posts?.[0];
 
     return {
         celebration,
