@@ -194,23 +194,26 @@ describe("Posts list context menu", () => {
     });
 
     /**
-     * The bulk actions are wired in Phase 8. Until then they must not look
-     * available: a menu that closes and does nothing when you pick Delete is
-     * worse than one that says the item isn't ready.
+     * Every item the menu shows must do something. The menu renders whatever
+     * `getPostContextMenuItems` returns and disables anything absent from
+     * `IMPLEMENTED_POST_ACTIONS`, so adding an item without wiring it would
+     * show up here as a disabled entry rather than as a silent no-op.
      */
-    it("disables the actions that are not wired up yet", async () => {
+    it("offers no item that does nothing", async () => {
         fakePosts([post({ title: "A draft", status: "draft" })]);
         await renderAdminApp("/posts?type=draft", FLAG_ON);
         await expect.element(postsListScreen.listItems().first()).toBeVisible();
 
         await postsListScreen.listItems().first().click({ button: "right" });
+        await expect.element(postsListScreen.contextMenu()).toBeVisible();
 
-        // Add a tag and Change access still need their pickers.
-        await expect.element(postsListScreen.contextMenuItem("Add a tag")).toBeDisabled();
-        await expect.element(postsListScreen.contextMenuItem("Change access")).toBeDisabled();
-        // ...while the ones that do work are not disabled.
-        await expect.element(postsListScreen.contextMenuItem("Duplicate")).not.toBeDisabled();
-        await expect.element(postsListScreen.contextMenuItem("Delete")).not.toBeDisabled();
+        const disabled = postsListScreen.contextMenu()
+            .elements()
+            .flatMap(menu => [...menu.querySelectorAll('[role="menuitem"]')])
+            .filter(item => item.getAttribute("data-disabled") !== null)
+            .map(item => item.textContent);
+
+        expect(disabled).toEqual([]);
     });
 
     /**

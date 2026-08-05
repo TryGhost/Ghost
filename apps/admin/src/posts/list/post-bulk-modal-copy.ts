@@ -50,3 +50,20 @@ export function getBulkConfirmCopy(
         runningLabel: LABELS[key].running
     };
 }
+
+/**
+ * The Change access modal's heading, ported from `edit-posts-access.hbs`. The
+ * count is appended only when the selection is not single — same `isSingle`
+ * rule as the confirmations above, so an inverted selection of one still counts.
+ */
+export function getAccessModalTitle({count, resource, isSingle}: {
+    count: number;
+    resource: PostResource;
+    isSingle: boolean;
+}): string {
+    const noun = resource === 'pages' ? 'page' : 'post';
+
+    return isSingle
+        ? `Change ${noun} access`
+        : `Change ${noun} access for ${count} ${noun}s`;
+}

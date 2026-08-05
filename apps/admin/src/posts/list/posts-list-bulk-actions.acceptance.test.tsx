@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { userEvent } from "vitest/browser";
 
-import { fakeAdminEndpoint, fakePosts, fakeTags, fakeUsers, post, renderAdminApp } from "@test-utils/acceptance";
+import { fakeAdminEndpoint, fakePosts, fakeTags, fakeTiers, fakeUsers, post, renderAdminApp, tag } from "@test-utils/acceptance";
 import { postsListScreen } from "./posts-list.screen";
 
 const FLAG_ON = { labs: { postsListReact: true } };
@@ -131,6 +131,71 @@ describe("Posts list bulk actions", () => {
 
             await expect(postsListScreen.listItems()).toHaveCount(1);
             await expect.element(postsListScreen.listItems().first()).toHaveTextContent("Untouched");
+        });
+    });
+
+    /**
+     * The edit path had no request assertions at all, so a typo in the action
+     * verb — `feature` for `unfeature`, say — would pass every other test in
+     * this file, because the prune tests are satisfied entirely by the local
+     * edit and never look at what was sent.
+     */
+    describe("the outgoing bulk edit", () => {
+        it.each([
+            {label: "Unpublish", verb: "unpublish", type: "published", confirm: true},
+            {label: "Unschedule", verb: "unschedule", type: "scheduled", confirm: true},
+            {label: "Feature", verb: "feature", type: "draft", confirm: false}
+        ] as const)("sends $verb", async ({label, verb, type, confirm}) => {
+            fakePosts([post({ title: "Target", status: type })]);
+            const edit = fakeAdminEndpoint("PUT", /^\/posts\/bulk/, {});
+            await renderAdminApp(`/posts?type=${type}`, FLAG_ON);
+            await expect.element(postsListScreen.listItems().first()).toBeVisible();
+
+            await postsListScreen.listItems().first().click({ button: "right" });
+            await postsListScreen.contextMenuItem(label).click();
+
+            if (confirm) {
+                await postsListScreen.confirmButton(label).click();
+            }
+
+            await expect.poll(() => edit.requests.length).toBe(1);
+            expect(edit.requests[0].body).toEqual({bulk: {action: verb, meta: {}}});
+        });
+
+        it("sends the chosen tags for Add a tag", async () => {
+            fakePosts([post({ title: "Target", status: "draft" })]);
+            fakeTags([tag({ id: "t1", name: "News", slug: "news" })]);
+            const edit = fakeAdminEndpoint("PUT", /^\/posts\/bulk/, {});
+            await renderAdminApp("/posts?type=draft", FLAG_ON);
+            await expect.element(postsListScreen.listItems().first()).toBeVisible();
+
+            await postsListScreen.listItems().first().click({ button: "right" });
+            await postsListScreen.contextMenuItem("Add a tag").click();
+            await postsListScreen.tagOption("News").click();
+            await postsListScreen.dialogButton("Add").click();
+
+            await expect.poll(() => edit.requests.length).toBe(1);
+            expect(edit.requests[0].body).toEqual({
+                bulk: {action: "addTag", meta: {tags: [{id: "t1", name: "News", slug: "news"}]}}
+            });
+        });
+
+        it("sends the chosen visibility for Change access", async () => {
+            fakePosts([post({ title: "Target", status: "draft" })]);
+            // The modal offers a tier picker once "Specific tier(s)" is chosen.
+            fakeTiers([]);
+            const edit = fakeAdminEndpoint("PUT", /^\/posts\/bulk/, {});
+            await renderAdminApp("/posts?type=draft", FLAG_ON);
+            await expect.element(postsListScreen.listItems().first()).toBeVisible();
+
+            await postsListScreen.listItems().first().click({ button: "right" });
+            await postsListScreen.contextMenuItem("Change access").click();
+            await postsListScreen.dialogButton("Save").click();
+
+            await expect.poll(() => edit.requests.length).toBe(1);
+            expect(edit.requests[0].body).toEqual({
+                bulk: {action: "access", meta: {visibility: "public", tiers: []}}
+            });
         });
     });
 });
