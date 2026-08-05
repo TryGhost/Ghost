@@ -93,7 +93,6 @@
                 "src/components.ts",
                 "src/patterns.ts",
                 "src/page-templates.ts",
-                "src/posts-stats.ts",
                 "src/app.ts",
                 "src/utils.ts"
             ]

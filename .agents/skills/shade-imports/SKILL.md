@@ -16,7 +16,6 @@ import {Stack, Inline, Box, Grid, Container, Text} from '@tryghost/shade/primiti
 import {Button, Input, Dialog} from '@tryghost/shade/components';
 import {PageHeader, KpiCard, Filters} from '@tryghost/shade/patterns';
 import {ListPage} from '@tryghost/shade/page-templates';
-import {PostShareModal} from '@tryghost/shade/posts-stats';
 import {cn, formatNumber} from '@tryghost/shade/utils';
 import {ShadeApp} from '@tryghost/shade/app';
 ```

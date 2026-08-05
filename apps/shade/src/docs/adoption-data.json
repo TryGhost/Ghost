@@ -1,34 +1,34 @@
 {
   "snapshot": {
-    "generatedAt": "2026-08-04T19:27:52.582Z",
-    "sha": "78319af7df717abae77443c6393e50a933071f16",
-    "branch": "slars/settings-ref-cleanup"
+    "generatedAt": "2026-08-05T13:31:39.708Z",
+    "sha": "e56a23045ca33e4b8da7e966201e41e75c11c96a",
+    "branch": "steve-pla-244-collapse-shades-transitional-posts-stats-subpath"
   },
   "summary": {
-    "adminReactFilesTotal": 692,
-    "adminReactFilesUsingShade": 371,
-    "shadeAdoptionPct": 53.6,
-    "uniqueShadeComponentsUsed": 303,
+    "adminReactFilesTotal": 702,
+    "adminReactFilesUsingShade": 377,
+    "shadeAdoptionPct": 53.7,
+    "uniqueShadeComponentsUsed": 306,
     "adminXDsComponentsStillUsed": 0
   },
   "apps": [
     {
       "name": "admin",
-      "files": 591,
-      "shadeFiles": 322,
+      "files": 601,
+      "shadeFiles": 328,
       "adminXDsFiles": 0,
       "shadeComponents": [
         {
           "name": "Button",
-          "count": 145
+          "count": 148
         },
         {
           "name": "LucideIcon",
-          "count": 131
+          "count": 134
         },
         {
           "name": "formatNumber",
-          "count": 71
+          "count": 73
         },
         {
           "name": "FieldLabel",
@@ -40,15 +40,15 @@
         },
         {
           "name": "cn",
-          "count": 45
+          "count": 46
         },
         {
           "name": "Input",
-          "count": 43
+          "count": 44
         },
         {
           "name": "LoadingIndicator",
-          "count": 37
+          "count": 40
         },
         {
           "name": "FieldDescription",
@@ -60,7 +60,7 @@
         },
         {
           "name": "FieldError",
-          "count": 32
+          "count": 33
         },
         {
           "name": "Tabs",
@@ -71,16 +71,16 @@
           "count": 30
         },
         {
-          "name": "Switch",
+          "name": "Card",
           "count": 28
         },
         {
-          "name": "Card",
-          "count": 27
+          "name": "CardContent",
+          "count": 28
         },
         {
-          "name": "CardContent",
-          "count": 27
+          "name": "Switch",
+          "count": 28
         },
         {
           "name": "Select",
@@ -124,11 +124,23 @@
         },
         {
           "name": "DialogFooter",
-          "count": 20
+          "count": 21
         },
         {
           "name": "Text",
           "count": 20
+        },
+        {
+          "name": "Dialog",
+          "count": 19
+        },
+        {
+          "name": "DialogContent",
+          "count": 19
+        },
+        {
+          "name": "DialogTitle",
+          "count": 19
         },
         {
           "name": "SettingGroupContent",
@@ -147,15 +159,7 @@
           "count": 19
         },
         {
-          "name": "Dialog",
-          "count": 18
-        },
-        {
-          "name": "DialogContent",
-          "count": 18
-        },
-        {
-          "name": "DialogTitle",
+          "name": "Stack",
           "count": 18
         },
         {
@@ -167,7 +171,7 @@
           "count": 18
         },
         {
-          "name": "Stack",
+          "name": "DialogHeader",
           "count": 17
         },
         {
@@ -183,12 +187,12 @@
           "count": 17
         },
         {
-          "name": "DialogHeader",
+          "name": "CardDescription",
           "count": 16
         },
         {
-          "name": "CardDescription",
-          "count": 16
+          "name": "Textarea",
+          "count": 14
         },
         {
           "name": "getRangeDates",
@@ -211,16 +215,20 @@
           "count": 13
         },
         {
-          "name": "Textarea",
-          "count": 13
-        },
-        {
           "name": "TableRow",
           "count": 12
         },
         {
           "name": "ValueSource",
           "count": 12
+        },
+        {
+          "name": "InputGroup",
+          "count": 11
+        },
+        {
+          "name": "InputGroupAddon",
+          "count": 11
         },
         {
           "name": "Table",
@@ -251,11 +259,23 @@
           "count": 10
         },
         {
+          "name": "Box",
+          "count": 10
+        },
+        {
           "name": "ToggleGroup",
           "count": 10
         },
         {
           "name": "ToggleGroupItem",
+          "count": 10
+        },
+        {
+          "name": "Skeleton",
+          "count": 10
+        },
+        {
+          "name": "InputGroupInput",
           "count": 10
         },
         {
@@ -267,20 +287,8 @@
           "count": 10
         },
         {
-          "name": "InputGroup",
-          "count": 10
-        },
-        {
-          "name": "InputGroupAddon",
-          "count": 10
-        },
-        {
           "name": "BarChartLoadingIndicator",
           "count": 10
-        },
-        {
-          "name": "Box",
-          "count": 9
         },
         {
           "name": "TableHead",
@@ -288,10 +296,6 @@
         },
         {
           "name": "TableHeader",
-          "count": 9
-        },
-        {
-          "name": "InputGroupInput",
           "count": 9
         },
         {
@@ -319,8 +323,44 @@
           "count": 9
         },
         {
-          "name": "Skeleton",
-          "count": 9
+          "name": "PageHeader",
+          "count": 8
+        },
+        {
+          "name": "ImageUpload",
+          "count": 8
+        },
+        {
+          "name": "ImageUploadAction",
+          "count": 8
+        },
+        {
+          "name": "ImageUploadActions",
+          "count": 8
+        },
+        {
+          "name": "ImageUploadDropzone",
+          "count": 8
+        },
+        {
+          "name": "ImageUploadImage",
+          "count": 8
+        },
+        {
+          "name": "ImageUploadPreview",
+          "count": 8
+        },
+        {
+          "name": "Label",
+          "count": 8
+        },
+        {
+          "name": "ButtonProps",
+          "count": 8
+        },
+        {
+          "name": "DialogDescription",
+          "count": 8
         },
         {
           "name": "AlertDialog",
@@ -383,7 +423,11 @@
           "count": 8
         },
         {
-          "name": "PageHeader",
+          "name": "Container",
+          "count": 7
+        },
+        {
+          "name": "DirtyConfirmDialog",
           "count": 7
         },
         {
@@ -404,34 +448,6 @@
         },
         {
           "name": "Filter",
-          "count": 7
-        },
-        {
-          "name": "ButtonProps",
-          "count": 7
-        },
-        {
-          "name": "ImageUpload",
-          "count": 7
-        },
-        {
-          "name": "ImageUploadAction",
-          "count": 7
-        },
-        {
-          "name": "ImageUploadActions",
-          "count": 7
-        },
-        {
-          "name": "ImageUploadDropzone",
-          "count": 7
-        },
-        {
-          "name": "ImageUploadImage",
-          "count": 7
-        },
-        {
-          "name": "ImageUploadPreview",
           "count": 7
         },
         {
@@ -463,20 +479,8 @@
           "count": 7
         },
         {
-          "name": "DialogDescription",
-          "count": 7
-        },
-        {
           "name": "AlertDialogCancel",
           "count": 7
-        },
-        {
-          "name": "Container",
-          "count": 6
-        },
-        {
-          "name": "DirtyConfirmDialog",
-          "count": 6
         },
         {
           "name": "useDirtyConfirmation",
@@ -539,6 +543,10 @@
           "count": 5
         },
         {
+          "name": "InputGroupText",
+          "count": 5
+        },
+        {
           "name": "TooltipProvider",
           "count": 5
         },
@@ -575,10 +583,6 @@
           "count": 5
         },
         {
-          "name": "Label",
-          "count": 5
-        },
-        {
           "name": "SidebarGroup",
           "count": 5
         },
@@ -588,6 +592,30 @@
         },
         {
           "name": "ListPage",
+          "count": 4
+        },
+        {
+          "name": "Breadcrumb",
+          "count": 4
+        },
+        {
+          "name": "BreadcrumbItem",
+          "count": 4
+        },
+        {
+          "name": "BreadcrumbLink",
+          "count": 4
+        },
+        {
+          "name": "BreadcrumbList",
+          "count": 4
+        },
+        {
+          "name": "BreadcrumbPage",
+          "count": 4
+        },
+        {
+          "name": "BreadcrumbSeparator",
           "count": 4
         },
         {
@@ -624,10 +652,6 @@
         },
         {
           "name": "CopyFieldValue",
-          "count": 4
-        },
-        {
-          "name": "InputGroupText",
           "count": 4
         },
         {
@@ -675,35 +699,15 @@
           "count": 3
         },
         {
+          "name": "ShareModal",
+          "count": 3
+        },
+        {
           "name": "SelectGroup",
           "count": 3
         },
         {
           "name": "SelectLabel",
-          "count": 3
-        },
-        {
-          "name": "Breadcrumb",
-          "count": 3
-        },
-        {
-          "name": "BreadcrumbItem",
-          "count": 3
-        },
-        {
-          "name": "BreadcrumbLink",
-          "count": 3
-        },
-        {
-          "name": "BreadcrumbList",
-          "count": 3
-        },
-        {
-          "name": "BreadcrumbPage",
-          "count": 3
-        },
-        {
-          "name": "BreadcrumbSeparator",
           "count": 3
         },
         {
@@ -728,10 +732,6 @@
         },
         {
           "name": "RadioGroupItem",
-          "count": 3
-        },
-        {
-          "name": "PostShareModal",
           "count": 3
         },
         {
@@ -780,6 +780,30 @@
         },
         {
           "name": "DropdownMenuCheckboxItem",
+          "count": 2
+        },
+        {
+          "name": "DetailPage",
+          "count": 2
+        },
+        {
+          "name": "FacebookLogo",
+          "count": 2
+        },
+        {
+          "name": "GoogleLogo",
+          "count": 2
+        },
+        {
+          "name": "XLogo",
+          "count": 2
+        },
+        {
+          "name": "H3",
+          "count": 2
+        },
+        {
+          "name": "ShareModalSocialLink",
           "count": 2
         },
         {
@@ -847,10 +871,6 @@
           "count": 2
         },
         {
-          "name": "ShareModal",
-          "count": 2
-        },
-        {
           "name": "Navbar",
           "count": 2
         },
@@ -904,6 +924,22 @@
         },
         {
           "name": "ShadeApp",
+          "count": 1
+        },
+        {
+          "name": "Accordion",
+          "count": 1
+        },
+        {
+          "name": "AccordionContent",
+          "count": 1
+        },
+        {
+          "name": "AccordionItem",
+          "count": 1
+        },
+        {
+          "name": "AccordionTrigger",
           "count": 1
         },
         {
@@ -979,18 +1015,6 @@
           "count": 1
         },
         {
-          "name": "FacebookLogo",
-          "count": 1
-        },
-        {
-          "name": "GoogleLogo",
-          "count": 1
-        },
-        {
-          "name": "XLogo",
-          "count": 1
-        },
-        {
           "name": "GhostLogo",
           "count": 1
         },
@@ -1023,10 +1047,6 @@
           "count": 1
         },
         {
-          "name": "ShareModalSocialLink",
-          "count": 1
-        },
-        {
           "name": "FilterFieldGroup",
           "count": 1
         },
@@ -1040,10 +1060,6 @@
         },
         {
           "name": "RenderItemProps",
-          "count": 1
-        },
-        {
-          "name": "DetailPage",
           "count": 1
         },
         {
@@ -1140,10 +1156,6 @@
         },
         {
           "name": "getYRange",
-          "count": 1
-        },
-        {
-          "name": "H3",
           "count": 1
         },
         {
@@ -1478,15 +1490,19 @@
   "topShadeComponents": [
     {
       "name": "Button",
-      "count": 183
+      "count": 186
     },
     {
       "name": "LucideIcon",
-      "count": 170
+      "count": 173
     },
     {
       "name": "formatNumber",
-      "count": 74
+      "count": 76
+    },
+    {
+      "name": "LoadingIndicator",
+      "count": 57
     },
     {
       "name": "FieldLabel",
@@ -1497,16 +1513,12 @@
       "count": 54
     },
     {
-      "name": "LoadingIndicator",
-      "count": 54
-    },
-    {
       "name": "cn",
-      "count": 48
+      "count": 49
     },
     {
       "name": "Input",
-      "count": 48
+      "count": 49
     },
     {
       "name": "FieldDescription",
@@ -1518,7 +1530,7 @@
     },
     {
       "name": "FieldError",
-      "count": 34
+      "count": 35
     },
     {
       "name": "Tabs",
@@ -1533,6 +1545,14 @@
       "count": 29
     },
     {
+      "name": "Card",
+      "count": 28
+    },
+    {
+      "name": "CardContent",
+      "count": 28
+    },
+    {
       "name": "Switch",
       "count": 28
     },
@@ -1541,19 +1561,11 @@
       "count": 28
     },
     {
-      "name": "Card",
-      "count": 27
-    },
-    {
-      "name": "CardContent",
+      "name": "Skeleton",
       "count": 27
     },
     {
       "name": "Select",
-      "count": 26
-    },
-    {
-      "name": "SelectContent",
       "count": 26
     }
   ],
