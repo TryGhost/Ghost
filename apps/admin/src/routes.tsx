@@ -52,10 +52,28 @@ const EMBER_ROUTES: string[] = [
 
 const emberFallbackHandle = { allowInForceUpgrade: true } satisfies AdminRouteHandle;
 
+/**
+ * Ember routes that hide the nav sidebar.
+ *
+ * The editor is a focused writing surface and has always hidden it. Ember
+ * arranges that by setting `ui.isFullScreen` when the editor route *activates* —
+ * but with `postsListReact` on, the posts route aborts its transition, so the
+ * editor route never deactivates, and a second visit is a model change on an
+ * already-active route where `activate()` does not run again. The sidebar came
+ * back from the second post onwards.
+ *
+ * Deciding it from the route makes React the authority and removes the
+ * cross-implementation handshake, which had already caused the mirror-image bug
+ * (the sidebar going *missing* on returning from the editor).
+ */
+const EMBER_ROUTES_HIDING_SIDEBAR = new Set(['/editor/*']);
+
 const emberFallbackRoutes: RouteObject[] = EMBER_ROUTES.map((path) => ({
   path,
   Component: EmberFallback,
-  handle: emberFallbackHandle,
+  handle: EMBER_ROUTES_HIDING_SIDEBAR.has(path)
+    ? ({ ...emberFallbackHandle, hideAdminSidebar: true } satisfies AdminRouteHandle)
+    : emberFallbackHandle,
 }));
 
 const membersRoute: RouteObject = {
