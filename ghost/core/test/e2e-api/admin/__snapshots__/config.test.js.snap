@@ -33,7 +33,6 @@ Object {
       "indexnow": true,
       "lexicalIndicators": true,
       "llmsTxt": true,
-      "memberDetailsReact": true,
       "members": true,
       "membersCustomFields": true,
       "paywallImprovements": true,

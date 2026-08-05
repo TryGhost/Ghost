@@ -7,10 +7,9 @@ import {usePerTestIsolation} from '@/helpers/playwright/isolation';
 /**
  * Behaviour contract for `/members/:id`.
  *
- * The assertions here were written to run against both the Ember and the React
- * screen, so they describe what the screen does rather than how it is built.
- * Keep them that way: a test that reaches for markup specific to the current
- * implementation stops being a contract and starts being a snapshot.
+ * The assertions describe what the screen does rather than how it is built.
+ * Keep them that way: a test that reaches for implementation-specific markup
+ * stops being a contract and starts being a snapshot.
  */
 
 usePerTestIsolation();
@@ -323,7 +322,7 @@ test.describe('Ghost Admin - Member Detail', () => {
         const member = await memberFactory.create({name: 'Newsletter Test', email: 'newsletter-toggle@ghost.org'});
 
         await page.goto(memberPath(member.id));
-        // Wait on the toggle, not the checkbox — Ember hides the real input
+        // Wait on the toggle, not the checkbox — the real input is hidden
         // behind a styled span, so the control is never visible itself.
         await expect(memberDetailsPage.newsletterSubscriptionToggles.first()).toBeVisible();
         const initiallyChecked = await memberDetailsPage.newsletterSubscriptionCheckboxes.first().isChecked();
@@ -590,7 +589,7 @@ test.describe('Ghost Admin - Member Detail - screen-specific behaviour', () => {
         await page.goto(memberPath(member.id));
         await page.getByRole('button', {name: /Add complimentary subscription/}).click();
         await page.getByTestId('comp-tier-select').click();
-        const option = memberDetailsPage.reactCompTierOptions.first();
+        const option = memberDetailsPage.compTierOptions.first();
         const chosenTierId = await option.getAttribute('data-tier-id');
         await option.click();
         await page.getByTestId('comp-add-confirm').click();

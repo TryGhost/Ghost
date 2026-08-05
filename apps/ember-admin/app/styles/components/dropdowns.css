@@ -285,42 +285,6 @@
     margin-right: 0;
 }
 
-.gh-member-label-input .dropdown-action-icon {
-    opacity: 0;
-    transition: opacity ease-in-out 0.15s;
-    padding: 4px;
-    margin-top: -2px;
-    margin-bottom: -2px;
-    margin-right: 4px;
-    border-radius: 3px;
-}
-
-.gh-member-settings .gh-member-label-input .dropdown-action-icon {
-    margin-right: -8px;
-    padding: 4px 6px;
-    color: var(--midgrey);
-}
-
-.gh-member-settings .gh-member-label-input .dropdown-action-icon:hover {
-    color: var(--darkgrey);
-}
-
-.gh-member-label-input li:hover .dropdown-action-icon {
-    opacity: 1.0;
-}
-
-.gh-member-label-input .dropdown-action-icon:hover {
-    background: var(--whitegrey-d1);
-}
-
-.gh-member-label-input .dropdown-action-icon svg {
-    margin: 0;
-    height: 14px;
-    width: 14px;
-    line-height: 1em;
-    fill: none;
-}
-
 /**
 Post context menu
 */

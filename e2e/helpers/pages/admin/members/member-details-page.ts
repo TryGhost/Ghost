@@ -3,14 +3,12 @@ import {BasePage} from '@/helpers/pages';
 import {Locator, Page} from '@playwright/test';
 
 /**
- * The member detail screen has two implementations behind the
- * `memberDetailsReact` Labs flag, and this page object drives both without
- * branching. Where the two render different markup for the same thing, the
- * locator matches either.
+ * Page object for the member detail screen.
  *
- * Role-based locators need no visibility filter — Playwright already skips
- * hidden subtrees for them. `getByTestId` and attribute selectors don't, so
- * those are filtered explicitly to whichever tree is actually on screen.
+ * Menu entries are matched as either a menu item or a button, because the
+ * screen renders both: subscription actions live in a Radix menu, while
+ * "Add complimentary subscription" is a plain button in the subscriptions
+ * section.
  */
 const menuAction = (page: Page, name: string) => page.getByRole('menuitem', {name}).or(page.getByRole('button', {name}));
 
@@ -29,8 +27,6 @@ class SettingsSection extends BasePage {
         super(page);
         this.memberActionsButton = page.getByTestId('member-actions').filter({visible: true});
 
-        // Ember renders the menu contents as plain buttons; React renders them
-        // as Radix menu items. Match either.
         this.impersonateButton = menuAction(page, 'Impersonate');
         this.signOutOfAllDevices = menuAction(page, 'Sign out of all devices');
         this.disableCommentingButton = menuAction(page, 'Disable commenting');
@@ -77,17 +73,10 @@ export class MemberDetailsPage extends AdminPage {
     readonly newsletterSubscriptionCheckboxes: Locator;
     readonly engagementSection: Locator;
     readonly subscriptionActionsButton: Locator;
-    // The add-complimentary modal is the one place the two screens differ by
-    // widget rather than behaviour: Ember picks a tier with radios and saves
-    // from the modal footer, React uses dropdowns. These name Ember's controls
-    // so its test can drive them without a raw locator.
-    readonly emberCompTierOptions: Locator;
-    readonly reactCompTierOptions: Locator;
-    readonly emberSaveCompTierButton: Locator;
+    readonly compTierOptions: Locator;
     readonly cancelSubscriptionButton: Locator;
     readonly continueSubscriptionButton: Locator;
     readonly removeComplimentaryButton: Locator;
-    readonly addComplimentaryButton: Locator;
 
     constructor(page: Page) {
         super(page);
@@ -116,34 +105,18 @@ export class MemberDetailsPage extends AdminPage {
         this.hideCommentsCheckbox = this.disableCommentingModal.getByRole('switch', {name: 'Hide all previous comments'});
         this.commentingDisabledIndicator = page.getByText('Comments disabled');
 
-        this.screenTitle = page.locator('[data-test-screen-title]')
-            .or(page.getByTestId('member-detail-title'))
-            .filter({visible: true});
-        this.logoutConfirmModal = page.locator('[data-test-modal="logout-member"]')
-            .or(page.getByTestId('logout-member-modal'))
-            .filter({visible: true});
-        // Ember puts the testid on a styled span sitting next to the real
-        // checkbox, so the checked state has to be read from the sibling
-        // input. React puts it straight on the Radix switch, which carries the
-        // state itself.
-        this.newsletterSubscriptionCheckboxes = this.newsletterSubscriptionToggles
-            .locator('..')
-            .getByRole('checkbox')
-            .or(this.newsletterSubscriptionToggles.and(page.getByRole('switch')));
+        this.screenTitle = page.getByTestId('member-detail-title');
+        this.logoutConfirmModal = page.getByRole('alertdialog', {name: 'Sign out member from all devices?'});
+        // The testid sits on the Radix switch, which carries the checked state
+        // itself.
+        this.newsletterSubscriptionCheckboxes = this.newsletterSubscriptionToggles.and(page.getByRole('switch'));
         this.engagementSection = page.getByTestId('member-detail-engagement').filter({visible: true});
 
-        // Same control, different attribute: Ember marks it `data-test-button`,
-        // React `data-testid`.
-        this.subscriptionActionsButton = page.locator('[data-test-button="subscription-actions"]')
-            .or(page.getByTestId('subscription-actions'))
-            .filter({visible: true});
+        this.subscriptionActionsButton = page.getByRole('button', {name: 'Subscription menu'});
         this.cancelSubscriptionButton = menuAction(page, 'Cancel subscription');
         this.continueSubscriptionButton = menuAction(page, 'Continue subscription');
         this.removeComplimentaryButton = menuAction(page, 'Remove complimentary subscription');
-        this.addComplimentaryButton = menuAction(page, 'Add complimentary subscription');
-        this.emberCompTierOptions = page.locator('[data-test-tier-option]');
-        this.reactCompTierOptions = page.locator('[data-tier-id]');
-        this.emberSaveCompTierButton = page.locator('[data-test-button="save-comp-tier"]');
+        this.compTierOptions = page.getByRole('option');
 
         this.customFieldsCard = page.getByTestId('member-custom-fields-field');
         this.customFieldModal = page.getByTestId('member-custom-field-edit-modal');
@@ -169,17 +142,12 @@ export class MemberDetailsPage extends AdminPage {
 
     /**
      * Removes a complimentary subscription from the first subscription row.
-     * One implementation confirms the removal in a dialog and the other acts
-     * immediately, so the confirm step is best-effort — the caller only cares
-     * that the removal was requested.
+     * Removal always asks for confirmation first.
      */
     async removeComplimentarySubscription(): Promise<void> {
         await this.subscriptionActionsButton.first().click();
         await this.removeComplimentaryButton.click();
-        const confirm = this.page.getByRole('button', {name: 'Remove', exact: true});
-        if (await confirm.isVisible().catch(() => false)) {
-            await confirm.click();
-        }
+        await this.page.getByRole('button', {name: 'Remove', exact: true}).click();
     }
 
     async clickNewsletterSubscriptionToggle(index: number = 0) {

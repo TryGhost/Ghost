@@ -34,8 +34,7 @@ const GA_FEATURES = [
     'featurebaseFeedback',
     'dangerZoneResetAuth',
     'indexnow',
-    'llmsTxt',
-    'memberDetailsReact'
+    'llmsTxt'
 ];
 
 // These features are considered publicly available and can be enabled/disabled by users
