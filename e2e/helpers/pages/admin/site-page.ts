@@ -7,7 +7,7 @@ export class SitePage extends AdminPage {
     constructor(page: Page) {
         super(page);
         this.pageUrl = '/ghost/#/site';
-        this.sitePreview = page.locator('iframe.site-frame');
+        this.sitePreview = page.getByTitle('Site preview');
     }
 
     async waitForPageToFullyLoad(): Promise<void> {

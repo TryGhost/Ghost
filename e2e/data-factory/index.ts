@@ -14,8 +14,8 @@ export {AutomatedEmailFactory} from './factories/automated-email-factory';
 export type {AutomatedEmail} from './factories/automated-email-factory';
 export {CommentFactory} from './factories/comment-factory';
 export type {Comment} from './factories/comment-factory';
-export {StaffUserFactory} from './factories/staff-user-factory';
-export type {InvitationTokenProvider, StaffRole, StaffUser} from './factories/staff-user-factory';
+export {StaffAccountFactory} from './factories/staff-account-factory';
+export type {AssignableStaffRoleName, InvitationTokenProvider, StaffAccount} from './factories/staff-account-factory';
 export * from './factories/user-factory';
 
 // Persistence Adapters
@@ -38,5 +38,5 @@ export {createTierFactory} from './setup';
 export {createOfferFactory} from './setup';
 export {createAutomatedEmailFactory} from './setup';
 export {createCommentFactory} from './setup';
-export {createStaffUserFactory} from './setup';
+export {createStaffAccountFactory} from './setup';
 export {createFactories} from './setup';

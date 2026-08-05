@@ -1,19 +1,20 @@
 import {Factory} from '@/data-factory';
 import {HttpClient} from '@/data-factory/persistence/adapters/http-client';
 import {faker} from '@faker-js/faker';
+import type {StaffRoleName} from '@tryghost/test-data';
 
-export type StaffRole = 'Author' | 'Contributor';
+export type AssignableStaffRoleName = Exclude<StaffRoleName, 'Owner'>;
 
-export interface StaffUser {
+export interface StaffAccount {
     name: string;
     email: string;
     password: string;
-    role: StaffRole;
+    role: AssignableStaffRoleName;
 }
 
 interface Role {
     id: string;
-    name: string;
+    name: StaffRoleName;
 }
 
 interface RolesResponse {
@@ -22,8 +23,8 @@ interface RolesResponse {
 
 export type InvitationTokenProvider = (email: string) => Promise<string>;
 
-export class StaffUserFactory extends Factory<Partial<StaffUser>, StaffUser> {
-    entityType = 'staffUsers';
+export class StaffAccountFactory extends Factory<Partial<StaffAccount>, StaffAccount> {
+    entityType = 'staffAccounts';
     private readonly httpClient: HttpClient;
     private readonly getInvitationToken: InvitationTokenProvider;
 
@@ -36,53 +37,64 @@ export class StaffUserFactory extends Factory<Partial<StaffUser>, StaffUser> {
         this.getInvitationToken = getInvitationToken;
     }
 
-    build(options: Partial<StaffUser> = {}): StaffUser {
+    build(options: Partial<StaffAccount> = {}): StaffAccount {
         const role = options.role ?? 'Author';
 
         return {
             name: `Test ${role}`,
-            email: `test-${role.toLowerCase()}-${faker.string.uuid()}@ghost.org`,
+            email: `test-${role.toLowerCase().replace(' ', '-')}-${faker.string.uuid()}@ghost.org`,
             password: 'test@123@test',
             ...options,
             role
         };
     }
 
-    async create(options: Partial<StaffUser> = {}): Promise<StaffUser> {
-        const staffUser = this.build(options);
-        const roleId = await this.getRoleId(staffUser.role);
+    async create(options: Partial<StaffAccount> = {}): Promise<StaffAccount> {
+        const staffAccount = this.build(options);
+        const roleId = await this.getRoleId(staffAccount.role);
 
         await this.assertSuccessfulResponse(
             await this.httpClient.post('/ghost/api/admin/invites/', {
                 data: {
                     invites: [{
-                        email: staffUser.email,
+                        email: staffAccount.email,
                         role_id: roleId
                     }]
                 }
             }),
-            `invite ${staffUser.role}`
+            `invite ${staffAccount.role}`
         );
 
-        const token = await this.getInvitationToken(staffUser.email);
+        const token = await this.getInvitationToken(staffAccount.email);
         await this.assertSuccessfulResponse(
             await this.httpClient.post('/ghost/api/admin/authentication/invitation/', {
                 data: {
                     invitation: [{
                         token,
-                        name: staffUser.name,
-                        email: staffUser.email,
-                        password: staffUser.password
+                        name: staffAccount.name,
+                        email: staffAccount.email,
+                        // secretlint-disable-next-line @secretlint/secretlint-rule-pattern
+                        password: staffAccount.password
                     }]
                 }
             }),
-            `accept invitation for ${staffUser.role}`
+            `accept invitation for ${staffAccount.role}`
         );
 
-        return staffUser;
+        return staffAccount;
     }
 
-    private async getRoleId(roleName: StaffRole): Promise<string> {
+    async createMany(optionsList: Partial<StaffAccount>[]): Promise<StaffAccount[]> {
+        const staffAccounts: StaffAccount[] = [];
+
+        for (const options of optionsList) {
+            staffAccounts.push(await this.create(options));
+        }
+
+        return staffAccounts;
+    }
+
+    private async getRoleId(roleName: AssignableStaffRoleName): Promise<string> {
         const response = await this.httpClient.get('/ghost/api/admin/roles/?permissions=assign');
         await this.assertSuccessfulResponse(response, 'load assignable staff roles');
 

@@ -1,10 +1,11 @@
 import {LoginPage, PostsPage, SitePage, TagsPage} from '@/admin-pages';
 import {Page} from '@playwright/test';
 import {expect, test} from '@/helpers/playwright';
+import {usePerTestIsolation} from '@/helpers/playwright/isolation';
+
+usePerTestIsolation();
 
 test.describe('Ghost Admin - Signin Redirect', () => {
-    test.use({isolation: 'per-test'});
-
     async function logout(page: Page) {
         const loginPage = new LoginPage(page);
         await loginPage.logout();

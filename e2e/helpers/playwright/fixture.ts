@@ -1,5 +1,6 @@
 import baseDebug from '@tryghost/debug';
 import {AnalyticsOverviewPage} from '@/helpers/pages';
+import {AssignableStaffRoleName, StaffAccount, createStaffAccountFactory} from '@/data-factory';
 import {Browser, BrowserContext, Page, Request, Response, TestInfo, test as base} from '@playwright/test';
 import {EGRESS_ENFORCE, EGRESS_MOCK_RESPONSE_HEADER, EGRESS_MONITOR_ENABLED} from '@/helpers/environment/constants';
 import {EmailClient, MailPit} from '@/helpers/services/email/mail-pit';
@@ -7,7 +8,6 @@ import {FakeMailgunServer, MailgunTestService} from '@/helpers/services/mailgun'
 import {FakeStripeServer, StripeTestService, WebhookClient} from '@/helpers/services/stripe';
 import {GhostInstance, getEnvironmentManager, isAllowedHost} from '@/helpers/environment';
 import {SettingsService} from '@/helpers/services/settings/settings-service';
-import {StaffRole, StaffUser, createStaffUserFactory} from '@/data-factory';
 import {extractInviteLink} from '@/helpers/services/email/utils';
 import {faker} from '@faker-js/faker';
 import {loginToGetAuthenticatedSession} from '@/helpers/playwright/flows/sign-in';
@@ -105,8 +105,8 @@ export interface GhostInstanceFixture {
     mailgun?: MailgunTestService;
     emailClient: EmailClient;
     ghostAccountOwner: User;
-    ghostAccountAuthor: StaffUser;
-    ghostAccountContributor: StaffUser;
+    ghostAccountAuthor: StaffAccount;
+    ghostAccountContributor: StaffAccount;
     pageWithAuthenticatedUser: {
         page: Page;
         context: BrowserContext;
@@ -188,7 +188,15 @@ async function setupAuthenticatedPageFromStorageState(browser: Browser, baseURL:
 }
 
 async function getInvitationToken(emailClient: EmailClient, email: string): Promise<string> {
-    const messages = await emailClient.search({subject: 'has invited you to join', to: email});
+    let messages;
+
+    try {
+        messages = await emailClient.search({subject: 'has invited you to join', to: email});
+    } catch (error) {
+        const detail = error instanceof Error ? `: ${error.message}` : '';
+        throw new Error(`No staff invitation email found for ${email}${detail}`);
+    }
+
     const message = messages[0];
 
     if (!message) {
@@ -206,13 +214,13 @@ async function getInvitationToken(emailClient: EmailClient, email: string): Prom
     return token;
 }
 
-async function createStaffAccount(page: Page, emailClient: EmailClient, role: StaffRole): Promise<StaffUser> {
-    const staffUserFactory = createStaffUserFactory(
+async function createStaffAccount(page: Page, emailClient: EmailClient, role: AssignableStaffRoleName): Promise<StaffAccount> {
+    const staffAccountFactory = createStaffAccountFactory(
         page.request,
         email => getInvitationToken(emailClient, email)
     );
 
-    return await staffUserFactory.create({role});
+    return await staffAccountFactory.create({role});
 }
 
 /**
