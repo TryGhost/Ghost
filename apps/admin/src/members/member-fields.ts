@@ -196,12 +196,18 @@ const customFieldsCodec: FilterCodec = {
 
         const keyClause = `custom_fields.key:${escapeNqlString(fieldKey)}`;
 
+        // set / not-set target a part's presence when a part is chosen (`path`), or the
+        // whole field otherwise (the bare key / its negation).
         if (predicate.operator === 'is-set') {
-            return [keyClause];
+            return subfield
+                ? [`(${keyClause}+custom_fields.path:${escapeNqlString(subfield)})`]
+                : [keyClause];
         }
 
         if (predicate.operator === 'is-not-set') {
-            return [`custom_fields.key:-${escapeNqlString(fieldKey)}`];
+            return subfield
+                ? [`(${keyClause}+custom_fields.path:-${escapeNqlString(subfield)})`]
+                : [`custom_fields.key:-${escapeNqlString(fieldKey)}`];
         }
 
         const symbol = CUSTOM_FIELD_VALUE_SYMBOLS[predicate.operator];

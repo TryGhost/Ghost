@@ -1,28 +1,31 @@
 // The members filter reaches custom field values through a `custom_fields` relation
-// on the Member model (the values table joined on member_id). A field is named by
-// its `key` — the stable public slug — and matched on its `value`; a composite
-// field's part is named as `value.<part>`:
+// on the Member model (the values table joined on member_id). A field is named by its
+// `key` — the stable public slug — and matched on its `value`; a composite field's
+// part is named as `value.<part>`, and a part's presence as `path.<part>`:
 //
-//   (custom_fields.key:'company'+custom_fields.value:'Ghost')
+//   (custom_fields.key:'company'+custom_fields.value:'Ghost')              // value
 //   (custom_fields.key:'shipping-address'+custom_fields.value.country:'GB')
-//   custom_fields.key:'phone'                      // is set
-//   custom_fields.key:-'phone'                     // is not set
+//   custom_fields.key:'phone'  /  custom_fields.key:-'phone'               // field set / not set
+//   (custom_fields.key:'shipping-address'+custom_fields.path:'country')    // part set
+//   (custom_fields.key:'shipping-address'+custom_fields.path:-'country')   // part not set
 //
 // The values table stores one row per leaf: `custom_field_id` (the field), `path`
-// (empty for a scalar, the part's key for a composite), and `value_text`. The public
-// grammar names none of that — `key`/`value[.part]` is the vocabulary a saved segment
-// keeps. This transformer maps the grammar onto the columns just before the query is
-// built, and collapses the `(key + value)` pair into a single-row `$elemMatch` so both
-// conditions match the same leaf (not a member whose company row is Acme but who
-// happens to hold Ghost on some other field). The field is addressed publicly by its
-// immutable key but stored by id, so the caller passes in the key→id map to resolve
-// against; a key that no longer resolves (its field was deleted) matches nothing.
+// (empty for a scalar, the part's key for a composite), and `value_text`. A scalar
+// field is just a leaf at path ''; "the field", "a part", and "the whole field" are
+// the same thing — a set of leaf rows pinned by (custom_field_id, [path], [value]).
+// So every filter is one `$elemMatch` over those columns: positive asserts a matching
+// leaf exists, `$not` asserts none does. The public grammar names none of the storage
+// (`key`/`value`/`path` is the vocabulary a saved segment keeps); this transformer
+// resolves the immutable key to its stored id and emits the match. A key that no
+// longer resolves (its field was archived or deleted) matches nothing — and, crucially,
+// is never negated, since a negated empty match would match every member.
 import {chainTransformers} from '@tryghost/mongo-utils';
 
 const RELATION = 'custom_fields';
 const PREFIX = `${RELATION}.`;
 const KEY_ATTRIBUTE = `${PREFIX}key`;
 const VALUE_ATTRIBUTE = `${PREFIX}value`;
+const PATH_ATTRIBUTE = `${PREFIX}path`;
 const ROOT_PATH = '';
 
 // A field id that cannot exist, so a predicate naming a since-deleted field resolves
@@ -49,8 +52,8 @@ function isCustomFieldClause(node: unknown): node is QueryNode {
     return keys.length === 1 && keys[0].startsWith(PREFIX);
 }
 
-// The `(key + value)` compound the UI emits: an $and whose clauses all target the
-// relation and include the `key` discriminator. Its clauses describe one leaf row.
+// The compound the UI emits: an $and whose clauses all target the relation and include
+// the `key` discriminator. Its clauses describe one leaf row.
 function isCustomFieldCompound(clauses: unknown): clauses is QueryNode[] {
     if (!Array.isArray(clauses) || clauses.length < 2 || !clauses.every(isCustomFieldClause)) {
         return false;
@@ -71,46 +74,62 @@ function pathForValueAttribute(attribute: string): string | null {
     return null;
 }
 
+// The single `{$ne}` shape all negations arrive as (is-not-set on a key or part).
+function negatedString(value: unknown): string | null {
+    return isPlainObject(value) && typeof value.$ne === 'string' ? value.$ne : null;
+}
+
 export function createCustomFieldsFilterTransformer(fieldIdsByKey: Map<string, string>) {
     const resolve = (key: unknown): string => (typeof key === 'string' && fieldIdsByKey.get(key)) || NO_SUCH_FIELD;
 
-    // A `(key + value[.part])` compound becomes one $elemMatch over the leaf: the field
-    // resolved to its id, the part as `path`, and the value (with its operator) as
-    // `value_text`.
-    function toElemMatch(clauses: QueryNode[]): QueryNode {
-        const match: QueryNode = {};
-        for (const clause of clauses) {
-            const [attribute, value] = Object.entries(clause)[0];
-            if (attribute === KEY_ATTRIBUTE) {
-                match.custom_field_id = resolve(value);
-                continue;
-            }
-            const path = pathForValueAttribute(attribute);
-            if (path !== null) {
-                match.path = path;
-                match.value_text = value;
-            }
+    // One (maybe-negated) $elemMatch over the leaf columns: positive is "a leaf pinned
+    // by these matches", `$not` is "no leaf does". An unresolved field matches nothing
+    // either way, so it is never negated — a negated empty match would match everyone.
+    function buildElemMatch(fieldId: string, conditions: QueryNode, negate: boolean): QueryNode {
+        const match = {custom_field_id: fieldId, ...conditions};
+        if (negate && fieldId !== NO_SUCH_FIELD) {
+            return {[RELATION]: {$not: {$elemMatch: match}}};
         }
         return {[RELATION]: {$elemMatch: match}};
     }
 
-    // A standalone `key` clause is field-level is-set / is-not-set: "has any leaf for
-    // this field" and its negation. Emitted as a plain relation-column predicate (the
-    // dotted form mongo-knex reads), with the operator riding onto the resolved id.
-    //
-    // A key that no longer resolves (its field was archived or deleted) must match
-    // nothing for BOTH operators. is-set falls out naturally — `custom_field_id = ''`
-    // is a `IN (…)` over an empty set. is-not-set must NOT keep its `$ne`: that renders
-    // `NOT IN (empty)`, which is true for every member and would silently widen the
-    // segment to the whole member base. So an unresolved negation drops to the same
-    // never-match positive form.
-    function aliasKeyClause(value: unknown): QueryNode {
-        const column = `${RELATION}.custom_field_id`;
-        if (isPlainObject(value) && typeof value.$ne === 'string') {
-            const id = fieldIdsByKey.get(value.$ne);
-            return id ? {[column]: {$ne: id}} : {[column]: NO_SUCH_FIELD};
+    // A `(key + value[.part] | path)` compound. A `value` clause pins the part and its
+    // value; a `path` clause pins the part's presence (no value), and a negated path is
+    // is-not-set — no such leaf — which negates the whole match.
+    function toElemMatch(clauses: QueryNode[]): QueryNode {
+        let fieldId = NO_SUCH_FIELD;
+        const conditions: QueryNode = {};
+        let negate = false;
+
+        for (const clause of clauses) {
+            const [attribute, value] = Object.entries(clause)[0];
+
+            if (attribute === KEY_ATTRIBUTE) {
+                fieldId = resolve(value);
+            } else if (attribute === PATH_ATTRIBUTE) {
+                const negatedPath = negatedString(value);
+                conditions.path = negatedPath ?? value;
+                negate = negatedPath !== null;
+            } else {
+                const path = pathForValueAttribute(attribute);
+                if (path !== null) {
+                    conditions.path = path;
+                    conditions.value_text = value;
+                }
+            }
         }
-        return {[column]: resolve(value)};
+
+        return buildElemMatch(fieldId, conditions, negate);
+    }
+
+    // A standalone `key` clause is whole-field is-set / is-not-set: a leaf for this
+    // field exists (any part), or none does.
+    function fromKeyClause(value: unknown): QueryNode {
+        const negatedKey = negatedString(value);
+        if (negatedKey !== null) {
+            return buildElemMatch(resolve(negatedKey), {}, true);
+        }
+        return buildElemMatch(resolve(value), {}, false);
     }
 
     function transform(node: unknown): unknown {
@@ -128,7 +147,7 @@ export function createCustomFieldsFilterTransformer(fieldIdsByKey: Map<string, s
         const out: QueryNode = {};
         for (const [key, value] of Object.entries(node)) {
             if (key === KEY_ATTRIBUTE) {
-                Object.assign(out, aliasKeyClause(value));
+                Object.assign(out, fromKeyClause(value));
             } else {
                 out[key] = transform(value);
             }

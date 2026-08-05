@@ -279,6 +279,7 @@ function matchCustomFieldNode(node: AstNode): ParsedPredicate | null {
 
     let fieldKey: string | undefined;
     let valueEntry: {subfield: string; raw: unknown} | undefined;
+    let pathEntry: {subfield: string; negated: boolean} | undefined;
 
     for (const child of compound.children) {
         if (typeof child['custom_fields.key'] === 'string') {
@@ -290,11 +291,32 @@ function matchCustomFieldNode(node: AstNode): ParsedPredicate | null {
                 valueEntry = {subfield: '', raw: child[childKey]};
             } else if (childKey.startsWith('custom_fields.value.')) {
                 valueEntry = {subfield: childKey.slice('custom_fields.value.'.length), raw: child[childKey]};
+            } else if (childKey === 'custom_fields.path') {
+                const raw = child[childKey];
+
+                if (typeof raw === 'string') {
+                    pathEntry = {subfield: raw, negated: false};
+                } else if (raw && typeof raw === 'object' && !Array.isArray(raw) && typeof (raw as Record<string, unknown>).$ne === 'string') {
+                    pathEntry = {subfield: (raw as Record<string, string>).$ne, negated: true};
+                }
             }
         }
     }
 
-    if (!fieldKey || !valueEntry) {
+    if (!fieldKey) {
+        return null;
+    }
+
+    // A `path` clause is a part's set / not-set: its presence, carrying no value.
+    if (pathEntry) {
+        return {
+            field: `custom_field.${fieldKey}`,
+            operator: pathEntry.negated ? 'is-not-set' : 'is-set',
+            values: [pathEntry.subfield, '']
+        };
+    }
+
+    if (!valueEntry) {
         return null;
     }
 

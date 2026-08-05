@@ -41,21 +41,22 @@ const CustomFieldFilterRenderer: React.FC<CustomRendererProps<string>> = ({field
     const [subfield = '', value = ''] = values;
     const isWholeField = subfield === '';
 
-    // A composite's "Any" (whole field) only supports set / not-set; a specific part
-    // only the value operators; a scalar field offers both. Kept valid as the part
-    // selection changes by an effect rather than the change handler, because the
-    // framework's filter update reads a stale list within a tick — a value change and
-    // an operator change can't both land in the same one.
-    const operators = isComposite
-        ? (isWholeField ? SET_OPERATORS : VALUE_OPERATORS)
+    // A composite's "Any" (whole field) only supports set / not-set — "Any contains X"
+    // is meaningless. A specific part, and a scalar field, support the value operators
+    // and set / not-set. Only "Any" restricts the set, so only it needs the operator
+    // coerced when the part selection changes — done in an effect rather than the change
+    // handler, because the framework's filter update reads a stale list within a tick, so
+    // a value change and an operator change can't both land in the same one.
+    const operators = isComposite && isWholeField
+        ? SET_OPERATORS
         : [...VALUE_OPERATORS, ...SET_OPERATORS];
 
     useEffect(() => {
-        if (!onOperatorChange || !isComposite || operators.includes(operator)) {
+        if (!onOperatorChange || operators.includes(operator)) {
             return;
         }
-        onOperatorChange(isWholeField ? 'is-set' : 'is');
-    }, [isComposite, isWholeField, operator, operators, onOperatorChange]);
+        onOperatorChange('is-set');
+    }, [operator, operators, onOperatorChange]);
 
     const needsValue = !SET_OPERATORS.includes(operator);
     const partOptions = [{value: '', label: 'Any'}, ...parts];

@@ -157,6 +157,26 @@ describe('Members filtering by custom fields', function () {
             assert.deepEqual(matched, [noAddress.email]);
         });
 
+        it('finds members who have a value for a subfield (part is set)', async function () {
+            await createField({name: 'Shipping address', type: 'address'});
+            const withCountry = await createMember({'shipping-address': {city: 'London', country: 'GB'}});
+            await createMember({'shipping-address': {city: 'Boston'}});
+            await createMember();
+
+            const matched = await browse("(custom_fields.key:'shipping-address'+custom_fields.path:'country')");
+            assert.deepEqual(matched, [withCountry.email]);
+        });
+
+        it('finds members missing a subfield (part is not set), including those with no address', async function () {
+            await createField({name: 'Shipping address', type: 'address'});
+            await createMember({'shipping-address': {city: 'London', country: 'GB'}});
+            const cityOnly = await createMember({'shipping-address': {city: 'Boston'}});
+            const noAddress = await createMember();
+
+            const matched = await browse("(custom_fields.key:'shipping-address'+custom_fields.path:-'country')");
+            assert.deepEqual(matched.sort(), [cityOnly.email, noAddress.email].sort());
+        });
+
         it('matches a subfield case-insensitively (contains)', async function () {
             await createField({name: 'Shipping address', type: 'address'});
             const london = await createMember({

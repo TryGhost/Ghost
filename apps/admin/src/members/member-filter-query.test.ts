@@ -329,7 +329,10 @@ describe('member-filter-query - custom fields', () => {
         {field: 'custom_field.shipping-address', operator: 'is', values: ['country', 'GB'], nql: "(custom_fields.key:'shipping-address'+custom_fields.value.country:'GB')"},
         {field: 'custom_field.shipping-address', operator: 'is-not', values: ['country', 'GB'], nql: "(custom_fields.key:'shipping-address'+custom_fields.value.country:-'GB')"},
         {field: 'custom_field.phone', operator: 'is-set', values: ['', ''], nql: "custom_fields.key:'phone'"},
-        {field: 'custom_field.phone', operator: 'is-not-set', values: ['', ''], nql: "custom_fields.key:-'phone'"}
+        {field: 'custom_field.phone', operator: 'is-not-set', values: ['', ''], nql: "custom_fields.key:-'phone'"},
+        // A part's set / not-set targets its presence via `path`, not the whole field.
+        {field: 'custom_field.shipping-address', operator: 'is-set', values: ['country', ''], nql: "(custom_fields.key:'shipping-address'+custom_fields.path:'country')"},
+        {field: 'custom_field.shipping-address', operator: 'is-not-set', values: ['country', ''], nql: "(custom_fields.key:'shipping-address'+custom_fields.path:-'country')"}
     ];
 
     it.each(cases)('serializes $field $operator to the expected NQL', ({field, operator, values, nql}) => {

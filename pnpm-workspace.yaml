@@ -87,8 +87,8 @@ catalog:
   # the $elemMatch operator this feature needs. Reverts to the released versions
   # once #192 ships. (The JSON-path half of #192 goes unused now that values are
   # normalised into leaf rows, and is removed from NQL separately.)
-  '@tryghost/mongo-knex': 0.10.2-pr192.4
-  '@tryghost/nql': 0.13.2-pr192.4
+  '@tryghost/mongo-knex': 0.10.2-pr192.5
+  '@tryghost/nql': 0.13.2-pr192.5
   '@tryghost/nql-lang': 0.6.6
   '@tryghost/string': 0.3.5
   '@tryghost/timezone-data': 1.0.0
@@ -205,8 +205,8 @@ overrides:
   'knex-migrator>knex': 2.4.2
   # Force the #192 pre-release through transitive resolvers too (bookshelf-filter
   # depends on @tryghost/nql). Paired with the catalog bump above.
-  '@tryghost/mongo-knex': 0.10.2-pr192.4
-  '@tryghost/nql': 0.13.2-pr192.4
+  '@tryghost/mongo-knex': 0.10.2-pr192.5
+  '@tryghost/nql': 0.13.2-pr192.5
   '@tryghost/errors': 'catalog:'
   '@tryghost/logging': 'catalog:'
   jackspeak: 4.2.3
