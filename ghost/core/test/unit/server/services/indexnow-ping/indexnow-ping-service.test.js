@@ -23,9 +23,7 @@ function createService() {
     labs.isSet.withArgs('indexnow').returns(true);
 
     const urlService = {
-        facade: {
-            getUrlForResource: sinon.stub().returns('https://example.com/my-post/')
-        }
+        getUrlForResource: sinon.stub().returns('https://example.com/my-post/')
     };
 
     const urlUtils = {
@@ -284,7 +282,7 @@ describe('IndexNow', function () {
 
         it('does not ping when the post has no resolvable URL (/404/)', async function () {
             const {service, deps} = createService();
-            deps.urlService.facade.getUrlForResource.returns('https://example.com/404/');
+            deps.urlService.getUrlForResource.returns('https://example.com/404/');
             const pingRequest = nock('https://api.indexnow.org')
                 .get(/\/indexnow/)
                 .reply(200);
@@ -517,7 +515,7 @@ describe('IndexNow', function () {
         // would vanish without a trace).
         it('logs and swallows a throw from URL resolution as ping_failed', async function () {
             const {service, deps} = createService();
-            deps.urlService.facade.getUrlForResource.throws(new Error('filter evaluation failed'));
+            deps.urlService.getUrlForResource.throws(new Error('filter evaluation failed'));
             const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
 
             await service.ping(testPost);
@@ -559,7 +557,7 @@ describe('IndexNow', function () {
             // Bind the stub to the exact resource shape production passes
             // (`{...post, type: 'posts'}`) so a regression that drops the type
             // override or the spread surfaces here.
-            deps.urlService.facade.getUrlForResource
+            deps.urlService.getUrlForResource
                 .withArgs(sinon.match({id: 'abc', type: 'posts'}), {absolute: true})
                 .returns(POST_URL);
 
@@ -572,7 +570,7 @@ describe('IndexNow', function () {
 
             await service.ping(post);
 
-            sinon.assert.calledOnce(deps.urlService.facade.getUrlForResource);
+            sinon.assert.calledOnce(deps.urlService.getUrlForResource);
             assert.equal(pingRequest.isDone(), true);
         });
     });

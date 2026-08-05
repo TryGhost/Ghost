@@ -12,7 +12,7 @@ describe('getCanonicalUrl', function () {
     let urlForStub;
 
     beforeEach(function () {
-        getUrlForResourceStub = sinon.stub(urlService.facade, 'getUrlForResource');
+        getUrlForResourceStub = sinon.stub(urlService, 'getUrlForResource');
 
         urlJoinStub = sinon.stub(urlUtils, 'urlJoin');
         urlForStub = sinon.stub(urlUtils, 'urlFor').withArgs('home', true).returns('http://localhost:9999');

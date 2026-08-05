@@ -22,8 +22,8 @@ describe('Search index public controller', function () {
     it('lazyRouting: forces the URL service required columns into the posts fetch', async function () {
         // the public posts fetch does not select `status`, which the lazy URL
         // service's base filter reads
-        sinon.stub(urlService.facade, 'getRequiredFields').withArgs('posts').returns(['status', 'type', 'slug']);
-        sinon.stub(urlService.facade, 'getRequiredRelations').returns([]);
+        sinon.stub(urlService, 'getRequiredFields').withArgs('posts').returns(['status', 'type', 'slug']);
+        sinon.stub(urlService, 'getRequiredRelations').returns([]);
 
         await searchIndexController.fetchPosts.query();
 
@@ -33,8 +33,8 @@ describe('Search index public controller', function () {
     });
 
     it('lazyRouting: forces the URL service required columns into the tags fetch', async function () {
-        sinon.stub(urlService.facade, 'getRequiredFields').withArgs('tags').returns(['visibility', 'slug']);
-        sinon.stub(urlService.facade, 'getRequiredRelations').returns([]);
+        sinon.stub(urlService, 'getRequiredFields').withArgs('tags').returns(['visibility', 'slug']);
+        sinon.stub(urlService, 'getRequiredRelations').returns([]);
 
         await searchIndexController.fetchTags.query();
 
@@ -43,8 +43,8 @@ describe('Search index public controller', function () {
     });
 
     it('lazyRouting: leaves columns untouched under the eager service', async function () {
-        sinon.stub(urlService.facade, 'getRequiredFields').returns([]);
-        sinon.stub(urlService.facade, 'getRequiredRelations').returns([]);
+        sinon.stub(urlService, 'getRequiredFields').returns([]);
+        sinon.stub(urlService, 'getRequiredRelations').returns([]);
 
         await searchIndexController.fetchPosts.query();
 

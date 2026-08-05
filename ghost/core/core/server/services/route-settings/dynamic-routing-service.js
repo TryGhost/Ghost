@@ -1,11 +1,6 @@
 const debug = require('@tryghost/debug')('services:route-settings:service');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
-const tpl = require('@tryghost/tpl');
-
-const messages = {
-    loadError: 'Could not load routes.yaml file.'
-};
 
 function isStoredContentError(err) {
     return err.errorType === 'ValidationError' || err.errorType === 'IncorrectUsageError';
@@ -43,7 +38,7 @@ class DynamicRoutingService {
      *
      * @param {object} deps
      * @param {object} deps.routerManager - frontend RouterManager singleton
-     * @param {object} deps.urlService    - UrlServiceFacade
+     * @param {object} deps.urlService    - the URL service singleton
      */
     async start({routerManager, urlService}) {
         debug('start');
@@ -91,60 +86,14 @@ class DynamicRoutingService {
         // Parse and validate before anything is persisted — an invalid
         // upload is rejected here and never reaches the store.
         const next = parseRouteSettings(parseYaml(yamlContent), yamlContent);
-        let previous = null;
-        try {
-            previous = await this.store.get();
-        } catch (err) {
-            if (!isStoredContentError(err)) {
-                throw err;
-            }
-        }
 
         await this.store.replace(next);
 
-        urlService.resetGenerators({releaseResourcesOnly: true});
-
-        const bringBackValidRoutes = async () => {
-            urlService.resetGenerators({releaseResourcesOnly: true});
-
-            if (previous) {
-                await this.store.replace(previous);
-            }
-
-            return bridge.reloadFrontend(this, urlService);
-        };
-
+        // Registration is synchronous inside the reload: RouterManager.start()
+        // always mounts the static pages router, which has permalinks, so the
+        // URL service has routers again — and reports ready — by the time this
+        // resolves. Nothing left to wait for.
         await bridge.reloadFrontend(this, urlService);
-
-        let tries = 0;
-
-        function isBlogRunning() {
-            debug('waiting for blog running');
-            return new Promise((resolve) => {
-                setTimeout(resolve, 1000);
-            })
-                .then(() => {
-                    debug('waited for blog running');
-                    if (!urlService.facade.hasFinished()) {
-                        if (tries > 5) {
-                            throw new errors.InternalServerError({
-                                message: tpl(messages.loadError)
-                            });
-                        }
-
-                        tries = tries + 1;
-                        return isBlogRunning();
-                    }
-                });
-        }
-
-        return isBlogRunning()
-            .catch((err) => {
-                return bringBackValidRoutes()
-                    .finally(() => {
-                        throw err;
-                    });
-            });
     }
 }
 

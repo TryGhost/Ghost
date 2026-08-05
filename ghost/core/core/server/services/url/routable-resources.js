@@ -1,15 +1,14 @@
 const errors = require('@tryghost/errors');
 
 /**
- * Enumerates the routable resources of a type: the rows the lazy URL service
- * would produce a URL for. This is the lazy counterpart of the eager
- * service's boot walk — same raw-knex fast path, same public-visibility
- * gates — computed on demand instead of held in memory.
+ * Enumerates the routable resources of a type: the rows the URL service would
+ * produce a URL for. Computed on demand rather than held in memory.
  *
- * Callers name the extra columns they want back; everything else stays out
- * of memory. The columns URL computation needs (permalink fields, filter
- * columns, relations) come from the lazy service itself, so rows are never
- * thin for the active routing config.
+ * Callers name the extra columns they want back; everything else stays out of
+ * memory. The columns URL computation itself needs (permalink fields, filter
+ * columns, relations) are passed in by the URL service, which is the source of
+ * truth for what the active routing config reads — so rows are never thin for
+ * it.
  */
 
 // Which rows of each type are routable. visibility:public alone is not
@@ -42,75 +41,66 @@ const RELATION_FIELDS = {
 const SQLITE_BATCH_SIZE = 999;
 
 /**
- * @param {Object} deps
- * @param {Object} deps.lazyUrlService - source of truth for the columns and
- * relations the active routing config reads
- * @returns {(type: string, options?: {columns?: string[]}) => Promise<Object[]>}
+ * @param {string} type
+ * @param {Object} [options]
+ * @param {string[]} [options.columns] - extra columns the caller wants back
+ * @param {string[]} [options.requiredFields] - columns URL computation reads
+ * @param {string[]} [options.requiredRelations] - relations URL computation reads
+ * @returns {Promise<Object[]>}
  */
-function createFetchRoutableResources({lazyUrlService}) {
-    if (!lazyUrlService) {
+async function fetchRoutableResources(type, {columns = [], requiredFields = [], requiredRelations = []} = {}) {
+    const typeConfig = TYPE_CONFIG[type];
+    if (!typeConfig) {
         throw new errors.IncorrectUsageError({
-            message: 'fetchRoutableResources requires a lazy URL service backend'
+            message: `Unknown routable resource type: ${type}`
         });
     }
 
-    return async function fetchRoutableResources(type, {columns = []} = {}) {
-        const typeConfig = TYPE_CONFIG[type];
-        if (!typeConfig) {
-            throw new errors.IncorrectUsageError({
-                message: `Unknown routable resource type: ${type}`
-            });
-        }
+    // Lazy requires: the model layer must not load before boot wires it.
+    const models = require('../../models');
+    const schema = require('../../data/schema');
+    const DatabaseInfo = require('@tryghost/database-info');
 
-        // Lazy requires: the model layer must not load before boot wires it.
-        const models = require('../../models');
-        const schema = require('../../data/schema');
-        const DatabaseInfo = require('@tryghost/database-info');
-
-        // Callers speak include; raw_knex only speaks exclude, so translate
-        // against the table schema here, once.
-        const include = new Set(['id', ...columns, ...lazyUrlService.getRequiredFields(type)]);
-        const options = {
-            modelName: typeConfig.modelName,
-            filter: typeConfig.filter,
-            exclude: Object.keys(schema.tables[typeConfig.table]).filter(column => !include.has(column))
-        };
-        if (typeConfig.shouldHavePosts) {
-            options.shouldHavePosts = typeConfig.shouldHavePosts;
-        }
-
-        // Relations only when the active routing config reads them (e.g.
-        // /:primary_tag/:slug/ permalinks, tag-filtered collections). Pages
-        // never carry relations, mirroring the eager resource config.
-        if (type === 'posts') {
-            const relations = lazyUrlService.getRequiredRelations();
-            if (relations.length) {
-                options.withRelated = relations;
-                options.withRelatedFields = {};
-                for (const relation of relations) {
-                    options.withRelatedFields[relation] = RELATION_FIELDS[relation];
-                }
-            }
-        }
-
-        let rows;
-        if (!DatabaseInfo.isSQLite(models.Base.knex)) {
-            rows = await models.Base.Model.raw_knex.fetchAll(options);
-        } else {
-            rows = [];
-            let offset = 0;
-            let batch;
-            do {
-                // orderBy makes the pagination deterministic; without it the
-                // row order between batches is unspecified.
-                batch = await models.Base.Model.raw_knex.fetchAll({...options, orderBy: 'id', offset, limit: SQLITE_BATCH_SIZE});
-                rows.push(...batch);
-                offset += SQLITE_BATCH_SIZE;
-            } while (batch.length);
-        }
-
-        return rows;
+    // Callers speak include; raw_knex only speaks exclude, so translate
+    // against the table schema here, once.
+    const include = new Set(['id', ...columns, ...requiredFields]);
+    const options = {
+        modelName: typeConfig.modelName,
+        filter: typeConfig.filter,
+        exclude: Object.keys(schema.tables[typeConfig.table]).filter(column => !include.has(column))
     };
+    if (typeConfig.shouldHavePosts) {
+        options.shouldHavePosts = typeConfig.shouldHavePosts;
+    }
+
+    // Relations only when the active routing config reads them (e.g.
+    // /:primary_tag/:slug/ permalinks, tag-filtered collections). Only posts
+    // carry relations, mirroring the resource config in ./config.js.
+    if (type === 'posts' && requiredRelations.length) {
+        options.withRelated = requiredRelations;
+        options.withRelatedFields = {};
+        for (const relation of requiredRelations) {
+            options.withRelatedFields[relation] = RELATION_FIELDS[relation];
+        }
+    }
+
+    let rows;
+    if (!DatabaseInfo.isSQLite(models.Base.knex)) {
+        rows = await models.Base.Model.raw_knex.fetchAll(options);
+    } else {
+        rows = [];
+        let offset = 0;
+        let batch;
+        do {
+            // orderBy makes the pagination deterministic; without it the
+            // row order between batches is unspecified.
+            batch = await models.Base.Model.raw_knex.fetchAll({...options, orderBy: 'id', offset, limit: SQLITE_BATCH_SIZE});
+            rows.push(...batch);
+            offset += SQLITE_BATCH_SIZE;
+        } while (batch.length);
+    }
+
+    return rows;
 }
 
-module.exports = {createFetchRoutableResources};
+module.exports = {fetchRoutableResources};

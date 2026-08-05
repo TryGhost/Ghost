@@ -20,7 +20,7 @@ const jobsService = require('../mentions-jobs');
 // relations it reads for filtered collections (event-emitted models don't
 // reliably carry them).
 async function getPostData(post) {
-    const missing = urlService.facade.getRequiredRelations().filter(relation => !post.relations[relation]);
+    const missing = urlService.getRequiredRelations().filter(relation => !post.relations[relation]);
     if (missing.length) {
         await post.load(missing);
     }

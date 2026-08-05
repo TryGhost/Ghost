@@ -1,13 +1,40 @@
 const debug = require('@tryghost/debug')('services:url:lazy');
 const errors = require('@tryghost/errors');
+const logging = require('@tryghost/logging');
 const localUtils = require('../../../shared/url-utils').default;
 const {matchPermalink, toLookupParams} = require('./permalink-matcher');
 const {buildFilter, filterMatches, routerTypeOf} = require('./router-filter');
+const {fetchRoutableResources: defaultFetchRoutableResources} = require('./routable-resources');
 const urlConfig = require('./config');
 
-import type {Resource, UrlOptions, LazyUrlServiceBackend} from './url-service-facade';
 import type {CompiledFilter} from './router-filter';
 import type {PermalinkParams} from './permalink-matcher';
+
+/**
+ * Routing-level resource. `type` is one of the plural router keys
+ * ('posts', 'pages', 'tags', 'authors'). Concrete records carry additional
+ * fields (slug, published_at, primary_tag, ...) read by the permalink
+ * templates and router filters.
+ */
+export interface Resource {
+    type: string;
+    id: string;
+    [key: string]: unknown;
+}
+
+export interface UrlOptions {
+    absolute?: boolean;
+    withSubdirectory?: boolean;
+}
+
+/**
+ * On-demand enumeration of the routable rows of a type. Injectable so tests
+ * can drive `getRoutableResources` without a database.
+ */
+export type FetchRoutableResources = (
+    type: string,
+    options: {columns?: string[]; requiredFields?: string[]; requiredRelations?: string[]}
+) => Promise<Array<Record<string, unknown>>>;
 
 export type ResourceLookupParams = {id: string} | {slug: string};
 
@@ -24,17 +51,15 @@ interface RouterConfig {
     compiledFilter: CompiledFilter | null;
 }
 
-// Per-resource-type base filters, mirroring eager's resource-fetch filters
-// (`modelOptions.filter` in services/url/config.js). Deliberately duplicated
-// rather than imported: lazy is meant to replace eager, at which point eager's
-// config goes away and this becomes the single source. `fields` lists the
-// record columns each filter reads; a resource that reaches URL generation
-// must carry them (a thin one is rejected — see _assertBaseFieldsPresent).
+// Per-resource-type gate on which rows get a URL at all — the forward-lookup
+// counterpart of the fetch filters in routable-resources.js. `fields` lists
+// the record columns each filter reads; a resource that reaches URL generation
+// must carry them (see _assertBaseFieldsPresent).
 //
 // Authors are intentionally absent: users.visibility is schema-pinned to
-// 'public' (isIn: [['public']]), so eager's visibility:public author filter
-// never excludes anyone — every author is routable, and serialized authors
-// drop visibility anyway (#10438).
+// 'public' (isIn: [['public']]), so the visibility:public author filter never
+// excludes anyone — every author is routable, and serialized authors drop
+// visibility anyway (#10438).
 const BASE_FILTERS: Record<string, {filter: string; fields: string[]}> = {
     posts: {filter: 'status:published+type:post', fields: ['status', 'type']},
     pages: {filter: 'status:published+type:page', fields: ['status', 'type']},
@@ -58,15 +83,14 @@ function buildBaseFilters(): Map<string, BaseFilter> {
     return baseFilters;
 }
 
-// Columns eager drops from its in-memory URL cache (the `exclude` lists in
-// services/url/config.js). Eager evaluates a router's collection filter against
-// that reduced cached record, so an excluded column reads as absent — NQL then
-// treats it as null. Lazy loads full records and would see the real value, so
-// to preserve eager's behaviour it strips these columns before evaluating
-// router filters (and neither requires nor force-loads them). Keyed by
-// resourceType ('posts'/'pages'/'tags'). Read from eager's config directly so
-// the two can't drift; when eager is retired this derives from whatever
-// replaces it. The base filter is unaffected — it runs against the full record.
+// Columns a router filter must not see (the `exclude` lists in
+// services/url/config.js), keyed by resourceType. Ghost previously answered
+// URLs from a precomputed cache that dropped these columns, so a filter
+// referencing one matched it as absent — NQL reads absent as null. This
+// service loads full records and would see the real value, so it strips them
+// before evaluating router filters (and neither requires nor force-loads
+// them), keeping routes.yaml files that rely on that behaviour working. The
+// base filter above is unaffected — it runs against the full record.
 function buildExcludedFilterFields(): Map<string, Set<string>> {
     const excluded = new Map<string, Set<string>>();
     for (const entry of urlConfig) {
@@ -115,19 +139,21 @@ function filterScalarFields(filter: string | null): string[] {
 interface LazyUrlServiceDeps {
     urlUtils?: typeof localUtils;
     findResource: FindResource;
+    fetchRoutableResources?: FetchRoutableResources;
 }
 
 const ROUTER_TYPE_TO_DB_TYPE: Record<string, string> = {posts: 'post', pages: 'page'};
 
 /**
- * On-demand replacement for the eager UrlService: computes URLs and ownership
- * per call from the registered router configs instead of precomputing a full
- * map at boot. Forward lookups are pure; resolveUrl is the only DB-touching
- * path, and only through the injected findResource hook.
+ * Ghost's URL service: computes URLs and ownership per call from the
+ * registered router configs. Forward lookups are pure; resolveUrl and
+ * getRoutableResources are the only DB-touching paths, and only through the
+ * injected findResource / fetchRoutableResources hooks.
  */
-export class LazyUrlService implements LazyUrlServiceBackend {
+export class LazyUrlService {
     private urlUtils: typeof localUtils;
     private findResource: FindResource;
+    private fetchRoutableResources: FetchRoutableResources;
     // Router configs in registration order, which is also their priority.
     private routerConfigs: RouterConfig[];
     private requiredRelations: string[] | null;
@@ -137,7 +163,11 @@ export class LazyUrlService implements LazyUrlServiceBackend {
     // route-reload window re-gates the maintenance middleware.
     private routersReady: boolean;
 
-    constructor({urlUtils = localUtils, findResource}: LazyUrlServiceDeps) {
+    constructor({
+        urlUtils = localUtils,
+        findResource,
+        fetchRoutableResources = defaultFetchRoutableResources
+    }: LazyUrlServiceDeps) {
         if (typeof findResource !== 'function') {
             throw new errors.IncorrectUsageError({
                 message: 'LazyUrlService requires a findResource function'
@@ -145,6 +175,7 @@ export class LazyUrlService implements LazyUrlServiceBackend {
         }
         this.urlUtils = urlUtils;
         this.findResource = findResource;
+        this.fetchRoutableResources = fetchRoutableResources;
         this.routerConfigs = [];
         this.requiredRelations = null;
         this.baseFilters = buildBaseFilters();
@@ -255,7 +286,39 @@ export class LazyUrlService implements LazyUrlServiceBackend {
         return this.routersReady;
     }
 
+    /**
+     * All routable rows of a type. The columns URL computation needs come
+     * from the active routing config, so the rows are never thin for it;
+     * callers name any extra columns they want back.
+     */
+    async getRoutableResources(type: string, {columns = []}: {columns?: string[]} = {}): Promise<Array<Record<string, unknown>>> {
+        return this.fetchRoutableResources(type, {
+            columns,
+            requiredFields: this.getRequiredFields(type),
+            requiredRelations: this.getRequiredRelations()
+        });
+    }
+
+    /**
+     * A thin resource — one missing a column its base filter or a router
+     * filter reads — is a caller bug: we cannot tell whether it routes. It is
+     * reported and degraded to /404/ rather than thrown, because 500ing a page
+     * that does route is worse than a 404 on one that may not. Every other
+     * failure is a backend bug and propagates.
+     */
     getUrlForResource(resource: Resource, options: UrlOptions = {}): string {
+        try {
+            return this._buildUrlForResource(resource, options);
+        } catch (err) {
+            if ((err as {code?: string} | null)?.code !== 'LAZY_URL_THIN_RESOURCE') {
+                throw err;
+            }
+            this._reportThinResource(resource, err as Error);
+            return this.notFoundUrl(options);
+        }
+    }
+
+    private _buildUrlForResource(resource: Resource, options: UrlOptions): string {
         const routerType = routerTypeOf(resource);
         if (!routerType) {
             return this.notFoundUrl(options);
@@ -374,6 +437,30 @@ export class LazyUrlService implements LazyUrlServiceBackend {
         return Object.keys(captured).every(key => canonical[key] === captured[key]);
     }
 
+    // The thrown error names the missing columns; this adds what the caller
+    // handed over — its resource shape, and what the active routing config
+    // needs — so the fetch that produced the thin resource can be found.
+    private _reportThinResource(resource: Resource, err: Error): void {
+        const report = new errors.InternalServerError({
+            message: 'Lazy URL service could not build a URL, degraded to /404/',
+            code: 'LAZY_URL_RESOLUTION_ERROR',
+            err
+        });
+        // @tryghost/errors copies the wrapped error's enumerable props over the
+        // new error, so the thrown error's own errorDetails would otherwise
+        // clobber these. Merge both after construction.
+        report.errorDetails = {
+            method: 'getUrlForResource',
+            type: resource.type,
+            id: resource.id,
+            status: (resource as Record<string, unknown>).status,
+            resourceKeys: Object.keys(resource),
+            requiredRelations: this.getRequiredRelations(),
+            ...(err as {errorDetails?: Record<string, unknown>}).errorDetails
+        };
+        logging.error(report);
+    }
+
     private _hasRouterForType(routerType: string): boolean {
         return this.routerConfigs.some(config => config.resourceType === routerType);
     }
@@ -456,15 +543,12 @@ export class LazyUrlService implements LazyUrlServiceBackend {
 
     /**
      * The /404/ a resource gets when nothing routes it, formatted for the given
-     * options. Byte-identical to the miss path at the end of eager's
-     * `getUrlByResourceId`, deliberately — including the argument it omits.
+     * options. Deliberately omits the argument `_formatPath` passes.
      *
      * The subdirectory is not lost by that omission: `createUrl` takes it from
      * its own base whenever the url is relative, so a subdirectory install gets
      * `/blog/404/` from here either way. The third argument `_formatPath`
      * passes is `trailingSlash`, and `/404/` already ends in one.
-     *
-     * Public so the facade can fall back to it when this service throws.
      */
     notFoundUrl(options: UrlOptions = {}): string {
         if (options.absolute) {
@@ -477,10 +561,10 @@ export class LazyUrlService implements LazyUrlServiceBackend {
     }
 
     // A filtered router that references a relation the resource doesn't carry
-    // can't be evaluated: lazy would 404 here while eager (full data in memory)
-    // returns a URL. Callers must hand the service fully-inflated resources, so
-    // a thin one is a programmer error we refuse loudly rather than mask as a
-    // silent /404/.
+    // can't be evaluated, so the resource would 404 for a reason that has
+    // nothing to do with the routing config. Callers must hand over
+    // fully-inflated resources; a thin one is reported rather than silently
+    // 404'd (see getUrlForResource).
     private _assertNotThin(config: RouterConfig, resource: Resource, routerType: string): void {
         if (!config.filter) {
             return;

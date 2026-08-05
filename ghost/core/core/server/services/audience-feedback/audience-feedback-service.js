@@ -24,7 +24,7 @@ class AudienceFeedbackService {
      */
     buildLink(uuid, post, score, key) {
         const postData = toPlain(post);
-        let postUrl = this.#urlService.facade.getUrlForResource({...postData, type: 'posts'}, {absolute: true});
+        let postUrl = this.#urlService.getUrlForResource({...postData, type: 'posts'}, {absolute: true});
 
         if (postUrl.match(/\/404\//)) {
             postUrl = this.#baseURL;

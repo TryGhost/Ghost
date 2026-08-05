@@ -10,7 +10,7 @@ describe('Unit: endpoints/utils/serializers/input/utils/url', function () {
 
     describe('forceUrlColumnsWhenLazy', function () {
         it('forces the lazy-required columns into the fetch when url is requested', function () {
-            sinon.stub(urlService.facade, 'getRequiredFields').withArgs('tags').returns(['visibility']);
+            sinon.stub(urlService, 'getRequiredFields').withArgs('tags').returns(['visibility']);
             const frame = {options: {columns: ['url', 'id']}};
 
             urlUtil.forceUrlColumnsWhenLazy(frame, 'tags');
@@ -19,7 +19,7 @@ describe('Unit: endpoints/utils/serializers/input/utils/url', function () {
         });
 
         it('does not duplicate a column already requested', function () {
-            sinon.stub(urlService.facade, 'getRequiredFields').withArgs('tags').returns(['visibility']);
+            sinon.stub(urlService, 'getRequiredFields').withArgs('tags').returns(['visibility']);
             const frame = {options: {columns: ['url', 'visibility']}};
 
             urlUtil.forceUrlColumnsWhenLazy(frame, 'tags');
@@ -28,7 +28,7 @@ describe('Unit: endpoints/utils/serializers/input/utils/url', function () {
         });
 
         it('is a no-op when url is not requested', function () {
-            const stub = sinon.stub(urlService.facade, 'getRequiredFields');
+            const stub = sinon.stub(urlService, 'getRequiredFields');
             const frame = {options: {columns: ['id', 'slug']}};
 
             urlUtil.forceUrlColumnsWhenLazy(frame, 'tags');
@@ -46,7 +46,7 @@ describe('Unit: endpoints/utils/serializers/input/utils/url', function () {
         });
 
         it('records the forced columns so the output can strip them', function () {
-            sinon.stub(urlService.facade, 'getRequiredFields').withArgs('posts').returns(['status', 'type', 'slug']);
+            sinon.stub(urlService, 'getRequiredFields').withArgs('posts').returns(['status', 'type', 'slug']);
             const frame = {options: {columns: ['url', 'slug']}};
 
             urlUtil.forceUrlColumnsWhenLazy(frame, 'posts');
@@ -58,7 +58,7 @@ describe('Unit: endpoints/utils/serializers/input/utils/url', function () {
         });
 
         it('records no forced columns when everything was already requested', function () {
-            sinon.stub(urlService.facade, 'getRequiredFields').withArgs('posts').returns(['status']);
+            sinon.stub(urlService, 'getRequiredFields').withArgs('posts').returns(['status']);
             const frame = {options: {columns: ['url', 'status']}};
 
             urlUtil.forceUrlColumnsWhenLazy(frame, 'posts');

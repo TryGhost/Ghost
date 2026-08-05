@@ -136,7 +136,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
         // not skip the force-load — otherwise the URL still 404s for
         // tag/author-filtered routes.
         it('lazyRouting: merges the required relations into withRelated when caller passes both ?fields=url and ?include=email', function () {
-            sinon.stub(urlService.facade, 'getRequiredRelations').returns(['tags', 'authors']);
+            sinon.stub(urlService, 'getRequiredRelations').returns(['tags', 'authors']);
 
             const frame = {
                 apiType: 'admin',
@@ -157,7 +157,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
         it('lazyRouting: forces the required relations on the Content API path', function () {
             // Content API uses mapWithRelated rather than defaultRelations;
             // both branches must invoke the helper.
-            sinon.stub(urlService.facade, 'getRequiredRelations').returns(['tags', 'authors']);
+            sinon.stub(urlService, 'getRequiredRelations').returns(['tags', 'authors']);
 
             const frame = {
                 apiType: 'content',
@@ -175,7 +175,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
         });
 
         it('lazyRouting: loads only the relations the live routes reference', function () {
-            sinon.stub(urlService.facade, 'getRequiredRelations').returns(['tags']);
+            sinon.stub(urlService, 'getRequiredRelations').returns(['tags']);
 
             const frame = {
                 apiType: 'admin',
@@ -196,7 +196,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
         // force-load the relations the URL service needs — and record them
         // so the output serializer can strip what the caller didn't ask for.
         it('lazyRouting: forces required relations on a Content API browse without fields narrowing', function () {
-            sinon.stub(urlService.facade, 'getRequiredRelations').returns(['tags', 'authors']);
+            sinon.stub(urlService, 'getRequiredRelations').returns(['tags', 'authors']);
 
             const frame = {
                 apiType: 'content',
@@ -215,7 +215,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
         });
 
         it('lazyRouting: does not force relations when ?fields excludes url', function () {
-            sinon.stub(urlService.facade, 'getRequiredRelations').returns(['tags', 'authors']);
+            sinon.stub(urlService, 'getRequiredRelations').returns(['tags', 'authors']);
 
             const frame = {
                 apiType: 'content',
@@ -232,7 +232,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
         });
 
         it('lazyRouting: treats a nested include as covering its parent relation', function () {
-            sinon.stub(urlService.facade, 'getRequiredRelations').returns(['tags', 'authors']);
+            sinon.stub(urlService, 'getRequiredRelations').returns(['tags', 'authors']);
 
             // `authors.roles` eager-loads authors with roles nested, so the
             // resource is not thin — forcing (and then stripping) `authors`
@@ -254,7 +254,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
         });
 
         it('lazyRouting: records nothing for stripping when the caller already requested the relations', function () {
-            sinon.stub(urlService.facade, 'getRequiredRelations').returns(['tags', 'authors']);
+            sinon.stub(urlService, 'getRequiredRelations').returns(['tags', 'authors']);
 
             const frame = {
                 apiType: 'content',
@@ -271,7 +271,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
         });
 
         it('lazyRouting: keeps the full admin default relations when forcing fires on a plain admin browse', function () {
-            sinon.stub(urlService.facade, 'getRequiredRelations').returns(['tags', 'authors']);
+            sinon.stub(urlService, 'getRequiredRelations').returns(['tags', 'authors']);
 
             const frame = {
                 apiType: 'admin',
@@ -288,7 +288,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
         });
 
         it('does not force any relations when no route references tags or authors', function () {
-            sinon.stub(urlService.facade, 'getRequiredRelations').returns([]);
+            sinon.stub(urlService, 'getRequiredRelations').returns([]);
 
             const frame = {
                 apiType: 'admin',

@@ -18,9 +18,10 @@ const PAGE_SCOPE = {type: 'page', status: 'published'};
 const POST_RELATIONS = ['tags', 'authors'];
 const RELATION_KEYS = ['tags', 'authors', 'primary_tag', 'primary_author'];
 
-// Drop the same fields the eager resourceConfig excludes so the resolved record
-// has the same shape the eager service exposes (no post body, no extra
-// author/tag fields). posts_meta is an auto-loaded relation eager never keeps.
+// Drop the same columns the URL service excludes from filter evaluation, so a
+// resolved record keeps the shape callers have always seen (no post body, no
+// extra author/tag fields). posts_meta is an auto-loaded relation Ghost has
+// never exposed here.
 function excludeFor(type: string): string[] {
     const cfg = resourcesConfig.find((c: {type: string}) => c.type === type);
     const exclude = (cfg && cfg.modelOptions.exclude) || [];
@@ -59,8 +60,9 @@ function pruneToEagerShape(record: Record<string, unknown>, type: string): Recor
 
 /**
  * Builds the per-request DB lookup hook injected into LazyUrlService.resolveUrl.
- * Visibility rules mirror the eager service so a guessed slug can't surface
- * anything the eager path hid; unknown types resolve to null.
+ * Visibility rules match the forward lookup's base filters, so a guessed slug
+ * can't surface anything a generated URL would have hidden; unknown types
+ * resolve to null.
  */
 export function createFindResource(models: Models): FindResource {
     const loadOne = async (

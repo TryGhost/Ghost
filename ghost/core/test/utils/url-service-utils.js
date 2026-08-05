@@ -7,7 +7,7 @@ module.exports.isFinished = async () => {
         (function retry() {
             clearTimeout(timeout);
 
-            if (urlService.facade.hasFinished()) {
+            if (urlService.hasFinished()) {
                 return resolve();
             }
 
@@ -16,45 +16,16 @@ module.exports.isFinished = async () => {
     });
 };
 
-// Wait for a standalone (non-singleton) eager UrlService instance to finish
-// its boot walk. Used by the parity integration tests, which construct their
-// own instances instead of using the singleton `isFinished` above.
-module.exports.waitUntilFinished = (standaloneUrlService, timeout = 5000) => {
-    return new Promise((resolve, reject) => {
-        const start = Date.now();
-        (function retry() {
-            if (standaloneUrlService.hasFinished()) {
-                return resolve();
-            }
-            if (Date.now() - start > timeout) {
-                return reject(new Error('Eager UrlService did not finish in time'));
-            }
-            setTimeout(retry, 50);
-        })();
-    });
-};
-
-// @TODO: unify all the reset/softTeset helpers so they either work how the main code works or the reasons why they are different are clear
-module.exports.init = ({urlCache} = {}) => {
-    urlService.init({urlCache});
-};
-
-// Data-only reset, for a DB truncate or snapshot restore between tests inside
-// one boot. Deliberately leaves the facade alone: lazy caches nothing from the
-// DB, only the router configs read from routes.yaml, and dropping those here
-// would leave it routerless — and answering /404/ — for the rest of the boot,
-// where eager keeps its generators through a softReset. Lazy's equivalent of
-// those generators is reset per boot, in resetGenerators below.
-module.exports.reset = () => {
-    urlService.softReset();
-};
-
 module.exports.urlFor = (model, type, options) => {
-    return urlService.facade.getUrlForResource({...model.toJSON(), type}, options);
+    return urlService.getUrlForResource({...model.toJSON(), type}, options);
 };
 
-module.exports.resetGenerators = () => {
-    urlService.resetGenerators();
-    urlService.resources.reset();
-    urlService.facade.reset();
+// Drop the router configs the previous boot registered. Ghost registers them
+// again on the next one, so this must only run BETWEEN boots — calling it
+// mid-boot (e.g. from a DB truncate) would leave the service routerless, and
+// answering /404/, for the rest of that boot. There is no data-only reset to
+// pair with it: the service caches nothing from the database, only the router
+// configs read from routes.yaml.
+module.exports.resetRouters = () => {
+    urlService.reset();
 };

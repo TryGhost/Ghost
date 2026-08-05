@@ -11,7 +11,7 @@ const logging = require('@tryghost/logging');
 // The only server events the frontend may subscribe to. A narrow surface on
 // purpose: the shared bus's own header discourages widening cross-layer
 // coupling, so new event names here need the same scrutiny as new exports.
-const FRONTEND_SUBSCRIBABLE_EVENTS = ['site.changed', 'url.added', 'url.removed'];
+const FRONTEND_SUBSCRIBABLE_EVENTS = ['site.changed'];
 
 // Require from the handlebars framework
 const {SafeString} = require('./handlebars');

@@ -86,15 +86,6 @@ class BaseSiteMapGenerator {
         return sitemapXml;
     }
 
-    updateURL(datum) {
-        const url = this.nodeLookup[datum.id]?.url[0].loc;
-
-        if (url) {
-            this.removeUrl(url, datum);
-            this.addUrl(url, datum);
-        }
-    }
-
     addUrl(url, datum) {
         // Computed once and threaded through: the three consumers below each
         // used to construct their own moment() from the same datum, which

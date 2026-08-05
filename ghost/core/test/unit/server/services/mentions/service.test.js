@@ -19,7 +19,7 @@ describe('Mentions service post url helpers', function () {
     }
 
     it('loads the URL service required relations before returning the post data', async function () {
-        sinon.stub(urlService.facade, 'getRequiredRelations').returns(['tags', 'authors']);
+        sinon.stub(urlService, 'getRequiredRelations').returns(['tags', 'authors']);
         const post = fakePost();
 
         await getPostData(post);
@@ -60,7 +60,7 @@ describe('Mentions service post url helpers', function () {
     });
 
     it('does not reload relations that are already loaded', async function () {
-        sinon.stub(urlService.facade, 'getRequiredRelations').returns(['tags', 'authors']);
+        sinon.stub(urlService, 'getRequiredRelations').returns(['tags', 'authors']);
         const post = fakePost({tags: {}, authors: {}});
 
         await getPostData(post);
@@ -69,7 +69,7 @@ describe('Mentions service post url helpers', function () {
     });
 
     it('loads nothing under the eager service', async function () {
-        sinon.stub(urlService.facade, 'getRequiredRelations').returns([]);
+        sinon.stub(urlService, 'getRequiredRelations').returns([]);
         const post = fakePost();
 
         await getPostData(post);

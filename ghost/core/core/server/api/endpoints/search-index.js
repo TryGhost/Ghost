@@ -5,7 +5,7 @@ const getPostServiceInstance = require('../../services/posts/posts-service-insta
 const postsService = getPostServiceInstance();
 
 const urlRelationsWhenLazyRouting = () => {
-    const withRelated = urlService.facade.getRequiredRelations();
+    const withRelated = urlService.getRequiredRelations();
     return withRelated.length ? {withRelated} : {};
 };
 

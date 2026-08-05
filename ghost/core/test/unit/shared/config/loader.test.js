@@ -114,7 +114,6 @@ describe('Config Loader', function () {
                 'fixtures',
                 'defaultSettings',
                 'assetSrc',
-                'urlCache',
                 'appRoot',
                 'corePath',
                 'adminAssets',

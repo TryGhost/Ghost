@@ -76,7 +76,7 @@ const forceUrlColumnsWhenLazy = (frame, routerType, extraColumns = []) => {
     if (!Array.isArray(frame.options.columns) || !frame.options.columns.includes('url')) {
         return;
     }
-    const required = new Set([...urlService.facade.getRequiredFields(routerType), ...extraColumns]);
+    const required = new Set([...urlService.getRequiredFields(routerType), ...extraColumns]);
     const missing = [...required].filter(field => !frame.options.columns.includes(field));
     if (!missing.length) {
         return;
@@ -105,7 +105,7 @@ const forceUrlRelationsWhenLazy = (frame, routerType) => {
     if (!localUtils.willSerializeUrl(frame)) {
         return;
     }
-    const relations = urlService.facade.getRequiredRelations();
+    const relations = urlService.getRequiredRelations();
     if (relations.length) {
         const requested = frame.options.withRelated || [];
         // a nested include covers its parent: `authors.roles` loads authors
@@ -129,7 +129,7 @@ const forceUrlRelationsWhenLazy = (frame, routerType) => {
 // Options-object variant of forceUrlColumnsWhenLazy for endpoints that build
 // their query options directly (search index).
 const requiredUrlColumns = (routerType, columns) => {
-    const required = urlService.facade.getRequiredFields(routerType).filter(field => !columns.includes(field));
+    const required = urlService.getRequiredFields(routerType).filter(field => !columns.includes(field));
     return required.length ? [...columns, ...required] : columns;
 };
 

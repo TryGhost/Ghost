@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
+const logging = require('@tryghost/logging');
 const LazyUrlService = require('../../../../../core/server/services/url/lazy-url-service');
 
 function makeUrlUtils() {
@@ -40,6 +41,13 @@ describe('LazyUrlService', function () {
 
     beforeEach(function () {
         urlUtils = makeUrlUtils();
+        // The service reports a thin resource rather than throwing, so every
+        // test that trips one would otherwise write to the real logger.
+        sinon.stub(logging, 'error');
+    });
+
+    afterEach(function () {
+        sinon.restore();
     });
 
     describe('getUrlForResource', function () {
@@ -94,30 +102,31 @@ describe('LazyUrlService', function () {
             assert.equal(url, '/404/');
         });
 
-        it('throws when a post is missing a base-filter field (status)', function () {
+        it('degrades to /404/ when a post is missing a base-filter field (status)', function () {
             const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
             service.onRouterAddedType('default', null, 'posts', '/:slug/');
 
             // A resource that reaches URL generation must carry the columns its
             // base filter reads; production callers always provide status, so a
-            // status-less post is a thin-resource bug we refuse loudly rather
-            // than silently 404.
-            assert.throws(
-                () => service.getUrlForResource({type: 'posts', id: 'p', slug: 'hello'}),
-                /Thin resource passed to LazyUrlService/
-            );
+            // status-less post is a thin-resource bug. It is reported rather
+            // than thrown: a 500 on a page that does route is worse than /404/.
+            assert.equal(service.getUrlForResource({type: 'posts', id: 'p', slug: 'hello'}), '/404/');
+            sinon.assert.calledOnce(logging.error);
+            assert.equal(logging.error.firstCall.args[0].code, 'LAZY_URL_RESOLUTION_ERROR');
         });
 
-        it('throws when a relation-filtered router is given a thin resource', function () {
+        it('degrades to /404/ when a relation-filtered router is given a thin resource', function () {
             const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
             // tag:news needs the tags relation; a resource with no tags array
-            // can't be evaluated, which would otherwise silently 404.
+            // can't be evaluated, so we report the caller's mistake and 404.
             service.onRouterAddedType('news', 'tag:news', 'posts', '/:slug/');
 
-            assert.throws(
-                () => service.getUrlForResource({type: 'posts', id: 'p', slug: 'hello', status: 'published'}),
-                /Thin resource passed to LazyUrlService/
+            assert.equal(
+                service.getUrlForResource({type: 'posts', id: 'p', slug: 'hello', status: 'published'}),
+                '/404/'
             );
+            sinon.assert.calledOnce(logging.error);
+            assert.equal(logging.error.firstCall.args[0].code, 'LAZY_URL_RESOLUTION_ERROR');
         });
 
         it('does not throw when the relation a filter references is present', function () {
@@ -132,17 +141,19 @@ describe('LazyUrlService', function () {
             );
         });
 
-        it('throws when a router filter references a scalar field the resource lacks (e.g. featured)', function () {
+        it('degrades to /404/ when a router filter references a scalar field the resource lacks (e.g. featured)', function () {
             const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
             // featured:true needs the featured column; without it the filter would
             // see undefined and silently route to the wrong permalink.
             service.onRouterAddedType('featured', 'featured:true', 'posts', '/featured/:slug/');
             service.onRouterAddedType('default', null, 'posts', '/:slug/');
 
-            assert.throws(
-                () => service.getUrlForResource({type: 'posts', id: 'p', slug: 'hot', status: 'published'}),
-                /Thin resource passed to LazyUrlService/
+            assert.equal(
+                service.getUrlForResource({type: 'posts', id: 'p', slug: 'hot', status: 'published'}),
+                '/404/'
             );
+            sinon.assert.calledOnce(logging.error);
+            assert.equal(logging.error.firstCall.args[0].code, 'LAZY_URL_RESOLUTION_ERROR');
         });
 
         it('routes via the filtered router when its scalar field is present', function () {
@@ -265,14 +276,13 @@ describe('LazyUrlService', function () {
             );
         });
 
-        it('throws when a tag is missing the visibility base-filter field', function () {
+        it('degrades to /404/ when a tag is missing the visibility base-filter field', function () {
             const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
             service.onRouterAddedType('tagsRouter', null, 'tags', '/tag/:slug/');
 
-            assert.throws(
-                () => service.getUrlForResource({type: 'tags', id: 't1', slug: 'food'}),
-                /Thin resource passed to LazyUrlService/
-            );
+            assert.equal(service.getUrlForResource({type: 'tags', id: 't1', slug: 'food'}), '/404/');
+            sinon.assert.calledOnce(logging.error);
+            assert.equal(logging.error.firstCall.args[0].code, 'LAZY_URL_RESOLUTION_ERROR');
         });
 
         it('routes an author without a visibility field (authors have no base filter)', function () {
@@ -814,6 +824,89 @@ describe('LazyUrlService', function () {
 
             assert.deepEqual(service.getRequiredFields('posts').sort(), ['primary_tag', 'slug', 'status', 'type']);
             assert.deepEqual(service.getRequiredFields('pages').sort(), ['primary_author', 'slug', 'status', 'type']);
+        });
+    });
+
+    // A thin resource is a caller bug, but 500ing a page that does route is
+    // worse than serving /404/ — so it is reported and degraded. Anything else
+    // thrown out of URL generation is a backend bug and must propagate.
+    describe('getUrlForResource — failure policy', function () {
+        it('reports the resource shape the caller passed, so the bug is traceable', function () {
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
+            service.onRouterAddedType('news', 'tag:news', 'posts', '/:slug/');
+
+            service.getUrlForResource({type: 'posts', id: 'p', slug: 'hello', status: 'published'});
+
+            const {errorDetails} = logging.error.firstCall.args[0];
+            assert.equal(errorDetails.method, 'getUrlForResource');
+            assert.deepEqual(errorDetails.missing, ['tags']);
+            assert.deepEqual(errorDetails.resourceKeys, ['type', 'id', 'slug', 'status']);
+        });
+
+        it('formats the degraded /404/ for the requested options', function () {
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
+            service.onRouterAddedType('default', null, 'posts', '/:slug/');
+
+            assert.equal(
+                service.getUrlForResource({type: 'posts', id: 'p', slug: 'hello'}, {absolute: true}),
+                'https://example.com/404/'
+            );
+        });
+
+        it('rethrows an unexpected failure rather than serving /404/', function () {
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
+            service.onRouterAddedType('default', null, 'posts', '/:slug/');
+            urlUtils.replacePermalink = () => {
+                throw new TypeError('permalink.replace is not a function');
+            };
+
+            assert.throws(
+                () => service.getUrlForResource({type: 'posts', id: 'p', slug: 'hello', status: 'published'}),
+                /permalink\.replace is not a function/
+            );
+            sinon.assert.notCalled(logging.error);
+        });
+
+        it('rethrows a non-object throw unchanged', function () {
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
+            service.onRouterAddedType('default', null, 'posts', '/:slug/');
+            urlUtils.replacePermalink = () => {
+                throw null;
+            };
+
+            assert.throws(
+                () => service.getUrlForResource({type: 'posts', id: 'p', slug: 'hello', status: 'published'}),
+                err => err === null
+            );
+        });
+    });
+
+    // The lazy counterpart of eager's in-memory resource cache: the routable
+    // rows of a type, fetched on demand with the columns the active routing
+    // config needs.
+    describe('getRoutableResources', function () {
+        it('asks the fetcher for the caller\'s columns plus what the routers require', async function () {
+            const fetchRoutableResources = sinon.stub().resolves([{id: 'p1'}]);
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource, fetchRoutableResources});
+            service.onRouterAddedType('news', 'primary_tag:news', 'posts', '/:slug/');
+
+            const rows = await service.getRoutableResources('posts', {columns: ['feature_image']});
+
+            assert.deepEqual(rows, [{id: 'p1'}]);
+            const [type, options] = fetchRoutableResources.firstCall.args;
+            assert.equal(type, 'posts');
+            assert.deepEqual(options.columns, ['feature_image']);
+            assert.deepEqual(options.requiredFields.sort(), ['primary_tag', 'slug', 'status', 'type']);
+            assert.deepEqual(options.requiredRelations, ['tags']);
+        });
+
+        it('defaults the caller columns to none', async function () {
+            const fetchRoutableResources = sinon.stub().resolves([]);
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource, fetchRoutableResources});
+
+            await service.getRoutableResources('tags');
+
+            assert.deepEqual(fetchRoutableResources.firstCall.args[1].columns, []);
         });
     });
 

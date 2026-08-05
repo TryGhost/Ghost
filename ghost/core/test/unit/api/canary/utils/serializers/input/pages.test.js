@@ -13,7 +13,7 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
 
     describe('browse', function () {
         it('lazyRouting: forces required relations on a Content API browse without fields narrowing', function () {
-            sinon.stub(urlService.facade, 'getRequiredRelations').returns(['tags']);
+            sinon.stub(urlService, 'getRequiredRelations').returns(['tags']);
 
             const frame = {
                 apiType: 'content',
@@ -29,7 +29,7 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
         });
 
         it('lazyRouting: keeps the full admin default relations when forcing fires on a plain admin browse', function () {
-            sinon.stub(urlService.facade, 'getRequiredRelations').returns(['tags', 'authors']);
+            sinon.stub(urlService, 'getRequiredRelations').returns(['tags', 'authors']);
 
             const frame = {
                 apiType: 'admin',

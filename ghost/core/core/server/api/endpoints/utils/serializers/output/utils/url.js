@@ -10,8 +10,9 @@ const forPost = (id, attrs, frame, type = 'posts') => {
     // type from `attrs` would silently fall back to 'posts' for pages.
     // The mapper that owns the resource always knows which it is.
     //
-    // `id` is passed separately for the same reason: without it, the eager
-    // facade's id-based fallback hits /404/ for every record.
+    // `id` is passed separately for the same reason: `?fields=url` strips it
+    // from `attrs`, and the URL service needs it for `:id` permalinks and to
+    // name the resource when it reports a problem.
     //
     // When `url` was not requested (`?fields=id,title`), don't compute it at
     // all — attrs is stripped to the requested columns, so the resource would
@@ -24,23 +25,7 @@ const forPost = (id, attrs, frame, type = 'posts') => {
         return attrs;
     }
 
-    // Diagnostic only: pass the producing api endpoint and the fetch shape the
-    // input serializer decided on (withRelated/columns/forcedUrlRelations) to
-    // the compare-mode URL service, so a thin-resource throw names its producer
-    // and shows whether the URL force-load ran. Read only into the compare log.
-    const options = {absolute: true};
-    if (frame && (frame.docName || frame.method)) {
-        options.serializerContext = {
-            apiType: frame.apiType,
-            docName: frame.docName,
-            method: frame.method,
-            withRelated: frame.options && frame.options.withRelated,
-            columns: frame.options && frame.options.columns,
-            forcedUrlRelations: frame.forcedUrlRelations
-        };
-    }
-
-    attrs.url = urlService.facade.getUrlForResource({...attrs, id, type}, options);
+    attrs.url = urlService.getUrlForResource({...attrs, id, type}, {absolute: true});
 
     /**
      * CASE: admin api should serve preview urls
@@ -77,7 +62,7 @@ const forPost = (id, attrs, frame, type = 'posts') => {
 
 const forUser = (id, attrs, options) => {
     if (!options.columns || (options.columns && options.columns.includes('url'))) {
-        attrs.url = urlService.facade.getUrlForResource({...attrs, id, type: 'authors'}, {absolute: true});
+        attrs.url = urlService.getUrlForResource({...attrs, id, type: 'authors'}, {absolute: true});
     }
 
     return attrs;
@@ -85,7 +70,7 @@ const forUser = (id, attrs, options) => {
 
 const forTag = (id, attrs, options) => {
     if (!options.columns || (options.columns && options.columns.includes('url'))) {
-        attrs.url = urlService.facade.getUrlForResource({...attrs, id, type: 'tags'}, {absolute: true});
+        attrs.url = urlService.getUrlForResource({...attrs, id, type: 'tags'}, {absolute: true});
     }
 
     return attrs;
