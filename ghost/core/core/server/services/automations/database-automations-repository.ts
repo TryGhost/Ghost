@@ -21,7 +21,7 @@ import type {
     EditAutomationData,
     Page
 } from './automations-repository';
-import {toDatabaseDate, type DatabaseDate} from './database-date';
+import {fromDatabaseDate, toDatabaseDate, type DatabaseDate} from './database-date';
 import {getStaleLockCutoff} from './stale-lock-cutoff';
 import type {ExclusifyUnion, ReadonlyDeep} from 'type-fest';
 
@@ -709,14 +709,14 @@ async function findNextPendingReadyAt(trx: Knex.Transaction, staleLockCutoff: Re
         })
         .orderBy('ready_at')
         .first();
-    return row?.next_ready_at ? new Date(row.next_ready_at) : null;
+    return row?.next_ready_at ? fromDatabaseDate(row.next_ready_at) : null;
 }
 
 function buildStepToRun(row: ReadonlyDeep<StepToRunRow>): AutomationStepToRun {
     const base = {
         id: row.id,
         step_attempts: row.step_attempts,
-        ready_at: new Date(row.ready_at),
+        ready_at: fromDatabaseDate(row.ready_at),
         locked_by: row.locked_by,
         automation_run_id: row.automation_run_id,
         automation_id: row.automation_id,
@@ -1259,13 +1259,13 @@ async function insertActionRevisions(
     );
 }
 
-function getNextRevisionCreatedAt(latestCreatedAt: string | null, requestedCreatedAt: string) {
+function getNextRevisionCreatedAt(latestCreatedAt: DatabaseDate | null, requestedCreatedAt: string) {
     if (!latestCreatedAt) {
         return toDatabaseDate(requestedCreatedAt);
     }
 
-    const requestedTime = new Date(requestedCreatedAt).getTime();
-    const latestTime = new Date(latestCreatedAt).getTime();
+    const requestedTime = fromDatabaseDate(requestedCreatedAt).getTime();
+    const latestTime = fromDatabaseDate(latestCreatedAt).getTime();
 
     if (requestedTime > latestTime) {
         return toDatabaseDate(requestedCreatedAt);
@@ -1355,8 +1355,8 @@ function buildAutomationSummary(automation: AutomationRow): AutomationSummary {
     };
 }
 
-function serializeDate(date: string) {
-    const normalizedDate = new Date(date);
+function serializeDate(date: DatabaseDate) {
+    const normalizedDate = fromDatabaseDate(date);
     normalizedDate.setMilliseconds(0);
     return normalizedDate.toISOString();
 }
