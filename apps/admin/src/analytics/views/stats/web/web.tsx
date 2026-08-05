@@ -149,7 +149,10 @@ const Web: React.FC = () => {
     // Calculate combined loading state
     const isPageLoading = isConfigLoading;
 
-    if (!webAnalyticsEnabled) {
+    // The Web tab is hidden when analytics is off, but a direct link can still
+    // land here. Wait until settings have loaded before redirecting so enabled
+    // sites are not bounced to Overview during boot.
+    if (appSettings && !webAnalyticsEnabled) {
         return (
             <Navigate to='/' />
         );
