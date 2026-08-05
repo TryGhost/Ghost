@@ -7,6 +7,7 @@ import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
 import type {MemberTier, StepSidebarDetail} from '@/automations/components/types';
 import {TRIGGER_CANVAS_ID} from './nodes';
 import {formatWait} from './format-wait';
+import {useFeatureFlag} from '@tryghost/admin-x-framework/hooks';
 
 const MAX_WAIT_DAYS = 30;
 const WHOLE_NUMBER_PATTERN = /^\d+$/;
@@ -181,6 +182,7 @@ const SendEmailSidebarBody: React.FC<{
   onDelete: () => void;
 }> = ({automationId, action, onUpdateSubject, onEditEmail, onDelete}) => {
     const subjectInputRef = useRef<HTMLInputElement>(null);
+    const automationAnalyticsEnabled = useFeatureFlag('automationAnalytics');
 
     useEffect(() => {
         subjectInputRef.current?.focus({preventScroll: true});
@@ -205,7 +207,7 @@ const SendEmailSidebarBody: React.FC<{
                 <LucideIcon.Pencil className='size-4' />
               Edit email
             </Button>
-            {action.stats && <EmailPerformanceSection actionId={action.id} automationId={automationId} stats={action.stats} />}
+            {automationAnalyticsEnabled && action.stats && <EmailPerformanceSection actionId={action.id} automationId={automationId} stats={action.stats} />}
             <div className='mt-auto pt-6'>
                 <DeleteStepButton onClick={onDelete} />
             </div>

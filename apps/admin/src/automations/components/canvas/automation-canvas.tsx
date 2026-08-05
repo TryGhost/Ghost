@@ -16,6 +16,7 @@ import {type StepPickerType} from './step-picker';
 import {StepSidebar} from './step-sidebar';
 import {formatWait} from './format-wait';
 import {isEmptyEmailLexical} from '@/automations/utils';
+import {useFeatureFlag} from '@tryghost/admin-x-framework/hooks';
 import {useLocation, useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
 import type {EmailModalMode} from '@/automations/components/types';
 
@@ -157,6 +158,7 @@ const getInitialActionOrder = (automation: AutomationDetail): AutomationAction[]
 type BuildGraphParams = {
     actionErrors: Record<string, string>;
     automation: AutomationDetail;
+    automationAnalyticsEnabled: boolean;
     disabled: boolean;
     onDelete: (stepId: string) => void;
     onEditEmailBody: (stepId: string, mode?: EmailModalMode) => void;
@@ -167,7 +169,7 @@ type BuildGraphParams = {
     selectedStepId: string | null;
 }
 
-const buildGraph = ({actionErrors, automation, disabled, onDelete, onEditEmailBody, onPick, onPreviewEmail, onSelectStep, newStepId, selectedStepId}: BuildGraphParams): { nodes: AutomationFlowNode[]; edges: Edge[] } => {
+const buildGraph = ({actionErrors, automation, automationAnalyticsEnabled, disabled, onDelete, onEditEmailBody, onPick, onPreviewEmail, onSelectStep, newStepId, selectedStepId}: BuildGraphParams): { nodes: AutomationFlowNode[]; edges: Edge[] } => {
     const ordered = getInitialActionOrder(automation);
     const baseNodeProps = {
         draggable: false,
@@ -209,7 +211,8 @@ const buildGraph = ({actionErrors, automation, disabled, onDelete, onEditEmailBo
     ordered.forEach((action) => {
         const displayData = buildActionData(action);
         const errorMessage = actionErrors[action.id];
-        const showStatsFooter = action.type === 'send_email'
+        const showStatsFooter = automationAnalyticsEnabled
+            && action.type === 'send_email'
             && Boolean(action.stats)
             && !errorMessage
             && !displayData.warningMessage;
@@ -449,6 +452,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
         : undefined;
 
     const initialViewport = useRef(getInitialViewport(window.innerWidth));
+    const automationAnalyticsEnabled = useFeatureFlag('automationAnalytics');
 
     const graph = useMemo(() => {
         if (!automation) {
@@ -457,6 +461,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
         return buildGraph({
             actionErrors,
             automation,
+            automationAnalyticsEnabled,
             disabled: automation.actions.length >= MAX_AUTOMATION_ACTIONS,
             onDelete: handleRequestDelete,
             onEditEmailBody: handleContextMenuEditEmail,
@@ -466,7 +471,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
             newStepId,
             selectedStepId
         });
-    }, [actionErrors, automation, handleContextMenuEditEmail, handleContextMenuPreviewEmail, handlePick, handleRequestDelete, newStepId, selectedStepId]);
+    }, [actionErrors, automation, automationAnalyticsEnabled, handleContextMenuEditEmail, handleContextMenuPreviewEmail, handlePick, handleRequestDelete, newStepId, selectedStepId]);
 
     const clearDetail = useCallback(() => {
         setSelectedStep(null);
