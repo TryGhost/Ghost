@@ -7,6 +7,8 @@ import {FakeMailgunServer, MailgunTestService} from '@/helpers/services/mailgun'
 import {FakeStripeServer, StripeTestService, WebhookClient} from '@/helpers/services/stripe';
 import {GhostInstance, getEnvironmentManager, isAllowedHost} from '@/helpers/environment';
 import {SettingsService} from '@/helpers/services/settings/settings-service';
+import {StaffRole, StaffUser, createStaffUserFactory} from '@/data-factory';
+import {extractInviteLink} from '@/helpers/services/email/utils';
 import {faker} from '@faker-js/faker';
 import {loginToGetAuthenticatedSession} from '@/helpers/playwright/flows/sign-in';
 import {setupUser} from '@/helpers/utils';
@@ -103,6 +105,8 @@ export interface GhostInstanceFixture {
     mailgun?: MailgunTestService;
     emailClient: EmailClient;
     ghostAccountOwner: User;
+    ghostAccountAuthor: StaffUser;
+    ghostAccountContributor: StaffUser;
     pageWithAuthenticatedUser: {
         page: Page;
         context: BrowserContext;
@@ -181,6 +185,34 @@ async function setupAuthenticatedPageFromStorageState(browser: Browser, baseURL:
         context,
         ghostAccountOwner: authenticatedSession.ghostAccountOwner
     };
+}
+
+async function getInvitationToken(emailClient: EmailClient, email: string): Promise<string> {
+    const messages = await emailClient.search({subject: 'has invited you to join', to: email});
+    const message = messages[0];
+
+    if (!message) {
+        throw new Error(`No staff invitation email found for ${email}`);
+    }
+
+    const detailedMessage = await emailClient.getMessageDetailed(message);
+    const inviteUrl = new URL(extractInviteLink(detailedMessage));
+    const token = inviteUrl.pathname.split('/').filter(Boolean).at(-1);
+
+    if (!token) {
+        throw new Error(`No invitation token found in URL for ${email}`);
+    }
+
+    return token;
+}
+
+async function createStaffAccount(page: Page, emailClient: EmailClient, role: StaffRole): Promise<StaffUser> {
+    const staffUserFactory = createStaffUserFactory(
+        page.request,
+        email => getInvitationToken(emailClient, email)
+    );
+
+    return await staffUserFactory.create({role});
 }
 
 /**
@@ -520,6 +552,14 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
         }
 
         await use(ghostAccountOwner);
+    },
+
+    ghostAccountAuthor: async ({pageWithAuthenticatedUser, emailClient}, use) => {
+        await use(await createStaffAccount(pageWithAuthenticatedUser.page, emailClient, 'Author'));
+    },
+
+    ghostAccountContributor: async ({pageWithAuthenticatedUser, emailClient}, use) => {
+        await use(await createStaffAccount(pageWithAuthenticatedUser.page, emailClient, 'Contributor'));
     },
 
     // Intermediate fixture that sets up the page and returns all setup data
