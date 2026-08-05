@@ -72,10 +72,15 @@ export interface PreviewModalProps {
 
     onCancel?: () => void;
     onOk?: () => void;
+    /** Supersedes the NiceModal close path; without it the modal must be mounted through NiceModal. Keep its presence stable across renders — toggling defined/undefined remounts the modal subtree. */
+    onClose?: () => void;
     afterClose?: () => void;
 }
 
-export const PreviewModalContent: React.FC<PreviewModalProps> = ({
+type PreviewModalContentBaseProps = Omit<PreviewModalProps, 'onClose'> & {requestClose: () => void};
+
+const PreviewModalContentBase: React.FC<PreviewModalContentBaseProps> = ({
+    requestClose,
     testId,
     title,
     titleHeadingLevel = 4,
@@ -109,7 +114,6 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
     onOk,
     afterClose
 }) => {
-    const modal = useModal();
     const {setGlobalDirtyState} = useGlobalDirtyState();
     const {confirm, dialogProps} = useDirtyConfirmation();
 
@@ -184,7 +188,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
 
     const handleCancel = onCancel || (() => {
         confirm(dirty, () => {
-            modal.remove();
+            requestClose();
             afterClose?.();
         });
     });
@@ -203,6 +207,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
             title=''
             width={width}
             hideXOnMobile
+            onClose={requestClose}
         >
             <Inline align='stretch' className='h-full grow' gap='none'>
                 <Box className={cn(
@@ -247,4 +252,16 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
             <DirtyConfirmDialog {...dialogProps} />
         </SettingsModal>
     );
+};
+
+const NicePreviewModalContent: React.FC<Omit<PreviewModalContentBaseProps, 'requestClose'>> = (props) => {
+    const modal = useModal();
+    return <PreviewModalContentBase {...props} requestClose={() => modal.remove()} />;
+};
+
+export const PreviewModalContent: React.FC<PreviewModalProps> = ({onClose, ...props}) => {
+    if (onClose) {
+        return <PreviewModalContentBase {...props} requestClose={onClose} />;
+    }
+    return <NicePreviewModalContent {...props} />;
 };
