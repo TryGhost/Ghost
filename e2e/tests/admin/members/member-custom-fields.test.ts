@@ -16,7 +16,7 @@ import {usePerTestIsolation} from '@/helpers/playwright/isolation';
 usePerTestIsolation();
 
 test.describe('Ghost Admin - Member custom fields', () => {
-    test.use({labs: {membersCustomFields: true, memberDetailsReact: true}});
+    test.use({labs: {membersCustomFields: true}});
 
     test('a field defined in settings takes a value on a member and persists it', async ({page}) => {
         const fieldName = `Job title ${Date.now()}`;

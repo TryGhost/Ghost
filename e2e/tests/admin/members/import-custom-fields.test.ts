@@ -13,13 +13,12 @@ import {usePerTestIsolation} from '@/helpers/playwright/isolation';
  * two things only the browser exercises -- the export -> import loop end to end, and the
  * mapping step both auto-detecting an exported column and taking a hand-picked target.
  *
- * Behind membersCustomFields (the whole feature) and memberDetailsReact (the member detail
- * screen that renders a field's value).
+ * Behind membersCustomFields, which gates the whole feature.
  */
 usePerTestIsolation();
 
 test.describe('Ghost Admin - Members import with custom fields', () => {
-    test.use({labs: {membersCustomFields: true, memberDetailsReact: true}});
+    test.use({labs: {membersCustomFields: true}});
 
     test('an exported custom field value round-trips back through import, auto-mapped', async ({page}) => {
         const ts = Date.now();
