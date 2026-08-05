@@ -7,7 +7,7 @@ export { allowUnhandledRequests, fakeAdminEndpoint, fakeEndpoint, fakeSitePrevie
 export type { CapturedEndpointRequest, EndpointCapture, FakeAdminEndpointResponse, FakeEndpointOptions, SitePreviewCapture, SitePreviewRequest } from "./worker";
 export { TINYBIRD_SITE_UUID, fakeTinybirdPipe, fakeTinybirdToken, webAnalyticsBootOverrides } from "./tinybird";
 export type { TinybirdPipeCapture, TinybirdPipeQuery } from "./tinybird";
-export { fakeAdminStats } from "./stats";
+export { fakeAdminStats, fakeAnalyticsOverview } from "./stats";
 
 // Test-data re-exports, so a spec needs a single import surface.
 export { activeThemeResponse, analyticsActiveVisitors, analyticsDevice, analyticsGiftLinkVisits, analyticsKpi, analyticsLocation, analyticsSource, analyticsUtmCampaign, analyticsUtmContent, analyticsUtmMedium, analyticsUtmSource, analyticsUtmTerm, automation, browseResponse, changelogEntry, comment, commentThread, configResponse, currentUserResponse, defaultThemesResponse, label, member, memberStatusStat, mrrHistoryStat, newsletter, newsletterBasicStat, newsletterClickStat, newsletterSubscriberStat, newsletterSubscriberValue, offer, post, postGrowthStat, postReferrerStat, postStats, reply, retentionOffer, settingsResponse, siteResponse, staffInvite, staffRole, staffUser, subscriptionStat, tag, theme, tier, topContentStat, topPostStat, topPostViewsStat } from "@tryghost/test-data";

@@ -86,6 +86,18 @@ function seedTopPostsViews() {
 }
 
 describe("Analytics overview", () => {
+    it("renders zero KPIs when growth history is empty", async () => {
+        fakeAdminStats.memberCount();
+        fakeAdminStats.mrr();
+        fakeAdminStats.subscriptions();
+        fakeAdminStats.topPostViews();
+        fakePosts([]);
+        await renderAdminApp("/analytics");
+
+        await expect.element(analyticsScreen.membersValue()).toHaveTextContent(/^0$/);
+        await expect.element(analyticsScreen.mrrValue()).toHaveTextContent(/^\$0$/);
+    });
+
     it("renders the seeded KPIs, latest post and top posts", async () => {
         const { postsApi } = seedAnalyticsWorld();
         seedTopPostsViews();

@@ -1,23 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { userEvent } from "vitest/browser";
 
-import { currentRoute, fakeAdminStats, fakePosts, fakeSettingsScreens, fakeTiers, renderAdminApp, settingsResponse, tier } from "@test-utils/acceptance";
+import { currentRoute, fakeAnalyticsOverview, fakeSettingsScreens, fakeTiers, renderAdminApp, settingsResponse, tier } from "@test-utils/acceptance";
 import { settingsScreen } from "./settings.screen";
-
-function fakeAnalyticsOverview() {
-    const today = new Date().toISOString().slice(0, 10);
-    fakeAdminStats.memberCount({
-        stats: [{ date: today }],
-        totals: { paid: 0, free: 0, comped: 0, gift: 0 },
-    });
-    fakeAdminStats.mrr({
-        stats: [{ date: today }],
-        totals: [{ currency: "usd", mrr: 0 }],
-    });
-    fakeAdminStats.subscriptions();
-    fakeAdminStats.topPostViews();
-    fakePosts([]);
-}
 
 describe("Settings layout", () => {
     it("leaves immediately when the page is clean", async () => {
