@@ -124,12 +124,7 @@ export default class SessionService extends ESASessionService {
                 return;
             }
 
-            // The root route is React-owned. Ember's router transition updates
-            // its own state, but React Router does not observe that transition,
-            // leaving it on the signin route until the page is refreshed.
-            // A real hash navigation keeps both routers in sync and replaces
-            // the signin entry in browser history.
-            windowProxy.replaceHash('/');
+            super.handleAuthentication('index');
         });
     }
 

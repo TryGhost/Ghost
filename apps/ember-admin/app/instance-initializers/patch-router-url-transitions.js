@@ -40,14 +40,6 @@ export function initialize(appInstance) {
     windowProxy.replaceLocation = function () {
         origTransitionTo('signin');
     };
-
-    windowProxy.replaceHash = function (route) {
-        if (route === '/') {
-            return origReplaceWith('index');
-        }
-
-        return origReplaceWith('react-fallback', route.replace(/^\//, ''));
-    };
 }
 
 export default {
