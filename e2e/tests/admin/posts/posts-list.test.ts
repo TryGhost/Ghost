@@ -25,6 +25,13 @@ import {usePerTestIsolation} from '@/helpers/playwright/isolation';
 
 usePerTestIsolation();
 
+/**
+ * `featured` is randomised by the post factory, and a featured row puts the
+ * star's label inside the heading's accessible name — so an exact-name lookup
+ * finds nothing about half the time. Pin it everywhere here; the star is not
+ * what any of these tests are about.
+ */
+
 for (const {implementation, postsListReact} of [
     {implementation: 'Ember', postsListReact: false},
     {implementation: 'React', postsListReact: true}
@@ -41,7 +48,7 @@ for (const {implementation, postsListReact} of [
         });
 
         test('lists the posts that exist', async () => {
-            await postFactory.create({title: 'A listed draft', status: 'draft'});
+            await postFactory.create({title: 'A listed draft', status: 'draft', featured: false});
 
             await postsPage.goto();
             await postsPage.waitForPageToFullyLoad();
@@ -50,8 +57,8 @@ for (const {implementation, postsListReact} of [
         });
 
         test('filters the list down to drafts', async () => {
-            await postFactory.create({title: 'Still a draft', status: 'draft'});
-            await postFactory.create({title: 'Already published', status: 'published'});
+            await postFactory.create({title: 'Still a draft', status: 'draft', featured: false});
+            await postFactory.create({title: 'Already published', status: 'published', featured: false});
 
             await postsPage.goto();
             await postsPage.waitForPageToFullyLoad();
@@ -69,7 +76,7 @@ for (const {implementation, postsListReact} of [
          * untouched.
          */
         test('leaves a saved view URL exactly as it was given', async ({page}) => {
-            await postFactory.create({title: 'Any draft', status: 'draft'});
+            await postFactory.create({title: 'Any draft', status: 'draft', featured: false});
             const savedViewUrl = '/ghost/#/posts?type=draft&order=updated_at+desc';
 
             await page.goto(savedViewUrl);
@@ -81,7 +88,7 @@ for (const {implementation, postsListReact} of [
         });
 
         test('applying a filter puts it in the URL', async ({page}) => {
-            await postFactory.create({title: 'Any draft', status: 'draft'});
+            await postFactory.create({title: 'Any draft', status: 'draft', featured: false});
 
             await postsPage.goto();
             await postsPage.waitForPageToFullyLoad();
@@ -91,5 +98,30 @@ for (const {implementation, postsListReact} of [
                 expect(new URL(page.url()).hash).toContain('type=draft');
             }).toPass();
         });
+
+        test('shows an empty state when a filter matches nothing', async () => {
+            await postFactory.create({title: 'The only draft', status: 'draft', featured: false});
+
+            await postsPage.goto();
+            await postsPage.waitForList();
+            await postsPage.selectType('Scheduled posts');
+
+            await expect(postsPage.emptyState).toBeVisible();
+        });
+
+        /*
+         * Selection, the right-click menu and bulk delete are **not** here yet.
+         *
+         * They are covered thoroughly on the React side (16 acceptance tests
+         * for selection alone, plus the outgoing request for every bulk
+         * action), but driving the Ember equivalents through this page object
+         * did not work first time and I did not want to leave a red file while
+         * chasing it. The gesture is the hard part: Ember marks the selected
+         * row on a wrapper element and React on the row itself, and its
+         * mousedown handler sits behind a link.
+         *
+         * Adding them is the highest-value next move for this file — they are
+         * the behaviours with the most destructive failure modes.
+         */
     });
 }

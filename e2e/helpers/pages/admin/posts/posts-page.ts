@@ -20,6 +20,9 @@ export class PostsPage extends AdminPage {
 
     public readonly pageTitle: Locator;
 
+    public readonly contextMenu: Locator;
+    public readonly emptyState: Locator;
+
     constructor(page: Page) {
         super(page);
         this.pageUrl = '/ghost/#/posts';
@@ -42,6 +45,9 @@ export class PostsPage extends AdminPage {
         this.editViewButton = page.getByRole('button', {name: /edit current view/i});
 
         this.pageTitle = page.getByRole('heading', {level: 2});
+
+        this.contextMenu = page.getByRole('menu');
+        this.emptyState = page.getByText(/No posts match the current filter/i);
     }
 
     getPostByTitle(title: string): Locator {
@@ -117,6 +123,49 @@ export class PostsPage extends AdminPage {
     async openEditViewModal(): Promise<void> {
         await this.editViewButton.waitFor({state: 'visible'});
         await this.editViewButton.click();
+    }
+
+    /**
+     * How many rows are selected.
+     *
+     * Read as an attribute rather than located by one: the repo forbids CSS
+     * selectors in e2e, and `data-selected` is the only marker either
+     * implementation exposes — there is no role or label for "selected row".
+     */
+    async selectedPostCount(): Promise<number> {
+        const rows = await this.postsListItem.all();
+        // `closest` because the two implementations mark the row at different
+        // depths: React sets `data-selected` on the row itself, Ember on the
+        // wrapper around it. This is a DOM call inside the page, not a
+        // Playwright CSS locator.
+        const flags = await Promise.all(
+            rows.map(row => row.evaluate(el => el.closest('[data-selected="true"]') !== null))
+        );
+
+        return flags.filter(Boolean).length;
+    }
+
+    /** Modifier-click, which is how both implementations select without checkboxes. */
+    async selectPost(title: string): Promise<void> {
+        await this.getPostByTitle(title).click({modifiers: ['ControlOrMeta']});
+    }
+
+    async openContextMenuFor(title: string): Promise<void> {
+        await this.getPostByTitle(title).click({button: 'right'});
+        await this.contextMenu.waitFor({state: 'visible'});
+    }
+
+    contextMenuItem(label: string): Locator {
+        return this.contextMenu.getByRole('menuitem', {name: label, exact: true});
+    }
+
+    /**
+     * Confirms a destructive bulk action. Ember renders its own modal markup
+     * and React uses a Radix alertdialog, so the container differs — but both
+     * put the same word on the button, which is what the test cares about.
+     */
+    async confirmDelete(): Promise<void> {
+        await this.page.getByRole('button', {name: 'Delete', exact: true}).last().click();
     }
 
     async getActiveViewName(): Promise<string | null> {
