@@ -20,6 +20,8 @@ import {hasAdminAccess, isAuthorOrContributor, isContributorUser} from '@tryghos
 import {usePostActions} from './hooks/use-post-actions';
 import {usePostSelection} from './hooks/use-post-selection';
 import {canCopyGiftLink} from '@/shared/gift-link';
+import {AddTagModal} from './components/modals/add-tag-modal';
+import {ChangeAccessModal} from './components/modals/change-access-modal';
 import {ConfirmBulkActionModal} from './components/modals/confirm-bulk-action-modal';
 import {usePostBulkActions, type BulkActionSnapshot} from './hooks/use-post-bulk-actions';
 import type {BulkConfirmKey} from './post-bulk-modal-copy';
@@ -207,6 +209,7 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
         selectionFilter: selection.filter,
         allFilter: buildAllFilter(params, {ownAuthorSlug}),
         bucketFilters,
+        isSingle: isSinglePostSelected(selectionState),
         // The selection count, not the loaded-row count: after Cmd+A on a
         // 2,000-post site the toast has to say 2,000, not the 30 in memory.
         count: getPostSelectionCount(selectionState, totalItems)
@@ -352,7 +355,7 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
                         action={pendingBulkAction.key as BulkConfirmKey}
                         count={pendingBulkAction.snapshot.count}
                         isRunning={bulkActions.isRunning}
-                        isSingle={isSinglePostSelected(selectionState) || pendingBulkAction.snapshot.count === 1}
+                        isSingle={pendingBulkAction.snapshot.isSingle}
                         resource={resource}
                         title={pendingBulkAction.snapshot.posts[0]?.title}
                         onCancel={() => {
@@ -360,6 +363,32 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
                         }}
                         onConfirm={() => {
                             void bulkActions.run(pendingBulkAction.key, pendingBulkAction.snapshot);
+                        }}
+                    />
+                )}
+                {pendingBulkAction?.key === 'add-tag' && (
+                    <AddTagModal
+                        isRunning={bulkActions.isRunning}
+                        onCancel={() => {
+                            setPendingBulkAction(null);
+                        }}
+                        onConfirm={(tags) => {
+                            void bulkActions.runWithPayload('add-tag', pendingBulkAction.snapshot, {tags});
+                        }}
+                    />
+                )}
+                {pendingBulkAction?.key === 'change-access' && (
+                    <ChangeAccessModal
+                        count={pendingBulkAction.snapshot.count}
+                        currentVisibility={pendingBulkAction.snapshot.posts[0]?.visibility}
+                        isRunning={bulkActions.isRunning}
+                        isSingle={pendingBulkAction.snapshot.isSingle}
+                        resource={resource}
+                        onCancel={() => {
+                            setPendingBulkAction(null);
+                        }}
+                        onConfirm={(access) => {
+                            void bulkActions.runWithPayload('change-access', pendingBulkAction.snapshot, access);
                         }}
                     />
                 )}

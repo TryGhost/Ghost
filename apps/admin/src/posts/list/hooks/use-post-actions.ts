@@ -19,7 +19,7 @@ import type {PostResource} from '@/posts/list/post-resource';
 /**
  * The keys the menu can actually carry out. Anything absent renders disabled —
  * a menu item that closes the menu and does nothing is worse than one that says
- * it isn't ready. `add-tag` and `change-access` still need their pickers.
+ * it isn't ready.
  */
 export const IMPLEMENTED_POST_ACTIONS: ReadonlySet<PostContextMenuKey> = new Set([
     'copy-link',
@@ -30,7 +30,9 @@ export const IMPLEMENTED_POST_ACTIONS: ReadonlySet<PostContextMenuKey> = new Set
     'unpublish',
     'unschedule',
     'feature',
-    'unfeature'
+    'unfeature',
+    'add-tag',
+    'change-access'
 ]);
 
 interface UsePostActionsOptions {
@@ -53,10 +55,12 @@ interface UsePostActionsOptions {
     allFilter: string;
     /** The bucket filters currently on screen — see `BulkActionSnapshot`. */
     bucketFilters: string[];
+    /** Ember's `isSingle`, captured with the rest of the selection. */
+    isSingle: boolean;
 }
 
 export function usePostActions({
-    resource, posts, onShareAsGift, count, onBulkAction, selectionFilter, allFilter, bucketFilters
+    resource, posts, onShareAsGift, count, onBulkAction, selectionFilter, allFilter, bucketFilters, isSingle
 }: UsePostActionsOptions) {
     const {data: siteData} = useBrowseSite();
     const siteUrl = siteData?.site.url ?? '';
@@ -75,7 +79,7 @@ export function usePostActions({
         }
 
         const notify = (message: Parameters<typeof getPostActionMessage>[0]) => {
-            toast.success(getPostActionMessage(message, {count, resource}));
+            toast.success(getPostActionMessage(message, {count, resource, isSingle}));
         };
 
         // Ember wraps every one of these in a try/catch and surfaces the error;
@@ -122,7 +126,7 @@ export function usePostActions({
             // Everything else is a bulk action. The selection is captured now,
             // because the menu is about to close and take a transient selection
             // with it.
-            onBulkAction?.(key, {filter: selectionFilter, posts, count, allFilter, bucketFilters});
+            onBulkAction?.(key, {filter: selectionFilter, posts, count, allFilter, bucketFilters, isSingle});
             break;
         }
         } catch (error) {
@@ -132,6 +136,6 @@ export function usePostActions({
         }
     }, [
         posts, resource, siteUrl, copyPost, copyPage, queryClient,
-        onShareAsGift, count, onBulkAction, selectionFilter, allFilter, bucketFilters
+        onShareAsGift, count, onBulkAction, selectionFilter, allFilter, bucketFilters, isSingle
     ]);
 }

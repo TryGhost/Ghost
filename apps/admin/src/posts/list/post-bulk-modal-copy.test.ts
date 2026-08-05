@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {getBulkConfirmCopy} from './post-bulk-modal-copy';
+import {getAccessModalTitle, getBulkConfirmCopy} from './post-bulk-modal-copy';
 
 /**
  * Wording for the three confirmation modals, ported from
@@ -73,5 +73,24 @@ describe('getBulkConfirmCopy', () => {
         expect(getBulkConfirmCopy('delete', {count: 1, resource: 'posts'}).runningLabel).toBe('Deleting');
         expect(getBulkConfirmCopy('unpublish', {count: 1, resource: 'posts'}).runningLabel).toBe('Unpublishing');
         expect(getBulkConfirmCopy('unschedule', {count: 1, resource: 'posts'}).runningLabel).toBe('Unscheduling');
+    });
+
+});
+
+describe('getAccessModalTitle', () => {
+    it('names the resource for a single post', () => {
+        expect(getAccessModalTitle({count: 1, resource: 'posts', isSingle: true}))
+            .toBe('Change post access');
+    });
+
+    // Ember appends the count only when the selection is not single.
+    it('counts the posts when several are selected', () => {
+        expect(getAccessModalTitle({count: 7, resource: 'posts', isSingle: false}))
+            .toBe('Change post access for 7 posts');
+    });
+
+    it('says page on the pages screen', () => {
+        expect(getAccessModalTitle({count: 1, resource: 'pages', isSingle: true}))
+            .toBe('Change page access');
     });
 });

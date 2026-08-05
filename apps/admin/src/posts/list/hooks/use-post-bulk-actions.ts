@@ -34,6 +34,15 @@ export interface BulkActionSnapshot {
     posts: PostListItem[];
     /** The selection count, which after Cmd+A is the server total. */
     count: number;
+    /**
+     * Ember's `isSingle` — one id selected *and not inverted*. Captured here
+     * rather than read at modal-render time, because by then the transient
+     * selection is already gone. Deriving it from `count === 1` instead is
+     * actively dangerous: `getPostSelectionCount` floors at 1, so an inverted
+     * selection over a stale total would name a single post in the modal while
+     * the request carried a filter matching the whole site.
+     */
+    isSingle: boolean;
     /** The list's own filter, which pruned rows must still match. */
     allFilter: string;
     /**
@@ -139,7 +148,10 @@ export function usePostBulkActions({resource, onDeleted, onEdited}: UsePostBulkA
         const isDelete = action === 'delete';
         const remaining = new Set<string>();
 
-        queryClient.setQueriesData<{pages?: {posts?: PostListItem[]; pages?: PostListItem[]}[]}>(
+        queryClient.setQueriesData<{
+            pageParams?: unknown[];
+            pages?: {posts?: PostListItem[]; pages?: PostListItem[]}[];
+        }>(
             {
                 queryKey: [dataType],
                 // Only the lists on screen. A cached list from another filter
@@ -153,7 +165,11 @@ export function usePostBulkActions({resource, onDeleted, onEdited}: UsePostBulkA
                 )
             },
             (cached) => {
-                if (!cached?.pages) {
+                // `pageParams` rather than `pages`: a non-infinite *pages*
+                // response is literally `{pages: Page[]}`, so testing for
+                // `pages` would treat each Page as an infinite page and rewrite
+                // the record to nothing. Only InfiniteData has `pageParams`.
+                if (!Array.isArray(cached?.pageParams) || !cached.pages) {
                     return cached;
                 }
 
@@ -196,6 +212,59 @@ export function usePostBulkActions({resource, onDeleted, onEdited}: UsePostBulkA
         return remaining;
     }, [queryClient, dataType, isPages]);
 
+    /**
+     * The two actions that carry a payload. Both refetch rather than prune.
+     *
+     * Ember prunes here too, but only after re-fetching every edited post in
+     * batches of 50 — the new tag or visibility has to be in the store before
+     * the filter can be evaluated against it. We cannot shortcut that with a
+     * local edit: a *newly created* tag's slug is decided server-side, so
+     * pruning against `tag:<slug>` locally would be guesswork. Refetching the
+     * list is the same end state for one request instead of N, and costs only
+     * the scroll position.
+     */
+    const runWithPayload = useCallback(async (
+        key: 'add-tag' | 'change-access',
+        snapshot: BulkActionSnapshot,
+        meta: {tags: {id?: string; name: string; slug?: string}[]}
+            | {visibility: string; tiers?: {id: string}[]}
+    ) => {
+        setIsRunning(true);
+
+        try {
+            const action = (key === 'add-tag'
+                ? {type: 'addTag', meta}
+                : {type: 'access', meta}) as PostBulkAction;
+
+            if (isPages) {
+                await bulkEditPages.mutateAsync({filter: snapshot.filter, action});
+            } else {
+                await bulkEditPosts.mutateAsync({filter: snapshot.filter, action});
+            }
+
+            if (key === 'change-access') {
+                toast.success(getPostActionMessage('accessUpdated', {
+                    count: snapshot.count, resource, isSingle: snapshot.isSingle
+                }));
+            } else {
+                const tagCount = 'tags' in meta ? meta.tags.length : 1;
+
+                toast.success(getPostActionMessage(tagCount > 1 ? 'tagsAdded' : 'tagAdded', {
+                    count: snapshot.count, resource, isSingle: snapshot.isSingle
+                }));
+            }
+
+            await queryClient.invalidateQueries({queryKey: [dataType]});
+            onEdited?.(new Set(snapshot.posts.map(post => post.id)));
+        } catch (error) {
+            toast.error(error instanceof Error && error.message
+                ? error.message
+                : 'That action could not be completed.');
+        } finally {
+            setIsRunning(false);
+        }
+    }, [isPages, resource, onEdited, queryClient, dataType, bulkEditPosts, bulkEditPages]);
+
     const run = useCallback(async (key: PostContextMenuKey, snapshot: BulkActionSnapshot) => {
         setIsRunning(true);
 
@@ -208,7 +277,9 @@ export function usePostBulkActions({resource, onDeleted, onEdited}: UsePostBulkA
                 }
 
                 patchCaches(snapshot, 'delete');
-                toast.success(getPostActionMessage('deleted', {count: snapshot.count, resource}));
+                toast.success(getPostActionMessage('deleted', {
+                    count: snapshot.count, resource, isSingle: snapshot.isSingle
+                }));
                 onDeleted?.();
 
                 return;
@@ -229,7 +300,9 @@ export function usePostBulkActions({resource, onDeleted, onEdited}: UsePostBulkA
             }
 
             if (bulk.message) {
-                toast.success(getPostActionMessage(bulk.message, {count: snapshot.count, resource}));
+                toast.success(getPostActionMessage(bulk.message, {
+                    count: snapshot.count, resource, isSingle: snapshot.isSingle
+                }));
             }
 
             const remaining = patchCaches(snapshot, key);
@@ -253,5 +326,5 @@ export function usePostBulkActions({resource, onDeleted, onEdited}: UsePostBulkA
         bulkEditPosts, bulkEditPages, bulkDeletePosts, bulkDeletePages
     ]);
 
-    return {run, isRunning};
+    return {run, runWithPayload, isRunning};
 }

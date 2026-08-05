@@ -45,12 +45,21 @@ const MESSAGES: Record<PostActionMessageKey, MessageForms> = {
 
 export function getPostActionMessage(
     key: PostActionMessageKey,
-    {count, resource}: {count: number; resource: PostResource}
+    {count, resource, isSingle = count === 1}: {
+        count: number;
+        resource: PostResource;
+        /**
+         * Ember branches on `isSingle` here, not on the count — the same
+         * predicate the confirmation modal uses. Without it the modal can say
+         * "these posts" and the toast that follows say "Post deleted".
+         */
+        isSingle?: boolean;
+    }
 ): string {
     const forms = MESSAGES[key];
     // Falls back to the singular where Ember has no plural, rather than
     // interpolating `undefined` into the toast as Ember would.
-    const template = (count === 1 ? forms.single : forms.multiple) ?? forms.single;
+    const template = (isSingle ? forms.single : forms.multiple) ?? forms.single;
 
     const type = resource === 'pages' ? 'page' : 'post';
 

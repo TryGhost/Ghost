@@ -46,6 +46,9 @@ export const postsListScreen = {
      * text: these strings appear nowhere else on the screen.
      */
     toastWithText: (text: string | RegExp) => page.getByText(text),
+    /** A button inside a non-destructive modal (Add a tag, Change access). */
+    dialogButton: (label: string) => page.getByRole("dialog").getByRole("button", { name: label, exact: true }),
+    tagOption: (name: string) => page.getByRole("dialog").getByLabelText(name),
     /** The confirm button inside a bulk-action modal. */
     confirmButton: (label: string) => page.getByRole("alertdialog").getByRole("button", { name: label, exact: true }),
     bulkModal: () => page.getByRole("alertdialog"),
