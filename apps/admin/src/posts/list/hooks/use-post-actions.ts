@@ -1,7 +1,6 @@
 import {getPostActionMessage} from '@/posts/list/post-action-messages';
 import {useCopyPage} from '@tryghost/admin-x-framework/api/pages';
 import {useCopyPost} from '@tryghost/admin-x-framework/api/posts';
-import {useFramework} from '@tryghost/admin-x-framework';
 import {useQueryClient} from '@tanstack/react-query';
 import {getPostPreviewUrl} from '@/posts/list/post-preview-url';
 import {toast} from 'sonner';
@@ -71,8 +70,6 @@ export function usePostActions({
     const copyPost = useCopyPost();
     const copyPage = useCopyPage();
     const queryClient = useQueryClient();
-    // Ember owns the editor and keeps its own store; tell it too.
-    const {onInvalidate} = useFramework();
 
     return useCallback(async (key: PostContextMenuKey) => {
         const first = posts[0];
@@ -122,7 +119,6 @@ export function usePostActions({
             // query has refetched, and nothing here depends on that having
             // finished.
             void queryClient.invalidateQueries({queryKey: [dataType]});
-            onInvalidate(dataType);
 
             notify('duplicated');
             break;
@@ -144,7 +140,6 @@ export function usePostActions({
         }
     }, [
         posts, resource, siteUrl, copyPost, copyPage, queryClient,
-        onShareAsGift, count, onBulkAction, selectionFilter, allFilter, bucketFilters, isSingle,
-        onInvalidate
+        onShareAsGift, count, onBulkAction, selectionFilter, allFilter, bucketFilters, isSingle
     ]);
 }
