@@ -220,7 +220,14 @@ export type ImportMembersCompleteResponseType = {
         originalImportSize?: number;
         stats: {
             imported: number;
-            invalid?: Array<Record<string, string> & {error: string}>;
+            // The submitted row echoed back, so the remaining keys are whatever columns the
+            // CSV had. `errors` is why the row failed; `error` is those reasons written out
+            // for the error report's single cell.
+            invalid?: Array<{
+                [column: string]: unknown;
+                error: string;
+                errors: string[];
+            }>;
         };
         import_label?: ImportMembersImportLabel | null;
     };

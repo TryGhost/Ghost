@@ -210,7 +210,9 @@ export function formatImportError(error: string): string {
             'Invalid email address'
         )
         .replace(
-            /No such customer:[^,]*/,
+            // Runs to the end: this is handed one reason, and Stripe puts the customer id
+            // after the colon.
+            /No such customer:[\s\S]*/,
             'Could not find Stripe customer'
         );
 }
