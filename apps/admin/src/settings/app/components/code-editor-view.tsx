@@ -1,8 +1,8 @@
-import CodeMirror, {EditorView, tooltips, type BasicSetupOptions, type ReactCodeMirrorProps, type ReactCodeMirrorRef} from '@uiw/react-codemirror';
-import React, {type FocusEventHandler, forwardRef, useEffect, useId, useMemo, useRef, useState} from 'react';
-import {FieldDescription, FieldLabel} from './field';
-import {cn} from '@/lib/utils';
-import {useFocusContext} from '@/providers/shade-provider';
+import CodeMirror, {type BasicSetupOptions, type ReactCodeMirrorProps, type ReactCodeMirrorRef} from '@uiw/react-codemirror';
+import React, {type FocusEventHandler, forwardRef, useEffect, useId, useRef, useState} from 'react';
+import clsx from 'clsx';
+import {FieldDescription, FieldLabel} from '@tryghost/shade/components';
+import {useFocusContext} from '@tryghost/shade/app';
 import type {Extension} from '@codemirror/state';
 
 export interface CodeEditorProps extends Omit<ReactCodeMirrorProps, 'value' | 'onChange' | 'extensions'> {
@@ -14,9 +14,6 @@ export interface CodeEditorProps extends Omit<ReactCodeMirrorProps, 'value' | 'o
     clearBg?: boolean;
     extensions: Array<Extension | Promise<Extension>>;
     onChange?: (value: string) => void;
-    // Applied to the editor's contenteditable via EditorView.contentAttributes —
-    // an aria-label on the wrapper div is not announced by screen readers.
-    ariaLabel?: string;
 }
 
 const codeMirrorClasses = [
@@ -29,7 +26,8 @@ const codeMirrorClasses = [
     '[&_.cm-gutters]:bg-muted',
     '[&_.cm-gutters]:text-muted-foreground',
     '[&_.cm-gutters]:border-border',
-    '[&_.cm-cursor]:border-foreground'
+    '[&_.cm-cursor]:border-foreground',
+    '[&_.cm-tooltip-autocomplete.cm-tooltip_ul_li:not([aria-selected])]:bg-background'
 ].join(' ');
 
 // Meant to be imported asynchronously to avoid including CodeMirror in the main bundle
@@ -45,7 +43,6 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
     onFocus,
     onBlur,
     className,
-    ariaLabel,
     ...props
 }, ref) {
     const id = useId();
@@ -56,30 +53,6 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
         crosshairCursor: false
     });
     const {darkMode, setFocusState} = useFocusContext();
-
-    // Tooltips (autocomplete) escape this component's overflow-hidden container
-    // by rendering into a viewport-covering parent on document.body. The parent
-    // must span the viewport because CodeMirror demotes fixed tooltips to
-    // absolute (positioned against the parent's rect) whenever its offsetParent
-    // heuristics trip — reliably in Safari under page zoom — and it must carry
-    // the `shade` class so token-based tooltip styles resolve outside the app
-    // root (`.dark` lives on <html>, so dark mode inherits). Tooltip styling is
-    // global in styles.css; wrapper-scoped classes cannot reach it.
-    const [tooltipParent] = useState(() => document.createElement('div'));
-    useEffect(() => {
-        tooltipParent.className = 'shade pointer-events-none fixed inset-0 z-[60]';
-        document.body.appendChild(tooltipParent);
-        return () => {
-            tooltipParent.remove();
-        };
-    }, [tooltipParent]);
-
-    const editorExtensions = useMemo(() => {
-        const base = [...resolvedExtensions, tooltips({position: 'fixed', parent: tooltipParent})];
-        return ariaLabel
-            ? [...base, EditorView.contentAttributes.of({'aria-label': ariaLabel})]
-            : base;
-    }, [resolvedExtensions, ariaLabel, tooltipParent]);
 
     const handleFocus: FocusEventHandler<HTMLDivElement> = (e) => {
         onFocus?.(e);
@@ -103,7 +76,7 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
                 setResolvedExtensions([]);
             }
         });
-        setBasicSetup(setup => ({...setup, searchKeymap: false}));
+        setBasicSetup(setup => ({setup, searchKeymap: false}));
 
         return () => {
             cancelled = true;
@@ -120,7 +93,7 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
         return () => resizeObserver.disconnect();
     }, []);
 
-    const styles = cn(
+    const styles = clsx(
         'peer order-2 w-full max-w-full overflow-hidden rounded-sm border',
         clearBg ? 'bg-transparent' : 'bg-muted',
         error ? 'border-destructive' : 'border-border',
@@ -137,7 +110,7 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
                 ref={ref}
                 basicSetup={basicSetup}
                 className={styles}
-                extensions={editorExtensions}
+                extensions={resolvedExtensions}
                 height={height === 'full' ? '100%' : height}
                 theme={darkMode ? 'dark' : 'light'}
                 value={value}
@@ -147,7 +120,7 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
                 {...props}
             />
             {title && <FieldLabel className='order-1' htmlFor={id}>{title}</FieldLabel>}
-            {hint && <FieldDescription className={cn('order-3 mt-1', error && 'text-destructive')}>{hint}</FieldDescription>}
+            {hint && <FieldDescription className={clsx('order-3 mt-1', error && 'text-destructive')}>{hint}</FieldDescription>}
         </div>
     </>;
 });

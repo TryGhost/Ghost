@@ -1,7 +1,7 @@
-import React, {useMemo} from 'react';
+import React from 'react';
 import TagColorField from './tag-color-field';
 import TagImageField from './tag-image-field';
-import {Accordion, AccordionContent, AccordionItem, AccordionTrigger, Card, CardContent, CodeEditor, FieldError, Input, Label, Textarea} from '@tryghost/shade/components';
+import {Accordion, AccordionContent, AccordionItem, AccordionTrigger, Card, CardContent, FieldError, Input, Label, Textarea} from '@tryghost/shade/components';
 import {DESCRIPTION_MAX_LENGTH, FACEBOOK_DESCRIPTION_RECOMMENDED_LENGTH, FACEBOOK_TITLE_RECOMMENDED_LENGTH, META_DESCRIPTION_RECOMMENDED_LENGTH, META_TITLE_RECOMMENDED_LENGTH, X_DESCRIPTION_RECOMMENDED_LENGTH, X_TITLE_RECOMMENDED_LENGTH, charLength, getBlogDomain, getSeoDescription, getSeoTitle, getSeoUrl, getSlugUrlPreview, validateTagField} from './tag-detail-edit';
 import {FacebookCardPreview, SeoPreview, XCardPreview} from './tag-detail-previews';
 import {cn, formatNumber} from '@tryghost/shade/utils';
@@ -47,7 +47,6 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
     const siteMetaTitle = getSettingValue<string>(settingsData?.settings ?? [], 'meta_title') ?? '';
     const siteMetaDescription = getSettingValue<string>(settingsData?.settings ?? [], 'meta_description') ?? '';
     const unsplashEnabled = getSettingValue<boolean>(settingsData?.settings ?? [], 'unsplash') ?? false;
-    const htmlExtensions = useMemo(() => [import('@codemirror/lang-html').then(module => module.html())], []);
 
     const validateOnBlur = (field: TagFieldName) => {
         onFieldError(field, validateTagField(field, draft));
@@ -318,27 +317,25 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                             <AccordionContent>
                                 <div className='flex flex-col gap-5 pt-2'>
                                     <div className='flex flex-col gap-1.5'>
-                                        <Label>Tag header <code className='ml-1 font-normal'>{'{{ghost_head}}'}</code></Label>
-                                        <CodeEditor
-                                            ariaLabel='Tag header'
-                                            data-testid='codeinjection-head'
-                                            editable={!disabled}
-                                            extensions={htmlExtensions}
-                                            height='128px'
+                                        <Label htmlFor='codeinjection-head'>Tag header <code className='ml-1 font-normal'>{'{{ghost_head}}'}</code></Label>
+                                        <Textarea
+                                            className='min-h-32 font-mono text-sm'
+                                            disabled={disabled}
+                                            id='codeinjection-head'
+                                            spellCheck={false}
                                             value={draft.codeinjectionHead}
-                                            onChange={value => onChange({codeinjectionHead: value})}
+                                            onChange={e => onChange({codeinjectionHead: e.target.value})}
                                         />
                                     </div>
                                     <div className='flex flex-col gap-1.5'>
-                                        <Label>Tag footer <code className='ml-1 font-normal'>{'{{ghost_foot}}'}</code></Label>
-                                        <CodeEditor
-                                            ariaLabel='Tag footer'
-                                            data-testid='codeinjection-foot'
-                                            editable={!disabled}
-                                            extensions={htmlExtensions}
-                                            height='128px'
+                                        <Label htmlFor='codeinjection-foot'>Tag footer <code className='ml-1 font-normal'>{'{{ghost_foot}}'}</code></Label>
+                                        <Textarea
+                                            className='min-h-32 font-mono text-sm'
+                                            disabled={disabled}
+                                            id='codeinjection-foot'
+                                            spellCheck={false}
                                             value={draft.codeinjectionFoot}
-                                            onChange={value => onChange({codeinjectionFoot: value})}
+                                            onChange={e => onChange({codeinjectionFoot: e.target.value})}
                                         />
                                     </div>
                                 </div>

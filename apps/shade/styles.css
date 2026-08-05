@@ -111,14 +111,3 @@ html.theme-switching *::after {
 .gh-prose-links a {
     color: #30cf43;
 }
-
-/* CodeEditor tooltips (autocomplete) render into a detached viewport-covering
-   parent, outside any wrapper the component could scope styles to. The parent
-   is pointer-events-none so it doesn't block the page; tooltips re-enable. */
-.cm-tooltip {
-    pointer-events: auto;
-}
-
-.cm-tooltip-autocomplete.cm-tooltip ul li:not([aria-selected]) {
-    background: var(--background);
-}
