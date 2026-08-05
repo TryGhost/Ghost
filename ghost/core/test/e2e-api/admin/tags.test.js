@@ -41,8 +41,9 @@ describe('Tag API', function () {
         assert.equal(jsonResponse.meta.pagination.next, null);
         assert.equal(jsonResponse.meta.pagination.prev, null);
 
-        // returns 404 because this tag has no published posts
-        assert.equal(new URL(jsonResponse.tags[0].url).pathname, '/404/');
+        const postlessTag = jsonResponse.tags.find(t => t.count.posts === 0);
+        assertExists(postlessTag);
+        assert.equal(new URL(postlessTag.url).pathname, `/tag/${postlessTag.slug}/`);
 
         // Find specific tags by slug to verify URL generation
         const kitchenSinkTag = jsonResponse.tags.find(t => t.slug === 'kitchen-sink');

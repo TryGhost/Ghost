@@ -52,8 +52,9 @@ describe('Unit: endpoints/utils/serializers/input/utils/url', function () {
             urlUtil.forceUrlColumnsWhenLazy(frame, 'posts');
 
             assert.deepEqual(frame.options.columns, ['url', 'slug', 'status', 'type']);
-            // only what the caller did not request
-            assert.deepEqual(frame.forcedUrlColumns, ['status', 'type']);
+            // only what the caller did not request, tagged with the fetch it
+            // belongs to so nested mappers don't strip each other's columns
+            assert.deepEqual(frame.forcedUrlColumns, {routerType: 'posts', columns: ['status', 'type']});
         });
 
         it('records no forced columns when everything was already requested', function () {
