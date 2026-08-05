@@ -21,7 +21,7 @@ import type {
     EditAutomationData,
     Page
 } from './automations-repository';
-import {toDatabaseDate} from './database-date';
+import {toDatabaseDate, type DatabaseDate} from './database-date';
 import {getStaleLockCutoff} from './stale-lock-cutoff';
 import type {ExclusifyUnion, ReadonlyDeep} from 'type-fest';
 
@@ -48,8 +48,8 @@ interface AutomationRow {
     slug: string;
     name: string;
     status: string;
-    created_at: string;
-    updated_at: string;
+    created_at: DatabaseDate;
+    updated_at: DatabaseDate;
 }
 
 
@@ -76,7 +76,7 @@ type ActionLinkRow = {
 
 type ActionRevisionRow = {
     action_id: string;
-    created_at: string;
+    created_at: DatabaseDate;
     wait_hours: number | null;
     email_subject: string | null;
     email_lexical: string | null;
@@ -108,7 +108,7 @@ type StepToRunRow = {
     action_id: string;
     automation_action_revision_id: string;
     type: string;
-    ready_at: string;
+    ready_at: DatabaseDate;
     step_attempts: number;
     wait_hours: number | null;
     email_subject: string | null;
