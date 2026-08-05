@@ -38,6 +38,16 @@ export const postsListScreen = {
     metricCell: (label: string) => page.getByTestId("posts-list-item").getByRole("link", { name: new RegExp(label) }).first(),
     /** The hover breakdown, which Radix portals out of the row. */
     metricPanel: () => page.getByTestId("post-metric-panel"),
+    /** The right-click menu, which Radix portals out of the list. */
+    contextMenu: () => page.getByRole("menu"),
+    contextMenuItem: (label: string) => page.getByRole("menuitem", { name: label, exact: true }),
+    /**
+     * Toasts render into Shade's Sonner portal, outside the list. Matched by
+     * text: these strings appear nowhere else on the screen.
+     */
+    toastWithText: (text: string | RegExp) => page.getByText(text),
+    /** The gift-link modal, opened from the context menu. */
+    giftLinkModal: () => page.getByRole("dialog", { name: /gift/i }),
     /** The trailing button at a row's end — Analytics, View, or Editor. */
     rowAction: () => page.getByTestId("post-list-item-action"),
     featuredMarkers: () => page.getByTestId("post-featured"),

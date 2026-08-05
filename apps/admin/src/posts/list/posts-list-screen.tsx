@@ -5,6 +5,7 @@ import {LoadMoreButton} from '@/shared/virtual-list';
 import {cn, LucideIcon} from '@tryghost/shade/utils';
 import {FilterBar, PageHeader} from '@tryghost/shade/patterns';
 import {PostListRow} from './components/post-list-row';
+import {PostsContextMenu} from './components/posts-context-menu';
 import {PostsEmptyState} from './components/posts-empty-state';
 import {PostsFilters} from './components/posts-filters';
 import {ManagePostViewPopover} from './components/manage-post-view-popover';
@@ -16,12 +17,16 @@ import {canSavePostView, findActivePostView} from './post-views';
 import {usePostViews} from './hooks/use-post-views';
 import {getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {hasAdminAccess, isAuthorOrContributor, isContributorUser} from '@tryghost/admin-x-framework/api/users';
+import {usePostActions} from './hooks/use-post-actions';
 import {usePostSelection} from './hooks/use-post-selection';
+import {canCopyGiftLink} from '@/shared/gift-link';
+import {getPostContextMenuItems} from './post-context-menu-items';
+import {getPostSelectionCount, isPostSelected, isSinglePostSelected} from './post-selection-state';
 import {type PostResource, getPostResourceCopy} from './post-resource';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
 import {usePostsFilterState} from './hooks/use-posts-filter-state';
 import {rememberStickyPostFilters} from './posts-sticky-filters';
-import {useEffect, useMemo} from 'react';
+import {lazy, Suspense, useEffect, useMemo, useState} from 'react';
 import {useLocation} from '@tryghost/admin-x-framework';
 import {usePostAnalyticsCounts} from './hooks/use-post-analytics-counts';
 import {usePostsList} from './hooks/use-posts-list';
@@ -33,6 +38,9 @@ import {usePostsList} from './hooks/use-posts-list';
  * Currently renders bare titles: this phase is about the data layer being
  * right (three sequenced queries, URL round-tripping), not the design.
  */
+// Only needed once someone opens it, and it pulls in the gift-link API layer.
+const GiftLinkModal = lazy(() => import('@/posts/analytics/modals/gift-link-modal'));
+
 export function PostsListScreen({resource}: {resource: PostResource}) {
     const copy = getPostResourceCopy(resource);
     const {params, filters, order, setFilters, setOrder, hasFilters, clearFilters} = usePostsFilterState();
@@ -95,7 +103,8 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
         isError,
         hasNextPage,
         isFetchingNextPage,
-        fetchNextPage
+        fetchNextPage,
+        totalItems
     } = usePostsList({resource, params, context: {ownAuthorSlug}});
 
     // Selection is a bulk-edit affordance, and authors and contributors have no
@@ -106,6 +115,49 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
         // filter rather than every id, so it covers rows never loaded.
         allFilter: buildAllFilter(params, {ownAuthorSlug}),
         enabled: Boolean(currentUser) && !isRestrictedAuthor
+    });
+
+    // The menu describes the selection, not the row under the cursor. Ember's
+    // `availableModels` — the selected rows that are actually loaded.
+    //
+    // Depends on `selection.state` rather than `selection`, which is a fresh
+    // object literal every render and would make this memo a no-op.
+    const selectionState = selection.state;
+    const menuPosts = useMemo(
+        () => items.filter(item => isPostSelected(selectionState, item.id)),
+        [items, selectionState]
+    );
+    const membersEnabled = getSettingValue<string>(settings, 'members_signup_access') !== 'none';
+
+    // Identical for every row, so computed once rather than per row per render.
+    const menuItems = useMemo(() => getPostContextMenuItems({
+        posts: menuPosts,
+        resource,
+        isAdmin,
+        membersEnabled,
+        // The gift link is filtered back in per row below, since it is the one
+        // item that depends on *which* post rather than on the selection.
+        canCopyGiftLink: true
+    }), [menuPosts, resource, isAdmin, membersEnabled]);
+
+    // Ember gates this on `isSingle` — one *selected* post — not on "one loaded
+    // post". After Cmd+A on a view with a single loaded row, everything is
+    // selected, and offering to gift-link it would be wrong.
+    const giftLinkPost = isSinglePostSelected(selectionState) ? menuPosts[0] : undefined;
+    const menuGiftLinkPostId = giftLinkPost && canCopyGiftLink({user: currentUser, post: giftLinkPost})
+        ? giftLinkPost.id
+        : null;
+    // Opened from the context menu. Ember reaches the same React modal over the
+    // state bridge; here the list owns it directly, so there is one modal and
+    // one set of eligibility rules behind both implementations.
+    const [giftLinkPostId, setGiftLinkPostId] = useState<string | null>(null);
+    const runPostAction = usePostActions({
+        resource,
+        posts: menuPosts,
+        onShareAsGift: setGiftLinkPostId,
+        // The selection count, not the loaded-row count: after Cmd+A on a
+        // 2,000-post site the toast has to say 2,000, not the 30 in memory.
+        count: getPostSelectionCount(selectionState, totalItems)
     });
 
     const {visitorCounts, memberCounts} = usePostAnalyticsCounts({
@@ -203,21 +255,29 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
                                     data-testid='posts-list'
                                 >
                                     {items.map(item => (
-                                        <PostListRow
+                                        <PostsContextMenu
                                             key={item.id}
-                                            hasAdminAccess={isAdmin}
-                                            isContributor={isContributor}
-                                            isSelected={selection.isSelected(item.id)}
-                                            memberCounts={memberCounts}
-                                            metricsSettings={metricsSettings}
-                                            paidMembersEnabled={paidMembersEnabled}
-                                            post={item}
-                                            resource={resource}
-                                            timezone={timezone}
-                                            visitorCounts={visitorCounts}
-                                            onSelectClick={selection.onRowClick}
-                                            onSelectMouseDown={selection.onRowMouseDown}
-                                        />
+                                            enabled={selection.enabled}
+                                            items={menuItems}
+                                            showGiftLink={menuGiftLinkPostId === item.id}
+                                            onAction={runPostAction}
+                                            onOpenChange={selection.getContextMenuOpenHandler(item.id)}
+                                        >
+                                            <PostListRow
+                                                hasAdminAccess={isAdmin}
+                                                isContributor={isContributor}
+                                                isSelected={selection.isSelected(item.id)}
+                                                memberCounts={memberCounts}
+                                                metricsSettings={metricsSettings}
+                                                paidMembersEnabled={paidMembersEnabled}
+                                                post={item}
+                                                resource={resource}
+                                                timezone={timezone}
+                                                visitorCounts={visitorCounts}
+                                                onSelectClick={selection.onRowClick}
+                                                onSelectMouseDown={selection.onRowMouseDown}
+                                            />
+                                        </PostsContextMenu>
                                     ))}
                                 </ul>
                                 {/* Plain pager for now. Phase 5 adds the
@@ -235,6 +295,21 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
                         )}
                     </ListPage.Body>
                 </ListPage>
+                {giftLinkPostId && (
+                    <Suspense fallback={null}>
+                        <GiftLinkModal
+                            postId={giftLinkPostId}
+                            resource={resource}
+                            source='context-menu'
+                            open
+                            onOpenChange={(open) => {
+                                if (!open) {
+                                    setGiftLinkPostId(null);
+                                }
+                            }}
+                        />
+                    </Suspense>
+                )}
             </Container>
         </Box>
     );

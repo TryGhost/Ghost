@@ -220,6 +220,42 @@ export function usePostSelection({orderedIds, allFilter, enabled}: UsePostSelect
         clearTextSelection();
     }, []);
 
+    /**
+     * Radix owns the menu's open state, so this is where Ember's
+     * freeze/unfreeze pair lands: opening on an unselected row selects just
+     * that row transiently, and closing drops it again.
+     */
+    const onContextMenuOpenChange = useCallback((open: boolean, id: string) => {
+        if (!latest.current.enabled) {
+            return;
+        }
+
+        dispatch(open ? {type: 'contextMenu', id} : {type: 'closeContextMenu'});
+    }, []);
+
+    /**
+     * One stable handler per row id. An inline `open => handler(open, id)` in
+     * the list would be a new function on every render, which defeats the
+     * memoised context menu and with it the memoised row.
+     */
+    const openHandlers = useRef(new Map<string, (open: boolean) => void>());
+
+    const getContextMenuOpenHandler = useCallback((id: string) => {
+        const existing = openHandlers.current.get(id);
+
+        if (existing) {
+            return existing;
+        }
+
+        const handler = (open: boolean) => {
+            onContextMenuOpenChange(open, id);
+        };
+
+        openHandlers.current.set(id, handler);
+
+        return handler;
+    }, [onContextMenuOpenChange]);
+
     const filter = useMemo(() => getPostSelectionFilter(state, allFilter), [state, allFilter]);
 
     return {
@@ -230,6 +266,9 @@ export function usePostSelection({orderedIds, allFilter, enabled}: UsePostSelect
         selectAll: useCallback(() => dispatch({type: 'selectAll'}), []),
         clear: useCallback(() => dispatch({type: 'clear'}), []),
         onRowMouseDown,
-        onRowClick
+        onRowClick,
+        onContextMenuOpenChange,
+        getContextMenuOpenHandler,
+        enabled
     };
 }

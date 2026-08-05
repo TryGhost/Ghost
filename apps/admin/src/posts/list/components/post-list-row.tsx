@@ -10,12 +10,12 @@ import {
 } from '@/posts/list/post-row-copy';
 import {hasPostAnalyticsPage, type PostMetricsSettings} from '@/posts/list/post-metrics';
 import {PostMetricsCells} from '@/posts/list/components/post-metrics-cells';
-import {memo, useState} from 'react';
-import type {MouseEvent as ReactMouseEvent} from 'react';
+import {forwardRef, memo, useState} from 'react';
+import type {ComponentPropsWithoutRef, MouseEvent as ReactMouseEvent} from 'react';
 import type {PostListItem} from '@/posts/list/hooks/use-posts-list';
 import type {PostResource} from '@/posts/list/post-resource';
 
-interface PostListRowProps {
+interface PostListRowProps extends Omit<ComponentPropsWithoutRef<'li'>, 'onClick'> {
     post: PostListItem;
     resource: PostResource;
     timezone?: string;
@@ -86,11 +86,14 @@ function FeatureImage({post}: {post: PostListItem}) {
     );
 }
 
-function PostListRowComponent({
+const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowProps>(function PostListRowComponent({
     post, resource, timezone, isContributor, hasAdminAccess, paidMembersEnabled,
     isSelected, onSelectMouseDown, onSelectClick,
-    metricsSettings, visitorCounts, memberCounts
-}: PostListRowProps) {
+    metricsSettings, visitorCounts, memberCounts,
+    // Everything else lands on the <li>: the context menu wraps each row with
+    // `asChild`, so Radix hands its trigger props and ref straight through.
+    ...rest
+}, ref) {
     const [isHovered, setIsHovered] = useState(false);
 
     const metaParts = getPostMetaParts(post, {timezone});
@@ -117,6 +120,8 @@ function PostListRowComponent({
 
     return (
         <li
+            ref={ref}
+            {...rest}
             className={cn(
                 'group border-b border-border-default',
                 // `bg-muted` is Shade's own selected-row treatment (see
@@ -129,7 +134,9 @@ function PostListRowComponent({
             data-selected={isSelected ? 'true' : undefined}
             data-testid='posts-list-item'
             onClickCapture={onSelectClick}
-            onMouseDownCapture={event => onSelectMouseDown?.(event, post.id)}
+            onMouseDownCapture={(event) => {
+                onSelectMouseDown?.(event, post.id);
+            }}
             onMouseEnter={() => {
                 setIsHovered(true);
             }}
@@ -213,7 +220,7 @@ function PostListRowComponent({
             </Inline>
         </li>
     );
-}
+});
 
 /**
  * Memoised. Selection state and modifier "select mode" both live above the

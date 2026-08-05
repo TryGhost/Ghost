@@ -1,5 +1,5 @@
 import {InfiniteData} from '@tanstack/react-query';
-import {Meta, createInfiniteQuery, createQuery, createQueryWithId} from '../utils/api/hooks';
+import {Meta, createInfiniteQuery, createMutation, createQuery, createQueryWithId} from '../utils/api/hooks';
 import type {Email, PostListFields} from './posts';
 
 // A page is a post with `displayName: 'page'` server-side, so the list screens
@@ -66,4 +66,10 @@ export const useBrowsePagesInfinite = createInfiniteQuery<PagesResponseType & {i
             isEnd: meta ? meta.pagination.pages === meta.pagination.page : true
         };
     }
+});
+
+/** Duplicate a page. As with posts, the copy is always a draft. */
+export const useCopyPage = createMutation<PagesResponseType, string>({
+    method: 'POST',
+    path: id => `/pages/${id}/copy/`
 });

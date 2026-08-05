@@ -117,6 +117,15 @@ export const useDeletePost = createMutation<unknown, string>({
     path: id => `/posts/${id}/`
 });
 
+/**
+ * Duplicate a post. The copy is always a draft, whatever the source was, so
+ * callers place it at the top of the list rather than beside its original.
+ */
+export const useCopyPost = createMutation<PostsResponseType, string>({
+    method: 'POST',
+    path: id => `/posts/${id}/copy/`
+});
+
 // Search index endpoints for efficient search
 export const useSearchIndexPosts = createQuery<PostsResponseType>({
     dataType,

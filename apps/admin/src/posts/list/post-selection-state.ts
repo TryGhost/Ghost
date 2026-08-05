@@ -25,20 +25,30 @@ export interface PostSelectionState {
      * selected by hand before shift-clicking.
      */
     lastShiftGroup: Set<string>;
+    /**
+     * Set when the selection exists only because a row was right-clicked, and
+     * should be dropped again when the menu closes. Ember achieves this with a
+     * freeze/unfreeze pair plus a `clearOnNextUnfreeze` flag; Radix owns the
+     * menu's open state here, so one boolean is enough.
+     */
+    transient: boolean;
 }
 
 export type PostSelectionAction =
     | {type: 'toggle'; id: string}
     | {type: 'shift'; id: string; orderedIds: string[]}
     | {type: 'selectAll'}
-    | {type: 'clear'};
+    | {type: 'clear'}
+    | {type: 'contextMenu'; id: string}
+    | {type: 'closeContextMenu'};
 
 export function createPostSelection(): PostSelectionState {
     return {
         selectedIds: new Set(),
         inverted: false,
         lastSelectedId: null,
-        lastShiftGroup: new Set()
+        lastShiftGroup: new Set(),
+        transient: false
     };
 }
 
@@ -91,7 +101,8 @@ function toggle(state: PostSelectionState, id: string): PostSelectionState {
         selectedIds,
         inverted: state.inverted,
         lastSelectedId,
-        lastShiftGroup: new Set()
+        lastShiftGroup: new Set(),
+        transient: false
     };
 }
 
@@ -128,7 +139,8 @@ function shift(state: PostSelectionState, id: string, orderedIds: string[]): Pos
         // The anchor deliberately does not move, so a second shift-click
         // re-ranges from the original click rather than chaining off the last.
         lastSelectedId: state.lastSelectedId,
-        lastShiftGroup: new Set(range)
+        lastShiftGroup: new Set(range),
+        transient: false
     };
 }
 
@@ -149,8 +161,26 @@ export function postSelectionReducer(
             selectedIds: new Set(),
             inverted: !state.inverted,
             lastSelectedId: null,
-            lastShiftGroup: new Set()
+            lastShiftGroup: new Set(),
+            transient: false
         };
+    case 'contextMenu':
+        // Right-clicking a row already in the selection acts on the whole
+        // selection — that is how a bulk action is reached. Only an unselected
+        // row replaces it, and only for as long as the menu is open.
+        if (isPostSelected(state, action.id)) {
+            return state;
+        }
+
+        return {
+            selectedIds: new Set([action.id]),
+            inverted: false,
+            lastSelectedId: action.id,
+            lastShiftGroup: new Set(),
+            transient: true
+        };
+    case 'closeContextMenu':
+        return state.transient ? createPostSelection() : state;
     case 'clear':
         // A fresh object rather than the shared constant: handing out the same
         // Sets everywhere means one stray in-place mutation would corrupt the
