@@ -1,7 +1,7 @@
 import {getPost} from '@tryghost/admin-x-framework/api/posts';
 import {readPublishCelebration, type PublishCelebration} from '@/posts/list/post-publish-celebration';
 import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
-import {useEffect, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 
 /**
  * The post-publish celebration, ported from `checkPublishFlowModal` in
@@ -19,7 +19,24 @@ export function usePostPublishCelebration() {
      */
     const [celebration, setCelebration] = useState<PublishCelebration | null>(null);
 
+    /**
+     * The read is single-shot — it clears the key as it goes — and StrictMode
+     * invokes effects twice on mount. Without this guard the first invocation
+     * consumes the key and sets the state, and the second reads nothing and
+     * clobbers it back to null, so the celebration never appears at all.
+     *
+     * A ref rather than a module-level flag: it survives the double-invoke
+     * (same component instance) while still letting a genuinely new mount —
+     * publishing a second post — read a fresh key.
+     */
+    const hasRead = useRef(false);
+
     useEffect(() => {
+        if (hasRead.current) {
+            return;
+        }
+
+        hasRead.current = true;
         setCelebration(readPublishCelebration());
     }, []);
 

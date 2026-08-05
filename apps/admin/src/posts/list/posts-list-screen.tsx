@@ -20,6 +20,9 @@ import {hasAdminAccess, isAuthorOrContributor, isContributorUser} from '@tryghos
 import {usePostActions} from './hooks/use-post-actions';
 import {usePostSelection} from './hooks/use-post-selection';
 import {canCopyGiftLink} from '@/shared/gift-link';
+import {PostCelebrationModal} from './components/post-celebration-modal';
+import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
+import {usePostPublishCelebration} from './hooks/use-post-publish-celebration';
 import {AddTagModal} from './components/modals/add-tag-modal';
 import {ChangeAccessModal} from './components/modals/change-access-modal';
 import {ConfirmBulkActionModal} from './components/modals/confirm-bulk-action-modal';
@@ -166,6 +169,11 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
     // state bridge; here the list owns it directly, so there is one modal and
     // one set of eligibility rules behind both implementations.
     const [giftLinkPostId, setGiftLinkPostId] = useState<string | null>(null);
+
+    // The Ember editor writes a localStorage key on publish and navigates here;
+    // this reads it. The editor stays Ember on both sides of the flag.
+    const celebration = usePostPublishCelebration();
+    const {data: siteData} = useBrowseSite();
 
     /**
      * A bulk action that has been chosen but not yet confirmed. The selection
@@ -396,6 +404,16 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
                         onConfirm={(access) => {
                             void bulkActions.runWithPayload('change-access', pendingBulkAction.snapshot, access);
                         }}
+                    />
+                )}
+                {celebration.celebration && celebration.post && (
+                    <PostCelebrationModal
+                        post={celebration.post}
+                        postCount={celebration.postCount}
+                        siteTitle={siteData?.site.title ?? ''}
+                        type={celebration.celebration.type}
+                        wasPublished={celebration.celebration.wasPublished}
+                        onClose={celebration.dismiss}
                     />
                 )}
                 {giftLinkPostId && (
