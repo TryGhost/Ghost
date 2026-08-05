@@ -1,0 +1,159 @@
+name: 'Report boot benchmark'
+description: 'Writes a hyperfine boot measurement to the job summary and, on push runs, appends it to a Ghost-Benchmarks series.'
+inputs:
+  results-file:
+    description: 'hyperfine --export-json output, relative to the workspace'
+    required: true
+  series:
+    description: 'Suite name in the benchmark data - each series charts separately'
+    required: true
+  metric:
+    description: 'Metric name within the series'
+    required: true
+  title:
+    description: 'Heading for the job summary'
+    required: true
+  github-token:
+    description: 'Write-scoped token for TryGhost/Ghost-Benchmarks. Publishing is skipped on PRs.'
+    required: false
+    default: ''
+  data-dir:
+    description: 'Subdirectory of the benchmarks repo holding this series. Empty means the root series - use a subdirectory for anything new.'
+    required: false
+    default: ''
+  site-url:
+    description: 'Published benchmark site. Read anonymously for the comparison line - Pages is public even though the repo is not.'
+    required: false
+    default: 'https://tryghost.github.io/Ghost-Benchmarks'
+
+runs:
+  using: 'composite'
+  steps:
+    # Larger runners are not a uniform CPU: boot times differ by ~35% between hosts,
+    # which swamps most real regressions. Measure the host so a jump in the series can
+    # be told apart from a slower machine.
+    - name: Measure host
+      id: host
+      shell: bash
+      env:
+        ACTION_PATH: ${{ github.action_path }}
+      run: |
+        # /proc/cpuinfo has no model name on arm64, so prefer lscpu and fall back.
+        cpu_model="$(lscpu 2>/dev/null | sed -n 's/^Model name:[[:space:]]*//p' | head -1)"
+        if [ -z "$cpu_model" ] || [ "$cpu_model" = "-" ]; then
+            cpu_model="$(sed -n 's/^model name[[:space:]]*: //p' /proc/cpuinfo 2>/dev/null | head -1)"
+        fi
+        # Digits only: anything else downstream is consumed as JSON.
+        calibration="$(node "${ACTION_PATH}/calibration.js" | tr -dc '0-9')"
+
+        {
+          echo "cpu-model=${cpu_model:-unknown}"
+          echo "cpu-count=$(nproc 2>/dev/null || echo '?')"
+          echo "calibration=${calibration:-0}"
+        } >> "$GITHUB_OUTPUT"
+
+    - name: Convert data
+      id: convert
+      shell: bash
+      env:
+        RESULTS_FILE: ${{ inputs.results-file }}
+        METRIC: ${{ inputs.metric }}
+        CPU_MODEL: ${{ steps.host.outputs.cpu-model }}
+        CPU_COUNT: ${{ steps.host.outputs.cpu-count }}
+        CALIBRATION: ${{ steps.host.outputs.calibration }}
+      run: |
+        # Calibration rides along as its own metric (charted next to the boot time, so
+        # the two can be compared) and the CPU model as `extra`, which the chart shows
+        # on hover.
+        FORMATTED="${RESULTS_FILE%.json}-formatted.json"
+        jq --arg metric "$METRIC" \
+          --arg host "${CPU_MODEL} (${CPU_COUNT} cores)" \
+          --argjson calibration "${CALIBRATION:-0}" \
+          '[
+            {
+              name: $metric,
+              unit: "s",
+              value: .results[0].median,
+              range: ((.results[0].max - .results[0].min) | tostring),
+              extra: $host
+            }
+          ] + (if $calibration > 0 then [
+            {
+              name: "Compile calibration",
+              unit: "ms",
+              value: $calibration,
+              extra: $host
+            }
+          ] else [] end)' \
+          < "$RESULTS_FILE" > "$FORMATTED"
+        echo "formatted-file=$FORMATTED" >> "$GITHUB_OUTPUT"
+
+    # Numbers on the job page rather than buried in the log, with the latest main
+    # data point for context. Never fails the job.
+    - name: Write result to job summary
+      shell: bash
+      continue-on-error: true
+      env:
+        RESULTS_FILE: ${{ inputs.results-file }}
+        SERIES: ${{ inputs.series }}
+        METRIC: ${{ inputs.metric }}
+        TITLE: ${{ inputs.title }}
+        SITE_URL: ${{ inputs.site-url }}
+        DATA_DIR: ${{ inputs.data-dir }}
+        CPU_MODEL: ${{ steps.host.outputs.cpu-model }}
+        CPU_COUNT: ${{ steps.host.outputs.cpu-count }}
+        CALIBRATION: ${{ steps.host.outputs.calibration }}
+      run: |
+        {
+          echo "### $TITLE"
+          echo
+          echo "| metric | ms |"
+          echo "|---|---|"
+          jq -r '.results[0] | "| median | \(.median*1000|round) |\n| mean ± σ | \(.mean*1000|round) ± \(.stddev*1000|round) |\n| min | \(.min*1000|round) |\n| max | \(.max*1000|round) |"' < "$RESULTS_FILE"
+          echo
+          echo "Host: ${CPU_MODEL} (${CPU_COUNT} cores), compile calibration ${CALIBRATION} ms."
+        } >> "$GITHUB_STEP_SUMMARY"
+
+        if curl -fsSL --max-time 60 "${SITE_URL}/${DATA_DIR:+$DATA_DIR/}data.js" -o "${RUNNER_TEMP}/benchmark-data.js"; then
+          baseline=$(sed '1s/^window\.BENCHMARK_DATA = //' "${RUNNER_TEMP}/benchmark-data.js" | jq -r \
+            --arg series "$SERIES" --arg metric "$METRIC" \
+            '(.entries[$series] // []) | max_by(.date)
+             | [(.benches[] | select(.name == $metric) | .value),
+                ((.benches[] | select(.name == "Compile calibration") | .value) // 0),
+                .commit.id[0:9]] | @tsv' 2>/dev/null || true)
+        else
+          baseline=""
+        fi
+
+        if [ -n "$baseline" ]; then
+          median=$(jq -r '.results[0].median' < "$RESULTS_FILE")
+          IFS=$'\t' read -r base_boot base_calibration base_commit <<< "$baseline"
+          # A boot delta only means something if the calibration held steady - the two
+          # move together when the runner changed rather than the code.
+          awk -v cur="$median" -v base="$base_boot" -v commit="$base_commit" \
+              -v cur_cal="$CALIBRATION" -v base_cal="$base_calibration" 'BEGIN {
+            printf "\nLatest main data point (%s): %d ms - this run is %+d ms (%+.1f%%)\n", commit, base * 1000, (cur - base) * 1000, (cur - base) / base * 100
+            if (base_cal > 0) {
+              printf "Calibration then %d ms vs now %d ms (%+.1f%%)\n", base_cal, cur_cal, (cur_cal - base_cal) / base_cal * 100
+            } else {
+              printf "That data point predates calibration, so the hosts cannot be compared.\n"
+            }
+          }' >> "$GITHUB_STEP_SUMMARY"
+        else
+          printf '\nNo published data point to compare against yet.\n' >> "$GITHUB_STEP_SUMMARY"
+        fi
+
+    # Push runs only: a pull_request run executes PR-authored code, so it never gets
+    # the write-scoped token, and unmerged results stay out of the series. No token
+    # means summary-only, so callers can use this action without publishing.
+    - name: Publish to benchmark series
+      if: github.event_name != 'pull_request' && inputs.github-token != ''
+      uses: benchmark-action/github-action-benchmark@4bdcce38c94cec68da58d012ac24b7b1155efe8b # v1.20.7
+      with:
+        name: ${{ inputs.series }}
+        tool: 'customSmallerIsBetter'
+        output-file-path: ${{ steps.convert.outputs.formatted-file }}
+        benchmark-data-dir-path: ${{ inputs.data-dir }}
+        gh-repository: github.com/TryGhost/Ghost-Benchmarks
+        github-token: ${{ inputs.github-token }}
+        auto-push: true
