@@ -4,7 +4,6 @@ const sinon = require('sinon');
 const urlUtils = require('../../../../../core/shared/url-utils').default;
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const giftServiceWrapper = require('../../../../../core/server/services/gifts');
-const tiersService = require('../../../../../core/server/services/tiers');
 
 // Initialise i18n before requiring the controller so its destructured `t`
 // import resolves to the live i18next instance. The init helper falls back
@@ -17,7 +16,6 @@ describe('Gift Preview Controller', function () {
     let req;
     let res;
     let originalGiftService;
-    let originalTiersApi;
 
     beforeEach(function () {
         req = {
@@ -32,22 +30,15 @@ describe('Gift Preview Controller', function () {
             set: sinon.stub()
         };
         originalGiftService = giftServiceWrapper.service;
-        originalTiersApi = tiersService.api;
 
         sinon.stub(urlUtils, 'getSiteUrl').returns('https://example.com/');
         sinon.stub(settingsCache, 'get');
         settingsCache.get.withArgs('title').returns('Test Blog');
         settingsCache.get.withArgs('accent_color').returns('#FF5733');
-        tiersService.api = {
-            read: sinon.stub().resolves({
-                name: 'Premium'
-            })
-        };
     });
 
     afterEach(function () {
         giftServiceWrapper.service = originalGiftService;
-        tiersService.api = originalTiersApi;
 
         sinon.restore();
     });
@@ -55,7 +46,7 @@ describe('Gift Preview Controller', function () {
     describe('giftPreview', function () {
         it('redirects to homepage when gift token is invalid', async function () {
             giftServiceWrapper.service = {
-                getByToken: sinon.stub().rejects(new Error('Not found'))
+                getPreview: sinon.stub().rejects(new Error('Not found'))
             };
 
             await controller.giftPreview(req, res);
@@ -66,7 +57,7 @@ describe('Gift Preview Controller', function () {
 
         it('redirects to homepage when gift token is not found (null)', async function () {
             giftServiceWrapper.service = {
-                getByToken: sinon.stub().resolves(null)
+                getPreview: sinon.stub().resolves(null)
             };
 
             await controller.giftPreview(req, res);
@@ -77,8 +68,8 @@ describe('Gift Preview Controller', function () {
 
         it('returns HTML with OG tags for a valid gift', async function () {
             giftServiceWrapper.service = {
-                getByToken: sinon.stub().resolves({
-                    tierId: 'tier_1',
+                getPreview: sinon.stub().resolves({
+                    tier: {id: 'tier_1', name: 'Premium'},
                     cadence: 'year',
                     duration: 1
                 })
@@ -106,8 +97,8 @@ describe('Gift Preview Controller', function () {
         it('escapes HTML in site title', async function () {
             settingsCache.get.withArgs('title').returns('Blog <script>alert("xss")</script>');
             giftServiceWrapper.service = {
-                getByToken: sinon.stub().resolves({
-                    tierId: 'tier_1',
+                getPreview: sinon.stub().resolves({
+                    tier: {id: 'tier_1', name: 'Premium'},
                     cadence: 'month',
                     duration: 3
                 })
@@ -123,8 +114,8 @@ describe('Gift Preview Controller', function () {
 
         it('uses monthly cadence label', async function () {
             giftServiceWrapper.service = {
-                getByToken: sinon.stub().resolves({
-                    tierId: 'tier_1',
+                getPreview: sinon.stub().resolves({
+                    tier: {id: 'tier_1', name: 'Premium'},
                     cadence: 'month',
                     duration: 3
                 })
@@ -141,8 +132,8 @@ describe('Gift Preview Controller', function () {
         it('defaults site title to Ghost', async function () {
             settingsCache.get.withArgs('title').returns(null);
             giftServiceWrapper.service = {
-                getByToken: sinon.stub().resolves({
-                    tierId: 'tier_1',
+                getPreview: sinon.stub().resolves({
+                    tier: {id: 'tier_1', name: 'Premium'},
                     cadence: 'year',
                     duration: 1
                 })
@@ -159,18 +150,10 @@ describe('Gift Preview Controller', function () {
     describe('giftPreviewImage', function () {
         it('returns a PNG image for a valid gift', async function () {
             giftServiceWrapper.service = {
-                getByToken: sinon.stub().resolves({
-                    token: 'test-token-123',
-                    tierId: 'tier_1',
+                getPreview: sinon.stub().resolves({
+                    tier: {id: 'tier_1', name: 'Gold'},
                     cadence: 'year',
-                    duration: 1,
-                    amount: 5000,
-                    currency: 'USD'
-                })
-            };
-            tiersService.api = {
-                read: sinon.stub().withArgs('tier_1').resolves({
-                    name: 'Gold'
+                    duration: 1
                 })
             };
 

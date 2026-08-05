@@ -10,6 +10,7 @@ import {type Post, usePostAnalytics} from '@/posts/analytics/providers/post-anal
 import {buildMembersUrl} from '@/members/member-route';
 import {getLinkById} from '@/posts/analytics/utils/link-helpers';
 import {hasBeenEmailed, useNavigate} from '@tryghost/admin-x-framework';
+import {toast} from 'sonner';
 import {useAppContext} from '@tryghost/admin-x-framework';
 import {useBulkEditLinks} from '@tryghost/admin-x-framework/api/links';
 import {useEffect, useMemo, useRef, useState} from 'react';
@@ -89,7 +90,7 @@ const Newsletter: React.FC = () => {
     }, [navigate, postId, isPostLoading, showNewsletterSection]);
 
     const {stats, averageStats, topLinks, isLoading: isNewsletterStatsLoading, refetchTopLinks} = usePostNewsletterStats(postId);
-    const {mutateAsync: editLinks} = useBulkEditLinks();
+    const {mutate: editLinks} = useBulkEditLinks();
 
     // Calculate feedback stats from the post data
     const feedbackStats = useMemo(() => {
@@ -150,7 +151,7 @@ const Newsletter: React.FC = () => {
             setEditedUrl('');
             return;
         }
-        void editLinks({
+        editLinks({
             originalUrl: link.link.originalTo,
             editedUrl: editedUrl,
             postId: postId
@@ -159,6 +160,9 @@ const Newsletter: React.FC = () => {
                 setEditingLinkId(null);
                 setEditedUrl('');
                 void refetchTopLinks();
+            },
+            onError: () => {
+                toast.error('Couldn’t update the link. Please try again.');
             }
         });
     };

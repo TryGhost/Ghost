@@ -133,6 +133,9 @@ export class LazyUrlService implements LazyUrlServiceBackend {
     private requiredRelations: string[] | null;
     private baseFilters: Map<string, BaseFilter>;
     private excludedFilterFields: Map<string, Set<string>>;
+    // True once routers have been registered; hasFinished() returns it so the
+    // maintenance middleware holds requests until routing is ready.
+    private routersReady: boolean;
 
     constructor({urlUtils = localUtils, findResource}: LazyUrlServiceDeps) {
         if (typeof findResource !== 'function') {
@@ -146,6 +149,7 @@ export class LazyUrlService implements LazyUrlServiceBackend {
         this.requiredRelations = null;
         this.baseFilters = buildBaseFilters();
         this.excludedFilterFields = buildExcludedFilterFields();
+        this.routersReady = false;
     }
 
     onRouterAddedType(identifier: string, filter: string | null, resourceType: string, permalink: string): void {
@@ -158,6 +162,7 @@ export class LazyUrlService implements LazyUrlServiceBackend {
             compiledFilter: buildFilter(filter)
         });
         this.requiredRelations = null;
+        this.routersReady = true;
     }
 
     onRouterUpdated(): void {
@@ -169,6 +174,7 @@ export class LazyUrlService implements LazyUrlServiceBackend {
     reset(): void {
         this.routerConfigs = [];
         this.requiredRelations = null;
+        this.routersReady = false;
     }
 
     getRequiredRelations(): string[] {
@@ -246,7 +252,7 @@ export class LazyUrlService implements LazyUrlServiceBackend {
     }
 
     hasFinished(): boolean {
-        return true;
+        return this.routersReady;
     }
 
     getUrlForResource(resource: Resource, options: UrlOptions = {}): string {

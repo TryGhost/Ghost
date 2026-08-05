@@ -1,6 +1,6 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
-import {escapeNqlString} from '../utils/escape-nql-string';
+import {escapeNqlString} from '@tryghost/nql-string';
 import {inject as service} from '@ember/service';
 import {stripDiacritics} from 'ember-power-select/utils/group-utils';
 

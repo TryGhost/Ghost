@@ -417,7 +417,7 @@ describe('MemberBreadService', function () {
 
         const defaultGiftService = {
             service: {
-                getActiveByMembers: sinon.stub().resolves(new Map())
+                getMemberPresentations: sinon.stub().resolves(new Map())
             }
         };
 
@@ -791,7 +791,7 @@ describe('MemberBreadService', function () {
 
             const giftServiceStub = {
                 service: {
-                    getActiveByMembers: sinon.stub().resolves(new Map([
+                    getMemberPresentations: sinon.stub().resolves(new Map([
                         [MEMBER_ID, {cadence: 'month', currency: 'eur', amount: 1500}]
                     ]))
                 }
@@ -802,7 +802,7 @@ describe('MemberBreadService', function () {
 
             assert.equal(member.subscriptions.length, 1);
 
-            sinon.assert.calledOnceWithExactly(giftServiceStub.service.getActiveByMembers, [MEMBER_ID]);
+            sinon.assert.calledOnceWithExactly(giftServiceStub.service.getMemberPresentations, [MEMBER_ID]);
 
             sinon.assert.match(member.subscriptions[0], {
                 id: '',
@@ -852,14 +852,14 @@ describe('MemberBreadService', function () {
 
             const giftServiceStub = {
                 service: {
-                    getActiveByMembers: sinon.stub().resolves(new Map())
+                    getMemberPresentations: sinon.stub().resolves(new Map())
                 }
             };
 
             const memberBreadService = getService({giftService: giftServiceStub});
             await memberBreadService.read({id: MEMBER_ID});
 
-            sinon.assert.notCalled(giftServiceStub.service.getActiveByMembers);
+            sinon.assert.notCalled(giftServiceStub.service.getMemberPresentations);
         });
 
         it('returns a member with attribution data', async function () {

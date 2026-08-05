@@ -331,7 +331,7 @@ describe('HeaderNode', function () {
                 expect(node.buttonColor).toBe('#abcdef');
                 expect(node.alignment).toBe('center');
                 expect(node.backgroundImageSrc).toBe('https://example.com/image.jpg');
-                expect(node.layout).toBe('split');
+                expect(node.layout).toBe('full');
                 expect(node.textColor).toBe('#abcdef');
                 expect(node.header).toBe('Header');
                 expect(node.subheader).toBe('Subheader');
@@ -339,6 +339,83 @@ describe('HeaderNode', function () {
                 expect(node.buttonUrl).toBe('https://example.com');
                 expect(node.buttonText).toBe('Button');
                 expect(node.buttonTextColor).toBe('#abcdef');
+            }));
+
+            it('parses the layout from the card classes', editorTest(function () {
+                const cards: [string, string][] = [
+                    ['kg-width-regular', 'regular'],
+                    ['kg-width-wide', 'wide'],
+                    ['kg-width-full kg-content-wide', 'full'],
+                    ['kg-layout-split kg-width-full', 'split']
+                ];
+
+                cards.forEach(([classes, expected]) => {
+                    const htmlstring = `
+                        <div class="kg-card kg-header-card kg-v2 ${classes}" data-background-color="#000000">
+                            <picture><img class="kg-header-card-image" src="https://example.com/image.jpg" alt="" /></picture>
+                            <div class="kg-header-card-content">
+                                <div class="kg-header-card-text kg-align-center">
+                                    <h2 class="kg-header-card-heading">Header</h2>
+                                </div>
+                            </div>
+                        </div>`;
+                    const document = createDocument(htmlstring);
+                    const nodes = $generateNodesFromDOM(editor, document) as HeaderNode[];
+                    expect(nodes.length).toBe(1);
+                    expect(nodes[0].layout).toBe(expected);
+                });
+            }));
+
+            it('round-trips every layout with and without a background image', editorTest(function () {
+                const layouts = ['regular', 'wide', 'full', 'split'];
+                const backgroundImages = ['', 'https://example.com/image.jpg'];
+
+                layouts.forEach((layout) => {
+                    backgroundImages.forEach((backgroundImageSrc) => {
+                        const headerNode = $createHeaderNode({...dataset, layout, backgroundImageSrc});
+                        const {element} = headerNode.exportDOM(editor, exportOptions);
+                        const document = createDocument((element as HTMLElement).outerHTML);
+                        const nodes = $generateNodesFromDOM(editor, document) as HeaderNode[];
+
+                        expect(nodes.length).toBe(1);
+                        expect(nodes[0].layout).toBe(layout);
+                        expect(nodes[0].backgroundImageSrc).toBe(backgroundImageSrc);
+                    });
+                });
+            }));
+
+            it('does not force split layout when a full-width card has a background image', editorTest(function () {
+                const htmlstring = `
+                    <div class="kg-card kg-header-card kg-v2 kg-width-full kg-content-wide" data-background-color="#000000">
+                        <picture><img class="kg-header-card-image" src="https://example.com/image.jpg" alt="" /></picture>
+                        <div class="kg-header-card-content">
+                            <div class="kg-header-card-text kg-align-center">
+                                <h2 class="kg-header-card-heading" data-text-color="#FFFFFF">Title</h2>
+                                <p class="kg-header-card-subheading" data-text-color="#FFFFFF">Subtitle</p>
+                            </div>
+                        </div>
+                    </div>`;
+                const document = createDocument(htmlstring);
+                const nodes = $generateNodesFromDOM(editor, document) as HeaderNode[];
+                expect(nodes.length).toBe(1);
+                expect(nodes[0].layout).toBe('full');
+                expect(nodes[0].backgroundImageSrc).toBe('https://example.com/image.jpg');
+            }));
+
+            it('falls back to the image position when the layout classes are missing', editorTest(function () {
+                const htmlstring = `
+                    <div class="kg-card kg-header-card kg-v2" data-background-color="#000000">
+                        <div class="kg-header-card-content">
+                            <picture><img class="kg-header-card-image" src="https://example.com/image.jpg" alt="" /></picture>
+                            <div class="kg-header-card-text kg-align-center">
+                                <h2 class="kg-header-card-heading">Header</h2>
+                            </div>
+                        </div>
+                    </div>`;
+                const document = createDocument(htmlstring);
+                const nodes = $generateNodesFromDOM(editor, document) as HeaderNode[];
+                expect(nodes.length).toBe(1);
+                expect(nodes[0].layout).toBe('split');
             }));
 
             it('does not parse a v1 header as v2', editorTest(function () {

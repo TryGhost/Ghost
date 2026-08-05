@@ -235,6 +235,37 @@ describe('Gift', function () {
             assert.equal(redeemed.consumesAt?.toISOString(), '2026-03-03T12:00:00.000Z');
         });
 
+        it('keeps multi-month rollover behavior stable at month end', function () {
+            const threeMonthGift = buildGift({
+                cadence: 'month',
+                duration: 3
+            });
+            const sixMonthGift = buildGift({
+                cadence: 'month',
+                duration: 6
+            });
+
+            const redeemedThreeMonthGift = threeMonthGift.redeem({
+                memberId: 'member_2',
+                redeemedAt: new Date('2026-01-31T12:00:00.000Z')
+            });
+            const redeemedSixMonthGift = sixMonthGift.redeem({
+                memberId: 'member_2',
+                redeemedAt: new Date('2024-08-31T12:00:00.000Z')
+            });
+
+            assert.deepEqual([
+                redeemedThreeMonthGift.consumesAt?.getFullYear(),
+                redeemedThreeMonthGift.consumesAt?.getMonth(),
+                redeemedThreeMonthGift.consumesAt?.getDate()
+            ], [2026, 4, 1]);
+            assert.deepEqual([
+                redeemedSixMonthGift.consumesAt?.getFullYear(),
+                redeemedSixMonthGift.consumesAt?.getMonth(),
+                redeemedSixMonthGift.consumesAt?.getDate()
+            ], [2025, 2, 3]);
+        });
+
         it('keeps yearly redemption math stable across leap years', function () {
             const gift = buildGift({
                 cadence: 'year',

@@ -1,4 +1,4 @@
-import { configResponse, settingsResponse, type ConfigResponse } from "@tryghost/test-data";
+import { buildTinybirdPipeRows, configResponse, settingsResponse, type ConfigResponse, type TinybirdPipeInputs, type TinybirdPipeName } from "@tryghost/test-data";
 
 import type { BootOverrides } from "./boot";
 import { TINYBIRD_ORIGIN, fakeAdminEndpoint, fakeEndpoint, registerRoute, type EndpointCapture } from "./worker";
@@ -70,7 +70,8 @@ function toPipeQuery(url: string): TinybirdPipeQuery {
  * from resources.ts applies: the declared rows are served for every request,
  * never filtered by the query — assert the captured query params instead.
  */
-export function fakeTinybirdPipe(pipe: string, rows: Array<Record<string, unknown>>): TinybirdPipeCapture {
+export function fakeTinybirdPipe<Pipe extends TinybirdPipeName>(pipe: Pipe, inputs: Array<TinybirdPipeInputs[Pipe]>): TinybirdPipeCapture {
+    const rows = buildTinybirdPipeRows(pipe, inputs);
     const url = `${TINYBIRD_ORIGIN}/v0/pipes/${pipe}.json`;
     registerRoute("GET", url);
     const capture = fakeEndpoint("GET", url, {

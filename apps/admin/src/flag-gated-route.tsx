@@ -1,4 +1,4 @@
-import { EmberFallback } from "./ember-bridge";
+import { EmberFallback, useEmberFeatureFlag } from "./ember-bridge";
 import { Suspense, type ComponentType, type LazyExoticComponent } from "react";
 import { useBrowseConfig } from "@tryghost/admin-x-framework/api/config";
 
@@ -8,9 +8,12 @@ import { useBrowseConfig } from "@tryghost/admin-x-framework/api/config";
  * flag in Developer Experiments swaps implementations without a rebuild — the
  * routes table is static and evaluated once at module load.
  *
- * Ember owns the route unless the flag says otherwise, which makes it the safe
- * default in every uncertain case: config failed, config came back empty, flag
- * absent or not a boolean. Only an explicit `true` renders React.
+ * In the integrated admin, Ember's synchronously exposed feature state is the
+ * ownership authority for both routers. This prevents brief split-brain states
+ * while a Labs setting propagates between the Ember service and React cache.
+ * While Ember is present but its Labs settings are still loading, React does
+ * not claim the route. Standalone React/test environments (where there is no
+ * Ember feature reader) fall back to the config query.
  *
  * The one case that is NOT safe to default to Ember is config still loading.
  * Falling back there would un-hide the Ember shell and flash the Ember screen
@@ -26,6 +29,21 @@ export function FlagGatedRoute({ flag, component: Component }: {
     component: LazyExoticComponent<ComponentType>;
 }) {
     const { data: config, isError, isLoading } = useBrowseConfig();
+    const emberFlag = useEmberFeatureFlag(flag);
+
+    const renderReact = () => (
+        <Suspense fallback={null}>
+            <Component />
+        </Suspense>
+    );
+
+    if (typeof emberFlag === 'boolean') {
+        return emberFlag ? renderReact() : <EmberFallback />;
+    }
+
+    if (emberFlag === null) {
+        return null;
+    }
 
     if (isLoading) {
         return null;
@@ -39,9 +57,5 @@ export function FlagGatedRoute({ flag, component: Component }: {
         return <EmberFallback />;
     }
 
-    return (
-        <Suspense fallback={null}>
-            <Component />
-        </Suspense>
-    );
+    return renderReact();
 }

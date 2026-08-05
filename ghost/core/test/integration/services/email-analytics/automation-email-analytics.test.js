@@ -72,6 +72,8 @@ describe('Automation email analytics', function () {
 
     async function cleanupTables() {
         await testUtils.knex('automated_email_recipients').del();
+        await testUtils.knex('automation_run_steps').del();
+        await testUtils.knex('automation_runs').del();
         await testUtils.knex('automation_action_revisions').del();
         await testUtils.knex('automation_actions').del();
         await testUtils.knex('automations').del();
@@ -99,6 +101,32 @@ describe('Automation email analytics', function () {
             created_at: now,
             updated_at: now,
             ...attrs
+        });
+    }
+
+    async function createRunStep({revision, member}) {
+        const now = new Date();
+        const action = await testUtils.knex('automation_actions')
+            .where('id', revision.action_id)
+            .first();
+        assert.ok(action, `expected action ${revision.action_id} to exist`);
+
+        const run = await insert('automation_runs', {
+            id: ObjectId().toHexString(),
+            automation_id: action.automation_id,
+            member_id: member.id,
+            member_email: member.email,
+            created_at: now,
+            updated_at: now
+        });
+
+        return await insert('automation_run_steps', {
+            id: ObjectId().toHexString(),
+            automation_run_id: run.id,
+            automation_action_revision_id: revision.id,
+            ready_at: now,
+            created_at: now,
+            updated_at: now
         });
     }
 
@@ -135,8 +163,10 @@ describe('Automation email analytics', function () {
 
     async function recordEmailSent({revision, mailgunMessageId, trackClicks = true, trackOpens = true}) {
         const member = await createMember();
+        const step = await createRunStep({revision, member});
         await automationsApi.recordEmailSent({
             automationActionRevisionId: revision.id,
+            automationRunStepId: step.id,
             mailgunMessageId,
             memberEmail: member.email,
             memberId: member.id,

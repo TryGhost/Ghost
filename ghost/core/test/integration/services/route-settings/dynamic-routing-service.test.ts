@@ -69,14 +69,17 @@ describe('Integration: DynamicRoutingService over a real FileStore', function ()
 
     const writeRoutes = (yaml: string) => fs.writeFile(path.join(contentDir, 'routes.yaml'), yaml, 'utf8');
 
-    it('loadRouteSettings expands a valid stored file into the router array format', async function () {
+    it('loadRouteSettings returns the domain model parsed from the stored file', async function () {
         await writeRoutes(VALID_YAML);
 
-        const expanded = await service.loadRouteSettings();
+        const settings = await service.loadRouteSettings();
 
-        assert.deepEqual(expanded.routes, [{path: '/about/', type: 'template', templates: ['about']}]);
-        assert.deepEqual(expanded.collections, [{path: '/', permalink: '/:slug/', templates: ['index']}]);
-        assert.deepEqual(expanded.taxonomies, [{key: 'tag', permalink: '/tag/:slug/'}]);
+        assert.deepEqual(settings.routes, [{type: 'template', path: '/about/', templates: ['about']}]);
+        assert.deepEqual(settings.collections, [{path: '/', permalink: '/{slug}/', templates: ['index']}]);
+        // Taxonomies stay the domain `{tag, author}` map rather than the
+        // `{key, permalink}` entries the activation bridge used to build.
+        assert.deepEqual(settings.taxonomies, {tag: '/tag/{slug}/'});
+        assert.equal(settings.yamlSource, VALID_YAML);
     });
 
     it('loadRouteSettings logs ROUTE_SETTINGS_VALIDATION_ERROR and rethrows when the file fails validation', async function () {

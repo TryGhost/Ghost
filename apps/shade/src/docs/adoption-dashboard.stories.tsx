@@ -89,7 +89,7 @@ const Dashboard = () => {
                                 value={summary.adminXDsComponentsStillUsed}
                             />
                             <span className='text-xs text-muted-foreground'>
-                                unique admin-x-design-system exports still imported (mainly in admin-x-settings)
+                                unique admin-x-design-system exports still imported
                             </span>
                         </KpiCardHeader>
                         <KpiCardHeader>

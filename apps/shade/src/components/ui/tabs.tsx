@@ -132,7 +132,7 @@ interface TabsTriggerCountProps {
 
 const TabsTriggerCount: React.FC<TabsTriggerCountProps> = ({className = '', children}) => {
     return (
-        <span className={`mt-px ml-1.5 flex h-5 items-center justify-center rounded-full bg-surface-elevated px-1.5 py-0 text-sm leading-[21px] font-semibold text-text-secondary ${className}`}>{children}</span>
+        <span className={cn('mt-px ml-1.5 flex h-5 items-center justify-center rounded-full bg-secondary px-1.5 py-0 text-xs leading-[21px] font-semibold text-text-secondary', className)}>{children}</span>
     );
 };
 TabsTriggerCount.displayName = 'TabsTriggerCount';

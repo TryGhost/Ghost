@@ -259,7 +259,7 @@ export function fakeMembers(members: RespondWith<Member>, { labels = [], tiers =
     return membersResource(members);
 }
 
-// Settings-screen chrome: admin-x-settings renders EVERY settings group on
+// Settings-screen chrome: the settings app renders EVERY settings group on
 // one page (routes only scroll/expand), so all of these fire on any
 // /settings/* mount regardless of which screen a spec is about.
 export const fakeUsers = defineResource<StaffUser>({ resource: "users", semantics: { kind: "passthrough" } });

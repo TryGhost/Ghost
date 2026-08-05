@@ -1,4 +1,4 @@
-import {type NewsletterStatItem, useNewsletterBasicStats, useNewsletterClickStats} from '@tryghost/admin-x-framework/api/stats';
+import {type NewsletterClickStatItem, type NewsletterStatItem, useNewsletterBasicStats, useNewsletterClickStats} from '@tryghost/admin-x-framework/api/stats';
 import {type Post, getPost} from '@tryghost/admin-x-framework/api/posts';
 import {processAndGroupTopLinks} from '@/posts/analytics/utils/link-helpers';
 import {useMemo} from 'react';
@@ -104,7 +104,7 @@ export const usePostNewsletterStats = (postId: string) => {
         const clickStats = clickStatsResponse?.stats || [];
 
         // Create a map of click data by post_id for fast lookup
-        const clickStatsMap = new Map<string, NewsletterStatItem>();
+        const clickStatsMap = new Map<string, NewsletterClickStatItem>();
         clickStats.forEach((clickStat) => {
             clickStatsMap.set(clickStat.post_id, clickStat);
         });

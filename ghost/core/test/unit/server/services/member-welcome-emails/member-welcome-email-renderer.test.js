@@ -573,10 +573,11 @@ describe('MemberWelcomeEmailRenderer', function () {
 
             beforeEach(function () {
                 sinon.stub(linkTracking, 'init').resolves();
-                addAutomationTrackingToUrl = sinon.stub().callsFake(async (url, revisionId, uuid) => {
+                addAutomationTrackingToUrl = sinon.stub().callsFake(async (url, revisionId, runStepId, uuid) => {
                     assert.equal(revisionId, 'revision-id');
                     const tracked = new URL('https://example.com/r/abc123');
                     tracked.searchParams.set('m', uuid);
+                    tracked.searchParams.set('step', runStepId);
                     return tracked;
                 });
                 sinon.define(linkTracking, 'service', {addAutomationTrackingToUrl});
@@ -591,6 +592,7 @@ describe('MemberWelcomeEmailRenderer', function () {
                     siteSettings: defaultSiteSettings,
                     trackClicks: true,
                     automationActionRevisionId: 'revision-id',
+                    automationRunStepId: 'run-step-id',
                     ...options
                 });
             };
@@ -602,10 +604,11 @@ describe('MemberWelcomeEmailRenderer', function () {
                     addAutomationTrackingToUrl,
                     sinon.match(url => url.href === 'https://external.example/page'),
                     'revision-id',
+                    'run-step-id',
                     memberUuid
                 );
-                assert(result.html.includes(`https://example.com/r/abc123?m=${memberUuid}`));
-                assert(result.text.includes(`https://example.com/r/abc123?m=${memberUuid}`));
+                assert(result.html.includes(`https://example.com/r/abc123?m=${memberUuid}&amp;step=run-step-id`));
+                assert(result.text.includes(`https://example.com/r/abc123?m=${memberUuid}&step=run-step-id`));
             });
 
             it('resolves relative links before tracking them', async function () {
@@ -618,7 +621,7 @@ describe('MemberWelcomeEmailRenderer', function () {
                 const result = await renderTracked('<p><a href="https://external.example/page">One</a><a href="https://external.example/page">Two</a></p>');
 
                 sinon.assert.calledTwice(addAutomationTrackingToUrl);
-                assert.equal((result.html.match(new RegExp(`https://example.com/r/abc123\\?m=${memberUuid}`, 'g')) || []).length, 2);
+                assert.equal((result.html.match(new RegExp(`https://example.com/r/abc123\\?m=${memberUuid}&amp;step=run-step-id`, 'g')) || []).length, 2);
             });
 
             it('leaves fragment-only, invalid, and non-web links unchanged', async function () {
@@ -650,6 +653,14 @@ describe('MemberWelcomeEmailRenderer', function () {
             it('does not rewrite links when the member UUID is absent', async function () {
                 await renderTracked('<p><a href="https://external.example/page">Link</a></p>', {
                     member: {name: 'John', email: 'john@example.com'}
+                });
+
+                sinon.assert.notCalled(addAutomationTrackingToUrl);
+            });
+
+            it('does not rewrite links when the automation run step ID is absent', async function () {
+                await renderTracked('<p><a href="https://external.example/page">Link</a></p>', {
+                    automationRunStepId: null
                 });
 
                 sinon.assert.notCalled(addAutomationTrackingToUrl);

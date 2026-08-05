@@ -1,4 +1,4 @@
-import { App } from "@tryghost/admin-x-settings/src/app";
+import { App } from "./app/app";
 import { createPortal } from "react-dom";
 
 export default function Settings() {

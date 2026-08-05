@@ -368,6 +368,7 @@ describe('automations poll', function () {
         }));
         sinon.assert.calledOnceWithExactly(automationsApi.recordEmailSent, {
             automationActionRevisionId: 'revision-id',
+            automationRunStepId: step.id,
             mailgunMessageId: 'mailgun-message-id',
             memberEmail: 'member@example.com',
             memberId: 'member-id',
@@ -437,11 +438,13 @@ describe('automations poll', function () {
         await poll(options);
 
         sinon.assert.calledOnceWithExactly(automationsApi.recordEmailSent, sinon.match({
+            automationRunStepId: step.id,
             trackClicks: true
         }));
         sinon.assert.calledOnceWithExactly(memberWelcomeEmailService.api.sendAutomationEmail, sinon.match({
             trackClicks: true,
-            automationActionRevisionId: step.automation_action_revision_id
+            automationActionRevisionId: step.automation_action_revision_id,
+            automationRunStepId: step.id
         }));
     });
 
@@ -453,11 +456,13 @@ describe('automations poll', function () {
         await poll(options);
 
         sinon.assert.calledOnceWithExactly(automationsApi.recordEmailSent, sinon.match({
+            automationRunStepId: step.id,
             trackClicks: false
         }));
         sinon.assert.calledOnceWithExactly(memberWelcomeEmailService.api.sendAutomationEmail, sinon.match({
             trackClicks: false,
-            automationActionRevisionId: step.automation_action_revision_id
+            automationActionRevisionId: step.automation_action_revision_id,
+            automationRunStepId: step.id
         }));
     });
 
@@ -470,11 +475,13 @@ describe('automations poll', function () {
         await poll(options);
 
         sinon.assert.calledOnceWithExactly(automationsApi.recordEmailSent, sinon.match({
+            automationRunStepId: step.id,
             trackClicks: false
         }));
         sinon.assert.calledOnceWithExactly(memberWelcomeEmailService.api.sendAutomationEmail, sinon.match({
             trackClicks: false,
-            automationActionRevisionId: step.automation_action_revision_id
+            automationActionRevisionId: step.automation_action_revision_id,
+            automationRunStepId: step.id
         }));
     });
 
@@ -496,6 +503,7 @@ describe('automations poll', function () {
         }));
         sinon.assert.calledOnceWithExactly(automationsApi.recordEmailSent, {
             automationActionRevisionId: 'revision-id',
+            automationRunStepId: step.id,
             memberEmail: 'member@example.com',
             memberId: 'member-id',
             memberName: 'Test Member',

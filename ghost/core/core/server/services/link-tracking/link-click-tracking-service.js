@@ -4,6 +4,7 @@ const PostLink = require('./post-link');
 const ObjectID = require('bson-objectid').default;
 const errors = require('@tryghost/errors');
 const nql = require('@tryghost/nql');
+const {escapeNqlString} = require('@tryghost/nql-string');
 const _ = require('lodash');
 const tpl = require('@tryghost/tpl');
 const moment = require('moment');
@@ -174,7 +175,11 @@ class LinkClickTrackingService {
 
         // manages transformation of current url to relative for comparision
         const transformedOldUrl = this.#urlUtils.absoluteToTransformReady(redirectUrl.href);
-        const filterQuery = `post_id:'${postId}'+to:'${transformedOldUrl}'`;
+        // the url is re-serialised into NQL here, so it needs escaping again -
+        // quotes are legal in a URL and would otherwise break the filter.
+        // postId is String()d because nql parses an unquoted `post_id:123` to a
+        // number, and escapeNqlString operates on strings
+        const filterQuery = `post_id:${escapeNqlString(String(postId))}+to:${escapeNqlString(transformedOldUrl)}`;
 
         const updatedFilterOptions = {
             ...filterOptions,
@@ -245,13 +250,15 @@ class LinkClickTrackingService {
      * Add first-party tracking to a URL in an automation email
      * @param {Readonly<URL>} url
      * @param {string} automationActionRevisionId
+     * @param {string} automationRunStepId
      * @param {string} memberUuid
      * @return {Promise<URL>}
      */
-    async addAutomationTrackingToUrl(url, automationActionRevisionId, memberUuid) {
+    async addAutomationTrackingToUrl(url, automationActionRevisionId, automationRunStepId, memberUuid) {
         const redirect = await this.#linkRedirectService.getOrAddAutomationRedirect(automationActionRevisionId, url);
         const trackedUrl = new URL(redirect.from.href);
         trackedUrl.searchParams.set('m', memberUuid);
+        trackedUrl.searchParams.set('step', automationRunStepId);
         return trackedUrl;
     }
 
@@ -269,7 +276,8 @@ class LinkClickTrackingService {
             });
 
             const automationActionRevisionId = event.data.link.automationActionRevisionId;
-            if (!automationActionRevisionId) {
+            const automationRunStepId = event.data.url.searchParams.get('step');
+            if (!automationActionRevisionId || !automationRunStepId) {
                 await this.#linkClickRepository.save(click);
                 return;
             }
@@ -282,6 +290,7 @@ class LinkClickTrackingService {
 
                 await this.#automationsApi.trackEmailClicked({
                     automationActionRevisionId,
+                    automationRunStepId,
                     memberId,
                     clickedAt: event.timestamp
                 }, {transacting});

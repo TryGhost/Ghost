@@ -73,6 +73,17 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             assert.equal(mountRouterSpy.args[0][1], collectionRouter.rssRouter.router());
         });
 
+        it('converts a domain {slug} permalink to :slug notation', function () {
+            const collectionRouter = new CollectionRouter('/', {permalink: '/{primary_tag}/{slug}/'}, RESOURCE_CONFIG, routerCreatedSpy);
+
+            // the router owns the {slug} -> :slug conversion via the permalink adapter
+            assert.equal(collectionRouter.getPermalinks().getValue(), '/:primary_tag/:slug/');
+
+            // and the express routes are mounted with :slug
+            assert.equal(mountRouteSpy.args[2][0], '/:primary_tag/:slug/:options(edit)?/');
+            assert.equal(mountRouteSpy.args[3][0], '/:primary_tag/:slug.md');
+        });
+
         it('router name', function () {
             const collectionRouter1 = new CollectionRouter('/', {permalink: '/:slug/'}, RESOURCE_CONFIG, routerCreatedSpy);
             const collectionRouter2 = new CollectionRouter('/podcast/', {permalink: '/:slug/'}, RESOURCE_CONFIG, routerCreatedSpy);
@@ -186,6 +197,18 @@ describe('UNIT - services/routing/CollectionRouter', function () {
                 order: 'published asc',
                 limit: 19
             });
+        });
+
+        it('passes route data through in domain form', function () {
+            const collectionRouter = new CollectionRouter('/podcast/', {
+                permalink: '/podcast/{slug}/',
+                data: {'my-tag': 'tag.podcast'}
+            }, RESOURCE_CONFIG, routerCreatedSpy);
+
+            collectionRouter._prepareEntriesContext(req, res, next);
+
+            sinon.assert.calledOnce(next);
+            assert.deepEqual(res.routerOptions.data, {'my-tag': 'tag.podcast'});
         });
     });
 });

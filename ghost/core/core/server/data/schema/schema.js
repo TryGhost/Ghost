@@ -682,15 +682,34 @@ module.exports = {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         custom_field_id: {type: 'string', maxlength: 24, nullable: false, references: 'members_custom_fields.id', cascadeDelete: true},
         member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', cascadeDelete: true},
-        // Exactly one value column is populated per row, chosen by the field
-        // type's storage type in @tryghost/custom-field-types, whose byte bound
-        // on long_text matches this column exactly.
+        // Which part of the field's value this row carries. A scalar has one part and
+        // stores it under the empty path; a composite stores one row per sub-field it
+        // fills, under that sub-field's key. Not nullable, because MySQL counts NULLs
+        // as distinct in a unique index and the constraint below would stop holding.
+        path: {type: 'string', maxlength: 191, nullable: false, defaultTo: ''},
+        // One row, one value: a part a member has not filled in has no row at all. The
+        // column stays nullable even so, because making it NOT NULL is only reachable
+        // through knex's dropNullable, which rewrites the column on MySQL and widens
+        // TEXT to MEDIUMTEXT — a migrated site would then accept sixteen megabytes in a
+        // column a fresh install bounds at 65,535 bytes. The bound matching long_text's
+        // exactly is worth more than the schema restating what the write path enforces.
         value_text: {type: 'text', maxlength: 65535, nullable: true},
-        value_json: {type: 'text', maxlength: 65535, nullable: true},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
+        // Named, because the name knex derives from the table and all three columns is
+        // 65 characters and MySQL stops at 64. The migration that first created this
+        // table already shortened a column for the same reason; a third column spends
+        // what headroom that bought.
         '@@UNIQUE_CONSTRAINTS@@': [
-            ['member_id', 'custom_field_id']
+            {columns: ['member_id', 'custom_field_id', 'path'], indexName: 'members_custom_field_values_leaf_unique'}
+        ],
+        // What a segment filter looks up: every member holding a given value for a
+        // given part of a given field. The value itself is not in the index — it is
+        // TEXT, so MySQL would need a prefix length, and the schema's index builder
+        // applies one length to every column in a composite index rather than to a
+        // single chosen one.
+        '@@INDEXES@@': [
+            ['custom_field_id', 'path']
         ]
     },
     members_stripe_customers: {
@@ -1339,6 +1358,7 @@ module.exports = {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         automated_email_id: {type: 'string', maxlength: 24, nullable: true, references: 'welcome_email_automated_emails.id'},
         automation_action_revision_id: {type: 'string', maxlength: 24, nullable: true, references: 'automation_action_revisions.id'},
+        automation_run_step_id: {type: 'string', maxlength: 24, nullable: true, references: 'automation_run_steps.id'},
         member_id: {type: 'string', maxlength: 24, nullable: false, index: true},
         member_uuid: {type: 'string', maxlength: 36, nullable: false},
         member_email: {type: 'string', maxlength: 191, nullable: false},

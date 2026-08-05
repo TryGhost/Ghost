@@ -1,6 +1,6 @@
 {
     "name": "ghost-admin",
-    "version": "6.54.2-rc.0",
+    "version": "6.56.1-rc.0",
     "description": "Ember.js admin client for Ghost",
     "author": "Ghost Foundation",
     "homepage": "http://ghost.org",
@@ -55,6 +55,7 @@
         "@tryghost/koenig-lexical": "workspace:*",
         "@tryghost/limit-service": "catalog:",
         "@tryghost/nql": "catalog:",
+        "@tryghost/nql-string": "workspace:*",
         "@tryghost/string": "catalog:",
         "@tryghost/timezone-data": "catalog:",
         "animejs": "3.2.2",

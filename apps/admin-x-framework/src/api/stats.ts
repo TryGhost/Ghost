@@ -1,6 +1,8 @@
-import {Meta, createQuery, createQueryWithId} from '../utils/api/hooks';
+import {createQuery, createQueryWithId} from '../utils/api/hooks';
 
 // Types
+
+type StatsMeta = Record<string, never>;
 
 export type TopContentItem = {
     pathname: string;
@@ -14,7 +16,7 @@ export type TopContentItem = {
 
 export type TopContentResponseType = {
     stats: TopContentItem[];
-    meta: Meta;
+    meta: StatsMeta;
 }
 
 export type MemberStatusItem = {
@@ -40,21 +42,22 @@ export type MemberCountHistoryResponseType = {
 }
 
 export type TopPostStatItem = {
-    post_id: string;
+    post_id: string | null;
     attribution_url: string;
-    attribution_type: string;
-    attribution_id: string;
+    attribution_type: string | null;
+    attribution_id: string | null;
     title: string;
     free_members: number;
     paid_members: number;
     mrr: number;
-    published_at: string;
-    url_exists?: boolean;
+    published_at: string | null;
+    post_type: string | null;
+    url_exists: boolean;
 };
 
 export type TopPostsStatsResponseType = {
     stats: TopPostStatItem[];
-    meta: Meta;
+    meta: StatsMeta;
 };
 
 export type PostReferrerStatItem = {
@@ -67,7 +70,7 @@ export type PostReferrerStatItem = {
 
 export type PostReferrersResponseType = {
     stats: PostReferrerStatItem[];
-    meta: Meta;
+    meta: StatsMeta;
 };
 
 export type PostGrowthStatItem = {
@@ -79,7 +82,7 @@ export type PostGrowthStatItem = {
 
 export type PostGrowthStatsResponseType = {
     stats: PostGrowthStatItem[];
-    meta: Meta;
+    meta: StatsMeta;
 };
 
 export type MrrHistoryItem = {
@@ -116,7 +119,26 @@ export type NewsletterStatItem = {
 
 export type NewsletterStatsResponseType = {
     stats: NewsletterStatItem[];
-    meta: Meta;
+    meta: StatsMeta;
+};
+
+export type NewsletterBasicStatItem = Omit<NewsletterStatItem, 'total_clicks' | 'click_rate'> & {
+    total_clicks?: number;
+    click_rate?: number;
+};
+
+export type NewsletterBasicStatsResponseType = {
+    stats: NewsletterBasicStatItem[];
+    meta: StatsMeta;
+};
+
+export type NewsletterClickStatItem = Pick<NewsletterStatItem, 'post_id' | 'total_clicks' | 'click_rate'> & {
+    email_count: number;
+};
+
+export type NewsletterClickStatsResponseType = {
+    stats: NewsletterClickStatItem[];
+    meta: StatsMeta;
 };
 
 export type NewsletterSubscriberValue = {
@@ -152,7 +174,7 @@ export type TopPostViewsStats = {
     post_id: string;
     title: string;
     published_at: string;
-    feature_image: string;
+    feature_image: string | null;
     status: string;
     authors: string;
     views: number;
@@ -202,6 +224,8 @@ const memberCountHistoryDataType = 'MemberCountHistoryResponseType';
 const topPostsStatsDataType = 'TopPostsStatsResponseType';
 const postReferrersDataType = 'PostReferrersResponseType';
 const newsletterStatsDataType = 'NewsletterStatsResponseType';
+const newsletterBasicStatsDataType = 'NewsletterBasicStatsResponseType';
+const newsletterClickStatsDataType = 'NewsletterClickStatsResponseType';
 const newsletterSubscriberStatsDataType = 'NewsletterSubscriberStatsResponseType';
 
 const postGrowthStatsDataType = 'PostGrowthStatsResponseType';
@@ -275,16 +299,16 @@ export const useNewsletterStats = createQuery<NewsletterStatsResponseType>({
     }
 });
 
-export const useNewsletterBasicStats = createQuery<NewsletterStatsResponseType>({
-    dataType: newsletterStatsDataType,
+export const useNewsletterBasicStats = createQuery<NewsletterBasicStatsResponseType>({
+    dataType: newsletterBasicStatsDataType,
     path: '/stats/newsletter-basic-stats/',
     defaultSearchParams: {
         // Empty default params, will be filled by the hook
     }
 });
 
-export const useNewsletterClickStats = createQuery<NewsletterStatsResponseType>({
-    dataType: newsletterStatsDataType,
+export const useNewsletterClickStats = createQuery<NewsletterClickStatsResponseType>({
+    dataType: newsletterClickStatsDataType,
     path: '/stats/newsletter-click-stats/',
     defaultSearchParams: {
         // Empty default params, will be filled by the hook

@@ -75,6 +75,7 @@ class EmailServiceWrapper {
 
         const mailgunEmailProvider = new MailgunEmailProvider({
             mailgunClient,
+            config: configService,
             errorHandler
         });
 

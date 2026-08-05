@@ -326,6 +326,7 @@ describe('UrlServiceFacade', function () {
                 getUrlForResource: sinon.stub().returns('/lazy/'),
                 ownsResource: sinon.stub().returns(false),
                 resolveUrl: sinon.stub().resolves({type: 'posts', id: 'lazy'}),
+                getRequiredRelations: sinon.stub().returns([]),
                 hasFinished: sinon.stub().returns(true),
                 onRouterAddedType: sinon.stub(),
                 onRouterUpdated: sinon.stub(),
