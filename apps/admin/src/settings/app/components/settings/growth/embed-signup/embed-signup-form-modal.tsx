@@ -7,7 +7,7 @@ import {SettingsModal} from '@tryghost/shade/patterns';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 
 const EmbedSignupFormModal = NiceModal.create(() => {
     const modal = useModal();
@@ -19,7 +19,7 @@ const EmbedSignupFormModal = NiceModal.create(() => {
     const [generatedScript, setGeneratedScript] = useState<string>('');
     const [isCopied, setIsCopied] = useState(false);
 
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const {config} = useGlobalData();
     const {localSettings, siteData} = useSettingGroup();
     const [accentColor, title, description, locale, icon] = getSettingValues<string>(localSettings, ['accent_color', 'title', 'description', 'locale', 'icon']);

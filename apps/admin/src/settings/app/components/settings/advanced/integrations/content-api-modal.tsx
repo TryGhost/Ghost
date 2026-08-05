@@ -6,11 +6,11 @@ import {LucideIcon} from '@tryghost/shade/utils';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useBrowseIntegrations} from '@tryghost/admin-x-framework/api/integrations';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 
 const ContentApiModal = NiceModal.create(() => {
     const modal = NiceModal.useModal();
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const {data: {integrations} = {integrations: []}} = useBrowseIntegrations();
 
     const integration = integrations.find(({slug}) => slug === 'ghost-core-content');

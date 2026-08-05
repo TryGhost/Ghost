@@ -7,10 +7,10 @@ import {Button, Field, FieldDescription, FieldError, FieldGroup, FieldLabel, Fie
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {getSettingValues, useTestSlack} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'sonner';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 
 const SlackModal = NiceModal.create(() => {
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
 
     const {localSettings, updateSetting, handleSave, validate, errors, clearError, okProps} = useSettingGroup({
         onValidate: () => {

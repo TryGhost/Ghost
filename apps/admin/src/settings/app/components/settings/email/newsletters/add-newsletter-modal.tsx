@@ -4,7 +4,8 @@ import React, {useEffect, useState} from 'react';
 import useFeatureFlag from '@/settings/app/hooks/use-feature-flag';
 import {Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldLabel, Input, Switch, Textarea} from '@tryghost/shade/components';
 import {HostLimitError, useLimiter} from '@/settings/app/hooks/use-limiter';
-import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {type RoutingModalProps} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {formatNumber} from '@tryghost/shade/utils';
 import {useAddNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
@@ -13,7 +14,7 @@ import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
     const modal = useModal();
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const returnRoute = useFeatureFlag('automations') ? 'emails' : 'newsletters';
     const handleError = useHandleError();
     const [isCheckingLimit, setIsCheckingLimit] = useState(true);

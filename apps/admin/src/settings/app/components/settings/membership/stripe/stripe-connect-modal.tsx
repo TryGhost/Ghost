@@ -22,7 +22,7 @@ import {useBrowseMembers} from '@tryghost/admin-x-framework/api/members';
 import {useBrowseTiers, useEditTier} from '@tryghost/admin-x-framework/api/tiers';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 
 const RETRY_PRODUCT_SAVE_POLL_LENGTH = 1000;
 const RETRY_PRODUCT_SAVE_MAX_POLL = 15 * RETRY_PRODUCT_SAVE_POLL_LENGTH;
@@ -257,7 +257,7 @@ const Direct: React.FC<{onClose: () => void}> = ({onClose}) => {
 const StripeConnectModal: React.FC = () => {
     const {config, settings} = useGlobalData();
     const stripeConnectAccountId = getSettingValue(settings, 'stripe_connect_account_id');
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const [step, setStep] = useState<'start' | 'connect'>('start');
     const mainModal = useModal();
     const limiter = useLimiter();

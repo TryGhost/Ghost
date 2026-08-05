@@ -11,16 +11,20 @@ export function buildImportResponse(importData: ImportMembersCompleteResponseTyp
     const errorListMap: Record<string, {message: string; count: number}> = {};
 
     const errorsWithFormattedMessages = erroredMembers.map((row) => {
-        const formattedError = formatImportError(row.error);
-        formattedError.split(',').forEach((errorMsg: string) => {
-            const trimmed = errorMsg.trim();
-            if (errorListMap[trimmed]) {
-                errorListMap[trimmed].count += 1;
+        const {errors, ...columns} = row;
+        const formatted = errors
+            .map(reason => formatImportError(reason).trim())
+            .filter(Boolean);
+        for (const reason of formatted) {
+            if (errorListMap[reason]) {
+                errorListMap[reason].count += 1;
             } else {
-                errorListMap[trimmed] = {message: trimmed, count: 1};
+                errorListMap[reason] = {message: reason, count: 1};
             }
-        });
-        return {...row, error: formattedError};
+        }
+        // `errors` is dropped rather than spread: the error CSV echoes the submitted row
+        // back, so every key here becomes a column of the downloaded file.
+        return {...columns, error: formatted.join('\n')};
     });
 
     const errorCsv = unparseErrorCSV(errorsWithFormattedMessages);

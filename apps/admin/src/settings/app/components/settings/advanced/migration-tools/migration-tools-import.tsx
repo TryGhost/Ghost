@@ -4,10 +4,10 @@ import React from 'react';
 import UniversalImportModal from './universal-import-modal';
 import {Button} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 
 const MigrationToolsImport: React.FC = () => {
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
 
     const handleImportContent = () => {
         NiceModal.show(UniversalImportModal);

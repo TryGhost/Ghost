@@ -9,14 +9,14 @@ import {Text} from '@tryghost/shade/primitives';
 import {type Theme, useBrowseThemes} from '@tryghost/admin-x-framework/api/themes';
 import {downloadFile, getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useCheckThemeLimitError} from '@/settings/app/hooks/use-check-theme-limit-error';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 import {withErrorBoundary} from '@/settings/app/components/error-boundary';
 
 const ChangeTheme: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const [themeLimitError, setThemeLimitError] = useState<string|null>(null);
     const [isCheckingLimit, setIsCheckingLimit] = useState(false);
     const {checkThemeLimitError} = useCheckThemeLimitError();
-    const {route, updateRoute} = useRouting();
+    const {route, updateRoute} = useSettingsNavigation();
     const {data: themesData} = useBrowseThemes();
     const activeTheme = themesData?.themes.find((theme: Theme) => theme.active);
 

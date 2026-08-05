@@ -15,7 +15,7 @@ import {PageHeader, SettingsModal} from '@tryghost/shade/patterns';
 import {toast} from 'sonner';
 import {useCheckThemeLimitError} from '@/settings/app/hooks/use-check-theme-limit-error';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 
 interface ThemeToolbarProps {
     selectedTheme: OfficialTheme|null;
@@ -57,7 +57,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
     themes
 }) => {
     const modal = useModal();
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const {mutateAsync: uploadTheme} = useUploadTheme();
     const {checkThemeLimitError, isThemeLimited} = useCheckThemeLimitError();
     const handleError = useHandleError();
@@ -307,7 +307,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
     const [isInstalling, setInstalling] = useState(false);
     const [installedFromMarketplace, setInstalledFromMarketplace] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
 
     const modal = useModal();
     const {data: {themes} = {}} = useBrowseThemes();

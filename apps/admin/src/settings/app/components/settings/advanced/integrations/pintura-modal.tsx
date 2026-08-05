@@ -9,11 +9,11 @@ import {toast} from 'sonner';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 import {useUploadFile} from '@tryghost/admin-x-framework/api/files';
 
 const PinturaModal = NiceModal.create(() => {
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const [uploadingState, setUploadingState] = useState({
         js: false,
         css: false

@@ -127,6 +127,17 @@ describe("Analytics overview", () => {
 
 describe("Analytics web traffic", () => {
     it("renders the seeded KPIs, top content, sources and locations", async () => {
+        // Force the lazy Web route to render before settings boot finishes.
+        const boot = webAnalyticsBootOverrides();
+        const settings = boot.browseSettings?.response;
+        boot.browseSettings = {
+            response: async () => {
+                await new Promise<void>((resolve) => {
+                    setTimeout(resolve, 100);
+                });
+                return settings;
+            },
+        };
         seedAnalyticsWorld();
         seedTopPostsViews();
         fakeAdminStats.topContent([{
@@ -138,7 +149,7 @@ describe("Analytics web traffic", () => {
         }]);
         fakeTinybirdPipe("api_top_sources", [{ source: "google.com", visits: 170 }]);
         fakeTinybirdPipe("api_top_locations", [{ location: "US", visits: 200 }]);
-        await renderAdminApp("/analytics/web", { boot: webAnalyticsBootOverrides() });
+        await renderAdminApp("/analytics/web", { boot });
 
         await expect.element(analyticsScreen.webGraph()).toBeVisible();
         await expect.element(analyticsScreen.webGraph().getByRole("tab", { name: "Unique visitors" })).toHaveTextContent("250");

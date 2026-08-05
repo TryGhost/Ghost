@@ -38,9 +38,9 @@ describe('members import completion email', function () {
 
     it('rewrites raw ORM validation errors into human copy', function () {
         const email = build([
-            {email: '', subscribed: true, complimentary_plan: false, labels: [], error: 'Value in [members.email] cannot be blank.'},
-            {email: 'bad', subscribed: true, complimentary_plan: false, labels: [], error: 'Validation (isEmail) failed for email'},
-            {email: 'x', subscribed: true, complimentary_plan: false, labels: [], error: 'No such customer: cus_123'}
+            {email: '', subscribed: true, complimentary_plan: false, labels: [], error: 'Value in [members.email] cannot be blank.', errors: ['Value in [members.email] cannot be blank.']},
+            {email: 'bad', subscribed: true, complimentary_plan: false, labels: [], error: 'Validation (isEmail) failed for email', errors: ['Validation (isEmail) failed for email']},
+            {email: 'x', subscribed: true, complimentary_plan: false, labels: [], error: 'No such customer: cus_123', errors: ['No such customer: cus_123']}
         ]);
         const report = email.attachments[0].content;
 
@@ -57,7 +57,8 @@ describe('members import completion email', function () {
             email: 'x@example.com', name: 'Sam', note: 'a note',
             subscribed: false, complimentary_plan: true, stripe_customer_id: 'cus_1',
             labels: [{name: 'vip'}, {name: 'gold'}], gift_id: 'gift_1',
-            error: 'Validation (isEmail) failed for email'
+            error: 'Validation (isEmail) failed for email',
+            errors: ['Validation (isEmail) failed for email']
         }]).attachments[0].content;
 
         const [header, row] = report.split('\r\n');
@@ -67,7 +68,7 @@ describe('members import completion email', function () {
     });
 
     it('escapes CSV-injection characters so a spreadsheet cannot run them', function () {
-        const report = build([{email: 'x@example.com', name: '=1+2', subscribed: true, complimentary_plan: false, labels: [], error: 'nope'}]).attachments[0].content;
+        const report = build([{email: 'x@example.com', name: '=1+2', subscribed: true, complimentary_plan: false, labels: [], error: 'nope', errors: ['nope']}]).attachments[0].content;
         const row = report.split('\r\n')[1];
         assert.ok(row.includes(`"'=1+2"`), 'formula-leading value is quoted and apostrophe-escaped');
     });

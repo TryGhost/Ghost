@@ -19,7 +19,7 @@ import {searchKeywords as siteSearchKeywords} from './settings/site/site-setting
 
 import useFeatureFlag from '@/settings/app/hooks/use-feature-flag';
 import {useGlobalData} from './providers/global-data-provider';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 import {useScrollSectionContext, useScrollSectionNav} from '@/settings/app/hooks/use-scroll-section';
 import {useSearch} from './providers/settings-app-provider';
 
@@ -96,7 +96,7 @@ const PrivateBadge: React.FC = () => (
 
 const Sidebar: React.FC = () => {
     const {filter, setFilter, checkVisible, noResult, setNoResult} = useSearch();
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const searchInputRef = useRef<HTMLInputElement | null>(null);
     const {isAnyTextFieldFocused} = useFocusContext();
     const {settings, config} = useGlobalData();

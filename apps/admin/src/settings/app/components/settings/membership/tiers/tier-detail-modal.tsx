@@ -10,7 +10,8 @@ import {Button, Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {Inline, Text} from '@tryghost/shade/primitives';
 import {LucideIcon} from '@tryghost/shade/utils';
-import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {type RoutingModalProps} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {type Tier, useAddTier, useBrowseTiers, useEditTier} from '@tryghost/admin-x-framework/api/tiers';
 import {currencies, currencySelectGroups, validateCurrencyAmount} from '@/settings/app/utils/currency';
@@ -25,7 +26,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
     const isFreeTier = tier?.type === 'free';
     const [currencyOpen, setCurrencyOpen] = React.useState(false);
 
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const {mutateAsync: updateTier} = useEditTier();
     const {mutateAsync: createTier} = useAddTier();
     const {mutateAsync: editSettings} = useEditSettings();

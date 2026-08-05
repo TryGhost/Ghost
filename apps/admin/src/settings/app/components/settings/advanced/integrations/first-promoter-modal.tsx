@@ -7,10 +7,10 @@ import {SettingsModal} from '@tryghost/shade/patterns';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 
 const FirstPromoterModal = NiceModal.create(() => {
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
 
     const {settings} = useGlobalData();
     const {mutateAsync: editSettings} = useEditSettings();

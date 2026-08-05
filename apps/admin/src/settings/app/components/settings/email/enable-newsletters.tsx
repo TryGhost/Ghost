@@ -7,13 +7,13 @@ import {type Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x
 import {SettingGroupContent} from '@tryghost/shade/patterns';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 import {withErrorBoundary} from '@/settings/app/components/error-boundary';
 
 const EnableNewsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {settings} = useGlobalData();
     const {mutateAsync: editSettings} = useEditSettings();
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const handleError = useHandleError();
 
     const [newslettersEnabled, membersSignupAccess] = getSettingValues<string>(settings, ['editor_default_email_recipients', 'members_signup_access']);

@@ -10,7 +10,7 @@ import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'sonner';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 
 interface FormState {
     content: string;
@@ -19,7 +19,7 @@ interface FormState {
 
 const TestimonialsModal = NiceModal.create(() => {
     const platformErrorId = React.useId();
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const handleError = useHandleError();
     const modal = useModal();
     const {settings, currentUser, siteData, config} = useGlobalData();

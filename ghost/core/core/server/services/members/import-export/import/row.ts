@@ -42,7 +42,11 @@ export type MemberImportRow = z.infer<typeof memberImportRowSchema>;
 
 // A row that failed to import, carrying the raw message that stopped it. The message is
 // left raw here; turning it into human copy is a presentation concern.
-export type ImportErrorRow = MemberImportRow & {error: string};
+// A row can fail for more than one reason. `errors` is the list; `error` is that list
+// written out for the error report's single cell. Two fields because a reason may quote a
+// cell the publisher wrote, and a CSV cell legally holds commas and newlines, so no
+// separator survives being split back apart.
+export type ImportErrorRow = MemberImportRow & {error: string; errors: string[]};
 
 // The persisted import label as plain data -- taken off the Bookshelf model before it
 // leaves the kernel, so the result and the email carry only what they show.

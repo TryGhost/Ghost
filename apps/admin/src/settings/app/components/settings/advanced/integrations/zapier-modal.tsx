@@ -13,7 +13,7 @@ import {useEffect, useState} from 'react';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRefreshAPIKey} from '@tryghost/admin-x-framework/api/api-keys';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 import {useSettingsApp} from '@/settings/app/components/providers/settings-app-provider';
 
 export interface ZapierTemplate {
@@ -25,7 +25,7 @@ export interface ZapierTemplate {
 
 const ZapierModal = NiceModal.create(() => {
     const modal = NiceModal.useModal();
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const {zapierTemplates} = useSettingsApp();
     const {data: {integrations} = {integrations: []}} = useBrowseIntegrations();
     const {config} = useGlobalData();

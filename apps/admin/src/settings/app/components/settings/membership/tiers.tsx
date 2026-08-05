@@ -11,7 +11,7 @@ import {type Tier, getActiveTiers, getArchivedTiers, useBrowseTiers} from '@tryg
 import {checkStripeEnabled} from '@tryghost/admin-x-framework/api/settings';
 import {formatNumber} from '@tryghost/shade/utils';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 import {withErrorBoundary} from '@/settings/app/components/error-boundary';
 
 const StripeConnectedButton: React.FC<{className?: string; onClick: () => void;}> = ({className, onClick}) => {
@@ -33,7 +33,7 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {data: {tiers, meta, isEnd} = {}, fetchNextPage} = useBrowseTiers();
     const activeTiers = getActiveTiers(tiers || []);
     const archivedTiers = getArchivedTiers(tiers || []);
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const limiter = useLimiter();
 
     const openConnectModal = async () => {
