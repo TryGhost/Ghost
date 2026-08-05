@@ -36,6 +36,7 @@ type SettingsCache = {
 };
 
 type Config = {
+    get(key: string): unknown;
     isPrivacyDisabled(key: string): boolean;
 };
 
@@ -139,6 +140,11 @@ export class IndexNowPingService {
      * Ping IndexNow with a URL.
      */
     async ping(post: Post): Promise<void> {
+        // Skip if in development
+        if (this.config.get('env') === 'development') {
+            return;
+        }
+
         // Skip pages - only ping for posts
         if (post.type === 'page') {
             return;

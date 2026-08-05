@@ -16,7 +16,7 @@ function createService() {
     settingsCache.get.withArgs('is_private').returns(false);
     settingsCache.get.withArgs('indexnow_api_key').returns(VALID_API_KEY);
 
-    const config = {isPrivacyDisabled: sinon.stub()};
+    const config = {get: sinon.stub(), isPrivacyDisabled: sinon.stub()};
     config.isPrivacyDisabled.withArgs('useIndexNow').returns(false);
 
     const labs = {isSet: sinon.stub()};
@@ -268,6 +268,16 @@ describe('IndexNow', function () {
     });
 
     describe('ping()', function () {
+        it('does not ping in development', async function () {
+            const {service, deps} = createService();
+            deps.config.get.withArgs('env').returns('development');
+            const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
+
+            await service.ping(testPost);
+
+            sinon.assert.notCalled(deps.urlService.facade.getUrlForResource);
+        });
+
         it('with a post should execute ping', async function () {
             const {service, deps} = createService();
             nock('https://api.indexnow.org')
