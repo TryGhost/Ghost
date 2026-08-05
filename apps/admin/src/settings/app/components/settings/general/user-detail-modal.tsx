@@ -16,7 +16,8 @@ import {HostLimitError, useLimiter} from '@/settings/app/hooks/use-limiter';
 import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {Pencil, Trash2} from 'lucide-react';
-import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {type RoutingModalProps} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 import {SOCIAL_PLATFORM_CONFIGS, SOCIAL_PLATFORM_KEYS, getSocialValidationError} from '@/settings/app/utils/social-urls/index';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {Text} from '@tryghost/shade/primitives';
@@ -75,7 +76,7 @@ export interface UserDetailProps {
 }
 
 const UserDetailModalContent: React.FC<{user: User; onDeletingUserChange: (isDeleting: boolean) => void}> = ({user, onDeletingUserChange}) => {
-    const {updateRoute, route} = useRouting();
+    const {updateRoute, route} = useSettingsNavigation();
 
     const getTabFromPath = (path: string): string => {
         const lastSegment = path.split('/').pop() || '';
@@ -463,7 +464,7 @@ const UserDetailModalContent: React.FC<{user: User; onDeletingUserChange: (isDel
 
 const UserDetailModal: React.FC<RoutingModalProps> = ({params}) => {
     const {currentUser} = useGlobalData();
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const handleError = useHandleError();
     const [isDeletingUser, setIsDeletingUser] = useState(false);
 

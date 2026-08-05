@@ -14,7 +14,7 @@ import {getOfferPortalPreviewUrl, type offerPortalPreviewUrlTypes} from '@/setti
 import {toast} from 'sonner';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 
 function formatTimestamp(timestamp: string): string {
     const date = new Date(timestamp);
@@ -39,7 +39,7 @@ const Sidebar: React.FC<{
             const [nameLength, setNameLength] = useState(offer?.name.length || 0);
             const nameLengthColor = nameLength > 40 ? 'text-red' : 'text-green';
 
-            const {updateRoute} = useRouting();
+            const {updateRoute} = useSettingsNavigation();
 
             useEffect(() => {
                 if (offer?.name) {
@@ -164,7 +164,7 @@ const Sidebar: React.FC<{
 
 const EditOfferModal: React.FC<{id: string}> = ({id}) => {
     const {siteData} = useGlobalData();
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const handleError = useHandleError();
     const {mutateAsync: editOffer} = useEditOffer();
 

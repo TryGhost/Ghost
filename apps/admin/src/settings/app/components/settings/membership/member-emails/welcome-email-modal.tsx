@@ -12,7 +12,7 @@ import {getWelcomeEmailValidationErrors} from './welcome-email-validation';
 import {useBrowseAutomatedEmails, useEditAutomatedEmail, usePreviewWelcomeEmail} from '@tryghost/admin-x-framework/api/automated-emails';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 import {useWelcomeEmailPreview} from './use-welcome-email-preview';
 import {useWelcomeEmailSenderDetails} from '@/settings/app/hooks/use-welcome-email-sender-details';
 
@@ -101,7 +101,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
     const modal = useModal();
     const {settings: globalSettings, config} = useGlobalData();
     const [siteTitle, defaultEmailAddress, supportEmailAddress] = getSettingValues<string>(globalSettings, ['title', 'default_email_address', 'support_email_address']);
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const {mutateAsync: editAutomatedEmail} = useEditAutomatedEmail();
     const {mutateAsync: previewWelcomeEmail} = usePreviewWelcomeEmail();
     const {data: automatedEmailsData} = useBrowseAutomatedEmails();

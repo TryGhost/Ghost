@@ -5,7 +5,7 @@ import {Field, FieldContent, FieldDescription, FieldLabel, Separator, Switch} fr
 import {HostLimitError, useLimiter} from '@/settings/app/hooks/use-limiter';
 import {SettingGroupContent} from '@tryghost/shade/patterns';
 import {getSettingValues, isSettingReadOnly} from '@tryghost/admin-x-framework/api/settings';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 import {withErrorBoundary} from '@/settings/app/components/error-boundary';
 
 const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
@@ -26,7 +26,7 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const [isWebAnalyticsLimited, setIsWebAnalyticsLimited] = useState(false);
     const limiter = useLimiter();
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
 
     useEffect(() => {
         if (limiter?.isLimited('limitAnalytics')) {
