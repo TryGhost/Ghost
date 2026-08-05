@@ -197,6 +197,9 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
 
+      - name: Check agent skill discovery
+        run: pnpm lint:agent-skills
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
 
