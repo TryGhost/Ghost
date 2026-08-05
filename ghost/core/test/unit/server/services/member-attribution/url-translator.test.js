@@ -239,8 +239,8 @@ describe('UrlTranslator', function () {
 
     describe('getResourceUrl', function () {
         // Lazy URL service evaluates permalink templates against resource fields
-        // (slug, published_at, primary_tag, ...). The facade contract requires
-        // the full resource shape, not just `{id, type}`.
+        // (slug, published_at, primary_tag, ...), so it needs the full resource
+        // shape, not just `{id, type}`.
         it('passes the model\'s plain data (slug, etc.) to the URL service', function () {
             let captured;
             const translator = new UrlTranslator({
@@ -276,7 +276,7 @@ describe('UrlTranslator', function () {
                 },
                 urlService: {
                     getUrlForResource: () => {
-                        throw new Error('facade should not be consulted for email-only posts');
+                        throw new Error('the URL service should not be consulted for email-only posts');
                     }
                 },
                 models: {}

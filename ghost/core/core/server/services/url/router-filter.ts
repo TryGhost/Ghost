@@ -1,8 +1,9 @@
 const nql = require('@tryghost/nql');
 const logging = require('@tryghost/logging');
 
-// A deliberate copy of the eager UrlGenerator's NQL semantics: while both
-// services run side by side, eager is the parity oracle and must stay separate.
+// NQL evaluation for routes.yaml collection filters, kept in one place so the
+// forward lookup, ownership check and reverse lookup all decide membership the
+// same way.
 export const EXPANSIONS = [
     {key: 'author', replacement: 'authors.slug'},
     {key: 'tags', replacement: 'tags.slug'},
@@ -51,7 +52,7 @@ export function buildFilter(filter: string | null | undefined): CompiledFilter |
 }
 
 // A null filter always matches; a filter that throws is a non-match, not an
-// error, mirroring the eager generator's try/catch.
+// error: a routes.yaml filter Ghost cannot compile must not take down routing.
 export function filterMatches(compiledFilter: CompiledFilter | null, record: Record<string, unknown>): boolean {
     if (!compiledFilter) {
         return true;

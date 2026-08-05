@@ -160,8 +160,7 @@ describe('UNIT: DynamicRoutingService (store-backed)', function () {
         it('accepts a valid upload without reading the current stored file', async function () {
             sinon.stub(bridge, 'reloadFrontend').resolves();
             const replaceStub = sinon.stub(store, 'replace').resolves();
-            const getStub = sinon.stub(store, 'get')
-                .rejects(new errors.IncorrectUsageError({message: 'Could not parse provided YAML file: bad indentation of a mapping entry.'}));
+            const getStub = sinon.stub(store, 'get');
 
             await service.upload(CUSTOM_YAML);
 

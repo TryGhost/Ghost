@@ -3,7 +3,7 @@
 // routing an under-loaded post 404s. Ask the URL service which relations it
 // needs and load only the ones missing — reloading a relation the event
 // already carries (e.g. authors) would strip its nested roles from the
-// payload. Returns [] under eager routing, which resolves URLs by id.
+// payload. Returns [] when the routing config reads no relations.
 const loadRequiredUrlRelations = async (model, urlService) => {
     const required = urlService.getRequiredRelations();
     const missing = required.filter(relation => !model.relations[relation]);

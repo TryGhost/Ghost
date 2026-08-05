@@ -171,7 +171,7 @@ class RouterManager {
         if (collectionRouter && collectionRouter.getPermalinks().getValue().match(/:year|:month|:day/)) {
             debug('handleTimezoneEdit: trigger regeneration');
 
-            this.urlService.onRouterUpdated(collectionRouter.identifier);
+            this.urlService.onRouterUpdated();
         }
     }
 }

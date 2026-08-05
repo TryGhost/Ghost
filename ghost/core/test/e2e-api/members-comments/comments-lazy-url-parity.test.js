@@ -122,7 +122,7 @@ describe('Comments API lazy URL parity', function () {
         assert.deepEqual(
             resolutionErrors.map(err => err.errorDetails),
             [],
-            'lazy URL service threw and degraded to /404/ while serializing a page comment'
+            'URL service degraded to /404/ while serializing a page comment'
         );
     });
 });

@@ -15,7 +15,7 @@ const errors = require('@tryghost/errors');
 // enough for tags and authors: without the has-posts join, empty tags and
 // staff user accounts would be routable/listable.
 const TYPE_CONFIG = {
-    posts: {modelName: 'Post', table: 'posts', filter: 'status:published+type:post'},
+    posts: {modelName: 'Post', table: 'posts', filter: 'status:published+type:post', canCarryRelations: true},
     pages: {modelName: 'Post', table: 'posts', filter: 'status:published+type:page'},
     tags: {
         modelName: 'Tag',
@@ -36,8 +36,7 @@ const RELATION_FIELDS = {
     authors: ['users.id', 'users.slug']
 };
 
-// Keeps each SQLite query under the bound-variable limit (#5810) — the same
-// strategy as the eager boot walk (services/url/resources.js).
+// Keeps each SQLite query under the bound-variable limit (#5810).
 const SQLITE_BATCH_SIZE = 999;
 
 /**
@@ -45,7 +44,8 @@ const SQLITE_BATCH_SIZE = 999;
  * @param {Object} [options]
  * @param {string[]} [options.columns] - extra columns the caller wants back
  * @param {string[]} [options.requiredFields] - columns URL computation reads
- * @param {string[]} [options.requiredRelations] - relations URL computation reads
+ * @param {string[]} [options.requiredRelations] - relations URL computation
+ * reads; ignored for types that carry none
  * @returns {Promise<Object[]>}
  */
 async function fetchRoutableResources(type, {columns = [], requiredFields = [], requiredRelations = []} = {}) {
@@ -74,9 +74,9 @@ async function fetchRoutableResources(type, {columns = [], requiredFields = [], 
     }
 
     // Relations only when the active routing config reads them (e.g.
-    // /:primary_tag/:slug/ permalinks, tag-filtered collections). Only posts
-    // carry relations, mirroring the resource config in ./config.js.
-    if (type === 'posts' && requiredRelations.length) {
+    // /:primary_tag/:slug/ permalinks, tag-filtered collections), and only for
+    // the types that have any — see canCarryRelations above.
+    if (typeConfig.canCarryRelations && requiredRelations.length) {
         options.withRelated = requiredRelations;
         options.withRelatedFields = {};
         for (const relation of requiredRelations) {

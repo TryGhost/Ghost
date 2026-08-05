@@ -101,14 +101,6 @@ class BaseSiteMapGenerator {
         }
     }
 
-    removeUrl(url, datum) {
-        this.removeFromLookups(datum);
-
-        // force regeneration of xml
-        this.siteMapContent.clear();
-        this.lastModified = Date.now();
-    }
-
     /**
      * @returns {moment.Moment}
      */
@@ -199,20 +191,9 @@ class BaseSiteMapGenerator {
         return content;
     }
 
-    /**
-     * @NOTE
-     * The url service currently has no url update event.
-     * It removes and adds the url. If the url service extends it's
-     * feature set, we can detect if a node has changed.
-     */
     updateLookups(datum, node, lastModified = this.getLastModifiedForDatum(datum)) {
         this.nodeLookup[datum.id] = node;
         this.nodeTimeLookup[datum.id] = lastModified;
-    }
-
-    removeFromLookups(datum) {
-        delete this.nodeLookup[datum.id];
-        delete this.nodeTimeLookup[datum.id];
     }
 
     reset() {

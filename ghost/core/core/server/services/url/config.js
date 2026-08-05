@@ -16,101 +16,93 @@
 module.exports = [
     {
         type: 'posts',
-        modelOptions: {
-            exclude: [
-                'title',
-                'mobiledoc',
-                'lexical',
-                'html',
-                'plaintext',
-                // @TODO: https://github.com/TryGhost/Ghost/issues/10335
-                // 'page',
-                'status',
-                'codeinjection_head',
-                'codeinjection_foot',
-                'meta_title',
-                'meta_description',
-                'custom_excerpt',
-                'og_image',
-                'og_title',
-                'og_description',
-                'twitter_image',
-                'twitter_title',
-                'twitter_description',
-                'custom_template',
-                'locale',
-                'newsletter_id',
-                'show_title_and_feature_image',
-                'email_recipient_filter',
-                'comment_id',
-                'tiers'
-            ]
-        }
+        exclude: [
+            'title',
+            'mobiledoc',
+            'lexical',
+            'html',
+            'plaintext',
+            // @TODO: https://github.com/TryGhost/Ghost/issues/10335
+            // 'page',
+            'status',
+            'codeinjection_head',
+            'codeinjection_foot',
+            'meta_title',
+            'meta_description',
+            'custom_excerpt',
+            'og_image',
+            'og_title',
+            'og_description',
+            'twitter_image',
+            'twitter_title',
+            'twitter_description',
+            'custom_template',
+            'locale',
+            'newsletter_id',
+            'show_title_and_feature_image',
+            'email_recipient_filter',
+            'comment_id',
+            'tiers'
+        ]
     },
     {
         type: 'pages',
-        modelOptions: {
-            exclude: [
-                'title',
-                'mobiledoc',
-                'lexical',
-                'html',
-                'plaintext',
-                // @TODO: https://github.com/TryGhost/Ghost/issues/10335
-                // 'page',
-                // 'status',
-                'codeinjection_head',
-                'codeinjection_foot',
-                'meta_title',
-                'meta_description',
-                'custom_excerpt',
-                'og_image',
-                'og_title',
-                'og_description',
-                'twitter_image',
-                'twitter_title',
-                'twitter_description',
-                'custom_template',
-                'locale',
-                'tags',
-                'authors',
-                'primary_tag',
-                'primary_author',
-                'newsletter_id',
-                'show_title_and_feature_image',
-                'email_recipient_filter',
-                'comment_id',
-                'tiers'
-            ]
-        }
+        exclude: [
+            'title',
+            'mobiledoc',
+            'lexical',
+            'html',
+            'plaintext',
+            // @TODO: https://github.com/TryGhost/Ghost/issues/10335
+            // 'page',
+            // 'status',
+            'codeinjection_head',
+            'codeinjection_foot',
+            'meta_title',
+            'meta_description',
+            'custom_excerpt',
+            'og_image',
+            'og_title',
+            'og_description',
+            'twitter_image',
+            'twitter_title',
+            'twitter_description',
+            'custom_template',
+            'locale',
+            'tags',
+            'authors',
+            'primary_tag',
+            'primary_author',
+            'newsletter_id',
+            'show_title_and_feature_image',
+            'email_recipient_filter',
+            'comment_id',
+            'tiers'
+        ]
     },
     {
         type: 'tags',
-        modelOptions: {
-            exclude: [
-                'description',
-                'meta_title',
-                'meta_description',
-                'parent_id'
-            ]
-        }
+        exclude: [
+            'description',
+            'meta_title',
+            'meta_description',
+            'parent_id'
+        ]
     },
     {
         type: 'authors',
-        modelOptions: {
-            exclude: [
-                'bio',
-                'website',
-                'location',
-                'facebook',
-                'twitter',
-                'locale',
-                'accessibility',
-                'meta_title',
-                'meta_description',
-                'tour',
-                'last_seen'
-            ]
-        }
+        exclude: [
+            'bio',
+            'website',
+            'location',
+            'facebook',
+            'twitter',
+            'locale',
+            'accessibility',
+            'meta_title',
+            'meta_description',
+            'tour',
+            'last_seen'
+        ]
     }
 ];

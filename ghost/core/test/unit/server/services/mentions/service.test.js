@@ -68,7 +68,7 @@ describe('Mentions service post url helpers', function () {
         sinon.assert.notCalled(post.load);
     });
 
-    it('loads nothing under the eager service', async function () {
+    it('loads nothing when the routing config reads no relations', async function () {
         sinon.stub(urlService, 'getRequiredRelations').returns([]);
         const post = fakePost();
 

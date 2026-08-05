@@ -60,7 +60,6 @@ describe('Unit: sitemap/manager', function () {
 
         sinon.stub(PostGenerator.prototype, 'getXml');
         sinon.stub(PostGenerator.prototype, 'addUrl');
-        sinon.stub(PostGenerator.prototype, 'removeUrl');
         sinon.stub(IndexGenerator.prototype, 'getXml');
     });
 

@@ -72,7 +72,7 @@ describe('Unit: services/url/routable-resources', function () {
             authors: ['users.id', 'users.slug']
         });
 
-        // Pages never carry relations, mirroring the eager resource config.
+        // Pages carry no relations, so requiredRelations is ignored for them.
         await fetchRoutableResources('pages', {requiredRelations: ['tags']});
         assert.equal(fetchAll.thirdCall.args[0].withRelated, undefined);
     });

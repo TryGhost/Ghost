@@ -24,11 +24,12 @@ const RELATION_KEYS = ['tags', 'authors', 'primary_tag', 'primary_author'];
 // never exposed here.
 function excludeFor(type: string): string[] {
     const cfg = resourcesConfig.find((c: {type: string}) => c.type === type);
-    const exclude = (cfg && cfg.modelOptions.exclude) || [];
+    const exclude = cfg?.exclude ?? [];
     return [...exclude, 'posts_meta'];
 }
 
-// Eager trims relations to {id, slug} via withRelatedFields; match that.
+// Relations are trimmed to {id, slug}: permalinks and filters read nothing
+// else off them, and callers have never seen more.
 function trimRelation(value: unknown): unknown {
     if (Array.isArray(value)) {
         return value.map(item => _.pick(item, ['id', 'slug']));
@@ -39,12 +40,12 @@ function trimRelation(value: unknown): unknown {
     return value;
 }
 
-function pruneToEagerShape(record: Record<string, unknown>, type: string): Record<string, unknown> {
+function pruneToPublicShape(record: Record<string, unknown>, type: string): Record<string, unknown> {
     const pruned = _.omit(record, excludeFor(type));
 
     if (type === 'pages') {
-        // Eager always exposes primary_tag/primary_author as null on pages (they
-        // are virtual Post fields) but never carries the tags/authors arrays.
+        // primary_tag/primary_author are always null on pages (they are virtual
+        // Post fields), and pages never carry the tags/authors arrays.
         pruned.primary_tag = null;
         pruned.primary_author = null;
         return pruned;
@@ -80,7 +81,7 @@ export function createFindResource(models: Models): FindResource {
         if (Array.isArray(record.authors)) {
             record.primary_author = record.authors[0] ?? null;
         }
-        return pruneToEagerShape(record, type);
+        return pruneToPublicShape(record, type);
     };
 
     return (type: string, params: ResourceLookupParams): Promise<Record<string, unknown> | null> => {

@@ -56,7 +56,7 @@ function defaultRelations(frame) {
         frame.options.withRelated = ['tags', 'authors', 'authors.roles', 'tiers', 'count.signups', 'count.paid_conversions'];
     }
 
-    url.forceUrlRelationsWhenLazy(frame, 'pages');
+    url.forceUrlRelations(frame, 'pages');
 }
 
 function setDefaultOrder(frame) {
@@ -126,7 +126,7 @@ module.exports = {
 
             setDefaultOrder(frame);
             forceVisibilityColumn(frame);
-            url.forceUrlRelationsWhenLazy(frame, 'pages');
+            url.forceUrlRelations(frame, 'pages');
         }
 
         if (!localUtils.isContentAPI(frame)) {
@@ -145,7 +145,7 @@ module.exports = {
             removeSourceFormats(frame);
             setDefaultOrder(frame);
             forceVisibilityColumn(frame);
-            url.forceUrlRelationsWhenLazy(frame, 'pages');
+            url.forceUrlRelations(frame, 'pages');
         }
 
         if (!localUtils.isContentAPI(frame)) {

@@ -295,36 +295,6 @@ describe('Generators', function () {
             });
         });
 
-        describe('fn: removeUrl', function () {
-            let post;
-
-            beforeEach(function () {
-                post = testUtils.DataGenerator.forKnex.createPost();
-                generator.nodeLookup[post.id] = 'node';
-            });
-
-            afterEach(function () {
-                generator.nodeLookup = {};
-                generator.nodeTimeLookup = {};
-            });
-
-            it('remove none existend url', function () {
-                generator.removeUrl('https://myblog.com/blog/podcast/featured/', testUtils.DataGenerator.forKnex.createPost());
-                assert.equal(Object.keys(generator.nodeLookup).length, 1);
-            });
-
-            it('remove existing url', function () {
-                generator.removeUrl('https://myblog.com/blog/test/', post);
-                assert.equal(Object.keys(generator.nodeLookup).length, 0);
-            });
-        });
-    });
-
-    describe('PageGenerator', function () {
-        beforeEach(function () {
-            generator = new PageGenerator();
-        });
-
         describe('fn: getXml', function () {
             it('add', function () {
                 generator.addUrl('http://my-ghost-blog.com/home/', {id: 'identifier1', staticRoute: true});

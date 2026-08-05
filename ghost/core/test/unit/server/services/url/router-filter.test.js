@@ -91,7 +91,7 @@ describe('router-filter', function () {
     });
 
     describe('EXPANSIONS', function () {
-        it('exposes the shorthand keys the eager generator supports', function () {
+        it('exposes the shorthand keys routes.yaml filters may use', function () {
             const keys = EXPANSIONS.map(e => e.key);
             assert.deepEqual(
                 keys,

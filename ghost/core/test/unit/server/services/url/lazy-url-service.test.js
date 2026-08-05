@@ -171,14 +171,14 @@ describe('LazyUrlService', function () {
             );
         });
 
-        it('matches a filter on an eager-excluded column as eager does (absent → null)', function () {
+        it('matches a filter on an excluded column as absent (→ null)', function () {
             const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
-            // custom_template is dropped from eager's URL cache
-            // (services/url/config.js exclude), so eager evaluates
-            // `custom_template:null` against an absent field — NQL treats absent
-            // as null, the filter matches, and the post is served. Lazy loads the
-            // real value; to preserve eager it must strip the excluded column
-            // before matching and serve the post too.
+            // custom_template is an excluded column (services/url/config.js), so
+            // `custom_template:null` is evaluated against an absent field — NQL
+            // treats absent as null, the filter matches, and the post is served.
+            // The service loads the real value, so it must strip the column
+            // before matching or a post with a custom template would stop
+            // routing.
             service.onRouterAddedType('specials', 'custom_template:null', 'posts', '/:slug/');
 
             const url = service.getUrlForResource({
@@ -191,10 +191,10 @@ describe('LazyUrlService', function () {
             assert.equal(url, '/hello/');
         });
 
-        it('does not treat a resource lacking an eager-excluded filter column as thin', function () {
+        it('does not treat a resource lacking an excluded filter column as thin', function () {
             const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
-            // Eager never carries custom_template, so it never requires it; a
-            // resource lacking it must match null rather than throw thin.
+            // An excluded column is never required; a resource lacking it must
+            // match null rather than be reported as thin.
             service.onRouterAddedType('specials', 'custom_template:null', 'posts', '/:slug/');
 
             assert.equal(
@@ -203,13 +203,13 @@ describe('LazyUrlService', function () {
             );
         });
 
-        it('does not force-load eager-excluded columns as required fields', function () {
+        it('does not force-load excluded columns as required fields', function () {
             const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
             service.onRouterAddedType('specials', 'custom_template:null', 'posts', '/:slug/');
 
             assert.ok(
                 !service.getRequiredFields('posts').includes('custom_template'),
-                'custom_template is dropped from eager\'s cache, so lazy must not force-load it'
+                'custom_template is an excluded column, so it must not be force-loaded'
             );
         });
 
@@ -292,7 +292,7 @@ describe('LazyUrlService', function () {
             // users.visibility is schema-pinned to 'public', so BASE_FILTERS has
             // no entry for authors. Serialized authors drop visibility (#10438),
             // so unlike tags they must not be treated as thin — every author is
-            // routable, matching eager.
+            // routable.
             assert.equal(
                 service.getUrlForResource({type: 'authors', id: 'a1', slug: 'jane'}),
                 '/author/jane/'
@@ -363,7 +363,7 @@ describe('LazyUrlService', function () {
             const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
             service.onRouterAddedType('tagsRouter', null, 'tags', '/tag/:slug/');
 
-            // An internal tag is not in eager's map, so no router owns it.
+            // An internal tag fails its base filter, so no router owns it.
             assert.equal(service.ownsResource('tagsRouter', {type: 'tags', id: 't1', slug: 'x', visibility: 'internal'}), false);
             assert.equal(service.ownsResource('tagsRouter', {type: 'tags', id: 't1', slug: 'x', visibility: 'public'}), true);
         });
@@ -565,7 +565,7 @@ describe('LazyUrlService', function () {
             service.onRouterAddedType('default', null, 'posts', '/:primary_tag/:slug/');
 
             // The post's canonical URL is /podcast/hello/, so /news/hello/ must
-            // 404 exactly as the eager service does.
+            // 404.
             assert.equal(await service.resolveUrl('/news/hello/'), null);
         });
 
@@ -592,7 +592,7 @@ describe('LazyUrlService', function () {
             service.onRouterAddedType('default', null, 'posts', '/:year/:month/:slug/');
 
             // Post is published in 2026-04, so a 2026-05 URL is not its canonical
-            // URL and must 404, matching the eager service.
+            // URL and must 404.
             assert.equal(await service.resolveUrl('/2026/05/hello/'), null);
         });
 
@@ -648,7 +648,7 @@ describe('LazyUrlService', function () {
             const service = new LazyUrlService({urlUtils, findResource});
             // `:id` is a real permalink token, but a Ghost id is a 24-char hex
             // ObjectId. A path segment that can't be one is a guaranteed miss,
-            // so we skip the lookup eager would also never have a URL for.
+            // so we skip a lookup that could never produce a URL.
             service.onRouterAddedType('default', null, 'posts', '/:id/');
 
             assert.equal(await service.resolveUrl('/blahblah/'), null);
@@ -763,7 +763,7 @@ describe('LazyUrlService', function () {
             service.onRouterAddedType('tagsRouter', null, 'tags', '/tag/:slug/');
             service.onRouterAddedType('authorsRouter', null, 'authors', '/author/:slug/');
 
-            // slug is needed to build the permalink even though eager (id-based)
+            // slug is needed to build the permalink even though the reverse lookup
             // never reads it; authors have no base filter, only the permalink slug.
             assert.deepEqual(service.getRequiredFields('tags').sort(), ['slug', 'visibility']);
             assert.deepEqual(service.getRequiredFields('authors'), ['slug']);
@@ -881,9 +881,8 @@ describe('LazyUrlService', function () {
         });
     });
 
-    // The lazy counterpart of eager's in-memory resource cache: the routable
-    // rows of a type, fetched on demand with the columns the active routing
-    // config needs.
+    // The routable rows of a type, fetched on demand with the columns the
+    // active routing config needs.
     describe('getRoutableResources', function () {
         it('asks the fetcher for the caller\'s columns plus what the routers require', async function () {
             const fetchRoutableResources = sinon.stub().resolves([{id: 'p1'}]);

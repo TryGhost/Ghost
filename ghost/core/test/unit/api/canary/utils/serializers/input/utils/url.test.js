@@ -8,12 +8,12 @@ describe('Unit: endpoints/utils/serializers/input/utils/url', function () {
         sinon.restore();
     });
 
-    describe('forceUrlColumnsWhenLazy', function () {
+    describe('forceUrlColumns', function () {
         it('forces the lazy-required columns into the fetch when url is requested', function () {
             sinon.stub(urlService, 'getRequiredFields').withArgs('tags').returns(['visibility']);
             const frame = {options: {columns: ['url', 'id']}};
 
-            urlUtil.forceUrlColumnsWhenLazy(frame, 'tags');
+            urlUtil.forceUrlColumns(frame, 'tags');
 
             assert.deepEqual(frame.options.columns, ['url', 'id', 'visibility']);
         });
@@ -22,7 +22,7 @@ describe('Unit: endpoints/utils/serializers/input/utils/url', function () {
             sinon.stub(urlService, 'getRequiredFields').withArgs('tags').returns(['visibility']);
             const frame = {options: {columns: ['url', 'visibility']}};
 
-            urlUtil.forceUrlColumnsWhenLazy(frame, 'tags');
+            urlUtil.forceUrlColumns(frame, 'tags');
 
             assert.deepEqual(frame.options.columns, ['url', 'visibility']);
         });
@@ -31,7 +31,7 @@ describe('Unit: endpoints/utils/serializers/input/utils/url', function () {
             const stub = sinon.stub(urlService, 'getRequiredFields');
             const frame = {options: {columns: ['id', 'slug']}};
 
-            urlUtil.forceUrlColumnsWhenLazy(frame, 'tags');
+            urlUtil.forceUrlColumns(frame, 'tags');
 
             assert.deepEqual(frame.options.columns, ['id', 'slug']);
             sinon.assert.notCalled(stub);
@@ -40,7 +40,7 @@ describe('Unit: endpoints/utils/serializers/input/utils/url', function () {
         it('is a no-op when no columns are set (full fetch carries every field)', function () {
             const frame = {options: {}};
 
-            urlUtil.forceUrlColumnsWhenLazy(frame, 'tags');
+            urlUtil.forceUrlColumns(frame, 'tags');
 
             assert.deepEqual(frame.options, {});
         });
@@ -49,7 +49,7 @@ describe('Unit: endpoints/utils/serializers/input/utils/url', function () {
             sinon.stub(urlService, 'getRequiredFields').withArgs('posts').returns(['status', 'type', 'slug']);
             const frame = {options: {columns: ['url', 'slug']}};
 
-            urlUtil.forceUrlColumnsWhenLazy(frame, 'posts');
+            urlUtil.forceUrlColumns(frame, 'posts');
 
             assert.deepEqual(frame.options.columns, ['url', 'slug', 'status', 'type']);
             // only what the caller did not request, tagged with the fetch it
@@ -61,7 +61,7 @@ describe('Unit: endpoints/utils/serializers/input/utils/url', function () {
             sinon.stub(urlService, 'getRequiredFields').withArgs('posts').returns(['status']);
             const frame = {options: {columns: ['url', 'status']}};
 
-            urlUtil.forceUrlColumnsWhenLazy(frame, 'posts');
+            urlUtil.forceUrlColumns(frame, 'posts');
 
             assert.equal(frame.forcedUrlColumns, undefined);
         });

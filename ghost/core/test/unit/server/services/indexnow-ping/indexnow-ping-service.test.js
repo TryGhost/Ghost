@@ -546,7 +546,7 @@ describe('IndexNow', function () {
     // Pin which URL ping() actually sends. The ping() block above uses nock to
     // intercept the HTTP request but never inspects the `?url=...` query
     // parameter; that's the exact value a future change to the url-service call
-    // shape (e.g. swapping the legacy id-based method for a resource-based facade
+    // shape (e.g. swapping the legacy id-based method for a resource-based
     // method) could regress without anyone noticing.
     describe('ping() URL output', function () {
         const POST_URL = 'https://my-blog.example/some-post/';
