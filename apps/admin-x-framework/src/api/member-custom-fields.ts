@@ -109,6 +109,9 @@ export interface MemberCustomFieldsResponseType {
 }
 
 const dataType = 'MemberCustomFieldsResponseType';
+// Exported so a screen can move the list in its own cache before the request lands —
+// a drag that waits for a round-trip snaps back under the cursor.
+export const memberCustomFieldsDataType = dataType;
 
 export const useBrowseMemberCustomFields = createQuery<MemberCustomFieldsResponseType>({
     dataType,
@@ -142,6 +145,22 @@ export const useEditMemberCustomField = createMutation<MemberCustomFieldsRespons
     method: 'PUT',
     path: field => `/members/custom_fields/${field.key}/`,
     body: ({key: _key, ...patch}) => ({members_custom_fields: [patch]}),
+    invalidateQueries: {dataType}
+});
+
+/**
+ * Set the order of the whole list.
+ *
+ * Order is a property of the list rather than of a field — no definition carries a rank
+ * — so it is stated by PUTting the collection in the order it should have. The payload
+ * has to name every field the site has, archived ones included: the API rejects a list
+ * that doesn't, which is what stops a client that loaded before a colleague added a
+ * field from writing an order that was never true of the whole list.
+ */
+export const useReorderMemberCustomFields = createMutation<MemberCustomFieldsResponseType, MemberCustomField[]>({
+    method: 'PUT',
+    path: () => '/members/custom_fields/',
+    body: fields => ({members_custom_fields: fields.map(({key}) => ({key}))}),
     invalidateQueries: {dataType}
 });
 

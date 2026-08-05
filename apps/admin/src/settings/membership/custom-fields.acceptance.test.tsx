@@ -1,5 +1,5 @@
 import {describe, expect, it} from "vitest";
-import {page} from "vitest/browser";
+import {page, userEvent} from "vitest/browser";
 
 import {configResponse, fakeAdminEndpoint, fakeSettingsScreens, renderAdminApp, settingsResponse} from "@test-utils/acceptance";
 import {settingsScreen} from "@/settings/settings.screen";
@@ -233,6 +233,74 @@ describe("Custom fields", () => {
         // pending, and it would fire into the NEXT test's freshly-opened
         // modal — NiceModal keys modals by component and dispatches globally.
         await expect(modal).toHaveCount(0);
+    });
+
+    it("reorders a field by dragging it, sending the whole list in its new order", async () => {
+        fakeSettingsScreens();
+        const shirtField = {...companyField, key: "shirt-size", name: "Shirt size"};
+        const nicknameField = {...companyField, key: "nickname", name: "Nickname"};
+        let currentFields = [companyField, shirtField, nicknameField];
+        fakeAdminEndpoint("GET", new RegExp("^/members/custom_fields/\\?"), () => ({members_custom_fields: currentFields}));
+        const reorderApi = fakeAdminEndpoint("PUT", "/members/custom_fields/", (request) => {
+            const order = (request.body as {members_custom_fields: {key: string}[]}).members_custom_fields;
+            currentFields = order.map(({key}) => currentFields.find(field => field.key === key)!);
+            return {members_custom_fields: currentFields};
+        });
+        await renderAdminApp("/settings", {boot: customFieldsBoot()});
+
+        const rows = settingsScreen.customFields().getByTestId("custom-field-list-item");
+        await expect(rows).toHaveCount(3);
+
+        // A real pointer drag of the handle onto the first row, which is what dnd-kit
+        // listens for. Note this cannot be driven from the keyboard: the sortable list
+        // does not wire dnd-kit's sortable coordinate getter, so arrow keys move a
+        // lifted item by a flat 25px and it never reaches the next row.
+        const handle = settingsScreen.customFields().getByLabelText("Reorder Nickname");
+        await expect.element(handle).toBeVisible();
+        await userEvent.dragAndDrop(handle, rows.first());
+
+        // The whole list goes up, in the order the drag left it, keys only — order is a
+        // property of the list, so a field never carries a rank. Nickname was dropped on
+        // the first row, so it takes that place and the rest shuffle down.
+        await expect.poll(() => reorderApi.lastRequest?.body).toEqual({
+            members_custom_fields: [{key: "nickname"}, {key: "company"}, {key: "shirt-size"}],
+        });
+
+        // The row stays where it was dropped rather than snapping back and jumping when
+        // the response lands.
+        await expect.element(rows.first()).toHaveTextContent("Nickname");
+    });
+
+    it("offers dragging only once the whole list is on screen", async () => {
+        fakeSettingsScreens();
+        const manyFields = Array.from({length: 7}, (_, index) => ({
+            ...companyField,
+            key: `field-${index}`,
+            name: `Field ${index}`,
+        }));
+        fakeCustomFields(manyFields);
+        await renderAdminApp("/settings", {boot: customFieldsBoot()});
+
+        // Half a list is a bad thing to reorder: the places a field can be dropped are
+        // the rows you can see, so a collapsed list offers no handles at all.
+        await expect(settingsScreen.customFields().getByLabelText(/^Reorder /)).toHaveCount(0);
+
+        await settingsScreen.customFields().getByRole("button", {name: "Show all"}).click();
+
+        await expect(settingsScreen.customFields().getByLabelText(/^Reorder /)).toHaveCount(7);
+    });
+
+    it("does not offer dragging on the archived tab", async () => {
+        fakeSettingsScreens();
+        fakeCustomFields([companyField, archivedField]);
+        await renderAdminApp("/settings", {boot: customFieldsBoot()});
+
+        // An archived field holds its place in the order, but there is nowhere to see
+        // it, so there is nothing to drag it through.
+        await settingsScreen.customFields().getByRole("tab", {name: "Archived"}).click();
+
+        await expect(settingsScreen.customFields().getByTestId("custom-field-list-item")).toHaveCount(1);
+        await expect(settingsScreen.customFields().getByLabelText(/^Reorder /)).toHaveCount(0);
     });
 
     it("permanently deletes an archived field from the header menu, after a heavy warning", async () => {
