@@ -5,7 +5,7 @@ import type {Knex} from 'knex';
 import {z} from 'zod';
 import {FIELD_TYPES, subFieldsOf, type FieldType} from '@tryghost/custom-field-types';
 import {DbCustomFieldLeaf, DbCustomFieldValue, FIELD_STATUS} from './schema';
-import {activeFields} from './queries';
+import {activeFields, inFieldOrder} from './queries';
 import {leavesToWrite, valuesFromLeaves, type StoredLeaf} from './storage';
 
 const FIELDS_TABLE = 'members_custom_fields';
@@ -82,12 +82,20 @@ export class CustomFieldValuesService {
             return new Map();
         }
 
-        const rows = await this.knex(VALUES_TABLE)
+        // Ordered through the same helper the definition list uses, so there is one rule
+        // for the order of these fields rather than a second copy of it here. `path`
+        // then orders the parts within a composite field.
+        //
+        // It does not follow that a member's values arrive in the publisher's order.
+        // These rows become an object keyed by field, and an object cannot carry an
+        // order: JSON gives member order no meaning, and JavaScript enumerates any key
+        // that looks like an array index first, so a field named "2024" comes out in
+        // front however it was inserted. The definition list is the array that carries
+        // the order, and it is what every surface renders from.
+        const rows = await inFieldOrder(this.knex(VALUES_TABLE)
             .join(FIELDS_TABLE, `${VALUES_TABLE}.custom_field_id`, `${FIELDS_TABLE}.id`)
             .whereIn(`${VALUES_TABLE}.member_id`, memberIds)
-            .where(`${FIELDS_TABLE}.status`, FIELD_STATUS.active)
-            .orderBy(`${FIELDS_TABLE}.created_at`, 'asc')
-            .orderBy(`${FIELDS_TABLE}.id`, 'asc')
+            .where(`${FIELDS_TABLE}.status`, FIELD_STATUS.active))
             .orderBy(`${VALUES_TABLE}.path`, 'asc')
             .select(`${VALUES_TABLE}.member_id`, `${FIELDS_TABLE}.key`, `${FIELDS_TABLE}.type`, `${VALUES_TABLE}.path`, `${VALUES_TABLE}.value_text`);
 

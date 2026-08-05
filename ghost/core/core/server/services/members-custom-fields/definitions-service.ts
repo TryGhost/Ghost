@@ -6,7 +6,7 @@ import {CustomField} from './models';
 import {FieldTypeSchema} from '@tryghost/custom-field-types';
 import {customFieldCodec} from './codec';
 import {FIELD_STATUS, FieldStatusSchema} from './schema';
-import {activeFields} from './queries';
+import {activeFields, inFieldOrder} from './queries';
 import {type RecordCustomFieldAction, type RequestContext} from './actions';
 
 // @tryghost/string ships no types; slugify is the same helper tags/labels use.
@@ -66,6 +66,17 @@ const AddFieldsInput = z.array(AddFieldInput)
     .min(1)
     .max(MAX_FIELDS_PER_REQUEST, {message: `Custom fields can only be created ${MAX_FIELDS_PER_REQUEST} at a time.`});
 
+// A reorder states the whole list: every key, in the order it should have. Only the
+// key is read — the client sends whole field objects because that is the shape the API
+// speaks in, and everything else on them is already immutable or edited elsewhere.
+//
+// No length bound here, because the only correct length is "however many definitions
+// this site has" and that is not a constant. An order too long to be the list is turned
+// away before it reaches this (see assertOrderCouldBeComplete).
+const ReorderInput = z.array(z.object({
+    key: z.string().min(1, {message: 'Every custom field in the order needs a key.'})
+})).min(1, {message: 'The order must name every custom field.'});
+
 // Name and status are mutable. `key` and `type` are accepted so the immutability
 // rules can reject a change loudly; they are never persisted.
 const EditFieldInput = z.object({
@@ -97,15 +108,22 @@ export class CustomFieldDefinitionsService {
         // supplied `filter` can widen that — Settings pulls active and archived
         // together in one request (`filter=status:[active,archived]`).
         //
-        // Insertion order for now — when the UI needs a persistent user-defined
-        // order, add a `sort_order` column and order by it.
+        // Whichever set comes back, it comes back in the publisher's order: filtering
+        // narrows the list, it never reorders it.
         const query = options.filter
             ? applyFilter(this.knex(TABLE), options.filter)
             : activeFields(this.knex);
-        const rows = await query
-            .orderBy('created_at', 'asc')
-            .orderBy('id', 'asc')
-            .select('*');
+        return this.list(query);
+    }
+
+    /**
+     * Decode a definition query into the domain, in the publisher's order.
+     *
+     * Typed off `activeFields` so the builder keeps the table's row type: every caller
+     * hands over a query against the definitions table, whatever it has narrowed.
+     */
+    private async list(query: ReturnType<typeof activeFields>): Promise<CustomField[]> {
+        const rows = await inFieldOrder(query).select('*');
         return rows.map(row => z.decode(customFieldCodec, row));
     }
 
@@ -160,11 +178,23 @@ export class CustomFieldDefinitionsService {
             created = await this.knex.transaction(async (trx) => {
                 await this.assertWithinLimit(trx, fields.length);
 
+                // Read once, before the loop: a batch appends as consecutive ranks, so
+                // the five fields of one request land in the order the request gave
+                // them rather than all sharing the end of the list.
+                const firstSortOrder = await this.nextSortOrder(trx);
+
                 const keys: string[] = [];
                 for (const [index, field] of fields.entries()) {
                     await this.assertNameAvailable(trx, field.name);
                     const key = await this.mintKey(trx, bases[index]);
-                    await trx(TABLE).insert({id: new ObjectID().toHexString(), key, name: field.name, type: field.type, created_at: new Date()});
+                    await trx(TABLE).insert({
+                        id: new ObjectID().toHexString(),
+                        key,
+                        name: field.name,
+                        type: field.type,
+                        sort_order: firstSortOrder + index,
+                        created_at: new Date()
+                    });
                     keys.push(key);
                 }
                 return this.readMany(trx, keys);
@@ -230,6 +260,154 @@ export class CustomFieldDefinitionsService {
             // a refusal, and has to re-derive its own payload size to explain why.
             errorDetails: {limit: max, total, requested: addedCount}
         });
+    }
+
+    /**
+     * Set the publisher's order for the whole list.
+     *
+     * Takes every key in the order the list should have and writes a fresh rank to
+     * every row, rather than moving one field relative to its neighbours. That is what
+     * makes a move well-defined on a site that has never reordered, where every row
+     * still holds the same default rank and there is nothing to move between: the
+     * order is not adjusted, it is stated.
+     *
+     * Replaying the same list is a no-op, and a rejected list changes nothing. The
+     * response is the whole list, matching the request: a reorder names every
+     * definition, so it returns every definition, archived ones included. That is what
+     * a caller needs to re-sync, and it is the one read here that does not hide them.
+     */
+    async reorder(context: RequestContext, input: unknown): Promise<CustomField[]> {
+        await this.assertOrderCouldBeComplete(input);
+
+        const parsed = ReorderInput.safeParse(input);
+        if (!parsed.success) {
+            const issue = parsed.error.issues[0];
+            throw new errors.ValidationError({message: issue.message, property: propertyOf(issue.path)});
+        }
+        const keys = parsed.data.map(item => item.key);
+
+        const ordered = await this.knex.transaction(async (trx) => {
+            await this.assertNamesEveryField(trx, keys);
+
+            // One statement per field, and the rank comes from the request's order while
+            // the statements go out in key order. Two publishers dragging at the same
+            // moment write the same rows, and a database takes a row lock as it updates
+            // each one: if the two transactions walked their own lists, each would hold a
+            // row the other was waiting for and MySQL would break the tie by killing one
+            // of them. Locking in an order both agree on regardless of what they are
+            // writing means there is no cycle to break. The last writer wins, which is
+            // what a drag should do.
+            //
+            // `updated_at` deliberately stays put: it says when the definition changed,
+            // and a definition does not change when the list around it is reordered.
+            const ranks = new Map(keys.map((key, rank) => [key, rank]));
+            for (const key of [...keys].sort()) {
+                await trx(TABLE).where('key', key).update({sort_order: ranks.get(key)!});
+            }
+
+            return this.list(trx(TABLE));
+        });
+
+        await this.recordAction({
+            context,
+            verb: 'reorder',
+            // The act was on the list, so it belongs to no one field.
+            subject: null,
+            details: {action_name: 'reordered', count: ordered.length}
+        });
+        return ordered;
+    }
+
+    /**
+     * Refuse an order that is already too long to be the list, before it is parsed.
+     *
+     * The check below is the real one, but it runs on a parsed array, and parsing is
+     * the work worth avoiding: an order has to name every definition, so its length is
+     * fixed by the table rather than chosen by the request, and a request claiming more
+     * entries than the table holds can be turned away on its length alone.
+     *
+     * The count is deliberately not a limit anyone configures. The site's ceiling on
+     * definitions can be raised or lowered at any time, and a lowered ceiling must not
+     * leave a site unable to reorder the fields it already has.
+     */
+    private async assertOrderCouldBeComplete(input: unknown): Promise<void> {
+        if (!Array.isArray(input)) {
+            throw new errors.ValidationError({message: 'The order must be a list of custom fields.'});
+        }
+
+        const row = await this.knex(TABLE).count({count: '*'}).first();
+        const total = Number(row?.count ?? 0);
+        if (input.length > total) {
+            throw new errors.ValidationError({
+                message: 'The order names more custom fields than this site has.',
+                property: 'key'
+            });
+        }
+    }
+
+    /**
+     * A reorder must name every definition exactly once.
+     *
+     * Anything else is a client working from a list that is not the one in the database,
+     * and a partial statement of the order is not something to half-apply: the safe
+     * answer is to reject it. A client that loaded before a colleague added a field
+     * cannot name that field, so it is told to reload rather than writing an order that
+     * was never true of the whole list.
+     *
+     * This is not a guard against a concurrent *reorder*. Two publishers dragging at
+     * once both name the same complete list, both are accepted, and the last one wins —
+     * which is the right answer for a drag, and why nothing here tries to detect it.
+     */
+    private async assertNamesEveryField(db: Knex, keys: string[]): Promise<void> {
+        const named = new Set<string>();
+        for (const key of keys) {
+            if (named.has(key)) {
+                throw new errors.ValidationError({
+                    message: 'A custom field can only appear once in the order.',
+                    property: 'key',
+                    context: `"${key}" appears more than once.`
+                });
+            }
+            named.add(key);
+        }
+
+        const existing = new Set(await db(TABLE).pluck<string[]>('key'));
+
+        const unknown = keys.find(key => !existing.has(key));
+        if (unknown) {
+            throw new errors.ValidationError({
+                message: 'The order names a custom field that does not exist.',
+                property: 'key',
+                context: `No custom field is keyed "${unknown}".`
+            });
+        }
+
+        const missing = [...existing].find(key => !named.has(key));
+        if (missing) {
+            throw new errors.ValidationError({
+                message: 'The order must name every custom field.',
+                property: 'key',
+                context: `"${missing}" is missing from the order. Reload and try again.`
+            });
+        }
+    }
+
+    /**
+     * Where a newly created field goes: the end.
+     *
+     * Appending keeps a create cheap — one row written, none renumbered — and matches
+     * what Settings already shows, where a new field turns up at the bottom of the list
+     * it was added to. Archived fields count: they hold a rank like any other, so a
+     * field created after one was archived still lands past it.
+     */
+    private async nextSortOrder(db: Knex): Promise<number> {
+        const row = await db(TABLE).max({highest: 'sort_order'}).first();
+        const highest = row?.highest;
+        // No fields yet, so this one starts the order.
+        if (highest === null || highest === undefined) {
+            return 0;
+        }
+        return Number(highest) + 1;
     }
 
     /** Read back a batch in the order its keys were created, not the table's order. */

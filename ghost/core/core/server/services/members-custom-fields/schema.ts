@@ -22,7 +22,15 @@ export const DbCustomField = z.object({
     updated_at: DbDate.nullable()
 });
 
-type CustomFieldRow = z.infer<typeof DbCustomField>;
+// Where the field sits in the publisher's order.
+//
+// Deliberately outside the projection above: order is a fact about the list, not about
+// any one field, so nothing that reads a definition ever sees a rank — a selected row
+// carries the column and the parse above drops it. It is declared here, with the write
+// shapes, because writing and ordering by it is all anything does with it.
+type CustomFieldRank = {sort_order: number};
+
+type CustomFieldRow = z.infer<typeof DbCustomField> & CustomFieldRank;
 
 // One part of a member's value. What a `path` means is storage.ts's business, so the row
 // carries it as a plain string.
@@ -58,8 +66,10 @@ declare module 'knex/types/tables' {
         members_custom_fields: Knex.CompositeTableType<
             CustomFieldRow,
             // `status` is DB-defaulted to 'active' on create and only ever set via
-            // update (archive/restore), so it's absent from the insert type.
-            Omit<z.input<typeof DbCustomField>, 'updated_at' | 'status'>,
+            // update (archive/restore), so it's absent from the insert type. The rank
+            // is required: it is DB-defaulted too, but a create that let it default
+            // would silently land the new field at the top of the list.
+            Omit<z.input<typeof DbCustomField>, 'updated_at' | 'status'> & CustomFieldRank,
             Partial<CustomFieldRow>
         >;
         members_custom_field_values: Knex.CompositeTableType<

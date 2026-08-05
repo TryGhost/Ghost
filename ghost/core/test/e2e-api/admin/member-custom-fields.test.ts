@@ -512,6 +512,273 @@ describe('Member Custom Fields Admin API', function () {
         });
     });
 
+    describe('Ordering', function () {
+        // Order is a property of the list, not of a field: it is set by PUTting the
+        // whole collection in the order it should have, and read back as the order
+        // the list comes out in. No field ever carries a sort order over the API.
+        async function reorder(keys: string[], status = 200) {
+            const {body} = await agent
+                .put('members/custom_fields/')
+                .body({members_custom_fields: keys.map(key => ({key}))})
+                .expectStatus(status);
+            return body;
+        }
+
+        async function browseKeys(filter?: string): Promise<string[]> {
+            const url = filter
+                ? `members/custom_fields/?filter=${encodeURIComponent(filter)}`
+                : 'members/custom_fields/';
+            const {body} = await agent.get(url).expectStatus(200);
+            return body.members_custom_fields.map((field: {key: string}) => field.key);
+        }
+
+        it('returns definitions in the order they were created until they are reordered', async function () {
+            await createField({name: 'Company'});
+            await createField({name: 'Shirt size'});
+            await createField({name: 'Address'});
+
+            assert.deepEqual(await browseKeys(), ['company', 'shirt-size', 'address']);
+        });
+
+        it('returns definitions in the order a reorder gave them', async function () {
+            await createField({name: 'Company'});
+            await createField({name: 'Shirt size'});
+            await createField({name: 'Address'});
+
+            const {members_custom_fields: reordered} = await reorder(['address', 'company', 'shirt-size']);
+
+            // The response is the new list, so a client re-syncs from it rather than
+            // trusting the order it just guessed.
+            assert.deepEqual(reordered.map((field: {key: string}) => field.key), ['address', 'company', 'shirt-size']);
+            assert.deepEqual(await browseKeys(), ['address', 'company', 'shirt-size']);
+        });
+
+        // The state every existing site is in the moment the column is added: the
+        // migration writes no ranks, so every row holds the same default and nothing
+        // tells them apart but creation time. Creating fields through the API cannot
+        // reach this state — each create appends a distinct rank — so it is set up
+        // directly, which is exactly what the migration does to a real site.
+        async function asNeverReordered() {
+            await models.Base.knex('members_custom_fields').update({sort_order: 0});
+        }
+
+        it('falls back to creation order while every field holds the default rank', async function () {
+            await createField({name: 'One'});
+            await createField({name: 'Two'});
+            await createField({name: 'Three'});
+            await asNeverReordered();
+
+            assert.deepEqual(await browseKeys(), ['one', 'two', 'three']);
+        });
+
+        // Nothing done through the API can separate the two fallback rules: an id is
+        // minted from the clock as well, so it always happens to agree with created_at.
+        // Setting them against each other is the only way to say which one decides, and
+        // it matters because created_at is the rule the no-backfill upgrade rests on.
+        it('falls back to created_at rather than to id', async function () {
+            await createField({name: 'One'});
+            await createField({name: 'Two'});
+            await asNeverReordered();
+
+            await models.Base.knex('members_custom_fields')
+                .where('key', 'one').update({created_at: new Date('2030-01-01T00:00:00Z')});
+            await models.Base.knex('members_custom_fields')
+                .where('key', 'two').update({created_at: new Date('2020-01-01T00:00:00Z')});
+
+            // Against id order, which still has "one" first.
+            assert.deepEqual(await browseKeys(), ['two', 'one']);
+        });
+
+        // The move that has nothing to move between: with every rank identical there is
+        // no gap to slot into, which is why a reorder states the whole order rather than
+        // adjusting one field against its neighbours.
+        it('reorders a list whose fields all still hold the default rank', async function () {
+            await createField({name: 'One'});
+            await createField({name: 'Two'});
+            await createField({name: 'Three'});
+            await createField({name: 'Four'});
+            await asNeverReordered();
+
+            // Third of four dragged up one place.
+            await reorder(['one', 'three', 'two', 'four']);
+
+            assert.deepEqual(await browseKeys(), ['one', 'three', 'two', 'four']);
+        });
+
+        // A field created after the upgrade has to land past fields that have no real
+        // rank at all, not in among them.
+        it('appends a new field past fields that still hold the default rank', async function () {
+            await createField({name: 'One'});
+            await createField({name: 'Two'});
+            await asNeverReordered();
+
+            await createField({name: 'Three'});
+
+            assert.deepEqual(await browseKeys(), ['one', 'two', 'three']);
+        });
+
+        it('is idempotent', async function () {
+            await createField({name: 'Company'});
+            await createField({name: 'Shirt size'});
+
+            await reorder(['shirt-size', 'company']);
+            await reorder(['shirt-size', 'company']);
+
+            assert.deepEqual(await browseKeys(), ['shirt-size', 'company']);
+        });
+
+        it('appends a newly created field to the end of a reordered list', async function () {
+            await createField({name: 'Company'});
+            await createField({name: 'Shirt size'});
+            await reorder(['shirt-size', 'company']);
+
+            await createField({name: 'Address'});
+
+            assert.deepEqual(await browseKeys(), ['shirt-size', 'company', 'address']);
+        });
+
+        it('appends every field of a batch create in the order the batch gave them', async function () {
+            await createField({name: 'Company'});
+            await reorder(['company']);
+
+            await agent
+                .post('members/custom_fields/')
+                .body({members_custom_fields: [
+                    {name: 'Shirt size', type: 'short_text'},
+                    {name: 'Address', type: 'address'}
+                ]})
+                .expectStatus(201);
+
+            assert.deepEqual(await browseKeys(), ['company', 'shirt-size', 'address']);
+        });
+
+        // Order is one total order over every definition, so archiving takes a field
+        // out of sight without disturbing it and restoring puts it back where it was.
+        it('keeps an archived field in its place and restores it there', async function () {
+            await createField({name: 'Company'});
+            await createField({name: 'Shirt size'});
+            await createField({name: 'Address'});
+            await reorder(['address', 'company', 'shirt-size']);
+
+            await setStatus('company', 'archived');
+            assert.deepEqual(await browseKeys(), ['address', 'shirt-size']);
+            assert.deepEqual(
+                await browseKeys('status:[active,archived]'),
+                ['address', 'company', 'shirt-size']
+            );
+
+            await setStatus('company', 'active');
+            assert.deepEqual(await browseKeys(), ['address', 'company', 'shirt-size']);
+        });
+
+        it('reorders around an archived field', async function () {
+            await createField({name: 'Company'});
+            await createField({name: 'Shirt size'});
+            await createField({name: 'Address'});
+            await setStatus('shirt-size', 'archived');
+
+            // Settings holds both statuses, so the list it sends names all three.
+            const {members_custom_fields: reordered} = await reorder(['address', 'shirt-size', 'company']);
+
+            // The response mirrors the request: an order names every definition, so it
+            // returns every definition. This is the one read that does not hide archived
+            // fields, and a caller re-syncing from it gets back exactly what it sent.
+            assert.deepEqual(
+                reordered.map((field: {key: string}) => field.key),
+                ['address', 'shirt-size', 'company']
+            );
+            assert.equal(reordered[1].status, 'archived');
+
+            assert.deepEqual(await browseKeys(), ['address', 'company']);
+            assert.deepEqual(
+                await browseKeys('status:[active,archived]'),
+                ['address', 'shirt-size', 'company']
+            );
+        });
+
+        // A list that does not name every definition exactly once is rejected rather
+        // than partly applied. This is also what makes a stale client safe: if a
+        // colleague added a field since this client loaded, its list no longer names
+        // every definition and the reorder bounces instead of silently demoting the
+        // new field.
+        it('rejects a list that leaves a definition out', async function () {
+            await createField({name: 'Company'});
+            await createField({name: 'Shirt size'});
+
+            await reorder(['shirt-size'], 422);
+
+            assert.deepEqual(await browseKeys(), ['company', 'shirt-size']);
+        });
+
+        it('rejects a list naming a field that does not exist', async function () {
+            await createField({name: 'Company'});
+
+            await reorder(['company', 'nonexistent'], 422);
+
+            assert.deepEqual(await browseKeys(), ['company']);
+        });
+
+        it('rejects a list naming the same field twice', async function () {
+            await createField({name: 'Company'});
+            await createField({name: 'Shirt size'});
+
+            await reorder(['company', 'company'], 422);
+
+            assert.deepEqual(await browseKeys(), ['company', 'shirt-size']);
+        });
+
+        it('rejects an item with no key', async function () {
+            await createField({name: 'Company'});
+
+            await agent
+                .put('members/custom_fields/')
+                .body({members_custom_fields: [{name: 'Company'}]})
+                .expectStatus(422);
+        });
+
+        // Turned away on length alone, before the list is parsed: an order has to name
+        // every definition, so one longer than the table cannot be a valid order however
+        // it is read.
+        it('rejects an order longer than the site has fields', async function () {
+            await createField({name: 'Company'});
+
+            await reorder(['company', 'company', 'company'], 422);
+
+            assert.deepEqual(await browseKeys(), ['company']);
+        });
+
+        // A member's values are an object keyed by field, and an object cannot carry an
+        // order: JSON says nothing about member order, and JavaScript hoists any key
+        // that looks like an array index — a field named "2024" enumerates first however
+        // it was inserted. The definition list is the array that carries the order, and
+        // it is what every surface renders from. All this pins is that reordering does
+        // not disturb the values themselves.
+        it('leaves a member\'s values untouched when the list is reordered', async function () {
+            await createField({name: 'Company'});
+            await createField({name: 'Shirt size'});
+            const memberId = await createMember();
+            await setValues(memberId, {company: 'Ghost', 'shirt-size': 'M'});
+
+            await reorder(['shirt-size', 'company']);
+
+            assert.deepEqual(await readValues(memberId), {company: 'Ghost', 'shirt-size': 'M'});
+        });
+
+        it('never exposes a sort order on a field', async function () {
+            await createField({name: 'Company'});
+            await createField({name: 'Shirt size'});
+            const {members_custom_fields: reordered} = await reorder(['shirt-size', 'company']);
+
+            for (const field of reordered) {
+                assert.equal(field.sort_order, undefined);
+                assert.equal(field.sortOrder, undefined);
+            }
+
+            const {body} = await agent.get('members/custom_fields/shirt-size/').expectStatus(200);
+            assert.equal(body.members_custom_fields[0].sort_order, undefined);
+        });
+    });
+
     describe('Operational limit on the number of definitions', function () {
         // The cap is an operator setting, not a release constant. Ghost containers
         // are stateless, so it is read from config on every create: these tests set
@@ -1501,7 +1768,7 @@ describe('Member Custom Fields Admin API', function () {
         // context rather than in resource_id, which holds the row id.
         const contextOf = (a: {context: unknown}) =>
             (typeof a.context === 'string' ? JSON.parse(a.context) : a.context) as
-                {primary_name?: string; key?: string; previous_name?: string};
+                {primary_name?: string; key?: string; previous_name?: string; action_name?: string; count?: number};
 
         beforeAll(async function () {
             actorId = (await agent.get('users/me/').expectStatus(200)).body.users[0].id;
@@ -1532,6 +1799,28 @@ describe('Member Custom Fields Admin API', function () {
 
             const row = await models.Base.knex('members_custom_fields').where('key', field.key).first();
             assert.equal(actions[0].resource_id, row.id);
+        });
+
+        // A reorder is one act by the publisher, so it is one entry — not one per
+        // field whose position happened to shift. It belongs to no single field, so
+        // it carries no resource_id, and the count is what lets the activity feed
+        // read it as "3 custom fields reordered".
+        it('records a single action when the list is reordered', async function () {
+            await createField({name: 'Company'});
+            await createField({name: 'Shirt size'});
+            await createField({name: 'Address'});
+
+            await agent
+                .put('members/custom_fields/')
+                .body({members_custom_fields: [{key: 'address'}, {key: 'company'}, {key: 'shirt-size'}]})
+                .expectStatus(200);
+
+            const edited = (await customFieldActions()).filter((a: {event: string}) => a.event === 'edited');
+            assert.equal(edited.length, 1, 'a reorder records one action, not one per field');
+            assert.equal(edited[0].resource_id, null);
+            assert.equal(contextOf(edited[0]).action_name, 'reordered');
+            assert.equal(contextOf(edited[0]).count, 3);
+            assert.equal(edited[0].actor_id, actorId);
         });
 
         it('records an "edited" action when a field is renamed', async function () {
@@ -1746,6 +2035,13 @@ describe('Member Custom Fields Admin API', function () {
                 .body({members_custom_fields: [{name: 'Topic', type: 'short_text'}]})
                 .expectStatus(403);
         });
+
+        it('forbids a role without permission from reordering', async function () {
+            await agent
+                .put('members/custom_fields/')
+                .body({members_custom_fields: [{key: 'topic'}]})
+                .expectStatus(403);
+        });
     });
 
     describe('Flag disabled', function () {
@@ -1756,6 +2052,13 @@ describe('Member Custom Fields Admin API', function () {
 
         it('404s the definitions endpoint', async function () {
             await agent.get('members/custom_fields/').expectStatus(404);
+        });
+
+        it('404s the reorder endpoint', async function () {
+            await agent
+                .put('members/custom_fields/')
+                .body({members_custom_fields: [{key: 'company'}]})
+                .expectStatus(404);
         });
     });
 });

@@ -11,3 +11,34 @@ const FIELDS_TABLE = 'members_custom_fields';
 export function activeFields(db: Knex) {
     return db(FIELDS_TABLE).where('status', FIELD_STATUS.active);
 }
+
+/**
+ * The publisher's order, applied to any query over the definitions table.
+ *
+ * Here for the same reason the status filter is: a read that forgets it comes back in
+ * whatever order the engine felt like, which is a bug nothing fails on. Order belongs
+ * to the list rather than to any field, so every read of the list goes through this
+ * and no caller ever names a column.
+ *
+ * `sort_order` is rewritten across every row on a reorder, so on its own it decides the
+ * order once a publisher has set one. Only ranks written by the same reorder are
+ * guaranteed distinct — a create appends past the highest, and a delete leaves a gap, so
+ * the sequence is not dense and nothing should assume it is. Only the relative order
+ * means anything.
+ *
+ * `created_at` is what actually orders a site that has never reordered, where every row
+ * still holds the default 0 and there is nothing else to tell them apart. `id` is the
+ * final tiebreaker for two fields created in the same millisecond, so the order is total
+ * and a list never shuffles between two identical requests.
+ */
+export function inFieldOrder<T extends Knex.QueryBuilder>(query: T): T {
+    // Columns are qualified because one caller reads the definitions through a join
+    // against the values table, which has an `id` and a `created_at` of its own. A bare
+    // column name would be ambiguous there and unambiguous here, so both are qualified
+    // and there is one form to get right.
+    query
+        .orderBy(`${FIELDS_TABLE}.sort_order`, 'asc')
+        .orderBy(`${FIELDS_TABLE}.created_at`, 'asc')
+        .orderBy(`${FIELDS_TABLE}.id`, 'asc');
+    return query;
+}
