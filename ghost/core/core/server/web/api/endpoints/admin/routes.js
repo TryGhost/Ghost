@@ -85,9 +85,9 @@ module.exports = function apiRoutes() {
     // ## Schedules
     router.put('/schedules/:resource/:id', mw.authAdminApiWithUrl, http(api.schedules.publish));
 
-    // ## Gift Reminders
-    router.put('/gifts/flush_reminders', mw.authAdminApiWithUrl, http(api.giftReminders.flushReminders));
-    router.put('/gifts/flush_deliveries', mw.authAdminApiWithUrl, http(api.giftDeliveries.flushDeliveries));
+    // ## Gifts
+    router.put('/gifts/flush_reminders', mw.authAdminApiWithUrl, http(api.gifts.flushReminders));
+    router.put('/gifts/flush_deliveries', mw.authAdminApiWithUrl, http(api.gifts.flushDeliveries));
 
     // ## Settings
     router.get('/settings/routes/yaml', mw.authAdminApi, http(api.settings.download));
