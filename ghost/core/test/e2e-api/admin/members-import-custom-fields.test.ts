@@ -259,7 +259,11 @@ describe('Members import — custom fields', function () {
         assert.equal(res.status, 201);
         assert.equal(res.body.meta.stats.imported, 0);
         assert.equal(res.body.meta.stats.invalid.length, 1);
-        assert.match(res.body.meta.stats.invalid[0].error, /Shipping Address/);
+        // Read next to a spreadsheet, so it names the column down to the sub-field.
+        assert.equal(
+            res.body.meta.stats.invalid[0].error,
+            `custom_fields.${key}.country: Enter a 2-letter country code, like US.`
+        );
 
         assert.equal(await findMember(email), undefined, 'the failed row created no member');
     });
@@ -272,7 +276,10 @@ describe('Members import — custom fields', function () {
         assert.equal(res.status, 201);
         assert.equal(res.body.meta.stats.imported, 0);
         assert.equal(res.body.meta.stats.invalid.length, 1);
-        assert.match(res.body.meta.stats.invalid[0].error, /Nickname/);
+        assert.equal(
+            res.body.meta.stats.invalid[0].error,
+            `custom_fields.${key}: Use 255 characters or fewer.`
+        );
 
         assert.equal(await findMember(email), undefined);
     });
