@@ -108,20 +108,5 @@ for (const {implementation, postsListReact} of [
 
             await expect(postsPage.emptyState).toBeVisible();
         });
-
-        /*
-         * Selection, the right-click menu and bulk delete are **not** here yet.
-         *
-         * They are covered thoroughly on the React side (16 acceptance tests
-         * for selection alone, plus the outgoing request for every bulk
-         * action), but driving the Ember equivalents through this page object
-         * did not work first time and I did not want to leave a red file while
-         * chasing it. The gesture is the hard part: Ember marks the selected
-         * row on a wrapper element and React on the row itself, and its
-         * mousedown handler sits behind a link.
-         *
-         * Adding them is the highest-value next move for this file — they are
-         * the behaviours with the most destructive failure modes.
-         */
     });
 }

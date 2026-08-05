@@ -145,9 +145,29 @@ export class PostsPage extends AdminPage {
         return flags.filter(Boolean).length;
     }
 
-    /** Modifier-click, which is how both implementations select without checkboxes. */
+    /**
+     * Modifier-click, which is how both implementations select without
+     * checkboxes.
+     *
+     * Dispatched rather than clicked for real: the whole row is a link in both
+     * screens, and a genuine cmd-click on a link opens a new browser tab —
+     * which tears the test context down mid-run. Both implementations listen
+     * for `mousedown` (in the capture phase, precisely so they can beat the
+     * link), so this drives the same code path the user does.
+     */
     async selectPost(title: string): Promise<void> {
-        await this.getPostByTitle(title).click({modifiers: ['ControlOrMeta']});
+        await this.getPostByTitle(title).evaluate((row) => {
+            // Ember listens on the wrapper that carries `data-selected`; React
+            // listens on the row itself. Aim at whichever is present so one
+            // helper drives both.
+            const target = row.closest('[data-selected]') ?? row;
+
+            target.dispatchEvent(new MouseEvent('mousedown', {
+                bubbles: true,
+                cancelable: true,
+                metaKey: true
+            }));
+        });
     }
 
     async openContextMenuFor(title: string): Promise<void> {
