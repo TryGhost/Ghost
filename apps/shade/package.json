@@ -103,7 +103,6 @@
         "vitest": "catalog:"
     },
     "dependencies": {
-        "@codemirror/state": "catalog:",
         "@ebay/nice-modal-react": "catalog:",
         "@dnd-kit/core": "catalog:",
         "@dnd-kit/sortable": "catalog:",
@@ -133,7 +132,6 @@
         "@types/react": "catalog:",
         "@types/react-dom": "catalog:",
         "@types/validator": "catalog:",
-        "@uiw/react-codemirror": "catalog:",
         "class-variance-authority": "0.7.1",
         "clsx": "catalog:",
         "cmdk": "1.1.1",
