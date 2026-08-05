@@ -1,7 +1,11 @@
 const assert = require('node:assert/strict');
+const sinon = require('sinon');
+const logging = require('@tryghost/logging');
 const testUtils = require('../utils');
 const models = require('../../core/server/models');
 const urlService = require('../../core/server/services/url');
+const LazyUrlService = require('../../core/server/services/url/lazy-url-service');
+const {createFindResource} = require('../../core/server/services/url/lazy-find-resource');
 const inputSerializer = require('../../core/server/api/endpoints/utils/serializers/input/posts');
 const postsMapper = require('../../core/server/api/endpoints/utils/serializers/output/mappers/posts');
 const memberAttribution = require('../../core/server/services/member-attribution');
@@ -167,6 +171,94 @@ describe('Integration: Content API URL serialization (primary_tag permalinks)', 
                 filter: 'tag:business+slug:public-first'
             });
             assert.ok(mapped.url.endsWith('/business/public-first/'), `got ${mapped.url}`);
+        });
+    });
+
+    // Enumeration, against a real database. Unit tests drive this on stubbed
+    // queries, so nothing else checks that the columns and relations the URL
+    // service asks for actually come back — which is what the sitemap depends
+    // on to build every URL without a second query per row.
+    describe('getRoutableResources', function () {
+        it('returns the published posts with the relations the permalink reads', async function () {
+            const rows = await urlService.getRoutableResources('posts');
+
+            const bySlug = Object.fromEntries(rows.map(row => [row.slug, row]));
+            assert.ok(bySlug['public-first'], 'expected the published fixture posts');
+            // The /:primary_tag/ permalink reads tags, so they must be loaded
+            // — a row without them would build an /undefined/ URL.
+            assert.ok(Array.isArray(bySlug['public-first'].tags));
+            assert.ok(bySlug['public-first'].tags.some(tag => tag.slug === 'business'));
+        });
+
+        it('returns the caller\'s extra columns on top of what URL generation needs', async function () {
+            const rows = await urlService.getRoutableResources('posts', {columns: ['feature_image']});
+
+            const row = rows.find(r => r.slug === 'public-first');
+            assert.ok(Object.hasOwn(row, 'feature_image'), 'requested column missing');
+            assert.ok(Object.hasOwn(row, 'slug'), 'permalink column missing');
+            assert.ok(Object.hasOwn(row, 'status'), 'base-filter column missing');
+        });
+
+        it('applies each type\'s routing gate', async function () {
+            const [posts, pages, tags, authors] = await Promise.all([
+                urlService.getRoutableResources('posts'),
+                urlService.getRoutableResources('pages'),
+                urlService.getRoutableResources('tags'),
+                urlService.getRoutableResources('authors')
+            ]);
+
+            assert.ok(posts.every(p => p.status === 'published'));
+            assert.ok(pages.every(p => p.status === 'published'));
+            // Internal (#) tags are never routable.
+            assert.ok(!tags.some(t => t.slug === 'hash-hidden'), 'internal tags must not be routable');
+            assert.ok(tags.some(t => t.slug === 'business'), 'public tags with posts must be routable');
+            assert.ok(authors.length > 0);
+        });
+
+        it('rejects a type it has no routing gate for', async function () {
+            await assert.rejects(urlService.getRoutableResources('collections'), /collections/);
+        });
+    });
+
+    // What happens when a caller hands over a resource it under-fetched. In
+    // production this is an API endpoint that skipped the URL force-load; the
+    // service cannot tell whether the resource routes, so it reports and
+    // serves /404/ rather than 500ing the page.
+    describe('a resource missing what the routing config reads', function () {
+        // A tag-filtered collection, which is the case that needs the relation
+        // loaded: an unfiltered /:primary_tag/ permalink renders `all` for a
+        // resource with no primary tag rather than failing.
+        let filtered;
+
+        beforeAll(function () {
+            filtered = new LazyUrlService({findResource: createFindResource(models)});
+            filtered.onRouterAddedType('news', 'tag:business', 'posts', '/news/:slug/');
+        });
+
+        it('routes a fully-loaded resource', async function () {
+            const post = await models.Post.findOne(
+                {slug: 'public-first'},
+                {context: {internal: true}, withRelated: ['tags']}
+            );
+
+            assert.equal(filtered.getUrlForResource({...post.toJSON(), type: 'posts'}), '/news/public-first/');
+        });
+
+        it('degrades to /404/ and reports it, rather than throwing', async function () {
+            const post = await models.Post.findOne({slug: 'public-first'}, {context: {internal: true}});
+            const thin = {type: 'posts', id: post.id, slug: post.get('slug'), status: 'published'};
+
+            const errorStub = sinon.stub(logging, 'error');
+            try {
+                assert.equal(filtered.getUrlForResource(thin), '/404/');
+                sinon.assert.calledOnce(errorStub);
+                const report = errorStub.firstCall.args[0];
+                assert.equal(report.code, 'LAZY_URL_RESOLUTION_ERROR');
+                assert.deepEqual(report.errorDetails.missing, ['tags']);
+                assert.deepEqual(report.errorDetails.resourceKeys, ['type', 'id', 'slug', 'status']);
+            } finally {
+                errorStub.restore();
+            }
         });
     });
 
