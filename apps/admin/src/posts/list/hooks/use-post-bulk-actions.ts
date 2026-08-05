@@ -4,7 +4,6 @@ import {toast} from 'sonner';
 import {useCallback, useState} from 'react';
 import {useBulkDeletePages, useBulkEditPages} from '@tryghost/admin-x-framework/api/pages';
 import {useBulkDeletePosts, useBulkEditPosts} from '@tryghost/admin-x-framework/api/posts';
-import {useFramework} from '@tryghost/admin-x-framework';
 import {useQueryClient} from '@tanstack/react-query';
 import type {PostBulkAction} from '@tryghost/admin-x-framework/api/posts';
 import type {PostContextMenuKey} from '@/posts/list/post-context-menu-items';
@@ -127,18 +126,20 @@ export function usePostBulkActions({resource, onDeleted, onEdited}: UsePostBulkA
     const [isRunning, setIsRunning] = useState(false);
     const queryClient = useQueryClient();
 
-    /**
-     * Ember keeps its own store of post records, and the editor is still Ember.
-     * Every other mutation in the framework notifies it via
-     * `invalidateQueries: {dataType}`, which calls `onInvalidate` — but these
-     * mutations deliberately do *not* declare it, because that would also
-     * refetch the react-query lists and undo the client-side prune this hook
-     * exists to do. So the Ember half is notified by hand.
+    /*
+     * Deliberately *not* calling the framework's `onInvalidate` here.
      *
-     * Without it Ember's store keeps a post it believes is current, and opening
-     * that post in the editor after a bulk edit can hang mid-transition.
+     * It looked like the right thing — Ember keeps its own store and still owns
+     * the editor — but `PostsResponseType` has no entry in the bridge's
+     * `emberDataTypeMapping`, so the call throws outright; and the mapping it
+     * would need resolves to `store.unloadAll('post')`, which would drop the
+     * record out from under an editor the user may have open.
+     *
+     * It was added on a hypothesis about stale Ember records that never held up:
+     * the freeze it was meant to fix turned out to be an await-ordering bug in
+     * this file. Left out until there is evidence of a real staleness problem,
+     * and a safer way to signal it than unloading every post.
      */
-    const {onInvalidate} = useFramework();
 
     // Called unconditionally and picked by resource — hooks can't be branched.
     const bulkEditPosts = useBulkEditPosts();
@@ -277,7 +278,6 @@ export function usePostBulkActions({resource, onDeleted, onEdited}: UsePostBulkA
             onEdited?.(new Set(snapshot.posts.map(post => post.id)));
 
             void queryClient.invalidateQueries({queryKey: [dataType]});
-            onInvalidate(dataType);
         } catch (error) {
             toast.error(error instanceof Error && error.message
                 ? error.message
@@ -285,7 +285,7 @@ export function usePostBulkActions({resource, onDeleted, onEdited}: UsePostBulkA
         } finally {
             setIsRunning(false);
         }
-    }, [isPages, resource, onEdited, queryClient, dataType, bulkEditPosts, bulkEditPages, onInvalidate]);
+    }, [isPages, resource, onEdited, queryClient, dataType, bulkEditPosts, bulkEditPages]);
 
     const run = useCallback(async (key: PostContextMenuKey, snapshot: BulkActionSnapshot) => {
         setIsRunning(true);
@@ -299,7 +299,6 @@ export function usePostBulkActions({resource, onDeleted, onEdited}: UsePostBulkA
                 }
 
                 patchCaches(snapshot, 'delete');
-                onInvalidate(dataType);
                 toast.success(getPostActionMessage('deleted', {
                     count: snapshot.count, resource, isSingle: snapshot.isSingle
                 }));
@@ -330,8 +329,6 @@ export function usePostBulkActions({resource, onDeleted, onEdited}: UsePostBulkA
 
             const remaining = patchCaches(snapshot, key);
 
-            onInvalidate(dataType);
-
             // The rows the edit pushed out of the list are no longer selectable,
             // but the ones still on screen stay selected — matching Ember's
             // `clearUnavailableItems` rather than a full clear.
@@ -347,7 +344,7 @@ export function usePostBulkActions({resource, onDeleted, onEdited}: UsePostBulkA
             setIsRunning(false);
         }
     }, [
-        isPages, resource, onDeleted, onEdited, patchCaches, onInvalidate, dataType,
+        isPages, resource, onDeleted, onEdited, patchCaches, dataType,
         bulkEditPosts, bulkEditPages, bulkDeletePosts, bulkDeletePages
     ]);
 
