@@ -1,6 +1,9 @@
-import {LoginPage, PostsPage, TagsPage} from '@/admin-pages';
+import {LoginPage, PostsPage, SitePage, TagsPage} from '@/admin-pages';
 import {Page} from '@playwright/test';
 import {expect, test} from '@/helpers/playwright';
+import {usePerTestIsolation} from '@/helpers/playwright/isolation';
+
+usePerTestIsolation();
 
 test.describe('Ghost Admin - Signin Redirect', () => {
     async function logout(page: Page) {
@@ -57,5 +60,41 @@ test.describe('Ghost Admin - Signin Redirect', () => {
         // and the API rejected it (expected, since the token is fake).
         await expect(page.getByRole('heading', {name: 'Error verifying email address'})).toBeVisible();
         expect(page.url()).toContain('verifyEmail=fake-token-xyz');
+    });
+
+    test('Contributor lands on the posts list immediately after signin', async ({page, ghostAccountContributor}) => {
+        await logout(page);
+
+        const navigationWarnings: string[] = [];
+        page.on('console', (message) => {
+            if (message.text().includes('Cannot update a component') && message.text().includes('Navigate')) {
+                navigationWarnings.push(message.text());
+            }
+        });
+
+        const loginPage = new LoginPage(page);
+        await loginPage.signIn(ghostAccountContributor.email, ghostAccountContributor.password);
+
+        const postsPage = new PostsPage(page);
+        await postsPage.waitForPageToFullyLoad();
+        expect(navigationWarnings).toEqual([]);
+    });
+
+    test('Author lands on the site page immediately after signin', async ({page, ghostAccountAuthor}) => {
+        await logout(page);
+
+        const navigationWarnings: string[] = [];
+        page.on('console', (message) => {
+            if (message.text().includes('Cannot update a component') && message.text().includes('Navigate')) {
+                navigationWarnings.push(message.text());
+            }
+        });
+
+        const loginPage = new LoginPage(page);
+        await loginPage.signIn(ghostAccountAuthor.email, ghostAccountAuthor.password);
+
+        const sitePage = new SitePage(page);
+        await sitePage.waitForPageToFullyLoad();
+        expect(navigationWarnings).toEqual([]);
     });
 });

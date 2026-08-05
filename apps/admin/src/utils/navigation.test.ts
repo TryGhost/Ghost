@@ -2,10 +2,10 @@ import { describe, expect, it, beforeEach, afterEach, vi } from "vitest";
 import { navigateTo } from "./navigation";
 
 describe("navigateTo", () => {
-    let locationMock: { href: string; hash: string };
+    let locationMock: { href: string; hash: string; replace: ReturnType<typeof vi.fn> };
 
     beforeEach(() => {
-        locationMock = { href: "", hash: "" };
+        locationMock = { href: "", hash: "", replace: vi.fn() };
         vi.stubGlobal("location", locationMock);
     });
 
@@ -60,6 +60,13 @@ describe("navigateTo", () => {
             const result = navigateTo("");
             expect(result).toBe(true);
             expect(locationMock.hash).toBe("/");
+        });
+
+        it("should replace the current hash when requested", () => {
+            const result = navigateTo("/posts", {replace: true});
+            expect(result).toBe(true);
+            expect(locationMock.replace).toHaveBeenCalledWith("#/posts");
+            expect(locationMock.hash).toBe("");
         });
     });
 
