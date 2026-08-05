@@ -12,7 +12,6 @@ Canonical, rule-shaped reference for AI-assisted work on Shade and any admin app
   import {Button, Input, Dialog} from '@tryghost/shade/components';
   import {PageHeader, KpiCard, Filters} from '@tryghost/shade/patterns';
   import {ListPage} from '@tryghost/shade/page-templates';
-  import {PostShareModal} from '@tryghost/shade/posts-stats';
   import {cn} from '@tryghost/shade/utils';
   import {ShadeApp} from '@tryghost/shade/app';
   ```
@@ -28,10 +27,9 @@ Canonical, rule-shaped reference for AI-assisted work on Shade and any admin app
 | **Recipes** | `src/components/ui/<name>.ts` | Several components share the same visual rule (chrome, focus, density) | `inputSurface` |
 | **Patterns** | `src/components/patterns/` | The shape is product-specific and recurs across Admin | `PageHeader`, `Filters`, `KpiCard`, `GhAreaChart` |
 
-Plus two additional barrels:
+Plus one additional barrel:
 
 - **`page-templates/`** (`src/components/page-templates/`) — top-level page wrappers (`ListPage` today). Composes Patterns + Components + Primitives. Imported via `@tryghost/shade/page-templates`.
-- **`posts-stats/`** (`src/components/posts-stats/`) — transitional layer for components shared between `apps/posts` and `apps/stats` until those merge. Don't generalise it. Imported via `@tryghost/shade/posts-stats`.
 
 ## Decision flow: where does new code go?
 
@@ -54,7 +52,7 @@ Promote to Shade only when **all** are true:
 1. **Reused at least twice in different surfaces.** Not "we might reuse this" — actual second use.
 2. **It's generic.** A `<MembersTable>` that's just `<Table>` with three pre-set columns is not a Shade thing; it belongs in the app.
 3. **The shape has settled.** Slots and composition have been stable across both local copies for at least one iteration cycle.
-4. **It has a generic name.** `PageHeader`, `KpiCard`, `PostShareModal`. Not `MembersFilterBar` or `PostAnalyticsHero` — those name a single surface and will date.
+4. **It has a generic name.** `PageHeader`, `KpiCard`, `Filters`. Not `MembersFilterBar` or `PostAnalyticsHero` — those name a single surface and will date.
 5. **The API is slots, not props.** 3–6 named subcomponents (`.Title`, `.Actions`, `.Body`), not a `<ListPage title="..." onAdd={...} columns={...} />` prop bag.
 6. **State stays with the consumer.** No `useQuery`, no routing, no app-context reads inside Shade.
 
@@ -84,7 +82,6 @@ Fail any of these? Keep it local. Build it again somewhere else first, then prom
 | Component | `Components / <Name>` |
 | Recipe | `Recipes / <Name>` |
 | Pattern | `Patterns / <Name>` |
-| Posts–Stats interim | `Posts–Stats / <Name>` |
 | Token gallery | `Tokens / <Topic>` |
 
 Use `tags: ['autodocs']`. Add a short `parameters.docs.description.component`. Per-story `parameters.docs.description.story` is a one-liner explaining when to use that variant.
@@ -149,7 +146,6 @@ Formal testing strategy is TBD. Interim rules:
 - **Don't add product-specific props to a generic Component.** Extract a Pattern wrapper.
 - **Don't put `useQuery` or app-context reads inside a Pattern.** Patterns are layout/composition contracts. Bring-your-own state.
 - **Don't rename ShadCN-generated files** purely for casing.
-- **Don't generalise `posts-stats/`.** It's named for one specific historical situation and goes away on its own.
 - **Don't create new top-level CSS files.** Tokens live in `theme-variables.css` and `tailwind.theme.css`.
 - **Don't add migration / setup / install instructions to component docs.** Shade is admin-only and already wired up.
 
@@ -196,8 +192,7 @@ apps/shade/
     ├── components/
     │   ├── primitives/            Layout primitives
     │   ├── ui/                    Generic controls + recipes
-    │   ├── patterns/              Product compositions
-    │   └── posts-stats/           Interim Posts ↔ Stats shared
+    │   └── patterns/              Product compositions
     ├── docs/                      MDX + token showcase stories
     │   ├── showcase/              Internal-only token display components
     │   └── tokens/                Token visual stories

@@ -6,7 +6,7 @@ import {type Tier} from '@tryghost/admin-x-framework/api/tiers';
 import {TrialDaysLabel} from './tier-detail-preview';
 import {currencyToDecimal, getSymbol} from '@/settings/app/utils/currency';
 import {formatNumber} from '@tryghost/shade/utils';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 
 interface TiersListProps {
     tab?: 'active-tiers' | 'archive-tiers' | 'free-tier';
@@ -22,7 +22,7 @@ const cardContainerClasses = clsx(
 );
 
 const TierCard: React.FC<TierCardProps> = ({tier}) => {
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const currency = tier?.currency || 'USD';
     const currencySymbol = currency ? getSymbol(currency) : '$';
 
@@ -55,7 +55,7 @@ const TiersList: React.FC<TiersListProps> = ({
     tab,
     tiers
 }) => {
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const openTierModal = () => {
         updateRoute('tiers/add');
     };

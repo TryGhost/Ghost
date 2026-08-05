@@ -15,7 +15,7 @@ import {LucideIcon} from '@tryghost/shade/utils';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 import {useVerifyAutomatedEmailSender} from '@tryghost/admin-x-framework/api/automated-emails';
 
 export const searchKeywords = {
@@ -64,7 +64,7 @@ const isAutomatedEmailVerificationRoute = () => {
 };
 
 const EmailsGroup: React.FC<{ keywords: string[]; newslettersEnabled: boolean }> = ({keywords, newslettersEnabled}) => {
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const verifyEmailToken = useQueryParams().getParam('verifyEmail');
     const {mutateAsync: verifySenderUpdate} = useVerifyAutomatedEmailSender();
     const handleError = useHandleError();

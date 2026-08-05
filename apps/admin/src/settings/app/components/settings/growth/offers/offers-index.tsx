@@ -10,7 +10,7 @@ import {currencyToDecimal, getSymbol} from '@/settings/app/utils/currency';
 import {toast} from 'sonner';
 import {useModal} from '@ebay/nice-modal-react';
 import {useOffersShowArchived, useSortingState} from '@/settings/app/components/providers/settings-app-provider';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 
 export type OfferType = 'percent' | 'fixed' | 'trial';
 
@@ -260,7 +260,7 @@ const sortOfferListItems = (items: OfferListItem[], sortOption: string, sortDire
 
 export const OffersIndexModal: React.FC = () => {
     const modal = useModal();
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const {data: {offers: allOffers = []} = {}} = useBrowseOffers();
     const {data: {tiers: allTiers} = {}} = useBrowseTiers();
     const signupOffers = allOffers.filter(offer => offer.redemption_type === 'signup');

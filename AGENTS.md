@@ -323,6 +323,14 @@ Public-facing apps (`comments-ui`, `signup-form`, `sodo-search`, `portal`, `anno
 
 ## Code Guidelines
 
+### Repository Skills
+
+Repository skills live in `.agents/skills/<skill-name>`. When adding a skill,
+also add `.claude/skills/<skill-name>` as a symlink to
+`../../.agents/skills/<skill-name>` so Claude can discover the same canonical
+skill without duplicating it. Run `pnpm lint:agent-skills` to verify every
+repository skill is linked correctly; CI runs the same check.
+
 ### Commit Messages
 When the user asks you to create a commit or draft a commit message, load and follow the `commit` skill from `.agents/skills/commit`.
 

@@ -14,7 +14,7 @@ import {type Tier, useBrowseTiers, useEditTier} from '@tryghost/admin-x-framewor
 import {fullEmailAddress} from '@tryghost/admin-x-framework/api/site';
 import {useFocusContext} from '@tryghost/shade/app';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 import {verifyEmailToken} from '@tryghost/admin-x-framework/api/email-verification';
 
 type PreviewTab = 'signup' | 'account' | 'links';
@@ -64,7 +64,7 @@ const Sidebar: React.FC<{
 };
 
 const PortalModal: React.FC = () => {
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const {darkMode} = useFocusContext();
 
     const [selectedPreviewTab, setSelectedPreviewTab] = useState<PreviewTab>('signup');

@@ -4,13 +4,14 @@ import LimitModal from '@/settings/app/components/limit-modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useCallback, useEffect, useState} from 'react';
 import ThemeCodeEditorModal from './theme/theme-code-editor-modal';
-import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {type RoutingModalProps} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 import {parseEditingThemeRoute} from './theme/theme-editor-utils';
 import {useCheckThemeLimitError} from '@/settings/app/hooks/use-check-theme-limit-error';
 
 const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
     const modal = useModal();
-    const {route, updateRoute} = useRouting();
+    const {route, updateRoute} = useSettingsNavigation();
     const currentPath = route || pathName;
     const [themeChangeError, setThemeChangeError] = useState<string|null>(null);
     const [isCheckingLimit, setIsCheckingLimit] = useState(false);

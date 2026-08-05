@@ -19,10 +19,9 @@ Before adding anything to Shade, walk the decision flow and the promotion checkl
 | **Recipe** | `src/components/ui/<name>.ts` (no JSX) | `inputSurface` |
 | **Pattern** | `src/components/patterns/` | `PageHeader`, `KpiCard`, `Filters`, `GhAreaChart` |
 
-Plus two additional barrels:
+Plus one additional barrel:
 
 - **`page-templates/`** (`@tryghost/shade/page-templates`) — top-level page wrappers (`ListPage` today). Composes Patterns + Components + Primitives. If you're building a new shape that wraps a whole admin page, this is where it goes. See `shade-page-templates`.
-- **`posts-stats/`** (`@tryghost/shade/posts-stats`) — transitional layer for components shared between `apps/posts` and `apps/stats` until those merge. Don't add to it unless the file is genuinely posts-or-stats-only and shared between both apps.
 
 ## Decision flow (top-to-bottom, stop at first match)
 
@@ -47,7 +46,7 @@ Each layer can use anything **below** it. The reverse is forbidden.
 1. **Reused at least twice in different surfaces.** Actual second use, not "we might reuse this."
 2. **It's generic.** A `<MembersTable>` that's just `<Table>` with three preset columns belongs in the app, not Shade.
 3. **The shape has settled.** Slots and composition have been stable across both local copies for at least one iteration.
-4. **It has a generic name.** `PageHeader`, `KpiCard`, `PostShareModal` — not `MembersFilterBar` or `PostAnalyticsHero`.
+4. **It has a generic name.** `PageHeader`, `KpiCard`, `Filters` — not `MembersFilterBar` or `PostAnalyticsHero`.
 5. **The API is slots, not props.** 3–6 named subcomponents (`.Title`, `.Actions`, `.Body`) — not `<ListPage title="..." onAdd={...} columns={...} />`.
 6. **State stays with the consumer.** No `useQuery`, no routing, no app-context reads inside Shade.
 

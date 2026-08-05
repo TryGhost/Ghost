@@ -5,7 +5,7 @@ import UserAddIcon from '@/settings/app/assets/images/portal-splash-user-add.png
 import {Button} from '@tryghost/shade/components';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 import {withErrorBoundary} from '@/settings/app/components/error-boundary';
 
 const SignupOptionImage: React.FC<{color:string, title: string, price: string}> = ({title, color, price}) => {
@@ -25,7 +25,7 @@ const SignupOptionImage: React.FC<{color:string, title: string, price: string}> 
 };
 
 const Portal: React.FC<{ keywords: string[] }> = ({keywords}) => {
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const {settings} = useGlobalData();
     const [accentColor, icon, membersSignupAccess] = getSettingValues<string>(settings, ['accent_color', 'icon', 'members_signup_access']);
 

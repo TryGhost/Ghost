@@ -9,7 +9,7 @@ import {LucideIcon} from '@tryghost/shade/utils';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {toast} from 'sonner';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 
 interface AddRecommendationModalProps {
     recommendation: EditOrAddRecommendation,
@@ -18,7 +18,7 @@ interface AddRecommendationModalProps {
 
 const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({recommendation, animate}) => {
     const modal = useModal();
-    const {updateRoute, route} = useRouting();
+    const {updateRoute, route} = useSettingsNavigation();
     const {mutateAsync: addRecommendation} = useAddRecommendation();
     const handleError = useHandleError();
 

@@ -197,6 +197,9 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
 
+      - name: Check agent skill discovery
+        run: pnpm lint:agent-skills
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
 
@@ -277,6 +280,7 @@ jobs:
       is_six: ${{ env.IS_SIX }}
       is_six_pr: ${{ env.IS_SIX_PR }}
       member_is_in_org: ${{ steps.check_user_org_membership.outputs.is_member }}
+      has_perf_tests_label: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'perf-tests') }}
       node_version: ${{ env.NODE_VERSION }}
       node_test_matrix: ${{ steps.node_matrix.outputs.matrix }}
       nx_base: ${{ env.NX_BASE }}
@@ -451,6 +455,80 @@ jobs:
           status: ${{ job.status }}
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # Measures Ghost's boot time with hyperfine and appends the result to the
+  # long-running series charted at https://tryghost.github.io/Ghost-Benchmarks/
+  # (data lives on the gh-pages branch of TryGhost/Ghost-Benchmarks).
+  #
+  # Changing the runner label or the hyperfine version makes new results
+  # incomparable with the existing history - treat both as pinned.
+  job_perf-tests:
+    runs-on:
+      labels: ubuntu-latest-4-cores
+    needs: [job_setup]
+    if: (needs.job_setup.outputs.changed_core == 'true' && needs.job_setup.outputs.is_development == 'true') || needs.job_setup.outputs.has_perf_tests_label == 'true'
+    name: Performance tests
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          # Boot activates the default theme, which is a submodule
+          submodules: true
+
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        env:
+          FORCE_COLOR: 0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        # --force for the same reason as job_unit-tests: better-sqlite3 is an
+        # optionalDependency and boot uses it for the development database.
+        run: pnpm install --frozen-lockfile --force
+
+      - name: Install hyperfine
+        # The checksum must be updated alongside HYPERFINE_VERSION. Note that
+        # bumping the version also breaks comparability with existing data
+        # points, so it should be a deliberate decision, not a routine upgrade.
+        env:
+          HYPERFINE_VERSION: 1.18.0
+          HYPERFINE_SHA256: 0cf1779354f46037df145bce9dd298d28aee341ac789b6a377ad77855029bc8e
+        run: |
+          TARBALL="hyperfine-v${HYPERFINE_VERSION}-x86_64-unknown-linux-gnu.tar.gz"
+          wget "https://github.com/sharkdp/hyperfine/releases/download/v${HYPERFINE_VERSION}/${TARBALL}"
+          echo "${HYPERFINE_SHA256}  ${TARBALL}" | sha256sum --check --strict
+          tar -zxf "${TARBALL}"
+          mv "hyperfine-v${HYPERFINE_VERSION}-x86_64-unknown-linux-gnu/hyperfine" /usr/local/bin
+          chmod +x /usr/local/bin/hyperfine
+
+      - name: Build TS code
+        run: pnpm nx run-many -t build:tsc
+
+      - name: Run hyperfine on boot
+        working-directory: ghost/core
+        run: hyperfine --show-output --warmup 3 'GHOST_CI_SHUTDOWN_AFTER_BOOT=1 node index.js' --export-json boot-perf.json
+
+      - name: Convert data
+        working-directory: ghost/core
+        run: |
+          jq '[{ name: "Boot time", unit: "s", value: .results[0].median, range: ((.results[0].max - .results[0].min) | tostring) }]' < boot-perf.json > boot-perf-formatted.json
+
+      # Publishing is restricted to push runs. A `perf-tests`-labelled PR runs
+      # everything above and reports the numbers in the log, but never receives
+      # the write-scoped token, because a pull_request run executes PR-authored
+      # code (install scripts, build, boot). It also keeps unmerged PR results
+      # out of the main-branch series.
+      - name: Run analysis
+        if: github.event_name != 'pull_request'
+        uses: benchmark-action/github-action-benchmark@4bdcce38c94cec68da58d012ac24b7b1155efe8b # v1.20.7
+        with:
+          tool: 'customSmallerIsBetter'
+          output-file-path: ghost/core/boot-perf-formatted.json
+          benchmark-data-dir-path: ""
+          gh-repository: github.com/TryGhost/Ghost-Benchmarks
+          github-token: ${{ secrets.CANARY_DOCKER_BUILD }}
+          auto-push: true
 
   job_unit-tests:
     runs-on: ubuntu-latest

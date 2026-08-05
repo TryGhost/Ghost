@@ -9,7 +9,7 @@ import {canAccessSettings, isEditorUser} from '@tryghost/admin-x-framework/api/u
 import {toast} from 'sonner';
 import {useGlobalData} from './components/providers/global-data-provider';
 import {useGlobalDirtyState} from '@tryghost/shade/utils';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 
 const EMPTY_KEYWORDS: string[] = [];
 const OPEN_SHADE_MODAL_SELECTOR = ':is([role="dialog"], [role="alertdialog"])[data-state="open"]';
@@ -27,7 +27,7 @@ const Page: React.FC<{children: ReactNode}> = ({children}) => {
 
 const MainContent: React.FC = () => {
     const {currentUser} = useGlobalData();
-    const {loadingModal} = useRouting();
+    const {loadingModal} = useSettingsNavigation();
     const {isDirty} = useGlobalDirtyState();
     const {confirm, dialogProps} = useDirtyConfirmation();
 

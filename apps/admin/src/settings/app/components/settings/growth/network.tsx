@@ -10,14 +10,14 @@ import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useLimiter} from '@/settings/app/hooks/use-limiter';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 import {withErrorBoundary} from '@/settings/app/components/error-boundary';
 
 const Network: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {settings} = useGlobalData();
     const {mutateAsync: editSettings} = useEditSettings();
     const handleError = useHandleError();
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
 
     // The Network toggle is disabled in Admin settings if:
     // 1. (Ghost (Pro) only) the feature is disabled by config

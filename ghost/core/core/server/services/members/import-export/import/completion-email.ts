@@ -34,14 +34,19 @@ interface EmailPayload {
 
 // Turn an ORM validation error into copy a member manager can act on. Presentation
 // only: the API response keeps the raw messages, and just the emailed report is
-// rewritten.
-function humaniseError(message: string): string {
+// rewritten. Takes one reason at a time, so a rewrite matching to the end of its input
+// cannot consume the reason after it.
+function humaniseReason(message: string): string {
     return message
         .replace('Value in [members.email] cannot be blank.', 'Missing email address')
         .replace('Value in [members.note] exceeds maximum length of 2000 characters.', '"Note" exceeds maximum length of 2000 characters')
         .replace('Value in [members.subscribed] must be one of true, false, 0 or 1.', 'Value in "Subscribed to emails" must be "true" or "false"')
         .replace('Validation (isEmail) failed for email', 'Invalid email address')
-        .replace(/No such customer:[^,]*/, 'Could not find Stripe customer');
+        .replace(/No such customer:[\s\S]*/, 'Could not find Stripe customer');
+}
+
+function humaniseError(row: ImportErrorRow): string {
+    return row.errors.map(humaniseReason).join('\n');
 }
 
 // One row of the fixed, member-vocabulary part of the error report, in emit order.
@@ -93,7 +98,7 @@ function toErrorReportRow(row: ImportErrorRow): ErrorReportRow {
         labels: stringifyLabels(row.labels),
         tiers: '',
         gift_id: row.gift_id || null,
-        error: humaniseError(row.error)
+        error: humaniseError(row)
     };
 }
 
