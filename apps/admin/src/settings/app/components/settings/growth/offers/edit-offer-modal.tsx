@@ -245,9 +245,6 @@ const EditOfferModal: React.FC<{id: string}> = ({id}) => {
     };
 
     return offerById ? <PreviewModalContent
-        afterClose={() => {
-            updateRoute('offers');
-        }}
         backDropClick={false}
         cancelLabel='Cancel'
         dirty={saveState === 'unsaved'}
@@ -268,6 +265,9 @@ const EditOfferModal: React.FC<{id: string}> = ({id}) => {
         title='Offer'
         width={1140}
         onCancel={goBack}
+        onClose={() => {
+            updateRoute('offers');
+        }}
         onOk={async () => {
             try {
                 if (await handleSave({force: true})) {

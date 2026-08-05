@@ -1,5 +1,4 @@
 import EditRecommendationModal from './edit-recommendation-modal';
-import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import RecommendationIcon from './recommendation-icon';
 import useSettingGroup from '@/settings/app/hooks/use-setting-group';
@@ -15,19 +14,7 @@ interface RecommendationListProps {
     isLoading: boolean
 }
 
-const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recommendation}) => {
-    const {route} = useSettingsNavigation();
-
-    // Navigate to the edit page, without changing the route
-    // This helps to avoid fetching the recommendation
-    const showDetails = () => {
-        NiceModal.show(EditRecommendationModal, {
-            pathName: route,
-            animate: false,
-            recommendation: recommendation
-        });
-    };
-
+const RecommendationItem: React.FC<{recommendation: Recommendation, onEdit: () => void}> = ({recommendation, onEdit}) => {
     const isGhostSite = recommendation.one_click_subscribe;
     const showSubscribers = isGhostSite && !!recommendation.count?.subscribers;
     const count = (showSubscribers ? recommendation.count?.subscribers : recommendation.count?.clicks) || 0;
@@ -37,7 +24,7 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
     return (
         <ActionListItem className='group' data-testid='recommendation-list-item'>
             <ActionListItemContent asChild>
-                <button className='flex w-full text-left' type='button' onClick={showDetails}>
+                <button className='flex w-full text-left' type='button' onClick={onEdit}>
                 <div className='grow py-3 pr-6'>
                     <Inline gap='md'>
                         <RecommendationIcon isGhostSite={isGhostSite} {...recommendation} />
@@ -77,6 +64,8 @@ const RecommendationList: React.FC<RecommendationListProps> = ({recommendations,
     };
 
     const [copied, setCopied] = useState(false);
+    // The edit dialog opens with the already-loaded record; the URL stays put.
+    const [editingRecommendation, setEditingRecommendation] = useState<Recommendation | null>(null);
 
     const copyRecommendationsUrl = () => {
         navigator.clipboard.writeText(recommendationsURL);
@@ -90,8 +79,9 @@ const RecommendationList: React.FC<RecommendationListProps> = ({recommendations,
 
     if (recommendations.length) {
         return <>
+            {editingRecommendation && <EditRecommendationModal recommendation={editingRecommendation} onClose={() => setEditingRecommendation(null)} />}
             <ActionList>
-                {recommendations.map(recommendation => <RecommendationItem key={recommendation.id} recommendation={recommendation} />)}
+                {recommendations.map(recommendation => <RecommendationItem key={recommendation.id} recommendation={recommendation} onEdit={() => setEditingRecommendation(recommendation)} />)}
             </ActionList>
             <div className='border-t border-border pt-2'>
                 {showMore?.hasMore && <Button className='mb-2 h-auto p-0 text-green hover:text-green' type='button' variant='link' onClick={showMore.loadMore}>Show all</Button>}

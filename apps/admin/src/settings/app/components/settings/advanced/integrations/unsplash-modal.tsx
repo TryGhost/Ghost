@@ -1,6 +1,5 @@
 import BrandIcon from '@/settings/app/components/icons/brand-icon';
 import IntegrationHeader from './integration-header';
-import NiceModal from '@ebay/nice-modal-react';
 import {Field, FieldContent, FieldDescription, FieldGroup, FieldLabel, Switch} from '@tryghost/shade/components';
 import {type Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {SettingsModal} from '@tryghost/shade/patterns';
@@ -9,7 +8,7 @@ import {useGlobalData} from '@/settings/app/components/providers/global-data-pro
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 
-const UnsplashModal = NiceModal.create(() => {
+function UnsplashModal() {
     const {updateRoute} = useSettingsNavigation();
     const {settings} = useGlobalData();
     const [unsplashEnabled] = getSettingValues<boolean>(settings, ['unsplash']);
@@ -46,15 +45,15 @@ const UnsplashModal = NiceModal.create(() => {
 
     return (
         <SettingsModal
-            afterClose={() => {
-                updateRoute('integrations');
-            }}
             cancelLabel='Close'
             dirty={isDirty}
             okLabel={okLabel}
             okVariant='default'
             testId='unsplash-modal'
             title=''
+            onClose={() => {
+                updateRoute('integrations');
+            }}
             onOk={handleToggleChange}
         >
             <IntegrationHeader
@@ -75,6 +74,6 @@ const UnsplashModal = NiceModal.create(() => {
             </div>
         </SettingsModal>
     );
-});
+}
 
 export default UnsplashModal;

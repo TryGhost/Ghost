@@ -1,7 +1,6 @@
 import AddOfferModal from './add-offer-modal';
 import EditOfferModal from './edit-offer-modal';
 import EditRetentionOfferModal from './edit-retention-offer-modal';
-import NiceModal from '@ebay/nice-modal-react';
 import OfferSuccess from './offer-success';
 import {OffersIndexModal} from './offers-index';
 import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
@@ -34,4 +33,4 @@ const OffersContainerModal = () => {
     return <OffersRouteHandler route={route} />;
 };
 
-export default NiceModal.create(OffersContainerModal);
+export default OffersContainerModal;

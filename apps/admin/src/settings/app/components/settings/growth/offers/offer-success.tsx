@@ -70,9 +70,6 @@ const OfferSuccess: React.FC<{id: string}> = ({id}) => {
     };
 
     return <SettingsModal
-        afterClose={() => {
-            updateRoute('offers');
-        }}
         animate={false}
         backDropClick={false}
         footer={false}
@@ -81,6 +78,9 @@ const OfferSuccess: React.FC<{id: string}> = ({id}) => {
         testId='offer-success-modal'
         topRightContent='close'
         width={1140}
+        onClose={() => {
+            updateRoute('offers');
+        }}
     >
         <div className='-mt-6 flex h-full flex-col items-center justify-center text-center'>
             <SettingsBreadcrumbs

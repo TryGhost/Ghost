@@ -643,9 +643,6 @@ const AddOfferModal = () => {
         portalParent='offers'
     />;
     return <PreviewModalContent
-        afterClose={() => {
-            updateRoute('offers');
-        }}
         backDropClick={false}
         cancelLabel='Cancel'
         dirty={saveState === 'unsaved'}
@@ -660,6 +657,9 @@ const AddOfferModal = () => {
         title='Offer'
         width={1140}
         onCancel={cancelAddOffer}
+        onClose={() => {
+            updateRoute('offers');
+        }}
         onOk={async () => {
             validate();
             const isErrorsEmpty = Object.values(errors).every(error => !error);

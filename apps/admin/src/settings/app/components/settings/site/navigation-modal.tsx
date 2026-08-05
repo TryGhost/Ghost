@@ -1,5 +1,4 @@
 import NavigationEditForm from './navigation/navigation-edit-form';
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import useNavigationEditor, {type NavigationItem} from '@/settings/app/hooks/site/use-navigation-editor';
 import useSettingGroup from '@/settings/app/hooks/use-setting-group';
 import {SettingsModal} from '@tryghost/shade/patterns';
@@ -8,8 +7,7 @@ import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useCallback, useMemo, useState} from 'react';
 import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 
-const NavigationModal = NiceModal.create(() => {
-    const modal = useModal();
+function NavigationModal() {
     const {updateRoute} = useSettingsNavigation();
     const {
         localSettings,
@@ -46,9 +44,6 @@ const NavigationModal = NiceModal.create(() => {
 
     return (
         <SettingsModal
-            afterClose={() => {
-                updateRoute('navigation');
-            }}
             buttonsDisabled={saveState === 'saving'}
             cancelLabel='Close'
             dirty={localSettings.some(setting => setting.dirty)}
@@ -58,10 +53,12 @@ const NavigationModal = NiceModal.create(() => {
             stickyFooter={true}
             testId='navigation-modal'
             title='Navigation'
+            onClose={() => {
+                updateRoute('navigation');
+            }}
             onOk={async () => {
                 if (navigation.validate() && secondaryNavigation.validate()) {
                     await handleSave();
-                    modal.remove();
                     updateRoute('navigation');
                 }
             }}
@@ -78,6 +75,6 @@ const NavigationModal = NiceModal.create(() => {
             </div>
         </SettingsModal>
     );
-});
+}
 
 export default NavigationModal;
