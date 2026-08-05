@@ -251,10 +251,11 @@ function interpretCustomFieldValue(raw: unknown): {operator: string; value: stri
 }
 
 // A custom-field filter is `(custom_fields.key:'<key>'+custom_fields.value[.sub]:<v>)`,
-// or the flat `custom_fields.key:'<key>'` / `:-'<key>'` for set / not set. The
-// field's identity is in the *value* of the key clause, so this can't ride the
-// generic parser — it reads the key clause to find the field and the value clause
-// for the operator and value. `values` is [fieldKey, subfield, value].
+// or the flat `custom_fields.key:'<key>'` / `:-'<key>'` for set / not set. Each field
+// is its own predicate keyed `custom_field.<key>`, so the field's stable key becomes
+// part of the predicate field and the remaining `values` are [subfield, value]
+// (subfield '' for a scalar field or the whole-field set/unset case). This can't ride
+// the generic parser because the key lives in the value of the key clause, not the key.
 function matchCustomFieldNode(node: AstNode): ParsedPredicate | null {
     const compound = getCompoundChildren(node);
 
@@ -262,11 +263,11 @@ function matchCustomFieldNode(node: AstNode): ParsedPredicate | null {
         const keyValue = node['custom_fields.key'];
 
         if (typeof keyValue === 'string') {
-            return {field: 'custom_field', operator: 'is-set', values: [keyValue, '', '']};
+            return {field: `custom_field.${keyValue}`, operator: 'is-set', values: ['', '']};
         }
 
         if (keyValue && typeof keyValue === 'object' && !Array.isArray(keyValue) && typeof (keyValue as Record<string, unknown>).$ne === 'string') {
-            return {field: 'custom_field', operator: 'is-not-set', values: [(keyValue as Record<string, string>).$ne, '', '']};
+            return {field: `custom_field.${(keyValue as Record<string, string>).$ne}`, operator: 'is-not-set', values: ['', '']};
         }
 
         return null;
@@ -304,9 +305,9 @@ function matchCustomFieldNode(node: AstNode): ParsedPredicate | null {
     }
 
     return {
-        field: 'custom_field',
+        field: `custom_field.${fieldKey}`,
         operator: interpreted.operator,
-        values: [fieldKey, valueEntry.subfield, interpreted.value]
+        values: [valueEntry.subfield, interpreted.value]
     };
 }
 

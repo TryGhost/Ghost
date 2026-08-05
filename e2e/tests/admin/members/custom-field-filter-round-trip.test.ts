@@ -65,7 +65,7 @@ test.describe('Ghost Admin - Filter members by custom fields', () => {
         await sidebar.getNavLink(viewName).click();
 
         await expect(sidebar.getNavLink(viewName)).toHaveAttribute('aria-current', 'page');
-        await expect(membersPage.getFilterItem('Custom field')).toContainText(fieldName);
+        await expect(membersPage.getFilterItem(fieldName)).toContainText(fieldName);
         await expect(membersPage.getMemberByName(`Ghost Employee ${stamp}`)).toBeVisible();
         await expect(membersPage.getMemberByName(`Acme Employee ${stamp}`)).toHaveCount(0);
     });

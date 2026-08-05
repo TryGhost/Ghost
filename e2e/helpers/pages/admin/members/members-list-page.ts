@@ -69,24 +69,23 @@ export class MembersListPage extends AdminPage {
         await this.addSearchableFilter('Label', labelName, labelName);
     }
 
-    // The "Custom field" filter is a cascade: pick the field, then (for a composite
-    // like an address) a part, then the value. Operator defaults to "is"; pass one to change it.
+    // Custom fields are named directly in the filter dropdown (their own group), so a
+    // field is chosen by its name. For a composite field, pass a part; the rest of the
+    // cascade (part, then operator, then value) lives in the filter pill. Operator
+    // defaults to "is"; pass one to change it.
     async addCustomFieldFilter({field, value, subfield, operator}: {field: string; value?: string; subfield?: string; operator?: string}): Promise<void> {
         await this.filterButton.click();
-        await this.page.getByRole('option', {name: 'Custom field', exact: true}).click();
-
-        // The cascade segments are dropdown menus, so their choices are menuitems.
-        await this.page.getByTestId('custom-field-filter-field').click();
-        await this.page.getByRole('menuitem', {name: field, exact: true}).click();
+        await this.page.getByRole('option', {name: field, exact: true}).click();
 
         if (subfield) {
+            // The cascade segments are dropdown menus, so their choices are menuitems.
             await this.page.getByTestId('custom-field-filter-subfield').click();
             await this.page.getByRole('menuitem', {name: subfield, exact: true}).click();
         }
 
         if (operator) {
-            // The operator lives in the cascade after the field/sub-field; its
-            // options carry the display labels, e.g. "is set".
+            // The operator lives in the pill after any part; its options carry the
+            // display labels, e.g. "is set".
             await this.page.getByTestId('custom-field-filter-operator').click();
             await this.page.getByRole('menuitem', {name: operator, exact: true}).click();
         }

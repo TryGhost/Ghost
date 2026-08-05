@@ -178,15 +178,19 @@ const CUSTOM_FIELD_VALUE_SYMBOLS: Record<string, string> = {
 
 const customFieldsCodec: FilterCodec = {
     // Parsing a grouped custom-field expression back to a predicate is bespoke —
-    // the field's identity is in the value, not the key — so it's handled by a
-    // compound matcher in member-filter-query.ts, not here.
+    // its field and part are spread across a `(key + value)` pair — so it's handled
+    // by a compound matcher in member-filter-query.ts, not here.
     parse() {
         return null;
     },
-    serialize(predicate) {
-        const [fieldKey, subfield, value] = predicate.values as [string, string, string];
+    // The field's stable key comes from the dropdown entry (`custom_field.<key>`,
+    // resolved into `ctx.params.key`); the predicate carries only [subfield, value],
+    // with subfield '' for a scalar field or the "Any" (whole-field set/unset) case.
+    serialize(predicate, ctx) {
+        const fieldKey = ctx.params.key;
+        const [subfield, value] = predicate.values as [string, string];
 
-        if (typeof fieldKey !== 'string' || !fieldKey) {
+        if (!fieldKey) {
             return null;
         }
 
@@ -533,7 +537,10 @@ const baseMemberFields = defineFields({
         ],
         codec: multipleActiveSubscriptionsCodec
     },
-    custom_field: {
+    // Each defined custom field is its own filter, named directly in the dropdown
+    // (`custom_field.<key>`), so this template supplies the shared operators and codec;
+    // use-member-filter-fields builds one entry per field from the definitions.
+    'custom_field.:key': {
         operators: CUSTOM_FIELD_OPERATORS,
         ui: {
             label: 'Custom field',

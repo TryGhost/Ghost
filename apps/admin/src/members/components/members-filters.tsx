@@ -14,6 +14,7 @@ import {getSiteTimezone} from '@tryghost/admin-x-framework/utils/get-site-timezo
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
 import {useFeatureFlag} from '@tryghost/admin-x-framework/hooks';
+import {useBrowseMemberCustomFields} from '@tryghost/admin-x-framework/api/member-custom-fields';
 import {useEmailPostValueSource, useLabelValueSource, usePostResourceValueSource, useTierValueSource} from '@/shared/filter-sources';
 import type {MemberView} from '@/members/hooks/use-member-views';
 
@@ -95,6 +96,8 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     const labelValueSource = useLabelValueSource();
     const {valueSource: tierValueSource, hasMultipleTiers} = useTierValueSource();
     const customFieldsEnabled = useFeatureFlag('membersCustomFields');
+    const {data: customFieldsData} = useBrowseMemberCustomFields({enabled: customFieldsEnabled});
+    const customFields = customFieldsData?.members_custom_fields ?? [];
 
     const filterFields = useMemberFilterFields({
         newsletters,
@@ -112,7 +115,8 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
         emailTrackOpens,
         emailTrackClicks,
         siteTimezone,
-        customFieldsEnabled
+        customFieldsEnabled,
+        customFields
     });
 
     const hasFilters = filters.length > 0;
