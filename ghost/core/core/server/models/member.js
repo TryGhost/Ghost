@@ -3,6 +3,7 @@ const crypto = require('crypto');
 const _ = require('lodash');
 const config = require('../../shared/config');
 const {MemberCommentingCodec} = require('../services/members/commenting');
+const {CUSTOM_FIELDS_RELATION} = require('../services/members-custom-fields/filter');
 
 const DEEP_OFFSET_THRESHOLD = 1000;
 
@@ -166,8 +167,13 @@ const Member = ghostBookshelf.Model.extend({
         }];
     },
 
-    filterRelations() {
+    filterRelations(options = {}) {
         return {
+            // Custom field values are only filterable when the feature is on. Gating the
+            // relation here (rather than the whole model) means a `custom_fields.*` filter
+            // is simply an unknown relation when the flag is off, and the filter is
+            // rejected — nothing to special-case downstream.
+            ...(options.enableCustomFieldsFilter ? {custom_fields: CUSTOM_FIELDS_RELATION} : {}),
             labels: {
                 tableName: 'labels',
                 type: 'manyToMany',
@@ -593,7 +599,10 @@ const Member = ghostBookshelf.Model.extend({
         let options = ghostBookshelf.Model.permittedOptions.call(this, methodName);
 
         if (['findPage', 'findAll'].includes(methodName)) {
-            options = options.concat(['search']);
+            // `enableCustomFieldsFilter` is read by filterRelations to register the
+            // custom_fields relation; without it here, filterOptions would strip the
+            // flag before the relation is built.
+            options = options.concat(['search', 'enableCustomFieldsFilter']);
         }
 
         return options;

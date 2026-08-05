@@ -71,6 +71,16 @@ export class CustomFieldValuesService {
     }
 
     /**
+     * key → id for every active field. A member segment filter addresses a field by
+     * its stable public key, but the values table stores the field's id, so the filter
+     * transformer resolves one to the other before the query is built.
+     */
+    async getFieldIdsByKey(): Promise<Map<string, string>> {
+        const fields = await activeFields(this.knex).select('id', 'key');
+        return new Map(fields.map(field => [field.key, field.id]));
+    }
+
+    /**
      * Members' values, keyed by member id then field key; anything absent is unset.
      *
      * Archived fields are excluded to match the definitions browse: their values stay in
