@@ -10,7 +10,7 @@ import {
 } from '@/posts/list/post-row-copy';
 import {hasPostAnalyticsPage, type PostMetricsSettings} from '@/posts/list/post-metrics';
 import {PostMetricsCells} from '@/posts/list/components/post-metrics-cells';
-import {useState} from 'react';
+import {memo, useState} from 'react';
 import type {MouseEvent as ReactMouseEvent} from 'react';
 import type {PostListItem} from '@/posts/list/hooks/use-posts-list';
 import type {PostResource} from '@/posts/list/post-resource';
@@ -86,7 +86,7 @@ function FeatureImage({post}: {post: PostListItem}) {
     );
 }
 
-export function PostListRow({
+function PostListRowComponent({
     post, resource, timezone, isContributor, hasAdminAccess, paidMembersEnabled,
     isSelected, onSelectMouseDown, onSelectClick,
     metricsSettings, visitorCounts, memberCounts
@@ -139,7 +139,7 @@ export function PostListRow({
         >
             {/* `center`, not `start`: Ember centres everything on the right
                 against the 60px feature image. */}
-            <Inline align='center' className='gap-4 pr-2 transition-colors group-hover:bg-surface-elevated'>
+            <Inline align='center' className='gap-4 pr-2'>
                 <a
                     className='flex min-w-0 flex-1 items-start gap-4 py-4 pl-2 no-underline'
                     data-testid='post-list-item-link'
@@ -214,3 +214,14 @@ export function PostListRow({
         </li>
     );
 }
+
+/**
+ * Memoised. Selection state and modifier "select mode" both live above the
+ * list, so without this every cmd-click and every press of the Cmd key
+ * re-renders every row — and each row carries its own Radix hover cards, which
+ * is by far the most expensive thing on the screen.
+ *
+ * Every prop is either a primitive or memoised upstream; `metricsSettings` in
+ * particular is built with `useMemo` for this reason.
+ */
+export const PostListRow = memo(PostListRowComponent);
