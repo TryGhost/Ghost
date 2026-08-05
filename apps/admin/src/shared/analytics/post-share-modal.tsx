@@ -1,10 +1,9 @@
-import ShareModal, {type ShareModalSocialLink} from '@/components/patterns/share-modal';
-import {H3} from '@/components/layout/heading';
-import {Button} from '@/components/ui/button';
-import * as DialogPrimitive from '@radix-ui/react-dialog';
 import React from 'react';
+import {Button} from '@tryghost/shade/components';
+import {H3} from '@tryghost/shade/primitives';
+import {ShareModal, type ShareModalSocialLink} from '@tryghost/shade/patterns';
 
-interface PostShareModalProps extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Root> {
+interface PostShareModalProps extends React.ComponentPropsWithoutRef<typeof ShareModal.Root> {
     author?: string;
     canShareAsGift?: boolean;
     children?: React.ReactNode;
