@@ -9,11 +9,6 @@ describe('UNIT: route-settings adapter utils', function () {
             vi.useRealTimers();
         });
 
-        // The timestamp is formatted by hand, so pin the zero-padding
-        // explicitly — every field here is single-digit. The expectation is
-        // built from local-time components and CI runs the unit suite in
-        // America/New_York, so this also fails if the implementation switches
-        // to getUTC* accessors. Don't rewrite it in terms of Date.UTC.
         it('zero-pads every field of the timestamp', function () {
             vi.useFakeTimers();
             vi.setSystemTime(new Date(2026, 0, 2, 3, 4, 5));
