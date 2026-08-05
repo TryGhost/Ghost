@@ -1,5 +1,5 @@
 import {InfiniteData} from '@tanstack/react-query';
-import {ExternalLink, InternalLink} from '../providers/routing-provider';
+import {ExternalLink, InternalLink} from '../providers/framework-provider';
 import {Meta, createInfiniteQuery} from '../utils/api/hooks';
 import {JSONObject} from './config';
 

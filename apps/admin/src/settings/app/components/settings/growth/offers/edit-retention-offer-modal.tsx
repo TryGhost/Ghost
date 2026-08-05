@@ -639,7 +639,6 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
 
     return (
         <PreviewModalContent
-            afterClose={() => updateRoute('offers')}
             backDropClick={false}
             cancelLabel='Cancel'
             dirty={saveState === 'unsaved'}
@@ -660,6 +659,7 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
             title='Offer'
             width={1140}
             onCancel={goBack}
+            onClose={() => updateRoute('offers')}
             onOk={handleSaveClick}
         />
     );

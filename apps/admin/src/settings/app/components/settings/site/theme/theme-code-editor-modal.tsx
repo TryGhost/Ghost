@@ -1,6 +1,6 @@
 import CodeMirror, {EditorView} from '@uiw/react-codemirror';
 import InvalidThemeModal, {type FatalErrors} from './invalid-theme-modal';
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
+import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import ThemeEditorConfirmModal from './theme-editor-confirm-modal';
 import ThemeEditorInputModal from './theme-editor-input-modal';
@@ -234,7 +234,6 @@ const editorSelectionTheme = EditorView.theme({
 }, {dark: true});
 
 const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
-    const modal = useModal();
     const {updateRoute} = useSettingsNavigation();
     const queryClient = useQueryClient();
     const handleError = useHandleError();
@@ -422,7 +421,6 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
             }
         }
 
-        modal.remove();
         updateRoute(getReturnRouteFromHash() ?? 'design/change-theme');
     };
 

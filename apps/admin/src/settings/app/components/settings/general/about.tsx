@@ -1,7 +1,5 @@
-import NiceModal from '@ebay/nice-modal-react';
 import {GhostLogo, Separator} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
-import {type RoutingModalProps} from '@tryghost/admin-x-framework/routing';
 import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {linkToGitHubReleases} from '@/settings/app/utils/link-to-github-releases';
@@ -22,7 +20,7 @@ function VersionLink({label, version}: {label: string; version: string}) {
     );
 }
 
-const AboutModal = NiceModal.create<RoutingModalProps>(() => {
+function AboutModal() {
     const {updateRoute} = useSettingsNavigation();
     const globalData = useGlobalData();
     const config = globalData.config;
@@ -53,13 +51,13 @@ const AboutModal = NiceModal.create<RoutingModalProps>(() => {
 
     return (
         <SettingsModal
-            afterClose={() => {
-                updateRoute('');
-            }}
             cancelLabel=''
             footer={(<></>)}
             topRightContent='close'
             width={540}
+            onClose={() => {
+                updateRoute('');
+            }}
         >
             <div className='flex flex-col gap-4 pb-7'>
                 <GhostLogo className="h-auto w-[120px] dark:invert"/>
@@ -116,6 +114,6 @@ const AboutModal = NiceModal.create<RoutingModalProps>(() => {
             </div>
         </SettingsModal>
     );
-});
+}
 
 export default AboutModal;

@@ -1,6 +1,6 @@
 import APIKeys from './api-keys';
 import ConfirmationModal from '@/settings/app/components/confirmation-modal';
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
+import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
 import WebhooksTable from './webhooks-table';
 import {APIError} from '@tryghost/admin-x-framework/errors';
@@ -9,7 +9,7 @@ import {Box, Stack} from '@tryghost/shade/primitives';
 import {Field, FieldError, FieldLabel, Input} from '@tryghost/shade/components';
 import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
 import {type Integration, useBrowseIntegrations, useEditIntegration} from '@tryghost/admin-x-framework/api/integrations';
-import {type RoutingModalProps} from '@tryghost/admin-x-framework/routing';
+import {useParams} from '@tryghost/admin-x-framework';
 import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {Trash2} from 'lucide-react';
@@ -18,7 +18,6 @@ import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/image
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({integration}) => {
-    const modal = useModal();
     const {updateRoute} = useSettingsNavigation();
 
     const {mutateAsync: editIntegration} = useEditIntegration();
@@ -56,10 +55,9 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
 
     useEffect(() => {
         if (integration.type !== 'custom') {
-            modal.remove();
             updateRoute('integrations');
         }
-    }, [integration.type, modal, updateRoute]);
+    }, [integration.type, updateRoute]);
 
     const handleRegenerate = (apiKey: APIKey, setRegenerated: (value: boolean) => void) => {
         setRegenerated(false);
@@ -83,9 +81,6 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
     };
 
     return <SettingsModal
-        afterClose={() => {
-            updateRoute('integrations');
-        }}
         buttonsDisabled={okProps.disabled}
         cancelLabel='Close'
         dirty={saveState === 'unsaved'}
@@ -95,6 +90,9 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
         testId='custom-integration-modal'
         title={formState.name || 'Custom integration'}
         stickyFooter
+        onClose={() => {
+            updateRoute('integrations');
+        }}
         onOk={async () => {
             await handleSave({fakeWhenUnchanged: true});
         }}
@@ -171,15 +169,16 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
     </SettingsModal>;
 };
 
-const CustomIntegrationModal: React.FC<RoutingModalProps> = ({params}) => {
+function CustomIntegrationModal() {
+    const {integrationId} = useParams();
     const {data: {integrations} = {}} = useBrowseIntegrations();
-    const integration = integrations?.find(({id}) => id === params?.id);
+    const integration = integrations?.find(({id}) => id === integrationId);
 
     if (integration) {
         return <CustomIntegrationModalContent integration={integration} />;
     } else {
         return null;
     }
-};
+}
 
-export default NiceModal.create(CustomIntegrationModal);
+export default CustomIntegrationModal;
