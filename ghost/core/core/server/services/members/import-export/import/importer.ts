@@ -432,15 +432,16 @@ class MembersCSVImporter {
                 imported += 1;
             } catch (error) {
                 const errorList: unknown[] = Array.isArray(error) ? error : [error];
-                const errorMessage = errorList
+                const reasons = errorList
                     .map(e => (typeof e === 'object' && e !== null && 'message' in e ? e.message : undefined))
-                    .join(', ');
+                    .filter((message): message is string => typeof message === 'string');
+                const errorMessage = reasons.join('\n');
                 // trx is unset if the row failed before the transaction opened (a bad
                 // custom field value or gift combination).
                 if (trx) {
                     await trx.rollback();
                 }
-                importErrors.push({...row, error: errorMessage});
+                importErrors.push({...row, error: errorMessage, errors: reasons});
             }
         }
 
