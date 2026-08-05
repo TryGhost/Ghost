@@ -135,6 +135,9 @@ jobs:
               - '.github/actions/**'
               - '.github/scripts/**'
               - 'scripts/**'
+            agent-skills:
+              - '.agents/skills/**'
+              - '.claude/skills/**'
             core:
               - *shared
               - 'ghost/**'
@@ -196,9 +199,6 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
-
-      - name: Check agent skill discovery
-        run: node scripts/check-agent-skill-links.js
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
@@ -263,6 +263,7 @@ jobs:
       changed_i18n_apps: ${{ steps.affected.outputs.affected_i18n_projects != '' }}
       changed_core: ${{ steps.changed.outputs.core }}
       changed_any_code: ${{ steps.changed.outputs.any-code }}
+      changed_agent_skills: ${{ steps.changed.outputs.agent-skills }}
       changed_tb_cli: ${{ steps.changed.outputs.tb-cli }}
       # Single gate for the build + browser-E2E lane. True for tags, or when a
       # changed file could affect a running Ghost instance (see the `e2e` path
@@ -352,7 +353,7 @@ jobs:
   job_lint:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.affected_projects_str != ''
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.affected_projects_str != '' || needs.job_setup.outputs.changed_agent_skills == 'true'
     name: Lint
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -366,21 +367,28 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
 
+      - name: Lint agent skills
+        run: node scripts/check-agent-skill-links.js
+
       - name: Install dependencies
+        if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.affected_projects_str != ''
         run: pnpm install --frozen-lockfile
 
       - uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
+        if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.affected_projects_str != ''
         with:
           path: ghost/**/.eslintcache
           key: eslint-cache
 
       - name: Lint projects
+        if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.affected_projects_str != ''
         run: pnpm nx run-many -t lint -p "${{ needs.job_setup.outputs.affected_projects_str }}"
         env:
           NX_BASE: ${{ needs.job_setup.outputs.nx_base }}
           NX_HEAD: ${{ env.HEAD_COMMIT }}
 
       - name: Lint boundaries
+        if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.affected_projects_str != ''
         run: pnpm nx run ghost-monorepo:lint:boundaries
 
       - uses: tryghost/actions/actions/slack-build@e7a401946f91165a6426290705f501a377ec1533 # main
