@@ -96,14 +96,14 @@ export class AutomationsService {
             }
         };
 
-        domainEvents.subscribe(StartAutomationsPollEvent, oneAtATime(async () => poll({
+        domainEvents.subscribe(StartAutomationsPollEvent, oneAtATime(() => poll({
             automationsApi,
             memberWelcomeEmailService,
             scheduleAutomationEmailAnalyticsJob,
             enqueueAnotherPollAt: enqueuePollAt
         })));
 
-        domainEvents.subscribe(StartAutomationsPollEvent, oneAtATime(async () => welcomeEmailAutomationPoll({
+        domainEvents.subscribe(StartAutomationsPollEvent, oneAtATime(() => welcomeEmailAutomationPoll({
             memberWelcomeEmailService,
             enqueueAnotherPollAt: enqueuePollAt
         })));
