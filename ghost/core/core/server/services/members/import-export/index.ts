@@ -9,6 +9,7 @@ const MembersCSVImporterStripeUtils = require('./import/stripe-utils');
 const db = require('../../../data/db');
 const models = require('../../../models');
 const labs = require('../../../../shared/labs');
+const {applyCustomFieldsFilter} = require('../../members-custom-fields/filter');
 
 // The raw collaborators the members service hands the import composition root, before
 // they are adapted into the ports the importer declares. The members repository is the
@@ -125,6 +126,7 @@ export function makeExporter({definitions, values}: CustomFieldsServices): (opti
             // Minimal query, only to fetch the ids of the filtered members; the stream
             // reads their related data itself.
             findFilteredIds: async (options) => {
+                await applyCustomFieldsFilter(options, {values, labs});
                 const page = await models.Member.findPage({...options, withRelated: [], columns: ['id'], limit: 'all'});
                 return page.data.map((member: {id: string}) => member.id);
             }

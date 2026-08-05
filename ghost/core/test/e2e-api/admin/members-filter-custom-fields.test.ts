@@ -254,4 +254,39 @@ describe('Members filtering by custom fields', function () {
             assert.deepEqual(matched.sort(), [ghost.email, tech.email].sort());
         });
     });
+
+    // A saved segment is only useful if it works everywhere the members list feeds a
+    // filter, not just the list view. Export and bulk actions run the same NQL, so the
+    // custom_fields relation has to be served on those paths too.
+    describe('in export and bulk actions', function () {
+        it('exports only members a custom-field filter matches', async function () {
+            await createField({name: 'Company'});
+            const ghost = await createMember({company: 'Ghost'});
+            const acme = await createMember({company: 'Acme'});
+
+            const filter = encodeURIComponent("(custom_fields.key:'company'+custom_fields.value:'Ghost')");
+            const {text} = await agent.get(`members/upload/?limit=all&filter=${filter}`).expectStatus(200);
+
+            assert.ok(text.includes(ghost.email), 'exports the matching member');
+            assert.ok(!text.includes(acme.email), 'excludes a non-matching member');
+        });
+
+        it('bulk-acts on only members a custom-field filter matches', async function () {
+            await createField({name: 'Company'});
+            const ghost = await createMember({company: 'Ghost'});
+            await createMember({company: 'Acme'});
+            const label = await models.Label.add({name: 'cf-bulk-target'});
+
+            const filter = encodeURIComponent("(custom_fields.key:'company'+custom_fields.value:'Ghost')");
+            const {body} = await agent
+                .put(`members/bulk/?filter=${filter}`)
+                .body({bulk: {action: 'addLabel', meta: {label: {id: label.id, name: 'cf-bulk-target'}}}})
+                .expectStatus(200);
+
+            assert.equal(body.bulk.meta.stats.successful, 1);
+
+            const labelled = await browse("label:'cf-bulk-target'");
+            assert.deepEqual(labelled, [ghost.email]);
+        });
+    });
 });

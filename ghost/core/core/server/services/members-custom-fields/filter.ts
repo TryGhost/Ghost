@@ -17,6 +17,8 @@
 // happens to hold Ghost on some other field). The field is addressed publicly by its
 // immutable key but stored by id, so the caller passes in the key→id map to resolve
 // against; a key that no longer resolves (its field was deleted) matches nothing.
+import {chainTransformers} from '@tryghost/mongo-utils';
+
 const RELATION = 'custom_fields';
 const PREFIX = `${RELATION}.`;
 const KEY_ATTRIBUTE = `${PREFIX}key`;
@@ -135,6 +137,41 @@ export function createCustomFieldsFilterTransformer(fieldIdsByKey: Map<string, s
     }
 
     return (query: object): object => transform(query) as object;
+}
+
+interface FilterableOptions {
+    filter?: string;
+    enableCustomFieldsFilter?: boolean;
+    mongoTransformer?: (query: object) => object;
+}
+
+interface FilterServices {
+    values: {getFieldIdsByKey(): Promise<Map<string, string>>};
+    labs: {isSet(flag: string): boolean};
+}
+
+/**
+ * Turn on custom-field filtering for a members query: register the relation (via
+ * `enableCustomFieldsFilter`, which filterRelations reads) and chain the transformer
+ * that maps the public `key`/`value` grammar onto the storage columns. Mutates
+ * `options` in place. A no-op unless the flag is on and the filter actually names a
+ * custom field — so a `custom_fields.*` filter with the feature off is left as an
+ * unknown relation and rejected. Shared by every path that filters members — browse,
+ * CSV export, and bulk edit/destroy — so a saved custom-field segment behaves the same
+ * through all of them rather than working only in the list view.
+ */
+export async function applyCustomFieldsFilter(options: FilterableOptions, {values, labs}: FilterServices): Promise<void> {
+    if (!options.filter || !options.filter.includes(PREFIX) || !labs.isSet('membersCustomFields')) {
+        return;
+    }
+
+    const fieldIdsByKey = await values.getFieldIdsByKey();
+    const transformer = createCustomFieldsFilterTransformer(fieldIdsByKey);
+
+    options.enableCustomFieldsFilter = true;
+    options.mongoTransformer = options.mongoTransformer
+        ? chainTransformers(options.mongoTransformer, transformer)
+        : transformer;
 }
 
 /**

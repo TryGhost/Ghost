@@ -9,6 +9,7 @@ const {NotFoundError} = require('@tryghost/errors');
 const validator = require('@tryghost/validator');
 const crypto = require('crypto');
 const hasActiveOffer = require('../utils/has-active-offer');
+const {applyCustomFieldsFilter} = require('../../../members-custom-fields/filter');
 const StartAutomationsPollEvent = require('../../../automations/events/start-automations-poll-event');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../member-welcome-emails/constants');
 const db = require('../../../../data/db');
@@ -92,7 +93,9 @@ module.exports = class MemberRepository {
         newslettersService,
         automationsApi,
         Automation,
-        WelcomeEmailAutomationRun
+        WelcomeEmailAutomationRun,
+        customFieldValues,
+        labsService
     }) {
         this._Member = Member;
         this._MemberNewsletter = MemberNewsletter;
@@ -113,6 +116,8 @@ module.exports = class MemberRepository {
         this._automationsApi = automationsApi;
         this._Automation = Automation;
         this._WelcomeEmailAutomationRun = WelcomeEmailAutomationRun;
+        this._customFieldValues = customFieldValues;
+        this._labsService = labsService;
 
         DomainEvents.subscribe(OfferRedemptionEvent, async function (event) {
             if (!event.data.offerId) {
@@ -940,6 +945,9 @@ module.exports = class MemberRepository {
         if (all !== true) {
             // Include mongoTransformer to apply subscribed:{true|false} => newsletter relation mapping
             Object.assign(filterOptions, _.pick(options, ['filter', 'search', 'mongoTransformer']));
+            // Serve a custom-field segment here too, not only in the list view, so
+            // exporting or bulk-acting on one works rather than hitting an unknown relation.
+            await applyCustomFieldsFilter(filterOptions, {values: this._customFieldValues, labs: this._labsService});
         }
 
         const memberRows = await this._Member.getFilteredCollectionQuery(filterOptions)
@@ -977,6 +985,9 @@ module.exports = class MemberRepository {
         if (all !== true) {
             // Include mongoTransformer to apply subscribed:{true|false} => newsletter relation mapping
             Object.assign(filterOptions, _.pick(options, ['filter', 'search', 'mongoTransformer']));
+            // Serve a custom-field segment here too, not only in the list view, so
+            // exporting or bulk-acting on one works rather than hitting an unknown relation.
+            await applyCustomFieldsFilter(filterOptions, {values: this._customFieldValues, labs: this._labsService});
         }
         const memberRows = await this._Member.getFilteredCollectionQuery(filterOptions)
             .select('members.id')

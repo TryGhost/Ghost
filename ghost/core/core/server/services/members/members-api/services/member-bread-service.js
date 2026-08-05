@@ -2,8 +2,7 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const moment = require('moment');
-const {chainTransformers} = require('@tryghost/mongo-utils');
-const {createCustomFieldsFilterTransformer} = require('../../../members-custom-fields/filter');
+const {applyCustomFieldsFilter} = require('../../../members-custom-fields/filter');
 
 const messages = {
     stripeNotConnected: 'Missing Stripe connection.',
@@ -109,32 +108,6 @@ module.exports = class MemberBREADService {
         return this.customFieldValues.getValuesForMembers(memberIds);
     }
 
-    /**
-     * @private
-     * Custom field values live in their own table, joined via the model's
-     * `custom_fields` relation, so a `custom_fields.*` filter is served by mongo-knex
-     * natively. This turns that relation on (behind the flag) and chains a transformer
-     * that maps the public `key`/`value` filter vocabulary onto the relation's real
-     * columns — resolving the field's stable key to its stored id first. A no-op with
-     * the flag off, which leaves the relation unregistered so such a filter is rejected
-     * as unknown rather than silently ignored.
-     * @param {Object} options — browse options, mutated in place.
-     */
-    async applyCustomFieldsFilter(options) {
-        // Only pay for the key→id lookup when the filter actually names a custom field;
-        // a plain `status:paid` browse shouldn't hit the definitions table.
-        if (!options.filter || !options.filter.includes('custom_fields.') || !this.labsService.isSet('membersCustomFields')) {
-            return;
-        }
-
-        const fieldIdsByKey = await this.customFieldValues.getFieldIdsByKey();
-        const transformer = createCustomFieldsFilterTransformer(fieldIdsByKey);
-
-        options.enableCustomFieldsFilter = true;
-        options.mongoTransformer = options.mongoTransformer
-            ? chainTransformers(options.mongoTransformer, transformer)
-            : transformer;
-    }
 
     /**
      * @private
@@ -771,7 +744,7 @@ module.exports = class MemberBREADService {
         //option param to skip distinct from count query, distinct adds a lot of latency and in this case the result set will always be unique.
         options.useBasicCount = true;
 
-        await this.applyCustomFieldsFilter(options);
+        await applyCustomFieldsFilter(options, {values: this.customFieldValues, labs: this.labsService});
 
         const page = await this.memberRepository.list({
             ...options,
