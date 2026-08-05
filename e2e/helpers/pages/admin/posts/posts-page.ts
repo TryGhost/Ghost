@@ -7,6 +7,7 @@ export class PostsPage extends AdminPage {
     public readonly newPostButton: Locator;
 
     public readonly postsFilters: Locator;
+    public readonly addFilterButton: Locator;
 
     public readonly typeFilter: Locator;
     public readonly visibilityFilter: Locator;
@@ -28,6 +29,9 @@ export class PostsPage extends AdminPage {
         this.newPostButton = page.getByRole('link', {name: 'New post', exact: true});
 
         this.postsFilters = page.getByTestId('posts-filters');
+        // React's single entry point into the filter popover; absent in Ember,
+        // which has a dropdown per field.
+        this.addFilterButton = this.postsFilters.getByRole('button', {name: 'Filter', exact: true});
         this.typeFilter = this.postsFilters.getByRole('button', {name: 'Type filter'});
         this.visibilityFilter = this.postsFilters.getByRole('button', {name: 'Visibility filter'});
         this.authorFilter = this.postsFilters.getByRole('button', {name: 'Author filter'});
@@ -49,18 +53,45 @@ export class PostsPage extends AdminPage {
         await this.postsList.waitFor({state: 'visible'});
     }
 
+    /**
+     * Waits for the list without asserting the URL. `waitForPageToFullyLoad`
+     * matches the bare `/ghost/#/posts`, so it never settles on a filtered or
+     * saved-view URL — which is exactly where the query params matter.
+     */
+    async waitForList() {
+        await this.postsList.waitFor({state: 'visible'});
+    }
+
     async refreshData() {
         await this.page.reload();
     }
 
+    /**
+     * Applies a filter.
+     *
+     * The two implementations reach the same result through different UI:
+     * Ember has one dropdown per field, React has a single "Filter" button that
+     * asks which field first. The *gesture* differs, the contract does not — so
+     * the branch lives here and no test body needs to know which screen it is
+     * driving.
+     */
+    private async applyFilter(fieldLabel: string, emberTrigger: Locator, optionName: string): Promise<void> {
+        if (await emberTrigger.isVisible()) {
+            await emberTrigger.click();
+        } else {
+            await this.addFilterButton.click();
+            await this.page.getByRole('option', {name: fieldLabel, exact: true}).click();
+        }
+
+        await this.page.getByRole('option', {name: optionName, exact: true}).click();
+    }
+
     async selectType(typeName: string): Promise<void> {
-        await this.typeFilter.click();
-        await this.page.getByRole('option', {name: typeName, exact: true}).click();
+        await this.applyFilter('Post type', this.typeFilter, typeName);
     }
 
     async selectVisibility(visibilityName: string): Promise<void> {
-        await this.visibilityFilter.click();
-        await this.page.getByRole('option', {name: visibilityName, exact: true}).click();
+        await this.applyFilter('Access', this.visibilityFilter, visibilityName);
     }
 
     async selectAuthor(authorName: string): Promise<void> {
