@@ -6,6 +6,7 @@ import {getPostPreviewUrl} from '@/posts/list/post-preview-url';
 import {toast} from 'sonner';
 import {useCallback} from 'react';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
+import type {BulkActionSnapshot} from '@/posts/list/hooks/use-post-bulk-actions';
 import type {PostContextMenuKey} from '@/posts/list/post-context-menu-items';
 import type {PostListItem} from '@/posts/list/hooks/use-posts-list';
 import type {PostResource} from '@/posts/list/post-resource';
@@ -16,15 +17,20 @@ import type {PostResource} from '@/posts/list/post-resource';
  */
 
 /**
- * The keys `usePostActions` actually handles. The rest are rendered disabled
- * until Phase 8 wires their modals — a menu item that closes the menu and does
- * nothing is worse than one that says it isn't ready.
+ * The keys the menu can actually carry out. Anything absent renders disabled —
+ * a menu item that closes the menu and does nothing is worse than one that says
+ * it isn't ready. `add-tag` and `change-access` still need their pickers.
  */
 export const IMPLEMENTED_POST_ACTIONS: ReadonlySet<PostContextMenuKey> = new Set([
     'copy-link',
     'copy-preview',
     'duplicate',
-    'gift-link'
+    'gift-link',
+    'delete',
+    'unpublish',
+    'unschedule',
+    'feature',
+    'unfeature'
 ]);
 
 interface UsePostActionsOptions {
@@ -39,9 +45,19 @@ interface UsePostActionsOptions {
      * interpolates the same number into its toasts.
      */
     count: number;
+    /** Bulk keys are handed upward with the selection captured at this moment. */
+    onBulkAction?: (key: PostContextMenuKey, snapshot: BulkActionSnapshot) => void;
+    /** The NQL filter describing the selection, possibly inverted. */
+    selectionFilter: string;
+    /** The list's own filter, which pruned rows must still match. */
+    allFilter: string;
+    /** The bucket filters currently on screen — see `BulkActionSnapshot`. */
+    bucketFilters: string[];
 }
 
-export function usePostActions({resource, posts, onShareAsGift, count}: UsePostActionsOptions) {
+export function usePostActions({
+    resource, posts, onShareAsGift, count, onBulkAction, selectionFilter, allFilter, bucketFilters
+}: UsePostActionsOptions) {
     const {data: siteData} = useBrowseSite();
     const siteUrl = siteData?.site.url ?? '';
 
@@ -103,6 +119,10 @@ export function usePostActions({resource, posts, onShareAsGift, count}: UsePostA
             onShareAsGift?.(first.id);
             break;
         default:
+            // Everything else is a bulk action. The selection is captured now,
+            // because the menu is about to close and take a transient selection
+            // with it.
+            onBulkAction?.(key, {filter: selectionFilter, posts, count, allFilter, bucketFilters});
             break;
         }
         } catch (error) {
@@ -110,5 +130,8 @@ export function usePostActions({resource, posts, onShareAsGift, count}: UsePostA
                 ? error.message
                 : `Could not complete that action on this ${resource === 'pages' ? 'page' : 'post'}.`);
         }
-    }, [posts, resource, siteUrl, copyPost, copyPage, queryClient, onShareAsGift, count]);
+    }, [
+        posts, resource, siteUrl, copyPost, copyPage, queryClient,
+        onShareAsGift, count, onBulkAction, selectionFilter, allFilter, bucketFilters
+    ]);
 }

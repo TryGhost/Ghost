@@ -46,6 +46,9 @@ export const postsListScreen = {
      * text: these strings appear nowhere else on the screen.
      */
     toastWithText: (text: string | RegExp) => page.getByText(text),
+    /** The confirm button inside a bulk-action modal. */
+    confirmButton: (label: string) => page.getByRole("alertdialog").getByRole("button", { name: label, exact: true }),
+    bulkModal: () => page.getByRole("alertdialog"),
     /** The gift-link modal, opened from the context menu. */
     giftLinkModal: () => page.getByRole("dialog", { name: /gift/i }),
     /** The trailing button at a row's end — Analytics, View, or Editor. */
