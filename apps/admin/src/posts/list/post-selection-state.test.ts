@@ -223,3 +223,74 @@ describe('isSinglePostSelected', () => {
         expect(isSinglePostSelected(run([{type: 'selectAll'}, {type: 'toggle', id: 'b'}]))).toBe(false);
     });
 });
+
+/**
+ * Right-clicking a row that isn't selected selects just that row — but only for
+ * as long as the menu is open. Ember does this with a freeze/unfreeze pair on
+ * the selection list plus a `clearOnNextUnfreeze` flag; Radix owns the menu's
+ * open state for us, so it collapses to one boolean on the selection itself.
+ *
+ * Right-clicking a row that *is* already selected leaves the selection alone —
+ * that is how you act on many rows at once.
+ */
+describe('transient selection', () => {
+    it('replaces the selection when an unselected row is right-clicked', () => {
+        const state = run([
+            {type: 'toggle', id: 'a'},
+            {type: 'toggle', id: 'b'},
+            {type: 'contextMenu', id: 'd'}
+        ]);
+
+        expect(selected(state)).toEqual(['d']);
+        expect(state.transient).toBe(true);
+    });
+
+    it('leaves an existing selection alone when one of its rows is right-clicked', () => {
+        const state = run([
+            {type: 'toggle', id: 'a'},
+            {type: 'toggle', id: 'b'},
+            {type: 'contextMenu', id: 'b'}
+        ]);
+
+        expect(selected(state)).toEqual(['a', 'b']);
+        expect(state.transient).toBe(false);
+    });
+
+    it('leaves an inverted selection alone, since every row is in it', () => {
+        const state = run([
+            {type: 'selectAll'},
+            {type: 'contextMenu', id: 'c'}
+        ]);
+
+        expect(state.inverted).toBe(true);
+        expect(state.transient).toBe(false);
+    });
+
+    it('drops a transient selection when the menu closes', () => {
+        const state = run([
+            {type: 'contextMenu', id: 'd'},
+            {type: 'closeContextMenu'}
+        ]);
+
+        expect(selected(state)).toEqual([]);
+    });
+
+    // The selection the user built by hand has to survive the menu closing,
+    // or acting on it twice in a row would be impossible.
+    it('keeps a deliberate selection when the menu closes', () => {
+        const state = run([
+            {type: 'toggle', id: 'a'},
+            {type: 'toggle', id: 'b'},
+            {type: 'contextMenu', id: 'b'},
+            {type: 'closeContextMenu'}
+        ]);
+
+        expect(selected(state)).toEqual(['a', 'b']);
+    });
+
+    // Anchoring on the right-clicked row matches a plain cmd-click, so a
+    // shift-click straight after the menu closes ranges from where you clicked.
+    it('anchors on the row that was right-clicked', () => {
+        expect(run([{type: 'contextMenu', id: 'd'}]).lastSelectedId).toBe('d');
+    });
+});
