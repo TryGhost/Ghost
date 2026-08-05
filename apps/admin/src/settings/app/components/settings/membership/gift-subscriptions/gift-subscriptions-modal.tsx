@@ -131,7 +131,7 @@ const GiftSidebar: React.FC<GiftSidebarProps> = ({localSettings, updateSetting})
     );
 };
 
-const GiftModal: React.FC = () => {
+const GiftSubscriptionsModal: React.FC = () => {
     const {updateRoute} = useRouting();
     const handleError = useHandleError();
     const {settings} = useGlobalData();
@@ -184,7 +184,7 @@ const GiftModal: React.FC = () => {
             preview={<GiftPreview localSettings={formState.settings} localTiers={formState.tiers} />}
             previewToolbar={false}
             sidebar={<GiftSidebar localSettings={formState.settings} updateSetting={updateSetting} />}
-            testId='gift-modal'
+            testId='gift-subscriptions-modal'
             title='Gift subscriptions'
             onOk={async () => {
                 await handleSave({force: true});
@@ -193,4 +193,4 @@ const GiftModal: React.FC = () => {
     );
 };
 
-export default NiceModal.create(GiftModal);
+export default NiceModal.create(GiftSubscriptionsModal);

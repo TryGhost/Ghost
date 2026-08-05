@@ -14,22 +14,22 @@ const giftSettings: Record<string, string | null> = {
 
 const imageFile = () => new File([new Uint8Array([137, 80, 78, 71])], 'gift.png', {type: 'image/png'});
 
-async function openGiftModal(settings = giftSettings) {
+async function openGiftSubscriptionsModal(settings = giftSettings) {
     fakeSettingsScreens();
     fakeTiers([paidTier]);
     await renderAdminApp('/settings', {
         boot: {browseSettings: {response: settingsResponse({settings})}}
     });
     await settingsScreen.section('gift-subscriptions').getByRole('button', {name: 'Customize'}).click();
-    await expect.element(settingsScreen.giftModal()).toBeVisible();
-    return settingsScreen.giftModal();
+    await expect.element(settingsScreen.giftSubscriptionsModal()).toBeVisible();
+    return settingsScreen.giftSubscriptionsModal();
 }
 
 describe('Gift subscription settings', () => {
     it('saves image, heading and description changes together', async () => {
         fakeAdminEndpoint('POST', '/images/upload/', {images: [{url: 'https://example.com/gift.jpg', ref: null}]});
         const settingsApi = fakeEditSettings();
-        const modal = await openGiftModal();
+        const modal = await openGiftSubscriptionsModal();
 
         await expect.element(modal.getByLabelText('Heading')).toHaveAttribute('placeholder', 'Gift a membership');
         await expect.element(modal.getByLabelText('Description')).toHaveAttribute('placeholder', 'Share a full membership to Test Site with a friend or colleague');
@@ -54,7 +54,7 @@ describe('Gift subscription settings', () => {
 
     it('clears custom content back to Portal defaults', async () => {
         const settingsApi = fakeEditSettings();
-        const modal = await openGiftModal({
+        const modal = await openGiftSubscriptionsModal({
             ...giftSettings,
             gift_page_image: 'https://example.com/old.jpg',
             gift_page_heading: 'Old heading',
@@ -88,7 +88,7 @@ describe('Gift subscription settings', () => {
         const uploadApi = fakeAdminEndpoint('POST', '/images/upload/', {
             errors: [{message: 'Unsupported image', type: 'UnsupportedMediaTypeError'}]
         }, {status: 415});
-        const modal = await openGiftModal();
+        const modal = await openGiftSubscriptionsModal();
 
         await modal.getByTestId('gift-page-image-upload').upload(new File(['nope'], 'gift.txt', {type: 'text/plain'}));
         await expect.element(modal.getByRole('alert')).toHaveTextContent('Choose a JPG, PNG, GIF, WebP, or SVG image.');
