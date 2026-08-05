@@ -1,6 +1,7 @@
-const assert = require('node:assert/strict');
-const sinon = require('sinon');
-const getAuthorImage = require('../../../../core/frontend/meta/author-image');
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+// @ts-expect-error author-image currently lacks type definitions.
+import getAuthorImage from '../../../../core/frontend/meta/author-image';
 
 describe('getAuthorImage', function () {
     afterEach(function () {
