@@ -52,6 +52,14 @@ export const postsListScreen = {
     /** The confirm button inside a bulk-action modal. */
     confirmButton: (label: string) => page.getByRole("alertdialog").getByRole("button", { name: label, exact: true }),
     bulkModal: () => page.getByRole("alertdialog"),
+    /**
+     * The post-publish celebration, handed over from the Ember editor.
+     *
+     * Located by role, not testid: `PostShareModal` spreads its extra props
+     * onto Radix's `Dialog.Root`, which renders no DOM node at all, so a
+     * testid passed to it has nowhere to land.
+     */
+    celebrationModal: () => page.getByRole("dialog").filter({ hasText: /published|All set/ }),
     /** The gift-link modal, opened from the context menu. */
     giftLinkModal: () => page.getByRole("dialog", { name: /gift/i }),
     /** The trailing button at a row's end — Analytics, View, or Editor. */
