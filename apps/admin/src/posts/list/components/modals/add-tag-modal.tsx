@@ -10,6 +10,7 @@ import {
 } from '@tryghost/shade/components';
 import {Inline, Stack, Text} from '@tryghost/shade/primitives';
 import {useBrowseTags} from '@tryghost/admin-x-framework/api/tags';
+import {cn} from '@tryghost/shade/utils';
 import {useMemo, useState} from 'react';
 
 export interface TagToAdd {
@@ -19,6 +20,14 @@ export interface TagToAdd {
 }
 
 interface AddTagModalProps {
+    /**
+     * Tags already on the selected post, shown ticked and locked. This action
+     * can only *add*, so offering to untick one would promise a removal it
+     * cannot perform — but leaving them out entirely reads as "this post has no
+     * tags", which is worse. Only meaningful for a single post; with several
+     * there is no shared set to show.
+     */
+    appliedTags?: {id?: string; name: string; slug?: string}[];
     isRunning: boolean;
     onConfirm: (tags: TagToAdd[]) => void;
     onCancel: () => void;
@@ -32,7 +41,7 @@ interface AddTagModalProps {
  * submit with none selected. Both are kept: a tag typed but not matching any
  * existing one is offered as a new one, and the server creates it.
  */
-export function AddTagModal({isRunning, onConfirm, onCancel}: AddTagModalProps) {
+export function AddTagModal({appliedTags = [], isRunning, onConfirm, onCancel}: AddTagModalProps) {
     const [search, setSearch] = useState('');
     const [selected, setSelected] = useState<TagToAdd[]>([]);
 
@@ -49,6 +58,11 @@ export function AddTagModal({isRunning, onConfirm, onCancel}: AddTagModalProps) 
         && !tags.some(tag => tag.name.toLowerCase() === term.toLowerCase())
         && !selected.some(tag => tag.name.toLowerCase() === term.toLowerCase());
 
+    const applied = useMemo(
+        () => new Set(appliedTags.map(tag => tag.name.toLowerCase())),
+        [appliedTags]
+    );
+    const isApplied = (name: string) => applied.has(name.toLowerCase());
     const isSelected = (name: string) => selected.some(tag => tag.name === name);
 
     const toggle = (tag: TagToAdd) => {
@@ -99,13 +113,19 @@ export function AddTagModal({isRunning, onConfirm, onCancel}: AddTagModalProps) 
                         {matches.map(tag => (
                             <Inline key={tag.id} align='center' gap='sm'>
                                 <Checkbox
-                                    checked={isSelected(tag.name)}
+                                    checked={isApplied(tag.name) || isSelected(tag.name)}
+                                    disabled={isApplied(tag.name)}
                                     id={`tag-${tag.id}`}
                                     onCheckedChange={() => {
                                         toggle({id: tag.id, name: tag.name, slug: tag.slug});
                                     }}
                                 />
-                                <label className='text-sm' htmlFor={`tag-${tag.id}`}>{tag.name}</label>
+                                <label
+                                    className={cn('text-sm', isApplied(tag.name) && 'text-muted-foreground')}
+                                    htmlFor={`tag-${tag.id}`}
+                                >
+                                    {tag.name}
+                                </label>
                             </Inline>
                         ))}
                         {matches.length === 0 && !canCreate && (

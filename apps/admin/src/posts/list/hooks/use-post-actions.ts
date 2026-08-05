@@ -1,6 +1,7 @@
 import {getPostActionMessage} from '@/posts/list/post-action-messages';
 import {useCopyPage} from '@tryghost/admin-x-framework/api/pages';
 import {useCopyPost} from '@tryghost/admin-x-framework/api/posts';
+import {useFramework} from '@tryghost/admin-x-framework';
 import {useQueryClient} from '@tanstack/react-query';
 import {getPostPreviewUrl} from '@/posts/list/post-preview-url';
 import {toast} from 'sonner';
@@ -70,6 +71,8 @@ export function usePostActions({
     const copyPost = useCopyPost();
     const copyPage = useCopyPage();
     const queryClient = useQueryClient();
+    // Ember owns the editor and keeps its own store; tell it too.
+    const {onInvalidate} = useFramework();
 
     return useCallback(async (key: PostContextMenuKey) => {
         const first = posts[0];
@@ -100,7 +103,7 @@ export function usePostActions({
             await navigator.clipboard.writeText(getPostPreviewUrl(first, siteUrl));
             notify('copiedPreviewUrl');
             break;
-        case 'duplicate':
+        case 'duplicate': {
             if (resource === 'pages') {
                 await copyPage.mutateAsync(first.id);
             } else {
@@ -113,12 +116,17 @@ export function usePostActions({
             // came from, and the buckets are separate queries here. One list
             // refetch is cheap, and unlike the bulk actions in Phase 8 there is
             // no long selection whose scroll position needs preserving.
-            await queryClient.invalidateQueries({
-                queryKey: [resource === 'pages' ? 'PagesResponseType' : 'PostsResponseType']
-            });
+            const dataType = resource === 'pages' ? 'PagesResponseType' : 'PostsResponseType';
+
+            // Not awaited: `invalidateQueries` settles only once every active
+            // query has refetched, and nothing here depends on that having
+            // finished.
+            void queryClient.invalidateQueries({queryKey: [dataType]});
+            onInvalidate(dataType);
 
             notify('duplicated');
             break;
+        }
         case 'gift-link':
             onShareAsGift?.(first.id);
             break;
@@ -136,6 +144,7 @@ export function usePostActions({
         }
     }, [
         posts, resource, siteUrl, copyPost, copyPage, queryClient,
-        onShareAsGift, count, onBulkAction, selectionFilter, allFilter, bucketFilters, isSingle
+        onShareAsGift, count, onBulkAction, selectionFilter, allFilter, bucketFilters, isSingle,
+        onInvalidate
     ]);
 }
