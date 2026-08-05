@@ -21,7 +21,7 @@ import {type PostResource, getPostResourceCopy} from './post-resource';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
 import {usePostsFilterState} from './hooks/use-posts-filter-state';
 import {rememberStickyPostFilters} from './posts-sticky-filters';
-import {useEffect} from 'react';
+import {useEffect, useMemo} from 'react';
 import {useLocation} from '@tryghost/admin-x-framework';
 import {usePostAnalyticsCounts} from './hooks/use-post-analytics-counts';
 import {usePostsList} from './hooks/use-posts-list';
@@ -54,7 +54,10 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
     const isAdmin = Boolean(currentUser && hasAdminAccess(currentUser));
 
     const settings = settingsData?.settings ?? null;
-    const metricsSettings = {
+    // Memoised because it is a prop of every row, and the rows are memoised:
+    // rebuilding this object each render would defeat that and re-render the
+    // whole list on every modifier keypress.
+    const metricsSettings = useMemo(() => ({
         webAnalyticsEnabled: getSettingValue<boolean>(settings, 'web_analytics_enabled') === true,
         membersTrackSources: getSettingValue<boolean>(settings, 'members_track_sources') === true,
         emailTrackOpens: getSettingValue<boolean>(settings, 'email_track_opens') === true,
@@ -62,7 +65,7 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
         membersSignupAccess: getSettingValue<string>(settings, 'members_signup_access') ?? 'all',
         isMembersInviteOnly: getSettingValue<string>(settings, 'members_signup_access') === 'invite',
         isContributor
-    };
+    }), [settings, isContributor]);
     const paidMembersEnabled = getSettingValue<boolean>(settings, 'paid_members_enabled') === true;
 
     // The save/edit-view affordance: admins only, posts only, not while a
