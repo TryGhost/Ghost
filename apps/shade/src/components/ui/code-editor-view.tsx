@@ -29,8 +29,7 @@ const codeMirrorClasses = [
     '[&_.cm-gutters]:bg-muted',
     '[&_.cm-gutters]:text-muted-foreground',
     '[&_.cm-gutters]:border-border',
-    '[&_.cm-cursor]:border-foreground',
-    '[&_.cm-tooltip-autocomplete.cm-tooltip_ul_li:not([aria-selected])]:bg-background'
+    '[&_.cm-cursor]:border-foreground'
 ].join(' ');
 
 // Meant to be imported asynchronously to avoid including CodeMirror in the main bundle
@@ -59,10 +58,14 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
     const {darkMode, setFocusState} = useFocusContext();
 
     const editorExtensions = useMemo(() => {
-        // The editor container is overflow-hidden (rounded border), which clips
-        // in-flow tooltips like autocomplete; fixed positioning escapes the
-        // clip while keeping tooltips in the editor DOM so theme classes apply.
-        const base = [...resolvedExtensions, tooltips({position: 'fixed'})];
+        // Tooltips (autocomplete) render into document.body: inside the editor
+        // they get clipped by this component's overflow-hidden container, and
+        // plain position:fixed gets demoted to absolute by CodeMirror whenever
+        // an ancestor is a fixed-position containing block (its offsetParent
+        // check). CodeMirror mirrors the editor's theme classes onto the
+        // detached container, so tooltip styling must be global, not wrapper-
+        // scoped (see .cm-tooltip rules in styles.css).
+        const base = [...resolvedExtensions, tooltips({position: 'fixed', parent: document.body})];
         return ariaLabel
             ? [...base, EditorView.contentAttributes.of({'aria-label': ariaLabel})]
             : base;
