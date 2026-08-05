@@ -485,11 +485,18 @@ jobs:
         run: pnpm install --frozen-lockfile --force
 
       - name: Install hyperfine
+        # The checksum must be updated alongside HYPERFINE_VERSION. Note that
+        # bumping the version also breaks comparability with existing data
+        # points, so it should be a deliberate decision, not a routine upgrade.
+        env:
+          HYPERFINE_VERSION: 1.18.0
+          HYPERFINE_SHA256: 0cf1779354f46037df145bce9dd298d28aee341ac789b6a377ad77855029bc8e
         run: |
-          export HYPERFINE_VERSION=1.18.0
-          wget https://github.com/sharkdp/hyperfine/releases/download/v$HYPERFINE_VERSION/hyperfine-v$HYPERFINE_VERSION-x86_64-unknown-linux-gnu.tar.gz
-          tar -zxvf hyperfine-v$HYPERFINE_VERSION-x86_64-unknown-linux-gnu.tar.gz
-          mv hyperfine-v$HYPERFINE_VERSION-x86_64-unknown-linux-gnu/hyperfine /usr/local/bin
+          TARBALL="hyperfine-v${HYPERFINE_VERSION}-x86_64-unknown-linux-gnu.tar.gz"
+          wget "https://github.com/sharkdp/hyperfine/releases/download/v${HYPERFINE_VERSION}/${TARBALL}"
+          echo "${HYPERFINE_SHA256}  ${TARBALL}" | sha256sum --check --strict
+          tar -zxf "${TARBALL}"
+          mv "hyperfine-v${HYPERFINE_VERSION}-x86_64-unknown-linux-gnu/hyperfine" /usr/local/bin
           chmod +x /usr/local/bin/hyperfine
 
       - name: Build TS code
@@ -504,7 +511,13 @@ jobs:
         run: |
           jq '[{ name: "Boot time", unit: "s", value: .results[0].median, range: ((.results[0].max - .results[0].min) | tostring) }]' < boot-perf.json > boot-perf-formatted.json
 
+      # Publishing is restricted to push runs. A `perf-tests`-labelled PR runs
+      # everything above and reports the numbers in the log, but never receives
+      # the write-scoped token, because a pull_request run executes PR-authored
+      # code (install scripts, build, boot). It also keeps unmerged PR results
+      # out of the main-branch series.
       - name: Run analysis
+        if: github.event_name != 'pull_request'
         uses: benchmark-action/github-action-benchmark@4bdcce38c94cec68da58d012ac24b7b1155efe8b # v1.20.7
         with:
           tool: 'customSmallerIsBetter'
