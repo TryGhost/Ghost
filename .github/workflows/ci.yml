@@ -198,7 +198,7 @@ jobs:
           cache: pnpm
 
       - name: Check agent skill discovery
-        run: pnpm lint:agent-skills
+        run: node scripts/check-agent-skill-links.js
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
