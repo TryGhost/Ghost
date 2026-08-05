@@ -11,8 +11,12 @@ vi.mock('@tryghost/admin-x-framework/api/config', () => ({
     useBrowseConfig: mockUseBrowseConfig
 }));
 
+// `useEmberFeatureFlag` is the ownership authority when Ember is present: with
+// no Ember (as here) it returns undefined and the gate falls back to the config
+// query. Omitting it from the mock makes FlagGatedRoute throw.
 vi.mock('./ember-bridge', () => ({
-    EmberFallback: () => React.createElement('div', {'data-testid': 'ember-fallback'})
+    EmberFallback: () => React.createElement('div', {'data-testid': 'ember-fallback'}),
+    useEmberFeatureFlag: () => undefined
 }));
 
 // The Ember side of these routes is EmberListWithGiftLinks rather than a bare
