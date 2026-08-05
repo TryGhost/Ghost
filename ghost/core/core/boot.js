@@ -291,13 +291,17 @@ function initPrometheusClient({config}) {
  * However this _must_ happen after the express Apps are loaded, hence why this is here and not in initFrontend
  * Routing is currently tightly coupled between the frontend and backend
  */
-async function initDynamicRouting() {
+async function initDynamicRouting({frontend}) {
     debug('Begin: Dynamic Routing');
     const routing = require('./frontend/services/routing');
     const routeSettingsModule = require('./server/services/route-settings');
     const urlService = require('./server/services/url');
     const bridge = require('./bridge');
     bridge.init();
+
+    if (!frontend) {
+        routing.routerManager.init({urlService: urlService.facade});
+    }
 
     await routeSettingsModule.service.start({
         routerManager: routing.routerManager,
@@ -591,8 +595,9 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
         }
         const ghostApp = await initExpressApps({frontend, backend, config});
 
+        await initDynamicRouting({frontend});
+
         if (frontend) {
-            await initDynamicRouting();
             await initAppService();
         }
 
