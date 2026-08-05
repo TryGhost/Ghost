@@ -222,7 +222,7 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
                     iconName='User'
                     linkto='/analytics/growth/'
                     title='Members'
-                    trendingFromValue={`${formatNumber(membersChartData[0].value)}`}
+                    trendingFromValue={`${formatNumber(membersChartData[0]?.value ?? 0)}`}
                     onClick={() => {
                         navigate('/analytics/growth/?tab=total-members');
                     }}
@@ -249,7 +249,7 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
                     iconName='Coins'
                     linkto='/analytics/growth/'
                     title='MRR'
-                    trendingFromValue={`${currencySymbol}${formatNumber(mrrChartData[0].value)}`}
+                    trendingFromValue={`${currencySymbol}${formatNumber(mrrChartData[0]?.value ?? 0)}`}
                     onClick={() => {
                         navigate('/analytics/growth/?tab=mrr');
                     }}

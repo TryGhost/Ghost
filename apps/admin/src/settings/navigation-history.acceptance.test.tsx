@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { currentRoute, fakeAdminStats, fakePosts, fakeSettingsScreens, renderAdminApp } from "@test-utils/acceptance";
+import { currentRoute, fakeAnalyticsOverview, fakeSettingsScreens, renderAdminApp } from "@test-utils/acceptance";
 import { settingsScreen } from "./settings.screen";
 
 // Settings navigations are real router pushes; these specs pin the history
@@ -22,15 +22,11 @@ describe("Settings navigation history", () => {
 
     it("returns to settings with the back button after exiting", async () => {
         fakeSettingsScreens();
-        fakeAdminStats.memberCount();
-        fakeAdminStats.mrr();
-        fakeAdminStats.subscriptions();
-        fakeAdminStats.topPostViews();
-        fakePosts([]);
+        fakeAnalyticsOverview();
         await renderAdminApp("/settings");
 
         await settingsScreen.exitButton().click();
-        await expect.poll(currentRoute).not.toBe("/settings");
+        await expect.poll(currentRoute).toBe("/analytics");
 
         window.history.back();
 
