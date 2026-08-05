@@ -1,0 +1,756 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - button "close" [ref=e5] [cursor=pointer]:
+    - img "close"
+  - generic [ref=e6]:
+    - generic [ref=e9]:
+      - generic [ref=e11]:
+        - img
+        - generic [ref=e12]:
+          - textbox "Search" [ref=e14]:
+            - /placeholder: Search settings
+          - generic [ref=e15]: Search
+        - generic [ref=e16]: /
+      - navigation [ref=e17]:
+        - heading "General settings" [level=2] [ref=e18]
+        - list [ref=e19]:
+          - listitem [ref=e20]:
+            - generic [ref=e21] [cursor=pointer]:
+              - img "type-cursor"
+              - text: Title & description
+          - listitem [ref=e22]:
+            - generic [ref=e23] [cursor=pointer]:
+              - img
+              - text: Timezone
+          - listitem [ref=e24]:
+            - generic [ref=e25] [cursor=pointer]:
+              - img
+              - text: Publication language
+          - listitem [ref=e26]:
+            - generic [ref=e27] [cursor=pointer]:
+              - img
+              - text: Staff
+          - listitem [ref=e28]:
+            - generic [ref=e29] [cursor=pointer]:
+              - img
+              - text: Meta data
+          - listitem [ref=e30]:
+            - generic [ref=e31] [cursor=pointer]:
+              - img
+              - text: Social accounts
+          - listitem [ref=e32]:
+            - generic [ref=e33] [cursor=pointer]:
+              - img
+              - text: Analytics
+          - listitem [ref=e34]:
+            - generic [ref=e35] [cursor=pointer]:
+              - img "lock-1"
+              - text: Make this site private
+        - heading "Site" [level=2] [ref=e36]
+        - list [ref=e37]:
+          - listitem [ref=e38]:
+            - generic [ref=e39] [cursor=pointer]:
+              - img
+              - text: Design & branding
+          - listitem [ref=e40]:
+            - generic [ref=e41] [cursor=pointer]:
+              - img "browser-page-layout"
+              - text: Theme
+          - listitem [ref=e42]:
+            - generic [ref=e43] [cursor=pointer]:
+              - img "navigation-menu-4"
+              - text: Navigation
+          - listitem [ref=e44]:
+            - generic [ref=e45] [cursor=pointer]:
+              - img
+              - text: Announcement bar
+        - heading "Membership" [level=2] [ref=e46]
+        - list [ref=e47]:
+          - listitem [ref=e48]:
+            - generic [ref=e49] [cursor=pointer]:
+              - img
+              - text: Access
+          - listitem [ref=e50]:
+            - generic [ref=e51] [cursor=pointer]:
+              - img
+              - text: Tiers
+          - listitem [ref=e52]:
+            - generic [ref=e53] [cursor=pointer]:
+              - img
+              - text: Signup portal
+          - listitem [ref=e54]:
+            - generic [ref=e55] [cursor=pointer]:
+              - img
+              - text: Welcome emails
+          - listitem [ref=e56]:
+            - generic [ref=e57] [cursor=pointer]:
+              - img
+              - text: Newsletters
+        - heading "Growth" [level=2] [ref=e58]
+        - list [ref=e59]:
+          - listitem [ref=e60]:
+            - generic [ref=e61] [cursor=pointer]:
+              - img
+              - text: Network
+          - listitem [ref=e62]:
+            - generic [ref=e63] [cursor=pointer]:
+              - img
+              - text: Ghost Explore
+          - listitem [ref=e64]:
+            - generic [ref=e65] [cursor=pointer]:
+              - img
+              - text: Recommendations
+          - listitem [ref=e66]:
+            - generic [ref=e67] [cursor=pointer]:
+              - img
+              - text: Signup forms
+        - heading "Advanced" [level=2] [ref=e68]
+        - list [ref=e69]:
+          - listitem [ref=e70]:
+            - generic [ref=e71] [cursor=pointer]:
+              - img "module-three"
+              - text: Integrations
+          - listitem [ref=e72]:
+            - generic [ref=e73] [cursor=pointer]:
+              - img
+              - text: Import/Export
+          - listitem [ref=e74]:
+            - generic [ref=e75] [cursor=pointer]:
+              - img
+              - text: Code injection
+          - listitem [ref=e76]:
+            - generic [ref=e77] [cursor=pointer]:
+              - img
+              - text: Labs
+          - listitem [ref=e78]:
+            - generic [ref=e79] [cursor=pointer]:
+              - img "time-reverse"
+              - text: History
+        - generic [ref=e80] [cursor=pointer]:
+          - img "Ghost Logo" [ref=e81]
+          - text: About Ghost
+    - generic [ref=e83]:
+      - generic [ref=e84]:
+        - heading "General settings" [level=2] [ref=e85]
+        - generic [ref=e86]:
+          - generic [ref=e87]:
+            - generic [ref=e88]:
+              - generic [ref=e89]:
+                - heading "Title & description" [level=5] [ref=e90]
+                - paragraph [ref=e91]: The details used to identify your publication around the web
+              - button "Edit" [ref=e94] [cursor=pointer]:
+                - generic [ref=e95]: Edit
+            - generic [ref=e96]:
+              - generic [ref=e97]:
+                - heading "Site title" [level=6] [ref=e98]
+                - generic [ref=e99]: Test Site
+              - generic [ref=e100]:
+                - heading "Site description" [level=6] [ref=e101]
+                - generic [ref=e102]: Thoughts, stories and ideas.
+          - generic [ref=e103]:
+            - generic [ref=e105]:
+              - heading "Site timezone" [level=5] [ref=e106]
+              - paragraph [ref=e107]: Set the time and date of your publication, used for all published posts
+            - generic [ref=e109]:
+              - generic [ref=e110]: Site timezone
+              - generic [ref=e112]:
+                - log [ref=e114]
+                - generic [ref=e116]:
+                  - generic [ref=e117]: (GMT) UTC
+                  - combobox "Site timezone" [ref=e119]
+              - generic [ref=e123]: The local time here is currently 3/17/2026, 9:49:49 AM
+          - generic [ref=e124]:
+            - generic [ref=e126]:
+              - heading "Publication Language" [level=5] [ref=e127]
+              - paragraph [ref=e128]: Set the language/locale which is used on your site
+            - generic [ref=e130]:
+              - generic [ref=e131]: Site language
+              - generic [ref=e133]:
+                - log [ref=e135]
+                - generic [ref=e137]:
+                  - generic [ref=e138]: English (en)
+                  - combobox "Site language" [ref=e140]
+              - generic [ref=e144]:
+                - text: "Default: English ("
+                - strong [ref=e145]: en
+                - text: ); find out more about
+                - link "using Ghost in other languages" [ref=e146] [cursor=pointer]:
+                  - /url: https://ghost.org/docs/faq/translation/
+          - generic [ref=e147]:
+            - generic [ref=e148]:
+              - heading "Staff" [level=5] [ref=e150]
+              - button "Invite people" [ref=e152] [cursor=pointer]:
+                - generic [ref=e153]: Invite people
+            - generic [ref=e155]:
+              - generic [ref=e156]:
+                - generic [ref=e157]: Security settings
+                - generic [ref=e158]: Require email 2FA codes to be used on all staff logins
+              - switch [ref=e161]
+          - generic [ref=e163]:
+            - generic [ref=e165]:
+              - heading "Meta data" [level=5] [ref=e166]
+              - paragraph [ref=e167]: Extra content for search engines and social accounts
+            - generic [ref=e168]:
+              - tablist [ref=e169]:
+                - tablist [ref=e170]:
+                  - tab "Search" [selected] [ref=e171] [cursor=pointer]
+                  - tab "X card" [ref=e172] [cursor=pointer]
+                  - tab "Facebook card" [ref=e173] [cursor=pointer]
+              - tabpanel [ref=e174]:
+                - generic [ref=e175]:
+                  - generic [ref=e176]:
+                    - generic [ref=e177]:
+                      - textbox "Meta title" [ref=e179]:
+                        - /placeholder: Test Site
+                      - generic [ref=e181]: Meta title
+                      - generic [ref=e182]: "Recommended: 70 characters"
+                    - generic [ref=e183]:
+                      - textbox "Meta description" [ref=e185]:
+                        - /placeholder: Thoughts, stories and ideas.
+                      - generic [ref=e187]: Meta description
+                      - generic [ref=e188]: "Recommended: 156 characters"
+                  - generic [ref=e190]:
+                    - generic [ref=e191]: Preview
+                    - generic [ref=e192]:
+                      - generic [ref=e193]:
+                        - img "google" [ref=e195]
+                        - generic [ref=e203]:
+                          - img
+                      - generic [ref=e206]:
+                        - generic [ref=e207]: test.com
+                        - generic [ref=e208]: http://test.com
+                      - generic [ref=e209]:
+                        - generic [ref=e210]: Test Site
+                        - generic [ref=e211]: Thoughts, stories and ideas.
+          - generic [ref=e212]:
+            - generic [ref=e214]:
+              - heading "Social accounts" [level=5] [ref=e215]
+              - paragraph [ref=e216]: Link your social accounts for full structured data and rich card support
+            - generic [ref=e217]:
+              - generic [ref=e218]:
+                - textbox "URL of your publication's Facebook Page" [ref=e220]:
+                  - /placeholder: https://www.facebook.com/ghost
+                  - text: https://www.facebook.com/ghost
+                - generic [ref=e222]: URL of your publication's Facebook Page
+              - generic [ref=e223]:
+                - textbox "URL of your X profile" [ref=e225]:
+                  - /placeholder: https://x.com/ghost
+                  - text: https://x.com/ghost
+                - generic [ref=e227]: URL of your X profile
+          - generic [ref=e228]:
+            - generic [ref=e230]:
+              - heading "Analytics" [level=5] [ref=e231]
+              - paragraph [ref=e232]: Decide what data you collect across your publication
+            - generic [ref=e233]:
+              - generic [ref=e235]:
+                - switch "Web analytics Cookie-free, first party traffic analytics for your site" [disabled] [ref=e236]
+                - generic [ref=e238]:
+                  - generic [ref=e239]: Web analytics
+                  - generic [ref=e240]: Cookie-free, first party traffic analytics for your site
+              - generic [ref=e243]:
+                - text: Web analytics in Ghost is powered by
+                - link "Tinybird" [ref=e244] [cursor=pointer]:
+                  - /url: https://tbrd.co/ghost
+                - text: and requires configuration to start collecting data.
+                - link "Get started →" [ref=e245] [cursor=pointer]:
+                  - /url: https://docs.ghost.org/install/docker#tinybird-integration
+              - generic [ref=e247]:
+                - switch "Newsletter opens Record when a member opens an email" [checked] [ref=e248]
+                - generic [ref=e250]:
+                  - generic [ref=e251]: Newsletter opens
+                  - generic [ref=e252]: Record when a member opens an email
+              - generic [ref=e254]:
+                - switch "Newsletter clicks Record when a member clicks on any link in an email" [checked] [ref=e255]
+                - generic [ref=e257]:
+                  - generic [ref=e258]: Newsletter clicks
+                  - generic [ref=e259]: Record when a member clicks on any link in an email
+              - generic [ref=e261]:
+                - switch "Member sources Track the traffic sources and posts that drive the most member growth" [checked] [ref=e262]
+                - generic [ref=e264]:
+                  - generic [ref=e265]: Member sources
+                  - generic [ref=e266]: Track the traffic sources and posts that drive the most member growth
+              - generic [ref=e268]:
+                - switch "Outbound link tagging Make it easier for other sites to track the traffic you send them in their analytics" [checked] [ref=e269]
+                - generic [ref=e271]:
+                  - generic [ref=e272]: Outbound link tagging
+                  - generic [ref=e273]: Make it easier for other sites to track the traffic you send them in their analytics
+            - link "Learn about analytics" [ref=e275] [cursor=pointer]:
+              - /url: https://ghost.org/help/post-analytics/
+          - generic [ref=e276]:
+            - generic [ref=e277]:
+              - generic [ref=e278]:
+                - heading "Make site private" [level=5] [ref=e279]
+                - paragraph [ref=e280]: Enable protection with a simple shared password.
+              - button "Edit" [ref=e283] [cursor=pointer]:
+                - generic [ref=e284]: Edit
+            - generic [ref=e288]:
+              - img "lock-unlock"
+              - generic [ref=e289]: Your site is not password protected
+      - generic [ref=e290]:
+        - heading "Site" [level=2] [ref=e291]
+        - generic [ref=e292]:
+          - generic [ref=e293]:
+            - generic [ref=e294]:
+              - generic [ref=e295]:
+                - heading "Design & branding" [level=5] [ref=e296]
+                - paragraph [ref=e297]: Customize the style and layout of your site
+              - button "Customize" [ref=e299] [cursor=pointer]:
+                - generic [ref=e300]: Customize
+            - img [ref=e302]
+          - generic [ref=e303]:
+            - generic [ref=e304]:
+              - generic [ref=e305]:
+                - heading "Theme" [level=5] [ref=e306]
+                - paragraph [ref=e307]: Browse and install official themes or upload one
+              - button "Change theme" [ref=e309] [cursor=pointer]:
+                - generic [ref=e310]: Change theme
+            - generic [ref=e312]:
+              - heading "Active theme" [level=6] [ref=e313]
+              - generic [ref=e314]: Loading...
+          - generic [ref=e316]:
+            - generic [ref=e317]:
+              - heading "Navigation" [level=5] [ref=e318]
+              - paragraph [ref=e319]: Set up primary and secondary menus
+            - button "Customize" [ref=e321] [cursor=pointer]:
+              - generic [ref=e322]: Customize
+          - generic [ref=e324]:
+            - generic [ref=e325]:
+              - heading "Announcement bar" [level=5] [ref=e326]
+              - paragraph [ref=e327]: Highlight important updates or offers
+            - button "Customize" [ref=e329] [cursor=pointer]:
+              - generic [ref=e330]: Customize
+      - generic [ref=e331]:
+        - heading "Membership" [level=2] [ref=e332]
+        - generic [ref=e333]:
+          - generic [ref=e334]:
+            - generic [ref=e336]:
+              - heading "Access" [level=5] [ref=e337]
+              - paragraph [ref=e338]: Set up default access options for subscription and posts
+            - generic [ref=e339]:
+              - generic [ref=e340]:
+                - generic [ref=e341]: Who should be able to subscribe to your site?
+                - generic [ref=e344]:
+                  - log [ref=e346]
+                  - generic [ref=e348]:
+                    - generic [ref=e349]: Anyone can sign up
+                    - combobox [ref=e350]
+              - generic [ref=e354]:
+                - generic [ref=e355]: Who should have access to new posts?
+                - generic [ref=e358]:
+                  - log [ref=e360]
+                  - generic [ref=e362]:
+                    - generic [ref=e363]: Public
+                    - combobox [ref=e364]
+              - generic [ref=e368]:
+                - generic [ref=e369]: Who can comment on posts?
+                - generic [ref=e372]:
+                  - log [ref=e374]
+                  - generic [ref=e376]:
+                    - generic [ref=e377]: Nobody
+                    - combobox [ref=e378]
+          - generic [ref=e382]:
+            - generic [ref=e384]:
+              - heading "Spam filters" [level=5] [ref=e385]
+              - paragraph [ref=e386]: Protect your member signups from spam
+            - generic [ref=e388]:
+              - textbox "Blocked email domains" [ref=e389]:
+                - /placeholder: "spam.xyz\njunk.com"
+              - generic [ref=e390]: Blocked email domains
+              - generic [ref=e391]:
+                - text: Prevent unwanted signups by blocking email domains. Add one domain per line, e.g.,
+                - code [ref=e392]: spam.xyz
+                - text: to block signups from email addresses like
+                - code [ref=e393]: hello@spam.xyz
+                - text: .
+          - generic [ref=e394]:
+            - generic [ref=e395]:
+              - generic [ref=e396]:
+                - heading "Tiers" [level=5] [ref=e397]
+                - paragraph [ref=e398]: Set prices and paid member sign up settings
+              - button "Connect with Stripe" [ref=e400] [cursor=pointer]:
+                - generic [ref=e401]:
+                  - generic [ref=e402]: Connect with Stripe
+                  - img [ref=e403]
+            - generic [ref=e406]:
+              - img "money-bags"
+              - text: No archived tiers found.
+          - generic [ref=e407]:
+            - generic [ref=e408]:
+              - generic [ref=e409]:
+                - heading "Signup portal" [level=5] [ref=e410]
+                - paragraph [ref=e411]: Customize members modal signup flow
+              - button "Customize" [ref=e413] [cursor=pointer]:
+                - generic [ref=e414]: Customize
+            - generic [ref=e415]:
+              - img [ref=e417]
+              - generic [ref=e418]:
+                - generic [ref=e419]:
+                  - img [ref=e421]
+                  - generic [ref=e422]: Sign up
+                  - generic [ref=e423]: jamie@example.com
+                - generic [ref=e424]:
+                  - generic [ref=e425]: Free
+                  - generic [ref=e426]: $0
+                - generic [ref=e431]:
+                  - generic [ref=e432]: Silver
+                  - generic [ref=e433]: $5
+                - generic [ref=e438]:
+                  - generic [ref=e439]: Gold
+                  - generic [ref=e440]: $10
+          - generic [ref=e445]:
+            - generic [ref=e447]:
+              - heading "Welcome emails" [level=5] [ref=e448]
+              - paragraph [ref=e449]: Create and manage automated emails for your members
+            - table [ref=e452]:
+              - rowgroup [ref=e453]:
+                - row "Free members welcome email Welcome to Test Site Edit" [ref=e454]:
+                  - cell "Free members welcome email Welcome to Test Site Edit" [ref=e455]:
+                    - generic [ref=e456]:
+                      - button "Free members welcome email Welcome to Test Site" [ref=e459]:
+                        - generic [ref=e460]:
+                          - img
+                        - generic [ref=e461]:
+                          - generic [ref=e462]: Free members welcome email
+                          - generic [ref=e463]: Welcome to Test Site
+                      - generic [ref=e465]:
+                        - switch [ref=e468]
+                        - button "Edit" [ref=e470]
+      - generic [ref=e471]:
+        - heading "Newsletters" [level=2] [ref=e472]
+        - generic [ref=e473]:
+          - generic [ref=e474]:
+            - generic [ref=e475]:
+              - generic [ref=e476]:
+                - heading "Newsletter sending" [level=5] [ref=e477]
+                - paragraph [ref=e478]: Newsletter features are active, posts can be sent by email
+              - switch [checked] [ref=e482]
+            - generic [ref=e488]:
+              - img
+              - generic [ref=e489]: Enabled
+          - generic [ref=e490]:
+            - generic [ref=e492]:
+              - heading "Default recipients" [level=5] [ref=e493]
+              - paragraph [ref=e494]: When you publish new content, who do you usually want to send it to?
+            - generic [ref=e496]:
+              - generic [ref=e497]: Default Newsletter recipients
+              - generic [ref=e499]:
+                - log [ref=e501]
+                - generic [ref=e503]:
+                  - generic [ref=e504]: Whoever has access to the post
+                  - combobox "Default Newsletter recipients" [ref=e505]
+              - generic [ref=e509]: Who should receive your posts by default?
+          - generic [ref=e510]:
+            - generic [ref=e511]:
+              - generic [ref=e512]:
+                - heading "Newsletters" [level=5] [ref=e513]
+                - paragraph [ref=e514]: Edit details and customize your design
+              - button "Add newsletter" [ref=e516] [cursor=pointer]:
+                - generic [ref=e517]: Add newsletter
+            - generic [ref=e518]:
+              - tablist [ref=e519]:
+                - tablist [ref=e520]:
+                  - tab "Active" [selected] [ref=e521] [cursor=pointer]
+                  - tab "Archived" [ref=e522] [cursor=pointer]
+              - tabpanel [ref=e523]:
+                - generic [ref=e526]:
+                  - table [ref=e529]:
+                    - rowgroup [ref=e530]:
+                      - row "navigation-menu Awesome newsletter No description 0 Subscribers 0 Delivered Edit" [ref=e531] [cursor=pointer]:
+                        - cell "navigation-menu Awesome newsletter No description 0 Subscribers 0 Delivered Edit" [ref=e532]:
+                          - generic [ref=e533]:
+                            - generic [ref=e534]:
+                              - cell "navigation-menu" [ref=e535]:
+                                - button "navigation-menu" [ref=e536]:
+                                  - img "navigation-menu"
+                              - cell "Awesome newsletter No description" [ref=e537]:
+                                - generic [ref=e538]:
+                                  - generic [ref=e539]: Awesome newsletter
+                                  - generic [ref=e540]: No description
+                              - cell "0 Subscribers" [ref=e541]:
+                                - generic [ref=e542]:
+                                  - generic [ref=e543]: "0"
+                                  - generic [ref=e544]: Subscribers
+                              - cell "0 Delivered" [ref=e545]:
+                                - generic [ref=e546]:
+                                  - generic [ref=e547]: "0"
+                                  - generic [ref=e548]: Delivered
+                            - button "Edit" [ref=e550]:
+                              - generic [ref=e551]: Edit
+                  - status [ref=e552]
+          - generic [ref=e553]:
+            - generic [ref=e554]:
+              - generic [ref=e555]:
+                - heading "Mailgun" [level=5] [ref=e556]
+                - paragraph [ref=e557]:
+                  - text: The Mailgun API is used for bulk email newsletter delivery.
+                  - link "Why is this required?" [ref=e558] [cursor=pointer]:
+                    - /url: https://ghost.org/docs/faq/mailgun-newsletters/
+              - button "Edit" [ref=e561] [cursor=pointer]:
+                - generic [ref=e562]: Edit
+            - generic [ref=e564]:
+              - heading "Status" [level=6] [ref=e565]
+              - generic [ref=e566]: Mailgun is not set up
+      - generic [ref=e567]:
+        - heading "Growth" [level=2] [ref=e568]
+        - generic [ref=e569]:
+          - generic [ref=e570]:
+            - generic [ref=e571]:
+              - generic [ref=e572]:
+                - heading "Network" [level=5] [ref=e573]
+                - paragraph [ref=e574]: Distribute posts to the social web, so people can discover and follow your content across BlueSky, Threads, Mastodon, Flipboard, WordPress, and more.
+              - switch [ref=e578]
+            - img [ref=e581]
+          - generic [ref=e582]:
+            - generic [ref=e583]:
+              - generic [ref=e584]:
+                - heading "Ghost Explore" [level=5] [ref=e585]
+                - paragraph [ref=e586]: Promote your site across Ghost's website and publishing network
+              - switch [ref=e590]
+            - img [ref=e593]
+          - generic [ref=e594]:
+            - generic [ref=e595]:
+              - generic [ref=e596]:
+                - heading "RecommendationsBeta" [level=5] [ref=e597]:
+                  - text: Recommendations
+                  - superscript [ref=e598]: Beta
+                - paragraph [ref=e599]: Recommend any publication that your audience will find valuable, and find out when others are recommending you.
+              - button "Add recommendation" [ref=e601] [cursor=pointer]
+            - generic [ref=e602]:
+              - tablist [ref=e603]:
+                - tablist [ref=e604]:
+                  - tab "Your recommendations" [selected] [ref=e605] [cursor=pointer]
+                  - tab "Recommending you" [ref=e606] [cursor=pointer]
+              - tabpanel [ref=e607]:
+                - generic [ref=e609]:
+                  - button "Add first recommendation" [ref=e610] [cursor=pointer]:
+                    - generic [ref=e611]: Add first recommendation
+                  - generic [ref=e612]:
+                    - text: Need inspiration?
+                    - link "Explore thousands of sites" [ref=e613] [cursor=pointer]:
+                      - /url: https://ghost.org/explore
+          - generic [ref=e615]:
+            - generic [ref=e616]:
+              - heading "Signup forms" [level=5] [ref=e617]
+              - paragraph [ref=e618]: Grow your audience from anywhere on the web
+            - button "Embed" [ref=e620] [cursor=pointer]:
+              - generic [ref=e621]: Embed
+      - generic [ref=e622]:
+        - heading "Advanced" [level=2] [ref=e623]
+        - generic [ref=e624]:
+          - generic [ref=e625]:
+            - generic [ref=e626]:
+              - img [ref=e628]
+              - generic [ref=e629]:
+                - generic [ref=e631]:
+                  - heading "Integrations" [level=5] [ref=e632]
+                  - paragraph [ref=e633]: Make Ghost work with apps and tools.
+                - button "Add custom integration" [ref=e634] [cursor=pointer]:
+                  - generic [ref=e635]: Add custom integration
+            - generic [ref=e636]:
+              - tablist [ref=e637]:
+                - tablist [ref=e638]:
+                  - tab "Built-in" [selected] [ref=e639] [cursor=pointer]
+                  - tab "Custom" [ref=e640] [cursor=pointer]
+              - tabpanel [ref=e641]:
+                - generic [ref=e644]:
+                  - generic [ref=e648] [cursor=pointer]:
+                    - img "zapier"
+                    - generic [ref=e649]:
+                      - generic [ref=e650]: Zapier
+                      - generic [ref=e651]: Automation for your apps
+                  - generic [ref=e655] [cursor=pointer]:
+                    - img
+                    - generic [ref=e656]:
+                      - generic [ref=e657]: Slack
+                      - generic [ref=e658]: A messaging app for teams
+                  - generic [ref=e662] [cursor=pointer]:
+                    - img "unsplash"
+                    - generic [ref=e663]:
+                      - generic [ref=e665]:
+                        - text: Unsplash
+                        - generic [ref=e666]: Active
+                      - generic [ref=e667]: Beautiful, free photos
+                  - generic [ref=e671] [cursor=pointer]:
+                    - img
+                    - generic [ref=e672]:
+                      - generic [ref=e673]: FirstPromoter
+                      - generic [ref=e674]: Launch your member referral program
+                  - generic [ref=e678] [cursor=pointer]:
+                    - img
+                    - generic [ref=e679]:
+                      - generic [ref=e680]: Pintura
+                      - generic [ref=e681]: Advanced image editing
+          - generic [ref=e682]:
+            - generic [ref=e684]:
+              - heading "Migration tools" [level=5] [ref=e685]
+              - paragraph [ref=e686]: Import content, members and subscriptions from other platforms or export your Ghost data.
+            - generic [ref=e687]:
+              - tablist [ref=e688]:
+                - tablist [ref=e689]:
+                  - tab "Import" [selected] [ref=e690] [cursor=pointer]
+                  - tab "Export" [ref=e691] [cursor=pointer]
+              - tabpanel [ref=e692]:
+                - generic [ref=e694]:
+                  - button "Substack" [ref=e695] [cursor=pointer]:
+                    - img
+                    - text: Substack
+                  - button "WordPress" [ref=e696] [cursor=pointer]:
+                    - img
+                    - text: WordPress
+                  - button "Squarespace" [ref=e697] [cursor=pointer]:
+                    - img
+                    - text: Squarespace
+                  - button "Medium" [ref=e698] [cursor=pointer]:
+                    - img
+                    - text: Medium
+                  - button "Mailchimp" [ref=e699] [cursor=pointer]:
+                    - img
+                    - text: Mailchimp
+                  - button "Universal import" [ref=e700] [cursor=pointer]:
+                    - img
+                    - text: Universal import
+          - generic [ref=e702]:
+            - generic [ref=e704]:
+              - heading "Code injection" [level=5] [ref=e705]
+              - paragraph [ref=e706]: Add custom code to your publication.
+            - button "Open" [ref=e707] [cursor=pointer]:
+              - generic [ref=e708]: Open
+          - generic [ref=e709]:
+            - generic [ref=e710]:
+              - generic [ref=e712]:
+                - heading "Labs" [level=5] [ref=e713]
+                - paragraph [ref=e714]: This is a testing ground for new or experimental features. They may change, break or inexplicably disappear at any time.
+              - button "Open" [ref=e715] [cursor=pointer]:
+                - generic [ref=e716]: Open
+            - img [ref=e718]
+          - generic [ref=e720]:
+            - generic [ref=e721]:
+              - heading "History" [level=5] [ref=e722]
+              - paragraph [ref=e723]: View system event log
+            - button "View history" [ref=e725] [cursor=pointer]:
+              - generic [ref=e726]: View history
+          - generic [ref=e727]:
+            - generic [ref=e729]:
+              - heading "Danger zone" [level=5] [ref=e730]
+              - paragraph [ref=e731]: Permanently delete all posts and tags from the database, a hard reset
+            - button "Delete all content" [ref=e733] [cursor=pointer]:
+              - generic [ref=e734]: Delete all content
+  - generic [ref=e738]:
+    - generic [ref=e742]:
+      - generic [ref=e743]:
+        - paragraph [ref=e744]:
+          - text: Sender
+          - generic [ref=e745]: default@example.com
+        - paragraph [ref=e746]: "To: Jamie Larson jamie@example.com"
+      - generic [ref=e747]:
+        - generic [ref=e748]:
+          - generic [ref=e749]:
+            - heading "Test Site" [level=4] [ref=e750]
+            - heading "Updated newsletter" [level=5] [ref=e751]
+          - generic [ref=e752]:
+            - heading "Your email newsletter" [level=2] [ref=e753]
+            - paragraph [ref=e754]: A subtitle to highlight key points and engage your readers.
+            - generic [ref=e755]:
+              - paragraph [ref=e756]: By Owner User•Mar 17, 2026
+              - paragraph [ref=e757]: View in browser
+          - img "Feature" [ref=e759]
+          - generic [ref=e760]: Feature image caption
+        - generic [ref=e761]:
+          - generic [ref=e762]:
+            - paragraph [ref=e763]: This is what your content will look like when you send one of your posts as an email newsletter to your subscribers.
+            - paragraph [ref=e764]: Over there on the right you'll see some settings that allow you to customize the look and feel of this template – from colors and typography to layout and buttons – to make it perfectly suited to your brand.
+            - paragraph [ref=e765]: Email templates are exceptionally finnicky to make, but we've spent a long time optimising this one to make it work beautifully across devices, email clients and content types. So, you can trust that every email you send with Ghost will look great and work well. Just like the rest of your site.
+            - separator [ref=e766]
+            - heading "Need inspiration?" [level=3] [ref=e767]
+            - paragraph [ref=e768]:
+              - text: We've put together a
+              - link "quick guide" [ref=e769] [cursor=pointer]:
+                - /url: https://ghost.org/help/email-design/
+              - text: that walks through all of the available settings, along with a few examples of what's possible.
+            - link "Learn more" [ref=e770] [cursor=pointer]:
+              - /url: https://ghost.org/help/email-design/
+          - generic [ref=e772]:
+            - button "More like this":
+              - generic:
+                - img
+                - generic: More like this
+            - button "Less like this":
+              - generic:
+                - img
+                - generic: Less like this
+          - generic [ref=e775]:
+            - generic [ref=e776]: Test Site © 2026 —
+            - text: Unsubscribe
+    - generic [ref=e777]:
+      - generic [ref=e778]:
+        - heading "Newsletter" [level=4] [ref=e779]
+        - generic [ref=e780]:
+          - button "Close" [ref=e781] [cursor=pointer]:
+            - generic [ref=e782]: Close
+          - button "Save" [ref=e783] [cursor=pointer]:
+            - generic [ref=e784]: Save
+      - generic [ref=e788]:
+        - tablist [ref=e789]:
+          - tablist [ref=e790]:
+            - tab "General" [ref=e791] [cursor=pointer]
+            - tab "Content" [active] [selected] [ref=e792] [cursor=pointer]
+            - tab "Design" [ref=e793] [cursor=pointer]
+        - tabpanel [ref=e794]:
+          - generic [ref=e795]:
+            - generic [ref=e796]:
+              - heading "Header" [level=5] [ref=e797]
+              - generic [ref=e798]:
+                - generic [ref=e799]:
+                  - heading "Header image" [level=6] [ref=e801]
+                  - generic [ref=e802]:
+                    - generic [ref=e806] [cursor=pointer]:
+                      - img "picture-sun"
+                    - generic [ref=e807]: 1200×600 recommended. Use a transparent PNG for best results on any background.
+                - generic [ref=e808]:
+                  - generic [ref=e810]:
+                    - switch "Publication title" [checked] [ref=e811]
+                    - generic [ref=e814]: Publication title
+                  - generic [ref=e816]:
+                    - switch "Newsletter name" [checked] [ref=e817]
+                    - generic [ref=e820]: Newsletter name
+            - generic [ref=e821]:
+              - heading "Title section" [level=5] [ref=e822]
+              - generic [ref=e823]:
+                - generic [ref=e825]:
+                  - switch "Post title" [checked] [ref=e826]
+                  - generic [ref=e829]: Post title
+                - generic [ref=e831]:
+                  - switch "Post excerpt" [checked] [ref=e832]
+                  - generic [ref=e835]: Post excerpt
+                - generic [ref=e837]:
+                  - switch "Feature image" [checked] [ref=e838]
+                  - generic [ref=e841]: Feature image
+            - generic [ref=e842]:
+              - heading "Footer" [level=5] [ref=e843]
+              - generic [ref=e844]:
+                - generic [ref=e845]:
+                  - generic [ref=e847]:
+                    - switch "Ask your readers for feedback" [checked] [ref=e848]
+                    - generic [ref=e851]: Ask your readers for feedback
+                  - generic [ref=e853]:
+                    - switch "Share your latest posts" [ref=e854]
+                    - generic [ref=e857]: Share your latest posts
+                  - generic [ref=e859]:
+                    - switch "Show subscription details" [ref=e860]
+                    - generic [ref=e863]: Show subscription details
+                - generic [ref=e864]:
+                  - generic [ref=e865]: Email footer
+                  - textbox [ref=e871]:
+                    - paragraph [ref=e872]
+                  - generic [ref=e873]: Any extra information or legal text
+            - generic [ref=e874]:
+              - generic [ref=e875]:
+                - img
+              - generic [ref=e878]:
+                - switch "Promote independent publishing Show you're a part of the indie publishing movement with a small badge in the footer" [ref=e879]
+                - generic [ref=e883]:
+                  - generic [ref=e884]: Promote independent publishing
+                  - generic [ref=e885]: Show you're a part of the indie publishing movement with a small badge in the footer
+```

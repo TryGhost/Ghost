@@ -34,7 +34,7 @@ const CUSTOM_FIELDS_EDITED_ACTION = 'custom_fields_edited';
 
 /**
  * @typedef {object} IGiftServiceWrapper
- * @prop {{getActiveByMembers: (memberIds: string[]) => Promise<Map<string, {cadence: 'month' | 'year', currency: string, amount: number}>>}} service
+ * @prop {{getMemberPresentations: (memberIds: string[]) => Promise<Map<string, {cadence: 'month' | 'year', currency: string, amount: number}>>}} service
  */
 
 module.exports = class MemberBREADService {
@@ -347,7 +347,7 @@ module.exports = class MemberBREADService {
      * @private
      * Fetches active redeemed gifts for any gift-status members in the input list.
      * @param {import('bookshelf').Model[]} members - Bookshelf member models
-     * @returns {Promise<Map<string, {cadence: 'month' | 'year', currency: string, amount: number}>>} keyed by member.id → active Gift
+     * @returns {Promise<Map<string, {cadence: 'month' | 'year', currency: string, amount: number}>>} keyed by member.id → stable gift presentation
      */
     async fetchActiveGiftsForMembers(members) {
         const giftMemberIds = members
@@ -359,7 +359,7 @@ module.exports = class MemberBREADService {
         }
 
         try {
-            return await this.giftService.service.getActiveByMembers(giftMemberIds);
+            return await this.giftService.service.getMemberPresentations(giftMemberIds);
         } catch (e) {
             logging.error(`Failed to load active gifts for members - ${giftMemberIds.join(', ')}.`);
             logging.error(e);

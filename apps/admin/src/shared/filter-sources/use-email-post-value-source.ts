@@ -1,7 +1,7 @@
 import {type Post, type PostsResponseType, useBrowsePostsInfinite} from '@tryghost/admin-x-framework/api/posts';
 import {type ValueSource} from '@tryghost/shade/patterns';
 import {createGhostBrowseValueSource} from './create-ghost-browse-value-source';
-import {escapeNqlString} from '@/shared/filters/filter-normalization';
+import {escapeNqlString} from '@tryghost/nql-string';
 import {keepPreviousData} from '@tanstack/react-query';
 
 const EMAIL_BASE_FILTER = '(status:published,status:sent)+newsletter_id:-null';

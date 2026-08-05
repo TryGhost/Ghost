@@ -149,7 +149,7 @@ export default class GhBillingIframe extends Component {
 
         this.stateBridge.triggerSubscriptionChange(data);
 
-        // Invalidate React Query cache for config data in admin-x-settings
+        // Invalidate React Query cache for config data in the React admin (settings)
         if (window?.adminXQueryClient?.refetchQueries && typeof window.adminXQueryClient.refetchQueries === 'function') {
             window.adminXQueryClient.refetchQueries({queryKey: ['ConfigResponseType']}).catch(() => {});
             window.adminXQueryClient.refetchQueries({queryKey: ['SettingsResponseType']}).catch(() => {});

@@ -97,22 +97,6 @@ export class PostAnalyticsWebTrafficPage extends AdminPage {
     }
 
     /**
-     * Click the first location row in the locations card
-     * Useful when we don't know what location data will be available
-     */
-    async clickFirstLocationRow() {
-        const firstRow = this.locationsCard.locator('[data-testid^="location-row-"]').first();
-        await firstRow.click();
-    }
-
-    /**
-     * Get the first location row element
-     */
-    getFirstLocationRow(): Locator {
-        return this.locationsCard.locator('[data-testid^="location-row-"]').first();
-    }
-
-    /**
      * Get the search params from the current URL
      * The URL is like this: /ghost/#/posts/analytics/{postId}/web?source=direct
      */

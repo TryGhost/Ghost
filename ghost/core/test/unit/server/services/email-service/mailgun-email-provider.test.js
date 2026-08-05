@@ -6,6 +6,7 @@ describe('Mailgun Email Provider', function () {
     describe('send', function () {
         let mailgunClient;
         let sendStub;
+        let config;
 
         beforeEach(function () {
             sendStub = sinon.stub().resolves({
@@ -15,6 +16,9 @@ describe('Mailgun Email Provider', function () {
             mailgunClient = {
                 send: sendStub
             };
+            config = {
+                get: sinon.stub()
+            };
         });
 
         afterEach(function () {
@@ -22,8 +26,11 @@ describe('Mailgun Email Provider', function () {
         });
 
         it('calls mailgun client with correct data', async function () {
+            config.get.withArgs('bulkEmail:mailgun:tag').returns('newsletter-email');
+
             const mailgunEmailProvider = new MailgunEmailProvider({
                 mailgunClient,
+                config,
                 errorHandler: () => {}
             });
 
@@ -74,7 +81,8 @@ describe('Mailgun Email Provider', function () {
                     domainOverride: undefined,
                     deliveryTime,
                     track_opens: true,
-                    track_clicks: true
+                    track_clicks: true,
+                    tags: ['bulk-email', 'newsletter-email']
                 },
                 {'member@example.com': {name: 'John'}},
                 []
@@ -96,6 +104,7 @@ describe('Mailgun Email Provider', function () {
 
             const mailgunEmailProvider = new MailgunEmailProvider({
                 mailgunClient,
+                config,
                 errorHandler: () => {}
             });
             await assert.rejects(async () => {
@@ -144,6 +153,7 @@ describe('Mailgun Email Provider', function () {
 
             const mailgunEmailProvider = new MailgunEmailProvider({
                 mailgunClient,
+                config,
                 errorHandler: () => {}
             });
             await assert.rejects(async () => {
@@ -191,6 +201,7 @@ describe('Mailgun Email Provider', function () {
 
             const mailgunEmailProvider = new MailgunEmailProvider({
                 mailgunClient,
+                config,
                 errorHandler: () => {}
             });
             await assert.rejects(async () => {

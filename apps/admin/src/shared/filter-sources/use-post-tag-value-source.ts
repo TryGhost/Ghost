@@ -2,7 +2,7 @@ import {type Tag, type TagsResponseType, useBrowseTags} from '@tryghost/admin-x-
 import {type ValueSource} from '@tryghost/shade/patterns';
 import {buildQuotedListFilter} from './utils';
 import {createGhostBrowseValueSource} from './create-ghost-browse-value-source';
-import {escapeNqlString} from '@/shared/filters/filter-normalization';
+import {escapeNqlString} from '@tryghost/nql-string';
 import {keepPreviousData} from '@tanstack/react-query';
 
 /**

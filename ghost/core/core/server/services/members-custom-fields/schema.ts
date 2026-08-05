@@ -3,20 +3,15 @@ import type {Knex} from 'knex';
 import {FieldTypeSchema} from '@tryghost/custom-field-types';
 import {DbDate} from '../../lib/db-date';
 
-// A field's lifecycle state. `archived` is a soft state: the field drops out of
-// the values path but stays visible in the definition list (with its status) so
-// admins can find, rename, restore, or permanently delete it. The values mirror
-// schema.js's `isIn` constraint on the column — which is static config and can't
-// import this, so that one stays literal with a pointer back here.
+// `archived` is soft: the field drops out of the values path but stays in the definition
+// list so it can be renamed, restored or deleted. Mirrors schema.js's `isIn` on the
+// column, which is static config and cannot import this.
 export const FIELD_STATUS = {active: 'active', archived: 'archived'} as const;
 export type FieldStatus = typeof FIELD_STATUS[keyof typeof FIELD_STATUS];
 export const FieldStatusSchema = z.enum([FIELD_STATUS.active, FIELD_STATUS.archived]);
 
-// The members_custom_fields row: the single source for the read projection and the
-// knex table type below. `type` is validated as the field-type enum here (the DB
-// only stores registered types), so the row already carries the narrow type and
-// the definition codec needs no cast. `status` travels with the row: it's part of
-// the read projection so the definition list can group active vs archived.
+// The single source for the read projection and the knex table type below. `type` parses
+// as the field-type enum, so the row carries the narrow type and no codec needs a cast.
 export const DbCustomField = z.object({
     id: z.string(),
     key: z.string(),
@@ -29,30 +24,33 @@ export const DbCustomField = z.object({
 
 type CustomFieldRow = z.infer<typeof DbCustomField>;
 
-// A member's stored value for one field. `value_text`/`value_json` are the raw
-// columns — which one carries the value, and how it decodes, is the storage
-// codec's business (see storage.ts), so they're plain nullable strings here.
+// One part of a member's value. What a `path` means is storage.ts's business, so the row
+// carries it as a plain string.
 export const DbCustomFieldValue = z.object({
     id: z.string(),
     custom_field_id: z.string(),
     member_id: z.string(),
+    path: z.string(),
+    // Nullable like the column, though nothing here writes a null: a part with no value
+    // has no row.
     value_text: z.string().nullable(),
-    value_json: z.string().nullable(),
     created_at: DbDate,
     updated_at: DbDate.nullable()
 });
 
 type CustomFieldValueRow = z.infer<typeof DbCustomFieldValue>;
 
-// The value join a read needs: the field's identity and type travel with the
-// stored columns, so a row can be decoded without a second lookup. `type` is
-// parsed as the field-type enum, which narrows it with no cast.
-export const DbCustomFieldValueWithField = z.object({
+// The field's key travels with the row so a value assembles without a second lookup.
+//
+// `type` takes no part in the assembly and is here as a gate: a value whose type has left
+// the catalog is one the definitions list no longer returns either, so failing to parse
+// is what drops it.
+export const DbCustomFieldLeaf = z.object({
     member_id: z.string(),
     key: z.string(),
     type: FieldTypeSchema,
-    value_text: z.string().nullable(),
-    value_json: z.string().nullable()
+    path: z.string(),
+    value_text: z.string()
 });
 
 declare module 'knex/types/tables' {

@@ -1,4 +1,5 @@
 import {NOTE_MAX_LENGTH, buildCustomFieldSavePayload, buildMemberFieldEditPayload, getCustomFieldValidationErrors, getDefaultNewsletterIdsForNewMember, getEditableCustomFieldValues, getEmailErrorMessage, getMemberEditableSlice, getMemberNewslettersUiEnabled, getMemberSuppressionInfo, getNoteCharactersLeft, isDraftInSyncWithServer, isValidMemberEmail, parseCustomFieldServerErrors, resolveSlugsToLabels, toggleMemberNewsletter} from './member-detail-edit';
+import {MEMBER_CUSTOM_FIELD_TYPES} from '@tryghost/admin-x-framework/api/member-custom-fields';
 import {describe, expect, it} from 'vitest';
 import type {MemberCustomField} from '@tryghost/admin-x-framework/api/member-custom-fields';
 
@@ -107,9 +108,16 @@ describe('buildCustomFieldSavePayload', () => {
             .toEqual({id: 'mem_1', custom_fields: {job_title: null}});
     });
 
-    it('sends a normalized address whole, and null when every sub-field is empty', () => {
+    it('names every part the editor showed, so an emptied one is cleared rather than kept', () => {
+        // A write touches the parts it names. Leaving `line2` out would read as "no
+        // change" and the stored one would survive the person deleting it.
         expect(buildCustomFieldSavePayload('mem_1', 'home_address', {line1: ' 1 Main St ', line2: '', city: 'Berlin', postal_code: '10115', country: 'DE'}))
-            .toEqual({id: 'mem_1', custom_fields: {home_address: {line1: '1 Main St', city: 'Berlin', postal_code: '10115', country: 'DE'}}});
+            .toEqual({id: 'mem_1', custom_fields: {home_address: {line1: '1 Main St', line2: '', city: 'Berlin', postal_code: '10115', country: 'DE'}}});
+    });
+
+    it('sends an address emptied of everything as a cleared field', () => {
+        // Every part empty is not an address of empties, it is no address — which the
+        // field-level null already says.
         expect(buildCustomFieldSavePayload('mem_1', 'home_address', {line1: '', city: '  '}))
             .toEqual({id: 'mem_1', custom_fields: {home_address: null}});
     });
@@ -329,13 +337,12 @@ describe('getCustomFieldValidationErrors', () => {
         expect(getCustomFieldValidationErrors({job_title: '', home_address: {}}, fields)).toEqual({});
     });
 
-    it('reports missing required address sub-fields in plain words, keyed by dotted path', () => {
-        const errors = getCustomFieldValidationErrors({home_address: {line1: '1 Main St'}}, fields);
-        expect(errors).toEqual({
-            'home_address.city': 'Enter a city.',
-            'home_address.postal_code': 'Enter a postal code.',
-            'home_address.country': 'Enter a 2-letter country code, like US.'
-        });
+    it('accepts a partial address — no sub-field is required', () => {
+        // The stored shape is fixed, but which parts of it exist is a per-country
+        // question, so an address without a city or postal code is valid rather
+        // than incomplete.
+        expect(getCustomFieldValidationErrors({home_address: {line1: '1 Main St'}}, fields)).toEqual({});
+        expect(getCustomFieldValidationErrors({home_address: {country: 'HK'}}, fields)).toEqual({});
     });
 
     it('explains a malformed country code rather than echoing the schema message', () => {
@@ -348,14 +355,46 @@ describe('getCustomFieldValidationErrors', () => {
         expect(errors).toEqual({job_title: 'Use 255 characters or fewer.'});
     });
 
-    it('reports an over-long required address sub-field as a length problem, not a missing one', () => {
+    it('reports an over-long address sub-field with the limit a person can act on', () => {
         const errors = getCustomFieldValidationErrors({home_address: {...validAddress, line1: 'x'.repeat(256)}}, fields);
         expect(errors).toEqual({'home_address.line1': 'Use 255 characters or fewer.'});
     });
 
-    it('validates the normalized value, so whitespace does not dodge a limit', () => {
-        const errors = getCustomFieldValidationErrors({home_address: {line1: '1 Main St', city: '  ', postal_code: '10115', country: 'DE'}}, fields);
-        expect(Object.keys(errors)).toEqual(['home_address.city']);
+    it('raises nothing for an address of nothing but whitespace, which reads as cleared', () => {
+        const whitespaceOnly = {line1: '  ', city: '  '};
+
+        // The schema trims each part, so this names two parts as empty — a valid request
+        // to clear them, not a malformed address.
+        expect(MEMBER_CUSTOM_FIELD_TYPES.address.value.safeParse(whitespaceOnly).success).toBe(true);
+        expect(getCustomFieldValidationErrors({home_address: whitespaceOnly}, fields)).toEqual({});
+
+        // And with nothing left in it, the save clears the field outright.
+        expect(buildCustomFieldSavePayload('m1', 'home_address', whitespaceOnly).custom_fields)
+            .toEqual({home_address: null});
+    });
+
+    it('lets a sub-field with a format be emptied, not just one with a bound', () => {
+        // Emptying the country box is the one way a person removes a country while
+        // keeping the address. Its rule is a pattern rather than a length, so unless the
+        // catalog treats empty as a clear the save is refused and the box cannot be
+        // emptied at all.
+        const clearedCountry = {line1: '62 Ghost Lane', line2: '', city: 'Dublin', state: '', postal_code: '', country: ''};
+
+        expect(getCustomFieldValidationErrors({home_address: clearedCountry}, fields)).toEqual({});
+        expect(buildCustomFieldSavePayload('m1', 'home_address', clearedCountry).custom_fields)
+            .toEqual({home_address: clearedCountry});
+    });
+
+    it('checks the value the save sends, not the one the screen shows', () => {
+        // The two differ on emptied parts: the save names them so they clear, the display
+        // form drops them. Validating the display form would pass a payload the server
+        // then rejects, which is exactly how an unclearable country went unnoticed.
+        const emptiedParts = {line1: '62 Ghost Lane', country: ''};
+
+        expect(getEditableCustomFieldValues({home_address: emptiedParts}).home_address).toEqual({line1: '62 Ghost Lane'});
+        expect(buildCustomFieldSavePayload('m1', 'home_address', emptiedParts).custom_fields)
+            .toEqual({home_address: emptiedParts});
+        expect(getCustomFieldValidationErrors({home_address: emptiedParts}, fields)).toEqual({});
     });
 });
 

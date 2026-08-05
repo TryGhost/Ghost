@@ -90,10 +90,10 @@ class RouterManager {
      * 5. Static Pages: Weaker than collections, because we first try to find a post slug and fallback to lookup a static page.
      * 6. Internal Apps: Weakest
      *
-     * @param {object} routerSettings
+     * @param {RouteSettings} routeSettings
      */
-    start(routerSettings) {
-        debug('routing start', routerSettings);
+    start(routeSettings) {
+        debug('routing start', routeSettings);
         const RESOURCE_CONFIG = require(`./config`);
 
         const unsubscribeRouter = new UnsubscribeRouter();
@@ -110,14 +110,14 @@ class RouterManager {
         this.siteRouter.mountRouter(previewRouter.router());
         this.registry.setRouter('previewRouter', previewRouter);
 
-        for (const route of routerSettings.routes) {
+        for (const route of routeSettings.routes) {
             const staticRoutesRouter = new StaticRoutesRouter(route.path, route, this.routerCreated.bind(this));
             this.siteRouter.mountRouter(staticRoutesRouter.router());
 
             this.registry.setRouter(staticRoutesRouter.identifier, staticRoutesRouter);
         }
 
-        for (const collection of routerSettings.collections) {
+        for (const collection of routeSettings.collections) {
             const collectionRouter = new CollectionRouter(collection.path, collection, RESOURCE_CONFIG, this.routerCreated.bind(this));
             this.siteRouter.mountRouter(collectionRouter.router());
             this.registry.setRouter(collectionRouter.identifier, collectionRouter);
@@ -128,8 +128,8 @@ class RouterManager {
 
         this.registry.setRouter('staticPagesRouter', staticPagesRouter);
 
-        for (const taxonomy of routerSettings.taxonomies) {
-            const taxonomyRouter = new TaxonomyRouter(taxonomy.key, taxonomy.permalink, RESOURCE_CONFIG, this.routerCreated.bind(this));
+        for (const [key, permalink] of Object.entries(routeSettings.taxonomies)) {
+            const taxonomyRouter = new TaxonomyRouter(key, permalink, RESOURCE_CONFIG, this.routerCreated.bind(this));
             this.siteRouter.mountRouter(taxonomyRouter.router());
 
             this.registry.setRouter(taxonomyRouter.identifier, taxonomyRouter);
@@ -180,16 +180,12 @@ module.exports = RouterManager;
 
 /**
  * @typedef {Object} RouterConfig
- * @property {RouteSettings} [routeSettings] - JSON config representing routes
+ * @property {RouteSettings} [routeSettings] - parsed route settings domain model
  * @property {URLServiceFacade} urlService - resource-based URL service facade
  */
 
 /**
- * The shape RouterManager consumes — produced by the activation bridge. This is
- * a temporary reference into server code; when the bridge is removed (HKG-1898)
- * it becomes the domain `RouteSettings` from @tryghost/adapter-base-route-settings.
- *
- * @typedef {import('../../../server/services/route-settings/activation-bridge').RouterSettings} RouteSettings
+ * @typedef {import('@tryghost/adapter-base-route-settings').RouteSettings} RouteSettings
  */
 
 /**
