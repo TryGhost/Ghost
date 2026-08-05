@@ -1,5 +1,5 @@
-import CodeMirror, {type BasicSetupOptions, type ReactCodeMirrorProps, type ReactCodeMirrorRef} from '@uiw/react-codemirror';
-import React, {type FocusEventHandler, forwardRef, useEffect, useId, useRef, useState} from 'react';
+import CodeMirror, {EditorView, type BasicSetupOptions, type ReactCodeMirrorProps, type ReactCodeMirrorRef} from '@uiw/react-codemirror';
+import React, {type FocusEventHandler, forwardRef, useEffect, useId, useMemo, useRef, useState} from 'react';
 import {FieldDescription, FieldLabel} from './field';
 import {cn} from '@/lib/utils';
 import {useFocusContext} from '@/providers/shade-provider';
@@ -14,6 +14,9 @@ export interface CodeEditorProps extends Omit<ReactCodeMirrorProps, 'value' | 'o
     clearBg?: boolean;
     extensions: Array<Extension | Promise<Extension>>;
     onChange?: (value: string) => void;
+    // Applied to the editor's contenteditable via EditorView.contentAttributes —
+    // an aria-label on the wrapper div is not announced by screen readers.
+    ariaLabel?: string;
 }
 
 const codeMirrorClasses = [
@@ -43,6 +46,7 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
     onFocus,
     onBlur,
     className,
+    ariaLabel,
     ...props
 }, ref) {
     const id = useId();
@@ -53,6 +57,12 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
         crosshairCursor: false
     });
     const {darkMode, setFocusState} = useFocusContext();
+
+    const editorExtensions = useMemo(() => (
+        ariaLabel
+            ? [...resolvedExtensions, EditorView.contentAttributes.of({'aria-label': ariaLabel})]
+            : resolvedExtensions
+    ), [resolvedExtensions, ariaLabel]);
 
     const handleFocus: FocusEventHandler<HTMLDivElement> = (e) => {
         onFocus?.(e);
@@ -110,7 +120,7 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
                 ref={ref}
                 basicSetup={basicSetup}
                 className={styles}
-                extensions={resolvedExtensions}
+                extensions={editorExtensions}
                 height={height === 'full' ? '100%' : height}
                 theme={darkMode ? 'dark' : 'light'}
                 value={value}

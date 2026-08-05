@@ -27,6 +27,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
     args: {
         title: 'Code injection',
+        ariaLabel: 'Code injection',
         value: '<script>\n    console.log("hello");\n</script>',
         extensions: [],
         hint: 'Injected into {{ghost_head}}'

@@ -320,6 +320,7 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                                     <div className='flex flex-col gap-1.5'>
                                         <Label>Tag header <code className='ml-1 font-normal'>{'{{ghost_head}}'}</code></Label>
                                         <CodeEditor
+                                            ariaLabel='Tag header'
                                             data-testid='codeinjection-head'
                                             editable={!disabled}
                                             extensions={htmlExtensions}
@@ -331,6 +332,7 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                                     <div className='flex flex-col gap-1.5'>
                                         <Label>Tag footer <code className='ml-1 font-normal'>{'{{ghost_foot}}'}</code></Label>
                                         <CodeEditor
+                                            ariaLabel='Tag footer'
                                             data-testid='codeinjection-foot'
                                             editable={!disabled}
                                             extensions={htmlExtensions}

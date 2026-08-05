@@ -43,8 +43,8 @@ describe('Tag detail (tagDetailsReact on)', () => {
         await renderAdminApp(`/tags/${t.slug}`, FLAGS);
 
         await page.getByRole('button', {name: /Code injection/}).click();
-        await expect.element(page.getByTestId('codeinjection-head')).toHaveTextContent('<script>head()</script>');
-        await expect.element(page.getByTestId('codeinjection-foot')).toHaveTextContent('<style>.f{}</style>');
+        await expect.element(page.getByRole('textbox', {name: 'Tag header'})).toHaveTextContent('<script>head()</script>');
+        await expect.element(page.getByRole('textbox', {name: 'Tag footer'})).toHaveTextContent('<style>.f{}</style>');
     });
 
     it('redirects to billing during a force upgrade', async () => {
