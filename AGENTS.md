@@ -328,7 +328,7 @@ Public-facing apps (`comments-ui`, `signup-form`, `sodo-search`, `portal`, `anno
 Repository skills live in `.agents/skills/<skill-name>`. When adding a skill,
 also add `.claude/skills/<skill-name>` as a symlink to
 `../../.agents/skills/<skill-name>` so Claude can discover the same canonical
-skill without duplicating it. Run `pnpm check:agent-skills` to verify every
+skill without duplicating it. Run `pnpm lint:agent-skills` to verify every
 repository skill is linked correctly; CI runs the same check.
 
 ### Commit Messages
