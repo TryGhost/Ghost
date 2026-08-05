@@ -108,7 +108,7 @@ describe('Member Attribution Service', function () {
                 const post = await models.Post.where('id', id).fetch({require: true});
                 assert.equal(post.get('type'), 'page');
 
-                const url = urlServiceUtils.urlFor(post, 'posts', {absolute: false, withSubdirectory: true});
+                const url = urlServiceUtils.urlFor(post, 'pages', {absolute: false, withSubdirectory: true});
 
                 const attribution = await memberAttributionService.service.getAttribution([
                     {
@@ -122,7 +122,7 @@ describe('Member Attribution Service', function () {
                     type: 'page'
                 });
 
-                const absoluteUrl = urlServiceUtils.urlFor(post, 'posts', {absolute: true, withSubdirectory: true});
+                const absoluteUrl = urlServiceUtils.urlFor(post, 'pages', {absolute: true, withSubdirectory: true});
 
                 assertObjectMatches(await attribution.fetchResource(), {
                     id: post.id,
@@ -361,8 +361,8 @@ describe('Member Attribution Service', function () {
                 const post = await models.Post.where('id', id).fetch({require: true});
                 assert.equal(post.get('type'), 'page');
 
-                const url = urlServiceUtils.urlFor(post, 'posts', {absolute: false, withSubdirectory: true});
-                const urlWithoutSubdirectory = urlServiceUtils.urlFor(post, 'posts', {absolute: false, withSubdirectory: false});
+                const url = urlServiceUtils.urlFor(post, 'pages', {absolute: false, withSubdirectory: true});
+                const urlWithoutSubdirectory = urlServiceUtils.urlFor(post, 'pages', {absolute: false, withSubdirectory: false});
 
                 const attribution = await memberAttributionService.service.getAttribution([
                     {
@@ -376,7 +376,7 @@ describe('Member Attribution Service', function () {
                     type: 'page'
                 });
 
-                const absoluteUrl = urlServiceUtils.urlFor(post, 'posts', {absolute: true, withSubdirectory: true});
+                const absoluteUrl = urlServiceUtils.urlFor(post, 'pages', {absolute: true, withSubdirectory: true});
 
                 assertObjectMatches(await attribution.fetchResource(), {
                     id: post.id,

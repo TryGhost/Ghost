@@ -22,14 +22,14 @@ function makeUrlUtils() {
                 .replace(/:month\b/, datePart ? String(datePart.getUTCMonth() + 1).padStart(2, '0') : '')
                 .replace(/:day\b/, datePart ? String(datePart.getUTCDate()).padStart(2, '0') : '');
         },
-        createUrl(path, absolute, withSubdirectory) {
+        // Mirrors @tryghost/url-utils: the subdirectory is part of the base
+        // whenever the url is relative, and the third argument is
+        // trailingSlash — not a subdirectory switch.
+        createUrl(path, absolute) {
             if (absolute) {
                 return `https://example.com${path}`;
             }
-            if (withSubdirectory) {
-                return `/sub${path}`;
-            }
-            return path;
+            return `/sub${path}`;
         }
     };
 }
@@ -846,11 +846,37 @@ describe('LazyUrlService', function () {
         it('formats the degraded /404/ for the requested options', function () {
             const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
             service.onRouterAddedType('default', null, 'posts', '/:slug/');
+            const thin = {type: 'posts', id: 'p', slug: 'hello'};
 
-            assert.equal(
-                service.getUrlForResource({type: 'posts', id: 'p', slug: 'hello'}, {absolute: true}),
-                'https://example.com/404/'
-            );
+            assert.equal(service.getUrlForResource(thin, {absolute: true}), 'https://example.com/404/');
+            // A subdirectory install must not be served a root-relative /404/.
+            assert.equal(service.getUrlForResource(thin, {withSubdirectory: true}), '/sub/404/');
+            assert.equal(service.getUrlForResource(thin), '/404/');
+        });
+
+        it('reports a repeated cause once, so one bad caller cannot flood the log', function () {
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
+            service.onRouterAddedType('news', 'tag:news', 'posts', '/:slug/');
+
+            for (const id of ['p1', 'p2', 'p3']) {
+                assert.equal(
+                    service.getUrlForResource({type: 'posts', id, slug: 'hello', status: 'published'}),
+                    '/404/'
+                );
+            }
+            sinon.assert.calledOnce(logging.error);
+
+            // A different cause is still worth a line of its own.
+            service.onRouterAddedType('featured', 'featured:true', 'pages', '/:slug/');
+            service.getUrlForResource({type: 'pages', id: 'pg1', slug: 'about', status: 'published'});
+            sinon.assert.calledTwice(logging.error);
+
+            // A new routing config can make a resource newly thin or newly
+            // fine, so the record starts over.
+            service.reset();
+            service.onRouterAddedType('news', 'tag:news', 'posts', '/:slug/');
+            service.getUrlForResource({type: 'posts', id: 'p1', slug: 'hello', status: 'published'});
+            sinon.assert.calledThrice(logging.error);
         });
 
         it('rethrows an unexpected failure rather than serving /404/', function () {

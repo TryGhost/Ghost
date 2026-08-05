@@ -172,6 +172,8 @@ export class LazyUrlService {
     // True once routers have been registered. Cleared by reset() so the
     // route-reload window re-gates the maintenance middleware.
     private routersReady: boolean;
+    // Thin-resource causes already reported — see _degradeThinResource.
+    private reportedThinResources: Set<string>;
 
     constructor({
         urlUtils = localUtils,
@@ -191,6 +193,7 @@ export class LazyUrlService {
         this.baseFilters = buildBaseFilters();
         this.excludedFilterFields = buildExcludedFilterFields();
         this.routersReady = false;
+        this.reportedThinResources = new Set();
     }
 
     onRouterAddedType(identifier: string, filter: string | null, resourceType: string, permalink: string): void {
@@ -216,6 +219,7 @@ export class LazyUrlService {
         this.routerConfigs = [];
         this.requiredRelations = null;
         this.routersReady = false;
+        this.reportedThinResources.clear();
     }
 
     getRequiredRelations(): string[] {
@@ -442,7 +446,20 @@ export class LazyUrlService {
     // Reports which columns were missing alongside what the caller handed over
     // — the resource's shape, and what the active routing config needs — so
     // the fetch that under-fetched can be found from the log line alone.
+    //
+    // Reported once per distinct cause. A caller that under-fetches does so for
+    // every row it serializes, and a browse over a large collection would
+    // otherwise emit one error per row; the key below carries the whole
+    // diagnosis, so the repeats say nothing the first line did not. Cleared on
+    // reset(), since a new routing config can make a previously thin resource
+    // fine (or newly broken).
     private _degradeThinResource(resource: Resource, thin: ThinResource, options: UrlOptions): string {
+        const key = `${thin.resourceType}|${thin.routerIdentifier ?? ''}|${thin.missing.join(',')}`;
+        if (this.reportedThinResources.has(key)) {
+            return this.notFoundUrl(options);
+        }
+        this.reportedThinResources.add(key);
+
         logging.error(new errors.InternalServerError({
             message: 'URL service could not build a URL, degraded to /404/',
             code: 'LAZY_URL_RESOLUTION_ERROR',

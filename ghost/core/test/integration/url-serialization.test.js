@@ -27,6 +27,7 @@ describe('Integration: Content API URL serialization (primary_tag permalinks)', 
     beforeAll(testUtils.setup('users:roles', 'posts'));
 
     const EMPTY_LEXICAL = testUtils.DataGenerator.markdownToLexical('url serialization fixture');
+    let hadOutboundLinkTagger;
 
     beforeAll(async function () {
         await models.Post.add({
@@ -62,7 +63,9 @@ describe('Integration: Content API URL serialization (primary_tag permalinks)', 
         urlService.reset();
         ROUTES.forEach(r => urlService.onRouterAddedType(r.identifier, r.filter, r.resourceType, r.permalink));
 
-        // outboundLinkTagger is only wired at boot; stub a pass-through.
+        // outboundLinkTagger is only wired at boot; stub a pass-through. It
+        // is a process global, so put it back afterwards.
+        hadOutboundLinkTagger = Object.hasOwn(memberAttribution, 'outboundLinkTagger');
         if (!memberAttribution.outboundLinkTagger) {
             memberAttribution.outboundLinkTagger = {addToHtml: async html => html};
         }
@@ -70,6 +73,9 @@ describe('Integration: Content API URL serialization (primary_tag permalinks)', 
 
     afterAll(function () {
         urlService.reset();
+        if (!hadOutboundLinkTagger) {
+            delete memberAttribution.outboundLinkTagger;
+        }
     });
     afterAll(testUtils.teardownDb);
 
