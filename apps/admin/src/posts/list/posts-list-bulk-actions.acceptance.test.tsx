@@ -146,7 +146,10 @@ describe("Posts list bulk actions", () => {
             {label: "Unschedule", verb: "unschedule", type: "scheduled", confirm: true},
             {label: "Feature", verb: "feature", type: "draft", confirm: false}
         ] as const)("sends $verb", async ({label, verb, type, confirm}) => {
-            fakePosts([post({ title: "Target", status: type })]);
+            // `featured` is randomised by the builder, and it decides whether
+            // the menu offers Feature or Unfeature — pin it, or this test is
+            // flaky by construction.
+            fakePosts([post({ title: "Target", status: type, featured: false })]);
             const edit = fakeAdminEndpoint("PUT", /^\/posts\/bulk/, {});
             await renderAdminApp(`/posts?type=${type}`, FLAG_ON);
             await expect.element(postsListScreen.listItems().first()).toBeVisible();

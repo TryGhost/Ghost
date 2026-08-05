@@ -4,6 +4,7 @@ import {toast} from 'sonner';
 import {useCallback, useState} from 'react';
 import {useBulkDeletePages, useBulkEditPages} from '@tryghost/admin-x-framework/api/pages';
 import {useBulkDeletePosts, useBulkEditPosts} from '@tryghost/admin-x-framework/api/posts';
+import {useFramework} from '@tryghost/admin-x-framework';
 import {useQueryClient} from '@tanstack/react-query';
 import type {PostBulkAction} from '@tryghost/admin-x-framework/api/posts';
 import type {PostContextMenuKey} from '@/posts/list/post-context-menu-items';
@@ -125,6 +126,19 @@ interface UsePostBulkActionsOptions {
 export function usePostBulkActions({resource, onDeleted, onEdited}: UsePostBulkActionsOptions) {
     const [isRunning, setIsRunning] = useState(false);
     const queryClient = useQueryClient();
+
+    /**
+     * Ember keeps its own store of post records, and the editor is still Ember.
+     * Every other mutation in the framework notifies it via
+     * `invalidateQueries: {dataType}`, which calls `onInvalidate` — but these
+     * mutations deliberately do *not* declare it, because that would also
+     * refetch the react-query lists and undo the client-side prune this hook
+     * exists to do. So the Ember half is notified by hand.
+     *
+     * Without it Ember's store keeps a post it believes is current, and opening
+     * that post in the editor after a bulk edit can hang mid-transition.
+     */
+    const {onInvalidate} = useFramework();
 
     // Called unconditionally and picked by resource — hooks can't be branched.
     const bulkEditPosts = useBulkEditPosts();
@@ -254,8 +268,16 @@ export function usePostBulkActions({resource, onDeleted, onEdited}: UsePostBulkA
                 }));
             }
 
-            await queryClient.invalidateQueries({queryKey: [dataType]});
+            // Close *before* refetching, not after. `invalidateQueries`
+            // resolves only once every active query has refetched, so awaiting
+            // it here leaves the modal open — and a modal open means
+            // `body { pointer-events: none }`, so nothing on the page is
+            // clickable until it resolves. If one query is slow or never
+            // settles, the whole admin appears frozen.
             onEdited?.(new Set(snapshot.posts.map(post => post.id)));
+
+            void queryClient.invalidateQueries({queryKey: [dataType]});
+            onInvalidate(dataType);
         } catch (error) {
             toast.error(error instanceof Error && error.message
                 ? error.message
@@ -263,7 +285,7 @@ export function usePostBulkActions({resource, onDeleted, onEdited}: UsePostBulkA
         } finally {
             setIsRunning(false);
         }
-    }, [isPages, resource, onEdited, queryClient, dataType, bulkEditPosts, bulkEditPages]);
+    }, [isPages, resource, onEdited, queryClient, dataType, bulkEditPosts, bulkEditPages, onInvalidate]);
 
     const run = useCallback(async (key: PostContextMenuKey, snapshot: BulkActionSnapshot) => {
         setIsRunning(true);
@@ -277,6 +299,7 @@ export function usePostBulkActions({resource, onDeleted, onEdited}: UsePostBulkA
                 }
 
                 patchCaches(snapshot, 'delete');
+                onInvalidate(dataType);
                 toast.success(getPostActionMessage('deleted', {
                     count: snapshot.count, resource, isSingle: snapshot.isSingle
                 }));
@@ -307,6 +330,8 @@ export function usePostBulkActions({resource, onDeleted, onEdited}: UsePostBulkA
 
             const remaining = patchCaches(snapshot, key);
 
+            onInvalidate(dataType);
+
             // The rows the edit pushed out of the list are no longer selectable,
             // but the ones still on screen stay selected — matching Ember's
             // `clearUnavailableItems` rather than a full clear.
@@ -322,7 +347,7 @@ export function usePostBulkActions({resource, onDeleted, onEdited}: UsePostBulkA
             setIsRunning(false);
         }
     }, [
-        isPages, resource, onDeleted, onEdited, patchCaches,
+        isPages, resource, onDeleted, onEdited, patchCaches, onInvalidate, dataType,
         bulkEditPosts, bulkEditPages, bulkDeletePosts, bulkDeletePages
     ]);
 

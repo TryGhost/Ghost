@@ -36,6 +36,8 @@ interface ChangeAccessModalProps {
     isSingle: boolean;
     /** The single post's current access, when exactly one is selected. */
     currentVisibility?: string;
+    /** The single post's current tiers, so the picker opens on them. */
+    currentTiers?: {id: string}[];
     isRunning: boolean;
     onConfirm: (access: {visibility: string; tiers: {id: string}[]}) => void;
     onCancel: () => void;
@@ -51,7 +53,7 @@ interface ChangeAccessModalProps {
  * the validations.
  */
 export function ChangeAccessModal({
-    resource, count, isSingle, currentVisibility, isRunning, onConfirm, onCancel
+    resource, count, isSingle, currentVisibility, currentTiers, isRunning, onConfirm, onCancel
 }: ChangeAccessModalProps) {
     const {data: settingsData} = useBrowseSettings();
     const defaultVisibility = getSettingValue<string>(settingsData?.settings, 'default_content_visibility') ?? 'public';
@@ -59,7 +61,12 @@ export function ChangeAccessModal({
     const [visibility, setVisibility] = useState(
         isSingle && currentVisibility ? currentVisibility : defaultVisibility
     );
-    const [tierIds, setTierIds] = useState<string[]>([]);
+    // Ember seeds these from the post as well as the visibility, so opening the
+    // modal on a tiers-gated post shows the tiers it already has rather than an
+    // empty list with a permanently disabled Save.
+    const [tierIds, setTierIds] = useState<string[]>(
+        isSingle && currentTiers ? currentTiers.map(tier => tier.id) : []
+    );
 
     const {data: tiersData} = useBrowseTiers();
     const paidTiers = (tiersData?.tiers ?? []).filter(tier => tier.type === 'paid' && tier.active);
