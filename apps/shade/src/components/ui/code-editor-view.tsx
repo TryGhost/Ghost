@@ -1,4 +1,4 @@
-import CodeMirror, {EditorView, type BasicSetupOptions, type ReactCodeMirrorProps, type ReactCodeMirrorRef} from '@uiw/react-codemirror';
+import CodeMirror, {EditorView, tooltips, type BasicSetupOptions, type ReactCodeMirrorProps, type ReactCodeMirrorRef} from '@uiw/react-codemirror';
 import React, {type FocusEventHandler, forwardRef, useEffect, useId, useMemo, useRef, useState} from 'react';
 import {FieldDescription, FieldLabel} from './field';
 import {cn} from '@/lib/utils';
@@ -58,11 +58,15 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
     });
     const {darkMode, setFocusState} = useFocusContext();
 
-    const editorExtensions = useMemo(() => (
-        ariaLabel
-            ? [...resolvedExtensions, EditorView.contentAttributes.of({'aria-label': ariaLabel})]
-            : resolvedExtensions
-    ), [resolvedExtensions, ariaLabel]);
+    const editorExtensions = useMemo(() => {
+        // The editor container is overflow-hidden (rounded border), which clips
+        // in-flow tooltips like autocomplete; fixed positioning escapes the
+        // clip while keeping tooltips in the editor DOM so theme classes apply.
+        const base = [...resolvedExtensions, tooltips({position: 'fixed'})];
+        return ariaLabel
+            ? [...base, EditorView.contentAttributes.of({'aria-label': ariaLabel})]
+            : base;
+    }, [resolvedExtensions, ariaLabel]);
 
     const handleFocus: FocusEventHandler<HTMLDivElement> = (e) => {
         onFocus?.(e);
