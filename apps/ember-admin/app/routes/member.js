@@ -42,7 +42,7 @@ export default class MembersRoute extends MembersManagementRoute {
         // subtree unrendered, so the `data-testid` and `data-test-link`
         // attributes exist in only one tree and the queryRecord below doesn't
         // fire for a screen nobody sees.
-        if (this.feature.memberDetailsReact) {
+        if (this.feature.memberDetailsReact === true) {
             transition.abort();
         }
     }

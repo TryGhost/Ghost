@@ -1072,17 +1072,46 @@ describe('Member Custom Fields Admin API', function () {
             assert.deepEqual(await readValues(memberId), {[field.key]: address});
         });
 
-        it('replaces a stored address rather than merging into it', async function () {
+        it('writes the parts a request names and leaves the rest alone', async function () {
             const field = await createField({name: 'Home address', type: 'address'});
             const memberId = await createMember();
 
             await setValues(memberId, {[field.key]: {line1: '62 Ghost Lane', city: 'Dublin', country: 'IE'}});
             await setValues(memberId, {[field.key]: {city: 'Cork'}});
 
-            // A PUT sends a whole address, so what it sends is what is stored. The CSV
-            // import is the one caller that merges, because a file carries only the
-            // columns the publisher exported.
-            assert.deepEqual(await readValues(memberId), {[field.key]: {city: 'Cork'}});
+            // A part of a value is a field, so the rule is the same one level down as it
+            // is one level up: naming a field writes it and omitting one leaves it.
+            assert.deepEqual(await readValues(memberId), {
+                [field.key]: {line1: '62 Ghost Lane', city: 'Cork', country: 'IE'}
+            });
+        });
+
+        it('clears the part a request names as empty', async function () {
+            const field = await createField({name: 'Home address', type: 'address'});
+            const memberId = await createMember();
+
+            await setValues(memberId, {[field.key]: {line1: '62 Ghost Lane', city: 'Dublin', country: 'IE'}});
+            await setValues(memberId, {[field.key]: {city: ''}});
+
+            // Emptying is said out loud, because absence already means "no change".
+            assert.deepEqual(await readValues(memberId), {
+                [field.key]: {line1: '62 Ghost Lane', country: 'IE'}
+            });
+        });
+
+        it('clears a part whose rule is a format, not only one bounded by length', async function () {
+            const field = await createField({name: 'Home address', type: 'address'});
+            const memberId = await createMember();
+
+            await setValues(memberId, {[field.key]: {line1: '62 Ghost Lane', city: 'Dublin', country: 'IE'}});
+            await setValues(memberId, {[field.key]: {country: ''}});
+
+            // Every part clears the same way. A country's rule is a pattern that nothing
+            // empty can match, so a rule per part would make this the one part a member
+            // could be given but never rid of.
+            assert.deepEqual(await readValues(memberId), {
+                [field.key]: {line1: '62 Ghost Lane', city: 'Dublin'}
+            });
         });
 
         it('stores a country code in one case whichever case it arrives in', async function () {
@@ -1094,6 +1123,18 @@ describe('Member Custom Fields Admin API', function () {
             assert.deepEqual(await readValues(memberId), {[field.key]: {city: 'Bristol', country: 'GB'}});
         });
 
+        it('drops a part sent as an empty string rather than storing it as one', async function () {
+            const field = await createField({name: 'Home address', type: 'address'});
+            const memberId = await createMember();
+
+            // A part with nothing in it gets no row, so it reads back absent rather than
+            // present-and-empty. That is the whole point of a row per part: there is no
+            // place to record "this part is empty" separately from "this part is unset".
+            await setValues(memberId, {[field.key]: {line1: '62 Ghost Lane', city: ''}});
+
+            assert.deepEqual(await readValues(memberId), {[field.key]: {line1: '62 Ghost Lane'}});
+        });
+
         it('rejects an address with nothing in it', async function () {
             const field = await createField({name: 'Home address', type: 'address'});
             const memberId = await createMember();
@@ -1103,13 +1144,21 @@ describe('Member Custom Fields Admin API', function () {
             assert.equal(body.errors[0].property, `custom_fields.${field.key}`);
         });
 
-        it('strips unknown sub-fields of a composite value', async function () {
+        it('refuses a part of a composite value it does not recognise', async function () {
             const field = await createField({name: 'Home address', type: 'address'});
             const memberId = await createMember();
             const address = {line1: '62 Ghost Lane', city: 'Dublin', postal_code: 'D02', country: 'IE'};
 
-            await setValues(memberId, {[field.key]: {...address, sneaky: 'x'}});
+            await setValues(memberId, {[field.key]: address});
 
+            // The same answer an unknown field key gets, one level down. A misspelled part
+            // used to be dropped in silence, which loses what somebody typed and tells
+            // them it saved.
+            const body = await setValues(memberId, {[field.key]: {...address, city: 'Cork', citty: 'Dublin'}}, 422);
+            assert.equal(body.errors[0].property, `custom_fields.${field.key}`);
+
+            // The parts it named alongside the typo are not written either: a refused write
+            // leaves what was already stored exactly as it was.
             assert.deepEqual(await readValues(memberId), {[field.key]: address});
         });
 

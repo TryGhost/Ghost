@@ -48,7 +48,14 @@ export interface UrlOptions {
     // throw names its producer in the logs. The compare-log caller stack
     // truncates at the async api-framework boundary, so the stack alone can't.
     // Ignored by both backends; only read into the compare context.
-    serializerContext?: {apiType?: string; docName?: string; method?: string};
+    serializerContext?: {
+        apiType?: string;
+        docName?: string;
+        method?: string;
+        withRelated?: unknown;
+        columns?: unknown;
+        forcedUrlRelations?: unknown;
+    };
 }
 
 /**
@@ -251,6 +258,9 @@ export class UrlServiceFacade {
             id: resource.id,
             status: (resource as Record<string, unknown>).status,
             resourceKeys: Object.keys(resource),
+            // Diagnostic: what the lazy backend considers required right now,
+            // to pair against the serializer's withRelated/columns.
+            requiredRelations: this.lazyUrlService ? this.lazyUrlService.getRequiredRelations() : undefined,
             caller: caller.stack,
             ...extra
         };
