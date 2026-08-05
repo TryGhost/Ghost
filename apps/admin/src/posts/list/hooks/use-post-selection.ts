@@ -256,6 +256,11 @@ export function usePostSelection({orderedIds, allFilter, enabled}: UsePostSelect
         return handler;
     }, [onContextMenuOpenChange]);
 
+    /** Ember's `clearUnavailableItems`, called after a bulk edit prunes rows. */
+    const keepOnly = useCallback((ids: Set<string>) => {
+        dispatch({type: 'keepOnly', ids});
+    }, []);
+
     const filter = useMemo(() => getPostSelectionFilter(state, allFilter), [state, allFilter]);
 
     return {
@@ -265,6 +270,7 @@ export function usePostSelection({orderedIds, allFilter, enabled}: UsePostSelect
         isSelected: useCallback((id: string) => enabled && isPostSelected(state, id), [enabled, state]),
         selectAll: useCallback(() => dispatch({type: 'selectAll'}), []),
         clear: useCallback(() => dispatch({type: 'clear'}), []),
+        keepOnly,
         onRowMouseDown,
         onRowClick,
         onContextMenuOpenChange,

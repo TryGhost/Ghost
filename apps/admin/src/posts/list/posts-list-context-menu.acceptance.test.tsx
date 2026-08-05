@@ -205,10 +205,12 @@ describe("Posts list context menu", () => {
 
         await postsListScreen.listItems().first().click({ button: "right" });
 
-        await expect.element(postsListScreen.contextMenuItem("Delete")).toBeDisabled();
+        // Add a tag and Change access still need their pickers.
         await expect.element(postsListScreen.contextMenuItem("Add a tag")).toBeDisabled();
+        await expect.element(postsListScreen.contextMenuItem("Change access")).toBeDisabled();
         // ...while the ones that do work are not disabled.
         await expect.element(postsListScreen.contextMenuItem("Duplicate")).not.toBeDisabled();
+        await expect.element(postsListScreen.contextMenuItem("Delete")).not.toBeDisabled();
     });
 
     /**

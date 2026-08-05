@@ -123,6 +123,40 @@ export const useDeletePost = createMutation<unknown, string>({
   path: (id) => `/posts/${id}/`,
 });
 
+export type PostBulkAction =
+    | {type: 'feature'}
+    | {type: 'unfeature'}
+    | {type: 'unpublish'}
+    | {type: 'unschedule'}
+    | {type: 'addTag'; meta: {tags: {id?: string; name: string; slug?: string}[]}}
+    | {type: 'access'; meta: {visibility: string; tiers?: {id: string}[]}};
+
+/**
+ * Bulk-edit posts matching an NQL filter.
+ *
+ * The filter is the point: after Cmd+A the selection is inverted and covers
+ * posts that were never loaded, so the action has to be expressed as a query
+ * rather than as a list of ids.
+ */
+export const useBulkEditPosts = createMutation<unknown, {filter: string; action: PostBulkAction}>({
+    method: 'PUT',
+    path: () => '/posts/bulk/',
+    searchParams: ({filter}) => ({filter}),
+    body: ({action}) => ({
+        bulk: {
+            action: action.type,
+            meta: 'meta' in action ? action.meta : {}
+        }
+    })
+});
+
+/** Bulk-delete posts matching an NQL filter. */
+export const useBulkDeletePosts = createMutation<unknown, {filter: string}>({
+    method: 'DELETE',
+    path: () => '/posts/',
+    searchParams: ({filter}) => ({filter})
+});
+
 /**
  * Duplicate a post. The copy is always a draft, whatever the source was, so
  * callers place it at the top of the list rather than beside its original.

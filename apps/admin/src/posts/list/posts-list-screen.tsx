@@ -11,7 +11,7 @@ import {PostsFilters} from './components/posts-filters';
 import {ManagePostViewPopover} from './components/manage-post-view-popover';
 import {POST_DEFAULT_VIEWS} from '@/layout/app-sidebar/post-sidebar-views';
 import {PostsSortMenu} from './components/posts-sort-menu';
-import {buildAllFilter} from './post-query-params';
+import {buildAllFilter, buildBucketFilter, getActiveBuckets} from './post-query-params';
 import {canSavePostView, findActivePostView} from './post-views';
 
 import {usePostViews} from './hooks/use-post-views';
@@ -20,6 +20,10 @@ import {hasAdminAccess, isAuthorOrContributor, isContributorUser} from '@tryghos
 import {usePostActions} from './hooks/use-post-actions';
 import {usePostSelection} from './hooks/use-post-selection';
 import {canCopyGiftLink} from '@/shared/gift-link';
+import {ConfirmBulkActionModal} from './components/modals/confirm-bulk-action-modal';
+import {usePostBulkActions, type BulkActionSnapshot} from './hooks/use-post-bulk-actions';
+import type {BulkConfirmKey} from './post-bulk-modal-copy';
+import type {PostContextMenuKey} from './post-context-menu-items';
 import {getPostContextMenuItems} from './post-context-menu-items';
 import {getPostSelectionCount, isPostSelected, isSinglePostSelected} from './post-selection-state';
 import {type PostResource, getPostResourceCopy} from './post-resource';
@@ -38,6 +42,9 @@ import {usePostsList} from './hooks/use-posts-list';
  * Currently renders bare titles: this phase is about the data layer being
  * right (three sequenced queries, URL round-tripping), not the design.
  */
+/** The three that ask before acting. Feature and unfeature do not. */
+const CONFIRMABLE_ACTIONS: PostContextMenuKey[] = ['delete', 'unpublish', 'unschedule'];
+
 // Only needed once someone opens it, and it pulls in the gift-link API layer.
 const GiftLinkModal = lazy(() => import('@/posts/analytics/modals/gift-link-modal'));
 
@@ -122,6 +129,12 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
     //
     // Depends on `selection.state` rather than `selection`, which is a fresh
     // object literal every render and would make this memo a no-op.
+    // The buckets on screen, so a bulk edit only patches the lists it is about.
+    const bucketFilters = useMemo(
+        () => getActiveBuckets(params).map(bucket => buildBucketFilter(bucket, params, {ownAuthorSlug})),
+        [params, ownAuthorSlug]
+    );
+
     const selectionState = selection.state;
     const menuPosts = useMemo(
         () => items.filter(item => isPostSelected(selectionState, item.id)),
@@ -151,10 +164,49 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
     // state bridge; here the list owns it directly, so there is one modal and
     // one set of eligibility rules behind both implementations.
     const [giftLinkPostId, setGiftLinkPostId] = useState<string | null>(null);
+
+    /**
+     * A bulk action that has been chosen but not yet confirmed. The selection
+     * is captured *here*, when the menu item is picked — Radix closes the menu
+     * straight away, which clears a transient selection, so a modal reading the
+     * live selection would find it empty. Ember freezes its selection list for
+     * the modal's lifetime; a snapshot is the same guarantee without the state
+     * machine.
+     */
+    const [pendingBulkAction, setPendingBulkAction] = useState<
+        {key: PostContextMenuKey; snapshot: BulkActionSnapshot} | null
+    >(null);
+
+    const bulkActions = usePostBulkActions({
+        resource,
+        onDeleted: () => {
+            setPendingBulkAction(null);
+            selection.clear();
+        },
+        onEdited: (remainingIds) => {
+            setPendingBulkAction(null);
+            // Not a full clear: the rows still on screen stay selected, so a
+            // second action can follow the first. Ember's clearUnavailableItems.
+            selection.keepOnly(remainingIds);
+        }
+    });
     const runPostAction = usePostActions({
         resource,
         posts: menuPosts,
         onShareAsGift: setGiftLinkPostId,
+        onBulkAction: (key, snapshot) => {
+            // Feature and unfeature apply straight away in Ember — no
+            // confirmation, because they are trivially reversible.
+            if (key === 'feature' || key === 'unfeature') {
+                void bulkActions.run(key, snapshot);
+                return;
+            }
+
+            setPendingBulkAction({key, snapshot});
+        },
+        selectionFilter: selection.filter,
+        allFilter: buildAllFilter(params, {ownAuthorSlug}),
+        bucketFilters,
         // The selection count, not the loaded-row count: after Cmd+A on a
         // 2,000-post site the toast has to say 2,000, not the 30 in memory.
         count: getPostSelectionCount(selectionState, totalItems)
@@ -295,6 +347,22 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
                         )}
                     </ListPage.Body>
                 </ListPage>
+                {pendingBulkAction && CONFIRMABLE_ACTIONS.includes(pendingBulkAction.key) && (
+                    <ConfirmBulkActionModal
+                        action={pendingBulkAction.key as BulkConfirmKey}
+                        count={pendingBulkAction.snapshot.count}
+                        isRunning={bulkActions.isRunning}
+                        isSingle={isSinglePostSelected(selectionState) || pendingBulkAction.snapshot.count === 1}
+                        resource={resource}
+                        title={pendingBulkAction.snapshot.posts[0]?.title}
+                        onCancel={() => {
+                            setPendingBulkAction(null);
+                        }}
+                        onConfirm={() => {
+                            void bulkActions.run(pendingBulkAction.key, pendingBulkAction.snapshot);
+                        }}
+                    />
+                )}
                 {giftLinkPostId && (
                     <Suspense fallback={null}>
                         <GiftLinkModal

@@ -40,7 +40,8 @@ export type PostSelectionAction =
     | {type: 'selectAll'}
     | {type: 'clear'}
     | {type: 'contextMenu'; id: string}
-    | {type: 'closeContextMenu'};
+    | {type: 'closeContextMenu'}
+    | {type: 'keepOnly'; ids: Set<string>};
 
 export function createPostSelection(): PostSelectionState {
     return {
@@ -179,6 +180,21 @@ export function postSelectionReducer(
             lastShiftGroup: new Set(),
             transient: true
         };
+    case 'keepOnly': {
+        // Ember's `clearUnavailableItems`: after a bulk edit, ids that have
+        // left the list are dropped while the rows still on screen stay
+        // selected, so a second action can follow the first.
+        //
+        // Inverted selections hold *exclusions*, which are not list rows, so
+        // there is nothing to prune.
+        if (state.inverted) {
+            return state;
+        }
+
+        const selectedIds = new Set([...state.selectedIds].filter(id => action.ids.has(id)));
+
+        return {...state, selectedIds, lastShiftGroup: new Set()};
+    }
     case 'closeContextMenu':
         return state.transient ? createPostSelection() : state;
     case 'clear':

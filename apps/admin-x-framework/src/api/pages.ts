@@ -1,6 +1,6 @@
 import { InfiniteData } from '@tanstack/react-query';
 import { Meta, createInfiniteQuery, createMutation, createQuery } from '../utils/api/hooks';
-import type { Email, PostListFields } from './posts';
+import type { Email, PostBulkAction, PostListFields } from './posts';
 
 // A page is a post with `displayName: 'page'` server-side, so the list screens
 // read the same fields off both.
@@ -67,4 +67,24 @@ export const useBrowsePagesInfinite = createInfiniteQuery<PagesResponseType & { 
 export const useCopyPage = createMutation<PagesResponseType, string>({
     method: 'POST',
     path: id => `/pages/${id}/copy/`
+});
+
+/** Bulk-edit pages matching an NQL filter. See `useBulkEditPosts`. */
+export const useBulkEditPages = createMutation<unknown, {filter: string; action: PostBulkAction}>({
+    method: 'PUT',
+    path: () => '/pages/bulk/',
+    searchParams: ({filter}) => ({filter}),
+    body: ({action}) => ({
+        bulk: {
+            action: action.type,
+            meta: 'meta' in action ? action.meta : {}
+        }
+    })
+});
+
+/** Bulk-delete pages matching an NQL filter. */
+export const useBulkDeletePages = createMutation<unknown, {filter: string}>({
+    method: 'DELETE',
+    path: () => '/pages/',
+    searchParams: ({filter}) => ({filter})
 });
