@@ -320,6 +320,10 @@ module.exports = {
         return apiFramework.pipeline(require('./gift-reminders'), localUtils);
     },
 
+    get giftDeliveries() {
+        return apiFramework.pipeline(require('./gift-deliveries'), localUtils);
+    },
+
     get recommendationsPublic() {
         return apiFramework.pipeline(require('./recommendations-public'), localUtils, 'content');
     },

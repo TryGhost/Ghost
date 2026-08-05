@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const {GiftEmailService} = require('../../../../../core/server/services/gifts/gift-email-service');
 
@@ -68,6 +69,20 @@ describe('GiftEmailService', function () {
             subject: 'Your gift is ready',
             from: 'Test Site <noreply@example.com>'
         }));
+    });
+
+    it('tells the buyer an email gift is on its way to the recipient', async function () {
+        await service.sendPurchaseConfirmation({
+            ...defaultData,
+            recipientEmail: 'recipient@example.com'
+        });
+
+        const message = mailer.send.firstCall.firstArg;
+        assert.equal(message.subject, 'Your gift is on its way');
+        for (const field of ['html', 'text']) {
+            sinon.assert.match(message[field], sinon.match('recipient@example.com'));
+            sinon.assert.match(message[field], sinon.match('You can also share the link below yourself'));
+        }
     });
 
     it('includes gift link, tier name, and cadence in both HTML and text', async function () {
@@ -169,6 +184,81 @@ describe('GiftEmailService', function () {
         // but the structural <strong> + <a> tags from the template must still render
         sinon.assert.match(msg.html, sinon.match(/<strong>Gold &lt;img/));
         sinon.assert.match(msg.html, sinon.match(/<a class="small" href="mailto:buyer/));
+    });
+
+    describe('sendGiftDelivery', function () {
+        it('sends the prototype delivery content transactionally without open or click tracking', async function () {
+            mailer.send.resolves({id: '<provider-123>'});
+
+            const result = await service.sendGiftDelivery({
+                recipientEmail: 'recipient@example.com',
+                recipientName: 'Recipient',
+                buyerName: 'Buyer',
+                personalMessage: 'Enjoy this gift',
+                token: 'abc-123',
+                tierName: 'Gold',
+                benefits: ['All stories'],
+                cadence: 'year',
+                duration: 1,
+                expiresAt: new Date('2027-04-07')
+            });
+
+            assert.deepEqual(result, {providerMessageId: 'provider-123'});
+            const message = mailer.send.firstCall.firstArg;
+            sinon.assert.match(message, {
+                to: 'recipient@example.com',
+                subject: 'Buyer sent you a gift',
+                tags: ['gift-delivery'],
+                disableTracking: true
+            });
+            for (const field of ['html', 'text']) {
+                sinon.assert.match(message[field], sinon.match('Recipient'));
+                sinon.assert.match(message[field], sinon.match('Enjoy this gift'));
+                sinon.assert.match(message[field], sinon.match('All stories'));
+                sinon.assert.match(message[field], sinon.match('1 year'));
+                sinon.assert.match(message[field], sinon.match('https://example.com/gift/abc-123'));
+            }
+        });
+
+        it('escapes recipient-controlled delivery content in HTML', async function () {
+            await service.sendGiftDelivery({
+                recipientEmail: 'recipient@example.com',
+                recipientName: '<img src=x onerror=alert(1)>',
+                buyerName: '<script>alert(1)</script>',
+                personalMessage: '<b>not markup</b>',
+                token: 'abc-123',
+                tierName: 'Gold',
+                benefits: ['<i>benefit</i>'],
+                cadence: 'month',
+                duration: 1,
+                expiresAt: new Date('2027-04-07')
+            });
+
+            const html = mailer.send.firstCall.firstArg.html;
+            assert.ok(!html.includes('<script>alert(1)</script>'));
+            assert.ok(!html.includes('<img src=x onerror=alert(1)>'));
+            assert.ok(!html.includes('<b>not markup</b>'));
+            assert.ok(!html.includes('<i>benefit</i>'));
+        });
+
+        it('does not invent provider telemetry for transports without a Mailgun ID', async function () {
+            mailer.send.resolves('Message sent');
+
+            const result = await service.sendGiftDelivery({
+                recipientEmail: 'recipient@example.com',
+                recipientName: null,
+                buyerName: null,
+                personalMessage: null,
+                token: 'abc-123',
+                tierName: 'Gold',
+                benefits: [],
+                cadence: 'month',
+                duration: 1,
+                expiresAt: new Date('2027-04-07')
+            });
+
+            assert.deepEqual(result, {providerMessageId: null});
+        });
     });
 
     describe('sendReminder', function () {

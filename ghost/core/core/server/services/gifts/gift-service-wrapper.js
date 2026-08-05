@@ -27,6 +27,7 @@ class GiftServiceWrapper {
         const {GiftBookshelfRepository} = require('./gift-bookshelf-repository');
         const {GiftService} = require('./gift-service');
         const {GiftReminderScheduler} = require('./gift-reminder-scheduler');
+        const {GiftDeliveryScheduler} = require('./gift-delivery-scheduler');
         const {GiftEmailService} = require('./gift-email-service');
         const {GiftController} = require('./gift-controller');
         const GiftCheckoutAdapter = require('./gift-checkout-adapter');
@@ -37,8 +38,10 @@ class GiftServiceWrapper {
         const logging = require('@tryghost/logging');
         const {SubscriptionActivatedEvent} = require('../../../shared/events');
         const StartGiftReminderFlushEvent = require('./events/start-gift-reminder-flush-event');
+        const StartGiftDeliveryFlushEvent = require('./events/start-gift-delivery-flush-event');
         const StartGiftCleanupEvent = require('./events/start-gift-cleanup-event');
         const jobs = require('./jobs');
+        const emailAnalyticsJobs = require('../email-analytics/jobs');
 
         const {GhostMailer} = require('../mail');
         const settingsCache = require('../../../shared/settings-cache');
@@ -72,6 +75,13 @@ class GiftServiceWrapper {
             internalKeys: options.internalKeys,
             findUnsentReminders: () => repository.findUnsentReminders()
         });
+        const giftDeliveryScheduler = new GiftDeliveryScheduler({
+            apiUrl: options.apiUrl,
+            adapter: options.schedulerAdapter,
+            internalKeys: options.internalKeys,
+            findPendingDeliveries: () => repository.findPendingDeliveries(),
+            wake: () => DomainEvents.dispatch(StartGiftDeliveryFlushEvent.create())
+        });
 
         this.service = new GiftService({
             giftRepository: repository,
@@ -84,6 +94,10 @@ class GiftServiceWrapper {
                 return staffService.api.emails;
             },
             giftReminderScheduler,
+            giftDeliveryScheduler,
+            giftEmailAnalytics: {
+                schedule: () => emailAnalyticsJobs.scheduleRecurringGiftDeliveriesJob(true)
+            },
             checkoutAdapter,
             labsService,
             settingsCache
@@ -112,6 +126,20 @@ class GiftServiceWrapper {
             }
         });
 
+        DomainEvents.subscribe(StartGiftDeliveryFlushEvent, async () => {
+            if (!labsService.isSet('giftSubCustomization')) {
+                return;
+            }
+
+            const start = Date.now();
+            try {
+                const {sentCount, skippedCount, failedCount} = await this.service.processDeliveries();
+                logging.info(`Sent ${sentCount} gift deliveries, skipped ${skippedCount}, failed ${failedCount} in ${Date.now() - start}ms`);
+            } catch (err) {
+                logging.error(err, 'Failed to process gift deliveries');
+            }
+        });
+
         DomainEvents.subscribe(StartGiftCleanupEvent, async () => {
             const consumedStart = Date.now();
             try {
@@ -134,6 +162,10 @@ class GiftServiceWrapper {
 
         jobs.scheduleGiftCleanupJob();
         jobs.scheduleGiftReminderJob();
+
+        if (labsService.isSet('giftSubCustomization')) {
+            await giftDeliveryScheduler.recoverAll();
+        }
 
         this.#initialized = true;
     }

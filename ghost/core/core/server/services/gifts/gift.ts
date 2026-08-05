@@ -1,5 +1,5 @@
 import {GIFT_EXPIRY_DAYS} from './constants';
-import type {GiftCadence, GiftData, GiftStatus} from './gift-schema';
+import type {GiftCadence, GiftData, GiftDeliveryMethod, GiftDeliveryOutcome, GiftDeliveryStatus, GiftStatus} from './gift-schema';
 
 export type {GiftCadence, GiftStatus} from './gift-schema';
 
@@ -24,12 +24,65 @@ export type GiftFromPurchaseData = Pick<GiftData,
     | 'amount'
     | 'stripeCheckoutSessionId'
     | 'stripePaymentIntentId'
->;
+> & Partial<Pick<GiftData,
+    | 'buyerName'
+    | 'deliveryMethod'
+    | 'recipientEmail'
+    | 'recipientName'
+    | 'personalMessage'
+    | 'deliverAt'
+>>;
+
+type GiftConstructorData = Omit<GiftData,
+    | 'buyerName'
+    | 'deliveryMethod'
+    | 'recipientEmail'
+    | 'recipientName'
+    | 'personalMessage'
+    | 'deliverAt'
+    | 'deliveryStatus'
+    | 'deliveryAttempts'
+    | 'deliveryNextAttemptAt'
+    | 'emailSentAt'
+    | 'emailProviderMessageId'
+    | 'deliveryOutcome'
+    | 'deliveryOutcomeAt'
+    | 'deliveryOutcomeDiagnostics'
+> & Partial<Pick<GiftData,
+    | 'buyerName'
+    | 'deliveryMethod'
+    | 'recipientEmail'
+    | 'recipientName'
+    | 'personalMessage'
+    | 'deliverAt'
+    | 'deliveryStatus'
+    | 'deliveryAttempts'
+    | 'deliveryNextAttemptAt'
+    | 'emailSentAt'
+    | 'emailProviderMessageId'
+    | 'deliveryOutcome'
+    | 'deliveryOutcomeAt'
+    | 'deliveryOutcomeDiagnostics'
+>>;
 
 export class Gift implements GiftData {
     token: string;
     buyerEmail: string;
     buyerMemberId: string | null;
+    buyerName: string | null;
+    deliveryMethod: GiftDeliveryMethod;
+    recipientEmail: string | null;
+    recipientName: string | null;
+    personalMessage: string | null;
+    deliverAt: Date | null;
+    deliveryStatus: GiftDeliveryStatus;
+    deliveryAttempts: number;
+    deliveryNextAttemptAt: Date | null;
+    emailSentAt: Date | null;
+    emailProviderMessageId: string | null;
+    deliveryOutcome: GiftDeliveryOutcome;
+    deliveryOutcomeAt: Date | null;
+    deliveryOutcomeDiagnostics: string | null;
     redeemerMemberId: string | null;
     tierId: string;
     cadence: GiftCadence;
@@ -48,10 +101,24 @@ export class Gift implements GiftData {
     refundedAt: Date | null;
     consumesSoonReminderSentAt: Date | null;
 
-    constructor(data: GiftData) {
+    constructor(data: GiftConstructorData) {
         this.token = data.token;
         this.buyerEmail = data.buyerEmail;
         this.buyerMemberId = data.buyerMemberId;
+        this.buyerName = data.buyerName ?? null;
+        this.deliveryMethod = data.deliveryMethod ?? 'link';
+        this.recipientEmail = data.recipientEmail ?? null;
+        this.recipientName = data.recipientName ?? null;
+        this.personalMessage = data.personalMessage ?? null;
+        this.deliverAt = data.deliverAt ?? null;
+        this.deliveryStatus = data.deliveryStatus ?? 'pending';
+        this.deliveryAttempts = data.deliveryAttempts ?? 0;
+        this.deliveryNextAttemptAt = data.deliveryNextAttemptAt ?? null;
+        this.emailSentAt = data.emailSentAt ?? null;
+        this.emailProviderMessageId = data.emailProviderMessageId ?? null;
+        this.deliveryOutcome = data.deliveryOutcome ?? 'unknown';
+        this.deliveryOutcomeAt = data.deliveryOutcomeAt ?? null;
+        this.deliveryOutcomeDiagnostics = data.deliveryOutcomeDiagnostics ?? null;
         this.redeemerMemberId = data.redeemerMemberId;
         this.tierId = data.tierId;
         this.cadence = data.cadence;
@@ -79,6 +146,20 @@ export class Gift implements GiftData {
 
         return new Gift({
             ...data,
+            buyerName: data.buyerName ?? null,
+            deliveryMethod: data.deliveryMethod ?? 'link',
+            recipientEmail: data.recipientEmail ?? null,
+            recipientName: data.recipientName ?? null,
+            personalMessage: data.personalMessage ?? null,
+            deliverAt: data.deliverAt ?? null,
+            deliveryStatus: 'pending',
+            deliveryAttempts: 0,
+            deliveryNextAttemptAt: null,
+            emailSentAt: null,
+            emailProviderMessageId: null,
+            deliveryOutcome: 'unknown',
+            deliveryOutcomeAt: null,
+            deliveryOutcomeDiagnostics: null,
             redeemerMemberId: null,
             consumesAt: null,
             expiresAt,
