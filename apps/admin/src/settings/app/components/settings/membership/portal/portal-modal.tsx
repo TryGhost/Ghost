@@ -235,9 +235,6 @@ const PortalModal: React.FC = () => {
     );
 
     return <PreviewModalContent
-        afterClose={() => {
-            updateRoute('portal');
-        }}
         buttonsDisabled={okProps.disabled}
         cancelLabel='Close'
         dirty={saveState === 'unsaved'}
@@ -249,6 +246,9 @@ const PortalModal: React.FC = () => {
         sidebar={sidebar}
         testId='portal-modal'
         title='Portal'
+        onClose={() => {
+            updateRoute('portal');
+        }}
         onOk={async () => {
             if (!Object.values(errors).filter(Boolean).length) {
                 await handleSave({force: true});
@@ -257,4 +257,4 @@ const PortalModal: React.FC = () => {
     />;
 };
 
-export default NiceModal.create(PortalModal);
+export default PortalModal;

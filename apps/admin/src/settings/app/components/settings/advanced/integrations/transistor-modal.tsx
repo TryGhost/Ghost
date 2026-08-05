@@ -15,7 +15,7 @@ import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRefreshAPIKey} from '@tryghost/admin-x-framework/api/api-keys';
 import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 
-const TransistorModal = NiceModal.create(() => {
+function TransistorModal() {
     const {updateRoute} = useSettingsNavigation();
     const {config, settings} = useGlobalData();
     const {mutateAsync: editSettings} = useEditSettings();
@@ -91,15 +91,15 @@ const TransistorModal = NiceModal.create(() => {
 
     return (
         <SettingsModal
-            afterClose={() => {
-                updateRoute('integrations');
-            }}
             cancelLabel='Close'
             dirty={enabled !== transistorEnabled}
             okLabel={okLabel}
             okVariant='default'
             testId='transistor-modal'
             title=''
+            onClose={() => {
+                updateRoute('integrations');
+            }}
             onOk={handleSave}
         >
             <IntegrationHeader
@@ -147,6 +147,6 @@ const TransistorModal = NiceModal.create(() => {
             </>
         </SettingsModal>
     );
-});
+}
 
 export default TransistorModal;

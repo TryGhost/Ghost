@@ -18,6 +18,7 @@ import { TagDetailGate } from "./tag-detail-gate";
 import { OnboardingRedirect } from "./onboarding/onboarding-redirect";
 import { type AccessRouteHandle, RouteAccessGuard } from "./route-access-guard";
 import { canAccessSettingsRoute } from "./settings/settings-access";
+import { settingsRouteChildren } from "./settings/routes";
 import { canManageAutomations, canManageMembers, canManageTags } from "@tryghost/admin-x-framework/api/users";
 
 import { NotFound } from "./not-found";
@@ -184,8 +185,9 @@ const appRoutes: RouteObject[] = [
     {
         // hideAdminSidebar lives on the handle, not the lazy module, so the shell
         // hides at first paint instead of waiting on the settings chunk.
-        path: `settings/*`,
+        path: `settings`,
         lazy: lazyComponent(() => import("./settings/settings")),
+        children: settingsRouteChildren,
         handle: {
             allowInForceUpgrade: true,
             hideAdminSidebar: true,

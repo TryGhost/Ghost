@@ -8,7 +8,6 @@ import {type Tier, getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-f
 import {createOfferRedemptionFilterUrl, createOfferRedemptionsFilterUrl} from './offer-helpers';
 import {currencyToDecimal, getSymbol} from '@/settings/app/utils/currency';
 import {toast} from 'sonner';
-import {useModal} from '@ebay/nice-modal-react';
 import {useOffersShowArchived, useSortingState} from '@/settings/app/components/providers/settings-app-provider';
 import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 
@@ -259,7 +258,6 @@ const sortOfferListItems = (items: OfferListItem[], sortOption: string, sortDire
 };
 
 export const OffersIndexModal: React.FC = () => {
-    const modal = useModal();
     const {updateRoute} = useSettingsNavigation();
     const {data: {offers: allOffers = []} = {}} = useBrowseOffers();
     const {data: {tiers: allTiers} = {}} = useBrowseTiers();
@@ -330,7 +328,6 @@ export const OffersIndexModal: React.FC = () => {
     const actions = (
         <Inline gap='md'>
             <Button type='button' variant='outline' onClick={() => {
-                modal.remove();
                 updateRoute('offers');
             }}>Close</Button>
             <Button type='button' onClick={() => {
@@ -411,9 +408,6 @@ export const OffersIndexModal: React.FC = () => {
     </div>;
 
     return <SettingsModal
-        afterClose={() => {
-            updateRoute('offers');
-        }}
         animate={false}
         backDropClick={false}
         cancelLabel=''
@@ -424,6 +418,9 @@ export const OffersIndexModal: React.FC = () => {
         title='Offers'
         topRightContent={actions}
         width={1140}
+        onClose={() => {
+            updateRoute('offers');
+        }}
     >
         <Stack className='h-full pt-8'>
             {listLayoutOutput}

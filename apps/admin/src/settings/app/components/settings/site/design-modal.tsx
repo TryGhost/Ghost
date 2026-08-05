@@ -209,13 +209,6 @@ const DesignModal: React.FC = () => {
         />;
 
     return <PreviewModalContent
-        afterClose={() => {
-            if (refParam === 'setup') {
-                updateRoute({isExternal: true, route: 'analytics'});
-            } else {
-                updateRoute('design');
-            }
-        }}
         buttonsDisabled={okProps.disabled}
         cancelLabel='Close'
         deviceSelector={deviceSelector}
@@ -230,6 +223,13 @@ const DesignModal: React.FC = () => {
         size='full'
         testId='design-modal'
         title='Design'
+        onClose={() => {
+            if (refParam === 'setup') {
+                updateRoute({isExternal: true, route: 'analytics'});
+            } else {
+                updateRoute('design');
+            }
+        }}
         onOk={async () => {
             await handleSave({fakeWhenUnchanged: true});
         }}
