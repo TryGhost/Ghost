@@ -15,7 +15,7 @@ const RETRY_DELAY_MS = 10 * 60 * 1000;
 const LOCK_TIMEOUT_MS = 30 * 60 * 1000;
 const MAX_RUNS_PER_BATCH = 100;
 
-describe('automations poll', function () {
+describe('welcome email automations poll', function () {
     let options;
 
     beforeAll(async function () {
