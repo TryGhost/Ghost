@@ -133,6 +133,13 @@
         "email_only": {
           "type": "boolean"
         },
+        "email_public_preview": {
+          "type": "boolean"
+        },
+        "email_public_preview_audience": {
+          "type": ["string", "null"],
+          "enum": ["all", "free", null]
+        },
         "authors": {
           "$ref": "#/definitions/post-authors"
         },

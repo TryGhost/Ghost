@@ -165,6 +165,7 @@ export default class LexicalEditorController extends Controller {
     @inject config;
 
     @tracked excerptErrorMessage = '';
+    @tracked editorAPI = null;
 
     /* public properties -----------------------------------------------------*/
 
@@ -466,6 +467,46 @@ export default class LexicalEditorController extends Controller {
     @action
     registerEditorAPI(API) {
         this.editorAPI = API;
+    }
+
+    // the public preview divider card edits these post-level email settings
+    // from inside Koenig, so it needs host callbacks that set + save
+    @action
+    setEmailPublicPreviewFromCard(enabled) {
+        this.post.set('emailPublicPreview', enabled);
+        this._savePostFromCard();
+    }
+
+    @action
+    setEmailPublicPreviewAudienceFromCard(audience) {
+        this.post.set('emailPublicPreviewAudience', audience);
+        this._savePostFromCard();
+    }
+
+    _savePostFromCard() {
+        return this.savePostTask.perform().catch((error) => {
+            if (error === undefined) {
+                // validation error
+                return;
+            }
+
+            throw error;
+        });
+    }
+
+    // paywall node properties don't reliably trip the scratch-vs-secondary
+    // dirty heuristics, so the customise modal asks for an explicit content
+    // save; leavingEditor bypasses the dirty check without touching status
+    @action
+    savePaywallContentFromCard() {
+        return this.saveTask.perform({silent: true, backgroundSave: true, leavingEditor: true}).catch((error) => {
+            if (error === undefined) {
+                // validation error
+                return;
+            }
+
+            throw error;
+        });
     }
 
     @action

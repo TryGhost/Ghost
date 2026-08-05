@@ -128,8 +128,13 @@ module.exports = async (model, frame, options = {}) => {
         // NOTE: the default of `email_only` is `false` which is why we default to `false` instead of `null`
         //       The undefined value is possible because `posts_meta` table is lazily created only one of the
         //       values is assigned.
-        const defaultValue = (attr === 'email_only') ? false : null;
-        jsonModel[attr] = _.get(jsonModel.posts_meta, attr) || defaultValue;
+        if (attr === 'email_public_preview') {
+            // Defaults to `true`, so a stored `false` must survive — `||` would collapse it back to the default.
+            jsonModel[attr] = _.get(jsonModel.posts_meta, attr) ?? true;
+        } else {
+            const defaultValue = (attr === 'email_only') ? false : null;
+            jsonModel[attr] = _.get(jsonModel.posts_meta, attr) || defaultValue;
+        }
     });
     delete jsonModel.posts_meta;
 

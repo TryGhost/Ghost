@@ -1,0 +1,32 @@
+{{#if this.showSummary}}
+    {{#if @inline}}
+        {{!-- appended to the recipients accordion trigger so the publish
+              screen keeps reading top-down as one sentence --}}
+        <span class="gh-publish-audience-inline" data-testid="audience-breakdown">{{#each this.inlineRows as |row|~}}
+            {{~#let (members-count-fetcher query=(hash filter=row.filter)) as |countFetcher|~}}
+                <span data-testid="audience-breakdown-{{row.key}}">{{row.separator}}{{#if countFetcher.isLoading}}&hellip;{{else}}{{format-number countFetcher.count}}{{/if}} {{#if row.showNewsletter}}<span class="gh-selected-newsletter">{{@publishOptions.newsletter.name}}</span> {{/if}}{{#if row.first}}subscribers {{/if}}{{row.thing}}</span>
+            {{~/let~}}
+        {{~/each}}</span>
+    {{else}}
+        <div class="gh-publish-audience-summary" data-testid="audience-summary">
+            <header class="gh-publish-audience-summary-header">Who gets what</header>
+            <ul class="gh-publish-audience-summary-rows">
+                {{#each this.rows as |row|}}
+                    <li class="gh-publish-audience-summary-row" data-testid="audience-summary-{{row.key}}">
+                        {{#let (members-count-fetcher query=(hash filter=row.filter)) as |countFetcher|}}
+                            <span class="gh-publish-audience-summary-count">
+                                {{#if countFetcher.isLoading}}
+                                    &hellip;
+                                {{else}}
+                                    {{format-number countFetcher.count}}
+                                {{/if}}
+                            </span>
+                            <span class="gh-publish-audience-summary-label">{{gh-pluralize countFetcher.count "subscriber" without-count=true}} {{row.label}}</span>
+                        {{/let}}
+                    </li>
+                {{/each}}
+            </ul>
+            <p class="gh-publish-audience-summary-webnote">{{this.webNote}}</p>
+        </div>
+    {{/if}}
+{{/if}}

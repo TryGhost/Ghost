@@ -34,6 +34,17 @@ function lexicalNodeHasContent(node) {
     return node.type !== 'paragraph' && node.type !== 'root';
 }
 
+export function hasPublicPreview(post) {
+    const state = parseLexicalState(post.lexicalScratch || post.lexical);
+    const children = state?.root?.children;
+
+    if (!Array.isArray(children)) {
+        return false;
+    }
+
+    return children.some(node => node?.type === 'paywall');
+}
+
 export function getPublicPreviewWarning(post) {
     const state = parseLexicalState(post.lexicalScratch || post.lexical);
     const children = state?.root?.children;

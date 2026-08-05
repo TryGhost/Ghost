@@ -103,8 +103,11 @@ export function buildCardConfigPost(post, defaultContentVisibility) {
     return {
         displayName: post.displayName,
         isPage: post.isPage,
+        isPost: post.isPost,
         showTitleAndFeatureImage: post.showTitleAndFeatureImage,
-        visibility: post.visibility || defaultContentVisibility
+        visibility: post.visibility || defaultContentVisibility,
+        emailPublicPreview: post.emailPublicPreview,
+        emailPublicPreviewAudience: post.emailPublicPreviewAudience
     };
 }
 

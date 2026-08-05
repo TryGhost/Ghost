@@ -1,6 +1,6 @@
 import moment from 'moment-timezone';
 import {action} from '@ember/object';
-import {getPublicPreviewWarning} from 'ghost-admin/utils/public-preview-warning';
+import {getPublicPreviewWarning, hasPublicPreview} from 'ghost-admin/utils/public-preview-warning';
 import {htmlSafe} from '@ember/template';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
@@ -204,11 +204,23 @@ export default class PublishOptions {
                 return 'status:free,status:-free';
             }
 
+            // an emailed public preview widens the default audience: the
+            // subscribers who receive the preview must receive the email
+            const emailsPreview = hasPublicPreview(this.post) && (this.post.emailPublicPreview ?? true);
+            const previewAudience = this.post.emailPublicPreviewAudience || 'all';
+
             if (this.post.visibility === 'paid') {
-                return 'status:-free';
+                // a paid post's preview can only go to free subscribers
+                return emailsPreview ? 'status:free,status:-free' : 'status:-free';
             }
 
             if (this.post.visibility === 'tiers') {
+                if (emailsPreview) {
+                    return previewAudience === 'free'
+                        ? `${this.post.visibilitySegment},status:free`
+                        : 'status:free,status:-free';
+                }
+
                 return this.post.visibilitySegment;
             }
 

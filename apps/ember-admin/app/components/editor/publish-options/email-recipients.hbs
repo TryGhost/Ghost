@@ -5,6 +5,8 @@
         @onChange={{@publishOptions.setRecipientFilter}}
         @renderInPlace={{false}}
         @dropdownClass="gh-publish-newsletter-dropdown"
+        @audienceOutcomes={{this.audienceOutcomes}}
+        @paidSplit={{this.paidSplit}}
     />
 
     {{#if (gt @publishOptions.newsletters.length 1)}}

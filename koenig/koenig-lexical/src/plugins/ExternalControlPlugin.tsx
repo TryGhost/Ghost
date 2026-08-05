@@ -1,9 +1,14 @@
 import React from 'react';
 import {$canShowPlaceholder} from '@lexical/text';
 import {$createParagraphNode, $getRoot, $isDecoratorNode} from 'lexical';
+import {$createPaywallNode} from '../nodes/PaywallNode';
 import {$selectDecoratorNode} from '../utils/$selectDecoratorNode';
 import {DRAG_DROP_PASTE} from '@lexical/rich-text';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+
+// getType() comparison instead of $isPaywallNode so detection also works for
+// nodes deserialized by a different bundle of the node class
+const $getPaywallNodes = () => $getRoot().getChildren().filter(node => node.getType() === 'paywall');
 
 // used to register a minimal API for controlling the editor from the consuming app
 // designed to allow typical behaviours without the consuming app needing to bundle the lexical library
@@ -105,6 +110,45 @@ export const ExternalControlPlugin = ({registerAPI}) => {
                     isDecorator = lastNode && $isDecoratorNode(lastNode);
                 });
                 return isDecorator;
+            },
+            hasPaywall() {
+                let hasPaywall = false;
+                editor.getEditorState().read(() => {
+                    hasPaywall = $getPaywallNodes().length > 0;
+                });
+                return hasPaywall;
+            },
+            insertPaywall() {
+                editor.update(() => {
+                    if ($getPaywallNodes().length > 0) {
+                        return;
+                    }
+
+                    const root = $getRoot();
+                    const children = root.getChildren();
+                    const paywallNode = $createPaywallNode();
+
+                    // insert after the first content-bearing block so there's a
+                    // minimal preview by default; the writer can drag it from there
+                    const firstContentNode = children.find((node) => {
+                        return $isDecoratorNode(node) || node.getTextContent().trim() !== '';
+                    });
+
+                    if (firstContentNode) {
+                        firstContentNode.insertAfter(paywallNode);
+                    } else {
+                        root.append(paywallNode);
+                    }
+
+                    if (paywallNode.getNextSibling() === null) {
+                        paywallNode.insertAfter($createParagraphNode());
+                    }
+                });
+            },
+            removePaywall() {
+                editor.update(() => {
+                    $getPaywallNodes().forEach(node => node.remove());
+                });
             }
         };
 

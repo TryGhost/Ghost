@@ -73,6 +73,7 @@
     "The link expires on {expiresAt} and can only be redeemed once.": "Връзката изтича на {expiresAt} и може да бъде активирана само веднъж.",
     "This email address will not be used.": "Този имейл адрес няма да бъде използван.",
     "This message was sent from {siteDomain} to {email}.": "Това съобщение е изпратено от {siteDomain} до {email}.",
+    "This post is for paid members": "",
     "To keep your {tierName} membership, continue with a paid subscription today and we'll automatically add the rest of your gift period as a free trial.": "За да запазите {tierName} плана си, преминете към платен абонамент още днес и ние автоматично ще добавим остатъка от подарения ви период като безплатен пробен период.",
     "trialing": "пробен",
     "Unsubscribe": "Отписване",

@@ -45,6 +45,16 @@
                         {{/if}}
                     </div>
 
+                    {{#if (feature 'publicPreviews')}}
+                        <div class="gh-editor-header-access pe-auto">
+                            <Editor::AccessBar
+                                @post={{this.post}}
+                                @editorAPI={{this.editorAPI}}
+                                @savePostTask={{this.savePostTask}}
+                            />
+                        </div>
+                    {{/if}}
+
                     <section class="gh-editor-publish-buttons">
                         {{#unless this.post.isNew}}
                             <Editor::PublishButtons @publishManagement={{publishManagement}} />
@@ -96,6 +106,9 @@
                     snippets=this.snippets
                     deleteSnippet=(if this.canManageSnippets this.confirmDeleteSnippet)
                     createSnippet=(if this.canManageSnippets this.createSnippet)
+                    setEmailPublicPreview=this.setEmailPublicPreviewFromCard
+                    setEmailPublicPreviewAudience=this.setEmailPublicPreviewAudienceFromCard
+                    savePaywallContent=this.savePaywallContentFromCard
                 }}
                 @postType={{this.post.displayName}}
                 @registerAPI={{this.registerEditorAPI}}

@@ -14,7 +14,8 @@ export default class GhKoenigEditorLexical extends Component {
     mousedownY = 0;
     uploadUrl = `${ghostPaths().apiRoot}/images/upload/`;
 
-    editorAPI = null;
+    // tracked so the access bar re-renders once the editor API is registered
+    @tracked editorAPI = null;
     secondaryEditorAPI = null;
     skipFocusEditor = false;
 

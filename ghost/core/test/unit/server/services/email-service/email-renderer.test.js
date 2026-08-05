@@ -1327,6 +1327,81 @@ describe('Email renderer', function () {
                 'status:-free+(product:-\'gold\')'
             ]);
         });
+
+        describe('with publicPreviews', function () {
+            function createPreviewRenderer(html) {
+                return new EmailRenderer({
+                    renderers: {
+                        lexical: {
+                            render: () => html
+                        }
+                    },
+                    getPostUrl: () => {
+                        return 'http://example.com/post-id';
+                    },
+                    labs: {
+                        isSet: flag => flag === 'publicPreviews'
+                    }
+                });
+            }
+
+            it('splits free/paid for a paid post even without a paywall divider', async function () {
+                const renderer = createPreviewRenderer('<p>Members content, no divider</p>');
+                const post = {
+                    get: (key) => {
+                        if (key === 'lexical') {
+                            return '{}';
+                        }
+                        if (key === 'visibility') {
+                            return 'paid';
+                        }
+                    }
+                };
+                const response = await renderer.getSegments(post);
+                assert.deepEqual(response, ['status:free', 'status:-free']);
+            });
+
+            it('splits a tiers post three ways even without a paywall divider', async function () {
+                const renderer = createPreviewRenderer('<p>Members content, no divider</p>');
+                const post = {
+                    get: (key) => {
+                        if (key === 'lexical') {
+                            return '{}';
+                        }
+                        if (key === 'visibility') {
+                            return 'tiers';
+                        }
+                    },
+                    related: (key) => {
+                        if (key === 'tiers') {
+                            return {toJSON: () => [{slug: 'gold'}]};
+                        }
+                    }
+                };
+                const response = await renderer.getSegments(post);
+                assert.deepEqual(response, [
+                    'status:free',
+                    'status:-free+(product:\'gold\')',
+                    'status:-free+(product:-\'gold\')'
+                ]);
+            });
+
+            it('keeps a single segment for public posts', async function () {
+                const renderer = createPreviewRenderer('<p>Public content</p>');
+                const post = {
+                    get: (key) => {
+                        if (key === 'lexical') {
+                            return '{}';
+                        }
+                        if (key === 'visibility') {
+                            return 'public';
+                        }
+                    }
+                };
+                const response = await renderer.getSegments(post);
+                assert.deepEqual(response, [null]);
+            });
+        });
     });
 
     describe('getSegmentForAudience', function () {
@@ -1560,6 +1635,90 @@ describe('Email renderer', function () {
                 segment,
                 options
             );
+        });
+
+        describe('with publicPreviews', function () {
+            function createGatedPost({visibility = 'paid', tiers, ...meta} = {}) {
+                return createModel({
+                    ...basePost,
+                    visibility,
+                    ...(tiers ? {tiers, loaded: ['posts_meta', 'tiers']} : {}),
+                    posts_meta: createModel({
+                        feature_image_alt: null,
+                        feature_image_caption: null,
+                        ...meta
+                    })
+                });
+            }
+
+            beforeEach(function () {
+                labsEnabled = {publicPreviews: true};
+                renderedPost = '<p>Free preview</p><!--members-only--><p>Members content</p>';
+            });
+
+            it('truncates at the paywall for a without-access audience by default', async function () {
+                const post = createGatedPost();
+                const newsletter = createModel(baseNewsletter);
+
+                const response = await emailRenderer.renderBody(post, newsletter, 'status:free', {});
+
+                assert.ok(response.html.includes('Free preview'));
+                assert.ok(!response.html.includes('Members content'));
+                assert.ok(response.html.includes('Upgrade to continue reading.'));
+                assert.ok(!response.html.includes('This post is for paid members'));
+            });
+
+            it('renders an upgrade stub when the preview is excluded from email', async function () {
+                const post = createGatedPost({email_public_preview: false});
+                const newsletter = createModel(baseNewsletter);
+
+                const response = await emailRenderer.renderBody(post, newsletter, 'status:free', {});
+
+                assert.ok(!response.html.includes('Free preview'));
+                assert.ok(!response.html.includes('Members content'));
+                assert.ok(response.html.includes('This post is for paid members'));
+            });
+
+            it('renders an upgrade stub for a gated post without a paywall divider', async function () {
+                renderedPost = '<p>Members content, no divider</p>';
+                const post = createGatedPost();
+                const newsletter = createModel(baseNewsletter);
+
+                const response = await emailRenderer.renderBody(post, newsletter, 'status:free', {});
+
+                assert.ok(!response.html.includes('Members content'));
+                assert.ok(response.html.includes('This post is for paid members'));
+            });
+
+            it('stubs paid members outside a free-only preview audience but previews free members', async function () {
+                const post = createGatedPost({
+                    visibility: 'tiers',
+                    tiers: [createModel({slug: 'gold', name: 'Gold'})],
+                    email_public_preview: true,
+                    email_public_preview_audience: 'free'
+                });
+                const newsletter = createModel(baseNewsletter);
+
+                const paidNoAccess = await emailRenderer.renderBody(post, newsletter, 'status:-free+(product:-\'gold\')', {});
+                assert.ok(!paidNoAccess.html.includes('Free preview'));
+                assert.ok(paidNoAccess.html.includes('This post is for paid members'));
+
+                const free = await emailRenderer.renderBody(post, newsletter, 'status:free', {});
+                assert.ok(free.html.includes('Free preview'));
+                assert.ok(!free.html.includes('Members content'));
+                assert.ok(free.html.includes('Upgrade to continue reading.'));
+            });
+
+            it('renders the full content for audiences with access', async function () {
+                const post = createGatedPost();
+                const newsletter = createModel(baseNewsletter);
+
+                const response = await emailRenderer.renderBody(post, newsletter, 'status:-free', {});
+
+                assert.ok(response.html.includes('Free preview'));
+                assert.ok(response.html.includes('Members content'));
+                assert.ok(!response.html.includes('This post is for paid members'));
+            });
         });
 
         it('renders the post title as the top-level heading', async function () {

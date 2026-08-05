@@ -84,6 +84,7 @@ export default class FeatureService extends Service {
     @feature('editorExcerpt') editorExcerpt;
     @feature('memberDetailsReact') memberDetailsReact;
     @feature('paywallImprovements') paywallImprovements;
+    @feature('publicPreviews') publicPreviews;
     @feature('automations') automations;
     @feature('csvContentImporter') csvContentImporter;
     _user = null;

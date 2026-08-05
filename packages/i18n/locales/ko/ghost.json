@@ -71,6 +71,7 @@
     "The link expires on {expiresAt} and can only be redeemed once.": "이 링크는 {expiresAt}에 만료되며, 한 번만 사용할 수 있어요.",
     "This email address will not be used.": "이 이메일 주소는 사용하지 않을게요.",
     "This message was sent from {siteDomain} to {email}.": "이 메시지는 {siteDomain}에서 {email}(으)로 전송되었어요.",
+    "This post is for paid members": "",
     "To keep your {tierName} membership, continue with a paid subscription today and we'll automatically add the rest of your gift period as a free trial.": "{tierName} 멤버십을 유지하려면 오늘 유료 구독으로 전환해 주세요. 남은 선물 기간은 무료 체험으로 자동 추가해 드려요.",
     "trialing": "체험 중",
     "Unsubscribe": "구독 취소",

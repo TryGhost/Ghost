@@ -87,6 +87,10 @@ const features: Feature[] = [{
     title: 'Gift subscription customization',
     description: 'Enables fixed-duration gift subscription purchases before publisher configuration is available',
     flag: 'giftSubCustomization'
+}, {
+    title: 'Public previews',
+    description: 'Enables the access status element in the editor with public preview controls and email audience settings',
+    flag: 'publicPreviews'
 }];
 
 const AlphaFeatures: React.FC = () => {

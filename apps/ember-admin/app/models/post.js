@@ -116,6 +116,8 @@ export default Model.extend(Comparable, ValidationEngine, {
     uuid: attr('string'),
     emailSegment: attr('members-segment-string', {defaultValue: null}),
     emailOnly: attr('boolean', {defaultValue: false}),
+    emailPublicPreview: attr('boolean', {defaultValue: true}),
+    emailPublicPreviewAudience: attr('string', {defaultValue: null}),
 
     featureImage: attr('string'),
     featureImageAlt: attr('string'),

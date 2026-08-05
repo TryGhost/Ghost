@@ -73,6 +73,7 @@
     "The link expires on {expiresAt} and can only be redeemed once.": "",
     "This email address will not be used.": "Ez da erabiliko ePosta helbide hau",
     "This message was sent from {siteDomain} to {email}.": "Mezu hau {siteDomain}(e)k bidali dio {email}(r)i",
+    "This post is for paid members": "",
     "To keep your {tierName} membership, continue with a paid subscription today and we'll automatically add the rest of your gift period as a free trial.": "",
     "trialing": "probatzen",
     "Unsubscribe": "Utzi harpidetza",

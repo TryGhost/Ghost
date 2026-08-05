@@ -64,8 +64,11 @@ export type PostVisibility = 'public' | 'members' | 'paid' | 'tiers';
 export interface CardConfigPost {
     displayName?: 'post' | 'page';
     isPage?: boolean;
+    isPost?: boolean;
     showTitleAndFeatureImage?: boolean;
     visibility: PostVisibility;
+    emailPublicPreview?: boolean;
+    emailPublicPreviewAudience?: 'all' | 'free';
 }
 
 // no index signature: a new flag must be declared here before a card can read it
@@ -89,6 +92,9 @@ export interface CardConfig {
     image?: {allowedWidths?: string[]};
     feature?: CardConfigFeature;
     post?: CardConfigPost;
+    setEmailPublicPreview?: (enabled: boolean) => void;
+    setEmailPublicPreviewAudience?: (audience: 'all' | 'free') => void;
+    savePaywallContent?: () => void;
     snippets?: Snippet[];
     [key: string]: unknown;
 }

@@ -509,7 +509,9 @@ class PostsService {
                     'frontmatter',
                     'feature_image_alt',
                     'feature_image_caption',
-                    'hide_title_and_feature_image'
+                    'hide_title_and_feature_image',
+                    'email_public_preview',
+                    'email_public_preview_audience'
                 ]
             );
         }

@@ -343,6 +343,7 @@
     "This gift has been refunded.": "Error message when redeeming a gift subscription",
     "This gift has expired.": "Error message when redeeming a gift subscription",
     "This message was sent from {siteDomain} to {email}.": "Text in the footer of emails, e.g. reply to comments notifications",
+    "This post is for paid members": "Heading of the minimal upgrade stub email sent to newsletter subscribers who are outside a gated post’s public preview audience. Shown instead of any post content, above an Upgrade button.",
     "This site is invite-only, contact the owner for access.": "A message on the member login screen indicating that a site is not-open to public signups",
     "This site is not accepting donations at the moment.": "Error message in Portal when a user visits the donations page but donations are disabled",
     "This site is not accepting payments at the moment.": "An error message shown when a tips or donations link is opened but the site has donations disabled",

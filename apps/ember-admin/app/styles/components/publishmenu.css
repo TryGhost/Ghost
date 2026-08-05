@@ -1141,3 +1141,79 @@
         width: auto;
     }
 }
+
+/* Audience summary (publicPreviews labs flag) */
+
+.gh-publish-audience-summary {
+    margin-top: 2rem;
+    padding: 1.6rem;
+    border: 1px solid var(--whitegrey);
+    border-radius: var(--border-radius);
+    background: var(--white);
+}
+
+.gh-publish-audience-summary-header {
+    margin-bottom: 1rem;
+    color: var(--midgrey-d1);
+    font-size: 1.2rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.gh-publish-audience-summary-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.gh-publish-audience-summary-row {
+    display: flex;
+    align-items: baseline;
+    gap: 0.8rem;
+    margin: 0;
+}
+
+.gh-publish-audience-summary-count {
+    min-width: 4.8rem;
+    color: var(--black);
+    font-size: 1.4rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+}
+
+.gh-publish-audience-summary-label {
+    color: var(--middarkgrey);
+    font-size: 1.4rem;
+}
+
+.gh-publish-audience-summary-webnote {
+    margin: 1.2rem 0 0;
+    color: var(--midgrey-l1);
+    font-size: 1.25rem;
+    line-height: 1.4em;
+}
+
+/* Who-gets-what recipients line (replaces the totals when a preview is emailed) */
+.gh-publish-audience-inline {
+    color: inherit;
+}
+
+/* What each ticked audience receives (paid posts with an emailed preview) */
+.gh-publish-send-to-outcome {
+    margin-left: 2px;
+    color: var(--midgrey);
+    font-weight: 400;
+}
+
+/* Access split of a specific-people selection */
+.gh-publish-send-to-mixed-outcome {
+    margin: 8px 0 0;
+    color: var(--midgrey);
+    font-size: 1.35rem;
+    line-height: 1.4em;
+}

@@ -89,6 +89,8 @@ const post = (attrs, frame) => {
         delete attrs.email_only;
         delete attrs.newsletter;
         delete attrs.email_segment;
+        delete attrs.email_public_preview;
+        delete attrs.email_public_preview_audience;
 
         // We are standardising on returning null from the Content API for any empty values
         if (attrs.twitter_title === '') {

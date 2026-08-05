@@ -435,7 +435,14 @@ class EmailRenderer {
         )].filter(segment => allowedSegments.includes(segment));
         const hasCards = cardSegments.length > 0;
 
-        if (!hasPaywall && !hasCards) {
+        // With publicPreviews, gated posts always render differently for
+        // audiences without access (public preview or upgrade stub), even when
+        // the content has no paywall divider or segmented cards
+        const publicPreviews = this.getLabs().isSet('publicPreviews');
+        const visibility = post.get('visibility');
+        const isGated = visibility === 'paid' || visibility === 'tiers';
+
+        if (!hasPaywall && !hasCards && !(publicPreviews && isGated)) {
             // No difference in email content between members
             return [null];
         }
@@ -443,14 +450,16 @@ class EmailRenderer {
         // Tier-restricted posts split recipients by tier access (not just
         // free/paid) so members on a tier that can't read this post get the
         // public preview + paywall, exactly as they do on the web.
-        if (post.get('visibility') === 'tiers' && hasPaywall) {
+        if (visibility === 'tiers' && (hasPaywall || publicPreviews)) {
             const accessFilter = getPostAccessFilter(getPostGatingShape(post));
             const noAccessFilter = getNegatedTierFilter(post);
 
             if (accessFilter && noAccessFilter) {
-                if (hasCards) {
-                    // free/paid cards in the preview need free vs paid rendering
-                    // within the no-access audience -> three render variants
+                if (hasCards || publicPreviews) {
+                    // free vs paid must render separately within the no-access
+                    // audience: free/paid cards differ, and with publicPreviews
+                    // a free-only preview audience stubs paid members without
+                    // access while free members still get the preview
                     return [
                         'status:free',
                         `status:-free+(${accessFilter})`,
@@ -516,6 +525,21 @@ class EmailRenderer {
         };
     }
 
+    /**
+     * Per-post public preview email settings (publicPreviews labs flag).
+     * Defaults preserve the pre-flag behaviour: the preview is included in
+     * email for every audience without access.
+     * @param {Post} post
+     * @returns {{enabled: boolean, audience: 'all'|'free'}}
+     */
+    #getPublicPreviewEmailSettings(post) {
+        const postsMeta = post.related && post.related('posts_meta');
+        return {
+            enabled: Boolean(postsMeta?.get('email_public_preview') ?? true),
+            audience: postsMeta?.get('email_public_preview_audience') || 'all'
+        };
+    }
+
     async renderPostBaseHtml(post, newsletter) {
         const postUrl = this.#getPostUrl(post);
 
@@ -552,16 +576,34 @@ class EmailRenderer {
         const membersOnlyIndex = html.indexOf('<!--members-only-->');
         const hasMembersOnlyContent = membersOnlyIndex !== -1;
         let addPaywall = false;
+        let addStub = false;
 
         // Members without access to the gated content (free members, or members
         // on a tier that can't read this post) get the public preview + paywall,
         // exactly as on the web.
-        if (isPaidPost && hasMembersOnlyContent && !audience.hasPostAccess) {
-            // Add paywall
-            addPaywall = true;
+        if (isPaidPost && !audience.hasPostAccess) {
+            if (this.getLabs().isSet('publicPreviews')) {
+                // The post's preview settings decide what a without-access
+                // audience receives: the preview + upgrade CTA, or a minimal
+                // upgrade stub when there's no preview, the preview is excluded
+                // from email, or this audience is outside the preview audience
+                const previewSettings = this.#getPublicPreviewEmailSettings(post);
+                const audienceGetsPreview = previewSettings.audience === 'all' || getSegmentStatus(segment) === 'status:free';
 
-            // Remove the members-only content
-            html = html.slice(0, membersOnlyIndex);
+                if (hasMembersOnlyContent && previewSettings.enabled && audienceGetsPreview) {
+                    addPaywall = true;
+                    html = html.slice(0, membersOnlyIndex);
+                } else {
+                    addStub = true;
+                    html = '';
+                }
+            } else if (hasMembersOnlyContent) {
+                // Add paywall
+                addPaywall = true;
+
+                // Remove the members-only content
+                html = html.slice(0, membersOnlyIndex);
+            }
         }
 
         let $ = cheerioLoad(html);
@@ -589,6 +631,7 @@ class EmailRenderer {
             newsletter,
             html,
             addPaywall,
+            addStub,
             audience
         });
         html = await this.renderTemplate(templateData);
@@ -1045,7 +1088,8 @@ class EmailRenderer {
             htmlTemplateSource,
             latestPostsPartial,
             paywallPartial,
-            stylesPartialSource
+            stylesPartialSource,
+            stubPartial
         ] = await Promise.all([
             fs.readFile(path.join(emailPartials, 'base-styles.hbs'), 'utf8'),
             fs.readFile(path.join(emailPartials, 'card-styles.hbs'), 'utf8'),
@@ -1055,7 +1099,8 @@ class EmailRenderer {
             fs.readFile(path.join(emailTemplates, 'template.hbs'), 'utf8'),
             fs.readFile(path.join(emailTemplates, 'partials', 'latest-posts.hbs'), 'utf8'),
             fs.readFile(path.join(emailTemplates, 'partials', 'paywall.hbs'), 'utf8'),
-            fs.readFile(path.join(emailTemplates, 'partials', 'styles.hbs'), 'utf8')
+            fs.readFile(path.join(emailTemplates, 'partials', 'styles.hbs'), 'utf8'),
+            fs.readFile(path.join(emailTemplates, 'partials', 'stub.hbs'), 'utf8')
         ]);
 
         handlebars.registerPartial('baseStyles', baseStylesSource);
@@ -1066,6 +1111,7 @@ class EmailRenderer {
         handlebars.registerPartial('latestPosts', latestPostsPartial);
         handlebars.registerPartial('paywall', paywallPartial);
         handlebars.registerPartial('styles', stylesPartialSource);
+        handlebars.registerPartial('stub', stubPartial);
 
         return handlebars.compile(htmlTemplateSource);
     }
@@ -1178,7 +1224,7 @@ class EmailRenderer {
      * @param {boolean} options.addPaywall
      * @param {SegmentAudience} options.audience
      */
-    async getTemplateData({post, newsletter, html, addPaywall, audience}) {
+    async getTemplateData({post, newsletter, html, addPaywall, addStub, audience}) {
         const emailDesign = this.#getEmailDesign(newsletter);
 
         const {href: headerImage, width: headerImageWidth} = await this.limitImageWidth(newsletter.get('header_image'));
@@ -1387,6 +1433,12 @@ class EmailRenderer {
 
             // Paywall
             paywall: addPaywall ? {
+                signupUrl: signupUrl.href
+            } : null,
+
+            // Minimal upgrade stub for audiences outside the public preview
+            // audience (publicPreviews labs flag)
+            stub: addStub ? {
                 signupUrl: signupUrl.href
             } : null,
 
