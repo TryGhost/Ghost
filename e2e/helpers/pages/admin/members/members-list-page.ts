@@ -69,6 +69,36 @@ export class MembersListPage extends AdminPage {
         await this.addSearchableFilter('Label', labelName, labelName);
     }
 
+    // The "Custom field" filter is a cascade: pick the field, then (for a composite
+    // like an address) a part, then the value. Operator defaults to "is"; pass one to change it.
+    async addCustomFieldFilter({field, value, subfield, operator}: {field: string; value?: string; subfield?: string; operator?: string}): Promise<void> {
+        await this.filterButton.click();
+        await this.page.getByRole('option', {name: 'Custom field', exact: true}).click();
+
+        // The cascade segments are dropdown menus, so their choices are menuitems.
+        await this.page.getByTestId('custom-field-filter-field').click();
+        await this.page.getByRole('menuitem', {name: field, exact: true}).click();
+
+        if (subfield) {
+            await this.page.getByTestId('custom-field-filter-subfield').click();
+            await this.page.getByRole('menuitem', {name: subfield, exact: true}).click();
+        }
+
+        if (operator) {
+            // The operator lives in the cascade after the field/sub-field; its
+            // options carry the display labels, e.g. "is set".
+            await this.page.getByTestId('custom-field-filter-operator').click();
+            await this.page.getByRole('menuitem', {name: operator, exact: true}).click();
+        }
+
+        if (value !== undefined) {
+            await this.page.getByTestId('custom-field-filter-value').fill(value);
+        }
+
+        // Close the add-filter popover so the list re-queries.
+        await this.page.keyboard.press('Escape');
+    }
+
     async getVisibleMemberCount(): Promise<number> {
         return await this.memberRows.count();
     }

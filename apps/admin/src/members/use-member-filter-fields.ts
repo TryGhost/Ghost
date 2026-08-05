@@ -1,10 +1,11 @@
 import React, {useMemo} from 'react';
 import {DATE_OPERATOR_LABELS, RELATIVE_DATE_OPERATOR_LABELS, createOperatorOptions, createRelativeDateRenderer, fieldHasRelativeOperator, getTodayInTimezone} from '@/shared/filters';
 import {type FilterFieldConfig, type FilterFieldGroup, type FilterOption, type ValueSource} from '@tryghost/shade/patterns';
+import CustomFieldFilterRenderer from './custom-field-filter-renderer';
 import {LabelFilterRenderer} from '@/members/label-picker';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FIELD} from './multiple-active-subscriptions';
-import {getMemberFields} from './member-fields';
+import {CUSTOM_FIELD_OPERATOR_LABELS, getMemberFields} from './member-fields';
 import type {Offer} from '@tryghost/admin-x-framework/api/offers';
 
 interface UseMemberFilterFieldsOptions {
@@ -22,6 +23,7 @@ interface UseMemberFilterFieldsOptions {
     membersTrackSources?: boolean;
     emailTrackOpens?: boolean;
     emailTrackClicks?: boolean;
+    customFieldsEnabled?: boolean;
     siteTimezone?: string;
 }
 
@@ -83,6 +85,8 @@ function getFieldIcon(key: string) {
         return React.createElement(LucideIcon.MousePointerClick, {className: 'size-4'});
     case 'newsletter_feedback':
         return React.createElement(LucideIcon.MessageSquare, {className: 'size-4'});
+    case 'custom_field':
+        return React.createElement(LucideIcon.SlidersHorizontal, {className: 'size-4'});
     case 'offer_redemptions':
         return React.createElement(LucideIcon.Ticket, {className: 'size-4'});
     case MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FIELD:
@@ -255,6 +259,7 @@ export function useMemberFilterFields({
     membersTrackSources = false,
     emailTrackOpens = false,
     emailTrackClicks = false,
+    customFieldsEnabled = false,
     siteTimezone = 'UTC'
 }: UseMemberFilterFieldsOptions): FilterFieldGroup[] {
     return useMemo(() => {
@@ -329,6 +334,15 @@ export function useMemberFilterFields({
                     label: newsletter.name
                 }));
             }
+        }
+
+        if (customFieldsEnabled) {
+            basicFields.push(createFieldConfig('custom_field', {
+                // The field's type — and so its valid operators — is chosen inside
+                // the cascade, so the operator control lives there, after the field.
+                renderOperatorInValue: true,
+                customRenderer: props => React.createElement(CustomFieldFilterRenderer, props as React.ComponentProps<typeof CustomFieldFilterRenderer>)
+            }, CUSTOM_FIELD_OPERATOR_LABELS));
         }
 
         basicFields.push(
@@ -452,6 +466,7 @@ export function useMemberFilterFields({
     }, [
         emailFiltersEnabled,
         emailValueSource,
+        customFieldsEnabled,
         emailTrackClicks,
         emailTrackOpens,
         hasMultipleTiers,
