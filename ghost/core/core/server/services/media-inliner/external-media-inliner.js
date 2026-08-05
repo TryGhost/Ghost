@@ -5,7 +5,6 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const string = require('@tryghost/string');
 const path = require('path');
-const convert = require('heic-convert');
 
 let fileTypeFromBuffer;
 
@@ -102,20 +101,25 @@ class ExternalMediaInliner {
         }
 
         // If the file is heic or heif, attempt to convert it to jpeg
-        try {
-            if (extension === 'heic' || extension === 'heif') {
+        if (extension === 'heic' || extension === 'heif') {
+            // Lazy: pulls in libheif-js, a WASM codec costing ~50ms to load at boot.
+            // Deliberately outside the try — a missing codec is not a conversion error,
+            // and swallowing it would store an unconvertible .heic in its place.
+            const convert = require('heic-convert');
+
+            try {
                 body = await convert({
                     buffer: body,
                     format: 'JPEG'
                 });
 
                 extension = 'jpg';
+            } catch (error) {
+                logging.error(`Error converting file to JPEG: ${requestURL}`);
+                logging.error(new errors.DataImportError({
+                    err: error
+                }));
             }
-        } catch (error) {
-            logging.error(`Error converting file to JPEG: ${requestURL}`);
-            logging.error(new errors.DataImportError({
-                err: error
-            }));
         }
 
         const removeExtRegExp = new RegExp(`.${extension}`, '');
