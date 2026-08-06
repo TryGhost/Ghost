@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { currentRoute, currentUserResponse, fakeAdminEndpoint, fakePages, fakePosts, fakeTags, fakeUsers, post, renderAdminApp, staffRole, tag } from "@test-utils/acceptance";
+import { currentRoute, currentUserResponse, fakeAdminEndpoint, fakePages, fakePosts, fakePostsListScreen, post, renderAdminApp, staffRole, tag } from "@test-utils/acceptance";
 import { postsListScreen } from "./posts-list.screen";
 
 const FLAG_ON = { labs: { postsListReact: true } };
@@ -14,13 +14,7 @@ describe("Posts list rows", () => {
     // The filter bar mounts with the screen and probes these to resolve any
     // author/tag slug in the URL into a name.
     beforeEach(() => {
-        // The metric columns batch these for the rows on screen.
-        fakeAdminEndpoint("POST", "/stats/posts-visitor-counts/", {stats: [{data: {visitor_counts: {}}}]});
-        fakeAdminEndpoint("POST", "/stats/posts-member-counts/", {stats: [{data: {member_counts: {}}}]});
-        fakeTags([]);
-        fakeUsers([]);
-        fakeAdminEndpoint("GET", /^\/tags\/\?.*slug/, { tags: [] });
-        fakeAdminEndpoint("GET", /^\/users\/\?.*slug/, { users: [] });
+        fakePostsListScreen();
     });
 
     it("shows the title, byline, primary tag and status", async () => {
@@ -146,13 +140,7 @@ describe("Posts list empty states", () => {
     // The filter bar mounts with the screen and probes these to resolve any
     // author/tag slug in the URL into a name.
     beforeEach(() => {
-        // The metric columns batch these for the rows on screen.
-        fakeAdminEndpoint("POST", "/stats/posts-visitor-counts/", {stats: [{data: {visitor_counts: {}}}]});
-        fakeAdminEndpoint("POST", "/stats/posts-member-counts/", {stats: [{data: {member_counts: {}}}]});
-        fakeTags([]);
-        fakeUsers([]);
-        fakeAdminEndpoint("GET", /^\/tags\/\?.*slug/, { tags: [] });
-        fakeAdminEndpoint("GET", /^\/users\/\?.*slug/, { users: [] });
+        fakePostsListScreen();
     });
 
     it("invites you to write when there is nothing at all", async () => {
@@ -209,12 +197,7 @@ describe("Posts list empty states", () => {
 
 describe("Posts list trailing action button", () => {
     beforeEach(() => {
-        fakeAdminEndpoint("POST", "/stats/posts-visitor-counts/", {stats: [{data: {visitor_counts: {}}}]});
-        fakeAdminEndpoint("POST", "/stats/posts-member-counts/", {stats: [{data: {member_counts: {}}}]});
-        fakeTags([]);
-        fakeUsers([]);
-        fakeAdminEndpoint("GET", /^\/tags\/\?.*slug/, { tags: [] });
-        fakeAdminEndpoint("GET", /^\/users\/\?.*slug/, { users: [] });
+        fakePostsListScreen();
     });
 
     const settingsWithTracking = {
@@ -288,12 +271,7 @@ describe("Posts list trailing action button", () => {
  */
 describe("Posts list metric hover panels", () => {
     beforeEach(() => {
-        fakeAdminEndpoint("POST", "/stats/posts-visitor-counts/", {stats: [{data: {visitor_counts: {}}}]});
-        fakeAdminEndpoint("POST", "/stats/posts-member-counts/", {stats: [{data: {member_counts: {}}}]});
-        fakeTags([]);
-        fakeUsers([]);
-        fakeAdminEndpoint("GET", /^\/tags\/\?.*slug/, { tags: [] });
-        fakeAdminEndpoint("GET", /^\/users\/\?.*slug/, { users: [] });
+        fakePostsListScreen();
     });
 
     it("opens the newsletter breakdown on hovering a metric", async () => {

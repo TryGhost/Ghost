@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { userEvent } from "vitest/browser";
 
-import { currentUserResponse, fakeAdminEndpoint, fakePosts, fakeTags, fakeUsers, post, renderAdminApp, staffRole } from "@test-utils/acceptance";
+import { currentUserResponse, fakePosts, fakePostsListScreen, post, renderAdminApp, staffRole } from "@test-utils/acceptance";
 import { postsListScreen } from "./posts-list.screen";
 import type { StaffRoleName } from "@tryghost/test-data";
 
@@ -48,12 +48,7 @@ async function renderList(options: object = FLAG_ON) {
 
 describe("Posts list selection", () => {
     beforeEach(() => {
-        fakeAdminEndpoint("POST", "/stats/posts-visitor-counts/", {stats: [{data: {visitor_counts: {}}}]});
-        fakeAdminEndpoint("POST", "/stats/posts-member-counts/", {stats: [{data: {member_counts: {}}}]});
-        fakeTags([]);
-        fakeUsers([]);
-        fakeAdminEndpoint("GET", /^\/tags\/\?.*slug/, { tags: [] });
-        fakeAdminEndpoint("GET", /^\/users\/\?.*slug/, { users: [] });
+        fakePostsListScreen();
     });
 
     it("selects a row on cmd-click without following its link", async () => {
