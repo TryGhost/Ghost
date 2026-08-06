@@ -30,7 +30,7 @@ interface ResourceConfig {
     options?: Record<string, unknown>;
 }
 
-// A domain resource with no entry here would only fail per request.
+// Without this, a domain resource with no entry here would only fail per request.
 QUERY satisfies Record<DataShortFormResource, ResourceConfig>;
 
 /**
