@@ -42,7 +42,7 @@ type GiftConstructorData = Omit<GiftData,
     | 'deliverAt'
     | 'deliveryStatus'
     | 'deliveryAttempts'
-    | 'deliveryNextAttemptAt'
+    | 'deliveryAttemptAt'
     | 'emailSentAt'
     | 'emailProviderMessageId'
     | 'deliveryOutcome'
@@ -57,7 +57,7 @@ type GiftConstructorData = Omit<GiftData,
     | 'deliverAt'
     | 'deliveryStatus'
     | 'deliveryAttempts'
-    | 'deliveryNextAttemptAt'
+    | 'deliveryAttemptAt'
     | 'emailSentAt'
     | 'emailProviderMessageId'
     | 'deliveryOutcome'
@@ -77,7 +77,7 @@ export class Gift implements GiftData {
     deliverAt: Date | null;
     deliveryStatus: GiftDeliveryStatus;
     deliveryAttempts: number;
-    deliveryNextAttemptAt: Date | null;
+    deliveryAttemptAt: Date | null;
     emailSentAt: Date | null;
     emailProviderMessageId: string | null;
     deliveryOutcome: GiftDeliveryOutcome;
@@ -113,7 +113,7 @@ export class Gift implements GiftData {
         this.deliverAt = data.deliverAt ?? null;
         this.deliveryStatus = data.deliveryStatus ?? 'pending';
         this.deliveryAttempts = data.deliveryAttempts ?? 0;
-        this.deliveryNextAttemptAt = data.deliveryNextAttemptAt ?? null;
+        this.deliveryAttemptAt = data.deliveryAttemptAt ?? null;
         this.emailSentAt = data.emailSentAt ?? null;
         this.emailProviderMessageId = data.emailProviderMessageId ?? null;
         this.deliveryOutcome = data.deliveryOutcome ?? 'unknown';
@@ -154,7 +154,7 @@ export class Gift implements GiftData {
             deliverAt: data.deliverAt ?? null,
             deliveryStatus: 'pending',
             deliveryAttempts: 0,
-            deliveryNextAttemptAt: null,
+            deliveryAttemptAt: null,
             emailSentAt: null,
             emailProviderMessageId: null,
             deliveryOutcome: 'unknown',

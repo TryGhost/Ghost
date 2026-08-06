@@ -215,9 +215,30 @@ describe('GiftEmailService', function () {
                 sinon.assert.match(message[field], sinon.match('Recipient'));
                 sinon.assert.match(message[field], sinon.match('Enjoy this gift'));
                 sinon.assert.match(message[field], sinon.match('All stories'));
-                sinon.assert.match(message[field], sinon.match('1 year'));
+                sinon.assert.match(message[field], sinon.match('one-year'));
                 sinon.assert.match(message[field], sinon.match('https://example.com/gift/abc-123'));
             }
+        });
+
+        it('uses an attributive plural cadence for multi-month gifts', async function () {
+            await service.sendGiftDelivery({
+                recipientEmail: 'recipient@example.com',
+                recipientName: null,
+                buyerName: 'Buyer',
+                personalMessage: null,
+                token: 'abc-123',
+                tierName: 'Gold',
+                benefits: [],
+                cadence: 'month',
+                duration: 3,
+                expiresAt: new Date('2027-04-07')
+            });
+
+            const message = mailer.send.firstCall.firstArg;
+            sinon.assert.match(message.text, sinon.match('a 3-month Gold membership'));
+            sinon.assert.match(message.html, sinon.match('<strong>3-month</strong>'));
+            sinon.assert.match(message.html, sinon.match(value => !value.includes('3 months')));
+            sinon.assert.match(message.text, sinon.match(value => !value.includes('3 months')));
         });
 
         it('escapes recipient-controlled delivery content in HTML', async function () {

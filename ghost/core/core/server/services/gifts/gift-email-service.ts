@@ -134,12 +134,13 @@ export class GiftEmailService {
     }
 
     private getDeliveryCadenceLabel(cadence: GiftCadence, duration: number): string {
-        if (duration === 1) {
-            return cadence === 'year' ? this.t('1 year') : this.t('1 month');
+        if (cadence === 'year') {
+            return this.t('one-year');
         }
-        return cadence === 'year'
-            ? this.t('{years} year', {years: duration})
-            : this.t('{months} month', {months: duration});
+        if (duration === 1) {
+            return this.t('one-month');
+        }
+        return this.t('{count}-month', {count: duration});
     }
 
     private formatDate(date: Date): string {

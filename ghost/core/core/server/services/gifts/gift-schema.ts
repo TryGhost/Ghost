@@ -30,7 +30,7 @@ export const DbGift = z.object({
     deliver_at: DbDate.nullable().default(null),
     delivery_status: GiftDeliveryStatusSchema.default('pending'),
     delivery_attempts: z.number().int().nonnegative().default(0),
-    delivery_next_attempt_at: DbDate.nullable().default(null),
+    delivery_attempt_at: DbDate.nullable().default(null),
     email_sent_at: DbDate.nullable().default(null),
     email_provider_message_id: z.string().nullable().default(null),
     delivery_outcome: GiftDeliveryOutcomeSchema.default('unknown'),

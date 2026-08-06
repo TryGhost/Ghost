@@ -5,12 +5,14 @@ import type {Gift} from './gift';
 
 const urlUtils = require('../../../shared/url-utils').default;
 const {getSignedAdminToken} = require('../../adapters/scheduling/utils');
+const GIFT_DELIVERY_STUCK_THRESHOLD_MS = 10 * 60 * 1000;
 
 interface GiftDeliverySchedulerDeps {
     apiUrl: string;
     adapter?: SchedulerAdapter;
     internalKeys: InternalKeys;
     findPendingDeliveries(): Promise<Gift[]>;
+    countStuckDeliveries(before: Date): Promise<number>;
     wake(): void;
 }
 
@@ -19,13 +21,15 @@ export class GiftDeliveryScheduler {
     readonly #adapter: SchedulerAdapter;
     readonly #internalKeys: InternalKeys;
     readonly #findPendingDeliveries: () => Promise<Gift[]>;
+    readonly #countStuckDeliveries: (before: Date) => Promise<number>;
     readonly #wake: () => void;
 
-    constructor({apiUrl, adapter, internalKeys, findPendingDeliveries, wake}: GiftDeliverySchedulerDeps) {
+    constructor({apiUrl, adapter, internalKeys, findPendingDeliveries, countStuckDeliveries, wake}: GiftDeliverySchedulerDeps) {
         this.#apiUrl = apiUrl;
         this.#adapter = adapter!;
         this.#internalKeys = internalKeys;
         this.#findPendingDeliveries = findPendingDeliveries;
+        this.#countStuckDeliveries = countStuckDeliveries;
         this.#wake = wake;
         this.#adapter.register(this);
     }
@@ -53,6 +57,26 @@ export class GiftDeliveryScheduler {
     }
 
     async recoverAll({previousKey}: {previousKey?: InternalApiKey} = {}): Promise<void> {
+        const stuckBefore = new Date(Date.now() - GIFT_DELIVERY_STUCK_THRESHOLD_MS);
+
+        try {
+            const stuckCount = await this.#countStuckDeliveries(stuckBefore);
+
+            if (stuckCount > 0) {
+                logging.warn({
+                    event: {name: 'gift_delivery_scheduler.stuck'},
+                    count: stuckCount,
+                    stuckBefore
+                }, `Found ${stuckCount} gift deliveries stuck in sending`);
+            }
+        } catch (err) {
+            logging.error({
+                event: {name: 'gift_delivery_scheduler.stuck_check.failed'},
+                err,
+                stuckBefore
+            }, 'Failed to check for stuck gift deliveries');
+        }
+
         const pending = await this.#findPendingDeliveries();
         const currentKey = await this.#internalKeys.get('ghost-scheduler');
         const unscheduleKey = previousKey ?? currentKey;
@@ -60,7 +84,7 @@ export class GiftDeliveryScheduler {
         let hasDueDelivery = false;
 
         for (const gift of pending) {
-            const time = gift.deliveryNextAttemptAt ?? gift.deliverAt;
+            const time = gift.deliveryAttemptAt ?? gift.deliverAt;
             if (!time || time.getTime() <= Date.now()) {
                 hasDueDelivery = true;
                 continue;

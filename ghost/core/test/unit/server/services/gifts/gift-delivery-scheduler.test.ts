@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import logging from '@tryghost/logging';
 import sinon from 'sinon';
 import {GiftDeliveryScheduler} from '../../../../../core/server/services/gifts/gift-delivery-scheduler';
 import {AutoFillingMap} from '../../../../../core/server/lib/auto-filling-map';
@@ -24,11 +25,16 @@ function buildDeps(pending: Gift[] = []) {
         },
         internalKeys,
         findPendingDeliveries: sinon.stub().resolves(pending),
+        countStuckDeliveries: sinon.stub().resolves(0),
         wake: sinon.stub()
     };
 }
 
 describe('GiftDeliveryScheduler', function () {
+    afterEach(function () {
+        sinon.restore();
+    });
+
     it('queues an exact one-shot delivery wake', async function () {
         const deps = buildDeps();
         const scheduler = new GiftDeliveryScheduler(deps);
@@ -61,7 +67,7 @@ describe('GiftDeliveryScheduler', function () {
                 token: 'future-gift',
                 deliveryMethod: 'email',
                 recipientEmail: 'future@example.com',
-                deliveryNextAttemptAt: retryAt
+                deliveryAttemptAt: retryAt
             })
         ]);
         const scheduler = new GiftDeliveryScheduler(deps);
@@ -72,5 +78,45 @@ describe('GiftDeliveryScheduler', function () {
         sinon.assert.calledOnce(deps.adapter.unschedule);
         sinon.assert.calledOnce(deps.adapter.schedule);
         assert.equal(deps.adapter.schedule.firstCall.firstArg.time, retryAt.getTime());
+    });
+
+    it('warns about deliveries that have been sending for more than 10 minutes', async function () {
+        const now = new Date('2026-08-06T12:00:00.000Z');
+        sinon.useFakeTimers(now);
+        const warn = sinon.stub(logging, 'warn');
+        const deps = buildDeps();
+        deps.countStuckDeliveries.resolves(2);
+        const scheduler = new GiftDeliveryScheduler(deps);
+
+        await scheduler.recoverAll();
+
+        sinon.assert.calledOnceWithExactly(
+            deps.countStuckDeliveries,
+            new Date('2026-08-06T11:50:00.000Z')
+        );
+        sinon.assert.calledOnce(warn);
+        sinon.assert.match(warn.firstCall.firstArg, {
+            event: {name: 'gift_delivery_scheduler.stuck'},
+            count: 2
+        });
+    });
+
+    it('continues recovery when the stuck-delivery check fails', async function () {
+        const error = new Error('database unavailable');
+        const errorLog = sinon.stub(logging, 'error');
+        const deps = buildDeps([
+            buildGift({deliveryMethod: 'email', recipientEmail: 'now@example.com'})
+        ]);
+        deps.countStuckDeliveries.rejects(error);
+        const scheduler = new GiftDeliveryScheduler(deps);
+
+        await scheduler.recoverAll();
+
+        sinon.assert.calledOnce(deps.wake);
+        sinon.assert.calledOnce(errorLog);
+        sinon.assert.match(errorLog.firstCall.firstArg, {
+            event: {name: 'gift_delivery_scheduler.stuck_check.failed'},
+            err: error
+        });
     });
 });

@@ -33,7 +33,7 @@ module.exports = combineNonTransactionalMigrations(
         validations: {isIn: [['pending', 'sending', 'sent', 'failed']]}
     }),
     addGiftColumn('delivery_attempts', {type: 'integer', nullable: false, unsigned: true, defaultTo: 0}),
-    addGiftColumn('delivery_next_attempt_at', {type: 'dateTime', nullable: true}),
+    addGiftColumn('delivery_attempt_at', {type: 'dateTime', nullable: true}),
     addGiftColumn('email_sent_at', {type: 'dateTime', nullable: true}),
     addGiftColumn('email_provider_message_id', {type: 'string', maxlength: 1000, nullable: true}),
     addGiftColumn('delivery_outcome', {

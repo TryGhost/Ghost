@@ -151,6 +151,29 @@ describe('GiftService interface', function () {
         assert.equal(metadata.gift_deliver_at, '');
     });
 
+    it('prefers the checkout buyer name over the authenticated member name', async function () {
+        const {service, checkoutAdapter} = createService({customizationEnabled: true});
+
+        await service.startCheckout({
+            tierId: 'tier_1',
+            cadence: 'year',
+            deliveryMethod: 'email',
+            recipientEmail: 'recipient@example.com',
+            buyerName: 'Mum',
+            metadata: {},
+            successUrl: 'https://example.com/',
+            buyer: {
+                memberId: 'member_1',
+                email: 'buyer@example.com',
+                name: 'Account Name',
+                isAuthenticated: true
+            }
+        });
+
+        const metadata = checkoutAdapter.createSession.firstCall.firstArg.metadata;
+        assert.equal(metadata.gift_buyer_name, 'Mum');
+    });
+
     it('rejects invalid or scheduled email delivery input', async function () {
         const {service, checkoutAdapter} = createService({customizationEnabled: true});
         const input = {

@@ -1412,7 +1412,7 @@ module.exports = {
             }
         },
         delivery_attempts: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
-        delivery_next_attempt_at: {type: 'dateTime', nullable: true},
+        delivery_attempt_at: {type: 'dateTime', nullable: true},
         email_sent_at: {type: 'dateTime', nullable: true},
         email_provider_message_id: {type: 'string', maxlength: 1000, nullable: true},
         delivery_outcome: {
@@ -1457,7 +1457,7 @@ module.exports = {
             ['status', 'consumes_at'],
             ['status', 'expires_at'],
             {columns: ['email_provider_message_id'], length: 31},
-            ['delivery_method', 'delivery_status']
+            ['delivery_method', 'delivery_status', 'delivery_attempt_at']
         ]
     }
 };

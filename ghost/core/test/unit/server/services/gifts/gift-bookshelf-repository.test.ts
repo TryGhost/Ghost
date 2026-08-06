@@ -195,6 +195,7 @@ describe('GiftBookshelfRepository', function () {
                     delivery_method: 'email',
                     delivery_status: 'sending',
                     delivery_attempts: 1,
+                    delivery_attempt_at: now,
                     recipient_email: 'recipient@example.com'
                 })
             }),
@@ -207,6 +208,7 @@ describe('GiftBookshelfRepository', function () {
 
         assert.equal(claimed?.deliveryStatus, 'sending');
         assert.equal(claimed?.deliveryAttempts, 1);
+        assert.deepEqual(claimed?.deliveryAttemptAt, now);
         sinon.assert.calledWith(query.where, {
             token: 'gift-token',
             status: 'purchased',
@@ -215,6 +217,12 @@ describe('GiftBookshelfRepository', function () {
         });
         sinon.assert.calledWith(query.where, 'delivery_attempts', '<', 10);
         sinon.assert.calledOnceWithExactly(query.increment, 'delivery_attempts', 1);
+        sinon.assert.calledWith(query.update, {
+            delivery_status: 'sending',
+            delivery_attempt_at: '2026-08-05 12:00:00'
+        });
+        sinon.assert.calledWith(eligibilityBuilder.orWhere, 'deliver_at', '<=', '2026-08-05 12:00:00');
+        sinon.assert.calledWith(eligibilityBuilder.orWhere, 'delivery_attempt_at', '<=', '2026-08-05 12:00:00');
     });
 
     it('returns no delivery claim when a concurrent worker or lifecycle change wins', async function () {
@@ -240,6 +248,38 @@ describe('GiftBookshelfRepository', function () {
 
         assert.equal(await repository.claimPendingDelivery('gift-token', new Date(), 10), null);
         sinon.assert.notCalled(GiftModel.findOne);
+    });
+
+    it('only finds pending deliveries for purchased gifts', async function () {
+        const GiftModel = {
+            add: sinon.stub(),
+            transaction: sinon.stub(),
+            findOne: sinon.stub(),
+            findAll: sinon.stub().resolves({models: []})
+        };
+        const repository = createRepository(GiftModel);
+
+        assert.deepEqual(await repository.findPendingDeliveries(), []);
+        sinon.assert.calledOnceWithExactly(GiftModel.findAll, {
+            filter: 'status:purchased+delivery_method:email+delivery_status:pending'
+        });
+    });
+
+    it('counts purchased email deliveries stuck in sending before the cutoff', async function () {
+        const GiftModel = {
+            add: sinon.stub(),
+            transaction: sinon.stub(),
+            findOne: sinon.stub(),
+            findAll: sinon.stub().resolves({models: [{}, {}]})
+        };
+        const repository = createRepository(GiftModel);
+        const cutoff = new Date('2026-08-06T11:50:00.000Z');
+
+        assert.equal(await repository.countStuckDeliveries(cutoff), 2);
+        sinon.assert.calledOnceWithExactly(GiftModel.findAll, {
+            columns: ['id'],
+            filter: "status:purchased+delivery_method:email+delivery_status:sending+delivery_attempt_at:<='2026-08-06T11:50:00.000Z'"
+        });
     });
 
     it('replaces provider outcomes only through the newer-timestamp condition', async function () {

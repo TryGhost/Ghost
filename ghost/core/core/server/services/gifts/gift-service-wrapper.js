@@ -80,6 +80,7 @@ class GiftServiceWrapper {
             adapter: options.schedulerAdapter,
             internalKeys: options.internalKeys,
             findPendingDeliveries: () => repository.findPendingDeliveries(),
+            countStuckDeliveries: before => repository.countStuckDeliveries(before),
             wake: () => DomainEvents.dispatch(StartGiftDeliveryFlushEvent.create())
         });
 
@@ -164,7 +165,11 @@ class GiftServiceWrapper {
         jobs.scheduleGiftReminderJob();
 
         if (labsService.isSet('giftSubCustomization')) {
-            await giftDeliveryScheduler.recoverAll();
+            try {
+                await giftDeliveryScheduler.recoverAll();
+            } catch (err) {
+                logging.error(err, 'Failed to recover gift delivery schedules');
+            }
         }
 
         this.#initialized = true;

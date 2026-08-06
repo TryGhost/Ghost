@@ -488,7 +488,7 @@ export class GiftService {
         const customerId = input.buyer.isAuthenticated
             ? await this.deps.checkoutAdapter.getCustomerId(input.buyer)
             : null;
-        const buyerName = input.buyer.name ?? delivery.buyerName;
+        const buyerName = delivery.buyerName ?? input.buyer.name;
 
         const url = await this.deps.checkoutAdapter.createSession({
             amount,
