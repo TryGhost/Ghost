@@ -454,7 +454,10 @@ describe('MemberRepository', function () {
                 }),
                 edit: sinon.stub().resolves({
                     attributes: {},
-                    _previousAttributes: {}
+                    _previousAttributes: {},
+                    // The real _Member.edit resolves a bookshelf model; linkSubscription
+                    // loads relations off it when a subscription cancel flag changes
+                    load: sinon.stub().resolvesThis()
                 })
             };
 
@@ -561,7 +564,10 @@ describe('MemberRepository', function () {
                 }),
                 edit: sinon.stub().resolves({
                     attributes: {},
-                    _previousAttributes: {}
+                    _previousAttributes: {},
+                    // The real _Member.edit resolves a bookshelf model; linkSubscription
+                    // loads relations off it when a subscription cancel flag changes
+                    load: sinon.stub().resolvesThis()
                 })
             };
             MemberPaidSubscriptionEvent = {
@@ -1953,7 +1959,10 @@ describe('MemberRepository', function () {
                 }),
                 edit: sinon.stub().resolves({
                     attributes: {},
-                    _previousAttributes: {}
+                    _previousAttributes: {},
+                    // The real _Member.edit resolves a bookshelf model; linkSubscription
+                    // loads relations off it when a subscription cancel flag changes
+                    load: sinon.stub().resolvesThis()
                 })
             };
 

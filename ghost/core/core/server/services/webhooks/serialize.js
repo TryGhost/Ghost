@@ -36,7 +36,8 @@ module.exports = ({urlService}) => async (event, model) => {
     // `products` (renamed to `tiers`) is the only thing that changed.
     const SERIALIZED_KEYS = {
         members: {
-            products: 'tiers'
+            products: 'tiers',
+            stripeSubscriptions: 'subscriptions'
         }
     };
 
