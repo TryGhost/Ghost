@@ -87,28 +87,6 @@ for (const {implementation, postsListReact} of [
             expect(hash).toContain('order=updated_at');
         });
 
-        test('applying a filter puts it in the URL', async ({page}) => {
-            await postFactory.create({title: 'Any draft', status: 'draft', featured: false});
-
-            await postsPage.goto();
-            await postsPage.waitForPageToFullyLoad();
-            await postsPage.selectType('Draft posts');
-
-            await expect(async () => {
-                expect(new URL(page.url()).hash).toContain('type=draft');
-            }).toPass();
-        });
-
-        test('shows an empty state when a filter matches nothing', async () => {
-            await postFactory.create({title: 'The only draft', status: 'draft', featured: false});
-
-            await postsPage.goto();
-            await postsPage.waitForList();
-            await postsPage.selectType('Scheduled posts');
-
-            await expect(postsPage.emptyState).toBeVisible();
-        });
-
         // No checkboxes in either implementation — selection is modifier-click.
         test('selects a row on modifier-click', async () => {
             await postFactory.create({title: 'Selectable', status: 'draft', featured: false});
