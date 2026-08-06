@@ -216,6 +216,7 @@
   --color-button-hover: var(--button-hover);
   --color-interactive-hover: var(--interactive-hover);
   --color-table-row-hover: var(--table-row-hover);
+  --color-table-row-selected: var(--table-row-selected);
   --color-control-surface: var(--control-surface);
   --color-control-readonly-surface: var(--control-readonly-surface);
   --color-control-disabled-surface: var(--control-disabled-surface);
