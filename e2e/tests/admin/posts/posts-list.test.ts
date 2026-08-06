@@ -108,5 +108,44 @@ for (const {implementation, postsListReact} of [
 
             await expect(postsPage.emptyState).toBeVisible();
         });
+
+        // No checkboxes in either implementation — selection is modifier-click.
+        test('selects a row on modifier-click', async () => {
+            await postFactory.create({title: 'Selectable', status: 'draft', featured: false});
+
+            await postsPage.goto();
+            await postsPage.waitForList();
+            await postsPage.selectPost('Selectable');
+
+            await expect(async () => {
+                expect(await postsPage.selectedPostCount()).toBe(1);
+            }).toPass();
+        });
+
+        test('right-click opens a menu describing the row', async () => {
+            await postFactory.create({title: 'Right clickable', status: 'draft', featured: false});
+
+            await postsPage.goto();
+            await postsPage.waitForList();
+            await postsPage.openContextMenuFor('Right clickable');
+
+            await expect(postsPage.contextMenuItem('Delete')).toBeVisible();
+            // A draft has no public link to copy, so it offers the preview one.
+            await expect(postsPage.contextMenuItem('Copy preview link')).toBeVisible();
+        });
+
+        test('deleting a post from the menu removes it from the list', async () => {
+            await postFactory.create({title: 'Doomed post', status: 'draft', featured: false});
+            await postFactory.create({title: 'Surviving post', status: 'draft', featured: false});
+
+            await postsPage.goto();
+            await postsPage.waitForList();
+            await postsPage.openContextMenuFor('Doomed post');
+            await postsPage.contextMenuItem('Delete').click();
+            await postsPage.confirmDelete();
+
+            await expect(postsPage.getPostByTitle('Doomed post')).toBeHidden();
+            await expect(postsPage.getPostByTitle('Surviving post')).toBeVisible();
+        });
     });
 }
