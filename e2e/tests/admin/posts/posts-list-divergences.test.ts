@@ -32,7 +32,7 @@ test.describe('Ghost Admin - Posts List divergences (React only)', () => {
 
     test.beforeEach(async ({page}) => {
         postFactory = createPostFactory(page.request);
-        postsPage = new PostsPage(page);
+        postsPage = new PostsPage(page, {implementation: 'react'});
     });
 
     /**
