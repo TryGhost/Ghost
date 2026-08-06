@@ -1,28 +1,39 @@
 import { page } from "vitest/browser";
+import {
+    listPage,
+    postFeaturedMarker,
+    postListItemAction,
+    postListItemLink,
+    postMetricPanel,
+    postsEmptyCold,
+    postsEmptyFiltered,
+    postsFilters,
+    postsList,
+    postsListItem,
+    postsSort,
+} from "@tryghost/test-data/selectors/posts";
 
 /**
- * Locator vocabulary for the React posts and pages list screens.
+ * Locator vocabulary for the React posts and pages list screens. The testid
+ * strings live in `@tryghost/test-data/selectors/posts`, shared with the e2e
+ * page objects.
  *
  * Page-scoped locators go through `page(resource)`: the admin sidebar carries
  * its own "Create new post" link, so an unscoped role query matches twice.
- *
- * `listItems` uses the same testid the Ember list does, on both resources — the
- * e2e page objects and visual-regression baselines are written against it, and
- * the two implementations can never both be mounted (the Ember route aborts).
  * Which implementation is serving a route is asserted via `page(resource)`,
  * which only the React screen renders.
  */
 export const postsListScreen = {
-    page: (resource: "posts" | "pages") => page.getByTestId(`${resource}-page`),
+    page: (resource: "posts" | "pages") => page.getByTestId(listPage(resource)),
     title: (resource: "posts" | "pages", name: string) =>
-        page.getByTestId(`${resource}-page`).getByRole("heading", { name }),
+        page.getByTestId(listPage(resource)).getByRole("heading", { name }),
     // `exact` matters: the cold empty state also offers "Write a new post",
     // which a substring match on "New post" would pick up too.
     newLink: (resource: "posts" | "pages", name: string) =>
-        page.getByTestId(`${resource}-page`).getByRole("link", { name, exact: true }),
-    listItems: () => page.getByTestId("posts-list-item"),
+        page.getByTestId(listPage(resource)).getByRole("link", { name, exact: true }),
+    listItems: () => page.getByTestId(postsListItem),
     /** The <ul>. Carries `data-selection` so an inverted selection is observable. */
-    listRoot: () => page.getByTestId("posts-list").element(),
+    listRoot: () => page.getByTestId(postsList).element(),
     /**
      * Titles of the currently selected rows, keyed off the same `data-selected`
      * attribute Ember sets. Read as elements rather than as a locator because
@@ -33,11 +44,11 @@ export const postsListScreen = {
         .filter(element => element.getAttribute("data-selected") === "true")
         .map(element => element.querySelector("h3")?.textContent ?? ""),
     /** The row's main link — the image and title region. */
-    rowLink: () => page.getByTestId("post-list-item-link"),
+    rowLink: () => page.getByTestId(postListItemLink),
     /** A metric column, found by its label ("Opens", "Members", …). */
-    metricCell: (label: string) => page.getByTestId("posts-list-item").getByRole("link", { name: new RegExp(label) }).first(),
+    metricCell: (label: string) => page.getByTestId(postsListItem).getByRole("link", { name: new RegExp(label) }).first(),
     /** The hover breakdown, which Radix portals out of the row. */
-    metricPanel: () => page.getByTestId("post-metric-panel"),
+    metricPanel: () => page.getByTestId(postMetricPanel),
     /** The right-click menu, which Radix portals out of the list. */
     contextMenu: () => page.getByRole("menu"),
     contextMenuItem: (label: string) => page.getByRole("menuitem", { name: label, exact: true }),
@@ -63,16 +74,16 @@ export const postsListScreen = {
     /** The gift-link modal, opened from the context menu. */
     giftLinkModal: () => page.getByRole("dialog", { name: /gift/i }),
     /** The trailing button at a row's end — Analytics, View, or Editor. */
-    rowAction: () => page.getByTestId("post-list-item-action"),
-    featuredMarkers: () => page.getByTestId("post-featured"),
-    emptyCold: () => page.getByTestId("posts-empty-cold"),
-    emptyFiltered: () => page.getByTestId("posts-empty-filtered"),
+    rowAction: () => page.getByTestId(postListItemAction),
+    featuredMarkers: () => page.getByTestId(postFeaturedMarker),
+    emptyCold: () => page.getByTestId(postsEmptyCold),
+    emptyFiltered: () => page.getByTestId(postsEmptyFiltered),
     showAllButton: (plural: string) => page.getByRole("button", { name: `Show all ${plural}` }),
-    filterBar: () => page.getByTestId("posts-filters"),
-    addFilterButton: () => page.getByTestId("posts-filters").getByRole("button", { name: "Filter" }),
+    filterBar: () => page.getByTestId(postsFilters),
+    addFilterButton: () => page.getByTestId(postsFilters).getByRole("button", { name: "Filter" }),
     /** A field in the add-filter popover, which renders into a portal. */
     filterFieldOption: (label: string) => page.getByRole("option", { name: label, exact: true }),
-    sortButton: () => page.getByTestId("posts-sort"),
+    sortButton: () => page.getByTestId(postsSort),
     /** Radio items, so the active sort is announced and visibly checked. */
     sortOption: (label: string) => page.getByRole("menuitemradio", { name: label, exact: true })
 };

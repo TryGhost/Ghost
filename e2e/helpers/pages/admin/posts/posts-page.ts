@@ -1,5 +1,6 @@
 import {AdminPage} from '@/admin-pages';
 import {Locator, Page} from '@playwright/test';
+import {postsFilters, postsList, postsListItem} from '@tryghost/test-data/selectors/posts';
 
 /** Which implementation serves the list — decided by the `postsListReact` flag. */
 export type PostsListImplementation = 'ember' | 'react';
@@ -39,11 +40,11 @@ export class PostsPage extends AdminPage {
         this.implementation = implementation;
         this.pageUrl = '/ghost/#/posts';
 
-        this.postsList = page.getByTestId('posts-list');
-        this.postsListItem = this.postsList.getByTestId('posts-list-item');
+        this.postsList = page.getByTestId(postsList);
+        this.postsListItem = this.postsList.getByTestId(postsListItem);
         this.newPostButton = page.getByRole('link', {name: 'New post', exact: true});
 
-        this.postsFilters = page.getByTestId('posts-filters');
+        this.postsFilters = page.getByTestId(postsFilters);
         // React's single entry point into the filter popover; absent in Ember,
         // which has a dropdown per field.
         this.addFilterButton = this.postsFilters.getByRole('button', {name: 'Filter', exact: true});
