@@ -56,7 +56,8 @@ async function fetchRoutableResources(type, {columns = [], requiredFields = [], 
         });
     }
 
-    // Lazy requires: the model layer must not load before boot wires it.
+    // Required here rather than at the top so this module can be loaded
+    // for its shape without pulling in the model layer.
     const models = require('../../models');
     const schema = require('../../data/schema');
     const DatabaseInfo = require('@tryghost/database-info');

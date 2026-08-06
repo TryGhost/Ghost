@@ -884,7 +884,30 @@ describe('LazyUrlService', function () {
             sinon.assert.calledTwice(logging.error);
         });
 
-        it('reports a repeated cause once, so one bad caller cannot flood the log', function () {
+        it('reports a repeated cause at each order of magnitude, not once and not per row', function () {
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
+            service.onRouterAddedType('news', 'tag:news', 'posts', '/:slug/');
+            const thin = {type: 'posts', id: 'p', slug: 'hello', status: 'published'};
+
+            for (let i = 0; i < 3; i++) {
+                assert.equal(service.getUrlForResource(thin), '/404/');
+            }
+            sinon.assert.calledOnce(logging.error);
+            assert.equal(logging.error.firstCall.args[0].errorDetails.occurrences, 1);
+
+            // Reporting only the first would leave a still-breaking site
+            // silent; the count is what says it is still happening.
+            for (let i = 3; i < 100; i++) {
+                service.getUrlForResource(thin);
+            }
+            sinon.assert.calledThrice(logging.error);
+            assert.deepEqual(
+                logging.error.getCalls().map(call => call.args[0].errorDetails.occurrences),
+                [1, 10, 100]
+            );
+        });
+
+        it('keeps distinct causes on separate counters', function () {
             const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
             service.onRouterAddedType('news', 'tag:news', 'posts', '/:slug/');
 

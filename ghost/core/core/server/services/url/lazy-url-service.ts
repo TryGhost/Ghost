@@ -126,6 +126,15 @@ function buildExcludedFilterFields(): Map<string, Set<string>> {
 
 const EMPTY_FIELD_SET: ReadonlySet<string> = new Set();
 
+// 1, 10, 100, ... — exact for integers, unlike a log10 comparison.
+function isPowerOfTen(n: number): boolean {
+    let power = 1;
+    while (power < n) {
+        power *= 10;
+    }
+    return power === n;
+}
+
 // Relation roots are loaded via getRequiredRelations (as withRelated), not as
 // scalar columns; `page`/`type` are the router-type discriminator, always set
 // on the resource. Everything else a router filter references is a scalar
@@ -184,8 +193,9 @@ export class LazyUrlService {
     // True once routers have been registered. Cleared by reset() so the
     // route-reload window re-gates the maintenance middleware.
     private routersReady: boolean;
-    // Thin-resource causes already reported — see _degradeThinResource.
-    private reportedThinResources: Set<string>;
+    // How many times each thin-resource cause has been seen — see
+    // _degradeThinResource.
+    private reportedThinResources: Map<string, number>;
 
     constructor({
         urlUtils = localUtils,
@@ -205,7 +215,7 @@ export class LazyUrlService {
         this.baseFilters = buildBaseFilters();
         this.excludedFilterFields = buildExcludedFilterFields();
         this.routersReady = false;
-        this.reportedThinResources = new Set();
+        this.reportedThinResources = new Map();
     }
 
     onRouterAddedType(identifier: string, filter: string | null, resourceType: string, permalink: string): void {
@@ -459,12 +469,13 @@ export class LazyUrlService {
     // — the resource's shape, and what the active routing config needs — so
     // the fetch that under-fetched can be found from the log line alone.
     //
-    // Reported once per distinct cause. A caller that under-fetches does so for
-    // every row it serializes, and a browse over a large collection would
-    // otherwise emit one error per row; the key below carries the whole
-    // diagnosis, so the repeats say nothing the first line did not. Cleared on
-    // reset(), since a new routing config can make a previously thin resource
-    // fine (or newly broken).
+    // Reported on the first occurrence of each distinct cause, then at each
+    // order of magnitude. A caller that under-fetches does so for every row it
+    // serializes, so a browse over a large collection would otherwise emit one
+    // error per row — but reporting only once would hide that the problem is
+    // still happening, and how widely. `occurrences` carries that instead.
+    // Cleared on reset(), since a new routing config can make a previously
+    // thin resource fine (or newly broken).
     private _degradeThinResource(resource: Resource, thin: ThinResource, options: UrlOptions): string {
         const producedBy = options.serializerContext;
         // The producer is part of the key: two endpoints under-fetching the
@@ -476,10 +487,11 @@ export class LazyUrlService {
             thin.missing.join(','),
             producedBy ? `${producedBy.apiType}:${producedBy.docName}:${producedBy.method}` : ''
         ].join('|');
-        if (this.reportedThinResources.has(key)) {
+        const occurrences = (this.reportedThinResources.get(key) ?? 0) + 1;
+        this.reportedThinResources.set(key, occurrences);
+        if (!isPowerOfTen(occurrences)) {
             return this.notFoundUrl(options);
         }
-        this.reportedThinResources.add(key);
 
         logging.error(new errors.InternalServerError({
             message: 'URL service could not build a URL, degraded to /404/',
@@ -491,6 +503,7 @@ export class LazyUrlService {
                 status: (resource as Record<string, unknown>).status,
                 resourceKeys: Object.keys(resource),
                 requiredRelations: this.getRequiredRelations(),
+                occurrences,
                 ...(producedBy ? {serializer: producedBy} : {}),
                 ...thin
             }
