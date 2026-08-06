@@ -62,6 +62,38 @@ describe('Tag detail (tagDetailsReact on)', () => {
         expect(saved.codeinjection_foot).toBe('<style>.footer { display: grid; }</style>');
     });
 
+    it('keeps CodeMirror autocomplete outside the clipped editor surface', async () => {
+        const t = tag({name: 'News', slug: 'news'});
+        fakeTagWorld(t);
+        await renderAdminApp(`/tags/${t.slug}`, FLAGS);
+
+        await page.getByRole('button', {name: /Code injection/}).click();
+        const headerEditor = page.getByRole('textbox', {name: 'Tag header'});
+        await headerEditor.fill('<');
+
+        await expect.poll(() => {
+            const tooltip = document.querySelector<HTMLElement>('.cm-tooltip-autocomplete');
+            const tooltipParent = tooltip?.closest<HTMLElement>('.cm-tooltip-parent');
+            const container = tooltipParent?.firstElementChild as HTMLElement | null;
+
+            if (!tooltip || !tooltipParent || !container) {
+                return null;
+            }
+
+            return {
+                containerBackground: getComputedStyle(container).backgroundColor,
+                containerHeight: container.getBoundingClientRect().height,
+                hostParent: tooltipParent.parentElement?.tagName,
+                tooltipVisible: tooltip.getBoundingClientRect().height > 0
+            };
+        }).toEqual({
+            containerBackground: 'rgba(0, 0, 0, 0)',
+            containerHeight: 0,
+            hostParent: 'BODY',
+            tooltipVisible: true
+        });
+    });
+
     it('redirects to billing during a force upgrade', async () => {
         const config = configResponse(FLAGS);
         config.config.hostSettings = {forceUpgrade: true};

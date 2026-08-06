@@ -1,4 +1,4 @@
-import CodeMirror, {EditorView, type BasicSetupOptions, type ReactCodeMirrorProps, type ReactCodeMirrorRef} from '@uiw/react-codemirror';
+import CodeMirror, {EditorView, tooltips, type BasicSetupOptions, type ReactCodeMirrorProps, type ReactCodeMirrorRef} from '@uiw/react-codemirror';
 import React, {type FocusEventHandler, forwardRef, useEffect, useId, useMemo, useRef, useState} from 'react';
 
 import {FieldDescription, FieldLabel} from '@/components/ui/field';
@@ -30,8 +30,7 @@ const codeMirrorClasses = [
     '[&_.cm-gutters]:bg-muted',
     '[&_.cm-gutters]:text-muted-foreground',
     '[&_.cm-gutters]:border-border',
-    '[&_.cm-cursor]:border-foreground',
-    '[&_.cm-tooltip-autocomplete.cm-tooltip_ul_li:not([aria-selected])]:bg-background'
+    '[&_.cm-cursor]:border-foreground'
 ].join(' ');
 
 // Imported asynchronously by CodeEditor so CodeMirror stays out of the main bundle.
@@ -57,6 +56,21 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
     const [resolvedExtensions, setResolvedExtensions] = useState<Extension[]>([]);
     const {darkMode, setFocusState} = useFocusContext();
 
+    // Keep autocomplete outside the editor and accordion overflow boundaries.
+    // CodeMirror can switch fixed tooltips to absolute after its first layout
+    // measurement. A viewport-sized body host gives both positioning modes the
+    // same coordinate space, preventing the visible first-frame jump.
+    const [tooltipParent] = useState(() => document.createElement('div'));
+
+    useEffect(() => {
+        tooltipParent.className = 'shade cm-tooltip-parent pointer-events-none fixed inset-0 z-[60]';
+        document.body.appendChild(tooltipParent);
+
+        return () => {
+            tooltipParent.remove();
+        };
+    }, [tooltipParent]);
+
     const basicSetup = useMemo<BasicSetupOptions>(() => ({
         crosshairCursor: false,
         searchKeymap: false
@@ -75,8 +89,12 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
             contentAttributes['aria-disabled'] = 'true';
         }
 
-        return [...resolvedExtensions, EditorView.contentAttributes.of(contentAttributes)];
-    }, [ariaLabel, editable, error, id, resolvedExtensions]);
+        return [
+            ...resolvedExtensions,
+            tooltips({position: 'fixed', parent: tooltipParent}),
+            EditorView.contentAttributes.of(contentAttributes)
+        ];
+    }, [ariaLabel, editable, error, id, resolvedExtensions, tooltipParent]);
 
     const handleFocus: FocusEventHandler<HTMLDivElement> = (event) => {
         onFocus?.(event);
