@@ -1,6 +1,7 @@
 import {Button} from '@tryghost/shade/components';
 import {Inline, Stack, Text} from '@tryghost/shade/primitives';
 import {cn, LucideIcon} from '@tryghost/shade/utils';
+import FeatureImagePlaceholder from '@/shared/feature-image-placeholder';
 import {PostsContextMenu} from '@/posts/list/components/posts-context-menu';
 import type {PostContextMenuItem, PostContextMenuKey} from '@/posts/list/post-context-menu-items';
 import {
@@ -80,26 +81,31 @@ function statusTone(post: PostListItem, isFailed: boolean): string {
     }
 }
 
+/**
+ * The thumbnail, matched to the analytics dashboard's: a 16/10 landscape
+ * thumbnail rather than the square this list used to draw, at the same widths
+ * and corner radius. Ember's own list is 16/10 too, so this lands on both at
+ * once.
+ *
+ * The empty state is analytics' shared placeholder component rather than a
+ * restyle of it, so the two lists cannot drift apart.
+ */
+const FEATURE_IMAGE_GEOMETRY = 'aspect-[16/10] w-[80px] shrink-0 rounded-sm lg:w-[100px]';
+
 function FeatureImage({post}: {post: PostListItem}) {
     if (post.feature_image) {
         return (
             <div
-                className='size-[60px] shrink-0 rounded-md bg-surface-elevated bg-cover bg-center'
+                className={cn(FEATURE_IMAGE_GEOMETRY, 'bg-muted bg-cover bg-center')}
                 role='presentation'
                 style={{backgroundImage: `url(${post.feature_image})`}}
             />
         );
     }
 
-    return (
-        <Inline
-            align='center'
-            className='size-[60px] shrink-0 rounded-md bg-surface-elevated text-muted-foreground'
-            justify='center'
-        >
-            <LucideIcon.Image className='size-5' />
-        </Inline>
-    );
+    // `p-0` because the placeholder's own padding is sized for a larger box;
+    // here the icon just centres in the thumbnail.
+    return <FeatureImagePlaceholder className={cn(FEATURE_IMAGE_GEOMETRY, 'p-0')} />;
 }
 
 const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowProps>(function PostListRowComponent({
@@ -146,7 +152,12 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowProps>(functio
                 // indigo overlay, which has no semantic token here.
                 // `select-none` matches Ember: a modifier-drag across rows
                 // shouldn't leave text highlighted behind the selection.
-                isSelected && 'bg-muted select-none'
+                //
+                // Hover is the same `--table-row-hover` the members list uses,
+                // and applies only when the row is *not* selected — a hover
+                // rule would otherwise outrank the selected background and make
+                // the row under the cursor look deselected.
+                isSelected ? 'bg-muted select-none' : 'hover:bg-table-row-hover'
             )}
             data-selected={isSelected ? 'true' : undefined}
             data-testid='posts-list-item'
@@ -162,10 +173,15 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowProps>(functio
             }}
         >
             {/* `center`, not `start`: Ember centres everything on the right
-                against the 60px feature image. */}
-            <Inline align='center' className='gap-4 pr-2'>
+                against the feature image.
+
+                Padding is even on all four sides. It lives on the children
+                rather than the row because the link and the trailing button
+                each need to fill the row's full height to stay clickable —
+                so the row's own box has to stay flush. */}
+            <Inline align='center' className='gap-4 pr-4'>
                 <a
-                    className='flex min-w-0 flex-1 items-start gap-4 py-4 pl-2 no-underline'
+                    className='flex min-w-0 flex-1 items-start gap-4 py-4 pl-4 no-underline'
                     data-testid='post-list-item-link'
                     href={href}
                     rel={linksOffsite ? 'noopener noreferrer' : undefined}
