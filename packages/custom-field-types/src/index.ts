@@ -185,6 +185,14 @@ export const FIELD_TYPES = defineFieldTypes({
 export const AddressValue = FIELD_TYPES.address.value;
 export type Address = z.infer<typeof AddressValue>;
 
+/**
+ * A value of any field type, as a caller holding a field of unknown type must accept it.
+ *
+ * Derived from the schemas rather than listed, so a type added here widens it without
+ * anyone remembering to.
+ */
+export type FieldValue = {[T in FieldType]: z.infer<typeof FIELD_TYPES[T]['value']>}[FieldType];
+
 /** The parts of a record type in declaration order, or null for a type with none. */
 export function subFieldsOf(type: FieldType): string[] | null {
     // Through the interface, not the literal: a type with no parts has no `fields` key.
