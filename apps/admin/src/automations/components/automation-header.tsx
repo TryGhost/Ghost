@@ -1,8 +1,9 @@
 import AutomationStatusBadge from './automation-status-badge';
 import React from 'react';
 import {Button, type ButtonProps, Skeleton} from '@tryghost/shade/components';
+import {MailgunAlertPopover} from './mailgun-alert-popover';
 import {Link} from '@tryghost/admin-x-framework';
-import {LucideIcon} from '@tryghost/shade/utils';
+import {LucideIcon, cn} from '@tryghost/shade/utils';
 import type {AutomationDetail} from '@tryghost/admin-x-framework/api/automations';
 
 export type AutomationRequestState = 'idle' | 'loading' | 'error';
@@ -15,6 +16,10 @@ interface AutomationHeaderProps {
     isPublishButtonEnabled: boolean;
     isUnpublishButtonEnabled: boolean;
     isDiscardButtonEnabled: boolean;
+    // Whether the bulk-email (Mailgun) not-connected alert should render, and whether it's currently
+    // fading out because a connection was just confirmed. Owned by the editor via useMailgunAlert.
+    showMailgunAlert: boolean;
+    mailgunAlertDismissing: boolean;
     saveButtonVariant: ButtonProps['variant'];
     saveButtonChildren: React.ReactNode;
     onSave: () => void;
@@ -31,6 +36,8 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
     isPublishButtonEnabled,
     isUnpublishButtonEnabled,
     isDiscardButtonEnabled,
+    showMailgunAlert,
+    mailgunAlertDismissing,
     saveButtonVariant,
     saveButtonChildren,
     onSave,
@@ -68,6 +75,22 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
                 )}
             </div>
             <div className='flex shrink-0 items-center gap-3'>
+                {showMailgunAlert && (
+                    <MailgunAlertPopover>
+                        <Button
+                            aria-label='Automation warnings'
+                            className={cn(
+                                'transition-all duration-300 ease-out',
+                                mailgunAlertDismissing && 'pointer-events-none scale-90 opacity-0'
+                            )}
+                            data-mailgun-trigger=''
+                            size='icon'
+                            variant='ghost'
+                        >
+                            <LucideIcon.CircleAlert className='text-destructive' strokeWidth={2} />
+                        </Button>
+                    </MailgunAlertPopover>
+                )}
                 {hasUnsavedChanges && (
                     <span
                         className='flex items-center gap-1.5 text-sm text-text-secondary'

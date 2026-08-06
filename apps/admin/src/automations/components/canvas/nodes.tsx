@@ -1,8 +1,9 @@
 import '@xyflow/react/dist/style.css';
 import React, {useRef, useState} from 'react';
 import StepPicker, {type StepPickerType} from './step-picker';
+import {MailgunAlertPopover} from '@/automations/components/mailgun-alert-popover';
 import {useEmailTrackingSettings} from '@/automations/hooks/use-email-tracking-settings';
-import {ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger, Popover, PopoverContent, PopoverTrigger} from '@tryghost/shade/components';
+import {Button, ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger, Popover, PopoverContent, PopoverTrigger} from '@tryghost/shade/components';
 import {Handle, Position} from '@xyflow/react';
 import type {Node, NodeProps} from '@xyflow/react';
 import type {AutomationEmailStats} from '@tryghost/admin-x-framework/api/automations';
@@ -20,6 +21,10 @@ export const TAIL_CANVAS_ID = '__tail__';
 export type CanvasAnchor = {sourceId: string; targetId: string};
 
 export type StepNodeDisplayData = {
+  emailNotConfigured?: boolean;
+  // True while the Mailgun alert is fading out (connection just confirmed) — keeps the outline + badge
+  // mounted so they can animate away instead of vanishing.
+  emailAlertDismissing?: boolean;
   errorMessage?: string;
   icon: React.ElementType;
   label: string;
@@ -82,22 +87,24 @@ const NodeShell: React.FC<React.PropsWithChildren<{className?: string; data: Ste
     const ignoreNextClickRef = useRef(false);
 
     return (
-        <ContextMenu onOpenChange={(open) => {
-            if (!open) {
-                ignoreNextClickRef.current = false;
-            }
-        }}>
+        <div className='relative'>
+            <ContextMenu onOpenChange={(open) => {
+                if (!open) {
+                    ignoreNextClickRef.current = false;
+                }
+            }}>
             <ContextMenuTrigger asChild>
                 <button
                     aria-invalid={Boolean(data.errorMessage)}
                     aria-label={data.value ? `${data.label}: ${data.value}` : data.label}
                     aria-pressed={data.selected}
                     className={cn(
-                        'flex w-80 flex-col rounded-lg border border-transparent bg-surface-elevated p-6 text-left text-sm text-foreground shadow-sm transition-all focus-visible:border-border-strong focus-visible:outline-none',
-                        !data.selected && 'hover:border-border-strong',
+                        'flex w-[400px] flex-col rounded-lg border border-transparent bg-surface-elevated p-6 text-left text-sm text-foreground shadow-sm transition-all focus-visible:border-border-strong focus-visible:outline-none',
+                        !data.selected && !data.errorMessage && !data.warningMessage && !data.emailNotConfigured && 'hover:border-border-strong',
                         data.selected && !data.errorMessage && 'border-gray-700 shadow-[inset_0_0_0_1px_var(--color-gray-700),0_1px_2px_0_rgb(0_0_0_/_0.05)]',
                         data.errorMessage && 'border-destructive',
                         !data.errorMessage && data.warningMessage && 'border-yellow-600',
+                        !data.errorMessage && !data.warningMessage && data.emailNotConfigured && !data.emailAlertDismissing && 'border-destructive/70 hover:border-destructive',
                         data.isNew && 'animate-in duration-250 ease-out fade-in-0 zoom-in-90 motion-reduce:animate-none',
                         className
                     )}
@@ -122,7 +129,8 @@ const NodeShell: React.FC<React.PropsWithChildren<{className?: string; data: Ste
                 >
                     <div className={cn(
                         'flex w-full items-center gap-3',
-                        (data.errorMessage || data.warningMessage) && 'items-start'
+                        (data.errorMessage || data.warningMessage) && 'items-start',
+                        data.emailNotConfigured && 'pr-9'
                     )}>
                         {children}
                     </div>
@@ -147,7 +155,26 @@ const NodeShell: React.FC<React.PropsWithChildren<{className?: string; data: Ste
                     );
                 })}
             </ContextMenuContent>
-        </ContextMenu>
+            </ContextMenu>
+            {data.emailNotConfigured && (
+                <MailgunAlertPopover>
+                    <Button
+                        aria-label='Connect Mailgun'
+                        className={cn(
+                            'absolute top-6 right-6 text-destructive transition-opacity duration-300 ease-out',
+                            data.emailAlertDismissing && 'pointer-events-none opacity-0'
+                        )}
+                        data-mailgun-trigger=''
+                        size='icon'
+                        variant='ghost'
+                        onClick={event => event.stopPropagation()}
+                        onPointerDown={event => event.stopPropagation()}
+                    >
+                        <LucideIcon.CircleAlert strokeWidth={2} />
+                    </Button>
+                </MailgunAlertPopover>
+            )}
+        </div>
     );
 };
 
@@ -215,12 +242,12 @@ const TailNode: React.FC<NodeProps<TailFlowNode>> = ({data}) => {
         data.onPick(type, data.anchor);
     };
 
-    const triggerClassName = 'flex h-12 w-80 items-center justify-center rounded-lg border border-dashed border-border-default bg-surface-page transition-colors hover:border-border-strong focus-visible:border-border-strong focus-visible:outline-none';
+    const triggerClassName = 'flex h-12 w-[400px] items-center justify-center rounded-lg border border-dashed border-border-default bg-surface-page transition-colors hover:border-border-strong focus-visible:border-border-strong focus-visible:outline-none';
 
     if (data.disabled) {
         return (
             <div
-                className='flex h-12 w-80 items-center justify-center rounded-lg border border-border-default bg-[repeating-linear-gradient(135deg,var(--color-white)_0,var(--color-white)_12px,var(--color-gray-100)_12px,var(--color-gray-100)_24px)] text-sm font-medium text-text-secondary'
+                className='flex h-12 w-[400px] items-center justify-center rounded-lg border border-border-default bg-[repeating-linear-gradient(135deg,var(--color-white)_0,var(--color-white)_12px,var(--color-gray-100)_12px,var(--color-gray-100)_24px)] text-sm font-medium text-text-secondary'
                 data-testid='step-limit-tail-node'
             >
                 <HiddenHandle position={Position.Top} type='target' />

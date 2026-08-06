@@ -21,7 +21,7 @@ import {useLocation, useNavigate, useSearchParams} from '@tryghost/admin-x-frame
 import type {EmailModalMode} from '@/automations/components/types';
 
 const NODE_X = 0;
-const NODE_WIDTH = 320;
+const NODE_WIDTH = 400;
 const NODE_COLUMN_CENTER_X = NODE_X + (NODE_WIDTH / 2);
 // Visible space between node bottom and the next node's top. Constant across all pairs so the
 // chain reads as evenly spaced regardless of how tall any individual node renders.
@@ -171,6 +171,8 @@ type BuildGraphParams = {
     actionErrors: Record<string, string>;
     automation: AutomationDetail;
     automationAnalyticsEnabled: boolean;
+    bulkEmailNotConfigured: boolean;
+    bulkEmailAlertDismissing: boolean;
     disabled: boolean;
     onDelete: (stepId: string) => void;
     onEditEmailBody: (stepId: string, mode?: EmailModalMode) => void;
@@ -181,7 +183,7 @@ type BuildGraphParams = {
     selectedStepId: string | null;
 }
 
-const buildGraph = ({actionErrors, automation, automationAnalyticsEnabled, disabled, onDelete, onEditEmailBody, onPick, onPreviewEmail, onSelectStep, newStepId, selectedStepId}: BuildGraphParams): { nodes: AutomationFlowNode[]; edges: Edge[]; contentBottom: number } => {
+const buildGraph = ({actionErrors, automation, automationAnalyticsEnabled, bulkEmailNotConfigured, bulkEmailAlertDismissing, disabled, onDelete, onEditEmailBody, onPick, onPreviewEmail, onSelectStep, newStepId, selectedStepId}: BuildGraphParams): { nodes: AutomationFlowNode[]; edges: Edge[]; contentBottom: number } => {
     const ordered = getInitialActionOrder(automation);
     const baseNodeProps = {
         draggable: false,
@@ -235,6 +237,8 @@ const buildGraph = ({actionErrors, automation, automationAnalyticsEnabled, disab
             position: {x: NODE_X, y: cursorY},
             data: {
                 ...displayData,
+                emailNotConfigured: action.type === 'send_email' && bulkEmailNotConfigured,
+                emailAlertDismissing: action.type === 'send_email' && bulkEmailNotConfigured && bulkEmailAlertDismissing,
                 contextMenuItems: buildNodeContextMenuItems({
                     canDelete: true,
                     canEditEmailBody: action.type === 'send_email',
@@ -308,6 +312,42 @@ const getInitialViewport = (canvasWidth: number): { x: number; y: number; zoom: 
     zoom: 1
 });
 
+// Remember the pan/zoom per automation for the session, so leaving the editor (e.g. to connect
+// Mailgun in Settings) and coming back drops the user exactly where they were — the "you never left"
+// feel. Keyed by automation id; sessionStorage so it naturally resets when the tab closes.
+type CanvasViewport = {x: number; y: number; zoom: number};
+const VIEWPORT_STORAGE_PREFIX = 'ghost:automation-viewport:';
+
+const readSavedViewport = (automationId: string): CanvasViewport | null => {
+    if (!automationId) {
+        return null;
+    }
+    try {
+        const raw = sessionStorage.getItem(VIEWPORT_STORAGE_PREFIX + automationId);
+        if (!raw) {
+            return null;
+        }
+        const parsed = JSON.parse(raw) as Partial<CanvasViewport>;
+        if (typeof parsed.x === 'number' && typeof parsed.y === 'number' && typeof parsed.zoom === 'number') {
+            return {x: parsed.x, y: parsed.y, zoom: parsed.zoom};
+        }
+    } catch {
+        // Malformed JSON or unavailable storage — fall back to the default centred view.
+    }
+    return null;
+};
+
+const writeSavedViewport = (automationId: string, viewport: CanvasViewport): void => {
+    if (!automationId) {
+        return;
+    }
+    try {
+        sessionStorage.setItem(VIEWPORT_STORAGE_PREFIX + automationId, JSON.stringify(viewport));
+    } catch {
+        // sessionStorage can be unavailable (private mode / quota) — position recall is a nicety, skip.
+    }
+};
+
 // Pan bounds. Vertically symmetric: half a viewport of runway above the trigger (top = -marginY) and
 // below the tail (bottom = contentBottom + marginY), so either end can always be brought to the middle
 // of the viewport regardless of step count. Horizontally the column can be dragged PAN_SLACK_X off
@@ -333,6 +373,10 @@ type AutomationCanvasProps = {
     isEmailNavigationBlocked?: boolean;
     isLoading: boolean;
     isError: boolean;
+    // Whether email steps should carry the Mailgun not-connected outline, and whether it's fading out
+    // after a confirmed connection. Owned by the editor via useMailgunAlert.
+    showMailgunAlert?: boolean;
+    mailgunAlertDismissing?: boolean;
     onChange: (next: AutomationDetail) => void;
     onDiscardBlockedEmailNavigation?: (closeEmailModal: () => void) => void;
     onEmailDirtyChange?: (isDirty: boolean) => void;
@@ -361,6 +405,8 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     isEmailNavigationBlocked = false,
     isLoading,
     isError,
+    showMailgunAlert = false,
+    mailgunAlertDismissing = false,
     onChange,
     onDiscardBlockedEmailNavigation,
     onEmailDirtyChange,
@@ -498,6 +544,10 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     const [zoom, setZoom] = useState(CANVAS_MAX_ZOOM);
     const canvasElRef = useRef<HTMLDivElement | null>(null);
     const flowInstanceRef = useRef<ReactFlowInstance | null>(null);
+    // Kept in a ref so the one-shot onInit and the onMoveEnd handler always see the current automation
+    // id without re-subscribing.
+    const automationIdRef = useRef('');
+    automationIdRef.current = automation?.id ?? '';
     const contentBottomRef = useRef(0);
     const resizeObserverRef = useRef<ResizeObserver | null>(null);
     const measureCanvasRef = useCallback((el: HTMLDivElement | null) => {
@@ -532,7 +582,14 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     }, []);
     const onCanvasInit = useCallback((instance: ReactFlowInstance) => {
         flowInstanceRef.current = instance;
-        centerViewport();
+        // Restore the last pan/zoom for this automation if we have one; otherwise fall back to the
+        // computed centred view.
+        const saved = readSavedViewport(automationIdRef.current);
+        if (saved) {
+            void instance.setViewport(saved);
+        } else {
+            centerViewport();
+        }
     }, [centerViewport]);
 
     const graph = useMemo(() => {
@@ -543,6 +600,8 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
             actionErrors,
             automation,
             automationAnalyticsEnabled,
+            bulkEmailNotConfigured: showMailgunAlert,
+            bulkEmailAlertDismissing: mailgunAlertDismissing,
             disabled: automation.actions.length >= MAX_AUTOMATION_ACTIONS,
             onDelete: handleRequestDelete,
             onEditEmailBody: handleContextMenuEditEmail,
@@ -552,7 +611,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
             newStepId,
             selectedStepId
         });
-    }, [actionErrors, automation, automationAnalyticsEnabled, handleContextMenuEditEmail, handleContextMenuPreviewEmail, handlePick, handleRequestDelete, newStepId, selectedStepId]);
+    }, [actionErrors, automation, automationAnalyticsEnabled, showMailgunAlert, mailgunAlertDismissing, handleContextMenuEditEmail, handleContextMenuPreviewEmail, handlePick, handleRequestDelete, newStepId, selectedStepId]);
 
     const translateExtent = useMemo<[[number, number], [number, number]]>(
         () => buildTranslateExtent(
@@ -653,6 +712,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
                 panOnScroll
                 onInit={onCanvasInit}
                 onMove={(_, viewport) => setZoom(viewport.zoom)}
+                onMoveEnd={(_, viewport) => writeSavedViewport(automationIdRef.current, viewport)}
                 onNodeClick={(event, node) => {
                     if (event.button !== 0) {
                         return;

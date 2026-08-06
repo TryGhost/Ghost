@@ -1,6 +1,7 @@
 import AutomationCanvas, {EMAIL_STEP_QUERY_PARAM} from './components/canvas/automation-canvas';
 import AutomationHeader from './components/automation-header';
 import React from 'react';
+import {useMailgunAlert} from './hooks/use-mailgun-alert';
 import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Button, type ButtonProps, LoadingIndicator} from '@tryghost/shade/components';
 import {useEditAutomation, useReadAutomation} from '@tryghost/admin-x-framework/api/automations';
 import type {AutomationDetail, AutomationStatus} from '@tryghost/admin-x-framework/api/automations';
@@ -429,6 +430,10 @@ const AutomationEditor: React.FC = () => {
         setIsEmailModalDirty(dirty);
     }, []);
 
+    // Single source of truth for the "Mailgun not connected" alert + the choreography that plays when
+    // the user returns from connecting. Passed down so the header and canvas stay in lockstep.
+    const {showAlert: showMailgunAlert, isDismissing: mailgunAlertDismissing} = useMailgunAlert();
+
     return (
         <div className='fixed inset-0 z-50 flex flex-col bg-background' data-testid='automation-editor'>
             <AutomationHeader
@@ -439,8 +444,10 @@ const AutomationEditor: React.FC = () => {
                 isPublishButtonEnabled={isPublishButtonEnabled}
                 isSaveButtonEnabled={isSaveButtonEnabled}
                 isUnpublishButtonEnabled={isUnpublishButtonEnabled}
+                mailgunAlertDismissing={mailgunAlertDismissing}
                 saveButtonChildren={saveButtonChildren}
                 saveButtonVariant={saveButtonVariant}
+                showMailgunAlert={showMailgunAlert}
                 onDiscard={onDiscard}
                 onPublish={onPublish}
                 onSave={() => save()}
@@ -453,6 +460,8 @@ const AutomationEditor: React.FC = () => {
                 isEmailNavigationBlocked={isEmailNavigationBlocked}
                 isError={isError}
                 isLoading={isEditorLoading}
+                mailgunAlertDismissing={mailgunAlertDismissing}
+                showMailgunAlert={showMailgunAlert}
                 onChange={onDraftChange}
                 onDiscardBlockedEmailNavigation={(closeEmailModal) => {
                     onEmailDirtyChange(false);

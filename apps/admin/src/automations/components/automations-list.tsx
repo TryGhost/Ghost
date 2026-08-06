@@ -1,8 +1,10 @@
 import AutomationStatusBadge from './automation-status-badge';
 import React from 'react';
 import type {Automation} from '@tryghost/admin-x-framework/api/automations';
-import {Link} from '@tryghost/admin-x-framework';
 import {Skeleton, Table, TableBody, TableCell, TableRow} from '@tryghost/shade/components';
+import {Link} from '@tryghost/admin-x-framework';
+import {LucideIcon} from '@tryghost/shade/utils';
+import {useMailgunNotConnected} from '@/automations/hooks/use-mailgun-alert';
 
 const AUTOMATION_DESCRIPTIONS: Record<string, string> = {
     'member-welcome-email-free': 'Welcome new free members after they sign up.',
@@ -39,6 +41,11 @@ const AutomationsListSkeleton: React.FC = () => {
 };
 
 const AutomationsList: React.FC<AutomationsListProps> = ({automations = [], isLoading = false}) => {
+    // Mailgun is a site-wide connection, so when it's missing every email automation is affected —
+    // surface it on each row here (mirrors the editor alert) so the need for attention is visible from
+    // the landing page.
+    const mailgunNotConnected = useMailgunNotConnected();
+
     if (isLoading) {
         return <AutomationsListSkeleton />;
     }
@@ -70,8 +77,17 @@ const AutomationsList: React.FC<AutomationsListProps> = ({automations = [], isLo
                                     </span>
                                 )}
                             </TableCell>
-                            <TableCell className="text-right lg:w-32 lg:p-4">
-                                <AutomationStatusBadge status={automation.status} />
+                            <TableCell className="lg:w-32 lg:p-4">
+                                <div className="flex items-center justify-end gap-4">
+                                    {mailgunNotConnected && (
+                                        <LucideIcon.CircleAlert
+                                            aria-label="Mailgun not connected"
+                                            className="size-5 shrink-0 text-destructive"
+                                            strokeWidth={2}
+                                        />
+                                    )}
+                                    <AutomationStatusBadge status={automation.status} />
+                                </div>
                             </TableCell>
                         </TableRow>
                     );

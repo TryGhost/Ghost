@@ -149,7 +149,20 @@ vi.mock('@tryghost/admin-x-framework/api/config', async () => {
     );
     return {
         ...actual,
-        useBrowseConfig: () => ({data: {config: {labs: mockLabs.current}}})
+        useBrowseConfig: () => ({data: {config: {labs: mockLabs.current}}, isFetching: false, refetch: vi.fn()})
+    };
+});
+
+// The Mailgun alert reads settings alongside config (see use-mailgun-alert.ts). Stub the browse hook
+// so the editor stays hermetic and the alert stays off in tests: config has no `mailgunIsConfigured`,
+// so the `=== false` gate never trips regardless of these settings.
+vi.mock('@tryghost/admin-x-framework/api/settings', async () => {
+    const actual = await vi.importActual<typeof import('@tryghost/admin-x-framework/api/settings')>(
+        '@tryghost/admin-x-framework/api/settings'
+    );
+    return {
+        ...actual,
+        useBrowseSettings: () => ({data: {settings: []}, isFetching: false, refetch: vi.fn()})
     };
 });
 

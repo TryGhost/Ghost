@@ -8,7 +8,20 @@ const ExitSettingsButton: React.FC = () => {
     const {confirm, dialogProps} = useDirtyConfirmation();
 
     const navigateAway = () => {
-        window.location.hash = '/';
+        // If the user came here from a "Connect Mailgun" alert in the automation editor, return them
+        // exactly where they left off instead of dumping them on the dashboard. Consume the token so it
+        // only applies to this round-trip. Key mirrors MAILGUN_RETURN_KEY in apps/admin's
+        // use-mailgun-alert.ts (admin-x-settings can't import from apps/admin).
+        let returnTo: string | null = null;
+        try {
+            returnTo = sessionStorage.getItem('ghost:settings-return-to');
+            if (returnTo) {
+                sessionStorage.removeItem('ghost:settings-return-to');
+            }
+        } catch {
+            returnTo = null;
+        }
+        window.location.hash = returnTo || '/';
     };
 
     return (

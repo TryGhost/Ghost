@@ -1,8 +1,15 @@
 import AutomationsList from './automations-list';
 import React from 'react';
 import {MemoryRouter} from 'react-router';
-import {describe, expect, it} from 'vitest';
+import {describe, expect, it, vi} from 'vitest';
 import {render, screen} from '@testing-library/react';
+
+// The list reads the Mailgun connection signal (which hits config + settings queries) to decide
+// whether to show the attention indicator. Stub it so this stays a pure render test with no
+// QueryClient; the signal itself is covered where the queries are mocked.
+vi.mock('../hooks/use-mailgun-alert', () => ({
+    useMailgunNotConnected: () => false
+}));
 
 const automations = [{
     id: 'automation-id-1',
