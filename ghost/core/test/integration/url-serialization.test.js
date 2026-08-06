@@ -32,9 +32,10 @@ describe('Integration: Content API URL serialization (primary_tag permalinks)', 
 
     const EMPTY_LEXICAL = testUtils.DataGenerator.markdownToLexical('url serialization fixture');
     let hadOutboundLinkTagger;
+    let publicFirst;
 
     beforeAll(async function () {
-        await models.Post.add({
+        publicFirst = await models.Post.add({
             title: 'Public First',
             slug: 'public-first',
             status: 'published',
@@ -171,6 +172,69 @@ describe('Integration: Content API URL serialization (primary_tag permalinks)', 
                 filter: 'tag:business+slug:public-first'
             });
             assert.ok(mapped.url.endsWith('/business/public-first/'), `got ${mapped.url}`);
+        });
+    });
+
+    // `findOne` intersects the requested columns with the permitted attributes
+    // and — unlike `findPage` — never unions `defaultColumnsToFetch()` back in,
+    // so the primary key reaches the query only if the serializer forces it.
+    // Without it the mapper hands the URL service `id: undefined` and Bookshelf
+    // matches no eager-loaded rows, so the post serializes /404/ with no tags.
+    // Regression cases for #29797.
+    describe('single-post read with ?fields (findOne drops the primary key)', function () {
+        async function readPipeline({slug, id, fields, include}) {
+            const frame = {
+                apiType: 'content',
+                original: {context: {}},
+                data: id ? {id} : {slug},
+                options: {context: {public: true}}
+            };
+            if (fields) {
+                frame.options.columns = fields.split(',');
+            }
+            if (include) {
+                frame.options.withRelated = include.split(',');
+            }
+
+            inputSerializer.read({}, frame);
+
+            const model = await models.Post.findOne(frame.data, frame.options);
+            assert.ok(model, `expected a post for ${JSON.stringify(frame.data)}`);
+
+            return postsMapper(model, frame, {});
+        }
+
+        it('builds the real URL on a read whose fields omit id', async function () {
+            const mapped = await readPipeline({slug: 'public-first', fields: 'title,url,published_at'});
+
+            assert.ok(mapped.url.endsWith('/business/public-first/'), `got ${mapped.url}`);
+            assert.doesNotMatch(mapped.url, /\/404\//);
+        });
+
+        it('does not leak the forced primary key into the response', async function () {
+            const mapped = await readPipeline({slug: 'public-first', fields: 'title,url,published_at'});
+
+            assert.equal(mapped.id, undefined);
+        });
+
+        it('keeps the primary key a read looked up by id already returns', async function () {
+            // The model already carries the key it was fetched by, so nothing
+            // is forced and nothing is stripped.
+            const mapped = await readPipeline({id: publicFirst.id, fields: 'title,url'});
+
+            assert.equal(mapped.id, publicFirst.id);
+        });
+
+        it('leaves the ids of included relations alone', async function () {
+            // The forced columns belong to the post, not to its relations.
+            const mapped = await readPipeline({
+                slug: 'public-first',
+                fields: 'title,url',
+                include: 'tags'
+            });
+
+            assert.equal(mapped.tags.length, 1);
+            assert.ok(mapped.tags[0].id, 'expected the included tag to keep its id');
         });
     });
 
