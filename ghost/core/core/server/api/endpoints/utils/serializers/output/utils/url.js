@@ -25,7 +25,23 @@ const forPost = (id, attrs, frame, type = 'posts') => {
         return attrs;
     }
 
-    attrs.url = urlService.getUrlForResource({...attrs, id, type}, {absolute: true});
+    // Names the fetch that produced this resource. It matters on the degrade
+    // path: a thin resource is answered with a silent /404/, and the report is
+    // the only way back to the endpoint that under-fetched it. Ignored by URL
+    // generation itself; read only into that report.
+    const options = {absolute: true};
+    if (frame && (frame.docName || frame.method)) {
+        options.serializerContext = {
+            apiType: frame.apiType,
+            docName: frame.docName,
+            method: frame.method,
+            withRelated: frame.options && frame.options.withRelated,
+            columns: frame.options && frame.options.columns,
+            forcedUrlRelations: frame.forcedUrlRelations
+        };
+    }
+
+    attrs.url = urlService.getUrlForResource({...attrs, id, type}, options);
 
     /**
      * CASE: admin api should serve preview urls

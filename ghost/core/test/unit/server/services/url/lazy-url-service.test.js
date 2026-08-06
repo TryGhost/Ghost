@@ -852,6 +852,38 @@ describe('LazyUrlService', function () {
             assert.equal(service.getUrlForResource(thin), '/404/');
         });
 
+        it('names the producing endpoint in the report', function () {
+            // The degrade is silent to the caller, so the report is the only
+            // route back to the fetch that under-fetched.
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
+            service.onRouterAddedType('news', 'tag:news', 'posts', '/:slug/');
+
+            service.getUrlForResource(
+                {type: 'posts', id: 'p', slug: 'hello', status: 'published'},
+                {serializerContext: {apiType: 'content', docName: 'posts', method: 'read', columns: ['url']}}
+            );
+
+            const {errorDetails} = logging.error.firstCall.args[0];
+            assert.deepEqual(errorDetails.serializer, {
+                apiType: 'content', docName: 'posts', method: 'read', columns: ['url']
+            });
+            assert.deepEqual(errorDetails.missing, ['tags']);
+        });
+
+        it('reports each producing endpoint once, not the first one only', function () {
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
+            service.onRouterAddedType('news', 'tag:news', 'posts', '/:slug/');
+            const thin = {type: 'posts', id: 'p', slug: 'hello', status: 'published'};
+
+            service.getUrlForResource(thin, {serializerContext: {apiType: 'content', docName: 'posts', method: 'read'}});
+            service.getUrlForResource(thin, {serializerContext: {apiType: 'content', docName: 'posts', method: 'read'}});
+            sinon.assert.calledOnce(logging.error);
+
+            // A second endpoint under-fetching the same way is a second bug.
+            service.getUrlForResource(thin, {serializerContext: {apiType: 'admin', docName: 'pages', method: 'browse'}});
+            sinon.assert.calledTwice(logging.error);
+        });
+
         it('reports a repeated cause once, so one bad caller cannot flood the log', function () {
             const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
             service.onRouterAddedType('news', 'tag:news', 'posts', '/:slug/');

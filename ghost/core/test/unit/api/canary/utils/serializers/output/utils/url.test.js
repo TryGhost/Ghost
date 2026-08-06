@@ -44,6 +44,28 @@ describe('Unit: endpoints/utils/serializers/output/utils/url', function () {
             assert.deepEqual(options, {absolute: true});
         });
 
+        it('passes the producing endpoint and fetch shape for the degrade report', function () {
+            const post = pageModel(testUtils.DataGenerator.forKnex.createPost({id: 'id1', mobiledoc: '{}', html: 'html'}));
+
+            urlUtil.forPost(post.id, post, {
+                options: {withRelated: ['tags'], columns: ['url']},
+                forcedUrlRelations: ['tags'],
+                apiType: 'admin',
+                docName: 'posts',
+                method: 'read'
+            });
+
+            const [, options] = getUrlForResourceStub.firstCall.args;
+            assert.deepEqual(options.serializerContext, {
+                apiType: 'admin',
+                docName: 'posts',
+                method: 'read',
+                withRelated: ['tags'],
+                columns: ['url'],
+                forcedUrlRelations: ['tags']
+            });
+        });
+
         it('still passes id when attrs has been stripped (e.g. fields=url)', function () {
             // Content API request like `?fields=url` runs jsonModel through a
             // serializer that strips every attribute except `url`. The mapper

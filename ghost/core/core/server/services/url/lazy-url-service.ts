@@ -25,6 +25,18 @@ export interface Resource {
 export interface UrlOptions {
     absolute?: boolean;
     withSubdirectory?: boolean;
+    // Diagnostic only: the producing api endpoint and the fetch shape its
+    // input serializer settled on, threaded from the output serializer so a
+    // thin-resource report names what under-fetched. Ignored by URL
+    // generation; read only into that report.
+    serializerContext?: {
+        apiType?: string;
+        docName?: string;
+        method?: string;
+        withRelated?: unknown;
+        columns?: unknown;
+        forcedUrlRelations?: unknown;
+    };
 }
 
 /**
@@ -454,7 +466,16 @@ export class LazyUrlService {
     // reset(), since a new routing config can make a previously thin resource
     // fine (or newly broken).
     private _degradeThinResource(resource: Resource, thin: ThinResource, options: UrlOptions): string {
-        const key = `${thin.resourceType}|${thin.routerIdentifier ?? ''}|${thin.missing.join(',')}`;
+        const producedBy = options.serializerContext;
+        // The producer is part of the key: two endpoints under-fetching the
+        // same way are two bugs, and the endpoint set is small enough that
+        // this cannot flood.
+        const key = [
+            thin.resourceType,
+            thin.routerIdentifier ?? '',
+            thin.missing.join(','),
+            producedBy ? `${producedBy.apiType}:${producedBy.docName}:${producedBy.method}` : ''
+        ].join('|');
         if (this.reportedThinResources.has(key)) {
             return this.notFoundUrl(options);
         }
@@ -470,6 +491,7 @@ export class LazyUrlService {
                 status: (resource as Record<string, unknown>).status,
                 resourceKeys: Object.keys(resource),
                 requiredRelations: this.getRequiredRelations(),
+                ...(producedBy ? {serializer: producedBy} : {}),
                 ...thin
             }
         }));
