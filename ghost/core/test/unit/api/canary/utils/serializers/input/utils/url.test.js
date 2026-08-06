@@ -73,36 +73,36 @@ describe('Unit: endpoints/utils/serializers/input/utils/url', function () {
             // lookup matches case-insensitively, so the forged value can differ
             // from the stored one, and the URL is built from whichever the
             // model ends up carrying.
-            sinon.stub(urlService.facade, 'getRequiredFields').withArgs('posts').returns(['slug', 'status']);
+            sinon.stub(urlService, 'getRequiredFields').withArgs('posts').returns(['slug', 'status']);
             const frame = {data: {slug: 'Welcome'}, options: {columns: ['url', 'title']}};
 
-            urlUtil.forceUrlColumnsWhenLazy(frame, 'posts');
+            urlUtil.forceUrlColumns(frame, 'posts');
 
             assert.deepEqual(frame.options.columns, ['url', 'title', 'slug', 'status']);
             assert.deepEqual(frame.forcedUrlColumns, {routerType: 'posts', columns: ['status']});
         });
     });
 
-    describe('forceUrlRelationsWhenLazy', function () {
+    describe('forceUrlRelations', function () {
         it('forces the primary key into a narrowed fetch', function () {
             // Both backends look the URL up by `model.id`, so this is not
             // specific to the lazy service — hence no required relations here.
-            sinon.stub(urlService.facade, 'getRequiredRelations').returns([]);
-            sinon.stub(urlService.facade, 'getRequiredFields').withArgs('posts').returns(['status']);
+            sinon.stub(urlService, 'getRequiredRelations').returns([]);
+            sinon.stub(urlService, 'getRequiredFields').withArgs('posts').returns(['status']);
             const frame = {options: {columns: ['url', 'title']}};
 
-            urlUtil.forceUrlRelationsWhenLazy(frame, 'posts');
+            urlUtil.forceUrlRelations(frame, 'posts');
 
             assert.deepEqual(frame.options.columns, ['url', 'title', 'status', 'id']);
             assert.deepEqual(frame.forcedUrlColumns, {routerType: 'posts', columns: ['status', 'id']});
         });
 
         it('forces the primary key so the required relations can load', function () {
-            sinon.stub(urlService.facade, 'getRequiredRelations').returns(['tags']);
-            sinon.stub(urlService.facade, 'getRequiredFields').withArgs('posts').returns([]);
+            sinon.stub(urlService, 'getRequiredRelations').returns(['tags']);
+            sinon.stub(urlService, 'getRequiredFields').withArgs('posts').returns([]);
             const frame = {options: {columns: ['url', 'title']}};
 
-            urlUtil.forceUrlRelationsWhenLazy(frame, 'posts');
+            urlUtil.forceUrlRelations(frame, 'posts');
 
             assert.deepEqual(frame.options.withRelated, ['tags']);
             assert.deepEqual(frame.forcedUrlColumns, {routerType: 'posts', columns: ['id']});
@@ -111,42 +111,42 @@ describe('Unit: endpoints/utils/serializers/input/utils/url', function () {
         it('never strips the primary key from a read looked up by id', function () {
             // The model already carries the key it was fetched by, so stripping
             // it would take away an id the caller is served today.
-            sinon.stub(urlService.facade, 'getRequiredRelations').returns(['tags']);
-            sinon.stub(urlService.facade, 'getRequiredFields').withArgs('posts').returns([]);
+            sinon.stub(urlService, 'getRequiredRelations').returns(['tags']);
+            sinon.stub(urlService, 'getRequiredFields').withArgs('posts').returns([]);
             const frame = {data: {id: 'abc123'}, options: {columns: ['url', 'title']}};
 
-            urlUtil.forceUrlRelationsWhenLazy(frame, 'posts');
+            urlUtil.forceUrlRelations(frame, 'posts');
 
             assert.deepEqual(frame.options.columns, ['url', 'title', 'id']);
             assert.equal(frame.forcedUrlColumns, undefined);
         });
 
         it('does not duplicate the primary key when the caller requested it', function () {
-            sinon.stub(urlService.facade, 'getRequiredRelations').returns([]);
-            sinon.stub(urlService.facade, 'getRequiredFields').withArgs('posts').returns([]);
+            sinon.stub(urlService, 'getRequiredRelations').returns([]);
+            sinon.stub(urlService, 'getRequiredFields').withArgs('posts').returns([]);
             const frame = {options: {columns: ['url', 'id']}};
 
-            urlUtil.forceUrlRelationsWhenLazy(frame, 'posts');
+            urlUtil.forceUrlRelations(frame, 'posts');
 
             assert.deepEqual(frame.options.columns, ['url', 'id']);
             assert.equal(frame.forcedUrlColumns, undefined);
         });
 
         it('is a no-op when the fetch is not narrowed', function () {
-            sinon.stub(urlService.facade, 'getRequiredRelations').returns([]);
+            sinon.stub(urlService, 'getRequiredRelations').returns([]);
             const frame = {options: {}};
 
-            urlUtil.forceUrlRelationsWhenLazy(frame, 'posts');
+            urlUtil.forceUrlRelations(frame, 'posts');
 
             assert.equal(frame.options.columns, undefined);
             assert.equal(frame.forcedUrlColumns, undefined);
         });
 
         it('is a no-op when the url will not be serialized', function () {
-            const relations = sinon.stub(urlService.facade, 'getRequiredRelations');
+            const relations = sinon.stub(urlService, 'getRequiredRelations');
             const frame = {options: {columns: ['title', 'slug']}};
 
-            urlUtil.forceUrlRelationsWhenLazy(frame, 'posts');
+            urlUtil.forceUrlRelations(frame, 'posts');
 
             assert.deepEqual(frame.options.columns, ['title', 'slug']);
             assert.equal(frame.options.withRelated, undefined);
