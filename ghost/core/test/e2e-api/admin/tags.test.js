@@ -41,6 +41,10 @@ describe('Tag API', function () {
         assert.equal(jsonResponse.meta.pagination.next, null);
         assert.equal(jsonResponse.meta.pagination.prev, null);
 
+        // A tag with no published posts gets its own URL, not /404/: eager left
+        // it out of the URL map behind a shouldHavePosts gate, lazy has no cheap
+        // way to run that check and this was accepted in HKG-1920. The archive
+        // still 404s to visitors — that 404 lives in the routing controllers.
         const postlessTag = jsonResponse.tags.find(t => t.count.posts === 0);
         assertExists(postlessTag);
         assert.equal(new URL(postlessTag.url).pathname, `/tag/${postlessTag.slug}/`);

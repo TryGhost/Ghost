@@ -194,6 +194,26 @@ describe('UrlServiceFacade', function () {
             assert.equal(logging.error.firstCall.args[0].code, 'LAZY_URL_RESOLUTION_ERROR');
         });
 
+        it('getUrlForResource names the producing serializer in a thin-resource report', function () {
+            // The degraded /404/ is silent to the caller, so the report is the
+            // only way back to the fetch that produced the thin resource.
+            sinon.stub(logging, 'error');
+            lazyUrlService.getUrlForResource.throws(new errors.InternalServerError({
+                message: 'Resource is missing fields required to build its URL',
+                code: 'LAZY_URL_THIN_RESOURCE'
+            }));
+
+            lazyFacade.getUrlForResource({type: 'posts', id: 'a'}, {
+                absolute: true,
+                serializerContext: {docName: 'posts', method: 'browse'}
+            });
+
+            assert.deepEqual(logging.error.firstCall.args[0].errorDetails.serializer, {
+                docName: 'posts',
+                method: 'browse'
+            });
+        });
+
         it('getUrlForResource rethrows an unexpected lazy failure rather than serving /404/', function () {
             sinon.stub(logging, 'error');
             lazyUrlService.getUrlForResource.throws(new TypeError('permalink.replace is not a function'));

@@ -23,6 +23,9 @@ if (process.env.NODE_ENV.startsWith('test')){
 const cache = new LocalFileCache({storagePath, writeDisabled});
 const urlService = new UrlService({cache});
 
+// Required here rather than at the top of the file: models is already loaded
+// via url-service -> resources by this point, so this require is safe where a
+// hoisted one would not be.
 const LazyUrlService = require('./lazy-url-service');
 const {createFindResource} = require('./lazy-find-resource');
 const {createFetchRoutableResources} = require('./routable-resources');

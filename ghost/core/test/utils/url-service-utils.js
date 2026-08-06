@@ -41,7 +41,7 @@ module.exports.init = ({urlCache} = {}) => {
 
 module.exports.reset = () => {
     urlService.softReset();
-},
+};
 
 module.exports.urlFor = (model, type, options) => {
     return urlService.facade.getUrlForResource({...model.toJSON(), type}, options);

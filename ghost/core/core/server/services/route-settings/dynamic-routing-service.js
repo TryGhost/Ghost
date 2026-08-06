@@ -25,8 +25,7 @@ class DynamicRoutingService {
 
     /**
      * Wire the storage-layer dependency so the API surface (upload, download)
-     * works immediately after boot — even when the frontend is disabled and
-     * `start()` is never called.
+     * works from early boot, well before `start()` wires up routing.
      *
      * @param {object} deps
      * @param {RouteSettingsStore} deps.store - adapter-manager provided store
@@ -38,8 +37,8 @@ class DynamicRoutingService {
 
     /**
      * Wire the routing dependencies and load route settings into the router.
-     * Called from initDynamicRouting in boot.js on every boot: the routers have
-     * to reach the URL service even where no page is served, so that the APIs and
+     * Called from initDynamicRouting in boot.js on every boot: the URL service
+     * has to learn the routes even where no page is served, so that the APIs and
      * background services can build URLs.
      *
      * @param {object} deps

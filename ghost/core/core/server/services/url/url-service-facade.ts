@@ -150,14 +150,24 @@ export class UrlServiceFacade {
      * filters and applies permalink templates against it.
      */
     getUrlForResource(resource: Resource, options?: UrlOptions): string {
+        // Names the fetch that produced the resource. It matters most on the
+        // degradation path below, where the /404/ is silent to the caller and
+        // the report is the only way back to the producer.
+        const producedBy = options?.serializerContext ? {serializer: options.serializerContext} : {};
         if (this.isLazy()) {
             try {
                 return this.lazyUrlService!.getUrlForResource(resource, options);
             } catch (err) {
+                // A thin resource is the one failure lazy can hit on a caller's
+                // request path, and it means the resource is unroutable — the
+                // same thing eager answers /404/ for. Degrade to match rather
+                // than 500 the request or fail a theme render. Every other
+                // throw is a backend bug and propagates: a silent /404/ on a
+                // page that does route would get indexed.
                 if ((err as {code?: string} | null)?.code !== 'LAZY_URL_THIN_RESOURCE') {
                     throw err;
                 }
-                this._reportLazyError('getUrlForResource', err as Error, this._reportContext(resource), {
+                this._reportLazyError('getUrlForResource', err as Error, this._reportContext(resource, producedBy), {
                     code: 'LAZY_URL_RESOLUTION_ERROR',
                     message: 'Lazy URL service threw while building a URL, degraded to /404/'
                 });
@@ -166,8 +176,7 @@ export class UrlServiceFacade {
         }
         const url = this.urlService.getUrlByResourceId(resource.id, options);
         if (this.isComparing() && !options?.skipComparison) {
-            const context = this._reportContext(resource,
-                options?.serializerContext ? {serializer: options.serializerContext} : {});
+            const context = this._reportContext(resource, producedBy);
             // Snapshot: callers mutate the resource's nested objects in place
             // after this returns, but the comparison runs later via setImmediate.
             const snapshot = _.cloneDeep(resource);
@@ -218,9 +227,9 @@ export class UrlServiceFacade {
             lazyRows = await this.fetchRoutableResources!(type, options);
         } catch (err) {
             this._reportLazyError('getRoutableResources', err as Error, {type}, {
-                    code: 'LAZY_URL_COMPARE_ERROR',
-                    message: 'Lazy URL service threw during comparison'
-                });
+                code: 'LAZY_URL_COMPARE_ERROR',
+                message: 'Lazy URL service threw during comparison'
+            });
             return;
         }
 
@@ -262,9 +271,10 @@ export class UrlServiceFacade {
         return owns;
     }
 
-    // Context for a compare or resolution report. Must be built synchronously in the calling
-    // frame: the comparison itself runs from setImmediate, where the caller's
-    // stack is gone — so a lazy throw reported there names only the URL service
+    // Context for a compare or resolution report. Must be built in the calling
+    // frame, which the resolution path does and the compare path has to be
+    // careful to: comparison runs from setImmediate, where the caller's stack
+    // is gone — so a lazy throw reported there names only the URL service
     // internals, not which caller handed over the (possibly thin) resource.
     // `caller` recaptures those frames; `resourceKeys` fingerprints the shape
     // the caller passed (e.g. a Content-API-serialized post vs a full model).

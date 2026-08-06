@@ -290,6 +290,11 @@ function initPrometheusClient({config}) {
  * When Ghost's DB and core are loaded, we can access this file and call routing.routingManager.start
  * However this _must_ happen after the express Apps are loaded, hence why this is here and not in initFrontend
  * Routing is currently tightly coupled between the frontend and backend
+ *
+ * Runs on every boot, not just a frontend one: it both mounts routers on the
+ * site app and tells the URL service about them, and only the first needs a
+ * frontend. The APIs, the email service and webhooks all build URLs, so a
+ * backend-only boot that skipped this resolved every resource to /404/.
  */
 async function initDynamicRouting({frontend}) {
     debug('Begin: Dynamic Routing');
@@ -299,6 +304,10 @@ async function initDynamicRouting({frontend}) {
     const bridge = require('./bridge');
     bridge.init();
 
+    // With a frontend, initFrontend has already called this to build the site
+    // app's router. Without one there is nothing to mount, but the URL service
+    // still has to be handed to RouterManager before the routers register — so
+    // call the same init and discard the express router it returns.
     if (!frontend) {
         routing.routerManager.init({urlService: urlService.facade});
     }
