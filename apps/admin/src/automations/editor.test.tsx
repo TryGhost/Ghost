@@ -297,6 +297,13 @@ const rerenderEditorRoute = (router: ReturnType<typeof createMemoryRouter>) => a
     await router.navigate('/automations/automation-id-1', {replace: true});
 });
 
+const withEmailSubject = (automation: AutomationDetail, emailSubject: string): AutomationDetail => ({
+    ...automation,
+    actions: automation.actions.map(action => action.type === 'send_email'
+        ? {...action, data: {...action.data, email_subject: emailSubject}}
+        : action)
+});
+
 const withEmptyEmailBodies = (fixture: AutomationDetail): AutomationDetail => ({
     ...fixture,
     actions: fixture.actions.map(action => (
@@ -373,12 +380,7 @@ describe('AutomationEditor', () => {
     });
 
     it('waits for a fresh response before cached automation data becomes editable', async () => {
-        const cachedAutomation = {
-            ...automationDetail,
-            actions: automationDetail.actions.map(action => action.type === 'send_email'
-                ? {...action, data: {...action.data, email_subject: 'Cached subject'}}
-                : action)
-        };
+        const cachedAutomation = withEmailSubject(automationDetail, 'Cached subject');
         mockUseReadAutomation.mockReturnValue({
             data: {automations: [cachedAutomation]},
             isLoading: false,
@@ -440,8 +442,9 @@ describe('AutomationEditor', () => {
         fireEvent.blur(subjectInput);
         expect(screen.getByRole('button', {name: 'Publish changes'})).toBeEnabled();
 
+        const refreshedAutomation = withEmailSubject(automationDetail, 'Server-refreshed subject');
         mockUseReadAutomation.mockReturnValue({
-            data: {automations: [automationDetail]},
+            data: {automations: [refreshedAutomation]},
             isLoading: false,
             isFetchedAfterMount: true,
             isError: true
@@ -450,6 +453,8 @@ describe('AutomationEditor', () => {
 
         expect(screen.getByTestId('automation-canvas')).toBeInTheDocument();
         expect(screen.queryByText('Couldn\'t load automation')).not.toBeInTheDocument();
+        expect(within(sidebar).getByDisplayValue('Locally edited subject')).toBeInTheDocument();
+        expect(within(sidebar).queryByDisplayValue('Server-refreshed subject')).not.toBeInTheDocument();
         expect(screen.getByRole('button', {name: 'Publish changes'})).toBeEnabled();
 
         fireEvent.click(screen.getByRole('link', {name: 'Back to automations'}));
@@ -458,16 +463,10 @@ describe('AutomationEditor', () => {
     });
 
     it('does not reuse an old draft when navigating from A to B and back to A', async () => {
-        const withSubject = (automation: AutomationDetail, emailSubject: string): AutomationDetail => ({
-            ...automation,
-            actions: automation.actions.map(action => action.type === 'send_email'
-                ? {...action, data: {...action.data, email_subject: emailSubject}}
-                : action)
-        });
-        const initialA = withSubject(automationDetail, 'Initial A subject');
-        const freshA = withSubject(automationDetail, 'Fresh A subject');
+        const initialA = withEmailSubject(automationDetail, 'Initial A subject');
+        const freshA = withEmailSubject(automationDetail, 'Fresh A subject');
         const automationB = {
-            ...withSubject(automationDetail, 'Automation B subject'),
+            ...withEmailSubject(automationDetail, 'Automation B subject'),
             id: 'automation-id-2',
             name: 'Paid member welcome flow',
             slug: 'member-welcome-email-paid'
@@ -479,8 +478,8 @@ describe('AutomationEditor', () => {
                 return {
                     data: {automations: [automationB]},
                     isLoading: false,
-                    isFetching: true,
-                    isFetchedAfterMount: false,
+                    isFetching: false,
+                    isFetchedAfterMount: true,
                     isError: false
                 };
             }
@@ -498,7 +497,7 @@ describe('AutomationEditor', () => {
         expect(screen.getByRole('button', {name: 'Send email: Initial A subject'})).toBeInTheDocument();
 
         await act(async () => router.navigate('/automations/automation-id-2'));
-        expect(screen.getByTestId('automation-canvas-loading')).toBeInTheDocument();
+        expect(screen.getByRole('button', {name: 'Send email: Automation B subject'})).toBeInTheDocument();
 
         aResponse = 'fetching';
         await act(async () => router.navigate('/automations/automation-id-1'));
