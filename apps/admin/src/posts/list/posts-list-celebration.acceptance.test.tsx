@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { fakeAdminEndpoint, fakePages, fakePosts, fakeTags, fakeUsers, post, renderAdminApp } from "@test-utils/acceptance";
+import { fakePages, fakePosts, fakePostsListScreen, post, renderAdminApp } from "@test-utils/acceptance";
 import { postsListScreen } from "./posts-list.screen";
 
 const FLAG_ON = { labs: { postsListReact: true } };
@@ -12,12 +12,7 @@ const FLAG_ON = { labs: { postsListReact: true } };
  */
 describe("Posts list publish celebration", () => {
     beforeEach(() => {
-        fakeAdminEndpoint("POST", "/stats/posts-visitor-counts/", {stats: [{data: {visitor_counts: {}}}]});
-        fakeAdminEndpoint("POST", "/stats/posts-member-counts/", {stats: [{data: {member_counts: {}}}]});
-        fakeTags([]);
-        fakeUsers([]);
-        fakeAdminEndpoint("GET", /^\/tags\/\?.*slug/, { tags: [] });
-        fakeAdminEndpoint("GET", /^\/users\/\?.*slug/, { users: [] });
+        fakePostsListScreen();
     });
 
     afterEach(() => {

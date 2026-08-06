@@ -21,7 +21,7 @@ import {
     type Tier,
 } from "@tryghost/test-data";
 
-import { record418, registerAdminApiHandler, registerRoute } from "./worker";
+import { fakeAdminEndpoint, record418, registerAdminApiHandler, registerRoute } from "./worker";
 
 export interface BrowseQuery {
     /** Full request URL, for raw assertions on encoding. */
@@ -326,6 +326,21 @@ export function fakeSettingsScreens(): void {
         }
         return undefined;
     });
+}
+
+/**
+ * Declares the chrome every posts/pages list mount reads: the batched
+ * analytics counts the metric columns request, and the tag/author worlds the
+ * filter bar and its slug lookups probe. Screen-specific data a spec asserts
+ * on is declared in the spec — a fake registered after this one wins.
+ */
+export function fakePostsListScreen(): void {
+    fakeAdminEndpoint("POST", "/stats/posts-visitor-counts/", { stats: [{ data: { visitor_counts: {} } }] });
+    fakeAdminEndpoint("POST", "/stats/posts-member-counts/", { stats: [{ data: { member_counts: {} } }] });
+    fakeTags([]);
+    fakeUsers([]);
+    fakeAdminEndpoint("GET", /^\/tags\/\?.*slug/, { tags: [] });
+    fakeAdminEndpoint("GET", /^\/users\/\?.*slug/, { users: [] });
 }
 
 type SettingsPutBody = { settings: Array<{ key: string; value: string | boolean | null }> };

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { currentUserResponse, fakeAdminEndpoint, fakePages, fakePosts, fakeTags, fakeUsers, post, renderAdminApp, staffRole } from "@test-utils/acceptance";
+import { currentUserResponse, fakePages, fakePosts, fakePostsListScreen, post, renderAdminApp, staffRole } from "@test-utils/acceptance";
 import { postsListScreen } from "./posts-list.screen";
 import type { StaffRoleName } from "@tryghost/test-data";
 
@@ -41,13 +41,7 @@ describe("Posts list data", () => {
     // The filter bar mounts with the screen and probes these to resolve any
     // author/tag slug in the URL into a name.
     beforeEach(() => {
-        // The metric columns batch these for the rows on screen.
-        fakeAdminEndpoint("POST", "/stats/posts-visitor-counts/", {stats: [{data: {visitor_counts: {}}}]});
-        fakeAdminEndpoint("POST", "/stats/posts-member-counts/", {stats: [{data: {member_counts: {}}}]});
-        fakeTags([]);
-        fakeUsers([]);
-        fakeAdminEndpoint("GET", /^\/tags\/\?.*slug/, { tags: [] });
-        fakeAdminEndpoint("GET", /^\/users\/\?.*slug/, { users: [] });
+        fakePostsListScreen();
     });
 
     it("runs one query per status bucket", async () => {

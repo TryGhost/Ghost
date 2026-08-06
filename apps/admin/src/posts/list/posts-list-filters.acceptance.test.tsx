@@ -3,10 +3,9 @@ import { beforeEach, describe, expect, it } from "vitest";
 import {
     currentRoute,
     currentUserResponse,
-    fakePosts,
-    fakeTags,
     fakeAdminEndpoint,
-    fakeUsers,
+    fakePosts,
+    fakePostsListScreen,
     post,
     renderAdminApp,
     staffRole,
@@ -33,11 +32,7 @@ describe("Posts list filters", () => {
     // The author and tag fields hydrate their selected values as soon as the
     // bar mounts, so both endpoints are probed on every render here.
     beforeEach(() => {
-        // The metric columns batch these for the rows on screen.
-        fakeAdminEndpoint("POST", "/stats/posts-visitor-counts/", {stats: [{data: {visitor_counts: {}}}]});
-        fakeAdminEndpoint("POST", "/stats/posts-member-counts/", {stats: [{data: {member_counts: {}}}]});
-        fakeTags([]);
-        fakeUsers([]);
+        fakePostsListScreen();
     });
 
     it("hydrates a chip from the URL", async () => {

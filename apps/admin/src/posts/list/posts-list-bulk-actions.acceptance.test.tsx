@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { userEvent } from "vitest/browser";
 
-import { fakeAdminEndpoint, fakePosts, fakeTags, fakeTiers, fakeUsers, post, renderAdminApp, tag } from "@test-utils/acceptance";
+import { fakeAdminEndpoint, fakePosts, fakePostsListScreen, fakeTags, fakeTiers, post, renderAdminApp, tag } from "@test-utils/acceptance";
 import { postsListScreen } from "./posts-list.screen";
 
 const FLAG_ON = { labs: { postsListReact: true } };
@@ -14,12 +14,7 @@ const FLAG_ON = { labs: { postsListReact: true } };
  */
 describe("Posts list bulk actions", () => {
     beforeEach(() => {
-        fakeAdminEndpoint("POST", "/stats/posts-visitor-counts/", {stats: [{data: {visitor_counts: {}}}]});
-        fakeAdminEndpoint("POST", "/stats/posts-member-counts/", {stats: [{data: {member_counts: {}}}]});
-        fakeTags([]);
-        fakeUsers([]);
-        fakeAdminEndpoint("GET", /^\/tags\/\?.*slug/, { tags: [] });
-        fakeAdminEndpoint("GET", /^\/users\/\?.*slug/, { users: [] });
+        fakePostsListScreen();
     });
 
     it("deletes one post by id, not by the list filter", async () => {
