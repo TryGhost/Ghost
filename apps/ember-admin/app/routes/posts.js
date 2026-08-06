@@ -128,14 +128,40 @@ export default class PostsRoute extends AuthenticatedRoute {
     // left alone - React owns it, and rewriting it here would drop the query
     // params that address saved views.
     //
-    // The guard keeps this from looping: parking re-enters this hook, and by
-    // then we are already on `react-fallback` and return immediately.
+    // The guard compares the parked *path*, not just the route name, and both
+    // halves matter. Without it at all, parking re-enters this hook and loops.
+    // Matching on the name alone stops the loop but parks only once: arrive
+    // from /analytics - which the admin boots on - and the router stays pinned
+    // at `react-fallback/analytics` however many times you visit /posts. The
+    // editor reads `transition.from.params.path` to label its back button, so
+    // it would send you to Analytics from a post you opened from the list.
     _parkOnReactFallback() {
-        if (this.router.currentRouteName === 'react-fallback') {
+        const parkedPath = this.router.currentRouteName === 'react-fallback'
+            ? this.router.currentRoute?.params?.path
+            : null;
+
+        if (parkedPath === this.routeName) {
             return;
         }
 
-        this.router.replaceWith('react-fallback', this.routeName);
+        const url = window.location.hash;
+
+        this.router.replaceWith('react-fallback', this.routeName)
+            .finally(() => this._restoreUrl(url));
+    }
+
+    // Parking writes the fallback route's own path when the transition settles,
+    // which drops the query string - and `?type=draft` is how saved views are
+    // addressed, so losing it silently breaks every saved view on a cold load.
+    //
+    // `replaceState` rather than assigning to `location.hash`: it adds no
+    // history entry, so it cannot disturb the back button, and it fires no
+    // `hashchange`, so restoring cannot re-enter routing and undo the parking we
+    // just did. React already rendered from this URL and is unaffected.
+    _restoreUrl(url) {
+        if (window.location.hash !== url) {
+            window.history.replaceState(null, '', url);
+        }
     }
 
     // Built by hand rather than with `router.urlFor`, whose output depends on

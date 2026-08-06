@@ -200,5 +200,22 @@ describe('Acceptance: posts/pages React flag', function () {
 
             expect(replaceWith.calledWith('react-fallback', 'posts'), 'replaceWith called').to.be.true;
         });
+
+        // Regression: the guard used to match on the route name alone, so once
+        // parked anywhere the router never moved again. Arriving from
+        // /analytics — which the admin boots on — left it pinned there, and the
+        // editor reads that path to label its back button, offering "Analytics"
+        // for a post opened from the list.
+        it('re-parks when already parked at a different path', async function () {
+            const router = this.owner.lookup('service:router');
+
+            await visitExpectingAbort('/analytics');
+            expect(router.currentRoute?.params?.path, 'parked path after /analytics').to.equal('analytics');
+
+            await visitExpectingAbort('/posts');
+
+            expect(router.currentRouteName, 'currentRouteName after /posts').to.equal('react-fallback');
+            expect(router.currentRoute?.params?.path, 'parked path after /posts').to.equal('posts');
+        });
     });
 });

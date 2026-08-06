@@ -105,6 +105,11 @@ export function PostsFilters({resource, filters, params, currentUser, iconOnly =
                 keyboardShortcut='f'
                 popoverAlign='start'
                 showClearButton={hasFilters}
+                // There are four fields — a search box to narrow four items is
+                // more chrome than help. This hides only the *field* list's
+                // search; the tag and author value pickers keep their own,
+                // which they need, since a site can have hundreds of either.
+                showSearchInput={false}
                 onChange={onFiltersChange}
             />
         </Inline>
