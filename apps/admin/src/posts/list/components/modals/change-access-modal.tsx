@@ -3,6 +3,7 @@ import {
     Checkbox,
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogFooter,
     DialogHeader,
     DialogTitle,
@@ -86,6 +87,9 @@ export function ChangeAccessModal({
             <DialogContent data-testid='change-access-modal'>
                 <DialogHeader>
                     <DialogTitle>{getAccessModalTitle({count, resource, isSingle})}</DialogTitle>
+                    <DialogDescription>
+                        Controls who can read the selected {resource === 'pages' ? 'pages' : 'posts'}.
+                    </DialogDescription>
                 </DialogHeader>
 
                 <Stack gap='md'>

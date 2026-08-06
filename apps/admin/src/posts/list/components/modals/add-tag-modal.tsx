@@ -3,6 +3,7 @@ import {
     Checkbox,
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogFooter,
     DialogHeader,
     DialogTitle,
@@ -83,6 +84,9 @@ export function AddTagModal({appliedTags = [], isRunning, onConfirm, onCancel}: 
             <DialogContent data-testid='add-tag-modal'>
                 <DialogHeader>
                     <DialogTitle>Add tags</DialogTitle>
+                    <DialogDescription>
+                        Added to everything selected, on top of any tags already applied.
+                    </DialogDescription>
                 </DialogHeader>
 
                 <Stack gap='md'>
