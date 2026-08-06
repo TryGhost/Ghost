@@ -57,19 +57,19 @@ function getUrl(data, absolute) {
         // preview probe stays keyed on the raw `data.status` so an unrouted
         // status-stripped post falls back to /p/:uuid.
         const postResource = {status: 'published', ...data, type: checks.isPage(data) ? 'pages' : 'posts'};
-        if (data.status !== 'published' && urlService.facade.getUrlForResource(postResource) === '/404/') {
+        if (data.status !== 'published' && urlService.getUrlForResource(postResource) === '/404/') {
             return urlUtils.urlFor({relativeUrl: urlUtils.urlJoin('/p', data.uuid, '/')}, null, absolute);
         }
 
-        return urlService.facade.getUrlForResource(postResource, {absolute: absolute, withSubdirectory: true});
+        return urlService.getUrlForResource(postResource, {absolute: absolute, withSubdirectory: true});
     }
 
     if (checks.isTag(data)) {
-        return urlService.facade.getUrlForResource({...data, type: 'tags'}, {absolute: absolute, withSubdirectory: true});
+        return urlService.getUrlForResource({...data, type: 'tags'}, {absolute: absolute, withSubdirectory: true});
     }
 
     if (checks.isUser(data)) {
-        return urlService.facade.getUrlForResource({...data, type: 'authors'}, {absolute: absolute, withSubdirectory: true});
+        return urlService.getUrlForResource({...data, type: 'authors'}, {absolute: absolute, withSubdirectory: true});
     }
 
     if (checks.isNav(data)) {

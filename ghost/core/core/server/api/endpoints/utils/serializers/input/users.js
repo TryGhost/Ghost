@@ -6,13 +6,13 @@ module.exports = {
         debug('browse');
 
         // Staff users route through the authors router types.
-        url.forceUrlColumnsWhenLazy(frame, 'authors');
+        url.forceUrlColumns(frame, 'authors');
     },
 
     read(apiConfig, frame) {
         debug('read');
 
-        url.forceUrlColumnsWhenLazy(frame, 'authors');
+        url.forceUrlColumns(frame, 'authors');
 
         if (frame.data.id === 'me' && frame.options.context && frame.options.context.user) {
             frame.data.id = frame.options.context.user;

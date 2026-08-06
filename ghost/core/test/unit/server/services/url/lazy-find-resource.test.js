@@ -56,7 +56,7 @@ describe('createFindResource', function () {
             assert.deepEqual(result.primary_author, {slug: 'jane'});
         });
 
-        it('strips fields the eager service excludes (body, status, posts_meta)', async function () {
+        it('strips the excluded fields (body, status, posts_meta)', async function () {
             models.Post.findOne.resolves(record({
                 id: 'p1',
                 slug: 'hello',

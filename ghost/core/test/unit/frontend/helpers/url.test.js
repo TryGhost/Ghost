@@ -17,8 +17,8 @@ describe('{{url}} helper', function () {
     beforeEach(function () {
         rendered = null;
 
-        // The helpers read through the facade, so that is the seam to stub.
-        getUrlForResourceStub = sinon.stub(urlService.facade, 'getUrlForResource');
+        // The helpers read through the URL service, so that is the seam to stub.
+        getUrlForResourceStub = sinon.stub(urlService, 'getUrlForResource');
 
         sinon.stub(api.settings, 'read').callsFake(function () {
             return Promise.resolve({settings: [{value: '/:slug/'}]});

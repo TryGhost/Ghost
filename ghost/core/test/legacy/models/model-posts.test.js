@@ -5,7 +5,6 @@ const sinon = require('sinon');
 const testUtils = require('../../utils');
 const moment = require('moment');
 const _ = require('lodash');
-const urlService = require('../../../core/server/services/url');
 const ghostBookshelf = require('../../../core/server/models/base');
 const models = require('../../../core/server/models');
 const db = require('../../../core/server/data/db');
@@ -32,10 +31,6 @@ describe('Post Model', function () {
 
     afterEach(function () {
         sinon.restore();
-    });
-
-    beforeEach(function () {
-        sinon.stub(urlService, 'getUrlByResourceId').withArgs(testUtils.DataGenerator.Content.posts[0].id).returns('/html-ipsum/');
     });
 
     describe('Single author posts', function () {

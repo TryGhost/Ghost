@@ -16,7 +16,7 @@ class RouterManager {
         this.registry = registry;
         this.siteRouter = null;
         /**
-         * @type {URLServiceFacade}
+         * @type {UrlService}
          */
         this.urlService = null;
     }
@@ -171,7 +171,7 @@ class RouterManager {
         if (collectionRouter && collectionRouter.getPermalinks().getValue().match(/:year|:month|:day/)) {
             debug('handleTimezoneEdit: trigger regeneration');
 
-            this.urlService.onRouterUpdated(collectionRouter.identifier);
+            this.urlService.onRouterUpdated();
         }
     }
 }
@@ -181,7 +181,7 @@ module.exports = RouterManager;
 /**
  * @typedef {Object} RouterConfig
  * @property {RouteSettings} [routeSettings] - parsed route settings domain model
- * @property {URLServiceFacade} urlService - resource-based URL service facade
+ * @property {UrlService} urlService - resource-based URL service
  */
 
 /**
@@ -189,7 +189,7 @@ module.exports = RouterManager;
  */
 
 /**
- * @typedef {Object} URLServiceFacade
+ * @typedef {Object} UrlService
  * @property {Function} getUrlForResource
  * @property {Function} ownsResource
  * @property {Function} resolveUrl

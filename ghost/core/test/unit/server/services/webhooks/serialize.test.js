@@ -95,7 +95,7 @@ describe('WebhookService - Serialize', function () {
         sinon.assert.calledWith(postModel.load, ['tags']);
     });
 
-    it('loads no relations when the URL service needs none (eager routing)', async function () {
+    it('loads no relations when the URL service needs none', async function () {
         const post = fixtureManager.get('posts', 1);
         const postModel = new Post(post);
         sinon.stub(postModel, 'load').resolves(postModel);

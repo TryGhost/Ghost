@@ -71,12 +71,12 @@ const forSetting = (attrs) => {
 // build a URL (e.g. status/visibility/slug), so the service would reject the
 // resource as thin. Force them back into the fetch and record them on the
 // frame — the output mapper strips them from the response after the URL is
-// built. No-op under the eager service (getRequiredFields → []).
-const forceUrlColumnsWhenLazy = (frame, routerType, extraColumns = []) => {
+// built. No-op when the routing config needs no extra columns.
+const forceUrlColumns = (frame, routerType, extraColumns = []) => {
     if (!Array.isArray(frame.options.columns) || !frame.options.columns.includes('url')) {
         return;
     }
-    const required = new Set([...urlService.facade.getRequiredFields(routerType), ...extraColumns]);
+    const required = new Set([...urlService.getRequiredFields(routerType), ...extraColumns]);
     const missing = [...required].filter(field => !frame.options.columns.includes(field));
     if (!missing.length) {
         return;
@@ -100,12 +100,12 @@ const forceUrlColumnsWhenLazy = (frame, routerType, extraColumns = []) => {
 // so the relations the lazy URL service reads (e.g. tags for a tag-filtered
 // collection) must be loaded whenever the URL will be built — not only for
 // the `?fields=url` case. Forced relations are recorded on the frame for the
-// output mapper to strip. No-op under the eager service.
-const forceUrlRelationsWhenLazy = (frame, routerType) => {
+// output mapper to strip. No-op when the routing config reads no relations.
+const forceUrlRelations = (frame, routerType) => {
     if (!localUtils.willSerializeUrl(frame)) {
         return;
     }
-    const relations = urlService.facade.getRequiredRelations();
+    const relations = urlService.getRequiredRelations();
     if (relations.length) {
         const requested = frame.options.withRelated || [];
         // a nested include covers its parent: `authors.roles` loads authors
@@ -118,18 +118,18 @@ const forceUrlRelationsWhenLazy = (frame, routerType) => {
             frame.options.withRelated = [...requested, ...forced];
         }
     }
-    // Both backends look the URL up by `model.id`, and Bookshelf matches
-    // eager-loaded rows back to their parent by the same key — so a `?fields=`
-    // list that omits it serializes /404/ and leaves the relations above
-    // unattached, silently and without a key on the model at all. A read
-    // looked up by id is covered by the carried-fields rule above.
-    forceUrlColumnsWhenLazy(frame, routerType, ['id']);
+    // The URL is looked up by `model.id`, and Bookshelf matches eager-loaded
+    // rows back to their parent by the same key — so a `?fields=` list that
+    // omits it serializes /404/ and leaves the relations above unattached,
+    // silently and without a key on the model at all. A read looked up by id
+    // is covered by the carried-fields rule above.
+    forceUrlColumns(frame, routerType, ['id']);
 };
 
-// Options-object variant of forceUrlColumnsWhenLazy for endpoints that build
+// Options-object variant of forceUrlColumns for endpoints that build
 // their query options directly (search index).
 const requiredUrlColumns = (routerType, columns) => {
-    const required = urlService.facade.getRequiredFields(routerType).filter(field => !columns.includes(field));
+    const required = urlService.getRequiredFields(routerType).filter(field => !columns.includes(field));
     return required.length ? [...columns, ...required] : columns;
 };
 
@@ -138,5 +138,5 @@ module.exports.requiredUrlColumns = requiredUrlColumns;
 module.exports.forUser = forUser;
 module.exports.forTag = forTag;
 module.exports.forSetting = forSetting;
-module.exports.forceUrlColumnsWhenLazy = forceUrlColumnsWhenLazy;
-module.exports.forceUrlRelationsWhenLazy = forceUrlRelationsWhenLazy;
+module.exports.forceUrlColumns = forceUrlColumns;
+module.exports.forceUrlRelations = forceUrlRelations;

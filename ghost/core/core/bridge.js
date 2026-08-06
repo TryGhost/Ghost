@@ -112,7 +112,7 @@ class Bridge {
 
         const routerConfig = {
             routeSettings: await routeSettings.loadRouteSettings(),
-            urlService: urlService.facade
+            urlService
         };
 
         // Clear lazy router configs before re-registration so they don't pile
@@ -122,20 +122,12 @@ class Bridge {
         // Admin API for the length of a read that is a network round trip on
         // Pro, and leaves them 503ing with no recovery but a restart if it
         // rejects. Nothing re-registers after a failed reload.
-        // No-op without a lazy backend; eager resets separately.
-        urlService.facade.reset();
+        urlService.reset();
 
         siteApp.reload(routerConfig);
 
         // re-initialize apps (register app routers, because we have re-initialized the site routers)
         appService.init();
-
-        // connect routers and resources again
-        urlService.queue.start({
-            event: 'init',
-            tolerance: 100,
-            requiredSubscriberCount: 1
-        });
     }
 }
 

@@ -86,15 +86,6 @@ class BaseSiteMapGenerator {
         return sitemapXml;
     }
 
-    updateURL(datum) {
-        const url = this.nodeLookup[datum.id]?.url[0].loc;
-
-        if (url) {
-            this.removeUrl(url, datum);
-            this.addUrl(url, datum);
-        }
-    }
-
     addUrl(url, datum) {
         // Computed once and threaded through: the three consumers below each
         // used to construct their own moment() from the same datum, which
@@ -108,14 +99,6 @@ class BaseSiteMapGenerator {
             // force regeneration of xml
             this.siteMapContent.clear();
         }
-    }
-
-    removeUrl(url, datum) {
-        this.removeFromLookups(datum);
-
-        // force regeneration of xml
-        this.siteMapContent.clear();
-        this.lastModified = Date.now();
     }
 
     /**
@@ -208,20 +191,9 @@ class BaseSiteMapGenerator {
         return content;
     }
 
-    /**
-     * @NOTE
-     * The url service currently has no url update event.
-     * It removes and adds the url. If the url service extends it's
-     * feature set, we can detect if a node has changed.
-     */
     updateLookups(datum, node, lastModified = this.getLastModifiedForDatum(datum)) {
         this.nodeLookup[datum.id] = node;
         this.nodeTimeLookup[datum.id] = lastModified;
-    }
-
-    removeFromLookups(datum) {
-        delete this.nodeLookup[datum.id];
-        delete this.nodeTimeLookup[datum.id];
     }
 
     reset() {

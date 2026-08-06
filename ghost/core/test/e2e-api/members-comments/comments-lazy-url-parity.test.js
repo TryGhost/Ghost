@@ -7,7 +7,6 @@ const logging = require('@tryghost/logging');
 const {agentProvider, fixtureManager, configUtils} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 const settingsCache = require('../../../core/shared/settings-cache');
-const urlService = require('../../../core/server/services/url');
 const urlServiceUtils = require('../../utils/url-service-utils');
 
 // The page must not match the collection filter: the production bug only
@@ -97,12 +96,6 @@ describe('Comments API lazy URL parity', function () {
         sinon.restore();
     });
 
-    it('answers from the lazy url service', function () {
-        // Guards the wiring: without it the assertions below say nothing about
-        // the lazy backend.
-        assert.equal(urlService.facade.isLazy(), true);
-    });
-
     it('serializes a page comment URL without degrading to /404/', async function () {
         const {body} = await membersAgent
             .get(`/api/comments/post/${page.id}/?include=post`)
@@ -129,7 +122,7 @@ describe('Comments API lazy URL parity', function () {
         assert.deepEqual(
             resolutionErrors.map(err => err.errorDetails),
             [],
-            'lazy URL service threw and degraded to /404/ while serializing a page comment'
+            'URL service degraded to /404/ while serializing a page comment'
         );
     });
 });

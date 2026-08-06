@@ -1006,8 +1006,8 @@ Post = ghostBookshelf.Model.extend({
      *     - `slug`: /:slug/
      *     - `published_at`: /:year/:slug
      *     - `author_id`: /:author/:slug, /:primary_author/:slug
-     *     - now, the UrlService pre-generates urls based on the resources
-     *     - you can ask `urlService.getUrlByResourceId(post.id)`
+     *     - now, the UrlService computes urls from the routing config
+     *     - you can ask `urlService.getUrlForResource(post)`
      *
      * ### events
      *   - you call `findAll` with `columns: id`

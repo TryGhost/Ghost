@@ -9,9 +9,7 @@ type SettingsCache = {
 };
 
 type UrlService = {
-    facade: {
-        getUrlForResource(resource: Record<string, unknown>, options: {absolute: boolean}): string | null;
-    };
+    getUrlForResource(resource: Record<string, unknown>, options: {absolute: boolean}): string | null;
 };
 
 type UrlUtils = {
@@ -126,7 +124,7 @@ export class SlackPingService {
 
         // If this is a post, we want to send the link of the post
         if (hasPostProperties(post)) {
-            message = this.urlService.facade.getUrlForResource({...post, type: 'posts'}, {absolute: true});
+            message = this.urlService.getUrlForResource({...post, type: 'posts'}, {absolute: true});
             title = post.title ? post.title : null;
             author = post.authors ? post.authors[0] : null;
 
@@ -214,7 +212,7 @@ export class SlackPingService {
                             fields: [
                                 {
                                     title: 'Author',
-                                    value: author ? `<${this.urlService.facade.getUrlForResource({...author, type: 'authors'}, {absolute: true})} | ${author.name}>` : null,
+                                    value: author ? `<${this.urlService.getUrlForResource({...author, type: 'authors'}, {absolute: true})} | ${author.name}>` : null,
                                     short: true
                                 }
                             ],

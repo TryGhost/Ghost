@@ -3,9 +3,6 @@ const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
 
 // Stuff we are testing
-const DomainEvents = require('@tryghost/domain-events');
-const {URLResourceUpdatedEvent} = require('../../../../../core/shared/events');
-
 const routingEvents = require('../../../../../core/frontend/services/routing/events');
 const urlUtils = require('../../../../../core/shared/url-utils').default;
 
@@ -30,15 +27,14 @@ describe('Unit: sitemap/manager', function () {
         tags = new TagGenerator();
         authors = new UserGenerator();
 
-        // Eager-shaped url service: every mode builds on first read now,
-        // so even the legacy render tests need one injected.
+        // The index is built from the url service on first read, so even the
+        // legacy render tests need one injected.
         return new SiteMapManager({
             posts: posts,
             pages: pages,
             tags: tags,
             authors: authors,
             urlService: {
-                isLazy: () => false,
                 getRoutableResources: async () => [],
                 getUrlForResource: () => '/x/'
             },
@@ -64,7 +60,6 @@ describe('Unit: sitemap/manager', function () {
 
         sinon.stub(PostGenerator.prototype, 'getXml');
         sinon.stub(PostGenerator.prototype, 'addUrl');
-        sinon.stub(PostGenerator.prototype, 'removeUrl');
         sinon.stub(IndexGenerator.prototype, 'getXml');
     });
 
@@ -81,59 +76,10 @@ describe('Unit: sitemap/manager', function () {
 
         it('can create a SiteMapManager instance', function () {
             assertExists(manager);
-            assert.equal(Object.keys(eventsToRemember).length, 5);
-            assertExists(eventsToRemember['url.added']);
-            assertExists(eventsToRemember['url.removed']);
+            assert.equal(Object.keys(eventsToRemember).length, 3);
             assertExists(eventsToRemember['router.created']);
             assertExists(eventsToRemember['routers.reset']);
             assertExists(eventsToRemember['site.changed']);
-        });
-
-        describe('trigger url events', function () {
-            it('url.added', function () {
-                eventsToRemember['url.added']({
-                    url: {
-                        relative: '/test/',
-                        absolute: 'https://myblog.com/test/'
-                    },
-                    resource: {
-                        config: {
-                            type: 'posts'
-                        },
-                        data: {}
-                    }
-                });
-
-                sinon.assert.calledOnce(PostGenerator.prototype.addUrl);
-            });
-
-            it('url.removed', function () {
-                eventsToRemember['url.removed']({
-                    url: {
-                        relative: '/test/',
-                        absolute: 'https://myblog.com/test/'
-                    },
-                    resource: {
-                        config: {
-                            type: 'posts'
-                        },
-                        data: {}
-                    }
-                });
-
-                sinon.assert.calledOnce(PostGenerator.prototype.removeUrl);
-            });
-
-            it('Listens to URLResourceUpdatedEvent event', async function () {
-                sinon.stub(PostGenerator.prototype, 'updateURL').resolves(true);
-                DomainEvents.dispatch(URLResourceUpdatedEvent.create({
-                    id: 'post_id',
-                    resourceType: 'posts'
-                }));
-                await DomainEvents.allSettled();
-
-                sinon.assert.calledOnce(PostGenerator.prototype.updateURL);
-            });
         });
 
         describe('build path: the index is built from routable resources on first read', function () {
@@ -168,7 +114,6 @@ describe('Unit: sitemap/manager', function () {
             beforeEach(function () {
                 sandbox = sinon.createSandbox();
                 urlService = {
-                    isLazy: sinon.stub().returns(true),
                     getRoutableResources: sinon.stub().resolves([]),
                     getUrlForResource: sinon.stub().returns('http://example.com/x/')
                 };
@@ -186,25 +131,6 @@ describe('Unit: sitemap/manager', function () {
 
             afterEach(function () {
                 sandbox.restore();
-            });
-
-            it('builds once on first read while eager is authoritative, then leaves freshness to the events', async function () {
-                // The manager only consults isLazy, so eager-only and
-                // compare mode are the same code path here: build once,
-                // never invalidate, the per-URL events own freshness.
-                urlService.isLazy.returns(false);
-
-                const siteMapManager = makeManager();
-                await siteMapManager.getSiteMapXml('posts');
-                sinon.assert.calledWith(fetchStub, 'posts', sinon.match({columns: sinon.match.array.contains(['canonical_url'])}));
-                sinon.assert.callCount(fetchStub, 4);
-
-                // Deploying compare mode must be a serving no-op: neither
-                // site changes nor router registrations trigger rebuilds.
-                eventsToRemember['site.changed']();
-                emitAboutRouter();
-                await siteMapManager.getSiteMapXml('posts');
-                sinon.assert.callCount(fetchStub, 4);
             });
 
             it('builds the index from routable resources, skipping /404/ URLs', async function () {
@@ -232,10 +158,6 @@ describe('Unit: sitemap/manager', function () {
                 const orphanCalls = PostGenerator.prototype.addUrl.getCalls().filter(call => call.args[1] && call.args[1].id === 'p2');
                 assert.equal(orphanCalls.length, 0, 'p2 resolves to /404/ and must not enter the sitemap');
 
-                // Bulk rows must skip the per-call comparison tee: one
-                // rebuild on a big site would otherwise capture a stack and
-                // queue a background lazy computation per resource.
-                sinon.assert.alwaysCalledWith(getUrlForResource, sinon.match.any, sinon.match({skipComparison: true}));
             });
 
             it('keeps a real resource whose slug is 404, dropping only the exact sentinel', async function () {

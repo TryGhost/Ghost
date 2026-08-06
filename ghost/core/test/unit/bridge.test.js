@@ -26,11 +26,11 @@ describe('Unit: bridge', function () {
             sinon.stub(siteApp, 'reload');
             sinon.stub(appService, 'init');
             reset = sinon.stub();
-            urlService = {facade: {reset}, queue: {start: sinon.stub()}};
+            urlService = {reset};
         });
 
         it('keeps the registered routers up while the settings read is in flight', async function () {
-            // reset() empties the lazy router configs and clears routersReady,
+            // reset() empties the router configs and clears routersReady,
             // which gates the maintenance middleware — so resetting before the
             // await leaves the site and the Admin API 503ing for the length of
             // a settings read, which on Pro is a network round trip.

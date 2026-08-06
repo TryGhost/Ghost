@@ -88,9 +88,8 @@ async function initDatabase({config}) {
  * @param {object} options
  * @param {object} options.ghostServer
  * @param {object} options.config
- * @param {boolean} options.frontend
  */
-async function initCore({ghostServer, config, frontend}) {
+async function initCore({ghostServer, config}) {
     debug('Begin: initCore');
 
     // Validate configured adapters up-front so misconfiguration fails at boot
@@ -122,17 +121,6 @@ async function initCore({ghostServer, config, frontend}) {
     const i18n = require('./server/services/i18n');
     await i18n.init();
     debug('End: i18n');
-
-    // The URLService is a core part of Ghost, which depends on models.
-    debug('Begin: Url Service');
-    const urlService = require('./server/services/url');
-    // Note: there is no await here, we do not wait for the url service to finish
-    // We can return, but the site will remain in maintenance mode until this finishes
-    // This is managed on request: https://github.com/TryGhost/Ghost/blob/main/core/app.js#L10
-    urlService.init({
-        urlCache: !frontend // hacky parameter to make the cache initialization kick in as we can't initialize labs before the boot
-    });
-    debug('End: Url Service');
 
     // Gift links service: wires the (knex-backed) repository once the DB is ready.
     debug('Begin: Gift Links Service');
@@ -172,10 +160,6 @@ async function initCore({ghostServer, config, frontend}) {
             await mentionsJobService.shutdown();
         });
         debug('End: Mentions Job Service');
-
-        ghostServer.registerCleanupTask(async () => {
-            await urlService.shutdown();
-        });
     }
 
     debug('End: initCore');
@@ -260,10 +244,7 @@ async function initExpressApps({frontend, backend, config}) {
 
     if (frontend) {
         // SITE + MEMBERS
-        // RouterManager and migrated frontend callers expect the facade
-        // (getUrlForResource / ownsResource), not the raw eager UrlService
-        // (which only exposes the legacy id-based methods).
-        const urlService = require('./server/services/url').facade;
+        const urlService = require('./server/services/url');
         const frontendApp = require('./server/web/parent/frontend')({urlService});
         parentApp.use(vhost(config.getFrontendMountPath(), frontendApp));
     }
@@ -309,12 +290,12 @@ async function initDynamicRouting({frontend}) {
     // still has to be handed to RouterManager before the routers register — so
     // call the same init and discard the express router it returns.
     if (!frontend) {
-        routing.routerManager.init({urlService: urlService.facade});
+        routing.routerManager.init({urlService});
     }
 
     await routeSettingsModule.service.start({
         routerManager: routing.routerManager,
-        urlService: urlService.facade
+        urlService
     });
 
     debug('End: Dynamic Routing');
@@ -590,7 +571,7 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
 
         // Step 4 - Load Ghost with all its services
         debug('Begin: Load Ghost Services & Apps');
-        await initCore({ghostServer, config, frontend});
+        await initCore({ghostServer, config});
 
         // Instrument the knex instance and connection pool if prometheus is enabled
         // Needs to be after initCore because the pool is destroyed and recreated in initCore, which removes the event listeners

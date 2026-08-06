@@ -1,7 +1,5 @@
-const DomainEvents = require('@tryghost/domain-events');
 const errors = require('@tryghost/errors');
 const urlUtils = require('../../../shared/url-utils').default;
-const {URLResourceUpdatedEvent} = require('../../../shared/events');
 const IndexMapGenerator = require('./site-map-index-generator');
 const PagesMapGenerator = require('./page-map-generator');
 const PostsMapGenerator = require('./post-map-generator');
@@ -43,9 +41,9 @@ class SiteMapManager {
         this._urlService = options.urlService || null;
 
         // Server events arrive through the proxy's narrow subscription
-        // surface (site.changed, url.added, url.removed). Injectable for
-        // tests; resolved at construction (not module load) for the same
-        // boot-order reason as the url service above.
+        // surface (site.changed). Injectable for tests; resolved at
+        // construction (not module load) for the same boot-order reason as
+        // the url service above.
         this._serverEvents = options.serverEvents || require('../proxy').serverEvents;
 
         // Index state for the build path. _indexEpoch increments on every
@@ -72,34 +70,13 @@ class SiteMapManager {
             // A router registering after a build (routes reload re-registers
             // them one macrotask after routers.reset) must not leave a
             // zero-router index marked built — the CDN would pin it.
-            if (this._getUrlService().isLazy()) {
-                this._invalidateIndex();
-            }
+            this._invalidateIndex();
         });
 
-        // Invalidation is lazy-mode only. Everywhere the eager service runs
-        // (flag off AND compare mode) its per-URL feed below keeps the index
-        // current after the initial build, exactly as before this change —
-        // deploying is a no-op until the lazy flip. Pure lazy fires no
-        // events, so there the index empties and the next read rebuilds.
+        // Nothing feeds the index per URL, so any change to the site's content
+        // empties it and the next read rebuilds.
         this._serverEvents.on('site.changed', () => {
-            if (this._getUrlService().isLazy()) {
-                this._invalidateIndex();
-            }
-        });
-
-        // The eager URL service's per-URL feed, active in both eager-only
-        // and compare mode; under pure lazy these events never fire.
-        DomainEvents.subscribe(URLResourceUpdatedEvent, (event) => {
-            this[event.data.resourceType].updateURL(event.data);
-        });
-
-        this._serverEvents.on('url.added', (obj) => {
-            this[obj.resource.config.type].addUrl(obj.url.absolute, obj.resource.data);
-        });
-
-        this._serverEvents.on('url.removed', (obj) => {
-            this[obj.resource.config.type].removeUrl(obj.url.absolute, obj.resource.data);
+            this._invalidateIndex();
         });
 
         routingEvents.on('routers.reset', () => {
@@ -110,9 +87,7 @@ class SiteMapManager {
             // The routers re-register right after a reset and refill the
             // list; keeping stale entries would resurrect deleted routes.
             this._routerEntries = [];
-            if (this._getUrlService().isLazy()) {
-                this._invalidateIndex();
-            }
+            this._invalidateIndex();
         });
     }
 
@@ -156,20 +131,15 @@ class SiteMapManager {
 
     /**
      * Make sure the index is ready to serve; every XML read awaits this, so
-     * no caller can render from an unbuilt index. The index is built once on
-     * first read in every mode. Wherever the eager service runs (eager-only
-     * and compare mode) the per-URL events keep it current from then on
-     * (and heal any gap in the initial snapshot, since addUrl is id-keyed);
-     * under pure lazy the invalidation signals empty it and the next read
-     * rebuilds.
+     * no caller can render from an unbuilt index. The index is built on first
+     * read; the invalidation signals empty it and the next read rebuilds.
      *
      * Concurrent readers share one build. A build whose result was
      * invalidated while it ran is discarded and the read fails — the index
      * must never serve pre-invalidation data (the CDN would pin it for the
      * full cache maxAge), and a 503 is retried by crawlers and stored by
-     * nobody. Unreachable with eager (nothing invalidates), and
-     * deliberately no retry; if SITEMAP_BUILD_SUPERSEDED shows up in the
-     * logs at any rate worth caring about, add one then.
+     * nobody. Deliberately no retry; if SITEMAP_BUILD_SUPERSEDED shows up in
+     * the logs at any rate worth caring about, add one then.
      */
     async _ensureIndexReady() {
         if (this._indexBuilt) {
@@ -231,12 +201,7 @@ class SiteMapManager {
      * Add a single resource to the index.
      */
     _applyResource(type, datum) {
-        // skipComparison: teeing every bulk row through the compare machinery
-        // would capture a stack and queue a background lazy computation per
-        // resource, per build. Enumeration parity comes from the
-        // getRoutableResources id-set comparison; per-URL parity from
-        // organic request traffic.
-        const url = this._getUrlService().getUrlForResource({...datum, type}, {absolute: true, skipComparison: true});
+        const url = this._getUrlService().getUrlForResource({...datum, type}, {absolute: true});
         // Exact match on the not-found sentinel: a real resource can carry
         // a slug like "404" (/tag/404/) and must stay in the sitemap.
         if (url && url !== this._notFoundUrl()) {
@@ -254,7 +219,7 @@ class SiteMapManager {
 
     _getUrlService() {
         if (!this._urlService) {
-            this._urlService = require('../proxy').urlService.facade;
+            this._urlService = require('../proxy').urlService;
         }
         return this._urlService;
     }
