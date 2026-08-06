@@ -65,8 +65,8 @@ export class GiftEmailRenderer {
     private registerTemplateHelpers(): void {
         this.handlebars.registerHelper('t', (key: string, options?: Handlebars.HelperOptions) => {
             const hash = options?.hash || {};
-            const escapedHash = Object.entries(hash).reduce<Record<string, string>>((acc, [name, value]) => {
-                acc[name] = this.htmlSafeInterpolationValue(value);
+            const escapedHash = Object.entries(hash).reduce<Record<string, unknown>>((acc, [name, value]) => {
+                acc[name] = typeof value === 'number' ? value : this.htmlSafeInterpolationValue(value);
                 return acc;
             }, {});
 

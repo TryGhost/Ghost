@@ -1,5 +1,7 @@
 {
-    "{buyerName} has gifted you a {cadenceLabel} {tierName} membership to {siteTitle}.": "",
+    "{buyerName} has gifted you a {duration}-month {tierName} membership to {siteTitle}": "",
+    "{buyerName} has gifted you a {duration}-month {tierName} membership to {siteTitle}_other": "",
+    "{buyerName} has gifted you a {duration}-year {tierName} membership to {siteTitle}": "",
     "{buyerName} sent you a gift": "",
     "{count} month_other": "{count} 個月",
     "{count} year_other": "{count} 年",
@@ -103,8 +105,8 @@
     "You will not be subscribed.": "系統不會為您訂閱任何內容。",
     "You're one tap away from subscribing to {siteTitle} — please confirm your email address with this link:": "您離訂閱{siteTitle}只差一步 — 請透過此連結確認您的電子郵件地址：",
     "You're one tap away from subscribing to {siteTitle}!": "點擊後即可完成{siteTitle}的訂閱！",
-    "You've been gifted a {cadenceLabel} {tierName} membership to {siteTitle}.": "",
     "You've been gifted a {duration}-month {tierName} membership to {siteTitle}": "有人贈送了您 {siteTitle} 的 {duration} 個月 {tierName} 會員資格",
+    "You've been gifted a {duration}-month {tierName} membership to {siteTitle}_other": "",
     "You've been gifted a {duration}-year {tierName} membership to {siteTitle}": "有人贈送了您 {siteTitle} 的 {duration} 年 {tierName} 會員資格",
     "You've been gifted a membership to {siteTitle}": "",
     "You've received a gift": "",

@@ -242,7 +242,8 @@ export class GiftEmailService {
             gift: {
                 tierName,
                 benefits,
-                cadenceLabel: this.getDeliveryCadenceLabel(cadence, duration),
+                duration,
+                isMonthly: cadence === 'month',
                 link: giftLink,
                 expiresAt: this.formatDate(expiresAt)
             }

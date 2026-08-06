@@ -15,7 +15,8 @@ export interface GiftDeliveryData {
     gift: {
         tierName: string;
         benefits: string[];
-        cadenceLabel: string;
+        duration: number;
+        isMonthly: boolean;
         link: string;
         expiresAt: string;
     };
@@ -23,18 +24,28 @@ export interface GiftDeliveryData {
 
 export function renderText(data: GiftDeliveryData, t: Translate): string {
     const greeting = data.recipientName ? `${t('Hi {recipientName},', {recipientName: data.recipientName})}\n\n` : '';
-    const intro = data.buyerName
-        ? t('{buyerName} has gifted you a {cadenceLabel} {tierName} membership to {siteTitle}.', {
-            buyerName: data.buyerName,
-            cadenceLabel: data.gift.cadenceLabel,
-            tierName: data.gift.tierName,
-            siteTitle: data.siteTitle
-        })
-        : t('You\'ve been gifted a {cadenceLabel} {tierName} membership to {siteTitle}.', {
-            cadenceLabel: data.gift.cadenceLabel,
-            tierName: data.gift.tierName,
-            siteTitle: data.siteTitle
-        });
+    const giftDescription = {
+        duration: data.gift.duration,
+        tierName: data.gift.tierName,
+        siteTitle: data.siteTitle
+    };
+    const intro = data.gift.isMonthly
+        ? data.buyerName
+            ? t('{buyerName} has gifted you a {duration}-month {tierName} membership to {siteTitle}', {
+                ...giftDescription,
+                buyerName: data.buyerName,
+                count: data.gift.duration
+            })
+            : t('You\'ve been gifted a {duration}-month {tierName} membership to {siteTitle}', {
+                ...giftDescription,
+                count: data.gift.duration
+            })
+        : data.buyerName
+            ? t('{buyerName} has gifted you a {duration}-year {tierName} membership to {siteTitle}', {
+                ...giftDescription,
+                buyerName: data.buyerName
+            })
+            : t('You\'ve been gifted a {duration}-year {tierName} membership to {siteTitle}', giftDescription);
     const message = data.personalMessage ? `\n"${data.personalMessage}"${data.buyerName ? `\n— ${data.buyerName}` : ''}\n` : '';
     const benefits = data.gift.benefits.length ? `\n${t('What\'s included:')}\n${data.gift.benefits.map(benefit => `- ${benefit}`).join('\n')}\n` : '';
 

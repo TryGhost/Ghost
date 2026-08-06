@@ -1,5 +1,7 @@
 {
-    "{buyerName} has gifted you a {cadenceLabel} {tierName} membership to {siteTitle}.": "",
+    "{buyerName} has gifted you a {duration}-month {tierName} membership to {siteTitle}": "",
+    "{buyerName} has gifted you a {duration}-month {tierName} membership to {siteTitle}_other": "",
+    "{buyerName} has gifted you a {duration}-year {tierName} membership to {siteTitle}": "",
     "{buyerName} sent you a gift": "",
     "{count} month_other": "",
     "{count} year_other": "",
@@ -103,8 +105,8 @@
     "You will not be subscribed.": "Anda tidak akan dilanggan.",
     "You're one tap away from subscribing to {siteTitle} — please confirm your email address with this link:": "Anda hanya satu ketikan dari melanggan{siteTitle} — sila sahkan alamat e-mel anda dengan pautan ini:",
     "You're one tap away from subscribing to {siteTitle}!": "Anda hanya satu ketikan dari melanggan {siteTitle}!",
-    "You've been gifted a {cadenceLabel} {tierName} membership to {siteTitle}.": "",
     "You've been gifted a {duration}-month {tierName} membership to {siteTitle}": "",
+    "You've been gifted a {duration}-month {tierName} membership to {siteTitle}_other": "",
     "You've been gifted a {duration}-year {tierName} membership to {siteTitle}": "",
     "You've been gifted a membership to {siteTitle}": "",
     "You've received a gift": "",

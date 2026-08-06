@@ -1,5 +1,7 @@
 {
-    "{buyerName} has gifted you a {cadenceLabel} {tierName} membership to {siteTitle}.": "",
+    "{buyerName} has gifted you a {duration}-month {tierName} membership to {siteTitle}": "",
+    "{buyerName} has gifted you a {duration}-month {tierName} membership to {siteTitle}_other": "",
+    "{buyerName} has gifted you a {duration}-year {tierName} membership to {siteTitle}": "",
     "{buyerName} sent you a gift": "",
     "{count} month_other": "{count} tháng",
     "{count} year_other": "{count} năm",
@@ -103,8 +105,8 @@
     "You will not be subscribed.": "Bạn sẽ không đăng ký gói.",
     "You're one tap away from subscribing to {siteTitle} — please confirm your email address with this link:": "Bạn còn một bước nữa để đăng ký {siteTitle} — vui lòng xác nhận địa chỉ email của bạn bằng liên kết này:",
     "You're one tap away from subscribing to {siteTitle}!": "Bạn còn một bước nữa để đăng ký {siteTitle}!",
-    "You've been gifted a {cadenceLabel} {tierName} membership to {siteTitle}.": "",
     "You've been gifted a {duration}-month {tierName} membership to {siteTitle}": "Bạn vừa được tặng {duration}-tháng thành viên {tierName} trên {siteTitle}",
+    "You've been gifted a {duration}-month {tierName} membership to {siteTitle}_other": "",
     "You've been gifted a {duration}-year {tierName} membership to {siteTitle}": "Bạn vừa được tặng {duration}-năm {tierName} thành viên trên {siteTitle}",
     "You've been gifted a membership to {siteTitle}": "",
     "You've received a gift": "",

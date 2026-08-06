@@ -1,5 +1,7 @@
 {
-    "{buyerName} has gifted you a {cadenceLabel} {tierName} membership to {siteTitle}.": "",
+    "{buyerName} has gifted you a {duration}-month {tierName} membership to {siteTitle}": "",
+    "{buyerName} has gifted you a {duration}-month {tierName} membership to {siteTitle}_other": "",
+    "{buyerName} has gifted you a {duration}-year {tierName} membership to {siteTitle}": "",
     "{buyerName} sent you a gift": "",
     "{count} month_other": "{count}개월",
     "{count} year_other": "{count}년",
@@ -103,8 +105,8 @@
     "You will not be subscribed.": "구독되지 않아요.",
     "You're one tap away from subscribing to {siteTitle} — please confirm your email address with this link:": "탭하시면 {siteTitle} 구독이 완료돼요! 이 링크를 사용하여 이메일 주소를 확인해 주세요.",
     "You're one tap away from subscribing to {siteTitle}!": "탭하시면 {siteTitle} 구독이 완료돼요!",
-    "You've been gifted a {cadenceLabel} {tierName} membership to {siteTitle}.": "",
     "You've been gifted a {duration}-month {tierName} membership to {siteTitle}": "{siteTitle}의 {duration}개월 {tierName} 멤버십을 선물받으셨어요",
+    "You've been gifted a {duration}-month {tierName} membership to {siteTitle}_other": "",
     "You've been gifted a {duration}-year {tierName} membership to {siteTitle}": "{siteTitle}의 {duration}년 {tierName} 멤버십을 선물받으셨어요",
     "You've been gifted a membership to {siteTitle}": "",
     "You've received a gift": "",

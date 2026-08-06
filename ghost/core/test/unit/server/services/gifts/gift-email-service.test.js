@@ -215,13 +215,17 @@ describe('GiftEmailService', function () {
                 sinon.assert.match(message[field], sinon.match('Recipient'));
                 sinon.assert.match(message[field], sinon.match('Enjoy this gift'));
                 sinon.assert.match(message[field], sinon.match('All stories'));
-                sinon.assert.match(message[field], sinon.match('one-year'));
                 sinon.assert.match(message[field], sinon.match('https://example.com/gift/abc-123'));
             }
+            sinon.assert.match(message.text, sinon.match('Buyer has gifted you a 1-year Gold membership to Test Site'));
+            sinon.assert.match(message.html, sinon.match('<strong>Buyer</strong> has gifted you a <strong>1</strong>-year <strong>Gold</strong> membership to Test Site'));
         });
 
         it('uses an attributive plural cadence for multi-month gifts', async function () {
-            await service.sendGiftDelivery({
+            const t = sinon.spy(translate());
+            const translatedService = new GiftEmailService({mailer, settingsCache, urlUtils, getFromAddress, blogIcon, t});
+
+            await translatedService.sendGiftDelivery({
                 recipientEmail: 'recipient@example.com',
                 recipientName: null,
                 buyerName: 'Buyer',
@@ -236,9 +240,17 @@ describe('GiftEmailService', function () {
 
             const message = mailer.send.firstCall.firstArg;
             sinon.assert.match(message.text, sinon.match('a 3-month Gold membership'));
-            sinon.assert.match(message.html, sinon.match('<strong>3-month</strong>'));
+            sinon.assert.match(message.html, sinon.match('<strong>3</strong>-month'));
             sinon.assert.match(message.html, sinon.match(value => !value.includes('3 months')));
             sinon.assert.match(message.text, sinon.match(value => !value.includes('3 months')));
+
+            const introKey = '{buyerName} has gifted you a {duration}-month {tierName} membership to {siteTitle}';
+            const introCalls = t.getCalls().filter(call => call.firstArg === introKey);
+            assert.equal(introCalls.length, 2);
+            for (const call of introCalls) {
+                assert.equal(call.args[1].count, 3);
+            }
+            assert.ok(introCalls.some(call => call.args[1].duration === 3));
         });
 
         it('escapes recipient-controlled delivery content in HTML', async function () {
@@ -264,8 +276,10 @@ describe('GiftEmailService', function () {
 
         it('does not invent provider telemetry for transports without a Mailgun ID', async function () {
             mailer.send.resolves('Message sent');
+            const t = sinon.spy(translate());
+            const translatedService = new GiftEmailService({mailer, settingsCache, urlUtils, getFromAddress, blogIcon, t});
 
-            const result = await service.sendGiftDelivery({
+            const result = await translatedService.sendGiftDelivery({
                 recipientEmail: 'recipient@example.com',
                 recipientName: null,
                 buyerName: null,
@@ -279,6 +293,9 @@ describe('GiftEmailService', function () {
             });
 
             assert.deepEqual(result, {providerMessageId: null});
+            const introKey = 'You\'ve been gifted a {duration}-month {tierName} membership to {siteTitle}';
+            const introCalls = t.getCalls().filter(call => call.firstArg === introKey);
+            assert.equal(introCalls.length, 2);
         });
     });
 
