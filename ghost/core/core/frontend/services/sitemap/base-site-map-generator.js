@@ -200,6 +200,7 @@ class BaseSiteMapGenerator {
         this.nodeLookup = {};
         this.nodeTimeLookup = {};
         this.siteMapContent.clear();
+        this.lastModified = 0;
     }
 }
 
