@@ -100,14 +100,8 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
         isDefaultView: isOnDefaultView
     });
 
-    // The bar is for chips, and appears only when there are some — a sort is
-    // not a filter and should not open a row of its own.
-    //
-    // Save-view sits with the chips it relates to, at the right of that bar.
-    // But it answers to `canManageView`, which includes `order` — so a sort on
-    // its own makes the view saveable with no chips and no bar to hold the
-    // button. It falls back to the top row there, rather than the capability
-    // disappearing whenever the bar does.
+    // A sort alone makes the view saveable without opening the chip bar, so
+    // the save-view control falls back to the top row when the bar is hidden.
     const showFilterBar = hasFilters;
     const showViewActionsInHeader = canManageView && !showFilterBar;
 
@@ -154,14 +148,8 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
     );
     const membersEnabled = getSettingValue<string>(settings, 'members_signup_access') !== 'none';
 
-    // Identical for every row, so computed once rather than per row per render.
-    /**
-     * Both of these change on every selection change — the items because they
-     * describe the selection, the action because it closes over it. Handing
-     * either to 100 memoised rows by value re-renders the whole list on every
-     * click. Behind a ref the rows keep their memo and read current values when
-     * a menu actually opens.
-     */
+    // Changes on every selection change; rows read it through a stable ref
+    // below so their memo holds.
     const menuItems = useMemo(() => getPostContextMenuItems({
         posts: menuPosts,
         resource,
@@ -189,14 +177,8 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
     const celebration = usePostPublishCelebration();
     const {data: siteData} = useBrowseSite();
 
-    /**
-     * A bulk action that has been chosen but not yet confirmed. The selection
-     * is captured *here*, when the menu item is picked — Radix closes the menu
-     * straight away, which clears a transient selection, so a modal reading the
-     * live selection would find it empty. Ember freezes its selection list for
-     * the modal's lifetime; a snapshot is the same guarantee without the state
-     * machine.
-     */
+    // Snapshotted when the menu item is picked: Radix closes the menu at once,
+    // which clears a transient selection before the modal could read it.
     const [pendingBulkAction, setPendingBulkAction] = useState<
         {key: PostContextMenuKey; snapshot: BulkActionSnapshot} | null
     >(null);
@@ -329,36 +311,18 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
                                 />
                             </Stack>
                         ) : (
-                            // Deliberately the same testids the Ember list
-                            // uses — including on pages, which shares the
-                            // Ember component — so the e2e page objects can
-                            // eventually target both implementations. They can
-                            // never collide: the Ember route aborts when this
-                            // screen renders.
-                            //
-                            // Ember renders `posts-list` even when empty, and
-                            // its rows are still richer than these; Phase 10
-                            // reconciles the page object and re-baselines the
-                            // visual-regression shots.
+                            // Same testids as the Ember list, deliberately —
+                            // shared e2e page objects. They can never collide:
+                            // the Ember route aborts when this screen renders.
                             <Stack gap='md'>
                                 <ul
-                                    // While a modifier is held the list stops
-                                    // behaving like a list of links: no pointer
-                                    // cursor, and children take no pointer
-                                    // events, so a click lands on the row
-                                    // rather than the anchor inside it. That is
-                                    // how Ember's `[data-ctrl]` rules work, and
-                                    // it makes select mode visible before the
-                                    // click. Anything opted out of selection
-                                    // stays clickable.
-                                    // The separator opening the list, rather
-                                    // than one closing the header: the header
-                                    // is full-bleed (it bleeds out through
-                                    // negative margins so its blur reaches the
-                                    // viewport edge), so a border there runs
-                                    // wider than the rows it is meant to sit
-                                    // against. On the list it lines up with the
-                                    // row dividers exactly.
+                                    // Held modifier: children take no pointer
+                                    // events, so clicks land on the row and not
+                                    // the anchor inside it (Ember's
+                                    // `[data-ctrl]` rules). `data-ignore-select`
+                                    // opts back out. Border here, not on the
+                                    // header: the header is full-bleed and a
+                                    // border there runs wider than the rows.
                                     className={cn('border-t border-border-default', selection.modifierHeld && [
                                         'cursor-default',
                                         '[&_li_*]:pointer-events-none [&_li_*]:cursor-default',
@@ -366,10 +330,9 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
                                         '[&_li_[data-ignore-select]]:cursor-pointer'
                                     ])}
                                     data-ctrl={selection.modifierHeld ? 'true' : undefined}
-                                    // Observable so tests can tell "all four
-                                    // rows selected" from "inverted", which
-                                    // look identical on a loaded page but mean
-                                    // very different things to a bulk action.
+                                    // "All rows selected" and "inverted" look
+                                    // identical on a loaded page; tests need to
+                                    // tell them apart.
                                     data-selection={selection.state.inverted ? 'inverted' : undefined}
                                     data-testid='posts-list'
                                 >
@@ -396,11 +359,6 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
                                         />
                                     ))}
                                 </ul>
-                                {/* Plain pager for now. Phase 5 adds the
-                                    metrics columns and Phase 10 checks
-                                    performance on large sites; the virtualised
-                                    scroll the members list uses lands with
-                                    whichever of those needs it first. */}
                                 {hasNextPage && (
                                     <LoadMoreButton
                                         isLoading={isFetchingNextPage}

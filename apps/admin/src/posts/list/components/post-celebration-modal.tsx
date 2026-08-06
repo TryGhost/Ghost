@@ -18,10 +18,6 @@ interface PostCelebrationModalProps {
  *
  * Wraps `PostShareModal`, which takes all of its copy as props — so the wording
  * lives in `post-celebration-copy.ts` and this is only assembly.
- *
- * It moved out of Shade and into `@/shared/analytics` when the transitional
- * `posts-stats` subpath was collapsed (a71a649b10); admin is now its only
- * consumer.
  */
 export function PostCelebrationModal({
     post, type, wasPublished, postCount, siteTitle, onClose
