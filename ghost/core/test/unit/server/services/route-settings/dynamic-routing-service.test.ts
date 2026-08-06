@@ -135,7 +135,18 @@ describe('UNIT: DynamicRoutingService (store-backed)', function () {
         it('persists the parsed upload through the store', async function () {
             sinon.stub(bridge, 'reloadFrontend').resolves();
             sinon.stub(urlService, 'resetGenerators');
-            sinon.stub(urlService, 'hasFinished').returns(true);
+            sinon.stub(urlService.facade, 'hasFinished').returns(true);
+
+            await service.upload(CUSTOM_YAML);
+
+            assert.equal((await store.get()).yamlSource, CUSTOM_YAML);
+        });
+
+        it('keeps the upload when the facade is ready but the eager service is not', async function () {
+            sinon.stub(bridge, 'reloadFrontend').resolves();
+            sinon.stub(urlService, 'resetGenerators');
+            sinon.stub(urlService.facade, 'hasFinished').returns(true);
+            sinon.stub(urlService, 'hasFinished').returns(false);
 
             await service.upload(CUSTOM_YAML);
 
@@ -161,7 +172,7 @@ describe('UNIT: DynamicRoutingService (store-backed)', function () {
         it('accepts a valid upload when the current file is syntactically corrupt yaml', async function () {
             sinon.stub(bridge, 'reloadFrontend').resolves();
             sinon.stub(urlService, 'resetGenerators');
-            sinon.stub(urlService, 'hasFinished').returns(true);
+            sinon.stub(urlService.facade, 'hasFinished').returns(true);
 
             const getStub = sinon.stub(store, 'get');
             getStub.onFirstCall().rejects(new errors.IncorrectUsageError({message: 'Could not parse provided YAML file: bad indentation of a mapping entry.'}));
@@ -175,7 +186,7 @@ describe('UNIT: DynamicRoutingService (store-backed)', function () {
         it('accepts a valid upload when the current stored file fails validation', async function () {
             sinon.stub(bridge, 'reloadFrontend').resolves();
             sinon.stub(urlService, 'resetGenerators');
-            sinon.stub(urlService, 'hasFinished').returns(true);
+            sinon.stub(urlService.facade, 'hasFinished').returns(true);
 
             const getStub = sinon.stub(store, 'get');
             getStub.onFirstCall().rejects(new errors.ValidationError({message: 'slug is required for read data entries.'}));
