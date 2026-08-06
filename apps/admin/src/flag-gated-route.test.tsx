@@ -193,6 +193,25 @@ describe('FlagGatedRoute', () => {
             expect(screen.queryByTestId('ember-fallback')).not.toBeInTheDocument();
         });
 
+        it('renders the custom fallback when Ember reports the flag off', () => {
+            // The Ember-authority branch is the production path — Ember present
+            // with labs loaded. It has to honour `fallback` too, or the
+            // gift-link host disappears exactly when Ember serves the list.
+            // Config says on, Ember says off: Ember wins AND fallback renders.
+            mockUseBrowseConfig.mockReturnValue(withLabs({someFlag: true}));
+            window.EmberBridge = {
+                state: {
+                    isFeatureEnabled: () => false
+                }
+            } as unknown as typeof window.EmberBridge;
+
+            render(<FlagGatedRoute component={ReactScreen} fallback={customFallback} flag="someFlag" />);
+
+            expect(screen.getByTestId('custom-fallback')).toBeInTheDocument();
+            expect(screen.queryByTestId('ember-fallback')).not.toBeInTheDocument();
+            expect(screen.queryByTestId('react-screen')).not.toBeInTheDocument();
+        });
+
         it('still renders nothing while config is loading', () => {
             mockUseBrowseConfig.mockReturnValue(configResult({isLoading: true}));
 
