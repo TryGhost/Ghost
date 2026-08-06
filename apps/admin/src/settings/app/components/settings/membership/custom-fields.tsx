@@ -8,7 +8,6 @@ import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent
 import {TextCursorInput} from 'lucide-react';
 import {arrayMove} from '@dnd-kit/sortable';
 import {memberCustomFieldsDataType, useBrowseMemberCustomFieldsIncludingArchived, useReorderMemberCustomFields, userTypeForField} from '@tryghost/admin-x-framework/api/member-custom-fields';
-import {toast} from 'sonner';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useQueryClient} from '@tryghost/admin-x-framework';
 import {withErrorBoundary} from '@/settings/app/components/error-boundary';
@@ -55,6 +54,7 @@ const FieldRow: React.FC<{
 // The row a dragged field sits in. The drag overlay renders outside the list's wrapper,
 // so a row being dragged supplies its own ActionList to keep its styling.
 const SortableFieldRow: React.FC<SortableItemContainerProps> = ({
+    id,
     setRef,
     isDragging,
     style,
@@ -62,7 +62,12 @@ const SortableFieldRow: React.FC<SortableItemContainerProps> = ({
     children,
     ...props
 }) => {
-    void separator; // not used here, and DragIndicator errors if it receives it
+    // Both are dropped rather than passed on: what is left is spread onto the handle
+    // button, and neither belongs there. `separator` makes DragIndicator error, and `id`
+    // is a field key, which would become the button's DOM id — publisher-chosen, and
+    // duplicated the moment the drag overlay renders its copy of the row.
+    void separator;
+    void id;
 
     const row = (
         <ActionListItem ref={setRef} className={isDragging ? 'opacity-75' : ''} data-testid='custom-field-list-item' style={style}>
@@ -200,14 +205,34 @@ const CustomFields: React.FC<{keywords: string[]}> = ({keywords}) => {
         }
 
         const reordered = arrayMove(fields, from, to);
+
+        // Several lists live under this data type, one per set of query params, and they
+        // do not hold the same fields: this screen asked for every status, while a
+        // member's details and the importer asked for active fields only. Each is put
+        // into the new order rather than replaced by this screen's list, which would
+        // hand those two archived fields they are written to assume they never see.
+        const placeOf = new Map(reordered.map((field, place) => [field.key, place]));
         queryClient.setQueriesData<MemberCustomFieldsResponseType>(
             {queryKey: [memberCustomFieldsDataType]},
-            current => (current ? {...current, members_custom_fields: reordered} : current)
+            (current) => {
+                if (!current?.members_custom_fields) {
+                    return current;
+                }
+                // A field this drag did not name keeps to the end rather than jumping to
+                // the front, which is where an unknown place would otherwise sort.
+                const inNewOrder = [...current.members_custom_fields].sort(
+                    (a, b) => (placeOf.get(a.key) ?? Infinity) - (placeOf.get(b.key) ?? Infinity)
+                );
+                return {...current, members_custom_fields: inNewOrder};
+            }
         );
 
         reorderFields(reordered).catch((error) => {
-            toast.error('Failed to reorder your custom fields');
-            handleError(error, {withToast: false});
+            // The server's own message, not a generic one. The failure a publisher can
+            // actually provoke is a list that no longer names every field, because a
+            // colleague added one, and the API says so in words worth reading: it names
+            // the field and asks them to reload.
+            handleError(error);
             queryClient.invalidateQueries({queryKey: [memberCustomFieldsDataType]});
         });
     };
