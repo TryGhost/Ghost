@@ -1,4 +1,4 @@
-import CustomFieldIcon from './custom-fields/custom-field-icon';
+import CustomFieldIcon from '@/shared/member-custom-fields/custom-field-icon';
 import CustomFieldModal from './custom-fields/custom-field-modal';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
