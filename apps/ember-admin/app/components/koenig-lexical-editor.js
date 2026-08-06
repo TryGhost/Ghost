@@ -107,7 +107,8 @@ export function buildCardConfigPost(post, defaultContentVisibility) {
         showTitleAndFeatureImage: post.showTitleAndFeatureImage,
         visibility: post.visibility || defaultContentVisibility,
         emailPublicPreview: post.emailPublicPreview,
-        emailPublicPreviewAudience: post.emailPublicPreviewAudience
+        emailPublicPreviewAudience: post.emailPublicPreviewAudience,
+        tierSlugs: (post.tiers || []).map(tier => tier.slug).filter(Boolean)
     };
 }
 
@@ -241,6 +242,10 @@ export default class KoenigLexicalEditor extends Component {
     get normalizedCardConfig() {
         return {
             ...this.args.cardConfig,
+            fetchTiers: async () => {
+                const tiers = await this.store.query('tier', {filter: 'type:paid+active:true', limit: 'all'});
+                return tiers.map(tier => ({name: tier.name, slug: tier.slug}));
+            },
             post: buildCardConfigPost(this.args.cardConfig?.post, this.settings.defaultContentVisibility)
         };
     }

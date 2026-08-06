@@ -5,6 +5,9 @@ import {renderPaywallNode} from './paywall-renderer.js';
 // Empty strings mean "use Ghost's default paywall copy"; the editor's
 // customise modal writes overrides here so they travel with the post
 const paywallProperties = {
+    // which non-access groups receive the preview by email: 'all' = everyone
+    // without access, '' = nobody, or a CSV of member segments
+    previewEmailTo: {default: 'all'},
     webHeading: {default: ''},
     webDescription: {default: ''},
     webButtonText: {default: ''},

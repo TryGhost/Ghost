@@ -1,6 +1,6 @@
 import moment from 'moment-timezone';
 import {action} from '@ember/object';
-import {getPublicPreviewWarning, hasPublicPreview} from 'ghost-admin/utils/public-preview-warning';
+import {getPreviewEmailSegments, getPublicPreviewWarning, hasPublicPreview} from 'ghost-admin/utils/public-preview-warning';
 import {htmlSafe} from '@ember/template';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
@@ -205,20 +205,24 @@ export default class PublishOptions {
             }
 
             // an emailed public preview widens the default audience: the
-            // subscribers who receive the preview must receive the email
-            const emailsPreview = hasPublicPreview(this.post) && (this.post.emailPublicPreview ?? true);
-            const previewAudience = this.post.emailPublicPreviewAudience || 'all';
+            // groups chosen on the divider must receive the email
+            const previewSegments = hasPublicPreview(this.post) ? getPreviewEmailSegments(this.post) : '';
 
             if (this.post.visibility === 'paid') {
-                // a paid post's preview can only go to free subscribers
-                return emailsPreview ? 'status:free,status:-free' : 'status:-free';
+                if (previewSegments === 'all' || previewSegments.includes('status:free')) {
+                    return 'status:free,status:-free';
+                }
+
+                return 'status:-free';
             }
 
             if (this.post.visibility === 'tiers') {
-                if (emailsPreview) {
-                    return previewAudience === 'free'
-                        ? `${this.post.visibilitySegment},status:free`
-                        : 'status:free,status:-free';
+                if (previewSegments === 'all') {
+                    return 'status:free,status:-free';
+                }
+
+                if (previewSegments) {
+                    return `${this.post.visibilitySegment},${previewSegments}`;
                 }
 
                 return this.post.visibilitySegment;

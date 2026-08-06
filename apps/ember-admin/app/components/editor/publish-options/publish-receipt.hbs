@@ -1,0 +1,31 @@
+<div class="gh-publish-receipt" data-testid="publish-receipt">
+    <header class="gh-publish-receipt-header">What will happen</header>
+    <p class="gh-publish-receipt-line" data-testid="receipt-web"><strong>Web</strong> — {{this.webLine}}</p>
+    <p class="gh-publish-receipt-line" data-testid="receipt-email">
+        <strong>Email</strong> —
+        {{#if @publishOptions.willEmail}}
+            {{#if this.showEmailBreakdown}}
+                {{#each this.emailRows as |row index|~}}
+                    {{~#let (members-count-fetcher query=(hash filter=row.filter)) as |countFetcher|~}}
+                        <span data-testid="receipt-email-{{row.key}}">{{if (gt index 0) " · " ""}}{{#if countFetcher.isLoading}}&hellip;{{else}}{{format-number countFetcher.count}}{{/if}} {{row.label}}</span>
+                    {{~/let~}}
+                {{~/each}}
+            {{else}}
+                {{#let (members-count-fetcher query=(hash filter=@publishOptions.fullRecipientFilter)) as |countFetcher|}}
+                    {{#if countFetcher.isLoading}}&hellip;{{else}}{{format-number countFetcher.count}}{{/if}} subscribers get the full post.
+                {{/let}}
+            {{/if}}
+        {{else}}
+            No email.
+        {{/if}}
+    </p>
+    <p class="gh-publish-receipt-line" data-testid="receipt-when">
+        <strong>When</strong> —
+        {{#if @publishOptions.isScheduled}}
+            {{capitalize (gh-format-post-time @publishOptions.scheduledAtUTC relative=true)}}.
+        {{else}}
+            Immediately.
+        {{/if}}
+    </p>
+    <p class="gh-publish-receipt-note">To change access, the free preview, or the paywall — edit them in the post.</p>
+</div>

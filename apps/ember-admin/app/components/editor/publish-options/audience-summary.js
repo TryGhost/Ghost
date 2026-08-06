@@ -1,5 +1,5 @@
 import Component from '@glimmer/component';
-import {hasPublicPreview} from '../../../utils/public-preview-warning';
+import {getPreviewEmailSegments, hasPublicPreview} from '../../../utils/public-preview-warning';
 import {inject as service} from '@ember/service';
 
 // Read-only "who gets what" breakdown for gated posts (publicPreviews labs flag).
@@ -25,12 +25,12 @@ export default class AudienceSummaryComponent extends Component {
         return hasPublicPreview(this.post);
     }
 
-    get emailPreviewEnabled() {
-        return this.hasPreview && (this.post.emailPublicPreview ?? true);
+    get previewSegments() {
+        return this.hasPreview ? getPreviewEmailSegments(this.post) : '';
     }
 
-    get audience() {
-        return this.post.emailPublicPreviewAudience || 'all';
+    get emailPreviewEnabled() {
+        return this.previewSegments !== '';
     }
 
     get showSummary() {
@@ -79,30 +79,16 @@ export default class AudienceSummaryComponent extends Component {
             return null;
         }
 
-        if (this.audience === 'free') {
-            // free members hold no tiers, so this is always a subset of no-access
-            return 'status:free';
+        if (this.previewSegments === 'all') {
+            return this.noAccessFilter;
         }
 
-        return this.noAccessFilter;
+        return this.previewSegments;
     }
 
     get stubFilter() {
-        const noAccess = this.noAccessFilter;
-
-        if (!noAccess) {
-            return null;
-        }
-
-        if (!this.emailPreviewEnabled) {
-            return noAccess;
-        }
-
-        if (this.audience === 'free') {
-            // paid subscribers without access to this post
-            return this.visibility === 'paid' ? null : `status:-free+${noAccess}`;
-        }
-
+        // with divider-scoped preview audiences the not-included groups simply
+        // get no email, so there is no upgrade-prompt stub group any more
         return null;
     }
 

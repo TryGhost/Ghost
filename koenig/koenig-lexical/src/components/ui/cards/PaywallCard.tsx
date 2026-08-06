@@ -5,9 +5,8 @@ import {InputList, InputListItem} from '../InputList';
 import {SettingsPanel} from '../SettingsPanel';
 import {Toggle} from '../Toggle';
 import {getAccentColor} from '../../../utils/getAccentColor.js';
-import {useContext, useEffect, useRef, useState} from 'react';
+import {useContext, useEffect, useMemo, useRef, useState} from 'react';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
-import type {ChangeEvent} from 'react';
 import type {PostVisibility} from '../../../context/KoenigComposerContext';
 
 const RESTRICTED_ACCESS_LABELS: Record<Exclude<PostVisibility, 'public'>, string> = {
@@ -15,11 +14,6 @@ const RESTRICTED_ACCESS_LABELS: Record<Exclude<PostVisibility, 'public'>, string
     paid: 'Paid members only',
     tiers: 'Selected tiers only'
 };
-
-const AUDIENCE_OPTIONS = [
-    {name: 'all', label: 'All subscribers without full access', description: 'Free and paid subscribers who can’t read the full post'},
-    {name: 'free', label: 'Free subscribers only', description: 'Paid subscribers without access get an upgrade prompt'}
-] as const;
 
 const PAYWALL_COPY_PROPS = ['webHeading', 'webDescription', 'webButtonText', 'webButtonUrl', 'emailHeading', 'emailDescription', 'emailButtonText', 'emailButtonUrl'] as const;
 type PaywallCopyProp = typeof PAYWALL_COPY_PROPS[number];
@@ -52,29 +46,6 @@ function defaultCopy(visibility?: PostVisibility): PaywallCopy {
         webButtonUrl: memberish ? '#/portal/signup/free' : '#/portal/signup',
         emailButtonUrl: memberish ? '#/portal/signup/free' : '#/portal/account/plans'
     };
-}
-
-function AudienceRadioRow({option, checked, onSelect}: {
-    option: {name: string; label: string; description: string};
-    checked: boolean;
-    onSelect: (name: 'all' | 'free') => void;
-}) {
-    return (
-        <label className="flex cursor-pointer items-start gap-2 py-1" data-testid={`paywall-audience-option-${option.name}`}>
-            <input
-                checked={checked}
-                className="mt-[3px] shrink-0"
-                name="paywall-email-preview-audience"
-                type="radio"
-                value={option.name}
-                onChange={() => onSelect(option.name as 'all' | 'free')}
-            />
-            <span className="flex flex-col gap-px">
-                <span className="text-sm font-normal leading-snug text-grey-900 dark:text-grey-300">{option.label}</span>
-                <span className="text-xs font-normal leading-snug text-grey-600 dark:text-grey-700">{option.description}</span>
-            </span>
-        </label>
-    );
 }
 
 function PaywallPreviewEditor({copy, defaults, medium, onChange}: {
@@ -198,10 +169,10 @@ export function PaywallCard() {
     const post = cardConfig?.post;
     const postVisibility = post?.visibility;
 
-    // post-level email settings live on the post, not the node; keep local
-    // state for immediate feedback and push changes to the host for saving
-    const [emailPreviewEnabled, setEmailPreviewEnabled] = useState(post?.emailPublicPreview ?? true);
-    const [audience, setAudience] = useState<string>(post?.emailPublicPreviewAudience || 'all');
+    // the preview email audience lives on the node ('all' | '' | CSV of
+    // segments); null state means "all non-access groups"
+    const [previewTo, setPreviewTo] = useState<string[] | null>(null);
+    const [siteTiers, setSiteTiers] = useState<{name: string; slug: string}[]>([]);
 
     // paywall copy lives on the node so it serializes with the post content
     const [customiserOpen, setCustomiserOpen] = useState(false);
@@ -212,10 +183,7 @@ export function PaywallCard() {
     // pages are never emailed, so email settings only apply to paid/tiers posts
     const emailSectionRelevant = post?.isPost && (postVisibility === 'paid' || postVisibility === 'tiers');
 
-    // a paid post's preview can only go to free subscribers, so the audience
-    // choice collapses into the toggle label itself; for members/public the
-    // wall is a registration wall, not a paywall
-    const emailToggleLabel = postVisibility === 'paid' ? 'Send public preview to free subscribers' : 'Send public preview';
+    // for members/public the wall is a registration wall, not a paywall
     const wallNoun = (postVisibility === 'paid' || postVisibility === 'tiers') ? 'paywall' : 'registration wall';
 
     useEffect(() => {
@@ -232,14 +200,60 @@ export function PaywallCard() {
         return () => window.removeEventListener('keydown', onKeyDown);
     }, [customiserOpen, cardConfig]);
 
-    const toggleEmailPreview = (event: ChangeEvent<HTMLInputElement>) => {
-        setEmailPreviewEnabled(event.target.checked);
-        cardConfig?.setEmailPublicPreview?.(event.target.checked);
+    // the removable non-access groups: Free, plus (for tiers posts) every
+    // active paid tier that doesn't have access to this post
+    const availableGroups = useMemo(() => {
+        const groups = [{segment: 'status:free', name: 'Free'}];
+        if (postVisibility === 'tiers') {
+            const accessSlugs = post?.tierSlugs || [];
+            siteTiers.filter(tier => !accessSlugs.includes(tier.slug)).forEach((tier) => {
+                groups.push({segment: `tier:${tier.slug}`, name: tier.name});
+            });
+        }
+        return groups;
+    }, [postVisibility, post?.tierSlugs, siteTiers]);
+
+    useEffect(() => {
+        if (emailSectionRelevant && postVisibility === 'tiers') {
+            cardConfig?.fetchTiers?.().then(setSiteTiers).catch(() => {});
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [emailSectionRelevant, postVisibility]);
+
+    useEffect(() => {
+        editor.getEditorState().read(() => {
+            const node = $getNodeByKey(nodeKey) as unknown as {previewEmailTo?: string} | null;
+            const raw = node?.previewEmailTo ?? 'all';
+            setPreviewTo(raw === 'all' ? null : raw.split(',').filter(Boolean));
+        });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const selectedSegments = previewTo === null ? availableGroups.map(g => g.segment) : previewTo;
+
+    const previousSelectionRef = useRef<string[]>([]);
+
+    const togglePreviewEmail = (event: {target: {checked: boolean}}) => {
+        if (event.target.checked) {
+            const restored = previousSelectionRef.current.length ? previousSelectionRef.current : availableGroups.map(g => g.segment);
+            setPreviewAudience(restored);
+        } else {
+            previousSelectionRef.current = selectedSegments;
+            setPreviewAudience([]);
+        }
     };
 
-    const changeAudience = (name: 'all' | 'free') => {
-        setAudience(name);
-        cardConfig?.setEmailPublicPreviewAudience?.(name);
+    const setPreviewAudience = (segments: string[]) => {
+        const isAll = segments.length === availableGroups.length && availableGroups.every(g => segments.includes(g.segment));
+        setPreviewTo(isAll ? null : segments);
+        editor.update(() => {
+            const node = $getNodeByKey(nodeKey) as unknown as {previewEmailTo?: string} | null;
+            if (node) {
+                node.previewEmailTo = isAll ? 'all' : segments.join(',');
+            }
+        });
+        cardConfig?.setEmailPublicPreview?.(segments.length > 0);
+        requestSave();
     };
 
     const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -315,41 +329,37 @@ export function PaywallCard() {
             )}
             {emailSectionRelevant && (
                 <>
-                    <label className="flex cursor-pointer items-center justify-between gap-3" htmlFor="paywall-email-preview-toggle">
-                        <span className="text-sm font-medium tracking-normal text-grey-900 dark:text-grey-300">{emailToggleLabel}</span>
-                        <span className="flex shrink-0"><Toggle dataTestId="paywall-email-preview-toggle" isChecked={emailPreviewEnabled} onChange={toggleEmailPreview} /></span>
+                    <label className="flex cursor-pointer items-center justify-between gap-3">
+                        <span className="text-sm font-medium tracking-normal text-grey-900 dark:text-grey-300">{postVisibility === 'paid' ? 'Send the preview to free subscribers' : 'Send the preview by email'}</span>
+                        <span className="flex shrink-0"><Toggle dataTestId="paywall-email-preview-toggle" isChecked={selectedSegments.length > 0} onChange={togglePreviewEmail} /></span>
                     </label>
-                    {emailPreviewEnabled ? (
-                        postVisibility === 'paid' ? (
-                            <p className="text-xs font-normal leading-snug text-grey-600 dark:text-grey-700">
-                                Free subscribers get an email with the public preview, followed by the paywall.
-                            </p>
-                        ) : postVisibility === 'tiers' && (
-                            <>
-                                <div className="flex flex-col">
-                                    <span className="mb-1 text-2xs font-semibold uppercase tracking-wide text-grey-800 dark:text-grey-500">Send the preview to</span>
-                                    {AUDIENCE_OPTIONS.map(option => (
-                                        <AudienceRadioRow
-                                            key={option.name}
-                                            checked={audience === option.name}
-                                            option={option}
-                                            onSelect={changeAudience}
-                                        />
-                                    ))}
-                                </div>
-                                <p className="text-xs font-normal leading-snug text-grey-600 dark:text-grey-700">
-                                    They get an email with the public preview, followed by the paywall. Subscribers outside this audience get an upgrade prompt instead.
-                                </p>
-                            </>
-                        )
-                    ) : (
-                        <p className="text-xs font-normal leading-snug text-grey-600 dark:text-grey-700">
-                            {postVisibility === 'paid'
-                                ? 'Free subscribers won’t receive this post by email.'
-                                : 'Subscribers without access won’t receive this post by email.'}
-                        </p>
-                    )}
                 </>
+            )}
+            {emailSectionRelevant && postVisibility === 'tiers' && selectedSegments.length > 0 && (
+                <>
+                    <span className="text-2xs font-semibold uppercase tracking-wide text-grey-800 dark:text-grey-500">To</span>
+                    <div className="flex flex-wrap gap-1.5" data-testid="paywall-preview-audience">
+                        {availableGroups.map(group => (selectedSegments.includes(group.segment) ? (
+                            <span key={group.segment} className="inline-flex items-center gap-1 rounded-full bg-grey-150 py-1 pl-3 pr-2 text-xs font-medium text-grey-900 dark:bg-grey-900 dark:text-grey-300" data-testid={`paywall-audience-chip-${group.segment}`}>
+                                {group.name}
+                                <button aria-label={`Remove ${group.name}`} className="cursor-pointer text-grey-600 hover:text-grey-900 dark:hover:text-grey-100" type="button" onClick={() => setPreviewAudience(selectedSegments.filter(seg => seg !== group.segment))}>
+                                    <svg className="size-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" strokeLinecap="round"/></svg>
+                                </button>
+                            </span>
+                        ) : (
+                            <button key={group.segment} className="inline-flex cursor-pointer items-center rounded-full border border-dashed border-grey-400 px-3 py-1 text-xs font-medium text-grey-600 hover:border-grey-600 hover:text-grey-900 dark:border-grey-800 dark:text-grey-600" data-testid={`paywall-audience-add-${group.segment}`} type="button" onClick={() => setPreviewAudience([...selectedSegments, group.segment])}>
+                                + {group.name}
+                            </button>
+                        )))}
+                    </div>
+                </>
+            )}
+            {emailSectionRelevant && (
+                <p className="text-xs font-normal leading-snug text-grey-600 dark:text-grey-700" data-testid="paywall-preview-audience-note">
+                    {selectedSegments.length === 0
+                        ? (postVisibility === 'paid' ? 'Free subscribers won’t get this post by email.' : 'Subscribers without access won’t get this post by email.')
+                        : `They get an email with the public preview, followed by the ${wallNoun}.` + (postVisibility === 'tiers' && selectedSegments.length < availableGroups.length ? ' Everyone else without access gets no email.' : '')}
+                </p>
             )}
             {!emailSectionRelevant && post?.isPost && (
                 <p className="text-sm font-normal leading-snug text-grey-700 dark:text-grey-600">

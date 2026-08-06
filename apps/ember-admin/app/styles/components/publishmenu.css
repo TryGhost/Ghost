@@ -1217,3 +1217,119 @@
     font-size: 1.35rem;
     line-height: 1.4em;
 }
+
+/* Single-page publish flow (publicPreviews vision) */
+.gh-pubflow {
+    display: flex;
+    flex-direction: column;
+}
+
+.gh-pubflow-row {
+    display: flex;
+    align-items: center;
+    gap: 1.4rem;
+    padding: 1.5rem 0;
+    border-top: 1px solid var(--whitegrey);
+}
+
+.gh-pubflow-row svg {
+    flex-shrink: 0;
+    width: 1.65rem;
+    height: 1.65rem;
+}
+
+.gh-pubflow-row svg path {
+    stroke: var(--black);
+    stroke-width: 2px;
+}
+
+.gh-pubflow-row-label {
+    flex: 1;
+    color: var(--black);
+    font-size: 1.8rem;
+    line-height: 1.35em;
+}
+
+.gh-pubflow-nest {
+    margin: -0.4rem 0 1.2rem 3.05rem;
+}
+
+.gh-pubflow-newsletter {
+    max-width: 320px;
+    margin: 0 0 1rem;
+}
+
+.gh-pubflow-radio {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 0.6rem;
+    font-size: 1.4rem;
+    color: var(--darkgrey);
+    cursor: pointer;
+}
+
+.gh-pubflow-radio input {
+    margin: 0;
+}
+
+.gh-pubflow-segments {
+    margin: 0.4rem 0 0 2.2rem;
+    max-width: 420px;
+}
+
+.gh-pubflow-hint {
+    margin: 0.6rem 0 0;
+    color: var(--midgrey);
+    font-size: 1.3rem;
+}
+
+.gh-pubflow-when {
+    flex: 1;
+}
+
+.gh-pubflow-row-when {
+    align-items: flex-start;
+}
+
+.gh-pubflow-row-when svg {
+    margin-top: 1.2rem;
+}
+
+.gh-pubflow-when .gh-publish-schedule {
+    margin-bottom: 0;
+}
+
+.gh-publish-receipt {
+    margin-top: 0.4rem;
+    padding: 1.6rem;
+    border: 1px solid var(--whitegrey);
+    border-radius: var(--border-radius);
+    background: var(--whitegrey-l2, #fafafb);
+}
+
+.gh-publish-receipt-header {
+    margin: 0 0 0.8rem;
+    color: var(--midgrey-d1);
+    font-size: 1.2rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.gh-publish-receipt-line {
+    margin: 0 0 0.5rem;
+    color: var(--darkgrey);
+    font-size: 1.4rem;
+    line-height: 1.55em;
+}
+
+.gh-publish-receipt-line strong {
+    font-weight: 600;
+}
+
+.gh-publish-receipt-note {
+    margin: 0.8rem 0 0;
+    color: var(--midgrey-l1);
+    font-size: 1.25rem;
+}

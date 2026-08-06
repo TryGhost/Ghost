@@ -45,6 +45,26 @@ export function hasPublicPreview(post) {
     return children.some(node => node?.type === 'paywall');
 }
 
+// which non-access groups get the preview by email, read from the paywall
+// node: 'all' (everyone without access), '' (nobody), or a CSV of member
+// segments like 'status:free,tier:bronze'. Falls back to the legacy
+// post-level toggle for posts whose divider predates the node property.
+export function getPreviewEmailSegments(post) {
+    const state = parseLexicalState(post.lexicalScratch || post.lexical);
+    const children = state?.root?.children;
+    const paywall = Array.isArray(children) ? children.find(node => node?.type === 'paywall') : null;
+
+    if (!paywall) {
+        return '';
+    }
+
+    if (paywall.previewEmailTo === undefined) {
+        return (post.emailPublicPreview ?? true) ? 'all' : '';
+    }
+
+    return paywall.previewEmailTo;
+}
+
 export function getPublicPreviewWarning(post) {
     const state = parseLexicalState(post.lexicalScratch || post.lexical);
     const children = state?.root?.children;
