@@ -76,7 +76,7 @@ const startGhost = async (options = {}) => {
     adapterManager.clearCache();
 
     // Reset the URL service so we clear out all the listeners
-    urlServiceUtils.resetGenerators();
+    urlServiceUtils.resetRouters();
 
     const defaults = {
         backend: true,

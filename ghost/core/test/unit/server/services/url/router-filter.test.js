@@ -1,4 +1,6 @@
 const assert = require('node:assert/strict');
+const sinon = require('sinon');
+const logging = require('@tryghost/logging');
 const {
     EXPANSIONS,
     routerTypeOf,
@@ -40,6 +42,26 @@ describe('router-filter', function () {
         it('returns a compiled matcher for a non-empty filter', function () {
             const compiled = buildFilter('featured:true');
             assert.equal(typeof compiled.queryJSON, 'function');
+        });
+    });
+
+    describe('filterMatches — a malformed filter cannot take routing down', function () {
+        // NQL parses lazily, so buildFilter accepts anything and the parse
+        // error only surfaces on the first evaluation. That makes
+        // filterMatches' catch the sole guard for a bad routes.yaml filter,
+        // which is easy to mistake for evaluation-only handling.
+        ['((', '+++', 'foo:[unclosed'].forEach(function (filter) {
+            it(`compiles ${JSON.stringify(filter)} without throwing, then treats it as a non-match`, function () {
+                const warn = sinon.stub(logging, 'warn');
+                try {
+                    const compiled = buildFilter(filter);
+                    assert.ok(compiled, 'buildFilter must not throw on a malformed filter');
+                    assert.equal(filterMatches(compiled, {featured: true}), false);
+                    sinon.assert.calledOnce(warn);
+                } finally {
+                    warn.restore();
+                }
+            });
         });
     });
 
@@ -91,7 +113,7 @@ describe('router-filter', function () {
     });
 
     describe('EXPANSIONS', function () {
-        it('exposes the shorthand keys the eager generator supports', function () {
+        it('exposes the shorthand keys routes.yaml filters may use', function () {
             const keys = EXPANSIONS.map(e => e.key);
             assert.deepEqual(
                 keys,

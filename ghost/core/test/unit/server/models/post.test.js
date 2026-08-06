@@ -5,7 +5,6 @@ const errors = require('@tryghost/errors');
 const sinon = require('sinon');
 const testUtils = require('../../../utils');
 const knex = require('../../../../core/server/data/db').knex;
-const urlService = require('../../../../core/server/services/url');
 const {Post} = require('../../../../core/server/models/post');
 const security = require('@tryghost/security');
 
@@ -412,7 +411,6 @@ describe('Unit: models/post', function () {
 describe('Unit: models/post: uses database (@TODO: fix me)', function () {
     beforeEach(function () {
         sinon.stub(security.password, 'hash').resolves('$2a$10$we16f8rpbrFZ34xWj0/ZC.LTPUux8ler7bcdTs5qIleN6srRHhilG');
-        sinon.stub(urlService, 'getUrlByResourceId');
     });
 
     afterEach(function () {

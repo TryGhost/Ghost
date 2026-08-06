@@ -333,7 +333,7 @@ describe('Integration - Web - vhosts', function () {
 
     describe('same host separate protocol', function () {
         beforeAll(async function () {
-            localUtils.urlService.resetGenerators();
+            localUtils.urlService.resetRouters();
             localUtils.defaultMocks(sinon);
             localUtils.overrideGhostConfig(configUtils);
 

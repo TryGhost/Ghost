@@ -9,11 +9,11 @@ describe('Unit: endpoints/utils/serializers/input/users', function () {
     });
 
     describe('browse', function () {
-        it('forces the lazy-required author columns into the fetch when url is requested', function () {
+        it('forces the required author columns into the fetch when url is requested', function () {
             // Staff users route through the authors router types; without
             // this, `?fields=url` strips the permalink columns (slug) and the
             // lazy URL service generates /author/undefined/.
-            sinon.stub(urlService.facade, 'getRequiredFields').withArgs('authors').returns(['slug']);
+            sinon.stub(urlService, 'getRequiredFields').withArgs('authors').returns(['slug']);
             const frame = {options: {columns: ['url', 'id']}};
 
             serializers.input.users.browse({}, frame);
@@ -23,8 +23,8 @@ describe('Unit: endpoints/utils/serializers/input/users', function () {
     });
 
     describe('read', function () {
-        it('forces the lazy-required author columns into the fetch when url is requested', function () {
-            sinon.stub(urlService.facade, 'getRequiredFields').withArgs('authors').returns(['slug']);
+        it('forces the required author columns into the fetch when url is requested', function () {
+            sinon.stub(urlService, 'getRequiredFields').withArgs('authors').returns(['slug']);
             const frame = {data: {}, options: {columns: ['url', 'id']}};
 
             serializers.input.users.read({}, frame);

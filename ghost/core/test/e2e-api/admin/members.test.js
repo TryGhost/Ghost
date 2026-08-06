@@ -18,7 +18,7 @@ const models = require('../../../core/server/models');
 const {knex} = require('../../../core/server/data/db');
 const membersService = require('../../../core/server/services/members');
 const memberAttributionService = require('../../../core/server/services/member-attribution');
-const urlService = require('../../../core/server/services/url');
+const urlServiceUtils = require('../../utils/url-service-utils');
 const urlUtils = require('../../../core/shared/url-utils').default;
 const settingsCache = require('../../../core/shared/settings-cache');
 const DomainEvents = require('@tryghost/domain-events');
@@ -349,7 +349,7 @@ describe('Members API - member attribution', function () {
             })
         });
 
-        const absoluteUrl = urlService.getUrlByResourceId(post.id, {absolute: true});
+        const absoluteUrl = urlServiceUtils.urlFor(post, 'posts', {absolute: true});
 
         await agent
             .get(`/members/${member.id}/`)
@@ -392,7 +392,7 @@ describe('Members API - member attribution', function () {
             })
         });
 
-        const absoluteUrl = urlService.getUrlByResourceId(post.id, {absolute: true});
+        const absoluteUrl = urlServiceUtils.urlFor(post, 'posts', {absolute: true});
 
         await agent
             .get(`/members/${member.id}/`)
@@ -435,7 +435,7 @@ describe('Members API - member attribution', function () {
             })
         });
 
-        const absoluteUrl = urlService.getUrlByResourceId(tag.id, {absolute: true});
+        const absoluteUrl = urlServiceUtils.urlFor(tag, 'tags', {absolute: true});
 
         await agent
             .get(`/members/${member.id}/`)
@@ -478,7 +478,7 @@ describe('Members API - member attribution', function () {
             })
         });
 
-        const absoluteUrl = urlService.getUrlByResourceId(author.id, {absolute: true});
+        const absoluteUrl = urlServiceUtils.urlFor(author, 'authors', {absolute: true});
 
         await agent
             .get(`/members/${member.id}/`)

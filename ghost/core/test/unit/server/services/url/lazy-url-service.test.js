@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
+const logging = require('@tryghost/logging');
 const LazyUrlService = require('../../../../../core/server/services/url/lazy-url-service');
 
 function makeUrlUtils() {
@@ -21,14 +22,14 @@ function makeUrlUtils() {
                 .replace(/:month\b/, datePart ? String(datePart.getUTCMonth() + 1).padStart(2, '0') : '')
                 .replace(/:day\b/, datePart ? String(datePart.getUTCDate()).padStart(2, '0') : '');
         },
-        createUrl(path, absolute, withSubdirectory) {
+        // Mirrors @tryghost/url-utils: the subdirectory is part of the base
+        // whenever the url is relative, and the third argument is
+        // trailingSlash — not a subdirectory switch.
+        createUrl(path, absolute) {
             if (absolute) {
                 return `https://example.com${path}`;
             }
-            if (withSubdirectory) {
-                return `/sub${path}`;
-            }
-            return path;
+            return `/sub${path}`;
         }
     };
 }
@@ -40,6 +41,13 @@ describe('LazyUrlService', function () {
 
     beforeEach(function () {
         urlUtils = makeUrlUtils();
+        // The service reports a thin resource rather than throwing, so every
+        // test that trips one would otherwise write to the real logger.
+        sinon.stub(logging, 'error');
+    });
+
+    afterEach(function () {
+        sinon.restore();
     });
 
     describe('getUrlForResource', function () {
@@ -94,30 +102,31 @@ describe('LazyUrlService', function () {
             assert.equal(url, '/404/');
         });
 
-        it('throws when a post is missing a base-filter field (status)', function () {
+        it('degrades to /404/ when a post is missing a base-filter field (status)', function () {
             const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
             service.onRouterAddedType('default', null, 'posts', '/:slug/');
 
             // A resource that reaches URL generation must carry the columns its
             // base filter reads; production callers always provide status, so a
-            // status-less post is a thin-resource bug we refuse loudly rather
-            // than silently 404.
-            assert.throws(
-                () => service.getUrlForResource({type: 'posts', id: 'p', slug: 'hello'}),
-                /Thin resource passed to LazyUrlService/
-            );
+            // status-less post is a thin-resource bug. It is reported rather
+            // than thrown: a 500 on a page that does route is worse than /404/.
+            assert.equal(service.getUrlForResource({type: 'posts', id: 'p', slug: 'hello'}), '/404/');
+            sinon.assert.calledOnce(logging.error);
+            assert.equal(logging.error.firstCall.args[0].code, 'LAZY_URL_RESOLUTION_ERROR');
         });
 
-        it('throws when a relation-filtered router is given a thin resource', function () {
+        it('degrades to /404/ when a relation-filtered router is given a thin resource', function () {
             const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
             // tag:news needs the tags relation; a resource with no tags array
-            // can't be evaluated, which would otherwise silently 404.
+            // can't be evaluated, so we report the caller's mistake and 404.
             service.onRouterAddedType('news', 'tag:news', 'posts', '/:slug/');
 
-            assert.throws(
-                () => service.getUrlForResource({type: 'posts', id: 'p', slug: 'hello', status: 'published'}),
-                /Thin resource passed to LazyUrlService/
+            assert.equal(
+                service.getUrlForResource({type: 'posts', id: 'p', slug: 'hello', status: 'published'}),
+                '/404/'
             );
+            sinon.assert.calledOnce(logging.error);
+            assert.equal(logging.error.firstCall.args[0].code, 'LAZY_URL_RESOLUTION_ERROR');
         });
 
         it('does not throw when the relation a filter references is present', function () {
@@ -132,17 +141,19 @@ describe('LazyUrlService', function () {
             );
         });
 
-        it('throws when a router filter references a scalar field the resource lacks (e.g. featured)', function () {
+        it('degrades to /404/ when a router filter references a scalar field the resource lacks (e.g. featured)', function () {
             const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
             // featured:true needs the featured column; without it the filter would
             // see undefined and silently route to the wrong permalink.
             service.onRouterAddedType('featured', 'featured:true', 'posts', '/featured/:slug/');
             service.onRouterAddedType('default', null, 'posts', '/:slug/');
 
-            assert.throws(
-                () => service.getUrlForResource({type: 'posts', id: 'p', slug: 'hot', status: 'published'}),
-                /Thin resource passed to LazyUrlService/
+            assert.equal(
+                service.getUrlForResource({type: 'posts', id: 'p', slug: 'hot', status: 'published'}),
+                '/404/'
             );
+            sinon.assert.calledOnce(logging.error);
+            assert.equal(logging.error.firstCall.args[0].code, 'LAZY_URL_RESOLUTION_ERROR');
         });
 
         it('routes via the filtered router when its scalar field is present', function () {
@@ -160,14 +171,14 @@ describe('LazyUrlService', function () {
             );
         });
 
-        it('matches a filter on an eager-excluded column as eager does (absent → null)', function () {
+        it('matches a filter on an excluded column as absent (→ null)', function () {
             const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
-            // custom_template is dropped from eager's URL cache
-            // (services/url/config.js exclude), so eager evaluates
-            // `custom_template:null` against an absent field — NQL treats absent
-            // as null, the filter matches, and the post is served. Lazy loads the
-            // real value; to preserve eager it must strip the excluded column
-            // before matching and serve the post too.
+            // custom_template is an excluded column (services/url/config.js), so
+            // `custom_template:null` is evaluated against an absent field — NQL
+            // treats absent as null, the filter matches, and the post is served.
+            // The service loads the real value, so it must strip the column
+            // before matching or a post with a custom template would stop
+            // routing.
             service.onRouterAddedType('specials', 'custom_template:null', 'posts', '/:slug/');
 
             const url = service.getUrlForResource({
@@ -180,10 +191,10 @@ describe('LazyUrlService', function () {
             assert.equal(url, '/hello/');
         });
 
-        it('does not treat a resource lacking an eager-excluded filter column as thin', function () {
+        it('does not treat a resource lacking an excluded filter column as thin', function () {
             const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
-            // Eager never carries custom_template, so it never requires it; a
-            // resource lacking it must match null rather than throw thin.
+            // An excluded column is never required; a resource lacking it must
+            // match null rather than be reported as thin.
             service.onRouterAddedType('specials', 'custom_template:null', 'posts', '/:slug/');
 
             assert.equal(
@@ -192,13 +203,13 @@ describe('LazyUrlService', function () {
             );
         });
 
-        it('does not force-load eager-excluded columns as required fields', function () {
+        it('does not force-load excluded columns as required fields', function () {
             const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
             service.onRouterAddedType('specials', 'custom_template:null', 'posts', '/:slug/');
 
             assert.ok(
                 !service.getRequiredFields('posts').includes('custom_template'),
-                'custom_template is dropped from eager\'s cache, so lazy must not force-load it'
+                'custom_template is an excluded column, so it must not be force-loaded'
             );
         });
 
@@ -265,14 +276,13 @@ describe('LazyUrlService', function () {
             );
         });
 
-        it('throws when a tag is missing the visibility base-filter field', function () {
+        it('degrades to /404/ when a tag is missing the visibility base-filter field', function () {
             const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
             service.onRouterAddedType('tagsRouter', null, 'tags', '/tag/:slug/');
 
-            assert.throws(
-                () => service.getUrlForResource({type: 'tags', id: 't1', slug: 'food'}),
-                /Thin resource passed to LazyUrlService/
-            );
+            assert.equal(service.getUrlForResource({type: 'tags', id: 't1', slug: 'food'}), '/404/');
+            sinon.assert.calledOnce(logging.error);
+            assert.equal(logging.error.firstCall.args[0].code, 'LAZY_URL_RESOLUTION_ERROR');
         });
 
         it('routes an author without a visibility field (authors have no base filter)', function () {
@@ -282,7 +292,7 @@ describe('LazyUrlService', function () {
             // users.visibility is schema-pinned to 'public', so BASE_FILTERS has
             // no entry for authors. Serialized authors drop visibility (#10438),
             // so unlike tags they must not be treated as thin — every author is
-            // routable, matching eager.
+            // routable.
             assert.equal(
                 service.getUrlForResource({type: 'authors', id: 'a1', slug: 'jane'}),
                 '/author/jane/'
@@ -311,6 +321,22 @@ describe('LazyUrlService', function () {
             assert.equal(service.getUrlForResource(post, {absolute: true}), 'https://example.com/hello/');
             assert.equal(service.getUrlForResource(post, {withSubdirectory: true}), '/sub/hello/');
         });
+
+        it('builds a /404/ without passing createUrl a third argument', function () {
+            // That argument is `trailingSlash`, and `/404/` already ends in
+            // one — the subdirectory comes from createUrl's own base whenever
+            // the url is relative. Pinned on the arguments so a future reader
+            // who mistakes the third parameter for a subdirectory switch, and
+            // "fixes" it, trips this rather than silently changing every
+            // /404/ a subdirectory install serves.
+            const createUrl = sinon.spy(urlUtils, 'createUrl');
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
+            service.onRouterAddedType('default', null, 'posts', '/:slug/');
+
+            service.getUrlForResource({type: 'tags', id: 't', slug: 'x'}, {withSubdirectory: true});
+
+            sinon.assert.calledOnceWithExactly(createUrl, '/404/', false);
+        });
     });
 
     describe('ownsResource', function () {
@@ -335,7 +361,7 @@ describe('LazyUrlService', function () {
             const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
             service.onRouterAddedType('tagsRouter', null, 'tags', '/tag/:slug/');
 
-            // An internal tag is not in eager's map, so no router owns it.
+            // An internal tag fails its base filter, so no router owns it.
             assert.equal(service.ownsResource('tagsRouter', {type: 'tags', id: 't1', slug: 'x', visibility: 'internal'}), false);
             assert.equal(service.ownsResource('tagsRouter', {type: 'tags', id: 't1', slug: 'x', visibility: 'public'}), true);
         });
@@ -537,7 +563,7 @@ describe('LazyUrlService', function () {
             service.onRouterAddedType('default', null, 'posts', '/:primary_tag/:slug/');
 
             // The post's canonical URL is /podcast/hello/, so /news/hello/ must
-            // 404 exactly as the eager service does.
+            // 404.
             assert.equal(await service.resolveUrl('/news/hello/'), null);
         });
 
@@ -564,7 +590,7 @@ describe('LazyUrlService', function () {
             service.onRouterAddedType('default', null, 'posts', '/:year/:month/:slug/');
 
             // Post is published in 2026-04, so a 2026-05 URL is not its canonical
-            // URL and must 404, matching the eager service.
+            // URL and must 404.
             assert.equal(await service.resolveUrl('/2026/05/hello/'), null);
         });
 
@@ -620,7 +646,7 @@ describe('LazyUrlService', function () {
             const service = new LazyUrlService({urlUtils, findResource});
             // `:id` is a real permalink token, but a Ghost id is a 24-char hex
             // ObjectId. A path segment that can't be one is a guaranteed miss,
-            // so we skip the lookup eager would also never have a URL for.
+            // so we skip a lookup that could never produce a URL.
             service.onRouterAddedType('default', null, 'posts', '/:id/');
 
             assert.equal(await service.resolveUrl('/blahblah/'), null);
@@ -735,7 +761,7 @@ describe('LazyUrlService', function () {
             service.onRouterAddedType('tagsRouter', null, 'tags', '/tag/:slug/');
             service.onRouterAddedType('authorsRouter', null, 'authors', '/author/:slug/');
 
-            // slug is needed to build the permalink even though eager (id-based)
+            // slug is needed to build the permalink even though the reverse lookup
             // never reads it; authors have no base filter, only the permalink slug.
             assert.deepEqual(service.getRequiredFields('tags').sort(), ['slug', 'visibility']);
             assert.deepEqual(service.getRequiredFields('authors'), ['slug']);
@@ -796,6 +822,169 @@ describe('LazyUrlService', function () {
 
             assert.deepEqual(service.getRequiredFields('posts').sort(), ['primary_tag', 'slug', 'status', 'type']);
             assert.deepEqual(service.getRequiredFields('pages').sort(), ['primary_author', 'slug', 'status', 'type']);
+        });
+    });
+
+    // A thin resource is a caller bug, but 500ing a page that does route is
+    // worse than serving /404/ — so it is reported and degraded. Anything else
+    // thrown out of URL generation is a backend bug and must propagate.
+    describe('getUrlForResource — failure policy', function () {
+        it('reports the resource shape the caller passed, so the bug is traceable', function () {
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
+            service.onRouterAddedType('news', 'tag:news', 'posts', '/:slug/');
+
+            service.getUrlForResource({type: 'posts', id: 'p', slug: 'hello', status: 'published'});
+
+            const {errorDetails} = logging.error.firstCall.args[0];
+            assert.equal(errorDetails.method, 'getUrlForResource');
+            assert.deepEqual(errorDetails.missing, ['tags']);
+            assert.deepEqual(errorDetails.resourceKeys, ['type', 'id', 'slug', 'status']);
+        });
+
+        it('formats the degraded /404/ for the requested options', function () {
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
+            service.onRouterAddedType('default', null, 'posts', '/:slug/');
+            const thin = {type: 'posts', id: 'p', slug: 'hello'};
+
+            assert.equal(service.getUrlForResource(thin, {absolute: true}), 'https://example.com/404/');
+            // A subdirectory install must not be served a root-relative /404/.
+            assert.equal(service.getUrlForResource(thin, {withSubdirectory: true}), '/sub/404/');
+            assert.equal(service.getUrlForResource(thin), '/404/');
+        });
+
+        it('names the producing endpoint in the report', function () {
+            // The degrade is silent to the caller, so the report is the only
+            // route back to the fetch that under-fetched.
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
+            service.onRouterAddedType('news', 'tag:news', 'posts', '/:slug/');
+
+            service.getUrlForResource(
+                {type: 'posts', id: 'p', slug: 'hello', status: 'published'},
+                {serializerContext: {apiType: 'content', docName: 'posts', method: 'read', columns: ['url']}}
+            );
+
+            const {errorDetails} = logging.error.firstCall.args[0];
+            assert.deepEqual(errorDetails.serializer, {
+                apiType: 'content', docName: 'posts', method: 'read', columns: ['url']
+            });
+            assert.deepEqual(errorDetails.missing, ['tags']);
+        });
+
+        it('reports each producing endpoint once, not the first one only', function () {
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
+            service.onRouterAddedType('news', 'tag:news', 'posts', '/:slug/');
+            const thin = {type: 'posts', id: 'p', slug: 'hello', status: 'published'};
+
+            service.getUrlForResource(thin, {serializerContext: {apiType: 'content', docName: 'posts', method: 'read'}});
+            service.getUrlForResource(thin, {serializerContext: {apiType: 'content', docName: 'posts', method: 'read'}});
+            sinon.assert.calledOnce(logging.error);
+
+            // A second endpoint under-fetching the same way is a second bug.
+            service.getUrlForResource(thin, {serializerContext: {apiType: 'admin', docName: 'pages', method: 'browse'}});
+            sinon.assert.calledTwice(logging.error);
+        });
+
+        it('reports a repeated cause at each order of magnitude, not once and not per row', function () {
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
+            service.onRouterAddedType('news', 'tag:news', 'posts', '/:slug/');
+            const thin = {type: 'posts', id: 'p', slug: 'hello', status: 'published'};
+
+            for (let i = 0; i < 3; i++) {
+                assert.equal(service.getUrlForResource(thin), '/404/');
+            }
+            sinon.assert.calledOnce(logging.error);
+            assert.equal(logging.error.firstCall.args[0].errorDetails.occurrences, 1);
+
+            // Reporting only the first would leave a still-breaking site
+            // silent; the count is what says it is still happening.
+            for (let i = 3; i < 100; i++) {
+                service.getUrlForResource(thin);
+            }
+            sinon.assert.calledThrice(logging.error);
+            assert.deepEqual(
+                logging.error.getCalls().map(call => call.args[0].errorDetails.occurrences),
+                [1, 10, 100]
+            );
+        });
+
+        it('keeps distinct causes on separate counters', function () {
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
+            service.onRouterAddedType('news', 'tag:news', 'posts', '/:slug/');
+
+            for (const id of ['p1', 'p2', 'p3']) {
+                assert.equal(
+                    service.getUrlForResource({type: 'posts', id, slug: 'hello', status: 'published'}),
+                    '/404/'
+                );
+            }
+            sinon.assert.calledOnce(logging.error);
+
+            // A different cause is still worth a line of its own.
+            service.onRouterAddedType('featured', 'featured:true', 'pages', '/:slug/');
+            service.getUrlForResource({type: 'pages', id: 'pg1', slug: 'about', status: 'published'});
+            sinon.assert.calledTwice(logging.error);
+
+            // A new routing config can make a resource newly thin or newly
+            // fine, so the record starts over.
+            service.reset();
+            service.onRouterAddedType('news', 'tag:news', 'posts', '/:slug/');
+            service.getUrlForResource({type: 'posts', id: 'p1', slug: 'hello', status: 'published'});
+            sinon.assert.calledThrice(logging.error);
+        });
+
+        it('rethrows an unexpected failure rather than serving /404/', function () {
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
+            service.onRouterAddedType('default', null, 'posts', '/:slug/');
+            urlUtils.replacePermalink = () => {
+                throw new TypeError('permalink.replace is not a function');
+            };
+
+            assert.throws(
+                () => service.getUrlForResource({type: 'posts', id: 'p', slug: 'hello', status: 'published'}),
+                /permalink\.replace is not a function/
+            );
+            sinon.assert.notCalled(logging.error);
+        });
+
+        it('rethrows a non-object throw unchanged', function () {
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
+            service.onRouterAddedType('default', null, 'posts', '/:slug/');
+            urlUtils.replacePermalink = () => {
+                throw null;
+            };
+
+            assert.throws(
+                () => service.getUrlForResource({type: 'posts', id: 'p', slug: 'hello', status: 'published'}),
+                err => err === null
+            );
+        });
+    });
+
+    // The routable rows of a type, fetched on demand with the columns the
+    // active routing config needs.
+    describe('getRoutableResources', function () {
+        it('asks the fetcher for the caller\'s columns plus what the routers require', async function () {
+            const fetchRoutableResources = sinon.stub().resolves([{id: 'p1'}]);
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource, fetchRoutableResources});
+            service.onRouterAddedType('news', 'primary_tag:news', 'posts', '/:slug/');
+
+            const rows = await service.getRoutableResources('posts', {columns: ['feature_image']});
+
+            assert.deepEqual(rows, [{id: 'p1'}]);
+            const [type, options] = fetchRoutableResources.firstCall.args;
+            assert.equal(type, 'posts');
+            assert.deepEqual(options.columns, ['feature_image']);
+            assert.deepEqual(options.requiredFields.sort(), ['primary_tag', 'slug', 'status', 'type']);
+            assert.deepEqual(options.requiredRelations, ['tags']);
+        });
+
+        it('defaults the caller columns to none', async function () {
+            const fetchRoutableResources = sinon.stub().resolves([]);
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource, fetchRoutableResources});
+
+            await service.getRoutableResources('tags');
+
+            assert.deepEqual(fetchRoutableResources.firstCall.args[1].columns, []);
         });
     });
 

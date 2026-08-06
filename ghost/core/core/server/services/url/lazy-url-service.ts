@@ -1,13 +1,52 @@
 const debug = require('@tryghost/debug')('services:url:lazy');
 const errors = require('@tryghost/errors');
+const logging = require('@tryghost/logging');
 const localUtils = require('../../../shared/url-utils').default;
 const {matchPermalink, toLookupParams} = require('./permalink-matcher');
 const {buildFilter, filterMatches, routerTypeOf} = require('./router-filter');
+const {fetchRoutableResources: defaultFetchRoutableResources} = require('./routable-resources');
 const urlConfig = require('./config');
 
-import type {Resource, UrlOptions, LazyUrlServiceBackend} from './url-service-facade';
 import type {CompiledFilter} from './router-filter';
 import type {PermalinkParams} from './permalink-matcher';
+
+/**
+ * Routing-level resource. `type` is one of the plural router keys
+ * ('posts', 'pages', 'tags', 'authors'). Concrete records carry additional
+ * fields (slug, published_at, primary_tag, ...) read by the permalink
+ * templates and router filters.
+ */
+export interface Resource {
+    type: string;
+    id: string;
+    [key: string]: unknown;
+}
+
+export interface UrlOptions {
+    absolute?: boolean;
+    withSubdirectory?: boolean;
+    // Diagnostic only: the producing api endpoint and the fetch shape its
+    // input serializer settled on, threaded from the output serializer so a
+    // thin-resource report names what under-fetched. Ignored by URL
+    // generation; read only into that report.
+    serializerContext?: {
+        apiType?: string;
+        docName?: string;
+        method?: string;
+        withRelated?: unknown;
+        columns?: unknown;
+        forcedUrlRelations?: unknown;
+    };
+}
+
+/**
+ * On-demand enumeration of the routable rows of a type. Injectable so tests
+ * can drive `getRoutableResources` without a database.
+ */
+export type FetchRoutableResources = (
+    type: string,
+    options: {columns?: string[]; requiredFields?: string[]; requiredRelations?: string[]}
+) => Promise<Array<Record<string, unknown>>>;
 
 export type ResourceLookupParams = {id: string} | {slug: string};
 
@@ -24,17 +63,15 @@ interface RouterConfig {
     compiledFilter: CompiledFilter | null;
 }
 
-// Per-resource-type base filters, mirroring eager's resource-fetch filters
-// (`modelOptions.filter` in services/url/config.js). Deliberately duplicated
-// rather than imported: lazy is meant to replace eager, at which point eager's
-// config goes away and this becomes the single source. `fields` lists the
-// record columns each filter reads; a resource that reaches URL generation
-// must carry them (a thin one is rejected — see _assertBaseFieldsPresent).
+// Per-resource-type gate on which rows get a URL at all — the forward-lookup
+// counterpart of the fetch filters in routable-resources.js. `fields` lists
+// the record columns each filter reads; a resource that reaches URL generation
+// must carry them (see _missingBaseFields).
 //
 // Authors are intentionally absent: users.visibility is schema-pinned to
-// 'public' (isIn: [['public']]), so eager's visibility:public author filter
-// never excludes anyone — every author is routable, and serialized authors
-// drop visibility anyway (#10438).
+// 'public' (isIn: [['public']]), so the visibility:public author filter never
+// excludes anyone — every author is routable, and serialized authors drop
+// visibility anyway (#10438).
 const BASE_FILTERS: Record<string, {filter: string; fields: string[]}> = {
     posts: {filter: 'status:published+type:post', fields: ['status', 'type']},
     pages: {filter: 'status:published+type:page', fields: ['status', 'type']},
@@ -45,6 +82,16 @@ interface BaseFilter {
     filter: string;
     compiledFilter: CompiledFilter;
     fields: string[];
+}
+
+// Why a resource could not be routed: the columns it was missing, and which
+// filter needed them. Reported, then degraded to /404/.
+interface ThinResource {
+    resourceType: string;
+    missing: string[];
+    baseFilter?: string;
+    routerIdentifier?: string;
+    filter?: string | null;
 }
 
 function buildBaseFilters(): Map<string, BaseFilter> {
@@ -58,19 +105,18 @@ function buildBaseFilters(): Map<string, BaseFilter> {
     return baseFilters;
 }
 
-// Columns eager drops from its in-memory URL cache (the `exclude` lists in
-// services/url/config.js). Eager evaluates a router's collection filter against
-// that reduced cached record, so an excluded column reads as absent — NQL then
-// treats it as null. Lazy loads full records and would see the real value, so
-// to preserve eager's behaviour it strips these columns before evaluating
-// router filters (and neither requires nor force-loads them). Keyed by
-// resourceType ('posts'/'pages'/'tags'). Read from eager's config directly so
-// the two can't drift; when eager is retired this derives from whatever
-// replaces it. The base filter is unaffected — it runs against the full record.
+// Columns a router filter must not see (the `exclude` lists in
+// services/url/config.js), keyed by resourceType. Ghost previously answered
+// URLs from a precomputed cache that dropped these columns, so a filter
+// referencing one matched it as absent — NQL reads absent as null. This
+// service loads full records and would see the real value, so it strips them
+// before evaluating router filters (and neither requires nor force-loads
+// them), keeping routes.yaml files that rely on that behaviour working. The
+// base filter above is unaffected — it runs against the full record.
 function buildExcludedFilterFields(): Map<string, Set<string>> {
     const excluded = new Map<string, Set<string>>();
     for (const entry of urlConfig) {
-        const exclude = entry?.modelOptions?.exclude;
+        const exclude = entry?.exclude;
         if (Array.isArray(exclude)) {
             excluded.set(entry.type, new Set(exclude));
         }
@@ -80,10 +126,19 @@ function buildExcludedFilterFields(): Map<string, Set<string>> {
 
 const EMPTY_FIELD_SET: ReadonlySet<string> = new Set();
 
+// 1, 10, 100, ... — exact for integers, unlike a log10 comparison.
+function isPowerOfTen(n: number): boolean {
+    let power = 1;
+    while (power < n) {
+        power *= 10;
+    }
+    return power === n;
+}
+
 // Relation roots are loaded via getRequiredRelations (as withRelated), not as
 // scalar columns; `page`/`type` are the router-type discriminator, always set
 // on the resource. Everything else a router filter references is a scalar
-// own-column the resource must carry to be routed like eager.
+// own-column the resource must carry to be routed.
 const FILTER_NON_SCALAR_FIELDS = new Set([
     'tag', 'tags', 'author', 'authors', 'primary_tag', 'primary_author', 'page', 'type'
 ]);
@@ -115,29 +170,38 @@ function filterScalarFields(filter: string | null): string[] {
 interface LazyUrlServiceDeps {
     urlUtils?: typeof localUtils;
     findResource: FindResource;
+    fetchRoutableResources?: FetchRoutableResources;
 }
 
 const ROUTER_TYPE_TO_DB_TYPE: Record<string, string> = {posts: 'post', pages: 'page'};
 
 /**
- * On-demand replacement for the eager UrlService: computes URLs and ownership
- * per call from the registered router configs instead of precomputing a full
- * map at boot. Forward lookups are pure; resolveUrl is the only DB-touching
- * path, and only through the injected findResource hook.
+ * Ghost's URL service: computes URLs and ownership per call from the
+ * registered router configs. Forward lookups are pure; resolveUrl and
+ * getRoutableResources are the only DB-touching paths, and only through the
+ * injected findResource / fetchRoutableResources hooks.
  */
-export class LazyUrlService implements LazyUrlServiceBackend {
+export class LazyUrlService {
     private urlUtils: typeof localUtils;
     private findResource: FindResource;
+    private fetchRoutableResources: FetchRoutableResources;
     // Router configs in registration order, which is also their priority.
     private routerConfigs: RouterConfig[];
     private requiredRelations: string[] | null;
     private baseFilters: Map<string, BaseFilter>;
     private excludedFilterFields: Map<string, Set<string>>;
-    // True once routers have been registered; hasFinished() returns it so the
-    // maintenance middleware holds requests until routing is ready.
+    // True once routers have been registered. Cleared by reset() so the
+    // route-reload window re-gates the maintenance middleware.
     private routersReady: boolean;
+    // How many times each thin-resource cause has been seen — see
+    // _degradeThinResource.
+    private reportedThinResources: Map<string, number>;
 
-    constructor({urlUtils = localUtils, findResource}: LazyUrlServiceDeps) {
+    constructor({
+        urlUtils = localUtils,
+        findResource,
+        fetchRoutableResources = defaultFetchRoutableResources
+    }: LazyUrlServiceDeps) {
         if (typeof findResource !== 'function') {
             throw new errors.IncorrectUsageError({
                 message: 'LazyUrlService requires a findResource function'
@@ -145,11 +209,13 @@ export class LazyUrlService implements LazyUrlServiceBackend {
         }
         this.urlUtils = urlUtils;
         this.findResource = findResource;
+        this.fetchRoutableResources = fetchRoutableResources;
         this.routerConfigs = [];
         this.requiredRelations = null;
         this.baseFilters = buildBaseFilters();
         this.excludedFilterFields = buildExcludedFilterFields();
         this.routersReady = false;
+        this.reportedThinResources = new Map();
     }
 
     onRouterAddedType(identifier: string, filter: string | null, resourceType: string, permalink: string): void {
@@ -175,6 +241,7 @@ export class LazyUrlService implements LazyUrlServiceBackend {
         this.routerConfigs = [];
         this.requiredRelations = null;
         this.routersReady = false;
+        this.reportedThinResources.clear();
     }
 
     getRequiredRelations(): string[] {
@@ -204,10 +271,10 @@ export class LazyUrlService implements LazyUrlServiceBackend {
         return [...this.requiredRelations];
     }
 
-    // Columns a resource of this type must carry for the lazy service to build
+    // Columns a resource of this type must carry for the service to build
     // its URL: its base-filter columns plus the scalar columns its routers'
     // permalinks substitute and filters read. Relations are covered separately
-    // by getRequiredRelations; eager needs none of this (it looks URLs up by id).
+    // by getRequiredRelations.
     getRequiredFields(routerType: string): string[] {
         const fields = new Set<string>();
         const excluded = this._excludedFilterFieldsFor(routerType);
@@ -239,9 +306,10 @@ export class LazyUrlService implements LazyUrlServiceBackend {
                     fields.add(computed);
                 }
             }
-            // Skip columns eager drops from its cache: it never force-loads them
-            // and evaluates their filters against an absent value, so lazy must
-            // not require them either (see buildExcludedFilterFields).
+            // Skip the columns a router filter must not see: their filters are
+            // evaluated against an absent value, so requiring them would
+            // force-load a column that can't affect the result (see
+            // buildExcludedFilterFields).
             filterScalarFields(config.filter).forEach((field) => {
                 if (!excluded.has(field)) {
                     fields.add(field);
@@ -255,27 +323,47 @@ export class LazyUrlService implements LazyUrlServiceBackend {
         return this.routersReady;
     }
 
+    /**
+     * All routable rows of a type. The columns URL computation needs come
+     * from the active routing config, so the rows are never thin for it;
+     * callers name any extra columns they want back.
+     */
+    async getRoutableResources(type: string, {columns = []}: {columns?: string[]} = {}): Promise<Array<Record<string, unknown>>> {
+        return this.fetchRoutableResources(type, {
+            columns,
+            requiredFields: this.getRequiredFields(type),
+            requiredRelations: this.getRequiredRelations()
+        });
+    }
+
+    /**
+     * A thin resource — one missing a column its base filter or a router
+     * filter reads — is a caller bug: we cannot tell whether it routes. It is
+     * reported and degraded to /404/ rather than thrown, because 500ing a page
+     * that does route is worse than a 404 on one that may not.
+     */
     getUrlForResource(resource: Resource, options: UrlOptions = {}): string {
         const routerType = routerTypeOf(resource);
         if (!routerType) {
-            return this._formatNotFound(options);
+            return this.notFoundUrl(options);
         }
 
         const record = this._recordForFilter(resource);
-        // The router (collection) filter is evaluated against eager's reduced
-        // column set; the base filter keeps the full record (it reads status /
-        // type / visibility, which eager applies at query time, not in cache).
+        // The router (collection) filter is evaluated against the reduced
+        // column set (see buildExcludedFilterFields); the base filter keeps the
+        // full record, since it reads status / type / visibility.
         const filterRecord = this._recordForRouterFilter(record, routerType);
 
-        // Eager only builds URLs for resources that pass the per-type base
-        // filter (e.g. visibility:public tags, status:published posts), so a
-        // resource failing it has no URL there and must 404 here too. Checked
-        // only when a router for the type exists, since otherwise the resource
-        // 404s regardless.
+        // Only resources that pass the per-type base filter (visibility:public
+        // tags, status:published posts) get a URL. Checked only when a router
+        // for the type exists, since otherwise the resource 404s regardless.
         if (this._hasRouterForType(routerType)) {
-            this._assertBaseFieldsPresent(routerType, resource);
+            const missing = this._missingBaseFields(routerType, resource);
+            if (missing) {
+                return this._degradeThinResource(resource, missing, options);
+            }
             if (!this._baseFilterMatches(routerType, record)) {
-                return this._formatNotFound(options);
+                return this.notFoundUrl(options);
             }
         }
 
@@ -283,13 +371,16 @@ export class LazyUrlService implements LazyUrlServiceBackend {
             if (config.resourceType !== routerType) {
                 continue;
             }
-            this._assertNotThin(config, resource, routerType);
+            const missing = this._missingRouterFields(config, resource, routerType);
+            if (missing) {
+                return this._degradeThinResource(resource, missing, options);
+            }
             if (filterMatches(config.compiledFilter, filterRecord)) {
                 const path = this.urlUtils.replacePermalink(config.permalink, resource);
                 return this._formatPath(path, options);
             }
         }
-        return this._formatNotFound(options);
+        return this.notFoundUrl(options);
     }
 
     ownsResource(routerIdentifier: string, resource: Resource | null): boolean {
@@ -300,15 +391,15 @@ export class LazyUrlService implements LazyUrlServiceBackend {
         if (!routerType) {
             return false;
         }
-        // A resource failing its base filter is not in eager's map, so no
-        // router owns it. Mirrors the base-filter gate in getUrlForResource.
+        // A resource failing its base filter has no URL, so no router owns it.
+        // Mirrors the base-filter gate in getUrlForResource.
         const record = this._recordForFilter(resource);
         if (!this._baseFilterMatches(routerType, record)) {
             return false;
         }
         const filterRecord = this._recordForRouterFilter(record, routerType);
         // Ownership is exclusive: only the first matching router of the type
-        // owns the resource, matching eager's reservation.
+        // owns the resource.
         const owner = this.routerConfigs.find(
             c => c.resourceType === routerType && filterMatches(c.compiledFilter, filterRecord)
         );
@@ -358,11 +449,11 @@ export class LazyUrlService implements LazyUrlServiceBackend {
         return null;
     }
 
-    // Eager only resolves a URL that equals a resource's generated (canonical)
-    // URL, so we regenerate the record's URL for this permalink and confirm the
-    // captured params match it. Without this, derived/relation segments the
-    // query can't filter on (year/month, primary_tag) would resolve any slug,
-    // 200-ing a URL the eager service 404s.
+    // Only a URL that equals the resource's own generated (canonical) URL
+    // resolves, so we regenerate the record's URL for this permalink and
+    // confirm the captured params match it. Without this, derived/relation
+    // segments the query can't filter on (year/month, primary_tag) would
+    // resolve any slug, 200-ing a URL that has no page.
     private _matchesCanonicalUrl(config: RouterConfig, params: PermalinkParams, resource: Record<string, unknown>): boolean {
         const canonicalPath = this.urlUtils.replacePermalink(config.permalink, resource);
         const canonicalParams = matchPermalink(config.permalink, canonicalPath);
@@ -372,6 +463,52 @@ export class LazyUrlService implements LazyUrlServiceBackend {
         const captured = params as Record<string, string>;
         const canonical = canonicalParams as Record<string, string>;
         return Object.keys(captured).every(key => canonical[key] === captured[key]);
+    }
+
+    // Reports which columns were missing alongside what the caller handed over
+    // — the resource's shape, and what the active routing config needs — so
+    // the fetch that under-fetched can be found from the log line alone.
+    //
+    // Reported on the first occurrence of each distinct cause, then at each
+    // order of magnitude. A caller that under-fetches does so for every row it
+    // serializes, so a browse over a large collection would otherwise emit one
+    // error per row — but reporting only once would hide that the problem is
+    // still happening, and how widely. `occurrences` carries that instead.
+    // Cleared on reset(), since a new routing config can make a previously
+    // thin resource fine (or newly broken).
+    private _degradeThinResource(resource: Resource, thin: ThinResource, options: UrlOptions): string {
+        const producedBy = options.serializerContext;
+        // The producer is part of the key: two endpoints under-fetching the
+        // same way are two bugs, and the endpoint set is small enough that
+        // this cannot flood.
+        const key = [
+            thin.resourceType,
+            thin.routerIdentifier ?? '',
+            thin.missing.join(','),
+            producedBy ? `${producedBy.apiType}:${producedBy.docName}:${producedBy.method}` : ''
+        ].join('|');
+        const occurrences = (this.reportedThinResources.get(key) ?? 0) + 1;
+        this.reportedThinResources.set(key, occurrences);
+        if (!isPowerOfTen(occurrences)) {
+            return this.notFoundUrl(options);
+        }
+
+        logging.error(new errors.InternalServerError({
+            message: 'URL service could not build a URL, degraded to /404/',
+            code: 'LAZY_URL_RESOLUTION_ERROR',
+            errorDetails: {
+                method: 'getUrlForResource',
+                type: resource.type,
+                id: resource.id,
+                status: (resource as Record<string, unknown>).status,
+                resourceKeys: Object.keys(resource),
+                requiredRelations: this.getRequiredRelations(),
+                occurrences,
+                ...(producedBy ? {serializer: producedBy} : {}),
+                ...thin
+            }
+        }));
+        return this.notFoundUrl(options);
     }
 
     private _hasRouterForType(routerType: string): boolean {
@@ -388,33 +525,24 @@ export class LazyUrlService implements LazyUrlServiceBackend {
 
     // A resource that reaches URL generation must carry the columns its base
     // filter reads (status for posts/pages, visibility for tags) — production
-    // callers always do (full models, or forced by the serializers). Without
-    // them the filter can't be evaluated and we'd silently 404 a URL eager would
-    // have produced, so refuse loudly instead of guessing.
-    private _assertBaseFieldsPresent(routerType: string, resource: Resource): void {
+    // callers always do, via full models or the serializers' force-load.
+    // Without them the filter can't be evaluated at all, so we cannot tell a
+    // genuine miss from a caller that under-fetched.
+    private _missingBaseFields(routerType: string, resource: Resource): ThinResource | null {
         const base = this.baseFilters.get(routerType);
         if (!base) {
-            return;
+            return null;
         }
         const r = resource as Record<string, unknown>;
         const missing = base.fields.filter(field => r[field] === undefined);
         if (missing.length === 0) {
-            return;
+            return null;
         }
-        throw new errors.InternalServerError({
-            message: 'Thin resource passed to LazyUrlService.getUrlForResource',
-            code: 'LAZY_URL_THIN_RESOURCE',
-            errorDetails: {
-                resourceType: routerType,
-                resourceId: resource.id,
-                baseFilter: base.filter,
-                missing
-            }
-        });
+        return {resourceType: routerType, baseFilter: base.filter, missing};
     }
 
     // Normalizes the plural router type to the singular DB value for filter
-    // evaluation only, so page: filters match as in the eager generator.
+    // evaluation only, so `page:` filters in routes.yaml match.
     private _recordForFilter(resource: Resource): Record<string, unknown> {
         const record = resource as Record<string, unknown>;
         const dbType = ROUTER_TYPE_TO_DB_TYPE[record.type as string];
@@ -425,8 +553,7 @@ export class LazyUrlService implements LazyUrlServiceBackend {
         return this.excludedFilterFields.get(routerType) ?? EMPTY_FIELD_SET;
     }
 
-    // Strips the columns eager drops from its cache so a router/collection
-    // filter is evaluated against the same reduced shape eager uses — an
+    // Strips the columns a router/collection filter must not see, so an
     // excluded column reads as absent (→ null in NQL) rather than its real
     // value. Only affects filters that reference an excluded column; every
     // other filter sees an identical record.
@@ -454,8 +581,16 @@ export class LazyUrlService implements LazyUrlServiceBackend {
         return path;
     }
 
-    // Mirrors the eager miss path: the /404/ fallback carries no subdirectory.
-    private _formatNotFound(options: UrlOptions): string {
+    /**
+     * The /404/ a resource gets when nothing routes it, formatted for the given
+     * options. Deliberately omits the argument `_formatPath` passes.
+     *
+     * The subdirectory is not lost by that omission: `createUrl` takes it from
+     * its own base whenever the url is relative, so a subdirectory install gets
+     * `/blog/404/` from here either way. The third argument `_formatPath`
+     * passes is `trailingSlash`, and `/404/` already ends in one.
+     */
+    private notFoundUrl(options: UrlOptions = {}): string {
         if (options.absolute) {
             return this.urlUtils.createUrl('/404/', options.absolute);
         }
@@ -466,13 +601,13 @@ export class LazyUrlService implements LazyUrlServiceBackend {
     }
 
     // A filtered router that references a relation the resource doesn't carry
-    // can't be evaluated: lazy would 404 here while eager (full data in memory)
-    // returns a URL. Callers must hand the service fully-inflated resources, so
-    // a thin one is a programmer error we refuse loudly rather than mask as a
-    // silent /404/.
-    private _assertNotThin(config: RouterConfig, resource: Resource, routerType: string): void {
+    // can't be evaluated, so the resource would 404 for a reason that has
+    // nothing to do with the routing config. Callers must hand over
+    // fully-inflated resources; a thin one is reported rather than silently
+    // 404'd (see getUrlForResource).
+    private _missingRouterFields(config: RouterConfig, resource: Resource, routerType: string): ThinResource | null {
         if (!config.filter) {
-            return;
+            return null;
         }
         const r = resource as Record<string, unknown>;
         const missing: string[] = [];
@@ -488,8 +623,8 @@ export class LazyUrlService implements LazyUrlServiceBackend {
         if (/\bprimary_author\b/.test(config.filter) && r.primary_author === undefined) {
             missing.push('primary_author');
         }
-        // Columns eager drops from its cache are never required — its filters
-        // match them as absent, so a resource lacking one is not thin here.
+        // Excluded columns are never required — their filters match them as
+        // absent, so a resource lacking one is not thin here.
         const excluded = this._excludedFilterFieldsFor(routerType);
         for (const field of filterScalarFields(config.filter)) {
             if (!excluded.has(field) && r[field] === undefined) {
@@ -497,19 +632,14 @@ export class LazyUrlService implements LazyUrlServiceBackend {
             }
         }
         if (missing.length === 0) {
-            return;
+            return null;
         }
-        throw new errors.InternalServerError({
-            message: 'Thin resource passed to LazyUrlService.getUrlForResource',
-            code: 'LAZY_URL_THIN_RESOURCE',
-            errorDetails: {
-                resourceType: routerType,
-                resourceId: resource.id,
-                routerIdentifier: config.identifier,
-                filter: config.filter,
-                missing
-            }
-        });
+        return {
+            resourceType: routerType,
+            routerIdentifier: config.identifier,
+            filter: config.filter,
+            missing
+        };
     }
 }
 

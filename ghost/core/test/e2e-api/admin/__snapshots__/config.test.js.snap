@@ -45,7 +45,6 @@ Object {
       "tagDetailsReact": true,
       "tagsX": true,
       "themeTranslation": true,
-      "urlCache": true,
     },
     "mail": "",
     "mailgunIsConfigured": false,

@@ -136,8 +136,8 @@ module.exports = async (model, frame, options = {}) => {
     clean.post(jsonModel, frame);
 
     // Columns force-loaded for the URL computation, not requested by the caller.
-    if (frame.forcedUrlColumns) {
-        frame.forcedUrlColumns.forEach((column) => {
+    if (frame.forcedUrlColumns && frame.forcedUrlColumns.routerType === routerType) {
+        frame.forcedUrlColumns.columns.forEach((column) => {
             delete jsonModel[column];
         });
     }
