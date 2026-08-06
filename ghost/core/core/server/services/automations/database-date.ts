@@ -5,7 +5,7 @@ const DATABASE_DATE_FORMAT = 'YYYY-MM-DD HH:mm:ss';
 
 export type DatabaseDate = Date | string | number;
 
-export const toDatabaseDate = (date: Date | string): string => moment(date).format(DATABASE_DATE_FORMAT);
+export const toDatabaseDate = (date: Date | string): string => moment.utc(date).format(DATABASE_DATE_FORMAT);
 
 export const fromDatabaseDate = (date: DatabaseDate): Date => {
     if (date instanceof Date) {

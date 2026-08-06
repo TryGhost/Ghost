@@ -59,6 +59,18 @@ describe('database date utilities', function () {
             const result = toDatabaseDate(input);
             assert.strictEqual(result, '2024-06-01 16:34:56');
         });
+
+        it('converts unzoned strings to UTC date strings in your system timezone', function () {
+            const input = '2020-01-01 12:34:56';
+            const result = toDatabaseDate(input);
+            assert.strictEqual(result, '2020-01-01 12:34:56');
+        });
+
+        it('converts unzoned strings to UTC date strings in other system timezones', async function () {
+            await runInOtherTimezones(`
+                assert.deepEqual(toDatabaseDate('2020-01-01 12:34:56'), '2020-01-01 12:34:56');
+            `);
+        });
     });
 
     describe('fromDatabaseDate', function () {
