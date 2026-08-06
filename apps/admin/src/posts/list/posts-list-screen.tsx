@@ -42,9 +42,6 @@ import {usePostsList} from './hooks/use-posts-list';
 /**
  * The React posts and pages list screens, served behind the `postsListReact`
  * Labs flag. One implementation, two resources — see `post-resource.ts`.
- *
- * Currently renders bare titles: this phase is about the data layer being
- * right (three sequenced queries, URL round-tripping), not the design.
  */
 /** The three that ask before acting. Feature and unfeature do not. */
 const CONFIRMABLE_ACTIONS: PostContextMenuKey[] = ['delete', 'unpublish', 'unschedule'];
