@@ -52,8 +52,8 @@ describe('Unit: sitemap/manager', function () {
         eventsToRemember = {};
 
         // @NOTE: the pattern of faking event call is not great, we should be
-        //        ideally tasting on real events instead of faking them
-        // router.created / routers.reset are frontend-internal routing events
+        //        ideally testing on real events instead of faking them
+        // RouteRegistered / RoutesReset are frontend-internal routing events
         sinon.stub(routingEvents, 'on').callsFake(function (eventName, callback) {
             eventsToRemember[eventName] = callback;
         });
@@ -77,8 +77,8 @@ describe('Unit: sitemap/manager', function () {
         it('can create a SiteMapManager instance', function () {
             assertExists(manager);
             assert.equal(Object.keys(eventsToRemember).length, 3);
-            assertExists(eventsToRemember['router.created']);
-            assertExists(eventsToRemember['routers.reset']);
+            assertExists(eventsToRemember.RouteRegistered);
+            assertExists(eventsToRemember.RoutesReset);
             assertExists(eventsToRemember['site.changed']);
         });
 
@@ -103,11 +103,15 @@ describe('Unit: sitemap/manager', function () {
                 });
             }
 
+            // The absolute URL is derived from the domain path the event
+            // carries, so the expectation is computed the same way.
+            const aboutUrl = urlUtils.createUrl('/about/', true);
+
             function emitAboutRouter() {
-                eventsToRemember['router.created']({
-                    name: 'StaticRoutesRouter',
-                    identifier: 'sr1',
-                    getRoute: () => 'http://example.com/about/'
+                eventsToRemember.RouteRegistered({
+                    type: 'StaticRoutesRouter',
+                    id: 'sr1',
+                    path: '/about/'
                 });
             }
 
@@ -224,9 +228,13 @@ describe('Unit: sitemap/manager', function () {
 
                 await siteMapManager.getSiteMapXml('posts');
 
-                // router.created only fires at boot and routes reload; the entry
+                // The expectation is computed the same way the subscriber
+                // computes it, so anchor its shape: the domain path the event
+                // carries has to reach the sitemap absolutised.
+                assert.match(aboutUrl, /^https?:\/\/.+\/about\/$/);
+                // RouteRegistered only fires at boot and routes reload; the entry
                 // must survive the apply-phase generator reset.
-                sinon.assert.calledWith(PageGenerator.prototype.addUrl, 'http://example.com/about/', sinon.match({id: 'sr1'}));
+                sinon.assert.calledWith(PageGenerator.prototype.addUrl, aboutUrl, sinon.match({id: 'sr1'}));
             });
 
             it('rebuilds after a router registers, so a reload window cannot pin a routerless index', async function () {
@@ -240,17 +248,17 @@ describe('Unit: sitemap/manager', function () {
                 sinon.assert.callCount(fetchStub, 8);
             });
 
-            it('forgets recorded route entries when routers.reset fires', async function () {
+            it('forgets recorded route entries when RoutesReset fires', async function () {
                 const siteMapManager = makeManager();
                 emitAboutRouter();
 
-                eventsToRemember['routers.reset']();
+                eventsToRemember.RoutesReset();
                 PageGenerator.prototype.addUrl.resetHistory();
                 await siteMapManager.getSiteMapXml('posts');
 
                 // The routers re-register right after a reset and refill the
                 // list; a stale entry here would resurrect a deleted route.
-                sinon.assert.neverCalledWith(PageGenerator.prototype.addUrl, 'http://example.com/about/', sinon.match({id: 'sr1'}));
+                sinon.assert.neverCalledWith(PageGenerator.prototype.addUrl, aboutUrl, sinon.match({id: 'sr1'}));
             });
 
             it('fails a read with a 503 when the build is invalidated mid-flight, and rebuilds on the next read', async function () {

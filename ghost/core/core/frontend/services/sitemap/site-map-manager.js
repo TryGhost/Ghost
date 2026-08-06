@@ -6,7 +6,7 @@ const PostsMapGenerator = require('./post-map-generator');
 const UsersMapGenerator = require('./user-map-generator');
 const TagsMapGenerator = require('./tags-map-generator');
 
-// Frontend-internal routing events (router.created / routers.reset)
+// Frontend-internal routing domain events (RouteRegistered / RoutesReset)
 const routingEvents = require('../routing/events');
 
 // What the sitemap XML reads off each resource, beyond the columns URL
@@ -52,23 +52,23 @@ class SiteMapManager {
         this._indexBuilt = false;
         this._buildInFlight = null;
         this._indexEpoch = 0;
-        // Static/collection route entries only arrive via router.created,
+        // Static/collection route entries only arrive via RouteRegistered,
         // which fires at boot and routes reload. They are recorded here so
         // every rebuild can replay them after resetting the generators.
         this._routerEntries = [];
 
-        routingEvents.on('router.created', (router) => {
-            if (router.name !== 'StaticRoutesRouter' && router.name !== 'CollectionRouter') {
+        routingEvents.on('RouteRegistered', ({path, type, id}) => {
+            if (type !== 'StaticRoutesRouter' && type !== 'CollectionRouter') {
                 return;
             }
             const entry = {
-                url: router.getRoute({absolute: true}),
-                datum: {id: router.identifier, staticRoute: router.name === 'StaticRoutesRouter'}
+                url: urlUtils.createUrl(path, true),
+                datum: {id, staticRoute: type === 'StaticRoutesRouter'}
             };
             this._routerEntries.push(entry);
             this.pages.addUrl(entry.url, entry.datum);
             // A router registering after a build (routes reload re-registers
-            // them one macrotask after routers.reset) must not leave a
+            // them one macrotask after RoutesReset) must not leave a
             // zero-router index marked built — the CDN would pin it.
             this._invalidateIndex();
         });
@@ -79,7 +79,7 @@ class SiteMapManager {
             this._invalidateIndex();
         });
 
-        routingEvents.on('routers.reset', () => {
+        routingEvents.on('RoutesReset', () => {
             this.pages && this.pages.reset();
             this.posts && this.posts.reset();
             this.users && this.users.reset();
