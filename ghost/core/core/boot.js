@@ -315,6 +315,7 @@ async function initAppService() {
     debug('Begin: App Service');
     const appService = require('./frontend/services/apps');
     await appService.init();
+    debug('End: App Service');
 }
 
 /**
