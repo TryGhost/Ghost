@@ -1,6 +1,4 @@
-import ConfirmationModal from '@/settings/app/components/confirmation-modal';
 import NewslettersList from './newsletters/newsletters-list';
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {type ReactNode, useEffect, useState} from 'react';
 import TopLevelGroup from '@/settings/app/components/top-level-group';
 import useQueryParams from '@/settings/app/hooks/use-query-params';
@@ -10,17 +8,17 @@ import {type InfiniteData, useQueryClient} from '@tryghost/admin-x-framework';
 import {type Newsletter, type NewslettersResponseType, newslettersDataType, useBrowseNewsletters, useEditNewsletter, useVerifyNewsletterEmail} from '@tryghost/admin-x-framework/api/newsletters';
 import {arrayMove} from '@dnd-kit/sortable';
 import {formatNumber} from '@tryghost/shade/utils';
+import {type ConfirmationHandle, useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 import {withErrorBoundary} from '@/settings/app/components/error-boundary';
 
-const NavigateToNewsletter = ({id, children}: {id: string; children: ReactNode}) => {
-    const modal = useModal();
+const NavigateToNewsletter = ({id, onNavigate, children}: {id: string; onNavigate: () => void; children: ReactNode}) => {
     const {updateRoute} = useSettingsNavigation();
 
     return <Button className='h-auto p-0 text-green hover:text-green' type='button' variant='link' onClick={() => {
         updateRoute(`newsletters/${id}`);
-        modal.remove();
+        onNavigate();
     }}>{children}</Button>;
 };
 
@@ -37,6 +35,7 @@ const Newsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const verifyEmailToken = useQueryParams().getParam('verifyEmail');
     const {mutateAsync: verifyEmail} = useVerifyNewsletterEmail();
     const handleError = useHandleError();
+    const {confirm} = useConfirmation();
 
     const [newsletters, setNewsletters] = useState<Newsletter[]>(apiNewsletters || []);
 
@@ -52,21 +51,23 @@ const Newsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
         const verify = async () => {
             try {
                 const {newsletters: [updatedNewsletter], meta: {email_verified: emailVerified} = {}} = await verifyEmail({token: verifyEmailToken});
+                const handleRef: {current: ConfirmationHandle | null} = {current: null};
+                const closeConfirmation = () => handleRef.current?.remove();
                 let title;
                 let prompt;
 
                 if (emailVerified && emailVerified === 'sender_email') {
                     title = 'Newsletter email verified';
-                    prompt = <>Newsletter <NavigateToNewsletter id={updatedNewsletter.id}>{updatedNewsletter.name}</NavigateToNewsletter> will now be sent from <strong>{updatedNewsletter.sender_email}</strong>.</>;
+                    prompt = <>Newsletter <NavigateToNewsletter id={updatedNewsletter.id} onNavigate={closeConfirmation}>{updatedNewsletter.name}</NavigateToNewsletter> will now be sent from <strong>{updatedNewsletter.sender_email}</strong>.</>;
                 } else if (emailVerified && emailVerified === 'sender_reply_to') {
                     title = 'Reply-to address verified';
-                    prompt = <>Newsletter <NavigateToNewsletter id={updatedNewsletter.id}>{updatedNewsletter.name}</NavigateToNewsletter> will now use <strong>{updatedNewsletter.sender_reply_to}</strong> as the reply-to address.</>;
+                    prompt = <>Newsletter <NavigateToNewsletter id={updatedNewsletter.id} onNavigate={closeConfirmation}>{updatedNewsletter.name}</NavigateToNewsletter> will now use <strong>{updatedNewsletter.sender_reply_to}</strong> as the reply-to address.</>;
                 } else {
                     title = 'Email address verified';
-                    prompt = <>Email address for newsletter <NavigateToNewsletter id={updatedNewsletter.id}>{updatedNewsletter.name}</NavigateToNewsletter> has been changed.</>;
+                    prompt = <>Email address for newsletter <NavigateToNewsletter id={updatedNewsletter.id} onNavigate={closeConfirmation}>{updatedNewsletter.name}</NavigateToNewsletter> has been changed.</>;
                 }
 
-                NiceModal.show(ConfirmationModal, {
+                handleRef.current = confirm({
                     title,
                     prompt,
                     okLabel: 'Close',
@@ -79,7 +80,7 @@ const Newsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 if (e instanceof APIError && e.message === 'Token expired') {
                     prompt = 'Verification link has expired.';
                 }
-                NiceModal.show(ConfirmationModal, {
+                confirm({
                     title: 'Error verifying email address',
                     prompt: prompt,
                     okLabel: 'Close',
@@ -90,7 +91,7 @@ const Newsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
             }
         };
         verify();
-    }, [verifyEmailToken, handleError, verifyEmail]);
+    }, [verifyEmailToken, handleError, verifyEmail, confirm]);
 
     const buttons = (
         <Button className='mt-[-5px]' size='sm' type='button' variant='ghost' onClick={() => {

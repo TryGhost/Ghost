@@ -1,18 +1,19 @@
-import LimitModal, {type LimitModalProps} from '@/settings/app/components/limit-modal';
-import NiceModal from '@ebay/nice-modal-react';
-import {act, fireEvent, render, screen, waitFor} from '@testing-library/react';
+import {type LimitModalProps} from '@/settings/app/components/limit-modal';
+import {useEffect} from 'react';
+import {ConfirmationProvider, useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
+import {fireEvent, render, screen, waitFor} from '@testing-library/react';
 
 describe('LimitModal', () => {
-    afterEach(() => {
-        void NiceModal.remove(LimitModal);
-    });
-
     const showModal = (props: LimitModalProps) => {
-        render(<NiceModal.Provider />);
-
-        act(() => {
-            void NiceModal.show(LimitModal, props);
-        });
+        const Trigger = () => {
+            const {showLimit} = useConfirmation();
+            useEffect(() => {
+                showLimit(props);
+                 
+            }, [showLimit]);
+            return null;
+        };
+        render(<ConfirmationProvider><Trigger /></ConfirmationProvider>);
     };
 
     it('preserves the upgrade defaults and renders HTML prompts', async () => {

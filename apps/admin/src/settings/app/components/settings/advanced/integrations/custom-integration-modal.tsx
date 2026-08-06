@@ -1,6 +1,4 @@
 import APIKeys from './api-keys';
-import ConfirmationModal from '@/settings/app/components/confirmation-modal';
-import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
 import WebhooksTable from './webhooks-table';
 import {APIError} from '@tryghost/admin-x-framework/errors';
@@ -9,6 +7,7 @@ import {Box, Stack} from '@tryghost/shade/primitives';
 import {Field, FieldError, FieldLabel, Input} from '@tryghost/shade/components';
 import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
 import {type Integration, useBrowseIntegrations, useEditIntegration} from '@tryghost/admin-x-framework/api/integrations';
+import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
 import {useParams} from '@tryghost/admin-x-framework';
 import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 import {SettingsModal} from '@tryghost/shade/patterns';
@@ -24,6 +23,7 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
     const {mutateAsync: refreshAPIKey} = useRefreshAPIKey();
     const {mutateAsync: uploadImage} = useUploadImage();
     const handleError = useHandleError();
+    const {confirm} = useConfirmation();
 
     const {formState, updateForm, handleSave, saveState, errors, clearError, okProps} = useForm({
         initialState: integration,
@@ -64,7 +64,7 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
 
         const name = apiKey.type === 'content' ? 'Content' : 'Admin';
 
-        NiceModal.show(ConfirmationModal, {
+        confirm({
             title: `Regenerate ${name} API Key`,
             prompt: `You can regenerate ${name} API Key any time, but any scripts or applications using it will need to be updated.`,
             okLabel: `Regenerate ${name} API Key`,

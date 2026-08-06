@@ -1,5 +1,3 @@
-import LimitModal from '@/settings/app/components/limit-modal';
-import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
 import TopLevelGroup from '@/settings/app/components/top-level-group';
 import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from '@tryghost/shade/components';
@@ -9,6 +7,7 @@ import {Text} from '@tryghost/shade/primitives';
 import {type Theme, useBrowseThemes} from '@tryghost/admin-x-framework/api/themes';
 import {downloadFile, getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useCheckThemeLimitError} from '@/settings/app/hooks/use-check-theme-limit-error';
+import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
 import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 import {withErrorBoundary} from '@/settings/app/components/error-boundary';
 
@@ -17,6 +16,7 @@ const ChangeTheme: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const [isCheckingLimit, setIsCheckingLimit] = useState(false);
     const {checkThemeLimitError} = useCheckThemeLimitError();
     const {route, updateRoute} = useSettingsNavigation();
+    const {showLimit} = useConfirmation();
     const {data: themesData} = useBrowseThemes();
     const activeTheme = themesData?.themes.find((theme: Theme) => theme.active);
 
@@ -38,7 +38,7 @@ const ChangeTheme: React.FC<{ keywords: string[] }> = ({keywords}) => {
         }
 
         if (themeLimitError) {
-            NiceModal.show(LimitModal, {
+            showLimit({
                 prompt: themeLimitError,
                 onOk: () => updateRoute({route: '/pro', isExternal: true})
             });
@@ -55,7 +55,7 @@ const ChangeTheme: React.FC<{ keywords: string[] }> = ({keywords}) => {
         const limitError = await checkThemeLimitError('.');
 
         if (limitError) {
-            NiceModal.show(LimitModal, {
+            showLimit({
                 prompt: limitError,
                 onOk: () => updateRoute({route: '/pro', isExternal: true})
             });

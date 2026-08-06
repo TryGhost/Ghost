@@ -1,14 +1,13 @@
 import APIKeys from './api-keys';
 import BrandIcon from '@/settings/app/components/icons/brand-icon';
-import ConfirmationModal from '@/settings/app/components/confirmation-modal';
 import IntegrationHeader from './integration-header';
-import NiceModal from '@ebay/nice-modal-react';
 import ZapierLogo from '@/settings/app/assets/images/zapier-logo.svg';
 import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Button} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useBrowseIntegrations} from '@tryghost/admin-x-framework/api/integrations';
+import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -31,6 +30,7 @@ function ZapierModal() {
 
     const {mutateAsync: refreshAPIKey} = useRefreshAPIKey();
     const handleError = useHandleError();
+    const {confirm} = useConfirmation();
     const [regenerated, setRegenerated] = useState(false);
 
     const zapierDisabled = config.hostSettings?.limits?.customIntegrations?.disabled;
@@ -50,7 +50,7 @@ function ZapierModal() {
 
         setRegenerated(false);
 
-        NiceModal.show(ConfirmationModal, {
+        confirm({
             title: 'Regenerate Admin API Key',
             prompt: 'You will need to locate the Ghost App within your Zapier account and click on "Reconnect" to enter the new Admin API Key.',
             okLabel: 'Regenerate Admin API Key',

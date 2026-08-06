@@ -1,4 +1,3 @@
-import ConfirmationModal from '@/settings/app/components/confirmation-modal';
 import NiceModal from '@ebay/nice-modal-react';
 import WebhookModal from './webhook-modal';
 import {Button, EmptyIndicator, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
@@ -7,12 +6,14 @@ import {type Integration} from '@tryghost/admin-x-framework/api/integrations';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {getWebhookEventLabel} from './webhook-event-options';
 import {toast} from 'sonner';
+import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
 import {useDeleteWebhook} from '@tryghost/admin-x-framework/api/webhooks';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 const WebhooksTable: React.FC<{integration: Integration}> = ({integration}) => {
     const {mutateAsync: deleteWebhook} = useDeleteWebhook();
     const handleError = useHandleError();
+    const {confirm} = useConfirmation();
     const webhooks = integration.webhooks || [];
 
     const showAddWebhookModal = () => {
@@ -22,7 +23,7 @@ const WebhooksTable: React.FC<{integration: Integration}> = ({integration}) => {
     };
 
     const handleDelete = (id: string) => {
-        NiceModal.show(ConfirmationModal, {
+        confirm({
             title: 'Are you sure?',
             prompt: 'Deleting this webhook may prevent the integration from functioning.',
             okVariant: 'destructive',
