@@ -189,9 +189,12 @@ export class PostsPage extends AdminPage {
      * uses Radix, so items carry `role="menuitem"`, while Ember renders a plain
      * list of `<button>`s with no menu roles at all.
      *
-     * Matched loosely on purpose. Ember inlines an SVG before the label, and
-     * the icon's name lands in the accessible name — "Add a tag" is actually
-     * `tagAdd a tag`. An exact match therefore finds nothing on the Ember side.
+     * Matched on a trailing label rather than an exact one, because Ember's
+     * accessible names have junk in front of them. The inlined SVG's title joins
+     * the name ("Add a tag" is really `tagAdd a tag`), and where the icon also
+     * carries an inline `<style>`, its CSS text joins too — Delete's accessible
+     * name is `trash.trash_svg__a{fill:none;…}Delete`. An exact match finds
+     * neither.
      */
     contextMenuItem(label: string): Locator {
         return this.page
