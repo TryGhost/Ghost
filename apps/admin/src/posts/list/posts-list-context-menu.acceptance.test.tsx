@@ -1,9 +1,27 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { fakeAdminEndpoint, fakePosts, fakeTags, fakeUsers, post, renderAdminApp } from "@test-utils/acceptance";
+import { fakeAdminEndpoint, fakePosts, fakePostsListScreen, post, renderAdminApp } from "@test-utils/acceptance";
 import { postsListScreen } from "./posts-list.screen";
 
 const FLAG_ON = { labs: { postsListReact: true } };
+
+// Captured before any test stubs it, so afterEach can put it back. Normally
+// undefined: `clipboard` lives on the prototype, not as an own property.
+const originalClipboard = Object.getOwnPropertyDescriptor(navigator, "clipboard");
+
+/**
+ * Records what the app hands to the clipboard. Recorded rather than read
+ * back: clipboard *read* permission is denied in this harness, and the value
+ * passed to `writeText` is the behaviour under test.
+ */
+function recordClipboard(): string[] {
+    const copied: string[] = [];
+    Object.defineProperty(navigator, "clipboard", {
+        configurable: true,
+        value: { writeText: (text: string) => { copied.push(text); return Promise.resolve(); } }
+    });
+    return copied;
+}
 
 /**
  * The right-click menu. Which items it offers for a given selection is unit
@@ -13,12 +31,15 @@ const FLAG_ON = { labs: { postsListReact: true } };
  */
 describe("Posts list context menu", () => {
     beforeEach(() => {
-        fakeAdminEndpoint("POST", "/stats/posts-visitor-counts/", {stats: [{data: {visitor_counts: {}}}]});
-        fakeAdminEndpoint("POST", "/stats/posts-member-counts/", {stats: [{data: {member_counts: {}}}]});
-        fakeTags([]);
-        fakeUsers([]);
-        fakeAdminEndpoint("GET", /^\/tags\/\?.*slug/, { tags: [] });
-        fakeAdminEndpoint("GET", /^\/users\/\?.*slug/, { users: [] });
+        fakePostsListScreen();
+    });
+
+    afterEach(() => {
+        if (originalClipboard) {
+            Object.defineProperty(navigator, "clipboard", originalClipboard);
+        } else {
+            delete (navigator as { clipboard?: unknown }).clipboard;
+        }
     });
 
     it("opens on right-click", async () => {
@@ -87,11 +108,7 @@ describe("Posts list context menu", () => {
         await renderAdminApp("/posts?type=draft", FLAG_ON);
         await expect.element(postsListScreen.listItems().first()).toBeVisible();
 
-        const copied: string[] = [];
-        Object.defineProperty(navigator, "clipboard", {
-            configurable: true,
-            value: { writeText: (text: string) => { copied.push(text); return Promise.resolve(); } }
-        });
+        const copied = recordClipboard();
 
         await postsListScreen.listItems().first().click({ button: "right" });
         await postsListScreen.contextMenuItem("Copy preview link").click();
@@ -106,11 +123,7 @@ describe("Posts list context menu", () => {
         await renderAdminApp("/posts?type=published", FLAG_ON);
         await expect.element(postsListScreen.listItems().first()).toBeVisible();
 
-        const copied: string[] = [];
-        Object.defineProperty(navigator, "clipboard", {
-            configurable: true,
-            value: { writeText: (text: string) => { copied.push(text); return Promise.resolve(); } }
-        });
+        const copied = recordClipboard();
 
         await postsListScreen.listItems().first().click({ button: "right" });
         await postsListScreen.contextMenuItem("Copy link to post").click();
