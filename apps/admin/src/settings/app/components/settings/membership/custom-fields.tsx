@@ -1,18 +1,18 @@
 import CustomFieldIcon from './custom-fields/custom-field-icon';
 import CustomFieldModal from './custom-fields/custom-field-modal';
 import NiceModal from '@ebay/nice-modal-react';
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import TopLevelGroup from '@/settings/app/components/top-level-group';
 import useFeatureFlag from '@/settings/app/hooks/use-feature-flag';
 import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Button, DragIndicator, NoValueLabel, NoValueLabelIcon, type SortableItemContainerProps, SortableList, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {TextCursorInput} from 'lucide-react';
 import {arrayMove} from '@dnd-kit/sortable';
 import {useDndContext} from '@dnd-kit/core';
-import {memberCustomFieldsDataType, useBrowseMemberCustomFieldsIncludingArchived, useReorderMemberCustomFields, userTypeForField} from '@tryghost/admin-x-framework/api/member-custom-fields';
+import {inOrderOf, memberCustomFieldsDataType, useBrowseMemberCustomFieldsIncludingArchived, useReorderMemberCustomFields, userTypeForField} from '@tryghost/admin-x-framework/api/member-custom-fields';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useQueryClient} from '@tryghost/admin-x-framework';
 import {withErrorBoundary} from '@/settings/app/components/error-boundary';
-import type {MemberCustomField, MemberCustomFieldsResponseType} from '@tryghost/admin-x-framework/api/member-custom-fields';
+import type {MemberCustomField} from '@tryghost/admin-x-framework/api/member-custom-fields';
 
 // How many fields render before the list collapses behind "Show all" — the
 // recommendations list's preview size.
@@ -168,10 +168,20 @@ const CustomFields: React.FC<{keywords: string[]}> = ({keywords}) => {
     const {data} = useBrowseMemberCustomFieldsIncludingArchived({
         enabled: hasCustomFields
     });
-    const fields = data?.members_custom_fields || [];
     const {mutateAsync: reorderFields} = useReorderMemberCustomFields();
     const queryClient = useQueryClient();
     const handleError = useHandleError();
+
+    // The order the publisher has just drawn, while the server catches up. Held as keys
+    // and applied over whatever the server currently says, rather than as a copy of the
+    // list: a field created elsewhere in the meantime still appears, and one deleted
+    // elsewhere still goes, because this only ever states an order and never a set.
+    const [drawnOrder, setDrawnOrder] = useState<string[] | null>(null);
+    const serverFields = data?.members_custom_fields;
+    const fields = useMemo(() => {
+        const known = serverFields || [];
+        return drawnOrder ? inOrderOf(drawnOrder, known) : known;
+    }, [serverFields, drawnOrder]);
     const [selectedTab, setSelectedTab] = useState('active-fields');
     const [showAllActive, setShowAllActive] = useState(false);
     const [showAllArchived, setShowAllArchived] = useState(false);
@@ -210,9 +220,11 @@ const CustomFields: React.FC<{keywords: string[]}> = ({keywords}) => {
      * moving the dragged one to the target's index in the full list gives exactly the
      * order the publisher drew, with the archived ones undisturbed around it.
      *
-     * The cache is moved first so the row stays where it was dropped. Waiting for the
-     * round-trip would snap it back under the cursor and then jump. If the request
-     * fails, invalidating puts the server's order back.
+     * Nothing about what is on screen waits for the server. The order the publisher drew
+     * is held here and rendered from immediately, so letting go of a row is the end of
+     * the interaction rather than the start of a round-trip. The request runs behind it,
+     * and its response settles the cached lists; only then is the drawn order let go of,
+     * by which point it and the authoritative order agree and nothing moves.
      */
     const onMove = (key: string, overKey: string) => {
         const from = fields.findIndex(field => field.key === key);
@@ -222,36 +234,21 @@ const CustomFields: React.FC<{keywords: string[]}> = ({keywords}) => {
         }
 
         const reordered = arrayMove(fields, from, to);
+        setDrawnOrder(reordered.map(field => field.key));
 
-        // Several lists live under this data type, one per set of query params, and they
-        // do not hold the same fields: this screen asked for every status, while a
-        // member's details and the importer asked for active fields only. Each is put
-        // into the new order rather than replaced by this screen's list, which would
-        // hand those two archived fields they are written to assume they never see.
-        const placeOf = new Map(reordered.map((field, place) => [field.key, place]));
-        queryClient.setQueriesData<MemberCustomFieldsResponseType>(
-            {queryKey: [memberCustomFieldsDataType]},
-            (current) => {
-                if (!current?.members_custom_fields) {
-                    return current;
-                }
-                // A field this drag did not name keeps to the end rather than jumping to
-                // the front, which is where an unknown place would otherwise sort.
-                const inNewOrder = [...current.members_custom_fields].sort(
-                    (a, b) => (placeOf.get(a.key) ?? Infinity) - (placeOf.get(b.key) ?? Infinity)
-                );
-                return {...current, members_custom_fields: inNewOrder};
-            }
-        );
-
-        reorderFields(reordered).catch((error) => {
-            // The server's own message, not a generic one. The failure a publisher can
-            // actually provoke is a list that no longer names every field, because a
-            // colleague added one, and the API says so in words worth reading: it names
-            // the field and asks them to reload.
-            handleError(error);
-            queryClient.invalidateQueries({queryKey: [memberCustomFieldsDataType]});
-        });
+        reorderFields(reordered)
+            .catch((error) => {
+                // The server's own message, not a generic one. The failure a publisher
+                // can actually provoke is a list that no longer names every field,
+                // because a colleague added one, and the API says so in words worth
+                // reading: it names the field and asks them to reload. Refetching then is
+                // how this screen learns about the field it did not know about.
+                handleError(error);
+                queryClient.invalidateQueries({queryKey: [memberCustomFieldsDataType]});
+            })
+            // Dropped whether or not it worked: on success the cached lists already hold
+            // this order, and on failure the server's order is the one to show.
+            .finally(() => setDrawnOrder(null));
     };
 
     return (

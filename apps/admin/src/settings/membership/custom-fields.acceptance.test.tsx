@@ -240,7 +240,7 @@ describe("Custom fields", () => {
         const shirtField = {...companyField, key: "shirt-size", name: "Shirt size"};
         const nicknameField = {...companyField, key: "nickname", name: "Nickname"};
         let currentFields = [companyField, shirtField, nicknameField];
-        fakeAdminEndpoint("GET", new RegExp("^/members/custom_fields/\\?"), () => ({members_custom_fields: currentFields}));
+        const browseApi = fakeAdminEndpoint("GET", new RegExp("^/members/custom_fields/\\?"), () => ({members_custom_fields: currentFields}));
         const reorderApi = fakeAdminEndpoint("PUT", "/members/custom_fields/", (request) => {
             const order = (request.body as {members_custom_fields: {key: string}[]}).members_custom_fields;
             currentFields = order.map(({key}) => currentFields.find(field => field.key === key)!);
@@ -250,6 +250,7 @@ describe("Custom fields", () => {
 
         const rows = settingsScreen.customFields().getByTestId("custom-field-list-item");
         await expect(rows).toHaveCount(3);
+        const browsesBeforeDrag = browseApi.requests.length;
 
         // A real pointer drag of the handle onto the first row, which is what dnd-kit
         // listens for. Note this cannot be driven from the keyboard: the sortable list
@@ -269,6 +270,11 @@ describe("Custom fields", () => {
         // The row stays where it was dropped rather than snapping back and jumping when
         // the response lands.
         await expect.element(rows.first()).toHaveTextContent("Nickname");
+
+        // And the response settles it, so the list is never re-read. A reorder only
+        // succeeds when it named exactly the fields the site has, so its response says
+        // everything a fetch would and the round-trip is not repeated.
+        expect(browseApi.requests.length).toBe(browsesBeforeDrag);
     });
 
     it("shows only one copy of a field while it is being dragged", async () => {
