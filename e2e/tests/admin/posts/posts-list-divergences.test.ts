@@ -83,4 +83,35 @@ test.describe('Ghost Admin - Posts List divergences (React only)', () => {
             expect(copied[0]).not.toContain('/draft-to-preview');
         }).toPass();
     });
+
+    /**
+     * **React offers Delete in the right-click menu; Ember does not.**
+     *
+     * Both gate it on the same rule — Ember's `session.user.isAdmin`, which is
+     * Owner or Administrator, and React's `hasAdminAccess`, which is the same
+     * pair. Yet probing Ember's menu as the **Owner** shows only Copy preview
+     * link, Feature, Add a tag, Change access and Duplicate. No Delete.
+     *
+     * This is recorded rather than explained: the port matches Ember's stated
+     * rule, so either Ember's own condition is not evaluating as its source
+     * suggests, or something upstream of it differs in this environment. It
+     * wants its own investigation — and until then, a delete-from-the-menu test
+     * cannot be shared, because half of it has nothing to click.
+     *
+     * The React behaviour is the one users would expect, so it is asserted here
+     * rather than removed.
+     */
+    test('deleting a post from the menu removes it from the list', async () => {
+        await postFactory.create({title: 'Doomed post', status: 'draft', featured: false});
+        await postFactory.create({title: 'Surviving post', status: 'draft', featured: false});
+
+        await postsPage.goto();
+        await postsPage.waitForList();
+        await postsPage.openContextMenuFor('Doomed post');
+        await postsPage.contextMenuItem('Delete').click();
+        await postsPage.confirmDelete();
+
+        await expect(postsPage.getPostByTitle('Doomed post')).toBeHidden();
+        await expect(postsPage.getPostByTitle('Surviving post')).toBeVisible();
+    });
 });

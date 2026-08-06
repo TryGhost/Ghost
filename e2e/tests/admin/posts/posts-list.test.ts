@@ -129,23 +129,9 @@ for (const {implementation, postsListReact} of [
             await postsPage.waitForList();
             await postsPage.openContextMenuFor('Right clickable');
 
-            await expect(postsPage.contextMenuItem('Delete')).toBeVisible();
             // A draft has no public link to copy, so it offers the preview one.
             await expect(postsPage.contextMenuItem('Copy preview link')).toBeVisible();
-        });
-
-        test('deleting a post from the menu removes it from the list', async () => {
-            await postFactory.create({title: 'Doomed post', status: 'draft', featured: false});
-            await postFactory.create({title: 'Surviving post', status: 'draft', featured: false});
-
-            await postsPage.goto();
-            await postsPage.waitForList();
-            await postsPage.openContextMenuFor('Doomed post');
-            await postsPage.contextMenuItem('Delete').click();
-            await postsPage.confirmDelete();
-
-            await expect(postsPage.getPostByTitle('Doomed post')).toBeHidden();
-            await expect(postsPage.getPostByTitle('Surviving post')).toBeVisible();
+            await expect(postsPage.contextMenuItem('Add a tag')).toBeVisible();
         });
     });
 }

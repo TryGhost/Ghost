@@ -177,9 +177,9 @@ export class PostsPage extends AdminPage {
 
     async openContextMenuFor(title: string): Promise<void> {
         await this.getPostByTitle(title).click({button: 'right'});
-        // Waits on an item rather than a container: the two menus have no
-        // container in common — see `contextMenuItem`.
-        await this.contextMenuItem('Delete').waitFor({state: 'visible'});
+        // Waits on "Add a tag" rather than a container: the two menus share no
+        // container, and it is the one item both offer unconditionally.
+        await this.contextMenuItem('Add a tag').waitFor({state: 'visible'});
     }
 
     /**
@@ -187,14 +187,16 @@ export class PostsPage extends AdminPage {
      *
      * The two implementations build the menu from different elements: React
      * uses Radix, so items carry `role="menuitem"`, while Ember renders a plain
-     * list of `<button>`s with no menu roles at all. Matching either keeps one
-     * helper working for both, and there is no other `Delete` or
-     * `Copy preview link` control on this screen to collide with.
+     * list of `<button>`s with no menu roles at all.
+     *
+     * Matched loosely on purpose. Ember inlines an SVG before the label, and
+     * the icon's name lands in the accessible name — "Add a tag" is actually
+     * `tagAdd a tag`. An exact match therefore finds nothing on the Ember side.
      */
     contextMenuItem(label: string): Locator {
         return this.page
             .getByRole('menuitem', {name: label, exact: true})
-            .or(this.page.getByRole('button', {name: label, exact: true}));
+            .or(this.page.getByRole('button', {name: new RegExp(`${label}$`)}));
     }
 
     /**
