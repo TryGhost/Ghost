@@ -45,7 +45,15 @@ module.exports = createTransactionalMigration(
         }
 
         const ids = discarded.map(definition => definition.id);
-        const discardedValues = await knex(VALUES_TABLE).whereIn('custom_field_id', ids).del();
+
+        // A later 6.58 migration re-keys this table off `custom_field_id`. On the idempotency
+        // re-run the column is gone, but so are these definitions (deleted on the first run,
+        // and minting will not re-create them), so this branch is unreachable then. Guarding
+        // on the column keeps the query shape-proof rather than erroring on a MySQL install.
+        const hasFieldId = await knex.schema.hasColumn(VALUES_TABLE, 'custom_field_id');
+        const discardedValues = hasFieldId
+            ? await knex(VALUES_TABLE).whereIn('custom_field_id', ids).del()
+            : 0;
         const discardedFields = await knex(FIELDS_TABLE).whereIn('id', ids).del();
 
         logging.info(`Discarded ${discardedFields} custom field definition(s) this release cannot mint, and ${discardedValues} value(s): ${discarded.map(definition => definition.key).join(', ')}`);
