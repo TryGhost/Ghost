@@ -103,6 +103,12 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
         isDefaultView: isOnDefaultView
     });
 
+    // The bar carries the chips, but also the only home Save-view has. `order`
+    // is one of the five params a saved view is made of, so a sort on its own
+    // makes the view saveable while leaving `hasFilters` false — gate the bar on
+    // filters alone and that view becomes unsaveable, which Ember allows.
+    const showFilterBar = hasFilters || canManageView;
+
     // Authors and contributors only ever see their own posts, whatever the
     // `author` param says — matching PostsRoute#model in the Ember app.
     const isRestrictedAuthor = Boolean(currentUser && isAuthorOrContributor(currentUser));
@@ -257,8 +263,25 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
                             <PageHeader.Left>
                                 <PageHeader.Title>{copy.title}</PageHeader.Title>
                             </PageHeader.Left>
+                            {/* Sort and the primary button live in the top row,
+                                as on the members list. The filter trigger joins
+                                them only while there is nothing to show — once
+                                there is, it moves down into a full-width row,
+                                because chips need the width and would otherwise
+                                crowd the title. */}
                             <PageHeader.Actions>
                                 <PageHeader.ActionGroup>
+                                    {!showFilterBar && (
+                                        <PostsFilters
+                                            currentUser={currentUser}
+                                            filters={filters}
+                                            iconOnly={true}
+                                            params={params}
+                                            resource={resource}
+                                            onFiltersChange={setFilters}
+                                        />
+                                    )}
+                                    <PostsSortMenu order={order} onOrderChange={setOrder} />
                                     <Button asChild>
                                         <a className='font-bold' href={copy.newHref}>
                                             <LucideIcon.Plus className='size-4' />
@@ -268,19 +291,20 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
                                 </PageHeader.ActionGroup>
                             </PageHeader.Actions>
                         </PageHeader>
-                        <FilterBar>
-                            <PostsFilters
-                                currentUser={currentUser}
-                                filters={filters}
-                                params={params}
-                                resource={resource}
-                                onFiltersChange={setFilters}
-                            />
-                            <PostsSortMenu order={order} onOrderChange={setOrder} />
-                            {canManageView && (
-                                <ManagePostViewPopover activeView={activeView} params={params} resource={resource} />
-                            )}
-                        </FilterBar>
+                        {showFilterBar && (
+                            <FilterBar>
+                                <PostsFilters
+                                    currentUser={currentUser}
+                                    filters={filters}
+                                    params={params}
+                                    resource={resource}
+                                    viewActions={canManageView && (
+                                        <ManagePostViewPopover activeView={activeView} params={params} resource={resource} />
+                                    )}
+                                    onFiltersChange={setFilters}
+                                />
+                            </FilterBar>
+                        )}
                     </ListPage.Header>
                     <ListPage.Body>
                         {isLoading ? (

@@ -40,8 +40,11 @@ export class PostsPage extends AdminPage {
         this.tagFilter = this.postsFilters.getByRole('button', {name: 'Tag filter'});
         this.orderFilter = this.postsFilters.getByRole('button', {name: 'Sort filter'});
 
-        this.saveViewButton = page.getByRole('button', {name: /save as view/i});
-        this.editViewButton = page.getByRole('button', {name: /edit current view/i});
+        // Ember titles these "Save as view..." / "Edit current view..."; React
+        // labels them "Save view" / "Edit view", matching the members list. The
+        // optional middle word covers both without two page objects.
+        this.saveViewButton = page.getByRole('button', {name: /save (as )?view/i});
+        this.editViewButton = page.getByRole('button', {name: /edit (current )?view/i});
 
         this.pageTitle = page.getByRole('heading', {level: 2});
 

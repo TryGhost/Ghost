@@ -1,6 +1,6 @@
 import {Button, Input, Popover, PopoverContent, PopoverTrigger} from '@tryghost/shade/components';
 import {Inline, Stack, Text} from '@tryghost/shade/primitives';
-import {LucideIcon, cn} from '@tryghost/shade/utils';
+import {cn} from '@tryghost/shade/utils';
 import {POST_VIEW_COLORS, type PostViewColor, pickPostViewColor} from '@/posts/list/post-views';
 import {getColorHex} from '@/layout/app-sidebar/shared-views';
 import {useDeletePostView, useSavePostView} from '@/posts/list/hooks/use-post-views';
@@ -148,12 +148,14 @@ export function ManagePostViewPopover({resource, params, activeView}: ManagePost
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
+                {/* Labelled in words rather than by icon, as on the members
+                    list. No `aria-label`: it would override the visible text as
+                    the accessible name, leaving the two out of step. */}
                 <Button
-                    aria-label={activeView ? 'Edit current view' : 'Save as view'}
                     data-testid='manage-post-view'
                     variant='outline'
                 >
-                    <LucideIcon.Bookmark className='size-4' />
+                    {activeView ? 'Edit view' : 'Save view'}
                 </Button>
             </PopoverTrigger>
             <PopoverContent align='end' className='w-72'>
