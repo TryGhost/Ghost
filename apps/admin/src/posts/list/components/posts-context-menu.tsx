@@ -5,8 +5,12 @@ import {Fragment, memo, type ReactNode} from 'react';
 
 interface PostsContextMenuProps {
     children: ReactNode;
-    /** Computed once for the whole list — it is the same for every row. */
-    items: PostContextMenuItem[];
+    /**
+     * Read when the menu opens rather than passed as a value: the items change
+     * on every selection change, and a changing prop would defeat the row's
+     * memo, which is the whole point of rendering the menu inside it.
+     */
+    getItems: () => PostContextMenuItem[];
     /** Only this row may offer a gift link, which is a single-post action. */
     showGiftLink: boolean;
     /**
@@ -30,9 +34,8 @@ interface PostsContextMenuProps {
  * selection, not from the row under the cursor.
  */
 function PostsContextMenuComponent({
-    children, items, showGiftLink, enabled, onOpenChange, onAction
+    children, getItems, showGiftLink, enabled, onOpenChange, onAction
 }: PostsContextMenuProps) {
-    const visible = showGiftLink ? items : items.filter(item => item.key !== 'gift-link');
 
     // Ember bails before intercepting the event for roles that cannot act, so
     // they keep the browser's own menu rather than getting an empty box.
@@ -50,7 +53,7 @@ function PostsContextMenuComponent({
         <ContextMenu onOpenChange={onOpenChange}>
             <ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
             <ContextMenuContent>
-                {visible.map(item => (
+                {(showGiftLink ? getItems() : getItems().filter(item => item.key !== 'gift-link')).map(item => (
                     // Fragment, not a div: a `role="menu"` may only contain
                     // menuitem, group and separator children.
                     <Fragment key={item.key}>

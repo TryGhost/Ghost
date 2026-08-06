@@ -5,7 +5,6 @@ import {LoadMoreButton} from '@/shared/virtual-list';
 import {cn, LucideIcon} from '@tryghost/shade/utils';
 import {FilterBar, PageHeader} from '@tryghost/shade/patterns';
 import {PostListRow} from './components/post-list-row';
-import {PostsContextMenu} from './components/posts-context-menu';
 import {PostsEmptyState} from './components/posts-empty-state';
 import {PostsFilters} from './components/posts-filters';
 import {ManagePostViewPopover} from './components/manage-post-view-popover';
@@ -35,7 +34,7 @@ import {type PostResource, getPostResourceCopy} from './post-resource';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
 import {usePostsFilterState} from './hooks/use-posts-filter-state';
 import {rememberStickyPostFilters} from './posts-sticky-filters';
-import {lazy, Suspense, useEffect, useMemo, useState} from 'react';
+import {lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useLocation} from '@tryghost/admin-x-framework';
 import {usePostAnalyticsCounts} from './hooks/use-post-analytics-counts';
 import {usePostsList} from './hooks/use-posts-list';
@@ -148,6 +147,13 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
     const membersEnabled = getSettingValue<string>(settings, 'members_signup_access') !== 'none';
 
     // Identical for every row, so computed once rather than per row per render.
+    /**
+     * Both of these change on every selection change — the items because they
+     * describe the selection, the action because it closes over it. Handing
+     * either to 100 memoised rows by value re-renders the whole list on every
+     * click. Behind a ref the rows keep their memo and read current values when
+     * a menu actually opens.
+     */
     const menuItems = useMemo(() => getPostContextMenuItems({
         posts: menuPosts,
         resource,
@@ -200,6 +206,17 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
             selection.keepOnly(remainingIds);
         }
     });
+    const menuItemsRef = useRef(menuItems);
+    const runPostActionRef = useRef<(key: PostContextMenuKey) => void | Promise<void>>(() => {});
+
+    menuItemsRef.current = menuItems;
+
+    const getMenuItems = useCallback(() => menuItemsRef.current, []);
+    const stableRunPostAction = useCallback(
+        (key: PostContextMenuKey) => runPostActionRef.current(key),
+        []
+    );
+
     const runPostAction = usePostActions({
         resource,
         posts: menuPosts,
@@ -222,6 +239,8 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
         // 2,000-post site the toast has to say 2,000, not the 30 in memory.
         count: getPostSelectionCount(selectionState, totalItems)
     });
+
+    runPostActionRef.current = runPostAction;
 
     const {visitorCounts, memberCounts} = usePostAnalyticsCounts({
         items,
@@ -318,29 +337,26 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
                                     data-testid='posts-list'
                                 >
                                     {items.map(item => (
-                                        <PostsContextMenu
+                                        <PostListRow
                                             key={item.id}
-                                            enabled={selection.enabled}
-                                            items={menuItems}
+                                            getMenuItems={getMenuItems}
+                                            hasAdminAccess={isAdmin}
+                                            isContributor={isContributor}
+                                            isSelected={selection.isSelected(item.id)}
+                                            memberCounts={memberCounts}
+                                            menuEnabled={selection.enabled}
+                                            menuOnAction={stableRunPostAction}
+                                            menuOnOpenChange={selection.getContextMenuOpenHandler(item.id)}
+                                            metricsSettings={metricsSettings}
+                                            paidMembersEnabled={paidMembersEnabled}
+                                            post={item}
+                                            resource={resource}
                                             showGiftLink={menuGiftLinkPostId === item.id}
-                                            onAction={runPostAction}
-                                            onOpenChange={selection.getContextMenuOpenHandler(item.id)}
-                                        >
-                                            <PostListRow
-                                                hasAdminAccess={isAdmin}
-                                                isContributor={isContributor}
-                                                isSelected={selection.isSelected(item.id)}
-                                                memberCounts={memberCounts}
-                                                metricsSettings={metricsSettings}
-                                                paidMembersEnabled={paidMembersEnabled}
-                                                post={item}
-                                                resource={resource}
-                                                timezone={timezone}
-                                                visitorCounts={visitorCounts}
-                                                onSelectClick={selection.onRowClick}
-                                                onSelectMouseDown={selection.onRowMouseDown}
-                                            />
-                                        </PostsContextMenu>
+                                            timezone={timezone}
+                                            visitorCounts={visitorCounts}
+                                            onSelectClick={selection.onRowClick}
+                                            onSelectMouseDown={selection.onRowMouseDown}
+                                        />
                                     ))}
                                 </ul>
                                 {/* Plain pager for now. Phase 5 adds the
