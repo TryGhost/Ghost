@@ -135,6 +135,14 @@ jobs:
               - '.github/actions/**'
               - '.github/scripts/**'
               - 'scripts/**'
+            docs:
+              - '**/*.md'
+              - '.agents/**'
+              - '.claude/**'
+              - '.github/workflows/ci.yml'
+              - 'package.json'
+              - 'scripts/check-agent-skill-links.js'
+              - 'scripts/test/check-agent-skill-links.test.js'
             core:
               - *shared
               - 'ghost/**'
@@ -196,9 +204,6 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
-
-      - name: Check agent skill discovery
-        run: pnpm lint:agent-skills
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
@@ -263,6 +268,7 @@ jobs:
       changed_i18n_apps: ${{ steps.affected.outputs.affected_i18n_projects != '' }}
       changed_core: ${{ steps.changed.outputs.core }}
       changed_any_code: ${{ steps.changed.outputs.any-code }}
+      changed_docs: ${{ steps.changed.outputs.docs }}
       changed_tb_cli: ${{ steps.changed.outputs.tb-cli }}
       # Single gate for the build + browser-E2E lane. True for tags, or when a
       # changed file could affect a running Ghost instance (see the `e2e` path
@@ -389,6 +395,21 @@ jobs:
           status: ${{ job.status }}
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  job_lint_docs:
+    name: Lint docs
+    runs-on: ubuntu-slim
+    needs: [job_setup]
+    if: needs.job_setup.outputs.changed_docs == 'true'
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Lint agent skills
+        run: node scripts/check-agent-skill-links.js
 
   job_i18n:
     runs-on: ubuntu-latest
@@ -1997,6 +2018,7 @@ jobs:
         job_app_version_bump_check,
         job_migration_integrity_check,
         job_lint,
+        job_lint_docs,
         job_i18n,
         job_build_admin,
         job_pack,
