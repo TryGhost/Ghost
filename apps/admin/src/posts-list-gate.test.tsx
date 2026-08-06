@@ -11,12 +11,18 @@ vi.mock('@tryghost/admin-x-framework/api/config', () => ({
     useBrowseConfig: mockUseBrowseConfig
 }));
 
-// `useEmberFeatureFlag` is the ownership authority when Ember is present: with
-// no Ember (as here) it returns undefined and the gate falls back to the config
-// query. Omitting it from the mock makes FlagGatedRoute throw.
+// `useEmberFeatureFlag` is the ownership authority when Ember is present.
+// Mirroring the real reader (window.EmberBridge, undefined without it) lets
+// tests cover both the standalone config path and the integrated Ember path.
 vi.mock('./ember-bridge', () => ({
     EmberFallback: () => React.createElement('div', {'data-testid': 'ember-fallback'}),
-    useEmberFeatureFlag: () => undefined
+    useEmberFeatureFlag: (flag: string) => {
+        const stateBridge = window.EmberBridge?.state;
+        if (!stateBridge?.isFeatureEnabled) {
+            return undefined;
+        }
+        return stateBridge.isFeatureEnabled(flag) ?? null;
+    }
 }));
 
 // The Ember side of these routes is EmberListWithGiftLinks rather than a bare
@@ -48,6 +54,7 @@ const withLabs = (labs: Record<string, unknown>) => configResult({data: {config:
 describe('posts and pages list gates', () => {
     beforeEach(() => {
         mockUseBrowseConfig.mockReset();
+        delete window.EmberBridge;
     });
 
     describe.each([
@@ -61,6 +68,23 @@ describe('posts and pages list gates', () => {
 
             expect(screen.getByTestId('ember-list-with-gift-links')).toBeInTheDocument();
             // A bare EmberFallback here would drop the gift-link modal host.
+            expect(screen.queryByTestId('ember-fallback')).not.toBeInTheDocument();
+        });
+
+        it('renders the Ember list (with the gift-link host) when Ember reports the flag off', () => {
+            // The integrated-admin path: FlagGatedRoute's Ember-authority
+            // branch used to bypass the `fallback` prop, silently unmounting
+            // the gift-link host in the flag's default state.
+            mockUseBrowseConfig.mockReturnValue(withLabs({postsListReact: false}));
+            window.EmberBridge = {
+                state: {
+                    isFeatureEnabled: () => false
+                }
+            } as unknown as typeof window.EmberBridge;
+
+            render(<Gate />);
+
+            expect(screen.getByTestId('ember-list-with-gift-links')).toBeInTheDocument();
             expect(screen.queryByTestId('ember-fallback')).not.toBeInTheDocument();
         });
 
