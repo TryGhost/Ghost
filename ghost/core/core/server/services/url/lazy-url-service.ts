@@ -271,7 +271,7 @@ export class LazyUrlService {
         return [...this.requiredRelations];
     }
 
-    // Columns a resource of this type must carry for the lazy service to build
+    // Columns a resource of this type must carry for the service to build
     // its URL: its base-filter columns plus the scalar columns its routers'
     // permalinks substitute and filters read. Relations are covered separately
     // by getRequiredRelations.

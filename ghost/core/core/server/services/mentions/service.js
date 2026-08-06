@@ -31,7 +31,7 @@ function getPostUrl(id, postData) {
     const jsonModel = {...postData};
     // The URL service routes by resource type. Pages and posts share the Post
     // model, so the page's own type must reach forPost — otherwise it defaults
-    // to 'posts', matches no post collection, and 404s under the lazy service.
+    // to 'posts', matches no post collection, and 404s.
     const type = postData.type === 'page' ? 'pages' : 'posts';
     outputSerializerUrlUtil.forPost(id, jsonModel, {options: {}}, type);
     return jsonModel.url;

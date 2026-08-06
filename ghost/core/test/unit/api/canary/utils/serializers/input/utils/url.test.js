@@ -9,7 +9,7 @@ describe('Unit: endpoints/utils/serializers/input/utils/url', function () {
     });
 
     describe('forceUrlColumns', function () {
-        it('forces the lazy-required columns into the fetch when url is requested', function () {
+        it('forces the required columns into the fetch when url is requested', function () {
             sinon.stub(urlService, 'getRequiredFields').withArgs('tags').returns(['visibility']);
             const frame = {options: {columns: ['url', 'id']}};
 
@@ -85,8 +85,8 @@ describe('Unit: endpoints/utils/serializers/input/utils/url', function () {
 
     describe('forceUrlRelations', function () {
         it('forces the primary key into a narrowed fetch', function () {
-            // Both backends look the URL up by `model.id`, so this is not
-            // specific to the lazy service — hence no required relations here.
+            // The URL is looked up by `model.id`, so the primary key is
+            // forced even when no relations are required.
             sinon.stub(urlService, 'getRequiredRelations').returns([]);
             sinon.stub(urlService, 'getRequiredFields').withArgs('posts').returns(['status']);
             const frame = {options: {columns: ['url', 'title']}};

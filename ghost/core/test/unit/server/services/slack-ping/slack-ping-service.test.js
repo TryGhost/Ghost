@@ -125,7 +125,7 @@ describe('Slack Ping', function () {
 
             assert.equal(scope.isDone(), true);
             assert.equal(requests[0].attachments[1].fields[0].value, `<http://myblog.com/author/${testAuthor.slug}/ | ${testAuthor.name}>`);
-            // tags must reach the URL service so the lazy backend can evaluate
+            // tags must reach the URL service so it can evaluate
             // collection filters like `tag:foo` when resolving the post URL
             sinon.assert.calledWith(
                 deps.urlService.getUrlForResource,

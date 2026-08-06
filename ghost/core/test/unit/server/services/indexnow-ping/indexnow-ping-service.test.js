@@ -110,7 +110,7 @@ describe('IndexNow', function () {
 
             sinon.assert.calledOnce(pingStub);
             // tags and authors must reach ping() (and onward the URL service) so
-            // the lazy backend can evaluate collection filters (e.g. `tag:foo`)
+            // the URL service can evaluate collection filters (e.g. `tag:foo`)
             // when building the URL
             sinon.assert.calledWith(
                 pingStub,

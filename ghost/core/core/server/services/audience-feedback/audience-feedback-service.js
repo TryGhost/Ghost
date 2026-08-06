@@ -36,7 +36,7 @@ class AudienceFeedbackService {
      * Feedback link for a post that no longer exists. Goes straight to the
      * home page — the same destination buildLink picks when the URL service
      * has no URL for the post — without asking the URL service: an id-only
-     * resource can't be routed (the lazy backend rejects it as thin).
+     * resource can't be routed (the URL service reports it as thin).
      *
      * @param {string} uuid
      * @param {string} postId

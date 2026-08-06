@@ -97,7 +97,7 @@ describe('audienceFeedbackService', function () {
     describe('build fallback link', function () {
         it('builds the home-page feedback link without touching the url service', async function () {
             // Used when the post no longer exists: an id-only resource can't
-            // be routed by the URL service (the lazy backend rejects it as
+            // be routed by the URL service (which reports it as
             // thin), so the fallback goes straight to the base URL — the same
             // destination buildLink picks when the service returns /404/.
             const getUrlForResource = sinon.stub();

@@ -17,7 +17,7 @@ describe('EmailServiceWrapper getPostUrl', function () {
 
     it('routes a page as a page, not a post', function () {
         // The URL service routes by resource type; a page mis-typed as a post
-        // matches no post collection and 404s under the lazy service.
+        // matches no post collection and 404s.
         const forPost = sinon.stub(url, 'forPost');
 
         new EmailServiceWrapper().getPostUrl(fakePost('page'));

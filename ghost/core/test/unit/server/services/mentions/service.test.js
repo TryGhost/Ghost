@@ -42,7 +42,7 @@ describe('Mentions service post url helpers', function () {
 
     it('routes a page as a page, not a post', function () {
         // The URL service routes by resource type. A page mis-typed as a post
-        // matches no post collection and 404s under the lazy service, so the
+        // matches no post collection and 404s, so the
         // page's own type must reach forPost.
         const forPost = sinon.stub(outputSerializerUrlUtil, 'forPost');
 
