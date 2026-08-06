@@ -216,12 +216,17 @@ export class PostsPage extends AdminPage {
     }
 
     /**
-     * Confirms a destructive bulk action. Ember renders its own modal markup
-     * and React uses a Radix alertdialog, so the container differs — but both
-     * put the same word on the button, which is what the test cares about.
+     * Confirms a bulk-action modal by its verb. Ember renders its own modal
+     * markup and React uses a Radix alertdialog, so the container differs —
+     * but both put the same word on the button, which is what the test cares
+     * about.
      */
+    async confirmAction(label: string): Promise<void> {
+        await this.page.getByRole('button', {name: label, exact: true}).last().click();
+    }
+
     async confirmDelete(): Promise<void> {
-        await this.page.getByRole('button', {name: 'Delete', exact: true}).last().click();
+        await this.confirmAction('Delete');
     }
 
     async getActiveViewName(): Promise<string | null> {
