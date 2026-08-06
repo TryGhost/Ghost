@@ -138,9 +138,14 @@ function PopoverBody({resource, params, activeView, onClose}: ManagePostViewPopo
 }
 
 /**
- * The save/edit-view affordance in the filter bar. Whether it shows at all is
- * decided by `canSavePostView` — admins only, posts only, not on a default
- * view, and something actually filtered.
+ * The save/edit-view affordance. Whether it shows at all is decided by
+ * `canSavePostView` — admins only, posts only, not on a default view, and at
+ * least one of the five view params set.
+ *
+ * Rendered in the filter bar beside Clear when there are filters, and in the
+ * page header when there are not. Both placements exist because that last rule
+ * includes `order`: a sort on its own makes the view saveable, and the bar only
+ * appears when there are chips to put in it.
  */
 export function ManagePostViewPopover({resource, params, activeView}: ManagePostViewPopoverProps) {
     const [open, setOpen] = useState(false);
@@ -148,9 +153,9 @@ export function ManagePostViewPopover({resource, params, activeView}: ManagePost
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
-                {/* Labelled in words rather than by icon, as on the members
-                    list. No `aria-label`: it would override the visible text as
-                    the accessible name, leaving the two out of step. */}
+                {/* Labelled in words. No `aria-label`: it would override the
+                    visible text as the accessible name, leaving the two out of
+                    step. */}
                 <Button
                     data-testid='manage-post-view'
                     variant='outline'

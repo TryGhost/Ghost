@@ -26,6 +26,7 @@ export function PostsSortMenu({order, onOrderChange}: PostsSortMenuProps) {
                     assistive tech would never hear which sort is active.
                 */}
                 <Button aria-label={`Sort: ${getOrderLabel(order)}`} data-testid='posts-sort' variant='outline'>
+                    <LucideIcon.ArrowUpDown className='size-4' />
                     {getOrderLabel(order)}
                     <LucideIcon.ChevronDown className='size-4' />
                 </Button>
