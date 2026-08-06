@@ -322,7 +322,15 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
                                     // it makes select mode visible before the
                                     // click. Anything opted out of selection
                                     // stays clickable.
-                                    className={cn(selection.modifierHeld && [
+                                    // The separator opening the list, rather
+                                    // than one closing the header: the header
+                                    // is full-bleed (it bleeds out through
+                                    // negative margins so its blur reaches the
+                                    // viewport edge), so a border there runs
+                                    // wider than the rows it is meant to sit
+                                    // against. On the list it lines up with the
+                                    // row dividers exactly.
+                                    className={cn('border-t border-border-default', selection.modifierHeld && [
                                         'cursor-default',
                                         '[&_li_*]:pointer-events-none [&_li_*]:cursor-default',
                                         '[&_li_[data-ignore-select]]:pointer-events-auto',
