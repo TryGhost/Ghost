@@ -1,6 +1,8 @@
 import {Button} from '@tryghost/shade/components';
 import {Inline, Stack, Text} from '@tryghost/shade/primitives';
 import {cn, LucideIcon} from '@tryghost/shade/utils';
+import {PostsContextMenu} from '@/posts/list/components/posts-context-menu';
+import type {PostContextMenuItem, PostContextMenuKey} from '@/posts/list/post-context-menu-items';
 import {
     didPostEmailFail,
     getPostDateTooltip,
@@ -31,6 +33,20 @@ interface PostListRowProps extends Omit<ComponentPropsWithoutRef<'li'>, 'onClick
     /** Capture-phase, so it beats the row's own link. */
     onSelectMouseDown?: (event: ReactMouseEvent, id: string) => void;
     onSelectClick?: (event: ReactMouseEvent) => void;
+    /**
+     * The right-click menu is rendered *inside* this component rather than
+     * wrapped around it. A wrapper's `children` is a fresh React element on
+     * every parent render, so `memo` on the wrapper can never hold and the
+     * whole list re-renders on every selection change. Rendering it here puts
+     * the menu's children inside this memo boundary instead.
+     *
+     * These props are all primitives or ref-stable getters for the same reason.
+     */
+    getMenuItems: () => PostContextMenuItem[];
+    showGiftLink?: boolean;
+    menuEnabled?: boolean;
+    menuOnOpenChange?: (open: boolean) => void;
+    menuOnAction?: (key: PostContextMenuKey) => void | Promise<void>;
     metricsSettings: PostMetricsSettings;
     visitorCounts?: Record<string, number>;
     memberCounts?: Record<string, {free: number; paid: number}>;
@@ -89,6 +105,7 @@ function FeatureImage({post}: {post: PostListItem}) {
 const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowProps>(function PostListRowComponent({
     post, resource, timezone, isContributor, hasAdminAccess, paidMembersEnabled,
     isSelected, onSelectMouseDown, onSelectClick,
+    getMenuItems, showGiftLink, menuEnabled, menuOnOpenChange, menuOnAction,
     metricsSettings, visitorCounts, memberCounts,
     // Everything else lands on the <li>: the context menu wraps each row with
     // `asChild`, so Radix hands its trigger props and ref straight through.
@@ -118,7 +135,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowProps>(functio
             ? {href: post.url, label: 'View post', external: true, Icon: LucideIcon.ArrowUpRight}
             : {href, label: 'Go to Editor', external: false, Icon: LucideIcon.Pen};
 
-    return (
+    const row = (
         <li
             ref={ref}
             {...rest}
@@ -219,6 +236,18 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowProps>(functio
                 </Button>
             </Inline>
         </li>
+    );
+
+    return (
+        <PostsContextMenu
+            enabled={menuEnabled ?? false}
+            getItems={getMenuItems}
+            showGiftLink={showGiftLink ?? false}
+            onAction={menuOnAction ?? (() => {})}
+            onOpenChange={menuOnOpenChange ?? (() => {})}
+        >
+            {row}
+        </PostsContextMenu>
     );
 });
 
