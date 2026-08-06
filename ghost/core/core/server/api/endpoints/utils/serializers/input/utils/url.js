@@ -76,8 +76,13 @@ const forceUrlColumnsWhenLazy = (frame, routerType, extraColumns = []) => {
     if (!Array.isArray(frame.options.columns) || !frame.options.columns.includes('url')) {
         return;
     }
+    // A read already carries the fields it was looked up by: `findOne` forges
+    // the model with them before the fetch, so they survive a narrowed
+    // `?fields=` list. Forcing them would strip a field the caller is served
+    // today — `posts/slug/:slug/?fields=url` still answers with its slug.
+    const carried = Object.keys(frame.data || {});
     const required = new Set([...urlService.facade.getRequiredFields(routerType), ...extraColumns]);
-    const forced = [...required].filter(field => !frame.options.columns.includes(field));
+    const forced = [...required].filter(field => !frame.options.columns.includes(field) && !carried.includes(field));
     if (forced.length) {
         frame.forcedUrlColumns = {routerType, columns: forced};
         frame.options.columns.push(...forced);
@@ -110,9 +115,8 @@ const forceUrlRelationsWhenLazy = (frame, routerType) => {
     // eager-loaded rows back to their parent by the same key — so a `?fields=`
     // list that omits it serializes /404/ and leaves the relations above
     // unattached, silently and without a key on the model at all. A read
-    // looked up by id already carries it; nothing else does.
-    const lookedUpById = Boolean(frame.data && frame.data.id);
-    forceUrlColumnsWhenLazy(frame, routerType, lookedUpById ? [] : ['id']);
+    // looked up by id is covered by the carried-fields rule above.
+    forceUrlColumnsWhenLazy(frame, routerType, ['id']);
 };
 
 // Options-object variant of forceUrlColumnsWhenLazy for endpoints that build

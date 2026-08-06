@@ -65,6 +65,19 @@ describe('Unit: endpoints/utils/serializers/input/utils/url', function () {
 
             assert.equal(frame.forcedUrlColumns, undefined);
         });
+
+        it('leaves the fields the read was looked up by alone', function () {
+            // `findOne` forges the model with them before the fetch, so they
+            // are on the response already — forcing them would strip a field
+            // the caller is served today.
+            sinon.stub(urlService.facade, 'getRequiredFields').withArgs('posts').returns(['slug', 'status']);
+            const frame = {data: {slug: 'welcome'}, options: {columns: ['url', 'title']}};
+
+            urlUtil.forceUrlColumnsWhenLazy(frame, 'posts');
+
+            assert.deepEqual(frame.options.columns, ['url', 'title', 'status']);
+            assert.deepEqual(frame.forcedUrlColumns, {routerType: 'posts', columns: ['status']});
+        });
     });
 
     describe('forceUrlRelationsWhenLazy', function () {
@@ -78,7 +91,7 @@ describe('Unit: endpoints/utils/serializers/input/utils/url', function () {
             urlUtil.forceUrlRelationsWhenLazy(frame, 'posts');
 
             assert.deepEqual(frame.options.columns, ['url', 'title', 'status', 'id']);
-            assert.deepEqual(frame.forcedUrlColumns, ['status', 'id']);
+            assert.deepEqual(frame.forcedUrlColumns, {routerType: 'posts', columns: ['status', 'id']});
         });
 
         it('forces the primary key so the required relations can load', function () {
@@ -89,7 +102,7 @@ describe('Unit: endpoints/utils/serializers/input/utils/url', function () {
             urlUtil.forceUrlRelationsWhenLazy(frame, 'posts');
 
             assert.deepEqual(frame.options.withRelated, ['tags']);
-            assert.deepEqual(frame.forcedUrlColumns, ['id']);
+            assert.deepEqual(frame.forcedUrlColumns, {routerType: 'posts', columns: ['id']});
         });
 
         it('leaves a read looked up by id alone', function () {
