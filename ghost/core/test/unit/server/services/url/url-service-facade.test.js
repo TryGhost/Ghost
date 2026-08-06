@@ -122,9 +122,14 @@ describe('UrlServiceFacade', function () {
                 hasFinished: sinon.stub().returns(true),
                 onRouterAddedType: sinon.stub(),
                 onRouterUpdated: sinon.stub(),
-                reset: sinon.stub()
+                reset: sinon.stub(),
+                notFoundUrl: sinon.stub().returns('https://example.com/404/')
             };
             lazyFacade = new UrlServiceFacade({urlService, lazyUrlService});
+        });
+
+        afterEach(function () {
+            sinon.restore();
         });
 
         it('isLazy() reports true', function () {
@@ -173,6 +178,63 @@ describe('UrlServiceFacade', function () {
         it('reset() drops registered router configs on the lazy backend', function () {
             lazyFacade.reset();
             sinon.assert.calledOnce(lazyUrlService.reset);
+        });
+
+        it('getUrlForResource degrades to /404/ and reports on a thin resource', function () {
+            sinon.stub(logging, 'error');
+            lazyUrlService.getUrlForResource.throws(new errors.InternalServerError({
+                message: 'Resource is missing fields required to build its URL',
+                code: 'LAZY_URL_THIN_RESOURCE'
+            }));
+
+            const url = lazyFacade.getUrlForResource({type: 'posts', id: 'a'}, {absolute: true});
+
+            assert.equal(url, 'https://example.com/404/');
+            sinon.assert.calledOnce(logging.error);
+            assert.equal(logging.error.firstCall.args[0].code, 'LAZY_URL_RESOLUTION_ERROR');
+        });
+
+        it('getUrlForResource names the producing serializer in a thin-resource report', function () {
+            // The degraded /404/ is silent to the caller, so the report is the
+            // only way back to the fetch that produced the thin resource.
+            sinon.stub(logging, 'error');
+            lazyUrlService.getUrlForResource.throws(new errors.InternalServerError({
+                message: 'Resource is missing fields required to build its URL',
+                code: 'LAZY_URL_THIN_RESOURCE'
+            }));
+
+            lazyFacade.getUrlForResource({type: 'posts', id: 'a'}, {
+                absolute: true,
+                serializerContext: {docName: 'posts', method: 'browse'}
+            });
+
+            assert.deepEqual(logging.error.firstCall.args[0].errorDetails.serializer, {
+                docName: 'posts',
+                method: 'browse'
+            });
+        });
+
+        it('getUrlForResource rethrows an unexpected lazy failure rather than serving /404/', function () {
+            sinon.stub(logging, 'error');
+            lazyUrlService.getUrlForResource.throws(new TypeError('permalink.replace is not a function'));
+
+            assert.throws(
+                () => lazyFacade.getUrlForResource({type: 'posts', id: 'a'}, {absolute: true}),
+                /permalink\.replace is not a function/
+            );
+            sinon.assert.notCalled(lazyUrlService.notFoundUrl);
+        });
+
+        it('getUrlForResource rethrows a non-object throw unchanged', function () {
+            lazyUrlService.getUrlForResource.callsFake(() => {
+                throw null;
+            });
+
+            assert.throws(
+                () => lazyFacade.getUrlForResource({type: 'posts', id: 'a'}, {absolute: true}),
+                err => err === null
+            );
+            sinon.assert.notCalled(lazyUrlService.notFoundUrl);
         });
     });
 
@@ -622,7 +684,7 @@ describe('UrlServiceFacade', function () {
             compareFacade.onRouterAddedType('id', 'filter', 'posts', '/{slug}/');
             sinon.assert.calledWith(urlService.onRouterAddedType, 'id', 'filter', 'posts', '/{slug}/');
             sinon.assert.calledOnce(logging.error);
-            assert.equal(logging.error.firstCall.args[0].code, 'LAZY_URL_COMPARE_ERROR');
+            assert.equal(logging.error.firstCall.args[0].code, 'LAZY_URL_HOOK_ERROR');
         });
 
         it('forwards onRouterUpdated to both backends', function () {
@@ -636,7 +698,7 @@ describe('UrlServiceFacade', function () {
             compareFacade.onRouterUpdated('id');
             sinon.assert.calledWith(urlService.onRouterUpdated, 'id');
             sinon.assert.calledOnce(logging.error);
-            assert.equal(logging.error.firstCall.args[0].code, 'LAZY_URL_COMPARE_ERROR');
+            assert.equal(logging.error.firstCall.args[0].code, 'LAZY_URL_HOOK_ERROR');
         });
 
         it('reset() clears the lazy backend', function () {
@@ -648,7 +710,7 @@ describe('UrlServiceFacade', function () {
             lazyUrlService.reset.throws(new Error('boom'));
             assert.doesNotThrow(() => compareFacade.reset());
             sinon.assert.calledOnce(logging.error);
-            assert.equal(logging.error.firstCall.args[0].code, 'LAZY_URL_COMPARE_ERROR');
+            assert.equal(logging.error.firstCall.args[0].code, 'LAZY_URL_HOOK_ERROR');
         });
     });
 });

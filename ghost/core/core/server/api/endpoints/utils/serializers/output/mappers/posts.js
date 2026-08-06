@@ -136,8 +136,8 @@ module.exports = async (model, frame, options = {}) => {
     clean.post(jsonModel, frame);
 
     // Columns force-loaded for the URL computation, not requested by the caller.
-    if (frame.forcedUrlColumns) {
-        frame.forcedUrlColumns.forEach((column) => {
+    if (frame.forcedUrlColumns && frame.forcedUrlColumns.routerType === routerType) {
+        frame.forcedUrlColumns.columns.forEach((column) => {
             delete jsonModel[column];
         });
     }
@@ -148,10 +148,7 @@ module.exports = async (model, frame, options = {}) => {
             // are being passed by reference in tags/authors. Might be refactored into more explicit call
             // in the future, but is good enough for current use-case
             if (relation === 'tags' && jsonModel.tags) {
-                // The forced URL columns belong to the post, not to the tags
-                // hanging off it — an included tag keeps its own id and slug.
-                const tagFrame = frame.forcedUrlColumns ? {...frame, forcedUrlColumns: null} : frame;
-                jsonModel.tags = jsonModel.tags.map(tag => mapTag(tag, tagFrame));
+                jsonModel.tags = jsonModel.tags.map(tag => mapTag(tag, frame));
             }
 
             if (relation === 'authors' && jsonModel.authors) {

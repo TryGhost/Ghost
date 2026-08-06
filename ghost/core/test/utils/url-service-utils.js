@@ -39,11 +39,22 @@ module.exports.init = ({urlCache} = {}) => {
     urlService.init({urlCache});
 };
 
+// Data-only reset, for a DB truncate or snapshot restore between tests inside
+// one boot. Deliberately leaves the facade alone: lazy caches nothing from the
+// DB, only the router configs read from routes.yaml, and dropping those here
+// would leave it routerless — and answering /404/ — for the rest of the boot,
+// where eager keeps its generators through a softReset. Lazy's equivalent of
+// those generators is reset per boot, in resetGenerators below.
 module.exports.reset = () => {
     urlService.softReset();
-},
+};
+
+module.exports.urlFor = (model, type, options) => {
+    return urlService.facade.getUrlForResource({...model.toJSON(), type}, options);
+};
 
 module.exports.resetGenerators = () => {
     urlService.resetGenerators();
     urlService.resources.reset();
+    urlService.facade.reset();
 };

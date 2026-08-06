@@ -77,11 +77,23 @@ const forceUrlColumnsWhenLazy = (frame, routerType, extraColumns = []) => {
         return;
     }
     const required = new Set([...urlService.facade.getRequiredFields(routerType), ...extraColumns]);
-    const forced = [...required].filter(field => !frame.options.columns.includes(field));
-    if (forced.length) {
-        frame.forcedUrlColumns = forced;
-        frame.options.columns.push(...forced);
+    const missing = [...required].filter(field => !frame.options.columns.includes(field));
+    if (!missing.length) {
+        return;
     }
+    // A read already carries the fields it was looked up by: `findOne` forges
+    // the model with them before the fetch, so they survive a narrowed
+    // `?fields=` list and the caller is served them today. Stripping those back
+    // out would take a field away — `posts/slug/:slug/?fields=url` still
+    // answers with its slug. They are still selected, because the lookup
+    // matches case-insensitively: the forged value can differ in case from the
+    // stored one, and the URL is built from whichever the model carries.
+    const carried = Object.keys(frame.data || {});
+    const forced = missing.filter(field => !carried.includes(field));
+    if (forced.length) {
+        frame.forcedUrlColumns = {routerType, columns: forced};
+    }
+    frame.options.columns.push(...missing);
 };
 
 // `url` is serialized for every post/page unless `?fields` narrows it away,
@@ -110,9 +122,8 @@ const forceUrlRelationsWhenLazy = (frame, routerType) => {
     // eager-loaded rows back to their parent by the same key — so a `?fields=`
     // list that omits it serializes /404/ and leaves the relations above
     // unattached, silently and without a key on the model at all. A read
-    // looked up by id already carries it; nothing else does.
-    const lookedUpById = Boolean(frame.data && frame.data.id);
-    forceUrlColumnsWhenLazy(frame, routerType, lookedUpById ? [] : ['id']);
+    // looked up by id is covered by the carried-fields rule above.
+    forceUrlColumnsWhenLazy(frame, routerType, ['id']);
 };
 
 // Options-object variant of forceUrlColumnsWhenLazy for endpoints that build
