@@ -32,10 +32,9 @@ export function activeFields(db: Knex) {
  * and a list never shuffles between two identical requests.
  */
 export function inFieldOrder<T extends Knex.QueryBuilder>(query: T): T {
-    // Columns are qualified because one caller reads the definitions through a join
-    // against the values table, which has an `id` and a `created_at` of its own. A bare
-    // column name would be ambiguous there and unambiguous here, so both are qualified
-    // and there is one form to get right.
+    // Columns are qualified so this survives being applied to a join. Every table a
+    // definition would be joined to has an `id` and a `created_at` of its own, and a bare
+    // column name would be ambiguous against any of them.
     query
         .orderBy(`${FIELDS_TABLE}.sort_order`, 'asc')
         .orderBy(`${FIELDS_TABLE}.created_at`, 'asc')

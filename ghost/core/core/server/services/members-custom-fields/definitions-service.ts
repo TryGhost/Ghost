@@ -298,6 +298,12 @@ export class CustomFieldDefinitionsService {
             // writing means there is no cycle to break. The last writer wins, which is
             // what a drag should do.
             //
+            // This settles reorder against reorder, not reorder against everything. A
+            // member's values reference these rows, so writing them takes a shared lock
+            // on each definition, in whatever order that request happened to name its
+            // fields — which can still cross with the exclusive locks held here. Rarer,
+            // and not worth serialising every member write to close.
+            //
             // `updated_at` deliberately stays put: it says when the definition changed,
             // and a definition does not change when the list around it is reordered.
             const ranks = new Map(keys.map((key, rank) => [key, rank]));

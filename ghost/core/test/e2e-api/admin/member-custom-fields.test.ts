@@ -764,6 +764,21 @@ describe('Member Custom Fields Admin API', function () {
             assert.deepEqual(await readValues(memberId), {company: 'Ghost', 'shirt-size': 'M'});
         });
 
+        // `updated_at` says when the definition changed, and a definition does not change
+        // when the list around it is reordered. Left alone so one drag does not read as
+        // an edit to every field on the site.
+        it('does not mark the fields as edited', async function () {
+            await createField({name: 'Company'});
+            await createField({name: 'Shirt size'});
+
+            await reorder(['shirt-size', 'company']);
+
+            const {body} = await agent.get('members/custom_fields/').expectStatus(200);
+            for (const field of body.members_custom_fields) {
+                assert.equal(field.updated_at, null, `${field.key} should not have been touched`);
+            }
+        });
+
         it('never exposes a sort order on a field', async function () {
             await createField({name: 'Company'});
             await createField({name: 'Shirt size'});
