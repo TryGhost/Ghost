@@ -311,6 +311,24 @@ describe('LazyUrlService', function () {
             assert.equal(service.getUrlForResource(post, {absolute: true}), 'https://example.com/hello/');
             assert.equal(service.getUrlForResource(post, {withSubdirectory: true}), '/sub/hello/');
         });
+
+        it('builds a /404/ with the same createUrl call the eager miss path makes', function () {
+            // Parity with the end of UrlService#getUrlByResourceId, which passes
+            // no third argument. That argument is `trailingSlash`, not the
+            // subdirectory — the real createUrl takes the subdirectory from its
+            // own base — so passing it here would be a silent divergence.
+            // Asserted on the arguments because makeUrlUtils' stand-in reads
+            // the third parameter as the subdirectory switch, which the real
+            // one does not. Mirrors url-service.test.js 'not found:
+            // withSubdirectory'.
+            const createUrl = sinon.spy(urlUtils, 'createUrl');
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
+            service.onRouterAddedType('default', null, 'posts', '/:slug/');
+
+            service.getUrlForResource({type: 'tags', id: 't', slug: 'x'}, {withSubdirectory: true});
+
+            sinon.assert.calledOnceWithExactly(createUrl, '/404/', false);
+        });
     });
 
     describe('ownsResource', function () {

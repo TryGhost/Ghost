@@ -456,10 +456,15 @@ export class LazyUrlService implements LazyUrlServiceBackend {
 
     /**
      * The /404/ a resource gets when nothing routes it, formatted for the given
-     * options. Byte-identical to the eager miss path (`url-service.js:246-254`);
-     * it differs from _formatPath only in omitting the trailing-slash argument,
-     * which is a no-op for /404/. Public so the facade can fall back to it when
-     * this service throws.
+     * options. Byte-identical to the miss path at the end of eager's
+     * `getUrlByResourceId`, deliberately — including the argument it omits.
+     *
+     * The subdirectory is not lost by that omission: `createUrl` takes it from
+     * its own base whenever the url is relative, so a subdirectory install gets
+     * `/blog/404/` from here either way. The third argument `_formatPath`
+     * passes is `trailingSlash`, and `/404/` already ends in one.
+     *
+     * Public so the facade can fall back to it when this service throws.
      */
     notFoundUrl(options: UrlOptions = {}): string {
         if (options.absolute) {
