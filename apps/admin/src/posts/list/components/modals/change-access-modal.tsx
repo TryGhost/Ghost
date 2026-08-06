@@ -88,7 +88,7 @@ export function ChangeAccessModal({
                 <DialogHeader>
                     <DialogTitle>{getAccessModalTitle({count, resource, isSingle})}</DialogTitle>
                     <DialogDescription>
-                        Controls who can read the selected {resource === 'pages' ? 'pages' : 'posts'}.
+                        Controls who can read the selected {(resource === 'pages' ? 'page' : 'post') + (isSingle ? '' : 's')}.
                     </DialogDescription>
                 </DialogHeader>
 

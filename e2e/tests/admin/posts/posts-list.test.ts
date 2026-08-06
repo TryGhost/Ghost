@@ -1,4 +1,4 @@
-import {PostEditorPage, PostsPage} from '@/admin-pages';
+import {AnalyticsOverviewPage, PostEditorPage, PostsPage} from '@/admin-pages';
 import {PostFactory, createPostFactory} from '@/data-factory';
 import {expect, test} from '@/helpers/playwright';
 import {usePerTestIsolation} from '@/helpers/playwright/isolation';
@@ -165,16 +165,19 @@ for (const {implementation, postsListReact} of [
         test('the editor offers to go back to the list, not wherever you were before', async ({page}) => {
             await postFactory.create({title: 'Breadcrumb post', status: 'draft', featured: false});
             const editor = new PostEditorPage(page);
+            const analytics = new AnalyticsOverviewPage(page);
 
-            await page.goto('/ghost/#/analytics');
-            await page.waitForURL(/analytics/);
+            // Waiting on the screen, not the URL: the URL matches before Ember
+            // has parked, and an unparked router is the bug's precondition.
+            await analytics.goto();
+            await expect(analytics.header).toBeVisible();
 
             await postsPage.goto();
             await postsPage.waitForList();
             await postsPage.getPostByTitle('Breadcrumb post').click();
             await expect(editor.titleInput).toBeVisible();
 
-            await expect(postsPage.editorBackButton).toContainText('Posts');
+            await expect(editor.backButton).toContainText('Posts');
         });
 
         test('deleting a post from the menu removes it from the list', async () => {
