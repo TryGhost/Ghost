@@ -1,16 +1,15 @@
 import BrandIcon from '@/settings/app/components/icons/brand-icon';
 import IntegrationHeader from './integration-header';
-import NiceModal from '@ebay/nice-modal-react';
 import useSettingGroup from '@/settings/app/hooks/use-setting-group';
 import validator from 'validator';
 import {Button, Field, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldSet, Input} from '@tryghost/shade/components';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {getSettingValues, useTestSlack} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'sonner';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 
-const SlackModal = NiceModal.create(() => {
-    const {updateRoute} = useRouting();
+function SlackModal() {
+    const {updateRoute} = useSettingsNavigation();
 
     const {localSettings, updateSetting, handleSave, validate, errors, clearError, okProps} = useSettingGroup({
         onValidate: () => {
@@ -40,15 +39,15 @@ const SlackModal = NiceModal.create(() => {
 
     return (
         <SettingsModal
-            afterClose={() => {
-                updateRoute('integrations');
-            }}
             cancelLabel='Close'
             dirty={isDirty}
             okLabel={okProps.label || 'Save'}
             okVariant={okProps.variant}
             testId='slack-modal'
             title=''
+            onClose={() => {
+                updateRoute('integrations');
+            }}
             onOk={async () => {
                 toast.dismiss();
                 await handleSave();
@@ -83,6 +82,6 @@ const SlackModal = NiceModal.create(() => {
             </div>
         </SettingsModal>
     );
-});
+}
 
 export default SlackModal;

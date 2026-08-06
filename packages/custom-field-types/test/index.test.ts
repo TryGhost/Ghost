@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {describe, it} from 'vitest';
-import {FIELD_TYPES, FIELD_TYPE_IDS, MAX_LONG_TEXT_BYTES, subFieldsOf} from '../src/index.ts';
+import {FIELD_TYPES, FIELD_TYPE_IDS, MAX_LONG_TEXT_BYTES, subFieldsOf, type FieldType} from '../src/index.ts';
 
 // This asserts only the catalog's *contract* — which field types exist, and which of
 // them have parts. The behavioural outcomes (per-type value validation, the composite
@@ -172,6 +172,53 @@ describe('custom-field-types catalog', function () {
             const result = FIELD_TYPES.address.value.safeParse({line1: '   ', city: '\t'});
             assert.equal(result.success, true);
             assert.deepEqual(result.data, {line1: '', city: ''});
+        });
+    });
+
+    describe('what a broken rule says', function () {
+        const reasonFor = (type: FieldType, value: unknown): string | null => {
+            const result = FIELD_TYPES[type].value.safeParse(value);
+            return result.success ? null : result.error.issues[0]?.message ?? null;
+        };
+
+        it('states what each rule expects', function () {
+            assert.equal(reasonFor('short_text', 'x'.repeat(256)), 'Use 255 characters or fewer.');
+            assert.equal(reasonFor('long_text', 'x'.repeat(MAX_LONG_TEXT_BYTES + 1)), 'This text is too long to save. Shorten it a little.');
+            assert.equal(reasonFor('address', {line1: 'x'.repeat(256)}), 'Use 255 characters or fewer.');
+            assert.equal(reasonFor('address', {postal_code: 'x'.repeat(33)}), 'Use 32 characters or fewer.');
+            assert.equal(reasonFor('address', {country: 'IRL'}), 'Enter a 2-letter country code, like US.');
+            assert.equal(reasonFor('address', {}), 'Enter at least one part of the address.');
+            assert.equal(reasonFor('short_text', 42), 'Enter text.');
+            assert.equal(reasonFor('address', {city: 42}), 'Enter text.');
+        });
+
+        it('says the same thing however one rule was broken', function () {
+            const expected = 'Enter a 2-letter country code, like US.';
+            for (const country of ['IRL', '12', 'D', 'ÜÜ']) {
+                assert.equal(reasonFor('address', {country}), expected, country);
+            }
+        });
+
+        it('holds a sentence for every rule a value can break', function () {
+            // Notices a rule added without wording, which falls back to zod's phrasing.
+            const brokenValues: Array<[FieldType, unknown]> = [
+                ['short_text', 'x'.repeat(256)],
+                ['short_text', 42],
+                ['long_text', 'x'.repeat(MAX_LONG_TEXT_BYTES + 1)],
+                ['address', {}],
+                ['address', {city: 42}],
+                ...subFieldsOf('address')!.map(part => [
+                    'address', {[part]: 'x'.repeat(256)}
+                ] as [FieldType, unknown])
+            ];
+
+            for (const [type, value] of brokenValues) {
+                const reason = reasonFor(type, value);
+                assert.ok(reason, `${type} ${JSON.stringify(value)} should be rejected`);
+                assert.doesNotMatch(reason, /Too big|Too small|Invalid input|expected /, `${type} ${JSON.stringify(value)}`);
+                // A whole sentence: a screen shows it unedited.
+                assert.match(reason, /^[A-Z].*\.$/, `${type} ${JSON.stringify(value)}`);
+            }
         });
     });
 });

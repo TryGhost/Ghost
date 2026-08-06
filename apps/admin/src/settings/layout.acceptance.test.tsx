@@ -1,22 +1,24 @@
 import { describe, expect, it } from "vitest";
 import { userEvent } from "vitest/browser";
 
-import { currentRoute, fakeSettingsScreens, fakeTiers, renderAdminApp, settingsResponse, tier } from "@test-utils/acceptance";
+import { currentRoute, fakeAnalyticsOverview, fakeSettingsScreens, fakeTiers, renderAdminApp, settingsResponse, tier } from "@test-utils/acceptance";
 import { settingsScreen } from "./settings.screen";
 
 describe("Settings layout", () => {
     it("leaves immediately when the page is clean", async () => {
         fakeSettingsScreens();
+        fakeAnalyticsOverview();
         await renderAdminApp("/settings");
 
         await settingsScreen.exitButton().click();
 
-        await expect.poll(currentRoute).toBe("/");
+        await expect.poll(currentRoute).toBe("/analytics");
         await expect(settingsScreen.confirmationModal()).toHaveCount(0);
     });
 
     it("can stay on or leave a dirty page from the confirmation", async () => {
         fakeSettingsScreens();
+        fakeAnalyticsOverview();
         await renderAdminApp("/settings");
 
         await settingsScreen.editTitle("New Site Title");
@@ -29,7 +31,7 @@ describe("Settings layout", () => {
 
         await settingsScreen.exitButton().click();
         await settingsScreen.confirmationAction("Leave").click();
-        await expect.poll(currentRoute).toBe("/");
+        await expect.poll(currentRoute).toBe("/analytics");
     });
 
     it("confirms before leaving a dirty page with Escape", async () => {

@@ -16,7 +16,8 @@ import {Inline, Stack} from '@tryghost/shade/primitives';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {type Newsletter, useBrowseNewsletters, useEditNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {PreviewModalContent} from '@/settings/app/components/settings/preview-modal';
-import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {useParams} from '@tryghost/admin-x-framework';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 import {getSettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {hasSendingDomain, isManagedEmail, sendingDomain} from '@tryghost/admin-x-framework/api/config';
 import {renderReplyToEmail, renderSenderEmail} from '@/settings/app/utils/newsletter-emails';
@@ -97,7 +98,7 @@ const Sidebar: React.FC<{
     clearError: (field: string) => void;
 }> = ({newsletter, onlyOne, updateNewsletter, validate, errors, clearError}) => {
     type FontOption = {value: string; label: string; className?: string};
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const {mutateAsync: editNewsletter} = useEditNewsletter();
     const limiter = useLimiter();
     const {settings, config, siteData} = useGlobalData();
@@ -685,7 +686,7 @@ const Sidebar: React.FC<{
 const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: boolean;}> = ({newsletter, onlyOne}) => {
     const {config} = useGlobalData();
     const {mutateAsync: editNewsletter} = useEditNewsletter();
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const returnRoute = useFeatureFlag('automations') ? 'emails' : 'newsletters';
     const handleError = useHandleError();
 
@@ -741,7 +742,6 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
     const sidebar = <Sidebar clearError={clearError} errors={errors} newsletter={formState} onlyOne={onlyOne} updateNewsletter={updateNewsletter} validate={validate} />;
 
     return <PreviewModalContent
-        afterClose={() => updateRoute(returnRoute)}
         buttonsDisabled={okProps.disabled}
         cancelLabel='Close'
         dirty={saveState === 'unsaved'}
@@ -754,15 +754,17 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
         sidebarPadding={false}
         testId='newsletter-modal'
         title='Newsletter'
+        onClose={() => updateRoute(returnRoute)}
         onOk={async () => {
             await handleSave({fakeWhenUnchanged: true});
         }}
     />;
 };
 
-const NewsletterDetailModal: React.FC<RoutingModalProps> = ({params}) => {
+const NewsletterDetailModal: React.FC = () => {
+    const {newsletterId} = useParams();
     const {data: {newsletters, isEnd} = {}, fetchNextPage} = useBrowseNewsletters();
-    const newsletter = newsletters?.find(({id}) => id === params?.id);
+    const newsletter = newsletters?.find(({id}) => id === newsletterId);
 
     useEffect(() => {
         if (!newsletter && !isEnd) {
@@ -777,4 +779,4 @@ const NewsletterDetailModal: React.FC<RoutingModalProps> = ({params}) => {
     }
 };
 
-export default NiceModal.create(NewsletterDetailModal);
+export default NewsletterDetailModal;

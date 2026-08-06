@@ -1,16 +1,15 @@
 import LimitModal from '@/settings/app/components/limit-modal';
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import React, {useEffect, useState} from 'react';
+import NiceModal from '@ebay/nice-modal-react';
+import {useEffect, useState} from 'react';
 import {Field, FieldError, FieldGroup, FieldLabel, Input} from '@tryghost/shade/components';
 import {HostLimitError, useLimiter} from '@/settings/app/hooks/use-limiter';
-import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {useCreateIntegration} from '@tryghost/admin-x-framework/api/integrations';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
-const AddIntegrationModal: React.FC<RoutingModalProps> = () => {
-    const modal = useModal();
-    const {updateRoute} = useRouting();
+function AddIntegrationModal() {
+    const {updateRoute} = useSettingsNavigation();
     const [name, setName] = useState('');
     const [errors, setErrors] = useState({name: ''});
     const {mutateAsync: createIntegration} = useCreateIntegration();
@@ -25,22 +24,21 @@ const AddIntegrationModal: React.FC<RoutingModalProps> = () => {
                         prompt: error.message || `Your current plan doesn't support more custom integrations.`,
                         onOk: () => updateRoute({route: '/pro', isExternal: true})
                     });
-                    modal.remove();
                     updateRoute('integrations');
                 }
             });
         }
-    }, [limiter, modal, updateRoute]);
+    }, [limiter, updateRoute]);
 
     return <SettingsModal
-        afterClose={() => {
-            updateRoute('integrations');
-        }}
         okLabel='Add'
         okVariant='default'
         size='sm'
         testId='add-integration-modal'
         title='Add integration'
+        onClose={() => {
+            updateRoute('integrations');
+        }}
         onOk={async () => {
             if (!name) {
                 setErrors({name: 'Name is required'});
@@ -49,7 +47,6 @@ const AddIntegrationModal: React.FC<RoutingModalProps> = () => {
 
             try {
                 const data = await createIntegration({name});
-                modal.remove();
                 updateRoute({route: `integrations/${data.integrations[0].id}`});
             } catch (e) {
                 handleError(e);
@@ -66,6 +63,6 @@ const AddIntegrationModal: React.FC<RoutingModalProps> = () => {
             </FieldGroup>
         </div>
     </SettingsModal>;
-};
+}
 
-export default NiceModal.create(AddIntegrationModal);
+export default AddIntegrationModal;

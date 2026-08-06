@@ -26,11 +26,6 @@
             "import": "./dist/hooks.js",
             "require": "./dist/hooks.cjs"
         },
-        "./routing": {
-            "types": "./types/routing.d.ts",
-            "import": "./dist/routing.js",
-            "require": "./dist/routing.cjs"
-        },
         "./api/*": {
             "types": "./types/api/*.d.ts",
             "import": "./dist/api/*.js",

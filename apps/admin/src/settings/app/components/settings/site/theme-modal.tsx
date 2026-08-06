@@ -2,7 +2,7 @@ import AdvancedThemeSettings from './theme/advanced-theme-settings';
 import ConfirmationModal from '@/settings/app/components/confirmation-modal';
 import InvalidThemeModal, {type FatalErrors} from './theme/invalid-theme-modal';
 import LimitModal from '@/settings/app/components/limit-modal';
-import NiceModal, {type NiceModalHandler, useModal} from '@ebay/nice-modal-react';
+import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import OfficialThemes from './theme/official-themes';
 import React, {useEffect, useState} from 'react';
 import ThemeInstalledModal from './theme/theme-installed-modal';
@@ -15,14 +15,13 @@ import {PageHeader, SettingsModal} from '@tryghost/shade/patterns';
 import {toast} from 'sonner';
 import {useCheckThemeLimitError} from '@/settings/app/hooks/use-check-theme-limit-error';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 
 interface ThemeToolbarProps {
     selectedTheme: OfficialTheme|null;
     currentTab: string;
     setCurrentTab: (tab: string) => void;
     setSelectedTheme: (theme: OfficialTheme|null) => void;
-    modal: NiceModalHandler<Record<string, unknown>>;
     themes: Theme[];
     setPreviewMode: (mode: string) => void;
     previewMode: string;
@@ -56,8 +55,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
     setCurrentTab,
     themes
 }) => {
-    const modal = useModal();
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const {mutateAsync: uploadTheme} = useUploadTheme();
     const {checkThemeLimitError, isThemeLimited} = useCheckThemeLimitError();
     const handleError = useHandleError();
@@ -81,7 +79,6 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
     }, [checkThemeLimitError, isThemeLimited]);
 
     const onClose = () => {
-        modal.remove();
         updateRoute('/');
     };
 
@@ -167,8 +164,8 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
                 title,
                 prompt,
                 fatalErrors,
-                onRetry: async () => {
-                    modal?.remove();
+                onRetry: async (invalidThemeModal) => {
+                    invalidThemeModal?.remove();
                     handleUpload();
                 }
             });
@@ -249,10 +246,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
     const right =
         <div className='flex items-center gap-14'>
             <div className='flex items-center gap-3'>
-                <Button type='button' variant='outline' onClick={() => {
-                    modal.remove();
-                    onClose();
-                }}>Close</Button>
+                <Button type='button' variant='outline' onClick={onClose}>Close</Button>
                 <Button disabled={isUploading} type='button' onClick={handleUpload}>{isUploading && <LoadingIndicator size='sm' />}Upload theme</Button>
             </div>
         </div>;
@@ -307,9 +301,8 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
     const [isInstalling, setInstalling] = useState(false);
     const [installedFromMarketplace, setInstalledFromMarketplace] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
 
-    const modal = useModal();
     const {data: {themes} = {}} = useBrowseThemes();
     const {mutateAsync: installTheme} = useInstallTheme();
     const {mutateAsync: activateTheme} = useActivateTheme();
@@ -341,7 +334,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
                     // Don't show installation modal if there's a limit error
                     // The parent component should handle this
                     // Also close the current modal to prevent any issues
-                    modal.remove();
+                    updateRoute('theme');
                     return;
                 }
 
@@ -395,7 +388,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
         };
 
         handleUrlInstallation();
-    }, [themeRef, source, installTheme, handleError, activateTheme, updateRoute, themes, installedFromMarketplace, checkThemeLimitError, modal, isMounted]);
+    }, [themeRef, source, installTheme, handleError, activateTheme, updateRoute, themes, installedFromMarketplace, checkThemeLimitError, isMounted]);
 
     if (!themes) {
         return;
@@ -501,7 +494,6 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
                 prompt,
                 installedTheme: installedTheme!,
                 onActivate: () => {
-                    modal.remove();
                     updateRoute('');
                 }
             });
@@ -510,9 +502,6 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
 
     return (
         <SettingsModal
-            afterClose={() => {
-                updateRoute('');
-            }}
             animate={false}
             cancelLabel=''
             footer={false}
@@ -522,7 +511,9 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
             title=''
             scrolling
             onCancel={() => {
-                modal.remove();
+                updateRoute('');
+            }}
+            onClose={() => {
                 updateRoute('');
             }}
         >
@@ -543,7 +534,6 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
                     }
                     <ThemeToolbar
                         currentTab={currentTab}
-                        modal={modal}
                         previewMode={previewMode}
                         selectedTheme={selectedTheme}
                         setCurrentTab={setCurrentTab}

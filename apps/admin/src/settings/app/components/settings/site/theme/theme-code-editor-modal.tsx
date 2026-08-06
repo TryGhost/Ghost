@@ -1,6 +1,6 @@
 import CodeMirror, {EditorView} from '@uiw/react-codemirror';
 import InvalidThemeModal, {type FatalErrors} from './invalid-theme-modal';
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
+import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import ThemeEditorConfirmModal from './theme-editor-confirm-modal';
 import ThemeEditorInputModal from './theme-editor-input-modal';
@@ -27,7 +27,7 @@ import {toast} from 'sonner';
 import {useBrowseThemes} from '@tryghost/admin-x-framework/api/themes';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useQueryClient} from '@tanstack/react-query';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 import type {SelectedNode} from './theme-file-tree';
 import type {ThemeEditorConfirmModalProps} from './theme-editor-confirm-modal';
 import type {ThemeEditorFile} from './theme-editor-utils';
@@ -234,8 +234,7 @@ const editorSelectionTheme = EditorView.theme({
 }, {dark: true});
 
 const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
-    const modal = useModal();
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const queryClient = useQueryClient();
     const handleError = useHandleError();
     const {data: themesData} = useBrowseThemes();
@@ -422,7 +421,6 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
             }
         }
 
-        modal.remove();
         updateRoute(getReturnRouteFromHash() ?? 'design/change-theme');
     };
 

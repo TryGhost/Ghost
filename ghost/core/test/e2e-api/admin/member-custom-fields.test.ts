@@ -882,6 +882,84 @@ describe('Member Custom Fields Admin API', function () {
             await setValues(memberId, {[field.key]: ''}, 422);
         });
 
+        describe('what a rejected value says', function () {
+            // `message` is the generic "cannot edit member" every rejection carries; the
+            // reason a person reads is `context`.
+            async function reasonFor(customFields: Record<string, unknown>, memberId: string) {
+                const body = await setValues(memberId, customFields, 422);
+                return body.errors[0].context;
+            }
+
+            it('gives a length failure the limit rather than the measurement', async function () {
+                const field = await createField({name: 'Job title'});
+                const memberId = await createMember();
+
+                assert.equal(
+                    await reasonFor({[field.key]: 'x'.repeat(256)}, memberId),
+                    'Use 255 characters or fewer.'
+                );
+            });
+
+            it('gives a sub-field failure the sub-field\'s own limit, not the field\'s', async function () {
+                // postal_code is bounded well under the 255 its siblings carry, and the
+                // reason has to name the bound that actually stopped the save.
+                const field = await createField({name: 'Home address', type: 'address'});
+                const memberId = await createMember();
+
+                assert.equal(
+                    await reasonFor({[field.key]: {postal_code: 'x'.repeat(33)}}, memberId),
+                    'Use 32 characters or fewer.'
+                );
+            });
+
+            it('says what a country code should be, whichever way it was wrong', async function () {
+                // One rule broken three ways; fixing any of them needs the same sentence.
+                const field = await createField({name: 'Home address', type: 'address'});
+                const memberId = await createMember();
+                const expected = 'Enter a 2-letter country code, like US.';
+
+                assert.equal(await reasonFor({[field.key]: {country: 'IRL'}}, memberId), expected);
+                assert.equal(await reasonFor({[field.key]: {country: '12'}}, memberId), expected);
+                assert.equal(await reasonFor({[field.key]: {country: 'D'}}, memberId), expected);
+            });
+
+            it('asks for a part when an address names none', async function () {
+                const field = await createField({name: 'Home address', type: 'address'});
+                const memberId = await createMember();
+
+                assert.equal(
+                    await reasonFor({[field.key]: {}}, memberId),
+                    'Enter at least one part of the address.'
+                );
+            });
+
+            it('hands the caller a sentence rather than schema wording', async function () {
+                // Covers what the API can be sent, not only what the editor sends. The
+                // catalog's own test walks every rule; this proves the sentence survives
+                // the service, the error handler and the wire.
+                const address = await createField({name: 'Home address', type: 'address'});
+                const text = await createField({name: 'Job title'});
+                const memberId = await createMember();
+                const schemaWording = /Too big|Too small|Invalid input|Unrecognized|expected /;
+
+                const reasons = [
+                    await reasonFor({[text.key]: 'x'.repeat(256)}, memberId),
+                    await reasonFor({[text.key]: 42}, memberId),
+                    await reasonFor({[address.key]: {line1: 'x'.repeat(256)}}, memberId),
+                    await reasonFor({[address.key]: {postal_code: 'x'.repeat(33)}}, memberId),
+                    await reasonFor({[address.key]: {country: 'IRL'}}, memberId),
+                    await reasonFor({[address.key]: {city: 42}}, memberId),
+                    await reasonFor({[address.key]: {}}, memberId)
+                ];
+
+                for (const reason of reasons) {
+                    assert.doesNotMatch(reason, schemaWording);
+                    // A sentence, not a fragment: something a screen can show unedited.
+                    assert.match(reason, /^[A-Z].*\.$/);
+                }
+            });
+        });
+
         it('omits a stored value whose type is no longer valid, without failing the read', async function () {
             // Stored data outlives the catalog: if a value's field type is later
             // dropped or renamed, reading the member must degrade — omit that one

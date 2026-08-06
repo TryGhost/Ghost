@@ -164,14 +164,15 @@ export class CustomFieldValuesService {
                 continue;
             }
 
-            // The issue path names the offending part, so `property` reads
-            // `custom_fields.home_address.postal_code`.
+            // Message only, no `context`: the API error handler moves a message into
+            // `context` when `context` is empty and prepends it when it is not, so
+            // anything added here reaches the client glued to the front of the reason.
+            // Which field failed rides in `property`.
             const value = FIELD_TYPES[field.type].value.safeParse(raw);
             if (!value.success) {
                 const issue = value.error.issues[0];
                 throw new errors.ValidationError({
-                    message: `Invalid value for custom field '${field.name}'.`,
-                    context: issue.message,
+                    message: issue.message,
                     property: [`custom_fields.${key}`, ...issue.path].join('.')
                 });
             }

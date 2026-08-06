@@ -13,10 +13,10 @@ import {useEffect, useState} from 'react';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRefreshAPIKey} from '@tryghost/admin-x-framework/api/api-keys';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 
-const TransistorModal = NiceModal.create(() => {
-    const {updateRoute} = useRouting();
+function TransistorModal() {
+    const {updateRoute} = useSettingsNavigation();
     const {config, settings} = useGlobalData();
     const {mutateAsync: editSettings} = useEditSettings();
     const {data: {integrations} = {integrations: []}} = useBrowseIntegrations();
@@ -91,15 +91,15 @@ const TransistorModal = NiceModal.create(() => {
 
     return (
         <SettingsModal
-            afterClose={() => {
-                updateRoute('integrations');
-            }}
             cancelLabel='Close'
             dirty={enabled !== transistorEnabled}
             okLabel={okLabel}
             okVariant='default'
             testId='transistor-modal'
             title=''
+            onClose={() => {
+                updateRoute('integrations');
+            }}
             onOk={handleSave}
         >
             <IntegrationHeader
@@ -147,6 +147,6 @@ const TransistorModal = NiceModal.create(() => {
             </>
         </SettingsModal>
     );
-});
+}
 
 export default TransistorModal;

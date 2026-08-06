@@ -27,6 +27,7 @@ const messages = {
 
 // flags in this list always return `true`, allows quick global enable prior to full flag removal
 const GA_FEATURES = [
+    'automationAnalytics',
     'customFonts',
     'explore',
     'commentsThreads',
@@ -48,7 +49,6 @@ const PUBLIC_BETA_FEATURES = [
 // Which is only visible if the developer experiments flag is enabled
 const PRIVATE_FEATURES = [
     'automations',
-    'automationAnalytics',
     'stripeAutomaticTax',
     'importMemberTier',
     'csvContentImporter',

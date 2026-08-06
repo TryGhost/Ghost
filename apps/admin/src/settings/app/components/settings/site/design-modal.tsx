@@ -12,7 +12,7 @@ import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 
 const Sidebar: React.FC<{
     globalSettings: GlobalSettingValues
@@ -71,7 +71,7 @@ const DesignModal: React.FC = () => {
     const handleError = useHandleError();
     const [selectedPreviewTab, setSelectedPreviewTab] = useState('homepage');
     const [previewDevice, setPreviewDevice] = useState<'desktop' | 'mobile'>('desktop');
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
 
     const refParam = useQueryParams().getParam('ref');
 
@@ -209,13 +209,6 @@ const DesignModal: React.FC = () => {
         />;
 
     return <PreviewModalContent
-        afterClose={() => {
-            if (refParam === 'setup') {
-                updateRoute({isExternal: true, route: 'analytics'});
-            } else {
-                updateRoute('design');
-            }
-        }}
         buttonsDisabled={okProps.disabled}
         cancelLabel='Close'
         deviceSelector={deviceSelector}
@@ -230,6 +223,13 @@ const DesignModal: React.FC = () => {
         size='full'
         testId='design-modal'
         title='Design'
+        onClose={() => {
+            if (refParam === 'setup') {
+                updateRoute({isExternal: true, route: 'analytics'});
+            } else {
+                updateRoute('design');
+            }
+        }}
         onOk={async () => {
             await handleSave({fakeWhenUnchanged: true});
         }}

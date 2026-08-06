@@ -1,4 +1,3 @@
-import NiceModal from '@ebay/nice-modal-react';
 import validator from 'validator';
 import {APIError, ValidationError} from '@tryghost/admin-x-framework/errors';
 import {Field, FieldContent, FieldDescription, FieldError, FieldLabel, FieldLegend, FieldSet, Input, RadioGroup, RadioGroupItem} from '@tryghost/shade/components';
@@ -12,22 +11,21 @@ import {useBrowseUsers} from '@tryghost/admin-x-framework/api/users';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 
 type RoleType = 'administrator' | 'editor' | 'author' | 'contributor' | 'super editor';
 
 const USER_ALREADY_REGISTERED_CODE = 'USER_ALREADY_REGISTERED';
 const USER_ALREADY_EXISTS_ERROR = 'A user with that email address already exists.';
 
-const InviteUserModal = NiceModal.create(() => {
-    const modal = NiceModal.useModal();
+function InviteUserModal() {
     const rolesQuery = useBrowseRoles();
     const assignableRolesQuery = useBrowseRoles({
         searchParams: {limit: '100', permissions: 'assign'}
     });
     const limiter = useLimiter();
 
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const {config} = useGlobalData();
     const editorBeta = config.labs.superEditors;
     const [email, setEmail] = useState<string>('');
@@ -125,7 +123,6 @@ const InviteUserModal = NiceModal.create(() => {
 
             toast.success(`Invitation sent`, {description: `${email}`});
 
-            modal.remove();
             updateRoute('staff?tab=invited');
         } catch (e) {
             const validationError = e instanceof ValidationError ? e.data?.errors[0] : undefined;
@@ -202,15 +199,15 @@ const InviteUserModal = NiceModal.create(() => {
 
     return (
         <SettingsModal
-            afterClose={() => {
-                updateRoute('staff');
-            }}
             cancelLabel='Close'
             okLabel={okLabel}
             okVariant={saveState === 'error' || !!errors.email ? 'destructive' : 'default'}
             testId='invite-user-modal'
             title='Invite a new staff user'
             width={540}
+            onClose={() => {
+                updateRoute('staff');
+            }}
             onOk={handleSendInvitation}
         >
             <Stack className='py-4' gap='xl'>
@@ -259,6 +256,6 @@ const InviteUserModal = NiceModal.create(() => {
             </Stack>
         </SettingsModal>
     );
-});
+}
 
 export default InviteUserModal;

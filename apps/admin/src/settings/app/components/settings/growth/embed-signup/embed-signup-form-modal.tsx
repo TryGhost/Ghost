@@ -1,17 +1,14 @@
 import EmbedSignupPreview from './embed-signup-preview';
 import EmbedSignupSidebar, {type SelectedLabelTypes} from './embed-signup-sidebar';
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import useSettingGroup from '@/settings/app/hooks/use-setting-group';
 import {type EmbedSignupLayout, generateCode} from '@/settings/app/utils/generate-embed-code';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 
-const EmbedSignupFormModal = NiceModal.create(() => {
-    const modal = useModal();
-
+const EmbedSignupFormModal = () => {
     const [selectedColor, setSelectedColor] = useState<string>('#08090c');
     const [selectedLabels, setSelectedLabels] = useState<SelectedLabelTypes[]>([]);
     const [selectedLayout, setSelectedLayout] = useState<EmbedSignupLayout>('all-in-one');
@@ -19,7 +16,7 @@ const EmbedSignupFormModal = NiceModal.create(() => {
     const [generatedScript, setGeneratedScript] = useState<string>('');
     const [isCopied, setIsCopied] = useState(false);
 
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const {config} = useGlobalData();
     const {localSettings, siteData} = useSettingGroup();
     const [accentColor, title, description, locale, icon] = getSettingValues<string>(localSettings, ['accent_color', 'title', 'description', 'locale', 'icon']);
@@ -79,7 +76,6 @@ const EmbedSignupFormModal = NiceModal.create(() => {
     };
 
     const handleClose = () => {
-        modal.remove();
         updateRoute('embed-signup-form');
     };
 
@@ -94,9 +90,6 @@ const EmbedSignupFormModal = NiceModal.create(() => {
 
     return (
         <SettingsModal
-            afterClose={() => {
-                updateRoute('embed-signup-form');
-            }}
             cancelLabel=''
             className='max-lg:h-auto!'
             footer={false}
@@ -106,6 +99,7 @@ const EmbedSignupFormModal = NiceModal.create(() => {
             title=''
             topRightContent='close'
             width={1120}
+            onClose={handleClose}
         >
             <div className='grid grid-cols-1 lg:grid-cols-[5.2fr_2.8fr]'>
                 <EmbedSignupPreview
@@ -131,6 +125,6 @@ const EmbedSignupFormModal = NiceModal.create(() => {
             </div>
         </SettingsModal>
     );
-});
+};
 
 export default EmbedSignupFormModal;

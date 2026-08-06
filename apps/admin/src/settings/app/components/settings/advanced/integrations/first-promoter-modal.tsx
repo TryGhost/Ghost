@@ -1,16 +1,15 @@
 import BrandIcon from '@/settings/app/components/icons/brand-icon';
 import IntegrationHeader from './integration-header';
-import NiceModal from '@ebay/nice-modal-react';
 import {Field, FieldContent, FieldDescription, FieldGroup, FieldLabel, FieldSet, Input, Switch} from '@tryghost/shade/components';
 import {type Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 
-const FirstPromoterModal = NiceModal.create(() => {
-    const {updateRoute} = useRouting();
+function FirstPromoterModal() {
+    const {updateRoute} = useSettingsNavigation();
 
     const {settings} = useGlobalData();
     const {mutateAsync: editSettings} = useEditSettings();
@@ -58,15 +57,15 @@ const FirstPromoterModal = NiceModal.create(() => {
 
     return (
         <SettingsModal
-            afterClose={() => {
-                updateRoute('integrations');
-            }}
             cancelLabel='Close'
             dirty={enabled !== firstPromoterEnabled || accountId !== firstPromoterId}
             okLabel={okLabel}
             okVariant='default'
             testId='firstpromoter-modal'
             title=''
+            onClose={() => {
+                updateRoute('integrations');
+            }}
             onOk={async () => {
                 try {
                     await handleSave();
@@ -107,6 +106,6 @@ const FirstPromoterModal = NiceModal.create(() => {
             </FieldSet>
         </SettingsModal>
     );
-});
+}
 
 export default FirstPromoterModal;

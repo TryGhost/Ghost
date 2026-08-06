@@ -13,7 +13,7 @@ import {useAddOffer} from '@tryghost/admin-x-framework/api/offers';
 import {useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
 import {useEffect, useMemo, useState} from 'react';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 
 // we should replace this with a library
 function slugify(text: string): string {
@@ -324,7 +324,7 @@ const AddOfferModal = () => {
     ];
 
     const [href, setHref] = useState<string>('');
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const {data: {tiers} = {}} = useBrowseTiers();
     const activeTiers = getPaidActiveTiers(tiers || []);
     const tierCadenceOptions = getTiersCadences(activeTiers);
@@ -643,9 +643,6 @@ const AddOfferModal = () => {
         portalParent='offers'
     />;
     return <PreviewModalContent
-        afterClose={() => {
-            updateRoute('offers');
-        }}
         backDropClick={false}
         cancelLabel='Cancel'
         dirty={saveState === 'unsaved'}
@@ -660,6 +657,9 @@ const AddOfferModal = () => {
         title='Offer'
         width={1140}
         onCancel={cancelAddOffer}
+        onClose={() => {
+            updateRoute('offers');
+        }}
         onOk={async () => {
             validate();
             const isErrorsEmpty = Object.values(errors).every(error => !error);

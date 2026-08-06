@@ -1,19 +1,14 @@
 import AddRecommendationModalConfirm from './add-recommendation-modal-confirm';
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
 import {AlreadyExistsError} from '@tryghost/admin-x-framework/errors';
 import {type EditOrAddRecommendation, useCheckRecommendation} from '@tryghost/admin-x-framework/api/recommendations';
 import {type ErrorMessages, useForm} from '@tryghost/admin-x-framework/hooks';
 import {Field, FieldDescription, FieldError, FieldGroup, FieldLabel, Input, LoadingIndicator} from '@tryghost/shade/components';
-import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSearchParams} from '@tryghost/admin-x-framework';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {formatUrl} from '@/settings/app/utils/format-url';
 import {toast} from 'sonner';
-
-interface AddRecommendationModalProps {
-    recommendation?: EditOrAddRecommendation,
-    animate?: boolean
-}
 
 const doFormatUrl = (url: string) => {
     return formatUrl(url).save || '';
@@ -35,22 +30,27 @@ const validateUrl = function (errors: ErrorMessages, url: string) {
     return errors;
 };
 
-const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModalProps> = ({searchParams, recommendation, animate}) => {
+const AddRecommendationModal: React.FC = () => {
     const [enterPressed, setEnterPressed] = useState(false);
-    const modal = useModal();
-    const {updateRoute} = useRouting();
+    const [searchParams] = useSearchParams();
+    const {updateRoute} = useSettingsNavigation();
     const {mutateAsync: checkRecommendation} = useCheckRecommendation();
 
+    // Both wizard steps render under recommendations/add; the confirm step has
+    // no URL of its own.
+    const [step, setStep] = useState<'form' | 'confirm'>('form');
+    const [animate, setAnimate] = useState(true);
+
     // Handle a URL that was passed via the URL
-    const initialUrl = recommendation ? '' : (searchParams?.get('url') ?? '');
+    const initialUrl = searchParams.get('url') ?? '';
     const {save: initialUrlCleaned} = initialUrl ? formatUrl(initialUrl) : {save: ''};
 
     // Show loading view when we had an initial URL
     const didInitialSubmit = React.useRef(false);
     const [showLoadingView, setShowLoadingView] = React.useState(!!initialUrlCleaned);
 
-    const {formState, updateForm, handleSave, errors, saveState, clearError} = useForm({
-        initialState: recommendation ?? {
+    const {formState, updateForm, handleSave, errors, saveState, clearError} = useForm<EditOrAddRecommendation>({
+        initialState: {
             title: '',
             url: initialUrlCleaned || '',
             description: '',
@@ -94,16 +94,10 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
             // Set a default description (excerpt)
             updatedRecommendation.description = updatedRecommendation.excerpt || null;
 
-            // Switch modal without changing the route (the second modal is not reachable by URL)
-            modal.remove();
-
-            // todo: we should change the URL, but this also keeps adding a new modal -> infinite loop
-            // updateRoute('recommendations/add?url=' + encodeURIComponent(updatedRecommendation.url));
-
-            NiceModal.show(AddRecommendationModalConfirm, {
-                animate: false,
-                recommendation: updatedRecommendation
-            });
+            updateForm(() => updatedRecommendation);
+            setShowLoadingView(false);
+            setAnimate(false);
+            setStep('confirm');
         },
         onValidate: () => {
             const newErrors: Record<string, string> = {};
@@ -156,17 +150,33 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
         }
     }, [formState]);
 
-    if (showLoadingView) {
-        return <SettingsModal
-            afterClose={() => {
-                // Closed without saving: reset route
+    if (step === 'confirm') {
+        return <AddRecommendationModalConfirm
+            recommendation={formState}
+            onBack={(recommendation) => {
+                updateForm(() => recommendation);
+                setStep('form');
+            }}
+            onClose={() => {
                 updateRoute('recommendations');
             }}
-            animate={animate ?? true}
+            onSaved={() => {
+                updateRoute('recommendations');
+            }}
+        />;
+    }
+
+    if (showLoadingView) {
+        return <SettingsModal
+            animate={animate}
             backDropClick={false}
             footer={false}
             header={false}
             size='sm'
+            onClose={() => {
+                // Closed without saving: reset route
+                updateRoute('recommendations');
+            }}
         >
             <div className="flex flex-col items-center justify-center p-8">
                 <div className="flex h-64 items-center justify-center">
@@ -177,11 +187,7 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
     }
 
     return <SettingsModal
-        afterClose={() => {
-            // Closed without saving: reset route
-            updateRoute('recommendations');
-        }}
-        animate={animate ?? true}
+        animate={animate}
         backDropClick={false}
         okLabel={'Next'}
         okLoading={saveState === 'saving'}
@@ -189,6 +195,10 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
         size='sm'
         testId='add-recommendation-modal'
         title='Add recommendation'
+        onClose={() => {
+            // Closed without saving: reset route
+            updateRoute('recommendations');
+        }}
         onOk={onOk}
     >
         <p className="mt-4">You can recommend <strong>any site</strong> your audience will find valuable, not just those published on Ghost.</p>
@@ -224,4 +234,4 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
     </SettingsModal>;
 };
 
-export default NiceModal.create(AddRecommendationModal);
+export default AddRecommendationModal;

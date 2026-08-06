@@ -1,16 +1,14 @@
 import APIKeys from './api-keys';
 import IntegrationHeader from './integration-header';
-import NiceModal from '@ebay/nice-modal-react';
 import {Button} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useBrowseIntegrations} from '@tryghost/admin-x-framework/api/integrations';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 
-const ContentApiModal = NiceModal.create(() => {
-    const modal = NiceModal.useModal();
-    const {updateRoute} = useRouting();
+function ContentApiModal() {
+    const {updateRoute} = useSettingsNavigation();
     const {data: {integrations} = {integrations: []}} = useBrowseIntegrations();
 
     const integration = integrations.find(({slug}) => slug === 'ghost-core-content');
@@ -18,22 +16,21 @@ const ContentApiModal = NiceModal.create(() => {
 
     return (
         <SettingsModal
-            afterClose={() => {
-                updateRoute('integrations');
-            }}
             cancelLabel=''
             footer={
                 <div className='mx-8 flex w-full items-center justify-between'>
                     <Button variant='outline' asChild><a href='https://ghost.org/docs/content-api/' rel='noopener noreferrer' target='_blank'>Open docs <LucideIcon.ExternalLink className='size-3' /></a></Button>
                     <Button type='button' onClick={() => {
                         updateRoute('integrations');
-                        modal.remove();
                     }}>Close</Button>
                 </div>
             }
             testId='content-api-modal'
             title=''
             stickyFooter
+            onClose={() => {
+                updateRoute('integrations');
+            }}
         >
             <IntegrationHeader
                 detail='Access your content programmatically'
@@ -53,6 +50,6 @@ const ContentApiModal = NiceModal.create(() => {
             </div>
         </SettingsModal>
     );
-});
+}
 
 export default ContentApiModal;

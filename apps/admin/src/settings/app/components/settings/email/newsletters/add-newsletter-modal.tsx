@@ -1,19 +1,18 @@
 import LimitModal from '@/settings/app/components/limit-modal';
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
+import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
 import useFeatureFlag from '@/settings/app/hooks/use-feature-flag';
 import {Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldLabel, Input, Switch, Textarea} from '@tryghost/shade/components';
 import {HostLimitError, useLimiter} from '@/settings/app/hooks/use-limiter';
-import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {formatNumber} from '@tryghost/shade/utils';
 import {useAddNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {useBrowseMembers} from '@tryghost/admin-x-framework/api/members';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 
-const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
-    const modal = useModal();
-    const {updateRoute} = useRouting();
+const AddNewsletterModal: React.FC = () => {
+    const {updateRoute} = useSettingsNavigation();
     const returnRoute = useFeatureFlag('automations') ? 'emails' : 'newsletters';
     const handleError = useHandleError();
     const [isCheckingLimit, setIsCheckingLimit] = useState(true);
@@ -80,19 +79,15 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
                 prompt: limitError.message || `Your current plan doesn't support more newsletters.`,
                 onOk: () => updateRoute({route: '/pro', isExternal: true})
             });
-            modal.remove();
             updateRoute(returnRoute);
         }
-    }, [limitError, modal, returnRoute, updateRoute]);
+    }, [limitError, returnRoute, updateRoute]);
 
     if (isCheckingLimit || limitError) {
         return null;
     }
 
     return <SettingsModal
-        afterClose={() => {
-            updateRoute(returnRoute);
-        }}
         backDropClick={false}
         okDisabled={saveState === 'saving'}
         okLabel='Create'
@@ -101,10 +96,11 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
         size='sm'
         testId='add-newsletter-modal'
         title='Create newsletter'
+        onClose={() => {
+            updateRoute(returnRoute);
+        }}
         onOk={async () => {
-            if (await handleSave()) {
-                modal.remove();
-            }
+            await handleSave();
         }}
     >
         <FieldGroup className='mt-10 gap-8'>
@@ -133,4 +129,4 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
     </SettingsModal>;
 };
 
-export default NiceModal.create(AddNewsletterModal);
+export default AddNewsletterModal;

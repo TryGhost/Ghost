@@ -10,7 +10,8 @@ import {Button, Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {Inline, Text} from '@tryghost/shade/primitives';
 import {LucideIcon} from '@tryghost/shade/utils';
-import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {useParams} from '@tryghost/admin-x-framework';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {type Tier, useAddTier, useBrowseTiers, useEditTier} from '@tryghost/admin-x-framework/api/tiers';
 import {currencies, currencySelectGroups, validateCurrencyAmount} from '@/settings/app/utils/currency';
@@ -25,7 +26,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
     const isFreeTier = tier?.type === 'free';
     const [currencyOpen, setCurrencyOpen] = React.useState(false);
 
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const {mutateAsync: updateTier} = useEditTier();
     const {mutateAsync: createTier} = useAddTier();
     const {mutateAsync: editSettings} = useEditSettings();
@@ -206,9 +207,6 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
 
     return <SettingsModal
         ref={modalRef}
-        afterClose={() => {
-            updateRoute('tiers');
-        }}
         buttonsDisabled={okProps.disabled}
         cancelLabel='Close'
         dirty={saveState === 'unsaved'}
@@ -219,6 +217,9 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
         testId='tier-detail-modal'
         title={(tier ? (tier.active ? 'Edit tier' : 'Edit archived tier') : 'New tier')}
         stickyFooter
+        onClose={() => {
+            updateRoute('tiers');
+        }}
         onOk={async () => {
             await handleSave({fakeWhenUnchanged: true});
         }}
@@ -410,19 +411,20 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
     </SettingsModal>;
 };
 
-const TierDetailModal: React.FC<RoutingModalProps> = ({params}) => {
+const TierDetailModal: React.FC = () => {
+    const {tierId} = useParams();
     const {data: {tiers, isEnd} = {}, fetchNextPage} = useBrowseTiers();
 
     let tier: Tier | undefined;
 
     useEffect(() => {
-        if (params?.id && !tier && !isEnd) {
+        if (tierId && !tier && !isEnd) {
             fetchNextPage();
         }
-    }, [fetchNextPage, isEnd, params?.id, tier]);
+    }, [fetchNextPage, isEnd, tierId, tier]);
 
-    if (params?.id) {
-        tier = tiers?.find(({id}) => id === params?.id);
+    if (tierId) {
+        tier = tiers?.find(({id}) => id === tierId);
 
         if (!tier) {
             return null;
@@ -432,4 +434,4 @@ const TierDetailModal: React.FC<RoutingModalProps> = ({params}) => {
     return <TierDetailModalContent tier={tier} />;
 };
 
-export default NiceModal.create(TierDetailModal);
+export default TierDetailModal;

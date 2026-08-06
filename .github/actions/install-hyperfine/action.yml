@@ -1,0 +1,26 @@
+name: 'Install hyperfine'
+description: 'Installs a pinned hyperfine build. Bumping the version breaks comparability with existing benchmark history.'
+inputs:
+  version:
+    description: 'hyperfine release to install'
+    required: false
+    default: '1.18.0'
+  sha256:
+    description: 'Checksum of the x86_64-unknown-linux-gnu tarball; update alongside version'
+    required: false
+    default: '0cf1779354f46037df145bce9dd298d28aee341ac789b6a377ad77855029bc8e'
+
+runs:
+  using: 'composite'
+  steps:
+    - shell: bash
+      env:
+        HYPERFINE_VERSION: ${{ inputs.version }}
+        HYPERFINE_SHA256: ${{ inputs.sha256 }}
+      run: |
+        TARBALL="hyperfine-v${HYPERFINE_VERSION}-x86_64-unknown-linux-gnu.tar.gz"
+        wget --tries=3 --timeout=30 "https://github.com/sharkdp/hyperfine/releases/download/v${HYPERFINE_VERSION}/${TARBALL}"
+        echo "${HYPERFINE_SHA256}  ${TARBALL}" | sha256sum --check --strict
+        tar -zxf "${TARBALL}"
+        mv "hyperfine-v${HYPERFINE_VERSION}-x86_64-unknown-linux-gnu/hyperfine" /usr/local/bin
+        chmod +x /usr/local/bin/hyperfine
