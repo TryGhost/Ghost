@@ -51,8 +51,6 @@ interface UsePostActionsOptions {
     onBulkAction?: (key: PostContextMenuKey, snapshot: BulkActionSnapshot) => void;
     /** The NQL filter describing the selection, possibly inverted. */
     selectionFilter: string;
-    /** The list's own filter, which pruned rows must still match. */
-    allFilter: string;
     /** The bucket filters currently on screen — see `BulkActionSnapshot`. */
     bucketFilters: string[];
     /** Ember's `isSingle`, captured with the rest of the selection. */
@@ -60,7 +58,7 @@ interface UsePostActionsOptions {
 }
 
 export function usePostActions({
-    resource, posts, onShareAsGift, count, onBulkAction, selectionFilter, allFilter, bucketFilters, isSingle
+    resource, posts, onShareAsGift, count, onBulkAction, selectionFilter, bucketFilters, isSingle
 }: UsePostActionsOptions) {
     const {data: siteData} = useBrowseSite();
     const siteUrl = siteData?.site.url ?? '';
@@ -130,7 +128,7 @@ export function usePostActions({
             // Everything else is a bulk action. The selection is captured now,
             // because the menu is about to close and take a transient selection
             // with it.
-            onBulkAction?.(key, {filter: selectionFilter, posts, count, allFilter, bucketFilters, isSingle});
+            onBulkAction?.(key, {filter: selectionFilter, posts, count, bucketFilters, isSingle});
             break;
         }
         } catch (error) {
@@ -140,6 +138,6 @@ export function usePostActions({
         }
     }, [
         posts, resource, siteUrl, copyPost, copyPage, queryClient,
-        onShareAsGift, count, onBulkAction, selectionFilter, allFilter, bucketFilters, isSingle
+        onShareAsGift, count, onBulkAction, selectionFilter, bucketFilters, isSingle
     ]);
 }

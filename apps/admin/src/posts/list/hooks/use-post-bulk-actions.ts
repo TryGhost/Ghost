@@ -43,8 +43,6 @@ export interface BulkActionSnapshot {
      * the request carried a filter matching the whole site.
      */
     isSingle: boolean;
-    /** The list's own filter, which pruned rows must still match. */
-    allFilter: string;
     /**
      * The bucket filters the screen is currently showing. Ember iterates only
      * the three infinity models on screen; `setQueriesData` would otherwise
@@ -95,15 +93,23 @@ function applyLocalEdit(post: PostListItem, key: PostContextMenuKey): PostListIt
     }
 }
 
-function decodeQueryKey(queryKey: readonly unknown[]): string {
-    const raw = JSON.stringify(queryKey);
+/**
+ * The decoded `filter` param of a cached query's key. Keys are
+ * `[dataType, url]` — see `createInfiniteQuery`.
+ */
+function getQueryKeyFilter(queryKey: readonly unknown[]): string | null {
+    const url = queryKey[1];
+
+    if (typeof url !== 'string') {
+        return null;
+    }
 
     try {
-        return decodeURIComponent(raw);
+        return new URL(url, window.location.origin).searchParams.get('filter');
     } catch {
-        // A malformed escape would throw; matching nothing is safer than
-        // patching a list this action is not about.
-        return raw;
+        // Matching nothing is safer than patching a list this action is not
+        // about.
+        return null;
     }
 }
 
@@ -127,18 +133,11 @@ export function usePostBulkActions({resource, onDeleted, onEdited}: UsePostBulkA
     const queryClient = useQueryClient();
 
     /*
-     * Deliberately *not* calling the framework's `onInvalidate` here.
-     *
-     * It looked like the right thing — Ember keeps its own store and still owns
-     * the editor — but `PostsResponseType` has no entry in the bridge's
-     * `emberDataTypeMapping`, so the call throws outright; and the mapping it
-     * would need resolves to `store.unloadAll('post')`, which would drop the
-     * record out from under an editor the user may have open.
-     *
-     * It was added on a hypothesis about stale Ember records that never held up:
-     * the freeze it was meant to fix turned out to be an await-ordering bug in
-     * this file. Left out until there is evidence of a real staleness problem,
-     * and a safer way to signal it than unloading every post.
+     * Invalidation goes through TanStack's `invalidateQueries` directly, never
+     * the framework's `onInvalidate`: `PostsResponseType` has no entry in the
+     * bridge's `emberDataTypeMapping`, so that call throws outright — and the
+     * mapping it would need resolves to `store.unloadAll('post')`, which would
+     * drop the record out from under an editor the user may have open.
      */
 
     // Called unconditionally and picked by resource — hooks can't be branched.
@@ -151,9 +150,10 @@ export function usePostBulkActions({resource, onDeleted, onEdited}: UsePostBulkA
     const dataType = isPages ? 'PagesResponseType' : 'PostsResponseType';
 
     /**
-     * Removes the given ids from every cached page of the list, and prunes any
-     * edited row that no longer matches the list's filter. Patching rather than
-     * refetching is what preserves scroll position on a long list.
+     * Removes the given ids from every cached page of the on-screen bucket
+     * lists, and prunes any edited row that no longer matches its own bucket's
+     * filter. Patching rather than refetching is what preserves scroll
+     * position on a long list.
      */
     const patchCaches = useCallback((
         snapshot: BulkActionSnapshot,
@@ -163,66 +163,95 @@ export function usePostBulkActions({resource, onDeleted, onEdited}: UsePostBulkA
         const isDelete = action === 'delete';
         const remaining = new Set<string>();
 
-        queryClient.setQueriesData<{
-            pageParams?: unknown[];
-            pages?: {posts?: PostListItem[]; pages?: PostListItem[]}[];
-        }>(
-            {
-                queryKey: [dataType],
-                // Only the lists on screen. A cached list from another filter
-                // must not be pruned against this one.
-                //
-                // The key is `[dataType, url]` with the filter percent-encoded
-                // into the query string, so it has to be decoded before the
-                // raw bucket filter can be found in it.
-                predicate: query => snapshot.bucketFilters.some(
-                    filter => decodeQueryKey(query.queryKey).includes(filter)
-                )
-            },
-            (cached) => {
-                // `pageParams` rather than `pages`: a non-infinite *pages*
-                // response is literally `{pages: Page[]}`, so testing for
-                // `pages` would treat each Page as an infinite page and rewrite
-                // the record to nothing. Only InfiniteData has `pageParams`.
-                if (!Array.isArray(cached?.pageParams) || !cached.pages) {
-                    return cached;
-                }
+        for (const bucketFilter of snapshot.bucketFilters) {
+            queryClient.setQueriesData<{
+                pageParams?: unknown[];
+                pages?: {
+                    posts?: PostListItem[];
+                    pages?: PostListItem[];
+                    meta?: {pagination: {total?: number}};
+                }[];
+            }>(
+                {
+                    queryKey: [dataType],
+                    // Exact match on the key's decoded `filter` param. A
+                    // substring test would also patch lists this filter merely
+                    // prefixes (`status:draft` vs `status:draft+featured:true`)
+                    // and prune them against a filter that is not their own.
+                    predicate: query => getQueryKeyFilter(query.queryKey) === bucketFilter
+                },
+                (cached) => {
+                    // `pageParams` rather than `pages`: a non-infinite *pages*
+                    // response is literally `{pages: Page[]}`, so testing for
+                    // `pages` would treat each Page as an infinite page and
+                    // rewrite the record to nothing. Only InfiniteData has
+                    // `pageParams`.
+                    if (!Array.isArray(cached?.pageParams) || !cached.pages) {
+                        return cached;
+                    }
 
-                return {
-                    ...cached,
-                    pages: cached.pages.map((page) => {
+                    let removed = 0;
+                    const pages = cached.pages.map((page) => {
                         const key = isPages ? 'pages' : 'posts';
                         const rows = page[key] ?? [];
+                        let kept: PostListItem[];
 
                         if (isDelete) {
-                            return {...page, [key]: rows.filter(row => !editedIds.has(row.id))};
+                            kept = rows.filter(row => !editedIds.has(row.id));
+                        } else {
+                            // The edit is applied to the cached rows *first*,
+                            // so the pruner sees the post as it now is.
+                            // Applying it to the snapshot's copies instead
+                            // would leave the cache holding the old state and
+                            // prune nothing.
+                            const edited = rows.map(row => (
+                                editedIds.has(row.id) ? applyLocalEdit(row, action) : row
+                            ));
+
+                            // Pruned against the bucket's own filter, not the
+                            // list-wide one: on the unfiltered list an
+                            // unpublished row still matches the every-status
+                            // filter but must leave the published bucket.
+                            kept = pruneNonMatchingPosts({
+                                posts: edited,
+                                editedIds,
+                                filter: bucketFilter
+                            });
+
+                            kept.forEach((row) => {
+                                if (editedIds.has(row.id)) {
+                                    remaining.add(row.id);
+                                }
+                            });
                         }
 
-                        // The edit is applied to the cached rows *first*, so
-                        // the pruner sees the post as it now is. Applying it to
-                        // the snapshot's copies instead would leave the cache
-                        // holding the old state and prune nothing.
-                        const edited = rows.map(row => (
-                            editedIds.has(row.id) ? applyLocalEdit(row, action) : row
-                        ));
-
-                        const kept = pruneNonMatchingPosts({
-                            posts: edited,
-                            editedIds,
-                            filter: snapshot.allFilter
-                        });
-
-                        kept.forEach((row) => {
-                            if (editedIds.has(row.id)) {
-                                remaining.add(row.id);
-                            }
-                        });
+                        removed += rows.length - kept.length;
 
                         return {...page, [key]: kept};
-                    })
-                };
-            }
-        );
+                    });
+
+                    if (removed === 0) {
+                        return {...cached, pages};
+                    }
+
+                    // The hooks' `returnData` reads `meta` off the last page;
+                    // keep every page consistent so the total tracks the rows.
+                    return {
+                        ...cached,
+                        pages: pages.map(page => (typeof page.meta?.pagination.total === 'number' ? {
+                            ...page,
+                            meta: {
+                                ...page.meta,
+                                pagination: {
+                                    ...page.meta.pagination,
+                                    total: Math.max(0, page.meta.pagination.total - removed)
+                                }
+                            }
+                        } : page))
+                    };
+                }
+            );
+        }
 
         return remaining;
     }, [queryClient, dataType, isPages]);
@@ -299,6 +328,10 @@ export function usePostBulkActions({resource, onDeleted, onEdited}: UsePostBulkA
                 }
 
                 patchCaches(snapshot, 'delete');
+                // Other cached lists for the resource (saved views, search
+                // index, analytics screens) still hold the rows; mark them
+                // stale without refetching the just-patched active queries.
+                void queryClient.invalidateQueries({queryKey: [dataType], refetchType: 'none'});
                 toast.success(getPostActionMessage('deleted', {
                     count: snapshot.count, resource, isSingle: snapshot.isSingle
                 }));
@@ -329,6 +362,8 @@ export function usePostBulkActions({resource, onDeleted, onEdited}: UsePostBulkA
 
             const remaining = patchCaches(snapshot, key);
 
+            void queryClient.invalidateQueries({queryKey: [dataType], refetchType: 'none'});
+
             // The rows the edit pushed out of the list are no longer selectable,
             // but the ones still on screen stay selected — matching Ember's
             // `clearUnavailableItems` rather than a full clear.
@@ -344,7 +379,7 @@ export function usePostBulkActions({resource, onDeleted, onEdited}: UsePostBulkA
             setIsRunning(false);
         }
     }, [
-        isPages, resource, onDeleted, onEdited, patchCaches, dataType,
+        isPages, resource, onDeleted, onEdited, patchCaches, dataType, queryClient,
         bulkEditPosts, bulkEditPages, bulkDeletePosts, bulkDeletePages
     ]);
 
