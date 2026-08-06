@@ -23,15 +23,23 @@ if (process.env.NODE_ENV.startsWith('test')){
 const cache = new LocalFileCache({storagePath, writeDisabled});
 const urlService = new UrlService({cache});
 
-const LazyUrlService = require('./lazy-url-service');
-const {createFindResource} = require('./lazy-find-resource');
-const {createFetchRoutableResources} = require('./routable-resources');
-const models = require('../../models');
+// Build a lazy backend alongside eager for shadow comparison, gated by the
+// existing `lazyRouting` flag (unset by default = pure eager, unchanged).
+// models is already loaded via url-service -> resources, so this require is safe.
+let lazyUrlService = null;
+let fetchRoutableResources = null;
+if (config.get('lazyRouting')) {
+    const LazyUrlService = require('./lazy-url-service');
+    const {createFindResource} = require('./lazy-find-resource');
+    const {createFetchRoutableResources} = require('./routable-resources');
+    const models = require('../../models');
+    lazyUrlService = new LazyUrlService({findResource: createFindResource(models)});
+    fetchRoutableResources = createFetchRoutableResources({lazyUrlService});
+}
 
-const lazyUrlService = new LazyUrlService({findResource: createFindResource(models)});
-const fetchRoutableResources = createFetchRoutableResources({lazyUrlService});
-
-const urlServiceFacade = new UrlServiceFacade({urlService, lazyUrlService, compare: false, fetchRoutableResources});
+const urlServiceFacade = lazyUrlService
+    ? new UrlServiceFacade({urlService, lazyUrlService, compare: true, fetchRoutableResources})
+    : new UrlServiceFacade({urlService});
 
 // Singleton: default export remains the eager UrlService for backwards
 // compatibility with existing imports. The new facade is exposed alongside

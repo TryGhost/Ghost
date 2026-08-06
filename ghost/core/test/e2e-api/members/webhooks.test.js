@@ -6,7 +6,7 @@ const stripe = require('stripe');
 const {Product} = require('../../../core/server/models/product');
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
-const urlServiceUtils = require('../../utils/url-service-utils');
+const urlService = require('../../../core/server/services/url');
 const urlUtils = require('../../../core/shared/url-utils').default;
 const DomainEvents = require('@tryghost/domain-events');
 const {anyContentVersion, anyContentLength, anyEtag, anyObjectId, anyUuid, anyISODateTime, anyString, anyArray, anyObject, nullable} = matchers;
@@ -2788,7 +2788,7 @@ describe('Members API', function () {
                 type: 'post'
             };
 
-            const absoluteUrl = urlServiceUtils.urlFor(post, 'posts', {absolute: true});
+            const absoluteUrl = urlService.getUrlByResourceId(post.id, {absolute: true});
 
             await testWithAttribution(attribution, {
                 id: post.id,
@@ -2831,7 +2831,7 @@ describe('Members API', function () {
                 type: 'page'
             };
 
-            const absoluteUrl = urlServiceUtils.urlFor(post, 'pages', {absolute: true});
+            const absoluteUrl = urlService.getUrlByResourceId(post.id, {absolute: true});
 
             await testWithAttribution(attribution, {
                 id: post.id,
@@ -2854,7 +2854,7 @@ describe('Members API', function () {
                 type: 'tag'
             };
 
-            const absoluteUrl = urlServiceUtils.urlFor(tag, 'tags', {absolute: true});
+            const absoluteUrl = urlService.getUrlByResourceId(tag.id, {absolute: true});
 
             await testWithAttribution(attribution, {
                 id: tag.id,
@@ -2877,7 +2877,7 @@ describe('Members API', function () {
                 type: 'author'
             };
 
-            const absoluteUrl = urlServiceUtils.urlFor(author, 'authors', {absolute: true});
+            const absoluteUrl = urlService.getUrlByResourceId(author.id, {absolute: true});
 
             await testWithAttribution(attribution, {
                 id: author.id,

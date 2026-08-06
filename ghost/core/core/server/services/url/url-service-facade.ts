@@ -10,13 +10,9 @@
  *  - lazyUrlService: an on-demand implementation (LazyUrlService) that
  *                    computes URLs and ownership per call.
  *
- * Reads are answered by `lazyUrlService` unless the facade is comparing, in
- * which case eager answers and lazy runs alongside it so divergence can be
- * logged.
- *
- * Outside compare mode the router lifecycle hooks also go to lazy alone, so
- * eager is constructed and initialised but never told about a router — it holds
- * no URLs and answers nothing. It stays only until it is deleted outright.
+ * When `lazyUrlService` is provided the facade routes calls to it; otherwise
+ * it delegates to the eager `urlService`. This lets the lazy implementation be
+ * swapped in behind a config flag without touching individual callers.
  */
 
 const _ = require('lodash');
@@ -109,7 +105,6 @@ export interface LazyUrlServiceBackend {
     onRouterAddedType(...args: unknown[]): unknown;
     onRouterUpdated(...args: unknown[]): unknown;
     reset(): void;
-    notFoundUrl(options?: UrlOptions): string;
 }
 
 export class UrlServiceFacade {
@@ -145,28 +140,18 @@ export class UrlServiceFacade {
         return this.compare && !!this.lazyUrlService;
     }
 
+
     /**
      * The full resource record is required: the lazy backend evaluates NQL
      * filters and applies permalink templates against it.
      */
     getUrlForResource(resource: Resource, options?: UrlOptions): string {
         if (this.isLazy()) {
-            try {
-                return this.lazyUrlService!.getUrlForResource(resource, options);
-            } catch (err) {
-                if ((err as {code?: string} | null)?.code !== 'LAZY_URL_THIN_RESOURCE') {
-                    throw err;
-                }
-                this._reportLazyError('getUrlForResource', err as Error, this._reportContext(resource), {
-                    code: 'LAZY_URL_RESOLUTION_ERROR',
-                    message: 'Lazy URL service threw while building a URL, degraded to /404/'
-                });
-                return this.lazyUrlService!.notFoundUrl(options);
-            }
+            return this.lazyUrlService!.getUrlForResource(resource, options);
         }
         const url = this.urlService.getUrlByResourceId(resource.id, options);
         if (this.isComparing() && !options?.skipComparison) {
-            const context = this._reportContext(resource,
+            const context = this._compareContext(resource,
                 options?.serializerContext ? {serializer: options.serializerContext} : {});
             // Snapshot: callers mutate the resource's nested objects in place
             // after this returns, but the comparison runs later via setImmediate.
@@ -217,10 +202,7 @@ export class UrlServiceFacade {
         try {
             lazyRows = await this.fetchRoutableResources!(type, options);
         } catch (err) {
-            this._reportLazyError('getRoutableResources', err as Error, {type}, {
-                    code: 'LAZY_URL_COMPARE_ERROR',
-                    message: 'Lazy URL service threw during comparison'
-                });
+            this._reportLazyError('getRoutableResources', err as Error, {type});
             return;
         }
 
@@ -252,7 +234,7 @@ export class UrlServiceFacade {
         }
         const owns = this.urlService.owns(routerIdentifier, resource.id);
         if (this.isComparing()) {
-            const context = this._reportContext(resource, {routerIdentifier});
+            const context = this._compareContext(resource, {routerIdentifier});
             // Snapshot, as in getUrlForResource.
             const snapshot = _.cloneDeep(resource);
             setImmediate(() => this._compare('ownsResource', owns,
@@ -262,15 +244,15 @@ export class UrlServiceFacade {
         return owns;
     }
 
-    // Context for a compare or resolution report. Must be built synchronously in the calling
+    // Context for a compare report. Must be built synchronously in the calling
     // frame: the comparison itself runs from setImmediate, where the caller's
     // stack is gone — so a lazy throw reported there names only the URL service
     // internals, not which caller handed over the (possibly thin) resource.
     // `caller` recaptures those frames; `resourceKeys` fingerprints the shape
     // the caller passed (e.g. a Content-API-serialized post vs a full model).
-    private _reportContext(resource: Resource, extra: Record<string, unknown> = {}): Record<string, unknown> {
+    private _compareContext(resource: Resource, extra: Record<string, unknown> = {}): Record<string, unknown> {
         const caller: {stack?: string} = {};
-        Error.captureStackTrace(caller, this._reportContext);
+        Error.captureStackTrace(caller, this._compareContext);
         return {
             type: resource.type,
             id: resource.id,
@@ -336,8 +318,7 @@ export class UrlServiceFacade {
         if (this.isLazy()) {
             return this.lazyUrlService!.hasFinished();
         }
-        // Track eager when comparing: it is the backend answering reads, so its
-        // readiness is the one that must gate traffic.
+        // Track eager when comparing: lazy always reports ready and would gate traffic in early.
         return this.urlService.hasFinished();
     }
 
@@ -374,18 +355,14 @@ export class UrlServiceFacade {
         }
     }
 
-    // Wraps the lazy hooks that must not throw — reset(), and the add/update
-    // hooks while comparing. Outside compare mode those two call lazy directly
-    // and a throw does escape. A swallowed reset leaves the previous router
-    // configs in place through the reload, so the report is the only signal.
+    // Runs a lazy router hook in compare mode. Lazy failures are swallowed and
+    // reported so they can never block the authoritative eager hook (or, for
+    // reset, break a routes reload).
     private _runLazyHook(method: string, fn: () => void): void {
         try {
             fn();
         } catch (err) {
-            this._reportLazyError(method, err as Error, {}, {
-                code: 'LAZY_URL_HOOK_ERROR',
-                message: 'Lazy URL service threw during a router lifecycle hook'
-            });
+            this._reportLazyError(method, err as Error, {});
         }
     }
 
@@ -402,10 +379,7 @@ export class UrlServiceFacade {
         try {
             lazyValue = getLazyValue();
         } catch (err) {
-            this._reportLazyError(method, err as Error, context, {
-                code: 'LAZY_URL_COMPARE_ERROR',
-                message: 'Lazy URL service threw during comparison'
-            });
+            this._reportLazyError(method, err as Error, context);
             return;
         }
         this._reportMismatch(method, eagerValue, lazyValue, context, isEqual);
@@ -422,10 +396,7 @@ export class UrlServiceFacade {
         try {
             lazyValue = await getLazyValue();
         } catch (err) {
-            this._reportLazyError(method, err as Error, context, {
-                code: 'LAZY_URL_COMPARE_ERROR',
-                message: 'Lazy URL service threw during comparison'
-            });
+            this._reportLazyError(method, err as Error, context);
             return;
         }
         this._reportMismatch(method, eagerValue, lazyValue, context, isEqual);
@@ -463,9 +434,8 @@ export class UrlServiceFacade {
         // (the shouldHavePosts gate) so they resolve to /404/, while lazy has no
         // cheap way to run that check and returns the real URL. Eager cache
         // staleness (a tag gaining its first post after boot) looks the same.
-        // Lazy's behaviour is the accepted one (HKG-1920): the empty archive
-        // still 404s to visitors, so the only change is that enumeration lists
-        // the tag's own URL instead of a literal /404/ href.
+        // Whether to keep lazy's behaviour is still open, but either way it is
+        // not a lazy bug, so exclude it to surface the divergences that are.
         if (method === 'getUrlForResource'
             && (context.type === 'tags' || context.type === 'authors')
             && this._isNotFound(eagerValue) && !this._isNotFound(lazyValue)) {
@@ -518,19 +488,11 @@ export class UrlServiceFacade {
         }
     }
 
-    // `code`/`message` are required: `reset()` reports through here in lazy mode
-    // too, and a compare-flavoured default would label a real routes-reload
-    // failure as comparison noise.
-    private _reportLazyError(
-        method: string,
-        err: Error,
-        context: Record<string, unknown>,
-        {code, message}: {code: string; message: string}
-    ): void {
+    private _reportLazyError(method: string, err: Error, context: Record<string, unknown>): void {
         const {caller, ...details} = context;
         const report = new errors.InternalServerError({
-            message,
-            code,
+            message: 'Lazy URL service threw during comparison',
+            code: 'LAZY_URL_COMPARE_ERROR',
             err,
             errorDetails: {method, ...details}
         });

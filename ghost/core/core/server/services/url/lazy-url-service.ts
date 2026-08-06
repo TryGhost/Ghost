@@ -133,8 +133,8 @@ export class LazyUrlService implements LazyUrlServiceBackend {
     private requiredRelations: string[] | null;
     private baseFilters: Map<string, BaseFilter>;
     private excludedFilterFields: Map<string, Set<string>>;
-    // True once routers have been registered. Cleared by reset() so the
-    // route-reload window re-gates the maintenance middleware.
+    // True once routers have been registered; hasFinished() returns it so the
+    // maintenance middleware holds requests until routing is ready.
     private routersReady: boolean;
 
     constructor({urlUtils = localUtils, findResource}: LazyUrlServiceDeps) {
@@ -258,7 +258,7 @@ export class LazyUrlService implements LazyUrlServiceBackend {
     getUrlForResource(resource: Resource, options: UrlOptions = {}): string {
         const routerType = routerTypeOf(resource);
         if (!routerType) {
-            return this.notFoundUrl(options);
+            return this._formatNotFound(options);
         }
 
         const record = this._recordForFilter(resource);
@@ -275,7 +275,7 @@ export class LazyUrlService implements LazyUrlServiceBackend {
         if (this._hasRouterForType(routerType)) {
             this._assertBaseFieldsPresent(routerType, resource);
             if (!this._baseFilterMatches(routerType, record)) {
-                return this.notFoundUrl(options);
+                return this._formatNotFound(options);
             }
         }
 
@@ -289,7 +289,7 @@ export class LazyUrlService implements LazyUrlServiceBackend {
                 return this._formatPath(path, options);
             }
         }
-        return this.notFoundUrl(options);
+        return this._formatNotFound(options);
     }
 
     ownsResource(routerIdentifier: string, resource: Resource | null): boolean {
@@ -454,14 +454,8 @@ export class LazyUrlService implements LazyUrlServiceBackend {
         return path;
     }
 
-    /**
-     * The /404/ a resource gets when nothing routes it, formatted for the given
-     * options. Byte-identical to the eager miss path (`url-service.js:246-254`);
-     * it differs from _formatPath only in omitting the trailing-slash argument,
-     * which is a no-op for /404/. Public so the facade can fall back to it when
-     * this service throws.
-     */
-    notFoundUrl(options: UrlOptions = {}): string {
+    // Mirrors the eager miss path: the /404/ fallback carries no subdirectory.
+    private _formatNotFound(options: UrlOptions): string {
         if (options.absolute) {
             return this.urlUtils.createUrl('/404/', options.absolute);
         }

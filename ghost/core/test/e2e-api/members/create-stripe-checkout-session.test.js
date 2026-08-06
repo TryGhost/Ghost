@@ -3,7 +3,7 @@ const querystring = require('querystring');
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const nock = require('nock');
 const models = require('../../../core/server/models');
-const urlServiceUtils = require('../../utils/url-service-utils');
+const urlService = require('../../../core/server/services/url');
 
 let membersAgent, adminAgent;
 
@@ -364,7 +364,7 @@ describe('Create Stripe Checkout Session', function () {
 
         it('Does pass post attribution source to session metadata', async function () {
             const post = await getPost(fixtureManager.get('posts', 0).id);
-            const url = urlServiceUtils.urlFor(post, 'posts', {absolute: false});
+            const url = urlService.getUrlByResourceId(post.id, {absolute: false});
 
             const {body: {tiers}} = await adminAgent.get('/tiers/?include=monthly_price&yearly_price');
 
