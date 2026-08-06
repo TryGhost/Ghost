@@ -147,17 +147,18 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowProps>(functio
             {...rest}
             className={cn(
                 'group border-b border-border-default',
-                // `bg-muted` is Shade's own selected-row treatment (see
-                // TableRow's `data-[state=selected]`). Ember paints a 10%
-                // indigo overlay, which has no semantic token here.
+                // A light blue rather than a grey: selection is a different
+                // kind of state from hover, and two greys a step apart read as
+                // degrees of the same thing. Ember paints a 10% indigo overlay
+                // for the same reason.
+                //
                 // `select-none` matches Ember: a modifier-drag across rows
                 // shouldn't leave text highlighted behind the selection.
                 //
-                // Hover is the same `--table-row-hover` the members list uses,
-                // and applies only when the row is *not* selected — a hover
+                // Hover applies only when the row is *not* selected — a hover
                 // rule would otherwise outrank the selected background and make
                 // the row under the cursor look deselected.
-                isSelected ? 'bg-muted select-none' : 'hover:bg-table-row-hover'
+                isSelected ? 'bg-table-row-selected select-none' : 'hover:bg-table-row-hover'
             )}
             data-selected={isSelected ? 'true' : undefined}
             data-testid='posts-list-item'
@@ -234,7 +235,12 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowProps>(functio
                     border colour. Revealing it on hover would make it
                     undiscoverable, and an invisible target on touch. */}
                 <Button
-                    className='my-4 shrink-0 px-4'
+                    // `bg-control-surface` rather than a bare white: it is
+                    // white in light mode and transparent in dark, so the
+                    // button sits on the row instead of punching a pale hole
+                    // through it. Without it the outline variant is see-through
+                    // and picks up the blue of a selected row.
+                    className='my-4 shrink-0 bg-control-surface px-4'
                     variant='outline'
                     asChild
                 >
