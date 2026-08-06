@@ -237,9 +237,6 @@ export function usePostSelection({orderedIds, allFilter, enabled}: UsePostSelect
      * One stable handler per row id. An inline `open => handler(open, id)` in
      * the list would be a new function on every render, which defeats the
      * memoised context menu and with it the memoised row.
-     *
-     * Not yet sufficient: ~85ms per selection change at 103 rows (measured
-     * Aug 2026), attributed to the per-row menu wrapper. Follow-up pending.
      */
     const openHandlers = useRef(new Map<string, (open: boolean) => void>());
 
