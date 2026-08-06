@@ -83,4 +83,27 @@ test.describe('Ghost Admin - Posts List divergences (React only)', () => {
             expect(copied[0]).not.toContain('/draft-to-preview');
         }).toPass();
     });
+
+    /**
+     * Bulk-unpublishing on the unfiltered list. React prunes the row against
+     * its *bucket's* filter, so it leaves the published section immediately —
+     * out of sight until the draft bucket next refetches. Ember prunes against
+     * the list-wide filter, which an unpublished row still matches, so the row
+     * stays in the published section labelled Draft. Asserted only against
+     * React; the Ember behaviour is a bug worth reporting separately rather
+     * than reproducing.
+     */
+    test('React removes an unpublished post from the published section of the unfiltered list', async () => {
+        await postFactory.create({title: 'Was published', status: 'published', featured: false});
+        await postFactory.create({title: 'Existing draft', status: 'draft', featured: false});
+
+        await postsPage.goto();
+        await postsPage.waitForList();
+        await postsPage.openContextMenuFor('Was published');
+        await postsPage.contextMenuItem('Unpublish').click();
+        await postsPage.confirmAction('Unpublish');
+
+        await expect(postsPage.getPostByTitle('Was published')).toBeHidden();
+        await expect(postsPage.getPostByTitle('Existing draft')).toBeVisible();
+    });
 });
