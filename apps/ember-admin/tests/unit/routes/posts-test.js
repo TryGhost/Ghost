@@ -52,6 +52,16 @@ describe('Unit: Route: posts', function () {
         expect(router.replaceWith.calledWith('react-fallback', 'posts'), 'parked on react-fallback').to.be.true;
     });
 
+    it('restores the URL together with the history state react-router keeps', function () {
+        const {route} = setupRoute(this.owner, {flagValue: true});
+        const replaceState = sinon.stub(window.history, 'replaceState');
+        const state = {usr: null, key: 'abc123', idx: 4};
+
+        route._restoreUrl('#/posts?type=draft', state);
+
+        expect(replaceState.calledOnceWith(state, '', '#/posts?type=draft'), 'state restored with URL').to.be.true;
+    });
+
     it('keeps Ember ownership when the feature flag is not a boolean', function () {
         const {route, router} = setupRoute(this.owner, {flagValue: 'true'});
         const transition = {abort: sinon.spy(), intent: {url: '/posts'}};
