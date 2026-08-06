@@ -86,8 +86,10 @@ setting_changed=false
 restore_setting() {
     if [[ $setting_changed == true ]]; then
         printf 'Restoring allow_merge_commit=%s...\n' "$original_setting" >&2
-        gh api --method PATCH "repos/$repo" \
-            -F "allow_merge_commit=$original_setting" >/dev/null
+        if ! gh api --method PATCH "repos/$repo" \
+            -F "allow_merge_commit=$original_setting" >/dev/null; then
+            return 1
+        fi
         setting_changed=false
     fi
 }
