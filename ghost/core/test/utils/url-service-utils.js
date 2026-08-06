@@ -1,17 +1,30 @@
 const urlService = require('../../core/server/services/url');
 
-module.exports.isFinished = async () => {
-    let timeout;
+// Bounded on purpose: readiness is router registration, so a regression there
+// would otherwise hang the whole run instead of failing one suite with a
+// usable message.
+const READY_TIMEOUT_MS = 15000;
 
-    return new Promise(function (resolve) {
+module.exports.isFinished = async ({timeout = READY_TIMEOUT_MS} = {}) => {
+    let retryTimer;
+    const start = Date.now();
+
+    return new Promise(function (resolve, reject) {
         (function retry() {
-            clearTimeout(timeout);
+            clearTimeout(retryTimer);
 
             if (urlService.hasFinished()) {
                 return resolve();
             }
 
-            timeout = setTimeout(retry, 50);
+            if (Date.now() - start > timeout) {
+                return reject(new Error(
+                    `URL service was not ready within ${timeout}ms — no router registered. ` +
+                    'Did boot skip dynamic routing, or did a reset run mid-boot?'
+                ));
+            }
+
+            retryTimer = setTimeout(retry, 50);
         })();
     });
 };
