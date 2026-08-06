@@ -2,6 +2,28 @@ import {ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, 
 import {IMPLEMENTED_POST_ACTIONS} from '@/posts/list/hooks/use-post-actions';
 import type {PostContextMenuItem, PostContextMenuKey} from '@/posts/list/post-context-menu-items';
 import {Fragment, memo, type ReactNode} from 'react';
+import {LucideIcon} from '@tryghost/shade/utils';
+
+/**
+ * One icon per action. Kept here rather than on the item itself so
+ * `post-context-menu-items.ts` stays a plain module with no React in it — it is
+ * the piece the unit tests lean on hardest.
+ *
+ * Star, Tag and Lock match the icons Ember uses for the same three actions.
+ */
+const POST_MENU_ICONS: Record<PostContextMenuKey, typeof LucideIcon.Link> = {
+    'copy-link': LucideIcon.Link,
+    'copy-preview': LucideIcon.Link,
+    'gift-link': LucideIcon.Gift,
+    unpublish: LucideIcon.Undo2,
+    unschedule: LucideIcon.CalendarX,
+    feature: LucideIcon.Star,
+    unfeature: LucideIcon.StarOff,
+    'add-tag': LucideIcon.Tag,
+    'change-access': LucideIcon.Lock,
+    duplicate: LucideIcon.Copy,
+    delete: LucideIcon.Trash2
+};
 
 interface PostsContextMenuProps {
     children: ReactNode;
@@ -49,27 +71,40 @@ function PostsContextMenuComponent({
         return <>{children}</>;
     }
 
+    const visible = showGiftLink ? getItems() : getItems().filter(item => item.key !== 'gift-link');
+
     return (
         <ContextMenu onOpenChange={onOpenChange}>
             <ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
             <ContextMenuContent>
-                {(showGiftLink ? getItems() : getItems().filter(item => item.key !== 'gift-link')).map(item => (
-                    // Fragment, not a div: a `role="menu"` may only contain
-                    // menuitem, group and separator children.
-                    <Fragment key={item.key}>
-                        {item.separated && <ContextMenuSeparator />}
-                        <ContextMenuItem
-                            data-testid={`post-menu-${item.key}`}
-                            disabled={!IMPLEMENTED_POST_ACTIONS.has(item.key)}
-                            variant={item.destructive ? 'destructive' : undefined}
-                            onSelect={() => {
-                                void onAction(item.key);
-                            }}
-                        >
-                            {item.label}
-                        </ContextMenuItem>
-                    </Fragment>
-                ))}
+                {visible.map((item, index) => {
+                    const Icon = POST_MENU_ICONS[item.key];
+
+                    return (
+                        // Fragment, not a div: a `role="menu"` may only contain
+                        // menuitem, group and separator children.
+                        <Fragment key={item.key}>
+                            {/* Never above the first item. `separated` is
+                                decided from the full list, but the gift link is
+                                filtered out here — so whatever followed it
+                                arrives carrying a separator with nothing above
+                                it to separate from, and Radix draws a stray
+                                rule across the top of the menu. */}
+                            {index > 0 && item.separated && <ContextMenuSeparator />}
+                            <ContextMenuItem
+                                data-testid={`post-menu-${item.key}`}
+                                disabled={!IMPLEMENTED_POST_ACTIONS.has(item.key)}
+                                variant={item.destructive ? 'destructive' : undefined}
+                                onSelect={() => {
+                                    void onAction(item.key);
+                                }}
+                            >
+                                <Icon />
+                                {item.label}
+                            </ContextMenuItem>
+                        </Fragment>
+                    );
+                })}
             </ContextMenuContent>
         </ContextMenu>
     );

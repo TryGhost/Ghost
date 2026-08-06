@@ -132,8 +132,9 @@ export function getPostContextMenuItems(inputs: PostContextMenuInputs): PostCont
         add('duplicate', 'Duplicate');
     }
 
+    // Set apart from the rest: it is the one item here that cannot be undone.
     if (isAdmin) {
-        add('delete', 'Delete', {destructive: true});
+        add('delete', 'Delete', {destructive: true, separated: true});
     }
 
     return items;

@@ -31,6 +31,36 @@ describe("Posts list context menu", () => {
         await expect.element(postsListScreen.contextMenu()).toBeVisible();
     });
 
+    /**
+     * Regression: `separated` is decided from the complete item list, but the
+     * gift link is filtered out at render — so a selection where the gift link
+     * would have been present but is dropped left Unpublish first in the menu
+     * still carrying its separator, and Radix drew a rule across the top of the
+     * menu with nothing above it.
+     */
+    it("draws no separator above the first item", async () => {
+        fakePosts([
+            post({ title: "Gated post", status: "published", visibility: "paid" }),
+            post({ title: "A draft", status: "draft" })
+        ]);
+        await renderAdminApp("/posts", FLAG_ON);
+        await expect.element(postsListScreen.listItems().nth(1)).toBeVisible();
+
+        // Two rows selected, so the gift link — a single-post action — is
+        // filtered out even though the published row qualifies for it.
+        const rows = postsListScreen.listItems();
+        for (const row of [rows.nth(0), rows.nth(1)]) {
+            row.element().dispatchEvent(new MouseEvent("mousedown", {
+                bubbles: true, cancelable: true, metaKey: true
+            }));
+        }
+        await rows.nth(0).click({ button: "right" });
+        await expect.element(postsListScreen.contextMenu()).toBeVisible();
+
+        const menu = postsListScreen.contextMenu().element();
+        expect(menu.firstElementChild?.getAttribute("role")).not.toBe("separator");
+    });
+
     // The whole point of the transient selection: right-clicking a row nothing
     // has selected acts on that row alone.
     it("offers actions for the right-clicked row when nothing is selected", async () => {
