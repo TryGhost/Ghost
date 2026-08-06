@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { fakeAdminEndpoint, fakePosts, fakePostsListScreen, post, renderAdminApp } from "@test-utils/acceptance";
-import { postsListScreen } from "./posts-list.screen";
+import { metaMouseDown, postsListScreen } from "./posts-list.screen";
 
 const FLAG_ON = { labs: { postsListReact: true } };
 
@@ -60,26 +60,56 @@ describe("Posts list context menu", () => {
      * menu with nothing above it.
      */
     it("draws no separator above the first item", async () => {
+        // One bucket only: the fakes serve the same rows to every status
+        // bucket, and duplicate rows make selection counts unreadable.
         fakePosts([
-            post({ title: "Gated post", status: "published", visibility: "paid" }),
-            post({ title: "A draft", status: "draft" })
+            post({ title: "Gated post", status: "published", visibility: "paid", featured: false }),
+            post({ title: "Also published", status: "published", visibility: "public", featured: false })
         ]);
-        await renderAdminApp("/posts", FLAG_ON);
+        await renderAdminApp("/posts?type=published", FLAG_ON);
         await expect.element(postsListScreen.listItems().nth(1)).toBeVisible();
 
         // Two rows selected, so the gift link — a single-post action — is
         // filtered out even though the published row qualifies for it.
         const rows = postsListScreen.listItems();
-        for (const row of [rows.nth(0), rows.nth(1)]) {
-            row.element().dispatchEvent(new MouseEvent("mousedown", {
-                bubbles: true, cancelable: true, metaKey: true
-            }));
-        }
+        metaMouseDown(rows.nth(0).element());
+        metaMouseDown(rows.nth(1).element());
+        // Guards the arrange step: with a broken selection the right-click
+        // falls back to a transient single row, the gift link renders, and
+        // the assertion below goes green without exercising the bug.
+        await expect.poll(() => postsListScreen.selectedTitles()).toHaveLength(2);
+
         await rows.nth(0).click({ button: "right" });
         await expect.element(postsListScreen.contextMenu()).toBeVisible();
 
         const menu = postsListScreen.contextMenu().element();
         expect(menu.firstElementChild?.getAttribute("role")).not.toBe("separator");
+    });
+
+    // The rule belongs to the gift link, not to Unpublish: a single published
+    // *public* post offers no gift link, and Ember draws no rule there.
+    it("separates Unpublish from the gift link only when the gift link is shown", async () => {
+        fakePosts([post({ title: "Public post", status: "published", visibility: "public" })]);
+        await renderAdminApp("/posts?type=published", FLAG_ON);
+        await expect.element(postsListScreen.listItems().first()).toBeVisible();
+
+        await postsListScreen.listItems().first().click({ button: "right" });
+        await expect.element(postsListScreen.contextMenuItem("Unpublish")).toBeVisible();
+
+        const unpublish = postsListScreen.contextMenuItem("Unpublish").element();
+        expect(unpublish.previousElementSibling?.getAttribute("role")).not.toBe("separator");
+    });
+
+    it("separates Unpublish from the gift link when it is shown", async () => {
+        fakePosts([post({ title: "Gated post", status: "published", visibility: "paid" })]);
+        await renderAdminApp("/posts?type=published", FLAG_ON);
+        await expect.element(postsListScreen.listItems().first()).toBeVisible();
+
+        await postsListScreen.listItems().first().click({ button: "right" });
+        await expect.element(postsListScreen.contextMenuItem("Share as a gift")).toBeVisible();
+
+        const unpublish = postsListScreen.contextMenuItem("Unpublish").element();
+        expect(unpublish.previousElementSibling?.getAttribute("role")).toBe("separator");
     });
 
     // The whole point of the transient selection: right-clicking a row nothing

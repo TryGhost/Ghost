@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { userEvent } from "vitest/browser";
 
 import { currentUserResponse, fakePosts, fakePostsListScreen, post, renderAdminApp, staffRole } from "@test-utils/acceptance";
-import { postsListScreen } from "./posts-list.screen";
+import { metaMouseDown, postsListScreen } from "./posts-list.screen";
 import type { StaffRoleName } from "@tryghost/test-data";
 
 const FLAG_ON = { labs: { postsListReact: true } };
@@ -26,18 +26,6 @@ function asRole(name: StaffRoleName) {
     const me = currentUserResponse();
     me.users[0].roles = [staffRole({ name })];
     return { ...FLAG_ON, boot: { browseMe: { response: me } } };
-}
-
-/**
- * A cmd-click on any of these targets is a cmd-click on a *link*, which opens
- * a new browser tab — that is the whole point of `data-ignore-select`, and it
- * is what Ember does too. Dispatching the mousedown directly exercises the
- * selection path without asking the browser to open tabs mid-suite.
- */
-function metaMouseDown(element: Element) {
-    element.dispatchEvent(new MouseEvent("mousedown", {
-        bubbles: true, cancelable: true, metaKey: true
-    }));
 }
 
 async function renderList(options: object = FLAG_ON) {

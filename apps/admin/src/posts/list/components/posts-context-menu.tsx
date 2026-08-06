@@ -84,13 +84,12 @@ function PostsContextMenuComponent({
                         // Fragment, not a div: a `role="menu"` may only contain
                         // menuitem, group and separator children.
                         <Fragment key={item.key}>
-                            {/* Never above the first item. `separated` is
-                                decided from the full list, but the gift link is
-                                filtered out here — so whatever followed it
-                                arrives carrying a separator with nothing above
-                                it to separate from, and Radix draws a stray
-                                rule across the top of the menu. */}
-                            {index > 0 && item.separated && <ContextMenuSeparator />}
+                            {/* The gift-link rule comes from adjacency, not a
+                                `separated` flag: the gift link is filtered out
+                                here per row, so a flag on the item after it
+                                would draw a stray rule when it goes. Never
+                                above the first item. */}
+                            {index > 0 && (item.separated || visible[index - 1].key === 'gift-link') && <ContextMenuSeparator />}
                             <ContextMenuItem
                                 data-testid={`post-menu-${item.key}`}
                                 disabled={!IMPLEMENTED_POST_ACTIONS.has(item.key)}
