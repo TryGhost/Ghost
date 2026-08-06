@@ -103,10 +103,11 @@
         "vitest": "catalog:"
     },
     "dependencies": {
-        "@ebay/nice-modal-react": "catalog:",
+        "@codemirror/state": "catalog:",
         "@dnd-kit/core": "catalog:",
         "@dnd-kit/sortable": "catalog:",
         "@dnd-kit/utilities": "catalog:",
+        "@ebay/nice-modal-react": "catalog:",
         "@hookform/resolvers": "5.4.0",
         "@number-flow/react": "0.6.2",
         "@radix-ui/react-accordion": "1.2.15",
@@ -132,6 +133,7 @@
         "@types/react": "catalog:",
         "@types/react-dom": "catalog:",
         "@types/validator": "catalog:",
+        "@uiw/react-codemirror": "catalog:",
         "class-variance-authority": "0.7.1",
         "clsx": "catalog:",
         "cmdk": "1.1.1",
