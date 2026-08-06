@@ -112,6 +112,34 @@ describe("Posts list bulk actions", () => {
             await expect.element(postsListScreen.listItems().first()).toHaveTextContent("Live two");
         });
 
+        /**
+         * The unfiltered list shows every status, so the *list-wide* filter
+         * still matches an unpublished row — it is the published *bucket's*
+         * filter the row no longer satisfies. Pruning against the wrong one
+         * left the row sitting in the published section labelled Draft.
+         */
+        it("moves an unpublished post out of the published bucket on the unfiltered list", async () => {
+            fakePosts(({ filter }) => {
+                if (filter?.includes("status:draft")) {
+                    return [post({ title: "Existing draft", status: "draft", featured: false })];
+                }
+                if (filter?.includes("status:scheduled")) {
+                    return [];
+                }
+                return [post({ title: "Was published", status: "published", featured: false })];
+            });
+            fakeAdminEndpoint("PUT", /^\/posts\/bulk/, {});
+            await renderAdminApp("/posts", FLAG_ON);
+            await expect.element(postsListScreen.listItems().nth(1)).toBeVisible();
+
+            await postsListScreen.listItems().nth(1).click({ button: "right" });
+            await postsListScreen.contextMenuItem("Unpublish").click();
+            await postsListScreen.confirmButton("Unpublish").click();
+
+            await expect(postsListScreen.listItems()).toHaveCount(1);
+            await expect.element(postsListScreen.listItems().first()).toHaveTextContent("Existing draft");
+        });
+
         // The rule with the worst failure mode: an edit must never remove rows
         // it did not touch, however the filter reads.
         it("leaves the posts it did not edit alone", async () => {
