@@ -20,7 +20,6 @@ export class PostsPage extends AdminPage {
 
     public readonly pageTitle: Locator;
 
-    public readonly contextMenu: Locator;
     public readonly emptyState: Locator;
 
     constructor(page: Page) {
@@ -46,7 +45,6 @@ export class PostsPage extends AdminPage {
 
         this.pageTitle = page.getByRole('heading', {level: 2});
 
-        this.contextMenu = page.getByRole('menu');
         this.emptyState = page.getByText(/No posts match the current filter/i);
     }
 
@@ -134,13 +132,17 @@ export class PostsPage extends AdminPage {
      */
     async selectedPostCount(): Promise<number> {
         const rows = await this.postsListItem.all();
-        // `closest` because the two implementations mark the row at different
-        // depths: React sets `data-selected` on the row itself, Ember on the
-        // wrapper around it. This is a DOM call inside the page, not a
-        // Playwright CSS locator.
-        const flags = await Promise.all(
-            rows.map(row => row.evaluate(el => el.closest('[data-selected="true"]') !== null))
-        );
+        const flags = await Promise.all(rows.map(row => row.evaluate((el) => {
+            // Presence, not a `"true"` value. React writes
+            // `data-selected="true"`; Ember writes the attribute with an *empty*
+            // value, because Glimmer renders `data-selected={{true}}` as a bare
+            // attribute and omits it entirely when false. Matching on `"true"`
+            // made Ember's selection invisible to this helper, which is what
+            // kept these tests out of the shared suite.
+            const marker = el.closest('[data-selected]');
+
+            return marker !== null && marker.getAttribute('data-selected') !== 'false';
+        })));
 
         return flags.filter(Boolean).length;
     }
@@ -160,7 +162,10 @@ export class PostsPage extends AdminPage {
             // Ember listens on the wrapper that carries `data-selected`; React
             // listens on the row itself. Aim at whichever is present so one
             // helper drives both.
-            const target = row.closest('[data-selected]') ?? row;
+            // Ember's handler sits on the wrapper carrying `role="menuitem"`;
+            // React's on the row. Either way a capture-phase listener sees an
+            // event dispatched at the row, so aim there and let it travel.
+            const target = row;
 
             target.dispatchEvent(new MouseEvent('mousedown', {
                 bubbles: true,
@@ -172,11 +177,24 @@ export class PostsPage extends AdminPage {
 
     async openContextMenuFor(title: string): Promise<void> {
         await this.getPostByTitle(title).click({button: 'right'});
-        await this.contextMenu.waitFor({state: 'visible'});
+        // Waits on an item rather than a container: the two menus have no
+        // container in common — see `contextMenuItem`.
+        await this.contextMenuItem('Delete').waitFor({state: 'visible'});
     }
 
+    /**
+     * An item in the right-click menu.
+     *
+     * The two implementations build the menu from different elements: React
+     * uses Radix, so items carry `role="menuitem"`, while Ember renders a plain
+     * list of `<button>`s with no menu roles at all. Matching either keeps one
+     * helper working for both, and there is no other `Delete` or
+     * `Copy preview link` control on this screen to collide with.
+     */
     contextMenuItem(label: string): Locator {
-        return this.contextMenu.getByRole('menuitem', {name: label, exact: true});
+        return this.page
+            .getByRole('menuitem', {name: label, exact: true})
+            .or(this.page.getByRole('button', {name: label, exact: true}));
     }
 
     /**
