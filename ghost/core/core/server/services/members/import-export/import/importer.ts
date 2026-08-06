@@ -1,5 +1,5 @@
 import moment from 'moment-timezone';
-import buildCompletionEmail, {buildFailureEmail} from './completion-email';
+import buildCompletionEmail, {buildFailureEmail, type EmailLinks} from './completion-email';
 import {stripFormulaGuard} from '../csv';
 import {fieldValuesFromCsvRow, type CsvField} from '@tryghost/custom-field-types/csv';
 import type {Knex} from 'knex';
@@ -71,7 +71,7 @@ interface TiersRepository {
 }
 
 // Stripe: the external subscription work a row with Stripe data triggers.
-interface StripeSubscriptions {
+export interface StripeSubscriptions {
     forceStripeSubscriptionToProduct(
         args: {customer_id: string; product_id?: string},
         options: object
@@ -89,17 +89,28 @@ export interface GiftService {
 export interface EmailNotifications {
     send(options: object): Promise<unknown>;
     getDefaultRecipient(): Promise<string>;
-    urlFor(type: string, data: unknown, absolute: boolean): string;
+    links: EmailLinks;
 }
 
-// Where a failure goes when the publisher cannot be shown it: a defect that failed rows,
-// cleanup that did not finish after they were already told, or the notification itself
-// failing to send. Everything reported here is an operator concern; the composition root
-// decides where it surfaces.
-//
-// Must not throw. It is called from every failure path, including inside catch and finally
-// blocks whose whole purpose is to stop an error escaping.
-export type FailureReporter = (operation: string, error: unknown, context?: Record<string, unknown>) => void;
+// These op names become the logged event names alerts are built on, so renaming one
+// silently breaks whatever watches for it.
+type ImportFailure =
+    | {op: 'run'}
+    | {op: 'notify'}
+    | {op: 'verification'}
+    | {op: 'row'; failedRows: number; totalRows: number}
+    | {op: 'rollback'; failedRows: number}
+    | {op: 'cleanup'; step: CleanupStep};
+
+type CleanupStep =
+    | 'remove-spooled-rows'
+    | 'read-import-label'
+    | 'record-metrics'
+    | 'archive-stripe-prices';
+
+// Must not throw: it is called from catch and finally blocks that exist to stop an error
+// escaping.
+export type FailureReporter = (failure: ImportFailure, error: unknown) => void;
 
 // Opaque to the import: planWrite produces it, applyWrite consumes it.
 type CustomFieldPlan = unknown;
@@ -147,38 +158,32 @@ interface MemberImportValues {
     newsletters?: unknown;
 }
 
-// What a run that produced something reports, and the only shape that leaves the
-// sub-domain. The label is absent when nothing imported, since a label is only persisted
-// once a member carries it.
+// The label is absent when nothing imported: it is only persisted once a member carries it.
 interface ImportResult {
     imported: number;
     errors: ImportErrorRow[];
     importLabel?: ImportLabel;
 }
 
-// How a run turned out, as the three things that can be true of one rather than a result
-// that may be absent with a counter beside it to say whether it was any use. The one
-// decision this drives -- what the publisher is told -- becomes a match on the status
-// instead of a condition reassembled at the point of asking.
 type ImportRun =
     | {status: 'not-run'}
+    | FinishedRun;
+
+// A run that reached its write loop, so it has something to say either way.
+type FinishedRun =
     | {status: 'no-usable-result'; errors: ImportErrorRow[]}
     | ({status: 'completed'} & ImportResult);
 
-// What every row in a run is written against, gathered once before the first write.
 interface PreparedRun {
     defaultTier: Tier;
     activeCustomFields: CsvField[];
     globalLabels: Label[];
 }
 
-// What writing the rows produced. Carries the Stripe prices an import tier created, which
-// only the settling phase acts on, and the defect tally that decides whether the run
-// produced anything the publisher can act on.
 interface WrittenRows {
     imported: number;
     errors: ImportErrorRow[];
-    defects: number;
+    unanticipated: number;
     archivableStripePriceIds: string[];
 }
 
@@ -194,7 +199,8 @@ const messages = {
     invalidImportTier: '"{tier}" is not a valid tier.',
     giftCannotCombineWithImportTier: 'Cannot specify both gift_id and import_tier.',
     giftCannotCombineWithComplimentary: 'Cannot specify both gift_id and complimentary_plan.',
-    giftReassignFailed: 'Failed to reassign gift to member.'
+    giftReassignFailed: 'Failed to reassign gift to member.',
+    importCouldNotComplete: 'The import could not be completed. There is nothing wrong with your file, so please try again.'
 };
 
 // Columns whose presence makes a row slow to import (they reach out to Stripe), so
@@ -217,43 +223,40 @@ function hasExpensiveColumns(rows: MemberImportRow[]): boolean {
     return rows.some(row => EXPENSIVE_COLUMNS.some(column => !!row[column]));
 }
 
-// The runtime types JavaScript raises when the code itself is wrong. Nothing a publisher
-// puts in a CSV produces one. RangeError and SyntaxError are deliberately absent: a cell
-// can reach a date conversion or a parse, so either could describe the row rather than the
-// code, and a row wrongly called a defect loses the publisher their error report.
-const DEFECT_TYPES = [TypeError, ReferenceError];
-
-// A row failure that is unambiguously ours rather than the row's. Everything else -- a
-// Ghost validation error, a Stripe customer that does not exist, a database constraint --
-// describes something about the row, and the error report puts it back in front of the
-// publisher to fix; completion-email humanises the raw Stripe and ORM messages precisely
-// because they are meant to be read.
-//
-// Deliberately narrow, because the two ways of being wrong do not cost the same. Treating
-// a real data problem as a defect takes away the report the publisher needs and tells them
-// their file is fine when it is not. Letting one of our bugs through into that report only
-// shows them a message they cannot act on, which is what happens today. Bookshelf surfaces
-// validation as an array, so a batch qualifies only if every error in it does.
-function isDefect(error: unknown): boolean {
-    const raised: unknown[] = Array.isArray(error) ? error : [error];
-    return raised.length > 0 && raised.every(one => DEFECT_TYPES.some(type => one instanceof type));
+// Ghost's own errors are the ones something raised deliberately, which the Stripe boundary
+// makes true of a rejected Stripe request too. Anything else is ours: the publisher cannot
+// act on it and would otherwise only ever see it in their error report.
+function unanticipatedReasonsIn(raised: unknown[]): unknown[] {
+    return raised.filter(one => !(one instanceof Error && errors.utils.isGhostError(one)));
 }
 
-// An import that landed nothing and failed only through defects of ours. Their file is not
-// at fault, so the error report would tell them nothing they can use.
-// The run as a caller holding an open request reads it. An import that landed nothing
-// still answers with what it tried, because that is what the response has always carried.
-function resultFor(run: ImportRun): ImportResult {
+function completedResult(run: ImportRun & {status: 'completed'}): ImportResult {
+    return {imported: run.imported, errors: run.errors, importLabel: run.importLabel};
+}
+
+// DataImportError specifically: Ghost Admin only surfaces the message of a validation or
+// data-import error, and shows anything else as "an unexpected error occurred".
+function requireUsableResult(run: FinishedRun): ImportResult {
     if (run.status === 'completed') {
-        return {imported: run.imported, errors: run.errors, importLabel: run.importLabel};
+        return completedResult(run);
     }
-    return {imported: 0, errors: run.status === 'no-usable-result' ? run.errors : []};
+    throw new errors.DataImportError({message: tpl(messages.importCouldNotComplete)});
+}
+
+// A run that produced nothing usable comes back rather than raising. The site import runs
+// every importer inside one transaction with no catch between them, so raising over a file
+// of bad rows would roll back the posts, tags and users imported alongside the members.
+function resultForCaller(run: FinishedRun): ImportResult {
+    if (run.status === 'completed') {
+        return completedResult(run);
+    }
+    return {imported: 0, errors: run.errors};
 }
 
 function producedNothingUsable(written: WrittenRows): boolean {
     return written.imported === 0
         && written.errors.length > 0
-        && written.defects === written.errors.length;
+        && written.unanticipated === written.errors.length;
 }
 
 // The routing decision, in terms it can reason about without knowing what a member
@@ -302,8 +305,8 @@ class MembersCSVImporter {
 
         if (canImportInline(rows.length, hasExpensiveColumns(rows), this._getInlineThreshold())) {
             const run = await this.importRows(rows, labelName, extraLabels);
-            await verificationTrigger.testImportThreshold();
-            return {deferred: false, originalImportSize: rows.length, result: resultFor(run)};
+            await this.triggerVerification(verificationTrigger);
+            return {deferred: false, originalImportSize: rows.length, result: requireUsableResult(run)};
         }
 
         await this.deferImport(rows, {labelName, extraLabels, requestUserEmail: request.requestUserEmail}, verificationTrigger);
@@ -313,8 +316,8 @@ class MembersCSVImporter {
     async importInline(request: ImportRequest, verificationTrigger: VerificationTrigger): Promise<ImportResult> {
         const rows = await this._readRows(request.filePath, request.mapping);
         const run = await this.importRows(rows, buildImportLabelName(this._getTimezone()), request.extraLabels ?? []);
-        await verificationTrigger.testImportThreshold();
-        return resultFor(run);
+        await this.triggerVerification(verificationTrigger);
+        return resultForCaller(run);
     }
 
     private async deferImport(
@@ -334,10 +337,8 @@ class MembersCSVImporter {
         });
     }
 
-    // The deferred import, and the one thing the publisher hears about it. The request was
-    // answered long ago, so an email is the only way to reach them and it has to go out
-    // whatever happened. Resolves in every case: the job manager reads a rejected inline
-    // job as a defect in the job itself, and there is no retry behind it either way.
+    // Must resolve in every case: the job manager reads a rejected inline job as a defect
+    // in the job itself, and there is no retry behind it.
     private async runImportJob(
         spooled: SpooledRows,
         {labelName, extraLabels, emailRecipient}: {labelName: string; extraLabels: Label[]; emailRecipient: string},
@@ -348,35 +349,27 @@ class MembersCSVImporter {
             const spooledRows = await spooled.read();
             run = await this.importRows(spooledRows, labelName, extraLabels);
         } catch (error) {
-            // importRows guards everything after its write loop, so a throw reaching here
-            // means the import stopped before any member was written.
-            this._report('run', error);
+            // importRows only throws before its write loop, so nothing was written.
+            this._report({op: 'run'}, error);
         } finally {
-            // Guarded here rather than trusted to the spool: anything thrown in a finally
-            // replaces whatever the try produced, so an unremovable file would both
-            // silence the publisher and reject the job. try/catch rather than .catch(),
-            // which would still let a synchronous throw past.
-            try {
-                await spooled.remove();
-            } catch (error) {
-                this._report('cleanup', error, {step: 'remove-spooled-rows'});
-            }
+            await this.settleStep('remove-spooled-rows', () => spooled.remove());
         }
 
-        await this.reportOutcome(run, {labelName, emailRecipient});
+        await this.notifyPublisher(run, {labelName, emailRecipient});
+        await this.triggerVerification(verificationTrigger);
+    }
 
+    // Runs once every member is written, on every path, so a check made after the fact
+    // cannot turn an import that landed into one its caller is told failed.
+    private async triggerVerification(verificationTrigger: VerificationTrigger): Promise<void> {
         try {
             await verificationTrigger.testImportThreshold();
         } catch (error) {
-            this._report('verification', error);
+            this._report({op: 'verification'}, error);
         }
     }
 
-    // Tell the publisher how their import went. A run that produced no result, or one
-    // that landed nothing and failed only in ways they cannot act on, is reported as an
-    // import that could not be completed: handing them an error report in either case
-    // would blame a file that was never the problem.
-    private async reportOutcome(
+    private async notifyPublisher(
         run: ImportRun,
         {labelName, emailRecipient}: {labelName: string; emailRecipient: string}
     ): Promise<void> {
@@ -387,44 +380,35 @@ class MembersCSVImporter {
                     recipient: emailRecipient,
                     labelName,
                     importLabel: run.importLabel ?? null,
-                    urlFor: this._email.urlFor
+                    links: this._email.links
                 })
-                : buildFailureEmail({recipient: emailRecipient, urlFor: this._email.urlFor});
+                : buildFailureEmail({recipient: emailRecipient, links: this._email.links});
             await this._email.send(email);
         } catch (error) {
-            // There is no longer anyone to tell but us.
-            this._report('notify', error);
+            this._report({op: 'notify'}, error);
         }
     }
 
-    // The members import kernel, shared by the inline and deferred paths, in three phases:
-    // gather what the rows are written against, write them, then settle up. Only the first
-    // may throw, so a throw out of here always means the import stopped before a single
-    // member was written -- which is what lets the deferred path tell an import that never
-    // ran from one that ran and then failed to tidy up.
-    private async importRows(rows: MemberImportRow[], labelName: string, extraLabels: Label[]): Promise<ImportRun> {
+    // Only prepareRun may throw. Callers rely on that to tell an import that never ran
+    // from one that ran and then failed to tidy up.
+    private async importRows(rows: MemberImportRow[], labelName: string, extraLabels: Label[]): Promise<FinishedRun> {
         const startedAt = Date.now();
         const prepared = await this.prepareRun(labelName, extraLabels);
         const written = await this.writeRows(rows, prepared);
         return this.settleRun(written, {labelName, startedAt});
     }
 
-    // Gather the facts every row is written against. The one phase allowed to fail:
-    // nothing has been written yet, so a failure here is an import that did not happen.
     private async prepareRun(labelName: string, extraLabels: Label[]): Promise<PreparedRun> {
         return {
             defaultTier: await this._tiers.getDefault(),
-            // The field set a custom_fields.* column is read against; empty when the
-            // feature is off, so a carried-through column is dropped and the write
-            // boundary stays shut.
+            // Empty when the feature is off, so a carried-through column is dropped.
             activeCustomFields: await this._customFields.activeFields(),
             globalLabels: [{name: labelName}, ...extraLabels]
         };
     }
 
-    // Write the members, each in its own transaction so one row's failure rolls back only
-    // itself. Reports what happened rather than throwing: once a row has committed, an
-    // import that failed halfway is not one that never ran, and saying so would be a lie.
+    // Must not throw: once a row has committed, an import that failed halfway is not one
+    // that never ran.
     private async writeRows(rows: MemberImportRow[], prepared: PreparedRun): Promise<WrittenRows> {
         const {defaultTier, activeCustomFields} = prepared;
         const tierIdCache = new Map();
@@ -437,8 +421,10 @@ class MembersCSVImporter {
             .filter(label => label.name);
 
         let imported = 0;
-        let defects = 0;
-        let firstDefect: unknown;
+        let unanticipated = 0;
+        let firstUnanticipated: unknown;
+        let rollbackFailures = 0;
+        let firstRollbackFailure: unknown;
         const importErrors: ImportErrorRow[] = [];
         for (const row of rows) {
             let trx: Knex.Transaction | undefined;
@@ -569,74 +555,90 @@ class MembersCSVImporter {
                     try {
                         await trx.rollback();
                     } catch (rollbackError) {
-                        this._report('cleanup', rollbackError, {step: 'roll-back-row'});
+                        firstRollbackFailure ??= rollbackError;
+                        rollbackFailures += 1;
                     }
                 }
-                // The row is collected either way, so one defect cannot stop the rest of
-                // the file importing. Counted rather than reported one by one: whatever
-                // causes one defect causes every one, so a report per row would be
-                // thousands of copies of the same exception.
-                if (isDefect(error)) {
-                    firstDefect ??= error;
-                    defects += 1;
+                // Counted rather than reported per row: whatever fails one row this way
+                // fails every one, and the extent is only known once the loop is done.
+                const unanticipatedReasons = unanticipatedReasonsIn(errorList);
+                if (unanticipatedReasons.length > 0) {
+                    firstUnanticipated ??= unanticipatedReasons[0];
+                    unanticipated += 1;
                 }
                 importErrors.push({...row, error: errorMessage, errors: reasons});
             }
         }
 
-        // One report per run, once the extent is known. How widespread a defect was is the
-        // part worth alerting on, and reporting it here rather than per row keeps a single
-        // exception from arriving thousands of times over.
-        if (defects > 0) {
-            this._report('row', firstDefect, {failedRows: defects, totalRows: rows.length});
+        if (unanticipated > 0) {
+            this._report({op: 'row', failedRows: unanticipated, totalRows: rows.length}, firstUnanticipated);
+        }
+        if (rollbackFailures > 0) {
+            this._report({op: 'rollback', failedRows: rollbackFailures}, firstRollbackFailure);
         }
 
-        return {imported, errors: importErrors, defects, archivableStripePriceIds};
+        return {imported, errors: importErrors, unanticipated, archivableStripePriceIds};
     }
 
-    // Settle up once every member is already written. Nothing here can change what was
-    // imported, so nothing here may escape: a Stripe hiccup or a failed lookup must not
-    // turn a completed import into one the publisher is told never happened. One guard for
-    // the phase rather than one per step, so work added here is covered by default.
+    private async settleValue<T>(step: CleanupStep, work: () => Promise<T>): Promise<T | undefined> {
+        try {
+            return await work();
+        } catch (error) {
+            this._report({op: 'cleanup', step}, error);
+            return undefined;
+        }
+    }
+
+    private async settleStep(step: CleanupStep, work: () => Promise<void> | void): Promise<void> {
+        await this.settleValue(step, async () => {
+            await work();
+        });
+    }
+
+    // Runs after the last member is written, so nothing here may escape and turn a
+    // completed import into one the publisher is told never happened. Each step is settled
+    // independently: nothing retries archiving a Stripe price, so a step that skipped it
+    // would leak it for good.
     private async settleRun(
         written: WrittenRows,
         {labelName, startedAt}: {labelName: string; startedAt: number}
-    ): Promise<ImportRun> {
-        const result: ImportResult = {
+    ): Promise<FinishedRun> {
+        const importLabel = written.imported > 0
+            ? await this.settleValue('read-import-label', async () => (await this._members.getImportLabel(labelName))?.toJSON())
+            : undefined;
+
+        await this.settleStep('record-metrics', () => metrics.metric('members-import', {
             imported: written.imported,
-            errors: written.errors
-        };
+            errors: written.errors.length,
+            value: Date.now() - startedAt
+        }));
 
-        // Ordered by what it costs the publisher to lose. One guard for the phase means a
-        // step that throws takes the rest of the phase with it, so the label their email
-        // links to is read first and the Stripe prices only we care about are archived
-        // last -- an unreachable Stripe leaves the email whole.
-        try {
-            if (written.imported > 0) {
-                // The import label exists now that members carry it, so fetch it to
-                // report. A null lookup leaves the result without one, which the email
-                // reads as a link it cannot offer.
-                const importLabelModel = await this._members.getImportLabel(labelName);
-                if (importLabelModel) {
-                    result.importLabel = importLabelModel.toJSON();
-                }
+        await this.settleStep('archive-stripe-prices', async () => {
+            // allSettled so one unarchivable price neither hides the others nor stops them
+            // being attempted.
+            const attempts = await Promise.allSettled(
+                written.archivableStripePriceIds.map(id => this._stripe.archivePrice(id))
+            );
+            const failed = attempts.filter(attempt => attempt.status === 'rejected');
+            if (failed.length > 0) {
+                throw new errors.InternalServerError({
+                    message: `Failed to archive ${failed.length} of ${attempts.length} Stripe prices created by this import`,
+                    err: failed[0].reason
+                });
             }
-            metrics.metric('members-import', {
-                imported: written.imported,
-                errors: written.errors.length,
-                value: Date.now() - startedAt
-            });
-            await Promise.all(written.archivableStripePriceIds.map(id => this._stripe.archivePrice(id)));
-        } catch (error) {
-            this._report('cleanup', error);
-        }
+        });
 
-        // Classified last, so the settling above still happens for a run that produced
-        // nothing: the prices are archived and the metric is recorded either way.
+        // Classified after settling, so a run that produced nothing still archives its
+        // prices and records its metric.
         if (producedNothingUsable(written)) {
             return {status: 'no-usable-result', errors: written.errors};
         }
-        return {status: 'completed', ...result};
+        return {
+            status: 'completed',
+            imported: written.imported,
+            errors: written.errors,
+            ...(importLabel ? {importLabel} : {})
+        };
     }
 }
 

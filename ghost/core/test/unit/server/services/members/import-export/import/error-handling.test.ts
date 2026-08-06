@@ -5,29 +5,18 @@ import type {MemberImportRow} from '../../../../../../../core/server/services/me
 
 const errors = require('@tryghost/errors');
 
-// An import fails in strata, and each one owes the publisher something different. A cell
-// fails its row; a row is collected and reported back as data the publisher can fix; the
-// run either produced a result or did not; and when even the telling fails there is
-// nobody left to tell but us. This suite drives every stratum through the importer's
-// injected collaborators -- each one is a seam a failure can be thrown from -- so nothing
-// here stubs a module or reaches past the ports the importer declares.
-
-// The three subjects an import can send. Asserted exactly rather than by pattern, because
-// the failure subject contains the word "completed": a /complete/ match passes for all
-// three and would prove nothing.
+// Asserted exactly rather than by pattern: the failure subject contains the word
+// "completed", so a /complete/ match would pass for all three.
 const COMPLETED = 'Your member import is complete';
 const UNSUCCESSFUL = 'Your member import was unsuccessful';
 const COULD_NOT_COMPLETE = 'Your member import could not be completed';
 
-// A failure the import anticipates: the publisher's data is wrong, and the row can say so
-// in terms they can act on.
 const expectedFailure = () => new errors.DataImportError({message: 'Member already exists'});
 
-// A row rejected by Stripe: not a Ghost error, since the Stripe SDK's own error travels
-// all the way up unwrapped, but still entirely about the row.
-const stripeRejection = () => Object.assign(new Error('No such customer: cus_missing'), {type: 'StripeInvalidRequestError'});
+// A Stripe rejection as the importer sees one: the boundary has already attributed it to
+// the row, so what arrives here is a Ghost error carrying Stripe's message.
+const stripeRejection = () => new errors.DataImportError({message: 'No such customer: cus_missing'});
 
-// A defect on our side, which the publisher can neither understand nor fix.
 const defect = () => new TypeError("Cannot read properties of undefined (reading 'id')");
 
 const row = (email: string): MemberImportRow => ({
@@ -44,8 +33,6 @@ const row = (email: string): MemberImportRow => ({
     gift_id: undefined
 });
 
-// A member as the import loop reads one back: relations are loaded before it looks at
-// them, so related() is always answerable.
 const member = (values: {name?: string; note?: string}) => ({
     id: 'member_1',
     name: values.name ?? '',
@@ -54,9 +41,8 @@ const member = (values: {name?: string; note?: string}) => ({
 });
 
 interface Reported {
-    operation: string;
+    failure: {op: string; [fact: string]: unknown};
     error: unknown;
-    context?: Record<string, unknown>;
 }
 
 interface SentEmail {
@@ -66,22 +52,20 @@ interface SentEmail {
     attachments: Array<{filename: string; content: string}>;
 }
 
-// Builds an importer whose every collaborator is a fake a test can make throw. The
-// collaborators are handed back as `deps` so a test names the seam it is breaking
-// (`deps.tiers.getDefault = ...`) rather than reaching inside the importer.
+// Collaborators are handed back as `deps` so a test can repoint the seam it is breaking.
 function harness(
     rows: MemberImportRow[] = [row('first@example.com'), row('second@example.com')],
-    // Zero sends every non-empty file down the deferred path, which is the one that has
-    // to report by email. Raised only by the test that wants the inline path.
+    // Zero sends every non-empty file down the deferred path.
     inlineThreshold = 0
 ) {
     const sent: SentEmail[] = [];
     const reported: Reported[] = [];
     const created: string[] = [];
+    const createFailures = new Map<string, unknown>();
+    const archivedPrices: string[] = [];
     const jobs: Array<{name: string; job: () => Promise<void>}> = [];
     let spoolRemoved = false;
     // The importer reads knex once, at construction, so a test cannot swap it afterwards.
-    // Rolling back goes through this instead, which a test can repoint at any time.
     let rollback: () => Promise<void> = async () => {};
     let removalFailure: Error | undefined;
 
@@ -104,6 +88,10 @@ function harness(
         members: {
             get: async () => null,
             create: async (values: {email?: string; name?: string; note?: string}) => {
+                const failure = createFailures.get(values.email ?? '');
+                if (failure) {
+                    throw failure;
+                }
                 created.push(values.email ?? '');
                 return member(values);
             },
@@ -118,7 +106,9 @@ function harness(
         },
         stripe: {
             forceStripeSubscriptionToProduct: async () => ({isNewStripePrice: true, stripePriceId: 'price_1'}),
-            archivePrice: async () => {}
+            archivePrice: async (id: string) => {
+                archivedPrices.push(id);
+            }
         },
         gifts: {
             reassignRedeemer: async () => {}
@@ -133,11 +123,19 @@ function harness(
                 sent.push(payload);
             },
             getDefaultRecipient: async () => 'owner@example.com',
-            urlFor: (type: string) => (type === 'admin' ? 'http://localhost/ghost/' : 'http://localhost/')
+            links: {
+                siteUrl: () => new URL('http://localhost/'),
+                membersUrl: (labelSlug?: string) => {
+                    const url = new URL('http://localhost/ghost/members');
+                    if (labelSlug) {
+                        url.searchParams.set('label', labelSlug);
+                    }
+                    return url;
+                }
+            }
         },
-        // Where a failure goes when it cannot be shown to the publisher.
-        report: (operation: string, error: unknown, context?: Record<string, unknown>) => {
-            reported.push({operation, error, context});
+        report: (failure: {op: string; [fact: string]: unknown}, error: unknown) => {
+            reported.push({failure, error});
         },
         addJob: (job: {name: string; job: () => Promise<void>}) => {
             jobs.push(job);
@@ -149,9 +147,7 @@ function harness(
     const importer = new MembersCSVImporter(deps);
     const noopVerification = {testImportThreshold: async () => {}};
 
-    // Accept the import, then run the job the deferred path queued. Splitting the two is
-    // the point: everything this suite is about happens after the request has been
-    // answered, so the job is invoked directly rather than through the job manager.
+    // The job is invoked directly rather than through the job manager.
     const run = async (verification = noopVerification) => {
         await importer.importCSV({filePath: 'members.csv', requestUserEmail: 'importer@example.com'}, verification);
         assert.equal(jobs.length, 1, 'expected the import to be deferred to a background job');
@@ -165,11 +161,19 @@ function harness(
         sent,
         reported,
         created,
+        archivedPrices,
         onlyEmail: () => {
             assert.equal(sent.length, 1, 'expected the publisher to be told exactly once');
             return sent[0];
         },
-        reportedOperations: () => reported.map(entry => entry.operation),
+        reportedOperations: () => reported.map(entry => entry.failure.op),
+        // Asserting the op alone leaves what was actually reported unchecked, which is
+        // where a caught error becomes an array with no stack for the error tracker.
+        reportOf: (op: string) => {
+            const matches = reported.filter(entry => entry.failure.op === op);
+            assert.equal(matches.length, 1, `expected exactly one ${op} report, got ${matches.length}`);
+            return matches[0];
+        },
         spoolRemoved: () => spoolRemoved,
         failRollbackWith: (error: Error) => {
             rollback = async () => {
@@ -178,13 +182,14 @@ function harness(
         },
         failSpoolRemovalWith: (error: Error) => {
             removalFailure = error;
+        },
+        failCreateFor: (email: string, error: unknown) => {
+            createFailures.set(email, error);
         }
     };
 }
 
-// A row carrying enough Stripe and tier data to make the import create a price it has to
-// archive once the loop is done -- the one piece of work that happens after every member
-// is already written.
+// Carries enough Stripe and tier data to make the import create a price it must archive.
 const rowNeedingPriceCleanup = (email: string): MemberImportRow => ({
     ...row(email),
     stripe_customer_id: 'cus_1',
@@ -195,13 +200,7 @@ describe('members import error handling', function () {
     describe('a row that fails', function () {
         it('collects a row the publisher can fix and imports the rest', async function () {
             const h = harness();
-            h.deps.members.create = async (values: {email?: string; name?: string; note?: string}) => {
-                if (values.email === 'first@example.com') {
-                    throw expectedFailure();
-                }
-                h.created.push(values.email ?? '');
-                return member(values);
-            };
+            h.failCreateFor('first@example.com', expectedFailure());
 
             await h.run();
 
@@ -215,19 +214,11 @@ describe('members import error handling', function () {
 
         it('reports a row that failed for a reason the publisher cannot act on', async function () {
             const h = harness();
-            h.deps.members.create = async (values: {email?: string; name?: string; note?: string}) => {
-                if (values.email === 'first@example.com') {
-                    throw defect();
-                }
-                h.created.push(values.email ?? '');
-                return member(values);
-            };
+            h.failCreateFor('first@example.com', defect());
 
             await h.run();
 
-            assert.ok(h.reportedOperations().includes('row'), 'expected the unexpected row failure to be reported');
-            // One row still imported, so the file itself is fine and the usual report of
-            // what did and did not land is still the honest thing to send.
+            assert.ok(h.reportOf('row').error instanceof TypeError);
             assert.equal(h.onlyEmail().subject, COMPLETED);
         });
 
@@ -241,9 +232,26 @@ describe('members import error handling', function () {
 
             const email = h.onlyEmail();
             assert.equal(email.subject, COULD_NOT_COMPLETE);
-            // Blaming their file would be wrong: nothing in it caused this.
             assert.doesNotMatch(email.subject, /unsuccessful/);
-            assert.ok(h.reportedOperations().includes('row'));
+            assert.ok(h.reportOf('row').error instanceof TypeError);
+        });
+
+        it('reports one of the reasons when a row fails for several at once', async function () {
+            const h = harness();
+            const reasons = [new TypeError('first reason'), new TypeError('second reason')];
+            h.failCreateFor('first@example.com', reasons);
+
+            await h.run();
+
+            // A row can fail for several reasons at once, and the list of them is not
+            // something an error tracker can read: it has no message and no stack.
+            const reported = h.reportOf('row').error;
+            assert.ok(reported instanceof Error, 'expected an error, not the list of reasons');
+            assert.equal(reported, reasons[0]);
+            // The publisher still gets every reason, in their report.
+            const attached = h.onlyEmail().attachments[0].content;
+            assert.match(attached, /first reason/);
+            assert.match(attached, /second reason/);
         });
 
         it('reports a systematic row failure once rather than once per row', async function () {
@@ -254,13 +262,29 @@ describe('members import error handling', function () {
 
             await h.run();
 
-            // Whatever fails one row this way fails every one, so a report per row would
-            // be thousands of copies of one exception. It goes out once, after the loop,
-            // when how widespread it was is finally known.
-            const summary = h.reported.filter(entry => entry.operation === 'row');
+            const summary = h.reported.filter(entry => entry.failure.op === 'row');
             assert.equal(summary.length, 1);
-            assert.equal(summary[0].context?.failedRows, 3);
-            assert.equal(summary[0].context?.totalRows, 3);
+            assert.equal(summary[0].failure.failedRows, 3);
+            assert.equal(summary[0].failure.totalRows, 3);
+            assert.equal(h.reported.length, 1);
+        });
+
+        it('tells us when every row failed for a reason nothing anticipated', async function () {
+            const h = harness();
+            h.deps.members.create = async () => {
+                throw Object.assign(new Error('ER_LOCK_WAIT_TIMEOUT_EXCEEDED'), {code: 'ER_LOCK_WAIT_TIMEOUT_EXCEEDED'});
+            };
+
+            await h.run();
+
+            const summary = h.reportOf('row');
+            assert.equal(summary.failure.failedRows, 2);
+            assert.match((summary.error as Error).message, /ER_LOCK_WAIT_TIMEOUT_EXCEEDED/);
+            // Nothing landed and nothing was the file's doing, so handing back a row per
+            // line saying the table was locked would be blaming them for our outage.
+            const email = h.onlyEmail();
+            assert.equal(email.subject, COULD_NOT_COMPLETE);
+            assert.deepEqual(email.attachments, []);
         });
 
         it('keeps the error report when every row was rejected by Stripe', async function () {
@@ -271,44 +295,19 @@ describe('members import error handling', function () {
 
             await h.run();
 
-            // A stale customer id is the publisher's to fix, and the Stripe SDK error is
-            // not a Ghost error -- so treating "not a Ghost error" as our fault would strip
-            // them of the one report that tells them which rows to correct, and tell them
-            // their file was fine. Nothing about this row failure is ours.
             const email = h.onlyEmail();
             assert.equal(email.subject, UNSUCCESSFUL);
             assert.match(email.attachments[0].content, /Could not find Stripe customer/);
-            assert.equal(h.reported.length, 0);
+            assert.deepEqual(h.reportedOperations(), []);
         });
 
-        it('keeps the error report when a row failed converting its own values', async function () {
-            const h = harness();
-            h.deps.members.create = async () => {
-                throw new RangeError('Invalid time value');
-            };
-
-            await h.run();
-
-            // A cell can reach a date conversion or a parse, so a RangeError may well be
-            // describing the row rather than the code. Counting it as a defect would take
-            // away the report naming the row to fix and tell them their file was fine.
-            const email = h.onlyEmail();
-            assert.equal(email.subject, UNSUCCESSFUL);
-            assert.match(email.attachments[0].content, /Invalid time value/);
-            assert.equal(h.reported.length, 0);
-        });
-
-        it('keeps the error report when only some of the failures were defects', async function () {
+        it('keeps the error report when only some failures were unattributed', async function () {
             const h = harness([row('first@example.com'), row('second@example.com')]);
-            h.deps.members.create = async (values: {email?: string}) => {
-                throw values.email === 'first@example.com' ? defect() : expectedFailure();
-            };
+            h.failCreateFor('first@example.com', defect());
+            h.failCreateFor('second@example.com', expectedFailure());
 
             await h.run();
 
-            // One row the publisher can act on is reason enough to send the report; the
-            // rows they can fix are worth more to them than the noise of the one they
-            // cannot.
             const email = h.onlyEmail();
             assert.equal(email.subject, UNSUCCESSFUL);
             assert.match(email.attachments[0].content, /Member already exists/);
@@ -339,7 +338,7 @@ describe('members import error handling', function () {
 
             assert.deepEqual(h.created, []);
             assert.equal(h.onlyEmail().subject, COULD_NOT_COMPLETE);
-            assert.ok(h.reportedOperations().includes('run'));
+            assert.match((h.reportOf('run').error as Error).message, /Database is gone/);
         });
 
         it('attaches no error report to an import that never ran', async function () {
@@ -350,14 +349,9 @@ describe('members import error handling', function () {
 
             await h.run();
 
-            // The whole point of the separate email: an attached CSV, and the copy that
-            // comes with it, tells the publisher to fix rows and re-upload. There is
-            // nothing in the file to fix.
             const email = h.onlyEmail();
             assert.deepEqual(email.attachments, []);
             assert.match(email.html, /nothing wrong with your file/);
-            // The subject and the heading inside are the same sentence, so an email that
-            // says one thing in the inbox and another when opened cannot ship.
             assert.ok(email.html.includes(email.subject));
         });
 
@@ -386,30 +380,36 @@ describe('members import error handling', function () {
 
             assert.deepEqual(h.created, []);
             assert.equal(h.onlyEmail().subject, COULD_NOT_COMPLETE);
-            assert.ok(h.reportedOperations().includes('run'));
+            assert.match((h.reportOf('run').error as Error).message, /ENOENT/);
         });
     });
 
     describe('a run whose rollback fails', function () {
+        it('reports a run of failed rollbacks once rather than once each', async function () {
+            const h = harness([row('a@example.com'), row('b@example.com'), row('c@example.com')]);
+            h.failRollbackWith(new Error('Connection lost'));
+            h.deps.members.create = async () => {
+                throw expectedFailure();
+            };
+
+            await h.run();
+
+            const rollbacks = h.reported.filter(entry => entry.failure.op === 'rollback');
+            assert.equal(rollbacks.length, 1);
+            assert.equal(rollbacks[0].failure.failedRows, 3);
+            assert.match((rollbacks[0].error as Error).message, /Connection lost/);
+        });
+
         it('does not report an import that wrote members as one that never ran', async function () {
             const h = harness([row('first@example.com'), row('second@example.com'), row('third@example.com')]);
             h.failRollbackWith(new Error('Connection lost'));
-            h.deps.members.create = async (values: {email?: string; name?: string; note?: string}) => {
-                if (values.email === 'second@example.com') {
-                    throw expectedFailure();
-                }
-                h.created.push(values.email ?? '');
-                return member(values);
-            };
+            h.failCreateFor('second@example.com', expectedFailure());
 
-            // A rejected rollback escaping the row handler would abandon the remaining rows
-            // and leave the job reporting no result at all -- telling the publisher nothing
-            // was imported after the first row had already been committed.
             await h.run();
 
             assert.deepEqual(h.created, ['first@example.com', 'third@example.com']);
             assert.equal(h.onlyEmail().subject, COMPLETED);
-            assert.ok(h.reportedOperations().includes('cleanup'));
+            assert.match((h.reportOf('rollback').error as Error).message, /Connection lost/);
         });
     });
 
@@ -423,15 +423,28 @@ describe('members import error handling', function () {
             await h.run();
 
             assert.deepEqual(h.created, ['first@example.com']);
-            // The member is imported. A leftover price is ours to clean up, not something
-            // to trouble the publisher with or to retract a successful import over.
             const email = h.onlyEmail();
             assert.equal(email.subject, COMPLETED);
-            // The whole settling phase shares one guard, so the work the publisher can see
-            // has to happen before the work only we can: their email still links at the
-            // members that landed.
             assert.match(email.html, /import-2026-01-01/);
-            assert.ok(h.reportedOperations().includes('cleanup'));
+            const cleanup = h.reportOf('cleanup');
+            assert.equal(cleanup.failure.step, 'archive-stripe-prices');
+            // How many were left behind is the part worth alerting on, and the rejection
+            // that caused it still has to reach whoever reads the alert. Ghost's errors
+            // fold a cause in rather than exposing it, so the stack is where it survives.
+            assert.match((cleanup.error as Error).message, /Failed to archive 1 of 1/);
+            assert.match((cleanup.error as Error).stack ?? '', /Stripe is unreachable/);
+        });
+
+        it('archives the Stripe prices even when reading the label failed first', async function () {
+            const h = harness([rowNeedingPriceCleanup('first@example.com')]);
+            h.deps.members.getImportLabel = async () => {
+                throw new Error('Label lookup failed');
+            };
+
+            await h.run();
+
+            assert.deepEqual(h.archivedPrices, ['price_1']);
+            assert.equal(h.onlyEmail().subject, COMPLETED);
         });
 
         it('still reports a completed import when the label lookup fails', async function () {
@@ -444,7 +457,9 @@ describe('members import error handling', function () {
 
             assert.deepEqual(h.created, ['first@example.com', 'second@example.com']);
             assert.equal(h.onlyEmail().subject, COMPLETED);
-            assert.ok(h.reportedOperations().includes('cleanup'));
+            const cleanup = h.reportOf('cleanup');
+            assert.equal(cleanup.failure.step, 'read-import-label');
+            assert.match((cleanup.error as Error).message, /Label lookup failed/);
         });
     });
 
@@ -457,8 +472,7 @@ describe('members import error handling', function () {
 
             await h.run();
 
-            // Nothing left to tell the publisher with, so it is only ours to see.
-            assert.ok(h.reportedOperations().includes('notify'));
+            assert.match((h.reportOf('notify').error as Error).message, /SMTP is down/);
         });
 
         it('reports a failing verification trigger without losing the email', async function () {
@@ -471,7 +485,7 @@ describe('members import error handling', function () {
             });
 
             assert.equal(h.onlyEmail().subject, COMPLETED);
-            assert.ok(h.reportedOperations().includes('verification'));
+            assert.match((h.reportOf('verification').error as Error).message, /Verification trigger failed/);
         });
     });
 
@@ -493,11 +507,26 @@ describe('members import error handling', function () {
 
             await h.run();
 
-            // The spooled file holds member names, emails and Stripe customer ids, so one
-            // left behind is worth knowing about. It is still only ours to chase: the
-            // import itself worked and the publisher hears the usual result.
             assert.equal(h.onlyEmail().subject, COMPLETED);
-            assert.ok(h.reportedOperations().includes('cleanup'));
+            const cleanup = h.reportOf('cleanup');
+            assert.equal(cleanup.failure.step, 'remove-spooled-rows');
+            assert.match((cleanup.error as Error).message, /EACCES/);
+        });
+
+        it('survives a spool that throws before it returns a promise', async function () {
+            const h = harness();
+            h.deps.spool.write = async (spooledRows: MemberImportRow[]) => ({
+                read: async () => spooledRows,
+                // Synchronous, so .catch() on the returned promise would never see it.
+                remove: (() => {
+                    throw new Error('EACCES: permission denied');
+                }) as unknown as () => Promise<void>
+            });
+
+            await h.run();
+
+            assert.equal(h.onlyEmail().subject, COMPLETED);
+            assert.equal(h.reportOf('cleanup').failure.step, 'remove-spooled-rows');
         });
 
         it('never rejects the queued job', async function () {
@@ -509,13 +538,42 @@ describe('members import error handling', function () {
                 throw new Error('SMTP is down');
             };
 
-            // The job manager treats a rejected inline job as a defect in the job itself,
-            // so the import owes it a resolved promise no matter what went wrong.
             await assert.doesNotReject(() => h.run({
                 testImportThreshold: async () => {
                     throw new Error('Verification trigger failed');
                 }
             }));
+        });
+    });
+
+    describe('an import with no request waiting on it', function () {
+        const runInline = (h: ReturnType<typeof harness>) => h.importer.importInline(
+            {filePath: 'members.csv', requestUserEmail: null},
+            {testImportThreshold: async () => {}}
+        );
+
+        it('returns a run that produced nothing usable rather than raising', async function () {
+            const h = harness();
+            h.deps.members.create = async () => {
+                throw defect();
+            };
+
+            // The site import runs every one of its importers inside a single transaction
+            // with no catch between them, so raising here takes the posts, tags and users
+            // imported alongside the members down with it.
+            const result = await runInline(h);
+
+            assert.equal(result.imported, 0);
+            assert.equal(result.errors.length, 2);
+        });
+
+        it('reports what landed when the run completed', async function () {
+            const h = harness();
+
+            const result = await runInline(h);
+
+            assert.equal(result.imported, 2);
+            assert.deepEqual(result.errors, []);
         });
     });
 
@@ -526,8 +584,6 @@ describe('members import error handling', function () {
                 throw new Error('Database is gone');
             };
 
-            // The request is still open, so the API can report this properly. Only the
-            // deferred path has to turn a failure into an email.
             await assert.rejects(
                 () => h.importer.importCSV(
                     {filePath: 'members.csv', requestUserEmail: 'importer@example.com'},
@@ -538,16 +594,67 @@ describe('members import error handling', function () {
             assert.equal(h.sent.length, 0);
         });
 
+        it('answers with what landed when only the check after it failed', async function () {
+            const h = harness(undefined, 100);
+
+            // The members are already written by the time the threshold is tested, so a
+            // failure there must not answer the request as though the import had not run.
+            const outcome = await h.importer.importCSV(
+                {filePath: 'members.csv', requestUserEmail: 'importer@example.com'},
+                {testImportThreshold: async () => {
+                    throw new Error('Verification trigger failed');
+                }}
+            );
+
+            assert.equal(outcome.deferred, false);
+            assert.equal(outcome.deferred === false && outcome.result.imported, 2);
+            assert.match((h.reportOf('verification').error as Error).message, /Verification trigger failed/);
+        });
+
+        it('fails the request when the import produced nothing usable', async function () {
+            const h = harness(undefined, 100);
+            h.deps.members.create = async () => {
+                throw defect();
+            };
+
+            await assert.rejects(
+                () => h.importer.importCSV(
+                    {filePath: 'members.csv', requestUserEmail: 'importer@example.com'},
+                    {testImportThreshold: async () => {}}
+                ),
+                (error: Error) => {
+                    // Admin only surfaces the message of a validation or data-import
+                    // error; anything else reaches the publisher as "an unexpected error
+                    // occurred", and both types carry this same message.
+                    assert.equal((error as {errorType?: string}).errorType, 'DataImportError');
+                    assert.match(error.message, /could not be completed/);
+                    return true;
+                }
+            );
+            assert.deepEqual(h.created, []);
+        });
+
+        it('still answers with the failed rows when the publisher can fix them', async function () {
+            const h = harness(undefined, 100);
+            h.deps.members.create = async () => {
+                throw expectedFailure();
+            };
+
+            const outcome = await h.importer.importCSV(
+                {filePath: 'members.csv', requestUserEmail: 'importer@example.com'},
+                {testImportThreshold: async () => {}}
+            );
+
+            assert.equal(outcome.deferred, false);
+            assert.equal(outcome.deferred === false && outcome.result.errors.length, 2);
+        });
+
         it('does not fail the request when only the cleanup after it failed', async function () {
             const h = harness(undefined, 100);
             h.deps.members.getImportLabel = async () => {
                 throw new Error('Label lookup failed');
             };
 
-            // Both members are written by the time the label is read back, so failing the
-            // request would report a completed import as an error. The label is only there
-            // to link the response at the imported members, so the import reports itself
-            // without one.
             const outcome = await h.importer.importCSV(
                 {filePath: 'members.csv', requestUserEmail: 'importer@example.com'},
                 {testImportThreshold: async () => {}}
@@ -556,7 +663,7 @@ describe('members import error handling', function () {
             assert.equal(outcome.deferred, false);
             assert.equal(outcome.deferred === false && outcome.result.imported, 2);
             assert.equal(outcome.deferred === false && outcome.result.importLabel, undefined);
-            assert.ok(h.reportedOperations().includes('cleanup'));
+            assert.equal(h.reportOf('cleanup').failure.step, 'read-import-label');
         });
     });
 });
