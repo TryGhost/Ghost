@@ -1,4 +1,4 @@
-// Declaration shim so the TS FileStore adapter can reuse the legacy YAML
-// parser (and its error semantics) until it's deleted in HKG-1898.
+// Declaration shim so the TS store adapters can reuse the YAML parser
+// (and its error semantics).
 declare function parseYaml(file: string): unknown;
 export = parseYaml;
