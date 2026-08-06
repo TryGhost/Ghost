@@ -65,6 +65,38 @@ describe('GiftBookshelfRepository (integration)', function () {
         });
     }
 
+    it('persists legacy link gifts with delivery defaults', async function () {
+        giftSequence += 1;
+        const now = new Date();
+
+        const gift = await models.Gift.add({
+            token: `legacy-link-token-${giftSequence}`,
+            buyer_email: `legacy-buyer-${giftSequence}@example.com`,
+            buyer_member_id: null,
+            redeemer_member_id: null,
+            tier_id: paidTierId,
+            cadence: 'year',
+            duration: 1,
+            currency: 'usd',
+            amount: 5000,
+            stripe_checkout_session_id: `cs_legacy_${giftSequence}`,
+            stripe_payment_intent_id: `pi_legacy_${giftSequence}`,
+            consumes_at: null,
+            expires_at: new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000),
+            status: 'purchased',
+            purchased_at: now,
+            redeemed_at: null,
+            consumed_at: null,
+            expired_at: null,
+            refunded_at: null
+        });
+
+        assert.equal(gift.get('delivery_method'), 'link');
+        assert.equal(gift.get('delivery_status'), 'pending');
+        assert.equal(gift.get('delivery_attempts'), 0);
+        assert.equal(gift.get('delivery_outcome'), 'unknown');
+    });
+
     it('allows exactly one concurrent caller to claim a due delivery', async function () {
         const claimAt = new Date();
         claimAt.setMilliseconds(0);
