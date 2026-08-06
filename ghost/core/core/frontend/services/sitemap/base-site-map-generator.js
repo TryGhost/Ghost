@@ -200,11 +200,6 @@ class BaseSiteMapGenerator {
         this.nodeLookup = {};
         this.nodeTimeLookup = {};
         this.siteMapContent.clear();
-        // updateLastModified only ever raises this, so it has to be cleared
-        // with the nodes it was derived from. The index rebuild resets every
-        // generator and replays the surviving resources, which restores the
-        // correct value; keeping the old one would report the timestamp of a
-        // resource that is no longer in the sitemap.
         this.lastModified = 0;
     }
 }
