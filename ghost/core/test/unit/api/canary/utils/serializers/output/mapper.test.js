@@ -173,7 +173,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
                 },
                 // input serializer recorded: caller asked for ?fields=url,id —
                 // status/slug were forced for the URL computation
-                forcedUrlColumns: {routerType: 'posts', columns: ['status', 'slug']},
+                forcedUrlColumns: ['status', 'slug'],
                 apiType: 'admin'
             };
 
@@ -222,47 +222,6 @@ describe('Unit: utils/serializers/output/mappers', function () {
             assert.deepEqual(urlUtil.forUser.getCall(0).args, ['id1', user, frame.options]);
             sinon.assert.calledOnce(cleanUtil.author);
         });
-
-        it('strips columns force-loaded for the URL after the URL is computed', function () {
-            const frame = {
-                options: {
-                    columns: ['id', 'url'],
-                    context: {}
-                },
-                forcedUrlColumns: {routerType: 'authors', columns: ['slug']}
-            };
-
-            const user = createJsonModel(testUtils.DataGenerator.forKnex.createUser({
-                id: 'id1',
-                name: 'Ghosty',
-                slug: 'ghosty'
-            }));
-
-            const result = mappers.users(user, frame);
-
-            assert.equal(result.slug, undefined);
-            assert.equal(result.id, 'id1');
-        });
-
-        it('leaves a nested author alone when the forced columns belong to another fetch', function () {
-            const frame = {
-                options: {
-                    columns: ['id', 'url'],
-                    context: {}
-                },
-                forcedUrlColumns: {routerType: 'posts', columns: ['status', 'type', 'slug']}
-            };
-
-            const user = createJsonModel(testUtils.DataGenerator.forKnex.createUser({
-                id: 'id1',
-                name: 'Ghosty',
-                slug: 'ghosty'
-            }));
-
-            const result = mappers.users(user, frame);
-
-            assert.equal(result.slug, 'ghosty');
-        });
     });
 
     describe('Tag Mapper', function () {
@@ -296,7 +255,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
                     columns: ['name', 'url', 'visibility'],
                     context: {}
                 },
-                forcedUrlColumns: {routerType: 'tags', columns: ['visibility']}
+                forcedUrlColumns: ['visibility']
             };
 
             const tag = createJsonModel(testUtils.DataGenerator.forKnex.createTag({

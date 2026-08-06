@@ -38,9 +38,7 @@ class DynamicRoutingService {
 
     /**
      * Wire the routing dependencies and load route settings into the router.
-     * Called from initDynamicRouting in boot.js on every boot: the routers have
-     * to reach the URL service even where no page is served, so that the APIs and
-     * background services can build URLs.
+     * Called from initDynamicRouting in boot.js — only when the frontend is enabled.
      *
      * @param {object} deps
      * @param {object} deps.routerManager - frontend RouterManager singleton
@@ -126,7 +124,7 @@ class DynamicRoutingService {
             })
                 .then(() => {
                     debug('waited for blog running');
-                    if (!urlService.facade.hasFinished()) {
+                    if (!urlService.hasFinished()) {
                         if (tries > 5) {
                             throw new errors.InternalServerError({
                                 message: tpl(messages.loadError)

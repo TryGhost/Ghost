@@ -43,12 +43,7 @@ module.exports.reset = () => {
     urlService.softReset();
 },
 
-module.exports.urlFor = (model, type, options) => {
-    return urlService.facade.getUrlForResource({...model.toJSON(), type}, options);
-};
-
 module.exports.resetGenerators = () => {
     urlService.resetGenerators();
     urlService.resources.reset();
-    urlService.facade.reset();
 };

@@ -49,8 +49,13 @@ describe('User API', function () {
                 assert.ok(userEmails.includes('ghost-author@example.com'));
                 assert.ok(userEmails.includes(fixtureManager.get('users', 1).email));
 
+                // Verify URL structure for users with/without published posts
                 body.users.forEach((user) => {
-                    assert.equal(user.url, `${config.get('url')}/author/${user.slug}/`);
+                    if (user.slug === 'ghost' || user.slug === 'joe-bloggs') {
+                        assert.equal(user.url, `${config.get('url')}/author/${user.slug}/`);
+                    } else {
+                        assert.equal(user.url, `${config.get('url')}/404/`);
+                    }
                 });
             });
     });

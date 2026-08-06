@@ -78,7 +78,7 @@ const forceUrlColumnsWhenLazy = (frame, routerType) => {
     }
     const forced = urlService.facade.getRequiredFields(routerType).filter(field => !frame.options.columns.includes(field));
     if (forced.length) {
-        frame.forcedUrlColumns = {routerType, columns: forced};
+        frame.forcedUrlColumns = forced;
         frame.options.columns.push(...forced);
     }
 };
