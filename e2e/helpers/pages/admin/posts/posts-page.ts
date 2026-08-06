@@ -1,7 +1,12 @@
 import {AdminPage} from '@/admin-pages';
 import {Locator, Page} from '@playwright/test';
 
+/** Which implementation serves the list — decided by the `postsListReact` flag. */
+export type PostsListImplementation = 'ember' | 'react';
+
 export class PostsPage extends AdminPage {
+    private readonly implementation: PostsListImplementation;
+
     public readonly postsList: Locator;
     public readonly postsListItem: Locator;
     public readonly newPostButton: Locator;
@@ -29,8 +34,9 @@ export class PostsPage extends AdminPage {
      */
     public readonly editorBackButton: Locator;
 
-    constructor(page: Page) {
+    constructor(page: Page, {implementation = 'ember'}: {implementation?: PostsListImplementation} = {}) {
         super(page);
+        this.implementation = implementation;
         this.pageUrl = '/ghost/#/posts';
 
         this.postsList = page.getByTestId('posts-list');
@@ -82,25 +88,14 @@ export class PostsPage extends AdminPage {
     }
 
     /**
-     * Applies a filter.
-     *
-     * The two implementations reach the same result through different UI:
-     * Ember has one dropdown per field, React has a single "Filter" button that
-     * asks which field first. The *gesture* differs, the contract does not — so
-     * the branch lives here and no test body needs to know which screen it is
-     * driving.
-     *
-     * The wait before the branch is load-bearing. `isVisible()` answers
-     * immediately and does not wait, so on a screen that has not finished
-     * rendering it reports "no Ember trigger" and sends an Ember run down the
-     * React path, where it waits for a button that will never exist. Waiting
-     * for *either* trigger first means the branch only ever runs against a
-     * rendered screen.
+     * Applies a filter. The gesture differs by implementation — Ember renders a
+     * dropdown per field, React one "Filter" button that asks for the field
+     * first — so the branch lives here, keyed by the constructor's
+     * `implementation`, and no test body needs to know which screen it drives.
+     * Never inferred from the DOM: a visibility probe races re-renders.
      */
     private async applyFilter(fieldLabel: string, emberTrigger: Locator, optionName: string): Promise<void> {
-        await emberTrigger.or(this.addFilterButton).first().waitFor({state: 'visible'});
-
-        if (await emberTrigger.isVisible()) {
+        if (this.implementation === 'ember') {
             await emberTrigger.click();
         } else {
             await this.addFilterButton.click();

@@ -243,7 +243,6 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
             setPendingBulkAction({key, snapshot});
         },
         selectionFilter: selection.filter,
-        allFilter: buildAllFilter(params, {ownAuthorSlug}),
         bucketFilters,
         isSingle: isSinglePostSelected(selectionState),
         // The selection count, not the loaded-row count: after Cmd+A on a

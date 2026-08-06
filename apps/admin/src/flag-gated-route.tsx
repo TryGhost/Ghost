@@ -44,7 +44,7 @@ export function FlagGatedRoute({ flag, component: Component, fallback = <EmberFa
     );
 
     if (typeof emberFlag === 'boolean') {
-        return emberFlag ? renderReact() : <EmberFallback />;
+        return emberFlag ? renderReact() : fallback;
     }
 
     if (emberFlag === null) {

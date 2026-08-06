@@ -44,7 +44,7 @@ for (const {implementation, postsListReact} of [
 
         test.beforeEach(async ({page}) => {
             postFactory = createPostFactory(page.request);
-            postsPage = new PostsPage(page);
+            postsPage = new PostsPage(page, {implementation: postsListReact ? 'react' : 'ember'});
         });
 
         test('lists the posts that exist', async () => {
