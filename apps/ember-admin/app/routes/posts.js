@@ -147,9 +147,10 @@ export default class PostsRoute extends AuthenticatedRoute {
         }
 
         const url = window.location.hash;
+        const state = window.history.state;
 
         this.router.replaceWith('react-fallback', this.routeName)
-            .finally(() => this._restoreUrl(url));
+            .finally(() => this._restoreUrl(url, state));
     }
 
     // Parking writes the fallback route's own path when the transition settles,
@@ -160,10 +161,12 @@ export default class PostsRoute extends AuthenticatedRoute {
     // history entry, so it cannot disturb the back button, and it fires no
     // `hashchange`, so restoring cannot re-enter routing and undo the parking we
     // just did. React already rendered from this URL and is unaffected.
-    _restoreUrl(url) {
-        if (window.location.hash !== url) {
-            window.history.replaceState(null, '', url);
-        }
+    //
+    // The captured history state goes back too, unconditionally: react-router
+    // keeps `{usr, key, idx}` there, and parking's fragment navigation resets
+    // it — a `null` state breaks its back/forward index and useBlocker.
+    _restoreUrl(url, state) {
+        window.history.replaceState(state, '', url);
     }
 
     // Built by hand rather than with `router.urlFor`, whose output depends on
