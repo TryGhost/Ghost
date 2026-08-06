@@ -1,5 +1,5 @@
 import {getCelebrationCopy} from '@/posts/list/post-celebration-copy';
-import {PostShareModal} from '@tryghost/shade/posts-stats';
+import PostShareModal from '@/shared/analytics/post-share-modal';
 import type {PostListItem} from '@/posts/list/hooks/use-posts-list';
 
 interface PostCelebrationModalProps {
@@ -16,8 +16,12 @@ interface PostCelebrationModalProps {
 /**
  * The post-publish celebration, shown when the Ember editor hands one over.
  *
- * Wraps Shade's `PostShareModal`, which takes all of its copy as props — so the
- * wording lives in `post-celebration-copy.ts` and this is only assembly.
+ * Wraps `PostShareModal`, which takes all of its copy as props — so the wording
+ * lives in `post-celebration-copy.ts` and this is only assembly.
+ *
+ * It moved out of Shade and into `@/shared/analytics` when the transitional
+ * `posts-stats` subpath was collapsed (a71a649b10); admin is now its only
+ * consumer.
  */
 export function PostCelebrationModal({
     post, type, wasPublished, postCount, siteTitle, onClose
