@@ -28,15 +28,17 @@ interface PruneOptions {
     posts: PostListItem[];
     /** Ids the bulk action actually edited — Ember's `availableModels`. */
     editedIds: Set<string>;
-    /** The list's own filter, which the edited posts must still match. */
+    /** The bucket's own filter, which the edited posts must still match. */
     filter: string;
 }
 
 /**
- * Drops the rows a bulk edit has pushed out of the current filter.
+ * Drops the rows a bulk edit has pushed out of the given filter.
  *
- * Ported from `updateFilteredPosts` in
- * `apps/ember-admin/app/components/posts-list/context-menu.js`.
+ * Adapted from `updateFilteredPosts` in Ember's posts-list context menu —
+ * with one deliberate difference: the caller prunes per *bucket* filter,
+ * where Ember prunes every model against the list-wide filter and so leaves
+ * an unpublished row sitting in the published section of the unfiltered list.
  */
 export function pruneNonMatchingPosts({posts, editedIds, filter}: PruneOptions): PostListItem[] {
     const query = nql(filter, {expansions: EXPANSIONS});

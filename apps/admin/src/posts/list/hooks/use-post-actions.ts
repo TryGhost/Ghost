@@ -55,10 +55,12 @@ interface UsePostActionsOptions {
     bucketFilters: string[];
     /** Ember's `isSingle`, captured with the rest of the selection. */
     isSingle: boolean;
+    /** Whether the selection is inverted (Cmd+A) — see `BulkActionSnapshot`. */
+    inverted: boolean;
 }
 
 export function usePostActions({
-    resource, posts, onShareAsGift, count, onBulkAction, selectionFilter, bucketFilters, isSingle
+    resource, posts, onShareAsGift, count, onBulkAction, selectionFilter, bucketFilters, isSingle, inverted
 }: UsePostActionsOptions) {
     const {data: siteData} = useBrowseSite();
     const siteUrl = siteData?.site.url ?? '';
@@ -128,7 +130,7 @@ export function usePostActions({
             // Everything else is a bulk action. The selection is captured now,
             // because the menu is about to close and take a transient selection
             // with it.
-            onBulkAction?.(key, {filter: selectionFilter, posts, count, bucketFilters, isSingle});
+            onBulkAction?.(key, {filter: selectionFilter, posts, count, bucketFilters, isSingle, inverted});
             break;
         }
         } catch (error) {
@@ -138,6 +140,6 @@ export function usePostActions({
         }
     }, [
         posts, resource, siteUrl, copyPost, copyPage, queryClient,
-        onShareAsGift, count, onBulkAction, selectionFilter, bucketFilters, isSingle
+        onShareAsGift, count, onBulkAction, selectionFilter, bucketFilters, isSingle, inverted
     ]);
 }

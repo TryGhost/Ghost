@@ -242,6 +242,7 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
         selectionFilter: selection.filter,
         bucketFilters,
         isSingle: isSinglePostSelected(selectionState),
+        inverted: selectionState.inverted,
         // The selection count, not the loaded-row count: after Cmd+A on a
         // 2,000-post site the toast has to say 2,000, not the 30 in memory.
         count: getPostSelectionCount(selectionState, totalItems)
