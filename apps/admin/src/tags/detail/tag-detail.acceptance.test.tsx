@@ -37,6 +37,16 @@ describe('Tag detail (tagDetailsReact on)', () => {
         await expect.element(page.getByRole('button', {name: 'Delete tag', exact: true})).toBeVisible();
     });
 
+    it('renders seeded code injection in the CodeMirror editors', async () => {
+        const t = tag({name: 'News', slug: 'news', codeinjection_head: '<script>head()</script>', codeinjection_foot: '<style>.f{}</style>'});
+        fakeTagWorld(t);
+        await renderAdminApp(`/tags/${t.slug}`, FLAGS);
+
+        await page.getByRole('button', {name: /Code injection/}).click();
+        await expect.element(page.getByRole('textbox', {name: 'Tag header'})).toHaveTextContent('<script>head()</script>');
+        await expect.element(page.getByRole('textbox', {name: 'Tag footer'})).toHaveTextContent('<style>.f{}</style>');
+    });
+
     it('redirects to billing during a force upgrade', async () => {
         const config = configResponse(FLAGS);
         config.config.hostSettings = {forceUpgrade: true};
@@ -132,7 +142,10 @@ describe('Tag detail (tagDetailsReact on)', () => {
         await renderAdminApp('/tags/new', FLAGS);
 
         await expect.element(page.getByTestId('tag-detail-title')).toHaveTextContent('New tag');
+        // The form waits on the site query; `.element()` doesn't retry, so
+        // settle the form first or a slow query fails the lookup.
         const nameInput = page.getByLabelText('Name', {exact: true});
+        await expect.element(nameInput).toBeVisible();
         await userEvent.type(nameInput.element(), 'Weekly News');
         await expect.element(page.getByLabelText('Slug', {exact: true})).toHaveValue('weekly-news');
 
