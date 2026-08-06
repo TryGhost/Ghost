@@ -44,6 +44,12 @@ export interface BulkActionSnapshot {
      */
     isSingle: boolean;
     /**
+     * Whether the selection is inverted (Cmd+A). An inverted delete covers
+     * rows that were never loaded, so the cached totals can't be decremented
+     * by counting removed rows — what remains is the exclusions.
+     */
+    inverted: boolean;
+    /**
      * The bucket filters the screen is currently showing. Ember iterates only
      * the three infinity models on screen; `setQueriesData` would otherwise
      * reach every cached list for the resource — including a Featured list
@@ -191,6 +197,7 @@ export function usePostBulkActions({resource, onDeleted, onEdited}: UsePostBulkA
                     }
 
                     let removed = 0;
+                    let keptCount = 0;
                     const pages = cached.pages.map((page) => {
                         const key = isPages ? 'pages' : 'posts';
                         const rows = page[key] ?? [];
@@ -226,11 +233,17 @@ export function usePostBulkActions({resource, onDeleted, onEdited}: UsePostBulkA
                         }
 
                         removed += rows.length - kept.length;
+                        keptCount += kept.length;
 
                         return {...page, [key]: kept};
                     });
 
-                    if (removed === 0) {
+                    // Totals only move on delete — an edited row that left this
+                    // bucket still exists, so subtracting it would shrink the
+                    // list-wide count the selection reads. Inverted deletes
+                    // covered rows never loaded, so what's left in the bucket
+                    // is exactly the exclusions still cached.
+                    if (!isDelete || (removed === 0 && !snapshot.inverted)) {
                         return {...cached, pages};
                     }
 
@@ -238,13 +251,15 @@ export function usePostBulkActions({resource, onDeleted, onEdited}: UsePostBulkA
                     // keep every page consistent so the total tracks the rows.
                     return {
                         ...cached,
-                        pages: pages.map(page => (typeof page.meta?.pagination.total === 'number' ? {
+                        pages: pages.map(page => (typeof page.meta?.pagination?.total === 'number' ? {
                             ...page,
                             meta: {
                                 ...page.meta,
                                 pagination: {
                                     ...page.meta.pagination,
-                                    total: Math.max(0, page.meta.pagination.total - removed)
+                                    total: snapshot.inverted
+                                        ? keptCount
+                                        : Math.max(0, page.meta.pagination.total - removed)
                                 }
                             }
                         } : page))
