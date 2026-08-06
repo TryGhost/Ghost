@@ -1,7 +1,7 @@
 import {ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger} from '@tryghost/shade/components';
 import {IMPLEMENTED_POST_ACTIONS} from '@/posts/list/hooks/use-post-actions';
 import type {PostContextMenuItem, PostContextMenuKey} from '@/posts/list/post-context-menu-items';
-import {Fragment, memo, type ReactNode} from 'react';
+import {Fragment, type ReactNode} from 'react';
 import {LucideIcon} from '@tryghost/shade/utils';
 
 /**
@@ -46,16 +46,11 @@ interface PostsContextMenuProps {
 }
 
 /**
- * The right-click menu, wrapping a row.
- *
- * Radix's ContextMenu replaces about 260 lines of Ember's `multi-list/item.js`
- * — hand-rolled long-press, native-context-menu suppression and ghost-click
- * suppression — all of which it handles itself.
- *
- * Which items appear is decided by `post-context-menu-items.ts` from the whole
- * selection, not from the row under the cursor.
+ * The right-click menu, rendered inside a row. Which items appear is decided
+ * by `post-context-menu-items.ts` from the whole selection, not from the row
+ * under the cursor.
  */
-function PostsContextMenuComponent({
+export function PostsContextMenu({
     children, getItems, showGiftLink, enabled, onOpenChange, onAction
 }: PostsContextMenuProps) {
 
@@ -109,10 +104,3 @@ function PostsContextMenuComponent({
     );
 }
 
-/**
- * Memoised, and it has to be: Radix's trigger builds fresh handlers and a fresh
- * `style` object on every render and clones them onto the child, so an
- * unmemoised wrapper defeats the row's own `memo` and re-renders every row (and
- * every hover card) on each selection change.
- */
-export const PostsContextMenu = memo(PostsContextMenuComponent);

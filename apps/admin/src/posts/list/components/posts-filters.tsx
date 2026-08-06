@@ -40,14 +40,8 @@ export function PostsFilters({resource, filters, params, currentUser, iconOnly =
     const hasFilters = filters.length > 0;
     const showIconOnlyTrigger = iconOnly && !hasFilters;
 
-    // Pinned to the right of the bar and outlined, rather than sitting inline
-    // after the trigger. Inline and unstyled it was a bare X among the chips'
-    // own bare X's, so "clear everything" looked like "remove this one". The
-    // border and the distance are what tell the two apart.
-    //
-    // Pinned rather than pushed: the chips wrap when there are several, and a
-    // right-aligned control in normal flow would ride down with them instead of
-    // staying level with the first row.
+    // Outlined and pinned right: inline it read as another chip's own X, and
+    // in normal flow wrapping chips would drag it down off the first row.
     const trailingActions = hasFilters ? (
         <Inline className='shrink-0 sm:absolute sm:top-0 sm:right-0' gap='sm'>
             <Button
@@ -63,19 +57,11 @@ export function PostsFilters({resource, filters, params, currentUser, iconOnly =
     ) : undefined;
 
     return (
-        // The testid sits on the wrapper, as it does in Ember (on the
-        // `view-actions` section) — `Filters` doesn't forward arbitrary props.
-        // Full width in the bar so the chips have the room to wrap into, and
-        // shrink-wrapped in the header so it does not stretch the title row.
+        // Testid on the wrapper — `Filters` doesn't forward arbitrary props.
         <Inline align='center' className={cn(!iconOnly && 'w-full')} data-testid='posts-filters' gap='sm'>
             <Filters
-                // Collapsed with `text-[0px]` rather than by dropping the
-                // label, which is how the members list does it: the word
-                // "Filter" stays in the accessible name, so the control is
-                // still findable by screen readers and by tests at every width.
-                //
-                // Once there are chips it keeps its border and becomes an
-                // outline "Add filter" that trails them.
+                // Collapsed with `text-[0px]`, not by dropping the label: the
+                // word "Filter" stays in the accessible name at every width.
                 addButtonClassName={cn(
                     showIconOnlyTrigger && 'min-w-[34px] gap-0 !px-3 text-[0px] lg:min-w-0 lg:gap-1.5 lg:px-3 lg:text-base',
                     // In the bar it is icon-only at every width — the chips
@@ -84,16 +70,11 @@ export function PostsFilters({resource, filters, params, currentUser, iconOnly =
                 )}
                 addButtonIcon={hasFilters ? <LucideIcon.ListFilterPlus className='size-4' /> : <LucideIcon.ListFilter className='size-4' />}
                 addButtonText={hasFilters ? 'Add filter' : 'Filter'}
-                // Shade defaults this to true. Each field here maps to one URL
-                // param holding one value, and the serializer keeps the last —
-                // so leaving it on would let someone sit looking at two "Post
-                // type" chips while only one was in the URL or a saved view.
+                // Each field maps to one URL param holding one value; a second
+                // chip per field would sit there without being in the URL.
                 allowMultiple={false}
-                // `order-last` covers both trailing buttons — the trigger and
-                // Clear — so they follow the chips while keeping their own DOM
-                // order relative to each other.
-                // `pr-40` reserves the lane the pinned actions occupy, so a
-                // long row of chips runs up to them rather than under them.
+                // `order-last` keeps the trailing buttons after the chips;
+                // `pr-40` reserves the lane the pinned actions occupy.
                 className={cn(
                     '[&>button]:order-last',
                     iconOnly ? 'w-auto' : 'w-full',
@@ -105,10 +86,8 @@ export function PostsFilters({resource, filters, params, currentUser, iconOnly =
                 keyboardShortcut='f'
                 popoverAlign='start'
                 showClearButton={hasFilters}
-                // There are four fields — a search box to narrow four items is
-                // more chrome than help. This hides only the *field* list's
-                // search; the tag and author value pickers keep their own,
-                // which they need, since a site can have hundreds of either.
+                // Hides only the four-item *field* list's search; the tag and
+                // author value pickers keep their own.
                 showSearchInput={false}
                 onChange={onFiltersChange}
             />

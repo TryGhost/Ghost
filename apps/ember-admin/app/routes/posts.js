@@ -130,13 +130,10 @@ export default class PostsRoute extends AuthenticatedRoute {
     // left alone - React owns it, and rewriting it here would drop the query
     // params that address saved views.
     //
-    // The guard compares the parked *path*, not just the route name, and both
-    // halves matter. Without it at all, parking re-enters this hook and loops.
-    // Matching on the name alone stops the loop but parks only once: arrive
-    // from /analytics - which the admin boots on - and the router stays pinned
-    // at `react-fallback/analytics` however many times you visit /posts. The
-    // editor reads `transition.from.params.path` to label its back button, so
-    // it would send you to Analytics from a post you opened from the list.
+    // The guard compares the parked *path*, not just the route name: without
+    // it parking loops, and on the name alone it parks only once, pinning the
+    // router at whatever the admin booted on - which the editor's back button
+    // reads via `transition.from.params.path`.
     _parkOnReactFallback() {
         const parkedPath = this.router.currentRouteName === 'react-fallback'
             ? this.router.currentRoute?.params?.path
@@ -153,18 +150,12 @@ export default class PostsRoute extends AuthenticatedRoute {
             .finally(() => this._restoreUrl(url, state));
     }
 
-    // Parking writes the fallback route's own path when the transition settles,
-    // which drops the query string - and `?type=draft` is how saved views are
-    // addressed, so losing it silently breaks every saved view on a cold load.
-    //
-    // `replaceState` rather than assigning to `location.hash`: it adds no
-    // history entry, so it cannot disturb the back button, and it fires no
-    // `hashchange`, so restoring cannot re-enter routing and undo the parking we
-    // just did. React already rendered from this URL and is unaffected.
-    //
-    // The captured history state goes back too, unconditionally: react-router
-    // keeps `{usr, key, idx}` there, and parking's fragment navigation resets
-    // it — a `null` state breaks its back/forward index and useBlocker.
+    // Parking writes the fallback route's own path, dropping the query string
+    // that addresses saved views - so the captured URL goes back afterwards.
+    // `replaceState`: no history entry, and no `hashchange` to re-enter
+    // routing. The captured history state goes back too, unconditionally:
+    // react-router keeps `{usr, key, idx}` there, and the parking navigation
+    // resets it - a `null` state breaks its back/forward index and useBlocker.
     _restoreUrl(url, state) {
         window.history.replaceState(state, '', url);
     }
