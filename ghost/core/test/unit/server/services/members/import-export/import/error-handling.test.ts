@@ -23,13 +23,11 @@ const COULD_NOT_COMPLETE = 'Your member import could not be completed';
 // in terms they can act on.
 const expectedFailure = () => new errors.DataImportError({message: 'Member already exists'});
 
-// A row rejected by Stripe. Not a Ghost error -- the Stripe SDK's own error travels all the
-// way up unwrapped -- but still entirely about the row, and completion-email humanises this
-// exact message for the report. The publisher fixes it by correcting the customer id.
+// A row rejected by Stripe: not a Ghost error, since the Stripe SDK's own error travels
+// all the way up unwrapped, but still entirely about the row.
 const stripeRejection = () => Object.assign(new Error('No such customer: cus_missing'), {type: 'StripeInvalidRequestError'});
 
-// A defect on our side, which the publisher can neither understand nor fix, so it must
-// never be reported to them as though their file were bad.
+// A defect on our side, which the publisher can neither understand nor fix.
 const defect = () => new TypeError("Cannot read properties of undefined (reading 'id')");
 
 const row = (email: string): MemberImportRow => ({
@@ -85,6 +83,7 @@ function harness(
     // The importer reads knex once, at construction, so a test cannot swap it afterwards.
     // Rolling back goes through this instead, which a test can repoint at any time.
     let rollback: () => Promise<void> = async () => {};
+    let removalFailure: Error | undefined;
 
     const deps = {
         knex: {
@@ -96,6 +95,9 @@ function harness(
                 read: async () => spooledRows,
                 remove: async () => {
                     spoolRemoved = true;
+                    if (removalFailure) {
+                        throw removalFailure;
+                    }
                 }
             })
         },
@@ -173,6 +175,9 @@ function harness(
             rollback = async () => {
                 throw error;
             };
+        },
+        failSpoolRemovalWith: (error: Error) => {
+            removalFailure = error;
         }
     };
 }
@@ -420,7 +425,12 @@ describe('members import error handling', function () {
             assert.deepEqual(h.created, ['first@example.com']);
             // The member is imported. A leftover price is ours to clean up, not something
             // to trouble the publisher with or to retract a successful import over.
-            assert.equal(h.onlyEmail().subject, COMPLETED);
+            const email = h.onlyEmail();
+            assert.equal(email.subject, COMPLETED);
+            // The whole settling phase shares one guard, so the work the publisher can see
+            // has to happen before the work only we can: their email still links at the
+            // members that landed.
+            assert.match(email.html, /import-2026-01-01/);
             assert.ok(h.reportedOperations().includes('cleanup'));
         });
 
@@ -475,6 +485,19 @@ describe('members import error handling', function () {
             await h.run();
 
             assert.equal(h.spoolRemoved(), true);
+        });
+
+        it('reports rows left on disk without silencing the publisher', async function () {
+            const h = harness();
+            h.failSpoolRemovalWith(new Error('EACCES: permission denied'));
+
+            await h.run();
+
+            // The spooled file holds member names, emails and Stripe customer ids, so one
+            // left behind is worth knowing about. It is still only ours to chase: the
+            // import itself worked and the publisher hears the usual result.
+            assert.equal(h.onlyEmail().subject, COMPLETED);
+            assert.ok(h.reportedOperations().includes('cleanup'));
         });
 
         it('never rejects the queued job', async function () {

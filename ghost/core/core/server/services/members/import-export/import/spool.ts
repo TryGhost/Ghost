@@ -5,8 +5,10 @@ import fs from 'fs-extra';
 import type {MemberImportRow} from './row';
 
 // A handle to rows written to a spool: the deferred job reads them back once it
-// runs, then removes the file. Removal swallows errors -- a failed cleanup must
-// never fail the import it was cleaning up after.
+// runs, then removes the file. Removal reports its failures rather than hiding
+// them: the file holds member names, emails and Stripe customer ids, so one left
+// behind is worth knowing about. Keeping a failed cleanup from failing the import
+// is the caller's business, and it is the caller that can say so.
 export interface SpooledRows {
     read(): Promise<MemberImportRow[]>;
     remove(): Promise<void>;
@@ -30,7 +32,7 @@ export function createRowSpool(): RowSpool {
                     return JSON.parse(await fs.readFile(spoolPath, 'utf8'));
                 },
                 async remove() {
-                    await fs.remove(spoolPath).catch(() => {});
+                    await fs.remove(spoolPath);
                 }
             };
         }

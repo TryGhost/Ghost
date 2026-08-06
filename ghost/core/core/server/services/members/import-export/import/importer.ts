@@ -147,18 +147,39 @@ interface MemberImportValues {
     newsletters?: unknown;
 }
 
-// The kernel does the importing, so it is what knows whether anything imported and,
-// if so, which label the members were tagged with (a label is only persisted once
-// attached to a member). The label is absent when nothing imported; the orchestrator
-// reads it as null and never fetches it itself.
+// What a run that produced something reports, and the only shape that leaves the
+// sub-domain. The label is absent when nothing imported, since a label is only persisted
+// once a member carries it.
 interface ImportResult {
     imported: number;
     errors: ImportErrorRow[];
     importLabel?: ImportLabel;
-    // How many of the failed rows failed through a defect of ours. Counted so a run that
-    // failed wholly this way is not reported back to the publisher as a problem with the
-    // file they uploaded.
+}
+
+// How a run turned out, as the three things that can be true of one rather than a result
+// that may be absent with a counter beside it to say whether it was any use. The one
+// decision this drives -- what the publisher is told -- becomes a match on the status
+// instead of a condition reassembled at the point of asking.
+type ImportRun =
+    | {status: 'not-run'}
+    | {status: 'no-usable-result'; errors: ImportErrorRow[]}
+    | ({status: 'completed'} & ImportResult);
+
+// What every row in a run is written against, gathered once before the first write.
+interface PreparedRun {
+    defaultTier: Tier;
+    activeCustomFields: CsvField[];
+    globalLabels: Label[];
+}
+
+// What writing the rows produced. Carries the Stripe prices an import tier created, which
+// only the settling phase acts on, and the defect tally that decides whether the run
+// produced anything the publisher can act on.
+interface WrittenRows {
+    imported: number;
+    errors: ImportErrorRow[];
     defects: number;
+    archivableStripePriceIds: string[];
 }
 
 // What the domain service returns: an import that ran inline carries its stats and
@@ -220,10 +241,19 @@ function isDefect(error: unknown): boolean {
 
 // An import that landed nothing and failed only through defects of ours. Their file is not
 // at fault, so the error report would tell them nothing they can use.
-function producedNothingUsable(result: ImportResult): boolean {
-    return result.imported === 0
-        && result.errors.length > 0
-        && result.defects === result.errors.length;
+// The run as a caller holding an open request reads it. An import that landed nothing
+// still answers with what it tried, because that is what the response has always carried.
+function resultFor(run: ImportRun): ImportResult {
+    if (run.status === 'completed') {
+        return {imported: run.imported, errors: run.errors, importLabel: run.importLabel};
+    }
+    return {imported: 0, errors: run.status === 'no-usable-result' ? run.errors : []};
+}
+
+function producedNothingUsable(written: WrittenRows): boolean {
+    return written.imported === 0
+        && written.errors.length > 0
+        && written.defects === written.errors.length;
 }
 
 // The routing decision, in terms it can reason about without knowing what a member
@@ -271,9 +301,9 @@ class MembersCSVImporter {
         const extraLabels = request.extraLabels ?? [];
 
         if (canImportInline(rows.length, hasExpensiveColumns(rows), this._getInlineThreshold())) {
-            const result = await this.importRows(rows, labelName, extraLabels);
+            const run = await this.importRows(rows, labelName, extraLabels);
             await verificationTrigger.testImportThreshold();
-            return {deferred: false, originalImportSize: rows.length, result};
+            return {deferred: false, originalImportSize: rows.length, result: resultFor(run)};
         }
 
         await this.deferImport(rows, {labelName, extraLabels, requestUserEmail: request.requestUserEmail}, verificationTrigger);
@@ -282,9 +312,9 @@ class MembersCSVImporter {
 
     async importInline(request: ImportRequest, verificationTrigger: VerificationTrigger): Promise<ImportResult> {
         const rows = await this._readRows(request.filePath, request.mapping);
-        const result = await this.importRows(rows, buildImportLabelName(this._getTimezone()), request.extraLabels ?? []);
+        const run = await this.importRows(rows, buildImportLabelName(this._getTimezone()), request.extraLabels ?? []);
         await verificationTrigger.testImportThreshold();
-        return result;
+        return resultFor(run);
     }
 
     private async deferImport(
@@ -313,10 +343,10 @@ class MembersCSVImporter {
         {labelName, extraLabels, emailRecipient}: {labelName: string; extraLabels: Label[]; emailRecipient: string},
         verificationTrigger: VerificationTrigger
     ): Promise<void> {
-        let result: ImportResult | null = null;
+        let run: ImportRun = {status: 'not-run'};
         try {
             const spooledRows = await spooled.read();
-            result = await this.importRows(spooledRows, labelName, extraLabels);
+            run = await this.importRows(spooledRows, labelName, extraLabels);
         } catch (error) {
             // importRows guards everything after its write loop, so a throw reaching here
             // means the import stopped before any member was written.
@@ -333,7 +363,7 @@ class MembersCSVImporter {
             }
         }
 
-        await this.reportOutcome(result, {labelName, emailRecipient});
+        await this.reportOutcome(run, {labelName, emailRecipient});
 
         try {
             await verificationTrigger.testImportThreshold();
@@ -347,16 +377,16 @@ class MembersCSVImporter {
     // import that could not be completed: handing them an error report in either case
     // would blame a file that was never the problem.
     private async reportOutcome(
-        result: ImportResult | null,
+        run: ImportRun,
         {labelName, emailRecipient}: {labelName: string; emailRecipient: string}
     ): Promise<void> {
         try {
-            const email = (result && !producedNothingUsable(result))
+            const email = run.status === 'completed'
                 ? buildCompletionEmail({
-                    result,
+                    result: run,
                     recipient: emailRecipient,
                     labelName,
-                    importLabel: result.importLabel ?? null,
+                    importLabel: run.importLabel ?? null,
                     urlFor: this._email.urlFor
                 })
                 : buildFailureEmail({recipient: emailRecipient, urlFor: this._email.urlFor});
@@ -367,28 +397,42 @@ class MembersCSVImporter {
         }
     }
 
-    // The members import kernel, shared by the inline and deferred paths. Each row is
-    // created or updated in its own transaction, so one row's failure rolls back only
-    // itself; failures are collected, and any Stripe prices an import tier created are
-    // archived at the end.
-    //
-    // Everything after the write loop is guarded, so a throw out of this method always
-    // means the import stopped before any member was written. The deferred path relies on
-    // that to tell an import that never ran from one that ran and then failed to tidy up.
-    private async importRows(rows: MemberImportRow[], labelName: string, extraLabels: Label[]): Promise<ImportResult> {
-        const importLabel: Label = {name: labelName};
-        const globalLabels: Label[] = [importLabel, ...extraLabels];
-        const performStart = Date.now();
-        const defaultTier = await this._tiers.getDefault();
-        // The field set a custom_fields.* column is read against; empty when the feature
-        // is off, so a carried-through column is dropped and the write boundary stays shut.
-        const activeCustomFields = await this._customFields.activeFields();
+    // The members import kernel, shared by the inline and deferred paths, in three phases:
+    // gather what the rows are written against, write them, then settle up. Only the first
+    // may throw, so a throw out of here always means the import stopped before a single
+    // member was written -- which is what lets the deferred path tell an import that never
+    // ran from one that ran and then failed to tidy up.
+    private async importRows(rows: MemberImportRow[], labelName: string, extraLabels: Label[]): Promise<ImportRun> {
+        const startedAt = Date.now();
+        const prepared = await this.prepareRun(labelName, extraLabels);
+        const written = await this.writeRows(rows, prepared);
+        return this.settleRun(written, {labelName, startedAt});
+    }
+
+    // Gather the facts every row is written against. The one phase allowed to fail:
+    // nothing has been written yet, so a failure here is an import that did not happen.
+    private async prepareRun(labelName: string, extraLabels: Label[]): Promise<PreparedRun> {
+        return {
+            defaultTier: await this._tiers.getDefault(),
+            // The field set a custom_fields.* column is read against; empty when the
+            // feature is off, so a carried-through column is dropped and the write
+            // boundary stays shut.
+            activeCustomFields: await this._customFields.activeFields(),
+            globalLabels: [{name: labelName}, ...extraLabels]
+        };
+    }
+
+    // Write the members, each in its own transaction so one row's failure rolls back only
+    // itself. Reports what happened rather than throwing: once a row has committed, an
+    // import that failed halfway is not one that never ran, and saying so would be a lie.
+    private async writeRows(rows: MemberImportRow[], prepared: PreparedRun): Promise<WrittenRows> {
+        const {defaultTier, activeCustomFields} = prepared;
         const tierIdCache = new Map();
         const archivableStripePriceIds: string[] = [];
         // Copied per row: the member model stamps ids and trims names onto these in
         // place, and each row runs in its own transaction that can roll back. A
         // caller can hand in a nameless label, which the model would drop anyway.
-        const cloneGlobalLabels = (): Label[] => globalLabels
+        const cloneGlobalLabels = (): Label[] => prepared.globalLabels
             .map(label => ({...label}))
             .filter(label => label.name);
 
@@ -547,35 +591,52 @@ class MembersCSVImporter {
             this._report('row', firstDefect, {failedRows: defects, totalRows: rows.length});
         }
 
-        // From here on every member is already written, so nothing below can change what
-        // was imported. Each step is guarded rather than allowed to throw: letting a
-        // Stripe hiccup or a failed lookup retract a completed import would misreport it.
-        try {
-            await Promise.all(archivableStripePriceIds.map(id => this._stripe.archivePrice(id)));
-        } catch (error) {
-            this._report('cleanup', error, {step: 'archive-stripe-prices'});
-        }
+        return {imported, errors: importErrors, defects, archivableStripePriceIds};
+    }
 
-        try {
-            metrics.metric('members-import', {imported, errors: importErrors.length, value: Date.now() - performStart});
-        } catch (error) {
-            this._report('cleanup', error, {step: 'record-metrics'});
-        }
+    // Settle up once every member is already written. Nothing here can change what was
+    // imported, so nothing here may escape: a Stripe hiccup or a failed lookup must not
+    // turn a completed import into one the publisher is told never happened. One guard for
+    // the phase rather than one per step, so work added here is covered by default.
+    private async settleRun(
+        written: WrittenRows,
+        {labelName, startedAt}: {labelName: string; startedAt: number}
+    ): Promise<ImportRun> {
+        const result: ImportResult = {
+            imported: written.imported,
+            errors: written.errors
+        };
 
-        if (imported > 0) {
-            try {
+        // Ordered by what it costs the publisher to lose. One guard for the phase means a
+        // step that throws takes the rest of the phase with it, so the label their email
+        // links to is read first and the Stripe prices only we care about are archived
+        // last -- an unreachable Stripe leaves the email whole.
+        try {
+            if (written.imported > 0) {
                 // The import label exists now that members carry it, so fetch it to
-                // report. Guarded against a null lookup in case a row is ever counted
-                // without it.
+                // report. A null lookup leaves the result without one, which the email
+                // reads as a link it cannot offer.
                 const importLabelModel = await this._members.getImportLabel(labelName);
-                return {imported, errors: importErrors, defects, importLabel: importLabelModel?.toJSON()};
-            } catch (error) {
-                // The label only links the email at the imported members. The import
-                // itself is done, so report it and send the email without the link.
-                this._report('cleanup', error, {step: 'read-import-label'});
+                if (importLabelModel) {
+                    result.importLabel = importLabelModel.toJSON();
+                }
             }
+            metrics.metric('members-import', {
+                imported: written.imported,
+                errors: written.errors.length,
+                value: Date.now() - startedAt
+            });
+            await Promise.all(written.archivableStripePriceIds.map(id => this._stripe.archivePrice(id)));
+        } catch (error) {
+            this._report('cleanup', error);
         }
-        return {imported, errors: importErrors, defects};
+
+        // Classified last, so the settling above still happens for a run that produced
+        // nothing: the prices are archived and the metric is recorded either way.
+        if (producedNothingUsable(written)) {
+            return {status: 'no-usable-result', errors: written.errors};
+        }
+        return {status: 'completed', ...result};
     }
 }
 
