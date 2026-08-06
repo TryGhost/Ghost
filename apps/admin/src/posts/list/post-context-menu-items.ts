@@ -99,8 +99,10 @@ export function getPostContextMenuItems(inputs: PostContextMenuInputs): PostCont
             add('gift-link', 'Share as a gift');
         }
 
-        // Ember separates Unpublish from the gift link above it, and only then.
-        add('unpublish', 'Unpublish', {separated: canCopyGiftLink});
+        // Ember separates Unpublish from the gift link above it, and only
+        // then — but whether the gift link renders is decided per row, after
+        // this list is built, so the menu draws that rule from adjacency.
+        add('unpublish', 'Unpublish');
     } else {
         if (isSingle(posts)) {
             add('copy-preview', 'Copy preview link');

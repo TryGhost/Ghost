@@ -23,6 +23,17 @@ import {
  * Which implementation is serving a route is asserted via `page(resource)`,
  * which only the React screen renders.
  */
+/**
+ * A cmd-click on a row is a cmd-click on a *link*, which opens a new browser
+ * tab — dispatching the mousedown directly exercises the selection path
+ * without asking the browser to open tabs mid-suite. Ember behaves the same.
+ */
+export function metaMouseDown(element: Element): void {
+    element.dispatchEvent(new MouseEvent("mousedown", {
+        bubbles: true, cancelable: true, metaKey: true
+    }));
+}
+
 export const postsListScreen = {
     page: (resource: "posts" | "pages") => page.getByTestId(listPage(resource)),
     title: (resource: "posts" | "pages", name: string) =>

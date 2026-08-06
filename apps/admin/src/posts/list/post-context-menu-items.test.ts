@@ -198,14 +198,17 @@ describe('getPostContextMenuItems', () => {
         ]);
     });
 
-    // Ember puts a separator above Unpublish only when the gift link is there.
-    it('separates Unpublish from the gift link above it', () => {
+    // Ember puts a separator above Unpublish only when the gift link is
+    // there — and whether it renders is decided per row, after this list is
+    // built. The menu draws that rule from adjacency, so Unpublish must not
+    // carry a flag that survives the gift link being filtered out.
+    it('leaves the gift-link separator to the menu, not the Unpublish item', () => {
         const withGift = getPostContextMenuItems(
             inputs([post({status: 'published'})], {canCopyGiftLink: true})
         );
         const withoutGift = getPostContextMenuItems(inputs([post({status: 'published'})]));
 
-        expect(withGift.find(item => item.key === 'unpublish')?.separated).toBe(true);
+        expect(withGift.find(item => item.key === 'unpublish')?.separated).toBe(false);
         expect(withoutGift.find(item => item.key === 'unpublish')?.separated).toBe(false);
     });
 
