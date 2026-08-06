@@ -52,7 +52,7 @@ describe('Unit: sitemap/manager', function () {
         eventsToRemember = {};
 
         // @NOTE: the pattern of faking event call is not great, we should be
-        //        ideally tasting on real events instead of faking them
+        //        ideally testing on real events instead of faking them
         // RouteRegistered / RoutesReset are frontend-internal routing events
         sinon.stub(routingEvents, 'on').callsFake(function (eventName, callback) {
             eventsToRemember[eventName] = callback;

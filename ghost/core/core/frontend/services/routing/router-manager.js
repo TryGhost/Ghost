@@ -39,7 +39,7 @@ class RouterManager {
         });
 
         // CASE: there are router types which do not generate resource urls
-        //       e.g. static route router, in this case we don't want ot notify the URL service
+        //       e.g. static route router, in this case we don't want to notify the URL service
         if (!router.getPermalinks()) {
             return;
         }
