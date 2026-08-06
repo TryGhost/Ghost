@@ -78,8 +78,17 @@ export class PostsPage extends AdminPage {
      * asks which field first. The *gesture* differs, the contract does not — so
      * the branch lives here and no test body needs to know which screen it is
      * driving.
+     *
+     * The wait before the branch is load-bearing. `isVisible()` answers
+     * immediately and does not wait, so on a screen that has not finished
+     * rendering it reports "no Ember trigger" and sends an Ember run down the
+     * React path, where it waits for a button that will never exist. Waiting
+     * for *either* trigger first means the branch only ever runs against a
+     * rendered screen.
      */
     private async applyFilter(fieldLabel: string, emberTrigger: Locator, optionName: string): Promise<void> {
+        await emberTrigger.or(this.addFilterButton).first().waitFor({state: 'visible'});
+
         if (await emberTrigger.isVisible()) {
             await emberTrigger.click();
         } else {

@@ -172,5 +172,33 @@ describe('Acceptance: posts/pages React flag', function () {
 
             expect(navigate.called, '_navigateToReactRoute called').to.be.false;
         });
+
+        // Regression: aborting alone left the router still reporting the route
+        // it came from, so returning to that same URL later was a no-op
+        // transition that rendered nothing - the editor came back blank. Parking
+        // on the catch-all keeps the router's own state truthful.
+        it('parks the router on the React fallback route', async function () {
+            const router = this.owner.lookup('service:router');
+
+            await visitExpectingAbort('/posts');
+
+            expect(router.currentRouteName, 'currentRouteName after aborting').to.equal('react-fallback');
+        });
+
+        // ...and parks with `replaceWith`, not `transitionTo`: this corrects
+        // router state the user never asked to change, so it must not put an
+        // extra entry in their way when they press Back.
+        //
+        // Only the positive assertion is made. `transitionTo` cannot serve as a
+        // negative signal here, because Ember's own `replaceWith` is built on
+        // top of it - spying on it reports a call either way.
+        it('parks with replace semantics so no history entry is added', async function () {
+            const route = this.owner.lookup('route:posts');
+            const replaceWith = sinon.spy(route.router, 'replaceWith');
+
+            await visitExpectingAbort('/posts');
+
+            expect(replaceWith.calledWith('react-fallback', 'posts'), 'replaceWith called').to.be.true;
+        });
     });
 });

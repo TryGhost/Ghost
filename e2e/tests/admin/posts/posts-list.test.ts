@@ -1,5 +1,5 @@
+import {PostEditorPage, PostsPage} from '@/admin-pages';
 import {PostFactory, createPostFactory} from '@/data-factory';
-import {PostsPage} from '@/admin-pages';
 import {expect, test} from '@/helpers/playwright';
 import {usePerTestIsolation} from '@/helpers/playwright/isolation';
 
@@ -132,6 +132,28 @@ for (const {implementation, postsListReact} of [
             // A draft has no public link to copy, so it offers the preview one.
             await expect(postsPage.contextMenuItem('Copy preview link')).toBeVisible();
             await expect(postsPage.contextMenuItem('Add a tag')).toBeVisible();
+        });
+
+        /**
+         * Regression: aborting the Ember posts transition used to leave Ember's
+         * router believing it was still on the editor. Re-opening the *same*
+         * post was then a no-op transition and rendered nothing — an empty
+         * screen — while opening any other post masked it.
+         */
+        test('reopening the same post after going back still opens the editor', async ({page}) => {
+            await postFactory.create({title: 'Reopened post', status: 'draft', featured: false});
+            const editor = new PostEditorPage(page);
+
+            await postsPage.goto();
+            await postsPage.waitForList();
+            await postsPage.getPostByTitle('Reopened post').click();
+            await expect(editor.titleInput).toBeVisible();
+
+            await page.goBack();
+            await postsPage.waitForList();
+            await postsPage.getPostByTitle('Reopened post').click();
+
+            await expect(editor.titleInput).toBeVisible();
         });
 
         test('deleting a post from the menu removes it from the list', async () => {

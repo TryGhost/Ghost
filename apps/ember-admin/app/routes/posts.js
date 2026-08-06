@@ -106,6 +106,36 @@ export default class PostsRoute extends AuthenticatedRoute {
         if (!transition.intent?.url) {
             this._navigateToReactRoute(this._reactRouteUrl(transition));
         }
+
+        this._parkOnReactFallback();
+    }
+
+    // Aborting stops Ember rendering this screen, but it also leaves the router
+    // believing it is still on the route we came from - `currentRouteName` stays
+    // `lexical-editor.edit` while the browser is showing the React list. That
+    // desync is only invisible until you navigate back to the very same URL:
+    // Ember compares it against the route it thinks it is on, finds no
+    // difference, and runs no transition at all, so the editor never
+    // re-activates and you get an empty screen. Opening a *different* post
+    // masks it, because a different id is a real change.
+    //
+    // So park on `react-fallback` - the empty catch-all Ember already uses for
+    // URLs React owns. It makes the router's state honest: the editor
+    // deactivates properly, and coming back to it is a real transition again.
+    //
+    // `replaceWith`, never `transitionTo`: this is a correction to router state
+    // the user did not ask for, so it must not add a history entry. The URL is
+    // left alone - React owns it, and rewriting it here would drop the query
+    // params that address saved views.
+    //
+    // The guard keeps this from looping: parking re-enters this hook, and by
+    // then we are already on `react-fallback` and return immediately.
+    _parkOnReactFallback() {
+        if (this.router.currentRouteName === 'react-fallback') {
+            return;
+        }
+
+        this.router.replaceWith('react-fallback', this.routeName);
     }
 
     // Built by hand rather than with `router.urlFor`, whose output depends on
