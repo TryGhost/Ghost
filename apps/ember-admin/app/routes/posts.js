@@ -78,7 +78,9 @@ export default class PostsRoute extends AuthenticatedRoute {
     beforeModel(transition) {
         super.beforeModel(...arguments);
 
-        if (!this.feature.postsListReact) {
+        // Strictly boolean, matching the tag route: a non-boolean labs value
+        // must not hand the route to React.
+        if (this.feature.postsListReact !== true) {
             return;
         }
 
