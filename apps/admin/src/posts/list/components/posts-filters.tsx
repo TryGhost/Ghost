@@ -19,7 +19,11 @@ interface PostsFiltersProps {
      * component belongs in the filter bar at full size.
      */
     iconOnly?: boolean;
-    /** Save/Edit view, pinned to the right of the bar beside Clear. */
+    /**
+     * Save/Edit view, pinned to the right of the bar beside Clear. Passed in
+     * rather than rendered here, because whether it belongs in the bar at all
+     * depends on state this component does not have.
+     */
     viewActions?: ReactNode;
     onFiltersChange: (filters: Filter<string>[]) => void;
 }
@@ -36,23 +40,24 @@ export function PostsFilters({resource, filters, params, currentUser, iconOnly =
     const hasFilters = filters.length > 0;
     const showIconOnlyTrigger = iconOnly && !hasFilters;
 
-    // Clear and the view actions sit together at the far right of the bar, as
-    // on the members list. Pinned rather than pushed: the chips wrap when there
-    // are several, and a right-aligned group in normal flow would ride down
-    // with them instead of staying level with the first row.
-    const trailingActions = (hasFilters || viewActions) ? (
-        <Inline className='shrink-0 sm:absolute sm:top-0 sm:right-0' gap='lg'>
-            {hasFilters && (
-                <Button
-                    className='hidden items-center gap-1 !px-0 text-sm font-normal text-muted-foreground hover:bg-transparent hover:text-foreground lg:inline-flex'
-                    type='button'
-                    variant='ghost'
-                    onClick={() => onFiltersChange([])}
-                >
-                    <LucideIcon.X className='size-4' />
-                    Clear
-                </Button>
-            )}
+    // Pinned to the right of the bar and outlined, rather than sitting inline
+    // after the trigger. Inline and unstyled it was a bare X among the chips'
+    // own bare X's, so "clear everything" looked like "remove this one". The
+    // border and the distance are what tell the two apart.
+    //
+    // Pinned rather than pushed: the chips wrap when there are several, and a
+    // right-aligned control in normal flow would ride down with them instead of
+    // staying level with the first row.
+    const trailingActions = hasFilters ? (
+        <Inline className='shrink-0 sm:absolute sm:top-0 sm:right-0' gap='sm'>
+            <Button
+                className='hidden items-center text-muted-foreground hover:text-foreground lg:inline-flex'
+                type='button'
+                variant='outline'
+                onClick={() => onFiltersChange([])}
+            >
+                Clear
+            </Button>
             {viewActions}
         </Inline>
     ) : undefined;
@@ -60,11 +65,8 @@ export function PostsFilters({resource, filters, params, currentUser, iconOnly =
     return (
         // The testid sits on the wrapper, as it does in Ember (on the
         // `view-actions` section) — `Filters` doesn't forward arbitrary props.
-        // `w-full` in the bar, and it is load-bearing rather than cosmetic: the
-        // trailing actions are pinned with `right-0`, which resolves against
-        // this wrapper. Left to shrink-wrap, "the right edge" is the right edge
-        // of the chips themselves, so Clear and Save view sit just after them
-        // instead of out at the edge of the page.
+        // Full width in the bar so the chips have the room to wrap into, and
+        // shrink-wrapped in the header so it does not stretch the title row.
         <Inline align='center' className={cn(!iconOnly && 'w-full')} data-testid='posts-filters' gap='sm'>
             <Filters
                 // Collapsed with `text-[0px]` rather than by dropping the
@@ -72,33 +74,37 @@ export function PostsFilters({resource, filters, params, currentUser, iconOnly =
                 // "Filter" stays in the accessible name, so the control is
                 // still findable by screen readers and by tests at every width.
                 //
-                // Once there are chips the trigger drops its border and becomes
-                // a quiet "Add filter" that trails them, rather than a second
-                // bordered control competing with the chips it produced.
-                addButtonClassName={cn(showIconOnlyTrigger && 'min-w-[34px] gap-0 !px-3 text-[0px] lg:min-w-0 lg:gap-1.5 lg:px-3 lg:text-base')}
-                addButtonIcon={hasFilters ? <LucideIcon.FunnelPlus className='size-4' /> : <LucideIcon.Filter className='size-4' />}
+                // Once there are chips it keeps its border and becomes an
+                // outline "Add filter" that trails them.
+                addButtonClassName={cn(
+                    showIconOnlyTrigger && 'min-w-[34px] gap-0 !px-3 text-[0px] lg:min-w-0 lg:gap-1.5 lg:px-3 lg:text-base',
+                    // In the bar it is icon-only at every width — the chips
+                    // beside it already say what it adds to.
+                    hasFilters && 'gap-0 !px-3 text-[0px]'
+                )}
+                addButtonIcon={hasFilters ? <LucideIcon.ListFilterPlus className='size-4' /> : <LucideIcon.ListFilter className='size-4' />}
                 addButtonText={hasFilters ? 'Add filter' : 'Filter'}
                 // Shade defaults this to true. Each field here maps to one URL
                 // param holding one value, and the serializer keeps the last —
                 // so leaving it on would let someone sit looking at two "Post
                 // type" chips while only one was in the URL or a saved view.
                 allowMultiple={false}
-                // `pr-40` reserves the lane the pinned actions above occupy, so
-                // a long row of chips runs up to them rather than under them.
-                // Shade only stretches this to full width once there are
-                // chips, but the bar needs it whenever it is on screen — a
-                // sort-only view has no chips and still pins Save view.
+                // `order-last` covers both trailing buttons — the trigger and
+                // Clear — so they follow the chips while keeping their own DOM
+                // order relative to each other.
+                // `pr-40` reserves the lane the pinned actions occupy, so a
+                // long row of chips runs up to them rather than under them.
                 className={cn(
                     '[&>button]:order-last',
                     iconOnly ? 'w-auto' : 'w-full',
-                    hasFilters && 'sm:!pr-40 [&>button]:border-none'
+                    hasFilters && 'sm:!pr-40'
                 )}
                 clearButton={trailingActions}
                 fields={fields}
                 filters={filters}
                 keyboardShortcut='f'
                 popoverAlign='start'
-                showClearButton={Boolean(trailingActions)}
+                showClearButton={hasFilters}
                 onChange={onFiltersChange}
             />
         </Inline>

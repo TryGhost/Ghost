@@ -103,11 +103,16 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
         isDefaultView: isOnDefaultView
     });
 
-    // The bar carries the chips, but also the only home Save-view has. `order`
-    // is one of the five params a saved view is made of, so a sort on its own
-    // makes the view saveable while leaving `hasFilters` false — gate the bar on
-    // filters alone and that view becomes unsaveable, which Ember allows.
-    const showFilterBar = hasFilters || canManageView;
+    // The bar is for chips, and appears only when there are some — a sort is
+    // not a filter and should not open a row of its own.
+    //
+    // Save-view sits with the chips it relates to, at the right of that bar.
+    // But it answers to `canManageView`, which includes `order` — so a sort on
+    // its own makes the view saveable with no chips and no bar to hold the
+    // button. It falls back to the top row there, rather than the capability
+    // disappearing whenever the bar does.
+    const showFilterBar = hasFilters;
+    const showViewActionsInHeader = canManageView && !showFilterBar;
 
     // Authors and contributors only ever see their own posts, whatever the
     // `author` param says — matching PostsRoute#model in the Ember app.
@@ -282,6 +287,9 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
                                         />
                                     )}
                                     <PostsSortMenu order={order} onOrderChange={setOrder} />
+                                    {showViewActionsInHeader && (
+                                        <ManagePostViewPopover activeView={activeView} params={params} resource={resource} />
+                                    )}
                                     <Button asChild>
                                         <a className='font-bold' href={copy.newHref}>
                                             <LucideIcon.Plus className='size-4' />
