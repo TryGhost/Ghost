@@ -28,7 +28,7 @@ type CustomFieldRow = z.infer<typeof DbCustomField>;
 // carries it as a plain string.
 export const DbCustomFieldValue = z.object({
     id: z.string(),
-    custom_field_id: z.string(),
+    custom_field_key: z.string(),
     member_id: z.string(),
     path: z.string(),
     // Nullable like the column, though nothing here writes a null: a part with no value
