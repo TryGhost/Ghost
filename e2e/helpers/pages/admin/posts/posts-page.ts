@@ -22,6 +22,13 @@ export class PostsPage extends AdminPage {
 
     public readonly emptyState: Locator;
 
+    /**
+     * The editor's back link. Located by its test attribute rather than by
+     * role: its accessible name carries the inlined arrow icon's title, so
+     * "Posts" is really "arrow-left Posts".
+     */
+    public readonly editorBackButton: Locator;
+
     constructor(page: Page) {
         super(page);
         this.pageUrl = '/ghost/#/posts';
@@ -49,6 +56,7 @@ export class PostsPage extends AdminPage {
         this.pageTitle = page.getByRole('heading', {level: 2});
 
         this.emptyState = page.getByText(/No posts match the current filter/i);
+        this.editorBackButton = page.locator('[data-test-breadcrumb]');
     }
 
     getPostByTitle(title: string): Locator {

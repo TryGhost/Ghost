@@ -156,6 +156,27 @@ for (const {implementation, postsListReact} of [
             await expect(editor.titleInput).toBeVisible();
         });
 
+        /**
+         * Regression: the editor labels its back button from the route Ember
+         * thinks it came from. Parking Ember on the catch-all only once left
+         * that stuck at whatever the admin booted on — usually /analytics — so
+         * a post opened from the list offered to send you to Analytics.
+         */
+        test('the editor offers to go back to the list, not wherever you were before', async ({page}) => {
+            await postFactory.create({title: 'Breadcrumb post', status: 'draft', featured: false});
+            const editor = new PostEditorPage(page);
+
+            await page.goto('/ghost/#/analytics');
+            await page.waitForURL(/analytics/);
+
+            await postsPage.goto();
+            await postsPage.waitForList();
+            await postsPage.getPostByTitle('Breadcrumb post').click();
+            await expect(editor.titleInput).toBeVisible();
+
+            await expect(postsPage.editorBackButton).toContainText('Posts');
+        });
+
         test('deleting a post from the menu removes it from the list', async () => {
             await postFactory.create({title: 'Doomed post', status: 'draft', featured: false});
             await postFactory.create({title: 'Surviving post', status: 'draft', featured: false});
