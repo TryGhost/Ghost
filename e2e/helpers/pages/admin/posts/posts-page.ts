@@ -28,13 +28,6 @@ export class PostsPage extends AdminPage {
 
     public readonly emptyState: Locator;
 
-    /**
-     * The editor's back link. Located by its test attribute rather than by
-     * role: its accessible name carries the inlined arrow icon's title, so
-     * "Posts" is really "arrow-left Posts".
-     */
-    public readonly editorBackButton: Locator;
-
     constructor(page: Page, {implementation = 'ember'}: {implementation?: PostsListImplementation} = {}) {
         super(page);
         this.implementation = implementation;
@@ -63,7 +56,6 @@ export class PostsPage extends AdminPage {
         this.pageTitle = page.getByRole('heading', {level: 2});
 
         this.emptyState = page.getByText(/No posts match the current filter/i);
-        this.editorBackButton = page.locator('[data-test-breadcrumb]');
     }
 
     getPostByTitle(title: string): Locator {
@@ -115,16 +107,21 @@ export class PostsPage extends AdminPage {
     }
 
     async selectAuthor(authorName: string): Promise<void> {
-        await this.authorFilter.click();
-        await this.page.getByRole('option', {name: authorName, exact: true}).click();
+        await this.applyFilter('Author', this.authorFilter, authorName);
     }
 
     async selectTag(tagName: string): Promise<void> {
-        await this.tagFilter.click();
-        await this.page.getByRole('option', {name: tagName, exact: true}).click();
+        await this.applyFilter('Tag', this.tagFilter, tagName);
     }
 
     async selectOrder(orderName: string): Promise<void> {
+        if (this.implementation !== 'ember') {
+            // React's sort is a menu next to the filter button, with its own
+            // labels — drive it via a dedicated helper when a React-lane test
+            // first needs it.
+            throw new Error('selectOrder drives the Ember sort dropdown; the React list sorts via its sort menu');
+        }
+
         await this.orderFilter.click();
         await this.page.getByRole('option', {name: orderName, exact: true}).click();
     }
