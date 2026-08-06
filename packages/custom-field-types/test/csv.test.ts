@@ -80,18 +80,20 @@ describe('custom field CSV cells', function () {
 // The column names are the vocabulary the admin offers as import mapping targets and
 // the error report echoes, so they are derived from the same primitives the cells are.
 describe('custom field CSV columns', function () {
-    it('gives a scalar field one namespaced column', function () {
-        assert.deepEqual(csvColumnsForField({key: 'nickname', type: 'short_text'}), ['custom_fields.nickname']);
+    it('gives a scalar field one namespaced column holding no particular part', function () {
+        assert.deepEqual(csvColumnsForField({key: 'nickname', type: 'short_text'}), [
+            {column: 'custom_fields.nickname', subField: null}
+        ]);
     });
 
-    it('gives a composite field one column per sub-field', function () {
+    it('gives a composite field one column per sub-field, each naming the part it holds', function () {
         assert.deepEqual(csvColumnsForField({key: 'shipping_address', type: 'address'}), [
-            'custom_fields.shipping_address.line1',
-            'custom_fields.shipping_address.line2',
-            'custom_fields.shipping_address.city',
-            'custom_fields.shipping_address.state',
-            'custom_fields.shipping_address.postal_code',
-            'custom_fields.shipping_address.country'
+            {column: 'custom_fields.shipping_address.line1', subField: 'line1'},
+            {column: 'custom_fields.shipping_address.line2', subField: 'line2'},
+            {column: 'custom_fields.shipping_address.city', subField: 'city'},
+            {column: 'custom_fields.shipping_address.state', subField: 'state'},
+            {column: 'custom_fields.shipping_address.postal_code', subField: 'postal_code'},
+            {column: 'custom_fields.shipping_address.country', subField: 'country'}
         ]);
     });
 
