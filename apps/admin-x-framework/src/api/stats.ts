@@ -1,6 +1,6 @@
 import { createQuery, createQueryWithId } from '../utils/api/hooks';
 import { apiUrl, useFetchApi } from '../utils/api/fetch-api';
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
 // Types
 
@@ -339,6 +339,9 @@ export const usePostVisitorCounts = (postUuids: string[], {enabled = true} = {})
     return useQuery<PostVisitorCounts>({
         queryKey: ['PostVisitorCounts', [...postUuids].sort().join(',')],
         enabled: enabled && postUuids.length > 0,
+        // The id list is the key, so loading the next page is a brand-new
+        // query — without this every visible count blanks to zero meanwhile.
+        placeholderData: keepPreviousData,
         queryFn: async () => {
             const response = await fetchApi<{stats?: Array<{data?: {visitor_counts?: PostVisitorCounts}}>}>(
                 apiUrl('/stats/posts-visitor-counts/'),
@@ -357,6 +360,7 @@ export const usePostMemberCounts = (postIds: string[], {enabled = true} = {}) =>
     return useQuery<PostMemberCounts>({
         queryKey: ['PostMemberCounts', [...postIds].sort().join(',')],
         enabled: enabled && postIds.length > 0,
+        placeholderData: keepPreviousData,
         queryFn: async () => {
             // The endpoint returns `{stats: [{<postId>: {free_members,
             // paid_members}}]}` — the map sits directly in the first element,
