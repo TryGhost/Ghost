@@ -5,9 +5,9 @@ import React, {useEffect, useMemo, useRef, useState} from 'react';
 import TopLevelGroup from '@/settings/app/components/top-level-group';
 import useFeatureFlag from '@/settings/app/hooks/use-feature-flag';
 import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Button, DragIndicator, NoValueLabel, NoValueLabelIcon, type SortableItemContainerProps, SortableList, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
+import {Inline} from '@tryghost/shade/primitives';
 import {TextCursorInput} from 'lucide-react';
 import {arrayMove} from '@dnd-kit/sortable';
-import {useDndContext} from '@dnd-kit/core';
 import {inOrderOf, memberCustomFieldsDataType, useBrowseMemberCustomFieldsIncludingArchived, useReorderMemberCustomFields, userTypeForField} from '@tryghost/admin-x-framework/api/member-custom-fields';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useQueryClient} from '@tryghost/admin-x-framework';
@@ -67,33 +67,27 @@ const SortableFieldRow: React.FC<SortableItemContainerProps> = ({
     // handle button, and DragIndicator errors if it receives it. `id` is dropped for the
     // same reason — it is a field key, which would become the button's DOM id.
     void separator;
+    void id;
 
-    // `isDragging` is true only for the copy the drag overlay renders, never for the row
-    // that copy was made from: the list hands every one of its own rows `false`. So the
-    // row being dragged has to be identified from the drag itself.
+    // `isDragging` is true only for the copy the drag overlay renders. The row that copy
+    // was made from stays in the list and keeps its normal appearance, sliding to the
+    // place it would land rather than following the cursor — the overlay does that. This
+    // follows the newsletters list, which is the same component and the same gesture, and
+    // a publisher who has reordered one should not have to learn the other.
     //
-    // It matters because that row is still in the list, still opaque, and still carrying
-    // the drag's transform — so without this it tracks the cursor alongside the overlay
-    // and a publisher drags two of everything. Hiding it leaves the overlay as the only
-    // thing moving, and leaves its space behind for the list to close up.
-    const {active} = useDndContext();
-    const isOverlay = Boolean(isDragging);
-    const isRowBeingDragged = !isOverlay && active !== null && active.id === id;
-
+    // The handle sits in a centred column of its own because the row stretches its
+    // children, so a handle given a height of its own would ride at the top of a row
+    // taller than it.
     const row = (
-        <ActionListItem
-            ref={setRef}
-            className={isOverlay ? 'opacity-75' : (isRowBeingDragged ? 'opacity-0' : '')}
-            data-dragging={isRowBeingDragged || undefined}
-            data-testid='custom-field-list-item'
-            style={style}
-        >
-            <DragIndicator className='mr-2 h-10 shrink-0' isDragging={isOverlay} {...props} />
+        <ActionListItem ref={setRef} className={isDragging ? 'opacity-75' : ''} data-testid='custom-field-list-item' style={style}>
+            <Inline align='center' className='w-10 shrink-0'>
+                <DragIndicator className='h-10' isDragging={isDragging || false} {...props} />
+            </Inline>
             {children}
         </ActionListItem>
     );
 
-    return isOverlay ? <ActionList>{row}</ActionList> : row;
+    return isDragging ? <ActionList>{row}</ActionList> : row;
 };
 
 const FieldList: React.FC<{
@@ -124,11 +118,11 @@ const FieldList: React.FC<{
     const isTruncated = !showAll && fields.length > PREVIEW_COUNT;
     const visibleFields = isTruncated ? fields.slice(0, PREVIEW_COUNT) : fields;
 
-    // Dragging is offered only once the whole list is on screen. Half a list is a bad
-    // thing to reorder: the places a field can be dropped are the rows you can see, so
-    // a truncated list silently withholds most of the order. Expanding is one click and
-    // a list of five or fewer never collapses in the first place.
-    const isSortable = Boolean(onMove) && !isTruncated;
+    // A collapsed list is still a list, and the five rows on screen can still be put in
+    // an order relative to each other. A drag only ever says "this field goes where that
+    // one is", and both ends of it are rows the publisher can see, so the fields hidden
+    // behind "Show all" keep their places around the move without taking part in it.
+    const isSortable = Boolean(onMove);
 
     return (
         <>

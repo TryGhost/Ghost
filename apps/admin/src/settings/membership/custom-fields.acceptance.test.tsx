@@ -277,37 +277,6 @@ describe("Custom fields", () => {
         expect(browseApi.requests.length).toBe(browsesBeforeDrag);
     });
 
-    it("shows only one copy of a field while it is being dragged", async () => {
-        fakeSettingsScreens();
-        const nicknameField = {...companyField, key: "nickname", name: "Nickname"};
-        fakeCustomFields([companyField, nicknameField]);
-        await renderAdminApp("/settings", {boot: customFieldsBoot()});
-
-        const rows = settingsScreen.customFields().getByTestId("custom-field-list-item");
-        await expect(rows).toHaveCount(2);
-
-        // Held open with raw pointer events, because dragAndDrop completes in one step and
-        // the ghost is only visible mid-drag. The row the overlay was copied from stays in
-        // the list carrying the drag's transform, so if it isn't hidden the publisher sees
-        // two of it tracking the cursor.
-        const handle = settingsScreen.customFields().getByLabelText("Reorder Nickname").element();
-        const doc = handle.ownerDocument;
-        const box = handle.getBoundingClientRect();
-        const at = (y: number) => ({bubbles: true, clientX: box.x + 2, clientY: y, isPrimary: true, pointerId: 1, button: 0});
-
-        handle.dispatchEvent(new PointerEvent("pointerdown", at(box.y + 2)));
-        doc.dispatchEvent(new PointerEvent("pointermove", at(box.y - 40)));
-
-        // Exactly one row is marked as the one being dragged, and it is the row the
-        // overlay was copied from — hidden, so the overlay is the only Nickname moving.
-        const hidden = () => [...doc.querySelectorAll("[data-dragging]")];
-        await expect.poll(() => hidden().length).toBe(1);
-        expect(hidden()[0].textContent).toContain("Nickname");
-        expect(getComputedStyle(hidden()[0]).opacity).toBe("0");
-
-        doc.dispatchEvent(new PointerEvent("pointerup", at(box.y - 40)));
-    });
-
     it("leaves the dragged field where it was dropped while the request is in flight", async () => {
         fakeSettingsScreens();
         const nicknameField = {...companyField, key: "nickname", name: "Nickname"};
@@ -372,7 +341,7 @@ describe("Custom fields", () => {
         });
     });
 
-    it("offers dragging only once the whole list is on screen", async () => {
+    it("offers dragging whether the list is collapsed or expanded", async () => {
         fakeSettingsScreens();
         const manyFields = Array.from({length: 7}, (_, index) => ({
             ...companyField,
@@ -382,13 +351,45 @@ describe("Custom fields", () => {
         fakeCustomFields(manyFields);
         await renderAdminApp("/settings", {boot: customFieldsBoot()});
 
-        // Half a list is a bad thing to reorder: the places a field can be dropped are
-        // the rows you can see, so a collapsed list offers no handles at all.
-        await expect(settingsScreen.customFields().getByLabelText(/^Reorder /)).toHaveCount(0);
+        // A collapsed list is still a list: the rows on screen can be put in an order
+        // relative to each other, and the ones behind "Show all" keep their places.
+        await expect(settingsScreen.customFields().getByLabelText(/^Reorder /)).toHaveCount(5);
 
         await settingsScreen.customFields().getByRole("button", {name: "Show all"}).click();
 
         await expect(settingsScreen.customFields().getByLabelText(/^Reorder /)).toHaveCount(7);
+    });
+
+    it("reorders from a collapsed list without disturbing the fields behind Show all", async () => {
+        fakeSettingsScreens();
+        let currentFields = Array.from({length: 7}, (_, index) => ({
+            ...companyField,
+            key: `field-${index}`,
+            name: `Field ${index}`,
+        }));
+        fakeAdminEndpoint("GET", new RegExp("^/members/custom_fields/\\?"), () => ({members_custom_fields: currentFields}));
+        const reorderApi = fakeAdminEndpoint("PUT", "/members/custom_fields/", (request) => {
+            const order = (request.body as {members_custom_fields: {key: string}[]}).members_custom_fields;
+            currentFields = order.map(({key}) => currentFields.find(field => field.key === key)!);
+            return {members_custom_fields: currentFields};
+        });
+        await renderAdminApp("/settings", {boot: customFieldsBoot()});
+
+        const rows = settingsScreen.customFields().getByTestId("custom-field-list-item");
+        await expect(rows).toHaveCount(5);
+
+        await userEvent.dragAndDrop(
+            settingsScreen.customFields().getByLabelText("Reorder Field 2"),
+            rows.first()
+        );
+
+        // The two fields the publisher cannot see are still named, and still last.
+        await expect.poll(() => reorderApi.lastRequest?.body).toEqual({
+            members_custom_fields: [
+                {key: "field-2"}, {key: "field-0"}, {key: "field-1"}, {key: "field-3"},
+                {key: "field-4"}, {key: "field-5"}, {key: "field-6"},
+            ],
+        });
     });
 
     it("does not offer dragging on the archived tab", async () => {

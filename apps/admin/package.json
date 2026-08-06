@@ -24,7 +24,6 @@
         "@codemirror/search": "catalog:",
         "@codemirror/state": "catalog:",
         "@codemirror/theme-one-dark": "catalog:",
-        "@dnd-kit/core": "catalog:",
         "@dnd-kit/sortable": "catalog:",
         "@ebay/nice-modal-react": "catalog:",
         "@sentry/react": "catalog:",
