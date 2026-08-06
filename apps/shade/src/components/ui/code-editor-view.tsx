@@ -51,10 +51,15 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
     ...props
 }, ref) {
     const id = useId();
+    const hintId = `${id}-description`;
     const sizeRef = useRef<HTMLDivElement>(null);
+    const {darkMode, setFocusState} = useFocusContext();
+    const focusedRef = useRef(false);
+    const setFocusStateRef = useRef(setFocusState);
     const [width, setWidth] = useState(100);
     const [resolvedExtensions, setResolvedExtensions] = useState<Extension[]>([]);
-    const {darkMode, setFocusState} = useFocusContext();
+
+    setFocusStateRef.current = setFocusState;
 
     // Keep autocomplete outside the editor and accordion overflow boundaries.
     // CodeMirror can switch fixed tooltips to absolute after its first layout
@@ -85,6 +90,9 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
         if (error) {
             contentAttributes['aria-invalid'] = 'true';
         }
+        if (hint) {
+            contentAttributes['aria-describedby'] = hintId;
+        }
         if (!editable) {
             contentAttributes['aria-disabled'] = 'true';
         }
@@ -94,17 +102,27 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
             tooltips({position: 'fixed', parent: tooltipParent}),
             EditorView.contentAttributes.of(contentAttributes)
         ];
-    }, [ariaLabel, editable, error, id, resolvedExtensions, tooltipParent]);
+    }, [ariaLabel, editable, error, hint, hintId, id, resolvedExtensions, tooltipParent]);
 
     const handleFocus: FocusEventHandler<HTMLDivElement> = (event) => {
         onFocus?.(event);
+        focusedRef.current = true;
         setFocusState(true);
     };
 
     const handleBlur: FocusEventHandler<HTMLDivElement> = (event) => {
         onBlur?.(event);
+        focusedRef.current = false;
         setFocusState(false);
     };
+
+    useEffect(() => {
+        return () => {
+            if (focusedRef.current) {
+                setFocusStateRef.current(false);
+            }
+        };
+    }, []);
 
     useEffect(() => {
         let cancelled = false;
@@ -163,7 +181,7 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
                     onFocus={handleFocus}
                     {...props}
                 />
-                {hint && <FieldDescription className={cn(error && 'text-destructive')}>{hint}</FieldDescription>}
+                {hint && <FieldDescription className={cn(error && 'text-destructive')} id={hintId}>{hint}</FieldDescription>}
             </Stack>
         </>
     );

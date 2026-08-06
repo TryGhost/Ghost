@@ -68,29 +68,47 @@ describe('Tag detail (tagDetailsReact on)', () => {
         await renderAdminApp(`/tags/${t.slug}`, FLAGS);
 
         await page.getByRole('button', {name: /Code injection/}).click();
+        await new Promise((resolve) => {
+            window.setTimeout(resolve, 250);
+        });
         const headerEditor = page.getByRole('textbox', {name: 'Tag header'});
         await headerEditor.fill('<');
+
+        await new Promise((resolve) => {
+            window.setTimeout(resolve, 75);
+        });
 
         await expect.poll(() => {
             const tooltip = document.querySelector<HTMLElement>('.cm-tooltip-autocomplete');
             const tooltipParent = tooltip?.closest<HTMLElement>('.cm-tooltip-parent');
             const container = tooltipParent?.firstElementChild as HTMLElement | null;
+            const editor = headerEditor.element().closest<HTMLElement>('[data-testid="codeinjection-head"]');
 
-            if (!tooltip || !tooltipParent || !container) {
+            if (!tooltip || !tooltipParent || !container || !editor) {
                 return null;
             }
+
+            const tooltipRect = tooltip.getBoundingClientRect();
+            const editorRect = editor.getBoundingClientRect();
 
             return {
                 containerBackground: getComputedStyle(container).backgroundColor,
                 containerHeight: container.getBoundingClientRect().height,
+                escapesEditor: tooltipRect.bottom > editorRect.bottom || tooltipRect.top < editorRect.top,
                 hostParent: tooltipParent.parentElement?.tagName,
-                tooltipVisible: tooltip.getBoundingClientRect().height > 0
+                tooltipOnscreen: tooltipRect.bottom > 0
+                    && tooltipRect.right > 0
+                    && tooltipRect.top < window.innerHeight
+                    && tooltipRect.left < window.innerWidth,
+                tooltipPosition: getComputedStyle(tooltip).position
             };
         }).toEqual({
             containerBackground: 'rgba(0, 0, 0, 0)',
             containerHeight: 0,
+            escapesEditor: true,
             hostParent: 'BODY',
-            tooltipVisible: true
+            tooltipOnscreen: true,
+            tooltipPosition: 'fixed'
         });
     });
 
