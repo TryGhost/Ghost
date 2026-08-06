@@ -64,10 +64,12 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
     // heuristics trip — reliably in Safari under page zoom — and it must carry
     // the `shade` class so token-based tooltip styles resolve outside the app
     // root (`.dark` lives on <html>, so dark mode inherits). Tooltip styling is
-    // global in styles.css; wrapper-scoped classes cannot reach it.
+    // global in styles.css; wrapper-scoped classes cannot reach it — including
+    // the `.cm-tooltip-parent` reset that stops CodeMirror painting this
+    // element over the whole app (see styles.css for why).
     const [tooltipParent] = useState(() => document.createElement('div'));
     useEffect(() => {
-        tooltipParent.className = 'shade pointer-events-none fixed inset-0 z-[60]';
+        tooltipParent.className = 'shade cm-tooltip-parent pointer-events-none fixed inset-0 z-[60]';
         document.body.appendChild(tooltipParent);
         return () => {
             tooltipParent.remove();

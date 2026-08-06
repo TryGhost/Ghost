@@ -119,6 +119,20 @@ html.theme-switching *::after {
     pointer-events: auto;
 }
 
+/* Inside that parent CodeMirror creates its own container element and copies
+   the editor's theme classes onto it (`createContainer` in @codemirror/view).
+   Those classes carry the editor's `&`-level rules — `background-color` from
+   the light/dark theme and `height: 100%` from the `height` prop — so the
+   container inflates to the parent's size and paints opaque over the entire
+   app. Only its top-left corner is read (tooltips are positioned against
+   `container.getBoundingClientRect()`), so collapse it and strip the paint.
+   The parent itself keeps its viewport-sized box: CodeMirror measures that
+   for zoom/transform scale correction. */
+.cm-tooltip-parent > * {
+    height: 0 !important;
+    background: none !important;
+}
+
 .cm-tooltip-autocomplete.cm-tooltip ul li:not([aria-selected]) {
     background: var(--background);
 }

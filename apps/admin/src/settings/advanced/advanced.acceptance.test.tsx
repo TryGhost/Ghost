@@ -39,6 +39,27 @@ describe("Advanced settings", () => {
         ]);
     });
 
+    it("keeps the code editor's tooltip layer from painting over the app", async () => {
+        fakeSettingsScreens();
+        await renderAdminApp("/settings/code-injection");
+
+        await settingsScreen.section("code-injection").getByRole("button", {name: "Open"}).click();
+        const modal = settingsScreen.section("modal-code-injection");
+        await expect.element(modal.getByTestId("header-code").getByRole("textbox")).toBeVisible();
+
+        // CodeEditor hangs a viewport-covering parent off <body> so autocomplete
+        // tooltips escape the editor's overflow-hidden wrapper. CodeMirror
+        // creates its own container inside that parent and copies the editor's
+        // theme classes onto it, which hands the container the editor's
+        // `height: 100%` and opaque background — a white sheet over the whole
+        // app. Shade's `.cm-tooltip-parent` reset collapses it; without that,
+        // the screen is blank with nothing logged to the console.
+        await expect.poll(() => {
+            const container = document.querySelector(".cm-tooltip-parent > *");
+            return container && `${container.getBoundingClientRect().height}/${getComputedStyle(container).backgroundColor}`;
+        }).toBe("0/rgba(0, 0, 0, 0)");
+    });
+
     it("deletes all content after confirmation", async () => {
         fakeSettingsScreens();
         const api = fakeAdminEndpoint("DELETE", "/db/", {});
