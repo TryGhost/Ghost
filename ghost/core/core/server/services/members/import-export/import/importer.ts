@@ -1,5 +1,5 @@
 import moment from 'moment-timezone';
-import buildCompletionEmail from './completion-email';
+import buildCompletionEmail, {buildFailureEmail} from './completion-email';
 import {stripFormulaGuard} from '../csv';
 import {fieldValuesFromCsvRow, type CsvField} from '@tryghost/custom-field-types/csv';
 import type {Knex} from 'knex';
@@ -9,7 +9,6 @@ import type {RowSpool, SpooledRows} from './spool';
 const metrics = require('@tryghost/metrics');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
-const logging = require('@tryghost/logging');
 
 // The members CSV importer, sliced into one concern per method. Two entry points by
 // design: importCSV decides inline-vs-deferred by load, since a large import must not
@@ -93,6 +92,15 @@ export interface EmailNotifications {
     urlFor(type: string, data: unknown, absolute: boolean): string;
 }
 
+// Where a failure goes when the publisher cannot be shown it: a defect that failed rows,
+// cleanup that did not finish after they were already told, or the notification itself
+// failing to send. Everything reported here is an operator concern; the composition root
+// decides where it surfaces.
+//
+// Must not throw. It is called from every failure path, including inside catch and finally
+// blocks whose whole purpose is to stop an error escaping.
+export type FailureReporter = (operation: string, error: unknown, context?: Record<string, unknown>) => void;
+
 // Opaque to the import: planWrite produces it, applyWrite consumes it.
 type CustomFieldPlan = unknown;
 
@@ -117,6 +125,7 @@ interface ImporterDeps {
     gifts: GiftService;
     customFields: CustomFieldsImport;
     email: EmailNotifications;
+    report: FailureReporter;
     addJob: (job: {job: () => Promise<void>; offloaded: boolean; name: string}) => void;
     getTimezone: () => string;
     getInlineThreshold: () => number;
@@ -146,6 +155,10 @@ interface ImportResult {
     imported: number;
     errors: ImportErrorRow[];
     importLabel?: ImportLabel;
+    // How many of the failed rows failed through a defect of ours. Counted so a run that
+    // failed wholly this way is not reported back to the publisher as a problem with the
+    // file they uploaded.
+    defects: number;
 }
 
 // What the domain service returns: an import that ran inline carries its stats and
@@ -183,6 +196,36 @@ function hasExpensiveColumns(rows: MemberImportRow[]): boolean {
     return rows.some(row => EXPENSIVE_COLUMNS.some(column => !!row[column]));
 }
 
+// The runtime types JavaScript raises when the code itself is wrong. Nothing a publisher
+// puts in a CSV produces one. RangeError and SyntaxError are deliberately absent: a cell
+// can reach a date conversion or a parse, so either could describe the row rather than the
+// code, and a row wrongly called a defect loses the publisher their error report.
+const DEFECT_TYPES = [TypeError, ReferenceError];
+
+// A row failure that is unambiguously ours rather than the row's. Everything else -- a
+// Ghost validation error, a Stripe customer that does not exist, a database constraint --
+// describes something about the row, and the error report puts it back in front of the
+// publisher to fix; completion-email humanises the raw Stripe and ORM messages precisely
+// because they are meant to be read.
+//
+// Deliberately narrow, because the two ways of being wrong do not cost the same. Treating
+// a real data problem as a defect takes away the report the publisher needs and tells them
+// their file is fine when it is not. Letting one of our bugs through into that report only
+// shows them a message they cannot act on, which is what happens today. Bookshelf surfaces
+// validation as an array, so a batch qualifies only if every error in it does.
+function isDefect(error: unknown): boolean {
+    const raised: unknown[] = Array.isArray(error) ? error : [error];
+    return raised.length > 0 && raised.every(one => DEFECT_TYPES.some(type => one instanceof type));
+}
+
+// An import that landed nothing and failed only through defects of ours. Their file is not
+// at fault, so the error report would tell them nothing they can use.
+function producedNothingUsable(result: ImportResult): boolean {
+    return result.imported === 0
+        && result.errors.length > 0
+        && result.defects === result.errors.length;
+}
+
 // The routing decision, in terms it can reason about without knowing what a member
 // or a Stripe customer is: an empty or small, cheap file imports inline (an empty
 // one simply imports nothing); a large one, or one carrying expensive columns, is
@@ -201,11 +244,12 @@ class MembersCSVImporter {
     private _gifts: GiftService;
     private _customFields: CustomFieldsImport;
     private _email: EmailNotifications;
+    private _report: FailureReporter;
     private _addJob: (job: {job: () => Promise<void>; offloaded: boolean; name: string}) => void;
     private _getTimezone: () => string;
     private _getInlineThreshold: () => number;
 
-    constructor({knex, readRows, spool, members, tiers, stripe, gifts, customFields, email, addJob, getTimezone, getInlineThreshold}: ImporterDeps) {
+    constructor({knex, readRows, spool, members, tiers, stripe, gifts, customFields, email, report, addJob, getTimezone, getInlineThreshold}: ImporterDeps) {
         this._knex = knex;
         this._readRows = readRows;
         this._spool = spool;
@@ -215,6 +259,7 @@ class MembersCSVImporter {
         this._gifts = gifts;
         this._customFields = customFields;
         this._email = email;
+        this._report = report;
         this._addJob = addJob;
         this._getTimezone = getTimezone;
         this._getInlineThreshold = getInlineThreshold;
@@ -259,36 +304,66 @@ class MembersCSVImporter {
         });
     }
 
-    // Swallows its own errors: a failed import or email must not leave the queued job
-    // rejected, and the verification trigger must still run afterwards either way.
+    // The deferred import, and the one thing the publisher hears about it. The request was
+    // answered long ago, so an email is the only way to reach them and it has to go out
+    // whatever happened. Resolves in every case: the job manager reads a rejected inline
+    // job as a defect in the job itself, and there is no retry behind it either way.
     private async runImportJob(
         spooled: SpooledRows,
         {labelName, extraLabels, emailRecipient}: {labelName: string; extraLabels: Label[]; emailRecipient: string},
         verificationTrigger: VerificationTrigger
     ): Promise<void> {
+        let result: ImportResult | null = null;
         try {
             const spooledRows = await spooled.read();
-            const result = await this.importRows(spooledRows, labelName, extraLabels);
-            const importLabel = result.importLabel ?? null;
-            await this._email.send(buildCompletionEmail({
-                result,
-                recipient: emailRecipient,
-                labelName,
-                importLabel,
-                urlFor: this._email.urlFor
-            }));
-        } catch (e) {
-            logging.error('Error in members import job');
-            logging.error(e);
+            result = await this.importRows(spooledRows, labelName, extraLabels);
+        } catch (error) {
+            // importRows guards everything after its write loop, so a throw reaching here
+            // means the import stopped before any member was written.
+            this._report('run', error);
         } finally {
-            await spooled.remove();
+            // Guarded here rather than trusted to the spool: anything thrown in a finally
+            // replaces whatever the try produced, so an unremovable file would both
+            // silence the publisher and reject the job. try/catch rather than .catch(),
+            // which would still let a synchronous throw past.
+            try {
+                await spooled.remove();
+            } catch (error) {
+                this._report('cleanup', error, {step: 'remove-spooled-rows'});
+            }
         }
+
+        await this.reportOutcome(result, {labelName, emailRecipient});
 
         try {
             await verificationTrigger.testImportThreshold();
-        } catch (e) {
-            logging.error('Error in members import job when testing import threshold');
-            logging.error(e);
+        } catch (error) {
+            this._report('verification', error);
+        }
+    }
+
+    // Tell the publisher how their import went. A run that produced no result, or one
+    // that landed nothing and failed only in ways they cannot act on, is reported as an
+    // import that could not be completed: handing them an error report in either case
+    // would blame a file that was never the problem.
+    private async reportOutcome(
+        result: ImportResult | null,
+        {labelName, emailRecipient}: {labelName: string; emailRecipient: string}
+    ): Promise<void> {
+        try {
+            const email = (result && !producedNothingUsable(result))
+                ? buildCompletionEmail({
+                    result,
+                    recipient: emailRecipient,
+                    labelName,
+                    importLabel: result.importLabel ?? null,
+                    urlFor: this._email.urlFor
+                })
+                : buildFailureEmail({recipient: emailRecipient, urlFor: this._email.urlFor});
+            await this._email.send(email);
+        } catch (error) {
+            // There is no longer anyone to tell but us.
+            this._report('notify', error);
         }
     }
 
@@ -296,6 +371,10 @@ class MembersCSVImporter {
     // created or updated in its own transaction, so one row's failure rolls back only
     // itself; failures are collected, and any Stripe prices an import tier created are
     // archived at the end.
+    //
+    // Everything after the write loop is guarded, so a throw out of this method always
+    // means the import stopped before any member was written. The deferred path relies on
+    // that to tell an import that never ran from one that ran and then failed to tidy up.
     private async importRows(rows: MemberImportRow[], labelName: string, extraLabels: Label[]): Promise<ImportResult> {
         const importLabel: Label = {name: labelName};
         const globalLabels: Label[] = [importLabel, ...extraLabels];
@@ -314,6 +393,8 @@ class MembersCSVImporter {
             .filter(label => label.name);
 
         let imported = 0;
+        let defects = 0;
+        let firstDefect: unknown;
         const importErrors: ImportErrorRow[] = [];
         for (const row of rows) {
             let trx: Knex.Transaction | undefined;
@@ -437,24 +518,64 @@ class MembersCSVImporter {
                     .filter((message): message is string => typeof message === 'string');
                 const errorMessage = reasons.join('\n');
                 // trx is unset if the row failed before the transaction opened (a bad
-                // custom field value or gift combination).
+                // custom field value or gift combination). A rejected rollback must not
+                // escape: rows before this one are already committed, and a throw leaving
+                // here would be read as an import that never wrote anything.
                 if (trx) {
-                    await trx.rollback();
+                    try {
+                        await trx.rollback();
+                    } catch (rollbackError) {
+                        this._report('cleanup', rollbackError, {step: 'roll-back-row'});
+                    }
+                }
+                // The row is collected either way, so one defect cannot stop the rest of
+                // the file importing. Counted rather than reported one by one: whatever
+                // causes one defect causes every one, so a report per row would be
+                // thousands of copies of the same exception.
+                if (isDefect(error)) {
+                    firstDefect ??= error;
+                    defects += 1;
                 }
                 importErrors.push({...row, error: errorMessage, errors: reasons});
             }
         }
 
-        await Promise.all(archivableStripePriceIds.map(id => this._stripe.archivePrice(id)));
-        metrics.metric('members-import', {imported, errors: importErrors.length, value: Date.now() - performStart});
+        // One report per run, once the extent is known. How widespread a defect was is the
+        // part worth alerting on, and reporting it here rather than per row keeps a single
+        // exception from arriving thousands of times over.
+        if (defects > 0) {
+            this._report('row', firstDefect, {failedRows: defects, totalRows: rows.length});
+        }
+
+        // From here on every member is already written, so nothing below can change what
+        // was imported. Each step is guarded rather than allowed to throw: letting a
+        // Stripe hiccup or a failed lookup retract a completed import would misreport it.
+        try {
+            await Promise.all(archivableStripePriceIds.map(id => this._stripe.archivePrice(id)));
+        } catch (error) {
+            this._report('cleanup', error, {step: 'archive-stripe-prices'});
+        }
+
+        try {
+            metrics.metric('members-import', {imported, errors: importErrors.length, value: Date.now() - performStart});
+        } catch (error) {
+            this._report('cleanup', error, {step: 'record-metrics'});
+        }
 
         if (imported > 0) {
-            // The import label exists now that members carry it, so fetch it to report.
-            // Guarded against a null lookup in case a row is ever counted without it.
-            const importLabelModel = await this._members.getImportLabel(labelName);
-            return {imported, errors: importErrors, importLabel: importLabelModel?.toJSON()};
+            try {
+                // The import label exists now that members carry it, so fetch it to
+                // report. Guarded against a null lookup in case a row is ever counted
+                // without it.
+                const importLabelModel = await this._members.getImportLabel(labelName);
+                return {imported, errors: importErrors, defects, importLabel: importLabelModel?.toJSON()};
+            } catch (error) {
+                // The label only links the email at the imported members. The import
+                // itself is done, so report it and send the email without the link.
+                this._report('cleanup', error, {step: 'read-import-label'});
+            }
         }
-        return {imported: 0, errors: importErrors};
+        return {imported, errors: importErrors, defects};
     }
 }
 

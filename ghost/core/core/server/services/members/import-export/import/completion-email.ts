@@ -11,12 +11,19 @@ interface ImportSummary {
     errors: ImportErrorRow[];
 }
 
+type UrlFor = (type: string, data: unknown, absolute: boolean) => string;
+
 interface CompletionEmailInput {
     result: ImportSummary;
     recipient: string;
     labelName: string;
     importLabel: ImportLabel | null;
-    urlFor: (type: string, data: unknown, absolute: boolean) => string;
+    urlFor: UrlFor;
+}
+
+interface FailureEmailInput {
+    recipient: string;
+    urlFor: UrlFor;
 }
 
 interface EmailPayload {
@@ -118,6 +125,23 @@ function buildErrorReport(errors: ImportErrorRow[]): string {
     return serialize(rows, {columns});
 }
 
+// Compose the email for an import that produced no result the publisher can use: it
+// stopped before writing anything, or it failed only in ways they cannot act on. Carries
+// no error report, because there is nothing in their file to fix and an attached CSV
+// would say there was.
+export function buildFailureEmail({recipient, urlFor}: FailureEmailInput): EmailPayload {
+    const siteUrl = new URL(urlFor('home', null, true));
+    const membersUrl = new URL('members', urlFor('admin', null, true));
+
+    return {
+        to: recipient,
+        subject: emailTemplate.importHeading(null),
+        html: emailTemplate({result: null, siteUrl, membersUrl, emailRecipient: recipient}),
+        forceTextContent: true,
+        attachments: []
+    };
+}
+
 // Compose the completion email for a finished import: the summary and its links,
 // plus the attached error report. Owns how the outcome is presented, so the
 // importer yields only the result and never touches email or CSV formatting.
@@ -129,7 +153,7 @@ export default function buildCompletionEmail({result, recipient, labelName, impo
     }
 
     const html = emailTemplate({result, siteUrl, membersUrl, emailRecipient: recipient, importLabel});
-    const subject = result.imported > 0 ? 'Your member import is complete' : 'Your member import was unsuccessful';
+    const subject = emailTemplate.importHeading(result);
 
     return {
         to: recipient,

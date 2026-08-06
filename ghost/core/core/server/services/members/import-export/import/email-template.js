@@ -3,13 +3,33 @@ function formatNumber(number) {
 }
 
 const iff = (cond, yes, no) => (cond ? yes : no);
-module.exports = ({result, siteUrl, membersUrl, emailRecipient}) => `
+
+// How an import's outcome is put into words, in one place. The subject line and the
+// heading inside the email say the same thing, so they are derived from the same call
+// rather than written out twice and left to drift apart.
+const importHeading = (result) => {
+    if (!result) {
+        return 'Your member import could not be completed';
+    }
+    return iff(result.imported > 0, 'Your member import is complete', 'Your member import was unsuccessful');
+};
+
+// A null result is an import that never produced one: it stopped before writing anything,
+// or everything that failed was ours rather than the publisher's. Either way there is
+// nothing to report row by row, so the email only says the import did not run.
+module.exports = ({result, siteUrl, membersUrl, emailRecipient}) => {
+    const didNotRun = !result;
+    const imported = didNotRun ? 0 : result.imported;
+    const errorCount = didNotRun ? 0 : result.errors.length;
+    const heading = importHeading(result);
+
+    return `
 <!doctype html>
 <html>
   <head>
     <meta name="viewport" content="width=device-width">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>Your member import is complete</title>
+    <title>${heading}</title>
     <style>
     /* -------------------------------------
         RESPONSIVE AND MOBILE FRIENDLY STYLES
@@ -115,7 +135,7 @@ module.exports = ({result, siteUrl, membersUrl, emailRecipient}) => `
           <div class="content" style="box-sizing: border-box; display: block; Margin: 0 auto; max-width: 600px; padding: 30px 20px;">
 
             <!-- START CENTERED CONTAINER -->
-            <span class="preheader" style="color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;">Your member import is complete</span>
+            <span class="preheader" style="color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;">${heading}</span>
             <table class="main" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; background: #ffffff; border-radius: 8px;">
 
               <!-- START MAIN CONTENT AREA -->
@@ -127,32 +147,39 @@ module.exports = ({result, siteUrl, membersUrl, emailRecipient}) => `
                       </tr>
                       <tr>
                           <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; vertical-align: top;">
-                            <p class="title" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 21px; color: #3A464C; font-weight: normal; line-height: 25px; margin-bottom: 30px; margin-top: 50px; font-weight: 600; color: #15212A;">${iff(result.imported > 0, `Your member import is complete`, `Your member import was unsuccessful`)}</p>
+                            <p class="title" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 21px; color: #3A464C; font-weight: normal; line-height: 25px; margin-bottom: 30px; margin-top: 50px; font-weight: 600; color: #15212A;">${heading}</p>
                           </td>
                       </tr>
-                    ${iff(result.imported === 0 && result.errors.length === 0, `
+                    ${iff(didNotRun, `
+                    <tr>
+                      <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; padding-bottom: 16px;">
+                          <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 0px;">Something went wrong on our end and your import didn't run. No members were added or changed, and there's nothing wrong with your file. Please try uploading it again.</p>
+                      </td>
+                    </tr>
+                    `, ``)}
+                    ${iff(!didNotRun && imported === 0 && errorCount === 0, `
                     <tr>
                       <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; padding-bottom: 16px;">
                           <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 0px;">No members were added.</p>
                       </td>
                     </tr>
                     `, ``)}
-                    ${iff(result.imported > 0, `
+                    ${iff(imported > 0, `
                     <tr>
                       <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; padding-bottom: 16px;">
-                          <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 0px;">A total of <strong style="font-weight: 600;">${formatNumber(result.imported)}</strong> ${iff(result.imported === 1, 'person', 'people')} were successfully added or updated in your list of members, and now have access to your site.</p>
+                          <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 0px;">A total of <strong style="font-weight: 600;">${formatNumber(imported)}</strong> ${iff(imported === 1, 'person', 'people')} were successfully added or updated in your list of members, and now have access to your site.</p>
                       </td>
                     </tr>`, ``)}
-                    ${iff(result.errors.length > 0, `
+                    ${iff(errorCount > 0, `
                     <tr>
                       <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; padding-bottom: 16px;">
                         <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 0px;">
-                        ${iff(result.imported === 0, `No members were added.`, `<strong style="font-weight: 600;">${formatNumber(result.errors.length)}</strong> ${iff(result.errors.length === 1, `member was`, `members were`)} skipped due to errors.`)} There's a validated CSV file attached to this email with the list of errors so that you can fix them and re-upload the CSV to complete the import.</p>
+                        ${iff(imported === 0, `No members were added.`, `<strong style="font-weight: 600;">${formatNumber(errorCount)}</strong> ${iff(errorCount === 1, `member was`, `members were`)} skipped due to errors.`)} There's a validated CSV file attached to this email with the list of errors so that you can fix them and re-upload the CSV to complete the import.</p>
                       </td>
                     </tr>`, '')}
                     <tr>
                       <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; padding-bottom: 12px; padding-top: 16px;">
-                        <a href="${membersUrl.href}" target="_blank" style="display: inline-block; color: #ffffff; background-color: #15212A; border: solid 1px #15212A; border-radius: 5px; box-sizing: border-box; cursor: pointer; text-decoration: none; font-size: 16px; font-weight: normal; margin: 0; padding: 9px 22px 10px; border-color: #15212A;">${iff(result.imported > 0, `View members`, `Try again`)}</a>
+                        <a href="${membersUrl.href}" target="_blank" style="display: inline-block; color: #ffffff; background-color: #15212A; border: solid 1px #15212A; border-radius: 5px; box-sizing: border-box; cursor: pointer; text-decoration: none; font-size: 16px; font-weight: normal; margin: 0; padding: 9px 22px 10px; border-color: #15212A;">${iff(imported > 0, `View members`, `Try again`)}</a>
                       </td>
                     </tr>
                   </table>
@@ -179,4 +206,7 @@ module.exports = ({result, siteUrl, membersUrl, emailRecipient}) => `
   </body>
 </html>
 `;
+};
+
+module.exports.importHeading = importHeading;
 

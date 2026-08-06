@@ -1,6 +1,6 @@
 import type {Knex} from 'knex';
 import type {CsvField} from '@tryghost/custom-field-types/csv';
-import MembersCSVImporter, {type MembersRepository, type GiftService, type EmailNotifications, type Tier, type CustomFieldsImport} from './import/importer';
+import MembersCSVImporter, {type MembersRepository, type GiftService, type EmailNotifications, type Tier, type CustomFieldsImport, type FailureReporter} from './import/importer';
 import readMemberRows from './import/reader';
 import {createRowSpool} from './import/spool';
 import MembersCSVExporter, {type ExportOptions, type CustomFieldDefinition} from './export/exporter';
@@ -9,6 +9,8 @@ const MembersCSVImporterStripeUtils = require('./import/stripe-utils');
 const db = require('../../../data/db');
 const models = require('../../../models');
 const labs = require('../../../../shared/labs');
+const logging = require('@tryghost/logging');
+const sentry = require('../../../../shared/sentry');
 
 // The raw collaborators the members service hands the import composition root, before
 // they are adapted into the ports the importer declares. The members repository is the
@@ -90,6 +92,24 @@ export function makeImporter(deps: ImporterServices) {
         applyWrite: (memberId, plan, executor) => deps.customFields.values.applyWrite(memberId, plan, {executor})
     };
 
+    // A deferred import runs after its request is answered, so a failure it cannot show
+    // the publisher has nowhere to go but here. Inline jobs never reach the job manager's
+    // Sentry handler (that is wired to the offloaded worker path), so the import reports
+    // itself rather than relying on a throw being noticed somewhere upstream.
+    const report: FailureReporter = (operation, error, context = {}) => {
+        try {
+            logging.error({event: {name: `members.import-${operation}.error`}, err: error, ...context}, 'Members import failure');
+            // The context carries how widespread a failure was, which is the part that
+            // decides whether it needs chasing, so it has to reach the error tracker and
+            // not only the log line.
+            sentry.captureException(error, {extra: context});
+        } catch {
+            // The import calls this from the catch and finally blocks that exist to stop an
+            // error escaping, so reporting cannot itself be what throws one. A failure to
+            // report leaves nowhere left to report it.
+        }
+    };
+
     return new MembersCSVImporter({
         knex: deps.knex,
         readRows: readMemberRows,
@@ -106,6 +126,7 @@ export function makeImporter(deps: ImporterServices) {
         gifts,
         customFields,
         email,
+        report,
         addJob: deps.addJob,
         getTimezone: deps.getTimezone,
         getInlineThreshold: deps.getInlineThreshold
