@@ -43,6 +43,46 @@ describe('Generators', function () {
         assert.equal(generator.maxPerPage, 50000);
     });
 
+    describe('fn: reset', function () {
+        const addPostAt = (gen, slug, updatedAt) => gen.addUrl(
+            `http://my-ghost-blog.com/${slug}/`,
+            testUtils.DataGenerator.forKnex.createPost({
+                slug,
+                updated_at: updatedAt,
+                created_at: updatedAt,
+                published_at: updatedAt
+            })
+        );
+
+        it('clears lastModified so a rebuild cannot report a removed resource', function () {
+            generator = new PostGenerator();
+
+            addPostAt(generator, 'older', '2024-01-01T00:00:00.000Z');
+            addPostAt(generator, 'newer', '2024-06-01T00:00:00.000Z');
+            assert.equal(generator.lastModified.toISOString(), '2024-06-01T00:00:00.000Z');
+
+            // The index rebuild resets every generator and replays only the
+            // resources that are still routable — here "newer" was deleted.
+            generator.reset();
+            addPostAt(generator, 'older', '2024-01-01T00:00:00.000Z');
+
+            assert.equal(
+                generator.lastModified.toISOString(),
+                '2024-01-01T00:00:00.000Z',
+                'lastModified must fall back to the newest surviving resource'
+            );
+        });
+
+        it('leaves lastModified at zero when nothing is replayed', function () {
+            generator = new PostGenerator();
+
+            addPostAt(generator, 'only', '2024-06-01T00:00:00.000Z');
+            generator.reset();
+
+            assert.equal(generator.lastModified, 0);
+        });
+    });
+
     describe('IndexGenerator', function () {
         beforeEach(function () {
             generator = new IndexGenerator({
@@ -80,6 +120,27 @@ describe('Generators', function () {
                 assert.doesNotMatch(xml, /sitemap-posts.xml/);
                 assert.doesNotMatch(xml, /sitemap-pages.xml/);
                 assert.doesNotMatch(xml, /sitemap-authors.xml/);
+            });
+
+            it('reports the newest surviving resource after a rebuild', function () {
+                const addPostAt = (slug, updatedAt) => generator.types.posts.addUrl(
+                    `http://my-ghost-blog.com/${slug}/`,
+                    testUtils.DataGenerator.forKnex.createPost({
+                        slug,
+                        updated_at: updatedAt,
+                        created_at: updatedAt,
+                        published_at: updatedAt
+                    })
+                );
+
+                addPostAt('older', '2024-01-01T00:00:00.000Z');
+                addPostAt('newer', '2024-06-01T00:00:00.000Z');
+                assert.match(generator.getXml(), /<lastmod>2024-06-01T00:00:00.000Z<\/lastmod>/);
+
+                generator.types.posts.reset();
+                addPostAt('older', '2024-01-01T00:00:00.000Z');
+
+                assert.match(generator.getXml(), /<lastmod>2024-01-01T00:00:00.000Z<\/lastmod>/);
             });
 
             it('creates multiple pages when there are too many posts', function () {
