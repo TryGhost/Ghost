@@ -19,9 +19,6 @@ function createService() {
     const config = {isPrivacyDisabled: sinon.stub()};
     config.isPrivacyDisabled.withArgs('useIndexNow').returns(false);
 
-    const labs = {isSet: sinon.stub()};
-    labs.isSet.withArgs('indexnow').returns(true);
-
     const urlService = {
         getUrlForResource: sinon.stub().returns('https://example.com/my-post/')
     };
@@ -36,7 +33,7 @@ function createService() {
     // Chainable so `events.removeListener(...).on(...)` works.
     const events = {removeListener: sinon.stub().returnsThis(), on: sinon.stub().returnsThis()};
 
-    const deps = {settingsCache, config, labs, urlService, urlUtils, request, logging, events};
+    const deps = {settingsCache, config, urlService, urlUtils, request, logging, events};
     const service = new IndexNowPingService(deps);
 
     return {service, deps};
@@ -321,20 +318,6 @@ describe('IndexNow', function () {
             const testPage = _.clone(testUtils.DataGenerator.Content.posts[5]);
 
             await service.ping(testPage);
-
-            assert.equal(pingRequest.isDone(), false);
-        });
-
-        it('when labs.indexnow is false should not execute ping', async function () {
-            const {service, deps} = createService();
-            deps.labs.isSet.withArgs('indexnow').returns(false);
-
-            const pingRequest = nock('https://api.indexnow.org')
-                .get(/\/indexnow/)
-                .reply(200);
-            const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
-
-            await service.ping(testPost);
 
             assert.equal(pingRequest.isDone(), false);
         });

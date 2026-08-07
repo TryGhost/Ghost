@@ -34,7 +34,6 @@ const GA_FEATURES = [
     'commentsPinning',
     'featurebaseFeedback',
     'dangerZoneResetAuth',
-    'indexnow',
     'llmsTxt'
 ];
 
