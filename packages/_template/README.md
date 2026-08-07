@@ -8,10 +8,10 @@ maintenance rules.
 
 ## Develop
 
-This is a workspace package in the Ghost monorepo. From the repo root:
+This is a workspace package in the Ghost monorepo. From the package directory:
 
 ```bash
-pnpm --filter @tryghost/{{NAME}} build   # compile to build/ with tsc (ESM)
-pnpm --filter @tryghost/{{NAME}} test    # type-check + unit tests
-pnpm --filter @tryghost/{{NAME}} lint    # lint source and tests
+pnpm build   # compile to build/ with tsc (ESM)
+pnpm test    # type-check + unit tests
+pnpm lint    # lint source and tests
 ```
