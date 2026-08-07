@@ -2,6 +2,7 @@
   "name": "@tryghost/parse-email-address",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/TryGhost/Ghost.git",
@@ -19,10 +20,9 @@
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "scripts": {
-    "build": "pnpm build:tsc",
-    "build:tsc": "tsc",
+    "build": "tsc",
     "test:unit": "NODE_ENV=testing vitest run --coverage",
-    "test:types": "tsc --noEmit",
+    "test:types": "tsc --noEmit -p test/tsconfig.json",
     "test": "pnpm run '/^test:/'",
     "lint:code": "eslint src/ --cache",
     "lint:test": "eslint test/ --cache",
@@ -31,9 +31,6 @@
   "files": [
     "build"
   ],
-  "publishConfig": {
-    "access": "public"
-  },
   "devDependencies": {
     "@internal/cfg-eslint": "workspace:*",
     "@internal/cfg-typescript": "workspace:*",

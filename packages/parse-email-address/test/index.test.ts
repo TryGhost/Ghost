@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {describe, it} from 'vitest';
-import {parseEmailAddress} from '../src';
+import {parseEmailAddress} from '../src/index.ts';
 
 describe('parseEmailAddress', function () {
     it('returns null for invalid email addresses', function () {
