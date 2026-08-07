@@ -8,6 +8,9 @@ import NewsletterEmailEventStorage from '../email-service/newsletter-email-event
 // @ts-expect-error This module lacks type definitions.
 import EmailEventProcessor from '../email-service/email-event-processor';
 // @ts-expect-error This module lacks type definitions.
+import EmailAnalyticsWebhookController from './email-analytics-webhook-controller';
+import adapterManager from '../adapter-manager';
+// @ts-expect-error This module lacks type definitions.
 import db from '../../data/db';
 import membersService from '../members';
 // @ts-expect-error This module lacks type definitions.
@@ -34,6 +37,10 @@ export const automations = new EmailAnalyticsServiceWrapper({
     logName: 'automations',
 });
 
+// Populated by init(). Exported separately so the webhook route (registered before
+// init() runs) can bind a stable reference and still reach the real processor.
+export let webhookController: InstanceType<typeof EmailAnalyticsWebhookController>;
+
 export const init = () => {
     const newsletterEmailEventProcessor = new EmailEventProcessor({
         domainEvents,
@@ -50,6 +57,15 @@ export const init = () => {
             prometheusClient
         }),
         prometheusClient
+    });
+
+    // Additive to the poll loop below: only reachable if the configured email adapter
+    // implements verifyWebhookRequest/parseWebhookEvents (see email-provider-base.js).
+    // Suppression and analytics converge here on the same EmailEventProcessor the
+    // Mailgun poll loop uses. See https://github.com/TryGhost/Ghost/issues/29828.
+    webhookController = new EmailAnalyticsWebhookController({
+        adapterManager,
+        emailEventProcessor: newsletterEmailEventProcessor
     });
 
     const newsletterMailgunTags = ['bulk-email'];

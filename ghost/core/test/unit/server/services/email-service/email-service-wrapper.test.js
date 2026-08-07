@@ -33,3 +33,49 @@ describe('EmailServiceWrapper getPostUrl', function () {
         assert.equal(forPost.getCall(0).args[3], 'posts');
     });
 });
+
+describe('EmailServiceWrapper getEmailProvider', function () {
+    it('uses Mailgun when no email adapter is configured', function () {
+        const mailgunClient = {};
+        const errorHandler = () => {};
+        const adapterManager = {getAdapter: () => assert.fail('adapter manager should not be called')};
+
+        class MailgunEmailProvider {
+            constructor(options) {
+                this.options = options;
+            }
+        }
+
+        const config = {get: () => undefined};
+        const provider = new EmailServiceWrapper().getEmailProvider({
+            config,
+            adapterManager,
+            MailgunEmailProvider,
+            mailgunClient,
+            errorHandler
+        });
+
+        assert.ok(provider instanceof MailgunEmailProvider);
+        assert.deepEqual(provider.options, {mailgunClient, config, errorHandler});
+    });
+
+    it('resolves the configured email adapter instead of Mailgun', function () {
+        const adapterInstance = {send: async () => {}};
+        const adapterManager = {
+            getAdapter(name) {
+                assert.equal(name, 'email');
+                return adapterInstance;
+            }
+        };
+
+        const resolvedProvider = new EmailServiceWrapper().getEmailProvider({
+            config: {get: () => ({active: 'ses'})},
+            adapterManager,
+            MailgunEmailProvider: class MailgunEmailProvider {},
+            mailgunClient: {},
+            errorHandler: () => {}
+        });
+
+        assert.equal(resolvedProvider, adapterInstance);
+    });
+});
