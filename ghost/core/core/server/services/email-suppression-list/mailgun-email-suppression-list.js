@@ -117,10 +117,12 @@ class MailgunEmailSuppressionList extends AbstractEmailSuppressionList {
     async init() {
         this.Suppression = models.Suppression;
         const handleEvent = reason => async (event) => {
-            if (reason === 'bounce') {
-                if (!Number.isInteger(event.error?.code)) {
-                    return;
-                }
+            // 605/607 are Mailgun-specific "permanent failure" codes. Only apply that
+            // filter when the code is actually Mailgun-shaped - a non-Mailgun adapter's
+            // EmailBouncedEvent (dispatched only for permanent failures, see
+            // email-event-processor.js#handlePermanentFailed) is already a trustworthy
+            // "suppress this" signal on its own.
+            if (reason === 'bounce' && Number.isInteger(event.error?.code)) {
                 if (event.error.code !== 607 && event.error.code !== 605) {
                     return;
                 }

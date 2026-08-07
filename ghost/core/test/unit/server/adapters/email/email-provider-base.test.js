@@ -6,6 +6,10 @@ describe('UNIT: EmailProviderBase', function () {
         const provider = new EmailProviderBase();
 
         assert.deepEqual(provider.requiredFns, ['send', 'getMaximumRecipients', 'getTargetDeliveryWindow']);
+
+        assert.throws(() => {
+            provider.requiredFns = [];
+        });
     });
 
     it('throws on send() when not implemented', async function () {

@@ -37,8 +37,11 @@ export const automations = new EmailAnalyticsServiceWrapper({
     logName: 'automations',
 });
 
-// Populated by init(). Exported separately so the webhook route (registered before
-// init() runs) can bind a stable reference and still reach the real processor.
+// Populated by init(). Exported as a mutable binding (rather than assigned in a
+// constructor, unlike stripeService.webhookController) so the route in web/members/app.js
+// can bind a lazy reference at require-time and still reach the real processor once
+// init() runs - normal boot order (initServices() before rootApp.use(ghostApp)) makes
+// this safe, but the route guards for undefined anyway in case that order ever changes.
 export let webhookController: InstanceType<typeof EmailAnalyticsWebhookController>;
 
 export const init = () => {

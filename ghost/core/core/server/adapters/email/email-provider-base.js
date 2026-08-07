@@ -6,9 +6,14 @@ const errors = require('@tryghost/errors');
  * @typedef EmailAnalyticsEvent
  * @property {'delivered'|'opened'|'permanent_failed'|'temporary_failed'|'unsubscribed'|'complained'} type
  * @property {string} email
- * @property {string} [providerId] The provider's message/send id for this recipient, if known
+ * @property {string} [emailId] Ghost's own Email id for this send, if the adapter can echo it
+ *     back (e.g. via provider-side message tags/metadata set at send time). Takes priority over
+ *     `providerId` and skips the `email_batches` lookup entirely - required for providers that
+ *     report a per-recipient message id rather than a per-batch one.
+ * @property {string} [providerId] The provider's message/send id for the batch, if known. Only
+ *     resolvable when it matches a `email_batches.provider_id` row Ghost recorded at send time.
  * @property {Date} timestamp
- * @property {{code: number|string, message: string} | null} [error] Present for permanent_failed/temporary_failed
+ * @property {{code: number|string, enhancedCode?: number|string, message: string} | null} [error] Present for permanent_failed/temporary_failed
  */
 
 class EmailProviderBase {
