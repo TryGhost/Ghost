@@ -5,8 +5,6 @@ Extract the local and domain parts of email address strings.
 ## Usage
 
 ```javascript
-import {parseEmailAddress} from '@tryghost/parse-email-address';
-
 parseEmailAddress('foo@example.com');
 // => {local: 'foo', domain: 'example.com'}
 
@@ -26,11 +24,13 @@ parseEmailAddress('foo@中文.example');
 
 ## Develop
 
-This is a private workspace package in the Ghost monorepo. From the repository
-root:
+This is a monorepo package.
 
-```bash
-pnpm --filter @tryghost/parse-email-address build
-pnpm --filter @tryghost/parse-email-address test
-pnpm --filter @tryghost/parse-email-address lint
-```
+Follow the instructions for the top-level repo.
+1. `git clone` this repo & `cd` into it as usual
+2. Run `pnpm` to install top-level dependencies.
+
+## Test
+
+- `pnpm lint` run just eslint
+- `pnpm test` run lint and tests
