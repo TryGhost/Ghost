@@ -1,5 +1,45 @@
 const logging = require('@tryghost/logging');
 const config = require('../../../shared/config');
+const EmailProviderBase = require('../../adapters/email/email-provider-base');
+
+// A bound on concurrent DB work per request, not a throughput target. Existing handlers
+// (handlePermanentFailed/handleComplained) each sleep 70ms specifically to keep the knex
+// pool from running dry (see email-event-processor.js) - that only works if something
+// bounds how many are in flight at once.
+const EVENT_CONCURRENCY = 5;
+
+// A generated batchGetRecipients() query grows one `orWhere` per event, and an
+// unbounded Promise.all defeats the per-event pool throttle above regardless of
+// concurrency limiting downstream. Reject rather than silently truncate - the caller
+// (an SNS/webhook provider) is expected to send smaller batches on retry.
+const MAX_EVENTS_PER_REQUEST = 500;
+
+/**
+ * Runs `fn` over `items` with at most `limit` in flight at a time. `Promise.all` over an
+ * unbounded batch would open one DB connection/transaction per event; a real SNS/SES
+ * batch is easily large enough to exhaust the knex pool that way.
+ *
+ * @template T, R
+ * @param {T[]} items
+ * @param {number} limit
+ * @param {(item: T) => Promise<R>} fn
+ * @returns {Promise<R[]>}
+ */
+async function mapWithConcurrency(items, limit, fn) {
+    const results = new Array(items.length);
+    let cursor = 0;
+
+    async function worker() {
+        while (cursor < items.length) {
+            const index = cursor;
+            cursor += 1;
+            results[index] = await fn(items[index]);
+        }
+    }
+
+    await Promise.all(Array.from({length: Math.min(limit, items.length)}, worker));
+    return results;
+}
 
 /**
  * Additive webhook ingestion path for email analytics/suppression, alongside the
@@ -52,7 +92,7 @@ class EmailAnalyticsWebhookController {
             return res.end();
         }
 
-        if (typeof adapter.verifyWebhookRequest !== 'function' || typeof adapter.parseWebhookEvents !== 'function') {
+        if (!this.supportsWebhooks(adapter)) {
             res.writeHead(501);
             return res.end();
         }
@@ -96,6 +136,12 @@ class EmailAnalyticsWebhookController {
             logging.warn(`[EmailAnalyticsWebhook] Discarded ${events.length - validEvents.length} malformed event(s) out of ${events.length}`);
         }
 
+        if (validEvents.length > MAX_EVENTS_PER_REQUEST) {
+            logging.warn(`[EmailAnalyticsWebhook] Rejecting batch of ${validEvents.length} events - exceeds the ${MAX_EVENTS_PER_REQUEST}-per-request cap`);
+            res.writeHead(413);
+            return res.end();
+        }
+
         // Pre-resolve every recipient in one batched lookup instead of one query per
         // event - the sequential per-event path each of these could otherwise take
         // (email_batches lookup + email_recipients lookup) is what makes a real-sized
@@ -104,36 +150,70 @@ class EmailAnalyticsWebhookController {
             validEvents.map(event => ({email: event.email, emailId: event.emailId, providerId: event.providerId}))
         );
 
-        const results = await Promise.all(validEvents.map(event => this.processEvent(event, recipientCache)));
+        const results = await mapWithConcurrency(
+            validEvents,
+            EVENT_CONCURRENCY,
+            event => this.processEvent(event, recipientCache)
+        );
 
+        let flushFailed = false;
         try {
             await this.#emailEventProcessor.flushBatchedUpdates();
         } catch (err) {
             logging.error(err, '[EmailAnalyticsWebhook] Failed to flush batched updates');
-            results.push(false);
+            flushFailed = true;
         }
 
         // A thrown error while processing an event (DB outage, pool exhaustion) is
         // retryable, so a non-2xx here lets the provider redeliver rather than silently
-        // dropping analytics/suppression data with no cursor to recover it from.
-        const hadFailure = results.some(succeeded => succeeded === false);
+        // dropping analytics/suppression data with no cursor to recover it from. This is
+        // whole-batch, at-least-once semantics: a retry re-runs every event in the
+        // batch, including ones that already succeeded.
+        const hadFailure = flushFailed || results.some(succeeded => succeeded === false);
         res.writeHead(hadFailure ? 500 : 200);
         res.end();
     }
 
     /**
+     * An adapter "supports webhooks" only if it overrides both methods - the base class
+     * gives every adapter a real (non-throwing) implementation of each so that adapters
+     * which don't care about webhooks don't have to know these methods exist, but that
+     * means a plain `typeof adapter.verifyWebhookRequest === 'function'` check is always
+     * true and can never signal "not supported".
+     *
+     * @param {import('../adapters/email/email-provider-base')} adapter
+     * @returns {boolean}
+     */
+    supportsWebhooks(adapter) {
+        return typeof adapter.verifyWebhookRequest === 'function'
+            && typeof adapter.parseWebhookEvents === 'function'
+            && adapter.verifyWebhookRequest !== EmailProviderBase.prototype.verifyWebhookRequest
+            && adapter.parseWebhookEvents !== EmailProviderBase.prototype.parseWebhookEvents;
+    }
+
+    /**
      * Boundary validation: a malformed event should not reach the processor and produce
-     * confusing downstream failures (e.g. comparing a Date to a string timestamp).
+     * confusing downstream failures (e.g. an unparseable timestamp being written as the
+     * literal string "Invalid date").
      *
      * @param {import('../adapters/email/email-provider-base').EmailAnalyticsEvent} event
      * @returns {boolean}
      */
     isValidEvent(event) {
-        return Boolean(event)
-            && typeof event === 'object'
-            && typeof event.email === 'string'
-            && event.email.length > 0
-            && Boolean(event.timestamp);
+        if (!event || typeof event !== 'object') {
+            return false;
+        }
+        if (typeof event.email !== 'string' || event.email.length === 0) {
+            return false;
+        }
+        if (!event.timestamp) {
+            return false;
+        }
+        const timestamp = event.timestamp instanceof Date ? event.timestamp : new Date(event.timestamp);
+        if (Number.isNaN(timestamp.getTime())) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -158,7 +238,7 @@ class EmailAnalyticsWebhookController {
                 break;
             case 'permanent_failed':
                 recipient = await this.#emailEventProcessor.handlePermanentFailed(identification, {
-                    id: event.providerId, timestamp, error: event.error ?? null
+                    id: event.providerId, timestamp, error: event.error ?? null, isWebhookSourced: true
                 }, recipientCache);
                 break;
             case 'temporary_failed':

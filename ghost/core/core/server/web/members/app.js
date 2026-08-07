@@ -7,7 +7,6 @@ const stripeService = require('../../services/stripe');
 const emailAnalyticsService = require('../../services/email-analytics');
 const audienceFeedbackService = require('../../services/audience-feedback');
 const middleware = membersService.middleware;
-const spamPrevention = require('../shared/middleware/api/spam-prevention');
 const shared = require('../shared');
 const errorHandler = require('@tryghost/mw-error-handler');
 const config = require('../../../shared/config');
@@ -45,7 +44,7 @@ module.exports = function setupMembersApp() {
     // to verify a signature before Ghost parses anything. Accepts any content-type - SNS
     // posts `text/plain`, not `application/json`, and the adapter (not Ghost) owns
     // parsing provider-specific payloads.
-    membersApp.post('/webhooks/email-analytics', spamPrevention.emailAnalyticsWebhook().prevent, bodyParser.raw({type: () => true, limit: '5mb'}), function lazyEmailAnalyticsWebhookMw(req, res, next) {
+    membersApp.post('/webhooks/email-analytics', shared.middleware.brute.emailAnalyticsWebhookLimiter, bodyParser.raw({type: () => true, limit: '5mb'}), function lazyEmailAnalyticsWebhookMw(req, res, next) {
         if (!emailAnalyticsService.webhookController) {
             res.writeHead(503);
             return res.end();

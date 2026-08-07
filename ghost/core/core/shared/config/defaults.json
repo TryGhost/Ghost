@@ -174,10 +174,10 @@
             "freeRetries": 10
         },
         "email_analytics_webhook": {
-            "minWait": 10,
-            "maxWait": 100,
-            "lifetime": 1000,
-            "freeRetries": 200
+            "minWait": 1000,
+            "maxWait": 60000,
+            "lifetime": 3600,
+            "freeRetries": 1000
         },
         "otc_verification_enumeration": {
             "minWait": 600000,

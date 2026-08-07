@@ -13,7 +13,10 @@ class EmailServiceWrapper {
      * @param {(error: Error) => void} options.errorHandler
      */
     getEmailProvider({config, adapterManager, MailgunEmailProvider, mailgunClient, errorHandler}) {
-        if (config.get('adapters:email')) {
+        // Matches AdapterManager's own resolution rule (resolveAdapterOptions) rather than
+        // truthiness of the whole `adapters:email` block, so a config that defines the
+        // block without `active` falls back to Mailgun instead of throwing at boot.
+        if (config.get('adapters:email:active')) {
             return adapterManager.getAdapter('email');
         }
 

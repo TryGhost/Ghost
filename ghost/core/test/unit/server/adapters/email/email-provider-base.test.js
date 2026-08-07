@@ -18,6 +18,13 @@ describe('UNIT: EmailProviderBase', function () {
         await assert.rejects(() => provider.send());
     });
 
+    it('throws on getMaximumRecipients() and getTargetDeliveryWindow() when not implemented', function () {
+        const provider = new EmailProviderBase();
+
+        assert.throws(() => provider.getMaximumRecipients());
+        assert.throws(() => provider.getTargetDeliveryWindow());
+    });
+
     it('defaults webhook ingestion to unsupported, not an error', function () {
         const provider = new EmailProviderBase();
 

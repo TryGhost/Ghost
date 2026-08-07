@@ -32,11 +32,27 @@ class EmailProviderBase {
         });
     }
 
+    // Throwing stubs, matching send() - `requiredFns` names all three, and
+    // AdapterManager.getAdapter() throws IncorrectUsageError for any entry that isn't a
+    // function, so the base class needs a real (if unimplemented) method for each.
+    getMaximumRecipients() {
+        throw new errors.IncorrectUsageError({
+            message: 'getMaximumRecipients() must be implemented by email provider adapter'
+        });
+    }
+
+    getTargetDeliveryWindow() {
+        throw new errors.IncorrectUsageError({
+            message: 'getTargetDeliveryWindow() must be implemented by email provider adapter'
+        });
+    }
+
     /**
-     * Optional. Implement to accept analytics/suppression webhooks from the provider
-     * instead of Ghost polling for events. Return `false` (the default) to signal that
-     * this adapter doesn't support webhook ingestion — Ghost responds 501 and does not
-     * call `parseWebhookEvents`.
+     * Optional. Override to accept analytics/suppression webhooks from the provider
+     * instead of Ghost polling for events. Leaving this un-overridden (the default) is
+     * how Ghost detects that an adapter doesn't support webhook ingestion - the
+     * controller compares the instance method against this prototype method, not the
+     * return value, so overriding is what signals support, not what you return from it.
      *
      * @param {import('express').Request} req
      * @returns {Promise<boolean>|boolean}
@@ -47,7 +63,11 @@ class EmailProviderBase {
 
     /**
      * Optional. Only called when `verifyWebhookRequest` returns true. Normalize the
-     * provider's webhook payload into Ghost's internal event shape.
+     * provider's webhook payload into Ghost's internal event shape. `emailId` is the
+     * most reliable correlation field for providers that report a per-recipient message
+     * id rather than a per-batch one: Ghost's own email id is available to `send()` in
+     * the payload it's given and can be echoed back via the provider's own message
+     * tags/metadata at send time, then read back off the webhook event here.
      *
      * @param {import('express').Request} req
      * @returns {Promise<EmailAnalyticsEvent[]>|EmailAnalyticsEvent[]}

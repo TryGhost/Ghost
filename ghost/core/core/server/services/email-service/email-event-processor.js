@@ -133,10 +133,10 @@ class EmailEventProcessor {
 
     /**
      * @param {EmailIdentification} emailIdentification
-     * @param {{id: string, timestamp: Date, error: {code: number; message: string; enhandedCode: string|number} | null}} event
+     * @param {{id: string, timestamp: Date, error: {code: number; message: string; enhandedCode: string|number} | null, isWebhookSourced?: boolean}} event
      * @param {Map<string, EmailRecipientInformation>} [recipientCache] Optional cache for batched processing
      */
-    async handlePermanentFailed(emailIdentification, {timestamp, error, id}, recipientCache) {
+    async handlePermanentFailed(emailIdentification, {timestamp, error, id, isWebhookSourced}, recipientCache) {
         const recipient = await this.getRecipient(emailIdentification, recipientCache);
         if (recipient) {
             const event = EmailBouncedEvent.create({
@@ -146,7 +146,8 @@ class EmailEventProcessor {
                 memberId: recipient.memberId,
                 emailId: recipient.emailId,
                 emailRecipientId: recipient.emailRecipientId,
-                timestamp
+                timestamp,
+                isWebhookSourced
             });
             await this.#eventStorage.handlePermanentFailed(event);
 

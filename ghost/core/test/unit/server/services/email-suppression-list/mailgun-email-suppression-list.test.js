@@ -46,20 +46,41 @@ describe('UNIT: MailgunEmailSuppressionList bounce gate', function () {
         assert.ok(Suppression.notCalled);
     });
 
-    it('trusts a non-Mailgun adapter permanent bounce with a non-integer error code', async function () {
+    it('does not suppress a Mailgun bounce with a non-integer/absent error code (unchanged stock behaviour)', async function () {
+        // Mailgun's own normalizer can produce this shape for a genuine permanent
+        // failure (see mailgun-client.js) - provenance, not error shape, is what
+        // decides trust, so this must stay un-suppressed exactly as before.
+        DomainEvents.dispatch(EmailBouncedEvent.create({
+            email: 'a@example.com', emailId: 'e1', error: null, timestamp: new Date()
+        }));
+        await DomainEvents.allSettled();
+
+        assert.ok(Suppression.notCalled);
+    });
+
+    it('trusts a webhook-sourced adapter permanent bounce with a non-integer error code', async function () {
         // e.g. an SES/SMTP adapter reporting "550 5.1.1" as a string, or an
         // enhanced-code-only shape - not a Mailgun 605/607 integer.
         DomainEvents.dispatch(EmailBouncedEvent.create({
-            email: 'a@example.com', emailId: 'e1', error: {code: '550 5.1.1', message: 'bounced'}, timestamp: new Date()
+            email: 'a@example.com', emailId: 'e1', error: {code: '550 5.1.1', message: 'bounced'}, timestamp: new Date(), isWebhookSourced: true
         }));
         await DomainEvents.allSettled();
 
         assert.ok(Suppression.calledOnce);
     });
 
-    it('trusts a non-Mailgun adapter permanent bounce with no error object', async function () {
+    it('trusts a webhook-sourced adapter permanent bounce with no error object', async function () {
         DomainEvents.dispatch(EmailBouncedEvent.create({
-            email: 'a@example.com', emailId: 'e1', error: null, timestamp: new Date()
+            email: 'a@example.com', emailId: 'e1', error: null, timestamp: new Date(), isWebhookSourced: true
+        }));
+        await DomainEvents.allSettled();
+
+        assert.ok(Suppression.calledOnce);
+    });
+
+    it('bypasses the 605/607 gate entirely once isWebhookSourced is set, even for a Mailgun-shaped non-605/607 code', async function () {
+        DomainEvents.dispatch(EmailBouncedEvent.create({
+            email: 'a@example.com', emailId: 'e1', error: {code: 550, message: 'bounced'}, timestamp: new Date(), isWebhookSourced: true
         }));
         await DomainEvents.allSettled();
 
