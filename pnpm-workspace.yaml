@@ -274,6 +274,8 @@ minimumReleaseAgeExclude:
   - 'knex-migrator'
   # Renovate security update: file-type@21.3.1 || 21.3.2
   - file-type@21.3.1 || 21.3.2
+  # Renovate security update: nx@23.0.2
+  - nx@23.0.2
 
 # configuration for pnpm's changeset functionality
 versioning:
