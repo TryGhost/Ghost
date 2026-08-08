@@ -23,6 +23,14 @@ interface VideoPayload {
     thumbnailSrc?: string;
 }
 
+// A transparent 1x1 GIF, used as a local placeholder `poster` for the web <video>
+// element so no third-party request (e.g. spacergif.org) is needed. The <video>
+// element already carries explicit width/height attributes, so the poster's own
+// dimensions are irrelevant - the browser scales it (invisibly, since it's
+// transparent) to fill the video's box while the real thumbnail shows through
+// via the CSS `background` on the element.
+const TRANSPARENT_PIXEL_SRC = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+
 const videoCard: Card = {
     name: 'video',
     type: 'dom',
@@ -136,7 +144,7 @@ const videoCard: Card = {
             postUrl: options.postUrl,
             cardClasses: cardClasses.join(' '),
             thumbnailSrc: payloadData.customThumbnailSrc || payloadData.thumbnailSrc || '',
-            posterSpacerSrc: `https://img.spacergif.org/v1/${payload.width}x${payload.height}/0a/spacer.png`,
+            posterSpacerSrc: TRANSPARENT_PIXEL_SRC,
             emailSpacerSrc: `https://img.spacergif.org/v1/${emailSpacerWidth}x${emailSpacerHeight}/0a/spacer.png`,
             emailTemplateMaxWidth,
             outlookCircleLeft: Math.round((emailTemplateMaxWidth / 2) - 39),
