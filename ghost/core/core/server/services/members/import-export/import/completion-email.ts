@@ -1,8 +1,9 @@
 import {serialize} from '../csv';
+import renderImportEmail, {type ImportEmailSummary} from './email-template';
 import {isCustomFieldColumn} from '@tryghost/custom-field-types/csv';
 import type {MemberImportRow, ImportErrorRow, ImportLabel, Label} from './row';
 
-const emailTemplate = require('./email-template');
+
 
 // The finished import as the email reads it: how many imported and which rows
 // failed. Structural, so the importer's richer result satisfies it directly.
@@ -11,12 +12,22 @@ interface ImportSummary {
     errors: ImportErrorRow[];
 }
 
+export interface EmailLinks {
+    siteUrl(): URL;
+    membersUrl(labelSlug?: string): URL;
+}
+
 interface CompletionEmailInput {
     result: ImportSummary;
     recipient: string;
     labelName: string;
     importLabel: ImportLabel | null;
-    urlFor: (type: string, data: unknown, absolute: boolean) => string;
+    links: EmailLinks;
+}
+
+interface FailureEmailInput {
+    recipient: string;
+    links: EmailLinks;
 }
 
 interface EmailPayload {
@@ -118,23 +129,58 @@ function buildErrorReport(errors: ImportErrorRow[]): string {
     return serialize(rows, {columns});
 }
 
-// Compose the completion email for a finished import: the summary and its links,
-// plus the attached error report. Owns how the outcome is presented, so the
-// importer yields only the result and never touches email or CSV formatting.
-export default function buildCompletionEmail({result, recipient, labelName, importLabel, urlFor}: CompletionEmailInput): EmailPayload {
-    const siteUrl = new URL(urlFor('home', null, true));
-    const membersUrl = new URL('members', urlFor('admin', null, true));
-    if (importLabel) {
-        membersUrl.searchParams.set('label', importLabel.slug);
-    }
-
-    const html = emailTemplate({result, siteUrl, membersUrl, emailRecipient: recipient, importLabel});
-    const subject = result.imported > 0 ? 'Your member import is complete' : 'Your member import was unsuccessful';
+// Carries no error report: there is nothing in the file to fix, and an attached CSV would
+// say there was.
+export function buildFailureEmail({recipient, links}: FailureEmailInput): EmailPayload {
+    const siteUrl = links.siteUrl();
+    const membersUrl = links.membersUrl();
+    const heading = 'Your member import could not be completed';
 
     return {
         to: recipient,
-        subject,
-        html,
+        subject: heading,
+        html: renderImportEmail({
+            heading,
+            summary: 'did-not-run',
+            imported: 0,
+            errorCount: 0,
+            siteUrl,
+            membersUrl,
+            emailRecipient: recipient
+        }),
+        forceTextContent: true,
+        attachments: []
+    };
+}
+
+function summaryOf(result: ImportSummary): ImportEmailSummary {
+    return result.imported > 0 ? 'added' : 'all-failed';
+}
+
+// Compose the completion email for a finished import: the summary and its links,
+// plus the attached error report. Owns how the outcome is presented, so the
+// importer yields only the result and never touches email or CSV formatting.
+export default function buildCompletionEmail({result, recipient, labelName, importLabel, links}: CompletionEmailInput): EmailPayload {
+    const siteUrl = links.siteUrl();
+    const membersUrl = links.membersUrl(importLabel?.slug);
+
+    const summary = summaryOf(result);
+    const heading = summary === 'added'
+        ? 'Your member import is complete'
+        : 'Your member import was unsuccessful';
+
+    return {
+        to: recipient,
+        subject: heading,
+        html: renderImportEmail({
+            heading,
+            summary,
+            imported: result.imported,
+            errorCount: result.errors.length,
+            siteUrl,
+            membersUrl,
+            emailRecipient: recipient
+        }),
         forceTextContent: true,
         attachments: [{
             filename: `${labelName} - Errors.csv`,

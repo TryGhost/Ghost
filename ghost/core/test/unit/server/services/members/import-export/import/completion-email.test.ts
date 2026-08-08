@@ -7,14 +7,17 @@ import type {ImportErrorRow} from '../../../../../../../core/server/services/mem
 // humanising of raw ORM validation errors, and the shaping of failed rows into the
 // import-shaped error report (its own serialiser, separate from the export CSV).
 describe('members import completion email', function () {
-    const urlFor = () => 'http://localhost/';
+    const links = {
+        siteUrl: () => new URL('http://localhost/'),
+        membersUrl: () => new URL('http://localhost/ghost/members')
+    };
 
     const build = (errors: ImportErrorRow[]) => buildCompletionEmail({
         result: {imported: 0, errors},
         recipient: 'owner@example.com',
         labelName: 'Import 2026-01-01 00:00',
         importLabel: null,
-        urlFor
+        links
     });
 
     it('names the attachment after the import label', function () {
@@ -31,7 +34,7 @@ describe('members import completion email', function () {
             recipient: 'owner@example.com',
             labelName: 'Import 2026-01-01 00:00',
             importLabel: null,
-            urlFor
+            links
         });
         assert.match(someImported.subject, /complete/);
     });
