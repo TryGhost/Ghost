@@ -1,7 +1,7 @@
 import ObjectID from 'bson-objectid';
 import {Knex} from 'knex';
 import {IdentityTokenService} from '../identity-tokens/identity-token-service';
-import fetch from 'node-fetch';
+import fetch, {FetchError} from 'node-fetch';
 
 type ExpectedWebhook = {
     event: string;
@@ -103,8 +103,14 @@ export class ActivityPubService {
 
             return body.webhook_secret;
         } catch (err: unknown) {
-            this.logging.error(`Could not get webhook secret for ActivityPub ${err}`);
-            return null;
+            // FetchError = network failure; SyntaxError = HTML response masquerading
+            // as JSON (gateway fallthrough). Both mean the sibling AP service is
+            // unreachable — degrade silently. Anything else is a real bug.
+            if (err instanceof FetchError || err instanceof SyntaxError) {
+                this.logging.info('[ActivityPub] Sibling service unreachable — federation disabled. Run the ActivityPub project to enable.');
+                return null;
+            }
+            throw err;
         }
     }
 
@@ -152,7 +158,7 @@ export class ActivityPubService {
         const secret = await this.getWebhookSecret();
 
         if (!secret) {
-            this.logging.error('No webhook secret found - cannot initialise');
+            // getWebhookSecret already logged or rethrew; nothing to add here.
             return;
         }
 
