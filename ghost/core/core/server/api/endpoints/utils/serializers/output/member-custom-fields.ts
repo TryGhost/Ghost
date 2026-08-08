@@ -21,5 +21,9 @@ module.exports = {
     // Create is a batch, so it returns every definition it made. The response is
     // already an array, so a one-item create looks exactly as it did before.
     add: serializeMany,
+    // A reorder returns the whole list in its new order — the same list it was given,
+    // read back from the database — so the client re-syncs from the response rather
+    // than trusting the order it guessed locally.
+    reorder: serializeMany,
     edit: serializeOne
 };

@@ -1,18 +1,94 @@
 import CustomFieldIcon from './custom-fields/custom-field-icon';
 import CustomFieldModal from './custom-fields/custom-field-modal';
 import NiceModal from '@ebay/nice-modal-react';
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import TopLevelGroup from '@/settings/app/components/top-level-group';
 import useFeatureFlag from '@/settings/app/hooks/use-feature-flag';
-import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Button, NoValueLabel, NoValueLabelIcon, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
+import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Button, DragIndicator, NoValueLabel, NoValueLabelIcon, type SortableItemContainerProps, SortableList, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
+import {Inline} from '@tryghost/shade/primitives';
 import {TextCursorInput} from 'lucide-react';
-import {useBrowseMemberCustomFieldsIncludingArchived, userTypeForField} from '@tryghost/admin-x-framework/api/member-custom-fields';
+import {arrayMove} from '@dnd-kit/sortable';
+import {inOrderOf, memberCustomFieldsDataType, useBrowseMemberCustomFieldsIncludingArchived, useReorderMemberCustomFields, userTypeForField} from '@tryghost/admin-x-framework/api/member-custom-fields';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useQueryClient} from '@tryghost/admin-x-framework';
 import {withErrorBoundary} from '@/settings/app/components/error-boundary';
 import type {MemberCustomField} from '@tryghost/admin-x-framework/api/member-custom-fields';
 
 // How many fields render before the list collapses behind "Show all" — the
 // recommendations list's preview size.
 const PREVIEW_COUNT = 5;
+
+// A field as the sortable list wants it. That list addresses rows by `id`; a custom
+// field has no id over the API and is addressed by its key, which is also what the
+// reorder request names, so the key is the identity all the way through.
+type SortableField = MemberCustomField & {id: string};
+const withRowIds = (fields: MemberCustomField[]): SortableField[] =>
+    fields.map(field => ({...field, id: field.key}));
+
+// One row's content, shared by the plain list and the sortable one so a field reads
+// identically whether or not it can be dragged.
+const FieldRow: React.FC<{
+    field: MemberCustomField;
+    openModal: (field: MemberCustomField) => void;
+}> = ({field, openModal}) => {
+    const userType = userTypeForField(field);
+    return (
+        <>
+            <ActionListItemContent asChild>
+                <button className='flex w-full items-center gap-3 py-3 text-left' type='button' onClick={() => openModal(field)}>
+                    <span className='flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted'>
+                        <CustomFieldIcon className='size-[18px]' type={userType.id} />
+                    </span>
+                    <span className='min-w-0 grow'>
+                        <span className='block font-semibold'>{field.name}</span>
+                        <span className='block text-sm text-muted-foreground'>{userType.label}</span>
+                    </span>
+                </button>
+            </ActionListItemContent>
+            <ActionListItemActions>
+                <Button className='h-auto p-0 font-bold text-green hover:text-green/90 hover:no-underline' size='sm' type='button' variant='link' onClick={() => openModal(field)}>Edit</Button>
+            </ActionListItemActions>
+        </>
+    );
+};
+
+// The row a dragged field sits in. The drag overlay renders outside the list's wrapper,
+// so a row being dragged supplies its own ActionList to keep its styling.
+const SortableFieldRow: React.FC<SortableItemContainerProps> = ({
+    id,
+    setRef,
+    isDragging,
+    style,
+    separator,
+    children,
+    ...props
+}) => {
+    // `separator` is dropped rather than passed on: what is left here is spread onto the
+    // handle button, and DragIndicator errors if it receives it. `id` is dropped for the
+    // same reason — it is a field key, which would become the button's DOM id.
+    void separator;
+    void id;
+
+    // `isDragging` is true only for the copy the drag overlay renders. The row that copy
+    // was made from stays in the list and keeps its normal appearance, sliding to the
+    // place it would land rather than following the cursor — the overlay does that. This
+    // follows the newsletters list, which is the same component and the same gesture, and
+    // a publisher who has reordered one should not have to learn the other.
+    //
+    // The handle sits in a centred column of its own because the row stretches its
+    // children, so a handle given a height of its own would ride at the top of a row
+    // taller than it.
+    const row = (
+        <ActionListItem ref={setRef} className={isDragging ? 'opacity-75' : ''} data-testid='custom-field-list-item' style={style}>
+            <Inline align='center' className='w-10 shrink-0'>
+                <DragIndicator className='h-10' isDragging={isDragging || false} {...props} />
+            </Inline>
+            {children}
+        </ActionListItem>
+    );
+
+    return isDragging ? <ActionList>{row}</ActionList> : row;
+};
 
 const FieldList: React.FC<{
     fields: MemberCustomField[];
@@ -21,7 +97,10 @@ const FieldList: React.FC<{
     showAll: boolean;
     onShowAll: () => void;
     openModal: (field: MemberCustomField) => void;
-}> = ({fields, showAll, onShowAll, openModal}) => {
+    // Absent on the archived tab: an archived field holds its place in the order but
+    // there is nowhere to see it, so there is nothing to drag it through.
+    onMove?: (key: string, overKey: string) => void;
+}> = ({fields, showAll, onShowAll, openModal, onMove}) => {
 
     if (fields.length === 0) {
         // Mirrors the newsletters list's empty state, tab for tab.
@@ -36,33 +115,36 @@ const FieldList: React.FC<{
     // The endpoint returns the full (deliberately small) list, so "Show all"
     // is a client-side reveal — same UI as the recommendations table, without
     // inventing pagination the API doesn't have.
-    const visibleFields = showAll ? fields : fields.slice(0, PREVIEW_COUNT);
+    const isTruncated = !showAll && fields.length > PREVIEW_COUNT;
+    const visibleFields = isTruncated ? fields.slice(0, PREVIEW_COUNT) : fields;
+
+    // A collapsed list is still a list, and the five rows on screen can still be put in
+    // an order relative to each other. A drag only ever says "this field goes where that
+    // one is", and both ends of it are rows the publisher can see, so the fields hidden
+    // behind "Show all" keep their places around the move without taking part in it.
+    const isSortable = Boolean(onMove);
+
     return (
         <>
-            <ActionList>
-                {visibleFields.map((field) => {
-                    const userType = userTypeForField(field);
-                    return (
+            {isSortable ? (
+                <SortableList
+                    container={props => <SortableFieldRow {...props} />}
+                    getDragHandleLabel={field => `Reorder ${field.name}`}
+                    items={withRowIds(visibleFields)}
+                    renderItem={field => <FieldRow field={field} openModal={openModal} />}
+                    wrapper={ActionList}
+                    onMove={(key, overKey) => onMove?.(key, overKey)}
+                />
+            ) : (
+                <ActionList>
+                    {visibleFields.map(field => (
                         <ActionListItem key={field.key} data-testid='custom-field-list-item'>
-                            <ActionListItemContent asChild>
-                                <button className='flex w-full items-center gap-3 py-3 text-left' type='button' onClick={() => openModal(field)}>
-                                    <span className='flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted'>
-                                        <CustomFieldIcon className='size-[18px]' type={userType.id} />
-                                    </span>
-                                    <span className='min-w-0 grow'>
-                                        <span className='block font-semibold'>{field.name}</span>
-                                        <span className='block text-sm text-muted-foreground'>{userType.label}</span>
-                                    </span>
-                                </button>
-                            </ActionListItemContent>
-                            <ActionListItemActions>
-                                <Button className='h-auto p-0 font-bold text-green hover:text-green/90 hover:no-underline' size='sm' type='button' variant='link' onClick={() => openModal(field)}>Edit</Button>
-                            </ActionListItemActions>
+                            <FieldRow field={field} openModal={openModal} />
                         </ActionListItem>
-                    );
-                })}
-            </ActionList>
-            {!showAll && fields.length > PREVIEW_COUNT && (
+                    ))}
+                </ActionList>
+            )}
+            {isTruncated && (
                 <div className='flex items-center gap-2 border-t border-border pt-2 font-bold text-green hover:opacity-80'>
                     <button type='button' onClick={onShowAll}>Show all</button>
                 </div>
@@ -80,7 +162,20 @@ const CustomFields: React.FC<{keywords: string[]}> = ({keywords}) => {
     const {data} = useBrowseMemberCustomFieldsIncludingArchived({
         enabled: hasCustomFields
     });
-    const fields = data?.members_custom_fields || [];
+    const {mutateAsync: reorderFields} = useReorderMemberCustomFields();
+    const queryClient = useQueryClient();
+    const handleError = useHandleError();
+
+    // The order the publisher has just drawn, while the server catches up. Held as keys
+    // and applied over whatever the server currently says, rather than as a copy of the
+    // list: a field created elsewhere in the meantime still appears, and one deleted
+    // elsewhere still goes, because this only ever states an order and never a set.
+    const [drawnOrder, setDrawnOrder] = useState<string[] | null>(null);
+    const serverFields = data?.members_custom_fields;
+    const fields = useMemo(() => {
+        const known = serverFields || [];
+        return drawnOrder ? inOrderOf(drawnOrder, known) : known;
+    }, [serverFields, drawnOrder]);
     const [selectedTab, setSelectedTab] = useState('active-fields');
     const [showAllActive, setShowAllActive] = useState(false);
     const [showAllArchived, setShowAllArchived] = useState(false);
@@ -92,11 +187,11 @@ const CustomFields: React.FC<{keywords: string[]}> = ({keywords}) => {
     const activeFields = fields.filter(field => field.status === 'active');
     const archivedFields = fields.filter(field => field.status === 'archived');
 
-    // The collapse is an initial-view optimization only: fields append in
-    // insertion order, so a just-created (or just-reactivated) field is
-    // always LAST — exactly the hidden slot. When a tab's list grows while
-    // the screen is open, expand it so the new arrival is visible in place
-    // rather than silently swallowed behind "Show all".
+    // The collapse is an initial-view optimization only: a new field is appended to the
+    // end of the publisher's order, so it lands in exactly the hidden slot. When a tab's
+    // list grows while the screen is open, expand it so the new arrival is visible in
+    // place rather than silently swallowed behind "Show all". Expanding also puts the
+    // active list back in reach of a drag, which a truncated list does not offer.
     const previousCounts = useRef({active: 0, archived: 0});
     useEffect(() => {
         if (activeFields.length > previousCounts.current.active && previousCounts.current.active > 0) {
@@ -109,6 +204,46 @@ const CustomFields: React.FC<{keywords: string[]}> = ({keywords}) => {
     }, [activeFields.length, archivedFields.length]);
 
     const openModal = (field?: MemberCustomField) => NiceModal.show(CustomFieldModal, {field});
+
+    /**
+     * Move a field to where another one sits, and tell the server the new order.
+     *
+     * The move is applied to the whole list, not to the active tab it was made in: a
+     * reorder states the order of every definition the site has, and the archived fields
+     * mixed in among them keep their places. Both ends of a drag are active fields, so
+     * moving the dragged one to the target's index in the full list gives exactly the
+     * order the publisher drew, with the archived ones undisturbed around it.
+     *
+     * Nothing about what is on screen waits for the server. The order the publisher drew
+     * is held here and rendered from immediately, so letting go of a row is the end of
+     * the interaction rather than the start of a round-trip. The request runs behind it,
+     * and its response settles the cached lists; only then is the drawn order let go of,
+     * by which point it and the authoritative order agree and nothing moves.
+     */
+    const onMove = (key: string, overKey: string) => {
+        const from = fields.findIndex(field => field.key === key);
+        const to = fields.findIndex(field => field.key === overKey);
+        if (from === -1 || to === -1 || from === to) {
+            return;
+        }
+
+        const reordered = arrayMove(fields, from, to);
+        setDrawnOrder(reordered.map(field => field.key));
+
+        reorderFields(reordered)
+            .catch((error) => {
+                // The server's own message, not a generic one. The failure a publisher
+                // can actually provoke is a list that no longer names every field,
+                // because a colleague added one, and the API says so in words worth
+                // reading: it names the field and asks them to reload. Refetching then is
+                // how this screen learns about the field it did not know about.
+                handleError(error);
+                queryClient.invalidateQueries({queryKey: [memberCustomFieldsDataType]});
+            })
+            // Dropped whether or not it worked: on success the cached lists already hold
+            // this order, and on failure the server's order is the one to show.
+            .finally(() => setDrawnOrder(null));
+    };
 
     return (
         <TopLevelGroup
@@ -129,7 +264,7 @@ const CustomFields: React.FC<{keywords: string[]}> = ({keywords}) => {
                         <TabsTrigger value='active-fields'>Active</TabsTrigger>
                         <TabsTrigger value='archived-fields'>Archived</TabsTrigger>
                     </TabsList>
-                    <TabsContent value='active-fields'><FieldList fields={activeFields} openModal={openModal} showAll={showAllActive} onShowAll={() => setShowAllActive(true)} /></TabsContent>
+                    <TabsContent value='active-fields'><FieldList fields={activeFields} openModal={openModal} showAll={showAllActive} onMove={onMove} onShowAll={() => setShowAllActive(true)} /></TabsContent>
                     <TabsContent value='archived-fields'><FieldList fields={archivedFields} openModal={openModal} showAll={showAllArchived} onShowAll={() => setShowAllArchived(true)} /></TabsContent>
                 </Tabs>
             )}

@@ -82,12 +82,21 @@ export class CustomFieldValuesService {
             return new Map();
         }
 
+        // Deliberately not ordered by field. These rows become an object keyed by field,
+        // and an object cannot carry an order: JSON gives member order no meaning, and
+        // JavaScript enumerates any key that looks like an array index first, so a field
+        // named "2024" comes out in front however it was inserted. Sorting the rows would
+        // buy an order no caller can rely on, and it would buy it on the hottest read in
+        // the domain — every member of a page, joined against their values. The
+        // definition list is the array that carries the publisher's order, and it is what
+        // every surface renders from.
+        //
+        // `path` is still ordered, so the parts of one composite field assemble the same
+        // way every time.
         const rows = await this.knex(VALUES_TABLE)
             .join(FIELDS_TABLE, `${VALUES_TABLE}.custom_field_id`, `${FIELDS_TABLE}.id`)
             .whereIn(`${VALUES_TABLE}.member_id`, memberIds)
             .where(`${FIELDS_TABLE}.status`, FIELD_STATUS.active)
-            .orderBy(`${FIELDS_TABLE}.created_at`, 'asc')
-            .orderBy(`${FIELDS_TABLE}.id`, 'asc')
             .orderBy(`${VALUES_TABLE}.path`, 'asc')
             .select(`${VALUES_TABLE}.member_id`, `${FIELDS_TABLE}.key`, `${FIELDS_TABLE}.type`, `${VALUES_TABLE}.path`, `${VALUES_TABLE}.value_text`);
 
