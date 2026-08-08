@@ -3,6 +3,7 @@ const sinon = require('sinon');
 
 const {Post} = require('../../../../../core/server/models/post');
 const {Member} = require('../../../../../core/server/models/member');
+const {Product} = require('../../../../../core/server/models/product');
 
 const createSerialize = require('../../../../../core/server/services/webhooks/serialize');
 
@@ -159,5 +160,44 @@ describe('WebhookService - Serialize', function () {
         assert.equal(result.member.previous.status, 'comped');
         assert.deepEqual(result.member.previous.updated_at, previousUpdatedAt);
         assert.deepEqual(Object.keys(result.member.previous).sort(), ['status', 'updated_at']);
+    });
+
+    it('includes the previous tiers when a member switches between paid tiers', async function () {
+        // `previous: true` cascades into related models, so the tiers have to look
+        // like the fetched models they are in the real event — bookshelf only
+        // populates `_previousAttributes` on fetch, not on construction.
+        const asFetched = (model) => {
+            model._previousAttributes = {...model.attributes};
+            return model;
+        };
+        const oldTier = asFetched(new Product({id: 'tier-old', name: 'Bronze', slug: 'bronze', type: 'paid', active: true}));
+        const newTier = asFetched(new Product({id: 'tier-new', name: 'Gold', slug: 'gold', type: 'paid', active: true}));
+
+        const memberModel = new Member({
+            id: 'member-id',
+            uuid: 'member-uuid',
+            email: 'member@example.com',
+            status: 'paid',
+            created_at: new Date('2026-01-01T00:00:00.000Z'),
+            updated_at: new Date('2026-01-01T00:00:00.000Z')
+        });
+
+        // A paid -> paid tier switch leaves every members column untouched, so the
+        // only change bookshelf-relations records is on the products relation:
+        // the change itself on `_changed` (extendChanged) and the pre-change
+        // targets on `_previousRelations` (attachPreviousRelations).
+        memberModel._previousAttributes = {...memberModel.attributes};
+        memberModel._changed = {
+            products: {attached: [newTier], detached: [oldTier]}
+        };
+        memberModel._previousRelations = {products: {models: [oldTier]}};
+        memberModel.related('products').models = [newTier];
+
+        sinon.stub(memberModel, 'load').resolves(memberModel);
+
+        const result = await serialize('member.edited', memberModel);
+
+        assert.deepEqual(result.member.current.tiers.map(tier => tier.slug), ['gold']);
+        assert.deepEqual(result.member.previous.tiers.map(tier => tier.slug), ['bronze']);
     });
 });
