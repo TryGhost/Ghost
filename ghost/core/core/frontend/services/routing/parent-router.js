@@ -10,7 +10,6 @@
 const debug = require('@tryghost/debug')('routing:parent-router');
 
 const express = require('../../../shared/express');
-const _ = require('lodash');
 const url = require('url');
 const security = require('@tryghost/security');
 const {resolveResourceRead} = require('./api-adapter');
@@ -142,27 +141,6 @@ class ParentRouter {
         registry.setRoute(this.name, path);
         this._router.post(path, controller);
         this._router.get(path, controller);
-    }
-
-    /**
-     * @description Unmount route.
-     *
-     * Not used at the moment, but useful to keep for e.g. deregister routes on runtime.
-     *
-     * @param {string} path
-     */
-    unmountRoute(path) {
-        let indexToRemove = null;
-
-        _.each(this._router.stack, (item, index) => {
-            if (item.path === path) {
-                indexToRemove = index;
-            }
-        });
-
-        if (indexToRemove !== null) {
-            this._router.stack.splice(indexToRemove, 1);
-        }
     }
 
     /**

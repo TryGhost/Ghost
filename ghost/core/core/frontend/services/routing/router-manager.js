@@ -53,8 +53,8 @@ class RouterManager {
     }
 
     /**
-     * The `init` function will return the wrapped parent express router and will start creating all
-     * routers if you pass the option "start: true".
+     * The `init` function will return the wrapped parent express router, and will start creating
+     * all routers if you pass `routeSettings`.
      *
      * CASES:
      *   - if Ghost starts, it will first init the site app with the wrapper router and then call `start`

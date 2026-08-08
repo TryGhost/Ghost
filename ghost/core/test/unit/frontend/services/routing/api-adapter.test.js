@@ -76,6 +76,16 @@ describe('UNIT - services/routing/api-adapter', function () {
     });
 
     describe('resolveApiCall - long form browse', function () {
+        it('resolves the posts browse a collection route runs by default', function () {
+            // fetch-data's default post query is built from this spec.
+            assert.deepEqual(resolveApiCall({type: 'browse', resource: 'posts'}), {
+                controller: 'postsPublic',
+                type: 'browse',
+                resource: 'posts',
+                options: {}
+            });
+        });
+
         it('does not apply read defaults to a browse entry', function () {
             assert.deepEqual(resolveApiCall({type: 'browse', resource: 'tags'}), {
                 controller: 'tagsPublic',

@@ -37,7 +37,7 @@ describe('Unit - frontend/data/entry-lookup', function () {
                     pages: pages
                 });
 
-            sinon.stub(api, 'posts').get(() => {
+            sinon.stub(api, 'postsPublic').get(() => {
                 return {
                     read: postsReadStub
                 };
@@ -68,7 +68,7 @@ describe('Unit - frontend/data/entry-lookup', function () {
     describe('posts', function () {
         const routerOptions = {
             permalinks: '/:slug/:options(edit)?/',
-            query: {controller: 'posts', resource: 'posts'}
+            query: {controller: 'postsPublic', resource: 'posts'}
         };
 
         let posts;
@@ -88,7 +88,7 @@ describe('Unit - frontend/data/entry-lookup', function () {
                     posts: posts
                 });
 
-            sinon.stub(api, 'posts').get(() => {
+            sinon.stub(api, 'postsPublic').get(() => {
                 return {
                     read: postsReadStub
                 };
@@ -130,7 +130,7 @@ describe('Unit - frontend/data/entry-lookup', function () {
         it('matches hyphen-separated date permalinks with hyphenated slugs', function () {
             const datedRouterOptions = {
                 permalinks: '/articles/:year-:month-:day-:slug/:options(edit)?/',
-                query: {controller: 'posts', resource: 'posts'}
+                query: {controller: 'postsPublic', resource: 'posts'}
             };
 
             postsReadStub.resolves({
@@ -153,7 +153,7 @@ describe('Unit - frontend/data/entry-lookup', function () {
         it('matches edit URLs for hyphen-separated date permalinks with hyphenated slugs', function () {
             const datedRouterOptions = {
                 permalinks: '/articles/:year-:month-:day-:slug/:options(edit)?/',
-                query: {controller: 'posts', resource: 'posts'}
+                query: {controller: 'postsPublic', resource: 'posts'}
             };
 
             postsReadStub.resolves({
@@ -177,7 +177,7 @@ describe('Unit - frontend/data/entry-lookup', function () {
         it('matches generic hyphen-separated params with hyphenated slugs', function () {
             const sectionRouterOptions = {
                 permalinks: '/articles/:section-:slug/:options(edit)?/',
-                query: {controller: 'posts', resource: 'posts'}
+                query: {controller: 'postsPublic', resource: 'posts'}
             };
 
             postsReadStub.resolves({

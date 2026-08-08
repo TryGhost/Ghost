@@ -138,8 +138,7 @@ class CollectionRouter extends ParentRouter {
      * @returns {string}
      */
     getResourceType() {
-        // @TODO: resourceAlias can be removed? We removed it. Looks like a last left over. Needs double checking.
-        return this.RESOURCE_CONFIG.resourceAlias || this.RESOURCE_CONFIG.resource;
+        return this.RESOURCE_CONFIG.resource;
     }
 
     /**
