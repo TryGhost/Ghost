@@ -1,10 +1,10 @@
-import ConfirmationModal from '@/settings/app/components/confirmation-modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import {Button, Dropzone} from '@tryghost/shade/components';
 import {ExternalLink} from 'lucide-react';
 import {Inline} from '@tryghost/shade/primitives';
 import {SettingsModal} from '@tryghost/shade/patterns';
+import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useImportContent} from '@tryghost/admin-x-framework/api/db';
 
@@ -13,6 +13,7 @@ const UniversalImportModal: React.FC = () => {
     const {mutateAsync: importContent} = useImportContent();
     const [uploading, setUploading] = useState(false);
     const handleError = useHandleError();
+    const {confirm} = useConfirmation();
 
     return (
         <SettingsModal
@@ -40,7 +41,7 @@ const UniversalImportModal: React.FC = () => {
                         try {
                             await importContent(file);
                             modal.remove();
-                            NiceModal.show(ConfirmationModal, {
+                            confirm({
                                 title: 'Import in progress',
                                 prompt: `Your import is being processed, and you'll receive a confirmation email as soon as it’s complete. Usually this only takes a few minutes, but larger imports may take longer.`,
                                 cancelLabel: '',

@@ -1,4 +1,4 @@
-import NiceModal from '@ebay/nice-modal-react';
+import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {type ReactNode} from 'react';
 import useCustomFonts from '@/settings/app/hooks/use-custom-fonts';
 import {ConfirmationModalContent} from '@/settings/app/components/confirmation-modal';
@@ -46,6 +46,8 @@ const ThemeInstalledModal: React.FC<{
         </>
     );
 
+    const modal = useModal();
+
     return <ConfirmationModalContent
         cancelLabel='Close'
         okLabel={okLabel}
@@ -73,6 +75,7 @@ const ThemeInstalledModal: React.FC<{
         </>}
         stickyFooter={true}
         title={modalTitle}
+        visible={modal.visible}
         onOk={async (activateModal) => {
             if (!installedTheme.active) {
                 try {
@@ -88,6 +91,7 @@ const ThemeInstalledModal: React.FC<{
             onActivate?.();
             activateModal?.remove();
         }}
+        onRemove={() => modal.remove()}
     />;
 };
 

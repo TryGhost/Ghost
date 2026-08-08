@@ -1,7 +1,6 @@
-import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 
-import {ConfirmationModalContent} from './confirmation-modal';
+import {type ConfirmationHostProps, ConfirmationModalContent} from './confirmation-modal';
 
 export interface LimitModalProps {
     title?: string;
@@ -13,7 +12,9 @@ export interface LimitModalProps {
     }) => void | Promise<void>;
 }
 
-export const LimitModalContent: React.FC<LimitModalProps> = ({
+export const LimitModalContent: React.FC<LimitModalProps & ConfirmationHostProps> = ({
+    visible = true,
+    onRemove,
     title = 'Upgrade your plan',
     prompt,
     okLabel = 'Upgrade',
@@ -31,9 +32,9 @@ export const LimitModalContent: React.FC<LimitModalProps> = ({
             prompt={<div className='w-full'>{promptContent}</div>}
             testId='limit-modal'
             title={title}
+            visible={visible}
             onOk={onOk}
+            onRemove={onRemove}
         />
     );
 };
-
-export default NiceModal.create(LimitModalContent);
