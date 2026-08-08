@@ -3,13 +3,13 @@ export const ALL_EVENT_TYPES = [
     {event: 'login_event', icon: 'filter-dropdown-logins', name: 'Logins', group: 'auth'},
     {event: 'subscription_event', icon: 'filter-dropdown-paid-subscriptions', name: 'Paid subscriptions', group: 'payments'},
     {event: 'payment_event', icon: 'filter-dropdown-payments', name: 'Payments', group: 'payments'},
-    {event: 'newsletter_event', icon: 'filter-dropdown-email-subscriptions', name: 'Email subscriptions', group: 'emails'},
-    {event: 'email_opened_event', icon: 'filter-dropdown-email-opened', name: 'Email opened', group: 'emails'},
-    {event: 'email_delivered_event', icon: 'filter-dropdown-email-received', name: 'Email received', group: 'emails'},
-    {event: 'email_complaint_event', icon: 'filter-dropdown-email-flagged-as-spam', name: 'Email flagged as spam', group: 'emails'},
-    {event: 'email_failed_event', icon: 'filter-dropdown-email-bounced', name: 'Email bounced', group: 'emails'},
+    {event: 'newsletter_event', icon: 'filter-dropdown-email-subscriptions', name: 'Newsletter subscriptions', group: 'emails'},
+    {event: 'email_opened_event', icon: 'filter-dropdown-email-opened', name: 'Newsletter opened', group: 'emails'},
+    {event: 'email_delivered_event', icon: 'filter-dropdown-email-received', name: 'Newsletter received', group: 'emails'},
+    {event: 'email_complaint_event', icon: 'filter-dropdown-email-flagged-as-spam', name: 'Newsletter flagged as spam', group: 'emails'},
+    {event: 'email_failed_event', icon: 'filter-dropdown-email-bounced', name: 'Newsletter bounced', group: 'emails'},
     {event: 'email_change_event', icon: 'filter-dropdown-email-address-changed', name: 'Email address changed', group: 'emails'},
-    {event: 'automated_email_sent_event', icon: 'filter-dropdown-email-received', name: 'Welcome email received', group: 'emails'},
+    {event: 'automated_email_sent_event', icon: 'filter-dropdown-email-received', name: 'Automated email received', group: 'emails'},
     {event: 'feedback_event', icon: 'filter-dropdown-feedback', name: 'Feedback', group: 'others'}
 ];
 
