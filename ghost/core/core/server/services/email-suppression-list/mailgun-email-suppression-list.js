@@ -118,10 +118,16 @@ class MailgunEmailSuppressionList extends AbstractEmailSuppressionList {
         this.Suppression = models.Suppression;
         const handleEvent = reason => async (event) => {
             if (reason === 'bounce') {
-                if (!Number.isInteger(event.error?.code)) {
-                    return;
-                }
-                if (event.error.code !== 607 && event.error.code !== 605) {
+                if (event.isWebhookSourced) {
+                    // A non-Mailgun adapter's EmailBouncedEvent (dispatched only for
+                    // permanent failures, see
+                    // email-event-processor.js#handlePermanentFailed) is already a
+                    // trustworthy "suppress this" signal on its own - the adapter has no
+                    // 605/607-shaped codes to give us. Explicit provenance, not error
+                    // shape: Mailgun itself sometimes reports a permanent bounce with a
+                    // non-integer or absent error.code (see mailgun-client.js), and that
+                    // existing Mailgun behaviour must not change.
+                } else if (!Number.isInteger(event.error?.code) || (event.error.code !== 607 && event.error.code !== 605)) {
                     return;
                 }
             }
