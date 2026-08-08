@@ -1,9 +1,8 @@
 import sanitizeHtml from 'sanitize-html';
 
-// Even though the upstream feed is operated by Ghost org, the resulting HTML
-// is rendered into admin inboxes on the receiving install. A compromised or
-// malformed feed entry must not be able to ship scripts, event handlers, or
-// non-http(s) URLs to recipients via this path.
+// Notification bodies are rendered as HTML in Ghost Admin and notification
+// emails. Keep the content semantic and exclude executable markup, event
+// handlers, unsafe URLs, images and inline styles.
 const ALLOWED_TAGS = [
     'p', 'br', 'hr',
     'strong', 'b', 'em', 'i', 'u', 'code',
@@ -30,6 +29,6 @@ const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
     }
 };
 
-export function sanitizeEmailHtml(html: string): string {
+export function sanitizeNotificationHtml(html: string): string {
     return sanitizeHtml(html, SANITIZE_OPTIONS);
 }

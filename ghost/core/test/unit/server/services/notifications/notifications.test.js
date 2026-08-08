@@ -47,9 +47,68 @@ describe('Notifications Service', function () {
             assert.equal(createdNotification.message, 'Hello test world!');
             assert.equal(createdNotification.createdAtVersion, '4.1.0');
         });
+
+        it('sanitizes notification HTML before returning it for storage', function () {
+            const settingsCache = {
+                get: sinon.fake.returns([])
+            };
+
+            const notificationsSvc = new Notifications({settingsCache});
+            const {notificationsToAdd} = notificationsSvc.add({
+                notifications: [{
+                    message: '<p>Keep <strong>formatting</strong> and <a href="https://ghost.org" onclick="alert(1)">safe links</a>.</p><script>alert(1)</script>'
+                }]
+            });
+
+            assert.equal(notificationsToAdd[0].message, '<p>Keep <strong>formatting</strong> and <a href="https://ghost.org" target="_blank" rel="noopener noreferrer">safe links</a>.</p>');
+        });
+
+        it('rejects non-string messages', function () {
+            const settingsCache = {
+                get: sinon.fake.returns([])
+            };
+
+            const notificationsSvc = new Notifications({settingsCache});
+
+            assert.throws(() => notificationsSvc.add({
+                notifications: [{message: {invalid: true}}]
+            }), {
+                message: 'Notification message must be a string.'
+            });
+        });
     });
 
     describe('browse', function () {
+        it('sanitizes notifications that were stored before write sanitization', function () {
+            const settingsCache = {
+                get: sinon.fake.returns([{
+                    custom: true,
+                    message: '<p>Keep <em>formatting</em>.</p><img src=x onerror="alert(1)"><script>alert(1)</script>',
+                    addedAt: '2021-03-17T01:41:20.906Z'
+                }])
+            };
+
+            const notificationSvc = new Notifications({settingsCache});
+            const notifications = notificationSvc.browse({user: owner});
+
+            assert.equal(notifications[0].message, '<p>Keep <em>formatting</em>.</p>');
+        });
+
+        it('neutralizes non-string messages that were stored previously', function () {
+            const settingsCache = {
+                get: sinon.fake.returns([{
+                    custom: true,
+                    message: {invalid: true},
+                    addedAt: '2021-03-17T01:41:20.906Z'
+                }])
+            };
+
+            const notificationSvc = new Notifications({settingsCache});
+            const notifications = notificationSvc.browse({user: owner});
+
+            assert.equal(notifications[0].message, '');
+        });
+
         it('can browse non-major version upgrade notifications', function () {
             const settingsCache = {
                 get: sinon.fake.returns([{
