@@ -37,6 +37,81 @@ describe('Tag detail (tagDetailsReact on)', () => {
         await expect.element(page.getByRole('button', {name: 'Delete tag', exact: true})).toBeVisible();
     });
 
+    it('edits and saves tag code injection with CodeMirror', async () => {
+        const head = '<script>\n    head();\n</script>';
+        const foot = '<style>\n    .footer { display: block; }\n</style>';
+        const t = tag({name: 'News', slug: 'news', codeinjection_head: head, codeinjection_foot: foot});
+        const saveApi = fakeTagWorld(t);
+        await renderAdminApp(`/tags/${t.slug}`, FLAGS);
+
+        await page.getByRole('button', {name: /Code injection/}).click();
+        const headerEditor = page.getByRole('textbox', {name: 'Tag header'});
+        const footerEditor = page.getByRole('textbox', {name: 'Tag footer'});
+        await expect.element(headerEditor).toBeVisible();
+        await expect.element(footerEditor).toBeVisible();
+        await expect.poll(() => (headerEditor.element() as HTMLElement).innerText).toBe(head);
+        await expect.poll(() => (footerEditor.element() as HTMLElement).innerText).toBe(foot);
+
+        await headerEditor.fill('<script>updatedHead();</script>');
+        await footerEditor.fill('<style>.footer { display: grid; }</style>');
+        await page.getByRole('button', {name: 'Save'}).click();
+
+        await expect.element(page.getByRole('button', {name: 'Saved'})).toBeVisible();
+        const saved = (saveApi.lastRequest?.body as {tags: Array<Record<string, unknown>>}).tags[0];
+        expect(saved.codeinjection_head).toBe('<script>updatedHead();</script>');
+        expect(saved.codeinjection_foot).toBe('<style>.footer { display: grid; }</style>');
+    });
+
+    it('keeps CodeMirror autocomplete outside the clipped editor surface', async () => {
+        const t = tag({name: 'News', slug: 'news'});
+        fakeTagWorld(t);
+        await renderAdminApp(`/tags/${t.slug}`, FLAGS);
+
+        await page.getByRole('button', {name: /Code injection/}).click();
+        await new Promise((resolve) => {
+            window.setTimeout(resolve, 250);
+        });
+        const headerEditor = page.getByRole('textbox', {name: 'Tag header'});
+        await headerEditor.fill('<');
+
+        await new Promise((resolve) => {
+            window.setTimeout(resolve, 75);
+        });
+
+        await expect.poll(() => {
+            const tooltip = document.querySelector<HTMLElement>('.cm-tooltip-autocomplete');
+            const tooltipParent = tooltip?.closest<HTMLElement>('.cm-tooltip-parent');
+            const container = tooltipParent?.firstElementChild as HTMLElement | null;
+            const editor = headerEditor.element().closest<HTMLElement>('[data-testid="codeinjection-head"]');
+
+            if (!tooltip || !tooltipParent || !container || !editor) {
+                return null;
+            }
+
+            const tooltipRect = tooltip.getBoundingClientRect();
+            const editorRect = editor.getBoundingClientRect();
+
+            return {
+                containerBackground: getComputedStyle(container).backgroundColor,
+                containerHeight: container.getBoundingClientRect().height,
+                escapesEditor: tooltipRect.bottom > editorRect.bottom || tooltipRect.top < editorRect.top,
+                hostParent: tooltipParent.parentElement?.tagName,
+                tooltipOnscreen: tooltipRect.bottom > 0
+                    && tooltipRect.right > 0
+                    && tooltipRect.top < window.innerHeight
+                    && tooltipRect.left < window.innerWidth,
+                tooltipPosition: getComputedStyle(tooltip).position
+            };
+        }).toEqual({
+            containerBackground: 'rgba(0, 0, 0, 0)',
+            containerHeight: 0,
+            escapesEditor: true,
+            hostParent: 'BODY',
+            tooltipOnscreen: true,
+            tooltipPosition: 'fixed'
+        });
+    });
+
     it('redirects to billing during a force upgrade', async () => {
         const config = configResponse(FLAGS);
         config.config.hostSettings = {forceUpgrade: true};
