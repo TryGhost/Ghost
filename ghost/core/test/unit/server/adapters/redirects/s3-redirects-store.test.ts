@@ -6,6 +6,7 @@ import {utils as errorUtils} from '@tryghost/errors';
 import S3RedirectsStore from '../../../../../core/server/adapters/redirects/S3RedirectsStore';
 import {s3Failure} from '../../../../utils/s3-failure';
 
+const BUCKET = 'a-bucket';
 const CANONICAL_KEY = 'content/data/redirects.json';
 const BACKUP_KEY = /^content\/data\/redirects-\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}\.json$/;
 
@@ -17,6 +18,7 @@ interface GhostErrorShape {
     help?: string;
     errorDetails?: {
         operation?: string;
+        bucket?: string;
         key?: string;
         s3ErrorCode?: string;
         statusCode?: number;
@@ -29,7 +31,7 @@ const accessDenied = () => s3Failure({message: 'Access denied.', httpStatusCode:
 const storeWithClient = (send: (command: unknown) => Promise<unknown>) => {
     const client: Pick<S3Client, 'send'> = {send: sinon.stub().callsFake(send)};
     return new S3RedirectsStore({
-        bucket: 'a-bucket',
+        bucket: BUCKET,
         staticFileURLPrefix: 'content/data',
         s3Client: client as S3Client
     });
@@ -95,6 +97,9 @@ describe('UNIT: S3RedirectsStore', function () {
                 assert.equal(err.errorDetails?.s3ErrorCode, 'AccessDenied');
                 assert.equal(err.errorDetails?.statusCode, 403);
                 assert.equal(err.errorDetails?.operation, 'GetObject');
+                // Naming the bucket is what makes a misconfigured one
+                // diagnosable — the hint to check it is no use on its own.
+                assert.equal(err.errorDetails?.bucket, BUCKET);
                 assert.equal(err.errorDetails?.key, CANONICAL_KEY);
                 // The point of the change: the API error handler deep-clones
                 // the error before rendering it, and the raw SDK exception made
