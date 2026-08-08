@@ -133,7 +133,7 @@ catalog:
   fs-extra: 11.3.6
   glob: 13.0.6
   globals: 17.7.0
-  js-yaml: 4.3.0
+  js-yaml: 4.3.1
   jsdom: 29.1.1
   jsonc-parser: 3.3.1
   knex-migrator: 5.4.1
@@ -274,6 +274,8 @@ minimumReleaseAgeExclude:
   - 'knex-migrator'
   # Renovate security update: file-type@21.3.1 || 21.3.2
   - file-type@21.3.1 || 21.3.2
+  # Renovate security update: js-yaml@4.3.1
+  - js-yaml@4.3.1
 
 # configuration for pnpm's changeset functionality
 versioning:

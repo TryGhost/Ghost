@@ -301,8 +301,8 @@ catalogs:
       specifier: 17.7.0
       version: 17.7.0
     js-yaml:
-      specifier: 4.3.0
-      version: 4.3.0
+      specifier: 4.3.1
+      version: 4.3.1
     jsdom:
       specifier: 29.1.1
       version: 29.1.1
@@ -483,8 +483,6 @@ overrides:
   perf-primitives: ^0.0.6
 
 packageExtensionsChecksum: sha256-gFsvptlcVXY90ntXWh9ANUP1/LYyeqXjWoDGw6BCfOY=
-
-pnpmfileChecksum: sha256-Ql0UP36A/aSGPgCeRfBqGbTHOVB+Rs4TPOe+11tcwYo=
 
 importers:
 
@@ -2440,7 +2438,7 @@ importers:
         version: 5.4.3
       js-yaml:
         specifier: 'catalog:'
-        version: 4.3.0
+        version: 4.3.1
       jsdom:
         specifier: 'catalog:'
         version: 29.1.1(@noble/hashes@1.8.0)
@@ -4048,7 +4046,7 @@ importers:
         version: 9.6.1
       js-yaml:
         specifier: 'catalog:'
-        version: 4.3.0
+        version: 4.3.1
       picomatch:
         specifier: 4.0.5
         version: 4.0.5
@@ -16287,6 +16285,10 @@ packages:
 
   js-yaml@4.3.0:
     resolution: {integrity: sha512-1td788aAnnZ5qs7V2QIRl1owjtYpbKt749Y3xauqQgwIIGF/xXWz1wMTEBx5O3LK3lXLVuqXPdPxj2BoFHaW9Q==}
+    hasBin: true
+
+  js-yaml@4.3.1:
+    resolution: {integrity: sha512-CY6crGq313MX8GkwvB7tzgp99vjQxY1++5y10/BKN/GUfHqWaOGQMNZkBvqSzsZKWk/ijwHlWzzkLulsGHhjWQ==}
     hasBin: true
 
   jsdom@16.7.0:
@@ -39111,6 +39113,10 @@ snapshots:
     dependencies:
       argparse: 2.0.1
 
+  js-yaml@4.3.1:
+    dependencies:
+      argparse: 2.0.1
+
   jsdom@16.7.0(supports-color@10.2.2):
     dependencies:
       abab: 2.0.6
@@ -43495,7 +43501,7 @@ snapshots:
 
   read-yaml-file@3.0.0:
     dependencies:
-      js-yaml: 4.3.0
+      js-yaml: 4.3.1
       strip-bom: 5.0.0
 
   readable-stream@1.0.34:
@@ -46989,7 +46995,7 @@ snapshots:
 
   write-yaml-file@6.0.0:
     dependencies:
-      js-yaml: 4.3.0
+      js-yaml: 4.3.1
       write-file-atomic: 7.0.1
 
   ws@7.5.11: {}
