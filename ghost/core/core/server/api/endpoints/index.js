@@ -316,8 +316,8 @@ module.exports = {
         return apiFramework.pipeline(require('./gift-links'), localUtils);
     },
 
-    get giftReminders() {
-        return apiFramework.pipeline(require('./gift-reminders'), localUtils);
+    get gifts() {
+        return apiFramework.pipeline(require('./gifts'), localUtils);
     },
 
     get recommendationsPublic() {

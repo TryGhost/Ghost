@@ -14,6 +14,10 @@ _Avoid_: Purchaser, recipient, redeemer
 The member who claims a gift subscription and receives its access. The redeemer is determined at redemption, not purchase.
 _Avoid_: Recipient, buyer
 
+**Recipient**:
+The person to whom an emailed gift subscription is addressed. A recipient need not be a member and does not become the redeemer until they claim the gift.
+_Avoid_: Receiver, redeemer
+
 ### Purchase and claim
 
 **Gift subscription**:
@@ -24,6 +28,10 @@ _Avoid_: Gift membership, recurring subscription
 A one-time purchase that creates a gift subscription for the buyer to share.
 _Avoid_: Gift checkout
 
+**Delivery method**:
+The buyer's chosen way of handing over a gift subscription: the publication emails it to a recipient, or the buyer shares the redemption link privately.
+_Avoid_: Delivery mode
+
 **Redemption link**:
 A single-use, time-limited link through which a purchased gift subscription can be claimed.
 _Avoid_: Gift Link
@@ -32,11 +40,31 @@ _Avoid_: Gift Link
 The act of claiming an eligible gift subscription. The member who claims it becomes the redeemer and gifted access begins at that point.
 _Avoid_: Gift activation
 
+**Gift delivery**:
+Communicating a gift subscription's redemption link to its recipient by email. Delivery does not claim the gift or begin gifted access.
+_Avoid_: Gift redemption, gift activation
+
+**Gift sent**:
+The recipient email has been accepted by the publication's configured mail transport. This completes gift delivery even when no later provider outcome is available.
+_Avoid_: Gift delivered, provider delivery
+
+**Email delivery status**:
+The current progress of handing a recipient email to the configured mail transport: pending, sending, sent, or failed. It is separate from any later provider-reported outcome.
+_Avoid_: Delivery outcome
+
+**Delivery outcome**:
+A gift email's latest provider-reported result, such as delivered, temporarily failed, or permanently failed. The outcome remains unknown when the configured transport provides no delivery telemetry.
+_Avoid_: Gift sent, delivery state
+
 ### Time and lifecycle
 
 **Gift duration**:
 The total length of gifted access, measured from redemption.
 _Avoid_: Gift cadence, billing period
+
+**Gift availability**:
+The point at which a purchased gift subscription becomes eligible for redemption. Immediate gifts are available after purchase; a chosen delivery date can delay availability.
+_Avoid_: Gift activation, gift redemption
 
 **Gift cadence**:
 The monthly or yearly membership price basis used to value a gift subscription. It does not make the gift recurring.

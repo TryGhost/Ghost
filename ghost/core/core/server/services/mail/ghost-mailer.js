@@ -68,6 +68,8 @@ function createMessage(message) {
     delete cleanMessage.tags;
     delete cleanMessage.forceTextContent;
     delete cleanMessage.trackOpens;
+    delete cleanMessage.trackClicks;
+    delete cleanMessage.disableTracking;
 
     const addresses = getFromAddress(message.from, message.replyTo);
 
@@ -88,9 +90,10 @@ function createMessage(message) {
  * @param {string} [options.message]
  * @param {Error} [options.err]
  * @param {boolean} [options.ignoreDefaultMessage]
+ * @param {string} [options.code]
  * @return {errors.EmailError}
  */
-function createMailError({message, err, ignoreDefaultMessage} = {message: ''}) {
+function createMailError({message, err, ignoreDefaultMessage, code} = {message: ''}) {
     const helpMessage = tpl(messages.checkEmailConfigInstructions, {url: 'https://ghost.org/docs/config/#mail'});
     const defaultErrorMessage = tpl(messages.failedSendingEmailError);
 
@@ -99,6 +102,7 @@ function createMailError({message, err, ignoreDefaultMessage} = {message: ''}) {
     return new errors.EmailError({
         message: ignoreDefaultMessage ? message : fullErrorMessage,
         err: err,
+        code,
         statusCode,
         help: helpMessage
     });
@@ -132,6 +136,8 @@ module.exports = class GhostMailer {
      * @param {string} [message.text] - text version of this message
      * @param {string[]} [message.tags] - optional additional Mailgun tags
      * @param {boolean} [message.trackOpens] - per-message override for Mailgun open tracking
+     * @param {boolean} [message.trackClicks] - per-message override for Mailgun click tracking
+     * @param {boolean} [message.disableTracking] - explicitly disable Mailgun open and click tracking
      * @param {Record<string, string>} [message.headers] - optional additional email headers (merged with defaults)
      * @param {boolean} [message.forceTextContent] - maps to generateTextFromHTML nodemailer option
      * which is: "if set to true uses HTML to generate plain text body part from the HTML if the text is not defined"
@@ -155,8 +161,14 @@ module.exports = class GhostMailer {
             const trackOpens = typeof message.trackOpens === 'boolean' ?
                 message.trackOpens :
                 settingsCache.get('email_track_opens');
-            if (trackOpens) {
+            if (message.disableTracking === true) {
+                messageToSend['o:tracking-opens'] = false;
+                messageToSend['o:tracking-clicks'] = false;
+            } else if (trackOpens) {
                 messageToSend['o:tracking-opens'] = true;
+            }
+            if (message.disableTracking !== true && typeof message.trackClicks === 'boolean') {
+                messageToSend['o:tracking-clicks'] = message.trackClicks;
             }
             if (messageToSend.headers) {
                 for (const [key, value] of Object.entries(messageToSend.headers)) {
@@ -207,13 +219,15 @@ module.exports = class GhostMailer {
 
         if (response.pending && response.pending.length > 0) {
             throw createMailError({
-                message: tpl(messages.reason, {reason: 'Email has been temporarily rejected'})
+                message: tpl(messages.reason, {reason: 'Email has been temporarily rejected'}),
+                code: 'EMAIL_TEMPORARILY_REJECTED'
             });
         }
 
         if (response.errors && response.errors.length > 0) {
             throw createMailError({
-                message: tpl(messages.reason, {reason: response.errors[0].message})
+                message: tpl(messages.reason, {reason: response.errors[0].message}),
+                err: response.errors[0]
             });
         }
 

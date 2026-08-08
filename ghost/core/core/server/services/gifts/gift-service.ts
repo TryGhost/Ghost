@@ -19,6 +19,11 @@ import {
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const GIFT_REMINDER_LEAD_MS = GIFT_REMINDER_LEAD_DAYS * MS_PER_DAY;
 const GIFT_REMINDER_FLOOR_MS = GIFT_REMINDER_FLOOR_DAYS * MS_PER_DAY;
+export const GIFT_DELIVERY_RETRY_MS = 10 * 60 * 1000;
+export const GIFT_DELIVERY_MAX_ATTEMPTS = 10;
+const GIFT_NAME_MAX_LENGTH = 191;
+const GIFT_CHECKOUT_MESSAGE_MAX_LENGTH = 250;
+const GIFT_STORED_MESSAGE_MAX_LENGTH = 500;
 
 const errorMessages = {
     giftNotFound: 'This gift does not exist.',
@@ -83,6 +88,7 @@ interface GiftEmailService {
         cadence: GiftCadence;
         duration: number;
         expiresAt: Date;
+        recipientEmail?: string | null;
     }): Promise<void>;
     sendReminder(data: {
         memberEmail: string;
@@ -90,6 +96,18 @@ interface GiftEmailService {
         tierName: string;
         consumesAt: Date;
     }): Promise<void>;
+    sendGiftDelivery(data: {
+        recipientEmail: string;
+        recipientName: string | null;
+        buyerName: string | null;
+        personalMessage: string | null;
+        token: string;
+        tierName: string;
+        benefits: string[];
+        cadence: GiftCadence;
+        duration: number;
+        expiresAt: Date;
+    }): Promise<{providerMessageId: string | null}>;
 }
 
 interface StaffServiceEmails {
@@ -114,9 +132,9 @@ interface StaffServiceEmails {
     }): Promise<void>;
 }
 
-const GiftPurchaseDataSchema = z.object({
+const GiftPurchaseBaseSchema = z.object({
     token: z.string().min(1),
-    buyerEmail: z.string().min(1),
+    buyerEmail: z.string().email().max(GIFT_NAME_MAX_LENGTH),
     stripeCustomerId: z.string().min(1).nullable(),
     tierId: z.string().min(1),
     cadence: GiftCadenceSchema,
@@ -127,7 +145,37 @@ const GiftPurchaseDataSchema = z.object({
     stripePaymentIntentId: z.string().min(1)
 });
 
-export type GiftPurchaseData = z.infer<typeof GiftPurchaseDataSchema>;
+const GiftPurchaseDeliverySchema = z.discriminatedUnion('deliveryMethod', [
+    z.object({
+        deliveryMethod: z.literal('link'),
+        recipientEmail: z.null().default(null),
+        recipientName: z.null().default(null),
+        buyerName: z.string().max(GIFT_NAME_MAX_LENGTH).nullable().default(null),
+        personalMessage: z.null().default(null),
+        deliverAt: z.null().default(null)
+    }),
+    z.object({
+        deliveryMethod: z.literal('email'),
+        recipientEmail: z.string().email().max(GIFT_NAME_MAX_LENGTH),
+        recipientName: z.string().max(GIFT_NAME_MAX_LENGTH).nullable().default(null),
+        buyerName: z.string().max(GIFT_NAME_MAX_LENGTH).nullable().default(null),
+        personalMessage: z.string().max(GIFT_STORED_MESSAGE_MAX_LENGTH).nullable().default(null),
+        deliverAt: z.null().default(null)
+    })
+]);
+
+const GiftPurchaseDataSchema = z.preprocess((value) => {
+    if (!value || typeof value !== 'object' || (value as {deliveryMethod?: unknown}).deliveryMethod !== undefined) {
+        return value;
+    }
+
+    return {...value, deliveryMethod: 'link'};
+}, GiftPurchaseBaseSchema.and(GiftPurchaseDeliverySchema));
+
+export type GiftPurchaseData = z.input<typeof GiftPurchaseBaseSchema> & (
+    | z.input<typeof GiftPurchaseDeliverySchema>
+    | {deliveryMethod?: undefined}
+);
 
 interface GiftServiceDeps {
     giftRepository: GiftRepository;
@@ -136,6 +184,13 @@ interface GiftServiceDeps {
     giftEmailService: GiftEmailService;
     staffServiceEmails: StaffServiceEmails;
     giftReminderScheduler: Pick<GiftReminderScheduler, 'scheduleFor'>;
+    giftDeliveryScheduler: {
+        wake(): void;
+        scheduleAt(time: Date): Promise<void>;
+    };
+    giftEmailAnalytics: {
+        schedule(): Promise<void>;
+    };
     checkoutAdapter: {
         getCustomerId(buyer: GiftCheckoutBuyer): Promise<string | null>;
         createSession(data: GiftCheckoutSession): Promise<string>;
@@ -166,10 +221,90 @@ export interface StartGiftCheckoutInput {
     offerId?: string;
     cadence?: string;
     duration?: number;
+    deliveryMethod?: unknown;
+    recipientEmail?: unknown;
+    recipientName?: unknown;
+    buyerName?: unknown;
+    personalMessage?: unknown;
+    deliverAt?: unknown;
     metadata: Record<string, unknown>;
     successUrl: string;
     cancelUrl?: string;
     buyer: GiftCheckoutBuyer;
+}
+
+const NullableCheckoutStringSchema = (max: number) => z.preprocess(
+    value => typeof value === 'string' && value.trim() === '' ? null : value,
+    z.string().trim().max(max).nullable().optional().default(null)
+);
+
+const GiftCheckoutDeliverySchema = z.preprocess((value) => {
+    if (!value || typeof value !== 'object' || 'deliveryMethod' in value) {
+        return value;
+    }
+
+    return {...value, deliveryMethod: 'link'};
+}, z.discriminatedUnion('deliveryMethod', [
+    z.object({
+        deliveryMethod: z.literal('link'),
+        recipientEmail: z.null().optional().default(null),
+        recipientName: z.null().optional().default(null),
+        personalMessage: z.null().optional().default(null),
+        deliverAt: z.null().optional().default(null),
+        buyerName: NullableCheckoutStringSchema(GIFT_NAME_MAX_LENGTH)
+    }),
+    z.object({
+        deliveryMethod: z.literal('email'),
+        recipientEmail: z.string().trim().email().max(GIFT_NAME_MAX_LENGTH),
+        recipientName: NullableCheckoutStringSchema(GIFT_NAME_MAX_LENGTH),
+        personalMessage: NullableCheckoutStringSchema(GIFT_CHECKOUT_MESSAGE_MAX_LENGTH),
+        deliverAt: z.null().optional().default(null),
+        buyerName: NullableCheckoutStringSchema(GIFT_NAME_MAX_LENGTH)
+    })
+]));
+
+type GiftCheckoutDelivery = z.infer<typeof GiftCheckoutDeliverySchema>;
+
+type DeliveryFailureKind = 'recoverable' | 'permanent' | 'ambiguous';
+
+function classifyDeliveryFailure(error: unknown): DeliveryFailureKind {
+    const chain: Array<Record<string, unknown>> = [];
+    let current = error;
+
+    for (let depth = 0; depth < 4 && current && typeof current === 'object'; depth += 1) {
+        const value = current as Record<string, unknown>;
+        chain.push(value);
+        current = value.err ?? value.error;
+    }
+
+    for (const value of chain.reverse()) {
+        const responseCode = typeof value.responseCode === 'number' ? value.responseCode : null;
+        if (responseCode !== null) {
+            return responseCode >= 500 ? 'permanent' : 'recoverable';
+        }
+
+        const status = typeof value.status === 'number' ? value.status : null;
+        if (status !== null) {
+            if (status === 408 || status === 429 || status >= 500) {
+                return 'recoverable';
+            }
+            if (status >= 400) {
+                return 'permanent';
+            }
+        }
+
+        if (value.code === 'ENOTFOUND' || value.code === 'EAI_AGAIN' || value.code === 'ECONNREFUSED') {
+            return 'recoverable';
+        }
+        if (value.code === 'EMAIL_TEMPORARILY_REJECTED') {
+            return 'recoverable';
+        }
+        if (value.statusCode === 400) {
+            return 'permanent';
+        }
+    }
+
+    return 'ambiguous';
 }
 
 interface GiftCheckoutSession {
@@ -230,6 +365,43 @@ export class GiftService {
     }
 
     async startCheckout(input: StartGiftCheckoutInput): Promise<{url: string}> {
+        const customizationEnabled = this.deps.labsService.isSet('giftSubCustomization');
+        const populatedDeliveryFields = [
+            input.recipientEmail,
+            input.recipientName,
+            input.buyerName,
+            input.personalMessage,
+            input.deliverAt
+        ].some(value => value !== undefined && value !== null && value !== '');
+
+        if (!customizationEnabled && (input.deliveryMethod === 'email' || populatedDeliveryFields)) {
+            throw new errors.BadRequestError({
+                message: 'Bad Request.',
+                context: 'Gift email delivery is not available'
+            });
+        }
+
+        const parsedDelivery = GiftCheckoutDeliverySchema.safeParse(customizationEnabled ? {
+            deliveryMethod: input.deliveryMethod ?? 'link',
+            recipientEmail: input.recipientEmail,
+            recipientName: input.recipientName,
+            buyerName: input.buyerName,
+            personalMessage: input.personalMessage,
+            deliverAt: input.deliverAt
+        } : {
+            deliveryMethod: 'link'
+        });
+
+        if (!parsedDelivery.success) {
+            const issue = parsedDelivery.error.issues[0];
+            throw new errors.BadRequestError({
+                message: 'Bad Request.',
+                context: `Invalid gift delivery data: ${issue.message}`
+            });
+        }
+
+        const delivery: GiftCheckoutDelivery = parsedDelivery.data;
+
         if (input.offerId) {
             throw new errors.BadRequestError({
                 message: 'Bad Request.',
@@ -247,7 +419,7 @@ export class GiftService {
         let resolvedDuration: ResolvedGiftDuration | null = null;
         let cadence: GiftCadence;
 
-        if (this.deps.labsService.isSet('giftSubCustomization')) {
+        if (customizationEnabled) {
             resolvedDuration = resolveGiftDuration(input);
             cadence = resolvedDuration.cadence;
         } else {
@@ -316,6 +488,7 @@ export class GiftService {
         const customerId = input.buyer.isAuthenticated
             ? await this.deps.checkoutAdapter.getCustomerId(input.buyer)
             : null;
+        const buyerName = delivery.buyerName ?? input.buyer.name;
 
         const url = await this.deps.checkoutAdapter.createSession({
             amount,
@@ -329,7 +502,13 @@ export class GiftService {
                 gift_token: token,
                 tier_id: tierId,
                 cadence,
-                duration: String(duration)
+                duration: String(duration),
+                gift_delivery_method: delivery.deliveryMethod,
+                gift_recipient_email: delivery.recipientEmail ?? '',
+                gift_recipient_name: delivery.recipientName ?? '',
+                gift_buyer_name: buyerName ?? '',
+                gift_personal_message: delivery.personalMessage ?? '',
+                gift_deliver_at: ''
             },
             successUrl: successUrl.toString(),
             cancelUrl: input.cancelUrl,
@@ -379,6 +558,12 @@ export class GiftService {
             token: data.token,
             buyerEmail: data.buyerEmail,
             buyerMemberId: member?.id ?? null,
+            buyerName: data.buyerName,
+            deliveryMethod: data.deliveryMethod,
+            recipientEmail: data.recipientEmail,
+            recipientName: data.recipientName,
+            personalMessage: data.personalMessage,
+            deliverAt: data.deliverAt,
             tierId: data.tierId,
             cadence: data.cadence,
             duration: data.duration,
@@ -389,6 +574,10 @@ export class GiftService {
         });
 
         await this.deps.giftRepository.create(gift);
+
+        if (gift.deliveryMethod === 'email') {
+            this.deps.giftDeliveryScheduler.wake();
+        }
 
         const tier = await this.deps.tiersService.api.read(data.tierId);
 
@@ -418,7 +607,8 @@ export class GiftService {
                 tierName: tier.name,
                 cadence: data.cadence,
                 duration: data.duration,
-                expiresAt: gift.expiresAt
+                expiresAt: gift.expiresAt,
+                recipientEmail: gift.recipientEmail
             });
         } catch (err) {
             logging.error('Failed to send gift purchase confirmation email', err);
@@ -889,6 +1079,123 @@ export class GiftService {
         }
 
         return {expiredCount};
+    }
+
+    async processDeliveries(): Promise<{sentCount: number; skippedCount: number; failedCount: number}> {
+        const pending = await this.deps.giftRepository.findPendingDeliveries();
+        let sentCount = 0;
+        let skippedCount = 0;
+        let failedCount = 0;
+
+        for (const gift of pending) {
+            try {
+                const result = await this.sendDeliveryForGift(gift.token);
+                if (result === 'sent') {
+                    sentCount += 1;
+                } else if (result === 'failed' || result === 'ambiguous') {
+                    failedCount += 1;
+                } else {
+                    skippedCount += 1;
+                }
+            } catch (err) {
+                logging.error(err);
+                failedCount += 1;
+            }
+        }
+
+        return {sentCount, skippedCount, failedCount};
+    }
+
+    private async sendDeliveryForGift(token: string): Promise<'sent' | 'skipped' | 'retry' | 'failed' | 'ambiguous'> {
+        const claimed = await this.deps.giftRepository.claimPendingDelivery(
+            token,
+            new Date(),
+            GIFT_DELIVERY_MAX_ATTEMPTS
+        );
+
+        if (!claimed || !claimed.recipientEmail) {
+            return 'skipped';
+        }
+
+        let tier: Tier | null;
+        try {
+            tier = await this.deps.tiersService.api.read(claimed.tierId);
+        } catch (err) {
+            logging.error(err);
+            return this.retryDelivery(claimed);
+        }
+
+        if (!tier) {
+            logging.error(`Tier not found for gift delivery: ${claimed.tierId}`);
+            return this.retryDelivery(claimed);
+        }
+
+        try {
+            const result = await this.deps.giftEmailService.sendGiftDelivery({
+                recipientEmail: claimed.recipientEmail,
+                recipientName: claimed.recipientName,
+                buyerName: claimed.buyerName,
+                personalMessage: claimed.personalMessage,
+                token: claimed.token,
+                tierName: tier.name,
+                benefits: tier.toJSON().benefits,
+                cadence: claimed.cadence,
+                duration: claimed.duration,
+                expiresAt: claimed.expiresAt
+            });
+
+            const persisted = await this.deps.giftRepository.markDeliverySent(
+                claimed.token,
+                new Date(),
+                result.providerMessageId
+            );
+
+            if (!persisted) {
+                throw new errors.InternalServerError({
+                    message: `Could not persist accepted gift delivery: ${claimed.token}`
+                });
+            }
+
+            if (result.providerMessageId) {
+                try {
+                    await this.deps.giftEmailAnalytics.schedule();
+                } catch (err) {
+                    logging.error('Failed to schedule gift delivery analytics', err);
+                }
+            }
+
+            return 'sent';
+        } catch (err) {
+            logging.error(err);
+            const kind = classifyDeliveryFailure(err);
+
+            if (kind === 'ambiguous') {
+                return 'ambiguous';
+            }
+
+            if (kind === 'permanent') {
+                await this.deps.giftRepository.markDeliveryFailed(claimed.token);
+                return 'failed';
+            }
+
+            return this.retryDelivery(claimed);
+        }
+    }
+
+    private async retryDelivery(gift: Gift): Promise<'retry' | 'failed'> {
+        if (gift.deliveryAttempts >= GIFT_DELIVERY_MAX_ATTEMPTS) {
+            await this.deps.giftRepository.markDeliveryFailed(gift.token);
+            return 'failed';
+        }
+
+        const nextAttemptAt = new Date(Date.now() + GIFT_DELIVERY_RETRY_MS);
+        await this.deps.giftRepository.markDeliveryForRetry(gift.token, nextAttemptAt);
+        await this.deps.giftDeliveryScheduler.scheduleAt(nextAttemptAt);
+        return 'retry';
+    }
+
+    async recordDeliveryOutcome(data: {providerMessageId: string; outcome: 'delivered' | 'temporary_failed' | 'permanent_failed'; timestamp: Date; diagnostics: string | null}): Promise<boolean> {
+        return this.deps.giftRepository.recordDeliveryOutcome(data);
     }
 
     async processReminders(): Promise<{remindedCount: number; skippedCount: number; failedCount: number}> {

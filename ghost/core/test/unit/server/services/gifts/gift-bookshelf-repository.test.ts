@@ -166,6 +166,153 @@ describe('GiftBookshelfRepository', function () {
         assert.equal(gift, null);
     });
 
+    it('claims a due pending email delivery with one atomic conditional update', async function () {
+        const eligibilityBuilder: any = {
+            whereNull: sinon.stub(),
+            orWhere: sinon.stub()
+        };
+        eligibilityBuilder.whereNull.returns(eligibilityBuilder);
+        eligibilityBuilder.orWhere.returns(eligibilityBuilder);
+        const query: any = {
+            where: sinon.stub(),
+            update: sinon.stub(),
+            increment: sinon.stub().resolves(1)
+        };
+        query.where.callsFake((value: unknown) => {
+            if (typeof value === 'function') {
+                value(eligibilityBuilder);
+            }
+            return query;
+        });
+        query.update.returns(query);
+        const trx = sinon.stub().withArgs('gifts').returns(query) as unknown as Knex.Transaction;
+        const GiftModel = {
+            add: sinon.stub(),
+            transaction: sinon.stub().callsFake(async callback => callback(trx)),
+            findOne: sinon.stub().resolves({
+                save: sinon.stub(),
+                toJSON: () => buildBaseGiftRow({
+                    delivery_method: 'email',
+                    delivery_status: 'sending',
+                    delivery_attempts: 1,
+                    delivery_attempt_at: now,
+                    recipient_email: 'recipient@example.com'
+                })
+            }),
+            findAll: sinon.stub()
+        };
+        const repository = createRepository(GiftModel);
+        const now = new Date('2026-08-05T12:00:00.000Z');
+
+        const claimed = await repository.claimPendingDelivery('gift-token', now, 10);
+
+        assert.equal(claimed?.deliveryStatus, 'sending');
+        assert.equal(claimed?.deliveryAttempts, 1);
+        assert.deepEqual(claimed?.deliveryAttemptAt, now);
+        sinon.assert.calledWith(query.where, {
+            token: 'gift-token',
+            status: 'purchased',
+            delivery_method: 'email',
+            delivery_status: 'pending'
+        });
+        sinon.assert.calledWith(query.where, 'delivery_attempts', '<', 10);
+        sinon.assert.calledOnceWithExactly(query.increment, 'delivery_attempts', 1);
+        sinon.assert.calledWith(query.update, {
+            delivery_status: 'sending',
+            delivery_attempt_at: '2026-08-05 12:00:00'
+        });
+        sinon.assert.calledWith(eligibilityBuilder.orWhere, 'deliver_at', '<=', '2026-08-05 12:00:00');
+        sinon.assert.calledWith(eligibilityBuilder.orWhere, 'delivery_attempt_at', '<=', '2026-08-05 12:00:00');
+    });
+
+    it('returns no delivery claim when a concurrent worker or lifecycle change wins', async function () {
+        const builder: any = {whereNull: sinon.stub(), orWhere: sinon.stub()};
+        builder.whereNull.returns(builder);
+        builder.orWhere.returns(builder);
+        const query: any = {where: sinon.stub(), update: sinon.stub(), increment: sinon.stub().resolves(0)};
+        query.where.callsFake((value: unknown) => {
+            if (typeof value === 'function') {
+                value(builder);
+            }
+            return query;
+        });
+        query.update.returns(query);
+        const trx = sinon.stub().withArgs('gifts').returns(query) as unknown as Knex.Transaction;
+        const GiftModel = {
+            add: sinon.stub(),
+            transaction: sinon.stub().callsFake(async callback => callback(trx)),
+            findOne: sinon.stub(),
+            findAll: sinon.stub()
+        };
+        const repository = createRepository(GiftModel);
+
+        assert.equal(await repository.claimPendingDelivery('gift-token', new Date(), 10), null);
+        sinon.assert.notCalled(GiftModel.findOne);
+    });
+
+    it('only finds pending deliveries for purchased gifts', async function () {
+        const GiftModel = {
+            add: sinon.stub(),
+            transaction: sinon.stub(),
+            findOne: sinon.stub(),
+            findAll: sinon.stub().resolves({models: []})
+        };
+        const repository = createRepository(GiftModel);
+
+        assert.deepEqual(await repository.findPendingDeliveries(), []);
+        sinon.assert.calledOnceWithExactly(GiftModel.findAll, {
+            filter: 'status:purchased+delivery_method:email+delivery_status:pending'
+        });
+    });
+
+    it('counts purchased email deliveries stuck in sending before the cutoff', async function () {
+        const GiftModel = {
+            add: sinon.stub(),
+            transaction: sinon.stub(),
+            findOne: sinon.stub(),
+            findAll: sinon.stub().resolves({models: [{}, {}]})
+        };
+        const repository = createRepository(GiftModel);
+        const cutoff = new Date('2026-08-06T11:50:00.000Z');
+
+        assert.equal(await repository.countStuckDeliveries(cutoff), 2);
+        sinon.assert.calledOnceWithExactly(GiftModel.findAll, {
+            columns: ['id'],
+            filter: "status:purchased+delivery_method:email+delivery_status:sending+delivery_attempt_at:<='2026-08-06T11:50:00.000Z'"
+        });
+    });
+
+    it('replaces provider outcomes only through the newer-timestamp condition', async function () {
+        const timestampBuilder: any = {whereNull: sinon.stub(), orWhere: sinon.stub()};
+        timestampBuilder.whereNull.returns(timestampBuilder);
+        timestampBuilder.orWhere.returns(timestampBuilder);
+        const query: any = {where: sinon.stub(), update: sinon.stub().resolves(1)};
+        query.where.callsFake((value: unknown) => {
+            if (typeof value === 'function') {
+                value(timestampBuilder);
+            }
+            return query;
+        });
+        const trx = sinon.stub().withArgs('gifts').returns(query) as unknown as Knex.Transaction;
+        const GiftModel = {
+            add: sinon.stub(),
+            transaction: sinon.stub().callsFake(async callback => callback(trx)),
+            findOne: sinon.stub(),
+            findAll: sinon.stub()
+        };
+        const repository = createRepository(GiftModel);
+        const timestamp = new Date('2026-08-05T12:00:00.000Z');
+
+        assert.equal(await repository.recordDeliveryOutcome({
+            providerMessageId: 'provider-123',
+            outcome: 'delivered',
+            timestamp,
+            diagnostics: null
+        }), true);
+        sinon.assert.calledWith(query.where, {email_provider_message_id: 'provider-123'});
+        sinon.assert.calledOnceWithExactly(timestampBuilder.orWhere, 'delivery_outcome_at', '<', timestamp);
+    });
+
     it('updates an existing gift', async function () {
         const existing = {
             save: sinon.stub().resolves(undefined),
