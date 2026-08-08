@@ -73,11 +73,12 @@ const CODE_BY_STATUS: Partial<Record<number, string>> = {
 };
 
 /**
- * Names that tell an operator nothing: the SDK's placeholder for a response it
- * could not read a code out of, and the generic wrappers Node throws when the
- * request never reached the service.
+ * Strings that tell an operator nothing, whether they arrive as the exception's
+ * name or as its message: the SDK's placeholders for a response it could not
+ * read a code out of, and the generic wrappers Node throws when the request
+ * never reached the service.
  */
-const UNINFORMATIVE_NAMES: ReadonlySet<string> = new Set(['Error', 'Unknown', 'UnknownError', 'AggregateError']);
+const UNINFORMATIVE: ReadonlySet<string> = new Set(['Error', 'Unknown', 'UnknownError', 'AggregateError']);
 
 const ERRNO = /^E[A-Z0-9_]+$/;
 
@@ -119,7 +120,7 @@ function resolveCode(err: S3ErrorShape): string {
 
     // The SDK puts the service error code in `name` (`AccessDenied`,
     // `NoSuchBucket`, ...) whenever it could parse one out of the response.
-    if (err.name && !UNINFORMATIVE_NAMES.has(err.name)) {
+    if (err.name && !UNINFORMATIVE.has(err.name)) {
         return err.name;
     }
 
@@ -168,9 +169,15 @@ export function toS3RequestError(err: unknown, options: S3RequestErrorOptions): 
     const template = options.action === 'save' ? messages.saveFailed : messages.readFailed;
     const helpKey = Object.hasOwn(HELP_BY_CODE, code) ? HELP_BY_CODE[code] : undefined;
 
+    // When the SDK could not read a code out of the response it fills the
+    // message with the same placeholder it used for the name, so reporting it
+    // as the cause would show the operator the word "UnknownError" and nothing
+    // else — the exact kind of non-answer this module exists to remove.
+    const cause = s3Error.message && !UNINFORMATIVE.has(s3Error.message) ? s3Error.message : undefined;
+
     const storeError = new errors.InternalServerError({
         message: tpl(template, {resource: options.resource, code, operation: options.operation}),
-        context: s3Error.message,
+        context: cause,
         help: helpKey && tpl(messages[helpKey]),
         code: options.errorCode,
         errorDetails: {

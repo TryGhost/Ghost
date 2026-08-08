@@ -135,6 +135,26 @@ describe('UNIT: adapters/lib/s3/errors', function () {
             assert.equal(err.errorDetails.s3ErrorCode, 'Forbidden');
             assert.equal(err.message, 'Could not save routes.yaml to storage: Forbidden (HeadObject).');
             assert.match(String(err.help), /credentials/);
+            // The SDK fills the message with the same placeholder it used for
+            // the name; showing an operator the bare word "UnknownError" as the
+            // cause is the non-answer this module exists to remove.
+            assert.equal(err.context, undefined);
+        });
+
+        // S3 and GCS often answer with a <Code> but no <Message>, and the SDK
+        // fills the gap with its placeholder. The code is informative, so it is
+        // reported — the placeholder still is not.
+        it('drops a placeholder message even when the code is informative', function () {
+            const noMessage = Object.assign(new Error('UnknownError'), {
+                name: 'AccessDenied',
+                $metadata: {httpStatusCode: 403}
+            });
+
+            const err = toS3RequestError(noMessage, {...OPTIONS, action: 'save', operation: 'PutObject'});
+
+            assert.equal(err.message, 'Could not save routes.yaml to storage: AccessDenied (PutObject).');
+            assert.equal(err.context, undefined);
+            assert.match(String(err.help), /credentials/);
         });
 
         it('maps the other statuses the SDK leaves unnamed', function () {
