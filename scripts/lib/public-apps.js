@@ -1,12 +1,10 @@
 // Shared vocabulary for the public UMD apps (portal, comments-ui, ...) — the
-// manifest, the config that pins their versions, and the major.minor rule that
-// ties those together.
+// manifest and the config that pins their versions.
 //
-// The rule: Ghost core serves each app from `<pkg>@~<major.minor>` on jsDelivr,
-// so an app's package.json major.minor must equal its defaults.json version.
-// `release-apps` writes that pair and `check-app-version-bump` verifies it on
-// every PR — they have to agree on what major.minor means, hence majorMinor
-// living here rather than one implementation each.
+// Ghost core serves each app from `<pkg>@~<major.minor>` on jsDelivr, so
+// defaults.json is the source of truth for which line an app publishes on:
+// `release-apps` moves it for a minor/major release and
+// `compute-next-app-version` reads it on every publish.
 
 import {writeFile} from 'node:fs/promises';
 import {join} from 'node:path';
@@ -47,19 +45,48 @@ export function appForPackageName(packageName) {
 }
 
 /**
- * The `major.minor` line a version belongs to — the form defaults.json pins and
- * jsDelivr resolves. Rejects a malformed version loudly rather than letting it
- * become a silently wrong CDN path.
+ * Parses a `major.minor` version line as pinned in defaults.json. Rejects a
+ * malformed line loudly rather than letting it become a silently wrong CDN path.
  *
- * @param {string} version
- * @returns {string} e.g. "2.69"
+ * @param {string} line - e.g. "2.69"
+ * @returns {{major: number, minor: number}}
  */
-export function majorMinor(version) {
-    const parsed = semver.parse(version);
+export function parseVersionLine(line) {
+    const parsed = semver.coerce(line);
 
-    if (!parsed) {
-        throw new Error(`Invalid semver version "${version}"`);
+    if (!parsed || `${parsed.major}.${parsed.minor}` !== line) {
+        throw new Error(`Invalid major.minor version line "${line}"`);
     }
 
-    return `${parsed.major}.${parsed.minor}`;
+    return {major: parsed.major, minor: parsed.minor};
+}
+
+/**
+ * The version line an app currently publishes on.
+ *
+ * @param {{configKey: string, packageName: string}} app
+ * @param {object} defaults - the full defaults.json object
+ * @returns {string} e.g. "2.69"
+ */
+export function versionLineFor(app, defaults) {
+    const line = defaults[app.configKey]?.version;
+
+    if (typeof line !== 'string') {
+        throw new Error(`${DEFAULTS_REPO_PATH} has no "${app.configKey}.version" for ${app.packageName}`);
+    }
+
+    return line;
+}
+
+/**
+ * The next version line for a deliberate minor/major release.
+ *
+ * @param {string} line - e.g. "2.69"
+ * @param {'minor'|'major'} bumpType
+ * @returns {string} e.g. "2.70" or "3.0"
+ */
+export function bumpVersionLine(line, bumpType) {
+    const {major, minor} = parseVersionLine(line);
+
+    return bumpType === 'major' ? `${major + 1}.0` : `${major}.${minor + 1}`;
 }

@@ -1,6 +1,7 @@
 // Builds the publish matrix for public UMD apps, filtered to the apps affected
-// in the current run. The output (stdout, compact JSON array) feeds the
-// publish_public_apps job's `strategy.matrix.include` via fromJSON.
+// in the current run plus apps whose defaults.json version line changed. The
+// output (stdout, compact JSON array) feeds the publish_public_apps job's
+// `strategy.matrix.include` via fromJSON.
 //
 // Matrix context isn't available in a job-level `if:`, so the affected gate
 // can't live on the publish job — instead we compute the set here in job_setup
@@ -11,7 +12,8 @@
 // and friends, which are not) and maps each to its defaults.json key. The URLs
 // to purge come from defaults.json itself — see cdnPathsFor.
 
-import {PUBLIC_APPS, readDefaults} from './lib/public-apps.js';
+import {DEFAULTS_REPO_PATH, PUBLIC_APPS, readDefaults} from './lib/public-apps.js';
+import {getFileFromCommit} from './lib/git.js';
 
 const DEFAULTS = await readDefaults();
 
@@ -39,13 +41,43 @@ export function cdnPathsFor(configEntry) {
 }
 
 /**
+ * Reads defaults.json from a previous git revision so version-line releases can
+ * select their app even though Nx associates defaults.json with Ghost core.
+ *
+ * Returns null when that revision can't be read — a base force-pushed away, or a
+ * blob the treeless clone can't fetch. This runs in job_setup, which every other
+ * job depends on, so a git failure must not take the whole run down with it:
+ * without a base to compare against we select on the Nx affected set alone,
+ * which is what this script did before version lines were considered.
+ *
+ * @param {string} revision
+ * @returns {Promise<object|null>}
+ */
+export async function defaultsAtRevision(revision) {
+    try {
+        return JSON.parse(await getFileFromCommit(revision, DEFAULTS_REPO_PATH));
+    } catch (error) {
+        console.error(`Unable to read ${DEFAULTS_REPO_PATH} at ${revision} — selecting on affected projects alone: ${error.message}`);
+        return null;
+    }
+}
+
+/**
  * @param {string[]} affectedProjects - nx project names affected in this run
+ * @param {object} previousDefaults - defaults.json at the Nx base revision
  * @returns {Array<{package_name: string, package_path: string, cdn_paths: string}>}
  *   matrix entries with cdn_paths flattened to the newline-delimited string the
  *   publish job's purge step expects.
  */
-export function buildMatrix(affectedProjects) {
+export function buildMatrix(affectedProjects, previousDefaults = DEFAULTS) {
     const affected = new Set(affectedProjects);
+
+    for (const app of PUBLIC_APPS) {
+        if (previousDefaults[app.configKey]?.version !== DEFAULTS[app.configKey]?.version) {
+            affected.add(app.packageName);
+        }
+    }
+
     return PUBLIC_APPS
         .filter(app => affected.has(app.packageName))
         .map((app) => {
@@ -70,8 +102,9 @@ export function buildMatrix(affectedProjects) {
         });
 }
 
-function main() {
+async function main() {
     const raw = process.argv[2] || '[]';
+    const baseRevision = process.argv[3];
 
     let affectedProjects;
     try {
@@ -84,13 +117,18 @@ function main() {
         throw new Error('affected-projects argument must be a JSON array');
     }
 
+    // No base revision (tag builds skip nx-set-shas) or an unreadable one both
+    // mean "nothing to compare against", which buildMatrix reads as no version
+    // line having moved.
+    const previousDefaults = (baseRevision && await defaultsAtRevision(baseRevision)) || DEFAULTS;
+
     // Stdout is the contract — the workflow captures this into a job output.
-    process.stdout.write(JSON.stringify(buildMatrix(affectedProjects)));
+    process.stdout.write(JSON.stringify(buildMatrix(affectedProjects, previousDefaults)));
 }
 
 if (import.meta.main) {
     try {
-        main();
+        await main();
     } catch (error) {
         console.error(error.message);
         process.exit(1);

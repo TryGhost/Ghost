@@ -9,7 +9,10 @@ export default publicAppViteConfig({
     cssCodeSplit: false,
     overrides: {
         define: {
-            REACT_APP_VERSION: JSON.stringify(pkg.version)
+            // package.json only carries a real version in the publish job, which
+            // sets it before building. Outside that, leave it null so the app
+            // falls back to the version Ghost reports.
+            REACT_APP_VERSION: JSON.stringify(pkg.version === '0.0.0' ? null : pkg.version)
         },
         resolve: {
             dedupe: ['@tryghost/debug']

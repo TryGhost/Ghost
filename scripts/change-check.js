@@ -20,8 +20,8 @@ const {values, positionals} = parseArgs({
 
 const {testPattern = [], changedFilesIgnorePattern = []} = camelcaseKeys(values);
 // Positional args win; otherwise fall back to the PR_* env vars the sibling PR
-// checks use (check-app-version-bump.js, check-migration-integrity.cjs), so CI
-// can invoke this bare. Local runs with neither default to main..HEAD.
+// checks use (check-migration-integrity.cjs), so CI can invoke this bare. Local
+// runs with neither default to main..HEAD.
 const [
     baseCommit = process.env.PR_BASE_SHA || 'main',
     headCommit = process.env.PR_COMPARE_SHA || process.env.GITHUB_SHA || 'HEAD'

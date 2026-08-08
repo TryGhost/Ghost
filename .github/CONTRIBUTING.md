@@ -73,7 +73,7 @@ This records which packages changed and the bump type (patch / minor / major); t
 pnpm change --bump none
 ```
 
-CI enforces this — the **Check app version bump** job fails a pull request that modifies a publishable package without a covering changeset. The pre-commit hook prints a non-blocking reminder locally, and `pnpm change status` shows what's currently pending.
+CI enforces this — the **Check for missing changesets** job fails a pull request that modifies a publishable package without a covering changeset. The pre-commit hook prints a non-blocking reminder locally, and `pnpm change status` shows what's currently pending.
 
 
 ### Submitting Pull Requests

@@ -251,12 +251,14 @@ jobs:
             --json)
           echo "affected_playwright_projects=$PLAYWRIGHT_PROJECTS" >> "$GITHUB_OUTPUT"
 
-          # Build the publish matrix for affected public apps. Matrix context
-          # isn't available in a job-level `if:`, so the publish job can't filter
-          # itself per-app — instead we emit the matrix here and it skips when
-          # the result is `[]`. The publish job's own is_main / event gates keep
-          # tags and PRs from publishing regardless of what this lists.
-          PUBLISH_PUBLIC_APPS_MATRIX=$(node scripts/build-public-apps-matrix.js "$AFFECTED_PROJECTS")
+          # Build the publish matrix for affected public apps, also comparing
+          # defaults.json with the Nx base so a version-line-only release selects
+          # its app. Matrix context isn't available in a job-level `if:`, so the
+          # publish job can't filter itself per-app — instead we emit the matrix
+          # here and it skips when the result is `[]`. The publish job's own
+          # is_main / event gates keep tags and PRs from publishing regardless of
+          # what this lists.
+          PUBLISH_PUBLIC_APPS_MATRIX=$(node scripts/build-public-apps-matrix.js "$AFFECTED_PROJECTS" "$NX_BASE")
           echo "publish_public_apps_matrix=$PUBLISH_PUBLIC_APPS_MATRIX" >> "$GITHUB_OUTPUT"
 
     outputs:
@@ -291,8 +293,8 @@ jobs:
       node_test_matrix: ${{ steps.node_matrix.outputs.matrix }}
       nx_base: ${{ env.NX_BASE }}
 
-  job_app_version_bump_check:
-    name: Check app version bump
+  job_changeset_check:
+    name: Check for missing changesets
     runs-on: ubuntu-latest
     needs: [job_setup]
     if: github.event_name == 'pull_request'
@@ -314,16 +316,10 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
 
-      # The script's only runtime dep is semver, so install @internal/scripts
-      # alone rather than the whole workspace — ~0.5s and a single package.
+      # Install @internal/scripts alone rather than the whole workspace — the
+      # check only needs that package's own runtime deps.
       - name: Install scripts dependencies
         run: pnpm install --frozen-lockfile --filter @internal/scripts --prod --ignore-scripts
-
-      - name: Check app version bump
-        env:
-          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          PR_COMPARE_SHA: ${{ github.event.pull_request.head.sha }}
-        run: node scripts/check-app-version-bump.js
 
       # Fail the PR if a publishable package changed (source or a catalog entry
       # it consumes) but the branch adds no changeset covering it. Prototype of
@@ -2015,7 +2011,7 @@ jobs:
     needs:
       [
         job_setup,
-        job_app_version_bump_check,
+        job_changeset_check,
         job_migration_integrity_check,
         job_lint,
         job_lint_docs,
@@ -2095,13 +2091,12 @@ jobs:
         id: release
         working-directory: ${{ matrix.package_path }}
         run: |
-          # npm is the source of truth for the patch number: compute the next
-          # patch above what's already published in this app's major.minor line
-          # (or publish package.json's exact version when starting a fresh
-          # minor/major line). The patch digit in package.json is otherwise
-          # unused — Ghost core resolves apps via <pkg>@~<major.minor> on
-          # jsDelivr, so the newest published patch is what sites receive.
-          NEXT_VERSION=$(node "$GITHUB_WORKSPACE/scripts/compute-next-app-version.cjs" .)
+          # defaults.json pins the major.minor line and npm is the source of
+          # truth for the patch number, so neither half comes from the app's
+          # package.json — its version field is a placeholder overwritten below.
+          # Ghost core resolves apps via <pkg>@~<major.minor> on jsDelivr, so the
+          # newest published patch is what sites receive.
+          NEXT_VERSION=$(node "$GITHUB_WORKSPACE/scripts/compute-next-app-version.js" "${{ matrix.package_name }}")
           echo "Publishing ${{ matrix.package_name }}@${NEXT_VERSION}"
 
           # Write it before building so the version baked into the bundle

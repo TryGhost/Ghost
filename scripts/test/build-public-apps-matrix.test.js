@@ -2,7 +2,7 @@ import {describe, it} from 'node:test';
 import assert from 'node:assert';
 import {readFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
-import {buildMatrix, cdnPathsFor} from '../build-public-apps-matrix.js';
+import {buildMatrix, cdnPathsFor, defaultsAtRevision} from '../build-public-apps-matrix.js';
 import {PUBLIC_APPS} from '../lib/public-apps.js';
 
 const DEFAULTS = JSON.parse(await readFile(
@@ -28,6 +28,23 @@ describe('buildMatrix', () => {
         assert.strictEqual(matrix[0].package_path, 'apps/portal');
     });
 
+    it('includes an app when only its defaults.json version line changed', () => {
+        const previousDefaults = structuredClone(DEFAULTS);
+        previousDefaults.portal.version = '2.68';
+
+        const matrix = buildMatrix(['ghost', 'ghost-monorepo'], previousDefaults);
+
+        assert.strictEqual(matrix.length, 1);
+        assert.strictEqual(matrix[0].package_name, '@tryghost/portal');
+    });
+
+    it('ignores unrelated changes to an app defaults.json entry', () => {
+        const previousDefaults = structuredClone(DEFAULTS);
+        previousDefaults.portal.url = 'https://example.com/old-portal.js';
+
+        assert.deepStrictEqual(buildMatrix(['ghost', 'ghost-monorepo'], previousDefaults), []);
+    });
+
     it('preserves public-apps.json order regardless of affected order', () => {
         const matrix = buildMatrix([...allPackageNames].reverse());
         assert.deepStrictEqual(matrix.map(e => e.package_name), allPackageNames);
@@ -50,6 +67,29 @@ describe('buildMatrix', () => {
             'https://cdn.jsdelivr.net/ghost/sodo-search@~CURRENT_MINOR/umd/sodo-search.min.js',
             'https://cdn.jsdelivr.net/ghost/sodo-search@~CURRENT_MINOR/umd/main.css'
         ]);
+    });
+});
+
+describe('defaultsAtRevision', () => {
+    it('reads defaults.json at a revision', async () => {
+        const defaults = await defaultsAtRevision('HEAD');
+
+        assert.strictEqual(defaults.sodoSearch.version, DEFAULTS.sodoSearch.version);
+    });
+
+    // This runs in job_setup, which every other job depends on, so an
+    // unreadable base must degrade to "no version line moved" rather than
+    // failing the entire CI run.
+    it('returns null for a revision it cannot read', async () => {
+        assert.strictEqual(await defaultsAtRevision('deadbeefdeadbeefdeadbeefdeadbeefdeadbeef'), null);
+    });
+
+    it('selects on the affected set alone when there is no base to compare', () => {
+        assert.deepStrictEqual(buildMatrix([], DEFAULTS), []);
+        assert.deepStrictEqual(
+            buildMatrix(['@tryghost/portal'], DEFAULTS).map(entry => entry.package_name),
+            ['@tryghost/portal']
+        );
     });
 });
 
