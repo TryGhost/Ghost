@@ -1,7 +1,7 @@
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 
 export interface YamlUploadError {
-    /** One-line summary, safe to use as a toast title. */
+    /** Short summary — the toast title, or the first line of the editor's banner. */
     message: string;
     /** Underlying cause and remediation — often multi-line, so render it pre-wrapped. */
     detail?: string;
@@ -14,10 +14,11 @@ export interface YamlUploadError {
  * handler intact — `prepareUserMessage` only rewrites the message for methods
  * it can map to an action, and `upload` is not one of them. So `message` is the
  * specific thing the server wanted to say, `context` carries the underlying
- * cause (for a YAML error, the line and column), and `help` the next step. The
- * framework's generic handling keeps at most one of the three, so uploads
- * reported "Something went wrong while loading settings, please try again."
- * no matter what actually failed.
+ * cause (for a YAML error, the line and column), and `help` the next step.
+ * The framework's generic handling reads none of the three for these errors —
+ * it only unwraps `ValidationError` — so every upload failure reported
+ * "Something went wrong while loading settings, please try again." regardless
+ * of what actually went wrong.
  *
  * Returns `null` when the failure carries no API error body — a transport
  * error, or the test harness's unmocked-request response — so the caller can

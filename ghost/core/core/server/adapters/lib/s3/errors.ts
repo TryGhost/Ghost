@@ -18,7 +18,7 @@ export type S3Action = 'read' | 'save';
 
 const messages = {
     readFailed: 'Could not read {resource} from storage: {code} ({operation}).',
-    writeFailed: 'Could not save {resource} to storage: {code} ({operation}).',
+    saveFailed: 'Could not save {resource} to storage: {code} ({operation}).',
     permissionsHelp: 'The storage credentials Ghost is configured with are not allowed to perform this operation on the bucket. Check the credentials and the bucket permissions.',
     missingBucketHelp: 'The configured storage bucket could not be found. Check the bucket name, region and endpoint in your storage configuration.',
     transientHelp: 'The storage service is temporarily unavailable or rate limiting requests. Wait a moment and try again.',
@@ -28,9 +28,10 @@ const messages = {
 type HelpKey = 'permissionsHelp' | 'missingBucketHelp' | 'transientHelp' | 'connectivityHelp';
 
 /**
- * Maps the failure codes an operator can actually act on to a next step. Codes
- * are the SDK's error names (which match the S3/GCS XML API error codes) plus
- * the Node.js `errno` codes that surface when the request never reaches the
+ * Maps the failure codes an operator can actually act on to a next step. The
+ * keys are whatever `resolveCode` can produce: S3/GCS XML API error codes, the
+ * SDK's own client-side names, the names `CODE_BY_STATUS` synthesises, and the
+ * Node.js `errno` codes that surface when the request never reaches the
  * service. Anything unmapped gets no `help` rather than a guess.
  */
 const HELP_BY_CODE: Partial<Record<string, HelpKey>> = {
@@ -56,13 +57,13 @@ const HELP_BY_CODE: Partial<Record<string, HelpKey>> = {
 };
 
 /**
- * The S3 error codes an HTTP status implies. Only consulted when the SDK could
- * not name the failure itself — see `resolveCode`.
+ * What to call a failure the SDK could not name — see `resolveCode`. These are
+ * chosen to read like the S3 code the same condition would carry if the
+ * response had had a body to parse one out of, so `403` reports `Forbidden`
+ * rather than a bare status.
  */
 const CODE_BY_STATUS: Partial<Record<number, string>> = {
-    401: 'Forbidden',
     403: 'Forbidden',
-    404: 'NotFound',
     408: 'RequestTimeout',
     429: 'SlowDown',
     500: 'InternalError',
@@ -103,7 +104,7 @@ export function isS3NotFound(err: unknown): boolean {
 /**
  * Derive the code to report. Reporting a placeholder like `Error` or `Unknown`
  * would recreate exactly the "the message tells you nothing" problem this
- * module exists to fix, so three sources are tried in order of specificity.
+ * module exists to fix, so each source is tried in turn, most specific first.
  */
 function resolveCode(err: S3ErrorShape): string {
     const errno = typeof err.code === 'string' ? err.code : undefined;
@@ -142,7 +143,7 @@ function resolveCode(err: S3ErrorShape): string {
 export type S3StorageErrorCode = 'ROUTE_SETTINGS_STORAGE_REQUEST_FAILED' | 'REDIRECTS_STORAGE_REQUEST_FAILED';
 
 export interface S3RequestErrorOptions {
-    /** What the caller was doing — `replace` reports `save` even for its reads. */
+    /** What the caller was doing — a store's write path reports `save` even for the reads it makes along the way. */
     action: S3Action;
     /** The S3 API call that failed. */
     operation: S3Operation;
@@ -164,7 +165,7 @@ export interface S3RequestErrorOptions {
 export function toS3RequestError(err: unknown, options: S3RequestErrorOptions): errors.InternalServerError {
     const s3Error = (err ?? {}) as S3ErrorShape;
     const code = resolveCode(s3Error);
-    const template = options.action === 'save' ? messages.writeFailed : messages.readFailed;
+    const template = options.action === 'save' ? messages.saveFailed : messages.readFailed;
     const helpKey = Object.hasOwn(HELP_BY_CODE, code) ? HELP_BY_CODE[code] : undefined;
 
     const storeError = new errors.InternalServerError({

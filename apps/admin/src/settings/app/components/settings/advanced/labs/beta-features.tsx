@@ -37,7 +37,13 @@ const BetaFeatures: React.FC = () => {
         }
 
         toast.dismiss();
-        toast.error(uploadError.message, {description: uploadError.detail});
+        toast.error(uploadError.message, {
+            // The detail is often a YAML parser pointer, which is meaningless
+            // once its line breaks collapse — and too long to read in the
+            // default five seconds.
+            description: uploadError.detail && <span className='whitespace-pre-wrap'>{uploadError.detail}</span>,
+            duration: uploadError.detail ? 15000 : undefined
+        });
         handleError(error, {withToast: false});
     };
 

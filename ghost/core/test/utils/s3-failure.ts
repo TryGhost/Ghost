@@ -5,10 +5,11 @@
  * response to the exception, which makes the error a circular object graph.
  * Ghost's API error handler deep-clones whatever it is handed, so that graph is
  * what used to turn a real S3 failure into `Maximum call stack size exceeded`.
- * Every suite that exercises the S3 stores' failure paths needs a fixture that
- * really is circular, so they share this one rather than each rebuilding it —
- * a copy that quietly stopped being circular would stop guarding the
- * regression without failing.
+ * The suites that exercise the S3 stores' failure paths share this rather than
+ * each rebuilding it: a copy that quietly stopped being circular would leave
+ * its suite passing against code that never fixed anything. Only
+ * `adapters/lib/s3/errors` asserts the cycle directly, and it does so precisely
+ * to keep this fixture honest for everyone else.
  */
 export const s3Failure = ({
     name = 'AccessDenied',

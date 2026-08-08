@@ -19,7 +19,7 @@ import {
     putObject
 } from '../../../utils/minio';
 import {runStoreContract} from '../../../unit/server/adapters/route-settings/helpers/store-contract';
-import {s3Failure as sdkFailure} from '../../../utils/s3-failure';
+import {s3Failure} from '../../../utils/s3-failure';
 
 const STATIC_PREFIX = 'content/settings';
 const CANONICAL_FILENAME = 'routes.yaml';
@@ -326,7 +326,7 @@ describe('Integration: S3RouteSettingsStore without a live bucket', function () 
     it('recovers the code from the status when the existence check is refused', async function () {
         const store = faultyStore(async (command) => {
             if (command instanceof HeadObjectCommand) {
-                throw sdkFailure({name: 'Unknown', message: 'UnknownError', httpStatusCode: 403, requestId: 'REQ-1'});
+                throw s3Failure({name: 'Unknown', message: 'UnknownError', httpStatusCode: 403, requestId: 'REQ-1'});
             }
             return {};
         });

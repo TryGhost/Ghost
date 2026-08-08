@@ -18,7 +18,7 @@ import {RouteSettingsStoreBase} from '@tryghost/adapter-base-route-settings';
 import S3RouteSettingsStore from '../../../../../core/server/adapters/route-settings/S3RouteSettingsStore';
 import parseYaml from '../../../../../core/server/services/route-settings/yaml-parser';
 import {parseRouteSettings} from '../../../../../core/server/services/route-settings/route-settings-parser';
-import {s3Failure as sdkFailure} from '../../../../utils/s3-failure';
+import {s3Failure} from '../../../../utils/s3-failure';
 
 const REAL_DEFAULTS_PATH = path.join(__dirname, '../../../../../core/server/services/route-settings');
 const CANONICAL_KEY = 'content/settings/routes.yaml';
@@ -57,7 +57,7 @@ interface GhostErrorShape {
     };
 }
 
-const s3Failure = () => sdkFailure({message: 'Access denied.', httpStatusCode: 403});
+const accessDenied = () => s3Failure({message: 'Access denied.', httpStatusCode: 403});
 
 const createNotFound = () => new NotFound({$metadata: {httpStatusCode: 404}, message: 'Not Found'});
 const createNoSuchKey = () => new NoSuchKey({$metadata: {httpStatusCode: 404}, message: 'The specified key does not exist.'});
@@ -245,7 +245,7 @@ describe('UNIT: S3RouteSettingsStore', function () {
                 const client = stubbedClient(async (command) => {
                     sent.push(command);
                     if (command instanceof HeadObjectCommand) {
-                        throw s3Failure();
+                        throw accessDenied();
                     }
                     return {};
                 });
@@ -333,7 +333,7 @@ describe('UNIT: S3RouteSettingsStore', function () {
         describe('S3 failure reporting', function () {
             it('reports the S3 error code, operation and key rather than the raw SDK error', async function () {
                 const client = stubbedClient(async () => {
-                    throw s3Failure();
+                    throw accessDenied();
                 });
 
                 await assert.rejects(createStore(client).get(), (err: GhostErrorShape) => {
@@ -356,7 +356,7 @@ describe('UNIT: S3RouteSettingsStore', function () {
             it('names CopyObject and the backup key when the backup fails', async function () {
                 const client = stubbedClient(async (command) => {
                     if (command instanceof CopyObjectCommand) {
-                        throw s3Failure();
+                        throw accessDenied();
                     }
                     return {};
                 });
@@ -372,7 +372,7 @@ describe('UNIT: S3RouteSettingsStore', function () {
                 const fake = createFakeS3();
                 const client = stubbedClient(async (command) => {
                     if (command instanceof PutObjectCommand) {
-                        throw s3Failure();
+                        throw accessDenied();
                     }
                     return fake.client.send(command as never);
                 });
@@ -387,7 +387,7 @@ describe('UNIT: S3RouteSettingsStore', function () {
             it('names HeadObject when the existence check fails', async function () {
                 const client = stubbedClient(async (command) => {
                     if (command instanceof HeadObjectCommand) {
-                        throw s3Failure();
+                        throw accessDenied();
                     }
                     return {};
                 });
