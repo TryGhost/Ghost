@@ -19,6 +19,7 @@ export type FeedListProps = {
     fetchNextPage: () => void,
     hasNextPage: boolean,
     isFetchingNextPage: boolean
+    showSensitiveMediaByDefault: boolean
 }
 
 const FeedList:React.FC<FeedListProps> = ({
@@ -27,7 +28,8 @@ const FeedList:React.FC<FeedListProps> = ({
     user,
     fetchNextPage,
     hasNextPage,
-    isFetchingNextPage
+    isFetchingNextPage,
+    showSensitiveMediaByDefault
 }) => {
     const navigate = useNavigateWithBasePath();
 
@@ -91,6 +93,7 @@ const FeedList:React.FC<FeedListProps> = ({
                                                         likeCount={activity.object.likeCount ?? 0}
                                                         object={activity.object}
                                                         repostCount={activity.object.repostCount ?? 0}
+                                                        showSensitiveMediaByDefault={showSensitiveMediaByDefault}
                                                         type={activity.type}
                                                         onClick={() => {
                                                             navigate(`/notes/${encodeURIComponent(activity.id)}`);

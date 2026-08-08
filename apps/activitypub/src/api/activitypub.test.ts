@@ -156,6 +156,153 @@ describe('ActivityPubAPI', function () {
         });
     });
 
+    describe('getPreferences', function () {
+        test('It returns the sensitive media display preference', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                'https://activitypub.api/.ghost/activitypub/v1/preferences': {
+                    async assert(_resource, init) {
+                        const headers = new Headers(init?.headers);
+                        expect(init?.method).toEqual('GET');
+                        expect(headers.get('Authorization')).toContain('fake-token');
+                    },
+                    response: JSONResponse({
+                        showSensitiveMedia: true
+                    })
+                }
+            });
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            await expect(api.getPreferences()).resolves.toEqual({
+                showSensitiveMedia: true
+            });
+        });
+
+        test('It defaults showSensitiveMedia to false when it is missing', async function () {
+            const fakeFetch = Fetch({
+                'https://activitypub.api/.ghost/activitypub/v1/preferences': {
+                    response: JSONResponse({})
+                }
+            });
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            await expect(api.getPreferences()).resolves.toEqual({
+                showSensitiveMedia: false
+            });
+        });
+    });
+
+    describe('updatePreferences', function () {
+        test('It saves the sensitive media display preference', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                'https://activitypub.api/.ghost/activitypub/v1/preferences': {
+                    async assert(_resource, init) {
+                        const headers = new Headers(init?.headers);
+                        expect(init?.method).toEqual('PUT');
+                        expect(headers.get('Authorization')).toContain('fake-token');
+                        expect(headers.get('Content-Type')).toEqual('application/json');
+                        expect(init?.body).toEqual(JSON.stringify({
+                            showSensitiveMedia: true
+                        }));
+                    },
+                    response: JSONResponse({
+                        showSensitiveMedia: true
+                    })
+                }
+            });
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            await expect(api.updatePreferences({showSensitiveMedia: true})).resolves.toEqual({
+                showSensitiveMedia: true
+            });
+        });
+
+        test('It can disable the sensitive media display preference', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                'https://activitypub.api/.ghost/activitypub/v1/preferences': {
+                    async assert(_resource, init) {
+                        expect(init?.method).toEqual('PUT');
+                        expect(init?.body).toEqual(JSON.stringify({
+                            showSensitiveMedia: false
+                        }));
+                    },
+                    response: JSONResponse({
+                        showSensitiveMedia: false
+                    })
+                }
+            });
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            await expect(api.updatePreferences({showSensitiveMedia: false})).resolves.toEqual({
+                showSensitiveMedia: false
+            });
+        });
+
+        test('It preserves the submitted preference when the update response has no body', async function () {
+            const fakeFetch = Fetch({
+                'https://activitypub.api/.ghost/activitypub/v1/preferences': {
+                    async assert(_resource, init) {
+                        expect(init?.method).toEqual('PUT');
+                        expect(init?.body).toEqual(JSON.stringify({
+                            showSensitiveMedia: true
+                        }));
+                    },
+                    response: new Response(null, {status: 204})
+                }
+            });
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            await expect(api.updatePreferences({showSensitiveMedia: true})).resolves.toEqual({
+                showSensitiveMedia: true
+            });
+        });
+    });
+
     describe('follow', function () {
         test('It passes the token to the follow endpoint', async function () {
             const fakeFetch = Fetch({
@@ -1355,7 +1502,22 @@ describe('ActivityPubAPI', function () {
                         notifications: [
                             {
                                 id: 'https://example.com/notifications/abc123',
-                                type: 'like'
+                                type: 'like',
+                                post: {
+                                    id: 'https://example.com/posts/sensitive',
+                                    type: 'note',
+                                    title: null,
+                                    content: '<p>Sensitive post</p>',
+                                    url: 'https://example.com/posts/sensitive',
+                                    sensitive: true,
+                                    contentWarning: 'Sensitive topic',
+                                    likeCount: 0,
+                                    likedByMe: false,
+                                    repostCount: 0,
+                                    repostedByMe: false,
+                                    replyCount: 0,
+                                    attachments: []
+                                }
                             },
                             {
                                 id: 'https://example.com/notifications/def456',
@@ -1379,7 +1541,22 @@ describe('ActivityPubAPI', function () {
             expect(actual.notifications).toEqual([
                 {
                     id: 'https://example.com/notifications/abc123',
-                    type: 'like'
+                    type: 'like',
+                    post: {
+                        id: 'https://example.com/posts/sensitive',
+                        type: 'note',
+                        title: null,
+                        content: '<p>Sensitive post</p>',
+                        url: 'https://example.com/posts/sensitive',
+                        sensitive: true,
+                        contentWarning: 'Sensitive topic',
+                        likeCount: 0,
+                        likedByMe: false,
+                        repostCount: 0,
+                        repostedByMe: false,
+                        replyCount: 0,
+                        attachments: []
+                    }
                 },
                 {
                     id: 'https://example.com/notifications/def456',

@@ -4,12 +4,14 @@ import React from 'react';
 import {isApiError} from '@src/api/activitypub';
 import {
     useFeedForUser,
+    usePreferencesForUser,
     useUserDataForUser
 } from '@hooks/use-activity-pub-queries';
 
 const Feed: React.FC = () => {
     const {feedQuery} = useFeedForUser({enabled: true});
     const {data, error, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = feedQuery;
+    const {data: preferences} = usePreferencesForUser();
 
     const activities = (data?.pages.flatMap(page => page.posts) ?? Array.from({length: 5}, (_, index) => ({id: `placeholder-${index}`, object: {}})));
 
@@ -25,6 +27,7 @@ const Feed: React.FC = () => {
         hasNextPage={hasNextPage!}
         isFetchingNextPage={isFetchingNextPage}
         isLoading={isLoading}
+        showSensitiveMediaByDefault={preferences?.showSensitiveMedia ?? false}
         user={user!}
     />;
 };

@@ -5,7 +5,7 @@ import Posts from './components/posts';
 import ProfilePage from './components/profile-page';
 import React, {useEffect} from 'react';
 import {Activity, isApiError} from '@src/api/activitypub';
-import {useAccountFollowsForUser, useAccountForUser, usePostsByAccount, usePostsLikedByAccount} from '@hooks/use-activity-pub-queries';
+import {useAccountFollowsForUser, useAccountForUser, usePostsByAccount, usePostsLikedByAccount, usePreferencesForUser} from '@hooks/use-activity-pub-queries';
 import {useParams} from '@tryghost/admin-x-framework';
 
 export type ProfileTab = 'posts' | 'likes' | 'following' | 'followers';
@@ -13,7 +13,7 @@ export type ProfileTab = 'posts' | 'likes' | 'following' | 'followers';
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface ProfileProps {}
 
-const PostsTab:React.FC<{handle: string}> = ({handle}) => {
+const PostsTab:React.FC<{handle: string, showSensitiveMediaByDefault: boolean}> = ({handle, showSensitiveMediaByDefault}) => {
     const {postsByAccountQuery} = usePostsByAccount(handle ? handle : 'me', {enabled: true});
 
     const {
@@ -33,10 +33,11 @@ const PostsTab:React.FC<{handle: string}> = ({handle}) => {
         isLoading={isLoading}
         noResultsMessage={handle ? `${handle} hasn't posted anything yet` : `You haven't posted anything yet.`}
         posts={posts}
+        showSensitiveMediaByDefault={showSensitiveMediaByDefault}
     />;
 };
 
-const LikesTab: React.FC = () => {
+const LikesTab: React.FC<{showSensitiveMediaByDefault: boolean}> = ({showSensitiveMediaByDefault}) => {
     const {postsLikedByAccountQuery} = usePostsLikedByAccount({enabled: true});
     const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = postsLikedByAccountQuery;
 
@@ -48,6 +49,7 @@ const LikesTab: React.FC = () => {
         isFetchingNextPage={isFetchingNextPage}
         isLoading={isLoading}
         posts={posts}
+        showSensitiveMediaByDefault={showSensitiveMediaByDefault}
     />;
 };
 
@@ -141,6 +143,8 @@ const Profile: React.FC<ProfileProps> = () => {
     const params = useParams();
 
     const {data: account, isLoading: isLoadingAccount, error: accountError, refetch} = useAccountForUser('index', (params.handle || 'me'));
+    const {data: preferences} = usePreferencesForUser();
+    const showSensitiveMediaByDefault = preferences?.showSensitiveMedia ?? false;
 
     useEffect(() => {
         refetch();
@@ -157,8 +161,8 @@ const Profile: React.FC<ProfileProps> = () => {
         };
     }) || [];
 
-    const postsTab = <PostsTab handle={params.handle || ''} />;
-    const likesTab = <LikesTab />;
+    const postsTab = <PostsTab handle={params.handle || ''} showSensitiveMediaByDefault={showSensitiveMediaByDefault} />;
+    const likesTab = <LikesTab showSensitiveMediaByDefault={showSensitiveMediaByDefault} />;
     const followingTab = <FollowingTab handle={params.handle || ''} />;
     const followersTab = <FollowersTab handle={params.handle || ''} />;
 

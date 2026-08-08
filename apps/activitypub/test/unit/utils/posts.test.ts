@@ -11,6 +11,8 @@ describe('mapPostToActivity', function () {
             title: 'Test Post',
             excerpt: 'Test Excerpt',
             summary: 'Test Summary',
+            sensitive: false,
+            contentWarning: null,
             content: 'Test Content',
             url: 'https://example.com/posts/123',
             featureImageUrl: 'https://example.com/posts/123/feature.jpg',
@@ -139,6 +141,8 @@ describe('mapPostToActivity', function () {
         expect(object.name).toBe('Test Post');
         expect(object.content).toBe('Test Content');
         expect(object.summary).toBe('Test Summary');
+        expect(object.sensitive).toBe(false);
+        expect(object.contentWarning).toBe(null);
         expect(object.url).toBe('https://example.com/posts/123');
         expect(object.attributedTo.id).toBe('https://example.com/users/123');
         expect(object.attributedTo.handle).toBe('@testuser@example.com');
@@ -170,6 +174,17 @@ describe('mapPostToActivity', function () {
                 profile_image: 'https://example.com/authors/ghost-author.jpg'
             }]
         });
+    });
+
+    test('it maps sensitive media fields', function () {
+        const object = mapPostToActivity({
+            ...post,
+            sensitive: true,
+            contentWarning: 'Sensitive topic'
+        }).object;
+
+        expect(object.sensitive).toBe(true);
+        expect(object.contentWarning).toBe('Sensitive topic');
     });
 
     test('it maps object engagement properties', function () {

@@ -10,7 +10,8 @@ export type LikesProps = {
     posts: Activity[],
     fetchNextPage: () => void,
     hasNextPage: boolean,
-    isFetchingNextPage: boolean
+    isFetchingNextPage: boolean,
+    showSensitiveMediaByDefault: boolean
 }
 
 const Likes: React.FC<LikesProps> = ({
@@ -18,7 +19,8 @@ const Likes: React.FC<LikesProps> = ({
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-    isLoading
+    isLoading,
+    showSensitiveMediaByDefault
 }) => {
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -78,6 +80,7 @@ const Likes: React.FC<LikesProps> = ({
                             likeCount={activity.object.likeCount}
                             object={activity.object}
                             repostCount={activity.object.repostCount}
+                            showSensitiveMediaByDefault={showSensitiveMediaByDefault}
                             type={activity.type}
                             onClick={() => {
                                 if (activity.object.type === 'Note') {
