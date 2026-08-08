@@ -65,6 +65,7 @@ const PRIVATE_FEATURES = [
     'membersCustomFields',
     'paywallImprovements',
     'giftSubCustomization',
+    'postsListReact',
     'tagDetailsReact'
 ];
 

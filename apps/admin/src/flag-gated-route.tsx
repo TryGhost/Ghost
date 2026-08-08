@@ -1,5 +1,5 @@
 import { EmberFallback, useEmberFeatureFlag } from "./ember-bridge";
-import { Suspense, type ComponentType, type LazyExoticComponent } from "react";
+import { Suspense, type ComponentType, type LazyExoticComponent, type ReactNode } from "react";
 import { useBrowseConfig } from "@tryghost/admin-x-framework/api/config";
 
 /**
@@ -23,10 +23,16 @@ import { useBrowseConfig } from "@tryghost/admin-x-framework/api/config";
  * Errors are deliberately not reported here: `useBrowseConfig` already routes
  * them through the framework's default error handler, and the shell calls the
  * same query, so anything logged here would be a duplicate.
+ *
+ * `fallback` overrides what the Ember side renders, for routes that need more
+ * than a bare EmberFallback while the flag is off — the posts and pages lists
+ * also mount the React gift-link modal host, which the Ember context menu
+ * opens over the state bridge.
  */
-export function FlagGatedRoute({ flag, component: Component }: {
+export function FlagGatedRoute({ flag, component: Component, fallback = <EmberFallback /> }: {
     flag: string;
     component: LazyExoticComponent<ComponentType>;
+    fallback?: ReactNode;
 }) {
     const { data: config, isError, isLoading } = useBrowseConfig();
     const emberFlag = useEmberFeatureFlag(flag);
@@ -38,7 +44,7 @@ export function FlagGatedRoute({ flag, component: Component }: {
     );
 
     if (typeof emberFlag === 'boolean') {
-        return emberFlag ? renderReact() : <EmberFallback />;
+        return emberFlag ? renderReact() : fallback;
     }
 
     if (emberFlag === null) {
@@ -50,11 +56,11 @@ export function FlagGatedRoute({ flag, component: Component }: {
     }
 
     if (isError || !config) {
-        return <EmberFallback />;
+        return fallback;
     }
 
     if (config.config.labs?.[flag] !== true) {
-        return <EmberFallback />;
+        return fallback;
     }
 
     return renderReact();

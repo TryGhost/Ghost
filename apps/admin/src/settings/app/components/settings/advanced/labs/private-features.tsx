@@ -87,6 +87,10 @@ const features: Feature[] = [{
     title: 'Gift subscription customization',
     description: 'Enables fixed-duration gift subscription purchases before publisher configuration is available',
     flag: 'giftSubCustomization'
+}, {
+    title: 'React posts & pages lists',
+    description: 'Renders the posts (/posts) and pages (/pages) list screens from the React app instead of the Ember screens. Gates the migration behind a runtime toggle so we can compare both implementations.',
+    flag: 'postsListReact'
 }];
 
 const AlphaFeatures: React.FC = () => {

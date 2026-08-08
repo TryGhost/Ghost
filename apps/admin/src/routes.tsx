@@ -12,8 +12,8 @@ import MyProfileRedirect from "./my-profile-redirect";
 import { EmberFallback, ForceUpgradeGuard } from "./ember-bridge";
 import type { RouteHandle } from "./ember-bridge";
 import HomeRedirect from "./home-redirect";
-import { EmberListWithGiftLinks } from "./gift-link-modal-host";
 import { MemberDetailGate } from "./member-detail-gate";
+import { PagesListGate, PostsListGate } from "./posts-list-gate";
 import { TagDetailGate } from "./tag-detail-gate";
 import { OnboardingRedirect } from "./onboarding/onboarding-redirect";
 import { type AccessRouteHandle, RouteAccessGuard } from "./route-access-guard";
@@ -43,10 +43,28 @@ const EMBER_ROUTES: string[] = [
 
 const emberFallbackHandle = { allowInForceUpgrade: true } satisfies RouteHandle;
 
+/**
+ * Ember routes that hide the nav sidebar.
+ *
+ * The editor is a focused writing surface and has always hidden it. Ember
+ * arranges that by setting `ui.isFullScreen` when the editor route *activates* —
+ * but with `postsListReact` on, the posts route aborts its transition, so the
+ * editor route never deactivates, and a second visit is a model change on an
+ * already-active route where `activate()` does not run again. The sidebar came
+ * back from the second post onwards.
+ *
+ * Deciding it from the route makes React the authority and removes the
+ * cross-implementation handshake, which had already caused the mirror-image bug
+ * (the sidebar going *missing* on returning from the editor).
+ */
+const EMBER_ROUTES_HIDING_SIDEBAR = new Set(["/editor/*"]);
+
 const emberFallbackRoutes: RouteObject[] = EMBER_ROUTES.map(path => ({
     path,
     Component: EmberFallback,
-    handle: emberFallbackHandle,
+    handle: EMBER_ROUTES_HIDING_SIDEBAR.has(path)
+        ? { ...emberFallbackHandle, hideAdminSidebar: true } satisfies RouteHandle & AdminRouteHandle
+        : emberFallbackHandle,
 }));
 
 const membersRoute: RouteObject = {
@@ -194,8 +212,11 @@ const appRoutes: RouteObject[] = [
             requiresAccess: canAccessSettingsRoute
         } satisfies RouteHandle & AdminRouteHandle & AccessRouteHandle,
     },
-    {path: "/posts", Component: EmberListWithGiftLinks, handle: emberFallbackHandle},
-    {path: "/pages", Component: EmberListWithGiftLinks, handle: emberFallbackHandle},
+    // Served by React or Ember depending on the `postsListReact` Labs flag.
+    // The handle stays emberFallbackHandle so force-upgrade behaves the same
+    // on both sides of the flag.
+    {path: "/posts", Component: PostsListGate, handle: emberFallbackHandle},
+    {path: "/pages", Component: PagesListGate, handle: emberFallbackHandle},
     // Ember-handled routes
     ...emberFallbackRoutes,
     {

@@ -1,5 +1,4 @@
 import {HttpResponse, http} from 'msw';
-import {type Post} from '@tryghost/admin-x-framework/api/posts';
 import {act, renderHook, waitFor} from '@testing-library/react';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {createTestWrapper, mockData, mockServer} from '@test-utils/posts-analytics/msw-helpers';
@@ -96,7 +95,7 @@ describe('usePostSuccessModal', () => {
             authors: [{name: 'John Doe'}],
             email: {email_count: 100, opened_count: 30},
             newsletter: {name: 'Weekly Newsletter'}
-        } as unknown as Partial<Post>);
+        });
 
         // Set up MSW to return the post data
         mockServer.setup({
@@ -266,7 +265,7 @@ describe('usePostSuccessModal', () => {
                 {name: 'Jane Smith'},
                 {name: 'Bob Johnson'}
             ]
-        } as unknown as Partial<Post>);
+        });
 
         mockServer.setup({
             posts: [testPost]
