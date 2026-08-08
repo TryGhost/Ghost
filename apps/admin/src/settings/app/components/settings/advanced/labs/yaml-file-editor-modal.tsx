@@ -1,10 +1,11 @@
 import CodeEditor from '@/settings/app/components/code-editor';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useMemo, useState} from 'react';
-import {APIError, JSONError} from '@tryghost/admin-x-framework/errors';
 import {Button} from '@tryghost/shade/components';
 import {Inline, Text} from '@tryghost/shade/primitives';
 import {SettingsModal} from '@tryghost/shade/patterns';
+import {APIError} from '@tryghost/admin-x-framework/errors';
+import {getYamlUploadError, type YamlUploadError} from './yaml-upload-error';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {toast} from 'sonner';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -19,18 +20,6 @@ export interface YamlFileEditorModalProps {
     onUpload: (file: File) => Promise<unknown>;
     afterClose?: () => void;
 }
-
-const extractErrorMessage = (error: unknown): string => {
-    if (error instanceof JSONError && error.data?.errors?.[0]) {
-        return error.data.errors[0].context || error.data.errors[0].message;
-    }
-
-    if (error instanceof APIError) {
-        return error.message;
-    }
-
-    return 'Something went wrong, please try again.';
-};
 
 const YamlFileEditorModal: React.FC<YamlFileEditorModalProps> = ({
     title,
@@ -48,7 +37,7 @@ const YamlFileEditorModal: React.FC<YamlFileEditorModalProps> = ({
     const [content, setContent] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [loadError, setLoadError] = useState<string | null>(null);
-    const [saveError, setSaveError] = useState<string | null>(null);
+    const [saveError, setSaveError] = useState<YamlUploadError | null>(null);
     const [isSaving, setIsSaving] = useState(false);
 
     const yamlExtension = useMemo(() => import('@codemirror/lang-yaml').then(module => module.yaml()), []);
@@ -117,7 +106,13 @@ const YamlFileEditorModal: React.FC<YamlFileEditorModalProps> = ({
 
             closeModal();
         } catch (error) {
-            setSaveError(extractErrorMessage(error));
+            // A transport-level failure carries no API error body but often
+            // does carry a specific message — "Request is larger than the
+            // maximum file size the server allows" for a 413, say — which is
+            // far more use than a generic retry prompt.
+            setSaveError(getYamlUploadError(error) ?? {
+                message: error instanceof APIError ? error.message : `Could not save ${uploadFilename}, please try again.`
+            });
             handleError(error, {withToast: false});
         } finally {
             setIsSaving(false);
@@ -161,8 +156,13 @@ const YamlFileEditorModal: React.FC<YamlFileEditorModalProps> = ({
                 </div>
 
                 {(loadError || saveError) && (
-                    <div className='mb-4 rounded-sm border border-red bg-red/5 px-4 py-2 text-sm text-red' data-testid='yaml-editor-error'>
-                        {saveError || loadError}
+                    <div className='mb-4 rounded-sm border border-red bg-red/5 px-4 py-2 text-sm text-red' data-testid='yaml-editor-error' role='alert'>
+                        <p className='whitespace-pre-wrap'>{saveError?.message || loadError}</p>
+                        {saveError?.detail && (
+                            // The cause is often a YAML snippet or a parser
+                            // pointer, so the original line breaks matter.
+                            <p className='mt-2 font-mono text-xs whitespace-pre-wrap'>{saveError.detail}</p>
+                        )}
                     </div>
                 )}
 

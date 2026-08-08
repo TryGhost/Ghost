@@ -212,6 +212,98 @@ describe("Advanced settings", () => {
         await expect(settingsScreen.successToast()).toHaveCount(0);
     });
 
+    // A storage-backed site answers an upload with a typed 500 rather than a
+    // validation error. The operator has to be told which S3 failure it was and
+    // what to do about it — a generic "something went wrong" makes the failure
+    // undiagnosable, which is the whole reason the API reports it in detail.
+    const storageFailure = {
+        errors: [{
+            type: "InternalServerError",
+            code: "ROUTE_SETTINGS_STORAGE_REQUEST_FAILED",
+            message: "Could not save routes.yaml to storage: AccessDenied (PutObject).",
+            context: "Access Denied",
+            help: "The storage credentials Ghost is configured with are not allowed to perform this operation on the bucket. Check the credentials and the bucket permissions.",
+        }],
+    };
+
+    it("surfaces a storage failure in the routes editor", async () => {
+        fakeSettingsScreens();
+        fakeAdminEndpoint("GET", "/settings/routes/yaml/", new TextEncoder().encode("routes:\n  /about/: about\n").buffer, {contentType: "text/yaml"});
+        fakeAdminEndpoint("POST", "/settings/routes/yaml/", storageFailure, {status: 500});
+        await renderAdminApp("/settings/labs");
+
+        const section = settingsScreen.section("labs");
+        await section.getByRole("button", {name: "Open"}).click();
+        await section.getByRole("tab", {name: "Beta features"}).click();
+        await section.getByTestId("routes").getByRole("button", {name: "Edit"}).click();
+
+        const modal = page.getByTestId("modal-routes-editor");
+        await expect.element(modal.getByRole("textbox").first()).toBeVisible();
+        await modal.getByRole("button", {name: "Save"}).click();
+
+        const error = modal.getByTestId("yaml-editor-error");
+        await expect.element(error).toHaveTextContent("Could not save routes.yaml to storage: AccessDenied (PutObject).");
+        await expect.element(error).toHaveTextContent("are not allowed to perform this operation on the bucket");
+        await expect.element(modal).toBeVisible();
+
+        await modal.getByRole("button", {name: "Close"}).click();
+        await expect(modal).toHaveCount(0);
+    });
+
+    // The commonest failure: `message` carries only js-yaml's reason, the line
+    // and column live in `context`, and losing them makes the file harder to fix.
+    it("keeps the line and column of a YAML parse error in the routes editor", async () => {
+        fakeSettingsScreens();
+        fakeAdminEndpoint("GET", "/settings/routes/yaml/", new TextEncoder().encode("routes:\n  /about/: about\n").buffer, {contentType: "text/yaml"});
+        fakeAdminEndpoint("POST", "/settings/routes/yaml/", {
+            errors: [{
+                type: "IncorrectUsageError",
+                code: "YAML_PARSER_ERROR",
+                message: "Could not parse provided YAML file: bad indentation of a mapping entry.",
+                context: "bad indentation of a mapping entry (3:7)\n\n 1 | routes:\n 2 |   /about/: about\n 3 |    bad: x\n-----------^",
+                help: "Check provided file for typos and fix the named issues.",
+            }],
+        }, {status: 400});
+        await renderAdminApp("/settings/labs");
+
+        const section = settingsScreen.section("labs");
+        await section.getByRole("button", {name: "Open"}).click();
+        await section.getByRole("tab", {name: "Beta features"}).click();
+        await section.getByTestId("routes").getByRole("button", {name: "Edit"}).click();
+
+        const modal = page.getByTestId("modal-routes-editor");
+        await expect.element(modal.getByRole("textbox").first()).toBeVisible();
+        await modal.getByRole("button", {name: "Save"}).click();
+
+        const error = modal.getByTestId("yaml-editor-error");
+        await expect.element(error).toHaveTextContent("Could not parse provided YAML file: bad indentation of a mapping entry.");
+        await expect.element(error).toHaveTextContent("(3:7)");
+        await expect.element(error).toHaveTextContent("Check provided file for typos");
+
+        await modal.getByRole("button", {name: "Close"}).click();
+        await expect(modal).toHaveCount(0);
+    });
+
+    it("surfaces a storage failure when dropping a routes file", async () => {
+        fakeSettingsScreens();
+        fakeAdminEndpoint("POST", "/settings/routes/yaml/", storageFailure, {status: 500});
+        await renderAdminApp("/settings/labs");
+
+        const section = settingsScreen.section("labs");
+        await section.getByRole("button", {name: "Open"}).click();
+        await section.getByRole("tab", {name: "Beta features"}).click();
+        const input = section.element().querySelector<HTMLInputElement>("#upload-routes");
+        if (!input) {
+            throw new Error("routes upload input was not rendered");
+        }
+        await page.elementLocator(input).upload(new File(["routes: test"], "routes.yml", {type: "text/yaml"}));
+
+        const toast = settingsScreen.errorToast();
+        await expect.element(toast).toHaveTextContent("Could not save routes.yaml to storage: AccessDenied (PutObject).");
+        await expect.element(toast).toHaveTextContent("Check the credentials and the bucket permissions.");
+        await expect(page.getByText("Routes uploaded")).toHaveCount(0);
+    });
+
     it("browses and filters history using the expected NQL", async () => {
         fakeSettingsScreens();
         const usersApi = fakeUsers(currentUserResponse().users as unknown as StaffUser[]);

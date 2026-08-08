@@ -4,8 +4,6 @@ import {
     CopyObjectCommand,
     GetObjectCommand,
     HeadObjectCommand,
-    NoSuchKey,
-    NotFound,
     PutObjectCommand,
     S3Client,
     S3ClientConfig
@@ -17,10 +15,13 @@ import {RouteSettingsStoreBase, type RouteSettings} from '@tryghost/adapter-base
 
 import parseYaml from '../../services/route-settings/yaml-parser';
 import {parseRouteSettings} from '../../services/route-settings/route-settings-parser';
+import {isS3NotFound, toS3RequestError, type S3Action, type S3Operation} from '../lib/s3/errors';
 import {getBackupRouteSettingsFilePath} from './utils';
 
 const YAML_FILENAME = 'routes.yaml';
 const DEFAULT_SETTINGS_FILENAME = 'default-routes.yaml';
+
+const STORAGE_ERROR_CODE = 'ROUTE_SETTINGS_STORAGE_REQUEST_FAILED';
 
 const CONTENT_TYPE = 'application/yaml; charset=utf-8';
 
@@ -118,24 +119,38 @@ export default class S3RouteSettingsStore extends RouteSettingsStoreBase {
     }
 
     async get(): Promise<RouteSettings> {
-        let body: string;
+        const key = this.buildKey();
+
+        // Only the S3 call is wrapped, so the error helper only ever sees an SDK
+        // failure and never has to decide whether an error is already ours.
+        let response;
         try {
-            const response = await this.client.send(new GetObjectCommand({
+            response = await this.client.send(new GetObjectCommand({
                 Bucket: this.bucket,
-                Key: this.buildKey()
+                Key: key
             }));
-            if (!response.Body) {
-                throw new errors.InternalServerError({
-                    message: tpl(messages.missingResponseBody)
-                });
-            }
-            body = await response.Body.transformToString('utf-8');
         } catch (err) {
-            if (this._isNotFound(err)) {
+            if (isS3NotFound(err)) {
                 const defaultContent = await this.readDefaultSettings();
                 return parseRouteSettings(parseYaml(defaultContent), defaultContent);
             }
-            throw err;
+            throw this.toStoreError(err, 'read', 'GetObject', key);
+        }
+
+        if (!response.Body) {
+            throw new errors.InternalServerError({
+                message: tpl(messages.missingResponseBody)
+            });
+        }
+
+        // Streaming the body is a second network round trip, so it fails
+        // separately from the request that opened it — a reset partway through
+        // rejects here, not above.
+        let body: string;
+        try {
+            body = await response.Body.transformToString('utf-8');
+        } catch (err) {
+            throw this.toStoreError(err, 'read', 'GetObject', key);
         }
 
         return parseRouteSettings(parseYaml(body), body);
@@ -145,19 +160,28 @@ export default class S3RouteSettingsStore extends RouteSettingsStoreBase {
         const key = this.buildKey();
 
         if (await this._canonicalExists()) {
-            await this.client.send(new CopyObjectCommand({
-                Bucket: this.bucket,
-                Key: getBackupRouteSettingsFilePath(key),
-                CopySource: `${this.bucket}/${key}`
-            }));
+            const backupKey = getBackupRouteSettingsFilePath(key);
+            try {
+                await this.client.send(new CopyObjectCommand({
+                    Bucket: this.bucket,
+                    Key: backupKey,
+                    CopySource: `${this.bucket}/${key}`
+                }));
+            } catch (err) {
+                throw this.toStoreError(err, 'save', 'CopyObject', backupKey);
+            }
         }
 
-        await this.client.send(new PutObjectCommand({
-            Bucket: this.bucket,
-            Key: key,
-            Body: settings.yamlSource,
-            ContentType: CONTENT_TYPE
-        }));
+        try {
+            await this.client.send(new PutObjectCommand({
+                Bucket: this.bucket,
+                Key: key,
+                Body: settings.yamlSource,
+                ContentType: CONTENT_TYPE
+            }));
+        } catch (err) {
+            throw this.toStoreError(err, 'save', 'PutObject', key);
+        }
     }
 
     private buildKey(): string {
@@ -165,18 +189,21 @@ export default class S3RouteSettingsStore extends RouteSettingsStoreBase {
         return parts.join('/');
     }
 
+    // Only reached from the write path, so a failure here is a failed save even
+    // though the call itself is a read.
     private async _canonicalExists(): Promise<boolean> {
+        const key = this.buildKey();
         try {
             await this.client.send(new HeadObjectCommand({
                 Bucket: this.bucket,
-                Key: this.buildKey()
+                Key: key
             }));
             return true;
         } catch (err) {
-            if (this._isNotFound(err)) {
+            if (isS3NotFound(err)) {
                 return false;
             }
-            throw err;
+            throw this.toStoreError(err, 'save', 'HeadObject', key);
         }
     }
 
@@ -193,7 +220,14 @@ export default class S3RouteSettingsStore extends RouteSettingsStoreBase {
         }
     }
 
-    private _isNotFound(err: unknown): boolean {
-        return err instanceof NotFound || err instanceof NoSuchKey;
+    private toStoreError(err: unknown, action: S3Action, operation: S3Operation, key: string): errors.InternalServerError {
+        return toS3RequestError(err, {
+            action,
+            operation,
+            bucket: this.bucket,
+            key,
+            resource: YAML_FILENAME,
+            errorCode: STORAGE_ERROR_CODE
+        });
     }
 }

@@ -2,8 +2,6 @@ import {
     CopyObjectCommand,
     GetObjectCommand,
     HeadObjectCommand,
-    NoSuchKey,
-    NotFound,
     PutObjectCommand,
     S3Client,
     S3ClientConfig
@@ -15,8 +13,11 @@ import {RedirectsStoreBase, type RedirectConfig} from '@tryghost/adapter-base-re
 
 import {parseJson} from '../../services/custom-redirects/redirect-config-parser';
 import {getBackupRedirectsFilePath} from '../../services/custom-redirects/utils';
+import {isS3NotFound, toS3RequestError, type S3Action, type S3Operation} from '../lib/s3/errors';
 
 const DEFAULT_FILENAME = 'redirects.json';
+
+const STORAGE_ERROR_CODE = 'REDIRECTS_STORAGE_REQUEST_FAILED';
 
 const messages = {
     missingBucket: 'S3RedirectsStore requires a bucket name',
@@ -114,27 +115,45 @@ export default class S3RedirectsStore extends RedirectsStoreBase {
                 sessionToken: options.sessionToken
             };
         }
-        this.client = new S3Client(clientConfig);
+        // `s3Client` is a test-only injection seam — it never comes from config
+        // (nconf holds static values), so it's read from the raw input rather
+        // than the validated schema output.
+        const injectedClient = (config as {s3Client?: S3Client} | null | undefined)?.s3Client;
+        this.client = injectedClient || new S3Client(clientConfig);
     }
 
     async getAll(): Promise<RedirectConfig[]> {
-        let body: string;
+        const key = this.buildKey();
+
+        // Only the S3 call is wrapped, so the error helper only ever sees an SDK
+        // failure and never has to decide whether an error is already ours.
+        let response;
         try {
-            const response = await this.client.send(new GetObjectCommand({
+            response = await this.client.send(new GetObjectCommand({
                 Bucket: this.bucket,
-                Key: this.buildKey()
+                Key: key
             }));
-            if (!response.Body) {
-                throw new errors.InternalServerError({
-                    message: tpl(messages.missingResponseBody)
-                });
-            }
-            body = await response.Body.transformToString('utf-8');
         } catch (err) {
-            if (this._isNotFound(err)) {
+            if (isS3NotFound(err)) {
                 return [];
             }
-            throw err;
+            throw this.toStoreError(err, 'read', 'GetObject', key);
+        }
+
+        if (!response.Body) {
+            throw new errors.InternalServerError({
+                message: tpl(messages.missingResponseBody)
+            });
+        }
+
+        // Streaming the body is a second network round trip, so it fails
+        // separately from the request that opened it — a reset partway through
+        // rejects here, not above.
+        let body: string;
+        try {
+            body = await response.Body.transformToString('utf-8');
+        } catch (err) {
+            throw this.toStoreError(err, 'read', 'GetObject', key);
         }
 
         return parseJson(body);
@@ -144,19 +163,28 @@ export default class S3RedirectsStore extends RedirectsStoreBase {
         const key = this.buildKey();
 
         if (await this._canonicalExists()) {
-            await this.client.send(new CopyObjectCommand({
-                Bucket: this.bucket,
-                Key: getBackupRedirectsFilePath(key),
-                CopySource: `${this.bucket}/${key}`
-            }));
+            const backupKey = getBackupRedirectsFilePath(key);
+            try {
+                await this.client.send(new CopyObjectCommand({
+                    Bucket: this.bucket,
+                    Key: backupKey,
+                    CopySource: `${this.bucket}/${key}`
+                }));
+            } catch (err) {
+                throw this.toStoreError(err, 'save', 'CopyObject', backupKey);
+            }
         }
 
-        await this.client.send(new PutObjectCommand({
-            Bucket: this.bucket,
-            Key: key,
-            Body: JSON.stringify(redirects),
-            ContentType: 'application/json'
-        }));
+        try {
+            await this.client.send(new PutObjectCommand({
+                Bucket: this.bucket,
+                Key: key,
+                Body: JSON.stringify(redirects),
+                ContentType: 'application/json'
+            }));
+        } catch (err) {
+            throw this.toStoreError(err, 'save', 'PutObject', key);
+        }
     }
 
     private buildKey(): string {
@@ -164,22 +192,32 @@ export default class S3RedirectsStore extends RedirectsStoreBase {
         return parts.join('/');
     }
 
+    // Only reached from the write path, so a failure here is a failed save even
+    // though the call itself is a read.
     private async _canonicalExists(): Promise<boolean> {
+        const key = this.buildKey();
         try {
             await this.client.send(new HeadObjectCommand({
                 Bucket: this.bucket,
-                Key: this.buildKey()
+                Key: key
             }));
             return true;
         } catch (err) {
-            if (this._isNotFound(err)) {
+            if (isS3NotFound(err)) {
                 return false;
             }
-            throw err;
+            throw this.toStoreError(err, 'save', 'HeadObject', key);
         }
     }
 
-    private _isNotFound(err: unknown): boolean {
-        return err instanceof NotFound || err instanceof NoSuchKey;
+    private toStoreError(err: unknown, action: S3Action, operation: S3Operation, key: string): errors.InternalServerError {
+        return toS3RequestError(err, {
+            action,
+            operation,
+            bucket: this.bucket,
+            key,
+            resource: DEFAULT_FILENAME,
+            errorCode: STORAGE_ERROR_CODE
+        });
     }
 }

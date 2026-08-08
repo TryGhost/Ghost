@@ -38,8 +38,16 @@ export const parseYaml = (content: string): RedirectConfig[] => {
     try {
         configYaml = yaml.load(content);
     } catch (err) {
+        // `reason` is the one-line summary and `message` adds the line, column
+        // and a pointer at the offending line. They go in separate fields so a
+        // caller can lead with the summary without losing the location — the
+        // route settings parser splits the same error the same way.
+        const parseError = err as Error & {reason?: string};
+
         throw new errors.BadRequestError({
-            message: tpl(messages.yamlParse, {context: (err as Error).message})
+            message: tpl(messages.yamlParse, {context: parseError.reason ?? parseError.message}),
+            context: parseError.message,
+            help: tpl(messages.redirectsHelp)
         });
     }
 

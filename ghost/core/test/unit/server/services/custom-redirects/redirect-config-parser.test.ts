@@ -168,6 +168,23 @@ describe('UNIT: redirect-config-parser', function () {
                 }
             );
         });
+
+        // The summary alone does not say *where* the file is broken. Admin
+        // leads with the message and shows the context underneath, so the
+        // line, column and pointer have to be reported separately rather than
+        // folded into a single multi-line sentence.
+        it('reports the reason as the message and the location as the context', function () {
+            assert.throws(
+                () => parseYaml('301:\n  /a: /b\n   /c: /d\n'),
+                (err: {message?: string; context?: string; help?: string}) => {
+                    assert.match(String(err.message), /^Could not parse YAML: [^\n]+\.$/);
+                    assert.match(String(err.context), /\(3:/);
+                    assert.match(String(err.context), /\^/);
+                    assert.ok(err.help, 'a parse failure should say what to do next');
+                    return true;
+                }
+            );
+        });
     });
 
     describe('serializeToYaml', function () {

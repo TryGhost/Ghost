@@ -4,7 +4,7 @@ import path from 'node:path';
 import {setTimeout as sleep} from 'node:timers/promises';
 import fs from 'fs-extra';
 import sinon from 'sinon';
-import {GetObjectCommand, HeadObjectCommand, ListObjectsV2Command, S3Client} from '@aws-sdk/client-s3';
+import {GetObjectCommand, HeadObjectCommand, ListObjectsV2Command, PutObjectCommand, S3Client} from '@aws-sdk/client-s3';
 
 import S3RouteSettingsStore from '../../../../core/server/adapters/route-settings/S3RouteSettingsStore';
 import parseYaml from '../../../../core/server/services/route-settings/yaml-parser';
@@ -19,6 +19,7 @@ import {
     putObject
 } from '../../../utils/minio';
 import {runStoreContract} from '../../../unit/server/adapters/route-settings/helpers/store-contract';
+import {s3Failure} from '../../../utils/s3-failure';
 
 const STATIC_PREFIX = 'content/settings';
 const CANONICAL_FILENAME = 'routes.yaml';
@@ -42,6 +43,15 @@ taxonomies:
   tag: /tag/{slug}/
   author: /author/{slug}/
 `;
+
+interface StoreErrorShape {
+    errorType?: string;
+    message?: string;
+    code?: string;
+    context?: string;
+    help?: string;
+    errorDetails?: {operation?: string; key?: string; s3ErrorCode?: string; requestId?: string};
+}
 
 const canonicalKey = (tenantPrefix = ''): string => [tenantPrefix, STATIC_PREFIX, CANONICAL_FILENAME].filter(Boolean).join('/');
 
@@ -292,25 +302,100 @@ describe('Integration: S3RouteSettingsStore without a live bucket', function () 
         });
     });
 
-    it('propagates a non-NotFound error raised while reading', async function () {
+    it('reports a non-NotFound error raised while reading', async function () {
         const store = faultyStore(async (command) => {
             if (command instanceof GetObjectCommand) {
-                throw new Error('connection reset');
+                throw Object.assign(new Error('connection reset'), {name: 'NetworkingError'});
             }
             return {};
         });
 
-        await assert.rejects(store.get(), /connection reset/);
+        await assert.rejects(store.get(), (err: StoreErrorShape) => {
+            assert.equal(err.errorType, 'InternalServerError');
+            assert.equal(err.errorDetails?.operation, 'GetObject');
+            assert.equal(err.errorDetails?.s3ErrorCode, 'NetworkingError');
+            assert.equal(err.context, 'connection reset');
+            return true;
+        });
     });
 
-    it('propagates a non-NotFound error raised by the existence check on replace', async function () {
+    // A HEAD response carries no body, so the SDK cannot parse a <Code> out of
+    // a 403 and names the exception 'Unknown'. Since the existence check runs
+    // before every write, this is how a permissions problem on an upload
+    // actually reaches an operator.
+    it('recovers the code from the status when the existence check is refused', async function () {
         const store = faultyStore(async (command) => {
             if (command instanceof HeadObjectCommand) {
-                throw new Error('access denied');
+                throw s3Failure({name: 'Unknown', message: 'UnknownError', httpStatusCode: 403, requestId: 'REQ-1'});
             }
             return {};
         });
 
-        await assert.rejects(store.replace(fromYaml(SAMPLE_YAML)), /access denied/);
+        await assert.rejects(store.replace(fromYaml(SAMPLE_YAML)), (err: StoreErrorShape) => {
+            assert.equal(err.errorType, 'InternalServerError');
+            // The operator asked to save; the backup check is an implementation
+            // detail, and it is named in the details rather than the message.
+            assert.equal(err.message, 'Could not save routes.yaml to storage: Forbidden (HeadObject).');
+            assert.equal(err.code, 'ROUTE_SETTINGS_STORAGE_REQUEST_FAILED');
+            assert.match(String(err.help), /credentials/);
+            assert.equal(err.errorDetails?.operation, 'HeadObject');
+            assert.equal(err.errorDetails?.s3ErrorCode, 'Forbidden');
+            assert.equal(err.errorDetails?.requestId, 'REQ-1');
+            // The whole point: the fixture carries the SDK's circular
+            // `$response`, and none of it may come along — the API error
+            // handler walks the error it is handed, and that graph is what made
+            // it recurse until the stack blew. (The unit suite pins this
+            // against the real `prepareStackForUser`; that helper is not
+            // reachable through this lane's ESM interop of `@tryghost/errors`.)
+            assert.equal((err as {$response?: unknown}).$response, undefined);
+            assert.doesNotThrow(() => JSON.stringify(err));
+            return true;
+        });
+    });
+
+    // The request never reaches S3, so there is no service error code to report
+    // — only the errno says what happened.
+    it('reports the errno when the storage service cannot be reached', async function () {
+        const store = faultyStore(async () => {
+            throw Object.assign(new Error('connect ECONNREFUSED 10.0.0.5:443'), {code: 'ECONNREFUSED'});
+        });
+
+        await assert.rejects(store.get(), (err: StoreErrorShape) => {
+            assert.equal(err.message, 'Could not read routes.yaml from storage: ECONNREFUSED (GetObject).');
+            assert.match(String(err.help), /could not reach the storage service/);
+            return true;
+        });
+    });
+
+    it('reports a body-stream failure against GetObject', async function () {
+        const store = faultyStore(async () => ({
+            Body: {
+                transformToString: async () => {
+                    throw new Error('aborted');
+                }
+            }
+        }));
+
+        await assert.rejects(store.get(), (err: StoreErrorShape) => {
+            assert.equal(err.message, 'Could not read routes.yaml from storage: UnknownError (GetObject).');
+            assert.equal(err.context, 'aborted');
+            return true;
+        });
+    });
+
+    it('reports the write operation and canonical key when the upload fails', async function () {
+        const store = faultyStore(async (command) => {
+            if (command instanceof PutObjectCommand) {
+                throw Object.assign(new Error('Access denied.'), {name: 'AccessDenied'});
+            }
+            return {};
+        });
+
+        await assert.rejects(store.replace(fromYaml(SAMPLE_YAML)), (err: StoreErrorShape) => {
+            assert.equal(err.message, 'Could not save routes.yaml to storage: AccessDenied (PutObject).');
+            assert.equal(err.errorDetails?.operation, 'PutObject');
+            assert.equal(err.errorDetails?.key, canonicalKey());
+            return true;
+        });
     });
 });

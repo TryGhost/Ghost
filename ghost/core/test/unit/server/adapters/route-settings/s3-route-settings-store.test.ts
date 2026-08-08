@@ -12,11 +12,13 @@ import {
     type S3Client
 } from '@aws-sdk/client-s3';
 
+import {utils as errorUtils} from '@tryghost/errors';
 import {RouteSettingsStoreBase} from '@tryghost/adapter-base-route-settings';
 
 import S3RouteSettingsStore from '../../../../../core/server/adapters/route-settings/S3RouteSettingsStore';
 import parseYaml from '../../../../../core/server/services/route-settings/yaml-parser';
 import {parseRouteSettings} from '../../../../../core/server/services/route-settings/route-settings-parser';
+import {s3Failure} from '../../../../utils/s3-failure';
 
 const REAL_DEFAULTS_PATH = path.join(__dirname, '../../../../../core/server/services/route-settings');
 const CANONICAL_KEY = 'content/settings/routes.yaml';
@@ -40,6 +42,22 @@ const fromYaml = (yaml: string) => parseRouteSettings(parseYaml(yaml), yaml);
 
 type StubbedClient = Pick<S3Client, 'send'>;
 type S3Command = GetObjectCommand | HeadObjectCommand | CopyObjectCommand | PutObjectCommand;
+
+interface GhostErrorShape {
+    errorType?: string;
+    message?: string;
+    code?: string;
+    context?: string;
+    errorDetails?: {
+        operation?: string;
+        bucket?: string;
+        key?: string;
+        s3ErrorCode?: string;
+        statusCode?: number;
+    };
+}
+
+const accessDenied = () => s3Failure({message: 'Access denied.', httpStatusCode: 403});
 
 const createNotFound = () => new NotFound({$metadata: {httpStatusCode: 404}, message: 'Not Found'});
 const createNoSuchKey = () => new NoSuchKey({$metadata: {httpStatusCode: 404}, message: 'The specified key does not exist.'});
@@ -227,12 +245,15 @@ describe('UNIT: S3RouteSettingsStore', function () {
                 const client = stubbedClient(async (command) => {
                     sent.push(command);
                     if (command instanceof HeadObjectCommand) {
-                        throw new Error('access denied');
+                        throw accessDenied();
                     }
                     return {};
                 });
 
-                await assert.rejects(createStore(client).replace(fromYaml(SAMPLE_YAML)), /access denied/);
+                await assert.rejects(createStore(client).replace(fromYaml(SAMPLE_YAML)), (err: GhostErrorShape) => {
+                    assert.equal(err.errorDetails?.s3ErrorCode, 'AccessDenied');
+                    return true;
+                });
                 assert.equal(putCommands(sent).length, 0);
             });
         });
@@ -274,21 +295,107 @@ describe('UNIT: S3RouteSettingsStore', function () {
                 });
             });
 
+            // The missing-body guard sits outside the wrapped block, so it must
+            // surface as its own error rather than being relabelled a storage
+            // request failure.
             it('throws InternalServerError when the S3 response has no body', async function () {
                 const client = stubbedClient(async () => ({Body: undefined}));
 
-                await assert.rejects(createStore(client).get(), (err: {errorType?: string}) => {
+                await assert.rejects(createStore(client).get(), (err: GhostErrorShape) => {
                     assert.equal(err.errorType, 'InternalServerError');
+                    assert.equal(err.code, null);
                     return true;
                 });
             });
 
-            it('propagates non-NotFound S3 errors instead of falling back to defaults', async function () {
+            it('reports a body-stream failure against GetObject', async function () {
+                const client = stubbedClient(async () => ({
+                    Body: {
+                        transformToString: async () => {
+                            throw Object.assign(new Error('aborted'), {code: 'ECONNRESET'});
+                        }
+                    }
+                } as never));
+
+                await assert.rejects(createStore(client).get(), (err: GhostErrorShape) => {
+                    assert.equal(err.code, 'ROUTE_SETTINGS_STORAGE_REQUEST_FAILED');
+                    assert.equal(err.errorDetails?.operation, 'GetObject');
+                    assert.equal(err.errorDetails?.s3ErrorCode, 'ECONNRESET');
+                    return true;
+                });
+            });
+        });
+
+        // The API error handler deep-clones whatever it is handed. A raw SDK
+        // exception carries a circular reference to its HTTP response, so it
+        // used to surface as "Maximum call stack size exceeded" and the real S3
+        // failure never reached the operator.
+        describe('S3 failure reporting', function () {
+            it('reports the S3 error code, operation and key rather than the raw SDK error', async function () {
                 const client = stubbedClient(async () => {
-                    throw new Error('AccessDenied');
+                    throw accessDenied();
                 });
 
-                await assert.rejects(createStore(client).get(), /AccessDenied/);
+                await assert.rejects(createStore(client).get(), (err: GhostErrorShape) => {
+                    assert.equal(err.errorType, 'InternalServerError');
+                    assert.equal(err.message, 'Could not read routes.yaml from storage: AccessDenied (GetObject).');
+                    assert.equal(err.code, 'ROUTE_SETTINGS_STORAGE_REQUEST_FAILED');
+                    assert.equal(err.context, 'Access denied.');
+                    assert.equal(err.errorDetails?.s3ErrorCode, 'AccessDenied');
+                    assert.equal(err.errorDetails?.statusCode, 403);
+                    assert.equal(err.errorDetails?.operation, 'GetObject');
+                    assert.equal(err.errorDetails?.key, CANONICAL_KEY);
+                    // The point of the change: the API error handler
+                    // deep-clones the error before rendering it, and the raw
+                    // SDK exception made that recurse until the stack blew.
+                    assert.doesNotThrow(() => errorUtils.prepareStackForUser(err as Error));
+                    return true;
+                });
+            });
+
+            it('names CopyObject and the backup key when the backup fails', async function () {
+                const client = stubbedClient(async (command) => {
+                    if (command instanceof CopyObjectCommand) {
+                        throw accessDenied();
+                    }
+                    return {};
+                });
+
+                await assert.rejects(createStore(client).replace(fromYaml(SAMPLE_YAML)), (err: GhostErrorShape) => {
+                    assert.equal(err.errorDetails?.operation, 'CopyObject');
+                    assert.match(String(err.errorDetails?.key), /^content\/settings\/routes-\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}\.yaml$/);
+                    return true;
+                });
+            });
+
+            it('names PutObject and the canonical key when the write fails', async function () {
+                const fake = createFakeS3();
+                const client = stubbedClient(async (command) => {
+                    if (command instanceof PutObjectCommand) {
+                        throw accessDenied();
+                    }
+                    return fake.client.send(command as never);
+                });
+
+                await assert.rejects(createStore(client).replace(fromYaml(SAMPLE_YAML)), (err: GhostErrorShape) => {
+                    assert.equal(err.errorDetails?.operation, 'PutObject');
+                    assert.equal(err.errorDetails?.key, CANONICAL_KEY);
+                    return true;
+                });
+            });
+
+            it('names HeadObject when the existence check fails', async function () {
+                const client = stubbedClient(async (command) => {
+                    if (command instanceof HeadObjectCommand) {
+                        throw accessDenied();
+                    }
+                    return {};
+                });
+
+                await assert.rejects(createStore(client).replace(fromYaml(SAMPLE_YAML)), (err: GhostErrorShape) => {
+                    assert.equal(err.errorDetails?.operation, 'HeadObject');
+                    return true;
+                });
             });
         });
     });
