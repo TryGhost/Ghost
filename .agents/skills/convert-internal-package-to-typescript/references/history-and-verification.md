@@ -34,14 +34,17 @@ than forcing a misleading rename.
 ## Compatibility checks
 
 Inspect actual consumers before choosing output formats. For the normal
-internal-package contract, verify at least:
+internal-package contract, first verify from the worktree that a consumer using
+the `source` condition resolves and loads raw TypeScript in development/tests.
 
-- a source-condition consumer can load raw TypeScript in development/tests;
+Then build and pack the package. Verify against the packed artifact that:
+
 - plain Node can import the compiled ESM entry point;
 - any existing CommonJS consumer can `require()` the compiled entry point on
   Ghost's supported Node versions;
 - the compiled module graph contains no top-level `await`;
-- all declared export paths exist after build.
+- the shipped `types`, `default` and `main` targets resolve to files in the
+  artifact.
 
 Do not add a second CommonJS build speculatively. Record and test any required
 exception in the package README and configuration.
@@ -58,7 +61,6 @@ Confirm that:
 - production execution does not read from `src/`;
 - `files` includes the built output and excludes authored source unless the
   package contract explicitly says otherwise;
-- package exports, `main` and `types` resolve to files in the artifact;
 - consumer behavior is tested against the artifact, not only the worktree.
 
 ## Review the final diff
