@@ -102,6 +102,36 @@ function createPublicFileMiddleware(location, file, mime, maxAge, options = {}) 
     };
 }
 
+/**
+ * Card assets are assembled in memory from a build-time manifest, so there's no
+ * file on disk to read — see services/assets-minification/card-assets.js
+ *
+ * @param {'css'|'js'} type
+ * @param {string} mime
+ * @param {number} maxAge
+ */
+function createCardAssetMiddleware(type, mime, maxAge) {
+    return function serveCardAssetMiddleware(req, res, next) {
+        const bundle = cardAssets.getBundle(type);
+
+        if (!bundle) {
+            return next(new errors.NotFoundError({
+                message: tpl(messages.fileNotFound),
+                code: 'PUBLIC_FILE_NOT_FOUND',
+                property: `cards.min.${type}`
+            }));
+        }
+
+        res.writeHead(200, {
+            'Content-Type': mime,
+            'Content-Length': Buffer.byteLength(bundle.content),
+            ETag: `"${bundle.hash}"`,
+            'Cache-Control': `public, max-age=${maxAge}`
+        });
+        res.end(bundle.content);
+    };
+}
+
 // Handles requests to robots.txt and favicon.ico (and caches them)
 function servePublicFile(location, file, type, maxAge, options = {}) {
     const publicFileMiddleware = createPublicFileMiddleware(location, file, type, maxAge, options);
@@ -127,9 +157,9 @@ function servePublicFiles(siteApp) {
     // Traffic analytics tracking script
     siteApp.get('/public/ghost-stats.min.js', createPublicFileMiddleware('static', 'public/ghost-stats.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
 
-    // Card assets (built on the fly)
-    siteApp.get('/public/cards.min.css', cardAssets.serveMiddleware(), createPublicFileMiddleware('built', 'public/cards.min.css', 'text/css', config.get('caching:publicAssets:maxAge')));
-    siteApp.get('/public/cards.min.js', cardAssets.serveMiddleware(), createPublicFileMiddleware('built', 'public/cards.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
+    // Card assets (assembled in memory per active theme)
+    siteApp.get('/public/cards.min.css', createCardAssetMiddleware('css', 'text/css', config.get('caching:publicAssets:maxAge')));
+    siteApp.get('/public/cards.min.js', createCardAssetMiddleware('js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
 
     // Comment counts
     siteApp.get('/public/comment-counts.min.js', createPublicFileMiddleware('static', 'public/comment-counts.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));

@@ -392,6 +392,34 @@ describe('Default Frontend routing', function () {
                 .expect(200)
                 .expect(assertCorrectFrontendHeaders);
         });
+
+        it('should retrieve card assets', async function () {
+            const css = await request.get('/public/cards.min.css')
+                .expect('Cache-Control', testUtils.cacheRules.year)
+                .expect('Content-Type', 'text/css')
+                .expect(200)
+                .expect(assertCorrectFrontendHeaders);
+
+            assert.match(css.text, /\.kg-/);
+
+            await request.get('/public/cards.min.js')
+                .expect('Content-Type', 'application/javascript')
+                .expect(200);
+        });
+
+        it('should serve card assets under the same hash the page rendered', async function () {
+            const page = await request.get('/').expect(200);
+            const href = cheerio.load(page.text)('link[href*="cards.min.css"]').attr('href');
+
+            assertExists(href);
+
+            const [, renderedHash] = href.match(/\?v=([^&#]+)/);
+
+            // The hash is derived from the bundle contents, so it must survive a
+            // restart and match across processes — see card-assets.js
+            const asset = await request.get(`/public/cards.min.css?v=${renderedHash}`).expect(200);
+            assert.equal(asset.headers.etag, `"${renderedHash}"`);
+        });
     });
 
     describe('Site Map', function () {
