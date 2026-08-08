@@ -1,10 +1,10 @@
 import CodeEditor from '@/settings/app/components/code-editor';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useMemo, useState} from 'react';
-import {APIError, JSONError} from '@tryghost/admin-x-framework/errors';
 import {Button} from '@tryghost/shade/components';
 import {Inline, Text} from '@tryghost/shade/primitives';
 import {SettingsModal} from '@tryghost/shade/patterns';
+import {extractYamlUploadError} from './yaml-upload-error';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {toast} from 'sonner';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -19,18 +19,6 @@ export interface YamlFileEditorModalProps {
     onUpload: (file: File) => Promise<unknown>;
     afterClose?: () => void;
 }
-
-const extractErrorMessage = (error: unknown): string => {
-    if (error instanceof JSONError && error.data?.errors?.[0]) {
-        return error.data.errors[0].context || error.data.errors[0].message;
-    }
-
-    if (error instanceof APIError) {
-        return error.message;
-    }
-
-    return 'Something went wrong, please try again.';
-};
 
 const YamlFileEditorModal: React.FC<YamlFileEditorModalProps> = ({
     title,
@@ -117,7 +105,7 @@ const YamlFileEditorModal: React.FC<YamlFileEditorModalProps> = ({
 
             closeModal();
         } catch (error) {
-            setSaveError(extractErrorMessage(error));
+            setSaveError(extractYamlUploadError(error));
             handleError(error, {withToast: false});
         } finally {
             setIsSaving(false);

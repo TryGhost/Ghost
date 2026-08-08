@@ -343,7 +343,9 @@ describe('Integration: S3RouteSettingsStore without a live bucket', function () 
 
         await assert.rejects(store.replace(fromYaml(SAMPLE_YAML)), (err: StoreErrorShape) => {
             assert.equal(err.errorType, 'InternalServerError');
-            assert.equal(err.message, 'Could not read routes.yaml from storage: Forbidden (HeadObject).');
+            // The operator asked to save; the backup check is an implementation
+            // detail, and it is named in the details rather than the message.
+            assert.equal(err.message, 'Could not save routes.yaml to storage: Forbidden (HeadObject).');
             assert.equal(err.code, 'ROUTE_SETTINGS_STORAGE_REQUEST_FAILED');
             assert.match(String(err.help), /credentials/);
             assert.equal(err.errorDetails?.operation, 'HeadObject');

@@ -7,6 +7,7 @@ import {ActionList, Button, Dropzone} from '@tryghost/shade/components';
 import {Inline, Stack} from '@tryghost/shade/primitives';
 import {downloadRedirects, useUploadRedirects} from '@tryghost/admin-x-framework/api/redirects';
 import {downloadRoutes, useUploadRoutes} from '@tryghost/admin-x-framework/api/routes';
+import {extractYamlUploadError} from './yaml-upload-error';
 import {getSettingValue} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'sonner';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
@@ -89,7 +90,8 @@ const BetaFeatures: React.FC = () => {
                                     await uploadRedirects(file);
                                     toast.success('Redirects uploaded');
                                 } catch (e) {
-                                    handleError(e);
+                                    toast.error(extractYamlUploadError(e));
+                                    handleError(e, {withToast: false});
                                 } finally {
                                     setRedirectsUploading(false);
                                 }
@@ -116,7 +118,8 @@ const BetaFeatures: React.FC = () => {
                                     await uploadRoutes(file);
                                     toast.success('Routes uploaded');
                                 } catch (e) {
-                                    handleError(e);
+                                    toast.error(extractYamlUploadError(e));
+                                    handleError(e, {withToast: false});
                                 } finally {
                                     setRoutesUploading(false);
                                 }

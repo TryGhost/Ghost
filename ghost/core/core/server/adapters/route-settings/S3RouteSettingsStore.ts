@@ -15,7 +15,7 @@ import {RouteSettingsStoreBase, type RouteSettings} from '@tryghost/adapter-base
 
 import parseYaml from '../../services/route-settings/yaml-parser';
 import {parseRouteSettings} from '../../services/route-settings/route-settings-parser';
-import {isS3NotFound, toS3RequestError, type S3Operation} from '../lib/s3/errors';
+import {isS3NotFound, toS3RequestError, type S3Action, type S3Operation} from '../lib/s3/errors';
 import {getBackupRouteSettingsFilePath} from './utils';
 
 const YAML_FILENAME = 'routes.yaml';
@@ -134,7 +134,7 @@ export default class S3RouteSettingsStore extends RouteSettingsStoreBase {
                 const defaultContent = await this.readDefaultSettings();
                 return parseRouteSettings(parseYaml(defaultContent), defaultContent);
             }
-            throw this.toStoreError(err, 'GetObject', key);
+            throw this.toStoreError(err, 'read', 'GetObject', key);
         }
 
         if (!response.Body) {
@@ -150,7 +150,7 @@ export default class S3RouteSettingsStore extends RouteSettingsStoreBase {
         try {
             body = await response.Body.transformToString('utf-8');
         } catch (err) {
-            throw this.toStoreError(err, 'GetObject', key);
+            throw this.toStoreError(err, 'read', 'GetObject', key);
         }
 
         return parseRouteSettings(parseYaml(body), body);
@@ -168,7 +168,7 @@ export default class S3RouteSettingsStore extends RouteSettingsStoreBase {
                     CopySource: `${this.bucket}/${key}`
                 }));
             } catch (err) {
-                throw this.toStoreError(err, 'CopyObject', backupKey);
+                throw this.toStoreError(err, 'save', 'CopyObject', backupKey);
             }
         }
 
@@ -180,7 +180,7 @@ export default class S3RouteSettingsStore extends RouteSettingsStoreBase {
                 ContentType: CONTENT_TYPE
             }));
         } catch (err) {
-            throw this.toStoreError(err, 'PutObject', key);
+            throw this.toStoreError(err, 'save', 'PutObject', key);
         }
     }
 
@@ -189,6 +189,8 @@ export default class S3RouteSettingsStore extends RouteSettingsStoreBase {
         return parts.join('/');
     }
 
+    // Only reached from the write path, so a failure here is a failed save even
+    // though the call itself is a read.
     private async _canonicalExists(): Promise<boolean> {
         const key = this.buildKey();
         try {
@@ -201,7 +203,7 @@ export default class S3RouteSettingsStore extends RouteSettingsStoreBase {
             if (isS3NotFound(err)) {
                 return false;
             }
-            throw this.toStoreError(err, 'HeadObject', key);
+            throw this.toStoreError(err, 'save', 'HeadObject', key);
         }
     }
 
@@ -218,8 +220,9 @@ export default class S3RouteSettingsStore extends RouteSettingsStoreBase {
         }
     }
 
-    private toStoreError(err: unknown, operation: S3Operation, key: string): errors.InternalServerError {
+    private toStoreError(err: unknown, action: S3Action, operation: S3Operation, key: string): errors.InternalServerError {
         return toS3RequestError(err, {
+            action,
             operation,
             bucket: this.bucket,
             key,

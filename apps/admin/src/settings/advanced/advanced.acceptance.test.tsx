@@ -212,6 +212,62 @@ describe("Advanced settings", () => {
         await expect(settingsScreen.successToast()).toHaveCount(0);
     });
 
+    // A storage-backed site answers an upload with a typed 500 rather than a
+    // validation error. The operator has to be told which S3 failure it was and
+    // what to do about it — a generic "something went wrong" makes the failure
+    // undiagnosable, which is the whole reason the API reports it in detail.
+    const storageFailure = {
+        errors: [{
+            type: "InternalServerError",
+            code: "ROUTE_SETTINGS_STORAGE_REQUEST_FAILED",
+            message: "Could not save routes.yaml to storage: AccessDenied (PutObject).",
+            context: "Access Denied",
+            help: "The storage credentials Ghost is configured with are not allowed to perform this operation on the bucket.",
+        }],
+    };
+
+    it("surfaces a storage failure in the routes editor", async () => {
+        fakeSettingsScreens();
+        fakeAdminEndpoint("GET", "/settings/routes/yaml/", new TextEncoder().encode("routes:\n  /about/: about\n").buffer, {contentType: "text/yaml"});
+        fakeAdminEndpoint("POST", "/settings/routes/yaml/", storageFailure, {status: 500});
+        await renderAdminApp("/settings/labs");
+
+        const section = settingsScreen.section("labs");
+        await section.getByRole("button", {name: "Open"}).click();
+        await section.getByRole("tab", {name: "Beta features"}).click();
+        await section.getByTestId("routes").getByRole("button", {name: "Edit"}).click();
+
+        const modal = page.getByTestId("modal-routes-editor");
+        await expect.element(modal.getByRole("textbox").first()).toBeVisible();
+        await modal.getByRole("button", {name: "Save"}).click();
+
+        const error = modal.getByTestId("yaml-editor-error");
+        await expect.element(error).toHaveTextContent("Could not save routes.yaml to storage: AccessDenied (PutObject).");
+        await expect.element(error).toHaveTextContent("are not allowed to perform this operation on the bucket");
+        await expect.element(modal).toBeVisible();
+
+        await modal.getByRole("button", {name: "Close"}).click();
+        await expect(modal).toHaveCount(0);
+    });
+
+    it("surfaces a storage failure when dropping a routes file", async () => {
+        fakeSettingsScreens();
+        fakeAdminEndpoint("POST", "/settings/routes/yaml/", storageFailure, {status: 500});
+        await renderAdminApp("/settings/labs");
+
+        const section = settingsScreen.section("labs");
+        await section.getByRole("button", {name: "Open"}).click();
+        await section.getByRole("tab", {name: "Beta features"}).click();
+        const input = section.element().querySelector<HTMLInputElement>("#upload-routes");
+        if (!input) {
+            throw new Error("routes upload input was not rendered");
+        }
+        await page.elementLocator(input).upload(new File(["routes: test"], "routes.yml", {type: "text/yaml"}));
+
+        await expect.element(page.getByText("Could not save routes.yaml to storage: AccessDenied (PutObject).", {exact: false})).toBeVisible();
+        await expect.element(page.getByText("Routes uploaded", {exact: false})).not.toBeInTheDocument();
+    });
+
     it("browses and filters history using the expected NQL", async () => {
         fakeSettingsScreens();
         const usersApi = fakeUsers(currentUserResponse().users as unknown as StaffUser[]);

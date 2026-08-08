@@ -9,7 +9,12 @@ import * as errors from '@tryghost/errors';
  */
 export type S3Operation = 'GetObject' | 'HeadObject' | 'CopyObject' | 'PutObject';
 
-const WRITE_OPERATIONS: ReadonlySet<S3Operation> = new Set<S3Operation>(['CopyObject', 'PutObject']);
+/**
+ * What the caller was doing, which is not the same as which S3 call failed:
+ * saving takes a backup first, so a `save` can fail on a `HeadObject`. The
+ * message names what the operator asked for and the details name the call.
+ */
+export type S3Action = 'read' | 'save';
 
 const messages = {
     readFailed: 'Could not read {resource} from storage: {code} ({operation}).',
@@ -137,6 +142,8 @@ function resolveCode(err: S3ErrorShape): string {
 export type S3StorageErrorCode = 'ROUTE_SETTINGS_STORAGE_REQUEST_FAILED' | 'REDIRECTS_STORAGE_REQUEST_FAILED';
 
 export interface S3RequestErrorOptions {
+    /** What the caller was doing — `replace` reports `save` even for its reads. */
+    action: S3Action;
     /** The S3 API call that failed. */
     operation: S3Operation;
     /** Bucket the call was made against. */
@@ -157,7 +164,7 @@ export interface S3RequestErrorOptions {
 export function toS3RequestError(err: unknown, options: S3RequestErrorOptions): errors.InternalServerError {
     const s3Error = (err ?? {}) as S3ErrorShape;
     const code = resolveCode(s3Error);
-    const template = WRITE_OPERATIONS.has(options.operation) ? messages.writeFailed : messages.readFailed;
+    const template = options.action === 'save' ? messages.writeFailed : messages.readFailed;
     const helpKey = Object.hasOwn(HELP_BY_CODE, code) ? HELP_BY_CODE[code] : undefined;
 
     const storeError = new errors.InternalServerError({

@@ -13,7 +13,7 @@ import {RedirectsStoreBase, type RedirectConfig} from '@tryghost/adapter-base-re
 
 import {parseJson} from '../../services/custom-redirects/redirect-config-parser';
 import {getBackupRedirectsFilePath} from '../../services/custom-redirects/utils';
-import {isS3NotFound, toS3RequestError, type S3Operation} from '../lib/s3/errors';
+import {isS3NotFound, toS3RequestError, type S3Action, type S3Operation} from '../lib/s3/errors';
 
 const DEFAULT_FILENAME = 'redirects.json';
 
@@ -137,7 +137,7 @@ export default class S3RedirectsStore extends RedirectsStoreBase {
             if (isS3NotFound(err)) {
                 return [];
             }
-            throw this.toStoreError(err, 'GetObject', key);
+            throw this.toStoreError(err, 'read', 'GetObject', key);
         }
 
         if (!response.Body) {
@@ -153,7 +153,7 @@ export default class S3RedirectsStore extends RedirectsStoreBase {
         try {
             body = await response.Body.transformToString('utf-8');
         } catch (err) {
-            throw this.toStoreError(err, 'GetObject', key);
+            throw this.toStoreError(err, 'read', 'GetObject', key);
         }
 
         return parseJson(body);
@@ -171,7 +171,7 @@ export default class S3RedirectsStore extends RedirectsStoreBase {
                     CopySource: `${this.bucket}/${key}`
                 }));
             } catch (err) {
-                throw this.toStoreError(err, 'CopyObject', backupKey);
+                throw this.toStoreError(err, 'save', 'CopyObject', backupKey);
             }
         }
 
@@ -183,7 +183,7 @@ export default class S3RedirectsStore extends RedirectsStoreBase {
                 ContentType: 'application/json'
             }));
         } catch (err) {
-            throw this.toStoreError(err, 'PutObject', key);
+            throw this.toStoreError(err, 'save', 'PutObject', key);
         }
     }
 
@@ -192,6 +192,8 @@ export default class S3RedirectsStore extends RedirectsStoreBase {
         return parts.join('/');
     }
 
+    // Only reached from the write path, so a failure here is a failed save even
+    // though the call itself is a read.
     private async _canonicalExists(): Promise<boolean> {
         const key = this.buildKey();
         try {
@@ -204,12 +206,13 @@ export default class S3RedirectsStore extends RedirectsStoreBase {
             if (isS3NotFound(err)) {
                 return false;
             }
-            throw this.toStoreError(err, 'HeadObject', key);
+            throw this.toStoreError(err, 'save', 'HeadObject', key);
         }
     }
 
-    private toStoreError(err: unknown, operation: S3Operation, key: string): errors.InternalServerError {
+    private toStoreError(err: unknown, action: S3Action, operation: S3Operation, key: string): errors.InternalServerError {
         return toS3RequestError(err, {
+            action,
             operation,
             bucket: this.bucket,
             key,
