@@ -7,7 +7,7 @@ import {ActionList, Button, Dropzone} from '@tryghost/shade/components';
 import {Inline, Stack} from '@tryghost/shade/primitives';
 import {downloadRedirects, useUploadRedirects} from '@tryghost/admin-x-framework/api/redirects';
 import {downloadRoutes, useUploadRoutes} from '@tryghost/admin-x-framework/api/routes';
-import {extractYamlUploadError} from './yaml-upload-error';
+import {getYamlUploadError} from './yaml-upload-error';
 import {getSettingValue} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'sonner';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
@@ -24,6 +24,22 @@ const BetaFeatures: React.FC = () => {
     const [routesUploading, setRoutesUploading] = useState<boolean>(false);
     const labs = JSON.parse(getSettingValue<string>(settings, 'labs') || '{}');
     const isAutomationsEnabled = !!labs.automations;
+
+    // Show what the server actually said when it told us, and otherwise leave it
+    // to the framework — which also owns the cases that deliberately show no
+    // toast at all (an expired session mid-redirect, an unmocked test request).
+    const reportUploadFailure = (error: unknown) => {
+        const uploadError = getYamlUploadError(error);
+
+        if (!uploadError) {
+            handleError(error);
+            return;
+        }
+
+        toast.dismiss();
+        toast.error(uploadError.message, {description: uploadError.detail});
+        handleError(error, {withToast: false});
+    };
 
     const openRedirectsEditor = () => {
         NiceModal.show(YamlFileEditorModal, {
@@ -90,8 +106,7 @@ const BetaFeatures: React.FC = () => {
                                     await uploadRedirects(file);
                                     toast.success('Redirects uploaded');
                                 } catch (e) {
-                                    toast.error(extractYamlUploadError(e));
-                                    handleError(e, {withToast: false});
+                                    reportUploadFailure(e);
                                 } finally {
                                     setRedirectsUploading(false);
                                 }
@@ -118,8 +133,7 @@ const BetaFeatures: React.FC = () => {
                                     await uploadRoutes(file);
                                     toast.success('Routes uploaded');
                                 } catch (e) {
-                                    toast.error(extractYamlUploadError(e));
-                                    handleError(e, {withToast: false});
+                                    reportUploadFailure(e);
                                 } finally {
                                     setRoutesUploading(false);
                                 }

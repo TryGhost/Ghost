@@ -18,6 +18,7 @@ import {RouteSettingsStoreBase} from '@tryghost/adapter-base-route-settings';
 import S3RouteSettingsStore from '../../../../../core/server/adapters/route-settings/S3RouteSettingsStore';
 import parseYaml from '../../../../../core/server/services/route-settings/yaml-parser';
 import {parseRouteSettings} from '../../../../../core/server/services/route-settings/route-settings-parser';
+import {s3Failure as sdkFailure} from '../../../../utils/s3-failure';
 
 const REAL_DEFAULTS_PATH = path.join(__dirname, '../../../../../core/server/services/route-settings');
 const CANONICAL_KEY = 'content/settings/routes.yaml';
@@ -56,16 +57,7 @@ interface GhostErrorShape {
     };
 }
 
-// Mimics an AWS SDK exception, including the circular reference back to its own
-// HTTP response that made the API error handler recurse until the stack blew.
-const s3Failure = (): Error => {
-    const err = Object.assign(new Error('Access denied.'), {
-        name: 'AccessDenied',
-        $metadata: {httpStatusCode: 403}
-    }) as Error & {$response?: unknown};
-    err.$response = {error: err};
-    return err;
-};
+const s3Failure = () => sdkFailure({message: 'Access denied.', httpStatusCode: 403});
 
 const createNotFound = () => new NotFound({$metadata: {httpStatusCode: 404}, message: 'Not Found'});
 const createNoSuchKey = () => new NoSuchKey({$metadata: {httpStatusCode: 404}, message: 'The specified key does not exist.'});

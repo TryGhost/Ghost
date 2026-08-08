@@ -4,32 +4,27 @@ import {CopyObjectCommand, HeadObjectCommand, PutObjectCommand, type S3Client} f
 import {utils as errorUtils} from '@tryghost/errors';
 
 import S3RedirectsStore from '../../../../../core/server/adapters/redirects/S3RedirectsStore';
+import {s3Failure} from '../../../../utils/s3-failure';
 
 const CANONICAL_KEY = 'content/data/redirects.json';
+const BACKUP_KEY = /^content\/data\/redirects-\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}\.json$/;
 
 interface GhostErrorShape {
     errorType?: string;
     message?: string;
     code?: string;
     context?: string;
+    help?: string;
     errorDetails?: {
         operation?: string;
         key?: string;
         s3ErrorCode?: string;
         statusCode?: number;
+        requestId?: string;
     };
 }
 
-// Mimics an AWS SDK exception, including the circular reference back to its own
-// HTTP response that made the API error handler recurse until the stack blew.
-const s3Failure = (): Error => {
-    const err = Object.assign(new Error('Access denied.'), {
-        name: 'AccessDenied',
-        $metadata: {httpStatusCode: 403}
-    }) as Error & {$response?: unknown};
-    err.$response = {error: err};
-    return err;
-};
+const accessDenied = () => s3Failure({message: 'Access denied.', httpStatusCode: 403});
 
 const storeWithClient = (send: (command: unknown) => Promise<unknown>) => {
     const client: Pick<S3Client, 'send'> = {send: sinon.stub().callsFake(send)};
@@ -89,7 +84,7 @@ describe('UNIT: S3RedirectsStore', function () {
     describe('S3 failure reporting', function () {
         it('reports the S3 error code, operation and key rather than the raw SDK error', async function () {
             const store = storeWithClient(async () => {
-                throw s3Failure();
+                throw accessDenied();
             });
 
             await assert.rejects(store.getAll(), (err: GhostErrorShape) => {
@@ -112,14 +107,53 @@ describe('UNIT: S3RedirectsStore', function () {
         it('names CopyObject and the backup key when the backup fails', async function () {
             const store = storeWithClient(async (command) => {
                 if (command instanceof CopyObjectCommand) {
-                    throw s3Failure();
+                    throw s3Failure({name: 'SlowDown', message: 'Please reduce your request rate.', httpStatusCode: 503, requestId: 'REQ-1'});
                 }
                 return {};
             });
 
             await assert.rejects(store.replaceAll([]), (err: GhostErrorShape) => {
+                // A failed backup is still a failed save, and the key tells the
+                // operator it was the backup rather than the canonical object.
+                assert.equal(err.message, 'Could not save redirects.json to storage: SlowDown (CopyObject).');
                 assert.equal(err.errorDetails?.operation, 'CopyObject');
-                assert.match(String(err.errorDetails?.key), /^content\/data\/redirects-\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}\.json$/);
+                assert.match(String(err.errorDetails?.key), BACKUP_KEY);
+                assert.equal(err.errorDetails?.requestId, 'REQ-1');
+                assert.match(String(err.help), /temporarily unavailable/);
+                return true;
+            });
+        });
+
+        // The request never reaches S3, so there is no service error code to
+        // report — only the errno says what happened.
+        it('reports the errno when the storage service cannot be reached', async function () {
+            const store = storeWithClient(async () => {
+                throw Object.assign(new Error('connect ECONNREFUSED 10.0.0.5:443'), {code: 'ECONNREFUSED'});
+            });
+
+            await assert.rejects(store.getAll(), (err: GhostErrorShape) => {
+                assert.equal(err.message, 'Could not read redirects.json from storage: ECONNREFUSED (GetObject).');
+                assert.match(String(err.help), /could not reach the storage service/);
+                return true;
+            });
+        });
+
+        // The body is streamed after the request that opened it succeeds, so a
+        // reset partway through rejects separately, with nothing on it to
+        // identify the failure by.
+        it('reports a body-stream failure against GetObject', async function () {
+            const store = storeWithClient(async () => ({
+                Body: {
+                    transformToString: async () => {
+                        throw new Error('aborted');
+                    }
+                }
+            }));
+
+            await assert.rejects(store.getAll(), (err: GhostErrorShape) => {
+                assert.equal(err.message, 'Could not read redirects.json from storage: UnknownError (GetObject).');
+                assert.equal(err.context, 'aborted');
+                assert.equal(err.help, undefined);
                 return true;
             });
         });
@@ -127,7 +161,7 @@ describe('UNIT: S3RedirectsStore', function () {
         it('names PutObject and the canonical key when the write fails', async function () {
             const store = storeWithClient(async (command) => {
                 if (command instanceof PutObjectCommand) {
-                    throw s3Failure();
+                    throw accessDenied();
                 }
                 return {};
             });
@@ -142,7 +176,7 @@ describe('UNIT: S3RedirectsStore', function () {
         it('names HeadObject when the existence check fails', async function () {
             const store = storeWithClient(async (command) => {
                 if (command instanceof HeadObjectCommand) {
-                    throw s3Failure();
+                    throw accessDenied();
                 }
                 return {};
             });

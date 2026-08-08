@@ -3,6 +3,7 @@ import {NoSuchKey, NotFound} from '@aws-sdk/client-s3';
 import {utils as errorUtils} from '@tryghost/errors';
 
 import {isS3NotFound, toS3RequestError} from '../../../../../../core/server/adapters/lib/s3/errors';
+import {s3Failure} from '../../../../../utils/s3-failure';
 
 const OPTIONS = {
     bucket: 'a-bucket',
@@ -11,19 +12,13 @@ const OPTIONS = {
     errorCode: 'ROUTE_SETTINGS_STORAGE_REQUEST_FAILED'
 } as const;
 
-// Mimics an AWS SDK service exception, including the circular reference back to
-// its own HTTP response that made the API error handler recurse until the stack
-// blew.
-const serviceException = (name: string, overrides: Record<string, unknown> = {}) => {
-    const err = Object.assign(new Error(`${name} message`), {
-        name,
-        $fault: 'client',
-        $metadata: {httpStatusCode: 403, requestId: 'REQ-123', attempts: 2},
-        ...overrides
-    }) as Error & {$response?: unknown};
-    err.$response = {error: err};
-    return err;
-};
+const serviceException = (name: string) => s3Failure({
+    name,
+    message: `${name} message`,
+    httpStatusCode: 403,
+    requestId: 'REQ-123',
+    attempts: 2
+});
 
 describe('UNIT: adapters/lib/s3/errors', function () {
     describe('isS3NotFound', function () {
@@ -220,8 +215,12 @@ describe('UNIT: adapters/lib/s3/errors', function () {
             assert.equal(cloned.errorDetails.s3ErrorCode, 'AccessDenied');
         });
 
-        // Guards the guard: if the fixture ever stopped being circular, the
-        // test above would pass against the unfixed code too.
+        // Guards the guard. Without this, a fixture that quietly stopped being
+        // circular — or an upstream clone that became cycle-safe — would leave
+        // the test above passing against code that never fixed anything.
+        // If this ever fails, the hazard this whole module exists to avoid is
+        // gone and the module's design should be revisited; it does not mean
+        // `toS3RequestError` regressed.
         it('the fixture really does blow the stack when cloned directly', function () {
             assert.throws(
                 () => errorUtils.prepareStackForUser(serviceException('AccessDenied')),

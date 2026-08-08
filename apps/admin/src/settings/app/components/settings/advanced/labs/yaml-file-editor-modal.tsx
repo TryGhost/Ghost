@@ -4,7 +4,7 @@ import React, {useEffect, useMemo, useState} from 'react';
 import {Button} from '@tryghost/shade/components';
 import {Inline, Text} from '@tryghost/shade/primitives';
 import {SettingsModal} from '@tryghost/shade/patterns';
-import {extractYamlUploadError} from './yaml-upload-error';
+import {getYamlUploadError, type YamlUploadError} from './yaml-upload-error';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {toast} from 'sonner';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -36,7 +36,7 @@ const YamlFileEditorModal: React.FC<YamlFileEditorModalProps> = ({
     const [content, setContent] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [loadError, setLoadError] = useState<string | null>(null);
-    const [saveError, setSaveError] = useState<string | null>(null);
+    const [saveError, setSaveError] = useState<YamlUploadError | null>(null);
     const [isSaving, setIsSaving] = useState(false);
 
     const yamlExtension = useMemo(() => import('@codemirror/lang-yaml').then(module => module.yaml()), []);
@@ -105,7 +105,7 @@ const YamlFileEditorModal: React.FC<YamlFileEditorModalProps> = ({
 
             closeModal();
         } catch (error) {
-            setSaveError(extractYamlUploadError(error));
+            setSaveError(getYamlUploadError(error) ?? {message: `Could not save ${uploadFilename}, please try again.`});
             handleError(error, {withToast: false});
         } finally {
             setIsSaving(false);
@@ -149,8 +149,13 @@ const YamlFileEditorModal: React.FC<YamlFileEditorModalProps> = ({
                 </div>
 
                 {(loadError || saveError) && (
-                    <div className='mb-4 rounded-sm border border-red bg-red/5 px-4 py-2 text-sm text-red' data-testid='yaml-editor-error'>
-                        {saveError || loadError}
+                    <div className='mb-4 rounded-sm border border-red bg-red/5 px-4 py-2 text-sm text-red' data-testid='yaml-editor-error' role='alert'>
+                        <p>{saveError?.message || loadError}</p>
+                        {saveError?.detail && (
+                            // The cause is often a YAML snippet or a parser
+                            // pointer, so the original line breaks matter.
+                            <p className='mt-2 font-mono text-xs whitespace-pre-wrap'>{saveError.detail}</p>
+                        )}
                     </div>
                 )}
 

@@ -1,31 +1,51 @@
-import {APIError, JSONError} from '@tryghost/admin-x-framework/errors';
+import {JSONError} from '@tryghost/admin-x-framework/errors';
 
-const GENERIC_MESSAGE = 'Something went wrong, please try again.';
+export interface YamlUploadError {
+    /** One-line summary, safe to use as a toast title. */
+    message: string;
+    /** Underlying cause and remediation — often multi-line, so render it pre-wrapped. */
+    detail?: string;
+}
 
 /**
  * Pull the operator-facing text out of a failed routes/redirects upload.
  *
  * These two endpoints are among the few whose `message` survives the API error
  * handler intact — `prepareUserMessage` only rewrites the message for methods
- * it can map to an action, and `upload` is not one of them. So the message is
- * the specific thing the server wanted to say ("Could not save routes.yaml to
- * storage: AccessDenied (PutObject)."), not a generic summary, and `help`
- * carries the next step. Both are dropped by the framework's default handling,
- * which assumes the generic shape.
+ * it can map to an action, and `upload` is not one of them. So `message` is the
+ * specific thing the server wanted to say, `context` carries the underlying
+ * cause (for a YAML error, the line and column), and `help` the next step. The
+ * framework's generic handling keeps at most one of the three, so uploads
+ * reported "Something went wrong while loading settings, please try again."
+ * no matter what actually failed.
+ *
+ * Returns `null` when the failure carries no API error body — a transport
+ * error, or the test harness's unmocked-request response — so the caller can
+ * fall back to the framework's handling rather than inventing a message.
  */
-export const extractYamlUploadError = (error: unknown): string => {
-    if (error instanceof JSONError && error.data?.errors?.[0]) {
-        const {message, context, help} = error.data.errors[0];
-        const parts = [message || context, help].filter(Boolean);
-
-        if (parts.length) {
-            return parts.join(' ');
-        }
+export const getYamlUploadError = (error: unknown): YamlUploadError | null => {
+    if (!(error instanceof JSONError) || !error.data?.errors?.[0]) {
+        return null;
     }
 
-    if (error instanceof APIError && error.message) {
-        return error.message;
+    const {message, context, help} = error.data.errors[0];
+
+    // `context` is documented as a string but a few validators put the offending
+    // object there, which React refuses to render.
+    const cause = typeof context === 'string' ? context.trim() : '';
+    const nextStep = typeof help === 'string' ? help.trim() : '';
+    const summary = message?.trim() || cause;
+
+    if (!summary) {
+        return null;
     }
 
-    return GENERIC_MESSAGE;
+    const detail = [
+        // The summary often paraphrases the cause; only add it when it carries
+        // something extra, which for a YAML error is the line and column.
+        cause && cause !== summary && !summary.includes(cause) ? cause : '',
+        nextStep
+    ].filter(Boolean).join('\n\n');
+
+    return {message: summary, detail: detail || undefined};
 };

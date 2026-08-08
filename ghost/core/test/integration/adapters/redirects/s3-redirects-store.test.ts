@@ -1,7 +1,6 @@
 import {describe, it, beforeAll, afterEach, afterAll} from 'vitest';
 import assert from 'node:assert/strict';
-import sinon from 'sinon';
-import {CopyObjectCommand, ListObjectsV2Command, S3Client} from '@aws-sdk/client-s3';
+import {ListObjectsV2Command, S3Client} from '@aws-sdk/client-s3';
 
 import S3RedirectsStore from '../../../../core/server/adapters/redirects/S3RedirectsStore';
 import {
@@ -19,14 +18,6 @@ const STATIC_PREFIX = 'content/data';
 const CANONICAL_FILENAME = 'redirects.json';
 
 const canonicalKey = (tenantPrefix = '') => [tenantPrefix, STATIC_PREFIX, CANONICAL_FILENAME].filter(Boolean).join('/');
-
-interface StoreErrorShape {
-    message?: string;
-    code?: string;
-    context?: string;
-    help?: string;
-    errorDetails?: {operation?: string; key?: string; requestId?: string};
-}
 
 const listObjectKeys = async (s3Client: S3Client, bucketName: string): Promise<string[]> => {
     const response = await s3Client.send(new ListObjectsV2Command({Bucket: bucketName}));
@@ -182,80 +173,6 @@ describe.skipIf(process.env.GHOST_TEST_MINIO_AVAILABLE !== '1')('Integration: S3
                 await listObjectKeys(adminClient, bucket),
                 [canonicalKey('tenant-abc')]
             );
-        });
-    });
-});
-
-// The S3 fault branches are exercised without a live bucket: MinIO won't
-// produce a dead connection or an AccessDenied on demand, so the failures are
-// driven with an injected client. This lives in the integration suite because
-// only that coverage report is uploaded, and it runs regardless of MinIO. The
-// cases here are chosen not to overlap the route-settings integration suite —
-// between the two, every branch of `adapters/lib/s3/errors` is covered.
-describe('Integration: S3RedirectsStore S3 failures', function () {
-    const faultyStore = (send: (command: unknown) => Promise<unknown>) => {
-        const client: Pick<S3Client, 'send'> = {send: sinon.stub().callsFake(send)};
-        return new S3RedirectsStore({
-            bucket: 'a-bucket',
-            staticFileURLPrefix: STATIC_PREFIX,
-            s3Client: client as S3Client
-        });
-    };
-
-    // The request never reaches S3, so there is no service error code to
-    // report — only the errno tells the operator what happened.
-    it('reports the errno when the storage service cannot be reached', async function () {
-        const store = faultyStore(async () => {
-            throw Object.assign(new Error('connect ECONNREFUSED 10.0.0.5:443'), {code: 'ECONNREFUSED'});
-        });
-
-        await assert.rejects(store.getAll(), (err: StoreErrorShape) => {
-            assert.equal(err.message, 'Could not read redirects.json from storage: ECONNREFUSED (GetObject).');
-            assert.equal(err.code, 'REDIRECTS_STORAGE_REQUEST_FAILED');
-            assert.match(String(err.help), /could not reach the storage service/);
-            assert.equal(err.errorDetails?.key, canonicalKey());
-            return true;
-        });
-    });
-
-    // The body is streamed after the request that opened it succeeds, so a
-    // reset partway through rejects separately — and with nothing on it to
-    // identify the failure by.
-    it('reports a body-stream failure against GetObject', async function () {
-        const store = faultyStore(async () => ({
-            Body: {
-                transformToString: async () => {
-                    throw new Error('aborted');
-                }
-            }
-        }));
-
-        await assert.rejects(store.getAll(), (err: StoreErrorShape) => {
-            assert.equal(err.message, 'Could not read redirects.json from storage: UnknownError (GetObject).');
-            assert.equal(err.code, 'REDIRECTS_STORAGE_REQUEST_FAILED');
-            assert.equal(err.context, 'aborted');
-            assert.equal(err.help, undefined);
-            return true;
-        });
-    });
-
-    it('reports the write operation and the backup key when the backup fails', async function () {
-        const store = faultyStore(async (command) => {
-            if (command instanceof CopyObjectCommand) {
-                throw Object.assign(new Error('Please reduce your request rate.'), {
-                    name: 'SlowDown',
-                    $metadata: {httpStatusCode: 503, requestId: 'REQ-1'}
-                });
-            }
-            return {};
-        });
-
-        await assert.rejects(store.replaceAll([]), (err: StoreErrorShape) => {
-            assert.equal(err.message, 'Could not save redirects.json to storage: SlowDown (CopyObject).');
-            assert.match(String(err.errorDetails?.key), backupKeyPattern());
-            assert.equal(err.errorDetails?.requestId, 'REQ-1');
-            assert.match(String(err.help), /temporarily unavailable/);
-            return true;
         });
     });
 });

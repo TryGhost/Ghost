@@ -19,6 +19,7 @@ import {
     putObject
 } from '../../../utils/minio';
 import {runStoreContract} from '../../../unit/server/adapters/route-settings/helpers/store-contract';
+import {s3Failure as sdkFailure} from '../../../utils/s3-failure';
 
 const STATIC_PREFIX = 'content/settings';
 const CANONICAL_FILENAME = 'routes.yaml';
@@ -51,17 +52,6 @@ interface StoreErrorShape {
     help?: string;
     errorDetails?: {operation?: string; key?: string; s3ErrorCode?: string; requestId?: string};
 }
-
-// Mimics an AWS SDK exception, including the circular reference back to its own
-// HTTP response that made the API error handler recurse until the stack blew.
-const sdkFailure = ({name, message, httpStatusCode, requestId}: {name: string; message: string; httpStatusCode?: number; requestId?: string}): Error => {
-    const err = Object.assign(new Error(message), {
-        name,
-        $metadata: {httpStatusCode, requestId}
-    }) as Error & {$response?: unknown};
-    err.$response = {error: err};
-    return err;
-};
 
 const canonicalKey = (tenantPrefix = ''): string => [tenantPrefix, STATIC_PREFIX, CANONICAL_FILENAME].filter(Boolean).join('/');
 
@@ -359,6 +349,36 @@ describe('Integration: S3RouteSettingsStore without a live bucket', function () 
             // reachable through this lane's ESM interop of `@tryghost/errors`.)
             assert.equal((err as {$response?: unknown}).$response, undefined);
             assert.doesNotThrow(() => JSON.stringify(err));
+            return true;
+        });
+    });
+
+    // The request never reaches S3, so there is no service error code to report
+    // — only the errno says what happened.
+    it('reports the errno when the storage service cannot be reached', async function () {
+        const store = faultyStore(async () => {
+            throw Object.assign(new Error('connect ECONNREFUSED 10.0.0.5:443'), {code: 'ECONNREFUSED'});
+        });
+
+        await assert.rejects(store.get(), (err: StoreErrorShape) => {
+            assert.equal(err.message, 'Could not read routes.yaml from storage: ECONNREFUSED (GetObject).');
+            assert.match(String(err.help), /could not reach the storage service/);
+            return true;
+        });
+    });
+
+    it('reports a body-stream failure against GetObject', async function () {
+        const store = faultyStore(async () => ({
+            Body: {
+                transformToString: async () => {
+                    throw new Error('aborted');
+                }
+            }
+        }));
+
+        await assert.rejects(store.get(), (err: StoreErrorShape) => {
+            assert.equal(err.message, 'Could not read routes.yaml from storage: UnknownError (GetObject).');
+            assert.equal(err.context, 'aborted');
             return true;
         });
     });
