@@ -4,7 +4,7 @@ import React from 'react';
 import {$getNodeByKey, CLICK_COMMAND, COMMAND_PRIORITY_LOW} from 'lexical';
 import {$isKoenigCard} from '@tryghost/kg-default-nodes';
 import {CardWrapper} from './ui/CardWrapper';
-import {EDIT_CARD_COMMAND, SELECT_CARD_COMMAND, SHOW_CARD_VISIBILITY_SETTINGS_COMMAND} from '../plugins/KoenigBehaviourPlugin';
+import {DELETE_CARD_COMMAND, EDIT_CARD_COMMAND, SELECT_CARD_COMMAND, SHOW_CARD_VISIBILITY_SETTINGS_COMMAND} from '../plugins/KoenigBehaviourPlugin';
 import {VISIBILITY_SETTINGS} from '../utils/visibility';
 import {mergeRegister} from '@lexical/utils';
 import {useKoenigSelectedCardContext} from '../context/KoenigSelectedCardContext';
@@ -27,16 +27,27 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
     const [cardWidth, setCardWidth] = React.useState<CardWidth>(width || 'regular');
     const containerRef = React.useRef(null);
     const skipClick = React.useRef(false);
+    const isTouchDeviceRef = React.useRef<boolean | null>(null);
 
     const {selectedCardKey, isEditingCard, isDragging} = useKoenigSelectedCardContext();
 
     const isSelected = selectedCardKey === nodeKey;
     const isEditing = isSelected && isEditingCard;
+    if (isTouchDeviceRef.current === null) {
+        isTouchDeviceRef.current = window.matchMedia?.('(pointer: coarse), (hover: none)').matches ?? false;
+    }
+    const isTouchDevice = isTouchDeviceRef.current;
 
     const handleVisibilityToggle = React.useCallback((event) => {
         event.preventDefault();
         event.stopPropagation();
         editor.dispatchCommand(SHOW_CARD_VISIBILITY_SETTINGS_COMMAND, {cardKey: nodeKey});
+    }, [editor, nodeKey]);
+
+    const handleDeleteCard = React.useCallback((event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        editor.dispatchCommand(DELETE_CARD_COMMAND, {cardKey: nodeKey});
     }, [editor, nodeKey]);
 
     React.useLayoutEffect(() => {
@@ -177,7 +188,9 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
                 isEditing={isEditing}
                 isSelected={isSelected}
                 isVisibilityActive={isVisibilityActive}
+                showDeleteButton={isTouchDevice && isSelected && !isDragging}
                 wrapperStyle={wrapperStyle}
+                onDeleteClick={handleDeleteCard}
                 onIndicatorClick={handleVisibilityToggle}
             >
                 {children}
