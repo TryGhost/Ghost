@@ -35,7 +35,7 @@ export const getYamlUploadError = (error: unknown): YamlUploadError | null => {
     // object there, which React refuses to render.
     const cause = typeof context === 'string' ? context.trim() : '';
     const nextStep = typeof help === 'string' ? help.trim() : '';
-    const summary = message?.trim() || cause;
+    const summary = (typeof message === 'string' ? message.trim() : '') || cause;
 
     if (!summary) {
         return null;

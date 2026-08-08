@@ -4,6 +4,7 @@ import React, {useEffect, useMemo, useState} from 'react';
 import {Button} from '@tryghost/shade/components';
 import {Inline, Text} from '@tryghost/shade/primitives';
 import {SettingsModal} from '@tryghost/shade/patterns';
+import {APIError} from '@tryghost/admin-x-framework/errors';
 import {getYamlUploadError, type YamlUploadError} from './yaml-upload-error';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {toast} from 'sonner';
@@ -105,7 +106,13 @@ const YamlFileEditorModal: React.FC<YamlFileEditorModalProps> = ({
 
             closeModal();
         } catch (error) {
-            setSaveError(getYamlUploadError(error) ?? {message: `Could not save ${uploadFilename}, please try again.`});
+            // A transport-level failure carries no API error body but often
+            // does carry a specific message — "Request is larger than the
+            // maximum file size the server allows" for a 413, say — which is
+            // far more use than a generic retry prompt.
+            setSaveError(getYamlUploadError(error) ?? {
+                message: error instanceof APIError ? error.message : `Could not save ${uploadFilename}, please try again.`
+            });
             handleError(error, {withToast: false});
         } finally {
             setIsSaving(false);
@@ -150,7 +157,7 @@ const YamlFileEditorModal: React.FC<YamlFileEditorModalProps> = ({
 
                 {(loadError || saveError) && (
                     <div className='mb-4 rounded-sm border border-red bg-red/5 px-4 py-2 text-sm text-red' data-testid='yaml-editor-error' role='alert'>
-                        <p>{saveError?.message || loadError}</p>
+                        <p className='whitespace-pre-wrap'>{saveError?.message || loadError}</p>
                         {saveError?.detail && (
                             // The cause is often a YAML snippet or a parser
                             // pointer, so the original line breaks matter.

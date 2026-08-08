@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
-import {CopyObjectCommand, HeadObjectCommand, PutObjectCommand, type S3Client} from '@aws-sdk/client-s3';
+import {CopyObjectCommand, HeadObjectCommand, NoSuchKey, NotFound, PutObjectCommand, type S3Client} from '@aws-sdk/client-s3';
 import {utils as errorUtils} from '@tryghost/errors';
 
 import S3RedirectsStore from '../../../../../core/server/adapters/redirects/S3RedirectsStore';
@@ -76,6 +76,26 @@ describe('UNIT: S3RedirectsStore', function () {
 
         it('accepts a tenantPrefix without throwing', function () {
             assert.doesNotThrow(() => new S3RedirectsStore({bucket: 'x', staticFileURLPrefix: 'content/data', tenantPrefix: 'tenant-abc'}));
+        });
+    });
+
+    describe('getAll', function () {
+        // An empty bucket is the normal state for a site with no redirects, so
+        // it must stay a clean empty list rather than becoming a failure.
+        it('returns no redirects when the object does not exist', async function () {
+            const store = storeWithClient(async () => {
+                throw new NoSuchKey({$metadata: {httpStatusCode: 404}, message: 'The specified key does not exist.'});
+            });
+
+            assert.deepEqual(await store.getAll(), []);
+        });
+
+        it('treats the HeadObject flavour of missing as missing too', async function () {
+            const store = storeWithClient(async () => {
+                throw new NotFound({$metadata: {httpStatusCode: 404}, message: 'Not Found'});
+            });
+
+            assert.deepEqual(await store.getAll(), []);
         });
     });
 
