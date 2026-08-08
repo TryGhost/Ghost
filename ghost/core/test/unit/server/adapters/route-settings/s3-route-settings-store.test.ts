@@ -12,6 +12,7 @@ import {
     type S3Client
 } from '@aws-sdk/client-s3';
 
+import {utils as errorUtils} from '@tryghost/errors';
 import {RouteSettingsStoreBase} from '@tryghost/adapter-base-route-settings';
 
 import S3RouteSettingsStore from '../../../../../core/server/adapters/route-settings/S3RouteSettingsStore';
@@ -43,6 +44,7 @@ type S3Command = GetObjectCommand | HeadObjectCommand | CopyObjectCommand | PutO
 
 interface GhostErrorShape {
     errorType?: string;
+    message?: string;
     code?: string;
     context?: string;
     errorDetails?: {
@@ -301,23 +303,32 @@ describe('UNIT: S3RouteSettingsStore', function () {
                 });
             });
 
+            // The missing-body guard sits outside the wrapped block, so it must
+            // surface as its own error rather than being relabelled a storage
+            // request failure.
             it('throws InternalServerError when the S3 response has no body', async function () {
                 const client = stubbedClient(async () => ({Body: undefined}));
 
-                await assert.rejects(createStore(client).get(), (err: {errorType?: string}) => {
+                await assert.rejects(createStore(client).get(), (err: GhostErrorShape) => {
                     assert.equal(err.errorType, 'InternalServerError');
+                    assert.equal(err.code, null);
                     return true;
                 });
             });
 
-            it('propagates non-NotFound S3 errors instead of falling back to defaults', async function () {
-                const client = stubbedClient(async () => {
-                    throw s3Failure();
-                });
+            it('reports a body-stream failure against GetObject', async function () {
+                const client = stubbedClient(async () => ({
+                    Body: {
+                        transformToString: async () => {
+                            throw Object.assign(new Error('aborted'), {code: 'ECONNRESET'});
+                        }
+                    }
+                } as never));
 
                 await assert.rejects(createStore(client).get(), (err: GhostErrorShape) => {
-                    assert.equal(err.errorType, 'InternalServerError');
+                    assert.equal(err.code, 'ROUTE_SETTINGS_STORAGE_REQUEST_FAILED');
                     assert.equal(err.errorDetails?.operation, 'GetObject');
+                    assert.equal(err.errorDetails?.s3ErrorCode, 'ECONNRESET');
                     return true;
                 });
             });
@@ -335,14 +346,17 @@ describe('UNIT: S3RouteSettingsStore', function () {
 
                 await assert.rejects(createStore(client).get(), (err: GhostErrorShape) => {
                     assert.equal(err.errorType, 'InternalServerError');
+                    assert.equal(err.message, 'Could not read routes.yaml from storage: AccessDenied (GetObject).');
                     assert.equal(err.code, 'ROUTE_SETTINGS_STORAGE_REQUEST_FAILED');
                     assert.equal(err.context, 'Access denied.');
                     assert.equal(err.errorDetails?.s3ErrorCode, 'AccessDenied');
                     assert.equal(err.errorDetails?.statusCode, 403);
                     assert.equal(err.errorDetails?.operation, 'GetObject');
                     assert.equal(err.errorDetails?.key, CANONICAL_KEY);
-                    // The details must survive serialisation — that is the bug.
-                    assert.doesNotThrow(() => JSON.stringify(err.errorDetails));
+                    // The point of the change: the API error handler
+                    // deep-clones the error before rendering it, and the raw
+                    // SDK exception made that recurse until the stack blew.
+                    assert.doesNotThrow(() => errorUtils.prepareStackForUser(err as Error));
                     return true;
                 });
             });
@@ -352,7 +366,7 @@ describe('UNIT: S3RouteSettingsStore', function () {
                     if (command instanceof CopyObjectCommand) {
                         throw s3Failure();
                     }
-                    return command instanceof HeadObjectCommand ? {} : {};
+                    return {};
                 });
 
                 await assert.rejects(createStore(client).replace(fromYaml(SAMPLE_YAML)), (err: GhostErrorShape) => {
@@ -388,16 +402,6 @@ describe('UNIT: S3RouteSettingsStore', function () {
 
                 await assert.rejects(createStore(client).replace(fromYaml(SAMPLE_YAML)), (err: GhostErrorShape) => {
                     assert.equal(err.errorDetails?.operation, 'HeadObject');
-                    return true;
-                });
-            });
-
-            it('passes Ghost errors through untouched', async function () {
-                const client = stubbedClient(async () => ({Body: undefined}));
-
-                await assert.rejects(createStore(client).get(), (err: GhostErrorShape) => {
-                    assert.equal(err.errorType, 'InternalServerError');
-                    assert.notEqual(err.code, 'ROUTE_SETTINGS_STORAGE_REQUEST_FAILED');
                     return true;
                 });
             });

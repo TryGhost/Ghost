@@ -4,7 +4,7 @@ import path from 'node:path';
 import {setTimeout as sleep} from 'node:timers/promises';
 import fs from 'fs-extra';
 import sinon from 'sinon';
-import {GetObjectCommand, HeadObjectCommand, ListObjectsV2Command, S3Client} from '@aws-sdk/client-s3';
+import {GetObjectCommand, HeadObjectCommand, ListObjectsV2Command, PutObjectCommand, S3Client} from '@aws-sdk/client-s3';
 
 import S3RouteSettingsStore from '../../../../core/server/adapters/route-settings/S3RouteSettingsStore';
 import parseYaml from '../../../../core/server/services/route-settings/yaml-parser';
@@ -45,9 +45,23 @@ taxonomies:
 
 interface StoreErrorShape {
     errorType?: string;
+    message?: string;
+    code?: string;
     context?: string;
-    errorDetails?: {operation?: string; key?: string; s3ErrorCode?: string};
+    help?: string;
+    errorDetails?: {operation?: string; key?: string; s3ErrorCode?: string; requestId?: string};
 }
+
+// Mimics an AWS SDK exception, including the circular reference back to its own
+// HTTP response that made the API error handler recurse until the stack blew.
+const sdkFailure = ({name, message, httpStatusCode, requestId}: {name: string; message: string; httpStatusCode?: number; requestId?: string}): Error => {
+    const err = Object.assign(new Error(message), {
+        name,
+        $metadata: {httpStatusCode, requestId}
+    }) as Error & {$response?: unknown};
+    err.$response = {error: err};
+    return err;
+};
 
 const canonicalKey = (tenantPrefix = ''): string => [tenantPrefix, STATIC_PREFIX, CANONICAL_FILENAME].filter(Boolean).join('/');
 
@@ -315,18 +329,50 @@ describe('Integration: S3RouteSettingsStore without a live bucket', function () 
         });
     });
 
-    it('reports a non-NotFound error raised by the existence check on replace', async function () {
+    // A HEAD response carries no body, so the SDK cannot parse a <Code> out of
+    // a 403 and names the exception 'Unknown'. Since the existence check runs
+    // before every write, this is how a permissions problem on an upload
+    // actually reaches an operator.
+    it('recovers the code from the status when the existence check is refused', async function () {
         const store = faultyStore(async (command) => {
             if (command instanceof HeadObjectCommand) {
-                throw Object.assign(new Error('Access denied.'), {name: 'AccessDenied'});
+                throw sdkFailure({name: 'Unknown', message: 'UnknownError', httpStatusCode: 403, requestId: 'REQ-1'});
             }
             return {};
         });
 
         await assert.rejects(store.replace(fromYaml(SAMPLE_YAML)), (err: StoreErrorShape) => {
             assert.equal(err.errorType, 'InternalServerError');
+            assert.equal(err.message, 'Could not read routes.yaml from storage: Forbidden (HeadObject).');
+            assert.equal(err.code, 'ROUTE_SETTINGS_STORAGE_REQUEST_FAILED');
+            assert.match(String(err.help), /credentials/);
             assert.equal(err.errorDetails?.operation, 'HeadObject');
-            assert.equal(err.errorDetails?.s3ErrorCode, 'AccessDenied');
+            assert.equal(err.errorDetails?.s3ErrorCode, 'Forbidden');
+            assert.equal(err.errorDetails?.requestId, 'REQ-1');
+            // The whole point: the fixture carries the SDK's circular
+            // `$response`, and none of it may come along — the API error
+            // handler walks the error it is handed, and that graph is what made
+            // it recurse until the stack blew. (The unit suite pins this
+            // against the real `prepareStackForUser`; that helper is not
+            // reachable through this lane's ESM interop of `@tryghost/errors`.)
+            assert.equal((err as {$response?: unknown}).$response, undefined);
+            assert.doesNotThrow(() => JSON.stringify(err));
+            return true;
+        });
+    });
+
+    it('reports the write operation and canonical key when the upload fails', async function () {
+        const store = faultyStore(async (command) => {
+            if (command instanceof PutObjectCommand) {
+                throw Object.assign(new Error('Access denied.'), {name: 'AccessDenied'});
+            }
+            return {};
+        });
+
+        await assert.rejects(store.replace(fromYaml(SAMPLE_YAML)), (err: StoreErrorShape) => {
+            assert.equal(err.message, 'Could not save routes.yaml to storage: AccessDenied (PutObject).');
+            assert.equal(err.errorDetails?.operation, 'PutObject');
+            assert.equal(err.errorDetails?.key, canonicalKey());
             return true;
         });
     });

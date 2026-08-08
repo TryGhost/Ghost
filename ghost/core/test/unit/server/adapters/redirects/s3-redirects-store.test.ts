@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import {CopyObjectCommand, HeadObjectCommand, PutObjectCommand, type S3Client} from '@aws-sdk/client-s3';
+import {utils as errorUtils} from '@tryghost/errors';
 
 import S3RedirectsStore from '../../../../../core/server/adapters/redirects/S3RedirectsStore';
 
@@ -8,6 +9,7 @@ const CANONICAL_KEY = 'content/data/redirects.json';
 
 interface GhostErrorShape {
     errorType?: string;
+    message?: string;
     code?: string;
     context?: string;
     errorDetails?: {
@@ -85,10 +87,6 @@ describe('UNIT: S3RedirectsStore', function () {
     // surface as "Maximum call stack size exceeded" and the real S3 failure
     // never reached the operator.
     describe('S3 failure reporting', function () {
-        afterEach(function () {
-            sinon.restore();
-        });
-
         it('reports the S3 error code, operation and key rather than the raw SDK error', async function () {
             const store = storeWithClient(async () => {
                 throw s3Failure();
@@ -96,13 +94,17 @@ describe('UNIT: S3RedirectsStore', function () {
 
             await assert.rejects(store.getAll(), (err: GhostErrorShape) => {
                 assert.equal(err.errorType, 'InternalServerError');
+                assert.equal(err.message, 'Could not read redirects.json from storage: AccessDenied (GetObject).');
                 assert.equal(err.code, 'REDIRECTS_STORAGE_REQUEST_FAILED');
                 assert.equal(err.context, 'Access denied.');
                 assert.equal(err.errorDetails?.s3ErrorCode, 'AccessDenied');
                 assert.equal(err.errorDetails?.statusCode, 403);
                 assert.equal(err.errorDetails?.operation, 'GetObject');
                 assert.equal(err.errorDetails?.key, CANONICAL_KEY);
-                assert.doesNotThrow(() => JSON.stringify(err.errorDetails));
+                // The point of the change: the API error handler deep-clones
+                // the error before rendering it, and the raw SDK exception made
+                // that recurse until the stack blew.
+                assert.doesNotThrow(() => errorUtils.prepareStackForUser(err as Error));
                 return true;
             });
         });

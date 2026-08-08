@@ -2,8 +2,6 @@ import {
     CopyObjectCommand,
     GetObjectCommand,
     HeadObjectCommand,
-    NoSuchKey,
-    NotFound,
     PutObjectCommand,
     S3Client,
     S3ClientConfig
@@ -15,15 +13,17 @@ import {RedirectsStoreBase, type RedirectConfig} from '@tryghost/adapter-base-re
 
 import {parseJson} from '../../services/custom-redirects/redirect-config-parser';
 import {getBackupRedirectsFilePath} from '../../services/custom-redirects/utils';
+import {isS3NotFound, toS3RequestError, type S3Operation} from '../lib/s3/errors';
 
 const DEFAULT_FILENAME = 'redirects.json';
+
+const STORAGE_ERROR_CODE = 'REDIRECTS_STORAGE_REQUEST_FAILED';
 
 const messages = {
     missingBucket: 'S3RedirectsStore requires a bucket name',
     missingStaticFileURLPrefix: 'S3RedirectsStore requires a staticFileURLPrefix',
     partialCredentials: 'S3RedirectsStore requires both accessKeyId and secretAccessKey when either is provided',
-    missingResponseBody: 'S3 GetObject returned no body',
-    requestFailed: 'Redirects storage request failed: {operation} returned {code}.'
+    missingResponseBody: 'S3 GetObject returned no body'
 };
 
 const stripLeadingAndTrailingSlashes = (value = '') => value.replace(/^\/+|\/+$/g, '');
@@ -125,7 +125,7 @@ export default class S3RedirectsStore extends RedirectsStoreBase {
     async getAll(): Promise<RedirectConfig[]> {
         const key = this.buildKey();
 
-        // Only the S3 call is wrapped, so `toStoreError` only ever sees an SDK
+        // Only the S3 call is wrapped, so the error helper only ever sees an SDK
         // failure and never has to decide whether an error is already ours.
         let response;
         try {
@@ -134,7 +134,7 @@ export default class S3RedirectsStore extends RedirectsStoreBase {
                 Key: key
             }));
         } catch (err) {
-            if (this._isNotFound(err)) {
+            if (isS3NotFound(err)) {
                 return [];
             }
             throw this.toStoreError(err, 'GetObject', key);
@@ -146,7 +146,15 @@ export default class S3RedirectsStore extends RedirectsStoreBase {
             });
         }
 
-        const body = await response.Body.transformToString('utf-8');
+        // Streaming the body is a second network round trip, so it fails
+        // separately from the request that opened it — a reset partway through
+        // rejects here, not above.
+        let body: string;
+        try {
+            body = await response.Body.transformToString('utf-8');
+        } catch (err) {
+            throw this.toStoreError(err, 'GetObject', key);
+        }
 
         return parseJson(body);
     }
@@ -193,42 +201,20 @@ export default class S3RedirectsStore extends RedirectsStoreBase {
             }));
             return true;
         } catch (err) {
-            if (this._isNotFound(err)) {
+            if (isS3NotFound(err)) {
                 return false;
             }
             throw this.toStoreError(err, 'HeadObject', key);
         }
     }
 
-    private _isNotFound(err: unknown): boolean {
-        return err instanceof NotFound || err instanceof NoSuchKey;
-    }
-
-    /**
-     * Convert an S3 failure into a Ghost error naming the operation, key and
-     * S3 error code.
-     *
-     * The SDK's exceptions are deliberately *not* attached: they hold a
-     * reference to the HTTP response, and the API error handler deep-clones
-     * whatever it is given, so a raw SDK error makes the request die with
-     * "Maximum call stack size exceeded" and the real cause never reaches the
-     * operator. Everything useful is copied out by value instead.
-     */
-    private toStoreError(err: unknown, operation: string, key: string): Error {
-        const s3Error = err as {name?: string; message?: string; $metadata?: {httpStatusCode?: number}};
-        const code = s3Error.name || 'UnknownError';
-
-        return new errors.InternalServerError({
-            message: tpl(messages.requestFailed, {operation, code}),
-            context: s3Error.message,
-            code: 'REDIRECTS_STORAGE_REQUEST_FAILED',
-            errorDetails: {
-                operation,
-                bucket: this.bucket,
-                key,
-                s3ErrorCode: code,
-                statusCode: s3Error.$metadata?.httpStatusCode
-            }
+    private toStoreError(err: unknown, operation: S3Operation, key: string): errors.InternalServerError {
+        return toS3RequestError(err, {
+            operation,
+            bucket: this.bucket,
+            key,
+            resource: DEFAULT_FILENAME,
+            errorCode: STORAGE_ERROR_CODE
         });
     }
 }

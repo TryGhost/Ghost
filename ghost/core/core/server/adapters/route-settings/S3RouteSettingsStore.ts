@@ -4,8 +4,6 @@ import {
     CopyObjectCommand,
     GetObjectCommand,
     HeadObjectCommand,
-    NoSuchKey,
-    NotFound,
     PutObjectCommand,
     S3Client,
     S3ClientConfig
@@ -17,10 +15,13 @@ import {RouteSettingsStoreBase, type RouteSettings} from '@tryghost/adapter-base
 
 import parseYaml from '../../services/route-settings/yaml-parser';
 import {parseRouteSettings} from '../../services/route-settings/route-settings-parser';
+import {isS3NotFound, toS3RequestError, type S3Operation} from '../lib/s3/errors';
 import {getBackupRouteSettingsFilePath} from './utils';
 
 const YAML_FILENAME = 'routes.yaml';
 const DEFAULT_SETTINGS_FILENAME = 'default-routes.yaml';
+
+const STORAGE_ERROR_CODE = 'ROUTE_SETTINGS_STORAGE_REQUEST_FAILED';
 
 const CONTENT_TYPE = 'application/yaml; charset=utf-8';
 
@@ -30,8 +31,7 @@ const messages = {
     missingDefaultSettingsBasePath: 'S3RouteSettingsStore requires a defaultSettingsBasePath',
     partialCredentials: 'S3RouteSettingsStore requires both accessKeyId and secretAccessKey when either is provided',
     missingResponseBody: 'S3 GetObject returned no body',
-    ensureDefaults: 'Error trying to access the default settings file in {path}.',
-    requestFailed: 'Route settings storage request failed: {operation} returned {code}.'
+    ensureDefaults: 'Error trying to access the default settings file in {path}.'
 };
 
 const stripLeadingAndTrailingSlashes = (value = '') => value.replace(/^\/+|\/+$/g, '');
@@ -121,7 +121,7 @@ export default class S3RouteSettingsStore extends RouteSettingsStoreBase {
     async get(): Promise<RouteSettings> {
         const key = this.buildKey();
 
-        // Only the S3 call is wrapped, so `toStoreError` only ever sees an SDK
+        // Only the S3 call is wrapped, so the error helper only ever sees an SDK
         // failure and never has to decide whether an error is already ours.
         let response;
         try {
@@ -130,7 +130,7 @@ export default class S3RouteSettingsStore extends RouteSettingsStoreBase {
                 Key: key
             }));
         } catch (err) {
-            if (this._isNotFound(err)) {
+            if (isS3NotFound(err)) {
                 const defaultContent = await this.readDefaultSettings();
                 return parseRouteSettings(parseYaml(defaultContent), defaultContent);
             }
@@ -143,7 +143,15 @@ export default class S3RouteSettingsStore extends RouteSettingsStoreBase {
             });
         }
 
-        const body = await response.Body.transformToString('utf-8');
+        // Streaming the body is a second network round trip, so it fails
+        // separately from the request that opened it — a reset partway through
+        // rejects here, not above.
+        let body: string;
+        try {
+            body = await response.Body.transformToString('utf-8');
+        } catch (err) {
+            throw this.toStoreError(err, 'GetObject', key);
+        }
 
         return parseRouteSettings(parseYaml(body), body);
     }
@@ -190,7 +198,7 @@ export default class S3RouteSettingsStore extends RouteSettingsStoreBase {
             }));
             return true;
         } catch (err) {
-            if (this._isNotFound(err)) {
+            if (isS3NotFound(err)) {
                 return false;
             }
             throw this.toStoreError(err, 'HeadObject', key);
@@ -210,35 +218,13 @@ export default class S3RouteSettingsStore extends RouteSettingsStoreBase {
         }
     }
 
-    private _isNotFound(err: unknown): boolean {
-        return err instanceof NotFound || err instanceof NoSuchKey;
-    }
-
-    /**
-     * Convert an S3 failure into a Ghost error naming the operation, key and
-     * S3 error code.
-     *
-     * The SDK's exceptions are deliberately *not* attached: they hold a
-     * reference to the HTTP response, and the API error handler deep-clones
-     * whatever it is given, so a raw SDK error makes the request die with
-     * "Maximum call stack size exceeded" and the real cause never reaches the
-     * operator. Everything useful is copied out by value instead.
-     */
-    private toStoreError(err: unknown, operation: string, key: string): Error {
-        const s3Error = err as {name?: string; message?: string; $metadata?: {httpStatusCode?: number}};
-        const code = s3Error.name || 'UnknownError';
-
-        return new errors.InternalServerError({
-            message: tpl(messages.requestFailed, {operation, code}),
-            context: s3Error.message,
-            code: 'ROUTE_SETTINGS_STORAGE_REQUEST_FAILED',
-            errorDetails: {
-                operation,
-                bucket: this.bucket,
-                key,
-                s3ErrorCode: code,
-                statusCode: s3Error.$metadata?.httpStatusCode
-            }
+    private toStoreError(err: unknown, operation: S3Operation, key: string): errors.InternalServerError {
+        return toS3RequestError(err, {
+            operation,
+            bucket: this.bucket,
+            key,
+            resource: YAML_FILENAME,
+            errorCode: STORAGE_ERROR_CODE
         });
     }
 }
