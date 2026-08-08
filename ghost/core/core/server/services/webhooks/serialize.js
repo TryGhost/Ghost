@@ -29,6 +29,18 @@ module.exports = ({urlService}) => async (event, model) => {
         'newsletters'
     ];
 
+    // `model._changed` carries raw model keys, but `previous` is picked off the
+    // API-serialized payload, where some of them are renamed. Without the
+    // mapping a change to a renamed key is silently dropped from `previous` —
+    // e.g. a switch between two paid tiers touches no members column at all, so
+    // `products` (renamed to `tiers`) is the only thing that changed.
+    const SERIALIZED_KEYS = {
+        members: {
+            products: 'tiers',
+            stripeSubscriptions: 'subscriptions'
+        }
+    };
+
     let current = {};
     let previous = {};
 
@@ -80,7 +92,7 @@ module.exports = ({urlService}) => async (event, model) => {
             .serializers
             .handle
             .output(model, {docName: docName, method: 'read'}, api.serializers.output, frame);
-        previous = _.pick(frame.response[docName][0], changed);
+        previous = _.pick(frame.response[docName][0], changed.map(key => SERIALIZED_KEYS[docName]?.[key] ?? key));
     }
 
 
