@@ -133,6 +133,95 @@ const multipleActiveSubscriptionsCodec: FilterCodec = {
     }
 };
 
+// One "Custom field" filter stands in for every defined field, so the filter list
+// stays short however many fields a publisher creates. The chosen field's key, an
+// optional address sub-field, and the value ride in the predicate's `values` as
+// [fieldKey, subfield, value]; `subfield` is '' for a scalar field and `value` is
+// unused for the set / not-set operators.
+export const CUSTOM_FIELD_OPERATORS = ['is', 'is-not', 'contains', 'does-not-contain', 'starts-with', 'ends-with', 'is-set', 'is-not-set'] as const;
+
+export const CUSTOM_FIELD_OPERATOR_LABELS: Record<string, string> = {
+    is: 'is',
+    'is-not': 'is not',
+    contains: 'contains',
+    'does-not-contain': 'does not contain',
+    'starts-with': 'starts with',
+    'ends-with': 'ends with',
+    'is-set': 'is set',
+    'is-not-set': 'is not set'
+};
+
+// Operators offered for a custom field of a given type. The field — and so its
+// type — is chosen inside the filter's value area, so the operator set is derived
+// there rather than fixed on the "Custom field" pseudo-field.
+export function operatorsForCustomFieldType(type?: string): readonly string[] {
+    switch (type) {
+    // Number, date, and boolean types will return their own sets here.
+    default:
+        // Text-shaped types: short text, and every address sub-field is text.
+        return CUSTOM_FIELD_OPERATORS;
+    }
+}
+
+// NQL operator symbol for each value operator. The field is named in the value
+// position (`custom_fields.key:'…'`) so its key can carry hyphens; the value is
+// matched on `custom_fields.value` (scalar) or `custom_fields.value.<subfield>`
+// (address), which the members filter relation maps onto the real columns.
+const CUSTOM_FIELD_VALUE_SYMBOLS: Record<string, string> = {
+    is: '',
+    'is-not': '-',
+    contains: '~',
+    'does-not-contain': '-~',
+    'starts-with': '~^',
+    'ends-with': '~$'
+};
+
+const customFieldsCodec: FilterCodec = {
+    // Parsing a grouped custom-field expression back to a predicate is bespoke —
+    // its field and part are spread across a `(key + value)` pair — so it's handled
+    // by a compound matcher in member-filter-query.ts, not here.
+    parse() {
+        return null;
+    },
+    // The field's stable key comes from the dropdown entry (`custom_field.<key>`,
+    // resolved into `ctx.params.key`); the predicate carries only [subfield, value],
+    // with subfield '' for a scalar field or the "Any" (whole-field set/unset) case.
+    serialize(predicate, ctx) {
+        const fieldKey = ctx.params.key;
+        const [subfield, value] = predicate.values as [string, string];
+
+        if (!fieldKey) {
+            return null;
+        }
+
+        const keyClause = `custom_fields.key:${escapeNqlString(fieldKey)}`;
+
+        // set / not-set target a part's presence when a part is chosen (`path`), or the
+        // whole field otherwise (the bare key / its negation).
+        if (predicate.operator === 'is-set') {
+            return subfield
+                ? [`(${keyClause}+custom_fields.path:${escapeNqlString(subfield)})`]
+                : [keyClause];
+        }
+
+        if (predicate.operator === 'is-not-set') {
+            return subfield
+                ? [`(${keyClause}+custom_fields.path:-${escapeNqlString(subfield)})`]
+                : [`custom_fields.key:-${escapeNqlString(fieldKey)}`];
+        }
+
+        const symbol = CUSTOM_FIELD_VALUE_SYMBOLS[predicate.operator];
+
+        if (symbol === undefined || value === undefined || value === null || value === '') {
+            return null;
+        }
+
+        const valueKey = subfield ? `custom_fields.value.${subfield}` : 'custom_fields.value';
+
+        return [`(${keyClause}+${valueKey}:${symbol}${escapeNqlString(String(value))})`];
+    }
+};
+
 const baseMemberFields = defineFields({
     name: {
         operators: TEXT_OPERATORS,
@@ -453,6 +542,18 @@ const baseMemberFields = defineFields({
             {value: 'false', label: 'No'}
         ],
         codec: multipleActiveSubscriptionsCodec
+    },
+    // Each defined custom field is its own filter, named directly in the dropdown
+    // (`custom_field.<key>`), so this template supplies the shared operators and codec;
+    // use-member-filter-fields builds one entry per field from the definitions.
+    'custom_field.:key': {
+        operators: CUSTOM_FIELD_OPERATORS,
+        ui: {
+            label: 'Custom field',
+            type: 'custom',
+            component: 'custom-field'
+        },
+        codec: customFieldsCodec
     }
 });
 

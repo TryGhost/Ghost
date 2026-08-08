@@ -42,7 +42,8 @@ describe('memberFields', () => {
             'clicked_links.post_id',
             'newsletter_feedback',
             'offer_redemptions',
-            'count.active_stripe_customers'
+            'count.active_stripe_customers',
+            'custom_field.:key'
         ]);
     });
 

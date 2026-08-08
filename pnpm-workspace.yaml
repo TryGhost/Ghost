@@ -83,8 +83,12 @@ catalog:
   '@tryghost/helpers': 1.1.106
   '@tryghost/limit-service': 1.5.6
   '@tryghost/logging': 5.3.0
-  '@tryghost/mongo-knex': 0.10.1
-  '@tryghost/nql': 0.13.1
+  # Pre-release of TryGhost/NQL#192 for the members custom-field filter: it adds
+  # the $elemMatch operator this feature needs. Reverts to the released versions
+  # once #192 ships. (The JSON-path half of #192 goes unused now that values are
+  # normalised into leaf rows, and is removed from NQL separately.)
+  '@tryghost/mongo-knex': 0.10.2-pr192.5
+  '@tryghost/nql': 0.13.2-pr192.5
   '@tryghost/nql-lang': 0.6.6
   '@tryghost/string': 0.3.5
   '@tryghost/timezone-data': 1.0.0
@@ -199,6 +203,10 @@ overrides:
   # executes them, so its knex must match Ghost's major or the 3.x runner throws on
   # the 2.x builder. Pin it back to 2.4.2 until ghost/core itself moves to knex 3.x.
   'knex-migrator>knex': 2.4.2
+  # Force the #192 pre-release through transitive resolvers too (bookshelf-filter
+  # depends on @tryghost/nql). Paired with the catalog bump above.
+  '@tryghost/mongo-knex': 0.10.2-pr192.5
+  '@tryghost/nql': 0.13.2-pr192.5
   '@tryghost/errors': 'catalog:'
   '@tryghost/logging': 'catalog:'
   jackspeak: 4.2.3

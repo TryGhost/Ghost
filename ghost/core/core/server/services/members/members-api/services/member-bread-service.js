@@ -2,6 +2,7 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const moment = require('moment');
+const {applyCustomFieldsFilter} = require('../../../members-custom-fields/filter');
 
 const messages = {
     stripeNotConnected: 'Missing Stripe connection.',
@@ -106,6 +107,7 @@ module.exports = class MemberBREADService {
 
         return this.customFieldValues.getValuesForMembers(memberIds);
     }
+
 
     /**
      * @private
@@ -741,6 +743,8 @@ module.exports = class MemberBREADService {
 
         //option param to skip distinct from count query, distinct adds a lot of latency and in this case the result set will always be unique.
         options.useBasicCount = true;
+
+        await applyCustomFieldsFilter(options, {values: this.customFieldValues, labs: this.labsService});
 
         const page = await this.memberRepository.list({
             ...options,
