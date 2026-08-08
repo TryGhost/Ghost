@@ -45,7 +45,7 @@
         "@tryghost/string": "catalog:",
         "@tryghost/timezone-data": "catalog:",
         "@uiw/react-codemirror": "catalog:",
-        "@xyflow/react": "12.11.1",
+        "@xyflow/react": "12.11.2",
         "clsx": "catalog:",
         "dequal": "catalog:",
         "i18n-iso-countries": "7.14.0",
