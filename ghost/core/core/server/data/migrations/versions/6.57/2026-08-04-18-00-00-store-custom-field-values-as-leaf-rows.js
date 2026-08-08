@@ -39,18 +39,30 @@ module.exports = createNonTransactionalMigration(
             await addColumn(TABLE, 'path', knex, undefined, {algorithm: 'auto'});
         }
 
-        // `member_id` stays leftmost, covering that foreign key the moment this exists.
-        await addUnique(TABLE, ['member_id', 'custom_field_id', 'path'], knex, LEAF_UNIQUE);
-        await dropUnique(TABLE, ['member_id', 'custom_field_id'], knex);
+        // Guarded on the column: a later migration renames `custom_field_id` to
+        // `custom_field_key`, and the idempotency check re-runs every up against that final
+        // schema. Skipping when the column is gone keeps this up re-runnable rather than
+        // erroring on a missing column (MySQL raises that where SQLite masks it behind the
+        // index name already existing).
+        const hasFieldId = await knex.schema.hasColumn(TABLE, 'custom_field_id');
+
+        if (hasFieldId) {
+            // `member_id` stays leftmost, covering that foreign key the moment this exists.
+            await addUnique(TABLE, ['member_id', 'custom_field_id', 'path'], knex, LEAF_UNIQUE);
+            await dropUnique(TABLE, ['member_id', 'custom_field_id'], knex);
+        }
 
         if (await knex.schema.hasColumn(TABLE, 'value_json')) {
             await dropColumn(TABLE, 'value_json', knex, {}, {algorithm: 'auto'});
         }
-        await addIndex(TABLE, ['custom_field_id', 'path'], knex);
 
-        // Only present after a rollback, where `down` adds it to keep a foreign key
-        // covered. Leaving it would be drift against a fresh install.
-        await dropIndex(TABLE, ['custom_field_id'], knex);
+        if (hasFieldId) {
+            await addIndex(TABLE, ['custom_field_id', 'path'], knex);
+
+            // Only present after a rollback, where `down` adds it to keep a foreign key
+            // covered. Leaving it would be drift against a fresh install.
+            await dropIndex(TABLE, ['custom_field_id'], knex);
+        }
     },
     async function down(knex) {
         // Rebuilding a composite would need the field-type catalog, which a migration must

@@ -83,7 +83,7 @@ export class CustomFieldValuesService {
         }
 
         const rows = await this.knex(VALUES_TABLE)
-            .join(FIELDS_TABLE, `${VALUES_TABLE}.custom_field_id`, `${FIELDS_TABLE}.id`)
+            .join(FIELDS_TABLE, `${VALUES_TABLE}.custom_field_key`, `${FIELDS_TABLE}.key`)
             .whereIn(`${VALUES_TABLE}.member_id`, memberIds)
             .where(`${FIELDS_TABLE}.status`, FIELD_STATUS.active)
             .orderBy(`${FIELDS_TABLE}.created_at`, 'asc')
@@ -207,25 +207,25 @@ export class CustomFieldValuesService {
             // than one per part, under one timestamp, because a write happened once
             // however many rows record it.
             const now = new Date();
-            const clearedFields: string[] = [];
-            const clearedPaths: Array<{fieldId: string, paths: string[]}> = [];
+            const clearedKeys: string[] = [];
+            const clearedPaths: Array<{fieldKey: string, paths: string[]}> = [];
             const rows: DbLeafRow[] = [];
 
             for (const {field, value} of writes) {
                 if (value === undefined) {
-                    clearedFields.push(field.id);
+                    clearedKeys.push(field.key);
                     continue;
                 }
 
                 const {set, cleared} = leavesToWrite(value);
                 if (cleared.length > 0) {
-                    clearedPaths.push({fieldId: field.id, paths: cleared});
+                    clearedPaths.push({fieldKey: field.key, paths: cleared});
                 }
 
                 rows.push(...set.map(leaf => ({
                     id: new ObjectID().toHexString(),
                     member_id: memberId,
-                    custom_field_id: field.id,
+                    custom_field_key: field.key,
                     path: leaf.path,
                     value_text: leaf.value_text,
                     created_at: now,
@@ -233,15 +233,15 @@ export class CustomFieldValuesService {
                 })));
             }
 
-            if (clearedFields.length > 0) {
-                await trx(VALUES_TABLE).where('member_id', memberId).whereIn('custom_field_id', clearedFields).del();
+            if (clearedKeys.length > 0) {
+                await trx(VALUES_TABLE).where('member_id', memberId).whereIn('custom_field_key', clearedKeys).del();
             }
 
             if (clearedPaths.length > 0) {
                 // One statement with a group per field, rather than a statement per field.
                 await trx(VALUES_TABLE).where('member_id', memberId).where((builder) => {
-                    for (const {fieldId, paths} of clearedPaths) {
-                        builder.orWhere(pair => pair.where('custom_field_id', fieldId).whereIn('path', paths));
+                    for (const {fieldKey, paths} of clearedPaths) {
+                        builder.orWhere(pair => pair.where('custom_field_key', fieldKey).whereIn('path', paths));
                     }
                 }).del();
             }
@@ -254,7 +254,7 @@ export class CustomFieldValuesService {
                     .insert(rows.slice(from, from + UPSERT_CHUNK))
                     // Naming the columns rather than giving values takes each from the row
                     // that lost the conflict, so every part updates to its own value.
-                    .onConflict(['member_id', 'custom_field_id', 'path'])
+                    .onConflict(['member_id', 'custom_field_key', 'path'])
                     .merge(['value_text', 'updated_at']);
             }
         };
