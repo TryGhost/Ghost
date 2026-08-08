@@ -25,9 +25,10 @@ Before editing:
    establish a baseline.
 4. Identify supported consumers that cannot load the golden-path ESM output.
 
-If the package is independently published, supports third-party consumers, or
-requires a format that conflicts with the golden path, stop and establish its
-support contract instead of applying this workflow mechanically.
+If the package has an active independent release or third-party support
+contract, or requires a format that conflicts with the golden path, stop and
+establish its support contract instead of applying this workflow mechanically.
+Deprecated historical npm versions do not by themselves block conversion.
 
 Read
 [`references/history-and-verification.md`](references/history-and-verification.md)

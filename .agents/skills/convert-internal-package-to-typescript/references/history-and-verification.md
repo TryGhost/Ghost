@@ -19,7 +19,7 @@ inspect the summary and a representative file:
 
 ```bash
 git diff --summary HEAD^
-git log --follow -- packages/<name>/src/index.ts
+git log --follow -- packages/<name>/src/<representative-file>.ts
 ```
 
 Git records snapshots rather than an explicit rename operation, so rename
