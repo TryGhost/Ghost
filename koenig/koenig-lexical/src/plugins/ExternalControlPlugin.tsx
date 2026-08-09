@@ -143,6 +143,18 @@ export const ExternalControlPlugin = ({registerAPI}) => {
                     if (paywallNode.getNextSibling() === null) {
                         paywallNode.insertAfter($createParagraphNode());
                     }
+
+                    // surface the divider's settings panel straight away
+                    $selectDecoratorNode(paywallNode);
+                });
+            },
+            selectPaywall() {
+                editor.update(() => {
+                    const [paywallNode] = $getPaywallNodes();
+
+                    if (paywallNode) {
+                        $selectDecoratorNode(paywallNode);
+                    }
                 });
             },
             removePaywall() {

@@ -66,12 +66,6 @@ export default class GhMembersRecipientSelect extends Component {
         return Array.from(this.specificFilters);
     }
 
-    // just the specific-people segments, without the free/paid status chips —
-    // used to compute the access split of that selection alone
-    get specificSegmentFilter() {
-        return Array.from(this.specificFilters).join(',');
-    }
-
     @action
     toggleFilter(filter) {
         if (this.args.disabled) {

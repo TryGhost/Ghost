@@ -244,6 +244,47 @@ export default function useSettingsPanelReposition({positionToRef} = {}, cardWid
         }
     }, [getInitialPosition, setPosition, ref]);
 
+    // follow the card when the editor scrolls — the panel is fixed-positioned,
+    // so without this it stays put while its card scrolls away
+    useLayoutEffect(() => {
+        const cardElement = positionToRef ||
+            document.querySelector('[data-kg-card-editing="true"]') ||
+            document.querySelector('[data-kg-card-selected="true"]');
+
+        if (!cardElement || !ref.current) {
+            return;
+        }
+
+        const scrollContainer = getScrollParent(cardElement) || window;
+        let lastCardTop = cardElement.getBoundingClientRect().top;
+        let rafId = null;
+
+        const onScroll = () => {
+            if (rafId) {
+                return;
+            }
+            rafId = requestAnimationFrame(() => {
+                rafId = null;
+                const cardTop = cardElement.getBoundingClientRect().top;
+                const dy = cardTop - lastCardTop;
+                if (dy !== 0) {
+                    lastCardTop = cardTop;
+                    const {x, y} = getPosition();
+                    setPosition({x, y: y + dy});
+                }
+            });
+        };
+
+        scrollContainer.addEventListener('scroll', onScroll, {passive: true});
+
+        return () => {
+            scrollContainer.removeEventListener('scroll', onScroll);
+            if (rafId) {
+                cancelAnimationFrame(rafId);
+            }
+        };
+    }, [positionToRef, getPosition, setPosition, ref]);
+
     // account for wide cards using a transform so we need to adjust the origin position
     //  NOTE: we want to make sure this doesn't happen on the first render so previousCardWidth must start as undefined
     useLayoutEffect(() => {

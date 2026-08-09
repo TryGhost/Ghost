@@ -1224,21 +1224,30 @@
     flex-direction: column;
 }
 
+/* hairline grammar: a rule below each row, none above the first, none after
+   the last — mirrors production's .gh-publish-setting/.last */
 .gh-pubflow-row {
+    padding: 1.6rem 0;
+    border-bottom: 1px solid var(--whitegrey);
+}
+
+.gh-pubflow-row-last {
+    border-bottom: none;
+}
+
+.gh-pubflow-row-head {
     display: flex;
     align-items: center;
     gap: 1.4rem;
-    padding: 1.5rem 0;
-    border-top: 1px solid var(--whitegrey);
 }
 
-.gh-pubflow-row svg {
+.gh-pubflow-row-head svg {
     flex-shrink: 0;
     width: 1.65rem;
     height: 1.65rem;
 }
 
-.gh-pubflow-row svg path {
+.gh-pubflow-row-head svg path {
     stroke: var(--black);
     stroke-width: 2px;
 }
@@ -1250,54 +1259,246 @@
     line-height: 1.35em;
 }
 
-.gh-pubflow-nest {
-    margin: -0.4rem 0 1.2rem 3.05rem;
+/* off rows dim as a whole and their label states the consequence */
+.gh-pubflow-row-off .gh-pubflow-row-label {
+    color: var(--midlightgrey);
 }
 
-.gh-pubflow-newsletter {
-    max-width: 320px;
-    margin: 0 0 1rem;
+.gh-pubflow-row-off .gh-pubflow-row-head svg path {
+    stroke: var(--midlightgrey);
 }
 
-.gh-pubflow-radio {
+/* a refused toggle click flashes the row that holds the constraint */
+.gh-pubflow-row-flash {
+    animation: gh-pubflow-flash 0.9s ease-in-out 1;
+}
+
+@keyframes gh-pubflow-flash {
+    0%, 100% {
+        background: transparent;
+    }
+    35% {
+        background: var(--whitegrey-l2, #fafbfb);
+    }
+}
+
+.gh-pubflow-row-label-email {
     display: flex;
-    align-items: center;
-    gap: 8px;
-    margin: 0 0 0.6rem;
-    font-size: 1.4rem;
-    color: var(--darkgrey);
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0 0.6rem;
+}
+
+/* the newsletter name reads as part of the sentence: same size, semibold,
+   no decoration — the name itself is the dropdown trigger */
+.gh-pubflow-newsletter-inline .gh-pubflow-newsletter-trigger {
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    height: auto;
+    min-height: 0;
+    color: var(--black);
+    font-size: 1.8rem;
+    font-weight: 400;
+    font-family: inherit;
+    letter-spacing: 0;
+    line-height: 1.35em;
+    border-bottom: 1px dashed var(--midlightgrey);
     cursor: pointer;
 }
 
-.gh-pubflow-radio input {
-    margin: 0;
+.gh-pubflow-newsletter-inline .ember-power-select-status-icon,
+.gh-pubflow-newsletter-inline .gh-pubflow-newsletter-trigger svg {
+    display: none;
+}
+
+.gh-pubflow-count {
+    font-variant-numeric: tabular-nums;
+}
+
+/* underlined words in a row title are its inline edit triggers */
+.gh-pubflow-inline-trigger {
+    padding: 0;
+    border: none;
+    background: none;
+    color: inherit;
+    font-size: inherit;
+    font-family: inherit;
+    line-height: inherit;
+    border-bottom: 1px dashed var(--midlightgrey);
+    cursor: pointer;
+}
+
+/* subline 1: the chosen value, darker than the derived outcome below it */
+.gh-pubflow-subline {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0 0.5rem;
+    margin: 0.4rem 0 0 3.05rem;
+    color: var(--darkgrey);
+    font-size: 1.4rem;
+    line-height: 1.5em;
+}
+
+.gh-pubflow-subline .gh-pubflow-link {
+    margin-left: 0.6rem;
+}
+
+.gh-pubflow-outcome {
+    margin: 0.4rem 0 0 3.05rem;
+    color: var(--midgrey);
+    font-size: 1.4rem;
+    line-height: 1.5em;
+}
+
+.gh-pubflow-link {
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--midgrey);
+    font-size: 1.35rem;
+    font-weight: 500;
+    line-height: 1.5em;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.gh-pubflow-link:hover {
+    color: var(--darkgrey);
+}
+
+/* the when-row label doesn't stretch, so its alternative sits beside it
+   as a quiet aside instead of floating at the far edge */
+.gh-pubflow-row-label-inline {
+    flex: none;
+}
+
+.gh-pubflow-cta {
+    margin-top: 4.4rem;
 }
 
 .gh-pubflow-segments {
-    margin: 0.4rem 0 0 2.2rem;
-    max-width: 420px;
+    margin: 1rem 0 0 3.05rem;
+    max-width: 480px;
 }
 
-.gh-pubflow-hint {
-    margin: 0.6rem 0 0;
-    color: var(--midgrey);
-    font-size: 1.3rem;
+.gh-pubflow-when-label {
+    position: relative;
 }
 
-.gh-pubflow-when {
-    flex: 1;
+.gh-pubflow-when-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    z-index: 100;
+    min-width: 210px;
+    padding: 6px;
+    background: var(--white);
+    border: 1px solid var(--whitegrey-d1);
+    border-radius: 6px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
 }
 
-.gh-pubflow-row-when {
-    align-items: flex-start;
+.gh-pubflow-when-menu button {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    width: 100%;
+    padding: 7px 10px;
+    border: none;
+    border-radius: 4px;
+    background: none;
+    color: var(--darkgrey);
+    font-size: 1.4rem;
+    text-align: left;
+    cursor: pointer;
 }
 
-.gh-pubflow-row-when svg {
-    margin-top: 1.2rem;
+.gh-pubflow-when-menu button:hover {
+    background: var(--whitegrey-l1, var(--whitegrey));
 }
 
-.gh-pubflow-when .gh-publish-schedule {
+.gh-pubflow-when-menu button svg {
+    width: 1.2rem;
+    height: 1.2rem;
+}
+
+.gh-pubflow-when-menu button svg path {
+    stroke: var(--black);
+}
+
+.gh-pubflow-when-picker {
+    margin: 1.2rem 0 0 3.05rem;
+}
+
+.gh-pubflow-when-picker .gh-date-time-picker {
     margin-bottom: 0;
+}
+
+@media (max-width: 560px) {
+    .gh-pubflow-row-label {
+        font-size: 1.6rem;
+    }
+
+    .gh-pubflow-newsletter-inline .gh-pubflow-newsletter-trigger {
+        font-size: 1.6rem;
+    }
+
+    .gh-pubflow-outcome,
+    .gh-pubflow-segments,
+    .gh-pubflow-when-label {
+    position: relative;
+}
+
+.gh-pubflow-when-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    z-index: 100;
+    min-width: 210px;
+    padding: 6px;
+    background: var(--white);
+    border: 1px solid var(--whitegrey-d1);
+    border-radius: 6px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.gh-pubflow-when-menu button {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    width: 100%;
+    padding: 7px 10px;
+    border: none;
+    border-radius: 4px;
+    background: none;
+    color: var(--darkgrey);
+    font-size: 1.4rem;
+    text-align: left;
+    cursor: pointer;
+}
+
+.gh-pubflow-when-menu button:hover {
+    background: var(--whitegrey-l1, var(--whitegrey));
+}
+
+.gh-pubflow-when-menu button svg {
+    width: 1.2rem;
+    height: 1.2rem;
+}
+
+.gh-pubflow-when-menu button svg path {
+    stroke: var(--black);
+}
+
+.gh-pubflow-when-picker {
+        margin-left: 0;
+    }
 }
 
 .gh-publish-receipt {

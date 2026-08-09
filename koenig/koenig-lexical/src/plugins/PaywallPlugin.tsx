@@ -1,5 +1,6 @@
 import {$createParagraphNode, $getSelection, $isParagraphNode, $isRangeSelection, COMMAND_PRIORITY_EDITOR} from 'lexical';
 import {$createPaywallNode, INSERT_PAYWALL_COMMAND} from '../nodes/PaywallNode';
+import {$selectDecoratorNode} from '../utils/$selectDecoratorNode';
 import {getSelectedNode} from '../utils/getSelectedNode';
 import {useEffect} from 'react';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
@@ -38,6 +39,9 @@ export const PaywallPlugin = () => {
                         .getNode()
                         .getTopLevelElementOrThrow()
                         .insertBefore(paywallNode);
+
+                    // surface the divider's settings panel straight away
+                    $selectDecoratorNode(paywallNode);
                 }
 
                 return true;
@@ -84,7 +88,8 @@ export const PaywallPlugin = () => {
                     parentNode.replace($createParagraphNode());
                 }
 
-                line.selectNext();
+                // surface the divider's settings panel straight away
+                $selectDecoratorNode(line);
             });
         });
     }, [editor]);

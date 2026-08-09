@@ -17,20 +17,55 @@
             </tr>
         </tbody>
     </table>
+    {{! the box is THE prompt card — image, copy and button live inside it,
+        and a custom background paints exactly this box (never the divider),
+        so what the publisher styles is one visible object }}
+    <div class="kg-paywall-box"{{#if paywall.backgroundColor}} style="background-color: {{paywall.backgroundColor}}; border-radius: 8px; padding: 24px;"{{/if}}>
+    {{#if paywall.image}}
+    {{#unless paywall.imageBottom}}
+    {{#if paywall.imageSmall}}
+    <img class="kg-paywall-image" src="{{paywall.image}}" width="180" style="max-width: 180px; height: auto; border-radius: 4px; margin-bottom: 16px;" alt="">
+    {{else}}
+    <img class="kg-paywall-image" src="{{paywall.image}}" width="600" style="max-width: 100%; height: auto; border-radius: 4px; margin-bottom: 16px;" alt="">
+    {{/if}}
+    {{/unless}}
+    {{/if}}
+    {{#if paywall.heading}}
+    <h3>{{paywall.heading}}</h3>
+    {{else}}
     <h3>{{t 'Upgrade to continue reading.'}}</h3>
+    {{/if}}
+    {{#if paywall.description}}
+    <p>{{paywall.description}}</p>
+    {{else}}
+    {{#unless paywall.heading}}
+    {{! only the fully-default paywall keeps the built-in supporting line —
+        once any custom copy is in play, a blank description renders blank,
+        matching the web wall so both surfaces tell the same story }}
     <p>{{{t 'Become a paid member of {site} to get access to all premium content.' site=site.title}}}</p>
+    {{/unless}}
+    {{/if}}
+    {{#if paywall.image}}
+    {{#if paywall.imageBottom}}
+    {{#if paywall.imageSmall}}
+    <img class="kg-paywall-image" src="{{paywall.image}}" width="180" style="max-width: 180px; height: auto; border-radius: 4px; margin-bottom: 16px;" alt="">
+    {{else}}
+    <img class="kg-paywall-image" src="{{paywall.image}}" width="600" style="max-width: 100%; height: auto; border-radius: 4px; margin-bottom: 16px;" alt="">
+    {{/if}}
+    {{/if}}
+    {{/if}}
         <table border="0" cellpadding="0" cellspacing="0">
             <tr>
                 <td>
                     <table class="btn" border="0" cellspacing="0" cellpadding="0" align="center">
                         <tr>
-                            <td align="center">
-                                <a href="{{paywall.signupUrl}}">{{t 'Upgrade'}}</a>
+                            <td align="center"{{#if paywall.buttonColor}} style="background-color: {{paywall.buttonColor}};"{{else}}{{#if paywall.buttonContrast}} style="background-color: #ffffff;"{{/if}}{{/if}}>
+                                <a href="{{#if paywall.buttonUrl}}{{paywall.buttonUrl}}{{else}}{{paywall.signupUrl}}{{/if}}"{{#if paywall.buttonColor}} style="background-color: {{paywall.buttonColor}}; color: {{#if paywall.buttonTextColor}}{{paywall.buttonTextColor}}{{else}}#ffffff{{/if}};"{{else}}{{#if paywall.buttonContrast}} style="background-color: #ffffff; color: {{paywall.backgroundColor}};"{{/if}}{{/if}}>{{#if paywall.buttonText}}{{paywall.buttonText}}{{else}}{{t 'Upgrade'}}{{/if}}</a>
                             </td>
                         </tr>
                     </table>
                 </td>
             </tr>
         </table>
-    <p></p>
+    </div>
 </div>

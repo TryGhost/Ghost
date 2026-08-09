@@ -97,7 +97,10 @@ module.exports = async (model, frame, options = {}) => {
 
     if (utils.isContentAPI(frame)) {
         date.forPost(jsonModel);
-        gating.forPost(jsonModel, frame);
+        // lexical is a source format that gets stripped from Content API
+        // output below, so hand it to gating directly for paywall card CTA
+        // extraction
+        gating.forPost(jsonModel, frame, {lexical: (typeof model.get === 'function' && model.get('lexical')) || jsonModel.lexical});
         previewRendering.forPost(jsonModel, frame);
 
         if (jsonModel.access) {

@@ -1,10 +1,11 @@
 import Component from '@glimmer/component';
 import {action, get} from '@ember/object';
 import {hasPublicPreview} from '../../utils/public-preview-warning';
+import {later} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 
 const ACCESS_OPTIONS = [
-    {name: 'public', label: 'Everyone', description: 'Free for everyone to read'},
+    {name: 'public', label: 'Public', description: 'Free for everyone to read'},
     {name: 'members', label: 'Members only', description: 'Requires a free account'},
     {name: 'paid', label: 'Paid members only', description: 'Requires a paid subscription'},
     {name: 'tiers', label: 'Specific tiers', description: 'Requires one of the selected tiers'}
@@ -45,7 +46,13 @@ export default class AccessBarComponent extends Component {
         }
 
         const option = ACCESS_OPTIONS.find(o => o.name === this.visibility);
-        return option ? option.label : 'Everyone';
+        return option ? option.label : 'Public';
+    }
+
+    // a divider on a public post does nothing — the actionable control is the
+    // access selector, so it wears a highlight while that state holds
+    get showAccessAttention() {
+        return this.visibility === 'public' && this.hasPublicPreview;
     }
 
     get hasPublicPreview() {
@@ -65,6 +72,7 @@ export default class AccessBarComponent extends Component {
         }
 
         this.post.set('visibility', name);
+        this._accessChanged = true;
 
         if (name === 'tiers') {
             // keep the menu open so the tier picker can be used; saving happens
@@ -80,6 +88,7 @@ export default class AccessBarComponent extends Component {
     @action
     setTiers(tiers) {
         this.post.set('tiers', tiers);
+        this._accessChanged = true;
 
         if (tiers?.length) {
             this.savePost();
@@ -89,6 +98,40 @@ export default class AccessBarComponent extends Component {
     @action
     addPublicPreview() {
         this.args.editorAPI?.insertPaywall();
+        this._resurfaceDividerPanel();
+    }
+
+    @action
+    registerDropdownAPI(dropdownAPI) {
+        this._dropdownAPI = dropdownAPI;
+    }
+
+    // resurface only once the menu closes — popping the divider panel up while
+    // the user is still inside the access menu was disorienting
+    @action
+    onAccessMenuClose() {
+        if (!this._accessChanged) {
+            return;
+        }
+
+        this._accessChanged = false;
+
+        if (this.isGated) {
+            this._resurfaceDividerPanel();
+        }
+    }
+
+    // access changes shape what the divider means, so its settings panel comes
+    // back into view after access changes and on divider insert
+    _resurfaceDividerPanel() {
+        later(() => {
+            if (!this.hasPublicPreview) {
+                return;
+            }
+
+            this.args.editorAPI?.selectPaywall?.();
+            this.scrollToPreviewDivider();
+        }, 120);
     }
 
     @action

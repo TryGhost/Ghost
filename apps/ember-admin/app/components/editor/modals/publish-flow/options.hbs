@@ -10,63 +10,68 @@
 {{else}}
     <div class="gh-pubflow">
 
-        <div class="gh-pubflow-row" data-test-setting="publish-web">
-            {{svg-jar "globe-simple"}}
-            <span class="gh-pubflow-row-label">Publish on the site</span>
-            <div class="for-switch small">
-                <label class="switch">
-                    <input type="checkbox" checked={{this.webChecked}} {{on "change" this.toggleWeb}} data-test-checkbox="publish-web">
-                    <span class="input-toggle-component"></span>
-                </label>
-            </div>
-        </div>
-
-        {{#unless @publishOptions.emailUnavailable}}
-            <div class="gh-pubflow-row" data-test-setting="publish-email">
-                {{svg-jar "send-email"}}
-                <span class="gh-pubflow-row-label">Email to subscribers</span>
+        <div class="gh-pubflow-row {{unless this.webChecked "gh-pubflow-row-off"}}" data-test-setting="publish-web">
+            <div class="gh-pubflow-row-head">
+                {{svg-jar "globe-simple"}}
+                <span class="gh-pubflow-row-label">
+                    {{if this.webChecked "Publish on the site" "Not published on the site"}}
+                </span>
                 <div class="for-switch small">
                     <label class="switch">
-                        <input type="checkbox" checked={{this.emailChecked}} disabled={{@publishOptions.emailDisabled}} {{on "change" this.toggleEmail}} data-test-checkbox="publish-email">
+                        <input type="checkbox" checked={{this.webChecked}} {{on "change" this.toggleWeb}} data-test-checkbox="publish-web">
                         <span class="input-toggle-component"></span>
                     </label>
                 </div>
             </div>
-            {{#if this.emailActive}}
-                <div class="gh-pubflow-nest">
-                    {{#if (gt @publishOptions.newsletters.length 1)}}
-                        <div class="gh-pubflow-newsletter" data-test-select="newsletter">
-                            <PowerSelect
-                                @selected={{@publishOptions.newsletter}}
-                                @options={{@publishOptions.newsletters}}
-                                @onChange={{@publishOptions.setNewsletter}}
-                                @triggerComponent={{component "gh-power-select/trigger"}}
-                                @triggerClass="gh-publish-newsletter-trigger"
-                                @dropdownClass="gh-publish-newsletter-dropdown"
-                                as |newsletter|
-                            >
-                                <span data-test-select-option={{newsletter.name}}>{{newsletter.name}}</span>
-                            </PowerSelect>
-                        </div>
-                    {{/if}}
-                    <label class="gh-pubflow-radio" data-testid="send-standard">
-                        <input type="radio" name="send-mode" checked={{eq this.sendMode "standard"}} {{on "change" this.useStandardSend}}>
-                        {{#let (members-count-fetcher query=(hash filter=this.standardCountFilter)) as |countFetcher|}}
-                            {{#if this.standardIsEveryone}}
-                                All {{if countFetcher.isLoading "…" (format-number countFetcher.count)}} subscribers
-                            {{else}}
-                                {{if countFetcher.isLoading "…" (format-number countFetcher.count)}} subscribers &mdash; everyone the post or its preview is for
+            {{#if (and this.webChecked this.webLine)}}
+                <p class="gh-pubflow-outcome" data-testid="web-outcome">{{this.webLine}}</p>
+            {{/if}}
+        </div>
+
+        {{#unless @publishOptions.emailUnavailable}}
+            <div class="gh-pubflow-row {{unless this.emailActive "gh-pubflow-row-off"}}" data-test-setting="publish-email">
+                <div class="gh-pubflow-row-head">
+                    {{svg-jar "send-email"}}
+                    {{#if this.emailActive}}
+                        <span class="gh-pubflow-row-label gh-pubflow-row-label-email">
+                            Email
+                            <button type="button" class="gh-pubflow-inline-trigger" {{on "click" this.toggleAudiencePicker}} data-testid="email-audience-trigger">
+                                {{#let (members-count-fetcher query=(hash filter=this.totalCountFilter)) as |totalFetcher|}}
+                                    <span class="gh-pubflow-count">{{if totalFetcher.isLoading "…" (format-number totalFetcher.count)}}</span> subscribers
+                                {{/let}}
+                            </button>
+                            {{#if (gt @publishOptions.newsletters.length 1)}}
+                                of
+                                <span class="gh-pubflow-newsletter-inline" data-test-select="newsletter">
+                                    <PowerSelect
+                                        @selected={{@publishOptions.newsletter}}
+                                        @options={{@publishOptions.newsletters}}
+                                        @onChange={{@publishOptions.setNewsletter}}
+                                        @triggerComponent={{component "gh-power-select/trigger"}}
+                                        @triggerClass="gh-pubflow-newsletter-trigger"
+                                        @dropdownClass="gh-publish-newsletter-dropdown"
+                                        as |newsletter|
+                                    >
+                                        <span data-test-select-option={{newsletter.name}}>{{newsletter.name}}</span>
+                                    </PowerSelect>
+                                </span>
                             {{/if}}
-                        {{/let}}
-                    </label>
-                    <label class="gh-pubflow-radio" data-testid="send-custom">
-                        <input type="radio" name="send-mode" checked={{eq this.sendMode "custom"}} {{on "change" this.useCustomSend}}>
-                        Only specific groups:
-                    </label>
-                    {{#if (eq this.sendMode "custom")}}
+                        </span>
+                    {{else}}
+                        <span class="gh-pubflow-row-label">Not sent as newsletter</span>
+                    {{/if}}
+                    <div class="for-switch small">
+                        <label class="switch">
+                            <input type="checkbox" checked={{this.emailChecked}} disabled={{@publishOptions.emailDisabled}} {{on "change" this.toggleEmail}} data-test-checkbox="publish-email">
+                            <span class="input-toggle-component"></span>
+                        </label>
+                    </div>
+                </div>
+                {{#if this.emailActive}}
+                    {{#if this.audiencePickerOpen}}
                         <div class="gh-pubflow-segments" data-test-select="segment-groups">
                             <GhSegmentTokenInput
-                                @nonLabelOptions={{array}}
+                                @nonLabelOptions={{this.nonLabelOptions}}
                                 @selectedSegments={{this.selectedSegments}}
                                 @onChange={{this.selectSegments}}
                                 @renderInPlace={{false}}
@@ -74,22 +79,73 @@
                                 @dropdownClass="gh-publish-newsletter-dropdown"
                                 @searchMessage="All groups selected"
                             />
-                            {{#if this.customSelectionEmpty}}
-                                <p class="gh-pubflow-hint">Pick at least one group, or switch back to all subscribers.</p>
-                            {{/if}}
                         </div>
                     {{/if}}
-                </div>
-            {{/if}}
+                    {{#if this.hasSplit}}
+                        <p class="gh-pubflow-outcome" data-testid="email-outcome">
+                            {{#if this.warnUngated}}
+                                {{#let (members-count-fetcher query=(hash filter=this.totalCountFilter)) as |totalFetcher|}}
+                                    <span class="gh-pubflow-count">{{if totalFetcher.isLoading "…" (format-number totalFetcher.count)}}</span> get the full post{{#let (members-count-fetcher query=(hash filter=this.otherCountFilter)) as |otherFetcher|}}{{#if (gt otherFetcher.count 0)}} &mdash; including <span class="gh-pubflow-count">{{format-number otherFetcher.count}}</span> {{this.notEmailedNoun}}{{/if}}{{/let}}.
+                                {{/let}}
+                            {{else}}
+                                {{#let (members-count-fetcher query=(hash filter=this.fullCountFilter)) as |fullFetcher|}}
+                                    <span class="gh-pubflow-count">{{if fullFetcher.isLoading "…" (format-number fullFetcher.count)}}</span> {{this.fullNoun}} get the full post
+                                {{/let}}
+                                {{#if this.otherCountFilter}}
+                                    {{#let (members-count-fetcher query=(hash filter=this.otherCountFilter)) as |otherFetcher|}}
+                                        {{#if (gt otherFetcher.count 0)}}
+                                            &middot; <span class="gh-pubflow-count">{{format-number otherFetcher.count}}</span> {{this.otherOutcomeLabel}}
+                                        {{/if}}
+                                    {{/let}}
+                                {{/if}}
+                                {{#if this.showNotEmailedNote}}
+                                    &middot; free subscribers aren&rsquo;t emailed
+                                {{/if}}
+                            {{/if}}
+                        </p>
+                    {{/if}}
+                {{else if this.emailDisabledReason}}
+                    <p class="gh-pubflow-outcome" data-testid="email-disabled-reason">{{this.emailDisabledReason}}</p>
+                {{/if}}
+            </div>
         {{/unless}}
 
-        <div class="gh-pubflow-row gh-pubflow-row-when" data-test-setting="publish-at">
-            {{svg-jar "clock"}}
-            <div class="gh-pubflow-when">
-                <Editor::PublishOptions::PublishAt @publishOptions={{@publishOptions}} />
+        <div class="gh-pubflow-row gh-pubflow-row-last" data-test-setting="publish-at">
+            <div class="gh-pubflow-row-head">
+                {{svg-jar "clock"}}
+                <span class="gh-pubflow-row-label gh-pubflow-when-label">
+                    <button type="button" class="gh-pubflow-inline-trigger" {{on "click" this.toggleWhenMenu}} data-testid="publish-at-trigger">
+                        {{#if @publishOptions.isScheduled}}{{this.relativeScheduleLabel}}{{else}}Right now{{/if}}
+                    </button>
+                    {{#if this.whenMenuOpen}}
+                        <div class="gh-pubflow-when-menu" data-testid="when-menu">
+                            <button type="button" class="{{unless @publishOptions.isScheduled "active"}}" {{on "click" this.chooseNow}} data-testid="when-option-now">
+                                Right now
+                                {{#unless @publishOptions.isScheduled}}{{svg-jar "check-2"}}{{/unless}}
+                            </button>
+                            <button type="button" class="{{if @publishOptions.isScheduled "active"}}" {{on "click" this.chooseLater}} data-testid="when-option-later">
+                                Schedule for later
+                                {{#if @publishOptions.isScheduled}}{{svg-jar "check-2"}}{{/if}}
+                            </button>
+                        </div>
+                    {{/if}}
+                </span>
             </div>
+            {{#if @publishOptions.isScheduled}}
+                <div class="gh-pubflow-when-picker" data-test-setting="schedule-picker">
+                    <GhDateTimePicker
+                        @datePickerClass="publish-flow-datepicker"
+                        @date={{moment-format (moment-site-tz @publishOptions.scheduledAtUTC) "YYYY-MM-DD"}}
+                        @time={{moment-format (moment-site-tz @publishOptions.scheduledAtUTC) "HH:mm"}}
+                        @setDate={{this.setDate}}
+                        @setTime={{this.setTime}}
+                        @minDate={{moment-site-tz @publishOptions.minScheduledAt}}
+                        @isActive={{true}}
+                        @renderInPlace={{false}}
+                    />
+                </div>
+            {{/if}}
         </div>
-
 
     </div>
 
@@ -104,8 +160,8 @@
         </Editor::EmailSizeWarning>
     {{/if}}
 
-    <div class="gh-publish-cta">
-        <button type="button" class="gh-btn gh-btn-black gh-btn-large" disabled={{this.ctaBlocked}} {{on "click" @confirm}} data-test-button="continue">
+    <div class="gh-publish-cta gh-pubflow-cta">
+        <button type="button" class="gh-btn gh-btn-black gh-btn-large" {{on "click" @confirm}} data-test-button="continue">
             <span>Continue, final review &rarr;</span>
         </button>
     </div>

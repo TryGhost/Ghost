@@ -916,6 +916,14 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     gap: 2px;
 }
 
+/* a divider exists but the post is public: the access selector is the thing
+   to change, so it wears a yellow rectangle while that state holds */
+.gh-editor-access-bar-attention {
+    outline: 2px solid var(--yellow);
+    outline-offset: 3px;
+    border-radius: 6px;
+}
+
 /* Centered in the editor header between post status and publish buttons */
 .gh-editor-header-access {
     position: absolute;
@@ -1627,4 +1635,8 @@ figure {
     color: var(--red);
     font-weight: 300;
     letter-spacing: 0.3px;
+}
+
+.gh-koenig-editor [data-lexical-editor="true"] > div:has([data-kg-card="paywall"]) ~ * {
+    opacity: 0.5;
 }

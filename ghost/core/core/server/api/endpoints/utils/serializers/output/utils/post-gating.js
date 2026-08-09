@@ -80,8 +80,54 @@ function _updateTextAttrs(attrs) {
     }
 }
 
+/**
+ * Extracts the per-post web CTA overrides from the post's paywall card so the
+ * frontend can render them in place of the built-in defaults. Runs before the
+ * lexical source is stripped from Content API output.
+ *
+ * @param {string} [lexical]
+ * @returns {Object | null} snake_cased webCta dataset, or null when the post
+ * has no paywall card or the card carries no web overrides
+ */
+const getPaywallCardCta = (lexical) => {
+    if (!lexical || !lexical.includes('"type":"paywall"')) {
+        return null;
+    }
+
+    try {
+        const stack = [...(JSON.parse(lexical).root?.children || [])];
+        while (stack.length) {
+            const node = stack.shift();
+            if (node?.type === 'paywall') {
+                // the card's per-post override for THIS channel; empty means
+                // the built-in default, which the theme resolves
+                const web = node.webCta || {};
+                const cta = {
+                    heading: web.heading || null,
+                    description: web.description || null,
+                    button_text: web.buttonText || null,
+                    button_url: web.buttonUrl || null,
+                    image: web.image || null,
+                    image_bottom: Boolean(web.imageBottom),
+                    image_small: Boolean(web.imageSmall),
+                    background_color: web.backgroundColor || null,
+                    button_color: web.buttonColor || null
+                };
+                const hasOverride = cta.heading || cta.description || cta.button_text || cta.button_url || cta.image || cta.background_color || cta.button_color;
+                return hasOverride ? cta : null;
+            }
+            if (Array.isArray(node?.children)) {
+                stack.push(...node.children);
+            }
+        }
+    } catch (err) {
+        // invalid lexical document - no custom CTA
+    }
+    return null;
+};
+
 // @TODO: reconsider the location of this - it's part of members and adds a property to the API
-const forPost = (attrs, frame) => {
+const forPost = (attrs, frame, {lexical} = {}) => {
     // CASE: Access always defaults to true, unless members is enabled and the member does not have access
     if (!Object.prototype.hasOwnProperty.call(frame.options, 'columns') || (frame.options.columns.includes('access'))) {
         attrs.access = true;
@@ -91,6 +137,13 @@ const forPost = (attrs, frame) => {
 
     if (!memberHasAccess) {
         const paywallIndex = (attrs.html || '').indexOf('<!--members-only-->');
+
+        // Per-post CTA copy set on the paywall card travels with the post so
+        // the frontend can render it instead of the built-in default
+        const paywallCardCta = getPaywallCardCta(lexical || attrs.lexical);
+        if (paywallCardCta) {
+            attrs.paywall_cta = paywallCardCta;
+        }
 
         if (paywallIndex !== -1) {
             attrs.html = attrs.html.slice(0, paywallIndex);

@@ -1,6 +1,6 @@
 {{#if this.canManageAccess}}
-    <div class="gh-editor-access-bar" data-testid="editor-access-bar">
-        <GhBasicDropdown @verticalPosition="below" @horizontalPosition="left" as |dd|>
+    <div class="gh-editor-access-bar {{if this.showAccessAttention "gh-editor-access-bar-attention"}}" data-testid="editor-access-bar">
+        <GhBasicDropdown @verticalPosition="below" @horizontalPosition="left" @registerAPI={{this.registerDropdownAPI}} @onClose={{this.onAccessMenuClose}} as |dd|>
             <dd.Trigger class="gh-access-bar-trigger" data-testid="access-bar-visibility">
                 {{#if this.isGated}}
                     {{svg-jar "lock"}}

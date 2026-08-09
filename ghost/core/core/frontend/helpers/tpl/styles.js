@@ -62,6 +62,17 @@ const contentHelper = `.gh-post-upgrade-cta-content,
 
 .gh-post-upgrade-cta a.gh-btn:hover {
     opacity: 0.92;
+}
+
+.gh-post-upgrade-cta-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+    margin: 0 0 20px;
+}
+
+.gh-post-upgrade-cta-image-small {
+    max-width: 180px;
 }`;
 
 const styles = contentHelper;

@@ -21,9 +21,6 @@
                                 <span class="gh-publish-emailcount" data-test-email-count="free-members">({{format-number countFetcher.count}})</span>
                             {{/if}}
                         {{/let}}
-                        {{#if (and this.isFreeChecked @audienceOutcomes.free)}}
-                            <span class="gh-publish-send-to-outcome" data-testid="audience-outcome-free">&mdash; {{@audienceOutcomes.free}}</span>
-                        {{/if}}
                     </p>
                 </div>
             </label>
@@ -52,9 +49,6 @@
                                     <span class="gh-publish-emailcount" data-test-email-count="paid-members">({{format-number countFetcher.count}})</span>
                                 {{/if}}
                             {{/let}}
-                            {{#if (and this.isPaidChecked @audienceOutcomes.paid)}}
-                                <span class="gh-publish-send-to-outcome" data-testid="audience-outcome-paid">&mdash; {{@audienceOutcomes.paid}}</span>
-                            {{/if}}
                         </p>
                     </div>
                 </label>
@@ -84,17 +78,6 @@
         </div>
     {{/if}}
 </div>
-{{#if (and @paidSplit this.isPaidChecked)}}
-    {{!-- tiers posts: the paid group mixes tiers with and without access,
-          so its outcome is a computed split rather than a single label --}}
-    <p class="gh-publish-send-to-mixed-outcome" data-testid="paid-outcome-split">
-        {{#let (members-count-fetcher query=(hash filter=(concat @newsletter.recipientFilter "+(" @paidSplit.fullFilter ")"))) as |fullFetcher|}}
-            {{#let (members-count-fetcher query=(hash filter=(concat @newsletter.recipientFilter "+(" @paidSplit.otherFilter ")"))) as |otherFetcher|}}
-                Of paid subscribers, {{if fullFetcher.isLoading "…" (format-number fullFetcher.count)}} get the full post and {{if otherFetcher.isLoading "…" (format-number otherFetcher.count)}} {{@paidSplit.otherOutcome}}.
-            {{/let}}
-        {{/let}}
-    </p>
-{{/if}}
 {{#if this.isSpecificChecked}}
     <div data-test-select="specific-members">
         <label class="gh-main-section-header small bn">Selection</label>
@@ -108,16 +91,5 @@
             @dropdownClass={{@dropdownClass}}
             @searchMessage="All labels selected"
         />
-        {{!-- a specific selection can mix access levels, so the outcome is a
-              computed split of the selection rather than a per-group label --}}
-        {{#if (and @audienceOutcomes.free this.specificSegmentFilter)}}
-            <p class="gh-publish-send-to-mixed-outcome" data-testid="specific-outcome-split">
-                {{#let (members-count-fetcher query=(hash filter=(concat @newsletter.recipientFilter "+(" this.specificSegmentFilter ")+(status:-free)"))) as |fullFetcher|}}
-                    {{#let (members-count-fetcher query=(hash filter=(concat @newsletter.recipientFilter "+(" this.specificSegmentFilter ")+(status:free)"))) as |previewFetcher|}}
-                        Of these, {{if fullFetcher.isLoading "…" (format-number fullFetcher.count)}} get the full post and {{if previewFetcher.isLoading "…" (format-number previewFetcher.count)}} the public preview.
-                    {{/let}}
-                {{/let}}
-            </p>
-        {{/if}}
     </div>
 {{/if}}

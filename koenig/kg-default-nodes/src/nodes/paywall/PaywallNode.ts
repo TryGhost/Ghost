@@ -2,20 +2,17 @@ import {generateDecoratorNode, type DecoratorNodeData, type DecoratorNodePropert
 import {parsePaywallNode} from './paywall-parser.js';
 import {renderPaywallNode} from './paywall-renderer.js';
 
-// Empty strings mean "use Ghost's default paywall copy"; the editor's
-// customise modal writes overrides here so they travel with the post
 const paywallProperties = {
     // which non-access groups receive the preview by email: 'all' = everyone
     // without access, '' = nobody, or a CSV of member segments
     previewEmailTo: {default: 'all'},
-    webHeading: {default: ''},
-    webDescription: {default: ''},
-    webButtonText: {default: ''},
-    webButtonUrl: {default: '', urlType: 'url'},
-    emailHeading: {default: ''},
-    emailDescription: {default: ''},
-    emailButtonText: {default: ''},
-    emailButtonUrl: {default: '', urlType: 'url'}
+    // per-post overrides of what the upgrade prompt shows, one dataset per
+    // channel: {image, imageBottom, imageSmall, heading, description,
+    // buttonText, buttonUrl, backgroundColor, buttonColor}. Each channel has a
+    // site-wide default, so an empty dataset means "render the default" —
+    // which makes "reset to default" a deletion, not a copy
+    webCta: {default: {}},
+    emailCta: {default: {}}
 } satisfies DecoratorNodePropertyMap;
 
 export type PaywallData = DecoratorNodeData<typeof paywallProperties>;

@@ -1,32 +1,57 @@
 {{{html}}}
 <aside class="gh-post-upgrade-cta">
-    <div class="gh-post-upgrade-cta-content" style="background-color: {{@site.accent_color}}">
-        {{#has visibility="paid"}}
-            {{#is "page"}}
-                <h2>{{t "This page is for paying subscribers only"}}</h2>
-            {{else}}
-                <h2>{{t "This post is for paying subscribers only"}}</h2>
-            {{/is}}
-        {{/has}}
-        {{#has visibility="members"}}
-            {{#is "page"}}
-                <h2>{{t "This page is for subscribers only"}}</h2>
-            {{else}}
-                <h2>{{t "This post is for subscribers only"}}</h2>
-            {{/is}}
-        {{/has}}
-        {{#has visibility="tiers"}}
-            {{#is "page"}}
-                <h2>{{{t "This page is for subscribers on the {tiers} only" tiers=(tiers separator=", " lastSeparator=(t " and "))}}}</h2>
-            {{else}}
-                <h2>{{{t "This post is for subscribers on the {tiers} only" tiers=(tiers separator=", " lastSeparator=(t " and "))}}}</h2>
-            {{/is}}
-        {{/has}}
-        {{#if @member}}
-            <a class="gh-btn" data-portal="account/plans" href="#/portal/account/plans" style="color:{{@site.accent_color}}">{{t "Upgrade your account"}}</a>
+    <div class="gh-post-upgrade-cta-content" style="background-color: {{#if paywall.backgroundColor}}{{paywall.backgroundColor}}{{else}}{{@site.accent_color}}{{/if}}{{#if paywall.backgroundTextColor}}; color: {{paywall.backgroundTextColor}}{{/if}}">
+        {{#if paywall.image}}
+            {{#unless paywall.imageBottom}}
+                <img alt="" class="gh-post-upgrade-cta-image{{#if paywall.imageSmall}} gh-post-upgrade-cta-image-small{{/if}}" src="{{paywall.image}}">
+            {{/unless}}
+        {{/if}}
+        {{#if paywall.heading}}
+            <h2{{#if paywall.backgroundTextColor}} style="color: {{paywall.backgroundTextColor}}"{{/if}}>{{paywall.heading}}</h2>
         {{else}}
-            <a class="gh-btn" data-portal="signup" href="#/portal/signup" style="color:{{@site.accent_color}}">{{t "Subscribe now"}}</a>
-            <p><small>{{t "Already have an account?"}} <a data-portal="signin" href="#/portal/signin">{{t "Sign in"}}</a></small></p>
+            {{#has visibility="paid"}}
+                {{#is "page"}}
+                    <h2{{#if paywall.backgroundTextColor}} style="color: {{paywall.backgroundTextColor}}"{{/if}}>{{t "This page is for paying subscribers only"}}</h2>
+                {{else}}
+                    <h2{{#if paywall.backgroundTextColor}} style="color: {{paywall.backgroundTextColor}}"{{/if}}>{{t "This post is for paying subscribers only"}}</h2>
+                {{/is}}
+            {{/has}}
+            {{#has visibility="members"}}
+                {{#is "page"}}
+                    <h2{{#if paywall.backgroundTextColor}} style="color: {{paywall.backgroundTextColor}}"{{/if}}>{{t "This page is for subscribers only"}}</h2>
+                {{else}}
+                    <h2{{#if paywall.backgroundTextColor}} style="color: {{paywall.backgroundTextColor}}"{{/if}}>{{t "This post is for subscribers only"}}</h2>
+                {{/is}}
+            {{/has}}
+            {{#has visibility="tiers"}}
+                {{#is "page"}}
+                    <h2{{#if paywall.backgroundTextColor}} style="color: {{paywall.backgroundTextColor}}"{{/if}}>{{{t "This page is for subscribers on the {tiers} only" tiers=(tiers separator=", " lastSeparator=(t " and "))}}}</h2>
+                {{else}}
+                    <h2{{#if paywall.backgroundTextColor}} style="color: {{paywall.backgroundTextColor}}"{{/if}}>{{{t "This post is for subscribers on the {tiers} only" tiers=(tiers separator=", " lastSeparator=(t " and "))}}}</h2>
+                {{/is}}
+            {{/has}}
+        {{/if}}
+        {{#if paywall.description}}
+            <p class="gh-post-upgrade-cta-description">{{paywall.description}}</p>
+        {{/if}}
+        {{#if paywall.image}}
+            {{#if paywall.imageBottom}}
+                <img alt="" class="gh-post-upgrade-cta-image{{#if paywall.imageSmall}} gh-post-upgrade-cta-image-small{{/if}}" src="{{paywall.image}}">
+            {{/if}}
+        {{/if}}
+        {{#if @member}}
+            {{#if paywall.buttonUrl}}
+                <a class="gh-btn" href="{{paywall.buttonUrl}}" style="{{#if paywall.buttonColor}}background-color: {{paywall.buttonColor}}; color: {{paywall.buttonTextColor}}{{else}}color:{{@site.accent_color}}{{/if}}">{{#if paywall.buttonText}}{{paywall.buttonText}}{{else}}{{t "Upgrade your account"}}{{/if}}</a>
+            {{else}}
+                <a class="gh-btn" data-portal="account/plans" href="#/portal/account/plans" style="{{#if paywall.buttonColor}}background-color: {{paywall.buttonColor}}; color: {{paywall.buttonTextColor}}{{else}}color:{{@site.accent_color}}{{/if}}">{{#if paywall.buttonText}}{{paywall.buttonText}}{{else}}{{t "Upgrade your account"}}{{/if}}</a>
+            {{/if}}
+        {{else}}
+            {{#if paywall.buttonUrl}}
+                <a class="gh-btn" href="{{paywall.buttonUrl}}" style="{{#if paywall.buttonColor}}background-color: {{paywall.buttonColor}}; color: {{paywall.buttonTextColor}}{{else}}color:{{@site.accent_color}}{{/if}}">{{#if paywall.buttonText}}{{paywall.buttonText}}{{else}}{{t "Subscribe now"}}{{/if}}</a>
+            {{else}}
+                <a class="gh-btn" data-portal="signup" href="#/portal/signup" style="{{#if paywall.buttonColor}}background-color: {{paywall.buttonColor}}; color: {{paywall.buttonTextColor}}{{else}}color:{{@site.accent_color}}{{/if}}">{{#if paywall.buttonText}}{{paywall.buttonText}}{{else}}{{t "Subscribe now"}}{{/if}}</a>
+            {{/if}}
+            <p><small{{#if paywall.backgroundTextColor}} style="color: {{paywall.backgroundTextColor}}"{{/if}}>{{t "Already have an account?"}} <a data-portal="signin" href="#/portal/signin"{{#if paywall.backgroundTextColor}} style="color: {{paywall.backgroundTextColor}}"{{/if}}>{{t "Sign in"}}</a></small></p>
         {{/if}}
     </div>
 </aside>

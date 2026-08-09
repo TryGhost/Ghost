@@ -4,8 +4,9 @@ import {inject as service} from '@ember/service';
 
 // Read-only "who gets what" breakdown for gated posts (publicPreviews labs flag).
 // The email recipient list stays authoritative for who receives an email; the
-// post's public preview settings determine what the without-access portion of
-// those recipients see: the public preview, or a minimal upgrade prompt.
+// divider determines what the without-access portion of those recipients see:
+// with one the email is truncated to the public preview, without one the full
+// post goes to everyone on the list.
 export default class AudienceSummaryComponent extends Component {
     @service feature;
 
@@ -74,22 +75,15 @@ export default class AudienceSummaryComponent extends Component {
         return null;
     }
 
+    // a divider truncates the email for every recipient without access — the
+    // preview settings only shape the default recipient list, so anyone
+    // without access who is on the list gets the preview
     get previewFilter() {
-        if (!this.emailPreviewEnabled || !this.noAccessFilter) {
+        if (!this.hasPreview) {
             return null;
         }
 
-        if (this.previewSegments === 'all') {
-            return this.noAccessFilter;
-        }
-
-        return this.previewSegments;
-    }
-
-    get stubFilter() {
-        // with divider-scoped preview audiences the not-included groups simply
-        // get no email, so there is no upgrade-prompt stub group any more
-        return null;
+        return this.noAccessFilter;
     }
 
     get rows() {
@@ -99,7 +93,9 @@ export default class AudienceSummaryComponent extends Component {
         rows.push({
             key: 'full',
             label: 'get the full post',
-            filter: combine(this.accessFilter)
+            // without a divider there is nothing to truncate: the full post
+            // goes to everyone on the list, access or not
+            filter: combine(this.hasPreview ? this.accessFilter : null)
         });
 
         if (this.previewFilter) {
@@ -107,14 +103,6 @@ export default class AudienceSummaryComponent extends Component {
                 key: 'preview',
                 label: 'get the public preview',
                 filter: combine(this.previewFilter)
-            });
-        }
-
-        if (this.stubFilter) {
-            rows.push({
-                key: 'upgrade',
-                label: 'get an upgrade prompt',
-                filter: combine(this.stubFilter)
             });
         }
 
@@ -128,8 +116,7 @@ export default class AudienceSummaryComponent extends Component {
     get inlineRows() {
         const thingNouns = {
             full: 'the full post',
-            preview: 'the public preview',
-            upgrade: 'an upgrade prompt'
+            preview: 'the public preview'
         };
 
         const rows = this.rows.map(row => ({
@@ -138,7 +125,7 @@ export default class AudienceSummaryComponent extends Component {
         }));
 
         rows.sort((a, b) => {
-            const order = {full: 0, preview: 1, upgrade: 2};
+            const order = {full: 0, preview: 1};
             return order[a.key] - order[b.key];
         });
 

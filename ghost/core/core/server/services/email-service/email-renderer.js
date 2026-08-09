@@ -19,6 +19,7 @@ const {registerHelpers} = require('./helpers/register-helpers');
 const crypto = require('crypto');
 const {checkSegmentPostAccess, getPostAccessFilter} = require('../members/content-gating');
 const {mobiledocToLexical} = require('@tryghost/kg-converters');
+const {textColorForBackgroundColor} = require('@tryghost/color-utils');
 /** @import {TemplateDelegate} from 'handlebars' */
 
 const DEFAULT_LOCALE = 'en-gb';
@@ -435,14 +436,7 @@ class EmailRenderer {
         )].filter(segment => allowedSegments.includes(segment));
         const hasCards = cardSegments.length > 0;
 
-        // With publicPreviews, gated posts always render differently for
-        // audiences without access (public preview or upgrade stub), even when
-        // the content has no paywall divider or segmented cards
-        const publicPreviews = this.getLabs().isSet('publicPreviews');
-        const visibility = post.get('visibility');
-        const isGated = visibility === 'paid' || visibility === 'tiers';
-
-        if (!hasPaywall && !hasCards && !(publicPreviews && isGated)) {
+        if (!hasPaywall && !hasCards) {
             // No difference in email content between members
             return [null];
         }
@@ -450,16 +444,14 @@ class EmailRenderer {
         // Tier-restricted posts split recipients by tier access (not just
         // free/paid) so members on a tier that can't read this post get the
         // public preview + paywall, exactly as they do on the web.
-        if (visibility === 'tiers' && (hasPaywall || publicPreviews)) {
+        if (post.get('visibility') === 'tiers' && hasPaywall) {
             const accessFilter = getPostAccessFilter(getPostGatingShape(post));
             const noAccessFilter = getNegatedTierFilter(post);
 
             if (accessFilter && noAccessFilter) {
-                if (hasCards || publicPreviews) {
-                    // free vs paid must render separately within the no-access
-                    // audience: free/paid cards differ, and with publicPreviews
-                    // a free-only preview audience stubs paid members without
-                    // access while free members still get the preview
+                if (hasCards) {
+                    // free/paid cards in the preview need free vs paid rendering
+                    // within the no-access audience -> three render variants
                     return [
                         'status:free',
                         `status:-free+(${accessFilter})`,
@@ -525,21 +517,6 @@ class EmailRenderer {
         };
     }
 
-    /**
-     * Per-post public preview email settings (publicPreviews labs flag).
-     * Defaults preserve the pre-flag behaviour: the preview is included in
-     * email for every audience without access.
-     * @param {Post} post
-     * @returns {{enabled: boolean, audience: 'all'|'free'}}
-     */
-    #getPublicPreviewEmailSettings(post) {
-        const postsMeta = post.related && post.related('posts_meta');
-        return {
-            enabled: Boolean(postsMeta?.get('email_public_preview') ?? true),
-            audience: postsMeta?.get('email_public_preview_audience') || 'all'
-        };
-    }
-
     async renderPostBaseHtml(post, newsletter) {
         const postUrl = this.#getPostUrl(post);
 
@@ -576,34 +553,16 @@ class EmailRenderer {
         const membersOnlyIndex = html.indexOf('<!--members-only-->');
         const hasMembersOnlyContent = membersOnlyIndex !== -1;
         let addPaywall = false;
-        let addStub = false;
 
         // Members without access to the gated content (free members, or members
         // on a tier that can't read this post) get the public preview + paywall,
         // exactly as on the web.
-        if (isPaidPost && !audience.hasPostAccess) {
-            if (this.getLabs().isSet('publicPreviews')) {
-                // The post's preview settings decide what a without-access
-                // audience receives: the preview + upgrade CTA, or a minimal
-                // upgrade stub when there's no preview, the preview is excluded
-                // from email, or this audience is outside the preview audience
-                const previewSettings = this.#getPublicPreviewEmailSettings(post);
-                const audienceGetsPreview = previewSettings.audience === 'all' || getSegmentStatus(segment) === 'status:free';
+        if (isPaidPost && hasMembersOnlyContent && !audience.hasPostAccess) {
+            // Add paywall
+            addPaywall = true;
 
-                if (hasMembersOnlyContent && previewSettings.enabled && audienceGetsPreview) {
-                    addPaywall = true;
-                    html = html.slice(0, membersOnlyIndex);
-                } else {
-                    addStub = true;
-                    html = '';
-                }
-            } else if (hasMembersOnlyContent) {
-                // Add paywall
-                addPaywall = true;
-
-                // Remove the members-only content
-                html = html.slice(0, membersOnlyIndex);
-            }
+            // Remove the members-only content
+            html = html.slice(0, membersOnlyIndex);
         }
 
         let $ = cheerioLoad(html);
@@ -631,7 +590,6 @@ class EmailRenderer {
             newsletter,
             html,
             addPaywall,
-            addStub,
             audience
         });
         html = await this.renderTemplate(templateData);
@@ -1088,8 +1046,7 @@ class EmailRenderer {
             htmlTemplateSource,
             latestPostsPartial,
             paywallPartial,
-            stylesPartialSource,
-            stubPartial
+            stylesPartialSource
         ] = await Promise.all([
             fs.readFile(path.join(emailPartials, 'base-styles.hbs'), 'utf8'),
             fs.readFile(path.join(emailPartials, 'card-styles.hbs'), 'utf8'),
@@ -1099,8 +1056,7 @@ class EmailRenderer {
             fs.readFile(path.join(emailTemplates, 'template.hbs'), 'utf8'),
             fs.readFile(path.join(emailTemplates, 'partials', 'latest-posts.hbs'), 'utf8'),
             fs.readFile(path.join(emailTemplates, 'partials', 'paywall.hbs'), 'utf8'),
-            fs.readFile(path.join(emailTemplates, 'partials', 'styles.hbs'), 'utf8'),
-            fs.readFile(path.join(emailTemplates, 'partials', 'stub.hbs'), 'utf8')
+            fs.readFile(path.join(emailTemplates, 'partials', 'styles.hbs'), 'utf8')
         ]);
 
         handlebars.registerPartial('baseStyles', baseStylesSource);
@@ -1111,7 +1067,6 @@ class EmailRenderer {
         handlebars.registerPartial('latestPosts', latestPostsPartial);
         handlebars.registerPartial('paywall', paywallPartial);
         handlebars.registerPartial('styles', stylesPartialSource);
-        handlebars.registerPartial('stub', stubPartial);
 
         return handlebars.compile(htmlTemplateSource);
     }
@@ -1224,7 +1179,7 @@ class EmailRenderer {
      * @param {boolean} options.addPaywall
      * @param {SegmentAudience} options.audience
      */
-    async getTemplateData({post, newsletter, html, addPaywall, addStub, audience}) {
+    async getTemplateData({post, newsletter, html, addPaywall, audience}) {
         const emailDesign = this.#getEmailDesign(newsletter);
 
         const {href: headerImage, width: headerImageWidth} = await this.limitImageWidth(newsletter.get('header_image'));
@@ -1254,9 +1209,11 @@ class EmailRenderer {
         const shareUrl = new URL(postUrl);
         shareUrl.hash = '/share';
 
-        // Signup URL is the post url with a hash added to it
+        // Signup URL is the post url with a hash added to it. Email
+        // recipients are already members — a paid-gated wall upgrades an
+        // existing account, only a members wall is a true signup
         const signupUrl = new URL(postUrl);
-        signupUrl.hash = `/portal/signup`;
+        signupUrl.hash = post.get('visibility') === 'members' ? `/portal/signup` : `/portal/account/plans`;
 
         // Audience feedback — durable, id-based links resolved to the post's
         // current URL at click time so they survive slug changes
@@ -1432,20 +1389,77 @@ class EmailRenderer {
             feedbackButtonCellWidth,
 
             // Paywall
-            paywall: addPaywall ? {
-                signupUrl: signupUrl.href
-            } : null,
-
-            // Minimal upgrade stub for audiences outside the public preview
-            // audience (publicPreviews labs flag)
-            stub: addStub ? {
-                signupUrl: signupUrl.href
-            } : null,
+            paywall: addPaywall ? this.#getPaywallData(post, signupUrl) : null,
 
             year: new Date().getFullYear().toString()
         };
 
         return data;
+    }
+
+    /**
+     * Finds the paywall card so its per-post email override can drive the
+     * email's upgrade prompt. Each channel has its own dataset on the card;
+     * this is the email one.
+     *
+     * @private
+     * @param {Post} post
+     * @returns {{image?: string, imageBottom?: boolean, imageSmall?: boolean, heading?: string, description?: string, buttonText?: string, buttonUrl?: string, backgroundColor?: string, buttonColor?: string}}
+     */
+    #getPaywallCardEmailCta(post) {
+        try {
+            const children = JSON.parse(post.get('lexical') || '{}').root?.children || [];
+            const card = children.find(node => node?.type === 'paywall');
+            return card?.emailCta || {};
+        } catch (e) {
+            return {};
+        }
+    }
+
+    /**
+     * Builds the paywall section data for a truncated (no-access) email.
+     * Copy comes from the card's per-post email override; empty fields fall
+     * through to the paywall partial's built-in defaults.
+     *
+     * @private
+     * @param {Post} post
+     * @param {URL} signupUrl
+     */
+    #getPaywallData(post, signupUrl) {
+        const cardCta = this.#getPaywallCardEmailCta(post);
+        const siteUrl = this.#urlUtils.urlFor('home', true);
+
+        // a per-post button link (custom URL or an offer link picked on the
+        // card) replaces the standard portal link; portal hashes resolve
+        // against the site so they work from any mail client
+        let buttonUrl = null;
+        if (cardCta.buttonUrl) {
+            buttonUrl = /^https?:\/\//.test(cardCta.buttonUrl)
+                ? cardCta.buttonUrl
+                : new URL(cardCta.buttonUrl, siteUrl).href;
+        }
+
+        const buttonColor = cardCta.buttonColor || null;
+        const accentColor = this.#settingsCache.get('accent_color');
+
+        return {
+            signupUrl: signupUrl.href,
+            image: cardCta.image || null,
+            imageBottom: Boolean(cardCta.imageBottom),
+            imageSmall: Boolean(cardCta.imageSmall),
+            backgroundColor: cardCta.backgroundColor || null,
+            buttonColor,
+            // a readable label colour for a custom button, derived not stored
+            buttonTextColor: buttonColor ? textColorForBackgroundColor(buttonColor).hex() : null,
+            // an accent-coloured box would swallow the accent-coloured
+            // button — flip the button to white-on-background instead
+            buttonContrast: Boolean(cardCta.backgroundColor && accentColor &&
+                cardCta.backgroundColor.toLowerCase() === String(accentColor).toLowerCase()),
+            heading: cardCta.heading || null,
+            description: cardCta.description || null,
+            buttonText: cardCta.buttonText || null,
+            buttonUrl
+        };
     }
 
     /**
