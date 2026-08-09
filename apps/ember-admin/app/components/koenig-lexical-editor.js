@@ -108,7 +108,8 @@ export function buildCardConfigPost(post, defaultContentVisibility) {
         visibility: post.visibility || defaultContentVisibility,
         emailPublicPreview: post.emailPublicPreview,
         emailPublicPreviewAudience: post.emailPublicPreviewAudience,
-        tierSlugs: (post.tiers || []).map(tier => tier.slug).filter(Boolean)
+        tierSlugs: (post.tiers || []).map(tier => tier.slug).filter(Boolean),
+        tierNames: (post.tiers || []).map(tier => tier.name).filter(Boolean)
     };
 }
 

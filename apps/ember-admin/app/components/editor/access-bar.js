@@ -38,11 +38,16 @@ export default class AccessBarComponent extends Component {
         if (this.visibility === 'tiers') {
             const names = (this.post.tiers || []).map(tier => tier.name).filter(Boolean);
 
-            if (names.length > 0 && names.length <= 2) {
-                return `${names.join(' & ')} only`;
+            if (names.length === 0) {
+                return 'Specific tiers only';
             }
 
-            return 'Specific tiers only';
+            if (names.length === 1) {
+                return `${names[0]} only`;
+            }
+
+            // every tier is named — the label states exactly who has access
+            return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]} only`;
         }
 
         const option = ACCESS_OPTIONS.find(o => o.name === this.visibility);

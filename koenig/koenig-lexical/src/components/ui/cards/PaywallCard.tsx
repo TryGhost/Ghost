@@ -337,8 +337,8 @@ export function PaywallCard() {
         <SettingsPanel>
             <div className="flex flex-col">
                 <div className="text-sm font-semibold tracking-normal text-grey-900 dark:text-grey-300">Public preview</div>
-                <p className="mt-1 whitespace-nowrap text-sm font-normal leading-snug text-grey-700 dark:text-grey-600" data-testid="paywall-web-note">
-                    Everyone can read up to the divider.
+                <p className="mt-1 text-sm font-normal leading-snug text-grey-700 dark:text-grey-600" data-testid="paywall-web-note">
+                    On the web, everyone can read up to the divider.
                 </p>
             </div>
             <>
@@ -525,8 +525,13 @@ export function PaywallCard() {
         paid: 'Paid members only',
         tiers: 'Selected tiers only'
     };
+    // every tier is named so the divider states exactly who the rest is for
+    const tierNames: string[] = post?.tierNames || [];
+    const tiersLabel = tierNames.length
+        ? `${tierNames.length === 1 ? tierNames[0] : `${tierNames.slice(0, -1).join(', ')} and ${tierNames[tierNames.length - 1]}`} only`
+        : RESTRICTED_ACCESS_LABELS.tiers;
     const accessLabel = paywallImprovements && postVisibility && postVisibility !== 'public'
-        ? RESTRICTED_ACCESS_LABELS[postVisibility]
+        ? (postVisibility === 'tiers' ? tiersLabel : RESTRICTED_ACCESS_LABELS[postVisibility])
         : 'Only visible to members';
 
     return (

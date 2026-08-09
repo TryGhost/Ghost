@@ -70,6 +70,7 @@ export interface CardConfigPost {
     emailPublicPreview?: boolean;
     emailPublicPreviewAudience?: 'all' | 'free';
     tierSlugs?: string[];
+    tierNames?: string[];
 }
 
 // no index signature: a new flag must be declared here before a card can read it

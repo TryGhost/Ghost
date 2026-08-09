@@ -136,17 +136,14 @@ export default class PublishFlowOptions extends Component {
         return this.hasDivider ? `${access} · Free preview` : access;
     }
 
+    // every tier is named — the reader must be able to see exactly who has
+    // access without opening anything
     _formatTierList(names) {
         if (names.length === 1) {
             return names[0];
         }
 
-        if (names.length === 2) {
-            return `${names[0]} and ${names[1]}`;
-        }
-
-        const rest = names.length - 2;
-        return `${names[0]}, ${names[1]} and ${rest} more ${rest === 1 ? 'tier' : 'tiers'}`;
+        return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
     }
 
     get notEmailedNoun() {
