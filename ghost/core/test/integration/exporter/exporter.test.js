@@ -53,6 +53,7 @@ describe('Exporter', function () {
             'invites',
             'jobs',
             'labels',
+            'machine_payment_events',
             'members',
             'members_cancel_events',
             'members_click_events',

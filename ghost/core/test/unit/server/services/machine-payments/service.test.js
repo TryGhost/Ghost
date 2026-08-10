@@ -1,0 +1,139 @@
+const assert = require('node:assert/strict');
+const sinon = require('sinon');
+const logging = require('@tryghost/logging');
+const {MachinePaymentsService} = require('../../../../../core/server/services/machine-payments/service');
+
+describe('Unit: server/services/machine-payments/service', function () {
+    let labsService;
+    let settings;
+    let mppAdapter;
+    let contentLoader;
+    let eventRepository;
+    let paymentRecorder;
+
+    beforeEach(function () {
+        sinon.stub(logging, 'warn');
+
+        labsService = {
+            isSet: sinon.stub().withArgs('machinePayments').returns(true)
+        };
+        settings = {
+            get: sinon.stub()
+        };
+        settings.get.withArgs('llms_enabled').returns(true);
+        settings.get.withArgs('machine_payments_enabled').returns(true);
+        settings.get.withArgs('machine_payments_amount').returns(100);
+        settings.get.withArgs('machine_payments_currency').returns('USD');
+
+        mppAdapter = {
+            name: 'mpp',
+            canHandle: sinon.stub().returns(false),
+            challenge: sinon.stub().resolves(new Response('', {
+                status: 402,
+                headers: {'WWW-Authenticate': 'Payment realm="mpp"'}
+            })),
+            fulfill: sinon.stub().resolves({
+                protocol: 'mpp',
+                method: 'tempo',
+                reference: '0xtx',
+                amount: 100,
+                currency: 'USD'
+            })
+        };
+
+        contentLoader = {
+            loadFullEntry: sinon.stub().resolves({
+                id: 'post1',
+                title: 'Paid',
+                html: '<p>Secret</p>',
+                url: 'http://example.com/paid/',
+                visibility: 'paid'
+            })
+        };
+
+        eventRepository = {save: sinon.stub().resolves()};
+        paymentRecorder = {record: sinon.stub().resolves('pi_123')};
+    });
+
+    afterEach(function () {
+        sinon.restore();
+    });
+
+    function createService(overrides = {}) {
+        return new MachinePaymentsService({
+            settingsCache: settings,
+            labsService,
+            adapters: [mppAdapter],
+            contentLoader,
+            eventRepository,
+            paymentRecorder,
+            isStripeConnected: () => true,
+            defaultCurrencyProvider: async () => 'USD',
+            ...overrides
+        });
+    }
+
+    it('is enabled when lab, setting, llms, and stripe are on', function () {
+        assert.equal(createService().isEnabled(), true);
+    });
+
+    it('fails closed without stripe', function () {
+        assert.equal(createService({isStripeConnected: () => false}).isEnabled(), false);
+    });
+
+    it('returns a 402 challenge without loading content', async function () {
+        const service = createService();
+        const renderMarkdown = sinon.stub().returns('# body');
+
+        const response = await service.challengeOrFulfill(new Request('http://example.com/paid.md'), {
+            entryId: 'post1',
+            resourceType: 'posts',
+            description: 'Paid',
+            contentLocation: '/paid.md',
+            renderMarkdown
+        });
+
+        assert.equal(response.status, 402);
+        assert.equal(response.headers.get('WWW-Authenticate'), 'Payment realm="mpp"');
+        sinon.assert.notCalled(contentLoader.loadFullEntry);
+        sinon.assert.notCalled(renderMarkdown);
+    });
+
+    it('loads content only after fulfill succeeds', async function () {
+        mppAdapter.canHandle.returns(true);
+        const service = createService();
+        const renderMarkdown = sinon.stub().returns('# Secret');
+
+        const response = await service.challengeOrFulfill(new Request('http://example.com/paid.md', {
+            headers: {authorization: 'Payment abc'}
+        }), {
+            entryId: 'post1',
+            resourceType: 'posts',
+            description: 'Paid',
+            contentLocation: '/paid.md',
+            renderMarkdown
+        });
+
+        assert.equal(response.status, 200);
+        assert.equal(await response.text(), '# Secret');
+        assert.equal(response.headers.get('Cache-Control'), 'private, no-store');
+        sinon.assert.calledOnce(contentLoader.loadFullEntry);
+        sinon.assert.calledOnce(renderMarkdown);
+        sinon.assert.calledOnce(eventRepository.save);
+        sinon.assert.calledOnce(paymentRecorder.record);
+    });
+
+    it('returns 503 when no adapter can challenge', async function () {
+        mppAdapter.challenge.resolves(null);
+        const service = createService();
+
+        const response = await service.challengeOrFulfill(new Request('http://example.com/paid.md'), {
+            entryId: 'post1',
+            resourceType: 'posts',
+            contentLocation: '/paid.md',
+            renderMarkdown: () => ''
+        });
+
+        assert.equal(response.status, 503);
+    });
+});

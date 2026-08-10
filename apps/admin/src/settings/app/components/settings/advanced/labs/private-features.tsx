@@ -87,6 +87,10 @@ const features: Feature[] = [{
     title: 'Gift subscription customization',
     description: 'Enables fixed-duration gift subscription purchases before publisher configuration is available',
     flag: 'giftSubCustomization'
+}, {
+    title: 'Machine payments',
+    description: 'Let AI agents pay for access to paid-members markdown (.md) URLs via Stripe Machine Payments Protocol',
+    flag: 'machinePayments'
 }];
 
 const AlphaFeatures: React.FC = () => {

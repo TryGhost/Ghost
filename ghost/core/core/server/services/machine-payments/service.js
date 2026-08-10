@@ -1,0 +1,295 @@
+/**
+ * Protocol-agnostic machine payments orchestrator.
+ *
+ * Adapters implement canHandle / challenge / fulfill. Membership and content
+ * gating stay outside this service — we only authorize emitting markdown bytes.
+ */
+
+const settingsCache = require('../../../shared/settings-cache');
+const labs = require('../../../shared/labs');
+const logging = require('@tryghost/logging');
+
+const Pricing = require('./pricing');
+const {isPurchasableEntry} = require('./eligibility');
+const ContentLoader = require('./content-loader');
+
+const PAID_MARKDOWN_CACHE_CONTROL = 'private, no-store';
+
+class MachinePaymentsService {
+    /**
+     * @param {object} [deps]
+     * @param {object} [deps.settingsCache]
+     * @param {object} [deps.labsService]
+     * @param {import('./pricing')} [deps.pricing]
+     * @param {import('./content-loader')} [deps.contentLoader]
+     * @param {Array<{canHandle: Function, challenge: Function, fulfill: Function, name?: string}>} [deps.adapters]
+     * @param {object} [deps.eventRepository]
+     * @param {object} [deps.paymentRecorder]
+     * @param {() => boolean} [deps.isStripeConnected]
+     * @param {() => Promise<string|null>} [deps.defaultCurrencyProvider]
+     */
+    constructor({
+        settingsCache: settings = settingsCache,
+        labsService = labs,
+        pricing,
+        contentLoader = new ContentLoader(),
+        adapters = [],
+        eventRepository = null,
+        paymentRecorder = null,
+        isStripeConnected = () => false,
+        defaultCurrencyProvider = getDefaultTiersCurrency
+    } = {}) {
+        this.settingsCache = settings;
+        this.labs = labsService;
+        this.pricing = pricing || new Pricing({settingsCache: settings, defaultCurrencyProvider});
+        this.contentLoader = contentLoader;
+        this.adapters = adapters;
+        this.eventRepository = eventRepository;
+        this.paymentRecorder = paymentRecorder;
+        this.isStripeConnected = isStripeConnected;
+        this.defaultCurrencyProvider = defaultCurrencyProvider;
+    }
+
+    /**
+     * Replace adapters after construction (used when wiring Stripe-backed rails).
+     * @param {Array} adapters
+     */
+    setAdapters(adapters) {
+        this.adapters = adapters || [];
+    }
+
+    isEnabled() {
+        return this.labs.isSet('machinePayments')
+            && this.settingsCache.get('llms_enabled') !== false
+            && this.settingsCache.get('machine_payments_enabled') === true
+            && this.isStripeConnected();
+    }
+
+    /**
+     * @param {object} entry
+     * @returns {boolean}
+     */
+    isPurchasable(entry) {
+        return this.isEnabled() && isPurchasableEntry(entry);
+    }
+
+    /**
+     * @param {string} url
+     * @param {string} [description]
+     */
+    async getTerms({url, description, method = 'GET', mimeType = 'text/markdown'}) {
+        const {amount, currency} = await this.pricing.getTerms();
+        return {
+            amount,
+            currency,
+            description: description || safePathname(url),
+            method,
+            mimeType,
+            url
+        };
+    }
+
+    /**
+     * Challenge or fulfill a paid markdown request.
+     * Does not load full HTML until payment fulfills successfully.
+     *
+     * @param {Request} request Fetch API Request
+     * @param {{entryId: string, resourceType: 'posts'|'pages', description?: string, renderMarkdown: (entry: object) => string, contentLocation: string}} options
+     * @returns {Promise<Response>}
+     */
+    async challengeOrFulfill(request, options) {
+        if (!this.isEnabled()) {
+            return this.#problemResponse({
+                type: 'https://paymentauth.org/problems/payment-unavailable',
+                title: 'Machine payments unavailable',
+                status: 404,
+                detail: 'Machine payments are not enabled.'
+            });
+        }
+
+        if (!this.adapters.length) {
+            return this.#problemResponse({
+                type: 'https://paymentauth.org/problems/payment-unavailable',
+                title: 'Machine payment challenges unavailable',
+                status: 503,
+                detail: 'Machine payment challenges are temporarily unavailable.'
+            });
+        }
+
+        const terms = await this.getTerms({
+            url: request.url,
+            description: options.description
+        });
+
+        const credentialed = this.adapters.find(adapter => adapter.canHandle(request));
+
+        if (credentialed) {
+            return await this.#handleFulfill(credentialed, request, terms, options);
+        }
+
+        return await this.#paymentRequiredResponse(request, terms);
+    }
+
+    async #handleFulfill(adapter, request, terms, options) {
+        let fulfillment;
+        try {
+            fulfillment = await adapter.fulfill(request, terms);
+        } catch (err) {
+            return this.#paymentCredentialErrorResponse(err);
+        }
+
+        const entry = await this.contentLoader.loadFullEntry(options.resourceType, options.entryId);
+        if (!entry) {
+            return this.#problemResponse({
+                type: 'https://paymentauth.org/problems/payment-forbidden',
+                title: 'Content unavailable',
+                status: 403,
+                detail: 'Paid content could not be loaded after payment.'
+            });
+        }
+
+        if (this.paymentRecorder) {
+            try {
+                await this.paymentRecorder.record({
+                    ...fulfillment,
+                    postId: options.entryId,
+                    amount: terms.amount,
+                    currency: terms.currency
+                });
+            } catch (err) {
+                logging.warn(err);
+            }
+        }
+
+        if (this.eventRepository) {
+            try {
+                await this.eventRepository.save({
+                    postId: options.entryId,
+                    amount: fulfillment.amount ?? terms.amount,
+                    currency: fulfillment.currency ?? terms.currency,
+                    protocol: fulfillment.protocol || 'mpp',
+                    method: fulfillment.method,
+                    stripePaymentIntentId: fulfillment.stripePaymentIntentId || null,
+                    reference: fulfillment.reference
+                });
+            } catch (err) {
+                logging.warn(err);
+            }
+        }
+
+        const body = options.renderMarkdown(entry);
+        const headers = new Headers({
+            'Content-Type': 'text/markdown; charset=utf-8',
+            'Cache-Control': PAID_MARKDOWN_CACHE_CONTROL,
+            'Content-Location': options.contentLocation
+        });
+
+        if (fulfillment.receiptHeaders) {
+            Object.entries(fulfillment.receiptHeaders).forEach(([key, value]) => {
+                headers.set(key, value);
+            });
+        }
+
+        return new Response(body, {status: 200, headers});
+    }
+
+    async #paymentRequiredResponse(request, terms) {
+        const results = await Promise.allSettled(
+            this.adapters.map(adapter => adapter.challenge(request, terms))
+        );
+
+        const challenges = results
+            .filter(result => result.status === 'fulfilled' && result.value)
+            .map(result => result.value);
+
+        if (!challenges.length) {
+            return this.#problemResponse({
+                type: 'https://paymentauth.org/problems/payment-unavailable',
+                title: 'Machine payment challenges unavailable',
+                status: 503,
+                detail: 'Machine payment challenges are temporarily unavailable.'
+            });
+        }
+
+        const headers = new Headers({
+            'Cache-Control': 'no-store',
+            'Content-Type': 'application/problem+json'
+        });
+
+        for (const challenge of challenges) {
+            if (challenge.headers) {
+                challenge.headers.forEach((value, key) => {
+                    // Preserve both x402 payment-required and MPP WWW-Authenticate when present.
+                    if (!headers.has(key) || key.toLowerCase() === 'www-authenticate') {
+                        headers.set(key, value);
+                    }
+                });
+            }
+        }
+
+        return new Response(JSON.stringify({
+            type: 'https://paymentauth.org/problems/payment-required',
+            title: 'Payment Required',
+            status: 402,
+            detail: 'Payment is required to access this markdown content.'
+        }), {
+            status: 402,
+            headers
+        });
+    }
+
+    #paymentCredentialErrorResponse(err) {
+        if (err?.statusCode === 403) {
+            return this.#problemResponse({
+                type: 'https://paymentauth.org/problems/payment-forbidden',
+                title: 'Payment credential rejected',
+                status: 403,
+                detail: 'The supplied machine payment credential could not be validated.'
+            });
+        }
+
+        logging.warn(err);
+
+        return this.#problemResponse({
+            type: 'https://paymentauth.org/problems/payment-unavailable',
+            title: 'Machine payment temporarily unavailable',
+            status: 503,
+            detail: 'Machine payment verification is temporarily unavailable.'
+        });
+    }
+
+    #problemResponse({type, title, status, detail}) {
+        return new Response(JSON.stringify({type, title, status, detail}), {
+            status,
+            headers: {
+                'Cache-Control': 'no-store',
+                'Content-Type': 'application/problem+json'
+            }
+        });
+    }
+}
+
+async function getDefaultTiersCurrency() {
+    const models = require('../../models');
+    const page = await models.Product.findPage({
+        filter: 'type:paid+active:true',
+        limit: 1,
+        order: 'monthly_price asc',
+        columns: ['currency']
+    });
+    const tier = page.data?.[0]?.toJSON?.() || page.data?.[0];
+    return tier?.currency || null;
+}
+
+function safePathname(url) {
+    try {
+        return new URL(url).pathname;
+    } catch {
+        return url;
+    }
+}
+
+module.exports = new MachinePaymentsService();
+module.exports.MachinePaymentsService = MachinePaymentsService;
+module.exports.getDefaultTiersCurrency = getDefaultTiersCurrency;
+module.exports.PAID_MARKDOWN_CACHE_CONTROL = PAID_MARKDOWN_CACHE_CONTROL;

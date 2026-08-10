@@ -15,12 +15,54 @@ const _ = require('lodash');
 const debug = require('@tryghost/debug')('ghost_head');
 const templateStyles = require('./tpl/styles');
 const {getFrontendAppConfig, getDataAttributes} = require('../utils/frontend-apps');
+const labs = require('../../shared/labs');
+const {getMarkdownUrl} = require('../services/llms/markdown');
+const {isPurchasableEntry} = require('../../shared/machine-payments');
 
 /**
  * @typedef {import('@tryghost/custom-fonts').FontSelection} FontSelection
  */
 
 const {get: getMetaData, getAssetUrl} = metaData;
+
+function isMachinePaymentsEnabled() {
+    return labs.isSet('machinePayments')
+        && settingsCache.get('machine_payments_enabled') === true
+        && settingsCache.get('llms_enabled') !== false
+        && Boolean(settingsCache.get('stripe_connect_secret_key') || settingsCache.get('stripe_secret_key'));
+}
+
+function shouldOutputMarkdownAlternate({context, post}) {
+    if (
+        !context
+        || !_.includes(context, 'post')
+        || !post
+        || !labs.isSet('llmsTxt')
+        || settingsCache.get('is_private')
+        || settingsCache.get('llms_enabled') === false
+    ) {
+        return false;
+    }
+
+    if (post.visibility === 'public') {
+        return true;
+    }
+
+    return isPurchasableEntry(post) && isMachinePaymentsEnabled();
+}
+
+function getMarkdownAlternateLink({context, post, canonicalUrl}) {
+    if (!shouldOutputMarkdownAlternate({context, post})) {
+        return '';
+    }
+
+    try {
+        return '<link rel="alternate" type="text/markdown" href="' + escapeExpression(getMarkdownUrl(canonicalUrl)) + '">';
+    } catch (err) {
+        logging.warn(err);
+        return '';
+    }
+}
 
 /**
  * Escape a serialized JSON string for safe inclusion inside an inline
@@ -327,6 +369,16 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
                 }
 
                 head.push('<link rel="canonical" href="' + escapeExpression(meta.canonicalUrl) + '">');
+
+                const markdownAlternateLink = getMarkdownAlternateLink({
+                    context,
+                    post: dataRoot.post,
+                    canonicalUrl: meta.canonicalUrl
+                });
+
+                if (markdownAlternateLink) {
+                    head.push(markdownAlternateLink);
+                }
 
                 if (_.includes(context, 'preview')) {
                     head.push(writeMetaTag('robots', 'noindex,nofollow', 'name'));

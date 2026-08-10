@@ -10,6 +10,7 @@ const BACKUP_TABLES = [
     'integrations',
     'invites',
     'labels',
+    'machine_payment_events',
     'members',
     'members_labels',
     'members_products',

@@ -60,6 +60,14 @@
             "defaultValue": null,
             "type": "string"
         },
+        "machine_payments_secret": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "machine_payments_deposit_address": {
+            "defaultValue": null,
+            "type": "string"
+        },
         "site_uuid": {
             "defaultValue": null,
             "type": "string",
@@ -193,6 +201,25 @@
             "defaultValue": "true",
             "validations": {},
             "type": "boolean"
+        },
+        "machine_payments_enabled": {
+            "defaultValue": "false",
+            "type": "boolean"
+        },
+        "machine_payments_currency": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "machine_payments_amount": {
+            "defaultValue": 100,
+            "validations": {
+                "isEmpty": false
+            },
+            "type": "number"
+        },
+        "machine_payments_stripe_profile_id": {
+            "defaultValue": null,
+            "type": "string"
         },
         "meta_title": {
             "defaultValue": null,
