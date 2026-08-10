@@ -75,7 +75,7 @@ catalog:
   '@testing-library/react': 14.3.1
   '@tryghost/api-framework': 3.3.5
   '@tryghost/brute-knex': 3.2.1
-  '@tryghost/color-utils': 0.2.19
+  '@tryghost/color-utils': 0.2.20
   '@tryghost/custom-fonts': 1.0.11
   '@tryghost/debug': 2.3.5
   '@tryghost/domain-events': 3.3.5
@@ -290,6 +290,3 @@ versioning:
     - '@tryghost/portal'
     - '@tryghost/signup-form'
     - '@tryghost/sodo-search'
-
-patchedDependencies:
-  '@tryghost/color-utils@0.2.19': patches/@tryghost__color-utils@0.2.19.patch
