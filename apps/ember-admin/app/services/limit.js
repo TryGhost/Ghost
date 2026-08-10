@@ -57,14 +57,34 @@ export default class LimitsService extends Service {
             helpLink = 'https://ghost.org/help/';
         }
 
-        this.limiter.loadLimits({
-            limits: this.decorateWithCountQueries(limits),
-            helpLink,
-            errors: {
-                HostLimitError,
-                IncorrectUsageError
+        let subscription;
+
+        if (this.config.hostSettings?.subscription) {
+            subscription = {
+                startDate: this.config.hostSettings.subscription.start,
+                interval: 'month'
+            };
+        }
+
+        try {
+            this.limiter.loadLimits({
+                limits: this.decorateWithCountQueries(limits),
+                subscription,
+                helpLink,
+                errors: {
+                    HostLimitError,
+                    IncorrectUsageError
+                }
+            });
+        } catch (error) {
+            // A limit that can't be built stops the whole load, so tolerate it here
+            // like the server does rather than leaving Admin with no limits at all
+            if (error?.errorType !== 'IncorrectUsageError') {
+                throw error;
             }
-        });
+
+            console.warn(`Host limits not loaded: ${error.message}`); // eslint-disable-line no-console
+        }
     }
 
     reload() {
@@ -82,6 +102,10 @@ export default class LimitsService extends Service {
 
         if (limits.newsletters) {
             limits.newsletters.currentCountQuery = bind(this, this.getNewslettersCount);
+        }
+
+        if (limits.emails) {
+            limits.emails.currentCountQuery = bind(this, this.getEmailsCount);
         }
 
         return limits;
@@ -107,5 +131,14 @@ export default class LimitsService extends Service {
     async getNewslettersCount() {
         const activeNewsletters = await this.store.query('newsletter', {filter: 'status:active', limit: 'all'});
         return activeNewsletters.length;
+    }
+
+    // Periodic limits pass the period start as the second argument. The default
+    // emails query counts recipients via knex, which doesn't exist in the browser
+    async getEmailsCount(_db, startDate) {
+        const since = new Date(startDate).toISOString();
+        const emails = await this.store.query('email', {filter: `created_at:>='${since}'`, limit: 'all'});
+
+        return emails.reduce((total, email) => total + (email.emailCount ?? 0), 0);
     }
 }
