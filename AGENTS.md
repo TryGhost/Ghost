@@ -51,9 +51,9 @@ external consumers only, automatically as part of the Ghost release lane
 (see `publish_koenig_packages` in ci.yml).
 
 **Zero-build dev via the `source` export condition.** The `kg-*` libraries
-consumed by `ghost/core` (and `packages/parse-email-address`) declare a `source`
-condition in their `package.json` `exports` that points at the raw
-`src/*.ts`, listed *before* `types`/`import`/`require`:
+consumed by `ghost/core` declare a `source` condition in their `package.json`
+`exports` that points at the raw `src/*.ts`, listed *before*
+`types`/`import`/`require`:
 
 ```jsonc
 ".": {
@@ -70,16 +70,19 @@ and its Vitest configs (`resolve.conditions: ['source', 'node']` +
 in a `kg-*` package is picked up with **no `tsc` rebuild**. Production and the
 published npm tarball run plain `node`, which ignores `source` and uses
 `build/` — and `src/` is excluded from each package's `files` array, so it is
-never shipped. When adding a new backend-consumed TS workspace package, copy
-this `exports` shape (see `packages/parse-email-address`) so it works build-free
-in dev from day one; keep the `^build` graph for `tsc`/type-checking and prod.
+never shipped. The separate ESM and CommonJS outputs are part of Koenig's public
+package contract; new internal packages use the ESM-only shape documented below.
 
 ### packages/* - Shared workspace libraries
-Backend and shared libraries consumed via `workspace:` — not published to npm:
+Backend and shared libraries. Internal packages are consumed via `workspace:*`;
+selected adapter bases also have supported public releases:
+
+Read [`packages/README.md`](packages/README.md) before creating or modernizing an
+internal package. It is the canonical lifetime contract; `packages/_template`
+is its scaffold.
 
 - **i18n** - Centralized internationalization for all apps
-- **parse-email-address** - Email address parsing (see the `source` export
-  condition above)
+- **parse-email-address** - Email address parsing
 - **adapters/** - Adapter base classes (`adapter-base-*`: scheduling, storage,
   SSO, redirects, route settings)
 - **custom-field-types**, **testing** - Shared field-type definitions and test
