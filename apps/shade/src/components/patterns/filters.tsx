@@ -1569,101 +1569,105 @@ interface SelectOptionsListProps<T = unknown> {
   onSelectUnselected: (option: FilterOption<T>) => void;
 }
 
+/**
+ * What a row's tooltip says. The detail is not rendered beside the label, so
+ * this is the only place it surfaces — enough to tell two same-named options
+ * apart when you need to, without spending row width on it always.
+ */
+function optionTitle<T>(option: FilterOption<T>): string {
+    return option.detail ? `${option.label} — ${option.detail}` : option.label;
+}
+
 function SelectOptionsList<T = unknown>({
-  contextLabel,
-  selectedOptions,
-  unselectedOptions,
-  isInitialLoad,
-  isLoadingMore,
-  hasMore,
-  onLoadMore,
-  onSelectSelected,
-  onSelectUnselected,
+    contextLabel,
+    selectedOptions,
+    unselectedOptions,
+    isInitialLoad,
+    isLoadingMore,
+    hasMore,
+    onLoadMore,
+    onSelectSelected,
+    onSelectUnselected
 }: Readonly<SelectOptionsListProps<T>>) {
-  const context = useFilterContext();
+    const context = useFilterContext();
 
-  return (
-    <CommandList className="outline-hidden">
-      {isInitialLoad ? (
-        <div className="flex items-center justify-center py-6 text-muted-foreground">
-          <Loader2 className="mr-2 size-4 animate-spin" />
-          {context.i18n.loading}
-        </div>
-      ) : (
-        <CommandEmpty>{context.i18n.noResultsFound}</CommandEmpty>
-      )}
-
-      {selectedOptions.length > 0 && (
-        <CommandGroup heading={contextLabel}>
-          {selectedOptions.map((option) => (
-            <CommandItem
-              key={String(option.value)}
-              className="group flex items-center gap-2"
-              onSelect={() => onSelectSelected(option)}
-            >
-              {option.icon && option.icon}
-              <div className="flex flex-col overflow-hidden">
-                <span className="truncate text-accent-foreground" title={option.label}>
-                  {option.label}
-                </span>
-                {option.detail && (
-                  <span className="truncate text-muted-foreground" title={option.detail}>
-                    {option.detail}
-                  </span>
-                )}
-              </div>
-              <Check className="ms-auto text-primary" />
-            </CommandItem>
-          ))}
-        </CommandGroup>
-      )}
-
-      {unselectedOptions.length > 0 && (
-        <>
-          {selectedOptions.length > 0 && <CommandSeparator />}
-          <CommandGroup>
-            {unselectedOptions.map((option) => (
-              <CommandItem
-                key={String(option.value)}
-                className="group flex items-center gap-2"
-                value={option.label + (option.detail ? ` - ${option.detail}` : '')}
-                onSelect={() => onSelectUnselected(option)}
-              >
-                {option.icon && option.icon}
-                <div className="flex flex-col overflow-hidden">
-                  <span className="truncate text-accent-foreground" title={option.label}>
-                    {option.label}
-                  </span>
-                  {option.detail && (
-                    <span className="truncate text-muted-foreground" title={option.detail}>
-                      {option.detail}
-                    </span>
-                  )}
+    return (
+        <CommandList className="outline-hidden">
+            {isInitialLoad ? (
+                <div className="flex items-center justify-center py-6 text-muted-foreground">
+                    <Loader2 className="mr-2 size-4 animate-spin" />
+                    {context.i18n.loading}
                 </div>
-                <Check className="ms-auto text-primary opacity-0" />
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        </>
-      )}
-      {hasMore && (
-        <>
-          {(selectedOptions.length > 0 || unselectedOptions.length > 0) && <CommandSeparator />}
-          <div className="p-1.5">
-            <button
-              className="flex w-full items-center justify-center rounded-xs px-2.5 py-1.5 text-muted-foreground hover:bg-interactive-hover hover:text-accent-foreground disabled:opacity-50"
-              disabled={isLoadingMore}
-              type="button"
-              onClick={onLoadMore}
-            >
-              {isLoadingMore && <Loader2 className="mr-2 size-4 animate-spin" />}
-              {isLoadingMore ? context.i18n.loading : context.i18n.loadMore}
-            </button>
-          </div>
-        </>
-      )}
-    </CommandList>
-  );
+            ) : (
+                <CommandEmpty>{context.i18n.noResultsFound}</CommandEmpty>
+            )}
+
+            {selectedOptions.length > 0 && (
+                <CommandGroup heading={contextLabel}>
+                    {selectedOptions.map(option => (
+                        <CommandItem
+                            key={String(option.value)}
+                            className="group flex items-center gap-2"
+                            onSelect={() => onSelectSelected(option)}
+                        >
+                            {option.icon && option.icon}
+                            <span className="min-w-0 flex-1 truncate text-accent-foreground" title={optionTitle(option)}>{option.label}</span>
+                            <Check className="shrink-0 text-primary" />
+                        </CommandItem>
+                    ))}
+                </CommandGroup>
+            )}
+
+            {unselectedOptions.length > 0 && (
+                <>
+                    {selectedOptions.length > 0 && <CommandSeparator />}
+                    <CommandGroup>
+                        {unselectedOptions.map(option => (
+                            <CommandItem
+                                key={String(option.value)}
+                                className="group flex items-center gap-2"
+                                // Identity comes from the value, never the
+                                // label. Two options sharing a label were a
+                                // single row to `cmdk`, so both highlighted
+                                // together. `keywords` keeps client-side search
+                                // matching what the row actually shows.
+                                keywords={[option.label, ...(option.detail ? [option.detail] : [])]}
+                                value={String(option.value)}
+                                onSelect={() => onSelectUnselected(option)}
+                            >
+                                {option.icon && option.icon}
+                                {/* The detail is not drawn — it lives in the
+                                    title. Beside the label it crowded out the
+                                    name, which is the thing being chosen; a
+                                    duplicate name is rare enough not to spend
+                                    half the row on. No invisible checkmark
+                                    either: the selected rows sit in their own
+                                    group above, so an empty column here only
+                                    narrowed the names. */}
+                                <span className="min-w-0 flex-1 truncate text-accent-foreground" title={optionTitle(option)}>{option.label}</span>
+                            </CommandItem>
+                        ))}
+                    </CommandGroup>
+                </>
+            )}
+            {hasMore && (
+                <>
+                    {(selectedOptions.length > 0 || unselectedOptions.length > 0) && <CommandSeparator />}
+                    <div className="p-1.5">
+                        <button
+                            className="flex w-full items-center justify-center rounded-xs px-2.5 py-1.5 text-muted-foreground hover:bg-interactive-hover hover:text-accent-foreground disabled:opacity-50"
+                            disabled={isLoadingMore}
+                            type="button"
+                            onClick={onLoadMore}
+                        >
+                            {isLoadingMore && <Loader2 className="mr-2 size-4 animate-spin" />}
+                            {isLoadingMore ? context.i18n.loading : context.i18n.loadMore}
+                        </button>
+                    </div>
+                </>
+            )}
+        </CommandList>
+    );
 }
 
 function ResolvedSelectOptionsPopover<T = unknown>({

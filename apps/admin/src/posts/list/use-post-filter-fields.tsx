@@ -105,7 +105,11 @@ export function buildPostFilterFields({
         operators: IS_ONLY,
         searchable: true,
         placeholder: 'Search tags',
-        valueSource: tagValueSource
+        valueSource: tagValueSource,
+        // Wider than the 200px default: each row carries the tag's name and its
+        // slug side by side, and the slug is what tells two same-named tags
+        // apart — it should not be the first thing to truncate.
+        className: 'w-[320px]'
     });
 
     return fields;

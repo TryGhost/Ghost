@@ -22,6 +22,13 @@ function toTagOption(tag: Tag) {
     return {
         value: tag.slug,
         label: tag.name,
+        // The slug, and it does more than inform. Names are not unique — a site
+        // can carry two tags called "broaf" — and Shade builds each row's
+        // `cmdk` value from `label` plus `detail`. Without a detail the two
+        // share one value, so `cmdk` treats them as a single row and highlights
+        // both at once. The slug is also the thing that tells them apart, so it
+        // is shown rather than only carried.
+        detail: tag.slug,
         metadata: {id: tag.id}
     };
 }
