@@ -241,7 +241,10 @@ describe("Theme settings", () => {
         fakeThemeWorld();
         await fakeThemeDownload("casper");
         await fakeThemeDownload("casper-edited");
-        const uploadApi = fakeAdminEndpoint("POST", "/themes/upload/", { themes: [theme({ name: "casper-edited" })] });
+        // saving under a new name carries over the original theme's settings
+        const uploadApi = fakeAdminEndpoint("POST", "/themes/upload/?copy_settings_from=casper", {
+            themes: [theme({ name: "casper-edited" })],
+        });
         await renderAdminApp("/settings/theme/edit/casper");
 
         const editor = await editorTextbox();

@@ -764,7 +764,11 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
             const formData = new FormData();
             formData.append('file', blob, `${nextThemeName}.zip`);
 
-            const response = await fetch(`${getGhostPaths().apiRoot}/themes/upload/`, {
+            // when saving under a new name, carry over the original theme's
+            // settings so activating the copy keeps the site's design
+            const uploadQuery = isSaveAs ? `?copy_settings_from=${encodeURIComponent(previousThemeName)}` : '';
+
+            const response = await fetch(`${getGhostPaths().apiRoot}/themes/upload/${uploadQuery}`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: {
