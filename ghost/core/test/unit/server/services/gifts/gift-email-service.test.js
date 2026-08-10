@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const {GiftEmailService} = require('../../../../../core/server/services/gifts/gift-email-service');
 
@@ -68,6 +69,22 @@ describe('GiftEmailService', function () {
             subject: 'Your gift is ready',
             from: 'Test Site <noreply@example.com>'
         }));
+    });
+
+    it('tells the buyer an email gift is on its way to the recipient', async function () {
+        await service.sendPurchaseConfirmation({
+            ...defaultData,
+            recipientEmail: 'recipient@example.com'
+        });
+
+        const message = mailer.send.firstCall.firstArg;
+        assert.equal(message.subject, 'Your gift is on its way');
+        for (const field of ['html', 'text']) {
+            sinon.assert.match(message[field], sinon.match('recipient@example.com'));
+            sinon.assert.match(message[field], sinon.match('is on its way to'));
+            sinon.assert.match(message[field], sinon.match(value => !value.includes('has been sent to')));
+            sinon.assert.match(message[field], sinon.match('You can also share the link below yourself'));
+        }
     });
 
     it('includes gift link, tier name, and cadence in both HTML and text', async function () {
@@ -169,6 +186,119 @@ describe('GiftEmailService', function () {
         // but the structural <strong> + <a> tags from the template must still render
         sinon.assert.match(msg.html, sinon.match(/<strong>Gold &lt;img/));
         sinon.assert.match(msg.html, sinon.match(/<a class="small" href="mailto:buyer/));
+    });
+
+    describe('sendGiftDelivery', function () {
+        it('sends the prototype delivery content transactionally without open or click tracking', async function () {
+            mailer.send.resolves({id: '<provider-123>'});
+
+            const result = await service.sendGiftDelivery({
+                recipientEmail: 'recipient@example.com',
+                recipientName: 'Recipient',
+                buyerName: 'Buyer',
+                personalMessage: 'Enjoy this gift',
+                token: 'abc-123',
+                tierName: 'Gold',
+                benefits: ['All stories'],
+                cadence: 'year',
+                duration: 1,
+                expiresAt: new Date('2027-04-07')
+            });
+
+            assert.deepEqual(result, {providerMessageId: 'provider-123'});
+            const message = mailer.send.firstCall.firstArg;
+            sinon.assert.match(message, {
+                to: 'recipient@example.com',
+                subject: 'Buyer sent you a gift',
+                tags: ['gift-delivery'],
+                disableTracking: true
+            });
+            for (const field of ['html', 'text']) {
+                sinon.assert.match(message[field], sinon.match('Recipient'));
+                sinon.assert.match(message[field], sinon.match('Enjoy this gift'));
+                sinon.assert.match(message[field], sinon.match('All stories'));
+                sinon.assert.match(message[field], sinon.match('https://example.com/gift/abc-123'));
+            }
+            sinon.assert.match(message.text, sinon.match('Buyer has gifted you a 1-year Gold membership to Test Site'));
+            sinon.assert.match(message.html, sinon.match('<strong>Buyer</strong> has gifted you a <strong>1</strong>-year <strong>Gold</strong> membership to Test Site'));
+        });
+
+        it('uses an attributive plural cadence for multi-month gifts', async function () {
+            const t = sinon.spy(translate());
+            const translatedService = new GiftEmailService({mailer, settingsCache, urlUtils, getFromAddress, blogIcon, t});
+
+            await translatedService.sendGiftDelivery({
+                recipientEmail: 'recipient@example.com',
+                recipientName: null,
+                buyerName: 'Buyer',
+                personalMessage: null,
+                token: 'abc-123',
+                tierName: 'Gold',
+                benefits: [],
+                cadence: 'month',
+                duration: 3,
+                expiresAt: new Date('2027-04-07')
+            });
+
+            const message = mailer.send.firstCall.firstArg;
+            sinon.assert.match(message.text, sinon.match('a 3-month Gold membership'));
+            sinon.assert.match(message.html, sinon.match('<strong>3</strong>-month'));
+            sinon.assert.match(message.html, sinon.match(value => !value.includes('3 months')));
+            sinon.assert.match(message.text, sinon.match(value => !value.includes('3 months')));
+
+            const introKey = '{buyerName} has gifted you a {duration}-month {tierName} membership to {siteTitle}';
+            const introCalls = t.getCalls().filter(call => call.firstArg === introKey);
+            assert.equal(introCalls.length, 2);
+            for (const call of introCalls) {
+                assert.equal(call.args[1].count, 3);
+            }
+            assert.ok(introCalls.some(call => call.args[1].duration === 3));
+        });
+
+        it('escapes recipient-controlled delivery content in HTML', async function () {
+            await service.sendGiftDelivery({
+                recipientEmail: 'recipient@example.com',
+                recipientName: '<img src=x onerror=alert(1)>',
+                buyerName: '<script>alert(1)</script>',
+                personalMessage: '<b>not markup</b>',
+                token: 'abc-123',
+                tierName: 'Gold',
+                benefits: ['<i>benefit</i>'],
+                cadence: 'month',
+                duration: 1,
+                expiresAt: new Date('2027-04-07')
+            });
+
+            const html = mailer.send.firstCall.firstArg.html;
+            assert.ok(!html.includes('<script>alert(1)</script>'));
+            assert.ok(!html.includes('<img src=x onerror=alert(1)>'));
+            assert.ok(!html.includes('<b>not markup</b>'));
+            assert.ok(!html.includes('<i>benefit</i>'));
+        });
+
+        it('does not invent provider telemetry for transports without a Mailgun ID', async function () {
+            mailer.send.resolves('Message sent');
+            const t = sinon.spy(translate());
+            const translatedService = new GiftEmailService({mailer, settingsCache, urlUtils, getFromAddress, blogIcon, t});
+
+            const result = await translatedService.sendGiftDelivery({
+                recipientEmail: 'recipient@example.com',
+                recipientName: null,
+                buyerName: null,
+                personalMessage: null,
+                token: 'abc-123',
+                tierName: 'Gold',
+                benefits: [],
+                cadence: 'month',
+                duration: 1,
+                expiresAt: new Date('2027-04-07')
+            });
+
+            assert.deepEqual(result, {providerMessageId: null});
+            const introKey = 'You\'ve been gifted a {duration}-month {tierName} membership to {siteTitle}';
+            const introCalls = t.getCalls().filter(call => call.firstArg === introKey);
+            assert.equal(introCalls.length, 2);
+        });
     });
 
     describe('sendReminder', function () {
