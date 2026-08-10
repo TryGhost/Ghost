@@ -16,8 +16,6 @@ export type FetchData = {
     /** The begin time used during the last fetch */
     lastBegin?: Date;
     lastEventTimestamp?: Date;
-    /** Set to quit the job early */
-    canceled?: boolean;
 };
 
 type FetchDataScheduled = FetchData & {schedule?: {begin: Date; end: Date}};
@@ -134,14 +132,6 @@ export class EmailAnalyticsService {
         };
     }
 
-    #clearScheduledData() {
-        this.#fetchScheduledData = {
-            running: false,
-            jobName: this.#jobNames.scheduled
-        };
-        this.queries.setJobMetadata(this.#jobNames.scheduled, null);
-    }
-
     getStatus() {
         return {
             latest: this.#fetchLatestNonOpenedData,
@@ -255,19 +245,18 @@ export class EmailAnalyticsService {
 
     /**
      * Cancels the scheduled fetch of email analytics events.
-     * If a fetch is currently running, it marks it for cancellation.
-     * If no fetch is running, it clears the scheduled fetch data.
+     * An in-progress fetch completes its current pass after its schedule is cleared.
      */
     cancelScheduled() {
-        if (this.#fetchScheduledData) {
-            if (this.#fetchScheduledData.running) {
-                this.#fetchScheduledData.canceled = true;
-                // Clear metadata eagerly; fetchScheduled() will clear in-memory state next cycle
-                this.queries.setJobMetadata(this.#jobNames.scheduled, null);
-            } else {
-                this.#clearScheduledData();
-            }
+        if (this.#fetchScheduledData.running) {
+            delete this.#fetchScheduledData.schedule;
+        } else {
+            this.#fetchScheduledData = {
+                running: false,
+                jobName: this.#jobNames.scheduled
+            };
         }
+        this.queries.setJobMetadata(this.#jobNames.scheduled, null);
     }
 
     /**
@@ -313,11 +302,6 @@ export class EmailAnalyticsService {
             return createEmptyResult();
         }
 
-        if (this.#fetchScheduledData.canceled) {
-            this.#clearScheduledData();
-            return createEmptyResult();
-        }
-
         let begin = this.#fetchScheduledData.schedule.begin;
         const end = this.#fetchScheduledData.schedule.end;
 
@@ -328,16 +312,17 @@ export class EmailAnalyticsService {
 
         if (end <= begin) {
             logging.info('[EmailAnalytics] Ending fetchScheduled because end is before begin');
-            this.#clearScheduledData();
+            this.cancelScheduled();
             return createEmptyResult();
         }
 
-        const fetchResult = await this.#fetchEventsForJob(this.#fetchScheduledData, {begin, end, maxEvents});
-        if (fetchResult.eventCount === 0 || this.#fetchScheduledData.canceled) {
-            this.#clearScheduledData();
+        const fetchData = this.#fetchScheduledData;
+        const fetchResult = await this.#fetchEventsForJob(fetchData, {begin, end, maxEvents});
+        if (fetchResult.eventCount === 0 && this.#fetchScheduledData === fetchData) {
+            this.cancelScheduled();
         }
 
-        this.queries.setJobTimestamp(this.#fetchScheduledData.jobName, 'finished', this.#fetchScheduledData.lastEventTimestamp!);
+        this.queries.setJobTimestamp(fetchData.jobName, 'finished', fetchData.lastEventTimestamp!);
         return fetchResult;
     }
     /**
@@ -435,24 +420,14 @@ export class EmailAnalyticsService {
                 logging.error('[EmailAnalytics] Error while aggregating stats');
                 logging.error(err);
             }
-
-            if (fetchData.canceled) {
-                throw new errors.InternalServerError({
-                    message: 'Fetching canceled'
-                });
-            }
         };
 
         try {
             await this.#fetchEvents({batchHandler: processBatch, begin, end, maxEvents, events: eventTypes});
         } catch (err) {
-            if (!(err instanceof Error) || err.message !== 'Fetching canceled') {
-                logging.error('[EmailAnalytics] Error while fetching');
-                logging.error(err);
-                error = err;
-            } else {
-                logging.error('[EmailAnalytics] Canceled fetching');
-            }
+            logging.error('[EmailAnalytics] Error while fetching');
+            logging.error(err);
+            error = err;
         }
 
         // Final aggregation.

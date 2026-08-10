@@ -374,7 +374,7 @@ describe('EmailAnalyticsService', function () {
                 sinon.assert.notCalled(eventProcessor.aggregate);
             });
 
-            it('returns 0 when fetch is canceled', async function () {
+            it('returns 0 when scheduled fetch is canceled before it starts', async function () {
                 await service.schedule({
                     begin: new Date(2023, 0, 1),
                     end: new Date(2023, 0, 2)
@@ -398,6 +398,65 @@ describe('EmailAnalyticsService', function () {
                 sinon.assert.calledOnce(setJobStatusStub);
                 sinon.assert.calledOnce(eventProcessor.processBatch);
                 assert.deepEqual(eventProcessor.processBatch.getCall(0).args[0], [1,2,3,4,5,6,7,8,9,10]);
+            });
+
+            it('finishes an in-progress fetch when its schedule is canceled', async function () {
+                let startFetch = () => {};
+                const fetchStarted = new Promise<void>((resolve) => {
+                    startFetch = resolve;
+                });
+                let continueFetch = () => {};
+                const fetchCanContinue = new Promise<void>((resolve) => {
+                    continueFetch = resolve;
+                });
+
+                service = createService({
+                    queries: {
+                        setJobTimestamp: setJobTimestampStub,
+                        setJobStatus: setJobStatusStub,
+                        setJobMetadata: setJobMetadataStub
+                    },
+                    fetchEvents: async ({batchHandler}) => {
+                        startFetch();
+                        await fetchCanContinue;
+                        await batchHandler([1,2,3,4,5,6,7,8,9,10]);
+                    },
+                    createEventProcessor: () => eventProcessor
+                });
+                await service.schedule({
+                    begin: new Date(2023, 0, 1),
+                    end: new Date(2023, 0, 2)
+                });
+                setJobMetadataStub.resetHistory();
+
+                const fetch = service.fetchScheduled({maxEvents: 100});
+                await fetchStarted;
+                service.cancelScheduled();
+
+                sinon.assert.calledOnceWithExactly(setJobMetadataStub, 'email-analytics-scheduled', null);
+                assert.equal(service.getStatus().scheduled.running, true);
+                assert.equal(service.getStatus().scheduled.schedule, undefined);
+                await assert.rejects(service.schedule({
+                    begin: new Date(2023, 0, 3),
+                    end: new Date(2023, 0, 4)
+                }), /Already fetching scheduled events/);
+
+                continueFetch();
+                const result = await fetch;
+
+                assert.equal(result.eventCount, 10);
+                sinon.assert.calledOnce(eventProcessor.processBatch);
+                assert.equal(service.getStatus().scheduled.running, false);
+                assert.equal(service.getStatus().scheduled.schedule, undefined);
+
+                await service.schedule({
+                    begin: new Date(2023, 0, 3),
+                    end: new Date(2023, 0, 4)
+                });
+                assert.deepEqual(service.getStatus().scheduled.schedule, {
+                    begin: new Date(2023, 0, 3),
+                    end: new Date(2023, 0, 4)
+                });
             });
 
             it('bails when end date is before begin date', async function () {
