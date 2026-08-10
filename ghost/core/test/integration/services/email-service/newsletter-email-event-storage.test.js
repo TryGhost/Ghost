@@ -35,7 +35,7 @@ processingModes.forEach(({name, batchProcessing}) => {
             configUtils.set('emailAnalytics:batchProcessing', batchProcessing);
 
             // Stub queries before boot
-            const queries = require('../../../../core/server/services/email-analytics/lib/queries');
+            const {queries} = require('../../../../core/server/services/email-analytics/lib/queries');
             sinon.stub(queries, 'getLastEventTimestamp').callsFake(async function () {
                 // This is required because otherwise the last event timestamp will be now, and that is too close to NOW to start fetching new events
                 return new Date(2000, 0, 1);
