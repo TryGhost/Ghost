@@ -164,6 +164,45 @@ module.exports = class CustomThemeSettingsService {
         return settingsObjects;
     }
 
+    /**
+     * Duplicate stored settings from one theme to another, e.g. when a theme
+     * is saved as a copy under a new name.
+     *
+     * No-ops if the destination theme already has stored settings so existing
+     * customisations are never overwritten. Values are copied verbatim - they
+     * are reconciled against the destination theme's settings definition by
+     * the sync that runs when that theme is activated.
+     *
+     * @param {string} fromThemeName
+     * @param {string} toThemeName
+     */
+    async copySettingsBetweenThemes(fromThemeName, toThemeName) {
+        const sourceCollection = await this._repository.browse({filter: `theme:'${fromThemeName}'`});
+
+        // single transaction so a failure part-way leaves no partial copy
+        // behind that would make later attempts skip the copy. The
+        // destination check locks inside the same transaction so concurrent
+        // copies can't both see an empty destination and insert duplicates
+        await this._repository.transaction(async (transacting) => {
+            const destinationCollection = await this._repository.browse({filter: `theme:'${toThemeName}'`, transacting, forUpdate: true});
+
+            if (destinationCollection.toJSON().length > 0) {
+                debug(`Skipping copy of custom theme settings from '${fromThemeName}' to '${toThemeName}' - destination already has settings`);
+                return;
+            }
+
+            for (const setting of sourceCollection.toJSON()) {
+                debug(`Copying custom theme setting '${fromThemeName}.${setting.key}' to '${toThemeName}'`);
+                await this._repository.add({
+                    theme: toThemeName,
+                    key: setting.key,
+                    type: setting.type,
+                    value: setting.value
+                }, {transacting});
+            }
+        });
+    }
+
     // Private -----------------------------------------------------------------
 
     /**

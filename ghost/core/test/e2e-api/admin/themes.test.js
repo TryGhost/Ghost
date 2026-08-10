@@ -3,6 +3,7 @@ const {assertExists} = require('../../utils/assertions');
 const sinon = require('sinon');
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
 const _ = require('lodash');
 const supertest = require('supertest');
 const nock = require('nock');
@@ -19,9 +20,10 @@ describe('Themes API', function () {
         const themePath = options.themePath;
         const fieldName = 'file';
         const request = options.request || ownerRequest;
+        const query = options.query || '';
 
         return request
-            .post(localUtils.API.getApiQuery('themes/upload'))
+            .post(localUtils.API.getApiQuery(`themes/upload${query}`))
             .set('Origin', config.get('url'))
             .attach(fieldName, themePath);
     };
@@ -423,6 +425,75 @@ describe('Themes API', function () {
 
         // Clean up only the limit service mocks
         mockManager.restoreLimitService();
+    });
+
+    it('Can copy custom theme settings when uploading a theme under a new name', async function () {
+        const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'theme-settings-copy-'));
+
+        try {
+            // start from a known active theme and customise its settings
+            await ownerRequest
+                .put(localUtils.API.getApiQuery('themes/source/activate'))
+                .set('Origin', config.get('url'))
+                .expect(200);
+
+            await ownerRequest
+                .put(localUtils.API.getApiQuery('custom_theme_settings/'))
+                .set('Origin', config.get('url'))
+                .send({custom_theme_settings: [
+                    {key: 'title_font', value: 'Elegant serif'},
+                    {key: 'site_background_color', value: '#123456'}
+                ]})
+                .expect(200);
+
+            // save a copy of the default theme under a new name, as the theme editor does
+            const zipPath = path.join(tmpDir, 'source-edited.zip');
+            fs.copyFileSync(path.join(__dirname, '..', '..', 'utils', 'fixtures', 'themes', 'source.zip'), zipPath);
+
+            const uploadRes = await uploadTheme({
+                themePath: zipPath,
+                query: '?copy_settings_from=source'
+            });
+            assert.equal(uploadRes.statusCode, 200);
+            assert.equal(uploadRes.body.themes[0].name, 'source-edited');
+
+            await ownerRequest
+                .put(localUtils.API.getApiQuery('themes/source-edited/activate'))
+                .set('Origin', config.get('url'))
+                .expect(200);
+
+            // customised values survived the switch to the renamed copy
+            const settingsRes = await ownerRequest
+                .get(localUtils.API.getApiQuery('custom_theme_settings/'))
+                .set('Origin', config.get('url'))
+                .expect(200);
+
+            const settingsByKey = Object.fromEntries(settingsRes.body.custom_theme_settings.map(setting => [setting.key, setting.value]));
+            assert.equal(settingsByKey.title_font, 'Elegant serif');
+            assert.equal(settingsByKey.site_background_color, '#123456');
+        } finally {
+            fs.rmSync(tmpDir, {recursive: true, force: true});
+
+            // best-effort restore of the pre-test theme state, no assertions so
+            // cleanup completes even when the test fails part-way through
+            await ownerRequest
+                .put(localUtils.API.getApiQuery('themes/source/activate'))
+                .set('Origin', config.get('url'));
+
+            await ownerRequest
+                .del(localUtils.API.getApiQuery('themes/source-edited'))
+                .set('Origin', config.get('url'));
+        }
+    });
+
+    it('Errors when asked to copy settings from an unknown theme', async function () {
+        const res = await uploadTheme({
+            themePath: path.join(__dirname, '..', '..', 'utils', 'fixtures', 'themes', 'valid.zip'),
+            query: '?copy_settings_from=unknown-theme'
+        });
+
+        assert.equal(res.statusCode, 422);
+        assert.equal(res.body.errors[0].type, 'ValidationError');
     });
 
     it('Can re-upload the active theme to override', async function () {
