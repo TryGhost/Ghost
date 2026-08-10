@@ -17,7 +17,7 @@ const templateStyles = require('./tpl/styles');
 const {getFrontendAppConfig, getDataAttributes} = require('../utils/frontend-apps');
 const labs = require('../../shared/labs');
 const {getMarkdownUrl} = require('../services/llms/markdown');
-const {isPurchasableEntry} = require('../../shared/machine-payments');
+const {isPurchasableEntry, isMachinePaymentsEnabled} = require('../../shared/machine-payments');
 
 /**
  * @typedef {import('@tryghost/custom-fonts').FontSelection} FontSelection
@@ -25,11 +25,12 @@ const {isPurchasableEntry} = require('../../shared/machine-payments');
 
 const {get: getMetaData, getAssetUrl} = metaData;
 
-function isMachinePaymentsEnabled() {
-    return labs.isSet('machinePayments')
-        && settingsCache.get('machine_payments_enabled') === true
-        && settingsCache.get('llms_enabled') !== false
-        && Boolean(settingsCache.get('stripe_connect_secret_key') || settingsCache.get('stripe_secret_key'));
+function isMachinePaymentsFeatureEnabled() {
+    return isMachinePaymentsEnabled({
+        labs,
+        settingsCache,
+        isStripeConnected: () => settingsHelpers.isStripeConnected()
+    });
 }
 
 function shouldOutputMarkdownAlternate({context, post}) {
@@ -48,7 +49,7 @@ function shouldOutputMarkdownAlternate({context, post}) {
         return true;
     }
 
-    return isPurchasableEntry(post) && isMachinePaymentsEnabled();
+    return isPurchasableEntry(post) && isMachinePaymentsFeatureEnabled();
 }
 
 function getMarkdownAlternateLink({context, post, canonicalUrl}) {

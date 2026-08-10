@@ -52,11 +52,24 @@ class MppAdapter {
             });
         }
 
+        if (!payment.status || payment.status >= 400) {
+            throw new errors.NoPermissionError({
+                message: 'Machine payment credential rejected'
+            });
+        }
+
         const receipt = payment.receipt || {};
+        const reference = receipt.reference || receipt.id || receipt.paymentIntentId || receipt.stripePaymentIntentId;
+        if (!reference) {
+            throw new errors.InternalServerError({
+                message: 'Machine payment succeeded without a stable settlement reference'
+            });
+        }
+
         return {
             protocol: 'mpp',
             method: receipt.method || (receipt.reference ? 'tempo' : 'spt'),
-            reference: receipt.reference || receipt.id || `mpp:${Date.now()}`,
+            reference,
             amount: terms.amount,
             currency: terms.currency,
             stripePaymentIntentId: receipt.paymentIntentId || receipt.stripePaymentIntentId || null,

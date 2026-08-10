@@ -15,8 +15,9 @@ describe('Unit: server/services/machine-payments/service', function () {
         sinon.stub(logging, 'warn');
 
         labsService = {
-            isSet: sinon.stub().withArgs('machinePayments').returns(true)
+            isSet: sinon.stub().returns(false)
         };
+        labsService.isSet.withArgs('machinePayments').returns(true);
         settings = {
             get: sinon.stub()
         };
@@ -75,6 +76,11 @@ describe('Unit: server/services/machine-payments/service', function () {
 
     it('is enabled when lab, setting, llms, and stripe are on', function () {
         assert.equal(createService().isEnabled(), true);
+    });
+
+    it('fails closed when machinePayments lab is off', function () {
+        labsService.isSet.withArgs('machinePayments').returns(false);
+        assert.equal(createService().isEnabled(), false);
     });
 
     it('fails closed without stripe', function () {

@@ -17,7 +17,12 @@ class Pricing {
      * @returns {Promise<{amount: number, currency: string}>}
      */
     async getTerms() {
-        const amount = Number(this.settingsCache.get('machine_payments_amount') || DEFAULT_AMOUNT);
+        const configuredAmount = this.settingsCache.get('machine_payments_amount');
+        const amount = Number(configuredAmount === null || configuredAmount === undefined
+            ? DEFAULT_AMOUNT
+            : configuredAmount);
+        this.assertValidAmount(amount);
+
         const configuredCurrency = this.settingsCache.get('machine_payments_currency');
         const currency = (configuredCurrency
             || (await this.defaultCurrencyProvider?.())

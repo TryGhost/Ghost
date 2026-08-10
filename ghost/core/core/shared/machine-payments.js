@@ -22,6 +22,24 @@ function isPurchasableEntry(entry) {
         && entry.tiers.every(tier => tier.type === 'paid');
 }
 
+/**
+ * Shared enablement check for machine payments (labs + settings + Stripe).
+ *
+ * @param {{
+ *   labs: {isSet: (flag: string) => boolean},
+ *   settingsCache: {get: (key: string) => unknown},
+ *   isStripeConnected: () => boolean
+ * }} deps
+ * @returns {boolean}
+ */
+function isMachinePaymentsEnabled({labs, settingsCache, isStripeConnected}) {
+    return labs.isSet('machinePayments')
+        && settingsCache.get('machine_payments_enabled') === true
+        && settingsCache.get('llms_enabled') !== false
+        && isStripeConnected();
+}
+
 module.exports = {
-    isPurchasableEntry
+    isPurchasableEntry,
+    isMachinePaymentsEnabled
 };

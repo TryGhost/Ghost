@@ -847,7 +847,10 @@ module.exports = {
         method: {type: 'string', maxlength: 50, nullable: false},
         stripe_payment_intent_id: {type: 'string', maxlength: 255, nullable: true, unique: true},
         reference: {type: 'string', maxlength: 255, nullable: false},
-        created_at: {type: 'dateTime', nullable: false}
+        created_at: {type: 'dateTime', nullable: false},
+        '@@UNIQUE_CONSTRAINTS@@': [
+            ['protocol', 'reference']
+        ]
     },
     donation_payment_events: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},

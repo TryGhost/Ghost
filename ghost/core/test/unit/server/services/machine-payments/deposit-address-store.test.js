@@ -26,14 +26,16 @@ describe('Unit: server/services/machine-payments/deposit-address-store', functio
         const settingsCache = {get: sinon.stub().returns(null)};
         const edit = sinon.stub().resolves();
         const create = sinon.stub().resolves({
+            id: 'pi_deposit',
             next_action: {
                 crypto_display_details: {
                     deposit_addresses: {tempo: {address: '0xcreated'}}
                 }
             }
         });
+        const cancel = sinon.stub().resolves();
         const stripeFactory = sinon.stub().returns({
-            paymentIntents: {create}
+            paymentIntents: {create, cancel}
         });
 
         const store = new DepositAddressStore({
@@ -51,6 +53,7 @@ describe('Unit: server/services/machine-payments/deposit-address-store', functio
         assert.equal(a, '0xcreated');
         assert.equal(b, '0xcreated');
         sinon.assert.calledOnce(create);
+        sinon.assert.calledOnce(cancel);
         sinon.assert.calledOnce(edit);
     });
 });

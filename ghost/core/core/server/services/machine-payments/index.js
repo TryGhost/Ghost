@@ -43,8 +43,7 @@ class MachinePaymentsServiceWrapper {
             new MppAdapter({depositAddressStore, settingsCache, pricing})
         ];
 
-        // x402 is optional — only registered when facilitator config is present
-        // or always registered as a second rail (agents that don't speak it ignore it).
+        // x402 is registered as a second rail; agents that don't speak it ignore it.
         adapters.push(new X402Adapter({depositAddressStore}));
 
         this.service = new MachinePaymentsService({

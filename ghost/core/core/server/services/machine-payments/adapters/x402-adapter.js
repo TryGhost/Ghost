@@ -2,17 +2,18 @@ const errors = require('@tryghost/errors');
 const config = require('../../../../shared/config');
 
 function formatPrice({amount, currency}) {
-    const majorAmount = (amount / 100).toFixed(2);
-    if (currency.toUpperCase() === 'USD') {
-        return `$${majorAmount}`;
+    if (currency.toUpperCase() !== 'USD') {
+        throw new errors.ValidationError({
+            message: 'x402 machine payments currently support USD only'
+        });
     }
-    return `${majorAmount} ${currency.toUpperCase()}`;
+
+    return `$${(amount / 100).toFixed(2)}`;
 }
 
 /**
  * x402 adapter (Base USDC). Second rail behind the same canHandle/challenge/fulfill boundary.
- * Avoids spinning a Hono app per request — uses @x402 resource server APIs directly when possible,
- * with a thin Hono fallback for middleware compatibility.
+ * Uses a thin Hono app for @x402 middleware compatibility.
  */
 class X402Adapter {
     /**
@@ -48,15 +49,20 @@ class X402Adapter {
 
         const paymentResponse = response.headers.get('payment-response')
             || response.headers.get('X-PAYMENT-RESPONSE');
+        if (!paymentResponse) {
+            throw new errors.InternalServerError({
+                message: 'x402 payment succeeded without a stable settlement reference'
+            });
+        }
 
         return {
             protocol: 'x402',
             method: 'base',
-            reference: paymentResponse || `x402:${Date.now()}`,
+            reference: paymentResponse,
             amount: terms.amount,
             currency: terms.currency,
             stripePaymentIntentId: null,
-            receiptHeaders: paymentResponse ? {'payment-response': paymentResponse} : {}
+            receiptHeaders: {'payment-response': paymentResponse}
         };
     }
 
@@ -68,7 +74,8 @@ class X402Adapter {
 
         const network = config.get('machinePayments:x402:network') || 'eip155:8453';
         const stripeNetwork = config.get('machinePayments:x402:stripeNetwork') || 'base';
-        const route = `${terms.method} ${new URL(terms.url).pathname}`;
+        const method = (terms.method || 'GET').toUpperCase();
+        const route = `${method} ${new URL(terms.url).pathname}`;
         const facilitatorUrl = config.get('machinePayments:x402:facilitatorUrl');
         const facilitator = this.facilitatorClient
             || (facilitatorUrl ? new HTTPFacilitatorClient({url: facilitatorUrl}) : new HTTPFacilitatorClient());
@@ -92,10 +99,18 @@ class X402Adapter {
             server: new ExactEvmScheme()
         }]));
 
-        app.get('*', () => new Response(responseData.body, {
+        const handler = () => new Response(responseData.body, {
             status: 200,
             headers: {'Content-Type': 'text/markdown; charset=utf-8'}
-        }));
+        });
+
+        if (method === 'GET') {
+            app.get('*', handler);
+        } else if (method === 'HEAD') {
+            app.on('HEAD', '*', handler);
+        } else {
+            app.on(method, '*', handler);
+        }
 
         return await app.fetch(request);
     }

@@ -45,6 +45,8 @@ class PaymentRecorder {
 
         const pi = await stripe.paymentIntents.create({
             amount: amountInCents,
+            // Tempo USDC settlement is recorded as USD cents via Stripe's
+            // transaction_verification crypto PaymentIntent flow.
             currency: 'usd',
             confirm: true,
             payment_method_data: {type: 'crypto'},

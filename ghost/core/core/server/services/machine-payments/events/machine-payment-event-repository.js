@@ -1,4 +1,7 @@
+const errors = require('@tryghost/errors');
 const {MachinePaymentEvent} = require('./machine-payment-event');
+
+const isUniqueConstraintError = err => err?.code === 'ER_DUP_ENTRY' || err?.code?.startsWith?.('SQLITE_CONSTRAINT');
 
 class MachinePaymentEventRepository {
     #Model;
@@ -20,25 +23,41 @@ class MachinePaymentEventRepository {
     async save(data) {
         const event = MachinePaymentEvent.create(data);
 
-        // Idempotent on protocol+reference when a unique constraint exists.
-        const existing = await this.#Model.findOne({
-            protocol: event.protocol,
-            reference: event.reference
-        });
+        const existing = await this.#findByProtocolReference(event.protocol, event.reference);
         if (existing) {
             return existing;
         }
 
-        return await this.#Model.add({
-            post_id: event.postId,
-            amount: event.amount,
-            currency: event.currency,
-            protocol: event.protocol,
-            method: event.method,
-            stripe_payment_intent_id: event.stripePaymentIntentId,
-            reference: event.reference,
-            created_at: event.timestamp
-        }, {context: {internal: true}});
+        try {
+            return await this.#Model.add({
+                post_id: event.postId,
+                amount: event.amount,
+                currency: event.currency,
+                protocol: event.protocol,
+                method: event.method,
+                stripe_payment_intent_id: event.stripePaymentIntentId,
+                reference: event.reference,
+                created_at: event.timestamp
+            }, {context: {internal: true}});
+        } catch (err) {
+            if (!isUniqueConstraintError(err)) {
+                throw err;
+            }
+
+            const raced = await this.#findByProtocolReference(event.protocol, event.reference);
+            if (raced) {
+                return raced;
+            }
+
+            throw new errors.InternalServerError({
+                err,
+                message: 'Failed to persist machine payment event after unique constraint conflict'
+            });
+        }
+    }
+
+    async #findByProtocolReference(protocol, reference) {
+        return await this.#Model.findOne({protocol, reference});
     }
 }
 

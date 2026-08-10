@@ -7,11 +7,14 @@ describe('Unit: server/services/machine-payments/adapters', function () {
         assert.equal(formatPrice({amount: 100, currency: 'USD'}), '$1.00');
     });
 
-    it('formats non-USD x402 prices with a currency suffix', function () {
-        assert.equal(formatPrice({amount: 250, currency: 'EUR'}), '2.50 EUR');
+    it('rejects non-USD x402 prices', function () {
+        assert.throws(
+            () => formatPrice({amount: 250, currency: 'EUR'}),
+            /USD only/
+        );
     });
 
     it('exports the Tempo USDC contract address', function () {
-        assert.match(TEMPO_USDC, /^0x[0-9a-f]+$/i);
+        assert.equal(TEMPO_USDC, '0x20c000000000000000000000b9537d11c60e8b50');
     });
 });

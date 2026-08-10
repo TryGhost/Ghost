@@ -1,4 +1,5 @@
 const errors = require('@tryghost/errors');
+const logging = require('@tryghost/logging');
 const {Stripe} = require('stripe');
 const settingsHelpers = require('../../settings-helpers');
 const settingsCache = require('../../../../shared/settings-cache');
@@ -78,7 +79,7 @@ class DepositAddressStore {
                     return address;
                 }
             } catch (err) {
-                // Fall through to PaymentIntent deposit mode.
+                logging.warn(err);
             }
         }
 
@@ -107,6 +108,16 @@ class DepositAddressStore {
             throw new errors.InternalServerError({
                 message: 'PaymentIntent did not return expected crypto deposit details'
             });
+        }
+
+        try {
+            // The deposit-mode PaymentIntent is only used to mint an address.
+            // Cancel it so it does not linger as requires_action in Dashboard.
+            if (typeof stripe.paymentIntents.cancel === 'function') {
+                await stripe.paymentIntents.cancel(paymentIntent.id);
+            }
+        } catch (err) {
+            logging.warn(err);
         }
 
         await this.#persist(address);

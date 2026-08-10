@@ -10,7 +10,7 @@ const labs = require('../../../shared/labs');
 const logging = require('@tryghost/logging');
 
 const Pricing = require('./pricing');
-const {isPurchasableEntry} = require('./eligibility');
+const {isPurchasableEntry, isMachinePaymentsEnabled} = require('./eligibility');
 const ContentLoader = require('./content-loader');
 
 const PAID_MARKDOWN_CACHE_CONTROL = 'private, no-store';
@@ -59,10 +59,11 @@ class MachinePaymentsService {
     }
 
     isEnabled() {
-        return this.labs.isSet('machinePayments')
-            && this.settingsCache.get('llms_enabled') !== false
-            && this.settingsCache.get('machine_payments_enabled') === true
-            && this.isStripeConnected();
+        return isMachinePaymentsEnabled({
+            labs: this.labs,
+            settingsCache: this.settingsCache,
+            isStripeConnected: this.isStripeConnected
+        });
     }
 
     /**
@@ -138,24 +139,19 @@ class MachinePaymentsService {
             return this.#paymentCredentialErrorResponse(err);
         }
 
-        const entry = await this.contentLoader.loadFullEntry(options.resourceType, options.entryId);
-        if (!entry) {
-            return this.#problemResponse({
-                type: 'https://paymentauth.org/problems/payment-forbidden',
-                title: 'Content unavailable',
-                status: 403,
-                detail: 'Paid content could not be loaded after payment.'
-            });
-        }
-
+        // Record settlement before content load so a missing entry cannot drop
+        // an already-consumed payment credential without a ledger row.
         if (this.paymentRecorder) {
             try {
-                await this.paymentRecorder.record({
+                const stripePaymentIntentId = await this.paymentRecorder.record({
                     ...fulfillment,
                     postId: options.entryId,
                     amount: terms.amount,
                     currency: terms.currency
                 });
+                if (stripePaymentIntentId) {
+                    fulfillment.stripePaymentIntentId = stripePaymentIntentId;
+                }
             } catch (err) {
                 logging.warn(err);
             }
@@ -175,6 +171,16 @@ class MachinePaymentsService {
             } catch (err) {
                 logging.warn(err);
             }
+        }
+
+        const entry = await this.contentLoader.loadFullEntry(options.resourceType, options.entryId);
+        if (!entry) {
+            return this.#problemResponse({
+                type: 'https://paymentauth.org/problems/payment-forbidden',
+                title: 'Content unavailable',
+                status: 403,
+                detail: 'Paid content could not be loaded after payment.'
+            });
         }
 
         const body = options.renderMarkdown(entry);
