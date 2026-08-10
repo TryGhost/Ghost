@@ -1,5 +1,3 @@
-import LimitModal from '@/settings/app/components/limit-modal';
-import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import StripeButton from '@/settings/app/components/stripe-button';
 import TiersList from './tiers/tiers-list';
@@ -10,6 +8,7 @@ import {HostLimitError, useLimiter} from '@/settings/app/hooks/use-limiter';
 import {type Tier, getActiveTiers, getArchivedTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {checkStripeEnabled} from '@tryghost/admin-x-framework/api/settings';
 import {formatNumber} from '@tryghost/shade/utils';
+import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
 import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 import {withErrorBoundary} from '@/settings/app/components/error-boundary';
@@ -35,6 +34,7 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const archivedTiers = getArchivedTiers(tiers || []);
     const {updateRoute} = useSettingsNavigation();
     const limiter = useLimiter();
+    const {showLimit} = useConfirmation();
 
     const openConnectModal = async () => {
         // Allow Stripe despite the limit when it's already connected, so it's
@@ -44,7 +44,7 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 await limiter.errorIfWouldGoOverLimit('limitStripeConnect');
             } catch (error) {
                 if (error instanceof HostLimitError) {
-                    NiceModal.show(LimitModal, {
+                    showLimit({
                         prompt: error.message || `Your current plan doesn't support Stripe Connect.`,
                         onOk: () => updateRoute({route: '/pro', isExternal: true})
                     });

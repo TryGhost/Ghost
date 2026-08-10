@@ -1,4 +1,3 @@
-import ConfirmationModal from '@/settings/app/components/confirmation-modal';
 import CustomFieldIcon from './custom-field-icon';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
@@ -8,6 +7,7 @@ import {SettingsModal} from '@tryghost/shade/patterns';
 import {ValidationError, getErrorMessage} from '@tryghost/admin-x-framework/errors';
 import {memberCustomFieldUserTypes, useCreateMemberCustomField, useDeleteMemberCustomField, useEditMemberCustomField, userTypeForField} from '@tryghost/admin-x-framework/api/member-custom-fields';
 import {toast} from 'sonner';
+import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import type {MemberCustomField} from '@tryghost/admin-x-framework/api/member-custom-fields';
 
@@ -31,6 +31,7 @@ const renderTypeOption = (option: {label: string; value: string}) => (
 
 const CustomFieldModal = NiceModal.create<{field?: MemberCustomField}>(({field}) => {
     const modal = useModal();
+    const {confirm} = useConfirmation();
     const {mutateAsync: createField} = useCreateMemberCustomField();
     const {mutateAsync: editField} = useEditMemberCustomField();
     const {mutateAsync: deleteField} = useDeleteMemberCustomField();
@@ -85,7 +86,7 @@ const CustomFieldModal = NiceModal.create<{field?: MemberCustomField}>(({field})
     const archiveButton = (
         <Button className='text-destructive hover:text-destructive' size='sm' type='button' variant='ghost' onClick={() => {
             modal.remove();
-            NiceModal.show(ConfirmationModal, {
+            confirm({
                 title: 'Archive custom field',
                 prompt: <>
                     <div className='mb-6'>Your custom field <strong>{field!.name}</strong> will no longer show up on your members, collect new information, or appear in filters.</div>
@@ -113,7 +114,7 @@ const CustomFieldModal = NiceModal.create<{field?: MemberCustomField}>(({field})
     const reactivateButton = (
         <Button className='text-green hover:text-green' size='sm' type='button' variant='ghost' onClick={() => {
             modal.remove();
-            NiceModal.show(ConfirmationModal, {
+            confirm({
                 title: 'Reactivate custom field',
                 prompt: <>
                     <div className='mb-6'>Reactivating <strong>{field!.name}</strong> will immediately make it available again on your members, for collecting, and in filters.</div>
@@ -145,7 +146,7 @@ const CustomFieldModal = NiceModal.create<{field?: MemberCustomField}>(({field})
     // would put irreversible data loss on equal footing with Save.
     const confirmDeleteField = () => {
         modal.remove();
-        NiceModal.show(ConfirmationModal, {
+        confirm({
             title: 'Delete custom field',
             prompt: <><strong>{field!.name}</strong> and every value collected from your members will be permanently deleted from the database. This can&rsquo;t be undone.</>,
             okLabel: 'Delete',
