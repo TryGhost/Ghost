@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/kg-default-cards",
-  "version": "10.3.3",
+  "version": "10.3.4",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/TryGhost/Ghost.git",
@@ -43,11 +43,11 @@
     "@eslint/js": "catalog:",
     "@types/jsdom": "catalog:",
     "@types/node": "catalog:",
+    "@typescript/native": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "eslint-plugin-ghost": "catalog:",
     "jsdom": "catalog:",
     "simple-dom": "1.4.0",
-    "@typescript/native": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
     "vitest": "catalog:"
