@@ -1,18 +1,30 @@
 import {HoverCard, HoverCardContent, HoverCardTrigger} from '@tryghost/shade/components';
 import {Inline, Stack, Text} from '@tryghost/shade/primitives';
-import {formatNumber} from '@tryghost/shade/utils';
+import {formatNumber, LucideIcon} from '@tryghost/shade/utils';
+import type {PostMetricRowIcon, PostMetricTooltipRow} from '@/posts/list/post-metric-tooltips';
 import type {ReactNode} from 'react';
-
-export interface MetricTooltipRow {
-    label: string;
-    value: number;
-}
 
 interface PostMetricTooltipProps {
     title: string;
-    rows: MetricTooltipRow[];
+    rows: PostMetricTooltipRow[];
     children: ReactNode;
 }
+
+/**
+ * One icon per row, matching what Ember draws in the same panel: a paper plane
+ * for Sent, an envelope for Opens, a cursor for Clicks.
+ *
+ * Keyed by name rather than held on the row itself, so `post-metric-tooltips.ts`
+ * stays a plain module with no React in it.
+ */
+const METRIC_ROW_ICONS: Record<PostMetricRowIcon, typeof LucideIcon.Users> = {
+    visitors: LucideIcon.Users,
+    sent: LucideIcon.Send,
+    opens: LucideIcon.MailOpen,
+    clicks: LucideIcon.MousePointerClick,
+    free: LucideIcon.User,
+    paid: LucideIcon.UserPlus
+};
 
 /**
  * The breakdown Ember reveals on hovering a metric — "Web traffic", "Newsletter
@@ -34,15 +46,29 @@ export function PostMetricTooltip({title, rows, children}: PostMetricTooltipProp
                 moving onto it would fire the row's mouseleave and drop the row
                 hover, the visible CTA border and the status detail. Nothing in
                 the card is clickable, so nothing is lost. */}
-            <HoverCardContent className='pointer-events-none w-44 p-3' data-testid='post-metric-panel'>
+            {/* Above the metric, as Ember's is: its `.above` positioning is the
+                default and it drops below only when there is no room. Radix
+                flips on collision by itself, so `side` sets the preference and
+                the fallback comes free. */}
+            <HoverCardContent className='pointer-events-none w-48 p-3' data-testid='post-metric-panel' side='top'>
                 <Stack gap='xs'>
                     <Text size='sm' weight='semibold'>{title}</Text>
-                    {rows.map(row => (
-                        <Inline key={row.label} gap='md' justify='between'>
-                            <Text size='sm' tone='secondary'>{row.label}</Text>
-                            <Text size='sm'>{formatNumber(row.value)}</Text>
-                        </Inline>
-                    ))}
+                    {rows.map((row) => {
+                        const Icon = METRIC_ROW_ICONS[row.icon];
+
+                        return (
+                            <Inline key={row.label} gap='md' justify='between'>
+                                <Inline align='center' gap='xs'>
+                                    <Icon className='size-3.5 shrink-0 text-muted-foreground' strokeWidth={1.5} />
+                                    <Text size='sm' tone='secondary'>{row.label}</Text>
+                                </Inline>
+                                {/* Mono, as the analytics tables are: the
+                                    figures line up on their digits when several
+                                    rows sit under each other. */}
+                                <Text className='font-mono' size='sm'>{formatNumber(row.value)}</Text>
+                            </Inline>
+                        );
+                    })}
                 </Stack>
             </HoverCardContent>
         </HoverCard>

@@ -17,7 +17,7 @@ describe('getPostMetricTooltip', () => {
     it('titles the visitor tooltip "Web traffic"', () => {
         expect(getPostMetricTooltip('visitors', post(), {...base, visitors: 42})).toEqual({
             title: 'Web traffic',
-            rows: [{label: 'Unique visitors', value: 42}]
+            rows: [{label: 'Unique visitors', value: 42, icon: 'visitors'}]
         });
     });
 
@@ -30,16 +30,16 @@ describe('getPostMetricTooltip', () => {
         expect(getPostMetricTooltip(key, emailed, base)).toEqual({
             title: 'Newsletter performance',
             rows: [
-                {label: 'Sent', value: 200},
-                {label: 'Opens', value: 100},
-                {label: 'Clicks', value: 20}
+                {label: 'Sent', value: 200, icon: 'sent'},
+                {label: 'Opens', value: 100, icon: 'opens'},
+                {label: 'Clicks', value: 20, icon: 'clicks'}
             ]
         });
     });
 
     it('lists only what is being tracked', () => {
         expect(getPostMetricTooltip('sent', emailed, {showOpens: false, showClicks: false}).rows)
-            .toEqual([{label: 'Sent', value: 200}]);
+            .toEqual([{label: 'Sent', value: 200, icon: 'sent'}]);
     });
 
     it('breaks new members into free and paid', () => {
@@ -47,7 +47,7 @@ describe('getPostMetricTooltip', () => {
             ...base, freeMembers: 69, paidMembers: 19, paidMembersEnabled: true
         })).toEqual({
             title: 'New members',
-            rows: [{label: 'Free', value: 69}, {label: 'Paid', value: 19}]
+            rows: [{label: 'Free', value: 69, icon: 'free'}, {label: 'Paid', value: 19, icon: 'paid'}]
         });
     });
 
@@ -55,6 +55,6 @@ describe('getPostMetricTooltip', () => {
     it('omits paid when paid members are off', () => {
         expect(getPostMetricTooltip('members', post(), {
             ...base, freeMembers: 69, paidMembersEnabled: false
-        }).rows).toEqual([{label: 'Free', value: 69}]);
+        }).rows).toEqual([{label: 'Free', value: 69, icon: 'free'}]);
     });
 });

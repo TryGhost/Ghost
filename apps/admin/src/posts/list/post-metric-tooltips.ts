@@ -14,9 +14,22 @@ import type {PostListItem} from '@/posts/list/hooks/use-posts-list';
  * the rate in both places would be a plausible-looking lie.
  */
 
+/**
+ * Which icon a row carries. A name rather than a component, so this module
+ * stays plain TypeScript — it is the one the unit tests lean on — and the
+ * component owns the mapping to actual icons.
+ */
+export type PostMetricRowIcon = 'visitors' | 'sent' | 'opens' | 'clicks' | 'free' | 'paid';
+
+export interface PostMetricTooltipRow {
+    label: string;
+    value: number;
+    icon: PostMetricRowIcon;
+}
+
 export interface PostMetricTooltipContent {
     title: string;
-    rows: Array<{label: string; value: number}>;
+    rows: PostMetricTooltipRow[];
 }
 
 export interface TooltipInputs {
@@ -37,7 +50,7 @@ export function getPostMetricTooltip(
     if (key === 'visitors') {
         return {
             title: 'Web traffic',
-            rows: [{label: 'Unique visitors', value: inputs.visitors ?? 0}]
+            rows: [{label: 'Unique visitors', value: inputs.visitors ?? 0, icon: 'visitors'}]
         };
     }
 
@@ -47,9 +60,9 @@ export function getPostMetricTooltip(
         return {
             title: 'Newsletter performance',
             rows: [
-                {label: 'Sent', value: sent},
-                ...(inputs.showOpens ? [{label: 'Opens', value: post.email?.opened_count ?? 0}] : []),
-                ...(inputs.showClicks ? [{label: 'Clicks', value: post.count?.clicks ?? 0}] : [])
+                {label: 'Sent', value: sent, icon: 'sent'},
+                ...(inputs.showOpens ? [{label: 'Opens', value: post.email?.opened_count ?? 0, icon: 'opens' as const}] : []),
+                ...(inputs.showClicks ? [{label: 'Clicks', value: post.count?.clicks ?? 0, icon: 'clicks' as const}] : [])
             ]
         };
     }
@@ -59,9 +72,9 @@ export function getPostMetricTooltip(
     return {
         title: 'New members',
         rows: [
-            {label: 'Free', value: inputs.freeMembers ?? 0},
+            {label: 'Free', value: inputs.freeMembers ?? 0, icon: 'free'},
             // Ember hides the paid row entirely when paid members are off.
-            ...(inputs.paidMembersEnabled ? [{label: 'Paid', value: inputs.paidMembers ?? 0}] : [])
+            ...(inputs.paidMembersEnabled ? [{label: 'Paid', value: inputs.paidMembers ?? 0, icon: 'paid' as const}] : [])
         ]
     };
 }
