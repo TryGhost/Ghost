@@ -76,9 +76,12 @@ module.exports = class FeedbackRepository {
             limit: options.limit || 10,
             page: options.page || 1,
             order: 'created_at DESC',
-            withRelated: ['member'],
             filter: filter
         };
+
+        if (options.withMember) {
+            findOptions.withRelated = ['member'];
+        }
 
         // Use findPage with filter
         const results = await this.#MemberFeedback.findPage(findOptions);

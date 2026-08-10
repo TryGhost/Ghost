@@ -1,7 +1,12 @@
 const sinon = require('sinon');
+const permissions = require('../../../../../core/server/services/permissions');
 const AudienceFeedbackController = require('../../../../../core/server/services/audience-feedback/audience-feedback-controller');
 
 describe('AudienceFeedbackController', function () {
+    afterEach(function () {
+        sinon.restore();
+    });
+
     describe('redirectToPost', function () {
         const postId = '634fc3901e0a291855d8b135';
         const uuid = '7b11de3c-dff9-4563-82ae-a281122d201d';
@@ -81,6 +86,68 @@ describe('AudienceFeedbackController', function () {
 
             sinon.assert.notCalled(res.redirect);
             sinon.assert.calledOnceWithExactly(next, error);
+        });
+    });
+
+    describe('browse', function () {
+        const postId = '634fc3901e0a291855d8b135';
+        const context = {user: 'user-id'};
+
+        function createController(getForPost) {
+            return new AudienceFeedbackController({
+                repository: {getForPost},
+                audienceFeedbackService: {}
+            });
+        }
+
+        it('includes member data when the user can browse members', async function () {
+            const browseMember = sinon.stub().resolves();
+            sinon.stub(permissions, 'canThis').withArgs(context).returns({
+                browse: {
+                    member: browseMember
+                }
+            });
+            const result = {data: [], meta: {}};
+            const getForPost = sinon.stub().resolves(result);
+            const controller = createController(getForPost);
+
+            const response = await controller.browse({
+                data: {id: postId},
+                options: {context}
+            });
+
+            sinon.assert.calledOnce(browseMember);
+            sinon.assert.calledOnceWithExactly(getForPost, postId, {
+                limit: 10,
+                page: 1,
+                withMember: true
+            });
+            sinon.assert.match(response, result);
+        });
+
+        it('excludes member data when the user cannot browse members', async function () {
+            const browseMember = sinon.stub().rejects();
+            sinon.stub(permissions, 'canThis').withArgs(context).returns({
+                browse: {
+                    member: browseMember
+                }
+            });
+            const result = {data: [], meta: {}};
+            const getForPost = sinon.stub().resolves(result);
+            const controller = createController(getForPost);
+
+            const response = await controller.browse({
+                data: {id: postId},
+                options: {context}
+            });
+
+            sinon.assert.calledOnce(browseMember);
+            sinon.assert.calledOnceWithExactly(getForPost, postId, {
+                limit: 10,
+                page: 1,
+                withMember: false
+            });
+            sinon.assert.match(response, result);
         });
     });
 });
