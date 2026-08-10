@@ -1,4 +1,4 @@
-import React, {useMemo} from 'react';
+import React from 'react';
 import TagColorField from './tag-color-field';
 import TagImageField from './tag-image-field';
 import {Accordion, AccordionContent, AccordionItem, AccordionTrigger, Card, CardContent, CodeEditor, FieldError, Input, Label, Textarea} from '@tryghost/shade/components';
@@ -21,6 +21,7 @@ interface TagDetailFormProps {
 }
 
 const errorId = (field: TagFieldName) => `tag-${field}-error`;
+const htmlExtensions = [() => import('@codemirror/lang-html').then(module => module.html())];
 
 /** Ember's `gh-count-down-characters`: the used count, red once past the limit. */
 const UsedCharacters: React.FC<{value: string; limit: number; prefix: 'Maximum' | 'Recommended'}> = ({value, limit, prefix}) => {
@@ -48,7 +49,6 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
     const siteMetaTitle = getSettingValue<string>(settingsData?.settings ?? [], 'meta_title') ?? '';
     const siteMetaDescription = getSettingValue<string>(settingsData?.settings ?? [], 'meta_description') ?? '';
     const unsplashEnabled = getSettingValue<boolean>(settingsData?.settings ?? [], 'unsplash') ?? false;
-    const htmlExtensions = useMemo(() => [import('@codemirror/lang-html').then(module => module.html())], []);
 
     const validateOnBlur = (field: TagFieldName) => {
         onFieldError(field, validateTagField(field, draft));
@@ -319,7 +319,6 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                             <AccordionContent>
                                 <Stack className='pt-2' gap='lg'>
                                     <CodeEditor
-                                        ariaLabel='Tag header'
                                         data-testid='codeinjection-head'
                                         editable={!disabled}
                                         extensions={htmlExtensions}
@@ -329,7 +328,6 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                                         onChange={value => onChange({codeinjectionHead: value})}
                                     />
                                     <CodeEditor
-                                        ariaLabel='Tag footer'
                                         data-testid='codeinjection-foot'
                                         editable={!disabled}
                                         extensions={htmlExtensions}

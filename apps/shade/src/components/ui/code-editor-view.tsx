@@ -15,7 +15,7 @@ export interface CodeEditorProps extends Omit<ReactCodeMirrorProps, 'value' | 'o
     error?: boolean;
     hint?: React.ReactNode;
     clearBg?: boolean;
-    extensions: Array<Extension | Promise<Extension>>;
+    extensions: Array<Extension | Promise<Extension> | (() => Extension | Promise<Extension>)>;
     ariaLabel?: string;
     onChange?: (value: string) => void;
 }
@@ -51,7 +51,9 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
     ...props
 }, ref) {
     const id = useId();
+    const labelId = `${id}-label`;
     const hintId = `${id}-description`;
+    const hasTitle = Boolean(title);
     const sizeRef = useRef<HTMLDivElement>(null);
     const {darkMode, setFocusState} = useFocusContext();
     const focusedRef = useRef(false);
@@ -84,7 +86,9 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
     const editorExtensions = useMemo(() => {
         const contentAttributes: Record<string, string> = {id};
 
-        if (ariaLabel) {
+        if (hasTitle) {
+            contentAttributes['aria-labelledby'] = labelId;
+        } else if (ariaLabel) {
             contentAttributes['aria-label'] = ariaLabel;
         }
         if (error) {
@@ -102,7 +106,7 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
             tooltips({position: 'fixed', parent: tooltipParent}),
             EditorView.contentAttributes.of(contentAttributes)
         ];
-    }, [ariaLabel, editable, error, hint, hintId, id, resolvedExtensions, tooltipParent]);
+    }, [ariaLabel, editable, error, hasTitle, hint, hintId, id, labelId, resolvedExtensions, tooltipParent]);
 
     const handleFocus: FocusEventHandler<HTMLDivElement> = (event) => {
         onFocus?.(event);
@@ -116,6 +120,12 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
         setFocusState(false);
     };
 
+    const handleLabelClick = () => {
+        if (editable) {
+            document.getElementById(id)?.focus();
+        }
+    };
+
     useEffect(() => {
         return () => {
             if (focusedRef.current) {
@@ -127,7 +137,11 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
     useEffect(() => {
         let cancelled = false;
 
-        Promise.all(extensions).then((nextExtensions) => {
+        const pendingExtensions = extensions.map(extension => (
+            typeof extension === 'function' ? extension() : extension
+        ));
+
+        Promise.all(pendingExtensions).then((nextExtensions) => {
             if (!cancelled) {
                 setResolvedExtensions(nextExtensions);
             }
@@ -163,10 +177,10 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
     );
 
     return (
-        <>
+        <div className={cn('w-full', height === 'full' && 'h-full')}>
             <div ref={sizeRef} />
             <Stack className={height === 'full' ? 'h-full' : ''} gap='xs' style={{width}}>
-                {title && <FieldLabel htmlFor={id}>{title}</FieldLabel>}
+                {title && <FieldLabel id={labelId} onClick={handleLabelClick}>{title}</FieldLabel>}
                 <CodeMirror
                     ref={ref}
                     basicSetup={basicSetup}
@@ -183,7 +197,7 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
                 />
                 {hint && <FieldDescription className={cn(error && 'text-destructive')} id={hintId}>{hint}</FieldDescription>}
             </Stack>
-        </>
+        </div>
     );
 });
 

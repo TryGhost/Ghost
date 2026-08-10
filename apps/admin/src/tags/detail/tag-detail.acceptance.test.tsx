@@ -45,8 +45,8 @@ describe('Tag detail (tagDetailsReact on)', () => {
         await renderAdminApp(`/tags/${t.slug}`, FLAGS);
 
         await page.getByRole('button', {name: /Code injection/}).click();
-        const headerEditor = page.getByRole('textbox', {name: 'Tag header'});
-        const footerEditor = page.getByRole('textbox', {name: 'Tag footer'});
+        const headerEditor = page.getByRole('textbox', {name: /^Tag header/});
+        const footerEditor = page.getByRole('textbox', {name: /^Tag footer/});
         await expect.element(headerEditor).toBeVisible();
         await expect.element(footerEditor).toBeVisible();
         await expect.poll(() => (headerEditor.element() as HTMLElement).innerText).toBe(head);
@@ -71,7 +71,7 @@ describe('Tag detail (tagDetailsReact on)', () => {
         await new Promise((resolve) => {
             window.setTimeout(resolve, 250);
         });
-        const headerEditor = page.getByRole('textbox', {name: 'Tag header'});
+        const headerEditor = page.getByRole('textbox', {name: /^Tag header/});
         await headerEditor.fill('<');
 
         await new Promise((resolve) => {

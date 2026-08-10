@@ -27,7 +27,6 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
     args: {
-        ariaLabel: 'Code injection',
         extensions: [],
         hint: 'Injected into {{ghost_head}}',
         title: 'Code injection',
@@ -44,7 +43,6 @@ export const Default: Story = {
 
 export const Focused: Story = {
     args: {
-        ariaLabel: 'Focused code editor',
         autoFocus: true,
         extensions: [],
         title: 'Focused editor',
@@ -61,7 +59,6 @@ export const Focused: Story = {
 
 export const WithError: Story = {
     args: {
-        ariaLabel: 'Invalid code injection',
         error: true,
         extensions: [],
         hint: 'Something is wrong with this code.',
@@ -79,7 +76,6 @@ export const WithError: Story = {
 
 export const Disabled: Story = {
     args: {
-        ariaLabel: 'Read-only code injection',
         editable: false,
         extensions: [],
         title: 'Code injection',
