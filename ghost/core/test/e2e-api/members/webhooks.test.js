@@ -549,6 +549,199 @@ describe('Members API', function () {
                 'The webhook payload should show the subscription was cancelling before');
         });
 
+        it('Includes every subscription in the previous payload when one of several is cancelled', async function () {
+            const customer_id = createStripeID('cust');
+            const first_subscription_id = createStripeID('sub');
+            const second_subscription_id = createStripeID('sub');
+
+            const buildSubscription = (id, itemId) => ({
+                id,
+                customer: customer_id,
+                status: 'active',
+                items: {
+                    type: 'list',
+                    data: [{
+                        id: itemId,
+                        price: {
+                            id: 'price_123',
+                            product: 'product_123',
+                            active: true,
+                            nickname: 'Monthly',
+                            currency: 'usd',
+                            recurring: {
+                                interval: 'month'
+                            },
+                            unit_amount: 500,
+                            type: 'recurring'
+                        }
+                    }]
+                },
+                start_date: Date.now() / 1000,
+                current_period_end: Date.now() / 1000 + (60 * 60 * 24 * 31),
+                cancel_at_period_end: false
+            });
+
+            set(subscription, buildSubscription(first_subscription_id, 'item_first'));
+            const secondSubscription = buildSubscription(second_subscription_id, 'item_second');
+            subscriptionOverrides[second_subscription_id] = secondSubscription;
+
+            set(customer, {
+                id: customer_id,
+                name: 'Two subscriptions, cancel only one',
+                email: 'cancel-one-of-two@test.com',
+                subscriptions: {
+                    type: 'list',
+                    data: [subscription, secondSubscription]
+                }
+            });
+
+            const initialMember = await createMemberFromStripe();
+            assert.equal(initialMember.subscriptions.length, 2, 'The member should start with two subscriptions');
+
+            // Cancel only the second subscription
+            Object.assign(secondSubscription, {
+                canceled_at: Date.now() / 1000,
+                cancel_at_period_end: true
+            });
+
+            const payload = JSON.stringify({
+                type: 'customer.subscription.updated',
+                data: {
+                    object: secondSubscription
+                }
+            });
+            const signature = stripe.webhooks.generateTestHeaderString({
+                payload,
+                secret: process.env.WEBHOOK_SECRET
+            });
+
+            const captured = [];
+            const capture = model => captured.push(model);
+            modelEvents.on('member.edited', capture);
+
+            await membersAgent.post('/webhooks/stripe/')
+                .body(payload)
+                .header('content-type', 'application/json')
+                .header('stripe-signature', signature)
+                .expectStatus(200);
+
+            modelEvents.removeListener('member.edited', capture);
+            await DomainEvents.allSettled();
+
+            assert.equal(captured.length, 1, 'Cancelling one of two subscriptions should emit exactly one member.edited');
+
+            const webhookBody = await createWebhookSerializer({getRequiredRelations: () => []})(
+                'member.edited', captured[0]
+            );
+            const currentSubs = webhookBody.member.current.subscriptions;
+            const previousSubs = webhookBody.member.previous.subscriptions;
+
+            assert.equal(currentSubs.length, 2, 'current must carry both subscriptions');
+            assert.equal(previousSubs.length, 2,
+                'previous must carry the full collection, not only the changed subscription');
+            assert.deepEqual(previousSubs.map(s => s.id).sort(), currentSubs.map(s => s.id).sort(),
+                'previous and current must describe the same set of subscriptions');
+
+            assert.equal(currentSubs.find(s => s.id === second_subscription_id).cancel_at_period_end, true,
+                'current must show the cancelled subscription as cancelling');
+            assert.equal(currentSubs.find(s => s.id === first_subscription_id).cancel_at_period_end, false,
+                'current must show the untouched subscription unchanged');
+            assert.equal(previousSubs.find(s => s.id === second_subscription_id).cancel_at_period_end, false,
+                'previous must show the changed subscription in its prior state');
+            assert.equal(previousSubs.find(s => s.id === first_subscription_id).cancel_at_period_end, false,
+                'previous must show the untouched subscription unchanged');
+        });
+
+        it('Does not emit member.edited when a subscription update leaves cancel_at_period_end unchanged', async function () {
+            const customer_id = createStripeID('cust');
+            const subscription_id = createStripeID('sub');
+
+            set(subscription, {
+                id: subscription_id,
+                customer: customer_id,
+                status: 'active',
+                items: {
+                    type: 'list',
+                    data: [{
+                        id: 'item_123',
+                        price: {
+                            id: 'price_123',
+                            product: 'product_123',
+                            active: true,
+                            nickname: 'Monthly',
+                            currency: 'usd',
+                            recurring: {
+                                interval: 'month'
+                            },
+                            unit_amount: 500,
+                            type: 'recurring'
+                        }
+                    }]
+                },
+                start_date: Date.now() / 1000,
+                current_period_end: Date.now() / 1000 + (60 * 60 * 24 * 31),
+                cancel_at_period_end: false
+            });
+
+            set(customer, {
+                id: customer_id,
+                name: 'Renew me quietly',
+                email: 'renew-me-quietly@test.com',
+                subscriptions: {
+                    type: 'list',
+                    data: [subscription]
+                }
+            });
+
+            const initialMember = await createMemberFromStripe();
+            // Anchor: the webhook path under test is only reached for a linked paid
+            // member — without this a broken fixture would make the test pass vacuously
+            assert.equal(initialMember.status, 'paid', 'The member must start paid');
+            assert.equal(initialMember.subscriptions.length, 1, 'The member must start with one linked subscription');
+
+            // A renewal-style update: the billing period moves, the cancel flag does not.
+            // This must stay silent — otherwise every Stripe sync becomes webhook spam.
+            const renewedPeriodEnd = Math.floor(Date.now() / 1000) + (60 * 60 * 24 * 62);
+            set(subscription, {
+                ...subscription,
+                current_period_end: renewedPeriodEnd
+            });
+
+            const payload = JSON.stringify({
+                type: 'customer.subscription.updated',
+                data: {
+                    object: subscription
+                }
+            });
+            const signature = stripe.webhooks.generateTestHeaderString({
+                payload,
+                secret: process.env.WEBHOOK_SECRET
+            });
+
+            const captured = [];
+            const capture = model => captured.push(model);
+            modelEvents.on('member.edited', capture);
+
+            await membersAgent.post('/webhooks/stripe/')
+                .body(payload)
+                .header('content-type', 'application/json')
+                .header('stripe-signature', signature)
+                .expectStatus(200);
+
+            modelEvents.removeListener('member.edited', capture);
+            await DomainEvents.allSettled();
+
+            // Anchor: the update must have been fully processed — proving the silence
+            // comes from the wasChanged() suppression, not from the webhook
+            // short-circuiting before linkSubscription
+            const subscriptionRow = await getSubscription(subscription_id);
+            assert.equal(Math.floor(subscriptionRow.get('current_period_end').getTime() / 1000), renewedPeriodEnd,
+                'The renewal must have been persisted by linkSubscription');
+
+            assert.equal(captured.length, 0,
+                'A subscription update without a cancel_at_period_end change must not emit member.edited');
+        });
+
         it('Handles immediate cancellation of paid subscriptions', async function () {
             const customer_id = createStripeID('cust');
             const subscription_id = createStripeID('sub');
