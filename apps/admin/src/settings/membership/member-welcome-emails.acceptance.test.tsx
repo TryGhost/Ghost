@@ -488,12 +488,13 @@ describe("Member welcome emails", () => {
         expect(editApi.lastRequest?.body).toMatchObject({automated_emails: [{id: freeWelcomeEmail.id, status: "inactive"}]});
     });
 
-    it("shows the paid welcome email row when Stripe is connected", async () => {
+    it("shows and enables the paid welcome email row when Stripe is connected", async () => {
         fakeSettingsScreens();
         fakeDefaultNewsletter();
         fakeAutomatedEmails();
         fakeRecentPosts();
         fakeTiers([tier({name: "Supporter"})]);
+        const addApi = fakeAdminEndpoint("POST", "/automated_emails/", {automated_emails: [{...paidWelcomeEmail, status: "active"}]});
         const stripe = settingsResponse({settings: {
             stripe_connect_publishable_key: "pk_test_123",
             stripe_connect_secret_key: "sk_test_123",
@@ -506,6 +507,11 @@ describe("Member welcome emails", () => {
         await expect.element(paidRow).toBeVisible();
         await expect.element(paidRow).toHaveTextContent("Paid members welcome email");
         await expect.element(paidRow.getByRole("switch")).toHaveAttribute("aria-checked", "false");
+
+        await paidRow.getByRole("switch").click();
+
+        await expect.element(page.getByText("Paid members welcome email enabled")).toBeVisible();
+        expect(addApi.lastRequest?.body).toMatchObject({automated_emails: [{slug: "member-welcome-email-paid", status: "active"}]});
     });
 
     it("keeps the newest draft's preview when a stale preview response arrives late", async () => {
