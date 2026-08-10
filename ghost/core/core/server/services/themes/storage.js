@@ -8,6 +8,7 @@ const errors = require('@tryghost/errors');
 
 const validate = require('./validate');
 const list = require('./list');
+const customThemeSettings = require('../custom-theme-settings');
 const ThemeStorage = require('./theme-storage');
 const themeLoader = require('./loader');
 const activator = require('./activation-bridge');
@@ -24,7 +25,8 @@ const messages = {
     invalidThemeName: 'Please select a valid theme.',
     overrideDefaultTheme: 'Please rename your zip, it\'s not allowed to override the default theme.',
     destroyDefaultTheme: 'Deleting the default theme is not allowed.',
-    destroyActive: 'Deleting the active theme is not allowed.'
+    destroyActive: 'Deleting the active theme is not allowed.',
+    copySettingsFromDoesNotExist: 'Theme to copy settings from is not installed.'
 };
 
 const INVALID_THEME_REGEX = /^[./]*$/;
@@ -51,7 +53,7 @@ module.exports = {
             name: themeName
         });
     },
-    setFromZip: async (zip) => {
+    setFromZip: async (zip, {copySettingsFrom} = {}) => {
         const themeName = getStorage().getSanitizedFileName(zip.name.split('.zip')[0]);
         const backupName = `${themeName}_${ObjectID()}`;
 
@@ -66,6 +68,12 @@ module.exports = {
         if (INVALID_THEME_REGEX.test(themeName)) {
             throw new errors.ValidationError({
                 message: 'Invalid theme name.'
+            });
+        }
+
+        if (copySettingsFrom && !list.get(copySettingsFrom)) {
+            throw new errors.ValidationError({
+                message: tpl(messages.copySettingsFromDoesNotExist)
             });
         }
 
@@ -92,6 +100,12 @@ module.exports = {
             // CASE: loads the theme from the fs & sets the theme on the themeList
             const loadedTheme = await themeLoader.loadOneTheme(themeName);
             overrideTheme = (themeName === settingsCache.get('active_theme'));
+
+            // CASE: theme uploaded as a copy of another theme, carry over that
+            // theme's settings so activating the copy keeps the site's design
+            if (copySettingsFrom) {
+                await customThemeSettings.api.copySettingsBetweenThemes(copySettingsFrom, themeName);
+            }
 
             // CASE: if this is the active theme, we are overriding
             if (overrideTheme) {

@@ -485,6 +485,52 @@ describe('Service', function () {
         });
     });
 
+    describe('copySettingsBetweenThemes()', function () {
+        const settingsForTheme = async (themeName) => {
+            const collection = await model.findAll({filter: `theme:'${themeName}'`});
+            return collection.toJSON().map(({theme, key, type, value}) => ({theme, key, type, value}));
+        };
+
+        it('copies settings rows to the new theme name', async function () {
+            await service.copySettingsBetweenThemes('test', 'test-edited');
+
+            assert.deepEqual(await settingsForTheme('test-edited'), [{
+                theme: 'test-edited',
+                key: 'one',
+                type: 'select',
+                value: '1'
+            }, {
+                theme: 'test-edited',
+                key: 'two',
+                type: 'select',
+                value: '2'
+            }]);
+
+            // source theme rows are untouched
+            assert.equal((await settingsForTheme('test')).length, 2);
+        });
+
+        it('does not overwrite existing settings for the destination theme', async function () {
+            await model.add({theme: 'test-edited', key: 'one', type: 'select', value: 'existing'});
+
+            await service.copySettingsBetweenThemes('test', 'test-edited');
+
+            assert.deepEqual(await settingsForTheme('test-edited'), [{
+                theme: 'test-edited',
+                key: 'one',
+                type: 'select',
+                value: 'existing'
+            }]);
+        });
+
+        it('is a no-op when the source theme has no settings', async function () {
+            await service.copySettingsBetweenThemes('unknown', 'test-edited');
+
+            assert.equal((await settingsForTheme('test-edited')).length, 0);
+            sinon.assert.notCalled(model.add);
+        });
+    });
+
     describe('updateSettings()', function () {
         it('saves new values', async function () {
             // activate theme so settings are loaded in internal cache

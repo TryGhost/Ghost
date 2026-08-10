@@ -164,6 +164,39 @@ module.exports = class CustomThemeSettingsService {
         return settingsObjects;
     }
 
+    /**
+     * Duplicate stored settings from one theme to another, e.g. when a theme
+     * is saved as a copy under a new name.
+     *
+     * No-ops if the destination theme already has stored settings so existing
+     * customisations are never overwritten. Values are copied verbatim - they
+     * are reconciled against the destination theme's settings definition by
+     * the sync that runs when that theme is activated.
+     *
+     * @param {string} fromThemeName
+     * @param {string} toThemeName
+     */
+    async copySettingsBetweenThemes(fromThemeName, toThemeName) {
+        const destinationCollection = await this._repository.browse({filter: `theme:'${toThemeName}'`});
+
+        if (destinationCollection.toJSON().length > 0) {
+            debug(`Skipping copy of custom theme settings from '${fromThemeName}' to '${toThemeName}' - destination already has settings`);
+            return;
+        }
+
+        const sourceCollection = await this._repository.browse({filter: `theme:'${fromThemeName}'`});
+
+        for (const setting of sourceCollection.toJSON()) {
+            debug(`Copying custom theme setting '${fromThemeName}.${setting.key}' to '${toThemeName}'`);
+            await this._repository.add({
+                theme: toThemeName,
+                key: setting.key,
+                type: setting.type,
+                value: setting.value
+            });
+        }
+    }
+
     // Private -----------------------------------------------------------------
 
     /**
