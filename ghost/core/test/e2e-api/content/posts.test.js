@@ -376,14 +376,18 @@ describe('Posts Content API', function () {
             lexical: testUtils.DataGenerator.markdownToLexical('Secret paid body'),
             published_at: moment().add(35, 'seconds').toDate()
         });
-        await models.Post.add(paidPost, {context: {internal: true}});
+        const created = await models.Post.add(paidPost, {context: {internal: true}});
 
-        const {body} = await agent
-            .get(`posts/slug/mp-content-api-paid/?formats=html`)
-            .header('Authorization', 'Payment test-credential')
-            .expectStatus(200);
+        try {
+            const {body} = await agent
+                .get(`posts/slug/mp-content-api-paid/?formats=html`)
+                .header('Authorization', 'Payment test-credential')
+                .expectStatus(200);
 
-        assert.doesNotMatch(body.posts[0].html || '', /Secret paid body/);
+            assert.doesNotMatch(body.posts[0].html || '', /Secret paid body/);
+        } finally {
+            await models.Post.destroy({id: created.id}, {context: {internal: true}});
+        }
     });
 
     it('Can include specific tier for post with tiers visibility', async function () {
