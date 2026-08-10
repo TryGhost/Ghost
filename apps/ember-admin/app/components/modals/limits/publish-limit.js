@@ -6,7 +6,7 @@ export default class PublishLimitModal extends Component {
     @inject config;
 
     get upgradeUrl() {
-        return getUpgradeUrl(this.config);
+        return getUpgradeUrl(this.config, '#/pro?action=checkout');
     }
 
     get headerMessage() {

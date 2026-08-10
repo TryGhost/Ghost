@@ -5,13 +5,13 @@ import NiceModal from '@ebay/nice-modal-react';
 import React, {useCallback, useEffect, useState} from 'react';
 import ThemeCodeEditorModal from './theme/theme-code-editor-modal';
 import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
-import {useUpgradeUrl} from '@/settings/app/hooks/use-upgrade-url';
+import {useUpgradeRoute} from '@/settings/app/hooks/use-upgrade-route';
 import {parseEditingThemeRoute} from './theme/theme-editor-utils';
 import {useCheckThemeLimitError} from '@/settings/app/hooks/use-check-theme-limit-error';
 
 const DesignAndThemeModal: React.FC = () => {
     const {route, updateRoute} = useSettingsNavigation();
-    const upgradeUrl = useUpgradeUrl();
+    const upgradeRoute = useUpgradeRoute();
     const currentPath = route;
     const [themeChangeError, setThemeChangeError] = useState<string|null>(null);
     const [isCheckingLimit, setIsCheckingLimit] = useState(false);
@@ -26,9 +26,9 @@ const DesignAndThemeModal: React.FC = () => {
     const showThemeLimitModal = useCallback((error: string) => {
         NiceModal.show(LimitModal, {
             prompt: error,
-            onOk: () => updateRoute({route: upgradeUrl, isExternal: true})
+            onOk: () => updateRoute({route: upgradeRoute, isExternal: true})
         });
-    }, [updateRoute, upgradeUrl]);
+    }, [updateRoute, upgradeRoute]);
 
     useEffect(() => {
         const checkIfThemeChangeAllowed = async () => {

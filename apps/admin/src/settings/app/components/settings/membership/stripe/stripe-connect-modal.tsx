@@ -23,7 +23,7 @@ import {useBrowseTiers, useEditTier} from '@tryghost/admin-x-framework/api/tiers
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
-import {useUpgradeUrl} from '@/settings/app/hooks/use-upgrade-url';
+import {useUpgradeRoute} from '@/settings/app/hooks/use-upgrade-route';
 
 const RETRY_PRODUCT_SAVE_POLL_LENGTH = 1000;
 const RETRY_PRODUCT_SAVE_MAX_POLL = 15 * RETRY_PRODUCT_SAVE_POLL_LENGTH;
@@ -259,7 +259,7 @@ const StripeConnectModal: React.FC = () => {
     const {config, settings} = useGlobalData();
     const stripeConnectAccountId = getSettingValue(settings, 'stripe_connect_account_id');
     const {updateRoute} = useSettingsNavigation();
-    const upgradeUrl = useUpgradeUrl();
+    const upgradeRoute = useUpgradeRoute();
     const [step, setStep] = useState<'start' | 'connect'>('start');
     const limiter = useLimiter();
 
@@ -280,7 +280,7 @@ const StripeConnectModal: React.FC = () => {
                         updateRoute('tiers');
                         NiceModal.show(LimitModal, {
                             prompt: error.message || `Your current plan doesn't support Stripe Connect.`,
-                            onOk: () => updateRoute({route: upgradeUrl, isExternal: true})
+                            onOk: () => updateRoute({route: upgradeRoute, isExternal: true})
                         });
                     }
                 }
@@ -288,7 +288,7 @@ const StripeConnectModal: React.FC = () => {
         };
 
         checkLimit();
-    }, [limiter, updateRoute, stripeEnabled, hasStripeConnectLimit, upgradeUrl]);
+    }, [limiter, updateRoute, stripeEnabled, hasStripeConnectLimit, upgradeRoute]);
 
     const startFlow = () => {
         setStep('connect');

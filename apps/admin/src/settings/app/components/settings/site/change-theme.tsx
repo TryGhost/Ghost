@@ -10,7 +10,7 @@ import {type Theme, useBrowseThemes} from '@tryghost/admin-x-framework/api/theme
 import {downloadFile, getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useCheckThemeLimitError} from '@/settings/app/hooks/use-check-theme-limit-error';
 import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
-import {useUpgradeUrl} from '@/settings/app/hooks/use-upgrade-url';
+import {useUpgradeRoute} from '@/settings/app/hooks/use-upgrade-route';
 import {withErrorBoundary} from '@/settings/app/components/error-boundary';
 
 const ChangeTheme: React.FC<{ keywords: string[] }> = ({keywords}) => {
@@ -18,7 +18,7 @@ const ChangeTheme: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const [isCheckingLimit, setIsCheckingLimit] = useState(false);
     const {checkThemeLimitError} = useCheckThemeLimitError();
     const {route, updateRoute} = useSettingsNavigation();
-    const upgradeUrl = useUpgradeUrl();
+    const upgradeRoute = useUpgradeRoute();
     const {data: themesData} = useBrowseThemes();
     const activeTheme = themesData?.themes.find((theme: Theme) => theme.active);
 
@@ -42,7 +42,7 @@ const ChangeTheme: React.FC<{ keywords: string[] }> = ({keywords}) => {
         if (themeLimitError) {
             NiceModal.show(LimitModal, {
                 prompt: themeLimitError,
-                onOk: () => updateRoute({route: upgradeUrl, isExternal: true})
+                onOk: () => updateRoute({route: upgradeRoute, isExternal: true})
             });
         } else {
             updateRoute('design/change-theme');
@@ -59,7 +59,7 @@ const ChangeTheme: React.FC<{ keywords: string[] }> = ({keywords}) => {
         if (limitError) {
             NiceModal.show(LimitModal, {
                 prompt: limitError,
-                onOk: () => updateRoute({route: upgradeUrl, isExternal: true})
+                onOk: () => updateRoute({route: upgradeRoute, isExternal: true})
             });
             return;
         }

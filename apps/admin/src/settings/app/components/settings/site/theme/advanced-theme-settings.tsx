@@ -14,7 +14,7 @@ import {toast} from 'sonner';
 import {useCheckThemeLimitError} from '@/settings/app/hooks/use-check-theme-limit-error';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
-import {useUpgradeUrl} from '@/settings/app/hooks/use-upgrade-url';
+import {useUpgradeRoute} from '@/settings/app/hooks/use-upgrade-route';
 
 interface ThemeActionProps {
     theme: Theme;
@@ -60,7 +60,7 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
     const {refreshActiveThemeData} = useCustomFonts();
     const handleError = useHandleError();
     const {route, updateRoute} = useSettingsNavigation();
-    const upgradeUrl = useUpgradeUrl();
+    const upgradeRoute = useUpgradeRoute();
     const {checkThemeLimitError} = useCheckThemeLimitError();
 
     const handleActivate = async () => {
@@ -135,7 +135,7 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
         if (limitError) {
             NiceModal.show(LimitModal, {
                 prompt: limitError,
-                onOk: () => updateRoute({route: upgradeUrl, isExternal: true})
+                onOk: () => updateRoute({route: upgradeRoute, isExternal: true})
             });
             return;
         }

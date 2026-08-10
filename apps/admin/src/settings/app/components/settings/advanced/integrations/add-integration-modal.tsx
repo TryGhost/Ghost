@@ -4,14 +4,14 @@ import {useEffect, useState} from 'react';
 import {Field, FieldError, FieldGroup, FieldLabel, Input} from '@tryghost/shade/components';
 import {HostLimitError, useLimiter} from '@/settings/app/hooks/use-limiter';
 import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
-import {useUpgradeUrl} from '@/settings/app/hooks/use-upgrade-url';
+import {useUpgradeRoute} from '@/settings/app/hooks/use-upgrade-route';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {useCreateIntegration} from '@tryghost/admin-x-framework/api/integrations';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 function AddIntegrationModal() {
     const {updateRoute} = useSettingsNavigation();
-    const upgradeUrl = useUpgradeUrl();
+    const upgradeRoute = useUpgradeRoute();
     const [name, setName] = useState('');
     const [errors, setErrors] = useState({name: ''});
     const {mutateAsync: createIntegration} = useCreateIntegration();
@@ -24,13 +24,13 @@ function AddIntegrationModal() {
                 if (error instanceof HostLimitError) {
                     NiceModal.show(LimitModal, {
                         prompt: error.message || `Your current plan doesn't support more custom integrations.`,
-                        onOk: () => updateRoute({route: upgradeUrl, isExternal: true})
+                        onOk: () => updateRoute({route: upgradeRoute, isExternal: true})
                     });
                     updateRoute('integrations');
                 }
             });
         }
-    }, [limiter, updateRoute, upgradeUrl]);
+    }, [limiter, updateRoute, upgradeRoute]);
 
     return <SettingsModal
         okLabel='Add'

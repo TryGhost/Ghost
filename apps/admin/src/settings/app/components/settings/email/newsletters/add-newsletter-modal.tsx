@@ -5,7 +5,7 @@ import useFeatureFlag from '@/settings/app/hooks/use-feature-flag';
 import {Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldLabel, Input, Switch, Textarea} from '@tryghost/shade/components';
 import {HostLimitError, useLimiter} from '@/settings/app/hooks/use-limiter';
 import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
-import {useUpgradeUrl} from '@/settings/app/hooks/use-upgrade-url';
+import {useUpgradeRoute} from '@/settings/app/hooks/use-upgrade-route';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {formatNumber} from '@tryghost/shade/utils';
 import {useAddNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
@@ -14,7 +14,7 @@ import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 const AddNewsletterModal: React.FC = () => {
     const {updateRoute} = useSettingsNavigation();
-    const upgradeUrl = useUpgradeUrl();
+    const upgradeRoute = useUpgradeRoute();
     const returnRoute = useFeatureFlag('automations') ? 'emails' : 'newsletters';
     const handleError = useHandleError();
     const [isCheckingLimit, setIsCheckingLimit] = useState(true);
@@ -79,11 +79,11 @@ const AddNewsletterModal: React.FC = () => {
         if (limitError) {
             NiceModal.show(LimitModal, {
                 prompt: limitError.message || `Your current plan doesn't support more newsletters.`,
-                onOk: () => updateRoute({route: upgradeUrl, isExternal: true})
+                onOk: () => updateRoute({route: upgradeRoute, isExternal: true})
             });
             updateRoute(returnRoute);
         }
-    }, [limitError, returnRoute, updateRoute, upgradeUrl]);
+    }, [limitError, returnRoute, updateRoute, upgradeRoute]);
 
     if (isCheckingLimit || limitError) {
         return null;

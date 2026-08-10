@@ -1,4 +1,5 @@
 import Component from '@glimmer/component';
+import Ember from 'ember';
 import getUpgradeUrl from 'ghost-admin/utils/upgrade-url';
 import moment from 'moment-timezone';
 import {htmlSafe} from '@ember/template';
@@ -9,10 +10,11 @@ import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
+const {Handlebars} = Ember;
+
 function isString(str) {
     return toString.call(str) === '[object String]';
 }
-
 
 export default class PublishFlowOptions extends Component {
     @service settings;
@@ -118,7 +120,7 @@ export default class PublishFlowOptions extends Component {
             if (isServerUnreachableError(e)) {
                 errorMessage = 'Unable to connect, please check your internet connection and try again.';
             } else if (payloadError?.type === 'HostLimitError') {
-                errorMessage = htmlSafe(payloadError.context.replace(/please upgrade/i, `<a href="${this.upgradeUrl}">$&</a>`));
+                errorMessage = htmlSafe(payloadError.context.replace(/please upgrade/i, `<a href="${Handlebars.Utils.escapeExpression(this.upgradeUrl)}">$&</a>`));
             } else if (e && isString(e)) {
                 errorMessage = e;
             } else if (e && isArray(e)) {
