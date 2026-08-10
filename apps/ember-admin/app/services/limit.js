@@ -66,25 +66,32 @@ export default class LimitsService extends Service {
             };
         }
 
-        try {
-            this.limiter.loadLimits({
-                limits: this.decorateWithCountQueries(limits),
-                subscription,
-                helpLink,
-                errors: {
-                    HostLimitError,
-                    IncorrectUsageError
-                }
-            });
-        } catch (error) {
-            // A limit that can't be built stops the whole load, so tolerate it here
-            // like the server does rather than leaving Admin with no limits at all
-            if (error?.errorType !== 'IncorrectUsageError') {
-                throw error;
+        this.limiter.loadLimits({
+            limits: this.decorateWithCountQueries(this.usableLimits(limits, subscription)),
+            subscription,
+            helpLink,
+            errors: {
+                HostLimitError,
+                IncorrectUsageError
+            }
+        });
+    }
+
+    // Periodic limits need a subscription to build. Registration stops at the first
+    // limit that throws, so passing one through would drop every limit after it
+    usableLimits(limits, subscription) {
+        if (subscription) {
+            return limits;
+        }
+
+        return Object.fromEntries(Object.entries(limits).filter(([name, limit]) => {
+            if (limit && Object.prototype.hasOwnProperty.call(limit, 'maxPeriodic')) {
+                console.warn(`Skipping ${name} limit: periodic limits need hostSettings.subscription`); // eslint-disable-line no-console
+                return false;
             }
 
-            console.warn(`Host limits not loaded: ${error.message}`); // eslint-disable-line no-console
-        }
+            return true;
+        }));
     }
 
     reload() {

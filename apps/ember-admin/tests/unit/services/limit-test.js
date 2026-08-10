@@ -40,6 +40,21 @@ describe('Unit | Service | limit', function () {
             };
 
             expect(() => limitService.loadLimits()).to.not.throw();
+            expect(limitService.limiter.isLimited('emails')).to.be.false;
+        });
+
+        it('still registers limits declared after an unusable periodic limit', function () {
+            limitService.config.hostSettings = {
+                limits: {
+                    emails: {maxPeriodic: 100},
+                    customThemes: {allowlist: ['casper']}
+                }
+            };
+
+            limitService.loadLimits();
+
+            expect(limitService.limiter.isLimited('emails')).to.be.false;
+            expect(limitService.limiter.isLimited('customThemes')).to.be.true;
         });
     });
 
