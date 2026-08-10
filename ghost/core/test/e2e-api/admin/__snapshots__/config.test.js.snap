@@ -30,7 +30,6 @@ Object {
       "getHelperDeduplication": true,
       "giftSubCustomization": true,
       "importMemberTier": true,
-      "indexnow": true,
       "lexicalIndicators": true,
       "llmsTxt": true,
       "memberDetailsReact": true,
