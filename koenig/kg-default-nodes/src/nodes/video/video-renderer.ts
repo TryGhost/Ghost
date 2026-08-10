@@ -30,7 +30,7 @@ const DEFAULT_EMAIL_ASPECT_RATIO = 16 / 9;
 // dimensions are irrelevant - the browser scales it (invisibly, since it's
 // transparent) to fill the video's box while the real thumbnail shows through
 // via the CSS `background` on the element.
-const TRANSPARENT_PIXEL_SRC = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+const TRANSPARENT_PIXEL_SRC = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 
 export function renderVideoNode(node: VideoNodeData, options: VideoRenderOptions = {}) {
     addCreateDocumentOption(options);

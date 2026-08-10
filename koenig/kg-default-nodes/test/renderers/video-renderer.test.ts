@@ -36,7 +36,7 @@ describe('renderers/video-renderer', function () {
             assertPrettifiesTo(result.html, html`
                 <figure class="kg-card kg-video-card kg-card-hascaption" data-kg-thumbnail="/content/images/2022/11/koenig-lexical.jpg" data-kg-custom-thumbnail="/content/images/2022/11/koenig-lexical-custom.jpg">
                     <div class="kg-video-container">
-                        <video src="/content/images/2022/11/koenig-lexical.mp4" poster="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" width="200" height="100" playsinline="" preload="metadata" style="background: transparent url('/content/images/2022/11/koenig-lexical-custom.jpg') 50% 50% / cover no-repeat;"></video>
+                        <video src="/content/images/2022/11/koenig-lexical.mp4" poster="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" width="200" height="100" playsinline="" preload="metadata" style="background: transparent url('/content/images/2022/11/koenig-lexical-custom.jpg') 50% 50% / cover no-repeat;"></video>
                         <div class="kg-video-overlay">
                             <button class="kg-video-large-play-icon" aria-label="Play video">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -90,7 +90,7 @@ describe('renderers/video-renderer', function () {
 
             assert.ok(result.html.includes(' width="null"'));
             assert.ok(result.html.includes(' height="null"'));
-            assert.ok(result.html.includes(' poster="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="'));
+            assert.ok(result.html.includes(' poster="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"'));
         });
 
         it('renders card width', function () {
