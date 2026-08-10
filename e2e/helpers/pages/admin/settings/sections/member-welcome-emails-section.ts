@@ -4,9 +4,7 @@ import {FrameLocator, Locator, Page} from '@playwright/test';
 export class MemberWelcomeEmailsSection extends BasePage {
     readonly section: Locator;
     readonly freeWelcomeEmailToggle: Locator;
-    readonly paidWelcomeEmailToggle: Locator;
     readonly freeWelcomeEmailEditButton: Locator;
-    readonly paidWelcomeEmailEditButton: Locator;
 
     // Customize button and modal
     readonly customizeButton: Locator;
@@ -51,9 +49,7 @@ export class MemberWelcomeEmailsSection extends BasePage {
         super(page, '/ghost/#/settings/memberemails');
         this.section = page.getByTestId('memberemails');
         this.freeWelcomeEmailToggle = this.section.getByTestId('free-welcome-email-row').getByRole('switch');
-        this.paidWelcomeEmailToggle = this.section.getByTestId('paid-welcome-email-row').getByRole('switch');
         this.freeWelcomeEmailEditButton = this.section.getByTestId('free-welcome-email-row').getByRole('button', {name: 'Edit'});
-        this.paidWelcomeEmailEditButton = this.section.getByTestId('paid-welcome-email-row').getByRole('button', {name: 'Edit'});
 
         // Customize button and modal
         this.customizeButton = this.section.getByRole('button', {name: 'Customize'});
@@ -109,27 +105,8 @@ export class MemberWelcomeEmailsSection extends BasePage {
         }
     }
 
-    async enablePaidWelcomeEmail(): Promise<void> {
-        if (!await this.isPaidWelcomeEmailEnabled()) {
-            await this.paidWelcomeEmailToggle.click();
-            await this.waitForPaidToggle(true);
-        }
-    }
-
-    async disablePaidWelcomeEmail(): Promise<void> {
-        if (await this.isPaidWelcomeEmailEnabled()) {
-            await this.paidWelcomeEmailToggle.click();
-            await this.waitForPaidToggle(false);
-        }
-    }
-
     async isFreeWelcomeEmailEnabled(): Promise<boolean> {
         const ariaChecked = await this.freeWelcomeEmailToggle.getAttribute('aria-checked');
-        return ariaChecked === 'true';
-    }
-
-    async isPaidWelcomeEmailEnabled(): Promise<boolean> {
-        const ariaChecked = await this.paidWelcomeEmailToggle.getAttribute('aria-checked');
         return ariaChecked === 'true';
     }
 
@@ -138,17 +115,8 @@ export class MemberWelcomeEmailsSection extends BasePage {
         await toggle.waitFor({state: 'visible'});
     }
 
-    private async waitForPaidToggle(checked: boolean): Promise<void> {
-        const toggle = this.section.getByTestId('paid-welcome-email-row').getByRole('switch', {checked});
-        await toggle.waitFor({state: 'visible'});
-    }
-
     async openFreeWelcomeEmailModal(): Promise<void> {
         await this.openWelcomeEmailModal(this.freeWelcomeEmailEditButton);
-    }
-
-    async openPaidWelcomeEmailModal(): Promise<void> {
-        await this.openWelcomeEmailModal(this.paidWelcomeEmailEditButton);
     }
 
     async saveWelcomeEmail(): Promise<void> {
