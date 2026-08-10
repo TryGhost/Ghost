@@ -8,9 +8,12 @@ const matchPermalinkParams = require('./match-permalink-params');
  * @param {string} postUrl
  * @param {Object} routerOptions
  * @param {Object} locals
+ * @param {Object} [lookupOptions]
+ * @param {string} [lookupOptions.giftToken] verified by the API read: unlocks
+ * gated content, or rejects with `code: 'INVALID_GIFT_TOKEN'`
  * @returns {*}
  */
-function entryLookup(postUrl, routerOptions, locals) {
+function entryLookup(postUrl, routerOptions, locals, {giftToken} = {}) {
     debug(postUrl);
 
     const api = require('../proxy').api;
@@ -40,6 +43,10 @@ function entryLookup(postUrl, routerOptions, locals) {
     };
 
     options.context = {member: locals.member};
+
+    if (giftToken) {
+        options.context.giftToken = giftToken;
+    }
 
     return (api[routerOptions.query.controller] || api[routerOptions.query.resource])
         .read(_.extend(_.pick(params, 'slug', 'id'), options))

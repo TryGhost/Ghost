@@ -18,6 +18,18 @@ function hasConflictingCheckoutFlowMetadata(metadata) {
     return hasStripeMetadataKey(metadata, 'ghost_donation') && hasStripeMetadataKey(metadata, 'ghost_gift');
 }
 
+function getStripeResourceId(resource) {
+    if (typeof resource === 'string') {
+        return resource;
+    }
+
+    if (resource && typeof resource === 'object' && typeof resource.id === 'string') {
+        return resource.id;
+    }
+
+    return null;
+}
+
 /**
  * Handles `checkout.session.completed` webhook events
  *
@@ -83,17 +95,17 @@ module.exports = class CheckoutSessionEventService {
      * @param {import('stripe').Stripe.Checkout.Session} session
      */
     async handleGiftEvent(session) {
-        await this.deps.giftService.recordPurchase({
+        await this.deps.giftService.completePurchase({
             token: session.metadata?.gift_token,
             buyerEmail: session.customer_details?.email,
-            stripeCustomerId: session.customer ?? null,
+            stripeCustomerId: getStripeResourceId(session.customer),
             tierId: session.metadata?.tier_id,
             cadence: session.metadata?.cadence,
-            duration: session.metadata?.duration,
+            duration: Number(session.metadata?.duration),
             currency: session.currency,
             amount: session.amount_total,
             stripeCheckoutSessionId: session.id,
-            stripePaymentIntentId: session.payment_intent
+            stripePaymentIntentId: getStripeResourceId(session.payment_intent)
         });
     }
 

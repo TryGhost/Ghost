@@ -2,14 +2,14 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const testUtils = require('../../../../../../../utils');
 const urlService = require('../../../../../../../../core/server/services/url');
-const urlUtils = require('../../../../../../../../core/shared/url-utils');
+const urlUtils = require('../../../../../../../../core/shared/url-utils').default;
 const urlUtil = require('../../../../../../../../core/server/api/endpoints/utils/serializers/output/utils/url');
 
 describe('Unit: endpoints/utils/serializers/output/utils/url', function () {
     let getUrlForResourceStub;
 
     beforeEach(function () {
-        getUrlForResourceStub = sinon.stub(urlService.facade, 'getUrlForResource').returns('getUrlForResource');
+        getUrlForResourceStub = sinon.stub(urlService, 'getUrlForResource').returns('getUrlForResource');
         sinon.stub(urlUtils, 'urlFor').returns('urlFor');
     });
 
@@ -26,7 +26,7 @@ describe('Unit: endpoints/utils/serializers/output/utils/url', function () {
             };
         });
 
-        it('passes a posts resource (with id and slug) to the facade', function () {
+        it('passes a posts resource (with id and slug) to the URL service', function () {
             const post = pageModel(testUtils.DataGenerator.forKnex.createPost({
                 id: 'id1',
                 mobiledoc: '{}',
@@ -44,13 +44,34 @@ describe('Unit: endpoints/utils/serializers/output/utils/url', function () {
             assert.deepEqual(options, {absolute: true});
         });
 
+        it('passes the producing endpoint and fetch shape for the degrade report', function () {
+            const post = pageModel(testUtils.DataGenerator.forKnex.createPost({id: 'id1', mobiledoc: '{}', html: 'html'}));
+
+            urlUtil.forPost(post.id, post, {
+                options: {withRelated: ['tags'], columns: ['url']},
+                forcedUrlRelations: ['tags'],
+                apiType: 'admin',
+                docName: 'posts',
+                method: 'read'
+            });
+
+            const [, options] = getUrlForResourceStub.firstCall.args;
+            assert.deepEqual(options.serializerContext, {
+                apiType: 'admin',
+                docName: 'posts',
+                method: 'read',
+                withRelated: ['tags'],
+                columns: ['url'],
+                forcedUrlRelations: ['tags']
+            });
+        });
+
         it('still passes id when attrs has been stripped (e.g. fields=url)', function () {
             // Content API request like `?fields=url` runs jsonModel through a
             // serializer that strips every attribute except `url`. The mapper
             // calls forPost(model.id, jsonModel, frame) — id is on the model,
             // not on attrs. Regression: a previous spread `{...attrs, type}`
-            // sent id-less resources, so the eager facade's id-fallback hit
-            // /404/ for every post.
+            // sent id-less resources.
             const stripped = {};
 
             urlUtil.forPost('post-id', stripped, {options: {}});
@@ -78,6 +99,30 @@ describe('Unit: endpoints/utils/serializers/output/utils/url', function () {
             assert.equal(resource.type, 'pages');
         });
 
+        it('skips url generation when columns excludes url', function () {
+            // A `?fields=id,title` request strips attrs to those columns, so
+            // the resource would reach the URL service without the fields it
+            // needs (status for the base filter, tags/authors for filtered
+            // routers) and be reported as thin on every such request. The URL
+            // was computed only to be deleted below anyway, so don't compute
+            // it at all (forUser/forTag already guard like this).
+            const stripped = {id: 'post-id', title: 'Title'};
+
+            const attrs = urlUtil.forPost('post-id', stripped, {options: {columns: ['id', 'title']}});
+
+            sinon.assert.notCalled(getUrlForResourceStub);
+            assert.equal(Object.hasOwn(attrs, 'url'), false);
+        });
+
+        it('generates url when columns includes url', function () {
+            const stripped = {id: 'post-id', status: 'published'};
+
+            const attrs = urlUtil.forPost('post-id', stripped, {options: {columns: ['id', 'url']}});
+
+            sinon.assert.calledOnce(getUrlForResourceStub);
+            assert.equal(attrs.url, 'getUrlForResource');
+        });
+
         it('defaults to posts when no type is passed', function () {
             // Other callers of forPost (comments mapper, activity-feed-events)
             // pass post records and rely on the default.
@@ -93,7 +138,7 @@ describe('Unit: endpoints/utils/serializers/output/utils/url', function () {
     });
 
     describe('forTag', function () {
-        it('passes a tags resource to the facade when url is requested', function () {
+        it('passes a tags resource to the URL service when url is requested', function () {
             const tag = {id: 'tag1', slug: 'food', name: 'Food'};
 
             urlUtil.forTag(tag.id, tag, {});
@@ -118,7 +163,7 @@ describe('Unit: endpoints/utils/serializers/output/utils/url', function () {
     });
 
     describe('forUser', function () {
-        it('passes an authors resource to the facade when url is requested', function () {
+        it('passes an authors resource to the URL service when url is requested', function () {
             const user = {id: 'user1', slug: 'jane', name: 'Jane'};
 
             urlUtil.forUser(user.id, user, {});

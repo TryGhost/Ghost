@@ -1,9 +1,16 @@
 import {Factory} from '@/data-factory';
 import {faker} from '@faker-js/faker';
-import {generateId, generateSlug} from '@/data-factory';
+import {generateSlug} from '@/data-factory';
+import {tier} from '@tryghost/test-data';
+import type {Tier as CanonicalTier} from '@tryghost/test-data';
 import type {HttpClient, PersistenceAdapter} from '@/data-factory';
 import type {Tier} from './member-factory';
 
+/**
+ * The *write/create* shape POSTed to /ghost/api/admin/tiers/ (Date objects
+ * for timestamps). The canonical *response* shape lives in
+ * `@tryghost/test-data`; `build()` derives this payload from it.
+ */
 export interface AdminTier extends Tier {
     description?: string | null;
     visibility?: 'public' | 'none';
@@ -29,6 +36,31 @@ export interface TierCreateInput {
     trial_days?: number;
 }
 
+/**
+ * Derive the create payload from the canonical API response shape:
+ * ISO-string dates become Date objects (serialized back on POST); every
+ * other field maps 1:1 — the tiers write lane accepts the response fields.
+ */
+function toCreatePayload(canonical: CanonicalTier): AdminTier {
+    return {
+        id: canonical.id,
+        name: canonical.name,
+        slug: canonical.slug,
+        type: canonical.type,
+        active: canonical.active,
+        description: canonical.description,
+        visibility: canonical.visibility,
+        welcome_page_url: canonical.welcome_page_url,
+        benefits: canonical.benefits,
+        currency: canonical.currency,
+        monthly_price: canonical.monthly_price,
+        yearly_price: canonical.yearly_price,
+        trial_days: canonical.trial_days,
+        created_at: new Date(canonical.created_at),
+        updated_at: new Date(canonical.updated_at)
+    };
+}
+
 export class TierFactory extends Factory<Partial<AdminTier>, AdminTier> {
     entityType = 'tiers';
     private readonly request?: HttpClient;
@@ -39,25 +71,15 @@ export class TierFactory extends Factory<Partial<AdminTier>, AdminTier> {
     }
 
     build(options: Partial<AdminTier> = {}): AdminTier {
-        const tierName = options.name ?? `Tier ${faker.commerce.productName()}`;
-        const now = new Date();
+        // Canonical response default is a null description; the write lane
+        // keeps seeding one (pre-rewire behavior).
+        const canonical = tier({description: faker.lorem.sentence()});
+        const name = options.name ?? canonical.name;
 
         const defaults: AdminTier = {
-            id: generateId(),
-            name: tierName,
-            slug: `${generateSlug(tierName)}-${faker.string.alphanumeric(6).toLowerCase()}`,
-            type: 'paid',
-            active: true,
-            description: faker.lorem.sentence(),
-            visibility: 'public',
-            welcome_page_url: null,
-            benefits: [],
-            currency: 'usd',
-            monthly_price: 500,
-            yearly_price: 5000,
-            trial_days: 0,
-            created_at: now,
-            updated_at: now
+            ...toCreatePayload(canonical),
+            name,
+            slug: `${generateSlug(name)}-${faker.string.alphanumeric(6).toLowerCase()}`
         };
 
         return {...defaults, ...options};
@@ -74,7 +96,7 @@ export class TierFactory extends Factory<Partial<AdminTier>, AdminTier> {
         }
 
         const {tiers} = await response.json() as {tiers: AdminTier[]};
-        const paidTier = tiers.find(tier => tier.type === 'paid' && tier.active);
+        const paidTier = tiers.find(candidate => candidate.type === 'paid' && candidate.active);
         if (!paidTier) {
             throw new Error('No paid tiers found');
         }

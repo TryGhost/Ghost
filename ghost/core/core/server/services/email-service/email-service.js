@@ -6,6 +6,11 @@
  * @typedef {object} LimitService
  * @typedef {{checkVerificationRequired(): Promise<boolean>}} VerificationTrigger
  * @typedef {import ('./domain-warming-service').DomainWarmingService} DomainWarmingService
+ *
+ * @typedef {object} EmailPreflight - Validation result from a pre-save checkCanSendEmail call
+ * @property {object} newsletter
+ * @property {string} emailRecipientFilter
+ * @property {number} emailCount
  */
 
 const BatchSendingService = require('./batch-sending-service');
@@ -122,9 +127,11 @@ class EmailService {
      *
      * @param {object} newsletter - The newsletter model to send to
      * @param {string} emailRecipientFilter - The recipient filter for the email
+     * @param {object} [options]
+     * @param {number} [options.emailCount] - A previously counted audience to revalidate without recounting
      * @returns {Promise<{emailCount: number}>} The email count if checks pass, throws if email cannot be sent
      */
-    async checkCanSendEmail(newsletter, emailRecipientFilter) {
+    async checkCanSendEmail(newsletter, emailRecipientFilter, {emailCount: knownEmailCount} = {}) {
         if (!newsletter) {
             throw new errors.EmailError({
                 message: tpl(messages.missingNewsletterError)
@@ -139,7 +146,9 @@ class EmailService {
             });
         }
 
-        const emailCount = await this.#emailSegmenter.getMembersCount(newsletter, emailRecipientFilter);
+        const emailCount = knownEmailCount === undefined
+            ? await this.#emailSegmenter.getMembersCount(newsletter, emailRecipientFilter)
+            : knownEmailCount;
         await this.checkLimits(emailCount);
 
         return {emailCount};
@@ -148,13 +157,20 @@ class EmailService {
     /**
      *
      * @param {Post} post
+     * @param {object} [options]
+     * @param {EmailPreflight} [options.preflight] - The emailCount is reused if the newsletter and filter still match the saved post
      * @returns {Promise<Email>}
      */
-    async createEmail(post) {
+    async createEmail(post, {preflight} = {}) {
         const newsletter = await post.getLazyRelation('newsletter');
         const emailRecipientFilter = post.get('email_recipient_filter');
 
-        const {emailCount} = await this.checkCanSendEmail(newsletter, emailRecipientFilter);
+        const preflightMatches = preflight?.newsletter?.id
+            && preflight.newsletter.id === newsletter?.id
+            && preflight.emailRecipientFilter === emailRecipientFilter;
+        const {emailCount} = preflightMatches
+            ? await this.checkCanSendEmail(newsletter, emailRecipientFilter, {emailCount: preflight.emailCount})
+            : await this.checkCanSendEmail(newsletter, emailRecipientFilter);
 
         const csdEmailCount = this.#domainWarmingService.isEnabled()
             ? await this.#domainWarmingService.getWarmupLimit(emailCount)
@@ -189,7 +205,7 @@ class EmailService {
 
         // make sure recurring background analytics jobs are running once we have emails
         try {
-            await this.#emailAnalyticsJobs.scheduleRecurringJobs(true);
+            await this.#emailAnalyticsJobs.scheduleRecurringNewslettersJob(true);
         } catch (e) {
             logging.error(e);
         }
@@ -353,10 +369,11 @@ class EmailService {
     }
 
     /**
-     * @params {string} [segment]
+     * @params {string|null} [audienceStatus] - the audience's free/paid status
+     *   ('status:free' / 'status:-free'), see EmailRenderer#describeSegment
      * @return {import('./email-renderer').MemberLike}
      */
-    getDefaultExampleMember(segment) {
+    getDefaultExampleMember(audienceStatus) {
         /**
          * @type {import('./email-renderer').MemberLike}
          */
@@ -366,8 +383,8 @@ class EmailService {
             email: 'jamie@example.com',
             name: 'Jamie Larson',
             createdAt: new Date(),
-            status: segment === 'status:free' ? 'free' : 'paid',
-            subscriptions: segment === 'status:free' ? [] : [
+            status: audienceStatus === 'status:free' ? 'free' : 'paid',
+            subscriptions: audienceStatus === 'status:free' ? [] : [
                 {
                     cancel_at_period_end: false,
                     trial_end_at: null,
@@ -382,14 +399,14 @@ class EmailService {
     /**
      * @private
      * @param {string} [email] (optional) Search for a member with this email address and use it as the example. If not found, defaults to the default but still uses the provided email address.
-     * @param {string} [segment] (optional) The segment to use for the example member
+     * @param {string|null} [audienceStatus] (optional) The audience's free/paid status, see EmailRenderer#describeSegment
      * @return {Promise<import('./email-renderer').MemberLike>}
      */
-    async getExampleMember(email, segment) {
+    async getExampleMember(email, audienceStatus) {
         /**
          * @type {import('./email-renderer').MemberLike}
          */
-        const exampleMember = this.getDefaultExampleMember(segment);
+        const exampleMember = this.getDefaultExampleMember(audienceStatus);
 
         // fetch any matching members so that replacements use expected values
         if (email) {
@@ -401,7 +418,7 @@ class EmailService {
                 exampleMember.name = member.get('name');
                 exampleMember.createdAt = member.get('created_at');
 
-                if (segment === 'status:-free' && member.get('status') !== 'free') {
+                if (audienceStatus === 'status:-free' && member.get('status') !== 'free') {
                     // Make sure the example member matches the chosen segment (otherwise we'll send an email to free segment, but include a paid member details, which looks like a bug)
                     exampleMember.status = member.get('status');
                     const subscriptions = (await member.getLazyRelation('stripeSubscriptions')).toJSON();
@@ -439,14 +456,17 @@ class EmailService {
      *
      * @param {*} post
      * @param {*} newsletter
-     * @param {import('./email-renderer').Segment} segment
+     * @param {'free'|'paid'|null} memberStatus
+     * @param {string} [memberTier] - narrow the paid audience to a single tier
      * @returns {Promise<{subject: string, html: string, plaintext: string}>} Email preview
      */
-    async previewEmail(post, newsletter, segment) {
-        const exampleMember = await this.getExampleMember(null, segment);
+    async previewEmail(post, newsletter, memberStatus, memberTier) {
+        const renderSegment = this.#emailRenderer.getSegmentForAudience(post, memberStatus, memberTier);
+        const audience = this.#emailRenderer.describeSegment(post, renderSegment);
+        const exampleMember = await this.getExampleMember(null, audience.status);
 
         const subject = this.#emailRenderer.getSubject(post);
-        let {html, plaintext, replacements} = await this.#emailRenderer.renderBody(post, newsletter, segment, {clickTrackingEnabled: false});
+        let {html, plaintext, replacements} = await this.#emailRenderer.renderBody(post, newsletter, renderSegment, {clickTrackingEnabled: false});
 
         return {
             subject,
@@ -459,19 +479,23 @@ class EmailService {
      *
      * @param {*} post
      * @param {*} newsletter
-     * @param {import('./email-renderer').Segment} segment
+     * @param {'free'|'paid'|null} memberStatus
      * @param {string[]} emails
+     * @param {string} [memberTier] - narrow the paid audience to a single tier
      */
-    async sendTestEmail(post, newsletter, segment, emails) {
+    async sendTestEmail(post, newsletter, memberStatus, emails, memberTier) {
+        const renderSegment = this.#emailRenderer.getSegmentForAudience(post, memberStatus, memberTier);
+        const audience = this.#emailRenderer.describeSegment(post, renderSegment);
+
         const members = [];
         for (const email of emails) {
-            members.push(await this.getExampleMember(email, segment));
+            members.push(await this.getExampleMember(email, audience.status));
         }
 
         await this.#sendingService.send({
             post,
             newsletter,
-            segment,
+            segment: renderSegment,
             members,
             emailId: null
         }, {

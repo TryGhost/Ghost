@@ -61,3 +61,19 @@ export const useAppContext = () => {
     }
     return context;
 };
+
+// Single source of truth for the web analytics kill-switch. Reads context without
+// throwing (unlike useAppContext) so framework data hooks (e.g. Tinybird) can call
+// it even when rendered without an AppProvider.
+export const useWebAnalyticsEnabled = (): boolean => {
+    const context = useContext(AppContext);
+
+    // No provider (standalone/Ember embed, tests): default to on — can't know otherwise.
+    if (!context) {
+        return true;
+    }
+
+    // Provider mounted: on only when explicitly true. Unresolved settings
+    // (appSettings undefined) count as off, so we don't query before it's known.
+    return context.appSettings?.analytics?.webAnalytics === true;
+};

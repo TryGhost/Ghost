@@ -1,12 +1,11 @@
 {
   "hooks": {
-    "PreToolUse": [
+    "SessionStart": [
       {
-        "matcher": "Bash",
         "hooks": [
           {
             "type": "command",
-            "command": "jq -c '{hookSpecificOutput:{hookEventName:\"PreToolUse\",updatedInput:{command:(\"[ -s ~/.nvm/nvm.sh ] && . ~/.nvm/nvm.sh >/dev/null 2>&1 && nvm use >/dev/null 2>&1; \" + .tool_input.command)}}}'"
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/nvm-path.sh\""
           }
         ]
       }

@@ -1,7 +1,7 @@
 {
     "url": "http://127.0.0.1:2369",
     "database": {
-        "client": "sqlite3",
+        "client": "better-sqlite3",
         "connection": {
             "filename": "/tmp/ghost-test.db"
         },
@@ -12,7 +12,8 @@
         "port": 2369
     },
     "logging": {
-        "level": "error"
+        "level": "error",
+        "logClientErrorsAsError": false
     },
     "adapters": {
         "Redis": {
@@ -110,7 +111,6 @@
     "useMinFiles": false,
     "paths": {
         "fixtures": "test/utils/fixtures/fixtures",
-        "defaultSettings": "test/utils/fixtures/default-settings.json",
-        "urlCache": "test/utils/fixtures/urls"
+        "defaultSettings": "test/utils/fixtures/default-settings.json"
     }
 }

@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
-
-import type {RedirectsStore} from '../../../../../../core/server/services/custom-redirects/types';
+import {type RedirectsStore} from '@tryghost/adapter-base-redirects'
 
 interface ContractOptions {
     createStore: () => RedirectsStore | Promise<RedirectsStore>;

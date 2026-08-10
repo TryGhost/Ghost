@@ -123,7 +123,7 @@ const ProfilePreviewHoverCard: React.FC<ProfilePreviewHoverCardProps> = ({
                                 {avatarUrl && (
                                     <AvatarImage
                                         alt={displayName}
-                                        className='rounded-full outline outline-[0.5px] outline-offset-[-0.5px] outline-black/10'
+                                        className='rounded-full outline-[0.5px] outline-offset-[-0.5px] outline-black/10'
                                         src={avatarUrl}
                                         onError={(event) => {
                                             (event.target as HTMLImageElement).src = '';

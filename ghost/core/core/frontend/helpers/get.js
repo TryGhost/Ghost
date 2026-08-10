@@ -310,6 +310,9 @@ async function makeAPICall(resource, controllerName, action, apiOptions) {
             const threshold = config.get('optimization:getHelper:timeout:threshold');
 
             const apiResponse = makeRequest(options).then(parseResult);
+            // consume rejections that happen after the timeout has already won
+            // the race — they'd otherwise crash the process as unhandled
+            apiResponse.catch(() => {});
 
             const timeout = new Promise((resolve) => {
                 timer = setTimeout(() => {
@@ -354,6 +357,11 @@ function renderResponse(response, resource, options, data) {
         [resource]: _.cloneDeep(response[resource])
     };
 
+    // consume the internal abort marker so it doesn't leak into the template context
+    // (templateResponse is a shallow copy, so the shared `response` object is untouched)
+    const degraded = templateResponse['@@ABORTED_GET_HELPER@@'];
+    delete templateResponse['@@ABORTED_GET_HELPER@@'];
+
     // prepare data properties for use with handlebars
     if (templateResponse[resource] && templateResponse[resource].length) {
         templateResponse[resource].forEach(prepareContextResource);
@@ -373,7 +381,10 @@ function renderResponse(response, resource, options, data) {
         blockParams: blockParams
     });
 
-    if (templateResponse['@@ABORTED_GET_HELPER@@']) {
+    if (degraded) {
+        if (options.data?.root?._locals) {
+            options.data.root._locals.degradedRender = true;
+        }
         return new SafeString(`<span data-aborted-get-helper>Could not load content</span>` + rendered);
     }
     return rendered;
@@ -416,6 +427,15 @@ module.exports = async function get(resource, options) {
     // Parse the options we're going to pass to the API
     apiOptions = parseOptions(ghostGlobals, this, apiOptions);
     apiOptions.context = {member: data.member};
+
+    // {{url}} on the results reads the serializer-attached url, so a narrowed
+    // fields list must still include it
+    if (['posts', 'pages', 'tags'].includes(resource) && _.isString(apiOptions.fields)) {
+        const fields = apiOptions.fields.split(',').map(field => field.trim());
+        if (!fields.includes('url')) {
+            apiOptions.fields = [...fields, 'url'].join(',');
+        }
+    }
 
     // Per-request deduplication: check if we have a cached result for this query
     const queryCache = options.data?._queryCache instanceof Map ? options.data._queryCache : null;

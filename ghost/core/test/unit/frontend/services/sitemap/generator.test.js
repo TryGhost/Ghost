@@ -1,10 +1,9 @@
 const sinon = require('sinon');
 const ObjectId = require('bson-objectid').default;
 const _ = require('lodash');
-const moment = require('moment');
 const assert = require('node:assert/strict');
 const testUtils = require('../../../../utils');
-const urlUtils = require('../../../../../core/shared/url-utils');
+const urlUtils = require('../../../../../core/shared/url-utils').default;
 const IndexGenerator = require('../../../../../core/frontend/services/sitemap/site-map-index-generator');
 const PostGenerator = require('../../../../../core/frontend/services/sitemap/post-map-generator');
 const PageGenerator = require('../../../../../core/frontend/services/sitemap/page-map-generator');
@@ -44,6 +43,46 @@ describe('Generators', function () {
         assert.equal(generator.maxPerPage, 50000);
     });
 
+    describe('fn: reset', function () {
+        const addPostAt = (gen, slug, updatedAt) => gen.addUrl(
+            `http://my-ghost-blog.com/${slug}/`,
+            testUtils.DataGenerator.forKnex.createPost({
+                slug,
+                updated_at: updatedAt,
+                created_at: updatedAt,
+                published_at: updatedAt
+            })
+        );
+
+        it('clears lastModified so a rebuild cannot report a removed resource', function () {
+            generator = new PostGenerator();
+
+            addPostAt(generator, 'older', '2024-01-01T00:00:00.000Z');
+            addPostAt(generator, 'newer', '2024-06-01T00:00:00.000Z');
+            assert.equal(generator.lastModified.toISOString(), '2024-06-01T00:00:00.000Z');
+
+            // The index rebuild resets every generator and replays only the
+            // resources that are still routable — here "newer" was deleted.
+            generator.reset();
+            addPostAt(generator, 'older', '2024-01-01T00:00:00.000Z');
+
+            assert.equal(
+                generator.lastModified.toISOString(),
+                '2024-01-01T00:00:00.000Z',
+                'lastModified must fall back to the newest surviving resource'
+            );
+        });
+
+        it('leaves lastModified at zero when nothing is replayed', function () {
+            generator = new PostGenerator();
+
+            addPostAt(generator, 'only', '2024-06-01T00:00:00.000Z');
+            generator.reset();
+
+            assert.equal(generator.lastModified, 0);
+        });
+    });
+
     describe('IndexGenerator', function () {
         beforeEach(function () {
             generator = new IndexGenerator({
@@ -81,6 +120,27 @@ describe('Generators', function () {
                 assert.doesNotMatch(xml, /sitemap-posts.xml/);
                 assert.doesNotMatch(xml, /sitemap-pages.xml/);
                 assert.doesNotMatch(xml, /sitemap-authors.xml/);
+            });
+
+            it('reports the newest surviving resource after a rebuild', function () {
+                const addPostAt = (slug, updatedAt) => generator.types.posts.addUrl(
+                    `http://my-ghost-blog.com/${slug}/`,
+                    testUtils.DataGenerator.forKnex.createPost({
+                        slug,
+                        updated_at: updatedAt,
+                        created_at: updatedAt,
+                        published_at: updatedAt
+                    })
+                );
+
+                addPostAt('older', '2024-01-01T00:00:00.000Z');
+                addPostAt('newer', '2024-06-01T00:00:00.000Z');
+                assert.match(generator.getXml(), /<lastmod>2024-06-01T00:00:00.000Z<\/lastmod>/);
+
+                generator.types.posts.reset();
+                addPostAt('older', '2024-01-01T00:00:00.000Z');
+
+                assert.match(generator.getXml(), /<lastmod>2024-01-01T00:00:00.000Z<\/lastmod>/);
             });
 
             it('creates multiple pages when there are too many posts', function () {
@@ -140,8 +200,7 @@ describe('Generators', function () {
                     page: false,
                     slug: 'some-cool-page',
                     canonical_url: 'https://myblog.com/test/'
-                }
-                ));
+                }), 'https://myblog.com/some-cool-page/');
                 assert.equal(isCanonical, true);
             });
             it('returns false if no canonical url', function () {
@@ -152,6 +211,36 @@ describe('Generators', function () {
                 }
                 ));
                 assert.equal(isCanonical, false);
+            });
+
+            it('returns false if the normalized canonical url matches the post url', function () {
+                const isCanonical = generator.hasCanonicalUrl(testUtils.DataGenerator.forKnex.createPost({
+                    page: false,
+                    slug: 'some-cool-page',
+                    canonical_url: 'https://MYBLOG.com:443/some-cool-page'
+                }), 'https://myblog.com/some-cool-page/');
+
+                assert.equal(isCanonical, false);
+            });
+
+            it('returns false if the transform-ready canonical url matches the post url', function () {
+                const isCanonical = generator.hasCanonicalUrl(testUtils.DataGenerator.forKnex.createPost({
+                    page: false,
+                    slug: 'some-cool-page',
+                    canonical_url: '__GHOST_URL__/some-cool-page'
+                }), urlUtils.urlJoin(urlUtils.urlFor('home', true), 'some-cool-page/'));
+
+                assert.equal(isCanonical, false);
+            });
+
+            it('returns true if the transform-ready canonical url points to a different path', function () {
+                const isCanonical = generator.hasCanonicalUrl(testUtils.DataGenerator.forKnex.createPost({
+                    page: false,
+                    slug: 'some-cool-page',
+                    canonical_url: '__GHOST_URL__/other-page'
+                }), urlUtils.urlJoin(urlUtils.urlFor('home', true), 'some-cool-page/'));
+
+                assert.equal(isCanonical, true);
             });
         });
 
@@ -265,64 +354,6 @@ describe('Generators', function () {
                 assert.equal(generator.getXml(99999), null);
                 assert.equal(generator.getXml(0), null);
             });
-        });
-
-        describe('fn: updateURL', function () {
-            it('updates existing url', function () {
-                const postDatumToUpdate = testUtils.DataGenerator.forKnex.createPost({
-                    updated_at: (Date.UTC(2014, 11, 22, 12) - 360000) + 100
-                });
-
-                generator.addUrl('http://my-ghost-blog.com/url/100/', postDatumToUpdate);
-
-                assert.equal(generator.nodeLookup[postDatumToUpdate.id].url[0].loc, 'http://my-ghost-blog.com/url/100/');
-
-                const postWithUpdatedDatum = Object.assign({}, {
-                    updated_at: (Date.UTC(2023, 11, 22, 12) - 360000)
-                }, postDatumToUpdate);
-                const updatedISOString = moment(postWithUpdatedDatum.updated_at).toISOString();
-                generator.updateURL(postWithUpdatedDatum);
-
-                assert.equal(generator.nodeLookup[postDatumToUpdate.id].url[0].loc, 'http://my-ghost-blog.com/url/100/');
-                assert.equal(generator.nodeLookup[postDatumToUpdate.id].url[1].lastmod, updatedISOString);
-            });
-
-            it('does not thrown when trying to update a non-existing url', function () {
-                const postDatumToUpdate = testUtils.DataGenerator.forKnex.createPost();
-                generator.updateURL(postDatumToUpdate);
-
-                assert.equal(generator.nodeLookup[postDatumToUpdate.id], undefined);
-            });
-        });
-
-        describe('fn: removeUrl', function () {
-            let post;
-
-            beforeEach(function () {
-                post = testUtils.DataGenerator.forKnex.createPost();
-                generator.nodeLookup[post.id] = 'node';
-            });
-
-            afterEach(function () {
-                generator.nodeLookup = {};
-                generator.nodeTimeLookup = {};
-            });
-
-            it('remove none existend url', function () {
-                generator.removeUrl('https://myblog.com/blog/podcast/featured/', testUtils.DataGenerator.forKnex.createPost());
-                assert.equal(Object.keys(generator.nodeLookup).length, 1);
-            });
-
-            it('remove existing url', function () {
-                generator.removeUrl('https://myblog.com/blog/test/', post);
-                assert.equal(Object.keys(generator.nodeLookup).length, 0);
-            });
-        });
-    });
-
-    describe('PageGenerator', function () {
-        beforeEach(function () {
-            generator = new PageGenerator();
         });
 
         describe('fn: getXml', function () {

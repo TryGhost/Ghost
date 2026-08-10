@@ -39,7 +39,7 @@ test('ignores English source locale files', async () => {
     let anthropicCalled = false;
     const octokit = createOctokit({
         files: [{
-            filename: 'ghost/i18n/locales/en/ghost.json',
+            filename: 'packages/i18n/locales/en/ghost.json',
             status: 'modified',
             patch: '@@ -1,1 +1,2 @@\n {\n+  "New": "New"\n }'
         }]
@@ -67,7 +67,7 @@ test('ignores empty-string placeholder additions seeded by `pnpm translate`', as
     let anthropicCalled = false;
     const octokit = createOctokit({
         files: [{
-            filename: 'ghost/i18n/locales/de/ghost.json',
+            filename: 'packages/i18n/locales/de/ghost.json',
             status: 'modified',
             patch: '@@ -1,1 +1,3 @@\n {\n+  "New key one": "",\n+  "New key two": ""\n }'
         }]
@@ -97,7 +97,7 @@ test('reviews real translations even when the PR also adds empty placeholders', 
     let anthropicCalled = false;
     const octokit = createOctokit({
         files: [{
-            filename: 'ghost/i18n/locales/de/ghost.json',
+            filename: 'packages/i18n/locales/de/ghost.json',
             status: 'modified',
             patch: '@@ -1,1 +1,3 @@\n {\n+  "Translated": "Übersetzt",\n+  "Placeholder": ""\n }'
         }]
@@ -139,7 +139,7 @@ test('skips the model call when the PR exceeds the per-PR line cap', async () =>
     let anthropicCalled = false;
     const octokit = createOctokit({
         files: [{
-            filename: 'ghost/i18n/locales/de/ghost.json',
+            filename: 'packages/i18n/locales/de/ghost.json',
             status: 'modified',
             patch
         }]
@@ -171,7 +171,7 @@ test('skips the model call when the PR exceeds the per-PR file cap without fetch
     const files = [];
     for (let i = 0; i < 20; i++) {
         files.push({
-            filename: `ghost/i18n/locales/de/file${i}.json`,
+            filename: `packages/i18n/locales/de/file${i}.json`,
             status: 'modified',
             patch: '@@ -1,1 +1,2 @@\n {\n+  "New": "Neu"\n }'
         });
@@ -202,7 +202,7 @@ test('skips the model call when the PR exceeds the per-PR file cap without fetch
 test('downgrades verdict when all model comments are filtered out', async () => {
     const octokit = createOctokit({
         files: [{
-            filename: 'ghost/i18n/locales/de/ghost.json',
+            filename: 'packages/i18n/locales/de/ghost.json',
             status: 'modified',
             patch: '@@ -1,1 +1,2 @@\n {\n+  "New": "Neu"\n }'
         }]
@@ -217,7 +217,7 @@ test('downgrades verdict when all model comments are filtered out', async () => 
                         verdict: 'questions',
                         overall: 'Looks fine after filtering.',
                         comments: [{
-                            filename: 'ghost/i18n/locales/de/ghost.json',
+                            filename: 'packages/i18n/locales/de/ghost.json',
                             position: 999,
                             severity: 'question',
                             message: 'Invalid position'

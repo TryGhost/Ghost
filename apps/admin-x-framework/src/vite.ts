@@ -67,9 +67,6 @@ export default function adminXViteConfig({packageName, entry, overrides}: {packa
 
                     return `${outputFileName}.js`;
                 }
-            },
-            commonjsOptions: {
-                include: [/packages/, /node_modules/]
             }
         },
         test: {

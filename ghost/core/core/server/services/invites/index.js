@@ -1,7 +1,7 @@
 const settingsCache = require('../../../shared/settings-cache');
 const settingsHelpers = require('../settings-helpers');
 const mailService = require('../../services/mail');
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 const Invites = require('./invites');
 
 module.exports = new Invites({

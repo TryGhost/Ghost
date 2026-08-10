@@ -37,6 +37,14 @@ let allowedNetworkDomains = [];
 const originalLabsIsSet = labs.isSet;
 const stripeMocker = new StripeMocker();
 
+// The image-size cache holds a bound copy of getImageSizeFromUrl, captured once
+// here so disableNetwork can swap in a no-op (external image lookups are
+// nock-blocked in tests, so the real fetch only produces "Unknown Request
+// error." log noise) and allowImageSize can put the real method back.
+let realCachedImageSizeFromUrl = null;
+
+const WEBMENTION_MOCK_HOST = 'ghost.org';
+
 /**
  * Stripe Mocks
  */
@@ -48,6 +56,8 @@ const disableStripe = async () => {
     const stripeService = require('../../core/server/services/stripe');
     await stripeService.disconnect();
 };
+
+const imageSizeNoop = () => Promise.resolve();
 
 const disableNetwork = () => {
     nock.disableNetConnect();
@@ -80,6 +90,86 @@ const disableNetwork = () => {
         }
         return false;
     });
+
+    // External image dimension lookups are nock-blocked in tests, so the real
+    // fetch always fails and logs "Unknown Request error." on every render.
+    // Replace the cache's bound lookup with a wrapper that resolves undefined
+    // for external URLs only (same outcome as the blocked fetch — dimensions
+    // omitted — but no log). Locally stored images never touch the network —
+    // getImageSizeFromUrl's own isLocalImage check just reads local file
+    // storage — so those still delegate to the real lookup; no-op'ing them too
+    // would silently drop dimensions from every locally-hosted test image.
+    // The image lib is required lazily because it's only loaded once Ghost has
+    // booted, after which disableNetwork runs in every afterEach.
+    const imageLib = require('../../core/server/lib/image');
+    const cachedImageSize = imageLib.cachedImageSizeFromUrl;
+    // Capture the real method once, on the first call only.
+    if (!realCachedImageSizeFromUrl) {
+        realCachedImageSizeFromUrl = cachedImageSize.getImageSizeFromUrl;
+    }
+    // Use a plain function (not a sinon stub) so it survives per-test sinon.restore().
+    cachedImageSize.getImageSizeFromUrl = (imagePath) => {
+        if (imageLib.imageSize.storageUtils.isLocalImage(imagePath)) {
+            return realCachedImageSizeFromUrl(imagePath);
+        }
+        return imageSizeNoop();
+    };
+};
+
+/**
+ * DB-lane only — do not call this from disableNetwork(). disableNetwork() is
+ * shared with the unit-test lane (test/utils/vitest-setup.ts calls it directly
+ * in every test's beforeAll/afterEach), and several unit tests register their
+ * own nock mocks against ghost.org/example.com and expect to be the only
+ * interceptor for that host (oembed-service.test.js, external-media-inliner
+ * tests). nock 14 matches the first-registered interceptor for a host and
+ * persisted interceptors are never consumed, so a catch-all registered here
+ * would shadow those tests' own mocks and never be evicted.
+ *
+ * Fixture/example post content (fixtures.json, golden-post.json) links to real
+ * ghost.org subdomains, and several individual DB-lane tests use example.com
+ * (the RFC 2606 reserved placeholder domain) as a stand-in external link.
+ * Publishing that content triggers real webmention discovery
+ * (mention-sending-service.js), which fetches every external link —
+ * nock-blocked here, so the real fetch throws and mention-discovery-service.js
+ * error-logs it on every publish. Reply with a plain page (no rel="webmention"
+ * link/header) instead of blocking the connection: same "no endpoint found"
+ * outcome discovery would reach for a real site that doesn't support
+ * webmentions, without eating a real connection error. Tests that exercise
+ * webmention discovery/sending itself (e2e-server/services/mentions.test.js)
+ * use entirely different hosts (otherghostsite.com/endpoint.com) so
+ * aren't affected either way. (nock 14's RegExp basePath matching doesn't
+ * cover subdomains reliably, so this is an explicit list — grep test content
+ * for new domains if this list goes stale.)
+ */
+const mockWebmentionDiscoveryDomains = () => {
+    // Check nock's actual live state rather than tracking a module-level flag: a
+    // handful of DB-lane test files (webhook-request, themes, webmentions,
+    // milestones, mentions) call nock.cleanAll() directly, bypassing restore() —
+    // a flag reset only in restore() would go stale and skip re-registering here
+    // even though the interceptors were just wiped, silently letting the
+    // webmention noise these mocks suppress return for the rest of the worker.
+    if (nock.activeMocks().some(mock => mock.includes(`https://${WEBMENTION_MOCK_HOST}:`))) {
+        return;
+    }
+
+    for (const host of ['ghost.org', 'www.ghost.org', 'koenig.ghost.org', 'main.ghost.org', 'forum.ghost.org', 'static.ghost.org', 'docs.ghost.org', 'help.ghost.org', 'api.ghost.org', 'themes.ghost.org', 'marketplace.ghost.org', 'example.com', 'www.example.com']) {
+        nock(`https://${host}`)
+            .persist()
+            .get(/.*/)
+            .reply(200, '<html><body></body></html>', {'content-type': 'text/html'});
+    }
+};
+
+/**
+ * Restore the real image-size cache lookup so tests that exercise the lookup
+ * mechanism itself (and stub its internals) run against the real chain.
+ */
+const allowImageSize = () => {
+    if (realCachedImageSizeFromUrl) {
+        const imageLib = require('../../core/server/lib/image');
+        imageLib.cachedImageSizeFromUrl.getImageSizeFromUrl = realCachedImageSizeFromUrl;
+    }
 };
 
 const allowStripe = () => {
@@ -387,6 +477,7 @@ const restore = () => {
 
     // Disable network again after restoring sinon
     disableNetwork();
+    mockWebmentionDiscoveryDomains();
 };
 
 module.exports = {
@@ -405,6 +496,8 @@ module.exports = {
     mockLimitService,
     restoreLimitService,
     disableNetwork,
+    mockWebmentionDiscoveryDomains,
+    allowImageSize,
     restore,
     stripeMocker,
     assert: {

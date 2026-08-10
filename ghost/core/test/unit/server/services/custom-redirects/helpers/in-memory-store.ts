@@ -1,6 +1,6 @@
-import type {RedirectConfig, RedirectsStore} from '../../../../../../core/server/services/custom-redirects/types';
+import {RedirectsStoreBase, type RedirectConfig} from '@tryghost/adapter-base-redirects'
 
-export class InMemoryStore implements RedirectsStore {
+export class InMemoryStore extends RedirectsStoreBase {
     private redirects: RedirectConfig[] = [];
 
     async getAll(): Promise<RedirectConfig[]> {

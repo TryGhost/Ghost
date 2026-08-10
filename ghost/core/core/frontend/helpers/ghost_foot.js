@@ -2,7 +2,7 @@
 // Usage: `{{ghost_foot}}`
 //
 // Outputs scripts and other assets at the bottom of a Ghost theme
-const {blogIcon, labs, settingsCache, urlUtils} = require('../services/proxy');
+const {blogIcon, settingsCache, urlUtils} = require('../services/proxy');
 const {SafeString, templates, hbs} = require('../services/handlebars');
 const _ = require('lodash');
 
@@ -28,10 +28,11 @@ module.exports = function ghost_foot(options) { // eslint-disable-line camelcase
         foot.push(tagCodeinjection);
     }
 
-    // Reader-side gift toast. `_gift` is set by the entry controller only on a
-    // verified gift render, so it shows on gift reads and never on canonical
-    // URLs. Overridable: a theme can supply its own `partials/gift-toast.hbs`.
-    if (labs.isSet('giftLinks') && options.data._gift) {
+    // Reader-side gift toast. `_giftLink` is set on res.locals by the entry
+    // controller only on a verified gift render, so it shows on gift reads and
+    // never on canonical URLs. Overridable: a theme can supply its own
+    // `partials/gift-toast.hbs`.
+    if (options.data.root._giftLink) {
         const data = createFrame(options.data);
         const siteUrl = urlUtils.getSiteUrl().replace(/\/$/, '');
 
@@ -46,7 +47,9 @@ module.exports = function ghost_foot(options) { // eslint-disable-line camelcase
             noiseUrl: `${siteUrl}/gift/assets/gift-card-noise.png`
         };
 
-        foot.push(templates.execute('gift-toast', this, {data}));
+        // Execute with the post as context so the partial, and any theme
+        // override of it, gets the full post scope.
+        foot.push(templates.execute('gift-toast', options.data.root.post, {data}));
     }
 
     return new SafeString(foot.join(' ').trim());

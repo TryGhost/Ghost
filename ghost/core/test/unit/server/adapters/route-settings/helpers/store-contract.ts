@@ -1,15 +1,16 @@
 import assert from 'node:assert/strict';
 
-import type {RouteSettings} from '../../../../../../core/server/services/route-settings/route-settings-parser';
-import type {RouteSettingsStore} from '../../../../../../core/server/adapters/route-settings/RouteSettingsStoreBase';
+import type {RouteSettings, RouteSettingsStore} from '@tryghost/adapter-base-route-settings';
+
+import {buildRouteSettings} from '../../../services/route-settings/route-settings-fixture';
 
 interface ContractOptions {
     createStore: () => RouteSettingsStore | Promise<RouteSettingsStore>;
 }
 
-const emptySettings = (): RouteSettings => ({routes: [], collections: [], taxonomies: {}});
+const emptySettings = (): RouteSettings => buildRouteSettings({routes: [], collections: [], taxonomies: {}});
 
-const sampleSettings = (): RouteSettings => ({
+const sampleSettings = (): RouteSettings => buildRouteSettings({
     routes: [
         {type: 'template', path: '/about/', templates: ['about']}
     ],
@@ -55,19 +56,27 @@ export function runStoreContract({createStore}: ContractOptions): void {
                 assert.deepEqual(await store.get(), settings);
             });
 
+            it('persists yamlSource verbatim', async function () {
+                const settings = sampleSettings();
+
+                await store.replace(settings);
+
+                assert.equal((await store.get()).yamlSource, settings.yamlSource);
+            });
+
             it('overwrites previously stored settings rather than merging', async function () {
                 await store.replace(sampleSettings());
-                await store.replace({
+                await store.replace(buildRouteSettings({
                     routes: [],
                     collections: [{path: '/blog/', permalink: '/blog/{slug}/', templates: ['index']}],
                     taxonomies: {}
-                });
+                }));
 
-                assert.deepEqual(await store.get(), {
+                assert.deepEqual(await store.get(), buildRouteSettings({
                     routes: [],
                     collections: [{path: '/blog/', permalink: '/blog/{slug}/', templates: ['index']}],
                     taxonomies: {}
-                });
+                }));
             });
 
             it('clears all settings when called with empty settings', async function () {

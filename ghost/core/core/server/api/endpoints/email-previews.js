@@ -10,12 +10,17 @@ const controller = {
         },
         options: [
             'fields',
+            'member_status',
+            'member_tier',
             'memberSegment',
             'newsletter'
         ],
         validation: {
             options: {
-                fields: ['html', 'plaintext', 'subject']
+                fields: ['html', 'plaintext', 'subject'],
+                member_status: {
+                    values: ['free', 'paid']
+                }
             }
         },
         data: [

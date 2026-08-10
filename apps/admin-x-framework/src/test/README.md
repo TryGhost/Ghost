@@ -47,13 +47,10 @@ In your app's test setup file (e.g., `test/setup.ts`), import and call the share
 
 ```typescript
 import '@testing-library/jest-dom';
-import {setupShadeMocks, setupConsoleFilters} from '@tryghost/admin-x-framework/test/setup';
+import {setupShadeMocks} from '@tryghost/admin-x-framework/test/setup';
 
 // Set up common mocks for shade components
 setupShadeMocks();
-
-// Set up console filtering for common warnings (optional)
-setupConsoleFilters();
 ```
 
 ### Available Setup Functions
@@ -63,12 +60,6 @@ Automatically provides mocks for:
 - **`window.matchMedia`** - Required for responsive behavior in shade components
 - **`ResizeObserver`** - Required for charts and responsive components  
 - **`Element.prototype.getBoundingClientRect`** - Required for positioning calculations
-
-#### `setupConsoleFilters()`
-Filters out common warnings that can't be fixed:
-- React defaultProps warnings from third-party libraries
-- Chart dimension warnings in headless environments
-- Duplicate key warnings from table components
 
 ## MSW API Mocking
 
@@ -93,29 +84,13 @@ describe('My Component', () => {
 });
 ```
 
-### Available Fixtures
-
-The framework provides realistic fixtures for common Ghost API endpoints:
-
-```typescript
-import {fixtures} from '@tryghost/admin-x-framework/test/msw-utils';
-
-// Global data
-fixtures.config      // Ghost configuration
-fixtures.settings    // Site settings
-fixtures.site        // Site information  
-fixtures.user        // Current user data
-
-// API-specific fixtures
-fixtures.linksBulkSuccess     // Successful link bulk operation
-fixtures.memberCountHistory  // Member count statistics
-fixtures.mrrHistory          // Monthly recurring revenue data
-```
-
 ### Overriding Specific Endpoints
 
+Use raw MSW handlers with `server.use()` to override responses per test:
+
 ```typescript
-import {setupMswServer, createHandler, createErrorHandler} from '@tryghost/admin-x-framework/test/msw-utils';
+import {setupMswServer} from '@tryghost/admin-x-framework/test/msw-utils';
+import {http, HttpResponse} from 'msw';
 
 const server = setupMswServer();
 
@@ -123,7 +98,7 @@ describe('Error Handling', () => {
     it('handles API errors gracefully', () => {
         // Override specific endpoint to return error
         server.use(
-            createErrorHandler('put', '/ghost/api/admin/links/bulk/', 500)
+            http.put('/ghost/api/admin/links/bulk/', () => new HttpResponse(null, {status: 500}))
         );
         
         // Test error handling...
@@ -132,10 +107,10 @@ describe('Error Handling', () => {
     it('handles custom responses', () => {
         // Override with custom response data
         server.use(
-            createHandler('get', '/ghost/api/admin/posts/', {
+            http.get('/ghost/api/admin/posts/', () => HttpResponse.json({
                 posts: [{id: '1', title: 'Custom Post'}],
                 meta: {pagination: {total: 1}}
-            })
+            }))
         );
         
         // Test with custom data...
@@ -182,11 +157,11 @@ describe('API Request Validation', () => {
 ### Advanced Usage
 
 ```typescript
-import {createMswServer, handlers, fixtures} from '@tryghost/admin-x-framework/test/msw-utils';
+import {setupMswServer} from '@tryghost/admin-x-framework/test/msw-utils';
 import {http, HttpResponse} from 'msw';
 
 // Create server with additional custom handlers
-const server = createMswServer([
+const server = setupMswServer([
     // Add your own custom handlers
     http.get('/custom/endpoint/', () => {
         return HttpResponse.json({custom: 'data'});
@@ -194,10 +169,7 @@ const server = createMswServer([
     
     // Override default handlers
     http.get('/ghost/api/admin/config/', () => {
-        return HttpResponse.json({
-            ...fixtures.config,
-            version: '6.x' // Custom version
-        });
+        return HttpResponse.json({version: '6.x'});
     })
 ]);
 ```
@@ -212,95 +184,29 @@ const server = createMswServer([
 
 ## Test Utilities
 
-The framework provides comprehensive test utilities for consistent testing across apps.
+The framework provides test utilities for consistent testing across apps.
 
 ### Component and Hook Testing
 
 ```typescript
-import {renderWithProviders, renderHookWithProviders, createTestQueryClient} from '@tryghost/admin-x-framework/test/test-utils';
-
-// Render components with all necessary providers
-const {getByText} = renderWithProviders(<MyComponent />);
+import {TestWrapper, renderHookWithProviders, createTestQueryClient} from '@tryghost/admin-x-framework/test/test-utils';
 
 // Render hooks with providers
 const {result} = renderHookWithProviders(() => useMyHook());
 
 // Custom QueryClient for specific tests
 const queryClient = createTestQueryClient();
-renderWithProviders(<MyComponent />, {queryClient});
+renderHookWithProviders(() => useMyHook(), {queryClient});
 
 // Custom framework props
-renderWithProviders(<MyComponent />, {
+renderHookWithProviders(() => useMyHook(), {
     frameworkProps: {
         ghostVersion: '4.x'
     }
 });
-```
 
-### API Testing Utilities
-
-```typescript
-import {waitForApiCall, waitForApiCalls} from '@tryghost/admin-x-framework/test/test-utils';
-
-// Wait for a single API call
-await waitForApiCall(mockFetch);
-
-// Wait for multiple API calls
-await waitForApiCalls(mockFetch, 3);
-```
-
-### Test Data Factories
-
-```typescript
-import {testDataFactories} from '@tryghost/admin-x-framework/test/test-utils';
-
-// Create test data with defaults
-const post = testDataFactories.post();
-const member = testDataFactories.member();
-const user = testDataFactories.user();
-const newsletter = testDataFactories.newsletter();
-
-// Override specific properties
-const publishedPost = testDataFactories.post({
-    status: 'published',
-    title: 'My Custom Title'
-});
-```
-
-### Console Filtering
-
-```typescript
-import {setupConsoleFiltering} from '@tryghost/admin-x-framework/test/test-utils';
-
-// Basic usage
-const cleanup = setupConsoleFiltering();
-
-// Custom filtering
-const cleanup = setupConsoleFiltering({
-    suppressReactWarnings: false,
-    suppressChartWarnings: true,
-    suppressMessages: ['Custom warning to suppress']
-});
-
-// Clean up when done
-cleanup();
-```
-
-### Timer Mocking
-
-```typescript
-import {mockTimers} from '@tryghost/admin-x-framework/test/test-utils';
-
-const timers = mockTimers();
-
-// Advance time
-timers.advanceTime(1000);
-
-// Run all timers
-timers.runAllTimers();
-
-// Clean up
-timers.cleanup();
+// Wrap components with all necessary providers
+render(<MyComponent />, {wrapper: TestWrapper});
 ```
 
 ## Best Practices
@@ -353,7 +259,7 @@ const server = setupServer(/* manual handlers */);
 ### 4. Override Only When Needed
 ```typescript
 // ✅ Good - Override specific endpoints
-server.use(createErrorHandler('put', '/api/endpoint/', 500));
+server.use(http.put('/api/endpoint/', () => new HttpResponse(null, {status: 500})));
 
 // ❌ Avoid - Recreating entire server setup
 ```

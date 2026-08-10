@@ -159,7 +159,7 @@ describe('UNIT: RedirectsService', function () {
             await service.activate();
 
             sinon.assert.notCalled(redirectManager.addRedirect);
-            const messages = loggingError.args.map(([arg]) => arg.message || arg);
+            const messages = loggingError.args.map(([arg]) => (arg as any).message || arg);
             assert.ok(
                 messages.some(m => /None of the 2 redirect/.test(m)),
                 `expected a zero-survived warning, got: ${JSON.stringify(messages)}`

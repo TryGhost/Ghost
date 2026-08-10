@@ -6,7 +6,7 @@ const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const settingsCache = require('../../../shared/settings-cache');
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 const metrics = require('@tryghost/metrics');
 const emailAddress = require('../email-address');
 const messages = {
@@ -53,7 +53,7 @@ function getFromAddress(requestedFromAddress, requestedReplyToAddress) {
 }
 
 /**
- * Decorates incoming message object wit    h nodemailer compatible fields.
+ * Decorates incoming message object with nodemailer compatible fields.
  * For nodemailer 0.7.1 reference see - https://github.com/nodemailer/nodemailer/tree/da2f1d278f91b4262e940c0b37638e7027184b1d#e-mail-message-fields
  * @param {Object} message
  * @param {boolean} [message.forceTextContent] - force text content
@@ -67,6 +67,7 @@ function createMessage(message) {
     const cleanMessage = {...message};
     delete cleanMessage.tags;
     delete cleanMessage.forceTextContent;
+    delete cleanMessage.trackOpens;
 
     const addresses = getFromAddress(message.from, message.replyTo);
 
@@ -82,6 +83,13 @@ function createMessage(message) {
     };
 }
 
+/**
+ * @param {object} [options]
+ * @param {string} [options.message]
+ * @param {Error} [options.err]
+ * @param {boolean} [options.ignoreDefaultMessage]
+ * @return {errors.EmailError}
+ */
 function createMailError({message, err, ignoreDefaultMessage} = {message: ''}) {
     const helpMessage = tpl(messages.checkEmailConfigInstructions, {url: 'https://ghost.org/docs/config/#mail'});
     const defaultErrorMessage = tpl(messages.failedSendingEmailError);
@@ -123,6 +131,7 @@ module.exports = class GhostMailer {
      * @param {string} [message.from] - sender email address
      * @param {string} [message.text] - text version of this message
      * @param {string[]} [message.tags] - optional additional Mailgun tags
+     * @param {boolean} [message.trackOpens] - per-message override for Mailgun open tracking
      * @param {Record<string, string>} [message.headers] - optional additional email headers (merged with defaults)
      * @param {boolean} [message.forceTextContent] - maps to generateTextFromHTML nodemailer option
      * which is: "if set to true uses HTML to generate plain text body part from the HTML if the text is not defined"
@@ -143,7 +152,10 @@ module.exports = class GhostMailer {
             if (tags.length > 0) {
                 messageToSend['o:tag'] = tags;
             }
-            if (settingsCache.get('email_track_opens')) {
+            const trackOpens = typeof message.trackOpens === 'boolean' ?
+                message.trackOpens :
+                settingsCache.get('email_track_opens');
+            if (trackOpens) {
                 messageToSend['o:tracking-opens'] = true;
             }
             if (messageToSend.headers) {

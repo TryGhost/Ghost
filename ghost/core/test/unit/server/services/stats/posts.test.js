@@ -222,7 +222,7 @@ describe('PostsStatsService', function () {
 
     beforeAll(async function () {
         db = knex({
-            client: 'sqlite3',
+            client: 'better-sqlite3',
             useNullAsDefault: true,
             connection: {
                 filename: ':memory:'
@@ -316,12 +316,10 @@ describe('PostsStatsService', function () {
 
         // Mock urlService for URL existence checking
         const mockUrlService = {
-            facade: {
-                hasFinished: () => true,
-                resolveUrl: async () => {
-                    // Mock that all URLs exist for testing
-                    return {title: 'Mock Title', type: 'posts'};
-                }
+            hasFinished: () => true,
+            resolveUrl: async () => {
+                // Mock that all URLs exist for testing
+                return {title: 'Mock Title', type: 'posts'};
             }
         };
 
@@ -375,10 +373,8 @@ describe('PostsStatsService', function () {
             return new PostsStatsService({
                 knex: db,
                 urlService: {
-                    facade: {
-                        hasFinished: () => true,
-                        resolveUrl: async path => lookup(path)
-                    }
+                    hasFinished: () => true,
+                    resolveUrl: async path => lookup(path)
                 }
             });
         }

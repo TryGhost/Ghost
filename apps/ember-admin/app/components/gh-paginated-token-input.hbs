@@ -1,0 +1,65 @@
+<GhTokenInput
+    @ariaDescribedBy={{@ariaDescribedBy}}
+    @ariaInvalid={{@ariaInvalid}}
+    @ariaLabel={{@ariaLabel}}
+    @ariaLabelledBy={{@ariaLabelledBy}}
+    @allowCreation={{@allowCreation}}
+    @class={{@class}}
+    @disabled={{@disabled}}
+    @dropdownClass={{@dropdownClass}}
+    @extra={{@extra}}
+    @labelField={{@labelField}}
+    @loadingMessage={{@loadingMessage}}
+    @matcher={{@matcher}}
+    @noMatchesMessage={{@noMatchesMessage}}
+    @onBlur={{@onBlur}}
+    @onChange={{this.handleChange}}
+    @onClose={{@onClose}}
+    @onCreate={{@onCreate}}
+    @onFocus={{@onFocus}}
+    @onInput={{@onInput}}
+    @onKeydown={{@onKeydown}}
+    @onOpen={{this.loadInitialOptions}}
+    @options={{this.availableOptions}}
+    @optionsComponent={{component "power-select-vertical-collection-options" lastReached=(perform this.loadMoreOptionsTask)}}
+    @placeholder={{@placeholder}}
+    @placeholderComponent={{@placeholderComponent}}
+    @allowClear={{@allowClear}}
+    @afterOptionsComponent={{@afterOptionsComponent}}
+    @beforeOptionsComponent={{@beforeOptionsComponent}}
+    @buildSelection={{@buildSelection}}
+    @calculatePosition={{@calculatePosition}}
+    @closeOnSelect={{@closeOnSelect}}
+    @destination={{@destination}}
+    @eventType={{@eventType}}
+    @groupComponent={{@groupComponent}}
+    @horizontalPosition={{@horizontalPosition}}
+    @initiallyOpened={{@initiallyOpened}}
+    @matchTriggerWidth={{@matchTriggerWidth}}
+    @preventScroll={{@preventScroll}}
+    @registerAPI={{this.registerPowerSelectAPI}}
+    @required={{@required}}
+    @renderInPlace={{@renderInPlace}}
+    @scrollTo={{@scrollTo}}
+    @search={{perform this.searchOptionsTask}}
+    @searchField={{@searchField}}
+    @searchMessage={{@searchMessage}}
+    @searchPlaceholder={{@searchPlaceholder}}
+    @selected={{@selected}}
+    @selectedItemComponent={{@selectedItemComponent}}
+    @showCreateWhen={{if this.shouldUseCustomShowCreateWhen this.showCreateWhen null}}
+    @triggerClass={{@triggerClass}}
+    @triggerComponent={{@triggerComponent}}
+    @triggerId={{@triggerId}}
+    @triggerRole={{@triggerRole}}
+    @verticalPosition={{@verticalPosition}}
+    @tabindex={{@tabindex}}
+    @title={{@title}}
+    as |option|
+>
+    {{#if (has-block)}}
+        {{yield option}}
+    {{else}}
+        {{get option (or @labelField "name")}}
+    {{/if}}
+</GhTokenInput>

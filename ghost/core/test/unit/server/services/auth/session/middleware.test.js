@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const deferred = require('../../../../../utils/deferred');
+const {deferred} = require('../../../../../utils/deferred')
 const sessionMiddleware = require('../../../../../../core/server/services/auth').session;
 const SessionMiddlware = require('../../../../../../core/server/services/auth/session/middleware');
 const models = require('../../../../../../core/server/models');
@@ -12,12 +12,21 @@ describe('Session Service', function () {
     });
 
     const fakeReq = function fakeReq() {
-        return {
-            session: {},
+        const req = {
             user: null,
             body: {},
             get() {}
         };
+
+        // Mimics express-session, where regenerate swaps in a new session object
+        const regenerate = function (cb) {
+            req.session = {regenerate};
+            cb();
+        };
+
+        req.session = {regenerate};
+
+        return req;
     };
 
     const fakeRes = function fakeRes() {

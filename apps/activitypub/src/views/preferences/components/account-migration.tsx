@@ -132,9 +132,9 @@ const AccountMigration: React.FC = () => {
                                 data-1p-ignore
                                 onChange={event => setSourceHandle(event.target.value)}
                             />
-                            <Button className='relative h-9 text-sm sm:w-auto' disabled={addAliasMutation.isLoading} type='submit'>
-                                <span className={addAliasMutation.isLoading ? 'invisible' : undefined}>Create alias</span>
-                                {addAliasMutation.isLoading && (
+                            <Button className='relative h-9 text-sm sm:w-auto' disabled={addAliasMutation.isPending} type='submit'>
+                                <span className={addAliasMutation.isPending ? 'invisible' : undefined}>Create alias</span>
+                                {addAliasMutation.isPending && (
                                     <span className='absolute inset-0 flex items-center justify-center'>
                                         <LoadingIndicator color='light' size='sm' />
                                         <span className='sr-only'>Creating alias...</span>
@@ -175,6 +175,7 @@ const AccountMigration: React.FC = () => {
                                 </Button>
                             </div>
                         ) : (
+                            /* eslint-disable-next-line tailwindcss/no-contradicting-classname -- divide-* colors children, border-t colors this element; the plugin compares properties without selectors */
                             <div className='divide-y divide-gray-200 border-t border-gray-200 dark:divide-gray-950 dark:border-gray-950'>
                                 {aliases.map(alias => (
                                     <div key={alias.apId} className='flex items-center justify-between gap-4 py-4'>

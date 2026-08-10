@@ -144,7 +144,7 @@ const controller = {
             method: 'browse'
         },
         async query() {
-            return emailAnalytics.service.getStatus();
+            return emailAnalytics.newsletters.service.getStatus();
         }
     },
 
@@ -173,7 +173,7 @@ const controller = {
                 ? new Date(endParam)
                 : new Date(Math.min(Date.now() - 60 * 60 * 1000, model.get('created_at').getTime() + 24 * 60 * 60 * 1000 * 7));
 
-            return emailAnalytics.service.schedule({begin, end});
+            return emailAnalytics.newsletters.service.schedule({begin, end});
         }
     },
 
@@ -185,7 +185,7 @@ const controller = {
             method: 'browse'
         },
         async query() {
-            return emailAnalytics.service.cancelScheduled();
+            return emailAnalytics.newsletters.service.cancelScheduled();
         }
     }
 };

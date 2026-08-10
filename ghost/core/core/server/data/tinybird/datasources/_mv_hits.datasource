@@ -11,6 +11,7 @@ SCHEMA >
     `member_status` String,
     `post_uuid` String,
     `post_type` String,
+    `gift_link` String,
     `location` String,
     `source` String,
     `pathname` String,

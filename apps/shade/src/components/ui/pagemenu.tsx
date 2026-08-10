@@ -144,7 +144,7 @@ const PageMenu = React.forwardRef<HTMLDivElement, PageMenuProps>(
                     ref={containerRef}
                     className="flex w-full min-w-0 flex-1 items-center gap-2"
                 >
-                    <div ref={ref} className={cn('flex items-center gap-2 min-w-0', className)} {...props}>
+                    <div ref={ref} className={cn('flex min-w-0 items-center gap-2', className)} {...props}>
                         {visibleItems}
                     </div>
 
@@ -208,7 +208,7 @@ const PageMenuItem = React.forwardRef<HTMLButtonElement, PageMenuItemProps>(
             <Button
                 ref={ref}
                 className={cn(
-                    'relative px-3 gap-1.5 text-control font-medium text-text-secondary hover:text-foreground focus-visible:ring-0',
+                    'relative gap-1.5 px-3 text-control font-medium text-text-secondary hover:text-foreground focus-visible:ring-0',
                     'data-[state=active]:bg-muted-foreground/10 data-[state=active]:text-foreground',
                     'dark:hover:bg-tab-hover dark:data-[state=active]:bg-tab-active dark:data-[state=active]:hover:bg-tab-active',
                     className

@@ -41,8 +41,13 @@ describe('Tag API', function () {
         assert.equal(jsonResponse.meta.pagination.next, null);
         assert.equal(jsonResponse.meta.pagination.prev, null);
 
-        // returns 404 because this tag has no published posts
-        assert.equal(new URL(jsonResponse.tags[0].url).pathname, '/404/');
+        // A tag with no published posts gets its own URL, not /404/: eager left
+        // it out of the URL map behind a shouldHavePosts gate, lazy has no cheap
+        // way to run that check and this was accepted in HKG-1920. The archive
+        // still 404s to visitors — that 404 lives in the routing controllers.
+        const postlessTag = jsonResponse.tags.find(t => t.count.posts === 0);
+        assertExists(postlessTag);
+        assert.equal(new URL(postlessTag.url).pathname, `/tag/${postlessTag.slug}/`);
 
         // Find specific tags by slug to verify URL generation
         const kitchenSinkTag = jsonResponse.tags.find(t => t.slug === 'kitchen-sink');
@@ -155,6 +160,76 @@ describe('Tag API', function () {
         assert.equal(jsonResponse.tags.length, 1);
         localUtils.API.checkResponse(jsonResponse.tags[0], 'tag', ['url']);
         assert.equal(jsonResponse.tags[0].description, 'hey ho ab ins klo');
+    });
+
+    it('Uses safe slugs when creating public tags with new as the generated or explicit slug', async function () {
+        const tag = testUtils.DataGenerator.forKnex.createTag({
+            name: 'new',
+            slug: null
+        });
+
+        const res = await request
+            .post(localUtils.API.getApiQuery('tags/'))
+            .set('Origin', config.get('url'))
+            .send({
+                tags: [tag]
+            })
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(201);
+
+        assert.equal(res.body.tags[0].name, 'new');
+        assert.equal(res.body.tags[0].slug, 'new-tag');
+
+        const explicitSlugTag = testUtils.DataGenerator.forKnex.createTag({
+            name: 'Explicit New Slug',
+            slug: 'new'
+        });
+
+        const explicitSlugRes = await request
+            .post(localUtils.API.getApiQuery('tags/'))
+            .set('Origin', config.get('url'))
+            .send({
+                tags: [explicitSlugTag]
+            })
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(201);
+
+        assert.equal(explicitSlugRes.body.tags[0].name, 'Explicit New Slug');
+        assert.equal(explicitSlugRes.body.tags[0].slug, 'new-tag-2');
+    });
+
+    it('Preserves an existing slug when editing a tag name to new without a slug', async function () {
+        const tag = testUtils.DataGenerator.forKnex.createTag({
+            name: 'Editable Tag',
+            slug: 'editable-tag'
+        });
+
+        const createRes = await request
+            .post(localUtils.API.getApiQuery('tags/'))
+            .set('Origin', config.get('url'))
+            .send({
+                tags: [tag]
+            })
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(201);
+
+        const res = await request
+            .put(localUtils.API.getApiQuery(`tags/${createRes.body.tags[0].id}`))
+            .set('Origin', config.get('url'))
+            .send({
+                tags: [{
+                    name: 'new'
+                }]
+            })
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        assert.equal(res.body.tags[0].name, 'new');
+        assert.equal(res.body.tags[0].slug, 'editable-tag');
     });
 
     it('Can destroy a tag', async function () {

@@ -1,0 +1,48 @@
+import path from 'path';
+import {expect, test} from '@playwright/test';
+import {fileURLToPath} from 'url';
+import {focusEditor, initialize, insertCard} from '../../utils/e2e';
+import {getImageDimensions} from '../../../src/utils/getImageDimensions';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+test.describe('Image card', async () => {
+    let page;
+
+    test.beforeAll(async ({browser}) => {
+        page = await browser.newPage();
+    });
+
+    test.beforeEach(async () => {
+        await initialize({page});
+    });
+
+    test.afterAll(async () => {
+        await page.close();
+    });
+
+    test('can get image height and width', async function () {
+        const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
+
+        await focusEditor(page);
+        const [fileChooser] = await Promise.all([
+            page.waitForEvent('filechooser'),
+            insertCard(page, {cardName: 'image'})
+        ]);
+        await fileChooser.setFiles([filePath]);
+
+        const imageCard = await page.locator('[data-kg-card="image"]');
+        expect(imageCard).not.toBeNull();
+
+        const image = await page.locator('img');
+        expect(image).not.toBeNull();
+
+        const url = await image.getAttribute('src');
+
+        const getImageDimensionsStr = getImageDimensions.toString();
+        const command = `(${getImageDimensionsStr})('${url}')`;
+        const dimensions = await page.evaluate(command);
+
+        expect(dimensions).toEqual({width: 248, height: 248});
+    });
+});

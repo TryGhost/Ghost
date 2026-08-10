@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const sinon = require('sinon');
 const EmailController = require('../../../../../core/server/services/email-service/email-controller');
 const {createModel, createModelClass} = require('./utils');
 
@@ -23,6 +24,33 @@ describe('Email Controller', function () {
             });
             assert.equal(post.id, 'options-id');
             assert.equal(newsletter.get('slug'), 'post-newsletter');
+        });
+
+        it('loads the relations the URL service needs', async function () {
+            // On sites whose routes.yaml filters collections by tag/author the
+            // lazy URL service refuses a post without those relations as thin,
+            // which would turn email previews into a 500 in pure-lazy mode.
+            const Post = createModelClass({
+                findOne: {
+                    title: 'Post title',
+                    newsletter: createModel({slug: 'post-newsletter'})
+                }
+            });
+            const findOneSpy = sinon.spy(Post, 'findOne');
+            const controller = new EmailController({}, {
+                models: {Post},
+                getRequiredUrlRelations: () => ['tags', 'authors']
+            });
+
+            await controller._getFrameData({
+                options: {id: 'options-id'},
+                data: {}
+            });
+
+            sinon.assert.calledOnce(findOneSpy);
+            const {withRelated} = findOneSpy.firstCall.args[1];
+            assert.ok(withRelated.includes('tags'));
+            assert.ok(withRelated.includes('authors'));
         });
 
         it('throws if post is not found', async function () {
@@ -102,7 +130,7 @@ describe('Email Controller', function () {
             assert.equal(post.get('slug'), 'my-post');
         });
 
-        it('uses segment from options', async function () {
+        it('uses member_status from options', async function () {
             const controller = new EmailController({}, {
                 models: {
                     Post: createModelClass({
@@ -113,16 +141,16 @@ describe('Email Controller', function () {
                     Newsletter: createModelClass()
                 }
             });
-            const {segment} = await controller._getFrameData({
+            const {memberStatus} = await controller._getFrameData({
                 options: {
                     id: 'options-id',
-                    memberSegment: 'free'
+                    member_status: 'free'
                 }
             });
-            assert.equal(segment, 'free');
+            assert.equal(memberStatus, 'free');
         });
 
-        it('uses segment from data', async function () {
+        it('uses member_status from data', async function () {
             const controller = new EmailController({}, {
                 models: {
                     Post: createModelClass({
@@ -133,15 +161,181 @@ describe('Email Controller', function () {
                     Newsletter: createModelClass()
                 }
             });
-            const {segment} = await controller._getFrameData({
+            const {memberStatus} = await controller._getFrameData({
                 options: {
                     id: 'options-id'
                 },
                 data: {
-                    memberSegment: 'free'
+                    member_status: 'paid'
                 }
             });
-            assert.equal(segment, 'free');
+            assert.equal(memberStatus, 'paid');
+        });
+
+        it('rejects an invalid member_status', async function () {
+            const controller = new EmailController({}, {
+                models: {
+                    Post: createModelClass(),
+                    Newsletter: createModelClass()
+                }
+            });
+            await assert.rejects(controller._getFrameData({
+                options: {
+                    id: 'options-id',
+                    member_status: 'comped'
+                },
+                data: {}
+            }), {errorType: 'ValidationError'});
+        });
+
+        it('maps legacy memberSegment values onto member_status', async function () {
+            const controller = new EmailController({}, {
+                models: {
+                    Post: createModelClass({
+                        findOne: {
+                            newsletter: createModel({slug: 'post-newsletter'})
+                        }
+                    }),
+                    Newsletter: createModelClass()
+                }
+            });
+            const free = await controller._getFrameData({
+                options: {
+                    id: 'options-id',
+                    memberSegment: 'status:free'
+                }
+            });
+            assert.equal(free.memberStatus, 'free');
+
+            const paid = await controller._getFrameData({
+                options: {
+                    id: 'options-id'
+                },
+                data: {
+                    memberSegment: 'status:-free'
+                }
+            });
+            assert.equal(paid.memberStatus, 'paid');
+        });
+
+        it('rejects an unknown legacy memberSegment', async function () {
+            const controller = new EmailController({}, {
+                models: {
+                    Post: createModelClass(),
+                    Newsletter: createModelClass()
+                }
+            });
+            await assert.rejects(controller._getFrameData({
+                options: {
+                    id: 'options-id',
+                    memberSegment: 'status:-free+product:\'gold\''
+                },
+                data: {}
+            }), {errorType: 'ValidationError'});
+        });
+
+        it('prefers member_status over legacy memberSegment', async function () {
+            const controller = new EmailController({}, {
+                models: {
+                    Post: createModelClass({
+                        findOne: {
+                            newsletter: createModel({slug: 'post-newsletter'})
+                        }
+                    }),
+                    Newsletter: createModelClass()
+                }
+            });
+            const {memberStatus} = await controller._getFrameData({
+                options: {
+                    id: 'options-id',
+                    member_status: 'free',
+                    memberSegment: 'status:-free'
+                }
+            });
+            assert.equal(memberStatus, 'free');
+        });
+
+        it('rejects a legacy memberSegment even when member_status is present', async function () {
+            const controller = new EmailController({}, {
+                models: {
+                    Post: createModelClass(),
+                    Newsletter: createModelClass()
+                }
+            });
+            await assert.rejects(controller._getFrameData({
+                options: {
+                    id: 'options-id',
+                    member_status: 'paid',
+                    memberSegment: 'status:-free+product:\'gold\''
+                },
+                data: {}
+            }), {errorType: 'ValidationError'});
+        });
+
+        it('rejects a non-string legacy memberSegment', async function () {
+            const controller = new EmailController({}, {
+                models: {
+                    Post: createModelClass(),
+                    Newsletter: createModelClass()
+                }
+            });
+            // a single-element array would coerce to a valid object key
+            await assert.rejects(controller._getFrameData({
+                options: {
+                    id: 'options-id',
+                    memberSegment: ['status:free']
+                },
+                data: {}
+            }), {errorType: 'ValidationError'});
+        });
+
+        it('rejects an empty member_tier', async function () {
+            const controller = new EmailController({}, {
+                models: {
+                    Post: createModelClass(),
+                    Newsletter: createModelClass()
+                }
+            });
+            await assert.rejects(controller._getFrameData({
+                options: {
+                    id: 'options-id',
+                    member_tier: ''
+                },
+                data: {}
+            }), {errorType: 'ValidationError'});
+        });
+
+        it('rejects a non-string member_tier from options', async function () {
+            const controller = new EmailController({}, {
+                models: {
+                    Post: createModelClass(),
+                    Newsletter: createModelClass()
+                }
+            });
+            await assert.rejects(controller._getFrameData({
+                options: {
+                    id: 'options-id',
+                    member_tier: ['silver', 'gold']
+                },
+                data: {}
+            }), {errorType: 'ValidationError'});
+        });
+
+        it('rejects a non-string member_tier from data', async function () {
+            const controller = new EmailController({}, {
+                models: {
+                    Post: createModelClass(),
+                    Newsletter: createModelClass()
+                }
+            });
+            await assert.rejects(controller._getFrameData({
+                options: {
+                    id: 'options-id'
+                },
+                data: {
+                    member_tier: {slug: 'gold'}
+                }
+            }), {errorType: 'ValidationError'});
         });
     });
 

@@ -1,4 +1,3 @@
-import { test as baseTest } from "vitest";
 import { setupServer } from "msw/node";
 
 /**
@@ -10,9 +9,10 @@ import { setupServer } from "msw/node";
  * Usage:
  *
  * @example
- * // Import explicitly from this module
- * import { testWithServer as test } from "@test/fixtures/msw";
+ * // Compose the fixture into your test via vitest's test.extend
+ * import { serverFixture } from "@test-utils/fixtures/msw";
  * import { http, HttpResponse } from "msw";
+ * const test = baseTest.extend({ ...serverFixture });
  *
  * describe("useChangelog", () => {
  *   // Server auto-initializes when you destructure { server }
@@ -48,7 +48,3 @@ export const serverFixture = {
         server.close();
     },
 } as const;
-
-export const testWithServer = baseTest.extend<{
-    server: ReturnType<typeof setupServer>;
-}>(serverFixture);

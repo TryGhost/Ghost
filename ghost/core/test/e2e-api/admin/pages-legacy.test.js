@@ -129,8 +129,9 @@ describe('Pages API', function () {
         const additionalProperties = ['reading_time'];
         localUtils.API.checkResponse(returnedPage, 'page', additionalProperties);
 
-        assert.equal(returnedPage.mobiledoc, page.mobiledoc);
-        assert.equal(returnedPage.lexical, null);
+        // mobiledoc input is converted to lexical on save
+        assert.equal(returnedPage.mobiledoc, null);
+        assert.ok(returnedPage.lexical.includes('Testing post creation with mobiledoc'));
     });
 
     it('Can add a page with lexical', async function () {

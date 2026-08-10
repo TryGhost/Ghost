@@ -311,9 +311,10 @@ export default function FeedbackPage() {
     const [score, setScore] = useState(initialScore);
     const positive = score === 1;
     const isLoggedIn = !!member;
+    const fromEmailLink = !!(uuid && key);
 
-    const [confirmed, setConfirmed] = useState(isLoggedIn);
-    const [loading, setLoading] = useState(isLoggedIn);
+    const [confirmed, setConfirmed] = useState(fromEmailLink && isLoggedIn);
+    const [loading, setLoading] = useState(fromEmailLink && isLoggedIn);
     const [error, setError] = useState(null);
 
     const doSendFeedback = async (selectedScore) => {

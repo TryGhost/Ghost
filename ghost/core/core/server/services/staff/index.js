@@ -16,7 +16,7 @@ class StaffServiceWrapper {
         const {GhostMailer} = require('../mail');
         const mailer = new GhostMailer();
         const settingsCache = require('../../../shared/settings-cache');
-        const urlUtils = require('../../../shared/url-utils');
+        const urlUtils = require('../../../shared/url-utils').default;
         const {blogIcon} = require('../../../server/lib/image');
         const settingsHelpers = require('../settings-helpers');
 

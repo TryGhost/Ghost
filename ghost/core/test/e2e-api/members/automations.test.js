@@ -5,7 +5,8 @@ const DomainEvents = require('@tryghost/domain-events');
 const {agentProvider, fixtureManager, mockManager} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 const db = require('../../../core/server/data/db');
-const adapterManager = require('../../../core/server/services/adapter-manager');
+const adapterManager = require('../../../core/server/services/adapter-manager').default;
+const MailgunClient = require('../../../core/server/services/lib/mailgun-client');
 const mailService = require('../../../core/server/services/mail');
 const membersService = require('../../../core/server/services/members');
 const {getSignedAdminToken} = require('../../../core/server/adapters/scheduling/utils');
@@ -79,16 +80,33 @@ async function upsertEmailDesignSetting({id, senderReplyTo}) {
         });
 }
 
+function serializeEditableAction(action) {
+    if (action.type !== 'send_email') {
+        return action;
+    }
+
+    return {
+        id: action.id,
+        type: action.type,
+        data: {
+            email_subject: action.data.email_subject,
+            email_lexical: action.data.email_lexical,
+            email_design_setting_id: action.data.email_design_setting_id
+        }
+    };
+}
+
 async function updateAutomationEmailDesignSetting(automation, emailDesignSettingId) {
     const actions = automation.actions.map((action) => {
         if (action.type !== 'send_email') {
             return action;
         }
 
+        const editableAction = serializeEditableAction(action);
         return {
-            ...action,
+            ...editableAction,
             data: {
-                ...action.data,
+                ...editableAction.data,
                 email_design_setting_id: emailDesignSettingId
             }
         };
@@ -114,7 +132,7 @@ async function updateAutomation(automation, overrides = {}) {
         .body({
             automations: [{
                 status: automation.status,
-                actions: automation.actions,
+                actions: automation.actions.map(serializeEditableAction),
                 edges: automation.edges,
                 ...overrides
             }]
@@ -124,10 +142,48 @@ async function updateAutomation(automation, overrides = {}) {
     return body.automations[0];
 }
 
-function getMemberWelcomeEmailSends() {
-    return mailService.GhostMailer.prototype.send.getCalls()
-        .map(call => call.args[0])
-        .filter(emailToSend => emailToSend.tags?.includes('member-welcome-email'));
+function getAutomationEmailSends() {
+    return MailgunClient.prototype.send.getCalls()
+        .filter(call => call.args[0].tags?.includes('automation-email'));
+}
+
+async function getEmailSentCounts(actions) {
+    const actionIds = actions.map(action => action.id);
+    const rows = await db.knex('automation_action_revisions')
+        .select('action_id', 'email_sent_count')
+        .whereIn('action_id', actionIds);
+
+    const countsByActionId = new Map(rows.map(row => [row.action_id, row.email_sent_count]));
+
+    return actionIds.map(actionId => countsByActionId.get(actionId));
+}
+
+async function runAutomationForFreeMember(automation, email) {
+    const member = await membersService.api.members.create({
+        email,
+        name: 'Automation Test Member',
+        status: 'free',
+        email_disabled: false
+    });
+    assert.equal(member.get('status'), 'free');
+
+    await DomainEvents.allSettled();
+
+    const clock = mockSystemTime(new Date());
+
+    try {
+        for (const action of automation.actions) {
+            if (action.type === 'wait') {
+                clock.setSystemTime(new Date(Date.now() + action.data.wait_hours * HOUR_MS));
+            }
+
+            await runSchedulerPoll();
+        }
+
+        await runSchedulerPoll();
+    } finally {
+        clock.restore();
+    }
 }
 
 describe('Members Automations', function () {
@@ -144,6 +200,7 @@ describe('Members Automations', function () {
         const schedulerAdapter = adapterManager.getAdapter('scheduling');
         sinon.stub(schedulerAdapter, 'schedule');
         sinon.stub(schedulerAdapter, '_pingUrl');
+        sinon.stub(MailgunClient.prototype, 'send').resolves({id: '<bulk-mailgun-message-id>'});
         sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail sent');
         await setupAutomationsFixture();
     });
@@ -161,6 +218,7 @@ describe('Members Automations', function () {
 
         const sendEmailActions = automation.actions.filter(action => action.type === 'send_email');
         assert.equal(sendEmailActions.length, 2);
+        assert.deepEqual(await getEmailSentCounts(sendEmailActions), [null, null]);
 
         const emailDesignSettingId = sendEmailActions[0].data.email_design_setting_id;
         assert(emailDesignSettingId, 'Expected send email action to have an email design setting');
@@ -178,52 +236,38 @@ describe('Members Automations', function () {
         );
 
         const email = `automation-free-member-${Date.now()}@test.example`;
-        const member = await membersService.api.members.create({
-            email,
-            name: 'Automation Test Member',
-            status: 'free',
-            email_disabled: false
-        });
-        assert.equal(member.get('status'), 'free');
+        await runAutomationForFreeMember(automation, email);
 
-        await DomainEvents.allSettled();
-
-        const clock = mockSystemTime(new Date());
-
-        try {
-            for (const action of automation.actions) {
-                if (action.type === 'wait') {
-                    clock.setSystemTime(new Date(Date.now() + action.data.wait_hours * HOUR_MS));
-                }
-
-                await runSchedulerPoll();
-            }
-
-            await runSchedulerPoll();
-        } finally {
-            clock.restore();
-        }
-
-        const sentEmails = getMemberWelcomeEmailSends();
-        assert.equal(sentEmails.length, 2);
-        assert.deepEqual(sentEmails.map(({to}) => to), [email, email]);
+        const sendCalls = getAutomationEmailSends();
+        const sentEmails = sendCalls.map(call => call.args[0]);
+        assert.equal(sendCalls.length, 2);
+        assert.deepEqual(sendCalls.map(call => Object.keys(call.args[1])), [[email], [email]]);
         assert.deepEqual(sentEmails.map(({subject}) => subject), ['Welcome!', 'Follow up']);
         assert.match(sentEmails[0].html, /Welcome!/);
         assert.match(sentEmails[1].html, /Follow up/);
-        assert.deepEqual(sentEmails.map(({forceTextContent}) => forceTextContent), [true, true]);
+        assert.match(sentEmails[0].plaintext, /Lorem ipsum\./);
+        assert.match(sentEmails[1].plaintext, /Lorem ipsum\./);
         assert.deepEqual(sentEmails.map(({replyTo}) => replyTo), [AUTOMATION_EMAIL_REPLY_TO, AUTOMATION_EMAIL_REPLY_TO]);
         assert.deepEqual(sentEmails.map(({tags}) => tags), [
-            ['member-welcome-email'],
-            ['member-welcome-email']
+            ['automation-email'],
+            ['automation-email']
         ]);
-        sinon.assert.calledWithMatch(mailService.GhostMailer.prototype.send, {
-            to: email,
+        sinon.assert.calledWithMatch(MailgunClient.prototype.send, {
             subject: 'Welcome!'
+        }, {
+            [email]: sinon.match.object
         });
-        sinon.assert.calledWithMatch(mailService.GhostMailer.prototype.send, {
-            to: email,
+        sinon.assert.calledWithMatch(MailgunClient.prototype.send, {
             subject: 'Follow up'
+        }, {
+            [email]: sinon.match.object
         });
+        assert.deepEqual(await getEmailSentCounts(sendEmailActions), [1, 1]);
+
+        const secondEmail = `automation-second-free-member-${Date.now()}@test.example`;
+        await runAutomationForFreeMember(automation, secondEmail);
+
+        assert.deepEqual(await getEmailSentCounts(sendEmailActions), [2, 2]);
     });
 
     it('does nothing when the automation is inactive', async function () {
@@ -242,7 +286,7 @@ describe('Members Automations', function () {
         await DomainEvents.allSettled();
         await runSchedulerPoll();
 
-        assert.equal(getMemberWelcomeEmailSends().length, 0);
+        assert.equal(getAutomationEmailSends().length, 0);
     });
 
     it('stops an automation run when its automation is deactivated before poll', async function () {
@@ -271,7 +315,7 @@ describe('Members Automations', function () {
             clock.restore();
         }
 
-        assert.equal(getMemberWelcomeEmailSends().length, 0);
+        assert.equal(getAutomationEmailSends().length, 0);
     });
 
     it('stops an automation run when the associated member changes their status', async function () {
@@ -305,6 +349,6 @@ describe('Members Automations', function () {
             clock.restore();
         }
 
-        assert.equal(getMemberWelcomeEmailSends().length, 0);
+        assert.equal(getAutomationEmailSends().length, 0);
     });
 });

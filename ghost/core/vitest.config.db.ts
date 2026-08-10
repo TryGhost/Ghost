@@ -12,11 +12,13 @@ import {defineConfig} from 'vitest/config';
 //    reset in place between boots, never duplicated — exactly one Ghost per
 //    process, the constraint mocha ran under). Across forks, files shard in
 //    parallel — the speedup over the old serial model (~4x locally).
-//  - forks, not threads: worker threads share one process.env, so the
-//    per-process DB derivation would collide. Separate processes each get their
-//    own env → collision-free DBs, the same isolation each mocha process had.
-//    (The forks-teardown deadlock the unit config avoids does not reproduce here
-//    on vitest 4 — the heavy DB forks exit cleanly.)
+//    The `legacy` project overrides this to 'threads' — see its note below.
+//  - the per-worker env derivation works under either pool. Both of vitest 4's
+//    pool workers are handed an explicit `env` object (`fork(…, {env})` /
+//    `new Worker(…, {env})`), and an explicit object gives a worker thread its
+//    OWN copy of process.env — only `SHARE_ENV` shares it. So a worker's writes
+//    to process.env stay local to that worker and the derived DB + port never
+//    collide, threads or forks.
 //  - test/utils/vitest-setup-db.ts provisions the per-process DB + port and
 //    bridges @tryghost/express-test's snapshot hooks onto vitest.
 //
@@ -50,8 +52,8 @@ const sharedDbConfig = {
     // forks (one child process per worker) + isolate:false → each fork boots a
     // single Ghost against its own per-process DB+port (derived in
     // vitest-setup-db.ts) and runs its share of files serially, sharing that one
-    // Ghost; files shard across forks in parallel. Threads can't do this: worker
-    // threads share process.env, so the per-process DB derivation would collide.
+    // Ghost; files shard across forks in parallel. The default for every project
+    // here except `legacy`, which sets pool: 'threads' (see its note below).
     pool: 'forks' as const,
     isolate: false,
     sequence: {shuffle: {files: !!process.env.CI}},
@@ -68,10 +70,12 @@ const sharedDbConfig = {
         // Bree runs jobs in worker_threads that inherit this NODE_OPTIONS; tsx lets
         // them require() Ghost's .ts sources (job files pull in e.g.
         // labs-flag-overrides.ts). The old mocha lane got tsx from `--node-option
-        // import=tsx`; vitest only registers tsx in-process (not in the fork
-        // execArgv worker_threads inherit) and ignores poolOptions.forks.execArgv
-        // here, so route it through the env. Applied on test.env (after fork
-        // startup) so only the spawned workers pick it up, not the fork.
+        // import=tsx`; vitest only registers tsx in the vitest worker itself (not
+        // in the execArgv Bree's worker_threads inherit) and ignores
+        // poolOptions.*.execArgv here, so route it through the env. Applied on
+        // test.env, i.e. inside the vitest worker once it's up, so only the
+        // worker_threads it spawns pick it up — pool-agnostic, works the same
+        // whether the vitest worker is a fork or a thread.
         NODE_OPTIONS: (process.env.NODE_OPTIONS ? process.env.NODE_OPTIONS + ' ' : '') + '--import tsx --conditions=source'
     },
     hookTimeout: 60000
@@ -147,6 +151,18 @@ export default defineConfig({
                 test: {
                     ...sharedDbConfig,
                     name: 'legacy',
+                    // threads, not the shared 'forks' default. Under forks this
+                    // project intermittently wedged in CI: every file reported a
+                    // result, then the run hung with no summary until the job's
+                    // 10m timeout fired. The wedge is one fork that finishes its
+                    // file but never sends `testfileFinished` — vitest's pool
+                    // awaits that message with no deadline (unlike its bounded
+                    // start/stop/SIGKILL paths), so main + that one fork sit
+                    // parked in the event loop forever. Same symptom the unit
+                    // config hit; same fix (see vitest.config.ts). Measured
+                    // locally: forks 2 hangs in ~10 runs, threads 0 in 39.
+                    // Not a perf change — ~4% at maxWorkers=3, well inside noise.
+                    pool: 'threads' as const,
                     // isolate:true for the same reason as integration: the legacy
                     // suite is the most state-pollution-prone (it was parked on
                     // exactly that under the old serial model), so per-file

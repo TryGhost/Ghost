@@ -28,22 +28,23 @@ const postMatcherShallowIncludes = Object.assign(
 
 async function trackDb(fn, skip) {
     const db = require('../../../core/server/data/db');
-    if (db?.knex?.client?.config?.client !== 'sqlite3') {
+    if (db?.knex?.client?.config?.client !== 'better-sqlite3') {
         return skip();
     }
-    /** @type {import('sqlite3').Database} */
-    const database = db.knex.client;
+
+    /** @type {import('knex').Knex.Client} */
+    const client = db.knex.client;
 
     const queries = [];
     function handler(/** @type {{sql: string}} */ query) {
         queries.push(query);
     }
 
-    database.on('query', handler);
+    client.on('query', handler);
 
     await fn();
 
-    database.off('query', handler);
+    client.off('query', handler);
 
     return queries;
 }
@@ -64,7 +65,7 @@ describe('Posts Content API', function () {
         // Assign a newsletter to one of the posts
         const newsletterId = testUtils.DataGenerator.Content.newsletters[0].id;
         const postId = testUtils.DataGenerator.Content.posts[0].id;
-        await models.Post.edit({newsletter_id: newsletterId}, {id: postId});
+        await models.Post.edit({newsletter_id: newsletterId}, {id: postId, context: {internal: true}});
     });
 
     it('Can request posts', async function () {
@@ -211,6 +212,18 @@ describe('Posts Content API', function () {
                 etag: anyEtag
             })
             .matchBodySnapshot();
+    });
+
+    it('Can request the url of a single post with a narrowed fields list', async function () {
+        // `findOne` drops the primary key when `?fields` omits it, and the URL
+        // is looked up by id — so without the serializer forcing it back in,
+        // the post serializes /404/ instead of its own URL.
+        const {body} = await agent
+            .get('posts/slug/welcome/?fields=title,url')
+            .expectStatus(200);
+
+        assert.doesNotMatch(body.posts[0].url, /\/404\//);
+        assert.deepEqual(Object.keys(body.posts[0]).sort(), ['slug', 'title', 'url']);
     });
 
     it('Can include relations', async function () {
@@ -484,7 +497,7 @@ describe('Posts Content API', function () {
             published_at: publishedAt,
             slug: 'consistent-ordering-1',
             tags: [{slug: 'consistent-order-test'}],
-            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('post 1')
+            lexical: testUtils.DataGenerator.markdownToLexical('post 1')
         }, {context: {internal: true}});
 
         const post2 = await models.Post.add({
@@ -493,7 +506,7 @@ describe('Posts Content API', function () {
             published_at: publishedAt,
             slug: 'consistent-ordering-2',
             tags: [{slug: 'consistent-order-test'}],
-            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('post 2')
+            lexical: testUtils.DataGenerator.markdownToLexical('post 2')
         }, {context: {internal: true}});
 
         const page1Response = await agent

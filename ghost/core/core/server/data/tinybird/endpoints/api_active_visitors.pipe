@@ -11,5 +11,6 @@ SQL >
         site_uuid = {{String(site_uuid, 'mock_site_uuid', description="Site UUID", required=True)}}
         and timestamp >= (now() - interval 5 minute)
         {% if defined(post_uuid) %} and post_uuid = {{ String(post_uuid, description="Post UUID to filter on", required=False) }} {% end %}
+        {% if defined(gift_link) %}{% if gift_link == 'false' or gift_link == '0' %} and gift_link = '' {% else %} and gift_link != '' {% end %}{% end %}
 
 TYPE ENDPOINT

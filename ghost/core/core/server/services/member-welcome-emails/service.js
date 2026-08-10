@@ -1,6 +1,6 @@
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 const settingsCache = require('../../../shared/settings-cache');
 const verifyEmailTemplate = require('../newsletters/emails/verify-email');
 const MagicLink = require('../lib/magic-link/magic-link');
@@ -9,10 +9,12 @@ const emailAddressService = require('../email-address');
 const settingsHelpers = require('../settings-helpers');
 const EmailAddressParser = require('../email-address/email-address-parser');
 const mail = require('../mail');
+const MailgunClient = require('../lib/mailgun-client');
+const config = require('../../../shared/config');
 const labs = require('../../../shared/labs');
 const {Automation, EmailDesignSetting, Newsletter} = require('../../models');
 const MemberWelcomeEmailRenderer = require('./member-welcome-email-renderer');
-const {DEFAULT_EMAIL_DESIGN_SETTING_SLUG, MEMBER_WELCOME_EMAIL_LOG_KEY, MEMBER_WELCOME_EMAIL_TAG, MEMBER_WELCOME_EMAIL_SLUGS, MESSAGES} = require('./constants');
+const {AUTOMATION_EMAIL_TAG, DEFAULT_EMAIL_DESIGN_SETTING_SLUG, MEMBER_WELCOME_EMAIL_LOG_KEY, MEMBER_WELCOME_EMAIL_TAG, MEMBER_WELCOME_EMAIL_SLUGS, MESSAGES} = require('./constants');
 
 const VERIFIED_SENDER_PROPERTIES = ['sender_reply_to'];
 const WELCOME_EMAIL_FILTER = `slug:${MEMBER_WELCOME_EMAIL_SLUGS.free},slug:${MEMBER_WELCOME_EMAIL_SLUGS.paid}`;
@@ -46,7 +48,8 @@ const getSenderDetails = (designSettingsJson) => {
 };
 
 class MemberWelcomeEmailService {
-    #mailer;
+    #transactionalMailer;
+    #bulkMailer;
     #renderer;
     #magicLinkService;
     #memberWelcomeEmails = {free: null, paid: null};
@@ -54,7 +57,8 @@ class MemberWelcomeEmailService {
 
     constructor({t, dir, singleUseTokenProvider}) {
         emailAddressService.init();
-        this.#mailer = new mail.GhostMailer();
+        this.#transactionalMailer = new mail.GhostMailer();
+        this.#bulkMailer = new MailgunClient({config, settings: settingsCache});
         this.#renderer = new MemberWelcomeEmailRenderer({t, dir});
 
         const getSigninURL = (token) => {
@@ -306,7 +310,7 @@ class MemberWelcomeEmailService {
                     logging.warn(message.text);
                 }
 
-                return this.#mailer.send({
+                return this.#transactionalMailer.send({
                     from: fromEmail,
                     subject: 'Verify email address',
                     forceTextContent: true,
@@ -367,10 +371,14 @@ class MemberWelcomeEmailService {
      * @param {string} options.email.subject
      * @param {null | object} options.email.designSettings
      * @param {'welcome' | 'automation'} options.emailType
+     * @param {boolean} [options.trackOpens]
+     * @param {boolean} [options.trackClicks]
+     * @param {string | null} [options.automationActionRevisionId]
+     * @param {string | null} [options.automationRunStepId]
      * @param {null | {url: string, oneClickUrl: string}} [options.unsubscribe] - When set, the footer links to an unsubscribe URL and the email carries one-click List-Unsubscribe headers
-     * @returns {Promise<void>}
+     * @returns {Promise<unknown>}
      */
-    async #sendEmail({member, memberStatus, email, emailType, unsubscribe = null}) {
+    async #sendEmail({member, memberStatus, email, emailType, trackOpens, trackClicks = false, automationActionRevisionId = null, automationRunStepId = null, unsubscribe = null}) {
         if (!member.email) {
             throw new errors.IncorrectUsageError({
                 message: MESSAGES.MISSING_RECIPIENT_EMAIL
@@ -395,28 +403,105 @@ class MemberWelcomeEmailService {
                 uuid: member.uuid
             },
             siteSettings: this.#getSiteSettings(),
-            unsubscribeUrl: unsubscribe?.url
+            unsubscribeUrl: unsubscribe?.url,
+            trackClicks,
+            automationActionRevisionId,
+            automationRunStepId
         });
 
         const senderOptions = await this.#getEffectiveSenderOptions(
             getSenderDetails(email.designSettings)
         );
 
-        const headers = unsubscribe?.oneClickUrl ? {
-            'List-Unsubscribe': `<${unsubscribe.oneClickUrl}>`,
-            'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click'
-        } : undefined;
+        /** @type {string[]} */ let tags;
+        let sendEmail;
+        switch (emailType) {
+        case 'welcome':
+            tags = [MEMBER_WELCOME_EMAIL_TAG];
+            sendEmail = this.#sendTransactionalEmail.bind(this);
+            break;
+        case 'automation':
+            tags = [AUTOMATION_EMAIL_TAG];
+            sendEmail = this.#sendBulkEmail.bind(this);
+            break;
+        default: {
+            /** @type {never} */ const _exhaustive = emailType;
+            throw new errors.InternalServerError({
+                message: `Unexpected email type ${_exhaustive}`
+            });
+        }
+        }
 
-        await this.#mailer.send({
+        return await sendEmail({
             to: member.email,
             subject,
             html,
             text,
-            forceTextContent: true,
-            tags: [MEMBER_WELCOME_EMAIL_TAG],
-            ...(headers ? {headers} : {}),
+            tags,
+            trackOpens,
+            listUnsubscribe: unsubscribe?.oneClickUrl,
             ...senderOptions
         });
+    }
+
+    /**
+     * @param {object} options
+     * @param {string} options.to
+     * @param {string} options.subject
+     * @param {string} options.html
+     * @param {string} options.text
+     * @param {string} options.from
+     * @param {string} [options.replyTo]
+     * @param {string[]} [options.tags]
+     * @param {boolean} [options.trackOpens]
+     * @param {string} [options.listUnsubscribe]
+     * @returns {Promise<unknown>}
+     */
+    async #sendTransactionalEmail({to, subject, html, text, from, replyTo, tags, trackOpens, listUnsubscribe}) {
+        const headers = listUnsubscribe ? {
+            'List-Unsubscribe': `<${listUnsubscribe}>`,
+            'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click'
+        } : undefined;
+
+        return await this.#transactionalMailer.send({
+            to,
+            subject,
+            html,
+            text,
+            forceTextContent: true,
+            tags,
+            ...(headers ? {headers} : {}),
+            ...(typeof trackOpens === 'boolean' ? {trackOpens} : {}),
+            from,
+            replyTo
+        });
+    }
+
+    /**
+     * @param {object} options
+     * @param {string} options.to
+     * @param {string} options.subject
+     * @param {string} options.html
+     * @param {string} options.text
+     * @param {string} options.from
+     * @param {string} [options.replyTo]
+     * @param {string[]} [options.tags]
+     * @param {boolean} [options.trackOpens]
+     * @param {string} [options.listUnsubscribe]
+     * @returns {Promise<unknown>}
+     */
+    async #sendBulkEmail({to, subject, html, text, from, replyTo, tags, trackOpens, listUnsubscribe}) {
+        return await this.#bulkMailer.send({
+            subject,
+            html,
+            plaintext: text,
+            from,
+            replyTo,
+            tags,
+            ...(typeof trackOpens === 'boolean' ? {track_opens: trackOpens} : {})
+        }, {
+            [to]: listUnsubscribe ? {list_unsubscribe: listUnsubscribe} : {}
+        }, []);
     }
 
     async send({member, memberStatus}) {
@@ -455,9 +540,13 @@ class MemberWelcomeEmailService {
      * @param {null | string} options.member.name
      * @param {string} options.member.uuid
      * @param {'free' | 'paid'} options.memberStatus
-     * @returns {Promise<void>}
+     * @param {boolean} options.trackOpens
+     * @param {boolean} options.trackClicks
+     * @param {string} options.automationActionRevisionId
+     * @param {string} options.automationRunStepId
+     * @returns {Promise<unknown>}
      */
-    async sendAutomationEmail({email, member, memberStatus}) {
+    async sendAutomationEmail({email, member, memberStatus, trackOpens, trackClicks, automationActionRevisionId, automationRunStepId}) {
         const designSettings = email.designSettingId ?
             await EmailDesignSetting.findOne({id: email.designSettingId}) :
             null;
@@ -473,7 +562,7 @@ class MemberWelcomeEmailService {
             null;
         const unsubscribe = unsubscribeUrl ? {url: unsubscribeUrl, oneClickUrl: unsubscribeUrl} : null;
 
-        await this.#sendEmail({
+        return await this.#sendEmail({
             member,
             memberStatus,
             emailType: 'automation',
@@ -482,6 +571,10 @@ class MemberWelcomeEmailService {
                 subject: email.subject,
                 designSettings: designSettingsJson
             },
+            trackOpens,
+            trackClicks,
+            automationActionRevisionId,
+            automationRunStepId,
             unsubscribe
         });
     }
@@ -619,12 +712,11 @@ class MemberWelcomeEmailService {
             getSenderDetails(designSettingsJson)
         );
 
-        await this.#mailer.send({
+        await this.#sendTransactionalEmail({
             to: email,
             subject: `[Test] ${renderedSubject}`,
             html,
             text,
-            forceTextContent: true,
             ...senderOptions
         });
     }

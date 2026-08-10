@@ -1,4 +1,5 @@
 import {getTinybirdToken} from '../api/tinybird';
+import {useWebAnalyticsEnabled} from '../providers/app-provider';
 
 export interface UseTinybirdTokenResult {
     token: string | undefined;
@@ -16,7 +17,21 @@ let hasLoggedConfigWarning = false;
 
 export const useTinybirdToken = (options: UseTinybirdTokenOptions = {}): UseTinybirdTokenResult => {
     const {enabled = true} = options;
-    const tinybirdQuery = getTinybirdToken({enabled});
+    // Web analytics is a global kill-switch read from context, so no call site threads it.
+    const webAnalyticsEnabled = useWebAnalyticsEnabled();
+    const effectiveEnabled = enabled && webAnalyticsEnabled;
+    const tinybirdQuery = getTinybirdToken({enabled: effectiveEnabled});
+
+    // A disabled React Query can keep cached data/errors, so return an idle
+    // result — else direct consumers (the providers) leak a stale token.
+    if (!effectiveEnabled) {
+        return {
+            token: undefined,
+            isLoading: false,
+            error: null,
+            refetch: tinybirdQuery.refetch
+        };
+    }
 
     const apiToken = tinybirdQuery.data?.tinybird?.token;
     
@@ -25,7 +40,7 @@ export const useTinybirdToken = (options: UseTinybirdTokenOptions = {}): UseTiny
     const error = tinybirdQuery.error as Error | null;
     
     // Log a warning ONCE if we got a response but no valid token (likely misconfiguration)
-    if (!tinybirdQuery.isLoading && enabled && tinybirdQuery.data && !apiToken && !hasLoggedConfigWarning) {
+    if (!tinybirdQuery.isLoading && tinybirdQuery.data && !apiToken && !hasLoggedConfigWarning) {
         // eslint-disable-next-line no-console
         console.warn('Tinybird analytics: No valid token received. Check your Tinybird configuration (workspaceId and adminToken must be non-empty strings).');
         hasLoggedConfigWarning = true;

@@ -57,6 +57,7 @@ const TINYBIRD_PIPES = [
     'api_top_utm_contents',
     'api_top_utm_terms',
     'api_top_devices',
+    'api_gift_link_visits',
     // v2 pipes (materialized view optimization)
     'api_kpis_v2',
     'api_active_visitors_v2',

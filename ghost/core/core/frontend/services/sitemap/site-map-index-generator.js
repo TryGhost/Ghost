@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const xml = require('xml');
 const moment = require('moment');
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 const localUtils = require('./utils');
 
 const XMLNS_DECLS = {

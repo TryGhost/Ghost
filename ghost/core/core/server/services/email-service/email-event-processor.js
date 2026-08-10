@@ -28,7 +28,7 @@ async function waitForEvent() {
  */
 
 /**
- * @typedef EmailEventStorage
+ * @typedef NewsletterEmailEventStorage
  * @property {(event: EmailDeliveredEvent) => Promise<void>} handleDelivered
  * @property {(event: EmailOpenedEvent) => Promise<void>} handleOpened
  * @property {(event: EmailBouncedEvent) => Promise<void>} handlePermanentFailed

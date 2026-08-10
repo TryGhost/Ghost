@@ -1,0 +1,177 @@
+import {JSDOM} from 'jsdom';
+import Prettier from 'prettier';
+import {LexicalHTMLRenderer as Renderer} from '../src/index.js';
+import {ImageNode, PaywallNode, HtmlNode} from '@tryghost/kg-default-nodes';
+
+const nodes = [ImageNode, PaywallNode, HtmlNode];
+
+interface TestLexicalState {
+    root: {
+        children: Array<Record<string, unknown>>;
+        direction: string | null;
+        format: string;
+        indent: number;
+        type: string;
+        version: number;
+    };
+}
+
+describe('Cards', function () {
+    let lexicalState: TestLexicalState;
+    let options: Record<string, unknown>;
+
+    beforeEach(function () {
+        lexicalState = {
+            root: {
+                children: [],
+                direction: null,
+                format: '',
+                indent: 0,
+                type: 'root',
+                version: 1
+            }
+        };
+
+        options = {
+            imageOptimization: {
+                contentImageSizes: {
+                    w600: {width: 600},
+                    w1000: {width: 1000},
+                    w1600: {width: 1600},
+                    w2400: {width: 2400}
+                }
+            },
+            createDocument() {
+                return (new JSDOM()).window.document;
+            }
+        };
+    });
+
+    it('renders an image card', async function () {
+        const imageCard = {
+            type: 'image',
+            src: '/content/images/2022/11/koenig-lexical.jpg',
+            caption: 'This is a caption',
+            cardWidth: 'regular'
+        };
+        lexicalState.root.children.push(imageCard);
+
+        const renderer = new Renderer({nodes});
+        const renderedInput = await renderer.render(JSON.stringify(lexicalState), options);
+
+        const output = await Prettier.format(renderedInput, {parser: 'html'});
+
+        const expected =
+`<figure class="kg-card kg-image-card kg-card-hascaption">
+  <img
+    src="/content/images/2022/11/koenig-lexical.jpg"
+    class="kg-image"
+    alt=""
+    loading="lazy"
+  />
+  <figcaption>This is a caption</figcaption>
+</figure>
+`;
+        expect(output).toBe(expected);
+    });
+
+    it('renders a paywall card', async function () {
+        const paywallCard = {
+            type: 'paywall'
+        };
+
+        lexicalState.root.children.push(paywallCard);
+
+        const renderer = new Renderer({nodes});
+        const renderedInput = await renderer.render(JSON.stringify(lexicalState), options);
+
+        const output = await Prettier.format(renderedInput, {parser: 'html'});
+
+        const expected = `<!--members-only-->\n`;
+        expect(output).toBe(expected);
+    });
+
+    it('renders HTML card with unclosed tags', async function () {
+        lexicalState.root.children.push({
+            type: 'html',
+            html: '<div style="color: red">'
+        }, {
+            children: [
+                {
+                    detail: 0,
+                    format: 0,
+                    mode: 'normal',
+                    style: '',
+                    text: 'Testing this',
+                    type: 'text',
+                    version: 1
+                }
+            ],
+            direction: 'ltr',
+            format: '',
+            indent: 0,
+            type: 'paragraph',
+            version: 1
+        }, {
+            type: 'html',
+            html: '</div>'
+        });
+
+        const renderer = new Renderer({nodes});
+        const renderedInput = await renderer.render(JSON.stringify(lexicalState), options);
+
+        const expected = `
+<!--kg-card-begin: html-->
+<div style="color: red">
+<!--kg-card-end: html-->
+<p>Testing this</p>
+<!--kg-card-begin: html-->
+</div>
+<!--kg-card-end: html-->
+`;
+        expect(renderedInput).toBe(expected);
+    });
+
+    it('renders HTML card with html entities and single-quote attributes', async function () {
+        lexicalState.root.children.push({
+            type: 'html',
+            html: '<p>&lt;pre&gt;Test&lt;/pre&gt;</p>\n<div data-graph-name=\'The "all-in" cost of a grant\'>Test</div>'
+        });
+
+        const renderer = new Renderer({nodes});
+        const renderedInput = await renderer.render(JSON.stringify(lexicalState), options);
+
+        const expected = `
+<!--kg-card-begin: html-->
+<p>&lt;pre&gt;Test&lt;/pre&gt;</p>
+<div data-graph-name='The "all-in" cost of a grant'>Test</div>
+<!--kg-card-end: html-->
+`;
+        expect(renderedInput).toBe(expected);
+    });
+
+    // https://linear.app/ghost/issue/ONC-801/
+    // we had an issue with HTML cards in content created during early alpha period
+    // where they would not be rendered in email due to incorrect migration of old
+    // visibility format
+    it('renders HTML card in email with old visibility format', async function () {
+        const htmlCard = {
+            type: 'html',
+            html: '<p>Should be visible in email</p>',
+            visibility: {emailOnly: false, segment: ''}
+        };
+        lexicalState.root.children.push(htmlCard);
+
+        options.target = 'email';
+        const renderer = new Renderer({nodes});
+        const renderedInput = await renderer.render(JSON.stringify(lexicalState), options);
+
+        const expected = `
+<!--kg-card-begin: html-->
+<p>Should be visible in email</p>
+<!--kg-card-end: html-->
+`;
+
+        expect(renderedInput).toBe(expected);
+    });
+});

@@ -21,7 +21,7 @@ class StatsServiceWrapper {
             urlService
         });
 
-        const adapterManager = require('../adapter-manager');
+        const adapterManager = require('../adapter-manager').default;
         const config = require('../../../shared/config');
 
         if (config.get('hostSettings:statsCache:enabled')) {

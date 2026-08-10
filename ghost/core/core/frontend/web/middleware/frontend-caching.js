@@ -2,9 +2,9 @@
  * @file Middleware to set the appropriate cache headers on the frontend
  */
 const config = require('../../../shared/config');
-const labs = require('../../../shared/labs');
 const shared = require('../../../server/web/shared');
 const {api} = require('../../services/proxy');
+const {isGiftRequest} = require('../../services/routing/controllers/entry/gift-links');
 const preview = require('../../services/theme-engine/preview');
 
 /**
@@ -72,9 +72,8 @@ const getMiddleware = async (getFreeTier = async () => {
 
         // CASE: never cache gift-link reads. A ?gift render holds unlocked gated
         // content with no member cookie, so the edge would otherwise serve it to
-        // everyone. Keyed on the param's presence so an empty `?gift=` still
-        // bypasses.
-        if (req.query?.gift !== undefined && labs.isSet('giftLinks')) {
+        // everyone.
+        if (isGiftRequest(req)) {
             return shared.middleware.cacheControl('noCache')(req, res, next);
         }
 

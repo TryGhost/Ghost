@@ -16,7 +16,8 @@
         }
     },
     "logging": {
-        "level": "error"
+        "level": "error",
+        "logClientErrorsAsError": false
     },
     "adapters": {
         "Redis": {
@@ -114,7 +115,6 @@
     "useMinFiles": false,
     "paths": {
         "fixtures": "test/utils/fixtures/fixtures",
-        "defaultSettings": "test/utils/fixtures/default-settings.json",
-        "urlCache": "test/utils/fixtures/urls"
+        "defaultSettings": "test/utils/fixtures/default-settings.json"
     }
 }

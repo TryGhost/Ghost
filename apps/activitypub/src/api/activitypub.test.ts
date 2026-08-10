@@ -35,6 +35,127 @@ function Fetch(specs: Record<string, Spec>) {
 }
 
 describe('ActivityPubAPI', function () {
+    describe('domain', function () {
+        test('It gets the Social Web domain state', async function () {
+            const fakeFetch = Fetch({
+                'https://activitypub.api/.ghost/activitypub/v1/domain': {
+                    async assert(_resource, init) {
+                        expect(init?.method).toEqual('GET');
+                    },
+                    response: JSONResponse({
+                        domain: null,
+                        handle: '@index@blog.site.com',
+                        actorUrl: 'https://blog.site.com/.ghost/activitypub/users/index'
+                    })
+                }
+            });
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const result = await api.getDomain();
+
+            expect(result).toEqual({
+                domain: null,
+                handle: '@index@blog.site.com',
+                actorUrl: 'https://blog.site.com/.ghost/activitypub/users/index'
+            });
+        });
+
+        test('It updates the Social Web domain', async function () {
+            const fakeFetch = Fetch({
+                'https://activitypub.api/.ghost/activitypub/v1/domain': {
+                    async assert(_resource, init) {
+                        expect(init?.method).toEqual('PUT');
+                        expect(init?.body).toEqual('{"domain":"site.com"}');
+                    },
+                    response: JSONResponse({
+                        domain: 'site.com',
+                        handle: '@index@site.com',
+                        actorUrl: 'https://blog.site.com/.ghost/activitypub/users/index'
+                    })
+                }
+            });
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const result = await api.updateDomain('site.com');
+
+            expect(result).toEqual({
+                domain: 'site.com',
+                handle: '@index@site.com',
+                actorUrl: 'https://blog.site.com/.ghost/activitypub/users/index'
+            });
+        });
+
+        test('It validates the Social Web domain without saving it', async function () {
+            const fakeFetch = Fetch({
+                'https://activitypub.api/.ghost/activitypub/v1/domain/validate': {
+                    async assert(_resource, init) {
+                        expect(init?.method).toEqual('POST');
+                        expect(init?.body).toEqual('{"domain":"site.com"}');
+                    },
+                    response: JSONResponse({
+                        domain: 'site.com',
+                        handle: '@index@site.com',
+                        actorUrl: 'https://blog.site.com/.ghost/activitypub/users/index'
+                    })
+                }
+            });
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const result = await api.validateDomain('site.com');
+
+            expect(result).toEqual({
+                domain: 'site.com',
+                handle: '@index@site.com',
+                actorUrl: 'https://blog.site.com/.ghost/activitypub/users/index'
+            });
+        });
+
+        test('It clears the Social Web domain', async function () {
+            const fakeFetch = Fetch({
+                'https://activitypub.api/.ghost/activitypub/v1/domain': {
+                    async assert(_resource, init) {
+                        expect(init?.method).toEqual('PUT');
+                        expect(init?.body).toEqual('{"domain":null}');
+                    },
+                    response: JSONResponse({
+                        domain: null,
+                        handle: '@index@blog.site.com',
+                        actorUrl: 'https://blog.site.com/.ghost/activitypub/users/index'
+                    })
+                }
+            });
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const result = await api.updateDomain(null);
+
+            expect(result).toEqual({
+                domain: null,
+                handle: '@index@blog.site.com',
+                actorUrl: 'https://blog.site.com/.ghost/activitypub/users/index'
+            });
+        });
+    });
+
     describe('follow', function () {
         test('It passes the token to the follow endpoint', async function () {
             const fakeFetch = Fetch({

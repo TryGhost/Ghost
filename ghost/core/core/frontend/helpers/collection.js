@@ -55,6 +55,9 @@ async function makeAPICall(resource, controllerName, action, apiOptions) {
             const threshold = config.get('optimization:getHelper:timeout:threshold');
 
             const apiResponse = controller[action](apiOptions);
+            // consume rejections that happen after the timeout has already won
+            // the race — they'd otherwise crash the process as unhandled
+            apiResponse.catch(() => {});
 
             const timeout = new Promise((resolve) => {
                 timer = setTimeout(() => {
@@ -67,7 +70,7 @@ async function makeAPICall(resource, controllerName, action, apiOptions) {
                         }
                     }));
 
-                    resolve({[resource]: []});
+                    resolve({[resource]: [], '@@ABORTED_GET_HELPER@@': true});
                 }, threshold);
             });
 
@@ -117,6 +120,13 @@ module.exports = async function collection(slug, options) {
 
     try {
         const response = await makeAPICall(resource, controllerName, action, apiOptions);
+
+        // consume the internal abort marker so it doesn't leak into the template context
+        const degraded = response['@@ABORTED_GET_HELPER@@'];
+        delete response['@@ABORTED_GET_HELPER@@'];
+        if (degraded && options.data?.root?._locals) {
+            options.data.root._locals.degradedRender = true;
+        }
 
         // prepare data properties for use with handlebars
         if (response[resource] && response[resource].length) {

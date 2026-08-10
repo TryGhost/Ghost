@@ -5,48 +5,14 @@ const postsPublicService = require('../../services/posts-public');
 const getPostServiceInstance = require('../../services/posts/posts-service-instance');
 const postsService = getPostServiceInstance();
 const {rejectContentApiRestrictedFieldsTransformer} = require('./utils/api-filter-utils');
+const {generateGiftKeyData, applyGiftAccess} = require('./utils/gift-link-access');
+const {generateOptionsData, generateAuthData} = require('./utils/public-cache-keys');
 
 const ALLOWED_INCLUDES = ['tags', 'authors', 'tiers', 'sentiment'];
 
 const messages = {
     postNotFound: 'Post not found.'
 };
-
-/**
- *
- * @param {import('@tryghost/api-framework').Frame} frame
- * @param {object} options
- * @returns {object}
- */
-function generateOptionsData(frame, options) {
-    return options.reduce((memo, option) => {
-        let value = frame.options?.[option];
-
-        if (['include', 'fields', 'formats'].includes(option) && typeof value === 'string') {
-            value = value.split(',').sort();
-        }
-
-        if (option === 'page') {
-            value = value || 1;
-        }
-
-        return {
-            ...memo,
-            [option]: value
-        };
-    }, {});
-}
-
-function generateAuthData(frame) {
-    if (frame.options?.context?.member) {
-        return {
-            free: frame.options?.context?.member.status === 'free',
-            tiers: frame.options?.context?.member.products?.map((product) => {
-                return product.slug;
-            }).sort()
-        };
-    }
-}
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
@@ -113,7 +79,7 @@ const controller = {
             cacheInvalidate: false
         },
         cache: postsPublicService.api?.cache,
-        generateCacheKeyData(frame) {
+        async generateCacheKeyData(frame) {
             return {
                 options: generateOptionsData(frame, [
                     'include',
@@ -122,6 +88,7 @@ const controller = {
                     'absolute_urls'
                 ]),
                 auth: generateAuthData(frame),
+                gift: await generateGiftKeyData(frame),
                 method: 'read',
                 identifier: {
                     id: frame.data.id,
@@ -164,6 +131,8 @@ const controller = {
                     message: tpl(messages.postNotFound)
                 });
             }
+
+            await applyGiftAccess(frame, model);
 
             return model;
         }

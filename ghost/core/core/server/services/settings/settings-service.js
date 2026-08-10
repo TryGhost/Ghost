@@ -7,14 +7,14 @@ const models = require('../../models');
 const labs = require('../../../shared/labs');
 const limits = require('../limits');
 const config = require('../../../shared/config');
-const adapterManager = require('../adapter-manager');
+const adapterManager = require('../adapter-manager').default;
 const SettingsCache = require('../../../shared/settings-cache');
 const SettingsBREADService = require('./settings-bread-service');
 const {generatePrivateSiteAccessCode} = require('./private-site-access-code');
 const {obfuscatedSetting, isSecretSetting, hideValueIfSecret} = require('./settings-utils');
 const mail = require('../mail');
 const SingleUseTokenProvider = require('../members/single-use-token-provider');
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 
 const ObjectId = require('bson-objectid').default;
 const settingsHelpers = require('../settings-helpers');
@@ -181,24 +181,6 @@ module.exports = {
         fields.push(new CalculatedField({key: 'web_analytics_configured', type: 'boolean', group: 'analytics', fn: settingsHelpers.isWebAnalyticsConfigured.bind(settingsHelpers), dependents: ['web_analytics']}));
 
         return fields;
-    },
-
-    /**
-     * Handles synchronization of routes.yaml hash loaded in the frontend with
-     * the value stored in the settings table.
-     * getRoutesHash is a function to allow keeping "frontend" decoupled from settings
-     *
-     * @param {function} getRoutesHash function fetching currently loaded routes file hash
-     */
-    async syncRoutesHash(getRoutesHash) {
-        const currentRoutesHash = await getRoutesHash();
-
-        if (SettingsCache.get('routes_hash') !== currentRoutesHash) {
-            return await models.Settings.edit([{
-                key: 'routes_hash',
-                value: currentRoutesHash
-            }], {context: {internal: true}});
-        }
     },
 
     /**

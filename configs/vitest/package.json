@@ -1,0 +1,17 @@
+{
+    "name": "@internal/cfg-vitest",
+    "version": "0.0.0",
+    "description": "Shared Vitest config for internal Ghost packages",
+    "private": true,
+    "type": "module",
+    "license": "MIT",
+    "exports": {
+        ".": "./index.mjs"
+    },
+    "files": [
+        "index.mjs"
+    ],
+    "dependencies": {
+        "vitest": "catalog:"
+    }
+}

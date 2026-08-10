@@ -208,13 +208,17 @@ describe('getMemberInitialsFromComment', function () {
 });
 
 describe('getCommentInReplyToSnippet', function () {
-    function testGetSnippet(comment: {html?: string}, expected: string) {
+    function testGetSnippet(comment: {html?: string | null}, expected: string) {
         const snippet = helpers.getCommentInReplyToSnippet(comment);
         expect(snippet).to.equal(expected);
     }
 
     it('handles comment with missing html', function () {
         testGetSnippet({}, '');
+    });
+
+    it('handles comment with null html', function () {
+        testGetSnippet({html: null}, '');
     });
 
     it('handles comment with blank html', function () {

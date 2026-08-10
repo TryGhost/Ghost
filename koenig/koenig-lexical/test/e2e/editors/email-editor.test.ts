@@ -1,0 +1,385 @@
+import path from 'path';
+import {assertHTML, focusEditor, html, initialize, insertCard, pasteText, selectBackwards} from '../../utils/e2e';
+import {expect, test} from '@playwright/test';
+import {fileURLToPath} from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const visibleEmailMenuItems = [
+    'Image',
+    'Unsplash',
+    'GIF',
+    'Bookmark',
+    'Button',
+    'Callout',
+    'Call to action',
+    'Email call to action',
+    'HTML',
+    'Product',
+    'Divider',
+    'YouTube'
+];
+
+const unavailableEmailMenuItems = [
+    'Audio',
+    'Gallery',
+    'Video',
+    'File',
+    'Markdown',
+    'Header',
+    'Public preview',
+    'Toggle',
+    'Signup',
+    'Email content'
+];
+
+const smokeTestInsertions = [
+    {shortcut: 'button', menuItem: 'Button', selector: '[data-kg-card="button"]'},
+    {shortcut: 'callout', menuItem: 'Callout', selector: '[data-kg-card="callout"]'},
+    {shortcut: 'html', menuItem: 'HTML', selector: '[data-kg-card="html"]'},
+    {shortcut: 'divider', menuItem: 'Divider', selector: '[data-kg-card="horizontalrule"]'},
+    {shortcut: 'email-cta', menuItem: 'Email call to action', selector: '[data-kg-card="email-cta"]'}
+];
+
+async function insertCardFromMenu(page, {shortcut, menuItem, selector}) {
+    await focusEditor(page);
+    await page.keyboard.type(`/${shortcut}`);
+    await expect(page.locator(`[data-kg-card-menu-item="${menuItem}" i]`)).toBeVisible();
+    await page.locator(`[data-kg-card-menu-item="${menuItem}" i]`).click();
+    await expect(page.locator(selector)).toBeVisible();
+}
+
+test.describe('Koenig Editor with email template nodes', async function () {
+    let page;
+
+    test.beforeAll(async ({browser}) => {
+        page = await browser.newPage();
+    });
+
+    test.beforeEach(async () => {
+        await initialize({page, uri: '/#/email?content=false'});
+    });
+
+    test.afterAll(async () => {
+        await page.close();
+    });
+
+    test.describe('Basic functionality', function () {
+        test('can navigate to email editor', async function () {
+            await focusEditor(page);
+            await expect(page.locator('[data-kg="editor"]')).toBeVisible();
+        });
+
+        test('shows correct placeholder text', async function () {
+            await expect(page.locator('text=Begin writing your email...')).toBeVisible();
+        });
+
+        test('renders email header with From and Subject fields', async function () {
+            await expect(page.locator('text=From:')).toBeVisible();
+            await expect(page.locator('text=Ghost <noreply@example.com>')).toBeVisible();
+            await expect(page.locator('text=Subject:')).toBeVisible();
+            await expect(page.locator('text=Welcome to Ghost')).toBeVisible();
+        });
+
+        test('title is hidden', async function () {
+            await expect(page.locator('[data-testid="post-title"]')).toHaveCount(0);
+        });
+    });
+
+    test.describe('Supported features', function () {
+        test('can add basic text', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('Hello World');
+
+            await assertHTML(page, html`
+                <p dir="ltr"><span data-lexical-text="true">Hello World</span></p>
+            `);
+        });
+
+        test('can add multiple paragraphs', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('First paragraph');
+            await page.keyboard.press('Enter');
+            await page.keyboard.type('Second paragraph');
+
+            await assertHTML(page, html`
+                <p dir="ltr"><span data-lexical-text="true">First paragraph</span></p>
+                <p dir="ltr"><span data-lexical-text="true">Second paragraph</span></p>
+            `);
+        });
+
+        test('can create headings with ## shortcut', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('## Heading 2');
+
+            await assertHTML(page, html`
+                <h2 dir="ltr"><span data-lexical-text="true">Heading 2</span></h2>
+            `);
+        });
+
+        test('can create unordered lists with - shortcut', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('- List item');
+
+            await assertHTML(page, html`
+                <ul>
+                    <li value="1" dir="ltr"><span data-lexical-text="true">List item</span></li>
+                </ul>
+            `);
+        });
+
+        test('can create ordered lists with 1. shortcut', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('1. List item');
+
+            await assertHTML(page, html`
+                <ol>
+                    <li value="1" dir="ltr"><span data-lexical-text="true">List item</span></li>
+                </ol>
+            `);
+        });
+
+        test('can create horizontal rules with --- shortcut', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('---');
+
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule">
+                        <hr />
+                    </div>
+                </div>
+                <p><br /></p>
+            `, {ignoreCardToolbarContents: true});
+        });
+
+        test('list backspace at start converts to paragraph', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('- Item');
+            // Move to start of line
+            await page.keyboard.press('Home');
+            await page.keyboard.press('Backspace');
+
+            await assertHTML(page, html`
+                <p dir="ltr"><span data-lexical-text="true">Item</span></p>
+            `);
+        });
+
+        test('can create blockquote with > shortcut', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('> This is a quote');
+
+            await assertHTML(page, html`
+                <blockquote dir="ltr"><span data-lexical-text="true">This is a quote</span></blockquote>
+            `);
+        });
+
+        test('pasting URL on blank paragraph creates an embed or bookmark card', async function () {
+            await focusEditor(page);
+            await pasteText(page, 'https://ghost.org/');
+
+            const embedCard = page.getByTestId('embed-iframe');
+            const bookmarkCard = page.getByTestId('bookmark-container');
+
+            await expect(embedCard.or(bookmarkCard)).toBeVisible();
+        });
+
+        test('bookmark card fetches metadata from URL input', async function () {
+            await focusEditor(page);
+            await insertCard(page, {cardName: 'bookmark'});
+
+            const urlInput = page.getByTestId('bookmark-url');
+            await expect(urlInput).toBeVisible();
+            await urlInput.fill('https://ghost.org/');
+            await urlInput.press('Enter');
+
+            await expect(page.getByTestId('bookmark-title')).toContainText('Ghost');
+        });
+
+        test('image card hides width controls when only one width is configured', async function () {
+            const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
+
+            await focusEditor(page);
+            await insertCard(page, {cardName: 'image'});
+
+            const [fileChooser] = await Promise.all([
+                page.waitForEvent('filechooser'),
+                page.click('button[name="placeholder-button"]')
+            ]);
+            await fileChooser.setFiles([filePath]);
+
+            await expect(page.getByTestId('image-card-populated')).toBeVisible();
+            await expect(page.getByTestId('progress-bar')).toBeHidden();
+
+            await page.click('[data-kg-card="image"]');
+            await expect(page.locator('[data-kg-card-toolbar="image"]')).toBeVisible();
+
+            await expect(page.locator('[data-kg-card-toolbar="image"] button[aria-label="Regular width"]')).toHaveCount(0);
+            await expect(page.locator('[data-kg-card-toolbar="image"] button[aria-label="Wide width"]')).toHaveCount(0);
+            await expect(page.locator('[data-kg-card-toolbar="image"] button[aria-label="Full width"]')).toHaveCount(0);
+        });
+    });
+
+    test.describe('Unsupported features', function () {
+        test('code block shortcut does NOT create code block', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('```javascript ');
+
+            // Should remain as plain text, not a code block
+            await assertHTML(page, html`
+                <p dir="ltr"><span data-lexical-text="true">\`\`\`javascript </span></p>
+            `);
+        });
+    });
+
+    test.describe('Card menu', function () {
+        test('slash menu is available', async function () {
+            await focusEditor(page);
+            await expect(page.locator('[data-kg-slash-menu]')).toHaveCount(0);
+            await page.keyboard.type('/');
+            await expect(page.locator('[data-kg-slash-menu]')).toBeVisible();
+        });
+
+        test('shows the supported email card menu items', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('/');
+            await expect(page.locator('[data-kg-slash-menu]')).toBeVisible();
+
+            for (const label of visibleEmailMenuItems) {
+                await expect(page.locator(`[data-kg-card-menu-item="${label}"]`)).toBeVisible();
+            }
+
+            for (const label of unavailableEmailMenuItems) {
+                await expect(page.locator(`[data-kg-card-menu-item="${label}"]`)).toHaveCount(0);
+            }
+        });
+
+        test('only shows YouTube embed option', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('/');
+            await expect(page.locator('[data-kg-slash-menu]')).toBeVisible();
+
+            // Should show YouTube
+            await expect(page.locator('[data-kg-card-menu-item="YouTube"]')).toBeVisible();
+
+            // Should NOT show other embed types
+            await expect(page.locator('[data-kg-card-menu-item="Other..."]')).toHaveCount(0);
+            await expect(page.locator('[data-kg-card-menu-item="Vimeo"]')).toHaveCount(0);
+            await expect(page.locator('[data-kg-card-menu-item="SoundCloud"]')).toHaveCount(0);
+            await expect(page.locator('[data-kg-card-menu-item="Spotify"]')).toHaveCount(0);
+            await expect(page.locator('[data-kg-card-menu-item="CodePen"]')).toHaveCount(0);
+            await expect(page.locator('[data-kg-card-menu-item="X (formerly Twitter)"]')).toHaveCount(0);
+        });
+
+        test('can insert YouTube embed via slash menu', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('/youtube');
+            await expect(page.locator('[data-kg-card-menu-item="YouTube"][data-kg-cardmenu-selected="true"]')).toBeVisible();
+            await page.keyboard.press('Enter');
+
+            await expect(page.locator('[data-kg-card="embed"]')).toBeVisible();
+        });
+
+        for (const {shortcut, menuItem, selector} of smokeTestInsertions) {
+            test(`can insert ${menuItem} via slash menu`, async function () {
+                await insertCardFromMenu(page, {shortcut, menuItem, selector});
+            });
+        }
+
+        test('can insert call to action card via slash menu', async function () {
+            await focusEditor(page);
+            await insertCard(page, {cardName: 'call-to-action'});
+
+            await expect(page.locator('[data-kg-card="call-to-action"]')).toBeVisible();
+        });
+
+        test('can insert product card via slash menu', async function () {
+            await focusEditor(page);
+            await insertCard(page, {cardName: 'product'});
+
+            await expect(page.locator('[data-kg-card="product"]')).toBeVisible();
+        });
+
+        test('can insert transistor card via slash menu when feature flag is enabled', async function () {
+            await initialize({page, uri: '/#/email?content=false&labs=transistor'});
+            await focusEditor(page);
+            await page.keyboard.type('/transistor');
+            await expect(page.locator('[data-kg-card-menu-item="Transistor" i]')).toBeVisible();
+            await page.locator('[data-kg-card-menu-item="Transistor" i]').click();
+            await expect(page.locator('[data-kg-card="transistor"]')).toBeVisible();
+        });
+
+        test('plus button is shown', async function () {
+            await focusEditor(page);
+            await expect(page.locator('[data-kg-plus-button]')).toBeVisible();
+        });
+    });
+
+    test.describe('Floating format toolbar', function () {
+        test('appears on text selection', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('text for selection');
+
+            await expect(page.locator('[data-kg-floating-toolbar]')).toHaveCount(0);
+
+            // Select text
+            await selectBackwards(page, 'for selection'.length);
+
+            await expect(page.locator('[data-kg-floating-toolbar]')).toBeVisible();
+        });
+
+        test('has heading buttons', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('text for selection');
+
+            // Select text
+            await selectBackwards(page, 'for selection'.length);
+
+            await expect(page.locator('[data-kg-floating-toolbar]')).toBeVisible();
+
+            // Email editor should have heading buttons (unlike basic/minimal)
+            const h2ButtonSelector = '[data-kg-floating-toolbar] [data-kg-toolbar-button="h2"] button';
+            await expect(page.locator(h2ButtonSelector)).toBeVisible();
+        });
+
+        test('has quote button', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('text for selection');
+
+            // Select text
+            await selectBackwards(page, 'for selection'.length);
+
+            await expect(page.locator('[data-kg-floating-toolbar]')).toBeVisible();
+
+            const quoteButtonSelector = '[data-kg-floating-toolbar] [data-kg-toolbar-button="quote"] button';
+            await expect(page.locator(quoteButtonSelector)).toBeVisible();
+        });
+
+        test('has link button', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('text for selection');
+
+            // Select text
+            await selectBackwards(page, 'for selection'.length);
+
+            await expect(page.locator('[data-kg-floating-toolbar]')).toBeVisible();
+
+            const linkButtonSelector = '[data-kg-floating-toolbar] [data-kg-toolbar-button="link"] button';
+            await expect(page.locator(linkButtonSelector)).toBeVisible();
+        });
+
+        test('has snippet button', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('text for selection');
+
+            // Select text
+            await selectBackwards(page, 'for selection'.length);
+
+            await expect(page.locator('[data-kg-floating-toolbar]')).toBeVisible();
+
+            const snippetButtonSelector = '[data-kg-floating-toolbar] [data-kg-toolbar-button="snippet"] button';
+            await expect(page.locator(snippetButtonSelector)).toBeVisible();
+        });
+    });
+});

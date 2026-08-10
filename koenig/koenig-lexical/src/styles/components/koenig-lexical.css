@@ -1,0 +1,187 @@
+.koenig-lexical {
+    position: relative;
+    --cta-link-color-text: var(--grey-900);
+}
+
+/* Link color */
+.koenig-lexical .cta-link-color {
+    color: var(--cta-link-color) !important;
+}
+
+/* everything is nested here to keep it scoped to our container */
+.koenig-lexical {
+    > * {
+        font-size: 1.7rem;
+        font-weight: 400;
+        letter-spacing: 0.1px;
+        color: var(--grey-900);
+        font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, "Droid Sans", "Helvetica Neue", sans-serif;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        -moz-font-feature-settings: "liga" on;
+    }
+
+    &.kg-inherit-styles {
+        > * {
+            color: inherit;
+            letter-spacing: inherit;
+            font-weight: inherit;
+            font-family: inherit;
+        }
+    }
+
+    [contenteditable] {
+        outline: none;
+    }
+
+    /* Selection highlight color */
+    ::selection {
+        background: var(--grey-300);
+    }
+}
+
+/* Dark mode */
+.koenig-lexical > .dark, .koenig-lexical.dark, .dark .koenig-lexical {
+    --cta-link-color-text: var(--grey-200);
+    
+    &:not(.kg-inherit-styles) {
+        /* background-color: var(--black); */
+
+        > * {
+            color: var(--grey-300);
+        }
+    }
+
+    ::selection {
+        background: var(--grey-900);
+    }
+
+    em-emoji-picker {
+        /* --green */
+        --rgb-accent: 48, 207, 67;
+        /* --grey-950 */
+        --rgb-background: 35, 41, 47;
+        /* --grey-300 */
+        --rgb-color: 221, 225, 229;
+        /* --grey-900 */
+        --rgb-input: 57, 64, 71;
+      }
+}
+
+.koenig-lexical.koenig-lexical-caption {
+    font-size: 0;
+
+    > * {
+        font-size: 1.4rem;
+    }
+}
+
+/* Caption in dark mode */
+.koenig-lexical-caption p {
+    color: var(--grey-800);
+}
+
+.dark .koenig-lexical-caption p {
+    color: var(--grey-500);
+}
+
+em-emoji-picker {
+    --font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, "Droid Sans", "Helvetica Neue", sans-serif;
+    --border-radius: 5px;
+    /* --background-rgb: 85, 170, 255; */
+    --font-size: 13px;
+    --rgb-accent: 57, 64, 71;
+    --rgb-color: 174, 183, 193;
+    --em-rgb-accent: (255,0,0)
+    /* --rgb-input: 255, 235, 235; */;
+    --shadow: 0 0 1px rgba(0,0,0,.05), 0 5px 18px rgba(0,0,0,.08);
+
+    height: 325px;
+  }
+
+  em-emoji-picker #nav button[aria-selected] svg {
+    fill: red;
+  }
+
+  em-emoji-picker .search input[type="search"] {
+    border-radius: 5px;
+  }
+
+  .search input, .search button {
+    font-size: 20px !important;
+  }
+
+  /* HTML card */
+
+  .koenig-lexical .js-embed-placeholder {
+    margin: .4rem 0!important;
+    color: var(--grey-700) !important;
+  }
+
+  .koenig-lexical.dark .js-embed-placeholder {
+    background: var(--grey-900);
+    border: none;
+  }
+
+  /* CTA card */
+
+  .koenig-lexical-cta-label a {
+    text-decoration: underline;
+  }
+
+/* Menu */
+.kg-cardmenu-card-hover:hover svg [data-selector=bg] {
+    fill: #fff;
+}
+
+.dark .kg-cardmenu-card-hover svg [data-selector=bg] {
+    fill: var(--grey-900);
+}
+
+.dark .kg-cardmenu-card-hover:hover svg [data-selector=bg] {
+    fill: var(--grey-800);
+}
+
+.dark .kg-cardmenu-card-hover svg [data-selector=fold] {
+    fill: var(--grey-800);
+}
+
+.dark .kg-cardmenu-card-hover:hover svg [data-selector=fold] {
+    fill: var(--grey-700);
+}
+
+/* Toolbar */
+[data-kg-floating-toolbar=true] .fill-white g,
+[data-kg-floating-toolbar=true] .fill-white path,
+[data-kg-card-toolbar] .fill-white g,
+[data-kg-card-toolbar] .fill-white path {
+    fill: #fff;
+}
+
+/* tailwind `hidden` class conflicts with ghost styles */
+.kg-cardmenu-card-hover button {
+    display: none;
+}
+
+/* Table */
+.koenig-lexical table {
+    font-size: 1.75rem;
+    margin: 0;
+    font-family: georgia,Times,serif;
+    letter-spacing: .02rem;
+    line-height: 1.6em;
+}
+
+.koenig-lexical table tr td,
+.koenig-lexical table tr th {
+    vertical-align: top;
+    border-bottom: 1px solid var(--grey-200);
+}
+
+.koenig-lexical > .dark, .koenig-lexical.dark, .dark .koenig-lexical {
+    table tr td,
+    table tr th {
+        border-bottom: 1px solid var(--grey-900);
+    }
+}

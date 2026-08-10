@@ -3,7 +3,6 @@ const path = require('path');
 const _ = require('lodash');
 const configUtils = require('../../../utils/config-utils');
 const sinon = require('sinon');
-const localUtils = require('../../../../core/shared/config/utils');
 describe('Config Loader', function () {
     beforeAll(async function () {
         await configUtils.restore();
@@ -18,13 +17,13 @@ describe('Config Loader', function () {
         let originalArgv;
         let customConfig;
         let loader;
-        let nodeEnvStub;
 
         beforeEach(function () {
             originalEnv = _.clone(process.env);
             originalArgv = _.clone(process.argv);
             loader = require('../../../../core/shared/config/loader');
-            nodeEnvStub = sinon.stub(localUtils, 'getNodeEnv').returns('testing');
+            // getNodeEnv() reads process.env.NODE_ENV, so drive that directly
+            process.env.NODE_ENV = 'testing';
             // we manually call `loadConf` in the tests and we need to ensure that the minimum
             // required config properties are available
             process.env.paths__contentPath = 'content/';
@@ -81,7 +80,7 @@ describe('Config Loader', function () {
             });
 
             assert(!customConfig.get('paths:corePath').includes('try-to-override'));
-            assert.equal(customConfig.get('database:client'), 'sqlite3');
+            assert.equal(customConfig.get('database:client'), 'better-sqlite3');
             // Note: database:connection:filename is now set via process.env in test/utils/vitest-setup-db.ts
             // for concurrent test isolation, so we skip asserting the config file value
             assert.equal(customConfig.get('database:debug'), true);
@@ -91,7 +90,7 @@ describe('Config Loader', function () {
         });
 
         it('should load JSONC files', function () {
-            nodeEnvStub.returns('development');
+            process.env.NODE_ENV = 'development';
             customConfig = loader.loadNconf({
                 baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
                 customConfigPath: path.join(__dirname, '../../../utils/fixtures/config')
@@ -115,7 +114,6 @@ describe('Config Loader', function () {
                 'fixtures',
                 'defaultSettings',
                 'assetSrc',
-                'urlCache',
                 'appRoot',
                 'corePath',
                 'adminAssets',

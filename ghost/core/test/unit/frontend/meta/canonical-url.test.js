@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const urlUtils = require('../../../../core/shared/url-utils');
+const urlUtils = require('../../../../core/shared/url-utils').default;
 const urlService = require('../../../../core/server/services/url');
 const testUtils = require('../../../utils');
 
@@ -12,7 +12,7 @@ describe('getCanonicalUrl', function () {
     let urlForStub;
 
     beforeEach(function () {
-        getUrlForResourceStub = sinon.stub(urlService.facade, 'getUrlForResource');
+        getUrlForResourceStub = sinon.stub(urlService, 'getUrlForResource');
 
         urlJoinStub = sinon.stub(urlUtils, 'urlJoin');
         urlForStub = sinon.stub(urlUtils, 'urlFor').withArgs('home', true).returns('http://localhost:9999');

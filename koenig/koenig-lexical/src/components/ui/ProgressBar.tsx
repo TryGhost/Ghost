@@ -1,0 +1,14 @@
+import PropTypes from 'prop-types';
+
+export function ProgressBar({style, fullWidth, bgStyle}) {
+    return (
+        <div className={`rounded-full bg-grey-200 dark:bg-black ${fullWidth ? 'w-full' : 'mx-auto w-3/5'} ${bgStyle === 'transparent' ? 'bg-white/30' : 'bg-grey-200'}`} data-testid="progress-bar">
+            <div className="rounded-full bg-green py-1 text-center text-2xs leading-none text-white" style={style}></div>
+        </div>
+    );
+}
+
+ProgressBar.propTypes = {
+    style: PropTypes.object,
+    fullWidth: PropTypes.bool
+};

@@ -7,7 +7,7 @@
  * callers accept either shape uniformly:
  *
  *   const data = toPlain(post);
- *   urlService.facade.getUrlForResource({...data, type: 'posts'}, ...)
+ *   urlService.getUrlForResource({...data, type: 'posts'}, ...)
  */
 type JsonSerializable<T> = {
     toJSON(): T;

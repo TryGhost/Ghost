@@ -1,3 +1,8 @@
+# NOTE: This _v3 Tinybird experiment is NOT currently in use.
+# It was added to test a faster unfiltered top-pages path using a daily materialized view.
+# The router was intended to send filtered requests to api_top_pages and unfiltered requests to api_top_pages_v3 without changing Ghost's endpoint version wiring.
+# The experiment has been put on hold, and these pipes may be removed in a future release.
+
 # api_top_pages_v3 - Optimized top pages endpoint using daily materialized view
 #
 # WHY: The original api_top_pages scans all raw hits and joins with filtered_sessions,

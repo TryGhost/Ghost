@@ -3,6 +3,7 @@ const _ = require('lodash');
 const crypto = require('crypto');
 const BaseImporter = require('./base');
 const mobiledocLib = require('../../../../lib/mobiledoc');
+const lexicalLib = require('../../../../lib/lexical');
 const validator = require('@tryghost/validator');
 const postsMetaSchema = require('../../../schema').tables.posts_meta;
 const metaAttrs = _.keys(_.omit(postsMetaSchema, ['id']));
@@ -244,8 +245,7 @@ class PostsImporter extends BaseImporter {
                     mobiledoc = JSON.parse(model.mobiledoc);
 
                     if (!mobiledoc.cards || !_.isArray(mobiledoc.cards)) {
-                        model.mobiledoc = mobiledocLib.blankDocument;
-                        mobiledoc = model.mobiledoc;
+                        mobiledoc = mobiledocLib.blankDocument;
                     }
                 } catch (err) {
                     mobiledoc = mobiledocLib.blankDocument;
@@ -270,11 +270,16 @@ class PostsImporter extends BaseImporter {
                     }
                 });
 
+                // keep the cleaned-up mobiledoc and let the model convert it to lexical and
+                // render the html on save - this exercises the same mobiledoc -> lexical
+                // import path that real legacy exports go through
                 model.mobiledoc = JSON.stringify(mobiledoc);
-                model.html = mobiledocLib.render(JSON.parse(model.mobiledoc));
+                delete model.html;
             } else if (model.html && !model.lexical) {
-                model.mobiledoc = JSON.stringify(mobiledocLib.htmlToMobiledocConverter(model.html));
-                model.html = mobiledocLib.render(JSON.parse(model.mobiledoc));
+                // html-only imports have no mobiledoc to convert, so turn the html into lexical
+                model.lexical = JSON.stringify(lexicalLib.htmlToLexicalConverter(model.html));
+                delete model.mobiledoc;
+                delete model.html;
             }
 
             this.sanitizePostsMeta(model);

@@ -7,5 +7,12 @@ module.exports = (model, frame) => {
     url.forTag(model.id, jsonModel, frame.options);
     clean.tag(jsonModel, frame);
 
+    // Columns force-loaded for the URL computation, not requested by the caller.
+    if (frame.forcedUrlColumns && frame.forcedUrlColumns.routerType === 'tags') {
+        frame.forcedUrlColumns.columns.forEach((column) => {
+            delete jsonModel[column];
+        });
+    }
+
     return jsonModel;
 };

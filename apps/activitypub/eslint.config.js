@@ -1,6 +1,6 @@
-import {reactAppConfig} from '../../eslint.shared.mjs';
+import {reactAppConfig} from '@internal/cfg-eslint-react';
 
-export default await reactAppConfig({
+export default reactAppConfig({
     tailwindCssPath: `${import.meta.dirname}/../admin/src/index.css`,
     shadeRestricted: true,
     sortImports: true

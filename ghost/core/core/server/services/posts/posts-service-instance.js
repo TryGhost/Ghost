@@ -6,7 +6,7 @@ const url = require('../../../server/api/endpoints/utils/serializers/output/util
  * @returns {InstanceType<PostsService>} instance of the PostsService
  */
 const getPostServiceInstance = () => {
-    const urlUtils = require('../../../shared/url-utils');
+    const urlUtils = require('../../../shared/url-utils').default;
     const labs = require('../../../shared/labs');
     const models = require('../../models');
     const PostStats = require('./stats/post-stats');

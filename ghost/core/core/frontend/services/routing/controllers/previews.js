@@ -1,7 +1,7 @@
 const debug = require('@tryghost/debug')('services:routing:controllers:preview');
 const config = require('../../../../shared/config');
 const {routerManager} = require('../');
-const urlUtils = require('../../../../shared/url-utils');
+const urlUtils = require('../../../../shared/url-utils').default;
 const renderer = require('../../rendering');
 
 /**
@@ -20,7 +20,8 @@ module.exports = function previewController(req, res, next) {
         uuid: req.params.uuid,
         status: 'all',
         include: 'authors,tags,tiers',
-        member_status: req.query?.member_status
+        member_status: req.query?.member_status,
+        member_tier: req.query?.member_tier
     };
 
     return api[res.routerOptions.query.controller]
@@ -51,12 +52,11 @@ module.exports = function previewController(req, res, next) {
 
             // published content should only resolve to /:slug - /p/:uuid is for drafts only in lieu of an actual preview api
             if (post.status === 'published') {
-                // The preview controller serves either posts or pages
-                // depending on the routerOptions; query.resource is the
-                // routing-level type ('posts' / 'pages'). The post object
-                // has its DB `type` column stripped by the serializer, so
-                // we tag the resource explicitly here.
-                const type = res.routerOptions.query.resource;
+                // The URL service routes by resource type, and `previews` (the
+                // preview router's resource) is not a routable type. Tag the
+                // resource with the post's own type — the previews serializer
+                // re-adds `type` (model.get('type')), so it is 'post' or 'page'.
+                const type = post.type;
                 return urlUtils.redirect301(res, routerManager.getUrlForResource({...post, type}, {withSubdirectory: true}));
             }
 

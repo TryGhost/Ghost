@@ -28,6 +28,7 @@
         "^default"
       ],
       "outputs": [
+        "{projectRoot}/build",
         "{projectRoot}/dist",
         "{projectRoot}/es",
         "{projectRoot}/types",

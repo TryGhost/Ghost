@@ -1,9 +1,7 @@
 /**
  * @typedef {Object} UrlService
- * @prop {{
- *   getUrlForResource: (resource: Object, options: Object) => string,
- *   resolveUrl: (path: string) => Promise<Object | null>
- * }} facade
+ * @prop {(resource: Object, options: Object) => string} getUrlForResource
+ * @prop {(path: string) => Promise<Object | null>} resolveUrl
  */
 
 const {toPlain} = require('../../lib/common/to-plain');
@@ -106,7 +104,7 @@ class UrlTranslator {
         // surface as an error.
         let resource;
         try {
-            resource = await this.urlService.facade.resolveUrl(path);
+            resource = await this.urlService.resolveUrl(path);
         } catch (err) {
             return;
         }
@@ -155,10 +153,10 @@ class UrlTranslator {
         }
         // Lazy URL service evaluates permalink templates against resource fields
         // (slug, published_at, primary_tag, ...). Caller already loaded the model,
-        // so spread its plain data so those fields reach the facade.
+        // so spread its plain data so those fields reach the URL service.
         const data = toPlain(model);
         const resource = {...data, id, type: TYPE_TO_RESOURCE[type]};
-        return this.urlService.facade.getUrlForResource(resource, {absolute});
+        return this.urlService.getUrlForResource(resource, {absolute});
     }
 
     async getResourceById(id, type) {

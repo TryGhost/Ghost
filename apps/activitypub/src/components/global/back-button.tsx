@@ -15,7 +15,7 @@ const BackButton: React.FC<BackButtonProps> = ({className, onClick}) => {
 
     return (
         <Button
-            className={cn('size-8 rounded-full bg-white/85 px-2 backdrop-blur-md dark:bg-transparent dark:text-white [&_svg]:size-6 focus-visible:ring-0', className)}
+            className={cn('size-8 rounded-full bg-white/85 px-2 backdrop-blur-md focus-visible:ring-0 dark:bg-transparent dark:text-white [&_svg]:size-6', className)}
             variant='ghost'
             onClick={() => {
                 if (onClick) {

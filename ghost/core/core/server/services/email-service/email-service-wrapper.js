@@ -6,7 +6,12 @@ const events = require('../../lib/common/events');
 class EmailServiceWrapper {
     getPostUrl(post) {
         const jsonModel = post.toJSON();
-        url.forPost(post.id, jsonModel, {options: {}});
+        // The URL service routes by resource type. Pages and posts share the
+        // Post model, so the page's own type must reach forPost — otherwise it
+        // defaults to 'posts', matches no post collection, and 404s under the
+        // lazy service.
+        const type = jsonModel.type === 'page' ? 'pages' : 'posts';
+        url.forPost(post.id, jsonModel, {options: {}}, type);
         return jsonModel.url;
     }
 
@@ -26,7 +31,7 @@ class EmailServiceWrapper {
 
         const {Post, Newsletter, Email, EmailBatch, EmailRecipient, Member} = require('../../models');
         const urlService = require('../url');
-        const getRequiredUrlRelations = () => urlService.facade.getRequiredRelations();
+        const getRequiredUrlRelations = () => urlService.getRequiredRelations();
         const MailgunClient = require('../lib/mailgun-client');
         const configService = require('../../../shared/config');
         const settingsCache = require('../../../shared/settings-cache');
@@ -40,9 +45,8 @@ class EmailServiceWrapper {
         const labs = require('../../../shared/labs');
         const emailAddressService = require('../email-address');
         const i18nLib = require('@tryghost/i18n');
-        const mobiledocLib = require('../../lib/mobiledoc');
         const lexicalLib = require('../../lib/lexical');
-        const urlUtils = require('../../../shared/url-utils');
+        const urlUtils = require('../../../shared/url-utils').default;
         const memberAttribution = require('../member-attribution');
         const linkReplacer = require('../lib/link-replacer');
         const linkTracking = require('../link-tracking');
@@ -71,6 +75,7 @@ class EmailServiceWrapper {
 
         const mailgunEmailProvider = new MailgunEmailProvider({
             mailgunClient,
+            config: configService,
             errorHandler
         });
 
@@ -78,7 +83,6 @@ class EmailServiceWrapper {
             settingsCache,
             settingsHelpers,
             renderers: {
-                mobiledoc: mobiledocLib,
                 lexical: lexicalLib
             },
             imageSize: cachedImageSizeFromUrl,

@@ -1,6 +1,6 @@
-const Base = require('@tryghost/adapter-base-cache');
+const {CacheBase} = require('@tryghost/adapter-base-cache');
 
-class MemoryCache extends Base {
+class MemoryCache extends CacheBase {
     constructor() {
         super();
 

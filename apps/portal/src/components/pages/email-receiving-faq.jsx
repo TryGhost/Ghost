@@ -61,17 +61,6 @@ export default function EmailReceivingPage() {
                     />
                 </p>
 
-                <h4>{t(`Send an email and say hi!`)}</h4>
-
-                <p>
-                    <Interpolate
-                        string={t(`Send an email to {senderEmail} and say hello. This can also help signal to your mail provider that emails to and from this address should be trusted.`)}
-                        mapping={{
-                            senderEmail: <strong>{defaultNewsletterSenderEmail}</strong>
-                        }}
-                    />
-                </p>
-
                 <h4>{t(`Check with your mail provider`)}</h4>
 
                 <p>

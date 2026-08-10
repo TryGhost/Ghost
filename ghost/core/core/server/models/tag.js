@@ -1,7 +1,7 @@
 const ghostBookshelf = require('./base');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
-const urlUtils = require('../../shared/url-utils');
+const urlUtils = require('../../shared/url-utils').default;
 
 const messages = {
     tagNotFound: 'Tag not found.'
@@ -217,6 +217,8 @@ Tag = ghostBookshelf.Model.extend({
 Tags = ghostBookshelf.Collection.extend({
     model: Tag
 });
+
+Tag.protectedSlugs = ['new'];
 
 module.exports = {
     Tag: ghostBookshelf.model('Tag', Tag),

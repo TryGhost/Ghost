@@ -114,6 +114,12 @@ export const routes: CustomRouteObject[] = [
                 showBackButton: true
             },
             {
+                path: 'preferences/handle',
+                lazy: lazyComponent(() => import('./views/preferences/components/domain')),
+                pageTitle: 'Handle',
+                showBackButton: true
+            },
+            {
                 path: 'welcome',
                 lazy: lazyComponent(() => import('./components/layout/onboarding')),
                 pageTitle: 'Welcome',

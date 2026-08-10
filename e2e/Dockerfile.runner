@@ -1,0 +1,48 @@
+# Slim, Chromium-only Playwright runner image for the Ghost E2E suite.
+#
+# The suite runs exclusively on Chromium (see e2e/playwright.config.mjs —
+# browserName: 'chromium', with only the 'main' and 'analytics' projects and no
+# Firefox/WebKit projects). The upstream mcr.microsoft.com/playwright image ships
+# all three browser engines (~2GB); installing only Chromium + its OS libraries
+# on a glibc Debian-slim base lands roughly ~1GB smaller, which is pulled on every
+# E2E shard.
+#
+# NOTE: If a WebKit or Firefox project is ever added to playwright.config.mjs, the
+# matching engine must be added to the `playwright install` line below.
+#
+# Alpine/musl is intentionally NOT used: Playwright's browser builds are glibc-only
+# and unsupported on musl, which would force using a system Chromium and break the
+# Chromium<->Playwright version lock.
+#
+# Published by .github/workflows/e2e-runner-image.yml as
+# ghcr.io/tryghost/ghost-e2e-runner:v<playwright-version>. Consumers fall back to
+# the upstream Playwright image when this tag is unavailable, so a Playwright
+# version bump degrades gracefully until the workflow publishes the new tag.
+
+ARG NODE_VERSION=22.23.1
+FROM node:${NODE_VERSION}-slim
+
+# Must match the pinned @playwright/test version (pnpm-workspace.yaml catalog);
+# the publish workflow passes it as a build-arg.
+ARG PLAYWRIGHT_VERSION
+
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
+    DEBIAN_FRONTEND=noninteractive
+
+# ca-certificates is required for npx to fetch Playwright over HTTPS before
+# `install --with-deps` runs; --with-deps then pulls Chromium's apt libraries.
+# The suite drives Docker via dockerode over the mounted /var/run/docker.sock, so
+# no Docker CLI/compose plugin is needed here, and node_modules (incl. Playwright)
+# is bind-mounted from the workspace at runtime — this image supplies only the
+# Node runtime and the Chromium browser.
+RUN set -eux; \
+    : "${PLAYWRIGHT_VERSION:?PLAYWRIGHT_VERSION build-arg is required}"; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends ca-certificates; \
+    npx --yes "playwright@${PLAYWRIGHT_VERSION}" install --with-deps chromium; \
+    rm -rf /var/lib/apt/lists/* /root/.npm
+
+# Enable corepack and install the pnpm version pinned in the repo's package.json
+# `packageManager` field.
+COPY package.json ./
+RUN corepack enable && corepack install && rm package.json

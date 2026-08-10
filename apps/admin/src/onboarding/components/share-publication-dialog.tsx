@@ -78,7 +78,7 @@ export function SharePublicationDialog({
                 </ShareModal.Preview>
                 <p className="text-sm text-muted-foreground">
                     Set your publication&apos;s cover image and description in{" "}
-                    <Button asChild className="h-auto p-0 align-baseline text-sm text-green hover:text-green/90" variant="link">
+                    <Button className="h-auto p-0 align-baseline text-sm text-green hover:text-green/90" variant="link" asChild>
                         <a href="#/settings/design/edit?ref=setup" id="ob-share-modal-design-settings">Design settings</a>
                     </Button>.
                 </p>

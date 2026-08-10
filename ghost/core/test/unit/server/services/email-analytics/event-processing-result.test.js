@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 
-const EventProcessingResult = require('../../../../../core/server/services/email-analytics/event-processing-result');
+const {EventProcessingResult} = require('../../../../../core/server/services/email-analytics/event-processing-result');
 
 describe('EventProcessingResult', function () {
     it('has expected initial state', function () {
@@ -67,6 +67,26 @@ describe('EventProcessingResult', function () {
         });
 
         assert.equal(result.totalEvents, 36);
+    });
+
+    it('resets all values', function () {
+        const result = new EventProcessingResult({
+            delivered: 1,
+            opened: 2,
+            temporaryFailed: 3,
+            permanentFailed: 4,
+            unsubscribed: 5,
+            complained: 6,
+            unhandled: 7,
+            unprocessable: 8,
+            processingFailures: 9,
+            emailIds: [1, 2, 3],
+            memberIds: [4, 5]
+        });
+
+        result.reset();
+
+        assert.deepEqual(result, new EventProcessingResult());
     });
 
     describe('merge()', function () {

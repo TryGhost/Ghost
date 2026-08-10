@@ -1,6 +1,6 @@
-import {reactAppConfig} from '../../eslint.shared.mjs';
+import {reactAppConfig} from '@internal/cfg-eslint-react';
 
-export default await reactAppConfig({
+export default reactAppConfig({
     // UMD bundle (no Vite HMR runtime), so the react-refresh rule is meaningless.
     reactRefresh: false,
     // LEGACY: Tailwind v3. Migration to v4 is a multi-day class/theme rewrite +

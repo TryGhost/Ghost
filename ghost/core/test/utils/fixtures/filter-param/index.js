@@ -5,7 +5,7 @@ const _ = require('lodash');
 
 const ObjectId = require('bson-objectid').default;
 const db = require('../../../../core/server/data/db');
-const markdownToMobiledoc = require('../data-generator').markdownToMobiledoc;
+const markdownToLexical = require('../data-generator').markdownToLexical;
 const data = {};
 
 // Password = Sl1m3rson
@@ -80,7 +80,7 @@ data.posts = [
         id: ObjectId().toHexString(),
         title: 'First Post',
         slug: 'first-post',
-        mobiledoc: markdownToMobiledoc('Hello World!'),
+        lexical: markdownToLexical('Hello World!'),
         featured: false,
         authors: [{id: data.users[0].id}],
         tags: [data.tags[0].id]
@@ -89,7 +89,7 @@ data.posts = [
         id: ObjectId().toHexString(),
         title: 'Second Post',
         slug: 'second-post',
-        mobiledoc: markdownToMobiledoc('Hello World!'),
+        lexical: markdownToLexical('Hello World!'),
         featured: false,
         authors: [{id: data.users[1].id}],
         tags: [data.tags[1].id, data.tags[2].id, data.tags[3].id, data.tags[5].id]
@@ -98,7 +98,7 @@ data.posts = [
         id: ObjectId().toHexString(),
         title: 'Third Post',
         slug: 'third-post',
-        mobiledoc: markdownToMobiledoc('Hello World!'),
+        lexical: markdownToLexical('Hello World!'),
         featured: false,
         authors: [{id: data.users[0].id}],
         tags: [data.tags[1].id]
@@ -107,7 +107,7 @@ data.posts = [
         id: ObjectId().toHexString(),
         title: 'Fourth Post',
         slug: 'fourth-post',
-        mobiledoc: markdownToMobiledoc('Hello World!'),
+        lexical: markdownToLexical('Hello World!'),
         featured: false,
         authors: [{id: data.users[0].id}],
         tags: [data.tags[2].id]
@@ -116,7 +116,7 @@ data.posts = [
         id: ObjectId().toHexString(),
         title: 'Fifth Post',
         slug: 'fifth-post',
-        mobiledoc: markdownToMobiledoc('Hello World!'),
+        lexical: markdownToLexical('Hello World!'),
         featured: true,
         authors: [{id: data.users[1].id}],
         tags: [data.tags[5].id]
@@ -125,7 +125,7 @@ data.posts = [
         id: ObjectId().toHexString(),
         title: 'Sixth Post',
         slug: 'sixth-post',
-        mobiledoc: markdownToMobiledoc('Hello World!'),
+        lexical: markdownToLexical('Hello World!'),
         featured: false,
         authors: [{id: data.users[1].id}],
         feature_image: 'some/image/path.jpg',
@@ -135,7 +135,7 @@ data.posts = [
         id: ObjectId().toHexString(),
         title: 'Seventh Post',
         slug: 'seventh-post',
-        mobiledoc: markdownToMobiledoc('Hello World!'),
+        lexical: markdownToLexical('Hello World!'),
         featured: false,
         authors: [{id: data.users[0].id}],
         feature_image: 'some/image/path.jpg',
@@ -145,7 +145,7 @@ data.posts = [
         id: ObjectId().toHexString(),
         title: 'Eighth Post',
         slug: 'eighth-post',
-        mobiledoc: markdownToMobiledoc('Hello World!'),
+        lexical: markdownToLexical('Hello World!'),
         featured: true,
         authors: [{id: data.users[0].id}],
         tags: [data.tags[0].id, data.tags[2].id, data.tags[3].id]
@@ -154,7 +154,7 @@ data.posts = [
         id: ObjectId().toHexString(),
         title: 'Ninth Post',
         slug: 'ninth-post',
-        mobiledoc: markdownToMobiledoc('Hello World!'),
+        lexical: markdownToLexical('Hello World!'),
         featured: false,
         authors: [{id: data.users[0].id}],
         tags: [data.tags[1].id, data.tags[3].id]
@@ -163,7 +163,7 @@ data.posts = [
         id: ObjectId().toHexString(),
         title: 'Tenth Post',
         slug: 'tenth-post',
-        mobiledoc: markdownToMobiledoc('Hello World!'),
+        lexical: markdownToLexical('Hello World!'),
         featured: false,
         authors: [{id: data.users[0].id}],
         tags: [data.tags[2].id]
@@ -172,7 +172,7 @@ data.posts = [
         id: ObjectId().toHexString(),
         title: 'Eleventh Post',
         slug: 'eleventh-post',
-        mobiledoc: markdownToMobiledoc('Hello World!'),
+        lexical: markdownToLexical('Hello World!'),
         featured: false,
         authors: [{id: data.users[0].id}],
         feature_image: 'some/image/path.jpg',
@@ -182,7 +182,7 @@ data.posts = [
         id: ObjectId().toHexString(),
         title: 'Twelfth Post',
         slug: 'twelfth-post',
-        mobiledoc: markdownToMobiledoc('Hello World!'),
+        lexical: markdownToLexical('Hello World!'),
         featured: false,
         authors: [{id: data.users[0].id}],
         tags: [data.tags[3].id]
@@ -191,7 +191,7 @@ data.posts = [
         id: ObjectId().toHexString(),
         title: 'Thirteenth Post',
         slug: 'thirteenth-post',
-        mobiledoc: markdownToMobiledoc('Hello World!'),
+        lexical: markdownToLexical('Hello World!'),
         featured: false,
         authors: [{id: data.users[0].id}],
         tags: []
@@ -200,7 +200,7 @@ data.posts = [
         id: ObjectId().toHexString(),
         title: 'Fourteenth Post',
         slug: 'fourteenth-post',
-        mobiledoc: markdownToMobiledoc('Hello World!'),
+        lexical: markdownToLexical('Hello World!'),
         featured: true,
         authors: [{id: data.users[0].id}],
         tags: [data.tags[3].id]
@@ -209,7 +209,7 @@ data.posts = [
         id: ObjectId().toHexString(),
         title: 'Fifteenth Post',
         slug: 'fifteenth-post',
-        mobiledoc: markdownToMobiledoc('Hello World! I am a featured page'),
+        lexical: markdownToLexical('Hello World! I am a featured page'),
         featured: true,
         page: 1,
         authors: [{id: data.users[0].id}],
@@ -219,7 +219,7 @@ data.posts = [
         id: ObjectId().toHexString(),
         title: 'Sixteenth Post',
         slug: 'sixteenth-post',
-        mobiledoc: markdownToMobiledoc('Hello World!'),
+        lexical: markdownToLexical('Hello World!'),
         featured: false,
         authors: [{id: data.users[0].id}],
         tags: []
@@ -228,7 +228,7 @@ data.posts = [
         id: ObjectId().toHexString(),
         title: 'Seventeenth Post',
         slug: 'seventeenth-post',
-        mobiledoc: markdownToMobiledoc('Hello World!'),
+        lexical: markdownToLexical('Hello World!'),
         featured: false,
         authors: [{id: data.users[0].id}],
         tags: []
@@ -237,7 +237,7 @@ data.posts = [
         id: ObjectId().toHexString(),
         title: 'Eighteenth Post',
         slug: 'eighteenth-post',
-        mobiledoc: markdownToMobiledoc('Hello World!'),
+        lexical: markdownToLexical('Hello World!'),
         featured: false,
         authors: [{id: data.users[0].id}],
         tags: []
@@ -246,7 +246,7 @@ data.posts = [
         id: ObjectId().toHexString(),
         title: 'Nineteenth Post',
         slug: 'nineteenth-post',
-        mobiledoc: markdownToMobiledoc('Hello World!'),
+        lexical: markdownToLexical('Hello World!'),
         featured: false,
         status: 'draft',
         authors: [{id: data.users[0].id}],
@@ -256,7 +256,7 @@ data.posts = [
         id: ObjectId().toHexString(),
         title: 'Twentieth Post',
         slug: 'twentieth-post',
-        mobiledoc: markdownToMobiledoc('Hello World!'),
+        lexical: markdownToLexical('Hello World!'),
         featured: false,
         authors: [{id: data.users[0].id}],
         tags: []
@@ -265,7 +265,7 @@ data.posts = [
         id: ObjectId().toHexString(),
         title: 'About Page',
         slug: 'about',
-        mobiledoc: markdownToMobiledoc('About Me!'),
+        lexical: markdownToLexical('About Me!'),
         featured: false,
         page: 1,
         authors: [{id: data.users[0].id}],

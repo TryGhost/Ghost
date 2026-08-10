@@ -39,6 +39,7 @@ describe('UNIT: sentry', function () {
             assert.equal(sentry.requestHandler.name, 'expressNoop', 'Should return noop');
             assert.equal(sentry.errorHandler.name, 'expressNoop', 'Should return noop');
             assert.equal(sentry.captureException.name, 'noop', 'Should return noop');
+            assert.equal(sentry.captureMessage.name, 'noop', 'Should return noop');
         });
     });
 

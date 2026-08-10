@@ -20,6 +20,7 @@ const MAX_AUTOMATION_ACTIONS = 20;
 
 const messages = {
     automationNotFound: 'Automation not found.',
+    automationActionNotFound: 'Automation action not found.',
     invalidAutomationPayload: 'Automation edit payload must include status, actions, and edges.',
     invalidAutomationStatus: 'Automation status must be one of: active, inactive.',
     duplicateAutomationActionIdentity: 'Automation action identifiers must be unique.',
@@ -39,8 +40,8 @@ const waitActionSchema = z.object({
     type: z.literal('wait'),
     data: z.object({
         wait_hours: z.number().int().positive()
-    }).strict()
-}).strict();
+    })
+});
 
 const sendEmailActionSchema = z.object({
     id: objectIdSchema,
@@ -49,13 +50,13 @@ const sendEmailActionSchema = z.object({
         email_subject: z.string(),
         email_lexical: z.string(),
         email_design_setting_id: z.string().min(1)
-    }).strict()
-}).strict();
+    })
+});
 
 const edgeSchema = z.object({
     source_action_id: objectIdSchema,
     target_action_id: objectIdSchema
-}).strict();
+});
 
 const editAutomationDataSchema = z.object({
     status: z.enum(['active', 'inactive']),
@@ -64,7 +65,7 @@ const editAutomationDataSchema = z.object({
         sendEmailActionSchema
     ])).min(1).max(MAX_AUTOMATION_ACTIONS),
     edges: z.array(edgeSchema)
-}).strict();
+});
 
 const repository = createDatabaseAutomationsRepository({
     knex,
@@ -85,6 +86,18 @@ export async function read(automationId: string) {
     }
 
     return automation;
+}
+
+export async function browseActionLinks(automationId: string, actionId: string) {
+    const links = await repository.getAutomationActionLinks(automationId, actionId);
+
+    if (!links) {
+        throw new errors.NotFoundError({
+            message: tpl(messages.automationActionNotFound)
+        });
+    }
+
+    return links;
 }
 
 export async function edit(automationId: string, data: unknown) {
@@ -358,4 +371,26 @@ export async function markStepTerminal(...args: Parameters<AutomationsRepository
 
 export async function retryStep(...args: Parameters<AutomationsRepository['retryStep']>) {
     return await repository.retryStep(...args);
+}
+
+export async function recordEmailSent(...args: Parameters<AutomationsRepository['recordEmailSent']>) {
+    return await repository.recordEmailSent(...args);
+}
+
+export async function getAutomatedEmailRecipientsByMailgunIds(
+    ...args: Parameters<AutomationsRepository['getAutomatedEmailRecipientsByMailgunIds']>
+) {
+    return await repository.getAutomatedEmailRecipientsByMailgunIds(...args);
+}
+
+export async function trackEmailDeliveredAndOpened(
+    ...args: Parameters<AutomationsRepository['trackEmailDeliveredAndOpened']>
+) {
+    return await repository.trackEmailDeliveredAndOpened(...args);
+}
+
+export async function trackEmailClicked(
+    ...args: Parameters<AutomationsRepository['trackEmailClicked']>
+) {
+    await repository.trackEmailClicked(...args);
 }

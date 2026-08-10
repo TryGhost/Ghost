@@ -2,7 +2,7 @@ import AppContext from './app-context';
 import PopupModal from './components/popup-modal';
 import React from 'react';
 import SearchIndex from './search-index.js';
-import i18nLib from '@tryghost/i18n';
+import i18nLib from '@tryghost/i18n/registry/search';
 
 export default class App extends React.Component {
     constructor(props) {

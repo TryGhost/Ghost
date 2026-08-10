@@ -114,7 +114,7 @@ describe('Custom Theme Settings API', function () {
                 value: 'Not gonna work'
             }];
 
-            const loggingStub = sinon.stub(logging, 'error');
+            const loggingStub = sinon.stub(logging, 'warn');
             await agent
                 .put(`custom_theme_settings/`)
                 .body({custom_theme_settings})
@@ -138,7 +138,7 @@ describe('Custom Theme Settings API', function () {
                 value: 'Not gonna work'
             }];
 
-            const loggingStub = sinon.stub(logging, 'error');
+            const loggingStub = sinon.stub(logging, 'warn');
             await agent
                 .put(`custom_theme_settings/`)
                 .body({custom_theme_settings})

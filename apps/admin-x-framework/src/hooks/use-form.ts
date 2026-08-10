@@ -1,5 +1,7 @@
-import {ButtonColor} from '@tryghost/admin-x-design-system';
 import {useCallback, useEffect, useState} from 'react';
+import type {ButtonProps} from '@tryghost/shade/components';
+
+export type ButtonVariant = NonNullable<ButtonProps['variant']>;
 
 export type Dirtyable<Data> = Data & {
     dirty?: boolean;
@@ -11,7 +13,7 @@ export type ErrorMessages = Record<string, string | undefined>
 
 export interface OkProps {
     disabled: boolean;
-    color: ButtonColor;
+    variant: ButtonVariant;
     label?: string;
 }
 
@@ -123,11 +125,11 @@ const useForm = <State>({initialState, savingDelay, savedDelay = 2000, onSave, o
         setSaveState('unsaved');
     }, []);
 
-    let okColor: ButtonColor = 'black';
+    let okVariant: ButtonVariant = 'default';
     if (saveState === 'saved') {
-        okColor = 'green';
+        okVariant = 'default';
     } else if (saveState === 'error') {
-        okColor = 'red';
+        okVariant = 'destructive';
     }
 
     let okLabel = '';
@@ -141,7 +143,7 @@ const useForm = <State>({initialState, savingDelay, savedDelay = 2000, onSave, o
 
     const okProps: OkProps = {
         disabled: saveState === 'saving',
-        color: okColor,
+        variant: okVariant,
         label: okLabel || undefined
     };
 

@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const security = require('@tryghost/security');
 const Base = require('../../../../../core/server/models/base');
-const urlUtils = require('../../../../../core/shared/url-utils');
+const urlUtils = require('../../../../../core/shared/url-utils').default;
 const testUtils = require('../../../../utils');
 
 describe('Models: base', function () {
@@ -110,6 +110,19 @@ describe('Models: base', function () {
             return Base.Model.generateSlug(Model, slug, options)
                 .then((generatedSlug) => {
                     assert.equal(generatedSlug, 'upsi-tableName');
+                });
+        });
+
+        it('model-specific protected slug', function () {
+            Model.findOne.resolves(false);
+            Model.protectedSlugs = ['reserved'];
+            const slug = 'reserved';
+
+            securityStringSafeStub.withArgs(slug).returns(slug);
+
+            return Base.Model.generateSlug(Model, slug, options)
+                .then((generatedSlug) => {
+                    assert.equal(generatedSlug, 'reserved-tableName');
                 });
         });
 

@@ -17,7 +17,7 @@ const AlertDialogOverlay = React.forwardRef<
 >(({className, ...props}, ref) => (
     <AlertDialogPrimitive.Overlay
         className={cn(
-            'fixed inset-0 z-50 bg-black/30 dark:bg-black/60 transform-gpu data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
+            'fixed inset-0 z-50 transform-gpu bg-black/30 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0 dark:bg-black/60',
             className
         )}
         {...props}
@@ -26,17 +26,21 @@ const AlertDialogOverlay = React.forwardRef<
 ));
 AlertDialogOverlay.displayName = AlertDialogPrimitive.Overlay.displayName;
 
+type AlertDialogContentProps = React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Content> & {
+    overlayClassName?: string;
+};
+
 const AlertDialogContent = React.forwardRef<
     React.ElementRef<typeof AlertDialogPrimitive.Content>,
-    React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Content>
->(({className, ...props}, ref) => (
+    AlertDialogContentProps
+>(({className, overlayClassName, ...props}, ref) => (
     <AlertDialogPortal>
         <div className={SHADE_APP_NAMESPACES}>
-            <AlertDialogOverlay onClick={e => e.stopPropagation()} />
+            <AlertDialogOverlay className={overlayClassName} onClick={e => e.stopPropagation()} />
             <AlertDialogPrimitive.Content
                 ref={ref}
                 className={cn(
-                    'fixed left-[50%] top-[20%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-20%] gap-6 bg-surface-elevated-2 p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-top-[18%] data-[state=open]:slide-in-from-top-[18%] sm:rounded-lg',
+                    'fixed top-[20%] left-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-20%] gap-6 bg-surface-elevated-2 p-6 shadow-lg duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=closed]:slide-out-to-top-[18%] data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=open]:slide-in-from-top-[18%] sm:rounded-lg',
                     className
                 )}
                 {...props}
@@ -66,7 +70,7 @@ const AlertDialogFooter = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
     <div
         className={cn(
-            'flex flex-col-reverse sm:flex-row sm:justify-end sm:gap-2 [&>button]:min-w-20',
+            'flex flex-col-reverse sm:flex-row sm:justify-end sm:gap-2',
             className
         )}
         {...props}

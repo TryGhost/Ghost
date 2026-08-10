@@ -8,7 +8,7 @@ const meta = {
     parameters: {
         docs: {
             description: {
-                component: 'Display country flags using ISO country codes. Built on react-world-flags with customizable sizing and fallback support for invalid or missing country codes.'
+                component: 'Display country flags using ISO country codes. Built on country-flag-icons with customizable sizing and fallback support for invalid or missing country codes.'
             }
         }
     },

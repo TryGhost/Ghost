@@ -1,0 +1,36 @@
+{
+  "name": "@tryghost/kg-simplemde",
+  "version": "3.1.3",
+  "description": "A simple, beautiful, and embeddable JavaScript Markdown editor. Features autosaving and spell checking.",
+  "keywords": [
+    "embeddable",
+    "markdown",
+    "editor",
+    "javascript",
+    "wysiwyg"
+  ],
+  "homepage": "https://github.com/TryGhost/Ghost/tree/main/koenig/kg-simplemde",
+  "main": "./src/js/simplemde.js",
+  "license": "MIT",
+  "company": "Next Step Webs, Inc.",
+  "author": {
+    "name": "Wes Cossick",
+    "url": "http://www.WesCossick.com"
+  },
+  "bugs": {
+    "url": "https://github.com/TryGhost/Ghost/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TryGhost/Ghost.git",
+    "directory": "koenig/kg-simplemde"
+  },
+  "dependencies": {
+    "codemirror": "5.65.21",
+    "codemirror-spell-checker": "1.1.2"
+  },
+  "gitHead": "d46b01ff5696e5a457abee67e0aabc62f2b8a191"
+}

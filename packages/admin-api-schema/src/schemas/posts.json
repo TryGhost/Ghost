@@ -1,0 +1,272 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "posts",
+  "title": "posts",
+  "description": "Base posts definitions",
+  "definitions": {
+    "post": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "type": "string",
+          "maxLength": 2000
+        },
+        "slug": {
+          "type": "string",
+          "maxLength": 191
+        },
+        "mobiledoc": {
+          "type": ["string", "null"],
+          "format": "json-string",
+          "maxLength": 1000000000
+        },
+        "lexical": {
+          "type": ["string", "null"],
+          "format": "json-string",
+          "maxLength": 1000000000
+        },
+        "html": {
+          "type": ["string", "null"],
+          "maxLength": 1000000000
+        },
+        "feature_image": {
+          "type": ["string", "null"],
+          "format": "uri-reference",
+          "maxLength": 2000
+        },
+        "feature_image_alt": {
+          "type": ["string", "null"],
+          "maxLength": 65535
+        },
+        "feature_image_caption": {
+          "type": ["string", "null"],
+          "maxLength": 65535
+        },
+        "featured": {
+          "type": "boolean"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["published", "draft", "scheduled", "sent"]
+        },
+        "locale": {
+          "type": ["string", "null"],
+          "maxLength": 6
+        },
+        "visibility": {
+          "type": ["string", "null"]
+        },
+        "visibility_filter": {
+          "type": ["string", "null"]
+        },
+        "tiers": {
+          "$ref": "#/definitions/post-products"
+        },
+        "meta_title": {
+          "type": ["string", "null"],
+          "maxLength": 300
+        },
+        "meta_description": {
+          "type": ["string", "null"],
+          "maxLength": 500
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "published_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "custom_excerpt": {
+          "type": ["string", "null"],
+          "maxLength": 300
+        },
+        "codeinjection_head": {
+          "type": ["string", "null"],
+          "maxLength": 65535
+        },
+        "codeinjection_foot": {
+          "type": ["string", "null"],
+          "maxLength": 65535
+        },
+        "og_image": {
+          "type": ["string", "null"],
+          "format": "uri-reference",
+          "maxLength": 2000
+        },
+        "og_title": {
+          "type": ["string", "null"],
+          "maxLength": 300
+        },
+        "og_description": {
+          "type": ["string", "null"],
+          "maxLength": 500
+        },
+        "twitter_image": {
+          "type": ["string", "null"],
+          "format": "uri-reference",
+          "maxLength": 2000
+        },
+        "twitter_title": {
+          "type": ["string", "null"],
+          "maxLength": 300
+        },
+        "twitter_description": {
+          "type": ["string", "null"],
+          "maxLength": 500
+        },
+        "email_subject": {
+          "type": ["string", "null"],
+          "maxLength": 300
+        },
+        "custom_template": {
+          "type": ["string", "null"],
+          "maxLength": 100
+        },
+        "canonical_url": {
+          "type": ["string", "null"],
+          "format": "uri-reference",
+          "maxLength": 2000
+        },
+        "email_only": {
+          "type": "boolean"
+        },
+        "authors": {
+          "$ref": "#/definitions/post-authors"
+        },
+        "tags": {
+          "$ref": "#/definitions/post-tags"
+        },
+        "collections": {
+          "$ref": "#/definitions/post-collections"
+        }
+      }
+    },
+    "post-products": {
+      "description": "Products of the post",
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "maxLength": 24
+              },
+              "name": {
+                "type": "string",
+                "maxLength": 191
+              },
+              "slug": {
+                "type": ["string", "null"],
+                "maxLength": 191
+              }
+            },
+            "anyOf": [
+              { "required": ["id"] },
+              { "required": ["name"] },
+              { "required": ["slug"] }
+            ]
+          },
+          {
+            "type": "string",
+            "maxLength": 191
+          }
+        ]
+      }
+    },
+    "post-authors": {
+      "description": "Authors of the post",
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "maxLength": 24
+              },
+              "slug": {
+                "type": "string",
+                "maxLength": 191
+              },
+              "email": {
+                "type": "string",
+                "maxLength": 191
+              }
+            },
+            "anyOf": [
+              { "required": ["id"] },
+              { "required": ["slug"] },
+              { "required": ["email"] }
+            ]
+          },
+          {
+            "type": "string",
+            "maxLength": 191
+          }
+        ]
+      }
+    },
+    "post-tags": {
+      "description": "Tags of the post",
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "maxLength": 24
+              },
+              "name": {
+                "type": "string",
+                "maxLength": 191
+              },
+              "slug": {
+                "type": ["string", "null"],
+                "maxLength": 191
+              }
+            },
+            "anyOf": [
+              { "required": ["id"] },
+              { "required": ["name"] },
+              { "required": ["slug"] }
+            ]
+          },
+          {
+            "type": "string",
+            "maxLength": 191
+          }
+        ]
+      }
+    },
+    "post-collections": {
+      "description": "Collections of the post",
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "maxLength": 24
+              }
+            },
+            "required": ["id"]
+          },
+          {
+            "type": "string",
+            "maxLength": 24
+          }
+        ]
+      }
+    }
+  }
+}

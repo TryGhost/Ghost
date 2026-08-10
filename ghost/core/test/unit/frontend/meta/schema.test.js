@@ -514,7 +514,7 @@ describe('getSchema', function () {
             mainEntityOfPage: 'http://mysite.com/author/me/',
             name: 'Author Name',
             sameAs: [
-                'http://myblogsite.com/?user&#x3D;bambedibu&amp;a&#x3D;&lt;script&gt;alert(&quot;bambedibu&quot;)&lt;/script&gt;',
+                'http://myblogsite.com/?user=bambedibu&a=<script>alert("bambedibu")</script>',
                 'https://x.com/testuser'
             ],
             url: 'http://mysite.com/author/me/'
@@ -569,7 +569,7 @@ describe('getSchema', function () {
             mainEntityOfPage: 'http://mysite.com/author/me/',
             name: 'Author Name',
             sameAs: [
-                'http://myblogsite.com/?user&#x3D;bambedibu&amp;a&#x3D;&lt;script&gt;alert(&quot;bambedibu&quot;)&lt;/script&gt;',
+                'http://myblogsite.com/?user=bambedibu&a=<script>alert("bambedibu")</script>',
                 'https://x.com/testuser'
             ],
             url: 'http://mysite.com/author/me/'
@@ -617,7 +617,7 @@ describe('getSchema', function () {
             mainEntityOfPage: 'http://mysite.com/author/me/',
             name: 'Author Name',
             sameAs: [
-                'http://myblogsite.com/?user&#x3D;bambedibu&amp;a&#x3D;&lt;script&gt;alert(&quot;bambedibu&quot;)&lt;/script&gt;',
+                'http://myblogsite.com/?user=bambedibu&a=<script>alert("bambedibu")</script>',
                 'https://x.com/testuser'
             ],
             url: 'http://mysite.com/author/me/'
@@ -671,7 +671,10 @@ describe('getSchema', function () {
         assert.deepEqual(schema.sameAs, expectedSameAs);
     });
 
-    it('should escape special characters in social platform urls', function () {
+    // Values are returned raw here; the ghost_head helper escapes them as JSON \u
+    // escapes when serializing the JSON-LD block, so no HTML-entity escaping happens
+    // at this layer (that would be indexed literally by structured-data consumers).
+    it('should return social platform urls unescaped (escaping happens at JSON-LD serialization)', function () {
         const metadata = {
             site: {
                 title: 'Site Title',
@@ -690,7 +693,7 @@ describe('getSchema', function () {
             }
         };
 
-        const expectedSameAs = buildExpectedSameAs('http://myblogsite.com/', {facebook: 'user&#x3D;name&#x3D;'});
+        const expectedSameAs = buildExpectedSameAs('http://myblogsite.com/', {facebook: 'user=name='});
 
         const schema = getSchema(metadata, data);
         assert.deepEqual(schema.sameAs, expectedSameAs);
@@ -960,7 +963,7 @@ describe('getSchema', function () {
         });
     });
 
-    it('should escape special characters in contributor social platform urls', function () {
+    it('should return contributor social platform urls unescaped (escaping happens at JSON-LD serialization)', function () {
         const metadata = {
             ...BASE_METADATA
         };
@@ -988,8 +991,8 @@ describe('getSchema', function () {
 
         assertExists(schema.contributor);
         assert.deepEqual(schema.contributor[0].sameAs, [
-            'http://coauthorsite.com/?user&#x3D;name&amp;param&#x3D;&lt;script&gt;alert(&quot;test&quot;)&lt;/script&gt;',
-            'https://www.facebook.com/user&#x3D;name&#x3D;'
+            'http://coauthorsite.com/?user=name&param=<script>alert("test")</script>',
+            'https://www.facebook.com/user=name='
         ]);
     });
 });

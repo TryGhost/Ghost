@@ -3,7 +3,7 @@ const request = require('supertest');
 const express = require('../../../../../core/shared/express');
 const serveFavicon = require('../../../../../core/frontend/web/routers/serve-favicon');
 const settingsCache = require('../../../../../core/shared/settings-cache');
-const storage = require('../../../../../core/server/adapters/storage');
+const adapterManager = require('../../../../../core/server/services/adapter-manager').default;
 const configUtils = require('../../../../utils/config-utils');
 const path = require('path');
 
@@ -19,7 +19,7 @@ describe('Serve Favicon', function () {
             return localSettingsCache[key];
         });
 
-        originalStoragePath = storage.getStorage().storagePath;
+        originalStoragePath = adapterManager.getAdapter('storage:images').storagePath;
 
         serveFavicon(blogApp);
     });
@@ -28,7 +28,7 @@ describe('Serve Favicon', function () {
         sinon.restore();
         await configUtils.restore();
         localSettingsCache = {};
-        storage.getStorage().storagePath = originalStoragePath;
+        adapterManager.getAdapter('storage:images').storagePath = originalStoragePath;
     });
 
     describe('serveFavicon', function () {
@@ -46,7 +46,7 @@ describe('Serve Favicon', function () {
 
         describe('redirects', function () {
             it('custom uploaded favicon.png', async function () {
-                storage.getStorage().storagePath = path.join(__dirname, '../../../../utils/fixtures/images/');
+                adapterManager.getAdapter('storage:images').storagePath = path.join(__dirname, '../../../../utils/fixtures/images/');
                 localSettingsCache.icon = '/content/images/favicon.png';
 
                 await request(blogApp)
@@ -56,7 +56,7 @@ describe('Serve Favicon', function () {
             });
 
             it('custom uploaded favicon.webp', async function () {
-                storage.getStorage().storagePath = path.join(__dirname, '../../../../utils/fixtures/images/');
+                adapterManager.getAdapter('storage:images').storagePath = path.join(__dirname, '../../../../utils/fixtures/images/');
                 localSettingsCache.icon = '/content/images/favicon.webp';
 
                 await request(blogApp)
@@ -66,7 +66,7 @@ describe('Serve Favicon', function () {
             });
 
             it('custom uploaded favicon.ico', async function () {
-                storage.getStorage().storagePath = path.join(__dirname, '../../../../utils/fixtures/images/');
+                adapterManager.getAdapter('storage:images').storagePath = path.join(__dirname, '../../../../utils/fixtures/images/');
                 localSettingsCache.icon = '/content/images/favicon.ico';
 
                 await request(blogApp)

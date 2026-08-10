@@ -1,5 +1,5 @@
 const urlService = require('../../../../../../services/url');
-const urlUtils = require('../../../../../../../shared/url-utils');
+const urlUtils = require('../../../../../../../shared/url-utils').default;
 const localUtils = require('../../../index');
 
 const forPost = (id, attrs, frame, type = 'posts') => {
@@ -10,9 +10,38 @@ const forPost = (id, attrs, frame, type = 'posts') => {
     // type from `attrs` would silently fall back to 'posts' for pages.
     // The mapper that owns the resource always knows which it is.
     //
-    // `id` is passed separately for the same reason: without it, the eager
-    // facade's id-based fallback hits /404/ for every record.
-    attrs.url = urlService.facade.getUrlForResource({...attrs, id, type}, {absolute: true});
+    // `id` is passed separately for the same reason: `?fields=url` strips it
+    // from `attrs`, and the URL service needs it for `:id` permalinks and to
+    // name the resource when it reports a problem.
+    //
+    // When `url` was not requested (`?fields=id,title`), don't compute it at
+    // all — attrs is stripped to the requested columns, so the resource would
+    // reach the lazy URL service without the fields it needs (status,
+    // tags/authors) and be rejected as thin. The value would only be deleted
+    // at the end of this function anyway. forUser/forTag guard the same way.
+    // Shared with the input serializers' force-load so both sides always
+    // agree on when a URL is generated.
+    if (!localUtils.willSerializeUrl(frame)) {
+        return attrs;
+    }
+
+    // Names the fetch that produced this resource. It matters on the degrade
+    // path: a thin resource is answered with a silent /404/, and the report is
+    // the only way back to the endpoint that under-fetched it. Ignored by URL
+    // generation itself; read only into that report.
+    const options = {absolute: true};
+    if (frame && (frame.docName || frame.method)) {
+        options.serializerContext = {
+            apiType: frame.apiType,
+            docName: frame.docName,
+            method: frame.method,
+            withRelated: frame.options && frame.options.withRelated,
+            columns: frame.options && frame.options.columns,
+            forcedUrlRelations: frame.forcedUrlRelations
+        };
+    }
+
+    attrs.url = urlService.getUrlForResource({...attrs, id, type}, options);
 
     /**
      * CASE: admin api should serve preview urls
@@ -44,16 +73,12 @@ const forPost = (id, attrs, frame, type = 'posts') => {
         }
     }
 
-    if (frame.options.columns && !frame.options.columns.includes('url')) {
-        delete attrs.url;
-    }
-
     return attrs;
 };
 
 const forUser = (id, attrs, options) => {
     if (!options.columns || (options.columns && options.columns.includes('url'))) {
-        attrs.url = urlService.facade.getUrlForResource({...attrs, id, type: 'authors'}, {absolute: true});
+        attrs.url = urlService.getUrlForResource({...attrs, id, type: 'authors'}, {absolute: true});
     }
 
     return attrs;
@@ -61,7 +86,7 @@ const forUser = (id, attrs, options) => {
 
 const forTag = (id, attrs, options) => {
     if (!options.columns || (options.columns && options.columns.includes('url'))) {
-        attrs.url = urlService.facade.getUrlForResource({...attrs, id, type: 'tags'}, {absolute: true});
+        attrs.url = urlService.getUrlForResource({...attrs, id, type: 'tags'}, {absolute: true});
     }
 
     return attrs;

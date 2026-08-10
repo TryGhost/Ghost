@@ -1,0 +1,64 @@
+{
+  "name": "@tryghost/kg-default-cards",
+  "version": "10.3.3",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TryGhost/Ghost.git",
+    "directory": "koenig/kg-default-cards"
+  },
+  "author": "Ghost Foundation",
+  "license": "MIT",
+  "main": "build/cjs/index.js",
+  "module": "build/esm/index.js",
+  "types": "build/esm/index.d.ts",
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "types": "./build/esm/index.d.ts",
+      "import": "./build/esm/index.js",
+      "require": "./build/cjs/index.js"
+    }
+  },
+  "scripts": {
+    "dev": "echo \"Implement me!\"",
+    "build": "tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json",
+    "test": "pnpm run '/^test:/'",
+    "test:unit": "NODE_ENV=testing vitest run --coverage",
+    "test:types": "tsc -p tsconfig.test.json",
+    "lint": "eslint --cache .",
+    "posttest": "pnpm lint"
+  },
+  "engines": {
+    "node": "^22.13.1 || ^24.0.0"
+  },
+  "files": [
+    "LICENSE",
+    "README.md",
+    "build"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@eslint/js": "catalog:",
+    "@types/jsdom": "catalog:",
+    "@types/node": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "eslint-plugin-ghost": "catalog:",
+    "jsdom": "catalog:",
+    "simple-dom": "1.4.0",
+    "@typescript/native": "catalog:",
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:",
+    "vitest": "catalog:"
+  },
+  "dependencies": {
+    "@tryghost/kg-markdown-html-renderer": "workspace:~",
+    "@tryghost/kg-utils": "workspace:~",
+    "@tryghost/string": "catalog:",
+    "@tryghost/url-utils": "5.2.7",
+    "handlebars": "4.7.9",
+    "juice": "12.1.1",
+    "luxon": "3.7.2"
+  }
+}

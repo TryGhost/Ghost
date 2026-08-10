@@ -9,16 +9,31 @@ const RoutingService = require('./routing-service');
 const models = require('../../models');
 const events = require('../../lib/common/events');
 const externalRequest = require('../../../server/lib/request-external.js');
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 const outputSerializerUrlUtil = require('../../../server/api/endpoints/utils/serializers/output/utils/url');
 const urlService = require('../url');
 const settingsCache = require('../../../shared/settings-cache');
 const DomainEvents = require('@tryghost/domain-events');
 const jobsService = require('../mentions-jobs');
 
-function getPostUrl(post) {
-    const jsonModel = post.toJSON();
-    outputSerializerUrlUtil.forPost(post.id, jsonModel, {options: {}});
+// Serializes a post model to the data the URL service needs, loading the
+// relations it reads for filtered collections (event-emitted models don't
+// reliably carry them).
+async function getPostData(post) {
+    const missing = urlService.getRequiredRelations().filter(relation => !post.relations[relation]);
+    if (missing.length) {
+        await post.load(missing);
+    }
+    return post.toJSON();
+}
+
+function getPostUrl(id, postData) {
+    const jsonModel = {...postData};
+    // The URL service routes by resource type. Pages and posts share the Post
+    // model, so the page's own type must reach forPost — otherwise it defaults
+    // to 'posts', matches no post collection, and 404s.
+    const type = postData.type === 'page' ? 'pages' : 'posts';
+    outputSerializerUrlUtil.forPost(id, jsonModel, {options: {}}, type);
     return jsonModel.url;
 }
 
@@ -99,7 +114,8 @@ module.exports = {
             discoveryService,
             externalRequest,
             getSiteUrl: () => urlUtils.urlFor('home', true),
-            getPostUrl: post => getPostUrl(post),
+            getPostData: post => getPostData(post),
+            getPostUrl: (id, data) => getPostUrl(id, data),
             isEnabled: () => !settingsCache.get('is_private'),
             jobService: {
                 async addJob(name, fn) {
@@ -116,3 +132,7 @@ module.exports = {
         this.sendingService = sendingService;
     }
 };
+
+// exposed for testing
+module.exports.getPostData = getPostData;
+module.exports.getPostUrl = getPostUrl;

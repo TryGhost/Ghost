@@ -26,6 +26,7 @@ const AUTH_CODE_CHALLENGE_BYTES = 16;
  * @prop {string} user_agent
  * @prop {string} ip
  * @prop {boolean} verified
+ * @prop {string} [verified_user_id]
  * @prop {string} [auth_code_challenge]
  * @prop {number} [auth_code_generated_at]
  */
@@ -58,7 +59,7 @@ const AUTH_CODE_CHALLENGE_BYTES = 16;
  * @param {() => string} deps.getBlogLogo
  * @param {import('../../mail').GhostMailer} deps.mailer
  * @param {import('../../i18n').t} deps.t
- * @param {import('../../../../shared/url-utils')} deps.urlUtils
+ * @param {import('../../../../shared/url-utils').default} deps.urlUtils
  * @param {() => boolean} deps.isStaffDeviceVerificationDisabled
  * @returns {SessionService}
  */
@@ -190,12 +191,14 @@ module.exports = function createSessionService({
 
             if (isAuthCodeVerified) {
                 session.verified = true;
+                session.verified_user_id = user.id;
                 invalidateAuthCodeChallenge(session);
             }
         }
 
         if (isStaffDeviceVerificationDisabled()) {
             session.verified = true;
+            session.verified_user_id = user.id;
         }
     }
 
@@ -208,7 +211,38 @@ module.exports = function createSessionService({
      * @returns {Promise<void>}
      */
     async function createSessionForUser(req, res, user) {
-        const session = await getSession(req, res);
+        const previousSession = await getSession(req, res);
+
+        // Carried over to the new session so verification state survives login
+        const {
+            user_id: previousUserId,
+            verified: previousVerified,
+            verified_user_id: previousVerifiedUserId,
+            auth_code_challenge: previousAuthCodeChallenge,
+            auth_code_generated_at: previousAuthCodeGeneratedAt
+        } = previousSession;
+
+        // Ensure a new session is always created
+        await new Promise((resolve, reject) => {
+            req.session.regenerate((err) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                resolve();
+            });
+        });
+
+        const session = req.session;
+        session.user_id = previousUserId;
+        // Verification is bound to the user who completed it — any other user
+        // (including sessions with no verified_user_id) must verify again
+        const carryVerification = previousVerified === true && previousVerifiedUserId === user.id;
+        session.verified = carryVerification ? true : undefined;
+        session.verified_user_id = carryVerification ? previousVerifiedUserId : undefined;
+        session.auth_code_challenge = previousAuthCodeChallenge;
+        session.auth_code_generated_at = previousAuthCodeGeneratedAt;
+
         const origin = getOriginOfRequest(req);
         await assignUserToSession({
             session,
@@ -255,6 +289,7 @@ module.exports = function createSessionService({
         });
 
         session.verified = true;
+        session.verified_user_id = user.id;
         invalidateAuthCodeChallenge(session);
     }
 
@@ -453,6 +488,7 @@ module.exports = function createSessionService({
     async function verifySession(req, res) {
         const session = await getSession(req, res);
         session.verified = true;
+        session.verified_user_id = session.user_id;
         invalidateAuthCodeChallenge(session);
     }
 
@@ -464,7 +500,12 @@ module.exports = function createSessionService({
      */
     async function isVerifiedSession(req, res) {
         const session = await getSession(req, res);
-        return session.verified;
+        // Verification is bound to a user; a session with no verified_user_id
+        // (e.g. logged out, or predating this field) fails closed rather than
+        // matching an absent user_id via undefined === undefined
+        return session.verified === true &&
+            !!session.verified_user_id &&
+            session.verified_user_id === session.user_id;
     }
 
     /**
@@ -479,6 +520,7 @@ module.exports = function createSessionService({
 
         if (isVerificationRequired()) {
             session.verified = undefined;
+            session.verified_user_id = undefined;
         }
 
         invalidateAuthCodeChallenge(session);

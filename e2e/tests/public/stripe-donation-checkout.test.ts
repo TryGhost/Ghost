@@ -70,7 +70,7 @@ test.describe('Ghost Public - Stripe Donation Checkout', () => {
 
         const fakeCheckoutPage = new FakeStripeCheckoutPage(page);
         await fakeCheckoutPage.goto(sessionResponse.url);
-        await fakeCheckoutPage.waitUntilDonationReady();
+        await fakeCheckoutPage.waitUntilPaymentReady();
 
         await stripe!.completeLatestDonationCheckout({
             donationMessage,

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {generateGiftLinkToken} from '../../../../../core/server/services/gift-links/service';
+import {generateGiftLinkToken} from '../../../../../core/server/services/gift-links/models';
 
 describe('Unit: generateGiftLinkToken', function () {
     it('generates a non-empty url-safe (base64url) string', function () {

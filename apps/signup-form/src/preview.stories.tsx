@@ -1,4 +1,4 @@
-import * as i18nLibModule from '@tryghost/i18n';
+import * as i18nLibModule from '@tryghost/i18n/registry/signup-form';
 import React, {useState} from 'react';
 import pages, {Page, PageName} from './pages';
 import {AppContextProvider, SignupFormOptions} from './app-context';

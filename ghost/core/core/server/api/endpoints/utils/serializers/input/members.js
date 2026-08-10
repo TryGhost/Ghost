@@ -31,11 +31,25 @@ function mapSubscribedFlagToNewsletterRelation(frame) {
     });
 }
 
+// Values are not a member relation — they're stored per field type and read by
+// the custom fields service — so `include=custom_fields` must not reach the model
+// layer as something to eager-load. Lift it out and leave a flag browse can act on.
+function liftCustomFieldsInclude(frame) {
+    if (!frame.options.withRelated.includes('custom_fields')) {
+        return;
+    }
+
+    frame.options.withRelated = frame.options.withRelated.filter(relation => relation !== 'custom_fields');
+    frame.options.includeCustomFields = true;
+}
+
 module.exports = {
     all(_apiConfig, frame) {
         if (!frame.options.withRelated) {
             return;
         }
+
+        liftCustomFieldsInclude(frame);
 
         frame.options.withRelated = frame.options.withRelated.map((relation) => {
             if (relation === 'tiers') {

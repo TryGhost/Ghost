@@ -2,6 +2,7 @@ const debug = require('@tryghost/debug')('shared:express');
 const express = require('express');
 const {createLazyRouter} = require('express-lazy-router');
 const sentry = require('./sentry');
+const config = require('../../core/shared/config');
 
 const lazyLoad = createLazyRouter();
 
@@ -17,7 +18,11 @@ module.exports = (name) => {
 
     // Make sure 'req.secure' is valid for proxied requests
     // (X-Forwarded-Proto header will be checked, if present)
-    app.enable('trust proxy');
+    if (config.get('usingLoopbackReverseProxy')) {
+        app.set('trust proxy', 'loopback');
+    } else {
+        app.enable('trust proxy');
+    }
 
     // Sentry must be our first error handler. Mounting it here means all custom error handlers will come after
     app.use(sentry.errorHandler);

@@ -362,7 +362,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
                 </div>
                 {imagePreview &&
                     <div className='group relative mt-6 flex min-h-[200px] w-full items-center justify-center'>
-                        <img alt='Image attachment preview' className={`max-h-[320px] w-full rounded-sm object-cover outline outline-1 -outline-offset-1 outline-black/10 ${isImageUploading && 'opacity-10'}`} src={imagePreview} />
+                        <img alt='Image attachment preview' className={`max-h-[320px] w-full rounded-sm object-cover outline-1 -outline-offset-1 outline-black/10 ${isImageUploading && 'opacity-10'}`} src={imagePreview} />
                         {isImageUploading &&
                             <div className='absolute leading-[0]'>
                                 <LoadingIndicator size='md' />

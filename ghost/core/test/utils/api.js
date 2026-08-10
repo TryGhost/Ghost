@@ -4,7 +4,6 @@ const _ = require('lodash');
 const moment = require('moment');
 const DataGenerator = require('./fixtures/data-generator');
 const config = require('../../core/shared/config');
-const {sequence} = require('@tryghost/promise');
 const host = config.get('server').host;
 const port = config.get('server').port;
 const protocol = 'http://';
@@ -61,7 +60,7 @@ function checkResponse(jsonResponse, objectType, additionalProperties, missingPr
  * @TODO make this do the DB init as well
  */
 const doAuth = (apiOptions) => {
-    return function doAuthInner() {
+    return async function doAuthInner() {
         let API_URL = arguments[0];
         let request = arguments[1];
 
@@ -77,9 +76,11 @@ const doAuth = (apiOptions) => {
 
         const fixtureOps = apiOptions.getFixtureOps(options);
 
-        return sequence(fixtureOps).then(function () {
-            return login(request, API_URL);
-        });
+        for (const fixtureOp of fixtureOps) {
+            await fixtureOp();
+        }
+
+        return login(request, API_URL);
     };
 };
 

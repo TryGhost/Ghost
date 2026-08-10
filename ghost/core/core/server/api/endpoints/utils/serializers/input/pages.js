@@ -1,19 +1,16 @@
 const _ = require('lodash');
-const urlService = require('../../../../../services/url');
 const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:input:pages');
 const {ValidationError} = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const url = require('./utils/url');
 const slugFilterOrder = require('./utils/slug-filter-order');
 const localUtils = require('../../index');
-const mobiledoc = require('../../../../../lib/mobiledoc');
 const postsMetaSchema = require('../../../../../data/schema').tables.posts_meta;
 const postsSchema = require('../../../../../data/schema').tables.posts;
 const clean = require('./utils/clean');
 const lexical = require('../../../../../lib/lexical');
 
 const messages = {
-    failedHtmlToMobiledoc: 'Failed to convert HTML to Mobiledoc',
     failedHtmlToLexical: 'Failed to convert HTML to Lexical'
 };
 
@@ -52,28 +49,14 @@ function selectAllAllowedColumns(frame) {
     }
 }
 
-function forceUrlRelationsWhenLazy(frame) {
-    if (Array.isArray(frame.options.columns) && frame.options.columns.includes('url')) {
-        const relations = urlService.facade.getRequiredRelations();
-        if (relations.length) {
-            frame.options.withRelated = _.union(frame.options.withRelated || [], relations);
-        }
-        url.forceUrlColumnsWhenLazy(frame, 'pages');
-    }
-}
-
 function defaultRelations(frame) {
-    forceUrlRelationsWhenLazy(frame);
-
-    if (frame.options.withRelated) {
-        return;
+    // Defaults for the admin API. Applied before the URL force-load so a
+    // forced relation can never preempt the full admin default list.
+    if (!frame.options.withRelated && !frame.options.columns) {
+        frame.options.withRelated = ['tags', 'authors', 'authors.roles', 'tiers', 'count.signups', 'count.paid_conversions'];
     }
 
-    if (frame.options.columns) {
-        return false;
-    }
-
-    frame.options.withRelated = ['tags', 'authors', 'authors.roles', 'tiers', 'count.signups', 'count.paid_conversions'];
+    url.forceUrlRelations(frame, 'pages');
 }
 
 function setDefaultOrder(frame) {
@@ -143,7 +126,7 @@ module.exports = {
 
             setDefaultOrder(frame);
             forceVisibilityColumn(frame);
-            forceUrlRelationsWhenLazy(frame);
+            url.forceUrlRelations(frame, 'pages');
         }
 
         if (!localUtils.isContentAPI(frame)) {
@@ -162,7 +145,7 @@ module.exports = {
             removeSourceFormats(frame);
             setDefaultOrder(frame);
             forceVisibilityColumn(frame);
-            forceUrlRelationsWhenLazy(frame);
+            url.forceUrlRelations(frame, 'pages');
         }
 
         if (!localUtils.isContentAPI(frame)) {
@@ -179,25 +162,6 @@ module.exports = {
             const html = frame.data.pages[0].html;
 
             if (frame.options.source === 'html' && !_.isEmpty(html)) {
-                if (process.env.CI) {
-                    console.time('htmlToMobiledocConverter (page)'); // eslint-disable-line no-console
-                }
-
-                try {
-                    frame.data.pages[0].mobiledoc = JSON.stringify(mobiledoc.htmlToMobiledocConverter(html));
-                } catch (err) {
-                    throw new ValidationError({
-                        message: tpl(messages.failedHtmlToMobiledoc),
-                        err
-                    });
-                }
-
-                if (process.env.CI) {
-                    console.timeEnd('htmlToMobiledocConverter (page)'); // eslint-disable-line no-console
-                }
-
-                // normally we don't allow both mobiledoc+lexical but the model layer will remove lexical
-                // if mobiledoc is already present to avoid migrating formats outside of an explicit conversion
                 if (process.env.CI) {
                     console.time('htmlToLexicalConverter (page)'); // eslint-disable-line no-console
                 }

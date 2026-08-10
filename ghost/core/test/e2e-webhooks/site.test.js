@@ -34,7 +34,7 @@ describe('site.* events', function () {
                 posts: [{
                     title: 'webhookz',
                     status: 'published',
-                    mobiledoc: fixtureManager.get('posts', 1).mobiledoc
+                    lexical: fixtureManager.get('posts', 1).lexical
                 }]
             })
             .expectStatus(201);
@@ -69,7 +69,7 @@ describe('site.* events', function () {
                 posts: [{
                     title: 'webhookz',
                     status: 'published',
-                    mobiledoc: fixtureManager.get('posts', 1).mobiledoc
+                    lexical: fixtureManager.get('posts', 1).lexical
                 }]
             })
             .expectStatus(201);
@@ -109,7 +109,7 @@ describe('site.* events', function () {
                 posts: [{
                     title: 'webhookz',
                     status: 'published',
-                    mobiledoc: fixtureManager.get('posts', 1).mobiledoc
+                    lexical: fixtureManager.get('posts', 1).lexical
                 }]
             })
             .expectStatus(201);
@@ -139,7 +139,7 @@ describe('site.* events', function () {
                 posts: [{
                     title: 'webhookz',
                     status: 'draft',
-                    mobiledoc: fixtureManager.get('posts', 1).mobiledoc
+                    lexical: fixtureManager.get('posts', 1).lexical
                 }]
             })
             .expectStatus(201);
@@ -184,7 +184,7 @@ describe('site.* events', function () {
                 posts: [{
                     title: 'bulk draft webhookz',
                     status: 'draft',
-                    mobiledoc: fixtureManager.get('posts', 1).mobiledoc
+                    lexical: fixtureManager.get('posts', 1).lexical
                 }]
             })
             .expectStatus(201);
@@ -217,7 +217,7 @@ describe('site.* events', function () {
                 posts: [{
                     title: 'published webhookz',
                     status: 'published',
-                    mobiledoc: fixtureManager.get('posts', 1).mobiledoc
+                    lexical: fixtureManager.get('posts', 1).lexical
                 }]
             })
             .expectStatus(201);
@@ -244,7 +244,7 @@ describe('site.* events', function () {
                 pages: [{
                     title: 'draft page webhookz',
                     status: 'draft',
-                    mobiledoc: fixtureManager.get('posts', 1).mobiledoc
+                    lexical: fixtureManager.get('posts', 1).lexical
                 }]
             })
             .expectStatus(201);
@@ -289,7 +289,7 @@ describe('site.* events', function () {
                 pages: [{
                     title: 'bulk draft page webhookz',
                     status: 'draft',
-                    mobiledoc: fixtureManager.get('posts', 1).mobiledoc
+                    lexical: fixtureManager.get('posts', 1).lexical
                 }]
             })
             .expectStatus(201);
@@ -322,7 +322,7 @@ describe('site.* events', function () {
                 pages: [{
                     title: 'published page webhookz',
                     status: 'published',
-                    mobiledoc: fixtureManager.get('posts', 1).mobiledoc
+                    lexical: fixtureManager.get('posts', 1).lexical
                 }]
             })
             .expectStatus(201);

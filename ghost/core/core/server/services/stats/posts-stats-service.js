@@ -1,6 +1,6 @@
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 
 // Import source normalization from ReferrersStatsService
 const {normalizeSource} = require('./referrers-stats-service');
@@ -222,8 +222,8 @@ class PostsStatsService {
             if (this.urlService && row.attribution_url) {
                 try {
                     // Check if URL service is ready
-                    if (this.urlService.facade.hasFinished && this.urlService.facade.hasFinished()) {
-                        const resource = await this.urlService.facade.resolveUrl(row.attribution_url);
+                    if (this.urlService.hasFinished && this.urlService.hasFinished()) {
+                        const resource = await this.urlService.resolveUrl(row.attribution_url);
                         urlExists = !!resource; // Convert to boolean
                     }
                     // If URL service isn't ready, we default to true (clickable)
@@ -399,29 +399,33 @@ class PostsStatsService {
 
     async getGrowthStatsForPost(postId) {
         try {
-            const freeMembers = await this.knex('members_created_events as mce')
-                .countDistinct('mce.member_id as free_members')
-                .leftJoin('members_subscription_created_events as msce', function () {
-                    this.on('mce.member_id', '=', 'msce.member_id')
-                        .andOn('mce.attribution_id', '=', 'msce.attribution_id');
-                })
-                .where('mce.attribution_id', postId)
-                .whereIn('mce.attribution_type', ['post', 'page'])
-                .where('msce.id', null);
+            // The three aggregates only depend on postId, so run them together:
+            // the wait becomes the slowest query instead of the sum of all three.
+            const [freeMembers, paidMembers, mrr] = await Promise.all([
+                this.knex('members_created_events as mce')
+                    .countDistinct('mce.member_id as free_members')
+                    .leftJoin('members_subscription_created_events as msce', function () {
+                        this.on('mce.member_id', '=', 'msce.member_id')
+                            .andOn('mce.attribution_id', '=', 'msce.attribution_id');
+                    })
+                    .where('mce.attribution_id', postId)
+                    .whereIn('mce.attribution_type', ['post', 'page'])
+                    .where('msce.id', null),
 
-            const paidMembers = await this.knex('members_subscription_created_events as msce')
-                .countDistinct('msce.member_id as paid_members')
-                .where('msce.attribution_id', postId)
-                .whereIn('msce.attribution_type', ['post', 'page']);
+                this.knex('members_subscription_created_events as msce')
+                    .countDistinct('msce.member_id as paid_members')
+                    .where('msce.attribution_id', postId)
+                    .whereIn('msce.attribution_type', ['post', 'page']),
 
-            const mrr = await this.knex('members_subscription_created_events as msce')
-                .sum('mpse.mrr_delta as mrr')
-                .join('members_paid_subscription_events as mpse', function () {
-                    this.on('mpse.subscription_id', '=', 'msce.subscription_id');
-                    this.andOn('mpse.member_id', '=', 'msce.member_id');
-                })
-                .where('msce.attribution_id', postId)
-                .whereIn('msce.attribution_type', ['post', 'page']);
+                this.knex('members_subscription_created_events as msce')
+                    .sum('mpse.mrr_delta as mrr')
+                    .join('members_paid_subscription_events as mpse', function () {
+                        this.on('mpse.subscription_id', '=', 'msce.subscription_id');
+                        this.andOn('mpse.member_id', '=', 'msce.member_id');
+                    })
+                    .where('msce.attribution_id', postId)
+                    .whereIn('msce.attribution_type', ['post', 'page'])
+            ]);
 
             return {
                 data: [
@@ -1209,86 +1213,90 @@ class PostsStatsService {
             // Filter out any rows without post_uuid and get unique UUIDs
             const postUuids = [...new Set(viewsData.filter(row => row.post_uuid).map(row => row.post_uuid))];
 
-            // Get posts data from Ghost DB - prioritize posts that were sent as newsletters
-            const posts = await this.knex('posts as p')
-                .select(
-                    'p.id as post_id',
-                    'p.uuid as post_uuid',
-                    'p.title',
-                    'p.published_at',
-                    'p.feature_image',
-                    'p.status',
-                    'emails.email_count',
-                    'emails.opened_count'
-                )
-                .leftJoin('emails', 'emails.post_id', 'p.id')
-                .where('p.status', 'published')
-                .where('p.type', 'post')
-                .whereNotNull('p.published_at')
-                .orderByRaw('CASE WHEN p.uuid IN (?) THEN 0 ELSE 1 END', [postUuids.length > 0 ? postUuids : ['none']])
-                .orderBy('p.published_at', 'desc')
-                .limit(limit);
+            let postsWithViews = [];
 
-            // Get authors for all posts
-            const postIds = posts.map(p => p.post_id);
-            const authorsData = postIds.length > 0 ? await this.knex('posts_authors as pa')
-                .select('pa.post_id', 'u.name', 'pa.sort_order')
-                .leftJoin('users as u', 'u.id', 'pa.author_id')
-                .whereIn('pa.post_id', postIds)
-                .whereNotNull('u.name')
-                .orderBy(['pa.post_id', 'pa.sort_order']) : [];
+            if (viewsData.length > 0) {
+                // Get posts data from Ghost DB - prioritize posts that were sent as newsletters
+                const posts = await this.knex('posts as p')
+                    .select(
+                        'p.id as post_id',
+                        'p.uuid as post_uuid',
+                        'p.title',
+                        'p.published_at',
+                        'p.feature_image',
+                        'p.status',
+                        'emails.email_count',
+                        'emails.opened_count'
+                    )
+                    .leftJoin('emails', 'emails.post_id', 'p.id')
+                    .where('p.status', 'published')
+                    .where('p.type', 'post')
+                    .whereNotNull('p.published_at')
+                    .orderByRaw('CASE WHEN p.uuid IN (?) THEN 0 ELSE 1 END', [postUuids.length > 0 ? postUuids : ['none']])
+                    .orderBy('p.published_at', 'desc')
+                    .limit(limit);
 
-            // Group authors by post_id
-            const authorsByPost = {};
-            authorsData.forEach((author) => {
-                if (!authorsByPost[author.post_id]) {
-                    authorsByPost[author.post_id] = [];
-                }
-                authorsByPost[author.post_id].push(author.name);
-            });
+                // Get authors for all posts
+                const postIds = posts.map(p => p.post_id);
+                const authorsData = postIds.length > 0 ? await this.knex('posts_authors as pa')
+                    .select('pa.post_id', 'u.name', 'pa.sort_order')
+                    .leftJoin('users as u', 'u.id', 'pa.author_id')
+                    .whereIn('pa.post_id', postIds)
+                    .whereNotNull('u.name')
+                    .orderBy(['pa.post_id', 'pa.sort_order']) : [];
 
-            // Add authors to posts
-            posts.forEach((post) => {
-                post.authors = (authorsByPost[post.post_id] || []).join(', ');
-            });
+                // Group authors by post_id
+                const authorsByPost = {};
+                authorsData.forEach((author) => {
+                    if (!authorsByPost[author.post_id]) {
+                        authorsByPost[author.post_id] = [];
+                    }
+                    authorsByPost[author.post_id].push(author.name);
+                });
 
-            // Get member attribution counts and click counts for these posts
-            const [memberAttributionCounts, clickCounts] = await Promise.all([
-                this._getMemberAttributionCounts(posts.map(p => p.post_id), options),
-                this.getPostsClickCounts(posts.map(p => p.post_id))
-            ]);
+                // Add authors to posts
+                posts.forEach((post) => {
+                    post.authors = (authorsByPost[post.post_id] || []).join(', ');
+                });
 
-            // Process posts with views
-            const postsWithViews = viewsData.map((row) => {
-                const post = posts.find(p => p.post_uuid === row.post_uuid);
+                // Get member attribution counts and click counts for these posts
+                const [memberAttributionCounts, clickCounts] = await Promise.all([
+                    this._getMemberAttributionCounts(posts.map(p => p.post_id), options),
+                    this.getPostsClickCounts(posts.map(p => p.post_id))
+                ]);
 
-                if (!post) {
-                    return null;
-                }
+                // Process posts with views
+                postsWithViews = viewsData.map((row) => {
+                    const post = posts.find(p => p.post_uuid === row.post_uuid);
 
-                // Find the member attribution count for this post
-                const attributionCount = memberAttributionCounts.find(ac => ac.post_id === post.post_id);
-                const memberCount = attributionCount ? (attributionCount.free_members + attributionCount.paid_members) : 0;
-                const clickCount = clickCounts[post.post_id] || 0;
+                    if (!post) {
+                        return null;
+                    }
 
-                return {
-                    post_id: post.post_id,
-                    title: post.title,
-                    published_at: post.published_at,
-                    feature_image: post.feature_image ? urlUtils.transformReadyToAbsolute(post.feature_image) : post.feature_image,
-                    status: post.status,
-                    authors: post.authors,
-                    views: row.visits,
-                    sent_count: post.email_count || null,
-                    opened_count: post.opened_count || null,
-                    open_rate: post.email_count > 0 ? (post.opened_count / post.email_count) * 100 : null,
-                    clicked_count: clickCount,
-                    click_rate: post.email_count > 0 ? (clickCount / post.email_count) * 100 : null,
-                    members: memberCount,
-                    free_members: attributionCount ? attributionCount.free_members : 0,
-                    paid_members: attributionCount ? attributionCount.paid_members : 0
-                };
-            }).filter(Boolean);
+                    // Find the member attribution count for this post
+                    const attributionCount = memberAttributionCounts.find(ac => ac.post_id === post.post_id);
+                    const memberCount = attributionCount ? (attributionCount.free_members + attributionCount.paid_members) : 0;
+                    const clickCount = clickCounts[post.post_id] || 0;
+
+                    return {
+                        post_id: post.post_id,
+                        title: post.title,
+                        published_at: post.published_at,
+                        feature_image: post.feature_image ? urlUtils.transformReadyToAbsolute(post.feature_image) : post.feature_image,
+                        status: post.status,
+                        authors: post.authors,
+                        views: row.visits,
+                        sent_count: post.email_count || null,
+                        opened_count: post.opened_count || null,
+                        open_rate: post.email_count > 0 ? (post.opened_count / post.email_count) * 100 : null,
+                        clicked_count: clickCount,
+                        click_rate: post.email_count > 0 ? (clickCount / post.email_count) * 100 : null,
+                        members: memberCount,
+                        free_members: attributionCount ? attributionCount.free_members : 0,
+                        paid_members: attributionCount ? attributionCount.paid_members : 0
+                    };
+                }).filter(Boolean);
+            }
 
             // Calculate how many more posts we need - we want to always return 5 posts
             const remainingCount = limit - postsWithViews.length;

@@ -1,10 +1,7 @@
-#!/usr/bin/env node
-'use strict';
+import {resolve} from 'node:path';
+import {execSync} from 'node:child_process';
 
-const {execSync} = require('node:child_process');
-const path = require('node:path');
-
-const ROOT = path.resolve(__dirname, '../..');
+const ROOT = resolve(import.meta.dirname, '../..');
 const REPO_URL = 'https://github.com/TryGhost/Ghost';
 
 // Emoji priority order (lowest index = lowest priority, sorted descending)
@@ -16,7 +13,12 @@ const USER_FACING_EMOJIS = new Set(EMOJI_ORDER);
 function getCommitLog(fromTag, toTag) {
     const range = `${fromTag}..${toTag}`;
     const format = '* %s - %an';
-    const cmd = `git log --no-merges --pretty=tformat:'${format}' ${range}`;
+    // --first-parent keeps us on the mainline: PRs are squash-merged, so every
+    // real change is a single commit there. Subtree imports (`git subtree add`,
+    // history merges from other repos) arrive as merge commits whose second
+    // parent is the foreign history — sometimes years of it — and following
+    // that side floods the changelog with unrelated commits.
+    const cmd = `git log --first-parent --no-merges --pretty=tformat:'${format}' ${range}`;
 
     let log;
     try {
@@ -55,7 +57,7 @@ function filterAndSortByEmoji(lines) {
     return emojiLines;
 }
 
-function generateReleaseNotes(fromTag, toTag) {
+export function generateReleaseNotes(fromTag, toTag) {
     const lines = getCommitLog(fromTag, toTag);
     const filtered = filterAndSortByEmoji(lines);
 
@@ -73,7 +75,7 @@ function generateReleaseNotes(fromTag, toTag) {
 }
 
 // CLI: node release-notes.js <from-tag> <to-tag>
-if (require.main === module) {
+if (import.meta.main) {
     const [fromTag, toTag] = process.argv.slice(2);
 
     if (!fromTag || !toTag) {
@@ -83,5 +85,3 @@ if (require.main === module) {
 
     process.stdout.write(generateReleaseNotes(fromTag, toTag));
 }
-
-module.exports = {generateReleaseNotes};

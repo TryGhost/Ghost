@@ -106,6 +106,7 @@ const controller = {
             'device',
             'location',
             'source',
+            'gift_link',
             'utm_source',
             'utm_medium',
             'utm_campaign',

@@ -85,6 +85,11 @@ export const BASE_GHOST_ENV = [
     'mail__options__host=ghost-dev-mailpit',
     'mail__options__port=1025',
 
+    // Staff device verification (new-device 2FA) defaults off in development but ships
+    // on in production. Force it on so the suite stays production-representative and the
+    // 2FA settings UI / sign-in flow render regardless of the dev default.
+    'security__staffDeviceVerification=true',
+
     // Disable IndexNow pings (tests run with real network access)
     'privacy__useIndexNow=false',
 

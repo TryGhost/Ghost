@@ -144,7 +144,7 @@ export const WithHoverButton: Story = {
                     />
                 </div>
                 <Button
-                    className='absolute right-6 translate-x-full opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100'
+                    className='absolute right-6 translate-x-full opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100 focus-visible:translate-x-0 focus-visible:opacity-100'
                     size='sm'
                     variant='outline'
                 >

@@ -2,6 +2,8 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
 const {rejectContentApiRestrictedFieldsTransformer} = require('./utils/api-filter-utils');
+const {generateGiftKeyData, applyGiftAccess} = require('./utils/gift-link-access');
+const {generateOptionsData, generateAuthData} = require('./utils/public-cache-keys');
 
 const ALLOWED_INCLUDES = ['tags', 'authors', 'tiers'];
 
@@ -52,6 +54,28 @@ const controller = {
         headers: {
             cacheInvalidate: false
         },
+        // The pages read has no response cache today, but the key must stay
+        // paired with applyGiftAccess below: if a cache is ever added without
+        // the gift dimension, a gift read would populate the anonymous key
+        // with unlocked content.
+        async generateCacheKeyData(frame) {
+            return {
+                options: generateOptionsData(frame, [
+                    'include',
+                    'fields',
+                    'formats',
+                    'absolute_urls'
+                ]),
+                auth: generateAuthData(frame),
+                gift: await generateGiftKeyData(frame),
+                method: 'read',
+                identifier: {
+                    id: frame.data.id,
+                    slug: frame.data.slug,
+                    uuid: frame.data.uuid
+                }
+            };
+        },
         options: [
             'include',
             'fields',
@@ -86,6 +110,8 @@ const controller = {
                     message: tpl(messages.pageNotFound)
                 });
             }
+
+            await applyGiftAccess(frame, model);
 
             return model;
         }

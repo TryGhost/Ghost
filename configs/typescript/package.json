@@ -1,0 +1,10 @@
+{
+    "name": "@internal/cfg-typescript",
+    "version": "0.0.0",
+    "description": "Shared TypeScript config for internal ESM-only Ghost packages",
+    "private": true,
+    "license": "MIT",
+    "files": [
+        "esm.json"
+    ]
+}

@@ -14,7 +14,7 @@ module.exports = class ActivityPubServiceWrapper {
         const logging = require('@tryghost/logging');
         const events = require('../../lib/common/events');
         const {knex} = require('../../data/db');
-        const urlUtils = require('../../../shared/url-utils');
+        const urlUtils = require('../../../shared/url-utils').default;
         const IdentityTokenServiceWrapper = require('../identity-tokens');
         const settingsCache = require('../../../shared/settings-cache');
 

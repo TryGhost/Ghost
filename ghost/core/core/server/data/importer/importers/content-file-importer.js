@@ -57,14 +57,14 @@ class ContentFileImporter {
     /** @property {string} */
     type;
 
-    /** @property {import('ghost-storage-base')} */
+    /** @property {import('ghost-storage-base').StorageBase} */
     #store;
 
     /**
      *
      * @param {Object} deps
      * @param {'images' | 'media' | 'files'} deps.type - importer type
-     * @param {import('ghost-storage-base')} deps.store
+     * @param {import('ghost-storage-base').StorageBase} deps.store
      */
     constructor(deps) {
         this.type = deps.type;

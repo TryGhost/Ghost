@@ -79,10 +79,23 @@ describe('Domain Warming Integration Tests', function () {
     }
 
     // Helper: Set fake time to specific day
-    // Uses fixed 24-hour increments from a normalized base to avoid DST drift
+    // Uses fixed 24-hour increments from a normalized base to avoid DST drift.
+    // Member fixtures are created with the real clock (createMembers() runs
+    // before setDay()), then batch-sending-service.js's recipient query
+    // deliberately excludes any member whose ObjectId timestamp isn't strictly
+    // before the email's (createBatches() comment: "we'll only fetch members
+    // that are created before the email"). Day 0 must therefore land strictly
+    // after "now" at file-load time, or members created moments earlier in the
+    // real clock look like they were created after the (now fake-backdated)
+    // email whenever this file happens to load after 12:00 UTC — anchor to a
+    // UTC midnight instead of "today at noon", which is only safe before noon.
+    // +2 days (not +1) so a file load landing right at a UTC midnight boundary
+    // still leaves a full day of margin, rather than a few-second window where
+    // createMembers() could tick past into the anchor day itself.
     const MILLISECONDS_IN_DAY = 24 * 60 * 60 * 1000;
     const baseDate = new Date();
-    baseDate.setUTCHours(12, 0, 0, 0);
+    baseDate.setUTCDate(baseDate.getUTCDate() + 2);
+    baseDate.setUTCHours(0, 0, 0, 0);
 
     function setDay(daysFromNow = 0) {
         if (clock) {

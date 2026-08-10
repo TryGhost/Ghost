@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useMemo, useRef} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {Form, FormWrapper} from './form';
 import {scrollToElement} from '../../../utils/helpers';
 import {useAppContext} from '../../../app-context';
@@ -30,7 +30,8 @@ const MainForm: React.FC<Props> = ({commentsCount}) => {
     }, [postId, dispatchAction, editor]);
 
     // C keyboard shortcut to focus main form
-    const formEl = useRef(null);
+    const formEl = useRef<HTMLDivElement>(null);
+    const [hasFocusWithin, setHasFocusWithin] = useState(false);
 
     useEffect(() => {
         if (!editor) {
@@ -91,10 +92,22 @@ const MainForm: React.FC<Props> = ({commentsCount}) => {
         submit
     };
 
-    const isOpen = editor?.isFocused || hasContent;
+    const isOpen = editor?.isFocused || hasContent || hasFocusWithin;
+
+    const handleBlur = useCallback((event: React.FocusEvent<HTMLDivElement>) => {
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+            setHasFocusWithin(false);
+        }
+    }, []);
 
     return (
-        <div ref={formEl} className='px-3 pb-2 pt-3' data-testid="main-form">
+        <div
+            ref={formEl}
+            className='px-3 pb-2 pt-3'
+            data-testid="main-form"
+            onBlurCapture={handleBlur}
+            onFocusCapture={() => setHasFocusWithin(true)}
+        >
             <FormWrapper editor={editor} isOpen={isOpen} reduced={false}>
                 <Form
                     editor={editor}

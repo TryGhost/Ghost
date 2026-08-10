@@ -2,9 +2,9 @@ name: ghost-dev
 
 services:
   mysql:
-    image: mysql:8.4.9@sha256:c36050afdca850f23cef85703f84c7531a5ae155a11b5ee1c60acb09937c4084
+    image: mysql:8.4.10@sha256:8dbcf531a03aade657e181b9cf2f1d1803ce621a1d55610cb44cb531ab7d7db6
     container_name: ghost-dev-mysql
-    command: --innodb-buffer-pool-size=1G --innodb-log-buffer-size=500M --innodb-change-buffer-max-size=50 --innodb-flush-log-at-trx_commit=0 --innodb-flush-method=O_DIRECT
+    command: --innodb-buffer-pool-size=1G --innodb-log-buffer-size=500M --innodb-change-buffer-max-size=50 --innodb-flush-log-at-trx_commit=0 --innodb-flush-method=O_DIRECT --log-error-verbosity=1
     ports:
       - "3306:3306"
     environment:
@@ -22,8 +22,9 @@ services:
       start_period: 10s
 
   redis:
-    image: redis:7.0@sha256:352c1fdadc91926edda08f45aeb3f27f37194c2f14101229c0523a11195c96e3
+    image: redis:7.4@sha256:a8f08480e1f88f2647fed492d1178c06abb0d0c1fbf02c682a61e2f483fb3954
     container_name: ghost-dev-redis
+    command: ["redis-server", "--loglevel", "warning"]
     ports:
       - "6379:6379"
     volumes:
@@ -39,8 +40,9 @@ services:
       retries: 120
 
   mailpit:
-    image: axllent/mailpit@sha256:37a38e48e9338cd7e89dfeb487f37b02ebfcd9cb23111bed2d345e79d37d6dd6
+    image: axllent/mailpit@sha256:956d688cbd13dca36c72d8e94c34d6d1cdf4a005aa6aa4ff6edaaac56c34d8df
     container_name: ghost-dev-mailpit
+    command: ["--quiet"]
     ports:
       - "1025:1025"  # SMTP server
       - "8025:8025"  # Web interface
@@ -60,13 +62,22 @@ services:
     working_dir: /home/ghost/ghost/core
     command: ["pnpm", "dev"]
     volumes:
-      # Keep the runtime workspace graph aligned with the packages installed
-      # by docker/ghost-dev/Dockerfile. Mounting all of ghost/ exposes
-      # ghost/admin, which depends on apps/* and causes pnpm to repair the
-      # workspace before running scripts.
-      - ./ghost/core:/home/ghost/ghost/core
-      - ./ghost/i18n:/home/ghost/ghost/i18n
-      - ./ghost/parse-email-address:/home/ghost/ghost/parse-email-address
+      # Mount the backend source as whole-directory mounts instead of
+      # enumerating each server-graph workspace package. `pnpm dev` runs in
+      # ghost/core, and pnpm's verify-deps-before-run only checks ghost/core's
+      # own dependency closure — which is fully installed in the root
+      # /home/ghost/node_modules baked into the image and never mounted over —
+      # so the non-server packages these dirs also expose (e.g. koenig-lexical)
+      # fall outside that closure and don't trigger a
+      # workspace repair. Because root node_modules is never mounted,
+      # linux-built native modules survive; each package's local node_modules
+      # holds only relative symlinks that re-resolve into the root store.
+      # verify-deps-before-run=false is set below as belt-and-suspenders in
+      # case a future pnpm widens that check back to the whole workspace.
+      - ./ghost:/home/ghost/ghost
+      - ./koenig:/home/ghost/koenig
+      - ./configs:/home/ghost/configs
+      - ./packages:/home/ghost/packages
       # Mount specific content subdirectories to preserve themes/adapters from source
       - ghost-dev-data:/home/ghost/ghost/core/content/data
       - ghost-dev-images:/home/ghost/ghost/core/content/images
@@ -133,7 +144,7 @@ services:
         condition: service_healthy
 
   stripe:
-    image: stripe/stripe-cli:latest@sha256:f22923b43d5de57ec14cc81c72053cba6e722324ecdf35d0a331301d251b7fd8
+    image: stripe/stripe-cli:latest@sha256:43dde8fdca05f88a09ef4c7f1fcc3cc113ba988ba967938c41e16f57840342c8
     container_name: ghost-dev-stripe
     entrypoint: ["/entrypoint.sh"]
     profiles: ["stripe"]

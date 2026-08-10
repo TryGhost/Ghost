@@ -1,10 +1,10 @@
 import logging from '@tryghost/logging';
 import {Gift} from './gift';
+import type {SchedulerAdapter, SchedulerJob} from '@tryghost/adapter-base-scheduling';
 import type {InternalApiKey, InternalKeys} from '../internal-keys';
-import type {SchedulerAdapter, SchedulerJob} from '../../adapters/scheduling/types';
 import {GIFT_REMINDER_LEAD_DAYS} from './constants';
 // Same-domain (scheduling) primitives, used unconditionally.
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 const {getSignedAdminToken} = require('../../adapters/scheduling/utils');
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;

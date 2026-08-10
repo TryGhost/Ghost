@@ -51,20 +51,18 @@ describe('lib/lexical', function () {
             assert(rendered.includes('<div class="kg-card kg-audio-card">'));
         });
 
-        it(`calls custom renderers`, async function () {
+        it(`calls custom renderers passed via options`, async function () {
             const {JSDOM} = jsdom;
             const dom = new JSDOM();
             const document = dom.window.document;
 
-            const customNodeRenderers = {
+            const nodeRenderers = {
                 image: () => {
                     const element = document.createElement('div');
                     element.innerHTML = '<span>CUSTOM</span>';
                     return {element, type: 'inner'};
                 }
             };
-
-            sinon.stub(lexicalLib, 'customNodeRenderers').get(() => customNodeRenderers);
 
             const lexicalState = JSON.stringify({
                 root: {
@@ -86,7 +84,7 @@ describe('lib/lexical', function () {
                 }
             });
 
-            const rendered = await lexicalLib.render(lexicalState);
+            const rendered = await lexicalLib.render(lexicalState, {nodeRenderers});
 
             assert(rendered.includes('<span>CUSTOM</span>'));
         });

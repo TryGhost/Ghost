@@ -46,7 +46,7 @@ back to the Sonnet default if unset.
 ## 2. What fires the workflow
 
 The workflow is gated on a `paths` filter — the PR must touch a file under
-`ghost/i18n/locales/**` — and runs on these events:
+`packages/i18n/locales/**` — and runs on these events:
 
 | Event | Trigger | Notes |
 |---|---|---|
@@ -62,7 +62,7 @@ The workflow is gated on a `paths` filter — the PR must touch a file under
 > silently never fired on auto-labelled contributor PRs. Keying off the
 > `paths` filter on PR-author events avoids that trap entirely. The final,
 > precise gate is still the script itself, which only reviews
-> `ghost/i18n/locales/<locale>/<namespace>.json` files (excluding `en/`).
+> `packages/i18n/locales/<locale>/<namespace>.json` files (excluding `en/`).
 
 Concurrency is set to `cancel-in-progress` per PR, so rapid pushes only
 result in one live run reviewing the latest commit.

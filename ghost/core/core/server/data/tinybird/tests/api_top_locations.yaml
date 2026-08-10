@@ -88,3 +88,20 @@
     {"location":"ES","visits":2}
     {"location":"DE","visits":1}
     {"location":"IT","visits":1}
+
+- name: Filtered by gift_link
+  description: Top locations restricted to gift-link traffic
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&gift_link=1
+  expected_result: |
+    {"location":"GB","visits":2}
+    {"location":"IT","visits":1}
+
+- name: Exclude gift_link
+  description: Top locations with gift-link traffic excluded
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&gift_link=false
+  expected_result: |
+    {"location":"GB","visits":7}
+    {"location":"US","visits":3}
+    {"location":"FR","visits":2}
+    {"location":"ES","visits":2}
+    {"location":"DE","visits":1}

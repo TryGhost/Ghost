@@ -1,4 +1,4 @@
-import {APIError, EmailError, ErrorResponse, HostLimitError, JSONError, MaintenanceError, RequestEntityTooLargeError, ServerUnreachableError, ThemeValidationError, UnsupportedMediaTypeError, ValidationError, VersionMismatchError} from '../errors';
+import {APIError, EmailError, ErrorResponse, HostLimitError, JSONError, MaintenanceError, RequestEntityTooLargeError, ServerUnreachableError, ThemeValidationError, UnauthorizedError, UnsupportedMediaTypeError, ValidationError, VersionMismatchError} from '../errors';
 
 const handleResponse = async (response: Response) => {
     if (response.status === 0) {
@@ -9,6 +9,11 @@ const handleResponse = async (response: Response) => {
         throw new UnsupportedMediaTypeError(response, await response.text());
     } else if (response.status === 413) {
         throw new RequestEntityTooLargeError(response, await response.text());
+    } else if (response.status === 401) {
+        if (response.headers.get('content-type')?.includes('json')) {
+            throw new UnauthorizedError(response, await response.json());
+        }
+        throw new UnauthorizedError(response, await response.text());
     } else if (!response.ok) {
         if (!response.headers.get('content-type')?.includes('json')) {
             throw new APIError(response, await response.text());
@@ -16,7 +21,9 @@ const handleResponse = async (response: Response) => {
 
         const data = await response.json() as ErrorResponse;
 
-        if (data.errors?.[0]?.type === 'VersionMismatchError') {
+        if (response.status === 403 && data.errors?.[0]?.message === 'Authorization failed') {
+            throw new UnauthorizedError(response, data);
+        } else if (data.errors?.[0]?.type === 'VersionMismatchError') {
             throw new VersionMismatchError(response, data);
         } else if (data.errors?.[0]?.type === 'ValidationError') {
             throw new ValidationError(response, data);
