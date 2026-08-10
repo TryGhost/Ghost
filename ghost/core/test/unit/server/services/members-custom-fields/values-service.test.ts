@@ -19,7 +19,7 @@ describe('CustomFieldValuesService', function () {
         });
 
         it('answers yes for a body that names a value', function () {
-            assert.equal(service().namesValues({'favourite-topic': 'Ghosts'}), true);
+            assert.equal(service().namesValues({favourite_topic: 'Ghosts'}), true);
         });
 
         it('rejects a body that is present but is not a values object', function () {

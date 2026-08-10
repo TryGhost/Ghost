@@ -7,10 +7,8 @@ import {FieldTypeSchema} from '@tryghost/custom-field-types';
 import {customFieldCodec} from './codec';
 import {FIELD_STATUS, FieldStatusSchema} from './schema';
 import {activeFields} from './queries';
+import {mintableKey} from './key';
 import {type RecordCustomFieldAction, type RequestContext} from './actions';
-
-// @tryghost/string ships no types; slugify is the same helper tags/labels use.
-const {slugify} = require('@tryghost/string') as {slugify(input: string): string};
 
 // The same NQL -> knex bridge Bookshelf's filter plugin uses, applied directly to
 // our raw-knex query: nql parses the `filter` string to a Mongo query, mongo-knex
@@ -28,22 +26,20 @@ const TABLE = 'members_custom_fields';
 const columns = require('../../data/schema').tables[TABLE];
 const MAX_NAME_LENGTH: number = columns.name.maxlength;
 const MAX_KEY_LENGTH: number = columns.key.maxlength;
-const MAX_SLUG_ITERATIONS = 1000;
-// Reserve room for a `-<n>` suffix (n up to MAX_SLUG_ITERATIONS).
-const MAX_KEY_BASE_LENGTH = MAX_KEY_LENGTH - (String(MAX_SLUG_ITERATIONS).length + 1);
+const MAX_KEY_ITERATIONS = 1000;
+// Reserve room for a `_<n>` suffix (n up to MAX_KEY_ITERATIONS).
+const MAX_KEY_BASE_LENGTH = MAX_KEY_LENGTH - (String(MAX_KEY_ITERATIONS).length + 1);
 
 // A key becomes a property name on the plain objects that carry a member's values —
 // on both sides of the wire, since `custom_fields` is JSON and a client gets a plain
 // object from JSON.parse. A key naming a member of Object.prototype reads back as
-// inherited rather than absent wherever one of those objects is indexed, and
-// `__proto__` holds no value at all: the values schema drops it during parse, and
-// assigning it sets a prototype rather than a property.
+// inherited rather than absent wherever one of those objects is indexed.
 //
 // Derived rather than listed, because the set is a consequence of how keys are
-// minted: slugifying lowercases, so only an already-lowercase prototype name can
-// survive to become a key. Currently `constructor` and `__proto__`.
+// minted: minting lowercases and trims leading underscores, so a prototype name
+// survives only if it has neither. `constructor` is the only one.
 const RESERVED_KEYS = Object.getOwnPropertyNames(Object.prototype)
-    .filter(name => slugify(name) === name);
+    .filter(name => mintableKey(name) === name);
 
 const FieldName = z.string().trim().min(1, {message: 'Custom field name is required.'}).max(MAX_NAME_LENGTH, {message: 'Custom field name is too long.'});
 
@@ -124,8 +120,8 @@ export class CustomFieldDefinitionsService {
      *
      * Running inside the transaction also makes a batch self-consistent for free —
      * `assertNameAvailable` and `mintKey` see the rows inserted earlier in the same
-     * batch, so two items sharing a name are caught and two items sharing a slug
-     * get distinct keys, exactly as if they had arrived as separate requests.
+     * batch, so two items sharing a name are caught and two items deriving the same
+     * key get distinct ones, exactly as if they had arrived as separate requests.
      */
     async add(context: RequestContext, input: unknown): Promise<CustomField[]> {
         const requestedCount = Array.isArray(input) ? input.length : 0;
@@ -141,10 +137,10 @@ export class CustomFieldDefinitionsService {
         }
         const fields = parsed.data;
 
-        // Slugify before opening the transaction: it needs no database access, and
+        // Mint before opening the transaction: it needs no database access, and
         // an unusable name is a payload problem worth reporting on its own terms.
         const bases = fields.map((field, index) => {
-            const base = slugify(field.name);
+            const base = mintableKey(field.name);
             if (!base) {
                 throw new errors.ValidationError({
                     message: 'Custom field name must contain at least one usable character.',
@@ -240,12 +236,15 @@ export class CustomFieldDefinitionsService {
     }
 
     /**
-     * Pick a free key from the name's slug: `base`, then `base-2`, `base-3`, ...
+     * Pick a free key from the name's base: `base`, then `base_2`, `base_3`, ...
      * Reads the keys already taken by that base — including archived fields, so a
-     * slug is never reused once minted. Mirrors how tags/labels generate slugs.
+     * key is never reused once minted.
      */
     private async mintKey(db: Knex, base: string): Promise<string> {
-        const safeBase = base.slice(0, MAX_KEY_BASE_LENGTH);
+        // Trimmed again after cutting, because the cut can land mid-separator and
+        // a key that ends in one is not a shape minting is allowed to produce. The
+        // base starts with an alphanumeric, so something always survives.
+        const safeBase = base.slice(0, MAX_KEY_BASE_LENGTH).replace(/_+$/, '');
         const taken = new Set([
             ...RESERVED_KEYS,
             ...await db(TABLE).where('key', 'like', `${safeBase}%`).pluck('key')
@@ -253,8 +252,8 @@ export class CustomFieldDefinitionsService {
         if (!taken.has(safeBase)) {
             return safeBase;
         }
-        for (let suffix = 2; suffix <= MAX_SLUG_ITERATIONS; suffix += 1) {
-            const candidate = `${safeBase}-${suffix}`;
+        for (let suffix = 2; suffix <= MAX_KEY_ITERATIONS; suffix += 1) {
+            const candidate = `${safeBase}_${suffix}`;
             if (!taken.has(candidate)) {
                 return candidate;
             }

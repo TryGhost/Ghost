@@ -81,9 +81,9 @@ describe('Member Custom Fields Admin API', function () {
             assert.deepEqual(body.members_custom_fields, []);
         });
 
-        it('creates a field, minting a slug key from the name', async function () {
+        it('creates a field, minting an underscored key from the name', async function () {
             const created = await createField({name: 'Favourite topic'});
-            assert.equal(created.key, 'favourite-topic');
+            assert.equal(created.key, 'favourite_topic');
             assert.equal(created.name, 'Favourite topic');
             assert.equal(created.type, 'short_text');
             // A new field is active; status travels with the definition so the UI
@@ -96,16 +96,24 @@ describe('Member Custom Fields Admin API', function () {
             assert.equal(list.members_custom_fields.length, 1);
 
             const read = (await agent.get(`members/custom_fields/${created.key}/`).expectStatus(200)).body;
-            assert.equal(read.members_custom_fields[0].key, 'favourite-topic');
+            assert.equal(read.members_custom_fields[0].key, 'favourite_topic');
         });
 
-        it('mints a suffixed key when the derived slug collides', async function () {
-            // Two distinct names can derive the same slug ("!" is stripped), so
+        // A key is referenced from filters, CSV columns, replacement strings and
+        // themes, and the hyphen is the character those disagree about. Nothing a
+        // publisher can type may put one in a key, including typing one themselves.
+        it('mints underscores for a name that already contains hyphens', async function () {
+            const created = await createField({name: 'T-Shirt size'});
+            assert.equal(created.key, 't_shirt_size');
+        });
+
+        it('mints a suffixed key when the derived base collides', async function () {
+            // Two distinct names can derive the same base ("!" is stripped), so
             // the key is suffixed even though the names stay unique.
             const first = await createField({name: 'Favourite topic'});
             const second = await createField({name: 'Favourite topic!'});
-            assert.equal(first.key, 'favourite-topic');
-            assert.equal(second.key, 'favourite-topic-2');
+            assert.equal(first.key, 'favourite_topic');
+            assert.equal(second.key, 'favourite_topic_2');
         });
 
         it('rejects a duplicate name, case-insensitively', async function () {
@@ -118,7 +126,7 @@ describe('Member Custom Fields Admin API', function () {
                 .expectStatus(422);
         });
 
-        it('rejects a name with no sluggable characters', async function () {
+        it('rejects a name with no usable characters', async function () {
             await agent
                 .post('members/custom_fields/')
                 .body({members_custom_fields: [{name: '!!!', type: 'short_text'}]})
@@ -127,16 +135,12 @@ describe('Member Custom Fields Admin API', function () {
 
         // A key names a property on the plain objects carrying a member's values, so
         // one naming a member of Object.prototype reads back as inherited rather than
-        // absent wherever it is indexed. Those keys are already taken, so the
-        // publisher keeps the name and the key takes a suffix. The match is on the
-        // slug rather than the name, which is what catches every spelling that
-        // collapses onto it.
+        // absent wherever it is indexed. That key is already taken, so the publisher
+        // keeps the name and the key takes a suffix. The match is on the key rather
+        // than the name, which is what catches every spelling that collapses onto it.
         const reservedSpellings = [
-            {name: 'Constructor', key: 'constructor-2'},
-            {name: 'constructor', key: 'constructor-2'},
-            {name: '__proto__', key: '__proto__-2'},
-            {name: '__PROTO__', key: '__proto__-2'},
-            {name: '＿＿ｐｒｏｔｏ＿＿', key: '__proto__-2'}
+            {name: 'Constructor', key: 'constructor_2'},
+            {name: 'constructor', key: 'constructor_2'}
         ];
         for (const {name, key} of reservedSpellings) {
             it(`mints ${key} for the name ${name}, and the value round-trips`, async function () {
@@ -150,20 +154,35 @@ describe('Member Custom Fields Admin API', function () {
             });
         }
 
+        // The other prototype name a publisher could reach for needs no reserving:
+        // minting trims leading and trailing separators, so no spelling of it can
+        // produce the key itself.
+        for (const name of ['__proto__', '__PROTO__', '＿＿ｐｒｏｔｏ＿＿']) {
+            it(`cannot mint __proto__ from the name ${name}`, async function () {
+                const field = await createField({name});
+                assert.equal(field.key, 'proto');
+
+                const memberId = await createMember();
+                await setValues(memberId, {proto: 'Bex'});
+
+                assert.deepEqual(await readValues(memberId), {proto: 'Bex'});
+            });
+        }
+
         // A reserved key is claimed by whichever field takes the suffix first, so the
         // next one along has to keep counting rather than collide with it.
         it('keeps counting past a reserved key already claimed by another field', async function () {
             const first = await createField({name: 'Constructor'});
             const second = await createField({name: 'Constructor!'});
 
-            assert.equal(first.key, 'constructor-2');
-            assert.equal(second.key, 'constructor-3');
+            assert.equal(first.key, 'constructor_2');
+            assert.equal(second.key, 'constructor_3');
         });
 
         // The batch runs in one transaction, so mintKey sees the rows minted earlier
         // in the same request — reserving a key must hold within a batch too, not
         // just across separate requests.
-        it('mints distinct keys when two definitions in one batch both slug onto a reserved key', async function () {
+        it('mints distinct keys when two definitions in one batch both derive a reserved key', async function () {
             const {body} = await agent
                 .post('members/custom_fields/')
                 .body({members_custom_fields: [
@@ -174,19 +193,33 @@ describe('Member Custom Fields Admin API', function () {
 
             assert.deepEqual(
                 body.members_custom_fields.map((f: {key: string}) => f.key),
-                ['constructor-2', 'constructor-3']
+                ['constructor_2', 'constructor_3']
             );
         });
 
-        // A reserved slug must not take a whole prefix with it — only the exact key.
+        // A reserved key must not take a whole prefix with it, only the exact key.
         it('leaves a name that merely starts with a reserved word unsuffixed', async function () {
             const field = await createField({name: 'Constructor role'});
-            assert.equal(field.key, 'constructor-role');
+            assert.equal(field.key, 'constructor_role');
 
             const memberId = await createMember();
             await setValues(memberId, {[field.key]: 'Foreman'});
 
-            assert.deepEqual(await readValues(memberId), {'constructor-role': 'Foreman'});
+            assert.deepEqual(await readValues(memberId), {constructor_role: 'Foreman'});
+        });
+
+        // The key column is shorter than the name column, so a long name is cut to
+        // fit. The cut can land mid-separator, and a key ending in one is a shape
+        // minting is not allowed to produce.
+        it('mints a key that fits the column without ending in a separator', async function () {
+            const created = await createField({name: `${'a'.repeat(185)} bcdef`});
+
+            assert.ok(created.key.length <= 191, `key was ${created.key.length} characters`);
+            assert.doesNotMatch(created.key, /_$/);
+
+            // And the suffix a collision adds lands against that trimmed base.
+            const second = await createField({name: `${'a'.repeat(185)} bcdeg`});
+            assert.doesNotMatch(second.key, /__/);
         });
 
         it('rejects a name that exceeds the maximum length', async function () {
@@ -301,7 +334,7 @@ describe('Member Custom Fields Admin API', function () {
             await agent.get('members/custom_fields/?filter=' + encodeURIComponent('status:')).expectStatus(400);
         });
 
-        it('archives a field, keeping its name and slug reserved', async function () {
+        it('archives a field, keeping its name and key reserved', async function () {
             const first = await createField({name: 'Favourite topic'});
 
             const archived = await setStatus(first.key, 'archived');
@@ -318,10 +351,10 @@ describe('Member Custom Fields Admin API', function () {
                 .body({members_custom_fields: [{name: 'Favourite topic', type: 'short_text'}]})
                 .expectStatus(422);
 
-            // ...and so does its slug: a different name deriving the same slug is
+            // ...and so does its key: a different name deriving the same base is
             // suffixed rather than reusing (and resurrecting) the old key.
             const second = await createField({name: 'Favourite topic!'});
-            assert.equal(second.key, 'favourite-topic-2');
+            assert.equal(second.key, 'favourite_topic_2');
         });
 
         it('restores an archived field', async function () {
@@ -362,7 +395,7 @@ describe('Member Custom Fields Admin API', function () {
             assert.equal(list.length, 1);
         });
 
-        it('permanently deletes an archived field, freeing its name and slug', async function () {
+        it('permanently deletes an archived field, freeing its name and key', async function () {
             const original = await createField({name: 'Favourite topic'});
             await setStatus(original.key, 'archived');
 
@@ -373,10 +406,10 @@ describe('Member Custom Fields Admin API', function () {
             assert.deepEqual(list, []);
             await agent.get(`members/custom_fields/${original.key}/`).expectStatus(404);
 
-            // The row is gone, so the name and its base slug are free again: a
+            // The row is gone, so the name and its base key are free again: a
             // fresh field with the same name reclaims the original (unsuffixed) key.
             const fresh = await createField({name: 'Favourite topic'});
-            assert.equal(fresh.key, 'favourite-topic');
+            assert.equal(fresh.key, 'favourite_topic');
         });
     });
 
@@ -401,8 +434,8 @@ describe('Member Custom Fields Admin API', function () {
             assert.equal(list.members_custom_fields.length, 3);
         });
 
-        it('mints distinct keys when two definitions in the batch derive the same slug', async function () {
-            // Within a batch each insert is visible to the next, so slug collision
+        it('mints distinct keys when two definitions in the batch derive the same base', async function () {
+            // Within a batch each insert is visible to the next, so a collision
             // resolves exactly as it would across two separate requests.
             const {body} = await agent
                 .post('members/custom_fields/')
@@ -414,7 +447,7 @@ describe('Member Custom Fields Admin API', function () {
 
             assert.deepEqual(
                 body.members_custom_fields.map((field: {key: string}) => field.key),
-                ['favourite-topic', 'favourite-topic-2']
+                ['favourite_topic', 'favourite_topic_2']
             );
         });
 
