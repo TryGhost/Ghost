@@ -12,6 +12,7 @@ import {checkStripeEnabled} from '@tryghost/admin-x-framework/api/settings';
 import {formatNumber} from '@tryghost/shade/utils';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
 import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+import {useUpgradeUrl} from '@/settings/app/hooks/use-upgrade-url';
 import {withErrorBoundary} from '@/settings/app/components/error-boundary';
 
 const StripeConnectedButton: React.FC<{className?: string; onClick: () => void;}> = ({className, onClick}) => {
@@ -34,6 +35,7 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const activeTiers = getActiveTiers(tiers || []);
     const archivedTiers = getArchivedTiers(tiers || []);
     const {updateRoute} = useSettingsNavigation();
+    const upgradeUrl = useUpgradeUrl();
     const limiter = useLimiter();
 
     const openConnectModal = async () => {
@@ -46,7 +48,7 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 if (error instanceof HostLimitError) {
                     NiceModal.show(LimitModal, {
                         prompt: error.message || `Your current plan doesn't support Stripe Connect.`,
-                        onOk: () => updateRoute({route: '/pro', isExternal: true})
+                        onOk: () => updateRoute({route: upgradeUrl, isExternal: true})
                     });
                     return;
                 }

@@ -18,6 +18,7 @@ import {type Newsletter, useBrowseNewsletters, useEditNewsletter} from '@tryghos
 import {PreviewModalContent} from '@/settings/app/components/settings/preview-modal';
 import {useParams} from '@tryghost/admin-x-framework';
 import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+import {useUpgradeUrl} from '@/settings/app/hooks/use-upgrade-url';
 import {getSettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {hasSendingDomain, isManagedEmail, sendingDomain} from '@tryghost/admin-x-framework/api/config';
 import {renderReplyToEmail, renderSenderEmail} from '@/settings/app/utils/newsletter-emails';
@@ -99,6 +100,7 @@ const Sidebar: React.FC<{
 }> = ({newsletter, onlyOne, updateNewsletter, validate, errors, clearError}) => {
     type FontOption = {value: string; label: string; className?: string};
     const {updateRoute} = useSettingsNavigation();
+    const upgradeUrl = useUpgradeUrl();
     const {mutateAsync: editNewsletter} = useEditNewsletter();
     const limiter = useLimiter();
     const {settings, config, siteData} = useGlobalData();
@@ -178,7 +180,7 @@ const Sidebar: React.FC<{
                 if (error instanceof HostLimitError) {
                     NiceModal.show(LimitModal, {
                         prompt: error.message || `Your current plan doesn't support more newsletters.`,
-                        onOk: () => updateRoute({route: '/pro', isExternal: true})
+                        onOk: () => updateRoute({route: upgradeUrl, isExternal: true})
                     });
                     return;
                 } else {

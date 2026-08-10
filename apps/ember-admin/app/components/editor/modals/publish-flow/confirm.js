@@ -1,6 +1,8 @@
 import Component from '@glimmer/component';
+import getUpgradeUrl from 'ghost-admin/utils/upgrade-url';
 import moment from 'moment-timezone';
 import {htmlSafe} from '@ember/template';
+import {inject} from 'ghost-admin/decorators/inject';
 import {isArray} from '@ember/array';
 import {isServerUnreachableError} from 'ghost-admin/services/ajax';
 import {inject as service} from '@ember/service';
@@ -11,12 +13,19 @@ function isString(str) {
     return toString.call(str) === '[object String]';
 }
 
+
 export default class PublishFlowOptions extends Component {
     @service settings;
     @service feature;
     @service router;
 
+    @inject config;
+
     @tracked errorMessage;
+
+    get upgradeUrl() {
+        return getUpgradeUrl(this.config);
+    }
 
     // store any derived state from PublishOptions on creation so the copy
     // doesn't change whilst the post is saving
@@ -109,7 +118,7 @@ export default class PublishFlowOptions extends Component {
             if (isServerUnreachableError(e)) {
                 errorMessage = 'Unable to connect, please check your internet connection and try again.';
             } else if (payloadError?.type === 'HostLimitError') {
-                errorMessage = htmlSafe(payloadError.context.replace(/please upgrade/i, '<a href="#/pro">$&</a>'));
+                errorMessage = htmlSafe(payloadError.context.replace(/please upgrade/i, `<a href="${this.upgradeUrl}">$&</a>`));
             } else if (e && isString(e)) {
                 errorMessage = e;
             } else if (e && isArray(e)) {

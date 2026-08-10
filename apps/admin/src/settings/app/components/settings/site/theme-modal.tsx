@@ -16,6 +16,7 @@ import {toast} from 'sonner';
 import {useCheckThemeLimitError} from '@/settings/app/hooks/use-check-theme-limit-error';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+import {useUpgradeUrl} from '@/settings/app/hooks/use-upgrade-url';
 
 interface ThemeToolbarProps {
     selectedTheme: OfficialTheme|null;
@@ -56,6 +57,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
     themes
 }) => {
     const {updateRoute} = useSettingsNavigation();
+    const upgradeUrl = useUpgradeUrl();
     const {mutateAsync: uploadTheme} = useUploadTheme();
     const {checkThemeLimitError, isThemeLimited} = useCheckThemeLimitError();
     const handleError = useHandleError();
@@ -238,7 +240,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
             NiceModal.show(LimitModal, {
                 title: 'Upgrade to enable custom themes',
                 prompt: uploadConfig.error || <>Your current plan only supports official themes. You can install them from the <a href="https://ghost.org/marketplace/">Ghost theme marketplace</a>.</>,
-                onOk: () => updateRoute({route: '/pro', isExternal: true})
+                onOk: () => updateRoute({route: upgradeUrl, isExternal: true})
             });
         }
     };
@@ -302,6 +304,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
     const [installedFromMarketplace, setInstalledFromMarketplace] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
     const {updateRoute} = useSettingsNavigation();
+    const upgradeUrl = useUpgradeUrl();
 
     const {data: {themes} = {}} = useBrowseThemes();
     const {mutateAsync: installTheme} = useInstallTheme();
@@ -404,7 +407,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
             if (limitError) {
                 NiceModal.show(LimitModal, {
                     prompt: limitError,
-                    onOk: () => updateRoute({route: '/pro', isExternal: true})
+                    onOk: () => updateRoute({route: upgradeUrl, isExternal: true})
                 });
                 return;
             }
