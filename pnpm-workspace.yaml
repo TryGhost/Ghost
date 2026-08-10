@@ -123,7 +123,7 @@ catalog:
   cross-fetch: 4.1.0
   dependency-cruiser: ^18.0.0
   dequal: 2.0.3
-  dompurify: 3.4.11
+  dompurify: 3.4.13
   dotenv: 17.4.2
   entities: 4.5.0
   eslint: 9.39.4
@@ -276,6 +276,8 @@ minimumReleaseAgeExclude:
   - 'knex-migrator'
   # Renovate security update: file-type@21.3.1 || 21.3.2
   - file-type@21.3.1 || 21.3.2
+  # Renovate security update: dompurify@3.4.13
+  - dompurify@3.4.13
 
 # configuration for pnpm's changeset functionality
 versioning:
