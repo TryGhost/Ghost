@@ -1,23 +1,25 @@
 import React, {useMemo, useState} from 'react';
 import type {Automation} from '@tryghost/admin-x-framework/api/automations';
 import {useBrowseAutomationRunAnalytics} from '@tryghost/admin-x-framework/api/automations';
-import {MetricValue, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
-import {Box, Grid, Inline, Stack, Text} from '@tryghost/shade/primitives';
+import {Card, CardContent, MetricValue, Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue} from '@tryghost/shade/components';
+import {Grid, Inline, Stack, Text} from '@tryghost/shade/primitives';
 import {GhAreaChart} from '@tryghost/shade/patterns';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 
 const MetricTile: React.FC<{label: string; value: number; color: string}> = ({label, value, color}) => (
-    <Box className="rounded-lg border border-border-default" padding="md">
-        <MetricValue
-            label={(
-                <>
-                    <span className={`size-2 rounded-full ${color}`} />
-                    {label}
-                </>
-            )}
-            value={formatNumber(value)}
-        />
-    </Box>
+    <Card className="bg-transparent">
+        <CardContent className="px-6 py-5">
+            <MetricValue
+                label={(
+                    <>
+                        <span className={`size-2 rounded-full ${color}`} />
+                        {label}
+                    </>
+                )}
+                value={formatNumber(value)}
+            />
+        </CardContent>
+    </Card>
 );
 
 const RunAnalyticsSidebar: React.FC<{automation: Automation}> = ({automation}) => {
@@ -38,43 +40,49 @@ const RunAnalyticsSidebar: React.FC<{automation: Automation}> = ({automation}) =
     const chartMax = Math.max(...chartData.map(point => point.value), 1);
 
     return (
-        <aside className="w-[480px] shrink-0 overflow-y-auto border-r border-border-default bg-sidebar px-6 py-5" data-testid="run-analytics-sidebar">
+        <aside className="w-[400px] shrink-0 overflow-y-auto border-r border-border-default bg-surface-elevated px-6 py-5" data-testid="run-analytics-sidebar">
             <Stack gap="md">
                 <Inline align="center" justify="between">
                     <Text weight="semibold">Performance</Text>
                     <Select value={range} onValueChange={setRange}>
-                        <SelectTrigger className="w-36 shrink-0">
-                            <SelectValue />
+                        <SelectTrigger className="w-auto">
+                            <LucideIcon.Calendar className="mr-2" size={16} strokeWidth={1.5} />
+                            <SelectValue placeholder="Select a period" />
                         </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="7">Last 7 days</SelectItem>
-                            <SelectItem value="30">Last 30 days</SelectItem>
+                        <SelectContent align="end">
+                            <SelectGroup>
+                                <SelectLabel>Period</SelectLabel>
+                                <SelectItem value="7">Last 7 days</SelectItem>
+                                <SelectItem value="30">Last 30 days</SelectItem>
+                            </SelectGroup>
                         </SelectContent>
                     </Select>
                 </Inline>
 
-                <Box className="rounded-lg border border-border-default" padding="md">
-                    <Stack gap="sm">
-                        <MetricValue
-                            label={(
-                                <>
-                                    <LucideIcon.Zap size={16} strokeWidth={1.5} />
-                                    Total runs
-                                </>
-                            )}
-                            value={formatNumber(metrics?.total_runs ?? 0)}
-                        />
-                        <GhAreaChart
-                            className="h-56 w-full"
-                            color="var(--chart-blue)"
-                            data={chartData}
-                            id={`automation-runs-${automation.id}`}
-                            range={chartData.length}
-                            showYAxisValues={false}
-                            yAxisRange={[0, chartMax]}
-                        />
-                    </Stack>
-                </Box>
+                <Card className="bg-transparent">
+                    <CardContent className="px-6 py-5">
+                        <Stack gap="sm">
+                            <MetricValue
+                                label={(
+                                    <>
+                                        <LucideIcon.Zap size={16} strokeWidth={1.5} />
+                                        Total runs
+                                    </>
+                                )}
+                                value={formatNumber(metrics?.total_runs ?? 0)}
+                            />
+                            <GhAreaChart
+                                className="h-56 w-full"
+                                color="var(--chart-blue)"
+                                data={chartData}
+                                id={`automation-runs-${automation.id}`}
+                                range={chartData.length}
+                                showYAxisValues={false}
+                                yAxisRange={[0, chartMax]}
+                            />
+                        </Stack>
+                    </CardContent>
+                </Card>
 
                 <Grid className="grid-cols-2" gap="md">
                     <MetricTile color="bg-chart-blue" label="In progress" value={metrics?.in_progress ?? 0} />
