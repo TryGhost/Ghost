@@ -1,64 +1,34 @@
-# Ghost Contributor Documentation
+# Ghost Codebase Documentation
 
-Welcome to the Ghost contributor documentation! This guide will help you understand the codebase, set up your development environment, and start contributing to Ghost.
+Welcome to the Ghost codebase documentation! These docs are for anyone wanting
+to work on the Ghost codebase. For self-hosting, themes, or using Ghost APIs,
+see the [official Ghost documentation](https://ghost.org/docs/).
 
 ## Quick Start
 
-### Prerequisites
-
-- **Node.js** - Recommended to install via [nvm](https://github.com/nvm-sh/nvm)
-- **pnpm** - Package manager
-- **Docker** - For MySQL database and development services
-
-### Initial Setup
-
-#### 1. Fork and Clone
-
-First, [fork the Ghost repository](https://github.com/TryGhost/Ghost/fork) on GitHub, then:
+With the [prerequisites](contributing/development-setup.md#prerequisites)
+installed:
 
 ```bash
-# Clone your fork with submodules
-git clone --recurse-submodules git@github.com:<YourUsername>/Ghost.git
+git clone --recurse-submodules git@github.com:TryGhost/Ghost.git
 cd Ghost
 
-# Configure remotes
-git remote rename origin upstream
-git remote add origin git@github.com:<YourUsername>/Ghost.git
-```
-
-#### 2. Install and Setup
-
-```bash
-# Install dependencies and initialize submodules
-corepack enable pnpm
-pnpm run setup
-```
-
-#### 3. Start Ghost
-
-```bash
-# Start development (runs Docker backend services + frontend dev servers)
+pnpm setup
 pnpm dev
 ```
 
 Ghost will be available at:
-- **Main site**: http://localhost:2368/
-- **Admin panel**: http://localhost:2368/ghost/
 
-### Troubleshooting Setup
+- **Main site**: [http://localhost:2368](http://localhost:2368)
+- **Admin panel**: [http://localhost:2368/ghost/](http://localhost:2368/ghost/)
+- **Development email**: [http://localhost:8025](http://localhost:8025)
 
-If you encounter issues during setup:
+`pnpm dev` also starts the supporting MySQL and Redis containers, plus Admin and
+Portal development watchers.
 
-```bash
-# Fix dependency issues
-pnpm fix
-
-# Update to latest main branch
-pnpm main
-
-# Reset running dev data
-pnpm reset:data
-```
+For more detail, see the
+[development setup guide](contributing/development-setup.md) including first-run
+setup, development variants, and troubleshooting.
 
 ## Repository Structure
 
@@ -94,7 +64,7 @@ Before contributing, please read:
 
 ### Development Workflow
 
-1. **Fork and clone** the repository
+1. **Clone** the repository
 2. **Create a branch** for your changes
 3. **Make your changes** and write tests
 4. **Run tests** to ensure everything works
