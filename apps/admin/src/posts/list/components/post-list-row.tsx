@@ -180,7 +180,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowProps>(functio
                 rather than the row because the link and the trailing button
                 each need to fill the row's full height to stay clickable —
                 so the row's own box has to stay flush. */}
-            <Inline align='center' className='gap-4 pr-4'>
+            <Inline align='center' className='pr-4' gap='md'>
                 <a
                     className='flex min-w-0 flex-1 items-start gap-4 py-4 pl-4 no-underline'
                     data-testid='post-list-item-link'
@@ -206,7 +206,12 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowProps>(functio
                         {metaParts.length > 0 && (
                             // Joined from parts so a missing piece takes its
                             // separator with it — no dangling " – date".
-                            <Text size='sm' title={dateTooltip} tone='secondary'>
+                            //
+                            // Truncated like the title above it. Left to wrap,
+                            // a long author-and-tag line runs to three lines on
+                            // a narrow window and drives the row's height,
+                            // which reads as the metrics squashing it.
+                            <Text className='truncate' size='sm' title={dateTooltip} tone='secondary'>
                                 {metaParts.join(' - ')}
                             </Text>
                         )}
@@ -240,7 +245,13 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowProps>(functio
                     // button sits on the row instead of punching a pale hole
                     // through it. Without it the outline variant is see-through
                     // and picks up the blue of a selected row.
-                    className='my-4 shrink-0 bg-control-surface px-4'
+                    // `ms-2` on top of the row's 12px gap, so the button sits
+                    // 20px off the metrics. It is a different kind of thing
+                    // from them — an action rather than a figure — and reads as
+                    // part of the run of metrics when spaced the same.
+                    // Margin rather than a wider row gap, which would push the
+                    // title away from the metrics too.
+                    className='my-4 ms-2 shrink-0 bg-control-surface px-4'
                     variant='outline'
                     asChild
                 >

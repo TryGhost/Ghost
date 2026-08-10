@@ -1,7 +1,8 @@
 import {HoverCard, HoverCardContent, HoverCardTrigger} from '@tryghost/shade/components';
 import {Inline, Stack, Text} from '@tryghost/shade/primitives';
-import {formatNumber, LucideIcon} from '@tryghost/shade/utils';
-import type {PostMetricRowIcon, PostMetricTooltipRow} from '@/posts/list/post-metric-tooltips';
+import {formatNumber} from '@tryghost/shade/utils';
+import {POST_METRIC_ICONS} from '@/posts/list/post-metric-icons';
+import type {PostMetricTooltipRow} from '@/posts/list/post-metric-tooltips';
 import type {ReactNode} from 'react';
 
 interface PostMetricTooltipProps {
@@ -9,22 +10,6 @@ interface PostMetricTooltipProps {
     rows: PostMetricTooltipRow[];
     children: ReactNode;
 }
-
-/**
- * One icon per row, matching what Ember draws in the same panel: a paper plane
- * for Sent, an envelope for Opens, a cursor for Clicks.
- *
- * Keyed by name rather than held on the row itself, so `post-metric-tooltips.ts`
- * stays a plain module with no React in it.
- */
-const METRIC_ROW_ICONS: Record<PostMetricRowIcon, typeof LucideIcon.Users> = {
-    visitors: LucideIcon.Users,
-    sent: LucideIcon.Send,
-    opens: LucideIcon.MailOpen,
-    clicks: LucideIcon.MousePointerClick,
-    free: LucideIcon.User,
-    paid: LucideIcon.UserPlus
-};
 
 /**
  * The breakdown Ember reveals on hovering a metric — "Web traffic", "Newsletter
@@ -54,7 +39,7 @@ export function PostMetricTooltip({title, rows, children}: PostMetricTooltipProp
                 <Stack gap='xs'>
                     <Text size='sm' weight='semibold'>{title}</Text>
                     {rows.map((row) => {
-                        const Icon = METRIC_ROW_ICONS[row.icon];
+                        const Icon = POST_METRIC_ICONS[row.icon];
 
                         return (
                             <Inline key={row.label} gap='md' justify='between'>

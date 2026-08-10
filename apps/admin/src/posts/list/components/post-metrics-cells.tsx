@@ -1,5 +1,6 @@
-import {Inline, Stack, Text} from '@tryghost/shade/primitives';
+import {Inline, Text} from '@tryghost/shade/primitives';
 import {getPostClickRate, getPostMetricColumns, getPostOpenRate, type PostMetricColumn, type PostMetricKey, type PostMetricsSettings} from '@/posts/list/post-metrics';
+import {POST_METRIC_ICONS} from '@/posts/list/post-metric-icons';
 import {PostMetricTooltip} from '@/posts/list/components/post-metric-tooltip';
 import {cn, formatNumber} from '@tryghost/shade/utils';
 import {getPostMetricTooltip} from '@/posts/list/post-metric-tooltips';
@@ -85,7 +86,15 @@ export function PostMetricsCells({
     });
 
     return (
-        <Inline align='center' className={cn('shrink-0', className)} gap='lg'>
+        // Hidden below 1200px, as Ember hides `.gh-post-list-metrics-container`
+        // at the same width: on a narrow window there is no room for both the
+        // title and four columns, and Ember's answer is to drop the columns
+        // rather than let them crowd the title.
+        //
+        // The literal 1200 rather than a named breakpoint: Shade's nearest is
+        // `sidebarlg` at 1240px, which exists to describe the sidebar and would
+        // tie this rule to something it has nothing to do with.
+        <Inline align='center' className={cn('shrink-0 max-[1200px]:hidden', className)} gap='md'>
             {groups.map((group) => {
                 const tooltip = getPostMetricTooltip(group[0].key, post, {
                     visitors: visitorCounts?.[post.uuid ?? ''],
@@ -98,23 +107,55 @@ export function PostMetricsCells({
 
                 return (
                     <PostMetricTooltip key={group[0].key} rows={tooltip.rows} title={tooltip.title}>
-                        <Inline align='center' gap='lg'>
-                            {group.map(column => (
-                                <a
-                                    key={column.key}
-                                    className='min-w-16 text-right no-underline'
-                                    href={`#/posts/analytics/${post.id}/${column.tab}`}
-                                    // Not part of row selection — Phase 6 relies on this.
-                                    data-ignore-select
-                                >
-                                    <Stack align='end' gap='none'>
-                                        <Text weight='semibold'>
-                                            {metricValue(column, post, visitorCounts, memberCounts)}
-                                        </Text>
-                                        <Text size='sm' tone='secondary'>{column.label}</Text>
-                                    </Stack>
-                                </a>
-                            ))}
+                        <Inline align='center' gap='md'>
+                            {group.map((column) => {
+                                const Icon = POST_METRIC_ICONS[column.key];
+                                const value = metricValue(column, post, visitorCounts, memberCounts);
+
+                                return (
+                                    <a
+                                        key={column.key}
+                                        // Named for assistive tech, because the
+                                        // column no longer says what it is: the
+                                        // icon replaced the text label, and an
+                                        // unlabelled icon beside a bare number
+                                        // is "0%" with no subject. Ember titles
+                                        // its icons for the same reason.
+                                        aria-label={`${column.label}: ${value}`}
+                                        // A fixed floor on the width so the
+                                        // figures line up in columns down the
+                                        // list and can be scanned. It is a
+                                        // *minimum*, so a long value like
+                                        // "1,000" grows the block rather than
+                                        // being clipped.
+                                        //
+                                        // It costs even spacing, and that trade
+                                        // is deliberate: with the content
+                                        // right-aligned inside the box, a short
+                                        // value leaves slack on its left, so
+                                        // the space you see between two blocks
+                                        // is the 12px gap plus that slack while
+                                        // the space to the button is a true
+                                        // 12px. Scannable columns are worth
+                                        // more here than an even rhythm.
+                                        className='min-w-16 no-underline'
+                                        href={`#/posts/analytics/${post.id}/${column.tab}`}
+                                        title={column.label}
+                                        // Not part of row selection — Phase 6 relies on this.
+                                        data-ignore-select
+                                    >
+                                        <Inline align='center' gap='xs' justify='end'>
+                                            <Icon className='size-4 shrink-0 text-muted-foreground' strokeWidth={1.5} />
+                                            {/* Small and unbolded, as Ember's
+                                                are — its `.gh-post-list-analytics-metric`
+                                                is midgrey at normal weight. The
+                                                figures are secondary to the
+                                                title, not competing with it. */}
+                                            <Text className='font-mono' size='sm'>{value}</Text>
+                                        </Inline>
+                                    </a>
+                                );
+                            })}
                         </Inline>
                     </PostMetricTooltip>
                 );
