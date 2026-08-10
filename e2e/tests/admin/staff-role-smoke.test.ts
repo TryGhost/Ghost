@@ -2,22 +2,13 @@ import {AnalyticsOverviewPage, ContributorUserMenu, LoginPage, PostsPage, Sideba
 import {Page} from '@playwright/test';
 import {expect, test, withIsolatedPage} from '@/helpers/playwright';
 
-// Each role signs in for the first time in a fresh browser context and must
-// land on its default view with its navigation available (incident-315:
-// Ember/React router desync blanked non-admin landing views after login).
 test.describe('Ghost Admin - Staff role smoke', () => {
-    // A user's first-ever login skips staff device verification (the session
-    // endpoint checks user.hasLoggedIn()); signing in again with the same
-    // account would stall on the emailed-code screen.
     async function signInFirstTime(page: Page, account: {email: string; password: string}) {
         const loginPage = new LoginPage(page);
         await loginPage.goto();
         await loginPage.signIn(account.email, account.password);
     }
 
-    // The sidebar locator anchors on the search button, which only renders
-    // once the current user has resolved — so the hidden checks cannot run
-    // before role gating has been applied.
     async function expectNavigation(sidebarPage: SidebarPage, {visible, hidden}: {visible: string[]; hidden: string[]}) {
         await expect(sidebarPage.sidebar).toBeVisible();
         for (const name of visible) {
@@ -36,8 +27,6 @@ test.describe('Ghost Admin - Staff role smoke', () => {
             await expect(analyticsPage.header).toBeVisible();
 
             const sidebarPage = new SidebarPage(page);
-            // Positive control for the contributor test's absence assertion:
-            // if the admin-sidebar testid disappears, this fails first.
             await expect(sidebarPage.adminSidebar).toBeVisible();
             await expectNavigation(sidebarPage, {
                 visible: ['Analytics', 'View site', 'Posts', 'Pages', 'Tags', 'Members', 'Settings'],
