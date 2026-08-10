@@ -22,6 +22,10 @@ describe('{{contrast_text_color}} helper', function () {
         });
     });
 
+    it('returns white for mid-tone backgrounds', function () {
+        assert.equal(contrast_text_color('#808080'), '#FFFFFF');
+    });
+
     it('falls back to white for invalid colors', function () {
         assert.equal(contrast_text_color(''), '#FFFFFF');
     });
