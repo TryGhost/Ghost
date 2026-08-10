@@ -67,9 +67,10 @@ class ModelStub {
 
     async transaction(fn) {
         const snapshot = this.knownSettings.slice();
+        this.lastTransacting = {};
 
         try {
-            return await fn({});
+            return await fn(this.lastTransacting);
         } catch (error) {
             this.knownSettings = snapshot;
             throw error;
@@ -504,6 +505,17 @@ describe('Service', function () {
 
         it('copies settings rows to the new theme name', async function () {
             await service.copySettingsBetweenThemes('test', 'test-edited');
+
+            // the destination check is locked inside the transaction so
+            // concurrent copies can't both see an empty destination
+            const destinationCheck = model.findAll.getCalls().find(call => call.firstArg.filter === `theme:'test-edited'`);
+            assert.equal(destinationCheck.firstArg.transacting, model.lastTransacting);
+            assert.equal(destinationCheck.firstArg.forUpdate, true);
+
+            // every insert runs in the same transaction
+            model.add.getCalls().forEach((call) => {
+                assert.equal(call.args[1].transacting, model.lastTransacting);
+            });
 
             assert.deepEqual(await settingsForTheme('test-edited'), [{
                 theme: 'test-edited',
