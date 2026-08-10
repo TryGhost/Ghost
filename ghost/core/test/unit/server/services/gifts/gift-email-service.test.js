@@ -81,6 +81,8 @@ describe('GiftEmailService', function () {
         assert.equal(message.subject, 'Your gift is on its way');
         for (const field of ['html', 'text']) {
             sinon.assert.match(message[field], sinon.match('recipient@example.com'));
+            sinon.assert.match(message[field], sinon.match('is on its way to'));
+            sinon.assert.match(message[field], sinon.match(value => !value.includes('has been sent to')));
             sinon.assert.match(message[field], sinon.match('You can also share the link below yourself'));
         }
     });

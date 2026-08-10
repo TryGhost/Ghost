@@ -797,6 +797,19 @@ describe('GiftService', function () {
             sinon.assert.notCalled(giftRepository.markDeliveryFailed);
         });
 
+        it('does not retry an accepted handoff when persistence fails with a recoverable-looking code', async function () {
+            giftEmailService.sendGiftDelivery.resolves({providerMessageId: 'provider-123'});
+            giftRepository.markDeliverySent.rejects({code: 'ECONNREFUSED'});
+            const service = createService();
+
+            const result = await service.processDeliveries();
+
+            assert.deepEqual(result, {sentCount: 0, skippedCount: 0, failedCount: 1});
+            sinon.assert.notCalled(giftRepository.markDeliveryForRetry);
+            sinon.assert.notCalled(giftRepository.markDeliveryFailed);
+            sinon.assert.notCalled(giftDeliveryScheduler.scheduleAt);
+        });
+
         it('keeps accepted delivery sent when provider analytics scheduling fails', async function () {
             giftEmailService.sendGiftDelivery.resolves({providerMessageId: 'provider-123'});
             giftEmailAnalytics.schedule.rejects(new Error('scheduler unavailable'));
@@ -816,6 +829,23 @@ describe('GiftService', function () {
 
             assert.deepEqual(result, {sentCount: 0, skippedCount: 1, failedCount: 0});
             sinon.assert.notCalled(giftEmailService.sendGiftDelivery);
+        });
+
+        it('fails a claimed email delivery that has no recipient email', async function () {
+            giftRepository.claimPendingDelivery.resolves(buildGift({
+                deliveryMethod: 'email',
+                deliveryStatus: 'sending',
+                deliveryAttempts: 1,
+                recipientEmail: null
+            }));
+            const service = createService();
+
+            const result = await service.processDeliveries();
+
+            assert.deepEqual(result, {sentCount: 0, skippedCount: 0, failedCount: 1});
+            sinon.assert.calledOnceWithExactly(giftRepository.markDeliveryFailed, 'gift-token');
+            sinon.assert.notCalled(giftEmailService.sendGiftDelivery);
+            sinon.assert.notCalled(giftRepository.markDeliveryForRetry);
         });
 
         it('schedules a recoverable non-acceptance exactly ten minutes later', async function () {

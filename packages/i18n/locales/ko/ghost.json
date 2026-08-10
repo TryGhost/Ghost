@@ -75,7 +75,7 @@
     "Thank you for subscribing to {siteTitle}. Tap the link below to be automatically signed in:": "{siteTitle} 구독에 감사해요. 아래 링크를 탭하여 자동으로 로그인해 주세요:",
     "Thank you for supporting {siteTitle}.": "{siteTitle}을(를) 후원해 주셔서 감사해요.",
     "Thank you for your support. Share the link below with whoever you'd like to gift them a {cadenceLabel} {tierName} membership to {siteTitle}.": "후원해 주셔서 감사해요. 아래 링크를 원하는 분께 공유하여 {siteTitle}의 {cadenceLabel} {tierName} 멤버십을 선물하세요.",
-    "Thank you for your support. Your gift — a {cadenceLabel} {tierName} membership to {siteTitle} — has been sent to {recipientEmail}. You can also share the link below yourself.": "",
+    "Thank you for your support. Your gift — a {cadenceLabel} {tierName} membership to {siteTitle} — is on its way to {recipientEmail}. You can also share the link below yourself.": "",
     "Thanks for reading {siteTitle}.": "{siteTitle}을(를) 읽어주셔서 감사해요.",
     "The link expires on {expiresAt} and can only be redeemed once.": "이 링크는 {expiresAt}에 만료되며, 한 번만 사용할 수 있어요.",
     "This email address will not be used.": "이 이메일 주소는 사용하지 않을게요.",

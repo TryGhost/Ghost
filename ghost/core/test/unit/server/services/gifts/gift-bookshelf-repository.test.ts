@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import type {Knex} from 'knex';
-import {GiftBookshelfRepository} from '../../../../../core/server/services/gifts/gift-bookshelf-repository';
+import {GiftBookshelfRepository, toDatabaseDate} from '../../../../../core/server/services/gifts/gift-bookshelf-repository';
 import {Gift} from '../../../../../core/server/services/gifts/gift';
 
 type GiftBookshelfModel = ConstructorParameters<typeof GiftBookshelfRepository>[0]['GiftModel'];
@@ -47,6 +47,21 @@ describe('GiftBookshelfRepository', function () {
 
     afterEach(function () {
         sinon.restore();
+    });
+
+    it('formats delivery claim timestamps in UTC regardless of the server timezone', function () {
+        const originalTimezone = process.env.TZ;
+        process.env.TZ = 'America/New_York';
+
+        try {
+            assert.equal(toDatabaseDate(new Date('2026-08-05T12:00:00.000Z')), '2026-08-05 12:00:00');
+        } finally {
+            if (originalTimezone === undefined) {
+                delete process.env.TZ;
+            } else {
+                process.env.TZ = originalTimezone;
+            }
+        }
     });
 
     it('returns a Gift when a token matches', async function () {

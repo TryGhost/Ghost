@@ -75,7 +75,7 @@
     "Thank you for subscribing to {siteTitle}. Tap the link below to be automatically signed in:": "感謝您訂閱{siteTitle}。點擊下面的連結即可自動登入：",
     "Thank you for supporting {siteTitle}.": "感謝您支持 {siteTitle}。",
     "Thank you for your support. Share the link below with whoever you'd like to gift them a {cadenceLabel} {tierName} membership to {siteTitle}.": "感謝您的支持。分享下方連結，即可將 {siteTitle} 的 {cadenceLabel} {tierName} 會員資格贈送給您想要的任何人。",
-    "Thank you for your support. Your gift — a {cadenceLabel} {tierName} membership to {siteTitle} — has been sent to {recipientEmail}. You can also share the link below yourself.": "",
+    "Thank you for your support. Your gift — a {cadenceLabel} {tierName} membership to {siteTitle} — is on its way to {recipientEmail}. You can also share the link below yourself.": "",
     "Thanks for reading {siteTitle}.": "感謝閱讀 {siteTitle}。",
     "The link expires on {expiresAt} and can only be redeemed once.": "此連結將於 {expiresAt} 失效，且只能兌換一次。",
     "This email address will not be used.": "此 email 將不會被使用。",

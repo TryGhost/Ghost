@@ -1113,8 +1113,17 @@ export class GiftService {
             GIFT_DELIVERY_MAX_ATTEMPTS
         );
 
-        if (!claimed || !claimed.recipientEmail) {
+        if (!claimed) {
             return 'skipped';
+        }
+
+        if (!claimed.recipientEmail) {
+            logging.error({
+                event: {name: 'gift_delivery.recipient_missing'},
+                giftToken: claimed.token
+            }, 'Claimed gift delivery has no recipient email');
+            await this.deps.giftRepository.markDeliveryFailed(claimed.token);
+            return 'failed';
         }
 
         let tier: Tier | null;
@@ -1130,8 +1139,9 @@ export class GiftService {
             return this.retryDelivery(claimed);
         }
 
+        let result: {providerMessageId: string | null};
         try {
-            const result = await this.deps.giftEmailService.sendGiftDelivery({
+            result = await this.deps.giftEmailService.sendGiftDelivery({
                 recipientEmail: claimed.recipientEmail,
                 recipientName: claimed.recipientName,
                 buyerName: claimed.buyerName,
@@ -1143,28 +1153,6 @@ export class GiftService {
                 duration: claimed.duration,
                 expiresAt: claimed.expiresAt
             });
-
-            const persisted = await this.deps.giftRepository.markDeliverySent(
-                claimed.token,
-                new Date(),
-                result.providerMessageId
-            );
-
-            if (!persisted) {
-                throw new errors.InternalServerError({
-                    message: `Could not persist accepted gift delivery: ${claimed.token}`
-                });
-            }
-
-            if (result.providerMessageId) {
-                try {
-                    await this.deps.giftEmailAnalytics.schedule();
-                } catch (err) {
-                    logging.error('Failed to schedule gift delivery analytics', err);
-                }
-            }
-
-            return 'sent';
         } catch (err) {
             logging.error(err);
             const kind = classifyDeliveryFailure(err);
@@ -1180,6 +1168,40 @@ export class GiftService {
 
             return this.retryDelivery(claimed);
         }
+
+        let persisted: boolean;
+        try {
+            persisted = await this.deps.giftRepository.markDeliverySent(
+                claimed.token,
+                new Date(),
+                result.providerMessageId
+            );
+        } catch (err) {
+            logging.error({
+                event: {name: 'gift_delivery.acceptance_persistence.failed'},
+                err,
+                giftToken: claimed.token
+            }, 'Failed to persist accepted gift delivery');
+            return 'ambiguous';
+        }
+
+        if (!persisted) {
+            logging.error({
+                event: {name: 'gift_delivery.acceptance_persistence.failed'},
+                giftToken: claimed.token
+            }, 'Failed to persist accepted gift delivery');
+            return 'ambiguous';
+        }
+
+        if (result.providerMessageId) {
+            try {
+                await this.deps.giftEmailAnalytics.schedule();
+            } catch (err) {
+                logging.error('Failed to schedule gift delivery analytics', err);
+            }
+        }
+
+        return 'sent';
     }
 
     private async retryDelivery(gift: Gift): Promise<'retry' | 'failed'> {

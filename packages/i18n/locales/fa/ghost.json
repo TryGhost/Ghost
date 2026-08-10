@@ -79,7 +79,7 @@
     "Thank you for subscribing to {siteTitle}. Tap the link below to be automatically signed in:": "از مشترک شدن شما در {siteTitle} سپاسگزاریم. برای ورود خودکار، پیوند زیر را باز کنید:",
     "Thank you for supporting {siteTitle}.": "از حمایت شما از {siteTitle} سپاسگزاریم.",
     "Thank you for your support. Share the link below with whoever you'd like to gift them a {cadenceLabel} {tierName} membership to {siteTitle}.": "از حمایت شما سپاسگزاریم. پیوند زیر را با هر کسی که می\u200cخواهید یک اشتراک {tierName} با {cadenceLabel} از {siteTitle} به او هدیه دهید، به اشتراک بگذارید.",
-    "Thank you for your support. Your gift — a {cadenceLabel} {tierName} membership to {siteTitle} — has been sent to {recipientEmail}. You can also share the link below yourself.": "",
+    "Thank you for your support. Your gift — a {cadenceLabel} {tierName} membership to {siteTitle} — is on its way to {recipientEmail}. You can also share the link below yourself.": "",
     "Thanks for reading {siteTitle}.": "از مطالعه {siteTitle} سپاسگزاریم.",
     "The link expires on {expiresAt} and can only be redeemed once.": "این پیوند در {expiresAt} منقضی می\u200cشود و فقط یک\u200cبار قابل استفاده است.",
     "This email address will not be used.": "این نشانی ایمیل استفاده نخواهد شد.",

@@ -83,7 +83,7 @@
     "Thank you for subscribing to {siteTitle}. Tap the link below to be automatically signed in:": "Grazie per esserti abbonato a {siteTitle}. Clicca il link sottostante per effettuare automaticamente l'accesso:",
     "Thank you for supporting {siteTitle}.": "Grazie per il tuo supporto a {siteTitle}.",
     "Thank you for your support. Share the link below with whoever you'd like to gift them a {cadenceLabel} {tierName} membership to {siteTitle}.": "Grazie per il tuo supporto. Condividi il link qui sotto con chi vuoi regalare un abbonamento {tierName} {cadenceLabel} a {siteTitle}.",
-    "Thank you for your support. Your gift — a {cadenceLabel} {tierName} membership to {siteTitle} — has been sent to {recipientEmail}. You can also share the link below yourself.": "",
+    "Thank you for your support. Your gift — a {cadenceLabel} {tierName} membership to {siteTitle} — is on its way to {recipientEmail}. You can also share the link below yourself.": "",
     "Thanks for reading {siteTitle}.": "Grazie per leggere {siteTitle}.",
     "The link expires on {expiresAt} and can only be redeemed once.": "Il link scade il {expiresAt} e può essere riscattato una sola volta.",
     "This email address will not be used.": "Questo indirizzo email non verrà utilizzato.",

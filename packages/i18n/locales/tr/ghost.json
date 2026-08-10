@@ -79,7 +79,7 @@
     "Thank you for subscribing to {siteTitle}. Tap the link below to be automatically signed in:": "{siteTitle} sitesine abone olduğun için teşekkürler. Otomatik olarak giriş yapmak için aşağıdaki bağlantıya tıkla:",
     "Thank you for supporting {siteTitle}.": "{siteTitle} sitesine desteğiniz için teşekkürler.",
     "Thank you for your support. Share the link below with whoever you'd like to gift them a {cadenceLabel} {tierName} membership to {siteTitle}.": "{siteTitle}’a desteğiniz için teşekkürler. Aşağıdaki bağlantıyı {cadenceLabel} {tierName} aboneliği hediye etmek istediğiniz kişiyle paylaşın.",
-    "Thank you for your support. Your gift — a {cadenceLabel} {tierName} membership to {siteTitle} — has been sent to {recipientEmail}. You can also share the link below yourself.": "",
+    "Thank you for your support. Your gift — a {cadenceLabel} {tierName} membership to {siteTitle} — is on its way to {recipientEmail}. You can also share the link below yourself.": "",
     "Thanks for reading {siteTitle}.": "{siteTitle} sitesini okuduğunuz için teşekkürler.",
     "The link expires on {expiresAt} and can only be redeemed once.": "Bağlantının süresi {expiresAt} tarihinde doluyor ve sadece bir kez kullanılabilir.",
     "This email address will not be used.": "Bu e-posta adresi kullanılmayacak.",

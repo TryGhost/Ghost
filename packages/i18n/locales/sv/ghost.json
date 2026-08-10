@@ -79,7 +79,7 @@
     "Thank you for subscribing to {siteTitle}. Tap the link below to be automatically signed in:": "Tack för att du prenumererar på {siteTitle}. Tryck på länken nedan för att bli automatiskt inloggad:",
     "Thank you for supporting {siteTitle}.": "Tack för att du stöder {siteTitle}.",
     "Thank you for your support. Share the link below with whoever you'd like to gift them a {cadenceLabel} {tierName} membership to {siteTitle}.": "Tack för ditt stöd. Dela länken nedan med den du vill ge en {cadenceLabel} {tierName}-prenumeration på {siteTitle}.",
-    "Thank you for your support. Your gift — a {cadenceLabel} {tierName} membership to {siteTitle} — has been sent to {recipientEmail}. You can also share the link below yourself.": "",
+    "Thank you for your support. Your gift — a {cadenceLabel} {tierName} membership to {siteTitle} — is on its way to {recipientEmail}. You can also share the link below yourself.": "",
     "Thanks for reading {siteTitle}.": "Tack för att du läser {siteTitle}.",
     "The link expires on {expiresAt} and can only be redeemed once.": "Länken slutar gälla {expiresAt} och kan bara användas en gång.",
     "This email address will not be used.": "Denna e-postadress kommer inte att användas.",

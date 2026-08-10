@@ -18,7 +18,7 @@ export interface GiftPurchaseConfirmationData {
 
 export function renderText(data: GiftPurchaseConfirmationData, t: Translate): string {
     const intro = data.gift.recipientEmail
-        ? t('Thank you for your support. Your gift — a {cadenceLabel} {tierName} membership to {siteTitle} — has been sent to {recipientEmail}. You can also share the link below yourself.', {
+        ? t('Thank you for your support. Your gift — a {cadenceLabel} {tierName} membership to {siteTitle} — is on its way to {recipientEmail}. You can also share the link below yourself.', {
             cadenceLabel: data.gift.cadenceLabel,
             tierName: data.gift.tierName,
             siteTitle: data.siteTitle,

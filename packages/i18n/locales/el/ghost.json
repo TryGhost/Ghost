@@ -79,7 +79,7 @@
     "Thank you for subscribing to {siteTitle}. Tap the link below to be automatically signed in:": "Ευχαριστούμε που εγγραφήκατε στο {siteTitle}. Πατήστε τον παρακάτω σύνδεσμο για να συνδεθείτε αυτόματα:",
     "Thank you for supporting {siteTitle}.": "Σας ευχαριστούμε για την υποστήριξή σας στο {siteTitle}.",
     "Thank you for your support. Share the link below with whoever you'd like to gift them a {cadenceLabel} {tierName} membership to {siteTitle}.": "Σας ευχαριστούμε για την υποστήριξή σας. Μοιραστείτε τον παρακάτω σύνδεσμο με όποιον θέλετε να χαρίσετε μια {cadenceLabel} συνδρομή {tierName} στο {siteTitle}.",
-    "Thank you for your support. Your gift — a {cadenceLabel} {tierName} membership to {siteTitle} — has been sent to {recipientEmail}. You can also share the link below yourself.": "",
+    "Thank you for your support. Your gift — a {cadenceLabel} {tierName} membership to {siteTitle} — is on its way to {recipientEmail}. You can also share the link below yourself.": "",
     "Thanks for reading {siteTitle}.": "Ευχαριστούμε που διαβάσατε το {siteTitle}.",
     "The link expires on {expiresAt} and can only be redeemed once.": "Ο σύνδεσμος λήγει στις {expiresAt} και μπορεί να εξαργυρωθεί μόνο μία φορά.",
     "This email address will not be used.": "Αυτή η διεύθυνση email δεν θα χρησιμοποιηθεί.",

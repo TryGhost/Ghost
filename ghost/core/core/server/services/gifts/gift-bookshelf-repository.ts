@@ -8,7 +8,7 @@ import type {GiftCadence, GiftDeliveryOutcome, GiftRow} from './gift-schema';
 
 type ParsedNqlFilter = unknown;
 
-const toDatabaseDate = (date: Date): string => moment(date).format('YYYY-MM-DD HH:mm:ss');
+export const toDatabaseDate = (date: Date): string => moment.utc(date).format('YYYY-MM-DD HH:mm:ss');
 
 export interface GiftEventBrowseOptions {
     filter?: string;

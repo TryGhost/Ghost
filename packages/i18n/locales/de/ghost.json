@@ -79,7 +79,7 @@
     "Thank you for subscribing to {siteTitle}. Tap the link below to be automatically signed in:": "Danke für dein Abonnement von {siteTitle}. Klicke auf den folgenden Link, um dich automatisch einzuloggen:",
     "Thank you for supporting {siteTitle}.": "",
     "Thank you for your support. Share the link below with whoever you'd like to gift them a {cadenceLabel} {tierName} membership to {siteTitle}.": "",
-    "Thank you for your support. Your gift — a {cadenceLabel} {tierName} membership to {siteTitle} — has been sent to {recipientEmail}. You can also share the link below yourself.": "",
+    "Thank you for your support. Your gift — a {cadenceLabel} {tierName} membership to {siteTitle} — is on its way to {recipientEmail}. You can also share the link below yourself.": "",
     "Thanks for reading {siteTitle}.": "",
     "The link expires on {expiresAt} and can only be redeemed once.": "",
     "This email address will not be used.": "Diese E-Mail Adresse wird nicht verwendet.",
