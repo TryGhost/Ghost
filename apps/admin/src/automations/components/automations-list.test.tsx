@@ -16,11 +16,25 @@ const automations = [{
     status: 'inactive' as const
 }];
 
+const analytics = [{
+    automation_id: 'automation-id-1',
+    total_runs: 1432,
+    in_progress: 118,
+    completed: 1225,
+    last_run_at: '2026-07-21T07:12:00Z'
+}, {
+    automation_id: 'automation-id-2',
+    total_runs: 412,
+    in_progress: 61,
+    completed: 320,
+    last_run_at: '2026-07-21T05:55:00Z'
+}];
+
 const renderWithRouter = (ui: React.ReactElement) => render(<MemoryRouter>{ui}</MemoryRouter>);
 
 describe('AutomationsList', () => {
     it('renders fetched automations with private beta copy and status labels', () => {
-        renderWithRouter(<AutomationsList automations={automations} />);
+        renderWithRouter(<AutomationsList analytics={analytics} automations={automations} showRunAnalytics={true} />);
 
         expect(screen.getAllByTestId('automation-list-row')).toHaveLength(2);
         expect(screen.getByText('Free member welcome flow')).toBeInTheDocument();
@@ -29,6 +43,22 @@ describe('AutomationsList', () => {
         expect(screen.getByText('Welcome new paid members after they start their subscription.')).toBeInTheDocument();
         expect(screen.getByText('Live')).toBeInTheDocument();
         expect(screen.getByText('Off')).toBeInTheDocument();
+        expect(screen.getByRole('columnheader', {name: 'Last entry'})).toBeInTheDocument();
+        expect(screen.getByRole('columnheader', {name: 'Running'})).toBeInTheDocument();
+        expect(screen.getByRole('columnheader', {name: 'Done'})).toBeInTheDocument();
+        expect(screen.getByText('118')).toBeInTheDocument();
+        expect(screen.getByText('1,225')).toBeInTheDocument();
+        expect(screen.getByText('61')).toBeInTheDocument();
+        expect(screen.getByText('320')).toBeInTheDocument();
+    });
+
+    it('keeps run analytics columns hidden when the feature is disabled', () => {
+        renderWithRouter(<AutomationsList analytics={analytics} automations={automations} showRunAnalytics={false} />);
+
+        expect(screen.queryByRole('columnheader', {name: 'Last entry'})).not.toBeInTheDocument();
+        expect(screen.queryByRole('columnheader', {name: 'Running'})).not.toBeInTheDocument();
+        expect(screen.queryByRole('columnheader', {name: 'Done'})).not.toBeInTheDocument();
+        expect(screen.queryByText('1,225')).not.toBeInTheDocument();
     });
 
     it('links each row to the automation sequence by id', () => {

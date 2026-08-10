@@ -38,6 +38,39 @@ export interface AutomationActionLink {
     clicked_count: number;
 }
 
+export type AutomationRunStatus =
+    | 'in_progress'
+    | 'completed'
+    | 'automation disabled'
+    | 'failed'
+    | 'member changed status'
+    | 'member unsubscribed';
+
+export interface AutomationRunAnalyticsBucket {
+    date: string;
+    count: number;
+}
+
+export interface AutomationRunAnalytics {
+    automation_id: string;
+    total_runs: number;
+    in_progress: number;
+    completed: number;
+    last_run_at: string | null;
+    runs_by_day?: AutomationRunAnalyticsBucket[];
+}
+
+export interface AutomationRunAnalyticsDateBucket {
+    date: string;
+    start: Date;
+    end: Date;
+}
+
+export interface BrowseAutomationRunAnalyticsOptions {
+    automationId?: string;
+    dateBuckets?: AutomationRunAnalyticsDateBucket[];
+}
+
 export interface SendEmailAction {
     id: string;
     type: 'send_email';
@@ -137,6 +170,7 @@ export type AutomationStepTerminalStatus =
 
 export interface AutomationsRepository {
     browse(): Promise<Page<AutomationSummary>>;
+    browseRunAnalytics(options: BrowseAutomationRunAnalyticsOptions): Promise<AutomationRunAnalytics[]>;
     getById(id: string): Promise<Automation | null>;
     getAutomationActionLinks(automationId: string, actionId: string): Promise<AutomationActionLink[] | null>;
     edit(id: string, data: EditAutomationData): Promise<Automation | null>;
@@ -175,7 +209,7 @@ export interface AutomationsRepository {
      * Returns whether the step was updated.
      */
     markStepTerminal(
-        step: Pick<AutomationStepToRun, 'id' | 'locked_by'>,
+        step: Pick<AutomationStepToRun, 'id' | 'locked_by' | 'automation_run_id'>,
         status: AutomationStepTerminalStatus
     ): Promise<boolean>;
     /**
@@ -184,7 +218,7 @@ export interface AutomationsRepository {
      * Returns whether the step was updated.
      */
     retryStep(
-        step: Pick<AutomationStepToRun, 'id' | 'locked_by'>,
+        step: Pick<AutomationStepToRun, 'id' | 'locked_by' | 'automation_run_id'>,
         retryAt: Readonly<Date>
     ): Promise<boolean>;
     /**

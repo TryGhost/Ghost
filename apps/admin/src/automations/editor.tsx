@@ -1,8 +1,10 @@
 import AutomationCanvas, {EMAIL_STEP_QUERY_PARAM} from './components/canvas/automation-canvas';
 import AutomationHeader from './components/automation-header';
+import RunAnalyticsSidebar from './components/run-analytics-sidebar';
 import {useAutomationForEditing} from './hooks/use-automation-for-editing';
 import React from 'react';
 import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Button, type ButtonProps, LoadingIndicator} from '@tryghost/shade/components';
+import {Inline} from '@tryghost/shade/primitives';
 import {useEditAutomation} from '@tryghost/admin-x-framework/api/automations';
 import type {AutomationDetail, AutomationStatus} from '@tryghost/admin-x-framework/api/automations';
 import {dequal} from 'dequal';
@@ -11,6 +13,7 @@ import {toast} from 'sonner';
 import {useBlocker} from 'react-router';
 import {useConfirmUnload, useParams} from '@tryghost/admin-x-framework';
 import type {AutomationEditState} from './types';
+import {useFeatureFlag} from '@tryghost/admin-x-framework/hooks';
 
 const SUBJECT_REQUIRED_MESSAGE = 'Add a subject line.';
 const BODY_REQUIRED_MESSAGE = 'Add an email body.';
@@ -51,6 +54,7 @@ const getActionErrors = (automation: AutomationDetail): Record<string, string> =
 
 const AutomationEditorContent: React.FC<{automationId: string}> = ({automationId}) => {
     const {automation, isError: isReadError} = useAutomationForEditing(automationId);
+    const runAnalyticsEnabled = useFeatureFlag('automationRunAnalytics');
 
     const editMutation = useEditAutomation();
     const [editState, setEditState] = React.useState<AutomationEditState>({phase: 'idle'});
@@ -418,31 +422,34 @@ const AutomationEditorContent: React.FC<{automationId: string}> = ({automationId
                 onTurnOff={() => setEditState({phase: 'confirming', action: 'unpublish'})}
             />
 
-            <AutomationCanvas
-                actionErrors={actionErrors}
-                automation={draft}
-                isEmailNavigationBlocked={isEmailNavigationBlocked}
-                isError={isEditorError}
-                isLoading={isEditorLoading}
-                onChange={onDraftChange}
-                onDiscardBlockedEmailNavigation={(closeEmailModal) => {
-                    onEmailDirtyChange(false);
-                    if (isBlockedEmailNavigationLeavingEditorRef.current) {
+            <Inline align="stretch" className="min-h-0 flex-1" gap="none">
+                {runAnalyticsEnabled && draft && <RunAnalyticsSidebar automation={draft} />}
+                <AutomationCanvas
+                    actionErrors={actionErrors}
+                    automation={draft}
+                    isEmailNavigationBlocked={isEmailNavigationBlocked}
+                    isError={isEditorError}
+                    isLoading={isEditorLoading}
+                    onChange={onDraftChange}
+                    onDiscardBlockedEmailNavigation={(closeEmailModal) => {
+                        onEmailDirtyChange(false);
+                        if (isBlockedEmailNavigationLeavingEditorRef.current) {
+                            isBlockedEmailNavigationLeavingEditorRef.current = false;
+                            navigationBlocker.reset?.();
+                            closeEmailModal();
+                            return;
+                        }
+
+                        isBlockedEmailNavigationLeavingEditorRef.current = false;
+                        navigationBlocker.proceed?.();
+                    }}
+                    onEmailDirtyChange={onEmailDirtyChange}
+                    onKeepEditingAfterBlockedEmailNavigation={() => {
                         isBlockedEmailNavigationLeavingEditorRef.current = false;
                         navigationBlocker.reset?.();
-                        closeEmailModal();
-                        return;
-                    }
-
-                    isBlockedEmailNavigationLeavingEditorRef.current = false;
-                    navigationBlocker.proceed?.();
-                }}
-                onEmailDirtyChange={onEmailDirtyChange}
-                onKeepEditingAfterBlockedEmailNavigation={() => {
-                    isBlockedEmailNavigationLeavingEditorRef.current = false;
-                    navigationBlocker.reset?.();
-                }}
-            />
+                    }}
+                />
+            </Inline>
 
             <AlertDialog
                 open={isAutomationNavigationBlocked}

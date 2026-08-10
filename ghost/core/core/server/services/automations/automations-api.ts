@@ -1,6 +1,7 @@
 import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 import ObjectId from 'bson-objectid';
+import moment from 'moment-timezone';
 import {z} from 'zod';
 import {createDatabaseAutomationsRepository} from './database-automations-repository';
 import {parseFakeWaitHoursMultiplier} from './fake-wait-hours-multiplier';
@@ -14,6 +15,7 @@ const domainEvents = require('@tryghost/domain-events');
 const labs = require('../../../shared/labs');
 const config = require('../../../shared/config');
 const lexicalLib = require('../../lib/lexical');
+const settingsCache = require('../../../shared/settings-cache');
 const StartAutomationsPollEvent = require('./events/start-automations-poll-event');
 
 const MAX_AUTOMATION_ACTIONS = 20;
@@ -30,7 +32,9 @@ const messages = {
     invalidAutomationGraphShape: 'Automation graph must be a single linear path without branches or cycles.',
     emptyEmailSubjectWhenActive: 'Active automations require a subject line for every email.',
     emptyEmailBodyWhenActive: 'Active automations require a body for every email.',
-    invalidEmailLexical: 'Email lexical must be a well-formed Lexical document.'
+    invalidEmailLexical: 'Email lexical must be a well-formed Lexical document.',
+    invalidRunAnalyticsOptions: 'Invalid automation run analytics options.',
+    invalidRunAnalyticsDateRange: 'Automation run analytics date ranges must contain between 1 and 90 days.'
 };
 
 const objectIdSchema = z.string().refine(value => ObjectId.isValid(value));
@@ -74,6 +78,76 @@ const repository = createDatabaseAutomationsRepository({
 
 export async function browse() {
     return await repository.browse();
+}
+
+const runAnalyticsOptionsSchema = z.object({
+    automation_id: objectIdSchema.optional(),
+    include: z.enum(['series']).optional(),
+    date_from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+    date_to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional()
+}).refine(options => Boolean(options.date_from) === Boolean(options.date_to));
+
+export async function browseRunAnalytics(options: unknown) {
+    const result = runAnalyticsOptionsSchema.safeParse(options);
+    if (!result.success) {
+        throwValidationError(messages.invalidRunAnalyticsOptions);
+    }
+
+    const timezone = settingsCache.get('timezone') || 'Etc/UTC';
+    const dateBuckets = result.data.include === 'series' ? buildRunAnalyticsDateBuckets({
+        dateFrom: result.data.date_from,
+        dateTo: result.data.date_to,
+        timezone
+    }) : undefined;
+    const data = await repository.browseRunAnalytics({
+        automationId: result.data.automation_id,
+        dateBuckets
+    });
+
+    return {
+        data,
+        meta: {
+            pagination: {
+                page: 1,
+                pages: 1,
+                limit: 'all' as const,
+                total: data.length,
+                prev: null,
+                next: null
+            }
+        }
+    };
+}
+
+function buildRunAnalyticsDateBuckets({dateFrom, dateTo, timezone}: {
+    dateFrom?: string;
+    dateTo?: string;
+    timezone: string;
+}) {
+    const end = dateTo
+        ? moment.tz(dateTo, 'YYYY-MM-DD', true, timezone)
+        : moment().tz(timezone).startOf('day');
+    const start = dateFrom
+        ? moment.tz(dateFrom, 'YYYY-MM-DD', true, timezone)
+        : end.clone().subtract(29, 'days');
+
+    if (!start.isValid() || !end.isValid()) {
+        throwValidationError(messages.invalidRunAnalyticsOptions);
+    }
+
+    const dayCount = end.diff(start, 'days') + 1;
+    if (dayCount < 1 || dayCount > 90) {
+        throwValidationError(messages.invalidRunAnalyticsDateRange);
+    }
+
+    return Array.from({length: dayCount}, (_, index) => {
+        const bucketStart = start.clone().add(index, 'days');
+        return {
+            date: bucketStart.format('YYYY-MM-DD'),
+            start: bucketStart.toDate(),
+            end: bucketStart.clone().add(1, 'day').toDate()
+        };
+    });
 }
 
 export async function read(automationId: string) {

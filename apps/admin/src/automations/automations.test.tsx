@@ -3,8 +3,19 @@ import {MemoryRouter} from 'react-router';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {render, screen} from '@testing-library/react';
 
-const {mockUseBrowseAutomations, mockUseBrowseSettings, mockUseBrowseConfig, mockUseCurrentUser} = vi.hoisted(() => ({
+const mockRunAnalyticsFlag = vi.hoisted(() => ({enabled: false}));
+
+vi.mock('@tryghost/admin-x-framework/hooks', async () => {
+    const actual = await vi.importActual<typeof import('@tryghost/admin-x-framework/hooks')>('@tryghost/admin-x-framework/hooks');
+    return {
+        ...actual,
+        useFeatureFlag: () => mockRunAnalyticsFlag.enabled
+    };
+});
+
+const {mockUseBrowseAutomations, mockUseBrowseAutomationRunAnalytics, mockUseBrowseSettings, mockUseBrowseConfig, mockUseCurrentUser} = vi.hoisted(() => ({
     mockUseBrowseAutomations: vi.fn(),
+    mockUseBrowseAutomationRunAnalytics: vi.fn(),
     mockUseBrowseSettings: vi.fn(),
     mockUseBrowseConfig: vi.fn(),
     mockUseCurrentUser: vi.fn()
@@ -16,7 +27,8 @@ vi.mock('@tryghost/admin-x-framework/api/automations', async () => {
     );
     return {
         ...actual,
-        useBrowseAutomations: mockUseBrowseAutomations
+        useBrowseAutomations: mockUseBrowseAutomations,
+        useBrowseAutomationRunAnalytics: mockUseBrowseAutomationRunAnalytics
     };
 });
 
@@ -85,7 +97,9 @@ const renderPage = () => render(<MemoryRouter><Automations /></MemoryRouter>);
 describe('Automations', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        mockRunAnalyticsFlag.enabled = false;
         mockUseBrowseAutomations.mockReturnValue({data: {automations}, isError: false, isLoading: false});
+        mockUseBrowseAutomationRunAnalytics.mockReturnValue({data: {automation_run_analytics: []}, isError: false, isLoading: false});
         mockUseBrowseSettings.mockReturnValue({data: stripeConnectedSettings, isLoading: false});
         mockUseBrowseConfig.mockReturnValue({data: {config: {}}, isLoading: false});
         mockUseCurrentUser.mockReturnValue({data: {id: 'user-1', roles: [{name: 'Owner'}]}});
@@ -96,6 +110,17 @@ describe('Automations', () => {
 
         expect(screen.getByText('Free member welcome flow')).toBeInTheDocument();
         expect(screen.getByText('Paid member welcome flow')).toBeInTheDocument();
+        expect(mockUseBrowseAutomationRunAnalytics).toHaveBeenCalledWith({enabled: false});
+        expect(screen.queryByRole('columnheader', {name: 'Last entry'})).not.toBeInTheDocument();
+    });
+
+    it('loads and shows run analytics when the feature is enabled', () => {
+        mockRunAnalyticsFlag.enabled = true;
+
+        renderPage();
+
+        expect(mockUseBrowseAutomationRunAnalytics).toHaveBeenCalledWith({enabled: true});
+        expect(screen.getByRole('columnheader', {name: 'Last entry'})).toBeInTheDocument();
     });
 
     it('hides the paid sequence when Stripe is not connected', () => {

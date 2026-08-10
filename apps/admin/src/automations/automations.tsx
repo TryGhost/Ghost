@@ -1,17 +1,22 @@
 import AutomationsHelpCards from './components/automations-help-cards';
 import AutomationsList from './components/automations-list';
 import React from 'react';
+import {useBrowseAutomationRunAnalytics} from '@tryghost/admin-x-framework/api/automations';
 import {Badge} from '@tryghost/shade/components';
 import {Box, Container} from '@tryghost/shade/primitives';
 import {ListPage} from '@tryghost/shade/page-templates';
 import {PageHeader} from '@tryghost/shade/patterns';
 import {useVisibleAutomations} from './hooks/use-visible-automations';
+import {useFeatureFlag} from '@tryghost/admin-x-framework/hooks';
 
 const Automations: React.FC = () => {
     const {automations, error, isError, isLoading} = useVisibleAutomations();
+    const runAnalyticsEnabled = useFeatureFlag('automationRunAnalytics');
+    const analyticsQuery = useBrowseAutomationRunAnalytics({enabled: runAnalyticsEnabled});
 
-    if (isError) {
-        throw error instanceof Error ? error : new Error('Failed to load automations');
+    if (isError || (runAnalyticsEnabled && analyticsQuery.isError)) {
+        const queryError = error || analyticsQuery.error;
+        throw queryError instanceof Error ? queryError : new Error('Failed to load automations');
     }
 
     return (
@@ -31,7 +36,12 @@ const Automations: React.FC = () => {
                     </PageHeader>
                 </ListPage.Header>
                 <ListPage.Body>
-                    <AutomationsList automations={automations} isLoading={isLoading} />
+                    <AutomationsList
+                        analytics={analyticsQuery.data?.automation_run_analytics}
+                        automations={automations}
+                        isLoading={isLoading || (runAnalyticsEnabled && analyticsQuery.isLoading)}
+                        showRunAnalytics={runAnalyticsEnabled}
+                    />
                     <AutomationsHelpCards />
                 </ListPage.Body>
             </ListPage>
