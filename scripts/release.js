@@ -15,7 +15,9 @@ const GHOST_ADMIN_PKG = join(ROOT_DIR, 'apps/ember-admin/package.json');
 const CASPER_DIR = join(ROOT_DIR, 'ghost/core/content/themes/casper');
 const SOURCE_DIR = join(ROOT_DIR, 'ghost/core/content/themes/source');
 
-const MAX_WAIT_MS = 30 * 60 * 1000; // 30 minutes
+// Generous enough to cover a full CI cycle (~15m) plus a retarget onto a newer
+// commit after the first run gets cancelled by a merge.
+const MAX_WAIT_MS = 60 * 60 * 1000; // 60 minutes
 const POLL_INTERVAL_MS = 30 * 1000; // 30 seconds
 
 // --- Argument parsing ---
@@ -135,7 +137,58 @@ function detectBumpType(baseTag, bumpType) {
 
 const REQUIRED_CHECK_NAME = 'All required tests passed or skipped';
 
-async function waitForChecks(commit) {
+// The aggregate gate for the commit. Filtering by name keeps us off page 2 of
+// the check-runs list (CI has ~30 checks and grows with every matrix entry);
+// the endpoint's default `filter=latest` already collapses re-runs, and the
+// sort makes the newest win if it ever returns more than one.
+async function fetchRequiredCheck(commit, token) {
+    const url = new URL(`https://api.github.com/repos/TryGhost/Ghost/commits/${commit}/check-runs`);
+    url.searchParams.set('check_name', REQUIRED_CHECK_NAME);
+    url.searchParams.set('per_page', '100');
+
+    const response = await fetch(url, {
+        headers: {
+            Authorization: `token ${token}`,
+            Accept: 'application/vnd.github+json'
+        }
+    });
+
+    if (!response.ok) {
+        throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
+    }
+
+    const {check_runs: checkRuns} = await response.json();
+    return [...checkRuns].sort((a, b) => new Date(b.started_at) - new Date(a.started_at))[0] ?? null;
+}
+
+function remoteHead(branch) {
+    const output = run(`git ls-remote origin refs/heads/${branch}`);
+    return output.split(/\s/)[0] || null;
+}
+
+// Move the checkout onto `sha`, but only as a fast-forward — anything else
+// means the branch was rewritten or we have local commits, and silently
+// resetting would drop work.
+function fastForwardTo(branch, sha) {
+    run(`git fetch origin ${branch}`);
+    try {
+        run(`git merge-base --is-ancestor HEAD ${sha}`);
+    } catch {
+        return false;
+    }
+    run(`git reset --hard ${sha}`);
+    return true;
+}
+
+// Wait for the required check on the branch head, and return the commit it
+// passed on. CI's concurrency group is per-branch with cancel-in-progress, so a
+// merge landing mid-wait cancels the run we're watching: the required check
+// either never gets created (the job is still queued when the run dies) or
+// completes as cancelled/failure off cancelled dependencies. Either way the
+// commit's checks will never go green, so we retarget onto the new head — which
+// is what the release wanted anyway: the latest passing commit on the branch.
+async function waitForChecks(branch, initialSha) {
+    let commit = initialSha;
     logStep(`Waiting for CI checks on ${commit.slice(0, 8)}...`);
 
     const token = process.env.GITHUB_TOKEN || process.env.RELEASE_TOKEN;
@@ -146,40 +199,39 @@ async function waitForChecks(commit) {
     const startTime = Date.now();
 
     while (true) {
-        const response = await fetch(`https://api.github.com/repos/TryGhost/Ghost/commits/${commit}/check-runs`, {
-            headers: {
-                Authorization: `token ${token}`,
-                Accept: 'application/vnd.github+json'
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
+        const elapsed = Math.round((Date.now() - startTime) / 1000);
+        if (Date.now() - startTime >= MAX_WAIT_MS) {
+            throw new Error(`Timed out waiting for "${REQUIRED_CHECK_NAME}" on ${commit.slice(0, 8)} after ${elapsed}s`);
         }
 
-        const {check_runs: checkRuns} = await response.json();
+        const head = remoteHead(branch);
+        if (head && head !== commit) {
+            if (!fastForwardTo(branch, head)) {
+                throw new Error(`${branch} moved to ${head.slice(0, 8)}, which is not a descendant of ${commit.slice(0, 8)} — refusing to retarget`);
+            }
+            log(`Superseded: ${branch} advanced to ${head.slice(0, 8)}, watching its checks instead`);
+            commit = head;
+            continue;
+        }
 
-        // Find the required check — this is the CI gate that aggregates all mandatory checks
-        const requiredCheck = checkRuns.find(r => r.name === REQUIRED_CHECK_NAME);
+        const requiredCheck = await fetchRequiredCheck(commit, token);
 
         if (requiredCheck) {
-            if (requiredCheck.status === 'completed' && requiredCheck.conclusion === 'success') {
-                log(`Required check "${REQUIRED_CHECK_NAME}" passed`);
-                return;
-            }
-            if (requiredCheck.status === 'completed' && requiredCheck.conclusion !== 'success') {
+            if (requiredCheck.status === 'completed') {
+                if (requiredCheck.conclusion === 'success') {
+                    log(`Required check "${REQUIRED_CHECK_NAME}" passed on ${commit.slice(0, 8)}`);
+                    return commit;
+                }
+                // The branch head is still this commit, so nothing superseded it
+                // — a cancel here was manual or a stuck run, not a merge race.
+                if (requiredCheck.conclusion === 'cancelled' || requiredCheck.conclusion === 'stale') {
+                    throw new Error(`Required check "${REQUIRED_CHECK_NAME}" was ${requiredCheck.conclusion} on ${commit.slice(0, 8)} and ${branch} has not moved — re-run CI for that commit, then release again`);
+                }
                 throw new Error(`Required check "${REQUIRED_CHECK_NAME}" failed (${requiredCheck.conclusion})`);
             }
             log(`Required check is ${requiredCheck.status}, waiting...`);
         } else {
             log('Required check not found yet, waiting...');
-        }
-
-        const elapsedMs = Date.now() - startTime;
-        const elapsed = Math.round(elapsedMs / 1000);
-
-        if (elapsedMs >= MAX_WAIT_MS) {
-            throw new Error(`Timed out waiting for "${REQUIRED_CHECK_NAME}" after ${elapsed}s`);
         }
 
         log(`(${elapsed}s elapsed), polling in 30s...`);
@@ -263,6 +315,49 @@ async function runPackagesOnlyRelease(opts) {
     log('Run the "Publish Packages" workflow to publish the new versions to npm');
 }
 
+// --- Release planning ---
+
+// Everything that reads the checked-out commit to decide what version we're
+// cutting. Re-run verbatim if the checkout moves while waiting for CI, since
+// the version, base tag and bump all come from the tree.
+function planRelease(bumpType) {
+    logStep('Reading current version');
+    const currentVersion = readPkgVersion(GHOST_CORE_PKG);
+    log(`Current version: ${currentVersion}`);
+
+    logStep('Resolving base tag');
+    const {tag: baseTag, isPrerelease} = resolveBaseTag(currentVersion, ROOT_DIR);
+    if (isPrerelease) {
+        log(`Prerelease detected (${currentVersion}), resolved base tag: ${baseTag}`);
+    } else {
+        log(`Base tag: ${baseTag}`);
+    }
+
+    logStep('Detecting bump type');
+    const resolvedBumpType = detectBumpType(baseTag, bumpType);
+    const newVersion = semver.inc(currentVersion, resolvedBumpType);
+    if (!newVersion) {
+        console.error(`Failed to calculate new version from ${currentVersion} with bump type ${resolvedBumpType}`);
+        process.exit(1);
+    }
+    log(`Bump type: ${resolvedBumpType}`);
+    log(`New version: ${newVersion}`);
+
+    logStep('Checking remote tags');
+    try {
+        const tagCheck = run(`git ls-remote --tags origin refs/tags/v${newVersion}`);
+        if (tagCheck) {
+            console.error(`Tag v${newVersion} already exists on remote. Cannot release this version.`);
+            process.exit(1);
+        }
+    } catch {
+        // ls-remote returns non-zero if no match — that's what we want
+    }
+    log(`Tag v${newVersion} does not exist on remote`);
+
+    return newVersion;
+}
+
 // --- Main ---
 
 async function main() {
@@ -279,53 +374,24 @@ async function main() {
     log(`Bump type: ${opts.bumpType}`);
     log(`Dry run: ${opts.dryRun}`);
 
-    // 1. Read current version
-    logStep('Reading current version');
-    const currentVersion = readPkgVersion(GHOST_CORE_PKG);
-    log(`Current version: ${currentVersion}`);
+    // 1. Plan the release from the current checkout
+    let newVersion = planRelease(opts.bumpType);
 
-    // 2. Resolve base tag
-    logStep('Resolving base tag');
-    const {tag: baseTag, isPrerelease} = resolveBaseTag(currentVersion, ROOT_DIR);
-    if (isPrerelease) {
-        log(`Prerelease detected (${currentVersion}), resolved base tag: ${baseTag}`);
-    } else {
-        log(`Base tag: ${baseTag}`);
-    }
-
-    // 3. Detect bump type
-    logStep('Detecting bump type');
-    const resolvedBumpType = detectBumpType(baseTag, opts.bumpType);
-    const newVersion = semver.inc(currentVersion, resolvedBumpType);
-    if (!newVersion) {
-        console.error(`Failed to calculate new version from ${currentVersion} with bump type ${resolvedBumpType}`);
-        process.exit(1);
-    }
-    log(`Bump type: ${resolvedBumpType}`);
-    log(`New version: ${newVersion}`);
-
-    // 4. Check tag doesn't exist
-    logStep('Checking remote tags');
-    try {
-        const tagCheck = run(`git ls-remote --tags origin refs/tags/v${newVersion}`);
-        if (tagCheck) {
-            console.error(`Tag v${newVersion} already exists on remote. Cannot release this version.`);
-            process.exit(1);
-        }
-    } catch {
-        // ls-remote returns non-zero if no match — that's what we want
-    }
-    log(`Tag v${newVersion} does not exist on remote`);
-
-    // 5. Wait for CI checks
+    // 2. Wait for CI checks, retargeting onto the branch head if a merge
+    // supersedes (and cancels the CI of) the commit we're waiting on
     if (!opts.skipChecks) {
         const headSha = run('git rev-parse HEAD');
-        await waitForChecks(headSha);
+        const releaseSha = await waitForChecks(opts.branch, headSha);
+
+        if (releaseSha !== headSha) {
+            logStep(`Re-planning release for ${releaseSha.slice(0, 8)}`);
+            newVersion = planRelease(opts.bumpType);
+        }
     } else {
         log('Skipping CI checks');
     }
 
-    // 6. Update theme submodules (main branch only)
+    // 3. Update theme submodules (main branch only)
     if (opts.branch === 'main') {
         logStep('Updating theme submodules');
         run('git submodule update --init');
@@ -335,19 +401,19 @@ async function main() {
         logStep('Skipping theme updates (not main branch)');
     }
 
-    // 7. Bump versions
+    // 4. Bump versions
     logStep(`Bumping version to ${newVersion}`);
     writePkgVersion(GHOST_CORE_PKG, newVersion);
     writePkgVersion(GHOST_ADMIN_PKG, newVersion);
 
-    // 7b. Consume changesets → version the publishable workspace packages
+    // 4b. Consume changesets → version the publishable workspace packages
     // (kg-*, packages/*, ...). These changes land in the Ghost release commit
     // below, tying every package version to the Ghost release that carries its
     // content; publishing (scripts/publish-packages.js) reads those off npm.
     logStep('Applying changeset versions to publishable packages');
     applyChangesetVersions();
 
-    // 8. Commit and tag
+    // 5. Commit and tag
     // Stage everything: the two Ghost manifests plus whatever `pnpm version -r`
     // touched (package.jsons, workspace-range rewrites, removed changesets,
     // pnpm-lock.yaml). Theme submodule bumps are already committed above.
@@ -356,7 +422,7 @@ async function main() {
     run(`git tag v${newVersion}`);
     log(`Created tag v${newVersion}`);
 
-    // 9. Push
+    // 6. Push
     if (opts.dryRun) {
         logStep('DRY RUN — skipping push');
         log(`Would push branch ${opts.branch} and tag v${newVersion}`);
@@ -367,7 +433,7 @@ async function main() {
         log('Pushed branch and tag');
     }
 
-    // 10. Advance to next RC
+    // 7. Advance to next RC
     // Default to the next patch RC. If a migration lands during the cycle,
     // ghost/core/bin/create-migration.js promotes this to the next minor RC.
     // detectBumpType resolves the actual bump (patch vs minor) at the next release.
