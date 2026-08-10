@@ -1,6 +1,6 @@
 import type {Knex} from 'knex';
 import type {CsvField} from '@tryghost/custom-field-types/csv';
-import MembersCSVImporter, {type MembersRepository, type GiftService, type EmailNotifications, type Tier, type CustomFieldsImport} from './import/importer';
+import MembersCSVImporter, {type MembersRepository, type GiftService, type EmailNotifications, type Tier, type CustomFieldsImport, type FailureReporter} from './import/importer';
 import readMemberRows from './import/reader';
 import {createRowSpool} from './import/spool';
 import MembersCSVExporter, {type ExportOptions, type CustomFieldDefinition} from './export/exporter';
@@ -9,6 +9,8 @@ const MembersCSVImporterStripeUtils = require('./import/stripe-utils');
 const db = require('../../../data/db');
 const models = require('../../../models');
 const labs = require('../../../../shared/labs');
+const logging = require('@tryghost/logging');
+const sentry = require('../../../../shared/sentry');
 
 // The raw collaborators the members service hands the import composition root, before
 // they are adapted into the ports the importer declares. The members repository is the
@@ -22,7 +24,7 @@ interface ImporterServices {
         reassignRedeemer(input: {giftId: string; memberId: string; transacting?: Knex.Transaction}): Promise<void>;
     };
     sendEmail: EmailNotifications['send'];
-    urlFor: EmailNotifications['urlFor'];
+    urlFor(type: string, data: unknown, absolute: boolean): string;
     addJob(job: {job: () => Promise<void>; offloaded: boolean; name: string}): void;
     getTimezone(): string;
     getInlineThreshold(): number;
@@ -68,7 +70,16 @@ export function makeImporter(deps: ImporterServices) {
     const email: EmailNotifications = {
         send: deps.sendEmail,
         getDefaultRecipient: async () => (await models.User.getOwnerUser()).get('email'),
-        urlFor: deps.urlFor
+        links: {
+            siteUrl: () => new URL(deps.urlFor('home', null, true)),
+            membersUrl: (labelSlug?: string) => {
+                const url = new URL('members', deps.urlFor('admin', null, true));
+                if (labelSlug) {
+                    url.searchParams.set('label', labelSlug);
+                }
+                return url;
+            }
+        }
     };
 
     // Gifts is initialised at boot and always present at request time; the getter
@@ -90,6 +101,17 @@ export function makeImporter(deps: ImporterServices) {
         applyWrite: (memberId, plan, executor) => deps.customFields.values.applyWrite(memberId, plan, {executor})
     };
 
+    // Inline jobs never reach the job manager's Sentry handler, which is wired to the
+    // offloaded worker path only, so a throw here would be seen by nobody.
+    const report: FailureReporter = (error) => {
+        try {
+            logging.error({event: {name: 'members.import.error'}, err: error}, 'Members import failure');
+            sentry.captureException(error);
+        } catch {
+            // Callers report from catch and finally blocks, so this must not throw.
+        }
+    };
+
     return new MembersCSVImporter({
         knex: deps.knex,
         readRows: readMemberRows,
@@ -106,6 +128,7 @@ export function makeImporter(deps: ImporterServices) {
         gifts,
         customFields,
         email,
+        report,
         addJob: deps.addJob,
         getTimezone: deps.getTimezone,
         getInlineThreshold: deps.getInlineThreshold

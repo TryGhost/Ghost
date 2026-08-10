@@ -1,5 +1,5 @@
 import moment from 'moment-timezone';
-import buildCompletionEmail from './completion-email';
+import buildImportEmail, {type EmailLinks} from './completion-email';
 import {stripFormulaGuard} from '../csv';
 import {fieldValuesFromCsvRow, type CsvField} from '@tryghost/custom-field-types/csv';
 import type {Knex} from 'knex';
@@ -9,7 +9,6 @@ import type {RowSpool, SpooledRows} from './spool';
 const metrics = require('@tryghost/metrics');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
-const logging = require('@tryghost/logging');
 
 // The members CSV importer, sliced into one concern per method. Two entry points by
 // design: importCSV decides inline-vs-deferred by load, since a large import must not
@@ -90,8 +89,12 @@ export interface GiftService {
 export interface EmailNotifications {
     send(options: object): Promise<unknown>;
     getDefaultRecipient(): Promise<string>;
-    urlFor(type: string, data: unknown, absolute: boolean): string;
+    links: EmailLinks;
 }
+
+// Must not throw: it is called from catch and finally blocks that exist to stop an error
+// escaping.
+export type FailureReporter = (error: unknown) => void;
 
 // Opaque to the import: planWrite produces it, applyWrite consumes it.
 type CustomFieldPlan = unknown;
@@ -117,6 +120,7 @@ interface ImporterDeps {
     gifts: GiftService;
     customFields: CustomFieldsImport;
     email: EmailNotifications;
+    report: FailureReporter;
     addJob: (job: {job: () => Promise<void>; offloaded: boolean; name: string}) => void;
     getTimezone: () => string;
     getInlineThreshold: () => number;
@@ -138,14 +142,23 @@ interface MemberImportValues {
     newsletters?: unknown;
 }
 
-// The kernel does the importing, so it is what knows whether anything imported and,
-// if so, which label the members were tagged with (a label is only persisted once
-// attached to a member). The label is absent when nothing imported; the orchestrator
-// reads it as null and never fetches it itself.
+// The label is absent when nothing imported: it is only persisted once a member carries it.
 interface ImportResult {
     imported: number;
     errors: ImportErrorRow[];
     importLabel?: ImportLabel;
+}
+
+interface PreparedRun {
+    defaultTier: Tier;
+    activeCustomFields: CsvField[];
+    globalLabels: Label[];
+}
+
+interface WrittenRows {
+    imported: number;
+    errors: ImportErrorRow[];
+    archivableStripePriceIds: string[];
 }
 
 // What the domain service returns: an import that ran inline carries its stats and
@@ -201,11 +214,12 @@ class MembersCSVImporter {
     private _gifts: GiftService;
     private _customFields: CustomFieldsImport;
     private _email: EmailNotifications;
+    private _report: FailureReporter;
     private _addJob: (job: {job: () => Promise<void>; offloaded: boolean; name: string}) => void;
     private _getTimezone: () => string;
     private _getInlineThreshold: () => number;
 
-    constructor({knex, readRows, spool, members, tiers, stripe, gifts, customFields, email, addJob, getTimezone, getInlineThreshold}: ImporterDeps) {
+    constructor({knex, readRows, spool, members, tiers, stripe, gifts, customFields, email, report, addJob, getTimezone, getInlineThreshold}: ImporterDeps) {
         this._knex = knex;
         this._readRows = readRows;
         this._spool = spool;
@@ -215,6 +229,7 @@ class MembersCSVImporter {
         this._gifts = gifts;
         this._customFields = customFields;
         this._email = email;
+        this._report = report;
         this._addJob = addJob;
         this._getTimezone = getTimezone;
         this._getInlineThreshold = getInlineThreshold;
@@ -226,8 +241,7 @@ class MembersCSVImporter {
         const extraLabels = request.extraLabels ?? [];
 
         if (canImportInline(rows.length, hasExpensiveColumns(rows), this._getInlineThreshold())) {
-            const result = await this.importRows(rows, labelName, extraLabels);
-            await verificationTrigger.testImportThreshold();
+            const result = await this.importRows(rows, labelName, extraLabels, verificationTrigger);
             return {deferred: false, originalImportSize: rows.length, result};
         }
 
@@ -237,9 +251,7 @@ class MembersCSVImporter {
 
     async importInline(request: ImportRequest, verificationTrigger: VerificationTrigger): Promise<ImportResult> {
         const rows = await this._readRows(request.filePath, request.mapping);
-        const result = await this.importRows(rows, buildImportLabelName(this._getTimezone()), request.extraLabels ?? []);
-        await verificationTrigger.testImportThreshold();
-        return result;
+        return this.importRows(rows, buildImportLabelName(this._getTimezone()), request.extraLabels ?? [], verificationTrigger);
     }
 
     private async deferImport(
@@ -259,61 +271,94 @@ class MembersCSVImporter {
         });
     }
 
-    // Swallows its own errors: a failed import or email must not leave the queued job
-    // rejected, and the verification trigger must still run afterwards either way.
+    // Must resolve in every case: the job manager reads a rejected inline job as a defect
+    // in the job itself, and there is no retry behind it.
     private async runImportJob(
         spooled: SpooledRows,
         {labelName, extraLabels, emailRecipient}: {labelName: string; extraLabels: Label[]; emailRecipient: string},
         verificationTrigger: VerificationTrigger
     ): Promise<void> {
+        // Null until the import produces one: parsing and mapping already happened inside
+        // the request, so anything failing from here is ours rather than the file's.
+        let result: ImportResult | null = null;
         try {
             const spooledRows = await spooled.read();
-            const result = await this.importRows(spooledRows, labelName, extraLabels);
-            const importLabel = result.importLabel ?? null;
-            await this._email.send(buildCompletionEmail({
-                result,
-                recipient: emailRecipient,
-                labelName,
-                importLabel,
-                urlFor: this._email.urlFor
-            }));
-        } catch (e) {
-            logging.error('Error in members import job');
-            logging.error(e);
+            result = await this.importRows(spooledRows, labelName, extraLabels, verificationTrigger);
+        } catch (error) {
+            // importRows only throws before its write loop, so nothing was written.
+            this._report(error);
         } finally {
-            await spooled.remove();
+            await this.settle(() => spooled.remove());
         }
 
-        try {
-            await verificationTrigger.testImportThreshold();
-        } catch (e) {
-            logging.error('Error in members import job when testing import threshold');
-            logging.error(e);
-        }
+        // Whatever became of it, the publisher hears exactly once. If this is what fails,
+        // there is nobody left to tell but us.
+        await this.settle(() => this._email.send(buildImportEmail({
+            result,
+            recipient: emailRecipient,
+            labelName,
+            links: this._email.links
+        })));
     }
 
-    // The members import kernel, shared by the inline and deferred paths. Each row is
-    // created or updated in its own transaction, so one row's failure rolls back only
-    // itself; failures are collected, and any Stripe prices an import tier created are
-    // archived at the end.
-    private async importRows(rows: MemberImportRow[], labelName: string, extraLabels: Label[]): Promise<ImportResult> {
-        const importLabel: Label = {name: labelName};
-        const globalLabels: Label[] = [importLabel, ...extraLabels];
-        const performStart = Date.now();
-        const defaultTier = await this._tiers.getDefault();
-        // The field set a custom_fields.* column is read against; empty when the feature
-        // is off, so a carried-through column is dropped and the write boundary stays shut.
-        const activeCustomFields = await this._customFields.activeFields();
+    // Only the write itself may throw. Callers rely on that to tell an import that never
+    // ran from one that ran and then failed to tidy up after itself.
+    private async importRows(
+        rows: MemberImportRow[],
+        labelName: string,
+        extraLabels: Label[],
+        verificationTrigger: VerificationTrigger
+    ): Promise<ImportResult> {
+        const startedAt = Date.now();
+        const prepared = await this.prepareRun(labelName, extraLabels);
+        const written = await this.writeRows(rows, prepared);
+        const result: ImportResult = {imported: written.imported, errors: written.errors};
+
+        // Bookkeeping, and the publisher's result is already in hand. Nothing below is
+        // load-bearing for what they are told, so it is left to throw into one report
+        // rather than each step defending itself. The label is read first because only
+        // it reaches the publisher, as the link their email arrives with.
+        await this.settle(async () => {
+            if (written.imported > 0) {
+                result.importLabel = (await this._members.getImportLabel(labelName))?.toJSON();
+            }
+            await metrics.metric('members-import', {
+                imported: written.imported,
+                errors: written.errors.length,
+                value: Date.now() - startedAt
+            });
+            await this.archiveStripePrices(written.archivableStripePriceIds);
+            await verificationTrigger.testImportThreshold();
+        });
+
+        return result;
+    }
+
+    private async prepareRun(labelName: string, extraLabels: Label[]): Promise<PreparedRun> {
+        return {
+            defaultTier: await this._tiers.getDefault(),
+            // Empty when the feature is off, so a carried-through column is dropped.
+            activeCustomFields: await this._customFields.activeFields(),
+            globalLabels: [{name: labelName}, ...extraLabels]
+        };
+    }
+
+    // Must not throw: once a row has committed, an import that failed halfway is not one
+    // that never ran.
+    private async writeRows(rows: MemberImportRow[], prepared: PreparedRun): Promise<WrittenRows> {
+        const {defaultTier, activeCustomFields} = prepared;
         const tierIdCache = new Map();
         const archivableStripePriceIds: string[] = [];
         // Copied per row: the member model stamps ids and trims names onto these in
         // place, and each row runs in its own transaction that can roll back. A
         // caller can hand in a nameless label, which the model would drop anyway.
-        const cloneGlobalLabels = (): Label[] => globalLabels
+        const cloneGlobalLabels = (): Label[] => prepared.globalLabels
             .map(label => ({...label}))
             .filter(label => label.name);
 
         let imported = 0;
+        let rollbackFailures = 0;
+        let firstRollbackFailure: unknown;
         const importErrors: ImportErrorRow[] = [];
         for (const row of rows) {
             let trx: Knex.Transaction | undefined;
@@ -437,24 +482,52 @@ class MembersCSVImporter {
                     .filter((message): message is string => typeof message === 'string');
                 const errorMessage = reasons.join('\n');
                 // trx is unset if the row failed before the transaction opened (a bad
-                // custom field value or gift combination).
+                // custom field value or gift combination). A rejected rollback must not
+                // escape: rows before this one are already committed, and a throw leaving
+                // here would be read as an import that never wrote anything.
                 if (trx) {
-                    await trx.rollback();
+                    try {
+                        await trx.rollback();
+                    } catch (rollbackError) {
+                        firstRollbackFailure ??= rollbackError;
+                        rollbackFailures += 1;
+                    }
                 }
                 importErrors.push({...row, error: errorMessage, errors: reasons});
             }
         }
 
-        await Promise.all(archivableStripePriceIds.map(id => this._stripe.archivePrice(id)));
-        metrics.metric('members-import', {imported, errors: importErrors.length, value: Date.now() - performStart});
-
-        if (imported > 0) {
-            // The import label exists now that members carry it, so fetch it to report.
-            // Guarded against a null lookup in case a row is ever counted without it.
-            const importLabelModel = await this._members.getImportLabel(labelName);
-            return {imported, errors: importErrors, importLabel: importLabelModel?.toJSON()};
+        if (rollbackFailures > 0) {
+            this._report(new errors.InternalServerError({
+                message: `Failed to roll back ${rollbackFailures} of ${rows.length} member rows`,
+                err: firstRollbackFailure
+            }));
         }
-        return {imported: 0, errors: importErrors};
+
+        return {imported, errors: importErrors, archivableStripePriceIds};
+    }
+
+    private async settle<T>(work: () => T | Promise<T>): Promise<T | undefined> {
+        try {
+            return await work();
+        } catch (error) {
+            this._report(error);
+            return undefined;
+        }
+    }
+
+
+    private async archiveStripePrices(priceIds: string[]): Promise<void> {
+        // allSettled so one unarchivable price neither hides the others nor stops them
+        // being attempted.
+        const attempts = await Promise.allSettled(priceIds.map(id => this._stripe.archivePrice(id)));
+        const failed = attempts.filter(attempt => attempt.status === 'rejected');
+        if (failed.length > 0) {
+            throw new errors.InternalServerError({
+                message: `Failed to archive ${failed.length} of ${attempts.length} Stripe prices created by this import`,
+                err: failed[0].reason
+            });
+        }
     }
 }
 
