@@ -290,3 +290,6 @@ versioning:
     - '@tryghost/portal'
     - '@tryghost/signup-form'
     - '@tryghost/sodo-search'
+
+patchedDependencies:
+  '@tryghost/color-utils@0.2.19': patches/@tryghost__color-utils@0.2.19.patch
