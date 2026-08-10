@@ -3,6 +3,11 @@ import sinon from 'sinon';
 import {GiftService} from '../../../../../core/server/services/gifts/gift-service';
 import {buildGift} from './utils';
 
+function hasInvalidDeliveryContext(error: unknown): boolean {
+    const context = error && typeof error === 'object' ? (error as {context?: unknown}).context : null;
+    return typeof context === 'string' && context.startsWith('Invalid gift delivery data:');
+}
+
 describe('GiftService interface', function () {
     afterEach(function () {
         sinon.restore();
@@ -111,6 +116,142 @@ describe('GiftService interface', function () {
         assert.equal(successUrl.searchParams.get('gift_tier'), 'tier_1');
         assert.equal(successUrl.searchParams.get('gift_cadence'), 'year');
         assert.equal(successUrl.searchParams.get('gift_duration'), null);
+    });
+
+    it('validates email delivery and writes only normalized reserved metadata', async function () {
+        const {service, checkoutAdapter} = createService({customizationEnabled: true});
+
+        await service.startCheckout({
+            tierId: 'tier_1',
+            cadence: 'year',
+            deliveryMethod: 'email',
+            recipientEmail: ' recipient@example.com ',
+            recipientName: ' Recipient ',
+            buyerName: ' Buyer ',
+            personalMessage: ' Enjoy your gift ',
+            deliverAt: null,
+            metadata: {
+                gift_recipient_email: 'attacker@example.com'
+            },
+            successUrl: 'https://example.com/',
+            buyer: {
+                memberId: null,
+                email: 'buyer@example.com',
+                name: null,
+                isAuthenticated: false
+            }
+        });
+
+        const metadata = checkoutAdapter.createSession.firstCall.firstArg.metadata;
+        assert.equal(metadata.gift_delivery_method, 'email');
+        assert.equal(metadata.gift_recipient_email, 'recipient@example.com');
+        assert.equal(metadata.gift_recipient_name, 'Recipient');
+        assert.equal(metadata.gift_buyer_name, 'Buyer');
+        assert.equal(metadata.gift_personal_message, 'Enjoy your gift');
+        assert.equal(metadata.gift_deliver_at, '');
+    });
+
+    it('prefers the checkout buyer name over the authenticated member name', async function () {
+        const {service, checkoutAdapter} = createService({customizationEnabled: true});
+
+        await service.startCheckout({
+            tierId: 'tier_1',
+            cadence: 'year',
+            deliveryMethod: 'email',
+            recipientEmail: 'recipient@example.com',
+            buyerName: 'Mum',
+            metadata: {},
+            successUrl: 'https://example.com/',
+            buyer: {
+                memberId: 'member_1',
+                email: 'buyer@example.com',
+                name: 'Account Name',
+                isAuthenticated: true
+            }
+        });
+
+        const metadata = checkoutAdapter.createSession.firstCall.firstArg.metadata;
+        assert.equal(metadata.gift_buyer_name, 'Mum');
+    });
+
+    it('rejects invalid or scheduled email delivery input', async function () {
+        const {service, checkoutAdapter} = createService({customizationEnabled: true});
+        const input = {
+            tierId: 'tier_1',
+            cadence: 'year',
+            deliveryMethod: 'email',
+            recipientEmail: 'not-an-email',
+            metadata: {},
+            successUrl: 'https://example.com/',
+            buyer: {
+                memberId: null,
+                email: 'buyer@example.com',
+                name: null,
+                isAuthenticated: false
+            }
+        };
+
+        await assert.rejects(() => service.startCheckout(input), hasInvalidDeliveryContext);
+        await assert.rejects(() => service.startCheckout({
+            ...input,
+            recipientEmail: 'recipient@example.com',
+            deliverAt: '2030-01-01T00:00:00.000Z'
+        }), hasInvalidDeliveryContext);
+        await assert.rejects(() => service.startCheckout({
+            ...input,
+            recipientEmail: 'recipient@example.com',
+            personalMessage: 'x'.repeat(251)
+        }), hasInvalidDeliveryContext);
+        sinon.assert.notCalled(checkoutAdapter.createSession);
+    });
+
+    it('rejects email-only fields in link mode', async function () {
+        const {service, checkoutAdapter} = createService({customizationEnabled: true});
+
+        await assert.rejects(() => service.startCheckout({
+            tierId: 'tier_1',
+            cadence: 'year',
+            deliveryMethod: 'link',
+            recipientEmail: 'recipient@example.com',
+            metadata: {},
+            successUrl: 'https://example.com/',
+            buyer: {
+                memberId: null,
+                email: 'buyer@example.com',
+                name: null,
+                isAuthenticated: false
+            }
+        }), hasInvalidDeliveryContext);
+        sinon.assert.notCalled(checkoutAdapter.createSession);
+    });
+
+    it('keeps omitted and explicit link delivery compatible while the flag is disabled', async function () {
+        const {service, checkoutAdapter} = createService();
+        const base = {
+            tierId: 'tier_1',
+            cadence: 'year',
+            metadata: {},
+            successUrl: 'https://example.com/',
+            buyer: {
+                memberId: null,
+                email: 'buyer@example.com',
+                name: null,
+                isAuthenticated: false
+            }
+        };
+
+        await service.startCheckout(base);
+        await service.startCheckout({...base, deliveryMethod: 'link'});
+        await assert.rejects(() => service.startCheckout({
+            ...base,
+            deliveryMethod: 'email',
+            recipientEmail: 'recipient@example.com'
+        }), {context: 'Gift email delivery is not available'});
+        await assert.rejects(() => service.startCheckout({
+            ...base,
+            buyerName: 'Buyer'
+        }), {context: 'Gift email delivery is not available'});
+        assert.equal(checkoutAdapter.createSession.callCount, 2);
     });
 
     for (const duration of [3, 6]) {
