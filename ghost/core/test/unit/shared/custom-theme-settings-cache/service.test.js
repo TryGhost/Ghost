@@ -64,6 +64,17 @@ class ModelStub {
         this.knownSettings = this.knownSettings.filter(setting => setting !== destroyedSetting);
         return destroyedSetting;
     }
+
+    async transaction(fn) {
+        const snapshot = this.knownSettings.slice();
+
+        try {
+            return await fn({});
+        } catch (error) {
+            this.knownSettings = snapshot;
+            throw error;
+        }
+    }
 }
 
 describe('Service', function () {
@@ -530,15 +541,19 @@ describe('Service', function () {
             sinon.assert.notCalled(model.add);
         });
 
-        it('removes already-copied settings when the copy fails part-way', async function () {
+        it('leaves no partial copy behind when the copy fails part-way', async function () {
             const originalAdd = model.add;
             let addCalls = 0;
-            model.add = async function (data) {
+            model.add = async function (data, options) {
                 addCalls += 1;
                 if (addCalls === 2) {
                     throw new Error('second add failed');
                 }
-                return originalAdd.call(model, data);
+                return originalAdd.call(model, data, options);
+            };
+            // atomicity must not depend on individual deletes succeeding
+            model.destroy = async () => {
+                throw new Error('destroy failed');
             };
 
             await assert.rejects(service.copySettingsBetweenThemes('test', 'test-edited'), /second add failed/);
