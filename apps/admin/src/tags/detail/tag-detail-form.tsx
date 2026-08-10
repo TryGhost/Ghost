@@ -1,7 +1,8 @@
 import React from 'react';
 import TagColorField from './tag-color-field';
 import TagImageField from './tag-image-field';
-import {Accordion, AccordionContent, AccordionItem, AccordionTrigger, Card, CardContent, FieldError, Input, Label, Textarea} from '@tryghost/shade/components';
+import {Accordion, AccordionContent, AccordionItem, AccordionTrigger, Card, CardContent, CodeEditor, FieldError, Input, Label, Textarea} from '@tryghost/shade/components';
+import {Stack} from '@tryghost/shade/primitives';
 import {DESCRIPTION_MAX_LENGTH, FACEBOOK_DESCRIPTION_RECOMMENDED_LENGTH, FACEBOOK_TITLE_RECOMMENDED_LENGTH, META_DESCRIPTION_RECOMMENDED_LENGTH, META_TITLE_RECOMMENDED_LENGTH, X_DESCRIPTION_RECOMMENDED_LENGTH, X_TITLE_RECOMMENDED_LENGTH, charLength, getBlogDomain, getSeoDescription, getSeoTitle, getSeoUrl, getSlugUrlPreview, validateTagField} from './tag-detail-edit';
 import {FacebookCardPreview, SeoPreview, XCardPreview} from './tag-detail-previews';
 import {cn, formatNumber} from '@tryghost/shade/utils';
@@ -20,6 +21,7 @@ interface TagDetailFormProps {
 }
 
 const errorId = (field: TagFieldName) => `tag-${field}-error`;
+const htmlExtensions = [() => import('@codemirror/lang-html').then(module => module.html())];
 
 /** Ember's `gh-count-down-characters`: the used count, red once past the limit. */
 const UsedCharacters: React.FC<{value: string; limit: number; prefix: 'Maximum' | 'Recommended'}> = ({value, limit, prefix}) => {
@@ -315,30 +317,26 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                         <AccordionItem className='last:border-b-0' value='code-injection'>
                             <SectionTrigger description='Add styles/scripts to the header and footer.' title='Code injection' />
                             <AccordionContent>
-                                <div className='flex flex-col gap-5 pt-2'>
-                                    <div className='flex flex-col gap-1.5'>
-                                        <Label htmlFor='codeinjection-head'>Tag header <code className='ml-1 font-normal'>{'{{ghost_head}}'}</code></Label>
-                                        <Textarea
-                                            className='min-h-32 font-mono text-sm'
-                                            disabled={disabled}
-                                            id='codeinjection-head'
-                                            spellCheck={false}
-                                            value={draft.codeinjectionHead}
-                                            onChange={e => onChange({codeinjectionHead: e.target.value})}
-                                        />
-                                    </div>
-                                    <div className='flex flex-col gap-1.5'>
-                                        <Label htmlFor='codeinjection-foot'>Tag footer <code className='ml-1 font-normal'>{'{{ghost_foot}}'}</code></Label>
-                                        <Textarea
-                                            className='min-h-32 font-mono text-sm'
-                                            disabled={disabled}
-                                            id='codeinjection-foot'
-                                            spellCheck={false}
-                                            value={draft.codeinjectionFoot}
-                                            onChange={e => onChange({codeinjectionFoot: e.target.value})}
-                                        />
-                                    </div>
-                                </div>
+                                <Stack className='pt-2' gap='lg'>
+                                    <CodeEditor
+                                        data-testid='codeinjection-head'
+                                        editable={!disabled}
+                                        extensions={htmlExtensions}
+                                        height='128px'
+                                        title={<>Tag header <code className='ml-1 font-normal'>{'{{ghost_head}}'}</code></>}
+                                        value={draft.codeinjectionHead}
+                                        onChange={value => onChange({codeinjectionHead: value})}
+                                    />
+                                    <CodeEditor
+                                        data-testid='codeinjection-foot'
+                                        editable={!disabled}
+                                        extensions={htmlExtensions}
+                                        height='128px'
+                                        title={<>Tag footer <code className='ml-1 font-normal'>{'{{ghost_foot}}'}</code></>}
+                                        value={draft.codeinjectionFoot}
+                                        onChange={value => onChange({codeinjectionFoot: value})}
+                                    />
+                                </Stack>
                             </AccordionContent>
                         </AccordionItem>
                     </Accordion>
