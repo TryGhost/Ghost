@@ -422,7 +422,7 @@ const AutomationEditorContent: React.FC<{automationId: string}> = ({automationId
                 onTurnOff={() => setEditState({phase: 'confirming', action: 'unpublish'})}
             />
 
-            <Inline className="min-h-0 flex-1" gap="none">
+            <Inline align="stretch" className="min-h-0 flex-1" gap="none">
                 {runAnalyticsEnabled && draft && <RunAnalyticsSidebar automation={draft} />}
                 <AutomationCanvas
                     actionErrors={actionErrors}
