@@ -280,8 +280,7 @@ async function getDefaultTiersCurrency() {
     const page = await models.Product.findPage({
         filter: 'type:paid+active:true',
         limit: 1,
-        order: 'monthly_price asc',
-        columns: ['currency']
+        order: 'monthly_price asc'
     });
     const tier = page.data?.[0]?.toJSON?.() || page.data?.[0];
     return tier?.currency || null;
