@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const SlackNotifications = require('../../../../../core/server/services/slack-notifications/slack-notifications');
 const nock = require('nock');
 const ObjectId = require('bson-objectid').default;
-const got = require('got').default;
+const externalRequest = require('../../../../../core/server/lib/request-external');
 const ghostVersion = require('@tryghost/version');
 
 describe('SlackNotifications', function () {
@@ -282,7 +282,7 @@ describe('SlackNotifications', function () {
 
     describe('send', function () {
         it('Sends with correct requestOptions', async function () {
-            const gotStub = sinon.stub(got, 'post').resolves();
+            const externalRequestStub = sinon.stub(externalRequest, 'post').resolves();
             sinon.stub(ghostVersion, 'original').value('5.0.0');
 
             const expectedRequestOptions = [
@@ -298,9 +298,9 @@ describe('SlackNotifications', function () {
 
             await slackNotifications.send({data: 'test'}, 'https://slack-webhook.com');
             assert(loggingErrorStub.callCount === 0);
-            sinon.assert.calledOnce(gotStub);
-            const gotStubArgs = gotStub.getCall(0).args;
-            assert.deepEqual(gotStubArgs, expectedRequestOptions);
+            sinon.assert.calledOnce(externalRequestStub);
+            const externalRequestStubArgs = externalRequestStub.getCall(0).args;
+            assert.deepEqual(externalRequestStubArgs, expectedRequestOptions);
         });
 
         it('Throws when invalid URL is passed', async function () {
