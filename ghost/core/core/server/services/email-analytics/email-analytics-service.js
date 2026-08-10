@@ -76,7 +76,7 @@ function createEmptyResult() {
 
 module.exports = class EmailAnalyticsService {
     /** @type {Queries} */ queries;
-    provider;
+    #fetchEvents;
     #createEventProcessor;
 
     /** @type {JobNames} */ #jobNames;
@@ -105,15 +105,15 @@ module.exports = class EmailAnalyticsService {
     /**
      * @param {object} dependencies
      * @param {Queries} dependencies.queries
-     * @param {object} dependencies.provider
+     * @param {(options: {batchHandler: Function, begin: Date, end: Date, maxEvents: number, events: EmailAnalyticsEvent[]}) => Promise<void>} dependencies.fetchEvents
      * @param {PrometheusClient} [dependencies.prometheusClient]
      * @param {() => BatchEventProcessor} dependencies.createEventProcessor
      * @param {JobNames} dependencies.jobNames
      * @param {CursorSeed} dependencies.cursorSeed
      */
-    constructor({queries, provider, prometheusClient, createEventProcessor, jobNames, cursorSeed}) {
+    constructor({queries, fetchEvents, prometheusClient, createEventProcessor, jobNames, cursorSeed}) {
         this.queries = queries;
-        this.provider = provider;
+        this.#fetchEvents = fetchEvents;
         this.prometheusClient = prometheusClient;
         this.#createEventProcessor = createEventProcessor;
         this.#jobNames = jobNames;
@@ -195,7 +195,7 @@ module.exports = class EmailAnalyticsService {
             return createEmptyResult();
         }
 
-        return await this.#fetchEvents(this.#fetchLatestOpenedData, {begin, end, maxEvents, eventTypes: ['opened']});
+        return await this.#fetchEventsForJob(this.#fetchLatestOpenedData, {begin, end, maxEvents, eventTypes: ['opened']});
     }
 
     /**
@@ -214,7 +214,7 @@ module.exports = class EmailAnalyticsService {
             return createEmptyResult();
         }
 
-        return await this.#fetchEvents(this.#fetchLatestNonOpenedData, {begin, end, maxEvents, eventTypes: ['delivered', 'failed', 'unsubscribed', 'complained']});
+        return await this.#fetchEventsForJob(this.#fetchLatestNonOpenedData, {begin, end, maxEvents, eventTypes: ['delivered', 'failed', 'unsubscribed', 'complained']});
     }
 
     /**
@@ -240,7 +240,7 @@ module.exports = class EmailAnalyticsService {
             return createEmptyResult();
         }
 
-        return await this.#fetchEvents(this.#fetchMissingData, {begin, end, maxEvents});
+        return await this.#fetchEventsForJob(this.#fetchMissingData, {begin, end, maxEvents});
     }
 
     /**
@@ -355,7 +355,7 @@ module.exports = class EmailAnalyticsService {
             return createEmptyResult();
         }
 
-        const fetchResult = await this.#fetchEvents(this.#fetchScheduledData, {begin, end, maxEvents});
+        const fetchResult = await this.#fetchEventsForJob(this.#fetchScheduledData, {begin, end, maxEvents});
         if (fetchResult.eventCount === 0 || this.#fetchScheduledData.canceled) {
             this.#clearScheduledData();
         }
@@ -373,7 +373,7 @@ module.exports = class EmailAnalyticsService {
      * @param {EmailAnalyticsEvent[]} [options.eventTypes] - Array of event types to fetch. If not provided, Mailgun will return all event types.
      * @returns {Promise<EmailAnalyticsFetchResult>} Fetch results with timing metrics
      */
-    async #fetchEvents(fetchData, {begin, end, maxEvents = Infinity, eventTypes}) {
+    async #fetchEventsForJob(fetchData, {begin, end, maxEvents = Infinity, eventTypes}) {
         // Start where we left of, or the last stored event in the database, or start 30 minutes ago if we have nothing available
         // Store that we started fetching
         fetchData.running = true;
@@ -476,7 +476,7 @@ module.exports = class EmailAnalyticsService {
         };
 
         try {
-            await this.provider.fetchLatest(processBatch, {begin, end, maxEvents, events: eventTypes});
+            await this.#fetchEvents({batchHandler: processBatch, begin, end, maxEvents, events: eventTypes});
         } catch (err) {
             if (err.message !== 'Fetching canceled') {
                 logging.error('[EmailAnalytics] Error while fetching');

@@ -47,12 +47,12 @@ class EmailAnalyticsServiceWrapper {
         }
 
         const EmailAnalyticsService = require('./email-analytics-service');
-        const MailgunProvider = require('./email-analytics-provider-mailgun');
+        const {fetchMailgunEvents} = require('./fetch-mailgun-events');
         const settings = require('../../../shared/settings-cache');
         const {queries} = require('./lib/queries');
 
         this.service = new EmailAnalyticsService({
-            provider: new MailgunProvider({config, settings, tags: mailgunTags}),
+            fetchEvents: (options) => fetchMailgunEvents({...options, config, settings, tags: mailgunTags}),
             queries,
             prometheusClient,
             jobNames,
