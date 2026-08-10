@@ -4,15 +4,30 @@ import {useBrowseAutomationRunAnalytics} from '@tryghost/admin-x-framework/api/a
 import {Card, CardContent, MetricValue, Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue} from '@tryghost/shade/components';
 import {Grid, Inline, Stack, Text} from '@tryghost/shade/primitives';
 import {GhAreaChart} from '@tryghost/shade/patterns';
-import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
+import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
 
-const MetricTile: React.FC<{label: string; value: number; color: string}> = ({label, value, color}) => (
+// Running has no fitting fixed Lucide glyph; this is the custom progress ring
+// lifted from the original prototype. The arc uses stroke-current so the caller
+// tints it via text-*, over a muted track.
+const ProgressRing: React.FC<{value?: number; className?: string}> = ({value = 70, className}) => {
+    const radius = 7;
+    const circumference = 2 * Math.PI * radius;
+    const offset = circumference * (1 - Math.min(Math.max(value, 0), 100) / 100);
+    return (
+        <svg className={cn('size-4 shrink-0 -rotate-90', className)} fill="none" viewBox="0 0 18 18">
+            <circle className="stroke-muted-foreground/30" cx="9" cy="9" r={radius} strokeWidth="1.5" />
+            <circle className="stroke-current" cx="9" cy="9" r={radius} strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" strokeWidth="1.5" />
+        </svg>
+    );
+};
+
+const MetricTile: React.FC<{label: string; value: number; icon: React.ReactNode}> = ({label, value, icon}) => (
     <Card className="bg-transparent">
         <CardContent className="px-6 py-5">
             <MetricValue
                 label={(
                     <>
-                        <span className={`size-2 rounded-full ${color}`} />
+                        {icon}
                         {label}
                     </>
                 )}
@@ -41,7 +56,7 @@ const RunAnalyticsSidebar: React.FC<{automation: Automation}> = ({automation}) =
 
     return (
         <aside className="w-[400px] shrink-0 overflow-y-auto border-r border-border-default bg-surface-elevated px-6 py-5" data-testid="run-analytics-sidebar">
-            <Stack gap="md">
+            <Stack gap="lg">
                 <Inline align="center" justify="between">
                     <Text weight="semibold">Performance</Text>
                     <Select value={range} onValueChange={setRange}>
@@ -84,9 +99,9 @@ const RunAnalyticsSidebar: React.FC<{automation: Automation}> = ({automation}) =
                     </CardContent>
                 </Card>
 
-                <Grid className="grid-cols-2" gap="md">
-                    <MetricTile color="bg-chart-blue" label="In progress" value={metrics?.in_progress ?? 0} />
-                    <MetricTile color="bg-chart-green" label="Completed" value={metrics?.completed ?? 0} />
+                <Grid className="grid-cols-2" gap="lg">
+                    <MetricTile icon={<ProgressRing className="text-chart-blue" />} label="Running" value={metrics?.in_progress ?? 0} />
+                    <MetricTile icon={<LucideIcon.Check className="text-chart-green" size={16} strokeWidth={1.5} />} label="Done" value={metrics?.completed ?? 0} />
                 </Grid>
             </Stack>
         </aside>

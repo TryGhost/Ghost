@@ -40,9 +40,9 @@ describe('RunAnalyticsSidebar', () => {
         expect(screen.getByTestId('runs-chart')).toHaveAttribute('data-point-count', '30');
         expect(screen.getByText('Total runs')).toBeInTheDocument();
         expect(screen.getByText('1,432')).toBeInTheDocument();
-        expect(screen.getByText('In progress')).toBeInTheDocument();
+        expect(screen.getByText('Running')).toBeInTheDocument();
         expect(screen.getByText('118')).toBeInTheDocument();
-        expect(screen.getByText('Completed')).toBeInTheDocument();
+        expect(screen.getByText('Done')).toBeInTheDocument();
         expect(screen.getByText('1,225')).toBeInTheDocument();
         expect(screen.queryByText('Upgraded')).not.toBeInTheDocument();
         expect(screen.queryByText('Unsubscribed')).not.toBeInTheDocument();
