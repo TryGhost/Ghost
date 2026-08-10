@@ -1570,16 +1570,34 @@ module.exports = class MemberRepository {
         // `_changed` here is what lets it through. The e2e test asserting exactly one
         // `member.edited` per cancellation guards this.
         if (subscriptionBeforeCancelFlagChange && updatedMember) {
-            await updatedMember.load(['stripeSubscriptions'], options);
+            // Price/tier relations are needed for the serialized subscription shape
+            // to match the Admin API member resource (price, tier, plan)
+            await updatedMember.load([
+                'stripeSubscriptions',
+                'stripeSubscriptions.stripePrice',
+                'stripeSubscriptions.stripePrice.stripeProduct',
+                'stripeSubscriptions.stripePrice.stripeProduct.product'
+            ], options);
+            await subscriptionBeforeCancelFlagChange.load([
+                'stripePrice',
+                'stripePrice.stripeProduct',
+                'stripePrice.stripeProduct.product'
+            ], options);
             updatedMember._changed = {
                 ...updatedMember._changed,
                 stripeSubscriptions: {
                     cancel_at_period_end: subscriptionBeforeCancelFlagChange.get('cancel_at_period_end')
                 }
             };
+            // `previous` must be the full collection — a member can have multiple
+            // subscriptions — with only the changed one swapped for its prior state
             updatedMember._previousRelations = {
                 ...updatedMember._previousRelations,
-                stripeSubscriptions: {models: [subscriptionBeforeCancelFlagChange]}
+                stripeSubscriptions: {
+                    models: updatedMember.related('stripeSubscriptions').models.map((subscription) => {
+                        return subscription.id === subscriptionBeforeCancelFlagChange.id ? subscriptionBeforeCancelFlagChange : subscription;
+                    })
+                }
             };
         }
 

@@ -394,6 +394,12 @@ describe('Members API', function () {
                 'The webhook payload should show the subscription now cancelling');
             assert.equal(webhookBody.member.previous.subscriptions[0].cancel_at_period_end, false,
                 'The webhook payload should show the subscription was not cancelling before');
+            // The subscription shape must match the Admin API member resource —
+            // price and tier only serialize when their relations are loaded
+            assert.equal(webhookBody.member.current.subscriptions[0].price.amount, 500,
+                'The webhook payload subscriptions should include the price');
+            assert.equal(webhookBody.member.previous.subscriptions[0].price.amount, 500,
+                'The previous subscriptions should include the price');
 
             // Check that the subscription has been set to cancel and has saved the cancellation reason
             const {body: body2} = await adminAgent.get('/members/' + initialMember.id + '/');
