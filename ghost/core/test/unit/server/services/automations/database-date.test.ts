@@ -34,7 +34,7 @@ describe('database date utilities', function () {
             const child = spawn(
                 process.execPath,
                 ['-e', source],
-                {stdio: 'inherit', env: {TZ: tz}}
+                {stdio: 'inherit', env: {...process.env, TZ: tz}}
             );
             const [code] = await once(child, 'exit');
             assert.equal(code, 0, `Child process exited with code ${code}. 0 was expected`);
