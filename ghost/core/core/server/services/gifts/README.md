@@ -20,8 +20,9 @@ transactions, or Stripe objects.
 - `getMemberPresentations(memberIds)`, `getPreview(token)`,
   `browsePurchaseEvents(...)`, and `browseRedemptionEvents(...)` expose
   stable read models.
-- `processReminders()`, `processConsumed()`, and `processExpired()` own due
-  lifecycle work; scheduler and HTTP triggers remain adapters.
+- `processDeliveries()`, `processReminders()`, `processConsumed()`, and
+  `processExpired()` own due lifecycle work; scheduler and HTTP triggers remain
+  adapters. Delivery claims are atomic and retry wakeups are one-shot.
 - `reassignRedeemer(...)` is the import capability.
 
 The `Gift`, repository, Bookshelf query, Stripe checkout, email, scheduling,

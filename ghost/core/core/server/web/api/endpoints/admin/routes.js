@@ -87,6 +87,7 @@ module.exports = function apiRoutes() {
 
     // ## Gifts
     router.put('/gifts/flush_reminders', mw.authAdminApiWithUrl, http(api.gifts.flushReminders));
+    router.put('/gifts/flush_deliveries', mw.authAdminApiWithUrl, http(api.gifts.flushDeliveries));
 
     // ## Settings
     router.get('/settings/routes/yaml', mw.authAdminApi, http(api.settings.download));

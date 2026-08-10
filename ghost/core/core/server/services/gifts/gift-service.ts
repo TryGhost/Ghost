@@ -19,6 +19,8 @@ import {
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const GIFT_REMINDER_LEAD_MS = GIFT_REMINDER_LEAD_DAYS * MS_PER_DAY;
 const GIFT_REMINDER_FLOOR_MS = GIFT_REMINDER_FLOOR_DAYS * MS_PER_DAY;
+export const GIFT_DELIVERY_RETRY_MS = 10 * 60 * 1000;
+export const GIFT_DELIVERY_MAX_ATTEMPTS = 10;
 
 const errorMessages = {
     giftNotFound: 'This gift does not exist.',
@@ -91,6 +93,18 @@ interface GiftEmailService {
         tierName: string;
         consumesAt: Date;
     }): Promise<void>;
+    sendGiftDelivery(data: {
+        recipientEmail: string;
+        recipientName: string | null;
+        buyerName: string | null;
+        personalMessage: string | null;
+        token: string;
+        tierName: string;
+        benefits: string[];
+        cadence: GiftCadence;
+        duration: number;
+        expiresAt: Date;
+    }): Promise<{providerMessageId: string | null}>;
 }
 
 interface StaffServiceEmails {
@@ -137,6 +151,10 @@ interface GiftServiceDeps {
     giftEmailService: GiftEmailService;
     staffServiceEmails: StaffServiceEmails;
     giftReminderScheduler: Pick<GiftReminderScheduler, 'scheduleFor'>;
+    giftDeliveryScheduler: {
+        wake(): void;
+        scheduleAt(time: Date): Promise<void>;
+    };
     checkoutAdapter: {
         getCustomerId(buyer: GiftCheckoutBuyer): Promise<string | null>;
         createSession(data: GiftCheckoutSession): Promise<string>;
@@ -171,6 +189,48 @@ export interface StartGiftCheckoutInput {
     successUrl: string;
     cancelUrl?: string;
     buyer: GiftCheckoutBuyer;
+}
+
+type DeliveryFailureKind = 'recoverable' | 'permanent' | 'ambiguous';
+
+function classifyDeliveryFailure(error: unknown): DeliveryFailureKind {
+    const chain: Array<Record<string, unknown>> = [];
+    let current = error;
+
+    for (let depth = 0; depth < 4 && current && typeof current === 'object'; depth += 1) {
+        const value = current as Record<string, unknown>;
+        chain.push(value);
+        current = value.err ?? value.error;
+    }
+
+    for (const value of chain.reverse()) {
+        const responseCode = typeof value.responseCode === 'number' ? value.responseCode : null;
+        if (responseCode !== null) {
+            return responseCode >= 500 ? 'permanent' : 'recoverable';
+        }
+
+        const status = typeof value.status === 'number' ? value.status : null;
+        if (status !== null) {
+            if (status === 408 || status === 429 || status >= 500) {
+                return 'recoverable';
+            }
+            if (status >= 400) {
+                return 'permanent';
+            }
+        }
+
+        if (value.code === 'ENOTFOUND' || value.code === 'EAI_AGAIN' || value.code === 'ECONNREFUSED') {
+            return 'recoverable';
+        }
+        if (value.code === 'EMAIL_TEMPORARILY_REJECTED') {
+            return 'recoverable';
+        }
+        if (value.statusCode === 400) {
+            return 'permanent';
+        }
+    }
+
+    return 'ambiguous';
 }
 
 interface GiftCheckoutSession {
@@ -895,6 +955,133 @@ export class GiftService {
         }
 
         return {expiredCount};
+    }
+
+    async processDeliveries(): Promise<{sentCount: number; skippedCount: number; failedCount: number}> {
+        const pending = await this.deps.giftRepository.findPendingDeliveries();
+        let sentCount = 0;
+        let skippedCount = 0;
+        let failedCount = 0;
+
+        for (const gift of pending) {
+            try {
+                const result = await this.sendDeliveryForGift(gift.token);
+                if (result === 'sent') {
+                    sentCount += 1;
+                } else if (result === 'failed' || result === 'ambiguous') {
+                    failedCount += 1;
+                } else {
+                    skippedCount += 1;
+                }
+            } catch (err) {
+                logging.error(err);
+                failedCount += 1;
+            }
+        }
+
+        return {sentCount, skippedCount, failedCount};
+    }
+
+    private async sendDeliveryForGift(token: string): Promise<'sent' | 'skipped' | 'retry' | 'failed' | 'ambiguous'> {
+        const claimed = await this.deps.giftRepository.claimPendingDelivery(
+            token,
+            new Date(),
+            GIFT_DELIVERY_MAX_ATTEMPTS
+        );
+
+        if (!claimed) {
+            return 'skipped';
+        }
+
+        if (!claimed.recipientEmail) {
+            logging.error({
+                event: {name: 'gift_delivery.recipient_missing'},
+                giftToken: claimed.token
+            }, 'Claimed gift delivery has no recipient email');
+            await this.deps.giftRepository.markDeliveryFailed(claimed.token);
+            return 'failed';
+        }
+
+        let tier: Tier | null;
+        try {
+            tier = await this.deps.tiersService.api.read(claimed.tierId);
+        } catch (err) {
+            logging.error(err);
+            return this.retryDelivery(claimed);
+        }
+
+        if (!tier) {
+            logging.error(`Tier not found for gift delivery: ${claimed.tierId}`);
+            return this.retryDelivery(claimed);
+        }
+
+        let result: {providerMessageId: string | null};
+        try {
+            result = await this.deps.giftEmailService.sendGiftDelivery({
+                recipientEmail: claimed.recipientEmail,
+                recipientName: claimed.recipientName,
+                buyerName: claimed.buyerName,
+                personalMessage: claimed.personalMessage,
+                token: claimed.token,
+                tierName: tier.name,
+                benefits: tier.toJSON().benefits,
+                cadence: claimed.cadence,
+                duration: claimed.duration,
+                expiresAt: claimed.expiresAt
+            });
+        } catch (err) {
+            logging.error(err);
+            const kind = classifyDeliveryFailure(err);
+
+            if (kind === 'ambiguous') {
+                return 'ambiguous';
+            }
+
+            if (kind === 'permanent') {
+                await this.deps.giftRepository.markDeliveryFailed(claimed.token);
+                return 'failed';
+            }
+
+            return this.retryDelivery(claimed);
+        }
+
+        let persisted: boolean;
+        try {
+            persisted = await this.deps.giftRepository.markDeliverySent(
+                claimed.token,
+                new Date(),
+                result.providerMessageId
+            );
+        } catch (err) {
+            logging.error({
+                event: {name: 'gift_delivery.acceptance_persistence.failed'},
+                err,
+                giftToken: claimed.token
+            }, 'Failed to persist accepted gift delivery');
+            return 'ambiguous';
+        }
+
+        if (!persisted) {
+            logging.error({
+                event: {name: 'gift_delivery.acceptance_persistence.failed'},
+                giftToken: claimed.token
+            }, 'Failed to persist accepted gift delivery');
+            return 'ambiguous';
+        }
+
+        return 'sent';
+    }
+
+    private async retryDelivery(gift: Gift): Promise<'retry' | 'failed'> {
+        if (gift.deliveryAttempts >= GIFT_DELIVERY_MAX_ATTEMPTS) {
+            await this.deps.giftRepository.markDeliveryFailed(gift.token);
+            return 'failed';
+        }
+
+        const nextAttemptAt = new Date(Date.now() + GIFT_DELIVERY_RETRY_MS);
+        await this.deps.giftRepository.markDeliveryForRetry(gift.token, nextAttemptAt);
+        await this.deps.giftDeliveryScheduler.scheduleAt(nextAttemptAt);
+        return 'retry';
     }
 
     async processReminders(): Promise<{remindedCount: number; skippedCount: number; failedCount: number}> {
