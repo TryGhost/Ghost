@@ -7,7 +7,8 @@ import {
     DialogHeader,
     DialogTitle
 } from '@tryghost/shade/components';
-import {TagPicker, type TagToAdd} from '@/posts/list/components/modals/tag-picker';
+import {TagPicker} from '@/posts/list/components/modals/tag-picker';
+import {tagKey, type TagToAdd} from '@/posts/list/components/modals/tag-selection';
 import {useBrowseTags} from '@tryghost/admin-x-framework/api/tags';
 import {useMemo, useState} from 'react';
 
@@ -34,13 +35,18 @@ interface AddTagModalProps {
  */
 export function AddTagModal({isRunning, onConfirm, onCancel}: AddTagModalProps) {
     const [selected, setSelected] = useState<TagToAdd[]>([]);
+    const [search, setSearch] = useState('');
 
     const {data: tagsData} = useBrowseTags({searchParams: {limit: '100', order: 'name asc'}, filter: {}});
     const tags = useMemo(() => tagsData?.tags ?? [], [tagsData]);
 
+    // Keyed on the id, not the name: two tags can share a name and differ only
+    // by slug, and comparing names ticked and unticked both at once.
     const toggle = (tag: TagToAdd) => {
-        setSelected(current => (current.some(item => item.name.toLowerCase() === tag.name.toLowerCase())
-            ? current.filter(item => item.name.toLowerCase() !== tag.name.toLowerCase())
+        const key = tagKey(tag);
+
+        setSelected(current => (current.some(item => tagKey(item) === key)
+            ? current.filter(item => tagKey(item) !== key)
             : [...current, tag]));
     };
 
@@ -53,7 +59,18 @@ export function AddTagModal({isRunning, onConfirm, onCancel}: AddTagModalProps) 
                 }
             }}
         >
-            <DialogContent data-testid='add-tag-modal'>
+            <DialogContent
+                data-testid='add-tag-modal'
+                // Escape reaches the dialog only when there is nothing to lose.
+                // Radix reads the key as "dismiss", so backing out of the open
+                // tag list was also the gesture that discarded every tag picked
+                // so far. Cancel and the close button remain the way out.
+                onEscapeKeyDown={(event) => {
+                    if (selected.length > 0 || search.length > 0) {
+                        event.preventDefault();
+                    }
+                }}
+            >
                 <DialogHeader>
                     <DialogTitle>Add tags</DialogTitle>
                     <DialogDescription>
@@ -61,7 +78,7 @@ export function AddTagModal({isRunning, onConfirm, onCancel}: AddTagModalProps) 
                     </DialogDescription>
                 </DialogHeader>
 
-                <TagPicker selected={selected} tags={tags} onToggle={toggle} />
+                <TagPicker selected={selected} tags={tags} onSearchChange={setSearch} onToggle={toggle} />
 
                 <DialogFooter>
                     <Button disabled={isRunning} variant='outline' onClick={onCancel}>Cancel</Button>

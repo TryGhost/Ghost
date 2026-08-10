@@ -73,6 +73,8 @@ export const postsListScreen = {
     /** A row in the tag picker's list — a `cmdk` item, so `option`. */
     tagOption: (name: string | RegExp) => page.getByRole("dialog").getByRole("option", { name }),
     tagSearchInput: () => page.getByRole("dialog").getByLabelText("Search tags"),
+    /** The chip field. Click it to open the list, as the chevron invites. */
+    tagPickerField: () => page.getByTestId("tag-picker"),
     /**
      * The dialog's own heading, used to dismiss the tag list: it floats over
      * the footer, so the confirm button cannot be reached until something

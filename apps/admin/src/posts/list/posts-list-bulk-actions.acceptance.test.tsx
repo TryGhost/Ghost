@@ -197,6 +197,7 @@ describe("Posts list bulk actions", () => {
 
             await postsListScreen.listItems().first().click({ button: "right" });
             await postsListScreen.contextMenuItem("Add a tag").click();
+            await postsListScreen.tagPickerField().click();
             await postsListScreen.tagOption("News").click();
             // The list floats over the dialog's footer, so it has to be
             // dismissed before the confirm button can be reached — clicking
@@ -228,6 +229,7 @@ describe("Posts list bulk actions", () => {
 
             await postsListScreen.listItems().first().click({ button: "right" });
             await postsListScreen.contextMenuItem("Add a tag").click();
+            await postsListScreen.tagPickerField().click();
 
             // Present to pick, but nothing is pre-selected: no chip, and the
             // confirm button stays disabled until you choose something.
@@ -279,6 +281,75 @@ describe("Posts list bulk actions", () => {
             await postsListScreen.dialogButton("Add").click();
 
             await expect.poll(() => tags.requests.length).toBeGreaterThan(before);
+        });
+
+        /**
+         * Names are not unique — a site can carry two tags called "broaf" that
+         * differ only by slug. Selection used to compare names, so clicking one
+         * ticked both and sent a tag the user had not chosen.
+         */
+        it("selects only the tag clicked when two share a name", async () => {
+            fakePosts([post({ title: "Target", status: "draft" })]);
+            fakeTags([
+                tag({ id: "t1", name: "broaf", slug: "broaf" }),
+                tag({ id: "t2", name: "broaf", slug: "broaf-2" })
+            ]);
+            const edit = fakeAdminEndpoint("PUT", /^\/posts\/bulk/, {});
+            await renderAdminApp("/posts?type=draft", FLAG_ON);
+            await expect.element(postsListScreen.listItems().first()).toBeVisible();
+
+            await postsListScreen.listItems().first().click({ button: "right" });
+            await postsListScreen.contextMenuItem("Add a tag").click();
+            await postsListScreen.tagPickerField().click();
+            await postsListScreen.tagOption(/broaf-2/).click();
+            await postsListScreen.dialogHeading("Add tags").click();
+            await postsListScreen.dialogButton("Add").click();
+
+            await expect.poll(() => edit.requests.length).toBe(1);
+            expect(edit.requests[0].body).toEqual({
+                bulk: {action: "addTag", meta: {tags: [{id: "t2", name: "broaf", slug: "broaf-2"}]}}
+            });
+        });
+
+        /**
+         * Radix reads Escape as "dismiss the dialog", so the key you press to
+         * back out of the open list was also the key that discarded every tag
+         * picked so far. It reaches the dialog only when there is nothing to
+         * lose.
+         */
+        it("keeps the dialog open on Escape once a tag is picked", async () => {
+            fakePosts([post({ title: "Target", status: "draft" })]);
+            fakeTags([tag({ id: "t1", name: "News", slug: "news" })]);
+            await renderAdminApp("/posts?type=draft", FLAG_ON);
+            await expect.element(postsListScreen.listItems().first()).toBeVisible();
+
+            await postsListScreen.listItems().first().click({ button: "right" });
+            await postsListScreen.contextMenuItem("Add a tag").click();
+            await postsListScreen.tagPickerField().click();
+            await postsListScreen.tagOption("News").click();
+
+            await userEvent.keyboard("{Escape}");
+            await expect.element(postsListScreen.dialogButton("Add")).toBeVisible();
+
+            await userEvent.keyboard("{Escape}");
+            await expect.element(postsListScreen.dialogButton("Add")).toBeVisible();
+        });
+
+        it("closes on Escape while the field is still empty", async () => {
+            fakePosts([post({ title: "Target", status: "draft" })]);
+            fakeTags([tag({ id: "t1", name: "News", slug: "news" })]);
+            await renderAdminApp("/posts?type=draft", FLAG_ON);
+            await expect.element(postsListScreen.listItems().first()).toBeVisible();
+
+            await postsListScreen.listItems().first().click({ button: "right" });
+            await postsListScreen.contextMenuItem("Add a tag").click();
+            await postsListScreen.tagPickerField().click();
+
+            // First closes the list, second reaches the dialog.
+            await userEvent.keyboard("{Escape}");
+            await userEvent.keyboard("{Escape}");
+
+            await expect.element(postsListScreen.dialogButton("Add")).not.toBeInTheDocument();
         });
 
         it("sends the chosen visibility for Change access", async () => {
