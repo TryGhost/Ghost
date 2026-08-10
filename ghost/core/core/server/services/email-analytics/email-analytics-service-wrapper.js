@@ -46,7 +46,7 @@ class EmailAnalyticsServiceWrapper {
             return;
         }
 
-        const EmailAnalyticsService = require('./email-analytics-service');
+        const {EmailAnalyticsService} = require('./email-analytics-service');
         const {fetchMailgunEvents} = require('./fetch-mailgun-events');
         const settings = require('../../../shared/settings-cache');
         const {queries} = require('./lib/queries');
