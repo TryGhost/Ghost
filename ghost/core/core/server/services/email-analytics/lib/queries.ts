@@ -337,3 +337,5 @@ export const queries = {
         `, bindings);
     }
 };
+
+export type Queries = typeof queries;

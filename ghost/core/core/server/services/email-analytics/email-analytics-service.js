@@ -3,7 +3,7 @@ const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 /** @import {PrometheusClient} from '@tryghost/prometheus-metrics' */
 /** @import {BatchEventProcessor} from './batch-event-processor' */
-/** @import {queries as Queries} from './lib/queries' */
+/** @import {Queries} from './lib/queries' */
 
 /**
  * @typedef {object} FetchData
@@ -75,7 +75,7 @@ function createEmptyResult() {
 }
 
 module.exports = class EmailAnalyticsService {
-    queries;
+    /** @type {Queries} */ queries;
     provider;
     #createEventProcessor;
 
