@@ -101,7 +101,11 @@ module.exports = {
                 } else {
                     fs.ensureSymlinkSync(adminXPath, assetsAdminXPath);
                 }
-            } else  {
+            } else if (this.env === 'production') {
+                // In dev the admin-x apps may not have finished their first
+                // build yet and Nx will trigger another Ember rebuild once
+                // they do. Only flag a missing dist for production where it
+                // indicates a real pipeline failure.
                 console.log(`${app} folder not found`);
             }
         }
