@@ -4,6 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import {Provider} from 'nconf';
 import {AdapterManager} from '../../../../../core/server/services/adapter-manager/adapter-manager';
+import {buildAdapterPaths} from '../../../../../core/server/services/adapter-manager/adapter-paths';
 import {bindAll as bindUrlHelpers} from '@tryghost/config-url-helpers';
 import {bindAll as bindHelpers} from '../../../../../core/shared/config/helpers';
 import type {ConfigInstance} from '../../../../../core/shared/config/loader';
@@ -33,24 +34,6 @@ function makeConfig(contentPath: string, adapters: object = {}): ConfigInstance 
     bindHelpers(nconf);
 
     return nconf;
-}
-
-/**
- * Reproduces the ordered path-list logic from `adapter-paths.ts` (blank
- * node_modules entry, internal adapters, optional installed adapters, then
- * content adapters last), but driven off a real, test-scoped `ConfigInstance`
- * rather than the process-wide config singleton `adapter-paths.ts` reads from
- * at import time. This lets the test exercise the exact same
- * `getContentPath('adapters')` resolution and ordering rules against a
- * throwaway content directory, without mutating global config.
- */
-function buildAdapterPaths(config: ConfigInstance): string[] {
-    return Array.from(new Set<string>([
-        '',
-        config.get('paths').internalAdaptersPath,
-        config.get('paths').installedAdaptersPath ?? '',
-        config.getContentPath('adapters')
-    ]));
 }
 
 describe('adapter-paths', function () {
