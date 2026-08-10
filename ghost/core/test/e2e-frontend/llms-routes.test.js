@@ -106,7 +106,15 @@ describe('llms.txt routing', function () {
                 custom_excerpt: 'Agent teaser',
                 lexical: testUtils.DataGenerator.markdownToLexical('secret')
             });
-            await testUtils.fixtures.insertPosts([paid]);
+            const membersOnly = testUtils.DataGenerator.forKnex.createPost({
+                slug: 'llms-members-hidden',
+                title: 'Members Hidden Post',
+                visibility: 'members',
+                status: 'published',
+                custom_excerpt: 'Members teaser',
+                lexical: testUtils.DataGenerator.markdownToLexical('members secret')
+            });
+            await testUtils.fixtures.insertPosts([paid, membersOnly]);
 
             const res = await request.get('/llms.txt')
                 .expect('Content-Type', /text\/plain/)
@@ -117,6 +125,17 @@ describe('llms.txt routing', function () {
                 'expected paid post .md link when machine payments are enabled'
             );
             assert.match(res.text, /Agent teaser/);
+            assert.doesNotMatch(res.text, /Members Hidden Post/);
+        });
+
+        it('lists paid posts with notices in llms-full.txt', async function () {
+            const res = await request.get('/llms-full.txt')
+                .expect('Content-Type', /text\/plain/)
+                .expect(200);
+
+            assert.match(res.text, /### Paid Discoverable Post/);
+            assert.match(res.text, /paying subscribers only/i);
+            assert.doesNotMatch(res.text, /### Members Hidden Post/);
         });
     });
 });

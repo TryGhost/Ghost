@@ -69,6 +69,15 @@ describe('Integration: machine-payments', function () {
 
         assert.equal(first.id, second.id);
         assert.equal(first.get('reference'), `ref-${paid.id}`);
+
+        const x402 = await repository.save({
+            ...payload,
+            protocol: 'x402',
+            method: 'base'
+        });
+        assert.notEqual(x402.id, first.id);
+        assert.equal(x402.get('protocol'), 'x402');
+        assert.equal(x402.get('reference'), `ref-${paid.id}`);
     });
 
     it('returns configured pricing terms and rejects invalid amounts', async function () {

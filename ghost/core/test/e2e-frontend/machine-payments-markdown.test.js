@@ -149,4 +149,34 @@ describe('Machine payments markdown routing', function () {
 
         assert.match(res.text, /Members-only content/);
     });
+
+    it('ignores Payment credentials on HTML permalinks for gated posts', async function () {
+        const challengeOrFulfill = sinon.stub(machinePayments, 'challengeOrFulfill');
+
+        const res = await request
+            .get(`/${paidSlug}/`)
+            .set('Authorization', 'Payment test-credential')
+            .expect(200)
+            .expect('Content-Type', /html/);
+
+        sinon.assert.notCalled(challengeOrFulfill);
+        assert.doesNotMatch(res.text, /Secret paid body/);
+        assert.equal(res.headers['www-authenticate'], undefined);
+    });
+
+    it('ignores Payment credentials on Accept markdown negotiation for gated posts', async function () {
+        const challengeOrFulfill = sinon.stub(machinePayments, 'challengeOrFulfill');
+
+        // Accept negotiation only unlocks public entries; paid HTML stays membership-gated.
+        const res = await request
+            .get(`/${paidSlug}/`)
+            .set('Accept', 'text/markdown')
+            .set('Authorization', 'Payment test-credential')
+            .expect(200)
+            .expect('Content-Type', /html/);
+
+        sinon.assert.notCalled(challengeOrFulfill);
+        assert.doesNotMatch(res.text, /Secret paid body/);
+        assert.equal(res.headers['www-authenticate'], undefined);
+    });
 });
