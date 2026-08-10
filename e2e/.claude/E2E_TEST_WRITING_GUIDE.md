@@ -54,10 +54,13 @@ e2e/
 ## Page Object Pattern
 
 ### Core Principles
-1. **ALL selectors must be in Page Objects** - Never put selectors in test files
-2. **Page Objects encapsulate page structure and interactions**
-3. **Reuse existing Page Objects when possible**
-4. **Create focused, single-responsibility Page Objects**
+1. **Page Objects contain reusable page structure and interactions**
+2. **Reuse existing Page Objects when possible**
+3. **Create focused, single-responsibility Page Objects**
+4. **Keep necessary structural selectors in Page Objects where practical**
+
+A direct semantic locator in a test is acceptable for a small, one-off assertion or
+interaction when a Page Object would add indirection without reuse.
 
 ### Creating a Page Object
 
@@ -77,19 +80,19 @@ export class FeaturePage extends AdminPage {
         this.pageUrl = '/ghost/#/[path]';
 
         // Selector priority (use in this order):
-        // 1. data-testid
-        this.elementName = page.getByTestId('element-id');
-
-        // 2. ARIA roles with accessible names
+        // 1. ARIA roles with accessible names
         this.buttonName = page.getByRole('button', {name: 'Button Text'});
 
-        // 3. Labels for form elements
+        // 2. Labels for form elements
         this.elementName = page.getByLabel('Field Label');
 
-        // 4. Text content (for unique text)
+        // 3. Text content (for unique text)
         this.elementName = page.getByText('Unique text');
 
-        // 5. Avoid CSS/XPath selectors unless absolutely necessary
+        // 4. Stable test IDs when semantic locators are unavailable
+        this.elementName = page.getByTestId('element-id');
+
+        // 5. Stable structural selectors only when necessary
     }
 
     // Action methods
@@ -180,7 +183,7 @@ export class PublicHomePage extends BasePage {
 
 **Important: Write self-documenting tests without comments. Test names and method names should clearly express intent. If complex logic is needed, extract it to a well-named method in the Page Object.**
 
-Tests should follow the **Arrange-Act-Assert (AAA)** pattern:
+Use **Arrange–Act–Assert (AAA)** as a readability heuristic:
 - **Arrange**: Set up test data and page objects
 - **Act**: Perform the actions being tested
 - **Assert**: Verify the expected outcomes
@@ -194,16 +197,13 @@ import {createPostFactory} from '../../data-factory';
 
 test.describe('Feature Name', () => {
     test('should perform expected behavior', async ({page, ghostInstance}) => {
-        // Arrange
         const featurePage = new FeaturePage(page);
         const postFactory = createPostFactory(page.request);
         const post = await postFactory.create({title: 'Test Post'});
 
-        // Act
         await featurePage.goto();
         await featurePage.performAction();
 
-        // Assert
         expect(await featurePage.isElementVisible()).toBe(true);
         expect(await featurePage.getResultText()).toContain('Expected text');
     });
@@ -290,7 +290,7 @@ New factories are added as needed. When you need test data that doesn't have a f
 ## Best Practices
 
 ### DO's
-✅ **Use Page Objects for all selectors**
+✅ **Use Page Objects for reusable UI structure and interactions**
 ✅ **Write self-documenting tests** with clear method and test names
 ✅ **Check existing Page Objects before creating new ones**
 ✅ **Use proper waits** (`waitForLoadState`, `waitFor`, etc.)
@@ -301,13 +301,13 @@ New factories are added as needed. When you need test data that doesn't have a f
 ✅ **Add meaningful assertions** beyond just visibility checks
 
 ### DON'Ts
-❌ **Never put selectors in test files**
+❌ **Don't duplicate reusable selectors and interactions across test files**
 ❌ **Don't write comments** - make code self-documenting instead
 ❌ **Don't use hardcoded waits** (`page.waitForTimeout`)
 ❌ **Don't use networkidle in waits** (`page.waitForLoadState('networkidle')`) - rely on web assertions to assess readiness instead
 ❌ **Don't depend on test execution order**
 ❌ **Don't manually log in** - use the pre-authenticated fixture
-❌ **Avoid CSS/XPath selectors** - use semantic selectors
+❌ **Avoid XPath and selectors coupled to styling or DOM position**
 ❌ **Don't create test data manually** if a factory exists
 
 ## Common Patterns
@@ -451,8 +451,8 @@ You don't need to worry about:
 ## Validation Checklist
 
 Before submitting a test:
-- [ ] All selectors are in Page Objects
-- [ ] Test follows AAA pattern
+- [ ] Reusable UI behavior is in Page Objects
+- [ ] Arrange, Act, and Assert phases are easy to identify
 - [ ] Test is deterministic (not flaky)
 - [ ] Uses proper waits (no arbitrary timeouts)
 - [ ] Has meaningful assertions
