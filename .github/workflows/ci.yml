@@ -484,8 +484,7 @@ jobs:
   # Changing the runner label or the hyperfine version makes new results
   # incomparable with the existing history - treat both as pinned.
   job_perf-tests:
-    runs-on:
-      labels: ubuntu-latest-4-cores
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     needs: [job_setup]
     if: (needs.job_setup.outputs.changed_core == 'true' && needs.job_setup.outputs.is_development == 'true') || needs.job_setup.outputs.has_perf_tests_label == 'true'
     name: Performance tests
@@ -533,8 +532,7 @@ jobs:
   # bump would land in the code series as a regression with no Ghost commit behind it.
   job_perf-tests-image:
     name: Performance tests (production image)
-    runs-on:
-      labels: ubuntu-latest-4-cores
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     needs: [job_setup, job_docker]
     # Registry path only: the core image is pushed to GHCR, never saved as an artifact.
     if: |
