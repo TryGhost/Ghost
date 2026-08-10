@@ -16,6 +16,10 @@ const features: Feature[] = [{
     description: 'Toggle the automations beta. Unexpected problems can occur if you turn this off after previously turning it on.',
     flag: 'automations'
 }, {
+    title: 'Automation run analytics',
+    description: 'Track run-level analytics for automations.',
+    flag: 'automationRunAnalytics'
+}, {
     title: 'Stripe Automatic Tax (private beta)',
     description: 'Use Stripe Automatic Tax at Stripe Checkout. Needs to be enabled in Stripe',
     flag: 'stripeAutomaticTax'

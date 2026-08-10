@@ -10,7 +10,7 @@
  * Security considerations:
  * - Only serves keys that exactly match the configured key
  * - Only responds to 32-character hex patterns (valid IndexNow key format)
- * - Returns 404 (via next()) if IndexNow is disabled or no key configured
+ * - Returns 404 (via next()) if no key is configured
  *
  * Route collision note:
  * The pattern /[a-f0-9]{32}.txt is unlikely to collide with user content
@@ -23,7 +23,6 @@
  */
 
 const settingsCache = require('../../../shared/settings-cache');
-const labs = require('../../../shared/labs');
 
 /**
  * Middleware to serve the IndexNow API key verification file
@@ -31,11 +30,6 @@ const labs = require('../../../shared/labs');
 function serveIndexNowKey(req, res, next) {
     // Only handle requests for .txt files at the root
     if (!req.path.match(/^\/[a-f0-9]{32}\.txt$/)) {
-        return next();
-    }
-
-    // Check if IndexNow is enabled
-    if (!labs.isSet('indexnow')) {
         return next();
     }
 
