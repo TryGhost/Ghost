@@ -111,7 +111,9 @@ const SETTING_KEYS_BLOCKLIST = [
     'members_stripe_webhook_id',
     'members_stripe_webhook_secret',
     'email_verification_required',
-    'indexnow_api_key'
+    'indexnow_api_key',
+    'machine_payments_secret',
+    'machine_payments_deposit_address'
 ];
 
 module.exports = {

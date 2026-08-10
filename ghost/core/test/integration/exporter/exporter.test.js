@@ -166,7 +166,9 @@ describe('Exporter', function () {
             'stripe_secret_key',
             'stripe_publishable_key',
             'members_stripe_webhook_id',
-            'members_stripe_webhook_secret'
+            'members_stripe_webhook_secret',
+            'machine_payments_secret',
+            'machine_payments_deposit_address'
         ];
 
         excludedSettings.forEach((settingKey) => {

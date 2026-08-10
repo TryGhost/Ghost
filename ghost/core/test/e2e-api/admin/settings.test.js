@@ -29,16 +29,16 @@ const labsSettingMatcher = {
 const matchSettingsArray = (length) => {
     const settingsArray = new Array(length).fill(settingsMatcher);
 
-    if (length > 34) {
+    if (length > 38) {
         // Added a setting that is alphabetically before 'public_hash'? then you need to increment this counter.
         // Item at index x is the public hash, which is always different
-        settingsArray[34] = publicHashSettingMatcher;
+        settingsArray[38] = publicHashSettingMatcher;
     }
 
-    if (length > 68) {
+    if (length > 72) {
         // Added a setting that is alphabetically before 'labs'? then you need to increment this counter.
         // Item at index x is the lab settings, which changes as we add and remove features
-        settingsArray[68] = labsSettingMatcher;
+        settingsArray[72] = labsSettingMatcher;
     }
 
     return settingsArray;
