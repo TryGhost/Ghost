@@ -208,6 +208,20 @@ describe('Member Custom Fields Admin API', function () {
             assert.deepEqual(await readValues(memberId), {constructor_role: 'Foreman'});
         });
 
+        // The key column is shorter than the name column, so a long name is cut to
+        // fit. The cut can land mid-separator, and a key ending in one is a shape
+        // minting is not allowed to produce.
+        it('mints a key that fits the column without ending in a separator', async function () {
+            const created = await createField({name: `${'a'.repeat(185)} bcdef`});
+
+            assert.ok(created.key.length <= 191, `key was ${created.key.length} characters`);
+            assert.doesNotMatch(created.key, /_$/);
+
+            // And the suffix a collision adds lands against that trimmed base.
+            const second = await createField({name: `${'a'.repeat(185)} bcdeg`});
+            assert.doesNotMatch(second.key, /__/);
+        });
+
         it('rejects a name that exceeds the maximum length', async function () {
             await agent
                 .post('members/custom_fields/')

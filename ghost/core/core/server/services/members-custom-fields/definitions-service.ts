@@ -241,7 +241,10 @@ export class CustomFieldDefinitionsService {
      * key is never reused once minted.
      */
     private async mintKey(db: Knex, base: string): Promise<string> {
-        const safeBase = base.slice(0, MAX_KEY_BASE_LENGTH);
+        // Trimmed again after cutting, because the cut can land mid-separator and
+        // a key that ends in one is not a shape minting is allowed to produce. The
+        // base starts with an alphanumeric, so something always survives.
+        const safeBase = base.slice(0, MAX_KEY_BASE_LENGTH).replace(/_+$/, '');
         const taken = new Set([
             ...RESERVED_KEYS,
             ...await db(TABLE).where('key', 'like', `${safeBase}%`).pluck('key')
