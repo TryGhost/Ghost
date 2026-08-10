@@ -146,7 +146,7 @@ export default class LimitsService extends Service {
     // emails query counts recipients via knex, which doesn't exist in the browser
     async getEmailsCount(_db, startDate) {
         const since = new Date(startDate).toISOString();
-        const emails = await this.store.query('email', {filter: `created_at:>='${since}'`, limit: 'all'});
+        const emails = await this.store.query('email', {filter: `created_at:>='${since}'`, fields: 'id,email_count', limit: 'all'});
 
         return emails.reduce((total, email) => total + (email.emailCount ?? 0), 0);
     }

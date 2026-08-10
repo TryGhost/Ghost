@@ -83,6 +83,8 @@ describe('Unit | Service | limit', function () {
             expect(count).to.equal(42);
             expect(query.firstCall.args[0]).to.equal('email');
             expect(query.firstCall.args[1].filter).to.equal(`created_at:>='2026-01-01T00:00:00.000Z'`);
+            // emails carry their full html and plaintext bodies, which this has no use for
+            expect(query.firstCall.args[1].fields).to.equal('id,email_count');
         });
 
         it('counts nothing when no emails were sent in the period', async function () {
