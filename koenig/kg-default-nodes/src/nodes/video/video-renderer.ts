@@ -26,11 +26,18 @@ const DEFAULT_EMAIL_ASPECT_RATIO = 16 / 9;
 
 // A transparent 1x1 GIF, used as a local placeholder `poster` for the web <video>
 // element so no third-party request (e.g. spacergif.org) is needed. The <video>
-// element already carries explicit width/height attributes, so the poster's own
-// dimensions are irrelevant - the browser scales it (invisibly, since it's
-// transparent) to fill the video's box while the real thumbnail shows through
-// via the CSS `background` on the element.
+// element has an explicit CSS aspect ratio, so the browser scales the poster
+// invisibly to fill the video's box while the real thumbnail shows through via
+// the CSS `background` on the element.
 const TRANSPARENT_PIXEL_SRC = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+
+function getAspectRatio(width?: number | null, height?: number | null) {
+    if (typeof width === 'number' && Number.isFinite(width) && width > 0 && typeof height === 'number' && Number.isFinite(height) && height > 0) {
+        return `${width} / ${height}`;
+    }
+
+    return '16 / 9';
+}
 
 export function renderVideoNode(node: VideoNodeData, options: VideoRenderOptions = {}) {
     addCreateDocumentOption(options);
@@ -59,6 +66,7 @@ export function renderVideoNode(node: VideoNodeData, options: VideoRenderOptions
 function cardTemplate({node, cardClasses}: {node: VideoNodeData, cardClasses: string}) {
     const width = node.width;
     const height = node.height;
+    const aspectRatio = getAspectRatio(width, height);
     const posterSpacerSrc = TRANSPARENT_PIXEL_SRC;
     const autoplayAttr = node.loop ? 'loop autoplay muted' : '';
     const thumbnailSrc = node.customThumbnailSrc || node.thumbnailSrc;
@@ -76,7 +84,7 @@ function cardTemplate({node, cardClasses}: {node: VideoNodeData, cardClasses: st
                     ${autoplayAttr}
                     playsinline
                     preload="metadata"
-                    style="background: transparent url('${thumbnailSrc}') 50% 50% / cover no-repeat;"
+                    style="aspect-ratio: ${aspectRatio}; background: transparent url('${thumbnailSrc}') 50% 50% / cover no-repeat;"
                 ></video>
                 <div class="kg-video-overlay">
                     <button class="kg-video-large-play-icon" aria-label="Play video">

@@ -273,7 +273,7 @@ describe('VideoNode', function () {
                             height="100"
                             playsinline=""
                             preload="metadata"
-                            style="background: transparent url('/content/images/2022/11/koenig-lexical.jpg') 50% 50% / cover no-repeat;"
+                            style="aspect-ratio: 200 / 100; background: transparent url('/content/images/2022/11/koenig-lexical.jpg') 50% 50% / cover no-repeat;"
                         ></video>
                         <div class="kg-video-overlay">
                             <button class="kg-video-large-play-icon" aria-label="Play video">
