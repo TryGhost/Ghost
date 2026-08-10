@@ -286,11 +286,11 @@ export class EmailAnalyticsService {
     async restoreScheduled() {
         try {
             const jobData = await this.queries.getJobData(this.#jobNames.scheduled);
-            if (!jobData || !jobData.metadata) {
+            if (!jobData) {
                 return;
             }
 
-            const metadata = JSON.parse(jobData.metadata);
+            const {metadata} = jobData;
             if (metadata.begin && metadata.end) {
                 const begin = new Date(metadata.begin);
                 const end = new Date(metadata.end);
