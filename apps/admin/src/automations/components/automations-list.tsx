@@ -4,6 +4,7 @@ import type {Automation} from '@tryghost/admin-x-framework/api/automations';
 import {Skeleton, Table, TableBody, TableCell, TableRow} from '@tryghost/shade/components';
 import {Link} from '@tryghost/admin-x-framework';
 import {LucideIcon} from '@tryghost/shade/utils';
+import {dangerText} from '@/automations/error-styles';
 import {useMailgunNotConnected} from '@/automations/hooks/use-mailgun-alert';
 
 const AUTOMATION_DESCRIPTIONS: Record<string, string> = {
@@ -82,7 +83,7 @@ const AutomationsList: React.FC<AutomationsListProps> = ({automations = [], isLo
                                     {mailgunNotConnected && (
                                         <LucideIcon.CircleAlert
                                             aria-label="Mailgun not connected"
-                                            className="size-5 shrink-0 text-destructive"
+                                            className={`size-5 shrink-0 ${dangerText}`}
                                             strokeWidth={2}
                                         />
                                     )}

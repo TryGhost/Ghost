@@ -70,6 +70,9 @@ export interface MailgunAlertState {
     showAlert: boolean;
     // Whether they should be playing their fade-out animation (connected, on the way out).
     isDismissing: boolean;
+    // Live "Mailgun isn't connected" truth, independent of the fade choreography — used to gate
+    // publishing (which must follow the real connection state, not the animation).
+    notConnected: boolean;
 }
 
 // Owns the single source of truth for the Mailgun-not-connected alert across the automation editor,
@@ -142,5 +145,5 @@ export const useMailgunAlert = (): MailgunAlertState => {
     // `done` fully removes it. `idle` falls back to the live signal (normal show/hide behaviour).
     const showAlert = phase === 'done' ? false : (phase === 'idle' ? notConnected : true);
 
-    return {showAlert, isDismissing: phase === 'dismissing'};
+    return {showAlert, isDismissing: phase === 'dismissing', notConnected};
 };

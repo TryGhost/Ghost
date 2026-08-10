@@ -6,6 +6,25 @@
 
 @import "@tryghost/shade/styles.css";
 
+/* Interim automations-scoped error red (see apps/admin/src/automations/error-styles.ts).
+   Defined as a flip-on-.dark token — like every other Shade semantic colour — rather than `dark:`
+   utility variants. The dark variant is gated by `:not(.light *)`, so it silently breaks inside
+   force-light subtrees (e.g. the automation canvas), while var-based tokens like --surface-elevated
+   keep flipping there — that asymmetry is why the node border stayed red-500 in dark mode. A token
+   sidesteps it entirely. red-500 in light, red-400 in dark. Remove alongside error-styles.ts when the
+   system-wide dark-mode red ramp lands. */
+@theme {
+    --color-automation-danger: var(--automation-danger);
+}
+
+:root {
+    --automation-danger: var(--color-red-500);
+}
+
+.dark {
+    --automation-danger: var(--color-red-400);
+}
+
 /* Koenig mounts floating toolbars to document.body. Radix modal dialogs disable
    body pointer events, so body-level Koenig portals need to opt back in. */
 [data-kg-portal] {

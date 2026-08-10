@@ -4,6 +4,7 @@ import {Button, type ButtonProps, Skeleton} from '@tryghost/shade/components';
 import {MailgunAlertPopover} from './mailgun-alert-popover';
 import {Link} from '@tryghost/admin-x-framework';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
+import {dangerText} from '@/automations/error-styles';
 import type {AutomationDetail} from '@tryghost/admin-x-framework/api/automations';
 
 export type AutomationRequestState = 'idle' | 'loading' | 'error';
@@ -20,6 +21,9 @@ interface AutomationHeaderProps {
     // fading out because a connection was just confirmed. Owned by the editor via useMailgunAlert.
     showMailgunAlert: boolean;
     mailgunAlertDismissing: boolean;
+    // When true, this automation sends email but Mailgun isn't connected, so publishing would break.
+    // Publish stays clickable and opens the alert popover instead of publishing.
+    publishBlockedByMailgun: boolean;
     saveButtonVariant: ButtonProps['variant'];
     saveButtonChildren: React.ReactNode;
     onSave: () => void;
@@ -38,6 +42,7 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
     isDiscardButtonEnabled,
     showMailgunAlert,
     mailgunAlertDismissing,
+    publishBlockedByMailgun,
     saveButtonVariant,
     saveButtonChildren,
     onSave,
@@ -87,7 +92,7 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
                             size='icon'
                             variant='ghost'
                         >
-                            <LucideIcon.CircleAlert className='text-destructive' strokeWidth={2} />
+                            <LucideIcon.CircleAlert className={dangerText} strokeWidth={2} />
                         </Button>
                     </MailgunAlertPopover>
                 )}
@@ -128,13 +133,28 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
                     </Button>
                 )}
                 {(isInactive || hasUnsavedChanges) && (
-                    <Button
-                        disabled={!isPublishButtonEnabled}
-                        variant='default'
-                        onClick={onPublish}
-                    >
-                        Publish
-                    </Button>
+                    // When publishing is gated by Mailgun, keep the button live but let it open the
+                    // alert popover (anchored to itself) rather than disabling it — a disabled button
+                    // wouldn't explain why. One click teaches the constraint; the popover offers the fix.
+                    publishBlockedByMailgun ? (
+                        <MailgunAlertPopover>
+                            <Button
+                                data-mailgun-trigger=''
+                                disabled={!isPublishButtonEnabled}
+                                variant='default'
+                            >
+                                Publish
+                            </Button>
+                        </MailgunAlertPopover>
+                    ) : (
+                        <Button
+                            disabled={!isPublishButtonEnabled}
+                            variant='default'
+                            onClick={onPublish}
+                        >
+                            Publish
+                        </Button>
+                    )
                 )}
             </div>
         </header>

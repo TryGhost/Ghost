@@ -2,6 +2,7 @@ import '@xyflow/react/dist/style.css';
 import React, {useRef, useState} from 'react';
 import StepPicker, {type StepPickerType} from './step-picker';
 import {MailgunAlertPopover} from '@/automations/components/mailgun-alert-popover';
+import {dangerBorder, dangerBorderSubtle, dangerText} from '@/automations/error-styles';
 import {useEmailTrackingSettings} from '@/automations/hooks/use-email-tracking-settings';
 import {Button, ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger, Popover, PopoverContent, PopoverTrigger} from '@tryghost/shade/components';
 import {Handle, Position} from '@xyflow/react';
@@ -102,9 +103,9 @@ const NodeShell: React.FC<React.PropsWithChildren<{className?: string; data: Ste
                         'flex w-[400px] flex-col rounded-lg border border-transparent bg-surface-elevated p-6 text-left text-sm text-foreground shadow-sm transition-all focus-visible:border-border-strong focus-visible:outline-none',
                         !data.selected && !data.errorMessage && !data.warningMessage && !data.emailNotConfigured && 'hover:border-border-strong',
                         data.selected && !data.errorMessage && 'border-gray-700 shadow-[inset_0_0_0_1px_var(--color-gray-700),0_1px_2px_0_rgb(0_0_0_/_0.05)]',
-                        data.errorMessage && 'border-destructive',
+                        data.errorMessage && dangerBorder,
                         !data.errorMessage && data.warningMessage && 'border-yellow-600',
-                        !data.errorMessage && !data.warningMessage && data.emailNotConfigured && !data.emailAlertDismissing && 'border-destructive/70 hover:border-destructive',
+                        !data.errorMessage && !data.warningMessage && data.emailNotConfigured && !data.emailAlertDismissing && dangerBorderSubtle,
                         data.isNew && 'animate-in duration-250 ease-out fade-in-0 zoom-in-90 motion-reduce:animate-none',
                         className
                     )}
@@ -161,7 +162,8 @@ const NodeShell: React.FC<React.PropsWithChildren<{className?: string; data: Ste
                     <Button
                         aria-label='Connect Mailgun'
                         className={cn(
-                            'absolute top-6 right-6 text-destructive transition-opacity duration-300 ease-out',
+                            'absolute top-6 right-6 transition-opacity duration-300 ease-out',
+                            dangerText,
                             data.emailAlertDismissing && 'pointer-events-none opacity-0'
                         )}
                         data-mailgun-trigger=''
@@ -189,7 +191,7 @@ const StepNodeContent: React.FC<{data: StepNodeData}> = ({data}) => {
             <div className='flex min-w-0 flex-col text-left'>
                 <span className='text-sm text-text-secondary'>{data.label}</span>
                 {data.value && <span className={cn('truncate text-base font-medium', data.isPlaceholderValue && 'opacity-50')}>{data.value}</span>}
-                {data.errorMessage && <span className='mt-1 text-xs text-destructive'>{data.errorMessage}</span>}
+                {data.errorMessage && <span className={cn('mt-1 text-xs', dangerText)}>{data.errorMessage}</span>}
                 {!data.errorMessage && data.warningMessage && <span className='mt-1 text-xs text-yellow-600'>{data.warningMessage}</span>}
             </div>
         </>

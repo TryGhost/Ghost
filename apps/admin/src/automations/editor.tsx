@@ -432,7 +432,14 @@ const AutomationEditor: React.FC = () => {
 
     // Single source of truth for the "Mailgun not connected" alert + the choreography that plays when
     // the user returns from connecting. Passed down so the header and canvas stay in lockstep.
-    const {showAlert: showMailgunAlert, isDismissing: mailgunAlertDismissing} = useMailgunAlert();
+    const {showAlert: showMailgunAlert, isDismissing: mailgunAlertDismissing, notConnected: mailgunNotConnected} = useMailgunAlert();
+
+    // Publishing is gated only when this automation would actually break: it sends email and Mailgun
+    // isn't connected. Editing/saving is never gated — the builder can draft the flow and hand the
+    // Mailgun setup to their team, publishing once it's connected. (A wait-only automation needs no
+    // Mailgun, so it's never gated.)
+    const automationHasEmailStep = !!draft && draft.actions.some(action => action.type === 'send_email');
+    const publishBlockedByMailgun = mailgunNotConnected && automationHasEmailStep;
 
     return (
         <div className='fixed inset-0 z-50 flex flex-col bg-background' data-testid='automation-editor'>
@@ -445,6 +452,7 @@ const AutomationEditor: React.FC = () => {
                 isSaveButtonEnabled={isSaveButtonEnabled}
                 isUnpublishButtonEnabled={isUnpublishButtonEnabled}
                 mailgunAlertDismissing={mailgunAlertDismissing}
+                publishBlockedByMailgun={publishBlockedByMailgun}
                 saveButtonChildren={saveButtonChildren}
                 saveButtonVariant={saveButtonVariant}
                 showMailgunAlert={showMailgunAlert}

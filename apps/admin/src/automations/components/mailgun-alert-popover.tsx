@@ -47,9 +47,11 @@ export const MailgunAlertPopover: React.FC<{children: React.ReactNode}> = ({chil
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>{children}</PopoverTrigger>
-            <PopoverContent ref={contentRef} align='end' className='flex w-72 flex-col gap-2 text-sm text-foreground'>
-                <span>Self-hosted sites need Mailgun connected to send automation emails.</span>
-                <Link className='font-medium underline underline-offset-2 hover:no-underline' to='/settings/mailgun' onClick={rememberConnectOrigin}>Connect Mailgun</Link>
+            <PopoverContent ref={contentRef} align='end' className='w-72 text-sm text-foreground'>
+                <p>
+                    Set up bulk delivery in settings to send automation emails.{' '}
+                    <Link className='font-medium underline underline-offset-2 hover:no-underline' to='/settings/mailgun' onClick={rememberConnectOrigin}>Connect Mailgun</Link>
+                </p>
             </PopoverContent>
         </Popover>
     );
