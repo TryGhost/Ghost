@@ -1,11 +1,14 @@
 import errors from '@tryghost/errors';
 import {chainTransformers, mapKeys, replaceFilters} from '@tryghost/mongo-utils';
 import type {Knex} from 'knex';
+import moment from 'moment';
 import {Gift} from './gift';
 import {decodeGiftRow, encodeGift} from './gift-codec';
 import type {GiftCadence, GiftRow} from './gift-schema';
 
 type ParsedNqlFilter = unknown;
+
+export const toDatabaseDate = (date: Date): string => moment.utc(date).format('YYYY-MM-DD HH:mm:ss');
 
 export interface GiftEventBrowseOptions {
     filter?: string;
@@ -66,6 +69,12 @@ export interface GiftRepository {
     findPendingExpiration(): Promise<Gift[]>;
     findPendingReminder(options: FindPendingReminderOptions): Promise<Gift[]>;
     findUnsentReminders(): Promise<Gift[]>;
+    findPendingDeliveries(): Promise<Gift[]>;
+    countStuckDeliveries(before: Date): Promise<number>;
+    claimPendingDelivery(token: string, now: Date, maxAttempts: number): Promise<Gift | null>;
+    markDeliverySent(token: string, sentAt: Date, providerMessageId: string | null): Promise<boolean>;
+    markDeliveryForRetry(token: string, nextAttemptAt: Date): Promise<boolean>;
+    markDeliveryFailed(token: string): Promise<boolean>;
     getActiveByMember(memberId: string, options?: RepositoryTransactionOptions): Promise<Gift | null>;
     getActiveByMembers(memberIds: string[], options?: RepositoryTransactionOptions): Promise<Map<string, Gift>>;
     browsePurchaseEvents(options?: GiftEventBrowseOptions, filter?: ParsedNqlFilter): Promise<GiftEventPage>;
@@ -89,6 +98,7 @@ type GiftEventQueryOptions = GiftEventBrowseOptions & {
 };
 
 type BookshelfFindOptions = RepositoryTransactionOptions & {
+    columns?: string[];
     filter?: string;
     require?: boolean;
 };
@@ -266,6 +276,79 @@ export class GiftBookshelfRepository implements GiftRepository {
         return collection.models.map(model => this.toGift(model));
     }
 
+    async findPendingDeliveries(): Promise<Gift[]> {
+        const collection = await this.model.findAll({
+            filter: 'status:purchased+delivery_method:email+delivery_status:pending'
+        });
+
+        return collection.models.map(model => this.toGift(model));
+    }
+
+    async countStuckDeliveries(before: Date): Promise<number> {
+        const collection = await this.model.findAll({
+            columns: ['id'],
+            filter: `status:purchased+delivery_method:email+delivery_status:sending+delivery_attempt_at:<='${before.toISOString()}'`
+        });
+
+        return collection.models.length;
+    }
+
+    async claimPendingDelivery(token: string, now: Date, maxAttempts: number): Promise<Gift | null> {
+        return this.transaction(async (transacting) => {
+            const claimAt = toDatabaseDate(now);
+            const query = transacting('gifts')
+                .where({
+                    token,
+                    status: 'purchased',
+                    delivery_method: 'email',
+                    delivery_status: 'pending'
+                })
+                .where('delivery_attempts', '<', maxAttempts)
+                .where((builder) => {
+                    builder.whereNull('deliver_at').orWhere('deliver_at', '<=', claimAt);
+                })
+                .where((builder) => {
+                    builder.whereNull('delivery_attempt_at').orWhere('delivery_attempt_at', '<=', claimAt);
+                });
+
+            const updated = await query
+                .update({
+                    delivery_status: 'sending',
+                    delivery_attempt_at: claimAt
+                })
+                .increment('delivery_attempts', 1);
+
+            if (updated !== 1) {
+                return null;
+            }
+
+            return this.getByToken(token, {transacting});
+        });
+    }
+
+    async markDeliverySent(token: string, sentAt: Date, providerMessageId: string | null): Promise<boolean> {
+        return this.updateDeliveryState(token, 'sending', {
+            delivery_status: 'sent',
+            email_sent_at: sentAt,
+            email_provider_message_id: providerMessageId,
+            delivery_attempt_at: null
+        });
+    }
+
+    async markDeliveryForRetry(token: string, nextAttemptAt: Date): Promise<boolean> {
+        return this.updateDeliveryState(token, 'sending', {
+            delivery_status: 'pending',
+            delivery_attempt_at: nextAttemptAt
+        });
+    }
+
+    async markDeliveryFailed(token: string): Promise<boolean> {
+        return this.updateDeliveryState(token, 'sending', {
+            delivery_status: 'failed',
+            delivery_attempt_at: null
+        });
+    }
+
     async create(gift: Gift, options: RepositoryTransactionOptions = {}) {
         await this.model.add(this.toRow(gift), options);
     }
@@ -289,6 +372,16 @@ export class GiftBookshelfRepository implements GiftRepository {
 
     async transaction<T>(callback: (transacting: Knex.Transaction) => Promise<T>): Promise<T> {
         return await this.model.transaction(callback);
+    }
+
+    private async updateDeliveryState(token: string, from: 'sending', data: Partial<GiftRow>): Promise<boolean> {
+        return this.transaction(async (transacting) => {
+            const updated = await transacting('gifts')
+                .where({token, delivery_status: from})
+                .update(data);
+
+            return updated === 1;
+        });
     }
 
     private toRow(gift: Gift): GiftRow {
