@@ -270,7 +270,7 @@ describe('IndexNow', function () {
 
             await service.ping(testPost);
 
-            sinon.assert.notCalled(deps.urlService.facade.getUrlForResource);
+            sinon.assert.notCalled(deps.urlService.getUrlForResource);
         });
 
         it('with a post should execute ping', async function () {
