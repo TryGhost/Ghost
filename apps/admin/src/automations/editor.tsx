@@ -4,6 +4,7 @@ import RunAnalyticsSidebar from './components/run-analytics-sidebar';
 import {useAutomationForEditing} from './hooks/use-automation-for-editing';
 import React from 'react';
 import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Button, type ButtonProps, LoadingIndicator} from '@tryghost/shade/components';
+import {Inline} from '@tryghost/shade/primitives';
 import {useEditAutomation} from '@tryghost/admin-x-framework/api/automations';
 import type {AutomationDetail, AutomationStatus} from '@tryghost/admin-x-framework/api/automations';
 import {dequal} from 'dequal';
@@ -12,6 +13,7 @@ import {toast} from 'sonner';
 import {useBlocker} from 'react-router';
 import {useConfirmUnload, useParams} from '@tryghost/admin-x-framework';
 import type {AutomationEditState} from './types';
+import useFeatureFlag from '@/settings/app/hooks/use-feature-flag';
 
 const SUBJECT_REQUIRED_MESSAGE = 'Add a subject line.';
 const BODY_REQUIRED_MESSAGE = 'Add an email body.';
@@ -52,6 +54,7 @@ const getActionErrors = (automation: AutomationDetail): Record<string, string> =
 
 const AutomationEditorContent: React.FC<{automationId: string}> = ({automationId}) => {
     const {automation, isError: isReadError} = useAutomationForEditing(automationId);
+    const runAnalyticsEnabled = useFeatureFlag('automationRunAnalytics');
 
     const editMutation = useEditAutomation();
     const [editState, setEditState] = React.useState<AutomationEditState>({phase: 'idle'});
@@ -419,8 +422,8 @@ const AutomationEditorContent: React.FC<{automationId: string}> = ({automationId
                 onTurnOff={() => setEditState({phase: 'confirming', action: 'unpublish'})}
             />
 
-            <div className="flex min-h-0 flex-1">
-                {draft && <RunAnalyticsSidebar automation={draft} />}
+            <Inline className="min-h-0 flex-1" gap="none">
+                {runAnalyticsEnabled && draft && <RunAnalyticsSidebar automation={draft} />}
                 <AutomationCanvas
                     actionErrors={actionErrors}
                     automation={draft}
@@ -446,7 +449,7 @@ const AutomationEditorContent: React.FC<{automationId: string}> = ({automationId
                         navigationBlocker.reset?.();
                     }}
                 />
-            </div>
+            </Inline>
 
             <AlertDialog
                 open={isAutomationNavigationBlocked}

@@ -15,11 +15,15 @@ interface AutomationsListProps {
     automations?: Automation[];
     analytics?: AutomationRunAnalytics[];
     isLoading?: boolean;
+    showRunAnalytics?: boolean;
 }
 
-const gridColumns = 'grid grid-cols-[1fr_auto] lg:grid-cols-[minmax(0,1fr)_170px_130px_130px_110px]';
+const getGridColumns = (showRunAnalytics: boolean) => cn(
+    'grid grid-cols-[1fr_auto]',
+    showRunAnalytics && 'lg:grid-cols-[minmax(0,1fr)_170px_130px_130px_110px]'
+);
 
-const AutomationsListSkeleton: React.FC = () => {
+const AutomationsListSkeleton: React.FC<{showRunAnalytics: boolean}> = ({showRunAnalytics}) => {
     return (
         <Table className="flex flex-col border-t" data-testid="automations-list-loading">
             <TableBody className="flex flex-col">
@@ -27,15 +31,19 @@ const AutomationsListSkeleton: React.FC = () => {
                     <TableRow
                         key={index}
                         aria-hidden="true"
-                        className={cn('w-full items-center gap-x-4 p-2 lg:p-0', gridColumns)}
+                        className={cn('w-full items-center gap-x-4 p-2 lg:p-0', getGridColumns(showRunAnalytics))}
                     >
                         <TableCell className="min-w-0 lg:p-4">
                             <Skeleton className="mb-1 h-3 w-48 max-w-full " />
                             <Skeleton className="h-3 w-80 max-w-full" />
                         </TableCell>
-                        <TableCell className="hidden lg:block lg:p-4"><Skeleton className="h-3 w-20" /></TableCell>
-                        <TableCell className="hidden lg:block lg:p-4"><Skeleton className="h-3 w-10" /></TableCell>
-                        <TableCell className="hidden lg:block lg:p-4"><Skeleton className="h-3 w-10" /></TableCell>
+                        {showRunAnalytics && (
+                            <>
+                                <TableCell className="hidden lg:block lg:p-4"><Skeleton className="h-3 w-20" /></TableCell>
+                                <TableCell className="hidden lg:block lg:p-4"><Skeleton className="h-3 w-10" /></TableCell>
+                                <TableCell className="hidden lg:block lg:p-4"><Skeleton className="h-3 w-10" /></TableCell>
+                            </>
+                        )}
                         <TableCell className="text-right lg:w-32 lg:p-4">
                             <Skeleton className="ml-auto h-3 w-16" />
                         </TableCell>
@@ -46,22 +54,24 @@ const AutomationsListSkeleton: React.FC = () => {
     );
 };
 
-const AutomationsList: React.FC<AutomationsListProps> = ({automations = [], analytics = [], isLoading = false}) => {
+const AutomationsList: React.FC<AutomationsListProps> = ({automations = [], analytics = [], isLoading = false, showRunAnalytics = false}) => {
     if (isLoading) {
-        return <AutomationsListSkeleton />;
+        return <AutomationsListSkeleton showRunAnalytics={showRunAnalytics} />;
     }
 
     return (
         <Table className="flex flex-col border-t" data-testid="automations-list">
-            <TableHeader className="hidden lg:flex lg:flex-col">
-                <TableRow className={cn('w-full items-center gap-x-4 border-b hover:bg-transparent', gridColumns)}>
-                    <TableHead className="lg:px-4">Name</TableHead>
-                    <TableHead className="lg:px-4">Last run</TableHead>
-                    <TableHead className="lg:px-4">In progress</TableHead>
-                    <TableHead className="lg:px-4">Completed</TableHead>
-                    <TableHead className="lg:px-4">Status</TableHead>
-                </TableRow>
-            </TableHeader>
+            {showRunAnalytics && (
+                <TableHeader className="hidden lg:flex lg:flex-col">
+                    <TableRow className={cn('w-full items-center gap-x-4 border-b hover:bg-transparent', getGridColumns(showRunAnalytics))}>
+                        <TableHead className="lg:px-4">Name</TableHead>
+                        <TableHead className="lg:px-4">Last run</TableHead>
+                        <TableHead className="lg:px-4">In progress</TableHead>
+                        <TableHead className="lg:px-4">Completed</TableHead>
+                        <TableHead className="lg:px-4">Status</TableHead>
+                    </TableRow>
+                </TableHeader>
+            )}
             <TableBody className="flex flex-col">
                 {automations.map((automation) => {
                     const description = AUTOMATION_DESCRIPTIONS[automation.slug];
@@ -73,7 +83,7 @@ const AutomationsList: React.FC<AutomationsListProps> = ({automations = [], anal
                     return (
                         <TableRow
                             key={automation.slug}
-                            className={cn('relative w-full cursor-pointer items-center gap-x-4 p-2 hover:bg-table-row-hover lg:p-0', gridColumns)}
+                            className={cn('relative w-full cursor-pointer items-center gap-x-4 p-2 hover:bg-table-row-hover lg:p-0', getGridColumns(showRunAnalytics))}
                             data-testid="automation-list-row"
                         >
                             <TableCell className="static min-w-0 lg:p-4">
@@ -91,16 +101,20 @@ const AutomationsList: React.FC<AutomationsListProps> = ({automations = [], anal
                                     </span>
                                 )}
                             </TableCell>
-                            <TableCell className={cn('hidden lg:block lg:p-4', !lastRunAt && 'text-muted-foreground')}>
-                                {formatLastRun(lastRunAt)}
-                            </TableCell>
-                            <TableCell className={cn('hidden lg:block lg:p-4', inProgress === 0 && 'text-muted-foreground')}>
-                                {formatNumber(inProgress)}
-                            </TableCell>
-                            <TableCell className={cn('hidden lg:block lg:p-4', completed === 0 && 'text-muted-foreground')}>
-                                {formatNumber(completed)}
-                            </TableCell>
-                            <TableCell className="lg:p-4">
+                            {showRunAnalytics && (
+                                <>
+                                    <TableCell className={cn('hidden lg:block lg:p-4', !lastRunAt && 'text-muted-foreground')}>
+                                        {formatLastRun(lastRunAt)}
+                                    </TableCell>
+                                    <TableCell className={cn('hidden lg:block lg:p-4', inProgress === 0 && 'text-muted-foreground')}>
+                                        {formatNumber(inProgress)}
+                                    </TableCell>
+                                    <TableCell className={cn('hidden lg:block lg:p-4', completed === 0 && 'text-muted-foreground')}>
+                                        {formatNumber(completed)}
+                                    </TableCell>
+                                </>
+                            )}
+                            <TableCell className={cn('lg:p-4', !showRunAnalytics && 'text-right lg:w-32')}>
                                 <AutomationStatusBadge status={automation.status} />
                             </TableCell>
                         </TableRow>

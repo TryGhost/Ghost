@@ -3,6 +3,12 @@ import {MemoryRouter} from 'react-router';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {render, screen} from '@testing-library/react';
 
+const mockRunAnalyticsFlag = vi.hoisted(() => ({enabled: false}));
+
+vi.mock('@/settings/app/hooks/use-feature-flag', () => ({
+    default: () => mockRunAnalyticsFlag.enabled
+}));
+
 const {mockUseBrowseAutomations, mockUseBrowseAutomationRunAnalytics, mockUseBrowseSettings, mockUseBrowseConfig, mockUseCurrentUser} = vi.hoisted(() => ({
     mockUseBrowseAutomations: vi.fn(),
     mockUseBrowseAutomationRunAnalytics: vi.fn(),
@@ -87,6 +93,7 @@ const renderPage = () => render(<MemoryRouter><Automations /></MemoryRouter>);
 describe('Automations', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        mockRunAnalyticsFlag.enabled = false;
         mockUseBrowseAutomations.mockReturnValue({data: {automations}, isError: false, isLoading: false});
         mockUseBrowseAutomationRunAnalytics.mockReturnValue({data: {automation_run_analytics: []}, isError: false, isLoading: false});
         mockUseBrowseSettings.mockReturnValue({data: stripeConnectedSettings, isLoading: false});
@@ -99,6 +106,17 @@ describe('Automations', () => {
 
         expect(screen.getByText('Free member welcome flow')).toBeInTheDocument();
         expect(screen.getByText('Paid member welcome flow')).toBeInTheDocument();
+        expect(mockUseBrowseAutomationRunAnalytics).toHaveBeenCalledWith({enabled: false});
+        expect(screen.queryByRole('columnheader', {name: 'Last run'})).not.toBeInTheDocument();
+    });
+
+    it('loads and shows run analytics when the feature is enabled', () => {
+        mockRunAnalyticsFlag.enabled = true;
+
+        renderPage();
+
+        expect(mockUseBrowseAutomationRunAnalytics).toHaveBeenCalledWith({enabled: true});
+        expect(screen.getByRole('columnheader', {name: 'Last run'})).toBeInTheDocument();
     });
 
     it('hides the paid sequence when Stripe is not connected', () => {

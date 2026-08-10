@@ -34,7 +34,7 @@ const renderWithRouter = (ui: React.ReactElement) => render(<MemoryRouter>{ui}</
 
 describe('AutomationsList', () => {
     it('renders fetched automations with private beta copy and status labels', () => {
-        renderWithRouter(<AutomationsList analytics={analytics} automations={automations} />);
+        renderWithRouter(<AutomationsList analytics={analytics} automations={automations} showRunAnalytics={true} />);
 
         expect(screen.getAllByTestId('automation-list-row')).toHaveLength(2);
         expect(screen.getByText('Free member welcome flow')).toBeInTheDocument();
@@ -50,6 +50,15 @@ describe('AutomationsList', () => {
         expect(screen.getByText('1,225')).toBeInTheDocument();
         expect(screen.getByText('61')).toBeInTheDocument();
         expect(screen.getByText('320')).toBeInTheDocument();
+    });
+
+    it('keeps run analytics columns hidden when the feature is disabled', () => {
+        renderWithRouter(<AutomationsList analytics={analytics} automations={automations} showRunAnalytics={false} />);
+
+        expect(screen.queryByRole('columnheader', {name: 'Last run'})).not.toBeInTheDocument();
+        expect(screen.queryByRole('columnheader', {name: 'In progress'})).not.toBeInTheDocument();
+        expect(screen.queryByRole('columnheader', {name: 'Completed'})).not.toBeInTheDocument();
+        expect(screen.queryByText('1,225')).not.toBeInTheDocument();
     });
 
     it('links each row to the automation sequence by id', () => {

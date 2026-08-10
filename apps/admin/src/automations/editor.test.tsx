@@ -147,6 +147,10 @@ vi.mock('@tryghost/admin-x-framework/api/automations', async () => {
 
 const mockLabs = vi.hoisted((): {current: Record<string, boolean>} => ({current: {}}));
 
+vi.mock('@/settings/app/hooks/use-feature-flag', () => ({
+    default: (flag: string) => mockLabs.current[flag] ?? false
+}));
+
 vi.mock('@tryghost/admin-x-framework/api/config', async () => {
     const actual = await vi.importActual<typeof import('@tryghost/admin-x-framework/api/config')>(
         '@tryghost/admin-x-framework/api/config'
@@ -378,6 +382,23 @@ describe('AutomationEditor', () => {
 
         expect(screen.getByTestId('automation-canvas-loading')).toBeInTheDocument();
         expect(screen.getByRole('button', {name: 'Publish'})).toBeDisabled();
+    });
+
+    it('hides run analytics when the feature is disabled', () => {
+        mockAutomationWithEmailStats();
+
+        renderEditor();
+
+        expect(screen.queryByTestId('run-analytics-sidebar')).not.toBeInTheDocument();
+    });
+
+    it('shows run analytics when the feature is enabled', () => {
+        mockLabs.current = {automationRunAnalytics: true};
+        mockAutomationWithEmailStats();
+
+        renderEditor();
+
+        expect(screen.getByTestId('run-analytics-sidebar')).toBeInTheDocument();
     });
 
     it('waits for a fresh response before cached automation data becomes editable', async () => {

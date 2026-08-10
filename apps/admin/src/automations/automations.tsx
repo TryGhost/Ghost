@@ -7,12 +7,14 @@ import {Box, Container} from '@tryghost/shade/primitives';
 import {ListPage} from '@tryghost/shade/page-templates';
 import {PageHeader} from '@tryghost/shade/patterns';
 import {useVisibleAutomations} from './hooks/use-visible-automations';
+import useFeatureFlag from '@/settings/app/hooks/use-feature-flag';
 
 const Automations: React.FC = () => {
     const {automations, error, isError, isLoading} = useVisibleAutomations();
-    const analyticsQuery = useBrowseAutomationRunAnalytics();
+    const runAnalyticsEnabled = useFeatureFlag('automationRunAnalytics');
+    const analyticsQuery = useBrowseAutomationRunAnalytics({enabled: runAnalyticsEnabled});
 
-    if (isError || analyticsQuery.isError) {
+    if (isError || (runAnalyticsEnabled && analyticsQuery.isError)) {
         const queryError = error || analyticsQuery.error;
         throw queryError instanceof Error ? queryError : new Error('Failed to load automations');
     }
@@ -37,7 +39,8 @@ const Automations: React.FC = () => {
                     <AutomationsList
                         analytics={analyticsQuery.data?.automation_run_analytics}
                         automations={automations}
-                        isLoading={isLoading || analyticsQuery.isLoading}
+                        isLoading={isLoading || (runAnalyticsEnabled && analyticsQuery.isLoading)}
+                        showRunAnalytics={runAnalyticsEnabled}
                     />
                     <AutomationsHelpCards />
                 </ListPage.Body>
