@@ -3,6 +3,25 @@ import type {GhAreaChartDataItem} from '@tryghost/shade/patterns';
 import {describe, expect, it, vi} from 'vitest';
 import {render, screen} from '@testing-library/react';
 
+vi.mock('@tryghost/admin-x-framework/api/automations', async () => {
+    const actual = await vi.importActual<typeof import('@tryghost/admin-x-framework/api/automations')>('@tryghost/admin-x-framework/api/automations');
+    return {
+        ...actual,
+        useBrowseAutomationRunAnalytics: () => ({
+            data: {
+                automation_run_analytics: [{
+                    automation_id: 'automation-id-1',
+                    total_runs: 1432,
+                    in_progress: 118,
+                    completed: 1225,
+                    last_run_at: '2026-07-21T07:12:00Z',
+                    runs_by_day: Array.from({length: 30}, (_, index) => ({date: `2026-07-${index + 1}`, count: index}))
+                }]
+            }
+        })
+    };
+});
+
 vi.mock('@tryghost/shade/patterns', () => ({
     GhAreaChart: ({data}: {data: GhAreaChartDataItem[]}) => <div data-point-count={data.length} data-testid="runs-chart" />
 }));

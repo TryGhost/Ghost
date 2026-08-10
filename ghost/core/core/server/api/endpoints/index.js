@@ -15,6 +15,10 @@ module.exports = {
         return apiFramework.pipeline(require('./automation-action-links'), localUtils);
     },
 
+    get automationRunAnalytics() {
+        return apiFramework.pipeline(require('./automation-run-analytics'), localUtils);
+    },
+
     get automationEmailPreviews() {
         return apiFramework.pipeline(require('./automation-email-previews'), localUtils);
     },

@@ -3,8 +3,9 @@ import {MemoryRouter} from 'react-router';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {render, screen} from '@testing-library/react';
 
-const {mockUseBrowseAutomations, mockUseBrowseSettings, mockUseBrowseConfig, mockUseCurrentUser} = vi.hoisted(() => ({
+const {mockUseBrowseAutomations, mockUseBrowseAutomationRunAnalytics, mockUseBrowseSettings, mockUseBrowseConfig, mockUseCurrentUser} = vi.hoisted(() => ({
     mockUseBrowseAutomations: vi.fn(),
+    mockUseBrowseAutomationRunAnalytics: vi.fn(),
     mockUseBrowseSettings: vi.fn(),
     mockUseBrowseConfig: vi.fn(),
     mockUseCurrentUser: vi.fn()
@@ -16,7 +17,8 @@ vi.mock('@tryghost/admin-x-framework/api/automations', async () => {
     );
     return {
         ...actual,
-        useBrowseAutomations: mockUseBrowseAutomations
+        useBrowseAutomations: mockUseBrowseAutomations,
+        useBrowseAutomationRunAnalytics: mockUseBrowseAutomationRunAnalytics
     };
 });
 
@@ -86,6 +88,7 @@ describe('Automations', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         mockUseBrowseAutomations.mockReturnValue({data: {automations}, isError: false, isLoading: false});
+        mockUseBrowseAutomationRunAnalytics.mockReturnValue({data: {automation_run_analytics: []}, isError: false, isLoading: false});
         mockUseBrowseSettings.mockReturnValue({data: stripeConnectedSettings, isLoading: false});
         mockUseBrowseConfig.mockReturnValue({data: {config: {}}, isLoading: false});
         mockUseCurrentUser.mockReturnValue({data: {id: 'user-1', roles: [{name: 'Owner'}]}});

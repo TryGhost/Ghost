@@ -1,10 +1,10 @@
 import AutomationStatusBadge from './automation-status-badge';
 import React from 'react';
-import type {Automation} from '@tryghost/admin-x-framework/api/automations';
+import type {Automation, AutomationRunAnalytics} from '@tryghost/admin-x-framework/api/automations';
 import {Link} from '@tryghost/admin-x-framework';
 import {Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
 import {cn, formatNumber} from '@tryghost/shade/utils';
-import {formatLastRun, getAutomationRunAnalytics} from '@/automations/run-analytics';
+import {formatLastRun} from '@/automations/format-last-run';
 
 const AUTOMATION_DESCRIPTIONS: Record<string, string> = {
     'member-welcome-email-free': 'Welcome new free members after they sign up.',
@@ -13,6 +13,7 @@ const AUTOMATION_DESCRIPTIONS: Record<string, string> = {
 
 interface AutomationsListProps {
     automations?: Automation[];
+    analytics?: AutomationRunAnalytics[];
     isLoading?: boolean;
 }
 
@@ -45,7 +46,7 @@ const AutomationsListSkeleton: React.FC = () => {
     );
 };
 
-const AutomationsList: React.FC<AutomationsListProps> = ({automations = [], isLoading = false}) => {
+const AutomationsList: React.FC<AutomationsListProps> = ({automations = [], analytics = [], isLoading = false}) => {
     if (isLoading) {
         return <AutomationsListSkeleton />;
     }
@@ -64,7 +65,10 @@ const AutomationsList: React.FC<AutomationsListProps> = ({automations = [], isLo
             <TableBody className="flex flex-col">
                 {automations.map((automation) => {
                     const description = AUTOMATION_DESCRIPTIONS[automation.slug];
-                    const metrics = getAutomationRunAnalytics(automation);
+                    const metrics = analytics.find(item => item.automation_id === automation.id);
+                    const lastRunAt = metrics?.last_run_at ?? null;
+                    const inProgress = metrics?.in_progress ?? 0;
+                    const completed = metrics?.completed ?? 0;
 
                     return (
                         <TableRow
@@ -87,14 +91,14 @@ const AutomationsList: React.FC<AutomationsListProps> = ({automations = [], isLo
                                     </span>
                                 )}
                             </TableCell>
-                            <TableCell className={cn('hidden lg:block lg:p-4', !metrics.lastRunAt && 'text-muted-foreground')}>
-                                {formatLastRun(metrics.lastRunAt)}
+                            <TableCell className={cn('hidden lg:block lg:p-4', !lastRunAt && 'text-muted-foreground')}>
+                                {formatLastRun(lastRunAt)}
                             </TableCell>
-                            <TableCell className={cn('hidden lg:block lg:p-4', metrics.inProgress === 0 && 'text-muted-foreground')}>
-                                {formatNumber(metrics.inProgress)}
+                            <TableCell className={cn('hidden lg:block lg:p-4', inProgress === 0 && 'text-muted-foreground')}>
+                                {formatNumber(inProgress)}
                             </TableCell>
-                            <TableCell className={cn('hidden lg:block lg:p-4', metrics.completed === 0 && 'text-muted-foreground')}>
-                                {formatNumber(metrics.completed)}
+                            <TableCell className={cn('hidden lg:block lg:p-4', completed === 0 && 'text-muted-foreground')}>
+                                {formatNumber(completed)}
                             </TableCell>
                             <TableCell className="lg:p-4">
                                 <AutomationStatusBadge status={automation.status} />

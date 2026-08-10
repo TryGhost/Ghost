@@ -1,10 +1,10 @@
 import React, {useMemo, useState} from 'react';
 import type {Automation} from '@tryghost/admin-x-framework/api/automations';
+import {useBrowseAutomationRunAnalytics} from '@tryghost/admin-x-framework/api/automations';
 import {MetricValue, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
 import {Box, Grid, Inline, Stack, Text} from '@tryghost/shade/primitives';
 import {GhAreaChart} from '@tryghost/shade/patterns';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
-import {getAutomationRunAnalytics} from '@/automations/run-analytics';
 
 const MetricTile: React.FC<{label: string; value: number; color: string}> = ({label, value, color}) => (
     <Box className="rounded-lg border border-border-default" padding="md">
@@ -22,13 +22,19 @@ const MetricTile: React.FC<{label: string; value: number; color: string}> = ({la
 
 const RunAnalyticsSidebar: React.FC<{automation: Automation}> = ({automation}) => {
     const [range, setRange] = useState('30');
-    const metrics = getAutomationRunAnalytics(automation);
-    const chartData = useMemo(() => metrics.enrollmentsByDay.slice(-Number(range)).map(point => ({
+    const {data} = useBrowseAutomationRunAnalytics({
+        searchParams: {
+            automation_id: automation.id,
+            include: 'series'
+        }
+    });
+    const metrics = data?.automation_run_analytics[0];
+    const chartData = useMemo(() => (metrics?.runs_by_day ?? []).slice(-Number(range)).map(point => ({
         date: point.date,
         formattedValue: formatNumber(point.count),
         label: 'Runs',
         value: point.count
-    })), [metrics.enrollmentsByDay, range]);
+    })), [metrics?.runs_by_day, range]);
     const chartMax = Math.max(...chartData.map(point => point.value), 1);
 
     return (
@@ -56,7 +62,7 @@ const RunAnalyticsSidebar: React.FC<{automation: Automation}> = ({automation}) =
                                     Total runs
                                 </>
                             )}
-                            value={formatNumber(metrics.enrollments)}
+                            value={formatNumber(metrics?.total_runs ?? 0)}
                         />
                         <GhAreaChart
                             className="h-56 w-full"
@@ -71,8 +77,8 @@ const RunAnalyticsSidebar: React.FC<{automation: Automation}> = ({automation}) =
                 </Box>
 
                 <Grid className="grid-cols-2" gap="md">
-                    <MetricTile color="bg-blue-500" label="In progress" value={metrics.inProgress} />
-                    <MetricTile color="bg-green" label="Completed" value={metrics.completed} />
+                    <MetricTile color="bg-chart-blue" label="In progress" value={metrics?.in_progress ?? 0} />
+                    <MetricTile color="bg-chart-green" label="Completed" value={metrics?.completed ?? 0} />
                 </Grid>
             </Stack>
         </aside>

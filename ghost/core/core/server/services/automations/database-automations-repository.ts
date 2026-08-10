@@ -14,6 +14,8 @@ import type {
     AutomationAction,
     AutomationEdge,
     AutomationEmailStats,
+    AutomationRunAnalytics,
+    AutomationRunStatus,
     AutomationSummary,
     AutomationStepTerminalStatus,
     AutomationStepToRun,
@@ -50,6 +52,20 @@ interface AutomationRow {
     status: string;
     created_at: DatabaseDate;
     updated_at: DatabaseDate;
+}
+
+interface AutomationRunAnalyticsRow {
+    automation_id: string;
+    total_runs: string | number;
+    in_progress: string | number;
+    completed: string | number;
+    last_run_at: Date | string | null;
+}
+
+interface AutomationRunAnalyticsSeriesRow {
+    automation_id: string;
+    date: string;
+    count: string | number;
 }
 
 
@@ -156,6 +172,62 @@ export function createDatabaseAutomationsRepository({
                     }
                 };
             });
+        },
+
+        async browseRunAnalytics({automationId, dateBuckets}): Promise<AutomationRunAnalytics[]> {
+            const summaryQuery = knex('automations as automation')
+                .select<AutomationRunAnalyticsRow[]>('automation.id as automation_id')
+                .select(knex.raw('COUNT(run.id) as total_runs'))
+                .select(knex.raw("SUM(CASE WHEN run.status = 'in_progress' THEN 1 ELSE 0 END) as in_progress"))
+                .select(knex.raw("SUM(CASE WHEN run.status = 'completed' THEN 1 ELSE 0 END) as completed"))
+                .select(knex.raw('MAX(run.created_at) as last_run_at'))
+                .leftJoin('automation_runs as run', 'run.automation_id', 'automation.id')
+                .groupBy('automation.id')
+                .orderBy('automation.created_at', 'asc');
+
+            if (automationId) {
+                summaryQuery.where('automation.id', automationId);
+            }
+
+            const summaries = await summaryQuery;
+            const analytics = summaries.map(row => ({
+                automation_id: row.automation_id,
+                total_runs: Number(row.total_runs),
+                in_progress: Number(row.in_progress),
+                completed: Number(row.completed),
+                last_run_at: row.last_run_at ? new Date(row.last_run_at).toISOString() : null
+            }));
+
+            if (!dateBuckets?.length || analytics.length === 0) {
+                return analytics;
+            }
+
+            const caseSql = dateBuckets
+                .map(() => 'WHEN run.created_at >= ? AND run.created_at < ? THEN ?')
+                .join(' ');
+            const caseBindings = dateBuckets.flatMap(bucket => [
+                bucket.start,
+                bucket.end,
+                bucket.date
+            ]);
+            const seriesQuery = knex('automation_runs as run')
+                .select('run.automation_id')
+                .select(knex.raw(`CASE ${caseSql} END as date`, caseBindings))
+                .count({count: 'run.id'})
+                .where('run.created_at', '>=', dateBuckets[0].start)
+                .where('run.created_at', '<', dateBuckets[dateBuckets.length - 1].end)
+                .whereIn('run.automation_id', analytics.map(item => item.automation_id))
+                .groupBy('run.automation_id', 'date');
+            const series = await seriesQuery as AutomationRunAnalyticsSeriesRow[];
+            const counts = new Map(series.map(row => [`${row.automation_id}:${row.date}`, Number(row.count)]));
+
+            return analytics.map(item => ({
+                ...item,
+                runs_by_day: dateBuckets.map(bucket => ({
+                    date: bucket.date,
+                    count: counts.get(`${item.automation_id}:${bucket.date}`) ?? 0
+                }))
+            }));
         },
 
         async getById(id: string): Promise<Automation | null> {
@@ -560,7 +632,9 @@ async function trigger(trx: Knex.Transaction, options: Readonly<{
         updated_at: nowString,
         automation_id: firstAction.automation_id,
         member_id: memberId,
-        member_email: memberEmail
+        member_email: memberEmail,
+        status: 'in_progress' satisfies AutomationRunStatus,
+        finished_at: null
     };
 
     await trx('automation_runs').insert(run);
@@ -801,12 +875,14 @@ async function finishStepAndEnqueueNext(
     }
 
     if (!await isRunAutomationActive(trx, step.automation_run_id)) {
+        await updateRunStatus(trx, step.automation_run_id, 'automation disabled');
         return null;
     }
 
     const next = await findNextActionRevision(trx, step.action_id);
 
     if (!next) {
+        await updateRunStatus(trx, step.automation_run_id, 'completed');
         return null;
     }
 
@@ -847,20 +923,26 @@ async function findNextActionRevision(trx: Knex.Transaction, sourceActionId: str
 
 async function markStepTerminal(
     trx: Knex.Transaction,
-    step: Pick<AutomationStepToRun, 'id' | 'locked_by'>,
+    step: Pick<AutomationStepToRun, 'id' | 'locked_by' | 'automation_run_id'>,
     status: AutomationStepTerminalStatus
 ): Promise<boolean> {
     const nowString = toDatabaseDate(new Date());
-    return await updateStep(trx, step, {
+    const didUpdate = await updateStep(trx, step, {
         status,
         finished_at: nowString,
         updated_at: nowString
     });
+
+    if (didUpdate && status !== 'finished') {
+        await updateRunStatus(trx, step.automation_run_id, status);
+    }
+
+    return didUpdate;
 }
 
 async function retryStep(
     trx: Knex.Transaction,
-    step: Pick<AutomationStepToRun, 'id' | 'locked_by'>,
+    step: Pick<AutomationStepToRun, 'id' | 'locked_by' | 'automation_run_id'>,
     retryAt: Readonly<Date>
 ): Promise<boolean> {
     if (!await isStepRunAutomationActive(trx, step.id)) {
@@ -926,6 +1008,39 @@ async function cancelCancelablePendingStepsForAutomation(
             builder
                 .whereNull('locked_by')
                 .orWhere('locked_at', '<', staleLockCutoff);
+        });
+
+    await trx('automation_runs')
+        .update({
+            status: 'automation disabled',
+            finished_at: nowString,
+            updated_at: nowString
+        })
+        .where({
+            automation_id: automationId,
+            status: 'in_progress'
+        })
+        .whereExists(trx('automation_run_steps')
+            .select(trx.raw('1'))
+            .whereRaw('?? = ??', ['automation_run_steps.automation_run_id', 'automation_runs.id'])
+            .where('automation_run_steps.status', 'automation disabled'));
+}
+
+async function updateRunStatus(
+    trx: Knex.Transaction,
+    runId: string,
+    status: Exclude<AutomationRunStatus, 'in_progress'>
+): Promise<void> {
+    const nowString = toDatabaseDate(new Date());
+    await trx('automation_runs')
+        .where({
+            id: runId,
+            status: 'in_progress'
+        })
+        .update({
+            status,
+            finished_at: nowString,
+            updated_at: nowString
         });
 }
 

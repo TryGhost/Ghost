@@ -133,6 +133,8 @@ const createDatabase = async (): Promise<Knex> => {
         table.text('automation_id').notNullable().references('id').inTable('automations');
         table.text('member_id'); // not a real foreign key here
         table.text('member_email').notNullable();
+        table.text('status').notNullable().defaultTo('in_progress');
+        table.text('finished_at');
     });
 
     await database.schema.createTable('automation_run_steps', (table) => {
@@ -458,7 +460,7 @@ describe('automations repository', function () {
         return result;
     };
 
-    const insertRun = async (automationId: string) => {
+    const insertRun = async (automationId: string, attrs: Record<string, unknown> = {}) => {
         const now = toDatabaseDate(new Date());
         const run = {
             id: ObjectId().toHexString(),
@@ -466,7 +468,10 @@ describe('automations repository', function () {
             updated_at: now,
             automation_id: automationId,
             member_id: ObjectId().toHexString(),
-            member_email: 'member@example.com'
+            member_email: 'member@example.com',
+            status: 'in_progress',
+            finished_at: null,
+            ...attrs
         };
 
         await knex('automation_runs').insert(run);
@@ -716,6 +721,61 @@ describe('automations repository', function () {
                 .first();
 
             assert.equal(Number(totalActions?.count), 2);
+        });
+    });
+
+    describe('browseRunAnalytics', function () {
+        it('returns summaries for every automation, including those without runs', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const firstRunAt = new Date('2026-08-08T12:00:00.000Z');
+            const lastRunAt = new Date('2026-08-09T12:00:00.000Z');
+            await insertRun(automation.id, {
+                created_at: toDatabaseDate(firstRunAt),
+                status: 'completed',
+                finished_at: toDatabaseDate(firstRunAt)
+            });
+            await insertRun(automation.id, {
+                created_at: toDatabaseDate(lastRunAt),
+                status: 'in_progress'
+            });
+
+            const result = await repo.browseRunAnalytics({});
+            const free = result.find(item => item.automation_id === automation.id);
+            assert.deepEqual(free, {
+                automation_id: automation.id,
+                total_runs: 2,
+                in_progress: 1,
+                completed: 1,
+                last_run_at: toRepositoryDateISOString(lastRunAt)
+            });
+            assert.equal(result.length, 2);
+            assert(result.some(item => item.automation_id !== automation.id && item.total_runs === 0));
+        });
+
+        it('returns a zero-filled daily series for one automation', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            await insertRun(automation.id, {created_at: '2026-08-08 12:00:00'});
+            await insertRun(automation.id, {created_at: '2026-08-08 18:00:00'});
+            await insertRun(automation.id, {created_at: '2026-08-10 08:00:00'});
+
+            const result = await repo.browseRunAnalytics({
+                automationId: automation.id,
+                dateBuckets: [{
+                    date: '2026-08-08',
+                    start: new Date('2026-08-08T00:00:00.000Z'),
+                    end: new Date('2026-08-09T00:00:00.000Z')
+                }, {
+                    date: '2026-08-09',
+                    start: new Date('2026-08-09T00:00:00.000Z'),
+                    end: new Date('2026-08-10T00:00:00.000Z')
+                }, {
+                    date: '2026-08-10',
+                    start: new Date('2026-08-10T00:00:00.000Z'),
+                    end: new Date('2026-08-11T00:00:00.000Z')
+                }]
+            });
+
+            assert.deepEqual(result[0].runs_by_day, [{date: '2026-08-08', count: 2}, {date: '2026-08-09', count: 0}, {date: '2026-08-10', count: 1}]);
         });
     });
 
@@ -1797,6 +1857,9 @@ describe('automations repository', function () {
 
             const allSteps = await getStepsByRunId(run.id);
             assert.equal(allSteps.length, 1);
+            const disabledRun = await knex('automation_runs').where('id', run.id).first();
+            assert.equal(disabledRun.status, 'automation disabled');
+            assert.equal(typeof disabledRun.finished_at, 'string');
         });
 
         it('does not finish or enqueue if the step lock has been taken by another runner', async function () {
@@ -1851,6 +1914,9 @@ describe('automations repository', function () {
 
             const allSteps = await getStepsByRunId(run.id);
             assert.equal(allSteps.length, 1);
+            const completedRun = await knex('automation_runs').where('id', run.id).first();
+            assert.equal(completedRun.status, 'completed');
+            assert.equal(typeof completedRun.finished_at, 'string');
         });
 
         it('enqueues the latest revision of the next action', async function () {
@@ -1929,6 +1995,9 @@ describe('automations repository', function () {
             assert(typeof markedFinishedAt === 'string');
             assert(markedFinishedAt >= toDatabaseDate(new Date(beforeMark - 1000)));
             assert(markedFinishedAt <= toDatabaseDate(new Date(afterMark)));
+            const markedRun = await knex('automation_runs').where('id', run.id).first();
+            assert.equal(markedRun.status, 'member unsubscribed');
+            assert.equal(typeof markedRun.finished_at, 'string');
         });
 
         it('does not overwrite a step that is no longer pending', async function () {

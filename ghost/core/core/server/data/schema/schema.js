@@ -1306,7 +1306,13 @@ module.exports = {
         updated_at: {type: 'dateTime', nullable: false},
         automation_id: {type: 'string', maxlength: 24, nullable: false, references: 'automations.id', restrictDelete: true},
         member_id: {type: 'string', maxlength: 24, nullable: true, references: 'members.id', setNullDelete: true, index: true},
-        member_email: {type: 'string', maxlength: 191, nullable: false, validations: {isEmail: true}}
+        member_email: {type: 'string', maxlength: 191, nullable: false, validations: {isEmail: true}},
+        status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'in_progress', validations: {isIn: [['in_progress', 'completed', 'automation disabled', 'failed', 'member changed status', 'member unsubscribed']]}},
+        finished_at: {type: 'dateTime', nullable: true},
+        '@@INDEXES@@': [
+            ['automation_id', 'created_at'],
+            ['automation_id', 'status', 'created_at']
+        ]
     },
     automation_run_steps: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},

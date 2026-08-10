@@ -88,11 +88,35 @@ export type AutomationActionLinksResponseType = {
     automation_action_links: AutomationActionLink[];
 }
 
+export type AutomationRunAnalyticsPoint = {
+    date: string;
+    count: number;
+}
+
+export type AutomationRunAnalytics = {
+    automation_id: string;
+    total_runs: number;
+    in_progress: number;
+    completed: number;
+    last_run_at: string | null;
+    runs_by_day?: AutomationRunAnalyticsPoint[];
+}
+
+export type AutomationRunAnalyticsResponseType = {
+    meta?: Meta;
+    automation_run_analytics: AutomationRunAnalytics[];
+}
+
 const dataType = 'AutomationsResponseType';
 
 export const useBrowseAutomations = createQuery<AutomationsResponseType>({
     dataType,
     path: '/automations/'
+});
+
+export const useBrowseAutomationRunAnalytics = createQuery<AutomationRunAnalyticsResponseType>({
+    dataType: 'AutomationRunAnalyticsResponseType',
+    path: '/automations/run-analytics/'
 });
 
 export const useReadAutomation = createQueryWithId<AutomationDetailResponseType>({

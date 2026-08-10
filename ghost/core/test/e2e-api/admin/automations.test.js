@@ -242,6 +242,53 @@ describe('Automations API', function () {
         });
     });
 
+    describe('run analytics', function () {
+        it('returns run totals and an optional daily series', async function () {
+            const {body} = await agent.get('automations').expectStatus(200);
+            const automationId = body.automations[0].id;
+            const member = fixtureManager.get('members', 0);
+            await models.Base.knex('automation_runs').insert([{
+                id: ObjectId().toHexString(),
+                automation_id: automationId,
+                member_id: member.id,
+                member_email: member.email,
+                status: 'completed',
+                finished_at: new Date('2026-08-08T13:00:00.000Z'),
+                created_at: new Date('2026-08-08T12:00:00.000Z'),
+                updated_at: new Date('2026-08-08T13:00:00.000Z')
+            }, {
+                id: ObjectId().toHexString(),
+                automation_id: automationId,
+                member_id: member.id,
+                member_email: member.email,
+                status: 'in_progress',
+                finished_at: null,
+                created_at: new Date('2026-08-10T12:00:00.000Z'),
+                updated_at: new Date('2026-08-10T12:00:00.000Z')
+            }]);
+
+            const {body: analyticsBody} = await agent
+                .get(`automations/run-analytics/?automation_id=${automationId}&include=series&date_from=2026-08-08&date_to=2026-08-10`)
+                .expectStatus(200)
+                .expect(cacheInvalidateHeaderNotSet());
+
+            assert.deepEqual(analyticsBody.automation_run_analytics, [{
+                automation_id: automationId,
+                total_runs: 2,
+                in_progress: 1,
+                completed: 1,
+                last_run_at: '2026-08-10T12:00:00.000Z',
+                runs_by_day: [{date: '2026-08-08', count: 1}, {date: '2026-08-09', count: 0}, {date: '2026-08-10', count: 1}]
+            }]);
+        });
+
+        it('rejects daily series ranges longer than 90 days', async function () {
+            await agent
+                .get('automations/run-analytics/?include=series&date_from=2026-01-01&date_to=2026-08-10')
+                .expectStatus(422);
+        });
+    });
+
     describe('read', function () {
         it('returns the automation, ordered actions, and edges sourced from the database', async function () {
             const {body: browseBody} = await agent

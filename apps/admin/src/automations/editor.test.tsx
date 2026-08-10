@@ -140,6 +140,7 @@ vi.mock('@tryghost/admin-x-framework/api/automations', async () => {
             ...mockUseReadAutomation(...args)
         }),
         useBrowseAutomationActionLinks: (...args: unknown[]) => mockUseBrowseAutomationActionLinks(...args),
+        useBrowseAutomationRunAnalytics: () => ({data: {automation_run_analytics: []}}),
         useEditAutomation: () => mockEditMutation
     };
 });
