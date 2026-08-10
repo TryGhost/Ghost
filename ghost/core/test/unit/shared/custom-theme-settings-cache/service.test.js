@@ -529,6 +529,23 @@ describe('Service', function () {
             assert.equal((await settingsForTheme('test-edited')).length, 0);
             sinon.assert.notCalled(model.add);
         });
+
+        it('removes already-copied settings when the copy fails part-way', async function () {
+            const originalAdd = model.add;
+            let addCalls = 0;
+            model.add = async function (data) {
+                addCalls += 1;
+                if (addCalls === 2) {
+                    throw new Error('second add failed');
+                }
+                return originalAdd.call(model, data);
+            };
+
+            await assert.rejects(service.copySettingsBetweenThemes('test', 'test-edited'), /second add failed/);
+
+            model.add = originalAdd;
+            assert.equal((await settingsForTheme('test-edited')).length, 0);
+        });
     });
 
     describe('updateSettings()', function () {

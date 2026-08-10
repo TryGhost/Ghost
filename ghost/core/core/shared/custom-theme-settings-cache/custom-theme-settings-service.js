@@ -185,15 +185,25 @@ module.exports = class CustomThemeSettingsService {
         }
 
         const sourceCollection = await this._repository.browse({filter: `theme:'${fromThemeName}'`});
+        const copiedSettings = [];
 
-        for (const setting of sourceCollection.toJSON()) {
-            debug(`Copying custom theme setting '${fromThemeName}.${setting.key}' to '${toThemeName}'`);
-            await this._repository.add({
-                theme: toThemeName,
-                key: setting.key,
-                type: setting.type,
-                value: setting.value
-            });
+        try {
+            for (const setting of sourceCollection.toJSON()) {
+                debug(`Copying custom theme setting '${fromThemeName}.${setting.key}' to '${toThemeName}'`);
+                copiedSettings.push(await this._repository.add({
+                    theme: toThemeName,
+                    key: setting.key,
+                    type: setting.type,
+                    value: setting.value
+                }));
+            }
+        } catch (error) {
+            // leave no partial copy behind so a retry starts from a clean slate
+            for (const copiedSetting of copiedSettings) {
+                await this._repository.destroy({id: copiedSetting.id});
+            }
+
+            throw error;
         }
     }
 

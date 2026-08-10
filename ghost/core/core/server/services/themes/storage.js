@@ -83,6 +83,15 @@ module.exports = {
 
         try {
             checkedTheme = await validate.checkSafe(themeName, zip, true);
+
+            // CASE: theme uploaded as a copy of another theme, carry over that
+            // theme's settings so activating the copy keeps the site's design.
+            // Happens before any file changes so a failed copy leaves the
+            // installed themes untouched
+            if (copySettingsFrom) {
+                await customThemeSettings.api.copySettingsBetweenThemes(copySettingsFrom, themeName);
+            }
+
             const themeExists = await getStorage().exists(themeName);
             // CASE: move the existing theme to a backup folder
             if (themeExists) {
@@ -100,12 +109,6 @@ module.exports = {
             // CASE: loads the theme from the fs & sets the theme on the themeList
             const loadedTheme = await themeLoader.loadOneTheme(themeName);
             overrideTheme = (themeName === settingsCache.get('active_theme'));
-
-            // CASE: theme uploaded as a copy of another theme, carry over that
-            // theme's settings so activating the copy keeps the site's design
-            if (copySettingsFrom) {
-                await customThemeSettings.api.copySettingsBetweenThemes(copySettingsFrom, themeName);
-            }
 
             // CASE: if this is the active theme, we are overriding
             if (overrideTheme) {
