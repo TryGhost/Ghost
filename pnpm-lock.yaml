@@ -487,7 +487,7 @@ packageExtensionsChecksum: sha256-gFsvptlcVXY90ntXWh9ANUP1/LYyeqXjWoDGw6BCfOY=
 pnpmfileChecksum: sha256-Ql0UP36A/aSGPgCeRfBqGbTHOVB+Rs4TPOe+11tcwYo=
 
 patchedDependencies:
-  '@tryghost/color-utils@0.2.19': 7cacccf02b005deeb61b3facf75dd5d6de42e30f15d171acb6807f1061d65324
+  '@tryghost/color-utils@0.2.19': 577abef17000f97e110696f49582881fa74e79dfab3853c2b4d9a883542e867d
 
 importers:
 
@@ -685,7 +685,7 @@ importers:
         version: link:../admin-x-framework
       '@tryghost/color-utils':
         specifier: 'catalog:'
-        version: 0.2.19(patch_hash=7cacccf02b005deeb61b3facf75dd5d6de42e30f15d171acb6807f1061d65324)
+        version: 0.2.19(patch_hash=577abef17000f97e110696f49582881fa74e79dfab3853c2b4d9a883542e867d)
       '@tryghost/custom-fonts':
         specifier: 'catalog:'
         version: 1.0.11
@@ -1234,7 +1234,7 @@ importers:
         version: link:../admin-x-framework
       '@tryghost/color-utils':
         specifier: 'catalog:'
-        version: 0.2.19(patch_hash=7cacccf02b005deeb61b3facf75dd5d6de42e30f15d171acb6807f1061d65324)
+        version: 0.2.19(patch_hash=577abef17000f97e110696f49582881fa74e79dfab3853c2b4d9a883542e867d)
       '@tryghost/ember-promise-modals':
         specifier: 2.0.1
         version: 2.0.1(ember-source@3.24.0(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(postcss@8.5.16)(supports-color@10.2.2)
@@ -2164,7 +2164,7 @@ importers:
         version: 3.2.1(better-sqlite3@12.11.1)(express@4.22.2(supports-color@10.2.2))(mysql2@3.22.5(@types/node@22.20.0))(sqlite3@5.1.7(bluebird@3.7.2)(supports-color@10.2.2))(supports-color@10.2.2)
       '@tryghost/color-utils':
         specifier: 'catalog:'
-        version: 0.2.19(patch_hash=7cacccf02b005deeb61b3facf75dd5d6de42e30f15d171acb6807f1061d65324)
+        version: 0.2.19(patch_hash=577abef17000f97e110696f49582881fa74e79dfab3853c2b4d9a883542e867d)
       '@tryghost/config-url-helpers':
         specifier: 1.0.27
         version: 1.0.27
@@ -2932,7 +2932,7 @@ importers:
         version: 0.13.1(lexical@0.13.1)
       '@tryghost/color-utils':
         specifier: 'catalog:'
-        version: 0.2.19(patch_hash=7cacccf02b005deeb61b3facf75dd5d6de42e30f15d171acb6807f1061d65324)
+        version: 0.2.19(patch_hash=577abef17000f97e110696f49582881fa74e79dfab3853c2b4d9a883542e867d)
       '@tryghost/kg-clean-basic-html':
         specifier: workspace:~
         version: link:../kg-clean-basic-html
@@ -3464,7 +3464,7 @@ importers:
         version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tryghost/color-utils':
         specifier: 'catalog:'
-        version: 0.2.19(patch_hash=7cacccf02b005deeb61b3facf75dd5d6de42e30f15d171acb6807f1061d65324)
+        version: 0.2.19(patch_hash=577abef17000f97e110696f49582881fa74e79dfab3853c2b4d9a883542e867d)
       '@tryghost/helpers':
         specifier: 'catalog:'
         version: 1.1.106
@@ -28308,7 +28308,7 @@ snapshots:
     dependencies:
       long-timeout: 0.1.1
 
-  '@tryghost/color-utils@0.2.19(patch_hash=7cacccf02b005deeb61b3facf75dd5d6de42e30f15d171acb6807f1061d65324)':
+  '@tryghost/color-utils@0.2.19(patch_hash=577abef17000f97e110696f49582881fa74e79dfab3853c2b4d9a883542e867d)':
     dependencies:
       '@types/color': 4.2.1
       color: 3.2.1
