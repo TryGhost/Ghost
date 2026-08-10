@@ -5,9 +5,13 @@ import {render, screen} from '@testing-library/react';
 
 const mockRunAnalyticsFlag = vi.hoisted(() => ({enabled: false}));
 
-vi.mock('@/settings/app/hooks/use-feature-flag', () => ({
-    default: () => mockRunAnalyticsFlag.enabled
-}));
+vi.mock('@tryghost/admin-x-framework/hooks', async () => {
+    const actual = await vi.importActual<typeof import('@tryghost/admin-x-framework/hooks')>('@tryghost/admin-x-framework/hooks');
+    return {
+        ...actual,
+        useFeatureFlag: () => mockRunAnalyticsFlag.enabled
+    };
+});
 
 const {mockUseBrowseAutomations, mockUseBrowseAutomationRunAnalytics, mockUseBrowseSettings, mockUseBrowseConfig, mockUseCurrentUser} = vi.hoisted(() => ({
     mockUseBrowseAutomations: vi.fn(),

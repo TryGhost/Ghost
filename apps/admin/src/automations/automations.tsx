@@ -7,7 +7,7 @@ import {Box, Container} from '@tryghost/shade/primitives';
 import {ListPage} from '@tryghost/shade/page-templates';
 import {PageHeader} from '@tryghost/shade/patterns';
 import {useVisibleAutomations} from './hooks/use-visible-automations';
-import useFeatureFlag from '@/settings/app/hooks/use-feature-flag';
+import {useFeatureFlag} from '@tryghost/admin-x-framework/hooks';
 
 const Automations: React.FC = () => {
     const {automations, error, isError, isLoading} = useVisibleAutomations();

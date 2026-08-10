@@ -147,9 +147,13 @@ vi.mock('@tryghost/admin-x-framework/api/automations', async () => {
 
 const mockLabs = vi.hoisted((): {current: Record<string, boolean>} => ({current: {}}));
 
-vi.mock('@/settings/app/hooks/use-feature-flag', () => ({
-    default: (flag: string) => mockLabs.current[flag] ?? false
-}));
+vi.mock('@tryghost/admin-x-framework/hooks', async () => {
+    const actual = await vi.importActual<typeof import('@tryghost/admin-x-framework/hooks')>('@tryghost/admin-x-framework/hooks');
+    return {
+        ...actual,
+        useFeatureFlag: (flag: string) => mockLabs.current[flag] ?? false
+    };
+});
 
 vi.mock('@tryghost/admin-x-framework/api/config', async () => {
     const actual = await vi.importActual<typeof import('@tryghost/admin-x-framework/api/config')>(
