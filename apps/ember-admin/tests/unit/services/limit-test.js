@@ -43,6 +43,18 @@ describe('Unit | Service | limit', function () {
             expect(limitService.limiter.isLimited('emails')).to.be.false;
         });
 
+        // A subscription with no start can't anchor a period; building one anyway
+        // throws on the missing start date and leaves the count query without one
+        it('skips a periodic limit when the subscription has no start date', function () {
+            limitService.config.hostSettings = {
+                subscription: {},
+                limits: {emails: {maxPeriodic: 100}}
+            };
+
+            expect(() => limitService.loadLimits()).to.not.throw();
+            expect(limitService.limiter.isLimited('emails')).to.be.false;
+        });
+
         it('still registers limits declared after an unusable periodic limit', function () {
             limitService.config.hostSettings = {
                 limits: {

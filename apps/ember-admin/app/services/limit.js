@@ -59,7 +59,9 @@ export default class LimitsService extends Service {
 
         let subscription;
 
-        if (this.config.hostSettings?.subscription) {
+        // A subscription without a start can't anchor a period, so it's treated as
+        // absent rather than built into one that throws on the way to the count query
+        if (this.config.hostSettings?.subscription?.start) {
             subscription = {
                 startDate: this.config.hostSettings.subscription.start,
                 interval: 'month'
