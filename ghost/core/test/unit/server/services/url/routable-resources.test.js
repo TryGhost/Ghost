@@ -3,31 +3,20 @@ const assert = require('node:assert/strict');
 const DatabaseInfo = require('@tryghost/database-info');
 
 const models = require('../../../../../core/server/models');
-const {createFetchRoutableResources} = require('../../../../../core/server/services/url/routable-resources');
+const {fetchRoutableResources} = require('../../../../../core/server/services/url/routable-resources');
 
 describe('Unit: services/url/routable-resources', function () {
     let sandbox;
     let fetchAll;
-    let lazyUrlService;
-    let fetchRoutableResources;
 
     beforeEach(function () {
         sandbox = sinon.createSandbox();
         fetchAll = sandbox.stub(models.Base.Model.raw_knex, 'fetchAll').resolves([]);
         sandbox.stub(DatabaseInfo, 'isSQLite').returns(false);
-        lazyUrlService = {
-            getRequiredFields: sandbox.stub().returns([]),
-            getRequiredRelations: sandbox.stub().returns([])
-        };
-        fetchRoutableResources = createFetchRoutableResources({lazyUrlService});
     });
 
     afterEach(function () {
         sandbox.restore();
-    });
-
-    it('requires a lazy URL service backend', function () {
-        assert.throws(() => createFetchRoutableResources({}), /lazy/i);
     });
 
     it('rejects an unknown resource type', async function () {
@@ -35,9 +24,10 @@ describe('Unit: services/url/routable-resources', function () {
     });
 
     it('selects only id, the requested columns and what the routers require', async function () {
-        lazyUrlService.getRequiredFields.withArgs('posts').returns(['slug', 'featured']);
-
-        await fetchRoutableResources('posts', {columns: ['feature_image', 'canonical_url']});
+        await fetchRoutableResources('posts', {
+            columns: ['feature_image', 'canonical_url'],
+            requiredFields: ['slug', 'featured']
+        });
 
         const {exclude} = fetchAll.firstCall.args[0];
         for (const kept of ['id', 'slug', 'featured', 'feature_image', 'canonical_url']) {
@@ -75,16 +65,15 @@ describe('Unit: services/url/routable-resources', function () {
         await fetchRoutableResources('posts');
         assert.equal(fetchAll.firstCall.args[0].withRelated, undefined);
 
-        lazyUrlService.getRequiredRelations.returns(['tags', 'authors']);
-        await fetchRoutableResources('posts');
+        await fetchRoutableResources('posts', {requiredRelations: ['tags', 'authors']});
         assert.deepEqual(fetchAll.secondCall.args[0].withRelated, ['tags', 'authors']);
         assert.deepEqual(fetchAll.secondCall.args[0].withRelatedFields, {
             tags: ['tags.id', 'tags.slug'],
             authors: ['users.id', 'users.slug']
         });
 
-        // Pages never carry relations, mirroring the eager resource config.
-        await fetchRoutableResources('pages');
+        // Pages carry no relations, so requiredRelations is ignored for them.
+        await fetchRoutableResources('pages', {requiredRelations: ['tags']});
         assert.equal(fetchAll.thirdCall.args[0].withRelated, undefined);
     });
 

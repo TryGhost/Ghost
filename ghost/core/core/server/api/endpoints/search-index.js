@@ -4,8 +4,8 @@ const {requiredUrlColumns} = require('./utils/serializers/input/utils/url');
 const getPostServiceInstance = require('../../services/posts/posts-service-instance');
 const postsService = getPostServiceInstance();
 
-const urlRelationsWhenLazyRouting = () => {
-    const withRelated = urlService.facade.getRequiredRelations();
+const urlRelationsForRouting = () => {
+    const withRelated = urlService.getRequiredRelations();
     return withRelated.length ? {withRelated} : {};
 };
 
@@ -26,7 +26,7 @@ const controller = {
                 limit: '10000',
                 order: 'updated_at DESC',
                 columns: requiredUrlColumns('posts', ['id', 'uuid', 'url', 'title', 'slug', 'status', 'published_at', 'visibility']),
-                ...urlRelationsWhenLazyRouting()
+                ...urlRelationsForRouting()
             };
 
             return postsService.browsePosts(options);
@@ -46,7 +46,7 @@ const controller = {
                 limit: '10000',
                 order: 'updated_at DESC',
                 columns: requiredUrlColumns('pages', ['id', 'uuid', 'url', 'title', 'slug', 'status', 'published_at', 'visibility']),
-                ...urlRelationsWhenLazyRouting()
+                ...urlRelationsForRouting()
             };
 
             return postsService.browsePosts(options);

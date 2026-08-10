@@ -372,7 +372,7 @@ module.exports = class EmailAnalyticsService {
      * @param {EmailAnalyticsEvent[]} [options.eventTypes] - Array of event types to fetch. If not provided, Mailgun will return all event types.
      * @returns {Promise<EmailAnalyticsFetchResult>} Fetch results with timing metrics
      */
-    async #fetchEvents(fetchData, {begin, end, maxEvents = Infinity, eventTypes = null}) {
+    async #fetchEvents(fetchData, {begin, end, maxEvents = Infinity, eventTypes}) {
         // Start where we left of, or the last stored event in the database, or start 30 minutes ago if we have nothing available
         // Store that we started fetching
         fetchData.running = true;

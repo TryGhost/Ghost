@@ -8,7 +8,6 @@ import {InMemoryStore} from '../../adapters/route-settings/helpers/in-memory-sto
 
 const DynamicRoutingService = require('../../../../../core/server/services/route-settings/dynamic-routing-service');
 const bridge = require('../../../../../core/bridge');
-const urlService = require('../../../../../core/server/services/url');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 
@@ -134,8 +133,6 @@ describe('UNIT: DynamicRoutingService (store-backed)', function () {
     describe('upload', function () {
         it('persists the parsed upload through the store', async function () {
             sinon.stub(bridge, 'reloadFrontend').resolves();
-            sinon.stub(urlService, 'resetGenerators');
-            sinon.stub(urlService, 'hasFinished').returns(true);
 
             await service.upload(CUSTOM_YAML);
 
@@ -158,38 +155,22 @@ describe('UNIT: DynamicRoutingService (store-backed)', function () {
             assert.equal(reloadStub.called, false);
         });
 
-        it('accepts a valid upload when the current file is syntactically corrupt yaml', async function () {
+        // Uploading is how a site recovers from a broken routes.yaml, so it
+        // must never read what is already stored.
+        it('accepts a valid upload without reading the current stored file', async function () {
             sinon.stub(bridge, 'reloadFrontend').resolves();
-            sinon.stub(urlService, 'resetGenerators');
-            sinon.stub(urlService, 'hasFinished').returns(true);
-
+            const replaceStub = sinon.stub(store, 'replace').resolves();
             const getStub = sinon.stub(store, 'get');
-            getStub.onFirstCall().rejects(new errors.IncorrectUsageError({message: 'Could not parse provided YAML file: bad indentation of a mapping entry.'}));
-            getStub.callThrough();
 
             await service.upload(CUSTOM_YAML);
 
-            assert.equal((await store.get()).yamlSource, CUSTOM_YAML);
-        });
-
-        it('accepts a valid upload when the current stored file fails validation', async function () {
-            sinon.stub(bridge, 'reloadFrontend').resolves();
-            sinon.stub(urlService, 'resetGenerators');
-            sinon.stub(urlService, 'hasFinished').returns(true);
-
-            const getStub = sinon.stub(store, 'get');
-            getStub.onFirstCall().rejects(new errors.ValidationError({message: 'slug is required for read data entries.'}));
-            getStub.callThrough();
-
-            await service.upload(CUSTOM_YAML);
-
-            assert.equal((await store.get()).yamlSource, CUSTOM_YAML);
+            assert.equal(getStub.called, false);
+            assert.equal(replaceStub.firstCall.args[0].yamlSource, CUSTOM_YAML);
         });
 
         it('surfaces a frontend reload failure without rolling back the store', async function () {
             const reloadStub = sinon.stub(bridge, 'reloadFrontend');
             reloadStub.rejects(new Error('YAMLException: bad indentation of a mapping entry'));
-            sinon.stub(urlService, 'resetGenerators');
 
             await store.replace(fromYaml(CUSTOM_YAML));
 

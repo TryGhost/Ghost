@@ -2,7 +2,19 @@ import {ErrorBoundary as SentryErrorBoundary} from '@sentry/react';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {ReactNode, createContext, useContext, useMemo} from 'react';
 import queryClient from '../utils/query-client';
-import {ExternalLink} from './routing-provider';
+
+export type ExternalLink = {
+    isExternal: true;
+    route: string;
+    models?: string[] | null;
+    replace?: boolean;
+};
+
+export type InternalLink = {
+    isExternal?: false;
+    route: string;
+    replace?: boolean;
+};
 
 // Stats-specific configuration
 export interface StatsConfig {

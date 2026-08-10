@@ -44,9 +44,7 @@ type Labs = {
 };
 
 type UrlService = {
-    facade: {
-        getUrlForResource(resource: Record<string, unknown>, options: {absolute: boolean}): string | null;
-    };
+    getUrlForResource(resource: Record<string, unknown>, options: {absolute: boolean}): string | null;
 };
 
 type UrlUtils = {
@@ -170,7 +168,7 @@ export class IndexNowPingService {
         // publishing.
         let url: string | null = null;
         try {
-            url = this.urlService.facade.getUrlForResource({...post, type: 'posts'}, {absolute: true});
+            url = this.urlService.getUrlForResource({...post, type: 'posts'}, {absolute: true});
 
             if (!url || url.endsWith('/404/')) {
                 this.logging.warn({

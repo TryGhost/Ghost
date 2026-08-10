@@ -199,7 +199,7 @@ class ContentStatsService {
         }
 
         try {
-            const resource = await this.urlService.facade.resolveUrl(pathname);
+            const resource = await this.urlService.resolveUrl(pathname);
 
             if (resource) {
                 // resource.type is the routing-level plural form (posts/pages/tags/authors).
@@ -251,8 +251,8 @@ class ContentStatsService {
             if (this.urlService && item.pathname) {
                 try {
                     // Check if URL service is ready
-                    if (this.urlService.facade.hasFinished && this.urlService.facade.hasFinished()) {
-                        const resource = await this.urlService.facade.resolveUrl(item.pathname);
+                    if (this.urlService.hasFinished && this.urlService.hasFinished()) {
+                        const resource = await this.urlService.resolveUrl(item.pathname);
                         urlExists = !!resource; // Convert to boolean
                     }
                     // If URL service isn't ready, we default to true (clickable)

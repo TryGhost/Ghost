@@ -1,18 +1,11 @@
-import { App } from "@tryghost/admin-x-settings/src/app";
-import { createPortal } from "react-dom";
+import { App } from "./app/app";
 
 export default function Settings() {
-    return createPortal(
-        <div
-            className="shade shade-admin"
-            style={{
-                position: "absolute",
-                inset: 0,
-                zIndex: 20,
-            }}
-        >
+    // Full-screen takeover inside the shell tree (automations-editor pattern);
+    // the admin sidebar is already unmounted via the route's hideAdminSidebar.
+    return (
+        <div className="fixed inset-0 z-50">
             <App />
-        </div>,
-        document.body,
+        </div>
     );
 }

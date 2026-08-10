@@ -135,6 +135,14 @@ jobs:
               - '.github/actions/**'
               - '.github/scripts/**'
               - 'scripts/**'
+            docs:
+              - '**/*.md'
+              - '.agents/**'
+              - '.claude/**'
+              - '.github/workflows/ci.yml'
+              - 'package.json'
+              - 'scripts/check-agent-skill-links.js'
+              - 'scripts/test/check-agent-skill-links.test.js'
             core:
               - *shared
               - 'ghost/**'
@@ -260,6 +268,7 @@ jobs:
       changed_i18n_apps: ${{ steps.affected.outputs.affected_i18n_projects != '' }}
       changed_core: ${{ steps.changed.outputs.core }}
       changed_any_code: ${{ steps.changed.outputs.any-code }}
+      changed_docs: ${{ steps.changed.outputs.docs }}
       changed_tb_cli: ${{ steps.changed.outputs.tb-cli }}
       # Single gate for the build + browser-E2E lane. True for tags, or when a
       # changed file could affect a running Ghost instance (see the `e2e` path
@@ -277,6 +286,7 @@ jobs:
       is_six: ${{ env.IS_SIX }}
       is_six_pr: ${{ env.IS_SIX_PR }}
       member_is_in_org: ${{ steps.check_user_org_membership.outputs.is_member }}
+      has_perf_tests_label: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'perf-tests') }}
       node_version: ${{ env.NODE_VERSION }}
       node_test_matrix: ${{ steps.node_matrix.outputs.matrix }}
       nx_base: ${{ env.NX_BASE }}
@@ -386,6 +396,21 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
+  job_lint_docs:
+    name: Lint docs
+    runs-on: ubuntu-slim
+    needs: [job_setup]
+    if: needs.job_setup.outputs.changed_docs == 'true'
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Lint agent skills
+        run: node scripts/check-agent-skill-links.js
+
   job_i18n:
     runs-on: ubuntu-latest
     needs: [job_setup]
@@ -451,6 +476,148 @@ jobs:
           status: ${{ job.status }}
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # Measures Ghost's boot time with hyperfine and appends the result to the
+  # long-running series charted at https://tryghost.github.io/Ghost-Benchmarks/
+  # (data lives on the gh-pages branch of TryGhost/Ghost-Benchmarks).
+  #
+  # Changing the runner label or the hyperfine version makes new results
+  # incomparable with the existing history - treat both as pinned.
+  job_perf-tests:
+    runs-on:
+      labels: ubuntu-latest-4-cores
+    needs: [job_setup]
+    if: (needs.job_setup.outputs.changed_core == 'true' && needs.job_setup.outputs.is_development == 'true') || needs.job_setup.outputs.has_perf_tests_label == 'true'
+    name: Performance tests
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          # Boot activates the default theme, which is a submodule
+          submodules: true
+
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        env:
+          FORCE_COLOR: 0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        # --force for the same reason as job_unit-tests: better-sqlite3 is an
+        # optionalDependency and boot uses it for the development database.
+        run: pnpm install --frozen-lockfile --force
+
+      - name: Install hyperfine
+        uses: ./.github/actions/install-hyperfine
+
+      - name: Build TS code
+        run: pnpm nx run-many -t build:tsc
+
+      - name: Run hyperfine on boot
+        working-directory: ghost/core
+        run: hyperfine --show-output --warmup 3 'GHOST_CI_SHUTDOWN_AFTER_BOOT=1 node index.js' --export-json boot-perf.json
+
+      - name: Report result
+        uses: ./.github/actions/report-boot-benchmark
+        with:
+          results-file: ghost/core/boot-perf.json
+          series: Benchmark
+          metric: Boot time
+          title: Boot time (dev tree)
+          github-token: ${{ secrets.CANARY_DOCKER_BUILD }}
+
+  # Boot time of the production image, as a series separate from job_perf-tests:
+  # that one tracks the code, this one tracks what ships (NODE_ENV=production, no
+  # devDependencies, jemalloc, baked compile cache). Never merge them - a base image
+  # bump would land in the code series as a regression with no Ghost commit behind it.
+  job_perf-tests-image:
+    name: Performance tests (production image)
+    runs-on:
+      labels: ubuntu-latest-4-cores
+    needs: [job_setup, job_docker]
+    # Registry path only: the core image is pushed to GHCR, never saved as an artifact.
+    if: |
+      needs.job_docker.result == 'success' &&
+      needs.job_docker.outputs.use-artifact == 'false' &&
+      ((needs.job_setup.outputs.changed_core == 'true' && needs.job_setup.outputs.is_development == 'true') || needs.job_setup.outputs.has_perf_tests_label == 'true')
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      # Only for .github/actions/load-docker-image; nothing is built from source here.
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+
+      - name: Install hyperfine
+        uses: ./.github/actions/install-hyperfine
+
+      - name: Load core image
+        uses: ./.github/actions/load-docker-image
+        id: load
+        with:
+          use-artifact: 'false'
+          image-tags: ${{ needs.job_docker.outputs.image-core-tags }}
+
+      - name: Start MySQL
+        # Own network rather than a service container, so Ghost can reach it by name.
+        # Pinned by digest: a MySQL bump moves the measurement, so it should be a
+        # deliberate baseline change rather than drift in the series.
+        run: |
+          docker network create ghost-perf
+          docker run -d --name mysql --network ghost-perf \
+            --tmpfs /var/lib/mysql \
+            -e MYSQL_DATABASE=ghost \
+            -e MYSQL_ROOT_PASSWORD=root \
+            --health-cmd "mysqladmin ping -h 127.0.0.1 -uroot -proot" \
+            --health-interval=2s \
+            --health-timeout=5s \
+            --health-retries=60 \
+            mysql:8.0@sha256:7dcddc01f13bab2f15cde676d44d01f61fc9f99fe7785e86196dfc07d358ae2b
+          for _ in $(seq 1 60); do
+            if [ "$(docker inspect -f '{{.State.Health.Status}}' mysql)" = "healthy" ]; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "MySQL did not become healthy"
+          docker logs mysql
+          exit 1
+
+      - name: Start Ghost container
+        # Kept alive with `sleep` so each measured run is a `docker exec`; timing
+        # `docker run` would put container create/start inside the measurement.
+        env:
+          IMAGE_TAG: ${{ steps.load.outputs.image-tag }}
+        run: |
+          docker run -d --name ghost --network ghost-perf --entrypoint sleep \
+            -e GHOST_CI_SHUTDOWN_AFTER_BOOT=1 \
+            -e database__client=mysql \
+            -e database__connection__host=mysql \
+            -e database__connection__user=root \
+            -e database__connection__password=root \
+            -e database__connection__database=ghost \
+            "$IMAGE_TAG" infinity
+
+      - name: Run migrations (discarded first boot)
+        # A fresh database costs ~6.5s of migrations vs ~2.3s steady state.
+        run: docker exec ghost node index.js
+
+      - name: Run hyperfine on boot
+        run: hyperfine --show-output --warmup 3 'docker exec ghost node index.js' --export-json boot-perf-image.json
+
+      - name: Report result
+        uses: ./.github/actions/report-boot-benchmark
+        with:
+          results-file: boot-perf-image.json
+          # Own subdirectory in the benchmarks repo (like dx/), so this series gets its
+          # own chart and data file and the root series is left untouched.
+          data-dir: docker
+          series: Production image
+          metric: Boot time
+          title: Boot time (production image)
+          github-token: ${{ secrets.CANARY_DOCKER_BUILD }}
 
   job_unit-tests:
     runs-on: ubuntu-latest
@@ -1479,6 +1646,7 @@ jobs:
 
     outputs:
       use-artifact: ${{ steps.strategy.outputs.use-artifact }}
+      image-core-tags: ${{ steps.meta-core.outputs.tags }}
       image-e2e-name: ${{ steps.strategy.outputs.image-e2e-name }}
       image-e2e-tags: ${{ steps.meta-e2e.outputs.tags }}
 
@@ -1850,6 +2018,7 @@ jobs:
         job_app_version_bump_check,
         job_migration_integrity_check,
         job_lint,
+        job_lint_docs,
         job_i18n,
         job_build_admin,
         job_pack,

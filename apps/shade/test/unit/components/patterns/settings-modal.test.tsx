@@ -1,6 +1,6 @@
 import NiceModal from '@ebay/nice-modal-react';
-import {act, render, screen} from '@testing-library/react';
-import {describe, expect, it} from 'vitest';
+import {act, fireEvent, render, screen, waitFor} from '@testing-library/react';
+import {describe, expect, it, vi} from 'vitest';
 
 import {SettingsModal, settingsModalVariants, type SettingsModalSize} from '@/components/patterns/settings-modal';
 
@@ -38,6 +38,56 @@ describe('SettingsModal', () => {
 
         act(() => {
             void NiceModal.remove(TestSettingsModal);
+        });
+    });
+
+    it('renders without a NiceModal context and closes through onClose', () => {
+        const onClose = vi.fn();
+        render(
+            <SettingsModal title='Test modal' topRightContent='close' onClose={onClose}>
+                Modal content
+            </SettingsModal>
+        );
+
+        fireEvent.click(screen.getByTestId('close-modal'));
+
+        expect(onClose).toHaveBeenCalledTimes(1);
+    });
+
+    it('confirms before closing through onClose when dirty', async () => {
+        const onClose = vi.fn();
+        render(
+            <SettingsModal title='Test modal' topRightContent='close' dirty onClose={onClose}>
+                Modal content
+            </SettingsModal>
+        );
+
+        fireEvent.click(screen.getByTestId('close-modal'));
+        expect(onClose).not.toHaveBeenCalled();
+
+        fireEvent.click(await screen.findByRole('button', {name: 'Leave'}));
+
+        await waitFor(() => {
+            expect(onClose).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    it('still closes through NiceModal when no onClose is passed', async () => {
+        const BridgeModal = NiceModal.create(() => (
+            <SettingsModal title='Bridge modal' topRightContent='close'>
+                Modal content
+            </SettingsModal>
+        ));
+
+        render(<NiceModal.Provider />);
+        act(() => {
+            void NiceModal.show(BridgeModal);
+        });
+
+        fireEvent.click(await screen.findByTestId('close-modal'));
+
+        await waitFor(() => {
+            expect(screen.queryByTestId('close-modal')).toBeNull();
         });
     });
 });

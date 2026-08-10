@@ -212,7 +212,8 @@ const TopClickedLinks: React.FC<{
 }> = ({actionId, automationId, clickedCount, sentCount}) => {
     const {data, isError, isLoading} = useBrowseAutomationActionLinks(automationId, actionId, {
         defaultErrorHandler: false,
-        enabled: sentCount > 0
+        enabled: sentCount > 0,
+        refetchOnMount: 'always'
     });
     const links = data?.automation_action_links.slice(0, 10) ?? [];
 

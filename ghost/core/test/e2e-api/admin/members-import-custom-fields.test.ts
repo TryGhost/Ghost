@@ -52,6 +52,16 @@ describe('Members import — custom fields', function () {
         return res.body.members.find((m: {email: string}) => m.email === email);
     };
 
+    // The rows behind a member's values, which is the only place the storage model is
+    // visible: the API hands back an assembled value either way.
+    const storedLeaves = async (email: string): Promise<Array<{path: string, value_text: string}>> => {
+        const member = await findMember(email);
+        return models.Base.knex('members_custom_field_values')
+            .where('member_id', member.id)
+            .orderBy('path')
+            .select('path', 'value_text');
+    };
+
     beforeAll(async function () {
         await localUtils.startGhost();
         request = supertest.agent(config.get('url'));
@@ -216,41 +226,29 @@ describe('Members import — custom fields', function () {
         assert.equal(member.custom_fields?.[key], undefined, 'the whitespace cell set no address');
     });
 
-    // The stored blob is the one thing a merge cannot take on trust: it was written by
-    // older code, by a migration, or by hand. Anything that will not read back as a record
-    // is replaced rather than merged into, so a bad row can neither fail the import nor
-    // leak into the value that replaces it.
-    for (const [shape, stored] of [
-        ['an array', '[1,2]'],
-        ['a bare number', '42'],
-        ['a null', 'null'],
-        ['unparseable text', 'not json at all']
-    ] as const) {
-        it(`replaces a stored address holding ${shape} rather than merging into it`, async function () {
-            const key = await createField('Shipping Address', 'address');
-            const email = `cf-corrupt-${shape.replace(/\s+/g, '-')}@example.com`;
-            const columns = ['line1', 'city'].map(sub => `custom_fields.${key}.${sub}`).join(',');
+    // The parts of an address are rows, so an import that names one column touches one
+    // row and leaves its siblings where they are. Asserting the rows rather than the
+    // assembled value is what pins the storage itself: read back through the API these
+    // two cases look identical.
+    it('writes one row per part, and touches only the parts a file names', async function () {
+        const key = await createField('Shipping Address', 'address');
+        const email = 'cf-leaf-rows@example.com';
+        const columns = ['line1', 'city', 'country'].map(sub => `custom_fields.${key}.${sub}`).join(',');
 
-            await importCSV(`email,${columns}\n${email},1 High Street,London\n`);
-            // Scoped to this member: an unqualified update would corrupt every value row
-            // the suite holds, and the damage would surface as an unrelated test failing
-            // in whatever order the runner happened to pick.
-            const corrupted = await findMember(email);
-            await models.Base.knex('members_custom_field_values')
-                .where('member_id', corrupted.id)
-                .update({value_json: stored});
+        await importCSV(`email,${columns}\n${email},1 High Street,London,GB\n`);
+        assert.deepEqual(await storedLeaves(email), [
+            {path: 'city', value_text: 'London'},
+            {path: 'country', value_text: 'GB'},
+            {path: 'line1', value_text: '1 High Street'}
+        ]);
 
-            const res = await importCSV(`email,custom_fields.${key}.city\n${email},Bristol\n`);
-            assert.equal(res.status, 201);
-            assert.equal(res.body.meta.stats.imported, 1);
-
-            assert.deepEqual(
-                (await findMember(email)).custom_fields?.[key],
-                {city: 'Bristol'},
-                'the unreadable value was replaced, not merged into'
-            );
-        });
-    }
+        await importCSV(`email,custom_fields.${key}.city\n${email},Bristol\n`);
+        assert.deepEqual(await storedLeaves(email), [
+            {path: 'city', value_text: 'Bristol'},
+            {path: 'country', value_text: 'GB'},
+            {path: 'line1', value_text: '1 High Street'}
+        ], 'only the named part moved');
+    });
 
     // A composite can still be invalid, and when it is the whole row fails like any other.
     it('fails a row whose address has a malformed sub-field', async function () {
@@ -261,9 +259,27 @@ describe('Members import — custom fields', function () {
         assert.equal(res.status, 201);
         assert.equal(res.body.meta.stats.imported, 0);
         assert.equal(res.body.meta.stats.invalid.length, 1);
-        assert.match(res.body.meta.stats.invalid[0].error, /Shipping Address/);
+        // Read next to a spreadsheet, so it names the column down to the sub-field.
+        assert.equal(
+            res.body.meta.stats.invalid[0].error,
+            `custom_fields.${key}.country: Enter a 2-letter country code, like US.`
+        );
 
         assert.equal(await findMember(email), undefined, 'the failed row created no member');
+    });
+
+    // A reason carries the punctuation of the copy it quotes; this one has a comma in it.
+    it('carries a row\'s reasons as a list, so punctuation inside one cannot split it', async function () {
+        const key = await createField('Shipping Address', 'address');
+        const email = 'cf-reason-list@example.com';
+
+        const res = await importCSV(`email,custom_fields.${key}.country\n${email},IRL\n`);
+        assert.equal(res.status, 201);
+        assert.equal(res.body.meta.stats.invalid.length, 1);
+
+        const reason = `custom_fields.${key}.country: Enter a 2-letter country code, like US.`;
+        assert.deepEqual(res.body.meta.stats.invalid[0].errors, [reason]);
+        assert.equal(res.body.meta.stats.invalid[0].error, reason);
     });
 
     it('fails a row whose value is too long for its field type', async function () {
@@ -274,7 +290,10 @@ describe('Members import — custom fields', function () {
         assert.equal(res.status, 201);
         assert.equal(res.body.meta.stats.imported, 0);
         assert.equal(res.body.meta.stats.invalid.length, 1);
-        assert.match(res.body.meta.stats.invalid[0].error, /Nickname/);
+        assert.equal(
+            res.body.meta.stats.invalid[0].error,
+            `custom_fields.${key}: Use 255 characters or fewer.`
+        );
 
         assert.equal(await findMember(email), undefined);
     });

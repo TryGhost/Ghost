@@ -31,14 +31,11 @@ const __dirname = dirname(__filename);
 const REPO_ROOT = join(__dirname, '..', '..', '..');
 const OUT_PATH = join(__dirname, '..', 'src', 'docs', 'adoption-data.json');
 
-// Apps that already adopt Shade as their target system, plus admin-x-settings
-// which is the active migration surface from admin-x-design-system → Shade.
+// Apps that adopt Shade as their target system. Settings, posts, and stats
+// live inside apps/admin now, so the admin entry covers them.
 const ADMIN_REACT_APPS = [
     'admin',
-    'posts',
-    'stats',
-    'activitypub',
-    'admin-x-settings'
+    'activitypub'
 ] as const;
 
 const PUBLIC_APPS = [

@@ -218,6 +218,7 @@ describe("Advanced settings", () => {
         const actor = {id: "1", name: "Jamie Larson", slug: "main", image: null};
         const actions = [
             {id: "security", resource_id: null, resource_type: "security_action", actor_id: "1", actor_type: "user", event: "edited", context: '{"action_name":"reset_authentication","api_keys_rotated":4,"users_locked":3}', created_at: "2023-08-11T12:37:02.000Z", actor},
+            {id: "tag", resource_id: "tag", resource_type: "tag", actor_id: "1", actor_type: "user", event: "edited", context: '{}', created_at: "2023-08-11T12:36:02.000Z", actor, resource: {id: "tag", slug: "useful-tag", title: "Useful tag"}},
             ...["setting-1", "setting-2"].map((id, index) => ({id, resource_id: "setting", resource_type: "setting", actor_id: "1", actor_type: "user", event: "edited", context: '{"key":"navigation","group":"site"}', created_at: `2023-08-11T12:3${index}:02.000Z`, actor, resource: {id: "setting", slug: "navigation"}})),
             ...["post-1", "post-2"].map((id, index) => ({id, resource_id: "post", resource_type: "post", actor_id: "1", actor_type: "user", event: "edited", context: '{"type":"page","primary_name":"The Clunkers Hall of Shame"}', created_at: `2023-08-11T12:2${index}:02.000Z`, actor, resource: {id: "post", slug: "clunkers", title: "The Clunkers Hall of Shame"}})),
         ];
@@ -229,6 +230,12 @@ describe("Advanced settings", () => {
         await expect.element(modal).toHaveTextContent(/Settings edited: Site \(navigation\) 2 times/);
         await expect.element(modal).toHaveTextContent(/Page edited: The Clunkers Hall of Shame 2 times/);
         await expect.element(modal).toHaveTextContent(/Security action reset authentication: 4 API keys rotated, 3 users locked/);
+        await modal.getByText("Useful tag").click();
+        expect(JSON.parse(document.body.dataset.externalNavigate ?? "null")).toMatchObject({
+            isExternal: true,
+            route: "tag",
+            models: ["useful-tag"]
+        });
         await expect.poll(() => actionsApi.requests.length).toBeGreaterThan(0);
         const initialQuery = new URL(actionsApi.requests[0].url).searchParams;
         expect(initialQuery.get("include")).toBe("actor,resource");

@@ -40,15 +40,11 @@ Promote to Shade when:
 
 1. **Real reuse exists, not expected reuse.** You've already built substantially the same shape a second time in a different surface.
 2. **The shape has settled.** Slots and composition have been stable across both local copies for at least one iteration.
-3. **The name is generic.** `PageHeader`, `KpiCard`, `PostShareModal` describe concepts. `MembersFilterBar` names a single surface and will date the moment that surface changes.
+3. **The name is generic.** `PageHeader`, `KpiCard`, `Filters` describe concepts. `MembersFilterBar` names a single surface and will date the moment that surface changes.
 4. **API is slots, not props.** 3–6 named subcomponents (`.Title`, `.Actions`, `.Body`) — not a prop bag.
 5. **State stays with the consumer.** No `useQuery` inside a pattern. No app context reads. Bring-your-own state.
 
 When in doubt: **keep it local**, build it again somewhere else, then promote.
-
-## Posts–Stats (temporary)
-
-The `posts-stats/` folder is an interim home for components shared between the Posts and Stats apps until they merge. Don't generalise it — that category goes away on its own.
 
 ## Where to go next
 

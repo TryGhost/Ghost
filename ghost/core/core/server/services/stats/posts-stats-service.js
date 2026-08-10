@@ -222,8 +222,8 @@ class PostsStatsService {
             if (this.urlService && row.attribution_url) {
                 try {
                     // Check if URL service is ready
-                    if (this.urlService.facade.hasFinished && this.urlService.facade.hasFinished()) {
-                        const resource = await this.urlService.facade.resolveUrl(row.attribution_url);
+                    if (this.urlService.hasFinished && this.urlService.hasFinished()) {
+                        const resource = await this.urlService.resolveUrl(row.attribution_url);
                         urlExists = !!resource; // Convert to boolean
                     }
                     // If URL service isn't ready, we default to true (clickable)

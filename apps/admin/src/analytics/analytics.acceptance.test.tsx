@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 
 import {
     TINYBIRD_SITE_UUID,
+    currentRoute,
     fakeAdminStats,
+    fakeAnalyticsOverview,
     fakeNewsletters,
     fakePosts,
     fakeTinybirdPipe,
@@ -12,6 +14,7 @@ import {
     renderAdminApp,
     webAnalyticsBootOverrides,
 } from "@test-utils/acceptance";
+import { deferred } from "@/utils/deferred";
 import { analyticsScreen } from "./analytics.screen";
 
 const LATEST_POST_ID = "64d623b64676110001e897d1";
@@ -84,6 +87,14 @@ function seedTopPostsViews() {
 }
 
 describe("Analytics overview", () => {
+    it("renders zero KPIs when growth history is empty", async () => {
+        fakeAnalyticsOverview();
+        await renderAdminApp("/analytics");
+
+        await expect.element(analyticsScreen.membersValue()).toHaveTextContent(/^0$/);
+        await expect.element(analyticsScreen.mrrValue()).toHaveTextContent(/^\$0$/);
+    });
+
     it("renders the seeded KPIs, latest post and top posts", async () => {
         const { postsApi } = seedAnalyticsWorld();
         seedTopPostsViews();
@@ -126,7 +137,13 @@ describe("Analytics overview", () => {
 });
 
 describe("Analytics web traffic", () => {
-    it("renders the seeded KPIs, top content, sources and locations", async () => {
+    it("stays on the Web route while settings load, then renders seeded analytics", async () => {
+        const boot = webAnalyticsBootOverrides();
+        const settings = boot.browseSettings?.response;
+        const pendingSettings = deferred<unknown>();
+        boot.browseSettings = {
+            response: () => pendingSettings.promise,
+        };
         seedAnalyticsWorld();
         seedTopPostsViews();
         fakeAdminStats.topContent([{
@@ -138,9 +155,19 @@ describe("Analytics web traffic", () => {
         }]);
         fakeTinybirdPipe("api_top_sources", [{ source: "google.com", visits: 170 }]);
         fakeTinybirdPipe("api_top_locations", [{ location: "US", visits: 200 }]);
-        await renderAdminApp("/analytics/web", { boot: webAnalyticsBootOverrides() });
 
-        await expect.element(analyticsScreen.webGraph()).toBeVisible();
+        try {
+            await renderAdminApp("/analytics/web", { boot });
+
+            // Prove the lazy route renders while settings are still unresolved.
+            // Resolving settings only after this assertion makes the ordering
+            // deterministic instead of relying on an arbitrary response delay.
+            await expect.element(analyticsScreen.dateRangeSelect()).toBeVisible();
+            await expect.poll(currentRoute).toBe("/analytics/web");
+        } finally {
+            pendingSettings.resolve(settings);
+        }
+
         await expect.element(analyticsScreen.webGraph().getByRole("tab", { name: "Unique visitors" })).toHaveTextContent("250");
 
         await expect.element(analyticsScreen.topContentCard()).toHaveTextContent("Attack of the Clones");
