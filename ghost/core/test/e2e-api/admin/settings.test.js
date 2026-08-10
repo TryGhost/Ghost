@@ -377,6 +377,54 @@ describe('Settings API', function () {
             sinon.assert.calledOnce(loggingStub);
         });
 
+        it('fails to edit machine_payments_amount below the minimum', async function () {
+            const loggingStub = sinon.stub(logging, 'warn');
+
+            await agent.put('settings/')
+                .body({
+                    settings: [{
+                        key: 'machine_payments_amount',
+                        value: 0
+                    }]
+                })
+                .expectStatus(422)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId
+                    }]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+
+            sinon.assert.calledOnce(loggingStub);
+        });
+
+        it('fails to edit machine_payments_currency with a non-ISO code', async function () {
+            const loggingStub = sinon.stub(logging, 'warn');
+
+            await agent.put('settings/')
+                .body({
+                    settings: [{
+                        key: 'machine_payments_currency',
+                        value: 'US'
+                    }]
+                })
+                .expectStatus(422)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId
+                    }]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+
+            sinon.assert.calledOnce(loggingStub);
+        });
+
         it('can edit Stripe settings when Stripe Connect limit is not enabled', async function () {
             mockManager.mockLimitService('limitStripeConnect', {
                 isLimited: false,
