@@ -25,7 +25,7 @@ const getGridColumns = (showRunAnalytics: boolean) => cn(
 
 const AutomationsListSkeleton: React.FC<{showRunAnalytics: boolean}> = ({showRunAnalytics}) => {
     return (
-        <Table className="flex flex-col border-t" data-testid="automations-list-loading">
+        <Table className="flex flex-col" data-testid="automations-list-loading">
             <TableBody className="flex flex-col">
                 {Array.from({length: 2}, (_, index) => (
                     <TableRow
@@ -60,15 +60,15 @@ const AutomationsList: React.FC<AutomationsListProps> = ({automations = [], anal
     }
 
     return (
-        <Table className="flex flex-col border-t" data-testid="automations-list">
+        <Table className="flex flex-col" data-testid="automations-list">
             {showRunAnalytics && (
                 <TableHeader className="hidden lg:flex lg:flex-col">
                     <TableRow className={cn('w-full items-center gap-x-4 border-b hover:bg-transparent', getGridColumns(showRunAnalytics))}>
-                        <TableHead className="lg:px-4">Name</TableHead>
-                        <TableHead className="lg:px-4">Last run</TableHead>
-                        <TableHead className="lg:px-4">In progress</TableHead>
-                        <TableHead className="lg:px-4">Completed</TableHead>
-                        <TableHead className="lg:px-4">Status</TableHead>
+                        <TableHead className="flex items-center lg:px-4">Name</TableHead>
+                        <TableHead className="flex items-center lg:px-4">Last entry</TableHead>
+                        <TableHead className="flex items-center lg:px-4">Running</TableHead>
+                        <TableHead className="flex items-center lg:px-4">Done</TableHead>
+                        <TableHead className="flex items-center lg:px-4">Status</TableHead>
                     </TableRow>
                 </TableHeader>
             )}

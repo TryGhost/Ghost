@@ -43,9 +43,9 @@ describe('AutomationsList', () => {
         expect(screen.getByText('Welcome new paid members after they start their subscription.')).toBeInTheDocument();
         expect(screen.getByText('Live')).toBeInTheDocument();
         expect(screen.getByText('Off')).toBeInTheDocument();
-        expect(screen.getByRole('columnheader', {name: 'Last run'})).toBeInTheDocument();
-        expect(screen.getByRole('columnheader', {name: 'In progress'})).toBeInTheDocument();
-        expect(screen.getByRole('columnheader', {name: 'Completed'})).toBeInTheDocument();
+        expect(screen.getByRole('columnheader', {name: 'Last entry'})).toBeInTheDocument();
+        expect(screen.getByRole('columnheader', {name: 'Running'})).toBeInTheDocument();
+        expect(screen.getByRole('columnheader', {name: 'Done'})).toBeInTheDocument();
         expect(screen.getByText('118')).toBeInTheDocument();
         expect(screen.getByText('1,225')).toBeInTheDocument();
         expect(screen.getByText('61')).toBeInTheDocument();
@@ -55,9 +55,9 @@ describe('AutomationsList', () => {
     it('keeps run analytics columns hidden when the feature is disabled', () => {
         renderWithRouter(<AutomationsList analytics={analytics} automations={automations} showRunAnalytics={false} />);
 
-        expect(screen.queryByRole('columnheader', {name: 'Last run'})).not.toBeInTheDocument();
-        expect(screen.queryByRole('columnheader', {name: 'In progress'})).not.toBeInTheDocument();
-        expect(screen.queryByRole('columnheader', {name: 'Completed'})).not.toBeInTheDocument();
+        expect(screen.queryByRole('columnheader', {name: 'Last entry'})).not.toBeInTheDocument();
+        expect(screen.queryByRole('columnheader', {name: 'Running'})).not.toBeInTheDocument();
+        expect(screen.queryByRole('columnheader', {name: 'Done'})).not.toBeInTheDocument();
         expect(screen.queryByText('1,225')).not.toBeInTheDocument();
     });
 

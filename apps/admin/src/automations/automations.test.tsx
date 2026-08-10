@@ -107,7 +107,7 @@ describe('Automations', () => {
         expect(screen.getByText('Free member welcome flow')).toBeInTheDocument();
         expect(screen.getByText('Paid member welcome flow')).toBeInTheDocument();
         expect(mockUseBrowseAutomationRunAnalytics).toHaveBeenCalledWith({enabled: false});
-        expect(screen.queryByRole('columnheader', {name: 'Last run'})).not.toBeInTheDocument();
+        expect(screen.queryByRole('columnheader', {name: 'Last entry'})).not.toBeInTheDocument();
     });
 
     it('loads and shows run analytics when the feature is enabled', () => {
@@ -116,7 +116,7 @@ describe('Automations', () => {
         renderPage();
 
         expect(mockUseBrowseAutomationRunAnalytics).toHaveBeenCalledWith({enabled: true});
-        expect(screen.getByRole('columnheader', {name: 'Last run'})).toBeInTheDocument();
+        expect(screen.getByRole('columnheader', {name: 'Last entry'})).toBeInTheDocument();
     });
 
     it('hides the paid sequence when Stripe is not connected', () => {
