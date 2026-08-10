@@ -31,16 +31,16 @@ services:
     # pnpm-store is a separate named volume, NOT under /workspaces/Ghost, so
     # it survives the bind mount above (which fully shadows anything baked
     # into the image at that path with the host's — node_modules-less — repo
-    # checkout). onCreateCommand/postCreateCommand still have to run a real
-    # `pnpm install` every time since the source is live-mounted, but with
-    # the store already warm it's linking already-fetched content instead of
+    # checkout). Because the source is live-mounted, onCreateCommand still has
+    # to run a real `pnpm install` every time, but with the store already warm
+    # it's linking already-fetched content instead of
     # re-downloading and recompiling native deps (better-sqlite3, sharp, etc.)
     # from scratch.
     volumes:
       - ./:/workspaces/Ghost:cached
       - pnpm-store:/pnpm-store
     environment:
-      npm_config_store_dir: /pnpm-store
+      pnpm_config_store_dir: /pnpm-store
     # Prefer the prebuilt image (docker/ghost-dev/Dockerfile, published by
     # .github/workflows/devcontainer-build.yml) over a local build. cache_from
     # makes a local `docker compose build` (e.g. after a Dockerfile edit)
