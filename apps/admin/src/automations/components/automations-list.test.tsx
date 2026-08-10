@@ -29,6 +29,13 @@ describe('AutomationsList', () => {
         expect(screen.getByText('Welcome new paid members after they start their subscription.')).toBeInTheDocument();
         expect(screen.getByText('Live')).toBeInTheDocument();
         expect(screen.getByText('Off')).toBeInTheDocument();
+        expect(screen.getByRole('columnheader', {name: 'Last run'})).toBeInTheDocument();
+        expect(screen.getByRole('columnheader', {name: 'In progress'})).toBeInTheDocument();
+        expect(screen.getByRole('columnheader', {name: 'Completed'})).toBeInTheDocument();
+        expect(screen.getByText('118')).toBeInTheDocument();
+        expect(screen.getByText('1,225')).toBeInTheDocument();
+        expect(screen.getByText('61')).toBeInTheDocument();
+        expect(screen.getByText('320')).toBeInTheDocument();
     });
 
     it('links each row to the automation sequence by id', () => {
