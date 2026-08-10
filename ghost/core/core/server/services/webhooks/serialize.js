@@ -9,7 +9,8 @@
 // API-serialized payload, where some keys are renamed (members `products` → `tiers`).
 const SERIALIZED_KEYS = {
     members: {
-        products: 'tiers'
+        products: 'tiers',
+        stripeSubscriptions: 'subscriptions'
     }
 };
 
