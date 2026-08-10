@@ -163,9 +163,7 @@ describe('WebhookService - Serialize', function () {
     });
 
     it('includes the previous tiers when a member switches between paid tiers', async function () {
-        // `previous: true` cascades into related models, so the tiers have to look
-        // like the fetched models they are in the real event — bookshelf only
-        // populates `_previousAttributes` on fetch, not on construction.
+        // bookshelf only populates `_previousAttributes` on fetch, not construction
         const asFetched = (model) => {
             model._previousAttributes = {...model.attributes};
             return model;
@@ -182,10 +180,8 @@ describe('WebhookService - Serialize', function () {
             updated_at: new Date('2026-01-01T00:00:00.000Z')
         });
 
-        // A paid -> paid tier switch leaves every members column untouched, so the
-        // only change bookshelf-relations records is on the products relation:
-        // the change itself on `_changed` (extendChanged) and the pre-change
-        // targets on `_previousRelations` (attachPreviousRelations).
+        // mirrors bookshelf-relations' extendChanged + attachPreviousRelations output
+        // for a tier switch that touches no members column
         memberModel._previousAttributes = {...memberModel.attributes};
         memberModel._changed = {
             products: {attached: [newTier], detached: [oldTier]}
