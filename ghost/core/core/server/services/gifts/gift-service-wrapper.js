@@ -42,6 +42,7 @@ class GiftServiceWrapper {
         const StartGiftDeliveryFlushEvent = require('./events/start-gift-delivery-flush-event');
         const StartGiftCleanupEvent = require('./events/start-gift-cleanup-event');
         const jobs = require('./jobs');
+        const emailAnalyticsJobs = require('../email-analytics/jobs');
 
         const {GhostMailer} = require('../mail');
         const settingsCache = require('../../../shared/settings-cache');
@@ -101,7 +102,7 @@ class GiftServiceWrapper {
             giftReminderScheduler,
             giftDeliveryScheduler,
             giftEmailAnalytics: {
-                schedule: () => Promise.resolve()
+                schedule: () => emailAnalyticsJobs.scheduleRecurringGiftDeliveriesJob(true)
             },
             checkoutAdapter,
             labsService,

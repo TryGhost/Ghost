@@ -17,6 +17,9 @@ type Models = {
     AutomatedEmailRecipient: {
         query(): ExistingRecipientQuery;
     };
+    GiftDelivery?: {
+        query(): ExistingRecipientQuery;
+    };
 };
 type Config = {get(key: string): unknown};
 type JobManager = {
@@ -39,6 +42,7 @@ function randomFiveMinuteCron(): string {
 export class EmailAnalyticsJobScheduler {
     #hasScheduledNewslettersJob = false;
     #hasScheduledAutomationsJob = false;
+    #hasScheduledGiftDeliveriesJob = false;
     readonly #models: Models;
     readonly #config: Config;
     readonly #jobManager: JobManager;
@@ -122,5 +126,30 @@ export class EmailAnalyticsJobScheduler {
         });
 
         this.#hasScheduledAutomationsJob = true;
+    }
+
+    async scheduleRecurringGiftDeliveriesJob(skipGiftDeliveryCheck: boolean = false): Promise<void> {
+        if (this.#hasScheduledGiftDeliveriesJob || !this.#isConfigured()) {
+            return;
+        }
+
+        const hasGiftDelivery = skipGiftDeliveryCheck || Boolean(
+            this.#models.GiftDelivery && await this.#models.GiftDelivery
+                .query()
+                .where('email_sent_at', '>', moment.utc().subtract(30, 'days').toDate())
+                .whereNotNull('email_provider_message_id')
+                .first('id')
+        );
+
+        if (!hasGiftDelivery || this.#hasScheduledGiftDeliveriesJob) {
+            return;
+        }
+
+        this.#jobManager.addJob({
+            at: randomFiveMinuteCron(),
+            job: path.resolve(__dirname, 'gift-fetch-latest/index.js'),
+            name: 'email-analytics-gift-fetch-latest'
+        });
+        this.#hasScheduledGiftDeliveriesJob = true;
     }
 }
