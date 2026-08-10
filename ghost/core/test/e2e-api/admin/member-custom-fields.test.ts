@@ -135,16 +135,12 @@ describe('Member Custom Fields Admin API', function () {
 
         // A key names a property on the plain objects carrying a member's values, so
         // one naming a member of Object.prototype reads back as inherited rather than
-        // absent wherever it is indexed. Those keys are already taken, so the
-        // publisher keeps the name and the key takes a suffix. The match is on the
-        // key rather than the name, which is what catches every spelling that
-        // collapses onto it.
+        // absent wherever it is indexed. That key is already taken, so the publisher
+        // keeps the name and the key takes a suffix. The match is on the key rather
+        // than the name, which is what catches every spelling that collapses onto it.
         const reservedSpellings = [
             {name: 'Constructor', key: 'constructor_2'},
-            {name: 'constructor', key: 'constructor_2'},
-            {name: '__proto__', key: '__proto___2'},
-            {name: '__PROTO__', key: '__proto___2'},
-            {name: '＿＿ｐｒｏｔｏ＿＿', key: '__proto___2'}
+            {name: 'constructor', key: 'constructor_2'}
         ];
         for (const {name, key} of reservedSpellings) {
             it(`mints ${key} for the name ${name}, and the value round-trips`, async function () {
@@ -155,6 +151,21 @@ describe('Member Custom Fields Admin API', function () {
                 await setValues(memberId, {[key]: 'Bex'});
 
                 assert.deepEqual(await readValues(memberId), {[key]: 'Bex'});
+            });
+        }
+
+        // The other prototype name a publisher could reach for needs no reserving:
+        // minting trims leading and trailing separators, so no spelling of it can
+        // produce the key itself.
+        for (const name of ['__proto__', '__PROTO__', '＿＿ｐｒｏｔｏ＿＿']) {
+            it(`cannot mint __proto__ from the name ${name}`, async function () {
+                const field = await createField({name});
+                assert.equal(field.key, 'proto');
+
+                const memberId = await createMember();
+                await setValues(memberId, {proto: 'Bex'});
+
+                assert.deepEqual(await readValues(memberId), {proto: 'Bex'});
             });
         }
 
