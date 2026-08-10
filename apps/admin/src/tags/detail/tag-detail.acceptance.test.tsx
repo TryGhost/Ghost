@@ -55,15 +55,19 @@ describe('Tag detail (tagDetailsReact on)', () => {
         const updatedHead = '<script>updatedHead();</script>';
         const updatedFoot = '<style>.footer { display: grid; }</style>';
 
-        // Let CodeMirror commit the clear before inserting replacement text.
-        // A single fill can race its async mutation observer and append the
-        // original document after the replacement.
-        await headerEditor.clear();
+        // Playwright manipulates contenteditable DOM directly when clearing,
+        // which can race CodeMirror's document reconciliation. Clear through
+        // CodeMirror's keyboard handling before filling the empty editor.
+        await headerEditor.click();
+        await userEvent.keyboard('{ControlOrMeta>}a{/ControlOrMeta}');
+        await userEvent.keyboard('{Backspace}');
         await expect.poll(() => headerEditor.element().textContent).toBe('');
         await headerEditor.fill(updatedHead);
         await expect.poll(() => (headerEditor.element() as HTMLElement).innerText).toBe(updatedHead);
 
-        await footerEditor.clear();
+        await footerEditor.click();
+        await userEvent.keyboard('{ControlOrMeta>}a{/ControlOrMeta}');
+        await userEvent.keyboard('{Backspace}');
         await expect.poll(() => footerEditor.element().textContent).toBe('');
         await footerEditor.fill(updatedFoot);
         await expect.poll(() => (footerEditor.element() as HTMLElement).innerText).toBe(updatedFoot);
