@@ -133,6 +133,7 @@ describe('Tag detail (tagDetailsReact on)', () => {
 
         await expect.element(page.getByTestId('tag-detail-title')).toHaveTextContent('New tag');
         const nameInput = page.getByLabelText('Name', {exact: true});
+        await expect.element(nameInput).toBeVisible();
         await userEvent.type(nameInput.element(), 'Weekly News');
         await expect.element(page.getByLabelText('Slug', {exact: true})).toHaveValue('weekly-news');
 
