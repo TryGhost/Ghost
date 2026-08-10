@@ -70,7 +70,15 @@ export const postsListScreen = {
     toastWithText: (text: string | RegExp) => page.getByText(text),
     /** A button inside a non-destructive modal (Add a tag, Change access). */
     dialogButton: (label: string) => page.getByRole("dialog").getByRole("button", { name: label, exact: true }),
-    tagOption: (name: string) => page.getByRole("dialog").getByLabelText(name),
+    /** A row in the tag picker's list — a `cmdk` item, so `option`. */
+    tagOption: (name: string | RegExp) => page.getByRole("dialog").getByRole("option", { name }),
+    tagSearchInput: () => page.getByRole("dialog").getByLabelText("Search tags"),
+    /**
+     * The dialog's own heading, used to dismiss the tag list: it floats over
+     * the footer, so the confirm button cannot be reached until something
+     * outside the list is clicked — which is what a user does too.
+     */
+    dialogHeading: (name: string) => page.getByRole("dialog").getByRole("heading", { name }),
     /** The confirm button inside a bulk-action modal. */
     confirmButton: (label: string) => page.getByRole("alertdialog").getByRole("button", { name: label, exact: true }),
     bulkModal: () => page.getByRole("alertdialog"),

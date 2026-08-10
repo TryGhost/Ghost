@@ -198,11 +198,62 @@ describe("Posts list bulk actions", () => {
             await postsListScreen.listItems().first().click({ button: "right" });
             await postsListScreen.contextMenuItem("Add a tag").click();
             await postsListScreen.tagOption("News").click();
+            // The list floats over the dialog's footer, so it has to be
+            // dismissed before the confirm button can be reached — clicking
+            // outside it, as a user would.
+            await postsListScreen.dialogHeading("Add tags").click();
             await postsListScreen.dialogButton("Add").click();
 
             await expect.poll(() => edit.requests.length).toBe(1);
             expect(edit.requests[0].body).toEqual({
                 bulk: {action: "addTag", meta: {tags: [{id: "t1", name: "News", slug: "news"}]}}
+            });
+        });
+
+        /**
+         * The dialog can only add, so it shows only what you are adding. An
+         * earlier version listed the post's existing tags ticked and disabled,
+         * which read as a set you could edit while offering no way to untick
+         * one.
+         */
+        it("does not offer the tags a post already has", async () => {
+            fakePosts([post({
+                title: "Target",
+                status: "draft",
+                tags: [tag({id: "t1", name: "News", slug: "news"})]
+            })]);
+            fakeTags([tag({ id: "t1", name: "News", slug: "news" })]);
+            await renderAdminApp("/posts?type=draft", FLAG_ON);
+            await expect.element(postsListScreen.listItems().first()).toBeVisible();
+
+            await postsListScreen.listItems().first().click({ button: "right" });
+            await postsListScreen.contextMenuItem("Add a tag").click();
+
+            // Present to pick, but nothing is pre-selected: no chip, and the
+            // confirm button stays disabled until you choose something.
+            await expect.element(postsListScreen.tagOption("News")).toBeVisible();
+            await expect.element(postsListScreen.dialogButton("Add")).toBeDisabled();
+        });
+
+        // Ember allows creating a tag inline; the server creates one from a
+        // name it does not recognise, so no id is sent.
+        it("sends a typed tag that does not exist yet", async () => {
+            fakePosts([post({ title: "Target", status: "draft" })]);
+            fakeTags([]);
+            const edit = fakeAdminEndpoint("PUT", /^\/posts\/bulk/, {});
+            await renderAdminApp("/posts?type=draft", FLAG_ON);
+            await expect.element(postsListScreen.listItems().first()).toBeVisible();
+
+            await postsListScreen.listItems().first().click({ button: "right" });
+            await postsListScreen.contextMenuItem("Add a tag").click();
+            await postsListScreen.tagSearchInput().fill("Fresh tag");
+            await postsListScreen.tagOption(/Create/).click();
+            await postsListScreen.dialogHeading("Add tags").click();
+            await postsListScreen.dialogButton("Add").click();
+
+            await expect.poll(() => edit.requests.length).toBe(1);
+            expect(edit.requests[0].body).toEqual({
+                bulk: {action: "addTag", meta: {tags: [{name: "Fresh tag"}]}}
             });
         });
 

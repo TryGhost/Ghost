@@ -387,11 +387,6 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
                 )}
                 {pendingBulkAction?.key === 'add-tag' && (
                     <AddTagModal
-                        appliedTags={pendingBulkAction.snapshot.isSingle
-                            ? pendingBulkAction.snapshot.posts[0]?.tags?.flatMap(tag => (
-                                tag.name ? [{id: tag.id, name: tag.name, slug: tag.slug}] : []
-                            )) ?? []
-                            : []}
                         isRunning={bulkActions.isRunning}
                         onCancel={() => {
                             setPendingBulkAction(null);
