@@ -1,7 +1,7 @@
 import moment from 'moment';
 import * as errors from '@tryghost/errors';
 
-const DATABASE_DATE_FORMAT = 'YYYY-MM-DD HH:mm:ss';
+export const DATABASE_DATE_FORMAT = 'YYYY-MM-DD HH:mm:ss';
 
 export type DatabaseDate = Date | string | number;
 
