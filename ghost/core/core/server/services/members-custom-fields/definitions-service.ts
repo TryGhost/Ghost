@@ -12,6 +12,13 @@ import {type RecordCustomFieldAction, type RequestContext} from './actions';
 // @tryghost/string ships no types; slugify is the same helper tags/labels use.
 const {slugify} = require('@tryghost/string') as {slugify(input: string): string};
 
+// A key is typed by hand into member filters, CSV columns, email replacement strings
+// and themes, and the hyphen a slug separates with is the character those disagree
+// about: NQL will not parse one in a property path, and a replacement string matches
+// word characters only. Slugify still does the transliteration and lowercasing, so
+// only the separator changes, and it changes for hyphens the publisher typed too.
+const mintableKey = (name: string): string => slugify(name).replace(/-/g, '_');
+
 // The same NQL -> knex bridge Bookshelf's filter plugin uses, applied directly to
 // our raw-knex query: nql parses the `filter` string to a Mongo query, mongo-knex
 // turns that into parametrised WHERE clauses. Neither needs a Bookshelf model.
@@ -29,7 +36,7 @@ const columns = require('../../data/schema').tables[TABLE];
 const MAX_NAME_LENGTH: number = columns.name.maxlength;
 const MAX_KEY_LENGTH: number = columns.key.maxlength;
 const MAX_SLUG_ITERATIONS = 1000;
-// Reserve room for a `-<n>` suffix (n up to MAX_SLUG_ITERATIONS).
+// Reserve room for a `_<n>` suffix (n up to MAX_SLUG_ITERATIONS).
 const MAX_KEY_BASE_LENGTH = MAX_KEY_LENGTH - (String(MAX_SLUG_ITERATIONS).length + 1);
 
 // A key becomes a property name on the plain objects that carry a member's values —
@@ -40,10 +47,10 @@ const MAX_KEY_BASE_LENGTH = MAX_KEY_LENGTH - (String(MAX_SLUG_ITERATIONS).length
 // assigning it sets a prototype rather than a property.
 //
 // Derived rather than listed, because the set is a consequence of how keys are
-// minted: slugifying lowercases, so only an already-lowercase prototype name can
+// minted: minting lowercases, so only an already-lowercase prototype name can
 // survive to become a key. Currently `constructor` and `__proto__`.
 const RESERVED_KEYS = Object.getOwnPropertyNames(Object.prototype)
-    .filter(name => slugify(name) === name);
+    .filter(name => mintableKey(name) === name);
 
 const FieldName = z.string().trim().min(1, {message: 'Custom field name is required.'}).max(MAX_NAME_LENGTH, {message: 'Custom field name is too long.'});
 
@@ -141,10 +148,10 @@ export class CustomFieldDefinitionsService {
         }
         const fields = parsed.data;
 
-        // Slugify before opening the transaction: it needs no database access, and
+        // Mint before opening the transaction: it needs no database access, and
         // an unusable name is a payload problem worth reporting on its own terms.
         const bases = fields.map((field, index) => {
-            const base = slugify(field.name);
+            const base = mintableKey(field.name);
             if (!base) {
                 throw new errors.ValidationError({
                     message: 'Custom field name must contain at least one usable character.',
@@ -240,9 +247,9 @@ export class CustomFieldDefinitionsService {
     }
 
     /**
-     * Pick a free key from the name's slug: `base`, then `base-2`, `base-3`, ...
+     * Pick a free key from the name's base: `base`, then `base_2`, `base_3`, ...
      * Reads the keys already taken by that base — including archived fields, so a
-     * slug is never reused once minted. Mirrors how tags/labels generate slugs.
+     * key is never reused once minted.
      */
     private async mintKey(db: Knex, base: string): Promise<string> {
         const safeBase = base.slice(0, MAX_KEY_BASE_LENGTH);
@@ -254,7 +261,7 @@ export class CustomFieldDefinitionsService {
             return safeBase;
         }
         for (let suffix = 2; suffix <= MAX_SLUG_ITERATIONS; suffix += 1) {
-            const candidate = `${safeBase}-${suffix}`;
+            const candidate = `${safeBase}_${suffix}`;
             if (!taken.has(candidate)) {
                 return candidate;
             }
