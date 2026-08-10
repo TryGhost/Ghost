@@ -322,6 +322,16 @@ export function usePostBulkActions({resource, onDeleted, onEdited}: UsePostBulkA
             onEdited?.(new Set(snapshot.posts.map(post => post.id)));
 
             void queryClient.invalidateQueries({queryKey: [dataType]});
+
+            // Adding a tag can *create* one: a name the server does not
+            // recognise becomes a new tag as a side effect of saving the post.
+            // Nothing in the tag cache is told, so without this the tag is
+            // missing from the filter and from this dialog until the browser is
+            // refreshed. Invalidated for every add, not only the creating kind
+            // — the counts on existing tags move too.
+            if (key === 'add-tag') {
+                void queryClient.invalidateQueries({queryKey: ['TagsResponseType']});
+            }
         } catch (error) {
             toast.error(error instanceof Error && error.message
                 ? error.message

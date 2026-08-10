@@ -257,6 +257,30 @@ describe("Posts list bulk actions", () => {
             });
         });
 
+        /**
+         * A tag typed here is created server-side as a side effect of the post
+         * save, so nothing in the tag cache knows it exists. Without this the
+         * new tag is missing from the filter and from this dialog until the
+         * browser is refreshed.
+         */
+        it("refetches tags after creating one", async () => {
+            fakePosts([post({ title: "Target", status: "draft" })]);
+            const tags = fakeTags([]);
+            fakeAdminEndpoint("PUT", /^\/posts\/bulk/, {});
+            await renderAdminApp("/posts?type=draft", FLAG_ON);
+            await expect.element(postsListScreen.listItems().first()).toBeVisible();
+
+            await postsListScreen.listItems().first().click({ button: "right" });
+            await postsListScreen.contextMenuItem("Add a tag").click();
+            const before = tags.requests.length;
+            await postsListScreen.tagSearchInput().fill("Fresh tag");
+            await postsListScreen.tagOption(/Create/).click();
+            await postsListScreen.dialogHeading("Add tags").click();
+            await postsListScreen.dialogButton("Add").click();
+
+            await expect.poll(() => tags.requests.length).toBeGreaterThan(before);
+        });
+
         it("sends the chosen visibility for Change access", async () => {
             fakePosts([post({ title: "Target", status: "draft" })]);
             // The modal offers a tier picker once "Specific tier(s)" is chosen.
