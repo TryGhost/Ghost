@@ -1,12 +1,10 @@
-import {isCustomFieldColumn} from '@tryghost/admin-x-framework/api/member-custom-fields';
-
-type CustomFieldColumn = {label: string; value: string};
+import {isCustomFieldColumn, type MemberCustomFieldCsvColumn} from '@tryghost/admin-x-framework/api/member-custom-fields';
 
 type FieldMappingOptions = {
     importMemberTier?: boolean;
     // Custom field CSV columns offered as mapping targets (see memberCustomFieldCsvColumns);
     // empty when the feature is off.
-    customFieldColumns?: CustomFieldColumn[];
+    customFieldColumns?: MemberCustomFieldCsvColumn[];
 };
 
 export const FIELD_MAPPINGS = [

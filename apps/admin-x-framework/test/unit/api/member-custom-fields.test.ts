@@ -35,7 +35,7 @@ describe('member custom fields api helpers', () => {
     describe('memberCustomFieldCsvColumns', () => {
         it('gives a scalar field one target labelled by its name', () => {
             expect(memberCustomFieldCsvColumns([field({key: 'nickname', name: 'Nickname'})])).toEqual([
-                {label: 'Nickname', value: 'custom_fields.nickname'}
+                {label: 'Nickname', value: 'custom_fields.nickname', type: 'short_text'}
             ]);
         });
 
@@ -43,12 +43,12 @@ describe('member custom fields api helpers', () => {
             const columns = memberCustomFieldCsvColumns([field({key: 'shipping_address', name: 'Shipping Address', type: 'address'})]);
 
             expect(columns).toEqual([
-                {label: 'Shipping Address (Address line 1)', value: 'custom_fields.shipping_address.line1'},
-                {label: 'Shipping Address (Address line 2)', value: 'custom_fields.shipping_address.line2'},
-                {label: 'Shipping Address (City)', value: 'custom_fields.shipping_address.city'},
-                {label: 'Shipping Address (State)', value: 'custom_fields.shipping_address.state'},
-                {label: 'Shipping Address (Postal code)', value: 'custom_fields.shipping_address.postal_code'},
-                {label: 'Shipping Address (Country)', value: 'custom_fields.shipping_address.country'}
+                {label: 'Shipping Address (Address line 1)', value: 'custom_fields.shipping_address.line1', type: 'address'},
+                {label: 'Shipping Address (Address line 2)', value: 'custom_fields.shipping_address.line2', type: 'address'},
+                {label: 'Shipping Address (City)', value: 'custom_fields.shipping_address.city', type: 'address'},
+                {label: 'Shipping Address (State)', value: 'custom_fields.shipping_address.state', type: 'address'},
+                {label: 'Shipping Address (Postal code)', value: 'custom_fields.shipping_address.postal_code', type: 'address'},
+                {label: 'Shipping Address (Country)', value: 'custom_fields.shipping_address.country', type: 'address'}
             ]);
         });
 
@@ -62,7 +62,7 @@ describe('member custom fields api helpers', () => {
             const future = field({key: 'mystery', name: 'Mystery', type: 'a_type_from_the_future' as MemberCustomField['type']});
 
             expect(memberCustomFieldCsvColumns([future])).toEqual([
-                {label: 'Mystery', value: 'custom_fields.mystery'}
+                {label: 'Mystery', value: 'custom_fields.mystery', type: 'a_type_from_the_future'}
             ]);
         });
     });
