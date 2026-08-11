@@ -52,14 +52,31 @@ describe('Tag detail (tagDetailsReact on)', () => {
         await expect.poll(() => (headerEditor.element() as HTMLElement).innerText).toBe(head);
         await expect.poll(() => (footerEditor.element() as HTMLElement).innerText).toBe(foot);
 
-        await headerEditor.fill('<script>updatedHead();</script>');
-        await footerEditor.fill('<style>.footer { display: grid; }</style>');
+        const updatedHead = '<script>updatedHead();</script>';
+        const updatedFoot = '<style>.footer { display: grid; }</style>';
+
+        // Playwright manipulates contenteditable DOM directly when clearing,
+        // which can race CodeMirror's document reconciliation. Clear through
+        // CodeMirror's keyboard handling before filling the empty editor.
+        await headerEditor.click();
+        await userEvent.keyboard('{ControlOrMeta>}a{/ControlOrMeta}');
+        await userEvent.keyboard('{Backspace}');
+        await expect.poll(() => headerEditor.element().textContent).toBe('');
+        await headerEditor.fill(updatedHead);
+        await expect.poll(() => (headerEditor.element() as HTMLElement).innerText).toBe(updatedHead);
+
+        await footerEditor.click();
+        await userEvent.keyboard('{ControlOrMeta>}a{/ControlOrMeta}');
+        await userEvent.keyboard('{Backspace}');
+        await expect.poll(() => footerEditor.element().textContent).toBe('');
+        await footerEditor.fill(updatedFoot);
+        await expect.poll(() => (footerEditor.element() as HTMLElement).innerText).toBe(updatedFoot);
         await page.getByRole('button', {name: 'Save'}).click();
 
         await expect.element(page.getByRole('button', {name: 'Saved'})).toBeVisible();
         const saved = (saveApi.lastRequest?.body as {tags: Array<Record<string, unknown>>}).tags[0];
-        expect(saved.codeinjection_head).toBe('<script>updatedHead();</script>');
-        expect(saved.codeinjection_foot).toBe('<style>.footer { display: grid; }</style>');
+        expect(saved.codeinjection_head).toBe(updatedHead);
+        expect(saved.codeinjection_foot).toBe(updatedFoot);
     });
 
     it('keeps CodeMirror autocomplete outside the clipped editor surface', async () => {
