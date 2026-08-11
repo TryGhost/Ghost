@@ -2,6 +2,10 @@ import type {Knex} from 'knex';
 import type {PrometheusClient} from '@tryghost/prometheus-metrics';
 import type {ConfigInstance} from '../../../shared/config/loader';
 // @ts-expect-error This module lacks type definitions.
+import type Metrics from '@tryghost/metrics';
+// @ts-expect-error This module lacks type definitions.
+import type SettingsCache from '../../../shared/settings-cache';
+// @ts-expect-error This module lacks type definitions.
 import EmailAnalyticsServiceWrapper from './email-analytics-service-wrapper';
 // @ts-expect-error This module lacks type definitions.
 import {NewsletterEmailAnalyticsBatchProcessor} from './newsletter-email-analytics-batch-processor';
@@ -43,7 +47,9 @@ export const init = ({
         EmailRecipientFailure,
         EmailSpamComplaintEvent
     },
-    prometheusClient
+    metrics,
+    prometheusClient,
+    settingsCache
 }: {
     automationsApi: Pick<typeof AutomationsApi, 'getAutomatedEmailRecipientsByMailgunIds' | 'trackEmailDeliveredAndOpened'>;
     config: Pick<ConfigInstance, 'get'>;
@@ -56,7 +62,9 @@ export const init = ({
         EmailRecipientFailure: EmailRecipientFailure;
         EmailSpamComplaintEvent: EmailSpamComplaintEvent;
     };
+    metrics: Pick<Metrics, 'metric'>;
     prometheusClient: PrometheusClient | null;
+    settingsCache: Pick<typeof SettingsCache, 'get'>;
 }) => {
     const queries = new Queries(db.knex);
 
@@ -64,6 +72,7 @@ export const init = ({
         domainEvents,
         db,
         eventStorage: new NewsletterEmailEventStorage({
+            config,
             db,
             membersRepository,
             models: {
@@ -83,6 +92,8 @@ export const init = ({
     }
 
     newsletters.init({
+        config,
+        domainEvents,
         event: StartEmailAnalyticsJobEvent,
         queries,
         mailgunTags: newsletterMailgunTags,
@@ -100,7 +111,9 @@ export const init = ({
                 failed: 'failed_at'
             }
         },
+        metrics,
         prometheusClient,
+        settingsCache,
         createEventProcessor: () => (
             new NewsletterEmailAnalyticsBatchProcessor({
                 config,
@@ -112,6 +125,8 @@ export const init = ({
     });
 
     automations.init({
+        config,
+        domainEvents,
         event: StartAutomationEmailAnalyticsJobEvent,
         queries,
         mailgunTags: [AUTOMATION_EMAIL_TAG],
@@ -128,6 +143,8 @@ export const init = ({
                 opened: 'opened_at'
             }
         },
+        metrics,
+        settingsCache,
         createEventProcessor: () => (
             new AutomationEmailAnalyticsBatchProcessor({
                 automationsApi

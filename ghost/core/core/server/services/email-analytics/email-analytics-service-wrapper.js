@@ -1,14 +1,17 @@
+const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
-const metrics = require('@tryghost/metrics');
-const config = require('../../../shared/config');
-const domainEvents = require('@tryghost/domain-events');
+/** @import {ConfigInstance} from '../../../shared/config/loader' */
+/** @import DomainEvents from '@tryghost/domain-events' */
 /** @import {Queries} from './lib/queries' */
+/** @import Metrics from '@tryghost/metrics' */
 /** @import {PrometheusClient} from '@tryghost/prometheus-metrics' */
 /** @import {BatchEventProcessor} from './batch-event-processor' */
 /** @import {JobNames, CursorSeed, EmailAnalyticsFetchResult} from './email-analytics-service' */
 
 class EmailAnalyticsServiceWrapper {
     /** @type {string} */ #logName;
+    /** @type {Pick<ConfigInstance, 'get'> | undefined} */ #config;
+    /** @type {Pick<Metrics, 'metric'> | undefined} */ #metrics;
     #fetching = false;
     #restoredSchedule = false;
 
@@ -28,33 +31,43 @@ class EmailAnalyticsServiceWrapper {
 
     /**
      * @param {object} options
-     * @param {Parameters<typeof domainEvents.subscribe>[0]} options.event
+     * @param {Pick<ConfigInstance, 'get'>} options.config
+     * @param {Pick<DomainEvents, 'subscribe'>} options.domainEvents
+     * @param {Parameters<DomainEvents['subscribe']>[0]} options.event
      * @param {Queries} options.queries
      * @param {string[]} options.mailgunTags
      * @param {JobNames} options.jobNames
      * @param {CursorSeed} options.cursorSeed
      * @param {() => BatchEventProcessor} options.createEventProcessor
+     * @param {Pick<Metrics, 'metric'>} options.metrics
      * @param {PrometheusClient | null} options.prometheusClient
+     * @param {{get: (key: string) => unknown}} options.settingsCache
      */
     init({
+        config,
+        domainEvents,
         event,
         queries,
         mailgunTags,
         jobNames,
         cursorSeed,
         createEventProcessor,
-        prometheusClient
+        metrics,
+        prometheusClient,
+        settingsCache
     }) {
         if (this.service) {
             return;
         }
 
+        this.#config = config;
+        this.#metrics = metrics;
+
         const {EmailAnalyticsService} = require('./email-analytics-service');
         const {fetchMailgunEvents} = require('./fetch-mailgun-events');
-        const settings = require('../../../shared/settings-cache');
 
         this.service = new EmailAnalyticsService({
-            fetchEvents: (options) => fetchMailgunEvents({...options, config, settings, tags: mailgunTags}),
+            fetchEvents: (options) => fetchMailgunEvents({...options, config, settings: settingsCache, tags: mailgunTags}),
             queries,
             jobNames,
             cursorSeed,
@@ -63,7 +76,7 @@ class EmailAnalyticsServiceWrapper {
         });
 
         // Log the processing mode on initialization
-        const batchProcessingEnabled = config.get('emailAnalytics:batchProcessing');
+        const batchProcessingEnabled = this.#config.get('emailAnalytics:batchProcessing');
         logging.info(`${this.#logPrefix} Initialized with ${batchProcessingEnabled ? 'BATCHED' : 'SEQUENTIAL'} processing mode`);
 
         // We currently cannot trigger a non-offloaded job from the job manager
@@ -73,6 +86,14 @@ class EmailAnalyticsServiceWrapper {
         });
     }
 
+    #getConfig() {
+        const result = this.#config;
+        if (!result) {
+            throw new errors.InternalServerError({message: "EmailAnalyticsServiceWrapper is not initialized with config"});
+        }
+        return result;
+    }
+
     /**
      * Log comprehensive job completion with timing metrics
      * @param {string} jobType - Type of job (e.g., 'latest-opened', 'latest', 'missing', 'scheduled')
@@ -80,6 +101,8 @@ class EmailAnalyticsServiceWrapper {
      * @param {number} totalDurationMs - Total duration in milliseconds
      */
     _logJobCompletion(jobType, fetchResult, totalDurationMs) {
+        const config = this.#getConfig();
+
         const {eventCount, apiPollingTimeMs, processingTimeMs, aggregationTimeMs, emailAggregationTimeMs, memberAggregationTimeMs, result} = fetchResult;
 
         if (eventCount === 0) {
@@ -110,6 +133,13 @@ class EmailAnalyticsServiceWrapper {
                 const metricName = this.#logName === 'newsletters'
                     ? 'email-analytics-open-throughput'
                     : `email-${this.#logName}-analytics-open-throughput`;
+
+                const metrics = this.#metrics;
+                if (!metrics) {
+                    throw new errors.InternalServerError({
+                        message: 'EmailAnalyticsServiceWrapper is not initialized with metrics'
+                    });
+                }
                 metrics.metric(metricName, {
                     value: throughput,
                     events: eventCount,
@@ -120,6 +150,8 @@ class EmailAnalyticsServiceWrapper {
     }
 
     async fetchLatestOpenedEvents({maxEvents} = {maxEvents: Infinity}) {
+        const config = this.#getConfig();
+
         const beginTimestamp = await this.service.getLastOpenedEventTimestamp();
         const lagMinutes = (Date.now() - beginTimestamp.getTime()) / 60000;
         const lagThreshold = config.get('emailAnalytics:openedJobLagWarningMinutes');

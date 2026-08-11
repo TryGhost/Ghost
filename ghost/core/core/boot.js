@@ -357,6 +357,7 @@ async function initServices({ghostServer, config, prometheusClient}) {
     const adapterManager = require('./server/services/adapter-manager').default;
     const {withErrorCapture} = require('./server/adapters/scheduling/error-capture');
 
+    const metrics = require('@tryghost/metrics');
     const db = require('./server/data/db');
     const models = require('./server/models');
     const urlUtils = require('./shared/url-utils').default;
@@ -393,7 +394,9 @@ async function initServices({ghostServer, config, prometheusClient}) {
             emailSuppressionList,
             membersRepository: members.api.members,
             models,
-            prometheusClient
+            metrics,
+            prometheusClient,
+            settingsCache
         }),
         webhooks.listen(),
         comments.init(),
