@@ -58,7 +58,7 @@ describe('Gift Deliveries API', function () {
             email_provider_message_id: null,
             delivery_outcome: 'unknown',
             delivery_outcome_at: null,
-            delivery_outcome_diagnostics: null,
+            delivery_outcome_error: null,
             redeemer_member_id: null,
             tier_id: paidTier.id,
             cadence: 'year',
