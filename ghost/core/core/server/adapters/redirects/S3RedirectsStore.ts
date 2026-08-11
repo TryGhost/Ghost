@@ -184,16 +184,6 @@ export default class S3RedirectsStore extends RedirectsStoreBase {
         }
     }
 
-    /**
-     * An AWS SDK exception holds `$response`, a reference to its own live HTTP
-     * response — a circular object graph. Ghost's API error handler deep-clones
-     * the error it renders, with no cycle detection, so letting one escape made
-     * that clone recurse until the stack blew and the caller was told "Maximum
-     * call stack size exceeded". Nothing is taken off the SDK exception by
-     * reference, which is what makes the replacement safe to serialise; the
-     * origin frames are carried across as a string so the real failure is still
-     * diagnosable from the logs.
-     */
     private _requestError(err: unknown): Error {
         // The only Ghost errors reaching here are this store's own, which are
         // already safe to render — re-wrapping them would hide the reason.
