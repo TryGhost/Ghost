@@ -317,7 +317,7 @@ async function initAppService() {
  * These services should all be part of core, frontend services should be loaded with the frontend
  * We are working towards this being a service loader, with the ability to make certain services optional
  */
-async function initServices({ghostServer} = {}) {
+async function initServices({ghostServer, config}) {
     debug('Begin: initServices');
 
     debug('Begin: Services');
@@ -386,6 +386,7 @@ async function initServices({ghostServer} = {}) {
         emailService.init({ghostServer}),
         emailAnalytics.init({
             automationsApi,
+            config,
             db,
             domainEvents
         }),
@@ -600,7 +601,7 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
             await initAppService();
         }
 
-        await initServices({ghostServer});
+        await initServices({ghostServer, config});
         debug('End: Load Ghost Services & Apps');
 
         // Step 5 - Mount the full Ghost app onto the minimal root app & disable maintenance mode

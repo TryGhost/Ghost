@@ -1,7 +1,7 @@
 import type {Knex} from 'knex';
+import type {ConfigInstance} from '../../../shared/config/loader';
 // @ts-expect-error This module lacks type definitions.
 import EmailAnalyticsServiceWrapper from './email-analytics-service-wrapper';
-import config from '../../../shared/config';
 // @ts-expect-error This module lacks type definitions.
 import {NewsletterEmailAnalyticsBatchProcessor} from './newsletter-email-analytics-batch-processor';
 // @ts-expect-error This module lacks type definitions.
@@ -34,10 +34,12 @@ export const automations = new EmailAnalyticsServiceWrapper({
 
 export const init = ({
     automationsApi,
+    config,
     db,
     domainEvents
 }: {
     automationsApi: Pick<typeof AutomationsApi, 'getAutomatedEmailRecipientsByMailgunIds' | 'trackEmailDeliveredAndOpened'>;
+    config: Pick<ConfigInstance, 'get'>;
     db: {knex: Knex},
     domainEvents: Pick<DomainEvents, 'subscribe'>;
 }) => {
