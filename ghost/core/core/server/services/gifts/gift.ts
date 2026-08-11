@@ -1,3 +1,4 @@
+import type {SetOptional} from 'type-fest';
 import {GIFT_EXPIRY_DAYS} from './constants';
 import type {GiftCadence, GiftData, GiftDeliveryMethod, GiftDeliveryOutcome, GiftDeliveryStatus, GiftStatus} from './gift-schema';
 
@@ -33,7 +34,7 @@ export type GiftFromPurchaseData = Pick<GiftData,
     | 'deliverAt'
 >>;
 
-type GiftConstructorData = Omit<GiftData,
+type GiftConstructorData = SetOptional<GiftData,
     | 'buyerName'
     | 'deliveryMethod'
     | 'recipientEmail'
@@ -48,22 +49,7 @@ type GiftConstructorData = Omit<GiftData,
     | 'deliveryOutcome'
     | 'deliveryOutcomeAt'
     | 'deliveryOutcomeError'
-> & Partial<Pick<GiftData,
-    | 'buyerName'
-    | 'deliveryMethod'
-    | 'recipientEmail'
-    | 'recipientName'
-    | 'personalMessage'
-    | 'deliverAt'
-    | 'deliveryStatus'
-    | 'deliveryAttempts'
-    | 'deliveryAttemptAt'
-    | 'emailSentAt'
-    | 'emailProviderMessageId'
-    | 'deliveryOutcome'
-    | 'deliveryOutcomeAt'
-    | 'deliveryOutcomeError'
->>;
+>;
 
 export class Gift implements GiftData {
     token: string;
