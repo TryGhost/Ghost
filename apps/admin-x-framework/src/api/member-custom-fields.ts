@@ -1,4 +1,4 @@
-import {FIELD_TYPE_IDS, type FieldType} from '@tryghost/custom-field-types';
+import {FIELD_TYPE_IDS, type Address, type FieldType} from '@tryghost/custom-field-types';
 import {csvColumnsForField} from '@tryghost/custom-field-types/csv';
 import {Meta, createMutation, createQuery, createQueryWithId} from '../utils/api/hooks';
 
@@ -54,6 +54,8 @@ const fieldTypePresentation: Record<FieldType, Omit<MemberCustomFieldUserType, '
     address: {
         label: 'Address',
         input: 'address',
+        // Keyed to the shared value schema's parts (`satisfies`), so a part added, removed,
+        // or mistyped upstream is a compile error here rather than a silently missing label.
         subFields: {
             line1: 'Address line 1',
             line2: 'Address line 2',
@@ -61,7 +63,7 @@ const fieldTypePresentation: Record<FieldType, Omit<MemberCustomFieldUserType, '
             state: 'State',
             postal_code: 'Postal code',
             country: 'Country'
-        }
+        } satisfies Record<keyof Address, string>
     }
 };
 
