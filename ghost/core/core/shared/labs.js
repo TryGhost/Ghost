@@ -30,8 +30,7 @@ const GA_FEATURES = [
     'automationAnalytics',
     'customFonts',
     'commentsThreads',
-    'commentsPinning',
-    'dangerZoneResetAuth'
+    'commentsPinning'
 ];
 
 // These features are considered publicly available and can be enabled/disabled by users

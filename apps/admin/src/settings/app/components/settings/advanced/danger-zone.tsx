@@ -8,7 +8,6 @@ import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {toast} from 'sonner';
 import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
 import {useDeleteAllContent} from '@tryghost/admin-x-framework/api/db';
-import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useQueryClient} from '@tryghost/admin-x-framework';
 import {useRemoveAllGiftLinks} from '@tryghost/admin-x-framework/api/gift-links';
@@ -21,11 +20,8 @@ const DangerZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {mutateAsync: removeAllGiftLinks} = useRemoveAllGiftLinks();
     const client = useQueryClient();
     const handleError = useHandleError();
-    const {config} = useGlobalData();
     const {totalUsers} = useStaffUsers();
     const {confirm} = useConfirmation();
-
-    const resetAuthEnabled = Boolean(config?.labs?.dangerZoneResetAuth);
 
     const resetAuthStaffSentence = totalUsers === 1
         ? 'You will be signed out and must reset your password before signing back in.'
@@ -121,15 +117,13 @@ const DangerZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     </ActionListItemContent>
                     <ActionListItemActions><Button aria-label='Delete all content' size='sm' type='button' variant='destructive' onClick={handleDeleteAllContent}>Delete</Button></ActionListItemActions>
                 </ActionListItem>
-                {resetAuthEnabled && (
-                    <ActionListItem data-testid='reset-all-authentication' hover={false}>
-                        <ActionListItemContent className='py-3 pr-6'>
-                            <div>Reset all authentication</div>
-                            <div className='text-sm text-muted-foreground'>Rotate every API key, sign out every staff user, and require a password reset. Use after a suspected credential compromise.</div>
-                        </ActionListItemContent>
-                        <ActionListItemActions><Button aria-label='Reset all authentication' size='sm' type='button' variant='destructive' onClick={handleResetAuth}>Reset</Button></ActionListItemActions>
-                    </ActionListItem>
-                )}
+                <ActionListItem data-testid='reset-all-authentication' hover={false}>
+                    <ActionListItemContent className='py-3 pr-6'>
+                        <div>Reset all authentication</div>
+                        <div className='text-sm text-muted-foreground'>Rotate every API key, sign out every staff user, and require a password reset. Use after a suspected credential compromise.</div>
+                    </ActionListItemContent>
+                    <ActionListItemActions><Button aria-label='Reset all authentication' size='sm' type='button' variant='destructive' onClick={handleResetAuth}>Reset</Button></ActionListItemActions>
+                </ActionListItem>
                 <ActionListItem data-testid='reset-all-gift-links' hover={false}>
                     <ActionListItemContent className='py-3 pr-6'>
                         <div>Reset all gift links</div>
