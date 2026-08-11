@@ -56,7 +56,7 @@ Ghost/
 pnpm links the workspaces and Nx runs their tasks in dependency order. For more
 detail, see the [monorepo structure guide](codebase/monorepo-structure.md).
 
-## Contributing
+## Contributing a change
 
 Before contributing, please read:
 
