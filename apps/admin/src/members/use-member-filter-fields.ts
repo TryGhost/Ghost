@@ -33,6 +33,10 @@ interface UseMemberFilterFieldsOptions {
 type OfferOption = FilterOption<string>;
 type SearchableFieldOverrides = Pick<FilterFieldConfig, 'options' | 'valueSource'>;
 
+// How many custom fields the picker shows before "Show more" — the same preview
+// size the settings list uses. The rest stay searchable and resolvable.
+const CUSTOM_FIELDS_PREVIEW_LIMIT = 5;
+
 const MEMBER_OPERATOR_LABELS: Record<string, string> = {
     'is-any': 'is any of',
     'is-not-any': 'is none of',
@@ -379,7 +383,7 @@ export function useMemberFilterFields({
                 customRenderer: props => React.createElement(CustomFieldFilterRenderer, props as React.ComponentProps<typeof CustomFieldFilterRenderer>)
             }));
 
-            groups.push({group: 'Custom fields', fields: customFieldFields});
+            groups.push({group: 'Custom fields', fields: customFieldFields, previewLimit: CUSTOM_FIELDS_PREVIEW_LIMIT});
         }
 
         if (activeNewsletters.length > 1) {
