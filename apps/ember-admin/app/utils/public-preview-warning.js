@@ -1,5 +1,4 @@
 const PUBLIC_ACCESS = 'public-access';
-const NO_CONTENT_BEFORE = 'no-content-before';
 const NO_CONTENT_AFTER = 'no-content-after';
 
 function parseLexicalState(lexical) {
@@ -45,6 +44,26 @@ export function hasPublicPreview(post) {
     return children.some(node => node?.type === 'paywall');
 }
 
+// the divider at the top of the post means nothing is previewed — that's the
+// resting state gating creates. A preview only exists once content sits above
+// the divider, and only then should it shape audiences and copy.
+export function hasPublicPreviewContent(post) {
+    const state = parseLexicalState(post.lexicalScratch || post.lexical);
+    const children = state?.root?.children;
+
+    if (!Array.isArray(children)) {
+        return false;
+    }
+
+    const dividerIndex = children.findIndex(node => node?.type === 'paywall');
+
+    if (dividerIndex === -1) {
+        return false;
+    }
+
+    return children.slice(0, dividerIndex).some(lexicalNodeHasContent);
+}
+
 // which non-access groups get the preview by email, read from the paywall
 // node: 'all' (everyone without access), '' (nobody), or a CSV of member
 // segments like 'status:free,tier:bronze'. Falls back to the legacy
@@ -83,8 +102,10 @@ export function getPublicPreviewWarning(post) {
         return PUBLIC_ACCESS;
     }
 
+    // the divider at the top is the valid "no preview" resting state, never
+    // a warning — gating parks it there by default
     if (!children.slice(0, publicPreviewIndex).some(lexicalNodeHasContent)) {
-        return NO_CONTENT_BEFORE;
+        return null;
     }
 
     if (!children.slice(publicPreviewIndex + 1).some(lexicalNodeHasContent)) {

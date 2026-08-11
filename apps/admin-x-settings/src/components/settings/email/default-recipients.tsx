@@ -13,8 +13,8 @@ type RefipientValueArgs = {
 };
 
 const RECIPIENT_FILTER_OPTIONS = [{
-    label: 'Whoever has access to the post',
-    hint: 'Free posts to everyone, premium posts sent to paid members',
+    label: 'Automatic',
+    hint: 'Posts go to whoever can read them; posts with a free preview go to everyone',
     value: 'visibility'
 }, {
     label: 'All members',

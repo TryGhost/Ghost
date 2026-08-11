@@ -33,27 +33,49 @@
                 <div class="gh-pubflow-row-head">
                     {{svg-jar "send-email"}}
                     {{#if this.emailActive}}
-                        <span class="gh-pubflow-row-label gh-pubflow-row-label-email">
+                        <span class="gh-pubflow-row-label gh-pubflow-row-label-email gh-pubflow-when-label">
                             Email
-                            <button type="button" class="gh-pubflow-inline-trigger" {{on "click" this.toggleAudiencePicker}} data-testid="email-audience-trigger">
+                            <button type="button" class="gh-pubflow-inline-trigger" {{on "click" this.toggleAudienceMenu}} data-testid="email-audience-trigger">
                                 {{#let (members-count-fetcher query=(hash filter=this.totalCountFilter)) as |totalFetcher|}}
-                                    <span class="gh-pubflow-count">{{if totalFetcher.isLoading "…" (format-number totalFetcher.count)}}</span> subscribers
+                                    {{if (eq this.audienceChoice "all") "all "}}<span class="gh-pubflow-count">{{if totalFetcher.isLoading "…" (format-number totalFetcher.count)}}</span> subscribers
                                 {{/let}}
+                                {{svg-jar "arrow-down-small" class="gh-pubflow-caret"}}
                             </button>
+                            {{#if (eq this.openMenu "audience")}}
+                                <div class="gh-pubflow-when-menu" data-testid="audience-menu">
+                                    <button type="button" class="{{if (eq this.audienceChoice "all") "active"}}" {{on "click" this.chooseAllAudience}} data-testid="audience-option-all">
+                                        All subscribers
+                                        {{#if (eq this.audienceChoice "all")}}{{svg-jar "check-2"}}{{/if}}
+                                    </button>
+                                    {{#if this.accessAudienceFilter}}
+                                        <button type="button" class="{{if (eq this.audienceChoice "access") "active"}}" {{on "click" this.chooseAccessAudience}} data-testid="audience-option-access">
+                                            Only people with full post access
+                                            {{#if (eq this.audienceChoice "access")}}{{svg-jar "check-2"}}{{/if}}
+                                        </button>
+                                    {{/if}}
+                                    <button type="button" class="{{if (eq this.audienceChoice "specific") "active"}}" {{on "click" this.chooseSpecificAudience}} data-testid="audience-option-specific">
+                                        Specific people&hellip;
+                                        {{#if (eq this.audienceChoice "specific")}}{{svg-jar "check-2"}}{{/if}}
+                                    </button>
+                                </div>
+                            {{/if}}
                             {{#if (gt @publishOptions.newsletters.length 1)}}
                                 of
-                                <span class="gh-pubflow-newsletter-inline" data-test-select="newsletter">
-                                    <PowerSelect
-                                        @selected={{@publishOptions.newsletter}}
-                                        @options={{@publishOptions.newsletters}}
-                                        @onChange={{@publishOptions.setNewsletter}}
-                                        @triggerComponent={{component "gh-power-select/trigger"}}
-                                        @triggerClass="gh-pubflow-newsletter-trigger"
-                                        @dropdownClass="gh-publish-newsletter-dropdown"
-                                        as |newsletter|
-                                    >
-                                        <span data-test-select-option={{newsletter.name}}>{{newsletter.name}}</span>
-                                    </PowerSelect>
+                                <span class="gh-pubflow-when-label" data-test-select="newsletter">
+                                    <button type="button" class="gh-pubflow-inline-trigger" {{on "click" this.toggleNewsletterMenu}} data-testid="newsletter-trigger">
+                                        {{@publishOptions.newsletter.name}}
+                                        {{svg-jar "arrow-down-small" class="gh-pubflow-caret"}}
+                                    </button>
+                                    {{#if (eq this.openMenu "newsletter")}}
+                                        <div class="gh-pubflow-when-menu" data-testid="newsletter-menu">
+                                            {{#each @publishOptions.newsletters as |newsletter|}}
+                                                <button type="button" class="{{if (eq newsletter @publishOptions.newsletter) "active"}}" {{on "click" (fn this.chooseNewsletter newsletter)}} data-test-select-option={{newsletter.name}}>
+                                                    {{newsletter.name}}
+                                                    {{#if (eq newsletter @publishOptions.newsletter)}}{{svg-jar "check-2"}}{{/if}}
+                                                </button>
+                                            {{/each}}
+                                        </div>
+                                    {{/if}}
                                 </span>
                             {{/if}}
                         </span>
@@ -68,7 +90,7 @@
                     </div>
                 </div>
                 {{#if this.emailActive}}
-                    {{#if this.audiencePickerOpen}}
+                    {{#if this.showAudiencePicker}}
                         <div class="gh-pubflow-segments" data-test-select="segment-groups">
                             <GhSegmentTokenInput
                                 @nonLabelOptions={{this.nonLabelOptions}}
@@ -83,25 +105,35 @@
                     {{/if}}
                     {{#if this.hasSplit}}
                         <p class="gh-pubflow-outcome" data-testid="email-outcome">
-                            {{#if this.warnUngated}}
-                                {{#let (members-count-fetcher query=(hash filter=this.totalCountFilter)) as |totalFetcher|}}
-                                    <span class="gh-pubflow-count">{{if totalFetcher.isLoading "…" (format-number totalFetcher.count)}}</span> get the full post{{#let (members-count-fetcher query=(hash filter=this.otherCountFilter)) as |otherFetcher|}}{{#if (gt otherFetcher.count 0)}} &mdash; including <span class="gh-pubflow-count">{{format-number otherFetcher.count}}</span> {{this.notEmailedNoun}}{{/if}}{{/let}}.
-                                {{/let}}
-                            {{else}}
-                                {{#let (members-count-fetcher query=(hash filter=this.fullCountFilter)) as |fullFetcher|}}
+                            {{#let (members-count-fetcher query=(hash filter=this.fullCountFilter)) as |fullFetcher|}}
                                     <span class="gh-pubflow-count">{{if fullFetcher.isLoading "…" (format-number fullFetcher.count)}}</span> {{this.fullNoun}} get the full post
                                 {{/let}}
                                 {{#if this.otherCountFilter}}
                                     {{#let (members-count-fetcher query=(hash filter=this.otherCountFilter)) as |otherFetcher|}}
                                         {{#if (gt otherFetcher.count 0)}}
-                                            &middot; <span class="gh-pubflow-count">{{format-number otherFetcher.count}}</span> {{this.otherOutcomeLabel}}
+                                            {{#if this.fullyLocked}}
+                                                &middot; <span class="gh-pubflow-count">{{format-number otherFetcher.count}}</span> {{this.notEmailedNoun}} <span class="gh-pubflow-when-label"><button type="button" class="gh-pubflow-inline-trigger" {{on "click" this.toggleLockedOutcomeMenu}} data-testid="locked-outcome-trigger">{{this.lockedOutcomeLabel}}{{svg-jar "arrow-down-small" class="gh-pubflow-caret"}}</button>
+                                                {{#if (eq this.openMenu "locked-outcome")}}
+                                                    <span class="gh-pubflow-when-menu" data-testid="locked-outcome-menu">
+                                                        <button type="button" class="{{unless this.post.emailFullPost "active"}}" {{on "click" (fn this.chooseLockedOutcome false)}} data-testid="locked-outcome-teaser">
+                                                            The title &amp; image only
+                                                            {{#unless this.post.emailFullPost}}{{svg-jar "check-2"}}{{/unless}}
+                                                        </button>
+                                                        <button type="button" class="{{if this.post.emailFullPost "active"}}" {{on "click" (fn this.chooseLockedOutcome true)}} data-testid="locked-outcome-full">
+                                                            The full post &mdash; bypasses the divider
+                                                            {{#if this.post.emailFullPost}}{{svg-jar "check-2"}}{{/if}}
+                                                        </button>
+                                                    </span>
+                                                {{/if}}
+                                                </span>
+                                            {{else}}
+                                                &middot; <span class="gh-pubflow-count">{{format-number otherFetcher.count}}</span> {{this.otherOutcomeLabel}}
+                                            {{/if}}
+                                        {{else if (not otherFetcher.isLoading)}}
+                                            &middot; {{this.notEmailedNote}}
                                         {{/if}}
                                     {{/let}}
                                 {{/if}}
-                                {{#if this.showNotEmailedNote}}
-                                    &middot; free subscribers aren&rsquo;t emailed
-                                {{/if}}
-                            {{/if}}
                         </p>
                     {{/if}}
                 {{else if this.emailDisabledReason}}
@@ -110,14 +142,15 @@
             </div>
         {{/unless}}
 
-        <div class="gh-pubflow-row gh-pubflow-row-last" data-test-setting="publish-at">
+        <div class="gh-pubflow-row" data-test-setting="publish-at">
             <div class="gh-pubflow-row-head">
                 {{svg-jar "clock"}}
                 <span class="gh-pubflow-row-label gh-pubflow-when-label">
                     <button type="button" class="gh-pubflow-inline-trigger" {{on "click" this.toggleWhenMenu}} data-testid="publish-at-trigger">
                         {{#if @publishOptions.isScheduled}}{{this.relativeScheduleLabel}}{{else}}Right now{{/if}}
+                        {{svg-jar "arrow-down-small" class="gh-pubflow-caret"}}
                     </button>
-                    {{#if this.whenMenuOpen}}
+                    {{#if (eq this.openMenu "when")}}
                         <div class="gh-pubflow-when-menu" data-testid="when-menu">
                             <button type="button" class="{{unless @publishOptions.isScheduled "active"}}" {{on "click" this.chooseNow}} data-testid="when-option-now">
                                 Right now

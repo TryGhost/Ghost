@@ -908,20 +908,110 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     height: 2.4rem;
 }
 
-/* Access bar (publicPreviews labs flag) -------------------------------- */
+/* Access pill (publicPreviews labs flag) — quiet at rest, loud once on
+   the transition that matters, gone when the post is public-and-plain */
 
-.gh-editor-access-bar {
+.gh-access-pill-wrap {
     display: flex;
-    align-items: center;
-    gap: 2px;
 }
 
-/* a divider exists but the post is public: the access selector is the thing
-   to change, so it wears a yellow rectangle while that state holds */
-.gh-editor-access-bar-attention {
-    outline: 2px solid var(--yellow);
-    outline-offset: 3px;
-    border-radius: 6px;
+.gh-access-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 28px;
+    padding: 0 9px;
+    border: 0.5px solid rgba(255, 255, 255, 0.45);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.55);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    backdrop-filter: blur(16px) saturate(180%);
+    color: var(--black);
+    font-size: 1.25rem;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 0;
+    white-space: nowrap;
+    cursor: pointer;
+    opacity: 0.75;
+    transition: opacity 0.3s ease, box-shadow 0.25s ease, background 0.25s ease;
+}
+
+.gh-access-pill:hover,
+.gh-access-pill:focus-within,
+.gh-access-pill[aria-expanded="true"] {
+    opacity: 1;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+}
+
+.gh-access-pill svg {
+    width: 13px;
+    height: 13px;
+    flex-shrink: 0;
+}
+
+.gh-access-pill svg path {
+    stroke: currentColor;
+}
+
+/* the label slides out of the chip on approach */
+.gh-access-pill-label {
+    display: inline-block;
+    max-width: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-width 0.22s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.18s ease;
+}
+
+.gh-access-pill:hover .gh-access-pill-label,
+.gh-access-pill[aria-expanded="true"] .gh-access-pill-label,
+.gh-access-pill-expanded .gh-access-pill-label,
+.gh-access-pill-announce .gh-access-pill-label {
+    max-width: 320px;
+    opacity: 1;
+}
+
+/* speaking in full also means full presence */
+.gh-access-pill-expanded {
+    opacity: 1;
+}
+
+/* public: quieter still — the concept barely exists */
+.gh-access-pill-quietest {
+    opacity: 0.55;
+}
+
+/* one loud beat when deleting the wall makes the post public */
+.gh-access-pill-announce {
+    background: rgba(255, 248, 225, 0.92);
+    border-color: rgba(190, 150, 40, 0.35);
+    box-shadow: 0 3px 14px rgba(0, 0, 0, 0.16);
+    opacity: 1;
+    animation: gh-access-pulse 0.4s cubic-bezier(0.23, 1, 0.32, 1) 1;
+}
+
+@keyframes gh-access-pulse {
+    0% { transform: scale(1); }
+    35% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .gh-access-pill-announce {
+        animation: none;
+    }
+}
+
+.gh-access-pill-undo {
+    margin-left: 4px;
+    padding: 0;
+    border: none;
+    background: none;
+    color: inherit;
+    font: inherit;
+    font-weight: 600;
+    text-decoration: underline;
+    cursor: pointer;
 }
 
 /* Centered in the editor header between post status and publish buttons */
@@ -938,57 +1028,13 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     }
 }
 
-.gh-access-bar-trigger {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 10px;
-    border: none;
-    border-radius: var(--border-radius);
-    background: transparent;
-    color: var(--midgrey);
-    font-size: 1.3rem;
-    font-weight: 500;
-    line-height: 1;
-    letter-spacing: 0;
-    cursor: pointer;
-    transition: background 0.15s ease, color 0.15s ease;
-}
 
-.gh-access-bar-trigger:hover {
-    background: var(--whitegrey-l1);
-    color: var(--darkgrey);
-}
 
-.gh-access-bar-trigger svg {
-    width: 13px;
-    height: 13px;
-}
 
-.gh-access-bar-trigger svg path {
-    stroke: currentColor;
-}
 
-.gh-access-bar-caret {
-    opacity: 0.5;
-}
 
-.gh-access-bar-trigger .gh-access-bar-caret {
-    width: 9px;
-    height: 9px;
-}
 
-.gh-access-bar-trigger-add {
-    color: var(--midgrey-l1);
-    font-weight: 400;
-}
 
-.gh-access-bar-divider {
-    width: 1px;
-    height: 16px;
-    margin: 0 4px;
-    background: var(--whitegrey-d1);
-}
 
 .gh-access-bar-popover {
     min-width: 300px;
@@ -1637,6 +1683,3 @@ figure {
     letter-spacing: 0.3px;
 }
 
-.gh-koenig-editor [data-lexical-editor="true"] > div:has([data-kg-card="paywall"]) ~ * {
-    opacity: 0.5;
-}

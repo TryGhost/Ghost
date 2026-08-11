@@ -1,67 +1,50 @@
 {{#if this.canManageAccess}}
-    <div class="gh-editor-access-bar {{if this.showAccessAttention "gh-editor-access-bar-attention"}}" data-testid="editor-access-bar">
-        <GhBasicDropdown @verticalPosition="below" @horizontalPosition="left" @registerAPI={{this.registerDropdownAPI}} @onClose={{this.onAccessMenuClose}} as |dd|>
-            <dd.Trigger class="gh-access-bar-trigger" data-testid="access-bar-visibility">
-                {{#if this.isGated}}
-                    {{svg-jar "lock"}}
-                {{else}}
-                    {{svg-jar "globe-simple"}}
-                {{/if}}
-                <span>{{this.accessLabel}}</span>
-                {{svg-jar "arrow-down-small" class="gh-access-bar-caret"}}
-            </dd.Trigger>
-            <dd.Content class="gh-access-bar-popover dropdown-menu">
-                <header class="gh-access-bar-popover-header">Who can read this {{this.post.displayName}}?</header>
-                <ul class="gh-access-bar-options">
-                    {{#each this.accessOptions as |option|}}
-                        <li>
-                            <button type="button" class="gh-access-bar-option {{if (eq option.name this.visibility) "selected"}}" {{on "click" (fn this.setVisibility option.name dd)}} data-testid="access-option-{{option.name}}">
-                                <span class="gh-access-bar-option-text">
-                                    <span class="gh-access-bar-option-label">{{option.label}}</span>
-                                    <span class="gh-access-bar-option-desc">{{option.description}}</span>
-                                </span>
-                                {{#if (eq option.name this.visibility)}}
-                                    {{svg-jar "check-2" class="gh-access-bar-check"}}
-                                {{/if}}
-                            </button>
-                        </li>
-                    {{/each}}
-                </ul>
-                {{#if (eq this.visibility "tiers")}}
-                    <div class="gh-access-bar-tiers">
-                        <GhPostSettingsMenu::VisibilitySegmentSelect
-                            @tiers={{this.post.tiers}}
-                            @onChange={{this.setTiers}}
-                            @renderInPlace={{true}}
-                        />
-                    </div>
-                {{/if}}
-            </dd.Content>
-        </GhBasicDropdown>
-
-        {{#if this.isGated}}
-            <span class="gh-access-bar-divider"></span>
-            {{#if this.hasPublicPreview}}
-                <button
-                    type="button"
-                    class="gh-access-bar-trigger gh-access-bar-state"
-                    title="Jump to the public preview divider"
-                    {{on "click" this.scrollToPreviewDivider}}
-                    data-testid="access-bar-preview-state"
-                >
-                    {{svg-jar "eye"}}
-                    <span>Public preview added</span>
-                </button>
-            {{else}}
-                <button
-                    type="button"
-                    class="gh-access-bar-trigger gh-access-bar-trigger-add"
-                    {{on "click" this.addPublicPreview}}
-                    data-testid="access-bar-add-preview"
-                >
-                    <span>+ Add public preview</span>
-                </button>
-            {{/if}}
+    <div class="gh-access-pill-wrap" data-testid="editor-access-bar" {{did-insert this.setupScrollTracking}} {{did-update this.onWallPresenceChange this.hasPublicPreview}}>
+        {{#if this.announcement}}
+            <div class="gh-access-pill gh-access-pill-announce" data-testid="access-pill-announcement">
+                {{svg-jar "globe-simple"}}
+                <span class="gh-access-pill-label">Now public &mdash; everyone can read everything
+                    <button type="button" class="gh-access-pill-undo" {{on "click" this.undoUngate}} data-testid="access-pill-undo">Undo</button>
+                </span>
+            </div>
+        {{else}}
+            <GhBasicDropdown @verticalPosition="below" @horizontalPosition="center" @registerAPI={{this.registerDropdownAPI}} as |dd|>
+                <dd.Trigger class="gh-access-pill {{unless this.isGated "gh-access-pill-quietest"}} {{if this.pillExpanded "gh-access-pill-expanded"}}" data-testid="access-bar-visibility">
+                    {{#if this.isGated}}
+                        {{svg-jar "lock"}}
+                    {{else}}
+                        {{svg-jar "globe-simple"}}
+                    {{/if}}
+                    <span class="gh-access-pill-label">{{this.accessLabel}}</span>
+                </dd.Trigger>
+                <dd.Content class="gh-access-bar-popover dropdown-menu">
+                    <header class="gh-access-bar-popover-header">Who can read this {{this.post.displayName}}?</header>
+                    <ul class="gh-access-bar-options">
+                        {{#each this.accessOptions as |option|}}
+                            <li>
+                                <button type="button" class="gh-access-bar-option {{if (eq option.name this.visibility) "selected"}}" {{on "click" (fn this.setVisibility option.name dd)}} data-testid="access-option-{{option.name}}">
+                                    <span class="gh-access-bar-option-text">
+                                        <span class="gh-access-bar-option-label">{{option.label}}</span>
+                                        <span class="gh-access-bar-option-desc">{{option.description}}</span>
+                                    </span>
+                                    {{#if (eq option.name this.visibility)}}
+                                        {{svg-jar "check-2" class="gh-access-bar-check"}}
+                                    {{/if}}
+                                </button>
+                            </li>
+                        {{/each}}
+                    </ul>
+                    {{#if (eq this.visibility "tiers")}}
+                        <div class="gh-access-bar-tiers">
+                            <GhPostSettingsMenu::VisibilitySegmentSelect
+                                @tiers={{this.post.tiers}}
+                                @onChange={{this.setTiers}}
+                                @renderInPlace={{true}}
+                            />
+                        </div>
+                    {{/if}}
+                </dd.Content>
+            </GhBasicDropdown>
         {{/if}}
     </div>
 {{/if}}

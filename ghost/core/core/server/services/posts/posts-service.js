@@ -511,7 +511,8 @@ class PostsService {
                     'feature_image_caption',
                     'hide_title_and_feature_image',
                     'email_public_preview',
-                    'email_public_preview_audience'
+                    'email_public_preview_audience',
+                    'email_full_post'
                 ]
             );
         }

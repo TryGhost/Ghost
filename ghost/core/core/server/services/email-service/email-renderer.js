@@ -117,6 +117,13 @@ function getNegatedTierFilter(post) {
  * @param {Segment} segment
  * @returns {string|null}
  */
+// the publish-flow escape valve: this post's email bypasses the divider and
+// carries the full content for everyone on the list
+function emailFullPost(post) {
+    const postsMeta = post.related && post.related('posts_meta');
+    return Boolean(postsMeta?.get('email_full_post'));
+}
+
 function getSegmentStatus(segment) {
     if (!segment) {
         return null;
@@ -428,7 +435,11 @@ class EmailRenderer {
         const allowedSegments = ['status:free', 'status:-free'];
         const html = await this.renderPostBaseHtml(post);
 
-        const hasPaywall = html.indexOf('<!--members-only-->') !== -1;
+        // the divider always cuts the email for without-access recipients —
+        // even at the very top of the post, where the cut leaves the title,
+        // feature image and upgrade CTA: the same view the web shows them —
+        // unless this post's email explicitly bypasses the divider
+        const hasPaywall = html.indexOf('<!--members-only-->') !== -1 && !emailFullPost(post);
 
         const $ = cheerioLoad(html);
         const cardSegments = [...new Set(
@@ -551,7 +562,7 @@ class EmailRenderer {
         // Paywall and members only content handling
         const isPaidPost = post.get('visibility') === 'paid' || post.get('visibility') === 'tiers';
         const membersOnlyIndex = html.indexOf('<!--members-only-->');
-        const hasMembersOnlyContent = membersOnlyIndex !== -1;
+        const hasMembersOnlyContent = membersOnlyIndex !== -1 && !emailFullPost(post);
         let addPaywall = false;
 
         // Members without access to the gated content (free members, or members

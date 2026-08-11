@@ -1231,9 +1231,10 @@
     border-bottom: 1px solid var(--whitegrey);
 }
 
-.gh-pubflow-row-last {
+.gh-pubflow-row:last-child {
     border-bottom: none;
 }
+
 
 .gh-pubflow-row-head {
     display: flex;
@@ -1289,31 +1290,6 @@
     gap: 0 0.6rem;
 }
 
-/* the newsletter name reads as part of the sentence: same size, semibold,
-   no decoration — the name itself is the dropdown trigger */
-.gh-pubflow-newsletter-inline .gh-pubflow-newsletter-trigger {
-    padding: 0;
-    border: none;
-    border-radius: 0;
-    background: none;
-    box-shadow: none;
-    height: auto;
-    min-height: 0;
-    color: var(--black);
-    font-size: 1.8rem;
-    font-weight: 400;
-    font-family: inherit;
-    letter-spacing: 0;
-    line-height: 1.35em;
-    border-bottom: 1px dashed var(--midlightgrey);
-    cursor: pointer;
-}
-
-.gh-pubflow-newsletter-inline .ember-power-select-status-icon,
-.gh-pubflow-newsletter-inline .gh-pubflow-newsletter-trigger svg {
-    display: none;
-}
-
 .gh-pubflow-count {
     font-variant-numeric: tabular-nums;
 }
@@ -1329,6 +1305,18 @@
     line-height: inherit;
     border-bottom: 1px dashed var(--midlightgrey);
     cursor: pointer;
+}
+
+.gh-pubflow-inline-trigger .gh-pubflow-caret {
+    width: 1.1rem;
+    height: 1.1rem;
+    margin-left: 1px;
+    vertical-align: baseline;
+}
+
+.gh-pubflow-inline-trigger .gh-pubflow-caret path {
+    stroke: var(--midgrey);
+    stroke-width: 2px;
 }
 
 /* subline 1: the chosen value, darker than the derived outcome below it */
@@ -1439,12 +1427,9 @@
     margin-bottom: 0;
 }
 
+
 @media (max-width: 560px) {
     .gh-pubflow-row-label {
-        font-size: 1.6rem;
-    }
-
-    .gh-pubflow-newsletter-inline .gh-pubflow-newsletter-trigger {
         font-size: 1.6rem;
     }
 

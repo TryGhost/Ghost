@@ -1193,6 +1193,80 @@ describe('Email renderer', function () {
             assert.deepEqual(response, [null]);
         });
 
+        it('segments a marker-topped post: the teaser is a render variant', async function () {
+            // the divider at the very top still cuts the email — without-access
+            // recipients get the title/feature-image/CTA teaser, the same view
+            // the web shows them
+            const renderer = new EmailRenderer({
+                renderers: {
+                    lexical: {
+                        render: () => {
+                            return '<!--members-only--><p>Members content</p>';
+                        }
+                    }
+                },
+                getPostUrl: () => {
+                    return 'http://example.com/post-id';
+                },
+                labs: {
+                    isSet: () => false
+                }
+            });
+
+            const post = {
+                related: () => null,
+                get: (key) => {
+                    if (key === 'lexical') {
+                        return '{}';
+                    }
+                    if (key === 'visibility') {
+                        return 'paid';
+                    }
+                }
+            };
+
+            const response = await renderer.getSegments(post);
+            assert.deepEqual(response, ['status:free', 'status:-free']);
+        });
+
+        it('does not segment on the marker when the post email bypasses the divider', async function () {
+            const renderer = new EmailRenderer({
+                renderers: {
+                    lexical: {
+                        render: () => {
+                            return '<p>preview</p><!--members-only--><p>Members content</p>';
+                        }
+                    }
+                },
+                getPostUrl: () => {
+                    return 'http://example.com/post-id';
+                },
+                labs: {
+                    isSet: () => false
+                }
+            });
+
+            const post = {
+                related: (key) => {
+                    if (key === 'posts_meta') {
+                        return {get: k => (k === 'email_full_post' ? true : null)};
+                    }
+                    return null;
+                },
+                get: (key) => {
+                    if (key === 'lexical') {
+                        return '{}';
+                    }
+                    if (key === 'visibility') {
+                        return 'paid';
+                    }
+                }
+            };
+
+            const response = await renderer.getSegments(post);
+            assert.deepEqual(response, [null]);
+        });
+
         it('returns correct segments for post with members only card', async function () {
             emailRenderer = new EmailRenderer({
                 renderers: {
@@ -2410,6 +2484,30 @@ describe('Email renderer', function () {
             assert(responsePaid.html.includes('some text for both'));
             assert(responsePaid.html.includes('finishing part only for members'));
             assert(!responsePaid.html.includes('Become a paid member of Test Blog to get access to all'));
+        });
+
+        it('sends the teaser when the marker sits at the top of the post', async function () {
+            // the same view the web shows without-access visitors: no body,
+            // just the frame and the upgrade CTA
+            renderedPost = '<!--members-only--><p>finishing part only for members</p>';
+            const post = createModel({...basePost, visibility: 'paid'});
+            const newsletter = createModel(baseNewsletter);
+
+            const response = await emailRenderer.renderBody(post, newsletter, 'status:free', {});
+
+            assert(!response.html.includes('finishing part only for members'));
+            assert(response.html.includes('Upgrade to continue reading'));
+        });
+
+        it('sends the full post to everyone when the post email bypasses the divider', async function () {
+            renderedPost = '<p>free intro</p><!--members-only--><p>finishing part only for members</p>';
+            const post = createModel({...basePost, visibility: 'paid', posts_meta: createModel({email_full_post: true})});
+            const newsletter = createModel(baseNewsletter);
+
+            const response = await emailRenderer.renderBody(post, newsletter, 'status:free', {});
+
+            assert(response.html.includes('finishing part only for members'));
+            assert(!response.html.includes('Upgrade to continue reading'));
         });
 
         it('paywalls a tiers post for the no-access segment and not for the access segment', async function () {

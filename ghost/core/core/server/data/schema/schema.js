@@ -121,7 +121,8 @@ module.exports = {
         feature_image_caption: {type: 'text', maxlength: 65535, nullable: true},
         email_only: {type: 'boolean', nullable: false, defaultTo: false},
         email_public_preview: {type: 'boolean', nullable: false, defaultTo: true},
-        email_public_preview_audience: {type: 'string', maxlength: 50, nullable: true, validations: {isIn: [['all', 'free']]}}
+        email_public_preview_audience: {type: 'string', maxlength: 50, nullable: true, validations: {isIn: [['all', 'free']]}},
+        email_full_post: {type: 'boolean', nullable: false, defaultTo: false}
     },
     // Every gift link added to a post; replaced tokens remain as history. Liveness lives in post_gift_links.
     gift_links: {

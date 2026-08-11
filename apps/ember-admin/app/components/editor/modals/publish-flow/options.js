@@ -1,8 +1,8 @@
 import Component from '@glimmer/component';
 import moment from 'moment-timezone';
 import {action} from '@ember/object';
-import {getPreviewEmailSegments, hasPublicPreview} from 'ghost-admin/utils/public-preview-warning';
 import {groupTiersByActive} from 'ghost-admin/utils/group-tiers';
+import {hasPublicPreviewContent} from 'ghost-admin/utils/public-preview-warning';
 import {isBlank} from '@ember/utils';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
@@ -73,16 +73,10 @@ export default class PublishFlowOptions extends Component {
         return this.visibility === 'paid' || this.visibility === 'tiers';
     }
 
-    get hasDivider() {
-        return hasPublicPreview(this.post);
-    }
-
-    get previewSegments() {
-        return this.hasDivider ? getPreviewEmailSegments(this.post) : '';
-    }
-
-    get previewEmailed() {
-        return this.hasSplit && this.previewSegments !== '';
+    // the divider at the top means nothing is previewed; a preview only
+    // exists (and shapes copy + audiences) once content sits above it
+    get hasPreview() {
+        return hasPublicPreviewContent(this.post);
     }
 
     get tierSlugs() {
@@ -133,7 +127,7 @@ export default class PublishFlowOptions extends Component {
             access = 'Members only';
         }
 
-        return this.hasDivider ? `${access} · Free preview` : access;
+        return this.hasPreview ? `${access} · Free preview` : access;
     }
 
     // every tier is named — the reader must be able to see exactly who has
@@ -150,23 +144,39 @@ export default class PublishFlowOptions extends Component {
         return this.visibility === 'paid' ? 'free subscribers' : 'subscribers without access';
     }
 
-    // default state on a gated post without an emailed preview: the derived
-    // audience quietly excludes people, which the line must say out loud
-    get showNotEmailedNote() {
-        return !this.customising && this.hasSplit && !this.previewEmailed;
+    // when the send list excludes everyone without access, the exclusion is
+    // silent arithmetic — this names it, acknowledging an unsent preview
+    get notEmailedNote() {
+        if (this.hasPreview) {
+            return 'the free preview isn\u2019t emailed';
+        }
+
+        return `${this.notEmailedNoun} aren\u2019t emailed`;
     }
 
     get otherOutcomeLabel() {
-        // a divider always truncates the email for recipients without access;
-        // without one, everyone on the list receives the whole thing
-        return this.hasDivider ? 'get the free preview' : 'also get the full post';
+        return this.hasPreview ? 'get the free preview' : null;
     }
 
-    // a gated post with no divider sends everyone on the list the full
-    // content; stated as a plain consequence, never as mechanics
-    get warnUngated() {
-        return this.customising && this.hasSplit && !this.hasDivider;
+    // on a locked post everyone on the list is still emailed — without-access
+    // recipients get exactly what the web shows them (title, image, upgrade
+    // CTA), unless this post's email explicitly bypasses the divider
+    get lockedOutcomeLabel() {
+        return this.post.emailFullPost ? 'get the full post too' : 'get the title & image only';
     }
+
+    @action
+    toggleLockedOutcomeMenu() {
+        this.openMenu = this.openMenu === 'locked-outcome' ? null : 'locked-outcome';
+    }
+
+    @action
+    chooseLockedOutcome(fullPost) {
+        this.post.set('emailFullPost', fullPost);
+        this.openMenu = null;
+    }
+
+
 
     get fullNoun() {
         if (this.visibility === 'paid') {
@@ -204,6 +214,14 @@ export default class PublishFlowOptions extends Component {
         return `${this.totalCountFilter}+(${this.noAccessFilter})`;
     }
 
+    get fullyLocked() {
+        return this.hasSplit && !this.hasPreview;
+    }
+
+
+
+
+
     // ---- customise state ----------------------------------------------------
 
     get customising() {
@@ -211,9 +229,11 @@ export default class PublishFlowOptions extends Component {
     }
 
     get selectedSegments() {
-        const filter = this.publishOptions.selectedRecipientFilter;
+        // chips always show the effective list — a site-default "specific"
+        // filter renders as chips even before the publisher touches anything
+        const filter = this.publishOptions.selectedRecipientFilter ?? this.publishOptions.recipientFilter;
 
-        if (filter === undefined || filter === null) {
+        if (!filter) {
             return [];
         }
 
@@ -274,17 +294,97 @@ export default class PublishFlowOptions extends Component {
         this._syncPublishType();
     }
 
+    // ---- audience menu -------------------------------------------------------
+    // one trigger, three named audiences; chips exist only behind "Specific
+    // people" — the same choice-menu pattern as the "Right now" row
+
+    // one sentence-menu at a time: 'audience' | 'newsletter' | 'when' | null
+    @tracked openMenu = null;
     @tracked audiencePickerOpen = false;
 
+    // "Specific people" is a mode, and a mode's detail control lives under the
+    // row for as long as the mode holds (the schedule picker pattern) — the
+    // chips also appear straight away when a site default lands here
+    get showAudiencePicker() {
+        return this.audiencePickerOpen || this.audienceChoice === 'specific';
+    }
+
+    get allAudienceFilter() {
+        return 'status:free,status:-free';
+    }
+
+    // recipients who can read the post; null when access doesn't narrow the
+    // audience (public/members posts — every subscriber can read those)
+    get accessAudienceFilter() {
+        if (this.visibility === 'paid') {
+            return 'status:-free';
+        }
+
+        if (this.visibility === 'tiers') {
+            return this.post.visibilitySegment || null;
+        }
+
+        return null;
+    }
+
+    _normalizeFilter(filter) {
+        return (filter || '').split(',').map(part => part.trim()).reject(isBlank).sort().join(',');
+    }
+
+    get audienceChoice() {
+        const current = this._normalizeFilter(this.publishOptions.recipientFilter);
+
+        if (current === this._normalizeFilter(this.allAudienceFilter)) {
+            return 'all';
+        }
+
+        if (this.accessAudienceFilter && current === this._normalizeFilter(this.accessAudienceFilter)) {
+            return 'access';
+        }
+
+        return 'specific';
+    }
+
     @action
-    toggleAudiencePicker() {
-        if (!this.audiencePickerOpen && this.publishOptions.selectedRecipientFilter === undefined) {
+    toggleAudienceMenu() {
+        this.openMenu = this.openMenu === 'audience' ? null : 'audience';
+    }
+
+    @action
+    toggleNewsletterMenu() {
+        this.openMenu = this.openMenu === 'newsletter' ? null : 'newsletter';
+    }
+
+    @action
+    chooseNewsletter(newsletter) {
+        this.publishOptions.setNewsletter(newsletter);
+        this.openMenu = null;
+    }
+
+    @action
+    chooseAllAudience() {
+        this.publishOptions.setRecipientFilter(this.allAudienceFilter);
+        this.openMenu = null;
+        this.audiencePickerOpen = false;
+    }
+
+    @action
+    chooseAccessAudience() {
+        this.publishOptions.setRecipientFilter(this.accessAudienceFilter);
+        this.openMenu = null;
+        this.audiencePickerOpen = false;
+    }
+
+    @action
+    chooseSpecificAudience() {
+        if (this.publishOptions.selectedRecipientFilter === undefined) {
             // preseed with the chips the derived default was already
             // selecting in the background — editing starts from the truth
             this.publishOptions.setRecipientFilter(this.publishOptions.defaultRecipientFilter);
         }
 
-        this.audiencePickerOpen = !this.audiencePickerOpen;
+        this.openMenu = null;
+        this.audiencePickerOpen = true;
     }
 
     @action
@@ -311,8 +411,6 @@ export default class PublishFlowOptions extends Component {
 
     // ---- when ---------------------------------------------------------------
 
-    @tracked whenMenuOpen = false;
-
     get scheduledLabel() {
         const at = moment.tz(this.publishOptions.scheduledAtUTC, this.settings.timezone);
         return at.format('dddd D MMM YYYY [at] HH:mm');
@@ -325,19 +423,19 @@ export default class PublishFlowOptions extends Component {
 
     @action
     toggleWhenMenu() {
-        this.whenMenuOpen = !this.whenMenuOpen;
+        this.openMenu = this.openMenu === 'when' ? null : 'when';
     }
 
     @action
     chooseNow() {
         this.publishOptions.toggleScheduled(false);
-        this.whenMenuOpen = false;
+        this.openMenu = null;
     }
 
     @action
     chooseLater() {
         this.publishOptions.toggleScheduled(true);
-        this.whenMenuOpen = false;
+        this.openMenu = null;
     }
 
     @action

@@ -1,5 +1,5 @@
 import Component from '@glimmer/component';
-import {getPreviewEmailSegments, hasPublicPreview} from '../../../utils/public-preview-warning';
+import {hasPublicPreviewContent} from '../../../utils/public-preview-warning';
 import {inject as service} from '@ember/service';
 
 // Read-only "who gets what" breakdown for gated posts (publicPreviews labs flag).
@@ -23,15 +23,7 @@ export default class AudienceSummaryComponent extends Component {
     }
 
     get hasPreview() {
-        return hasPublicPreview(this.post);
-    }
-
-    get previewSegments() {
-        return this.hasPreview ? getPreviewEmailSegments(this.post) : '';
-    }
-
-    get emailPreviewEnabled() {
-        return this.previewSegments !== '';
+        return hasPublicPreviewContent(this.post);
     }
 
     get showSummary() {
@@ -75,34 +67,32 @@ export default class AudienceSummaryComponent extends Component {
         return null;
     }
 
-    // a divider truncates the email for every recipient without access — the
-    // preview settings only shape the default recipient list, so anyone
-    // without access who is on the list gets the preview
-    get previewFilter() {
-        if (!this.hasPreview) {
-            return null;
-        }
-
-        return this.noAccessFilter;
-    }
-
     get rows() {
         const rows = [];
         const combine = filter => (filter ? `${this.baseFilter}+(${filter})` : this.baseFilter);
 
+        // the divider bypass sends everyone on the list the whole thing
+        if (this.post.emailFullPost && !this.hasPreview) {
+            rows.push({
+                key: 'full',
+                label: 'get the full post',
+                filter: combine(null)
+            });
+
+            return rows;
+        }
+
         rows.push({
             key: 'full',
             label: 'get the full post',
-            // without a divider there is nothing to truncate: the full post
-            // goes to everyone on the list, access or not
-            filter: combine(this.hasPreview ? this.accessFilter : null)
+            filter: combine(this.accessFilter)
         });
 
-        if (this.previewFilter) {
+        if (this.noAccessFilter) {
             rows.push({
                 key: 'preview',
-                label: 'get the public preview',
-                filter: combine(this.previewFilter)
+                label: this.hasPreview ? 'get the public preview' : 'get the title & image only',
+                filter: combine(this.noAccessFilter)
             });
         }
 

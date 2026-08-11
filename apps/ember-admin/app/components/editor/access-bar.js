@@ -1,8 +1,9 @@
 import Component from '@glimmer/component';
 import {action, get} from '@ember/object';
+import {cancel, later} from '@ember/runloop';
 import {hasPublicPreview} from '../../utils/public-preview-warning';
-import {later} from '@ember/runloop';
 import {inject as service} from '@ember/service';
+import {tracked} from '@glimmer/tracking';
 
 const ACCESS_OPTIONS = [
     {name: 'public', label: 'Public', description: 'Free for everyone to read'},
@@ -16,6 +17,54 @@ export default class AccessBarComponent extends Component {
     @service settings;
 
     accessOptions = ACCESS_OPTIONS;
+
+    // the change-announcement: quiet at rest, one loud beat on the
+    // transition that matters, then gone
+    @tracked announcement = null;
+
+    // the pill speaks in full while the reader is orienting (top of the
+    // document) or right after a change; it whispers while they write
+    @tracked atTop = true;
+    @tracked recentlyChanged = false;
+
+    get pillExpanded() {
+        return this.atTop || this.recentlyChanged;
+    }
+
+    constructor() {
+        super(...arguments);
+        this._hadWall = this.hasPublicPreview;
+    }
+
+    willDestroy() {
+        super.willDestroy(...arguments);
+        cancel(this._announceTimer);
+        cancel(this._changedTimer);
+        this._scrollTarget?.removeEventListener('scroll', this._onScroll);
+    }
+
+    @action
+    setupScrollTracking(element) {
+        this._scrollTarget = element.closest('.gh-editor')?.querySelector('.gh-editor-container') || null;
+
+        if (!this._scrollTarget) {
+            return;
+        }
+
+        this._onScroll = () => {
+            this.atTop = this._scrollTarget.scrollTop < 80;
+        };
+        this._scrollTarget.addEventListener('scroll', this._onScroll, {passive: true});
+        this._onScroll();
+    }
+
+    _flashChanged() {
+        cancel(this._changedTimer);
+        this.recentlyChanged = true;
+        this._changedTimer = later(() => {
+            this.recentlyChanged = false;
+        }, 2500);
+    }
 
     get post() {
         return this.args.post;
@@ -54,12 +103,6 @@ export default class AccessBarComponent extends Component {
         return option ? option.label : 'Public';
     }
 
-    // a divider on a public post does nothing — the actionable control is the
-    // access selector, so it wears a highlight while that state holds
-    get showAccessAttention() {
-        return this.visibility === 'public' && this.hasPublicPreview;
-    }
-
     get hasPublicPreview() {
         // lexicalScratch is a plain property on the classic post model — native
         // access doesn't consume its tag, so read it via `get` to make this
@@ -77,33 +120,30 @@ export default class AccessBarComponent extends Component {
         }
 
         this.post.set('visibility', name);
-        this._accessChanged = true;
 
         if (name === 'tiers') {
-            // keep the menu open so the tier picker can be used; saving happens
-            // once at least one tier is selected
+            // the wall rises as soon as the post is gated; saving waits for
+            // the tier picker (menu stays open) but the gate is already real
+            this._syncWall();
             return;
         }
 
         this.post.set('tiers', []);
         dropdown?.actions?.close();
+        this._syncWall();
+        this._flashChanged();
         this.savePost();
     }
 
     @action
     setTiers(tiers) {
         this.post.set('tiers', tiers);
-        this._accessChanged = true;
 
         if (tiers?.length) {
+            this._syncWall();
+            this._flashChanged();
             this.savePost();
         }
-    }
-
-    @action
-    addPublicPreview() {
-        this.args.editorAPI?.insertPaywall();
-        this._resurfaceDividerPanel();
     }
 
     @action
@@ -111,38 +151,66 @@ export default class AccessBarComponent extends Component {
         this._dropdownAPI = dropdownAPI;
     }
 
-    // resurface only once the menu closes — popping the divider panel up while
-    // the user is still inside the access menu was disorienting
+    // the wall IS the gate, in both directions: deleting the divider sets the
+    // post back to public. Only a true->false transition counts, so the
+    // deferred auto-insert on gating never trips this. The change announces
+    // itself from the pill — with a way back that restores both the gating
+    // and the wall
     @action
-    onAccessMenuClose() {
-        if (!this._accessChanged) {
+    onWallPresenceChange() {
+        const has = this.hasPublicPreview;
+        const had = this._hadWall;
+        this._hadWall = has;
+
+        if (had && !has && this.isGated) {
+            const previous = {
+                visibility: this.post.visibility,
+                tiers: (this.post.tiers || []).slice()
+            };
+
+            this.post.set('visibility', 'public');
+            this.post.set('tiers', []);
+            this.savePost();
+
+            cancel(this._announceTimer);
+            this.announcement = {previous};
+            this._announceTimer = later(() => {
+                this.announcement = null;
+            }, 4200);
+        }
+    }
+
+    @action
+    undoUngate() {
+        const previous = this.announcement?.previous;
+
+        cancel(this._announceTimer);
+        this.announcement = null;
+
+        if (!previous) {
             return;
         }
 
-        this._accessChanged = false;
-
-        if (this.isGated) {
-            this._resurfaceDividerPanel();
-        }
+        this.post.set('visibility', previous.visibility);
+        this.post.set('tiers', previous.tiers);
+        // the wall returns at the top (its exact position isn't recorded);
+        // mark it present so the observer doesn't re-fire on the insert
+        this._hadWall = true;
+        this.args.editorAPI?.insertPaywallAtTop?.();
+        this.savePost();
     }
 
-    // access changes shape what the divider means, so its settings panel comes
-    // back into view after access changes and on divider insert
-    _resurfaceDividerPanel() {
+    // the wall is the gate made visible: gating raises it at the top of the
+    // document (nothing previewed until the writer moves it down), going
+    // public removes it — the concept only exists while the post is gated
+    _syncWall() {
         later(() => {
-            if (!this.hasPublicPreview) {
-                return;
+            if (this.isGated && !this.hasPublicPreview) {
+                this.args.editorAPI?.insertPaywallAtTop?.();
+            } else if (!this.isGated && this.hasPublicPreview) {
+                this.args.editorAPI?.removePaywall?.();
             }
-
-            this.args.editorAPI?.selectPaywall?.();
-            this.scrollToPreviewDivider();
-        }, 120);
-    }
-
-    @action
-    scrollToPreviewDivider() {
-        const divider = document.querySelector('[data-kg-card="paywall"]');
-        divider?.scrollIntoView({behavior: 'smooth', block: 'center'});
+        }, 50);
     }
 
     savePost() {

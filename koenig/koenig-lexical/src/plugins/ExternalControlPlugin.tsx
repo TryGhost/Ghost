@@ -148,6 +148,30 @@ export const ExternalControlPlugin = ({registerAPI}) => {
                     $selectDecoratorNode(paywallNode);
                 });
             },
+            // gating a post raises the wall at the top of the document —
+            // quietly: no selection steal, no scroll; nothing is previewed
+            // until the writer moves it down
+            insertPaywallAtTop() {
+                editor.update(() => {
+                    if ($getPaywallNodes().length > 0) {
+                        return;
+                    }
+
+                    const root = $getRoot();
+                    const paywallNode = $createPaywallNode();
+                    const firstChild = root.getFirstChild();
+
+                    if (firstChild) {
+                        firstChild.insertBefore(paywallNode);
+                    } else {
+                        root.append(paywallNode);
+                    }
+
+                    if (paywallNode.getNextSibling() === null) {
+                        paywallNode.insertAfter($createParagraphNode());
+                    }
+                });
+            },
             selectPaywall() {
                 editor.update(() => {
                     const [paywallNode] = $getPaywallNodes();

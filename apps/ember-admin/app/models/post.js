@@ -118,6 +118,7 @@ export default Model.extend(Comparable, ValidationEngine, {
     emailOnly: attr('boolean', {defaultValue: false}),
     emailPublicPreview: attr('boolean', {defaultValue: true}),
     emailPublicPreviewAudience: attr('string', {defaultValue: null}),
+    emailFullPost: attr('boolean', {defaultValue: false}),
 
     featureImage: attr('string'),
     featureImageAlt: attr('string'),

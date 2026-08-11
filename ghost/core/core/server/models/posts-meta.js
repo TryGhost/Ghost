@@ -7,7 +7,8 @@ const PostsMeta = ghostBookshelf.Model.extend({
     defaults: function defaults() {
         return {
             email_only: false,
-            email_public_preview: true
+            email_public_preview: true,
+            email_full_post: false
         };
     },
 

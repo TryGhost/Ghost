@@ -1,6 +1,6 @@
 import moment from 'moment-timezone';
 import {action} from '@ember/object';
-import {getPreviewEmailSegments, getPublicPreviewWarning, hasPublicPreview} from 'ghost-admin/utils/public-preview-warning';
+import {getPublicPreviewWarning, hasPublicPreviewContent} from 'ghost-admin/utils/public-preview-warning';
 import {htmlSafe} from '@ember/template';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
@@ -19,6 +19,8 @@ export default class PublishOptions {
 
     @tracked publishDisabledError = null;
     @tracked totalMemberCount = 0;
+    @tracked _tierSlugsById = null;
+
 
     get isLoading() {
         return this.setupTask.isRunning;
@@ -204,34 +206,46 @@ export default class PublishOptions {
                 return 'status:free,status:-free';
             }
 
-            // an emailed public preview widens the default audience: the
-            // groups chosen on the divider must receive the email
-            const previewSegments = hasPublicPreview(this.post) ? getPreviewEmailSegments(this.post) : '';
+            // a public preview widens the default audience to everyone —
+            // what each recipient receives follows their access, cut at
+            // the divider, so there is no audience to configure. The divider
+            // at the top means no preview exists yet: no widening
+            if (hasPublicPreviewContent(this.post)) {
+                return 'status:free,status:-free';
+            }
 
             if (this.post.visibility === 'paid') {
-                if (previewSegments === 'all' || previewSegments.includes('status:free')) {
-                    return 'status:free,status:-free';
-                }
-
                 return 'status:-free';
             }
 
             if (this.post.visibility === 'tiers') {
-                if (previewSegments === 'all') {
-                    return 'status:free,status:-free';
-                }
-
-                if (previewSegments) {
-                    return `${this.post.visibilitySegment},${previewSegments}`;
-                }
-
                 return this.post.visibilitySegment;
             }
 
             return this.post.visibility;
         }
 
-        return filter;
+        return this._normalizeStoredFilter(filter);
+    }
+
+    // stored "Specific people" filters carry bare tier IDs; NQL needs
+    // tier:slug. Unknown IDs pass through untouched (they'll surface as an
+    // honest error rather than a silent zero)
+    _normalizeStoredFilter(filter) {
+        if (!filter) {
+            return filter;
+        }
+
+        return filter.split(',').map((segment) => {
+            const trimmed = segment.trim();
+
+            if (/^[0-9a-f]{24}$/.test(trimmed)) {
+                const slug = this._tierSlugsById?.[trimmed];
+                return slug ? `tier:${slug}` : trimmed;
+            }
+
+            return trimmed;
+        }).join(',');
     }
 
     get fullRecipientFilter() {
@@ -322,6 +336,19 @@ export default class PublishOptions {
         // newsletters
         if (!this.user.isContributor) {
             promises.push(this.store.query('newsletter', {status: 'active', limit: 'all', include: 'count.active_members'}));
+        }
+
+        // the site's "Specific people" default stores bare tier IDs while
+        // every consumer (member counts, sending) speaks NQL — fetch tiers so
+        // the stored filter can be translated to tier:slug segments
+        if (this.settings.editorDefaultEmailRecipients === 'filter' && this.settings.editorDefaultEmailRecipientsFilter) {
+            promises.push(this.store.query('tier', {filter: 'type:paid', limit: 'all'}).then((tiers) => {
+                const map = {};
+                tiers.forEach((tier) => {
+                    map[tier.id] = tier.slug;
+                });
+                this._tierSlugsById = map;
+            }));
         }
 
         yield Promise.all(promises);

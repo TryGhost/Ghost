@@ -135,7 +135,7 @@ module.exports = async (model, frame, options = {}) => {
             // Defaults to `true`, so a stored `false` must survive — `||` would collapse it back to the default.
             jsonModel[attr] = _.get(jsonModel.posts_meta, attr) ?? true;
         } else {
-            const defaultValue = (attr === 'email_only') ? false : null;
+            const defaultValue = (attr === 'email_only' || attr === 'email_full_post') ? false : null;
             jsonModel[attr] = _.get(jsonModel.posts_meta, attr) || defaultValue;
         }
     });

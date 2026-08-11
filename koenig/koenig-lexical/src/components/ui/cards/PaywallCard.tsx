@@ -1,12 +1,12 @@
 import CardContext from '../../../context/CardContext';
 import KoenigComposerContext from '../../../context/KoenigComposerContext';
-import {$getNodeByKey} from 'lexical';
+import {$getNodeByKey, $isDecoratorNode} from 'lexical';
+import {ActionToolbar} from '../ActionToolbar.jsx';
 import {InputList, InputListItem} from '../InputList';
-import {SettingsPanel} from '../SettingsPanel';
-import {Toggle} from '../Toggle';
+import {ToolbarMenu, ToolbarMenuItem} from '../ToolbarMenu.jsx';
 import {getAccentColor} from '../../../utils/getAccentColor.js';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
-import {useContext, useEffect, useMemo, useRef, useState} from 'react';
+import {useContext, useEffect, useRef, useState} from 'react';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import type {PostVisibility} from '../../../context/KoenigComposerContext';
 import type {KeyboardEvent as ReactKeyboardEvent} from 'react';
@@ -116,14 +116,15 @@ function ButtonUrlEditor({value, defaultUrl, onChange}: {
 
     return (
         <div data-testid="paywall-customiser-button-url-section">
-            <div className="text-sm font-medium tracking-normal text-grey-900 dark:text-grey-300">Button links to</div>
-            <div className="mt-2">
+            <div className="text-xs font-medium tracking-normal text-grey-700 dark:text-grey-500">Button links to</div>
+            <div className="mt-1.5">
                 <InputList
                     dataTestId="paywall-customiser-button-url"
                     dropdownClassName="z-20 max-h-[200px] w-full overflow-y-auto rounded-lg bg-white shadow-md dark:bg-grey-900"
                     dropdownPlacementBottomClass="-top-0.5 -translate-y-full"
                     dropdownPlacementTopClass="-top-0.5 -translate-y-full"
                     getItem={getItem}
+                    inputClassName="w-full rounded-md border border-grey-300 bg-white px-3 py-2 text-sm text-grey-900 outline-none placeholder:text-grey-500 focus:border-green dark:border-grey-800 dark:bg-grey-950 dark:text-grey-100"
                     listOptions={filteredSuggestions}
                     placeholder={defaultUrl}
                     value={value}
@@ -147,8 +148,6 @@ export function PaywallCard() {
 
     // the preview email audience lives on the node ('all' | '' | CSV of
     // segments); null state means "all non-access groups"
-    const [previewTo, setPreviewTo] = useState<string[] | null>(null);
-    const [siteTiers, setSiteTiers] = useState<{name: string; slug: string}[]>([]);
 
     // paywall CTA overrides live on the node (webCta/emailCta) so they
     // serialize with the post content; the modal edits local mirrors
@@ -168,6 +167,33 @@ export function PaywallCard() {
     // for members/public the wall is a registration wall, not a paywall
     const wallNoun = (postVisibility === 'paid' || postVisibility === 'tiers') ? 'paywall' : 'registration wall';
 
+    // the divider at the top means nothing is previewed — gating parks it
+    // there by default; a preview only exists once content sits above it
+    const [hasPreviewContent, setHasPreviewContent] = useState(true);
+
+    useEffect(() => {
+        const check = () => {
+            editor.getEditorState().read(() => {
+                const node = $getNodeByKey(nodeKey);
+                let found = false;
+                let sibling = node?.getPreviousSibling?.();
+
+                while (sibling) {
+                    if ($isDecoratorNode(sibling) || sibling.getTextContent().trim() !== '') {
+                        found = true;
+                        break;
+                    }
+                    sibling = sibling.getPreviousSibling();
+                }
+
+                setHasPreviewContent(found);
+            });
+        };
+
+        check();
+        return editor.registerUpdateListener(check);
+    }, [editor, nodeKey]);
+
     useEffect(() => {
         if (!customiserOpen) {
             return;
@@ -181,66 +207,6 @@ export function PaywallCard() {
         window.addEventListener('keydown', onKeyDown);
         return () => window.removeEventListener('keydown', onKeyDown);
     }, [customiserOpen, cardConfig]);
-
-    // the removable non-access groups: Free, plus (for tiers posts) every
-    // active paid tier that doesn't have access to this post
-    const availableGroups = useMemo(() => {
-        const groups = [{segment: 'status:free', name: 'Free'}];
-        if (postVisibility === 'tiers') {
-            const accessSlugs = post?.tierSlugs || [];
-            siteTiers.filter(tier => !accessSlugs.includes(tier.slug)).forEach((tier) => {
-                groups.push({segment: `tier:${tier.slug}`, name: tier.name});
-            });
-        }
-        return groups;
-    }, [postVisibility, post?.tierSlugs, siteTiers]);
-
-    useEffect(() => {
-        if (emailSectionRelevant && postVisibility === 'tiers') {
-            cardConfig?.fetchTiers?.().then(setSiteTiers).catch(() => {});
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [emailSectionRelevant, postVisibility]);
-
-    useEffect(() => {
-        editor.getEditorState().read(() => {
-            const node = $getNodeByKey(nodeKey) as unknown as PaywallCtaNode | null;
-            const raw = node?.previewEmailTo ?? 'all';
-            setPreviewTo(raw === 'all' ? null : raw.split(',').filter(Boolean));
-        });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    const selectedSegments = previewTo === null ? availableGroups.map(g => g.segment) : previewTo;
-
-    // a tiers post where Free is the only non-access group left behaves like
-    // the paid case: a plain on/off toggle, no chips to manage
-    const onlyFreeGroup = availableGroups.length === 1;
-
-    const previousSelectionRef = useRef<string[]>([]);
-
-    const togglePreviewEmail = (event: {target: {checked: boolean}}) => {
-        if (event.target.checked) {
-            const restored = previousSelectionRef.current.length ? previousSelectionRef.current : availableGroups.map(g => g.segment);
-            setPreviewAudience(restored);
-        } else {
-            previousSelectionRef.current = selectedSegments;
-            setPreviewAudience([]);
-        }
-    };
-
-    const setPreviewAudience = (segments: string[]) => {
-        const isAll = segments.length === availableGroups.length && availableGroups.every(g => segments.includes(g.segment));
-        setPreviewTo(isAll ? null : segments);
-        editor.update(() => {
-            const node = $getNodeByKey(nodeKey) as unknown as PaywallCtaNode | null;
-            if (node) {
-                node.previewEmailTo = isAll ? 'all' : segments.join(',');
-            }
-        });
-        cardConfig?.setEmailPublicPreview?.(segments.length > 0);
-        requestSave();
-    };
 
     const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -331,61 +297,6 @@ export function PaywallCard() {
 
     const customiserTabs: CtaChannel[] = emailSectionRelevant ? ['web', 'email'] : ['web'];
     const activeDefaults = defaultCopy(postVisibility, customiserTab);
-    const divider = <hr className="-mx-6 my-1 border-t border-grey-200 dark:border-grey-900" />;
-
-    const settingsPanel = isSelected && post && (
-        <SettingsPanel>
-            <div className="flex flex-col">
-                <div className="text-sm font-semibold tracking-normal text-grey-900 dark:text-grey-300">Public preview</div>
-                <p className="mt-1 text-sm font-normal leading-snug text-grey-700 dark:text-grey-600" data-testid="paywall-web-note">
-                    On the web, everyone can read up to the divider.
-                </p>
-            </div>
-            <>
-                    {emailSectionRelevant && (
-                        <>
-                            {divider}
-                            <label className="flex cursor-pointer items-center justify-between gap-3">
-                                <span className="text-sm font-medium tracking-normal text-grey-900 dark:text-grey-300">{(postVisibility === 'paid' || onlyFreeGroup) ? 'Email the preview to free subscribers' : 'Email the preview to'}</span>
-                                <span className="flex shrink-0"><Toggle dataTestId="paywall-email-preview-toggle" isChecked={selectedSegments.length > 0} onChange={togglePreviewEmail} /></span>
-                            </label>
-                        </>
-                    )}
-                    {emailSectionRelevant && postVisibility === 'tiers' && !onlyFreeGroup && selectedSegments.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5" data-testid="paywall-preview-audience">
-                            {availableGroups.map(group => (selectedSegments.includes(group.segment) ? (
-                                <span key={group.segment} className="inline-flex items-center gap-1 rounded-full bg-grey-150 py-1 pl-3 pr-2 text-xs font-medium text-grey-900 dark:bg-grey-900 dark:text-grey-300" data-testid={`paywall-audience-chip-${group.segment}`}>
-                                    {group.name}
-                                    {/* preventDefault keeps focus (and the card's selection)
-                                        from being stolen by the click */}
-                                    <button aria-label={`Remove ${group.name}`} className="cursor-pointer text-grey-600 hover:text-grey-900 dark:hover:text-grey-100" type="button" onClick={() => setPreviewAudience(selectedSegments.filter(seg => seg !== group.segment))} onMouseDown={e => e.preventDefault()}>
-                                        <svg className="size-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" strokeLinecap="round"/></svg>
-                                    </button>
-                                </span>
-                            ) : (
-                                <button key={group.segment} className="inline-flex cursor-pointer items-center rounded-full border border-dashed border-grey-400 px-3 py-1 text-xs font-medium text-grey-600 hover:border-grey-600 hover:text-grey-900 dark:border-grey-800 dark:text-grey-600" data-testid={`paywall-audience-add-${group.segment}`} type="button" onClick={() => setPreviewAudience([...selectedSegments, group.segment])} onMouseDown={e => e.preventDefault()}>
-                                    + {group.name}
-                                </button>
-                            )))}
-                        </div>
-                    )}
-                    {emailSectionRelevant && selectedSegments.length > 0 && (
-                        <p className="whitespace-nowrap text-xs font-normal text-grey-600 dark:text-grey-700" data-testid="paywall-email-ending-note">
-                            The email ends with the paywall.
-                        </p>
-                    )}
-                    {divider}
-                    <button
-                        className="cursor-pointer self-start text-sm font-medium text-grey-900 hover:text-black dark:text-grey-300 dark:hover:text-white"
-                        data-testid="paywall-customise"
-                        type="button"
-                        onClick={openCustomiser}
-                    >
-                        Customise {wallNoun}
-                    </button>
-            </>
-        </SettingsPanel>
-    );
 
     const customiserModal = customiserOpen && post && (
         <div
@@ -398,7 +309,7 @@ export function PaywallCard() {
                 }
             }}
         >
-            <div className="shadow-2xl flex max-h-full w-[880px] max-w-[95vw] flex-col overflow-hidden rounded-xl bg-grey-100 dark:bg-grey-975">
+            <div className="shadow-2xl flex max-h-full w-[1120px] max-w-[95vw] flex-col overflow-hidden rounded-xl bg-grey-100 dark:bg-grey-975">
                 <div className="flex items-center justify-between bg-white px-6 py-4 dark:bg-grey-950">
                     <h2 className="text-lg font-bold tracking-tight text-grey-900 dark:text-grey-100">{`Customise ${wallNoun}`}</h2>
                     {customiserTabs.length > 1 && (
@@ -487,11 +398,8 @@ export function PaywallCard() {
                         </div>
 
                         <div className="flex flex-col" data-testid={`paywall-customiser-${customiserTab}-preview`}>
-                            <p className="mb-3 text-center text-xs font-medium uppercase tracking-wide text-grey-600 dark:text-grey-600">
-                                {customiserTab === 'web' ? 'Shown on the web below the public preview' : 'Shown in email below the public preview'}
-                            </p>
-                            <div className="flex grow items-center justify-center rounded-lg bg-grey-50 p-8 dark:bg-grey-950">
-                                <div className="w-full max-w-[440px] rounded-lg border border-grey-250 bg-white px-8 py-10 text-center dark:border-grey-900 dark:bg-black">
+                            <div className="flex grow items-center justify-center rounded-lg bg-grey-50 p-10 dark:bg-grey-950">
+                                <div className="w-full max-w-[560px] rounded-lg border border-grey-250 bg-white px-10 py-12 text-center dark:border-grey-900 dark:bg-black">
                                     <p className="text-xl font-bold tracking-tight text-grey-900 dark:text-grey-100">{activeCta.heading || activeDefaults.heading}</p>
                                     <p className="mt-2 text-sm font-normal leading-normal text-grey-700 dark:text-grey-500">{activeCta.description || activeDefaults.description}</p>
                                     <span
@@ -536,14 +444,37 @@ export function PaywallCard() {
 
     return (
         <>
-            <div className="flex h-3 items-center whitespace-pre text-center font-sans text-2xs font-semibold uppercase text-grey-500 before:mr-2 before:flex-1 before:border-t before:border-grey-300 before:content-[''] after:ml-2 after:flex-1 after:border-t after:border-grey-300 dark:text-grey-800">
-            Free public preview
-                <span className="mx-2 text-green">↑</span>
-            /
-                <span className="mx-2 text-green">↓</span>
-                {accessLabel}
+            <div className="relative">
+                {hasPreviewContent ? (
+                    // preview exists: green marks the open half; everything else stays quiet grey
+                    <div className="flex h-3 items-center whitespace-pre text-center font-sans text-2xs font-semibold uppercase text-grey-500 before:mr-2 before:flex-1 before:border-t before:border-grey-300 before:content-[''] after:ml-2 after:flex-1 after:border-t after:border-grey-300 dark:text-grey-800 dark:before:border-grey-800 dark:after:border-grey-800">
+                        <span className="text-green-600 dark:text-green">Free public preview ↑</span>
+                        <span className="mx-2">/</span>
+                        <span className="mr-2">↓</span>
+                        {accessLabel}
+                    </div>
+                ) : (
+                    // wall at the top: fully monochrome, rules firm up slightly
+                    <div className="flex h-3 items-center whitespace-pre text-center font-sans text-2xs font-semibold uppercase text-grey-500 before:mr-2 before:flex-1 before:border-t-[1.5px] before:border-grey-400 before:content-[''] after:ml-2 after:flex-1 after:border-t-[1.5px] after:border-grey-400 dark:text-grey-800 dark:before:border-grey-700 dark:after:border-grey-700">
+                        <span className="mr-2">↓</span>
+                        {accessLabel}
+                    </div>
+                )}
             </div>
-            {settingsPanel}
+            <ActionToolbar
+                data-kg-card-toolbar="paywall"
+                isVisible={isSelected && !customiserOpen}
+            >
+                <ToolbarMenu>
+                    <ToolbarMenuItem
+                        dataTestId="paywall-customise"
+                        icon="edit"
+                        isActive={false}
+                        label={`Customise ${wallNoun}`}
+                        onClick={openCustomiser}
+                    />
+                </ToolbarMenu>
+            </ActionToolbar>
             {customiserModal}
         </>
     );
