@@ -408,6 +408,10 @@ describe('Settings API', function () {
                 })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
+                    // content-length is matched dynamically as the response
+                    // includes the labs setting, whose size changes whenever
+                    // a feature flag is added or removed
+                    'content-length': anyContentLength,
                     etag: anyEtag
                 });
         });
