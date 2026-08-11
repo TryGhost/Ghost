@@ -1117,7 +1117,7 @@ processingModes.forEach(({name, batchProcessing}) => {
             const emailBatch = fixtureManager.get('email_batches', 0);
             const emailRecipient = fixtureManager.get('email_recipients', 0);
             const memberId = emailRecipient.member_id;
-            const providerId = emailBatch.provider_id;
+            const providerId = emailBatch.mailgun_message_id;
             const timestamp = new Date(2000, 0, 1);
 
             // Member subscribed to 2 newsletters
