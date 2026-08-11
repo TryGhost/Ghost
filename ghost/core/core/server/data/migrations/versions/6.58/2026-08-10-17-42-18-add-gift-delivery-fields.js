@@ -44,5 +44,5 @@ module.exports = combineNonTransactionalMigrations(
         validations: {isIn: [['unknown', 'delivered', 'temporary_failed', 'permanent_failed']]}
     }),
     addGiftColumn('delivery_outcome_at', {type: 'dateTime', nullable: true}),
-    addGiftColumn('delivery_outcome_diagnostics', {type: 'text', maxlength: 65535, nullable: true})
+    addGiftColumn('delivery_outcome_error', {type: 'text', maxlength: 65535, nullable: true})
 );

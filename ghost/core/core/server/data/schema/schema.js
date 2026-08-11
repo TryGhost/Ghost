@@ -1432,7 +1432,7 @@ module.exports = {
             }
         },
         delivery_outcome_at: {type: 'dateTime', nullable: true},
-        delivery_outcome_diagnostics: {type: 'text', maxlength: 65535, nullable: true},
+        delivery_outcome_error: {type: 'text', maxlength: 65535, nullable: true},
 
         redeemer_member_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'members.id', setNullDelete: true},
 

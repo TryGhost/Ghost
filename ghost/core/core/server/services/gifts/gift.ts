@@ -47,7 +47,7 @@ type GiftConstructorData = Omit<GiftData,
     | 'emailProviderMessageId'
     | 'deliveryOutcome'
     | 'deliveryOutcomeAt'
-    | 'deliveryOutcomeDiagnostics'
+    | 'deliveryOutcomeError'
 > & Partial<Pick<GiftData,
     | 'buyerName'
     | 'deliveryMethod'
@@ -62,7 +62,7 @@ type GiftConstructorData = Omit<GiftData,
     | 'emailProviderMessageId'
     | 'deliveryOutcome'
     | 'deliveryOutcomeAt'
-    | 'deliveryOutcomeDiagnostics'
+    | 'deliveryOutcomeError'
 >>;
 
 export class Gift implements GiftData {
@@ -82,7 +82,7 @@ export class Gift implements GiftData {
     emailProviderMessageId: string | null;
     deliveryOutcome: GiftDeliveryOutcome;
     deliveryOutcomeAt: Date | null;
-    deliveryOutcomeDiagnostics: string | null;
+    deliveryOutcomeError: string | null;
     redeemerMemberId: string | null;
     tierId: string;
     cadence: GiftCadence;
@@ -118,7 +118,7 @@ export class Gift implements GiftData {
         this.emailProviderMessageId = data.emailProviderMessageId ?? null;
         this.deliveryOutcome = data.deliveryOutcome ?? 'unknown';
         this.deliveryOutcomeAt = data.deliveryOutcomeAt ?? null;
-        this.deliveryOutcomeDiagnostics = data.deliveryOutcomeDiagnostics ?? null;
+        this.deliveryOutcomeError = data.deliveryOutcomeError ?? null;
         this.redeemerMemberId = data.redeemerMemberId;
         this.tierId = data.tierId;
         this.cadence = data.cadence;
@@ -159,7 +159,7 @@ export class Gift implements GiftData {
             emailProviderMessageId: null,
             deliveryOutcome: 'unknown',
             deliveryOutcomeAt: null,
-            deliveryOutcomeDiagnostics: null,
+            deliveryOutcomeError: null,
             redeemerMemberId: null,
             consumesAt: null,
             expiresAt,

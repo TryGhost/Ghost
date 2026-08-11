@@ -35,7 +35,7 @@ export const DbGift = z.object({
     email_provider_message_id: z.string().nullable().default(null),
     delivery_outcome: GiftDeliveryOutcomeSchema.default('unknown'),
     delivery_outcome_at: DbDate.nullable().default(null),
-    delivery_outcome_diagnostics: z.string().nullable().default(null),
+    delivery_outcome_error: z.string().nullable().default(null),
     redeemer_member_id: z.string().nullable(),
     tier_id: z.string(),
     cadence: GiftCadenceSchema,
