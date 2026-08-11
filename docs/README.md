@@ -67,9 +67,11 @@ Before contributing, please read:
 1. **Clone** the repository
 2. **Create a branch** for your changes
 3. **Make your changes** and write tests
-4. **Run tests** to ensure everything works
+4. **Run `pnpm check`** to ensure everything works
 5. **Commit** following our commit message conventions
 6. **Submit a pull request** to the `main` branch
+
+For more detail, see the [contribution workflow](contributing/workflow.md).
 
 ## Additional Resources
 
