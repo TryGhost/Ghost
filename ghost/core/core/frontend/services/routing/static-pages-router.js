@@ -68,7 +68,6 @@ class StaticPagesRouter extends ParentRouter {
     _prepareContext(req, res, next) {
         res.routerOptions = {
             type: 'entry',
-            filter: this.filter,
             permalinks: this.permalinks.getValue({withUrlOptions: true}),
             resourceType: this.getResourceType(),
             query: this.RESOURCE_CONFIG,

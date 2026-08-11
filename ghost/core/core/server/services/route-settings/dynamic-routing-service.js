@@ -81,6 +81,8 @@ class DynamicRoutingService {
         const parseYaml = require('./yaml-parser');
         const {parseRouteSettings} = require('./route-settings-parser');
         const urlService = require('../url');
+        // Deferred: bridge reaches back here via api/endpoints/settings.js,
+        // so hoisting this would resolve to a half-initialised export.
         const bridge = require('../../../bridge');
 
         // Parse and validate before anything is persisted — an invalid

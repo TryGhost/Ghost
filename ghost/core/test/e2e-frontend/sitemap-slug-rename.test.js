@@ -1,4 +1,4 @@
-// A tag or author slug rename has to refresh the sitemap on its own, with no
+// A slug rename has to refresh the sitemap on its own, with no
 // unrelated edit to nudge it. The chain: the edit handler sets
 // `X-Cache-Invalidate: /*` dynamically (the endpoints' static `cacheInvalidate`
 // config is `false`, so it covers none of this) → the emit-events middleware
@@ -56,6 +56,29 @@ describe('Sitemap freshness', function () {
         const sitemap = await getSitemap('/sitemap-tags.xml');
         assert.ok(sitemap.includes(`/tag/${newSlug}/`), 'sitemap should serve the renamed tag URL');
         assert.ok(!sitemap.includes(`/tag/${oldSlug}/`), 'sitemap should not still serve the old tag URL');
+    });
+
+    // Posts reach the sitemap through the collection router's permalink, the
+    // other two through the taxonomy router and the author permalink.
+    it('serves the new URL in /sitemap-posts.xml after a post slug rename', async function () {
+        const {body: {posts: [post]}} = await adminAgent
+            .get('posts/?filter=status:published&limit=1')
+            .expectStatus(200);
+        const newSlug = `${post.slug}-renamed`;
+
+        assert.ok(
+            (await getSitemap('/sitemap-posts.xml')).includes(`/${post.slug}/`),
+            'precondition: sitemap should serve the original post URL'
+        );
+
+        await adminAgent.put(`posts/${post.id}/`)
+            .body({posts: [{slug: newSlug, updated_at: post.updated_at}]})
+            .expectStatus(200)
+            .expect(cacheInvalidateHeaderSetToWildcard());
+
+        const sitemap = await getSitemap('/sitemap-posts.xml');
+        assert.ok(sitemap.includes(`/${newSlug}/`), 'sitemap should serve the renamed post URL');
+        assert.ok(!sitemap.includes(`/${post.slug}/`), 'sitemap should not still serve the old post URL');
     });
 
     it('serves the new URL in /sitemap-authors.xml after an author slug rename', async function () {

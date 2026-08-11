@@ -26,10 +26,9 @@ module.exports = function handler(siteApp) {
         res.send(content);
     };
 
-    // The XML reads are async: with a lazy URL backend the manager builds
-    // its index on first read. Express 4 does not forward async handler
-    // rejections, so each body is fully wrapped — a failed build or render
-    // becomes an error response instead of a hung socket.
+    // Express 4 does not forward async handler rejections, so each body is
+    // fully wrapped — a failed index build or render becomes an error
+    // response instead of a hung socket.
     siteApp.get('/sitemap.xml', async function sitemapXML(req, res, next) {
         try {
             sendXml(res, await manager.getIndexXml());

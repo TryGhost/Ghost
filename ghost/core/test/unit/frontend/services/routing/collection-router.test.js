@@ -5,7 +5,7 @@ const express = require('../../../../../core/shared/express')._express;
 const events = require('../../../../../core/server/lib/common/events');
 const controllers = require('../../../../../core/frontend/services/routing/controllers');
 const CollectionRouter = require('../../../../../core/frontend/services/routing/collection-router');
-const RESOURCE_CONFIG = {QUERY: {post: {controller: 'posts', resource: 'posts'}}};
+const RESOURCE_CONFIG = {QUERY: {post: {controller: 'postsPublic', resource: 'posts'}}};
 
 describe('UNIT - services/routing/CollectionRouter', function () {
     let req;
@@ -22,7 +22,6 @@ describe('UNIT - services/routing/CollectionRouter', function () {
 
         mountRouteSpy = sinon.spy(CollectionRouter.prototype, 'mountRoute');
         mountRouterSpy = sinon.spy(CollectionRouter.prototype, 'mountRouter');
-        sinon.spy(CollectionRouter.prototype, 'unmountRoute');
         sinon.spy(express.Router, 'param');
 
         req = sinon.stub();
@@ -158,7 +157,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
                 type: 'collection',
                 filter: undefined,
                 permalinks: '/:slug/:options(edit)?/',
-                query: {controller: 'posts', resource: 'posts'},
+                query: {controller: 'postsPublic', resource: 'posts'},
                 frontPageTemplate: 'home',
                 templates: [],
                 identifier: collectionRouter.identifier,
@@ -186,7 +185,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
                 type: 'collection',
                 filter: undefined,
                 permalinks: '/:slug/:options(edit)?/',
-                query: {controller: 'posts', resource: 'posts'},
+                query: {controller: 'postsPublic', resource: 'posts'},
                 frontPageTemplate: 'home',
                 templates: ['index', 'home'],
                 identifier: collectionRouter.identifier,

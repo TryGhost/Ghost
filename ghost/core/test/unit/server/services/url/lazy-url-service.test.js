@@ -7,9 +7,9 @@ function makeUrlUtils() {
     // Just enough of url-utils to satisfy the service. createUrl returns the
     // path verbatim so tests can assert on the relative form; replacePermalink
     // does the same substitution Ghost's url-utils does for our limited fields.
-    // Permalinks use the `:field` syntax that Ghost's RouteSettings validator
-    // rewrites all `{field}` placeholders into before they reach the URL
-    // service.
+    // Permalinks use the `:field` syntax: the routers convert the domain
+    // model's `{field}` placeholders via toExpressNotation before handing
+    // them to the URL service.
     return {
         replacePermalink(permalink, resource) {
             const datePart = resource.published_at ? new Date(resource.published_at) : null;
@@ -97,7 +97,7 @@ describe('LazyUrlService', function () {
             const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
             service.onRouterAddedType('default', null, 'posts', '/:slug/');
 
-            // Eager only maps status:published posts, so a draft has no URL.
+            // Only status:published posts are routable, so a draft has no URL.
             const url = service.getUrlForResource({type: 'posts', id: 'p', slug: 'hello', status: 'draft'});
             assert.equal(url, '/404/');
         });
@@ -229,11 +229,11 @@ describe('LazyUrlService', function () {
         });
 
         it('matches page:false against the singular DB type field', function () {
-            // The legacy transformer rewrites `page:false` to `type:post` and
+            // The page transformer rewrites `page:false` to `type:post` and
             // evaluates it against the resource's singular DB-style `type`
             // field. The negative half (a record whose `type` is 'page'
             // failing the filter) is not directly expressible through this
-            // public API: `_routerTypeOf('page')` returns 'pages', so a
+            // public API: `routerTypeOf('page')` returns 'pages', so a
             // type:'page' resource is routed to the pages collection rather
             // than reaching this posts router's filter at all. That's why
             // only the positive match is asserted here.
@@ -268,8 +268,8 @@ describe('LazyUrlService', function () {
             const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
             service.onRouterAddedType('tagsRouter', null, 'tags', '/tag/:slug/');
 
-            // Eager filters its tag resources to visibility:public, so an
-            // internal tag (#hash) has no URL there and must 404 here too.
+            // Tag resources are filtered to visibility:public, so an
+            // internal tag (#hash) has no URL.
             assert.equal(
                 service.getUrlForResource({type: 'tags', id: 't1', slug: 'hash-internal', visibility: 'internal'}),
                 '/404/'

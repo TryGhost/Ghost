@@ -15,6 +15,9 @@ import tpl from '@tryghost/tpl';
 import type {PathSegment, RouteSettingsErrorCode} from './validation-errors';
 import {describeValue, formatLocation, humanList, ROUTE_SETTINGS_ERROR_CODES, toValidationError, validationError} from './validation-errors';
 
+// Omit over a union collapses to the shared keys; map over the members instead.
+type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
+
 const messages = {
     badDataError: '"{key}" is a reserved key. Please wrap the data definition into a custom name.',
     badDataHelp: 'Example:\n data:\n  my-tag:\n    resource: tags\n    ...\n',
@@ -192,7 +195,7 @@ const routeObjectSchema = (path: PathSegment[]) => z.object({
     order: OptionalStringField,
     limit: LimitField,
     rss: OptionalBooleanField
-}).transform((val): Omit<Route, 'path'> => {
+}).transform((val): DistributiveOmit<Route, 'path'> => {
     const templates = val.template;
     const data = val.data !== undefined ? parseRouteData(val.data, [...path, 'data']) : undefined;
 
@@ -331,11 +334,11 @@ export function parseRouteSettings(raw: unknown, yamlSource: string): RouteSetti
             }
 
             const route = routeResult.data;
-            if (route.type === 'template' && (!route.templates || route.templates.length === 0) && !route.data && !(route as Omit<TemplateRoute, 'path'>).contentType) {
+            if (route.type === 'template' && (!route.templates || route.templates.length === 0) && !route.data && !route.contentType) {
                 throw validationError(formatLocation(routeLocation), 'Please define a template, e.g. /about/: about.', {code: ROUTE_SETTINGS_ERROR_CODES.INVALID_TEMPLATE});
             }
 
-            routes.push({...route, path} as Route);
+            routes.push({...route, path});
         }
     }
 
@@ -388,7 +391,7 @@ export function serializeRouteSettings(settings: Omit<RouteSettings, 'yamlSource
 
     const routes: Record<string, unknown> = {};
     for (const route of settings.routes) {
-        if (route.type === 'template' && route.templates?.length === 1 && !route.data && !(route as TemplateRoute).contentType) {
+        if (route.type === 'template' && route.templates?.length === 1 && !route.data && !route.contentType) {
             routes[route.path] = route.templates[0];
         } else {
             const entry: Record<string, unknown> = {};
@@ -399,7 +402,7 @@ export function serializeRouteSettings(settings: Omit<RouteSettings, 'yamlSource
                 entry.data = route.data;
             }
             if (route.type === 'channel') {
-                const channel = route as ChannelRoute;
+                const channel = route;
                 entry.controller = 'channel';
                 if (channel.filter !== undefined) {
                     entry.filter = channel.filter;
@@ -414,7 +417,7 @@ export function serializeRouteSettings(settings: Omit<RouteSettings, 'yamlSource
                     entry.rss = channel.rss;
                 }
             } else {
-                const tmpl = route as TemplateRoute;
+                const tmpl = route;
                 if (tmpl.contentType !== undefined) {
                     entry.content_type = tmpl.contentType;
                 }
