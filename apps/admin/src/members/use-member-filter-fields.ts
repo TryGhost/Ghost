@@ -1,10 +1,13 @@
 import React, {useMemo} from 'react';
 import {DATE_OPERATOR_LABELS, RELATIVE_DATE_OPERATOR_LABELS, createOperatorOptions, createRelativeDateRenderer, fieldHasRelativeOperator, getTodayInTimezone} from '@/shared/filters';
 import {type FilterFieldConfig, type FilterFieldGroup, type FilterOption, type ValueSource} from '@tryghost/shade/patterns';
+import CustomFieldFilterRenderer from './custom-field-filter-renderer';
+import CustomFieldIcon from '@/shared/member-custom-fields/custom-field-icon';
 import {LabelFilterRenderer} from '@/members/label-picker';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FIELD} from './multiple-active-subscriptions';
 import {getMemberFields} from './member-fields';
+import type {MemberCustomField} from '@tryghost/admin-x-framework/api/member-custom-fields';
 import type {Offer} from '@tryghost/admin-x-framework/api/offers';
 
 interface UseMemberFilterFieldsOptions {
@@ -22,6 +25,8 @@ interface UseMemberFilterFieldsOptions {
     membersTrackSources?: boolean;
     emailTrackOpens?: boolean;
     emailTrackClicks?: boolean;
+    customFieldsEnabled?: boolean;
+    customFields?: Array<{key: string; name: string; type: MemberCustomField['type']}>;
     siteTimezone?: string;
 }
 
@@ -83,6 +88,8 @@ function getFieldIcon(key: string) {
         return React.createElement(LucideIcon.MousePointerClick, {className: 'size-4'});
     case 'newsletter_feedback':
         return React.createElement(LucideIcon.MessageSquare, {className: 'size-4'});
+    case 'custom_field':
+        return React.createElement(LucideIcon.SlidersHorizontal, {className: 'size-4'});
     case 'offer_redemptions':
         return React.createElement(LucideIcon.Ticket, {className: 'size-4'});
     case MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FIELD:
@@ -90,6 +97,10 @@ function getFieldIcon(key: string) {
     default:
         if (key.startsWith('newsletters.')) {
             return React.createElement(LucideIcon.Newspaper, {className: 'size-4'});
+        }
+
+        if (key.startsWith('custom_field.')) {
+            return React.createElement(LucideIcon.SlidersHorizontal, {className: 'size-4'});
         }
 
         return undefined;
@@ -255,6 +266,8 @@ export function useMemberFilterFields({
     membersTrackSources = false,
     emailTrackOpens = false,
     emailTrackClicks = false,
+    customFieldsEnabled = false,
+    customFields = [],
     siteTimezone = 'UTC'
 }: UseMemberFilterFieldsOptions): FilterFieldGroup[] {
     return useMemo(() => {
@@ -266,9 +279,14 @@ export function useMemberFilterFields({
             overrides: Partial<FilterFieldConfig> = {},
             operatorLabels: Record<string, string> = MEMBER_OPERATOR_LABELS
         ): FilterFieldConfig {
-            const field = key.startsWith('newsletters.')
-                ? fields['newsletters.:slug']
-                : fields[key as MemberFieldKey];
+            let field;
+            if (key.startsWith('newsletters.')) {
+                field = fields['newsletters.:slug'];
+            } else if (key.startsWith('custom_field.')) {
+                field = fields['custom_field.:key'];
+            } else {
+                field = fields[key as MemberFieldKey];
+            }
 
             return {
                 key,
@@ -344,6 +362,25 @@ export function useMemberFilterFields({
         }
 
         groups.push({group: 'Basic', fields: basicFields});
+
+        // Each defined custom field is its own named entry, so a publisher can search
+        // for "Shipping address" directly rather than reaching it through a generic
+        // "Custom field" door. A simple field filters on its value; a composite field's
+        // renderer opens its parts (plus "Any") in the pill.
+        if (customFieldsEnabled && customFields.length > 0) {
+            const customFieldFields = customFields.map(field => createFieldConfig(`custom_field.${field.key}`, {
+                label: field.name,
+                // The dropdown entry and the added filter show the field type's own icon
+                // rather than a generic custom-field mark.
+                icon: React.createElement(CustomFieldIcon, {type: field.type, className: 'size-4'}),
+                // The field's type decides its parts and operators, so the operator
+                // control lives in the renderer, after any part is chosen.
+                renderOperatorInValue: true,
+                customRenderer: props => React.createElement(CustomFieldFilterRenderer, props as React.ComponentProps<typeof CustomFieldFilterRenderer>)
+            }));
+
+            groups.push({group: 'Custom fields', fields: customFieldFields});
+        }
 
         if (activeNewsletters.length > 1) {
             const newsletterFields: FilterFieldConfig[] = [
@@ -452,6 +489,8 @@ export function useMemberFilterFields({
     }, [
         emailFiltersEnabled,
         emailValueSource,
+        customFieldsEnabled,
+        customFields,
         emailTrackClicks,
         emailTrackOpens,
         hasMultipleTiers,
