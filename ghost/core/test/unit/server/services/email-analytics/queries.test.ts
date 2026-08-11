@@ -269,6 +269,17 @@ describe('Email analytics queries', function () {
             assert.equal(job.status, 'finished');
         });
 
+        it('creates missing job with created timestamp', async function () {
+            const date = new Date('2026-08-11T10:00:00.000Z');
+
+            await queries.setJobTimestamp('email-analytics-missing', 'started', date);
+
+            const job = await knex('jobs').where('name', 'email-analytics-missing').first();
+            assert.equal(new Date(job.created_at).toISOString(), date.toISOString());
+            assert.equal(new Date(job.started_at).toISOString(), date.toISOString());
+            assert.equal(new Date(job.updated_at).toISOString(), date.toISOString());
+        });
+
         it('swallows database errors', async function () {
             await knex.schema.dropTable('jobs');
 
