@@ -1407,32 +1407,8 @@ module.exports = {
         buyer_email: {type: 'string', maxlength: 191, nullable: false, validations: {isEmail: true}},
         buyer_member_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'members.id', setNullDelete: true},
         buyer_name: {type: 'string', maxlength: 191, nullable: true},
-
-        delivery_method: {
-            type: 'string', maxlength: 50, nullable: false, defaultTo: 'link', validations: {
-                isIn: [['link', 'email']]
-            }
-        },
-        recipient_email: {type: 'string', maxlength: 191, nullable: true, validations: {isEmail: true}},
         recipient_name: {type: 'string', maxlength: 191, nullable: true},
         personal_message: {type: 'text', maxlength: 500, nullable: true},
-        deliver_at: {type: 'dateTime', nullable: true},
-        delivery_status: {
-            type: 'string', maxlength: 50, nullable: false, defaultTo: 'pending', validations: {
-                isIn: [['pending', 'sending', 'sent', 'failed']]
-            }
-        },
-        delivery_attempts: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
-        delivery_attempt_at: {type: 'dateTime', nullable: true},
-        email_sent_at: {type: 'dateTime', nullable: true},
-        email_provider_message_id: {type: 'string', maxlength: 1000, nullable: true},
-        delivery_outcome: {
-            type: 'string', maxlength: 50, nullable: false, defaultTo: 'unknown', validations: {
-                isIn: [['unknown', 'delivered', 'temporary_failed', 'permanent_failed']]
-            }
-        },
-        delivery_outcome_at: {type: 'dateTime', nullable: true},
-        delivery_outcome_error: {type: 'text', maxlength: 65535, nullable: true},
 
         redeemer_member_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'members.id', setNullDelete: true},
 
@@ -1451,6 +1427,7 @@ module.exports = {
         stripe_payment_intent_id: {type: 'string', maxlength: 255, nullable: false, unique: true},
 
         consumes_at: {type: 'dateTime', nullable: true},
+        available_at: {type: 'dateTime', nullable: true},
         expires_at: {type: 'dateTime', nullable: false},
 
         status: {
@@ -1466,9 +1443,32 @@ module.exports = {
         consumes_soon_reminder_sent_at: {type: 'dateTime', nullable: true},
         '@@INDEXES@@': [
             ['status', 'consumes_at'],
-            ['status', 'expires_at'],
+            ['status', 'expires_at']
+        ]
+    },
+    gift_deliveries: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        gift_id: {type: 'string', maxlength: 24, nullable: false, unique: true, references: 'gifts.id', cascadeDelete: true},
+        recipient_email: {type: 'string', maxlength: 191, nullable: false, validations: {isEmail: true}},
+        status: {
+            type: 'string', maxlength: 50, nullable: false, defaultTo: 'pending', validations: {
+                isIn: [['pending', 'sending', 'sent', 'failed', 'cancelled']]
+            }
+        },
+        attempts: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
+        attempt_at: {type: 'dateTime', nullable: true},
+        email_sent_at: {type: 'dateTime', nullable: true},
+        email_provider_message_id: {type: 'string', maxlength: 1000, nullable: true},
+        outcome: {
+            type: 'string', maxlength: 50, nullable: false, defaultTo: 'unknown', validations: {
+                isIn: [['unknown', 'delivered', 'temporary_failed', 'permanent_failed']]
+            }
+        },
+        outcome_at: {type: 'dateTime', nullable: true},
+        outcome_error: {type: 'text', maxlength: 65535, nullable: true},
+        '@@INDEXES@@': [
             {columns: ['email_provider_message_id'], length: 31},
-            ['delivery_method', 'delivery_status', 'delivery_attempt_at']
+            ['status', 'attempt_at']
         ]
     }
 };

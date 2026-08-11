@@ -5,13 +5,6 @@ const Gift = ghostBookshelf.Model.extend({
     tableName: 'gifts',
     hasTimestamps: false,
 
-    defaults: {
-        delivery_method: 'link',
-        delivery_status: 'pending',
-        delivery_attempts: 0,
-        delivery_outcome: 'unknown'
-    },
-
     buyer() {
         return this.belongsTo('Member', 'buyer_member_id', 'id');
     },
@@ -22,6 +15,10 @@ const Gift = ghostBookshelf.Model.extend({
 
     tier() {
         return this.belongsTo('Product', 'tier_id', 'id');
+    },
+
+    delivery() {
+        return this.hasOne('GiftDelivery', 'gift_id', 'id');
     }
 }, {
     async destroy() {

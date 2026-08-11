@@ -1,4 +1,5 @@
 import {Gift} from '../../../../../core/server/services/gifts/gift';
+import {GiftDelivery} from '../../../../../core/server/services/gifts/gift-delivery';
 
 export function buildGift(overrides: Partial<ConstructorParameters<typeof Gift>[0]> = {}) {
     return new Gift({
@@ -22,6 +23,15 @@ export function buildGift(overrides: Partial<ConstructorParameters<typeof Gift>[
         expiredAt: null,
         refundedAt: null,
         consumesSoonReminderSentAt: null,
+        ...overrides
+    });
+}
+
+export function buildGiftDelivery(overrides: Partial<ConstructorParameters<typeof GiftDelivery>[0]> = {}) {
+    return new GiftDelivery({
+        id: 'delivery_1',
+        giftId: 'gift_1',
+        recipientEmail: 'recipient@example.com',
         ...overrides
     });
 }

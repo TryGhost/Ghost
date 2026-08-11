@@ -15,7 +15,7 @@ The member who claims a gift subscription and receives its access. The redeemer 
 _Avoid_: Recipient, buyer
 
 **Recipient**:
-The person to whom an emailed gift subscription is addressed. A recipient need not be a member and does not become the redeemer until they claim the gift.
+The person for whom a gift subscription is intended. A recipient need not be a member and does not become the redeemer until they claim the gift.
 _Avoid_: Receiver, redeemer
 
 ### Purchase and claim
@@ -44,12 +44,16 @@ _Avoid_: Gift activation
 Communicating a gift subscription's redemption link to its recipient by email. Delivery does not claim the gift or begin gifted access.
 _Avoid_: Gift redemption, gift activation
 
+**Personal message**:
+A note from the buyer that forms part of the gift and can be presented wherever the gift is shown, including email and redemption experiences.
+_Avoid_: Delivery message, email message
+
 **Gift sent**:
 The recipient email has been accepted by the publication's configured mail transport. This completes gift delivery even when no later provider outcome is available.
 _Avoid_: Gift delivered, provider delivery
 
 **Email delivery status**:
-The current progress of handing a recipient email to the configured mail transport: pending, sending, sent, or failed. It is separate from any later provider-reported outcome.
+The current progress of handing a recipient email to the configured mail transport: pending, sending, sent, failed, or cancelled. It is separate from any later provider-reported outcome.
 _Avoid_: Delivery outcome
 
 **Delivery outcome**:
@@ -63,7 +67,7 @@ The total length of gifted access, measured from redemption.
 _Avoid_: Gift cadence, billing period
 
 **Gift availability**:
-The point at which a purchased gift subscription becomes eligible for redemption. Immediate gifts are available after purchase; a chosen delivery date can delay availability.
+The point at which a purchased gift subscription becomes eligible for redemption and its claim window begins. Immediate gifts are available after purchase; a chosen delivery date can delay availability.
 _Avoid_: Gift activation, gift redemption
 
 **Gift cadence**:
@@ -71,7 +75,7 @@ The monthly or yearly membership price basis used to value a gift subscription. 
 _Avoid_: Gift duration, renewal interval
 
 **Gift expiration**:
-The end of the claim window for a purchased gift subscription that was never redeemed.
+The end of the claim window that begins when a purchased gift subscription becomes available and was never redeemed.
 _Avoid_: Gift consumption
 
 **Gift consumption**:

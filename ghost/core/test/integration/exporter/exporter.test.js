@@ -47,6 +47,7 @@ describe('Exporter', function () {
             'email_recipients',
             'email_spam_complaint_events',
             'emails',
+            'gift_deliveries',
             'gift_links',
             'gifts',
             'integrations',
@@ -147,6 +148,7 @@ describe('Exporter', function () {
             'members_paid_subscription_events',
             'members_subscribe_events',
             'outbox',
+            'gift_deliveries',
             'gifts',
             'gift_links',
             'post_gift_links'

@@ -426,6 +426,15 @@ describe('GiftService', function () {
                 code: 'GIFT_REFUNDED'
             },
             {
+                name: 'gifts that are not available yet',
+                overrides: {
+                    availableAt: new Date('2100-01-01T00:00:00.000Z')
+                },
+                memberStatus: null,
+                message: 'This gift is not available yet.',
+                code: 'GIFT_NOT_AVAILABLE'
+            },
+            {
                 name: 'paid members',
                 overrides: {},
                 memberStatus: 'paid',

@@ -42,6 +42,17 @@ describe('Gift', function () {
             assert.equal(daysDiff, GIFT_EXPIRY_DAYS);
         });
 
+        it('starts the claim window at a requested availability time', function () {
+            const availableAt = new Date('2026-12-25T09:00:00.000Z');
+            const gift = Gift.fromPurchase({...purchaseData, availableAt});
+            const daysDiff = Math.round(
+                (gift.expiresAt.getTime() - gift.availableAt.getTime()) / (1000 * 60 * 60 * 24)
+            );
+
+            assert.equal(gift.availableAt.toISOString(), availableAt.toISOString());
+            assert.equal(daysDiff, GIFT_EXPIRY_DAYS);
+        });
+
         it('sets null defaults for redemption fields', function () {
             const gift = Gift.fromPurchase(purchaseData);
 
@@ -130,6 +141,21 @@ describe('Gift', function () {
             const result = gift.checkRedeemable('free');
 
             assert.deepEqual(result, {redeemable: true});
+        });
+
+        it('rejects redemption before the gift becomes available', function () {
+            const gift = buildGift({
+                availableAt: new Date('2026-12-25T09:00:00.000Z')
+            });
+
+            assert.deepEqual(
+                gift.checkRedeemable(null, new Date('2026-12-25T08:59:59.999Z')),
+                {redeemable: false, reason: 'unavailable'}
+            );
+            assert.deepEqual(
+                gift.checkRedeemable(null, new Date('2026-12-25T09:00:00.000Z')),
+                {redeemable: true}
+            );
         });
 
         for (const {name, overrides, memberStatus, reason} of testCases) {

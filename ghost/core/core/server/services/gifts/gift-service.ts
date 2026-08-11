@@ -26,6 +26,7 @@ const errorMessages = {
     giftConsumed: 'This gift has already been consumed.',
     giftExpired: 'This gift has expired.',
     giftRefunded: 'This gift has been refunded.',
+    giftUnavailable: 'This gift is not available yet.',
     paidMember: 'You already have an active subscription.',
     giftInvalidReassignStatus: 'This gift does not have a reassignable status.',
     giftInvalidReassignMember: 'Member already has an active subscription.',
@@ -451,6 +452,11 @@ export class GiftService {
                 throw new errors.BadRequestError({
                     message: tpl(errorMessages.giftRefunded),
                     code: 'GIFT_REFUNDED'
+                });
+            case 'unavailable':
+                throw new errors.BadRequestError({
+                    message: tpl(errorMessages.giftUnavailable),
+                    code: 'GIFT_NOT_AVAILABLE'
                 });
             case 'paid-member':
                 throw new errors.BadRequestError({
