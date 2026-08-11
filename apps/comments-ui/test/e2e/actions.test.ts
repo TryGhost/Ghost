@@ -249,8 +249,7 @@ test.describe('Actions', async () => {
         const {frame} = await initializeTest(page);
 
         // Check like button is not filled yet
-        const comment = frame.getByTestId('comment-component').nth(0);
-        const reply = comment.getByTestId('comment-component').nth(0);
+        const reply = frame.getByTestId('comment-component').nth(1);
         // check if reply contains text This is a reply to 1
         await expect(reply).toContainText('This is a reply to 1');
 
@@ -289,13 +288,13 @@ test.describe('Actions', async () => {
 
         // Click button
         await replyButton.click();
-        const editor = comment.getByTestId('form-editor');
+        const replyForm = frame.getByTestId('reply-form');
+        const editor = replyForm.getByTestId('form-editor');
         await expect(editor).toBeVisible();
         // Wait for focused
         await waitEditorFocused(editor);
 
         // Ensure form data is correct
-        const replyForm = frame.getByTestId('reply-form');
         await expect(replyForm.getByTestId('avatar-image')).toHaveAttribute('src', 'https://example.com/avatar.jpg');
 
         // Should not include the replying-to-reply indicator
@@ -306,7 +305,7 @@ test.describe('Actions', async () => {
         await expect(editor).toHaveText('This is a reply 123');
 
         // Click reply button
-        const submitButton = comment.getByTestId('submit-form-button');
+        const submitButton = replyForm.getByTestId('submit-form-button');
         await submitButton.click();
 
         // Check total amount of comments increased
@@ -317,13 +316,13 @@ test.describe('Actions', async () => {
     async function testReplyToReply(page) {
         const {frame} = await initializeTest(page);
 
-        const parentComment = frame.getByTestId('comment-component').nth(0);
-        const replyComment = parentComment.getByTestId('comment-component').nth(0);
+        const replyComment = frame.getByTestId('comment-component').nth(1);
 
         const replyReplyButton = replyComment.getByTestId('reply-button');
         await replyReplyButton.click();
 
-        const editor = parentComment.getByTestId('form-editor');
+        const replyForm = frame.getByTestId('reply-form');
+        const editor = replyForm.getByTestId('form-editor');
         await expect(editor).toBeVisible();
         await waitEditorFocused(editor);
 
@@ -336,19 +335,17 @@ test.describe('Actions', async () => {
         // give time for spinner to show
         mockedApi.setDelay(100);
 
-        const submitButton = parentComment.getByTestId('submit-form-button');
+        const submitButton = replyForm.getByTestId('submit-form-button');
         await submitButton.click();
 
         // Spinner is shown
         await expect(frame.getByTestId('button-spinner')).toBeVisible();
         await expect(frame.getByTestId('button-spinner')).not.toBeVisible();
 
-        // Comment gets added and has correct contents
+        // Comment gets added and has correct contents, nested below the reply it responds to
         await expect(frame.getByTestId('comment-component')).toHaveCount(3);
         await expect(frame.getByText('This is a reply to a reply')).toHaveCount(1);
-
-        // Should indicate this was a reply to a reply
-        await expect(frame.getByTestId('comment-in-reply-to')).toHaveText('This is a reply to 1');
+        await expect(frame.getByTestId('comment-component').nth(2)).toContainText('This is a reply to a reply');
 
         return {frame};
     }
@@ -379,88 +376,6 @@ test.describe('Actions', async () => {
         });
 
         await testReplyToReply(page);
-    });
-
-    test('Can highlight reply when clicking on reply to: snippet', async ({page}) => {
-        mockedApi.addComment({
-            html: '<p>This is comment 1</p>',
-            replies: [
-                mockedApi.buildReply({
-                    id: '2',
-                    html: '<p>This is a reply to 1</p>'
-                }),
-                mockedApi.buildReply({
-                    id: '3',
-                    html: '<p>This is a reply to a reply</p>',
-                    in_reply_to_id: '2',
-                    in_reply_to_snippet: 'This is a reply to 1'
-                })
-            ]
-        });
-
-        const {frame} = await initializeTest(page);
-
-        await frame.getByTestId('comment-in-reply-to').click();
-
-        // get the first reply which contains This is a reply to 1
-        const commentComponent = frame.getByTestId('comment-component').nth(1);
-
-        const replyComment = commentComponent.getByTestId('comment-content').nth(0);
-
-        // check that replyComment contains the text This is a reply to 1
-        await expect(replyComment).toHaveText('This is a reply to 1');
-
-        const markElement = await replyComment.locator('mark');
-        await expect(markElement).toBeVisible();
-
-        // Check that the mark element has the expected classes
-        await expect(markElement).toHaveClass(/animate-\[highlight_2\.5s_ease-out\]/);
-        await expect(markElement).toHaveClass(/\[animation-delay:1s\]/);
-        await expect(markElement).toHaveClass(/bg-yellow-300\/40/);
-        await expect(markElement).toHaveClass(/dark:bg-yellow-500\/40/);
-    });
-
-    test('Reply highlight disappears after a bit', async ({page}) => {
-        mockedApi.addComment({
-            html: '<p>This is comment 1</p>',
-            replies: [
-                mockedApi.buildReply({
-                    id: '2',
-                    html: '<p>This is a reply to 1</p>'
-                }),
-                mockedApi.buildReply({
-                    id: '3',
-                    html: '<p>This is a reply to a reply</p>',
-                    in_reply_to_id: '2',
-                    in_reply_to_snippet: 'This is a reply to 1'
-                })
-            ]
-        });
-
-        const {frame} = await initializeTest(page);
-
-        await frame.getByTestId('comment-in-reply-to').click();
-
-        // get the first reply which contains This is a reply to 1
-        const commentComponent = frame.getByTestId('comment-component').nth(1);
-
-        const replyComment = commentComponent.getByTestId('comment-content').nth(0);
-
-        // check that replyComment contains the text This is a reply to 1
-        await expect(replyComment).toHaveText('This is a reply to 1');
-
-        const markElement = await replyComment.locator('mark');
-        await expect(markElement).toBeVisible();
-
-        // Check that the mark element has the expected classes
-        await expect(markElement).toHaveClass(/animate-\[highlight_2\.5s_ease-out\]/);
-        await expect(markElement).toHaveClass(/\[animation-delay:1s\]/);
-        await expect(markElement).toHaveClass(/bg-yellow-300\/40/);
-        await expect(markElement).toHaveClass(/dark:bg-yellow-500\/40/);
-
-        const timeout = 3000;
-        await page.waitForTimeout(timeout);
-        await expect(markElement).not.toBeVisible();
     });
 
     test('Can add expertise', async ({page}) => {
@@ -618,32 +533,11 @@ test.describe('Actions', async () => {
 
         const {frame} = await initializeTest(page);
 
-        const comment = frame.getByTestId('comment-component').nth(0);
-        const replyToDelete = comment.getByTestId('comment-component').nth(0);
+        const replyToDelete = frame.getByTestId('comment-component').nth(1);
         await deleteComment(page, frame, replyToDelete);
 
         await expect(frame.getByTestId('comment-component')).toHaveCount(1);
         await expect(frame.getByTestId('replies-line')).not.toBeVisible();
-    });
-
-    test('Deleting a reply updates pagination', async ({page}) => {
-        const loggedInMember = buildMember();
-        mockedApi.setMember(loggedInMember);
-
-        mockedApi.addComment({
-            html: '<p>Parent comment</p>',
-            // 6 replies
-            replies: Array.from({length: 6}, (_, i) => buildReply({member: loggedInMember, html: `<p>Reply ${i + 1}</p>`}))
-        });
-
-        const {frame} = await initializeTest(page);
-        await expect(frame.getByTestId('replies-pagination')).toContainText('3');
-
-        const replyToDelete = frame.getByTestId('comment-component').nth(2);
-        await deleteComment(page, frame, replyToDelete);
-
-        // One visible reply was deleted, so hidden count drops from 3 to 2
-        await expect(frame.getByTestId('replies-pagination')).toContainText('2');
     });
 
     test('Can delete a comment with replies', async ({page}) => {
@@ -944,7 +838,10 @@ test.describe('Actions', async () => {
 
         // Get the parent comment and verify initial state
         const parentComment = frame.getByTestId('comment-component').nth(0);
-        const replies = await parentComment.getByTestId('comment-component').all();
+        const replies = [
+            frame.getByTestId('comment-component').nth(1),
+            frame.getByTestId('comment-component').nth(2)
+        ];
 
         // Verify initial state shows parent and replies
         await expect(parentComment).toContainText('Parent comment');

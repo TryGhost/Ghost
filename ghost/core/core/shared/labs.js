@@ -29,7 +29,6 @@ const messages = {
 const GA_FEATURES = [
     'automationAnalytics',
     'customFonts',
-    'commentsThreads',
     'commentsPinning',
     'dangerZoneResetAuth'
 ];

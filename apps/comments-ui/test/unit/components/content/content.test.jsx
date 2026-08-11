@@ -196,7 +196,7 @@ describe('<Content>', function () {
     });
 
     describe('threaded display', function () {
-        it('passes the commentsThreads display mode through to rendered comments', function () {
+        it('renders replies as nested threads', function () {
             const reply1 = buildComment({
                 html: '<p>First reply</p>'
             });
@@ -222,10 +222,7 @@ describe('<Content>', function () {
             contextualRender(<Content />, {
                 appContext: {
                     comments: [comment],
-                    commentCount: 1,
-                    labs: {
-                        commentsThreads: true
-                    }
+                    commentCount: 1
                 }
             });
 
