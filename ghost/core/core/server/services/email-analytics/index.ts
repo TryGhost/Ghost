@@ -13,7 +13,7 @@ import membersService from '../members';
 // @ts-expect-error This module lacks type definitions.
 import emailSuppressionList from '../email-suppression-list';
 // @ts-expect-error This module lacks type definitions.
-import {EmailRecipientFailure, EmailSpamComplaintEvent, Email} from '../../models';
+import type {EmailRecipientFailure, EmailSpamComplaintEvent, Email} from '../../models';
 // @ts-expect-error This module lacks type definitions.
 import type DomainEvents from '@tryghost/domain-events';
 import {Queries} from './lib/queries';
@@ -36,12 +36,22 @@ export const init = ({
     config,
     db,
     domainEvents,
+    models: {
+        Email,
+        EmailRecipientFailure,
+        EmailSpamComplaintEvent
+    },
     prometheusClient
 }: {
     automationsApi: Pick<typeof AutomationsApi, 'getAutomatedEmailRecipientsByMailgunIds' | 'trackEmailDeliveredAndOpened'>;
     config: Pick<ConfigInstance, 'get'>;
     db: {knex: Knex},
     domainEvents: Pick<DomainEvents, 'subscribe'>;
+    models: {
+        Email: Email;
+        EmailRecipientFailure: EmailRecipientFailure;
+        EmailSpamComplaintEvent: EmailSpamComplaintEvent;
+    };
     prometheusClient: PrometheusClient | null;
 }) => {
     const queries = new Queries(db.knex);

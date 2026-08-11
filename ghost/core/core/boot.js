@@ -358,6 +358,7 @@ async function initServices({ghostServer, config, prometheusClient}) {
     const {withErrorCapture} = require('./server/adapters/scheduling/error-capture');
 
     const db = require('./server/data/db');
+    const models = require('./server/models');
     const urlUtils = require('./shared/url-utils').default;
     const settingsCache = require('./shared/settings-cache');
     const internalKeys = require('./server/services/internal-keys').default;
@@ -389,6 +390,7 @@ async function initServices({ghostServer, config, prometheusClient}) {
             config,
             db,
             domainEvents,
+            models,
             prometheusClient
         }),
         webhooks.listen(),
