@@ -573,7 +573,7 @@ const WelcomeEmailCustomizeModal = NiceModal.create(() => {
                     />
                 }
                 testId="welcome-email-customize-modal"
-                title="Welcome emails"
+                title={hasAutomations ? 'Automation emails' : 'Welcome emails'}
                 onClose={handleClose}
                 onSave={() => handleSave({fakeWhenUnchanged: true})}
             />
