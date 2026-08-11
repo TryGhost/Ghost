@@ -436,4 +436,89 @@ describe('Filters', () => {
             expect(screen.queryByRole('option', {name: 'Gold'})).toBeNull();
         });
     });
+
+    describe('group previewLimit', () => {
+        beforeAll(() => {
+            global.ResizeObserver = class {
+                observe() {
+                    return undefined;
+                }
+
+                unobserve() {
+                    return undefined;
+                }
+
+                disconnect() {
+                    return undefined;
+                }
+            } as unknown as typeof ResizeObserver;
+            HTMLElement.prototype.scrollIntoView = vi.fn();
+        });
+
+        function PreviewLimitFilters({previewLimit}: Readonly<{previewLimit?: number}>) {
+            const [filters, setFilters] = useState<Filter<string>[]>([]);
+            const fields = useMemo(() => ([
+                {
+                    group: 'Custom fields',
+                    previewLimit,
+                    fields: Array.from({length: 8}, (_, index) => ({
+                        key: `custom_field.field_${index + 1}`,
+                        label: `Field ${index + 1}`,
+                        type: 'text' as const,
+                        operators: [{value: 'is', label: 'is'}]
+                    }))
+                }
+            ]), [previewLimit]);
+
+            return (
+                <Filters
+                    addButtonText="Add filter"
+                    allowMultiple={true}
+                    fields={fields}
+                    filters={filters}
+                    showSearchInput={true}
+                    onChange={setFilters}
+                />
+            );
+        }
+
+        it('previews only the first previewLimit fields behind a "Show more"', async () => {
+            render(<PreviewLimitFilters previewLimit={5} />);
+            fireEvent.click(screen.getByRole('button', {name: 'Add filter'}));
+
+            expect(await screen.findByRole('option', {name: 'Field 5'})).toBeDefined();
+            expect(screen.queryByRole('option', {name: 'Field 6'})).toBeNull();
+            expect(screen.getByRole('option', {name: 'Show 3 more'})).toBeDefined();
+        });
+
+        it('reveals the rest of the group when "Show more" is clicked', async () => {
+            render(<PreviewLimitFilters previewLimit={5} />);
+            fireEvent.click(screen.getByRole('button', {name: 'Add filter'}));
+
+            fireEvent.click(await screen.findByRole('option', {name: 'Show 3 more'}));
+
+            expect(await screen.findByRole('option', {name: 'Field 8'})).toBeDefined();
+            expect(screen.queryByRole('option', {name: /Show \d+ more/})).toBeNull();
+        });
+
+        it('uncaps the group while searching so a capped-out field is findable by name', async () => {
+            render(<PreviewLimitFilters previewLimit={5} />);
+            fireEvent.click(screen.getByRole('button', {name: 'Add filter'}));
+
+            const search = await screen.findByPlaceholderText('Search fields...');
+            fireEvent.change(search, {target: {value: 'Field 8'}});
+
+            expect(await screen.findByRole('option', {name: 'Field 8'})).toBeDefined();
+            // "Show more" is a capping affordance, never part of a search result.
+            expect(screen.queryByRole('option', {name: /Show \d+ more/})).toBeNull();
+        });
+
+        it('shows every field when no previewLimit is set', async () => {
+            render(<PreviewLimitFilters />);
+            fireEvent.click(screen.getByRole('button', {name: 'Add filter'}));
+
+            expect(await screen.findByRole('option', {name: 'Field 8'})).toBeDefined();
+            expect(screen.queryByRole('option', {name: /Show \d+ more/})).toBeNull();
+        });
+    });
 });

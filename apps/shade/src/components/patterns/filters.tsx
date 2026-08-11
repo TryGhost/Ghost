@@ -926,6 +926,10 @@ export interface CustomRendererProps<T = unknown> {
 export interface FilterFieldGroup<T = unknown> {
     group?: string;
     fields: FilterFieldConfig<T>[];
+    // Show only the first `previewLimit` fields in the picker, with a "Show more"
+    // to reveal the rest. Every field stays resolvable regardless — this caps
+    // presentation, not the config map. Absent = show all.
+    previewLimit?: number;
 }
 
 // Union type for both flat and grouped field configurations
@@ -975,6 +979,7 @@ export interface FilterFieldConfig<T = unknown> {
     // Group-level configuration
     group?: string;
     fields?: FilterFieldConfig<T>[];
+    previewLimit?: number;
     // Field-specific options
     options?: FilterOption<T>[];
     isLoading?: boolean;
@@ -2439,6 +2444,11 @@ export function Filters<T = unknown>({
     const [addFilterOpen, setAddFilterOpen] = useState(false);
     const [selectedFieldKeyForOptions, setSelectedFieldKeyForOptions] = useState<string | null>(null);
     const [tempSelectedValues, setTempSelectedValues] = useState<unknown[]>([]);
+    // The field-picker search, controlled so a `previewLimit` group can uncap while
+    // the user is searching. `expandedGroups` holds the groups whose "Show more" was
+    // clicked. Both reset when the picker closes.
+    const [fieldSearch, setFieldSearch] = useState('');
+    const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
     // Notify parent when active field changes
     useEffect(() => {
@@ -2542,6 +2552,8 @@ export function Filters<T = unknown>({
         setAddFilterOpen(false);
         setSelectedFieldKeyForOptions(null);
         setTempSelectedValues([]);
+        setFieldSearch('');
+        setExpandedGroups(new Set());
     }, []);
 
     const addFilter = useCallback(
@@ -2613,6 +2625,64 @@ export function Filters<T = unknown>({
             return !filters.some(filter => filter.field === field.key);
         });
     }, [fields, filters, allowMultiple]);
+
+    // A group can preview a subset in the picker (previewLimit) while every field
+    // stays resolvable — getFieldsMap flattens all of them, so named pills and saved
+    // segments never depend on a field being listed here. "Show more" reveals the
+    // rest; an active search reveals the whole group so a capped-out field is still
+    // findable by name.
+    const renderPickerGroup = (
+        groupKey: string,
+        heading: string,
+        groupFields: FilterFieldConfig<T>[],
+        previewLimit?: number
+    ) => {
+        if (groupFields.length === 0) {
+            return null;
+        }
+
+        const searching = fieldSearch.trim().length > 0;
+        const capped = previewLimit !== undefined
+            && !searching
+            && !expandedGroups.has(groupKey)
+            && groupFields.length > previewLimit;
+        const visibleFields = capped ? groupFields.slice(0, previewLimit) : groupFields;
+        const hiddenCount = groupFields.length - visibleFields.length;
+
+        return (
+            <CommandGroup key={groupKey} heading={heading}>
+                {visibleFields.map((field, fieldIndex) => {
+                    if (field.type === 'separator') {
+                        return <CommandSeparator key={field.key ?? `${groupKey}-separator-${fieldIndex}`} />;
+                    }
+
+                    return (
+                        <CommandItem
+                            key={field.key ?? `${groupKey}-field-${fieldIndex}`}
+                            className="min-w-0"
+                            onSelect={() => field.key && addFilter(field.key)}
+                        >
+                            {field.icon}
+                            <span className="truncate">{field.label}</span>
+                        </CommandItem>
+                    );
+                })}
+                {capped && (
+                    <CommandItem
+                        className="min-w-0 text-muted-foreground"
+                        value={`${groupKey}-show-more`}
+                        onSelect={() => setExpandedGroups((prev) => {
+                            const next = new Set(prev);
+                            next.add(groupKey);
+                            return next;
+                        })}
+                    >
+                        <span className="truncate">Show {hiddenCount} more</span>
+                    </CommandItem>
+                )}
+            </CommandGroup>
+        );
+    };
 
     return (
         <FilterContext.Provider
@@ -2686,6 +2756,8 @@ export function Filters<T = unknown>({
                             if (!open) {
                                 setSelectedFieldKeyForOptions(null);
                                 setTempSelectedValues([]);
+                                setFieldSearch('');
+                                setExpandedGroups(new Set());
                             }
                         }}
                     >
@@ -2739,7 +2811,7 @@ export function Filters<T = unknown>({
                             ) : (
                                 // Show field selection - needs Command wrapper for search/list
                                 <Command className='outline-hidden' tabIndex={showSearchInput ? undefined : 0}>
-                                    {showSearchInput && <CommandInput className="h-(--control-height)" placeholder={mergedI18n.searchFields} />}
+                                    {showSearchInput && <CommandInput className="h-(--control-height)" placeholder={mergedI18n.searchFields} value={fieldSearch} onValueChange={setFieldSearch} />}
                                     <CommandList className="outline-hidden">
                                         <CommandEmpty>{mergedI18n.noFieldsFound}</CommandEmpty>
                                         {fields.map((item, index) => {
@@ -2758,33 +2830,7 @@ export function Filters<T = unknown>({
                                                     return !filters.some(filter => filter.field === field.key);
                                                 });
 
-                                                if (groupFields.length === 0) {
-                                                    return null;
-                                                }
-
-                                                return (
-                                                    <CommandGroup key={item.group || `group-${index}`} heading={item.group || 'Fields'}>
-                                                        {groupFields.map((field, fieldIndex) => {
-                                                            // Handle separator - use field.key if available, or generate stable key
-                                                            if (field.type === 'separator') {
-                                                                const sepKey = field.key ?? `${item.group ?? `group-${index}`}-separator-${fieldIndex}`;
-                                                                return <CommandSeparator key={sepKey} />;
-                                                            }
-
-                                                            // Regular field
-                                                            return (
-                                                                <CommandItem
-                                                                    key={field.key ?? `${item.group ?? `group-${index}`}-field-${fieldIndex}`}
-                                                                    className="min-w-0"
-                                                                    onSelect={() => field.key && addFilter(field.key)}
-                                                                >
-                                                                    {field.icon}
-                                                                    <span className="truncate">{field.label}</span>
-                                                                </CommandItem>
-                                                            );
-                                                        })}
-                                                    </CommandGroup>
-                                                );
+                                                return renderPickerGroup(item.group || `group-${index}`, item.group || 'Fields', groupFields, item.previewLimit);
                                             }
 
                                             // Handle group-level fields (new FilterFieldConfig structure with group property)
@@ -2802,29 +2848,7 @@ export function Filters<T = unknown>({
                                                     return !filters.some(filter => filter.field === field.key);
                                                 });
 
-                                                if (groupFields.length === 0) {
-                                                    return null;
-                                                }
-
-                                                return (
-                                                    <CommandGroup key={item.group || `group-${index}`} heading={item.group || 'Fields'}>
-                                                        {groupFields.map((field) => {
-                                                            // Handle separator - use field.key if available, or generate stable key
-                                                            if (field.type === 'separator') {
-                                                                const sepKey = field.key || `${item.group || `group-${index}`}-separator-${field.label || Math.random()}`;
-                                                                return <CommandSeparator key={sepKey} />;
-                                                            }
-
-                                                            // Regular field
-                                                            return (
-                                                                <CommandItem key={field.key} className="min-w-0" onSelect={() => field.key && addFilter(field.key)}>
-                                                                    {field.icon}
-                                                                    <span className="truncate">{field.label}</span>
-                                                                </CommandItem>
-                                                            );
-                                                        })}
-                                                    </CommandGroup>
-                                                );
+                                                return renderPickerGroup(item.group || `group-${index}`, item.group || 'Fields', groupFields, item.previewLimit);
                                             }
 
                                             // Handle flat field configuration (backward compatibility)
