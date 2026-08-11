@@ -95,6 +95,7 @@ describe('Middleware: filterQueryParameters', function () {
         assert.equal(req.originalUrl, '/r/example?m=member-id&step=run-step-id');
         assert.equal(req.url, '/r/example?m=member-id&step=run-step-id');
         assert.deepEqual({...req.query}, {m: 'member-id', step: 'run-step-id'});
+        assert.equal(Object.getPrototypeOf(req.query), Object.prototype);
         sinon.assert.calledOnceWithExactly(warn, '[query-parameter-filter] Stripped undeclared query parameter(s) from /r/example: unknown');
         sinon.assert.calledOnce(next);
     });
@@ -117,6 +118,26 @@ describe('Middleware: filterQueryParameters', function () {
         assert.equal(req.originalUrl, '/welcome/?utm_source=newsletter');
         assert.deepEqual({...req.query}, {utm_source: 'newsletter'});
         sinon.assert.notCalled(warn);
+        sinon.assert.calledOnce(next);
+    });
+
+    it('preserves the existing query object for exempt paths', function () {
+        const query = {
+            include: 'roles'
+        };
+        const req = {
+            originalUrl: '/ghost/api/admin/session/?include=roles',
+            url: '/ghost/api/admin/session/?include=roles',
+            path: '/ghost/api/admin/session/',
+            query
+        };
+        const res = {};
+        const next = sinon.spy();
+
+        filterQueryParameters(req as unknown as Request, res as unknown as Response, next as NextFunction);
+
+        assert.equal(req.query, query);
+        assert.equal(typeof req.query.hasOwnProperty, 'function');
         sinon.assert.calledOnce(next);
     });
 });
