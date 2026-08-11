@@ -49,29 +49,6 @@ describe('EmailAnalyticsService', function () {
         clock.restore();
     });
 
-    describe('constructor', function () {
-        it('registers Prometheus metrics only for services given a client', function () {
-            const prometheusClient = {
-                registerCounter: sinon.stub()
-            };
-
-            createService({prometheusClient});
-            createService({
-                jobNames: {
-                    latestNonOpened: 'email-analytics-automation-latest-others',
-                    missing: 'email-analytics-automation-missing',
-                    latestOpened: 'email-analytics-automation-latest-opened',
-                    scheduled: 'email-analytics-automation-scheduled'
-                }
-            });
-
-            sinon.assert.calledOnceWithExactly(prometheusClient.registerCounter, {
-                name: 'email_analytics_aggregate_member_stats_count',
-                help: 'Count of member stats aggregations'
-            });
-        });
-    });
-
     describe('getStatus', function () {
         it('returns status object', function () {
             // these are null because we're not running them before calling this

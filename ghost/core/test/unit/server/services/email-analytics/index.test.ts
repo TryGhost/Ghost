@@ -114,4 +114,18 @@ describe('email analytics service', function () {
             createEventProcessor: sinon.match.func
         }));
     });
+
+    it('registers Prometheus metrics for member stat aggregation', function () {
+        const registerCounter = sinon.stub();
+
+        init({
+            ...dependencies,
+            prometheusClient: {registerCounter}
+        });
+
+        sinon.assert.calledWith(registerCounter, sinon.match({
+            name: 'email_analytics_aggregate_member_stats_count',
+            help: 'Count of member stats aggregations'
+        }));
+    });
 });

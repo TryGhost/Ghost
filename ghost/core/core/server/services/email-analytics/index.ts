@@ -8,7 +8,7 @@ import type SettingsCache from '../../../shared/settings-cache';
 // @ts-expect-error This module lacks type definitions.
 import EmailAnalyticsServiceWrapper from './email-analytics-service-wrapper';
 // @ts-expect-error This module lacks type definitions.
-import {NewsletterEmailAnalyticsBatchProcessor} from './newsletter-email-analytics-batch-processor';
+import {AGGREGATE_MEMBER_STATS_METRIC_NAME, NewsletterEmailAnalyticsBatchProcessor} from './newsletter-email-analytics-batch-processor';
 // @ts-expect-error This module lacks type definitions.
 import NewsletterEmailEventStorage from '../email-service/newsletter-email-event-storage';
 // @ts-expect-error This module lacks type definitions.
@@ -63,7 +63,7 @@ export const init = ({
         EmailSpamComplaintEvent: EmailSpamComplaintEvent;
     };
     metrics: Pick<Metrics, 'metric'>;
-    prometheusClient: PrometheusClient | null;
+    prometheusClient: Pick<PrometheusClient, 'registerCounter'> | null;
     settingsCache: Pick<typeof SettingsCache, 'get'>;
 }) => {
     const queries = new Queries(db.knex);
@@ -90,6 +90,11 @@ export const init = ({
     if (config.get('bulkEmail:mailgun:tag')) {
         newsletterMailgunTags.push(config.get('bulkEmail:mailgun:tag'));
     }
+
+    prometheusClient?.registerCounter({
+        name: AGGREGATE_MEMBER_STATS_METRIC_NAME,
+        help: 'Count of member stats aggregations'
+    });
 
     newsletters.init({
         config,
