@@ -23,9 +23,6 @@ module.exports = function apiRoutes() {
     router.get('/config', mw.authAdminApi, http(api.config.read));
     router.get('/config/featurebase', mw.authAdminApi, http(api.config.featurebase));
 
-    // ## Ghost Explore
-    router.get('/explore', mw.authAdminApi, http(api.explore.read));
-
     // ## Posts
     router.get('/posts', mw.authAdminApi, http(api.posts.browse));
     router.get('/posts/export', mw.authAdminApi, http(api.posts.exportCSV));

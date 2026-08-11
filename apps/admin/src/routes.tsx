@@ -36,7 +36,6 @@ const EMBER_ROUTES: string[] = [
     "/posts/analytics/:postId/debug",
     "/restore",
     "/editor/*",
-    "/explore/*",
     "/migrate/*",
     "/members-activity",
 ];
