@@ -1,8 +1,9 @@
-const assert = require('node:assert/strict');
-const logging = require('@tryghost/logging');
-const sinon = require('sinon');
+import assert from 'node:assert/strict';
+import logging from '@tryghost/logging';
+import type {NextFunction, Request, Response} from 'express';
+import sinon from 'sinon';
 
-const filterQueryParameters = require('../../../../../../core/server/web/parent/middleware/filter-query-parameters');
+import filterQueryParameters from '../../../../../../core/server/web/parent/middleware/filter-query-parameters';
 
 describe('Middleware: filterQueryParameters', function () {
     afterEach(function () {
@@ -91,7 +92,7 @@ describe('Middleware: filterQueryParameters', function () {
         const next = sinon.spy();
         const warn = sinon.stub(logging, 'warn');
 
-        filterQueryParameters(req, res, next);
+        filterQueryParameters(req as unknown as Request, res as unknown as Response, next as NextFunction);
 
         assert.equal(req.originalUrl, '/r/example?m=member-id&step=run-step-id');
         assert.equal(req.url, '/r/example?m=member-id&step=run-step-id');
@@ -116,7 +117,7 @@ describe('Middleware: filterQueryParameters', function () {
         const next = sinon.spy();
         const warn = sinon.stub(logging, 'warn');
 
-        filterQueryParameters(req, res, next);
+        filterQueryParameters(req as unknown as Request, res as unknown as Response, next as NextFunction);
 
         assert.equal(req.originalUrl, '/welcome/?utm_source=newsletter');
         assert.deepEqual({...req.query}, {utm_source: 'newsletter'});
