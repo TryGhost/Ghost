@@ -75,7 +75,7 @@ describe('Middleware: filterQueryParameters', function () {
         });
     });
 
-    it('updates the Express request and reports stripped undeclared parameters', function () {
+    it('updates the Express request and logs stripped undeclared parameters', function () {
         const req = {
             originalUrl: '/r/example?step=run-step-id&m=member-id&unknown=value',
             url: '/r/example?step=run-step-id&m=member-id&unknown=value',
@@ -86,9 +86,7 @@ describe('Middleware: filterQueryParameters', function () {
                 unknown: 'value'
             }
         };
-        const res = {
-            setHeader: sinon.spy()
-        };
+        const res = {};
         const next = sinon.spy();
         const warn = sinon.stub(logging, 'warn');
 
@@ -97,7 +95,6 @@ describe('Middleware: filterQueryParameters', function () {
         assert.equal(req.originalUrl, '/r/example?m=member-id&step=run-step-id');
         assert.equal(req.url, '/r/example?m=member-id&step=run-step-id');
         assert.deepEqual({...req.query}, {m: 'member-id', step: 'run-step-id'});
-        sinon.assert.calledOnceWithExactly(res.setHeader, 'X-Ghost-Dev-Stripped-Query-Parameters', 'unknown');
         sinon.assert.calledOnceWithExactly(warn, '[query-parameter-filter] Stripped undeclared query parameter(s) from /r/example: unknown');
         sinon.assert.calledOnce(next);
     });
@@ -111,9 +108,7 @@ describe('Middleware: filterQueryParameters', function () {
                 utm_source: 'newsletter'
             }
         };
-        const res = {
-            setHeader: sinon.spy()
-        };
+        const res = {};
         const next = sinon.spy();
         const warn = sinon.stub(logging, 'warn');
 
@@ -121,7 +116,6 @@ describe('Middleware: filterQueryParameters', function () {
 
         assert.equal(req.originalUrl, '/welcome/?utm_source=newsletter');
         assert.deepEqual({...req.query}, {utm_source: 'newsletter'});
-        sinon.assert.notCalled(res.setHeader);
         sinon.assert.notCalled(warn);
         sinon.assert.calledOnce(next);
     });
