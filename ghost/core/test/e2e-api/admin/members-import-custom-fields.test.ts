@@ -125,6 +125,11 @@ describe('Members import — custom fields', function () {
     // rather than omit it: an omitted column carries through under its own header, and a
     // custom_fields.* header is exactly what the importer reads a value from — so omitting
     // it would import the very column the publisher switched off.
+    //
+    // What these two prove is that the API accepts an empty mapping value and that nothing is
+    // written for the column. They do not prove the parser *drops* it — before the change it
+    // renamed the column to the empty string instead, which nothing downstream reads either.
+    // That distinction is pinned where it is observable, in csv/parse.test.ts.
     it('imports nothing from a namespaced column the mapping empties', async function () {
         const key = await createField('Nickname', 'short_text');
         const email = 'cf-deselected@example.com';
@@ -141,22 +146,21 @@ describe('Members import — custom fields', function () {
         assert.deepEqual(await storedLeaves(email), [], 'nothing was written for the emptied column');
     });
 
-    // The same column, deselected after being pointed at a field: the target it was given is
-    // no reason to import it, and the request carries the emptied target rather than that one.
-    it('imports nothing from a column the mapping empties after it had a field', async function () {
+    // The same column mapped and then emptied, so the emptying is what changes the outcome
+    // rather than the column never having had anywhere to go.
+    it('stops importing a column once the mapping empties it', async function () {
         const key = await createField('Nickname', 'short_text');
         const email = 'cf-deselected-mapped@example.com';
+        const csv = `Email Address,Preferred Name\n${email},Bex\n`;
 
-        const res = await importCSV(
-            `Email Address,Preferred Name\n${email},Bex\n`,
-            {'Email Address': 'email', 'Preferred Name': ''}
-        );
+        await importCSV(csv, {'Email Address': 'email', 'Preferred Name': `custom_fields.${key}`});
+        assert.equal((await findMember(email)).custom_fields?.[key], 'Bex', 'the column imports while it is mapped');
+
+        const res = await importCSV(`Email Address,Preferred Name\n${email},Changed\n`, {'Email Address': 'email', 'Preferred Name': ''});
         assert.equal(res.status, 201);
         assert.equal(res.body.meta.stats.imported, 1);
 
-        const member = await findMember(email);
-        assert.equal(member.custom_fields?.[key], undefined);
-        assert.deepEqual(await storedLeaves(email), []);
+        assert.equal((await findMember(email)).custom_fields?.[key], 'Bex', 'and stops once it is emptied');
     });
 
     it('reads an address from its sub-field columns', async function () {

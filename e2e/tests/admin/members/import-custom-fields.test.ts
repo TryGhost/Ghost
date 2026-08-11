@@ -65,7 +65,10 @@ test.describe('Ghost Admin - Members import with custom fields', () => {
 
         await expect(importModal.importButton).toBeVisible();
         // Default mapping: the exported column auto-detects to its field, no manual step.
-        await expect(importModal.getMappingValue(customColumn as string)).toHaveText(fieldName);
+        // Contains rather than equals: with custom fields on, the mapping control names the
+        // field and the list it came from on a second line, so the field name is part of the
+        // trigger's text rather than all of it.
+        await expect(importModal.getMappingValue(customColumn as string)).toContainText(fieldName);
 
         await importModal.importButton.click();
         await expect(importModal.importHeading).toBeVisible({timeout: 15000});
@@ -103,9 +106,12 @@ test.describe('Ghost Admin - Members import with custom fields', () => {
         await importModal.fileInput.setInputFiles(csvPath);
         await expect(importModal.importButton).toBeVisible();
 
-        await expect(importModal.getMappingValue('Their Job')).toHaveText('Not imported');
+        // A column no field matched is out of the import to begin with, said by its checkbox
+        // rather than by a value in the control that names the target — the two are separate
+        // answers here, so there is no control to read until the column is brought in.
+        await expect(importModal.getIncludeCheckbox('Their Job')).not.toBeChecked();
         await importModal.setMappingTarget('Their Job', fieldName);
-        await expect(importModal.getMappingValue('Their Job')).toHaveText(fieldName);
+        await expect(importModal.getMappingValue('Their Job')).toContainText(fieldName);
 
         await importModal.importButton.click();
         await expect(importModal.importHeading).toBeVisible({timeout: 15000});
