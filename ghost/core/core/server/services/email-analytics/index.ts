@@ -11,7 +11,7 @@ import NewsletterEmailEventStorage from '../email-service/newsletter-email-event
 import EmailEventProcessor from '../email-service/email-event-processor';
 import type membersService from '../members';
 // @ts-expect-error This module lacks type definitions.
-import emailSuppressionList from '../email-suppression-list';
+import type EmailSuppressionList from '../email-suppression-list';
 // @ts-expect-error This module lacks type definitions.
 import type {EmailRecipientFailure, EmailSpamComplaintEvent, Email} from '../../models';
 // @ts-expect-error This module lacks type definitions.
@@ -36,6 +36,7 @@ export const init = ({
     config,
     db,
     domainEvents,
+    emailSuppressionList,
     membersRepository,
     models: {
         Email,
@@ -48,6 +49,7 @@ export const init = ({
     config: Pick<ConfigInstance, 'get'>;
     db: {knex: Knex},
     domainEvents: Pick<DomainEvents, 'subscribe'>;
+    emailSuppressionList: Pick<typeof EmailSuppressionList, 'removeComplaint' | 'removeUnsubscribe'>;
     membersRepository: Pick<typeof membersService.api.members, 'get' | 'update'>;
     models: {
         Email: Email;

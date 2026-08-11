@@ -390,6 +390,7 @@ async function initServices({ghostServer, config, prometheusClient}) {
             config,
             db,
             domainEvents,
+            emailSuppressionList,
             membersRepository: members.api.members,
             models,
             prometheusClient
