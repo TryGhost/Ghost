@@ -19,6 +19,7 @@ export interface ActionRecorder {
 const COMMANDS = {
     create: 'added',
     rename: 'edited',
+    reorder: 'edited',
     archive: 'archived',
     restore: 'restored',
     delete: 'deleted'
@@ -27,19 +28,26 @@ const COMMANDS = {
 export type CustomFieldVerb = keyof typeof COMMANDS;
 
 // `details` is stored in the action's `context` column (Ghost's slot for "diffs,
-// meta"). We always pass the field's `primary_name` so the log reads as a human
-// label, not a bare key — this is what keeps the timeline legible after a hard
-// delete, when the row itself is gone. `key` rides alongside it because the key is
-// how a field is addressed publicly — its id never leaves the API.
-export type CustomFieldActionDetails = {primary_name: string; key: string; previous_name?: string};
+// meta").
+//
+// A change to one field always passes its `primary_name` so the log reads as a human
+// label, not a bare key — this is what keeps the timeline legible after a hard delete,
+// when the row itself is gone. `key` rides alongside it because the key is how a field
+// is addressed publicly — its id never leaves the API.
+//
+// A reorder names no field: it carries the count and the word the feed reads it by.
+export type CustomFieldActionDetails =
+    | {primary_name: string; key: string; previous_name?: string}
+    | {action_name: 'reordered'; count: number};
 
+// `subject` is the field's row id, or null for an act that belongs to no single field.
 export type RecordCustomFieldAction =
-    (input: {context: RequestContext; verb: CustomFieldVerb; subject: string; details: CustomFieldActionDetails}) => Promise<void>;
+    (input: {context: RequestContext; verb: CustomFieldVerb; subject: string | null; details: CustomFieldActionDetails}) => Promise<void>;
 
 // Best-effort action-log write: a failed action must never fail the command that triggered it.
 export async function recordCustomFieldAction(
     {Action, context, verb, subject, details}:
-    {Action: ActionRecorder; context: RequestContext; verb: CustomFieldVerb; subject: string; details: CustomFieldActionDetails}
+    {Action: ActionRecorder; context: RequestContext; verb: CustomFieldVerb; subject: string | null; details: CustomFieldActionDetails}
 ): Promise<void> {
     if (!context.actor) {
         return;
@@ -50,7 +58,7 @@ export async function recordCustomFieldAction(
             resource_type: 'member_custom_field',
             // The field's id: this column holds 24 characters, and a key minted from
             // a publisher-chosen name is bounded by the far wider key column, so only
-            // the id fits every field.
+            // the id fits every field. Null where the act had no single field.
             resource_id: subject,
             actor_type: context.actor.type,
             actor_id: context.actor.id,
