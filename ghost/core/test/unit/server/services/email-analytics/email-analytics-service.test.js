@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 
 const sinon = require('sinon');
 
-const EmailAnalyticsService = require('../../../../../core/server/services/email-analytics/email-analytics-service');
+const {EmailAnalyticsService} = require('../../../../../core/server/services/email-analytics/email-analytics-service');
 
 const JOB_NAMES = {
     latestNonOpened: 'email-analytics-latest-others',
