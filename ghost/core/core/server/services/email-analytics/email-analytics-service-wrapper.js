@@ -189,57 +189,60 @@ class EmailAnalyticsServiceWrapper {
         }
         this.#fetching = true;
 
+        let shouldContinue = true;
+        /**
+         * @param {string} reason
+         * @returns {void}
+         */
+        const restartFetch = (reason) => {
+            shouldContinue = true;
+            logging.info(`${this.#logPrefix} Restarting fetch due to ${reason}`);
+        };
+
         // NOTE: Data shows we can process ~2500 events per minute on Pro for a large-ish db (150k members).
         //       This can vary locally, but we should be conservative with the number of events we fetch.
         try {
-            // Prioritize opens since they are the most important (only data directly displayed to users)
-            const c1 = await this.fetchLatestOpenedEvents({maxEvents: 10000});
-            if (c1 >= 10000) {
-                this._restartFetch('high opened event count');
-                return;
+            while (shouldContinue) {
+                shouldContinue = false;
+
+                // Prioritize opens since they are the most important (only data directly displayed to users)
+                const c1 = await this.fetchLatestOpenedEvents({maxEvents: 10000});
+                if (c1 >= 10000) {
+                    restartFetch('high opened event count');
+                    continue;
+                }
+
+                // Set limits on how much we fetch without checkings for opened events. During surge events (following newsletter send)
+                //  we want to make sure we don't spend too much time collecting delivery data.
+                const c2 = await this.fetchLatestNonOpenedEvents({maxEvents: 10000 - c1});
+                const c3 = await this.fetchMissing({maxEvents: 10000 - c1 - c2});
+
+                // Always restart immediately instead of waiting for the next scheduled job if we're fetching a lot of events
+                if ((c1 + c2 + c3) > 10000) {
+                    restartFetch('high event count');
+                    continue;
+                }
+
+                // Only backfill if we're not currently fetching a lot of events
+                const c4 = await this.fetchScheduled({maxEvents: 10000});
+                if (c4 > 0) {
+                    restartFetch('scheduled backfill');
+                    continue;
+                }
+
+                // Log summary if no events were found across all jobs
+                if (c1 + c2 + c3 + c4 === 0) {
+                    logging.info(`${this.#logPrefix} Job complete - No events`);
+                }
             }
-
-            // Set limits on how much we fetch without checkings for opened events. During surge events (following newsletter send)
-            //  we want to make sure we don't spend too much time collecting delivery data.
-            const c2 = await this.fetchLatestNonOpenedEvents({maxEvents: 10000 - c1});
-            const c3 = await this.fetchMissing({maxEvents: 10000 - c1 - c2});
-
-            // Always restart immediately instead of waiting for the next scheduled job if we're fetching a lot of events
-            if ((c1 + c2 + c3) > 10000) {
-                this._restartFetch('high event count');
-                return;
-            }
-
-            // Only backfill if we're not currently fetching a lot of events
-            const c4 = await this.fetchScheduled({maxEvents: 10000});
-            if (c4 > 0) {
-                this._restartFetch('scheduled backfill');
-                return;
-            }
-
-            // Log summary if no events were found across all jobs
-            if (c1 + c2 + c3 + c4 === 0) {
-                logging.info(`${this.#logPrefix} Job complete - No events`);
-            }
-
-            this.#fetching = false;
         } catch (e) {
             logging.error(e, `Error while fetching email analytics for ${this.#logName}`);
 
             // Log again only the error, otherwise we lose the stack trace
             logging.error(e);
+        } finally {
+            this.#fetching = false;
         }
-        this.#fetching = false;
-    }
-
-    /**
-     * @param {string} reason
-     * @returns {void}
-     */
-    _restartFetch(reason) {
-        this.#fetching = false;
-        logging.info(`${this.#logPrefix} Restarting fetch due to ${reason}`);
-        this.startFetch();
     }
 }
 
