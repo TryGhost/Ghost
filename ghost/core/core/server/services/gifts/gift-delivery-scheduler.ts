@@ -1,7 +1,7 @@
 import logging from '@tryghost/logging';
 import type {SchedulerAdapter, SchedulerJob} from '@tryghost/adapter-base-scheduling';
 import type {InternalApiKey, InternalKeys} from '../internal-keys';
-import type {Gift} from './gift';
+import type {GiftDeliverySchedule} from './gift-delivery-bookshelf-repository';
 
 const urlUtils = require('../../../shared/url-utils').default;
 const {getSignedAdminToken} = require('../../adapters/scheduling/utils');
@@ -11,7 +11,7 @@ interface GiftDeliverySchedulerDeps {
     apiUrl: string;
     adapter?: SchedulerAdapter;
     internalKeys: InternalKeys;
-    findPendingDeliveries(): Promise<Gift[]>;
+    findPendingDeliveries(): Promise<GiftDeliverySchedule[]>;
     countStuckDeliveries(before: Date): Promise<number>;
     wake(): void;
 }
@@ -20,7 +20,7 @@ export class GiftDeliveryScheduler {
     readonly #apiUrl: string;
     readonly #adapter: SchedulerAdapter;
     readonly #internalKeys: InternalKeys;
-    readonly #findPendingDeliveries: () => Promise<Gift[]>;
+    readonly #findPendingDeliveries: () => Promise<GiftDeliverySchedule[]>;
     readonly #countStuckDeliveries: (before: Date) => Promise<number>;
     readonly #wake: () => void;
 
@@ -83,9 +83,9 @@ export class GiftDeliveryScheduler {
         const bootstrap = !previousKey;
         let hasDueDelivery = false;
 
-        for (const gift of pending) {
-            const time = gift.deliveryAttemptAt ?? gift.deliverAt;
-            if (!time || time.getTime() <= Date.now()) {
+        for (const {delivery, availableAt} of pending) {
+            const time = delivery.attemptAt ?? availableAt;
+            if (time.getTime() <= Date.now()) {
                 hasDueDelivery = true;
                 continue;
             }

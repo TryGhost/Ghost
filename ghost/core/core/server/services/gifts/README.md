@@ -23,7 +23,10 @@ transactions, or Stripe objects.
 - `processDeliveries()`, `processReminders()`, `processConsumed()`, and
   `processExpired()` own due lifecycle work; scheduler and HTTP triggers remain
   adapters. Delivery claims are atomic and retry wakeups are one-shot.
+- `recordDeliveryOutcome(...)` retains only the newest Mailgun delivery outcome;
+  mail transport acceptance remains the authoritative sent fact.
 - `reassignRedeemer(...)` is the import capability.
 
-The `Gift`, repository, Bookshelf query, Stripe checkout, email, scheduling,
-and notification collaborators are internal adapters.
+The `Gift` and `GiftDelivery` models, their repositories, Bookshelf queries,
+Stripe checkout, email, scheduling, and notification collaborators are internal
+adapters.
