@@ -1,5 +1,4 @@
 const sinon = require('sinon');
-const createKnex = require('knex');
 const EmailAnalyticsServiceWrapper = require('../../../../../core/server/services/email-analytics/email-analytics-service-wrapper');
 const {Queries} = require('../../../../../core/server/services/email-analytics/lib/queries');
 
@@ -39,13 +38,7 @@ describe('EmailAnalyticsServiceWrapper', function () {
                 subscribe: sinon.stub(),
             },
             event: FakeEvent,
-            queries: new Queries(createKnex({
-                client: 'better-sqlite3',
-                connection: {
-                    filename: ':memory:'
-                },
-                useNullAsDefault: true
-            })),
+            queries: sinon.createStubInstance(Queries),
             mailgunTags: [],
             jobNames: {
                 latestNonOpened: 'email-analytics-latest-others',
