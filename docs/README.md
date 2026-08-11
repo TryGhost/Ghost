@@ -73,6 +73,16 @@ Before contributing, please read:
 
 For more detail, see the [contribution workflow](contributing/workflow.md).
 
+### Testing
+
+Use `pnpm check` as the default one-stop command for linting and testing. Add
+tests at the closest layer to the behavior you changed. Browser end-to-end tests
+and Ember Admin tests run separately from `pnpm check`.
+
+For more detail, see the [testing guide](contributing/testing.md) including how
+to choose a test suite, run focused tests, and use the separate browser and
+Ember Admin test lanes.
+
 ## Additional Resources
 
 - **[Official Documentation](https://ghost.org/docs/)** - User and developer docs
