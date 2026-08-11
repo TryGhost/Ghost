@@ -317,7 +317,7 @@ async function initAppService() {
  * These services should all be part of core, frontend services should be loaded with the frontend
  * We are working towards this being a service loader, with the ability to make certain services optional
  */
-async function initServices({ghostServer, config}) {
+async function initServices({ghostServer, config, prometheusClient}) {
     debug('Begin: initServices');
 
     debug('Begin: Services');
@@ -388,7 +388,8 @@ async function initServices({ghostServer, config}) {
             automationsApi,
             config,
             db,
-            domainEvents
+            domainEvents,
+            prometheusClient
         }),
         webhooks.listen(),
         comments.init(),
@@ -601,7 +602,7 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
             await initAppService();
         }
 
-        await initServices({ghostServer, config});
+        await initServices({ghostServer, config, prometheusClient});
         debug('End: Load Ghost Services & Apps');
 
         // Step 5 - Mount the full Ghost app onto the minimal root app & disable maintenance mode

@@ -1,4 +1,5 @@
 import type {Knex} from 'knex';
+import type {PrometheusClient} from '@tryghost/prometheus-metrics';
 import type {ConfigInstance} from '../../../shared/config/loader';
 // @ts-expect-error This module lacks type definitions.
 import EmailAnalyticsServiceWrapper from './email-analytics-service-wrapper';
@@ -15,8 +16,6 @@ import emailSuppressionList from '../email-suppression-list';
 import {EmailRecipientFailure, EmailSpamComplaintEvent, Email} from '../../models';
 // @ts-expect-error This module lacks type definitions.
 import type DomainEvents from '@tryghost/domain-events';
-// @ts-expect-error This module lacks type definitions.
-import prometheusClient from '../../../shared/prometheus-client';
 import {Queries} from './lib/queries';
 import {StartEmailAnalyticsJobEvent} from './events/start-email-analytics-job-event';
 import {StartAutomationEmailAnalyticsJobEvent} from './events/start-automation-email-analytics-job-event';
@@ -36,12 +35,14 @@ export const init = ({
     automationsApi,
     config,
     db,
-    domainEvents
+    domainEvents,
+    prometheusClient
 }: {
     automationsApi: Pick<typeof AutomationsApi, 'getAutomatedEmailRecipientsByMailgunIds' | 'trackEmailDeliveredAndOpened'>;
     config: Pick<ConfigInstance, 'get'>;
     db: {knex: Knex},
     domainEvents: Pick<DomainEvents, 'subscribe'>;
+    prometheusClient: PrometheusClient | null;
 }) => {
     const queries = new Queries(db.knex);
 

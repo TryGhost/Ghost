@@ -34,7 +34,7 @@ class EmailAnalyticsServiceWrapper {
      * @param {JobNames} options.jobNames
      * @param {CursorSeed} options.cursorSeed
      * @param {() => BatchEventProcessor} options.createEventProcessor
-     * @param {PrometheusClient} [options.prometheusClient]
+     * @param {PrometheusClient | null} options.prometheusClient
      */
     init({
         event,
@@ -56,10 +56,10 @@ class EmailAnalyticsServiceWrapper {
         this.service = new EmailAnalyticsService({
             fetchEvents: (options) => fetchMailgunEvents({...options, config, settings, tags: mailgunTags}),
             queries,
-            prometheusClient,
             jobNames,
             cursorSeed,
-            createEventProcessor
+            createEventProcessor,
+            ...(prometheusClient ? {prometheusClient} : {})
         });
 
         // Log the processing mode on initialization
