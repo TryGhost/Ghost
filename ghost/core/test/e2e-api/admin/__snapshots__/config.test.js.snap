@@ -26,7 +26,6 @@ Object {
       "editorExcerpt": true,
       "emailCustomization": true,
       "emailUniqueid": true,
-      "explore": true,
       "featurebaseFeedback": true,
       "getHelperDeduplication": true,
       "giftSubCustomization": true,
