@@ -1,6 +1,6 @@
 {
     "name": "ghost",
-    "version": "6.57.1-rc.0",
+    "version": "6.58.0-rc.0",
     "description": "The professional publishing platform",
     "author": "Ghost Foundation",
     "homepage": "https://ghost.org",
@@ -238,6 +238,7 @@
         "tldts": "catalog:",
         "type-fest": "catalog:",
         "ua-parser-js": "1.0.41",
+        "unidecode": "catalog:",
         "xml": "1.0.1",
         "zod": "catalog:"
     },

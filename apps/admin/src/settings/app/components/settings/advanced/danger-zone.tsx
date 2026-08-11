@@ -1,5 +1,3 @@
-import ConfirmationModal from '@/settings/app/components/confirmation-modal';
-import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import TopLevelGroup from '@/settings/app/components/top-level-group';
 import trackEvent from '@/settings/app/utils/analytics';
@@ -8,6 +6,7 @@ import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent
 import {formatNumber} from '@tryghost/shade/utils';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {toast} from 'sonner';
+import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
 import {useDeleteAllContent} from '@tryghost/admin-x-framework/api/db';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -24,6 +23,7 @@ const DangerZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const handleError = useHandleError();
     const {config} = useGlobalData();
     const {totalUsers} = useStaffUsers();
+    const {confirm} = useConfirmation();
 
     const resetAuthEnabled = Boolean(config?.labs?.dangerZoneResetAuth);
 
@@ -34,7 +34,7 @@ const DangerZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
             : 'All staff users, including you, will be signed out and must reset their password before signing back in.';
 
     const handleDeleteAllContent = () => {
-        NiceModal.show(ConfirmationModal, {
+        confirm({
             title: 'Would you really like to delete all content from your blog?',
             prompt: 'This is permanent! No backups, no restores, no magic undo button. We warned you, k?',
             okVariant: 'destructive',
@@ -53,7 +53,7 @@ const DangerZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
     };
 
     const handleResetAuth = () => {
-        NiceModal.show(ConfirmationModal, {
+        confirm({
             title: 'Reset all authentication?',
             prompt: (
                 <>
@@ -85,7 +85,7 @@ const DangerZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
     };
 
     const handleRemoveAllGiftLinks = () => {
-        NiceModal.show(ConfirmationModal, {
+        confirm({
             title: 'Reset all gift links?',
             prompt: 'This immediately invalidates every active gift link across your site. Anyone holding one will lose access. New gift links can still be created afterwards.',
             okLabel: 'Reset all gift links',

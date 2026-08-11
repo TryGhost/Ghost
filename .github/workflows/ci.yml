@@ -484,8 +484,7 @@ jobs:
   # Changing the runner label or the hyperfine version makes new results
   # incomparable with the existing history - treat both as pinned.
   job_perf-tests:
-    runs-on:
-      labels: ubuntu-latest-4-cores
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     needs: [job_setup]
     if: (needs.job_setup.outputs.changed_core == 'true' && needs.job_setup.outputs.is_development == 'true') || needs.job_setup.outputs.has_perf_tests_label == 'true'
     name: Performance tests
@@ -533,10 +532,10 @@ jobs:
   # bump would land in the code series as a regression with no Ghost commit behind it.
   job_perf-tests-image:
     name: Performance tests (production image)
-    runs-on:
-      labels: ubuntu-latest-4-cores
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     needs: [job_setup, job_docker]
-    # Registry path only: the core image is pushed to GHCR, never saved as an artifact.
+    # Registry path only: benchmarks are a canonical-repo series, so this pulls the
+    # core image from GHCR rather than loading the artifact-path tarball.
     if: |
       needs.job_docker.result == 'success' &&
       needs.job_docker.outputs.use-artifact == 'false' &&
@@ -1400,6 +1399,29 @@ jobs:
           labels: ${{ steps.meta-core.outputs.labels }}
           cache-from: type=registry,ref=${{ steps.strategy.outputs.image-core-name }}:cache-main
           cache-to: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref={0}:cache-{1},mode=max', steps.strategy.outputs.image-core-name, github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main') || '' }}
+
+      # Uploaded here, before the full image is even built: on the artifact path
+      # consumers (Ghost-Moya CD) need the core image — server only, no admin —
+      # and would otherwise have to fall back to `docker-image-production`.
+      - name: Save core image as artifact
+        if: steps.strategy.outputs.use-artifact == 'true'
+        run: |
+          IMAGE_TAG=$(echo "${{ steps.meta-core.outputs.tags }}" | head -n1)
+          echo "Saving image: $IMAGE_TAG"
+          # Written outside the repo root: a stray tarball there would change the
+          # `.` context between the core and full builds and bust the deploy-stage
+          # COPY cache (same reason the admin artifact lands in RUNNER_TEMP below).
+          docker save "$IMAGE_TAG" | gzip > "${RUNNER_TEMP}/docker-image-core.tar.gz"
+          ls -lh "${RUNNER_TEMP}/docker-image-core.tar.gz"
+
+      - name: Upload core image artifact
+        if: steps.strategy.outputs.use-artifact == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: docker-image-core
+          path: ${{ runner.temp }}/docker-image-core.tar.gz
+          retention-days: 1
+          if-no-files-found: error
 
       # Synchronise with job_build_admin only now, after core is built: the full
       # image is core + admin. No `needs` edge, so the two jobs run concurrently

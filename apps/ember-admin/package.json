@@ -1,6 +1,6 @@
 {
     "name": "ghost-admin",
-    "version": "6.57.1-rc.0",
+    "version": "6.57.2-rc.0",
     "description": "Ember.js admin client for Ghost",
     "author": "Ghost Foundation",
     "homepage": "http://ghost.org",
@@ -16,7 +16,7 @@
         "test": "tests"
     },
     "scripts": {
-        "dev": "SKIP_DEPENDENCY_CHECKER=true ember serve",
+        "dev": "SKIP_DEPENDENCY_CHECKER=true NODE_OPTIONS=--disable-warning=DEP0179 ember serve",
         "build": "ember build --environment=production --silent",
         "build:dev": "SKIP_DEPENDENCY_CHECKER=true pnpm build --environment=development",
         "test": "ember exam --split 2 --parallel",
@@ -188,7 +188,7 @@
                 "executor": "nx:run-commands",
                 "options": {
                     "cwd": "apps/ember-admin",
-                    "command": "JOBS=4 SKIP_DEPENDENCY_CHECKER=true ember serve"
+                    "command": "JOBS=4 SKIP_DEPENDENCY_CHECKER=true NODE_OPTIONS=--disable-warning=DEP0179 ember serve"
                 },
                 "dependsOn": [
                     "^build"

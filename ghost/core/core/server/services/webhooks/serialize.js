@@ -5,6 +5,15 @@
 // already carries (e.g. authors) would strip its nested roles from the
 // payload. `getRequiredRelations()` is [] when the routing config reads
 // none, so this is a no-op on a default routes.yaml.
+// `model._changed` carries raw model keys, but `previous` is picked off the
+// API-serialized payload, where some keys are renamed (members `products` → `tiers`).
+const SERIALIZED_KEYS = {
+    members: {
+        products: 'tiers',
+        stripeSubscriptions: 'subscriptions'
+    }
+};
+
 const loadRequiredUrlRelations = async (model, urlService) => {
     const required = urlService.getRequiredRelations();
     const missing = required.filter(relation => !model.relations[relation]);
@@ -80,7 +89,7 @@ module.exports = ({urlService}) => async (event, model) => {
             .serializers
             .handle
             .output(model, {docName: docName, method: 'read'}, api.serializers.output, frame);
-        previous = _.pick(frame.response[docName][0], changed);
+        previous = _.pick(frame.response[docName][0], changed.map(key => SERIALIZED_KEYS[docName]?.[key] ?? key));
     }
 
 

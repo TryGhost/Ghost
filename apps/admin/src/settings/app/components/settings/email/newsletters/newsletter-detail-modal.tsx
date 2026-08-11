@@ -1,10 +1,7 @@
 import ColorPickerField from '@/settings/app/components/color-picker-field';
-import ConfirmationModal from '@/settings/app/components/confirmation-modal';
 import HeaderImageField from '@/settings/app/components/settings/email-design/header-image-field';
 import HtmlField from '@/settings/app/components/html-field';
-import LimitModal from '@/settings/app/components/limit-modal';
 import NewsletterPreview from './newsletter-preview';
-import NiceModal from '@ebay/nice-modal-react';
 import React, {useCallback, useEffect, useState} from 'react';
 import useFeatureFlag from '@/settings/app/hooks/use-feature-flag';
 import useSettingGroup from '@/settings/app/hooks/use-setting-group';
@@ -16,6 +13,7 @@ import {Inline, Stack} from '@tryghost/shade/primitives';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {type Newsletter, useBrowseNewsletters, useEditNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {PreviewModalContent} from '@/settings/app/components/settings/preview-modal';
+import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
 import {useParams} from '@tryghost/admin-x-framework';
 import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 import {useUpgradeRoute} from '@/settings/app/hooks/use-upgrade-route';
@@ -109,6 +107,7 @@ const Sidebar: React.FC<{
     const {localSettings} = useSettingGroup();
     const [siteTitle] = getSettingValues(localSettings, ['title']) as string[];
     const handleError = useHandleError();
+    const {confirm, showLimit} = useConfirmation();
     const {data: {newsletters: apiNewsletters} = {}} = useBrowseNewsletters();
     const commentsEnabled = ['all', 'paid'].includes(getSettingValue(settings, 'comments_enabled') || '');
 
@@ -155,7 +154,7 @@ const Sidebar: React.FC<{
 
     const confirmStatusChange = async () => {
         if (newsletter.status === 'active') {
-            NiceModal.show(ConfirmationModal, {
+            confirm({
                 title: 'Archive newsletter',
                 prompt: <>
                     <div className="mb-6">Your newsletter <strong>{newsletter.name}</strong> will no longer be visible to members or available as an option when publishing new posts.</div>
@@ -178,7 +177,7 @@ const Sidebar: React.FC<{
                 await limiter?.errorIfWouldGoOverLimit('newsletters');
             } catch (error) {
                 if (error instanceof HostLimitError) {
-                    NiceModal.show(LimitModal, {
+                    showLimit({
                         prompt: error.message || `Your current plan doesn't support more newsletters.`,
                         onOk: () => updateRoute({route: upgradeRoute, isExternal: true})
                     });
@@ -188,7 +187,7 @@ const Sidebar: React.FC<{
                 }
             }
 
-            NiceModal.show(ConfirmationModal, {
+            confirm({
                 title: 'Reactivate newsletter',
                 prompt: <>
                         Reactivating <strong>{newsletter.name}</strong> will immediately make it visible to members and re-enable it as an option when publishing new posts.

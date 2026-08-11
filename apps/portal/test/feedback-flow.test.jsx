@@ -64,7 +64,7 @@ describe('Feedback Submission Flow', () => {
                 within(popupIframeDocument).getByText('Your input helps shape what gets published.');
             });
 
-            test('Autosubmits feedback w/o uuid or key params', async () => {
+            test('Requires confirmation w/o uuid or key params', async () => {
                 Object.defineProperty(window, 'location', {
                     value: new URL(`${siteData.url}/${postSlug}/#/feedback/${postId}/1/`),
                     writable: true
@@ -72,9 +72,21 @@ describe('Feedback Submission Flow', () => {
                 const {ghostApi, popupFrame, popupIframeDocument} = await setup();
 
                 expect(popupFrame).toBeInTheDocument();
+                expect(within(popupIframeDocument).getByText('Give feedback on this post')).toBeInTheDocument();
+                expect(within(popupIframeDocument).getByText('More like this')).toBeInTheDocument();
+                expect(within(popupIframeDocument).getByText('Less like this')).toBeInTheDocument();
+                expect(ghostApi.feedback.add).toHaveBeenCalledTimes(0);
+
+                const submitBtn = within(popupIframeDocument).getByText('Submit feedback');
+                fireEvent.click(submitBtn);
+
                 expect(ghostApi.feedback.add).toHaveBeenCalledTimes(1);
-                within(popupIframeDocument).getByText('Thanks for the feedback!');
-                within(popupIframeDocument).getByText('Your input helps shape what gets published.');
+
+                // the re-render loop is slow to get to the final state
+                await waitFor(() => {
+                    within(popupIframeDocument).getByText('Thanks for the feedback!');
+                    within(popupIframeDocument).getByText('Your input helps shape what gets published.');
+                });
             });
         });
 

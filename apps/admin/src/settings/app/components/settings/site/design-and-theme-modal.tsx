@@ -1,9 +1,8 @@
 import ChangeThemeModal from './theme-modal';
 import DesignModal from './design-modal';
-import LimitModal from '@/settings/app/components/limit-modal';
-import NiceModal from '@ebay/nice-modal-react';
 import React, {useCallback, useEffect, useState} from 'react';
 import ThemeCodeEditorModal from './theme/theme-code-editor-modal';
+import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
 import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 import {useUpgradeRoute} from '@/settings/app/hooks/use-upgrade-route';
 import {parseEditingThemeRoute} from './theme/theme-editor-utils';
@@ -22,13 +21,14 @@ const DesignAndThemeModal: React.FC = () => {
     const [installationAllowed, setInstallationAllowed] = useState<boolean | null>(null);
     const [hasCheckedInstallation, setHasCheckedInstallation] = useState(false);
     const {themeName: editingThemeName, isInvalid: hasInvalidEditingThemeRoute} = parseEditingThemeRoute(currentPath);
+    const {showLimit} = useConfirmation();
 
     const showThemeLimitModal = useCallback((error: string) => {
-        NiceModal.show(LimitModal, {
+        showLimit({
             prompt: error,
             onOk: () => updateRoute({route: upgradeRoute, isExternal: true})
         });
-    }, [updateRoute, upgradeRoute]);
+    }, [showLimit, updateRoute, upgradeRoute]);
 
     useEffect(() => {
         const checkIfThemeChangeAllowed = async () => {

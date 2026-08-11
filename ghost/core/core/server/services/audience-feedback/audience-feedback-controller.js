@@ -1,5 +1,6 @@
 const Feedback = require('./feedback');
 const errors = require('@tryghost/errors');
+const permissions = require('../../services/permissions');
 const tpl = require('@tryghost/tpl');
 
 const messages = {
@@ -118,12 +119,20 @@ class AudienceFeedbackController {
         const postId = frame.data.id;
         const options = {
             limit: frame.options.limit || 10,
-            page: frame.options.page || 1
+            page: frame.options.page || 1,
+            withMember: false
         };
 
         // Add score filter if specified
         if (frame.options.score !== undefined) {
             options.score = parseInt(frame.options.score);
+        }
+
+        try {
+            await permissions.canThis(frame.options.context).browse.member();
+            options.withMember = true;
+        } catch {
+            // permissions throws; we want to return data but without member info
         }
 
         const result = await this.#repository.getForPost(postId, options);

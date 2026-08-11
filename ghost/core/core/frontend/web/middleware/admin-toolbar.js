@@ -135,7 +135,7 @@ function getCleanRedirectUrl(req) {
     currentUrl.searchParams.delete(QUERY_PARAM);
     currentUrl.searchParams.delete(HIDE_QUERY_PARAM);
 
-    return `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`;
+    return `${urlUtils.createUrl(currentUrl.pathname)}${currentUrl.search}${currentUrl.hash}`;
 }
 
 function getQueryValue(value) {

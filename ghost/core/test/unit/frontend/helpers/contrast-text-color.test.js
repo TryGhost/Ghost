@@ -16,6 +16,16 @@ describe('{{contrast_text_color}} helper', function () {
         assert.equal(contrast_text_color('#FFFFFF'), '#000000');
     });
 
+    it('returns black for other light backgrounds', function () {
+        ['#dacafe', '#ffa5b1', '#a3e6ff'].forEach(color => {
+            assert.equal(contrast_text_color(color), '#000000');
+        });
+    });
+
+    it('returns white for mid-tone backgrounds', function () {
+        assert.equal(contrast_text_color('#808080'), '#FFFFFF');
+    });
+
     it('falls back to white for invalid colors', function () {
         assert.equal(contrast_text_color(''), '#FFFFFF');
     });

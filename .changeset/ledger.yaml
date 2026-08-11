@@ -12,19 +12,40 @@
   dir: packages/adapters/scheduling-base
   intents:
     - fifty-maps-sing
+"@tryghost/adapter-base-scheduling@0.2.1":
+  dir: packages/adapters/scheduling-base
+  intents:
+    - typed-logging-args
 "@tryghost/adapter-base-sso@0.1.1":
   dir: packages/adapters/sso-base
   intents:
     - major-areas-fail
     - plain-singers-cheat
+"@tryghost/kg-converters@1.2.4":
+  dir: koenig/kg-converters
+  intents:
+    - tidy-types-check
+"@tryghost/kg-default-cards@10.3.4":
+  dir: koenig/kg-default-cards
+  intents:
+    - spacy-poodles-hunt
 "@tryghost/kg-default-nodes@2.1.4":
   dir: koenig/kg-default-nodes
   intents:
     - floppy-bobcats-spend
+"@tryghost/kg-default-nodes@2.1.5":
+  dir: koenig/kg-default-nodes
+  intents:
+    - spacy-poodles-hunt
+    - warm-hotels-make
 "@tryghost/koenig-lexical@1.9.0":
   dir: koenig/koenig-lexical
   intents:
     - bright-walls-preview
+"@tryghost/koenig-lexical@1.9.1":
+  dir: koenig/koenig-lexical
+  intents:
+    - warm-hotels-make
 ghost-storage-base@3.0.0:
   dir: packages/adapters/storage-base
   intents:
