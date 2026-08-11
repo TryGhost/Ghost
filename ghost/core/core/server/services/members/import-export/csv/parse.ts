@@ -14,7 +14,8 @@ function isSafeColumnName(name: string): boolean {
 }
 
 // headerMapping renames the CSV's headers to the columns they emit under; unmapped
-// columns carry through under their own name.
+// columns carry through under their own name, and one mapped to an empty target is
+// dropped.
 export default function parse(path: string, headerMapping?: Record<string, string>): Promise<Row[]> {
     return new Promise(function (resolve, reject) {
         const csvFileStream = fs.createReadStream(path);
@@ -47,6 +48,13 @@ export default function parse(path: string, headerMapping?: Record<string, strin
                     // hasOwn, not `in`: a prototype-named header would otherwise match an
                     // inherited method on the mapping and take a function as its mapped name.
                     if (headerMapping && Object.hasOwn(headerMapping, header)) {
+                        // An empty target is the caller naming a column to leave out, which
+                        // it has to name: an unnamed column carries through below, and for a
+                        // custom_fields.* column carrying through means being imported. So
+                        // omitting a column from the mapping is the opposite of excluding it.
+                        if (!headerMapping[header]) {
+                            continue;
+                        }
                         row[headerMapping[header]] = value;
                     } else if (isSafeColumnName(header)) {
                         // Carry any unmapped column through untouched, so the import is not
