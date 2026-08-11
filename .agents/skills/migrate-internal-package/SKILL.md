@@ -54,9 +54,12 @@ For the public-consumer audit, check npm metadata, first-party repositories and
 documentation, plus GitHub code search for package dependencies and runtime
 imports. Classify results as first-party consumers, independent integrations,
 Ghost forks, or deployed Ghost installation snapshots. Forks and installation
-snapshots demonstrate continued installation needs, but do not establish an
-independently supported API. Record the evidence and confidence behind the
-ownership decision; stop and ask if support expectations remain unclear.
+snapshots show historical presence only. Require a recent update, current
+deployment, active dependency or another freshness signal before treating them
+as evidence of continued installation needs; even then, they do not establish
+an independently supported API. Record the evidence and confidence behind the
+ownership decision; stop and ask if current support expectations remain
+unclear.
 
 ## Produce these work products in order
 

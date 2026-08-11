@@ -15,8 +15,11 @@ until it returns an exit status, and do not mistake an output timeout for
 completion. For example, when the default branch is `main`:
 
 ```bash
+set -euo pipefail
+
 git fetch origin
 git switch --detach origin/main
+test -z "$(git status --porcelain)"
 git subtree split \
   --quiet \
   --prefix=<source-package-path> \
@@ -42,6 +45,9 @@ Create or enter a dedicated Ghost worktree, then verify its branch, cleanliness,
 base and empty destination before attaching history:
 
 ```bash
+set -euo pipefail
+
+test "$(git rev-parse --git-dir)" != "$(git rev-parse --git-common-dir)"
 test "$(git branch --show-current)" = "codex/import-<package>"
 test -z "$(git status --porcelain)"
 test "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)"
@@ -69,6 +75,9 @@ git-subtree-split: <source-split-tip>
 Verify the topology before adding integration commits:
 
 ```bash
+set -euo pipefail
+
+source_split_tip="<recorded-source-split-tip>"
 subtree_commit=$(git rev-parse HEAD)
 ghost_parent=$(git rev-parse HEAD^1)
 imported_parent=$(git rev-parse HEAD^2)
