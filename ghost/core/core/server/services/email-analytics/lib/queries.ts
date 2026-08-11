@@ -67,7 +67,7 @@ function parseJobMetadata(rawMetadata: unknown): JobMetadata {
     };
 }
 
-export const queries = {
+export class Queries {
     /**
      * Retrieves the timestamp of the last seen event for the specified email analytics events.
      * @param jobName - The name of the job to update.
@@ -118,7 +118,7 @@ export const queries = {
         debug(`getLastEventTimestamp: finished in ${Date.now() - startDate.getTime()}ms`);
 
         return lastSeenEventTimestamp;
-    },
+    }
 
     /**
      * Retrieves the job data for the specified job name.
@@ -126,7 +126,7 @@ export const queries = {
      * @returns The job data, or null if no job data is found.
      */
     async getJobData(jobName: EmailAnalyticsJobName): Promise<JobData | null> {
-        const row = await db.knex('jobs')
+        const row = await this.#knex('jobs')
             .select('finished_at', 'started_at', 'metadata')
             .where('name', jobName)
             .first();
@@ -135,7 +135,7 @@ export const queries = {
             started_at: row.started_at,
             metadata: parseJobMetadata(row.metadata)
         } : null;
-    },
+    }
 
     /**
      * Retrieves the timestamp of the last job run for the specified job name.
@@ -145,7 +145,7 @@ export const queries = {
     async getLastJobRunTimestamp(jobName: EmailAnalyticsJobName): Promise<Date | null> {
         const jobData = await this.getJobData(jobName);
         return jobData ? jobData.finished_at || jobData.started_at : null;
-    },
+    }
 
     /**
      * Sets the timestamp of the last seen event for the specified email analytics events.
@@ -176,7 +176,7 @@ export const queries = {
             const message = err instanceof Error ? err.message : String(err);
             debug(`Error setting ${field} timestamp for job ${jobName}: ${message}`);
         }
-    },
+    }
 
     /**
      * Retrieves and parses the metadata JSON for the specified job.
@@ -184,9 +184,9 @@ export const queries = {
      * @returns The parsed metadata object, or null.
      */
     async getJobMetadata(jobName: EmailAnalyticsJobName): Promise<JobMetadata | null> {
-        const row = await db.knex('jobs').select('metadata').where('name', jobName).first();
+        const row = await this.#knex('jobs').select('metadata').where('name', jobName).first();
         return row ? parseJobMetadata(row.metadata) : null;
-    },
+    }
 
     /**
      * Writes metadata JSON for the specified job.
@@ -212,7 +212,7 @@ export const queries = {
             const message = err instanceof Error ? err.message : String(err);
             logging.error(`Error setting metadata for job ${jobName}: ${message}`);
         }
-    },
+    }
 
     /**
      * Sets the status of the specified email analytics job.
@@ -246,7 +246,7 @@ export const queries = {
             debug(`Error setting status for job ${jobName}: ${message}`);
             throw err;
         }
-    },
+    }
 
     async aggregateEmailStats(emailId: string, updateOpenedCount: boolean): Promise<void> {
         const [deliveredCount] = await db.knex('email_recipients').count('id as count').whereRaw('email_id = ? AND delivered_at IS NOT NULL', [emailId]);
@@ -263,7 +263,7 @@ export const queries = {
         }
 
         await db.knex('emails').update(updateData).where('id', emailId);
-    },
+    }
 
     async aggregateMemberStats(memberId: string): Promise<void> {
         const {trackedEmailCount} = await db.knex('email_recipients')
@@ -288,7 +288,7 @@ export const queries = {
         await db.knex('members')
             .update(updateQuery)
             .where('id', memberId);
-    },
+    }
 
     async aggregateMemberStatsBatch(memberIds: string[]): Promise<void> {
         if (!memberIds || memberIds.length === 0) {
@@ -374,5 +374,3 @@ export const queries = {
         `, bindings);
     }
 };
-
-export type Queries = typeof queries;

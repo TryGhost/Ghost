@@ -18,7 +18,7 @@ import {EmailRecipientFailure, EmailSpamComplaintEvent, Email} from '../../model
 import domainEvents from '@tryghost/domain-events';
 // @ts-expect-error This module lacks type definitions.
 import prometheusClient from '../../../shared/prometheus-client';
-import {queries} from './lib/queries';
+import {Queries} from './lib/queries';
 import {StartEmailAnalyticsJobEvent} from './events/start-email-analytics-job-event';
 import {StartAutomationEmailAnalyticsJobEvent} from './events/start-automation-email-analytics-job-event';
 import {AUTOMATION_EMAIL_TAG} from '../member-welcome-emails/constants';
@@ -34,6 +34,8 @@ export const automations = new EmailAnalyticsServiceWrapper({
 });
 
 export const init = () => {
+    const queries = new Queries();
+
     const newsletterEmailEventProcessor = new EmailEventProcessor({
         domainEvents,
         db,
@@ -58,6 +60,7 @@ export const init = () => {
 
     newsletters.init({
         event: StartEmailAnalyticsJobEvent,
+        queries,
         mailgunTags: newsletterMailgunTags,
         jobNames: {
             latestNonOpened: 'email-analytics-latest-others',
@@ -86,6 +89,7 @@ export const init = () => {
 
     automations.init({
         event: StartAutomationEmailAnalyticsJobEvent,
+        queries,
         mailgunTags: [AUTOMATION_EMAIL_TAG],
         jobNames: {
             latestNonOpened: 'email-analytics-automation-latest-others',
