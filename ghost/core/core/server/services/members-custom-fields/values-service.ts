@@ -11,8 +11,11 @@ import {leavesToWrite, valuesFromLeaves, type StoredLeaf} from './storage';
 const FIELDS_TABLE = 'members_custom_fields';
 const VALUES_TABLE = 'members_custom_field_values';
 
-/** Matches the `members_custom_fields.key` column, so no key a site could hold is refused. */
-const MAX_KEY_LENGTH = 191;
+/**
+ * From the canonical schema, the same source definitions-service reads, so no key a site
+ * could hold is refused and this cannot drift from the `members_custom_fields.key` column.
+ */
+const MAX_KEY_LENGTH: number = require('../../data/schema').tables[FIELDS_TABLE].key.maxlength;
 
 /**
  * Rows per insert statement, bounded by knex rather than by either database. SQLite takes
