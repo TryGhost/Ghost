@@ -704,7 +704,9 @@ describe('Acceptance: Publish flow', function () {
             this.server.db.settings.update({key: 'email_verification_required'}, {value: true});
 
             // the periodic limit counts sent emails through this endpoint
-            this.server.get('/emails/', function () {
+            const emailRequests = [];
+            this.server.get('/emails/', function (schema, request) {
+                emailRequests.push(request.queryParams);
                 return {emails: [], meta: {pagination: {total: 0}}};
             });
 
@@ -714,6 +716,14 @@ describe('Acceptance: Publish flow', function () {
             await visit(`/editor/post/${post.id}`);
             await click('[data-test-button="publish-flow"]');
             await click('[data-test-setting="publish-type"] [data-test-setting-title]');
+
+            // without this the verification hold alone would satisfy the assertion
+            // below, even with the limit never registered
+            // the adapter turns limit: 'all' into paged requests, so this asserts what
+            // reaches the endpoint rather than what getEmailsCount asked for
+            const emailCountQuery = emailRequests.find(query => query.fields === 'id,email_count');
+            expect(emailCountQuery, 'email count query').to.exist;
+            expect(emailCountQuery.filter).to.match(/^created_at:>='/);
 
             expect(find('[data-test-publish-type-error="email-disabled"]'), 'email disabled error').to.exist;
             expect(find('[data-test-publish-type-error="email-disabled"]'), 'email disabled error')
