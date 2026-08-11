@@ -109,6 +109,9 @@ export interface MemberCustomFieldsResponseType {
 }
 
 const dataType = 'MemberCustomFieldsResponseType';
+// Exported so a screen can move the list in its own cache before the request lands —
+// a drag that waits for a round-trip snaps back under the cursor.
+export const memberCustomFieldsDataType = dataType;
 
 export const useBrowseMemberCustomFields = createQuery<MemberCustomFieldsResponseType>({
     dataType,
@@ -144,6 +147,57 @@ export const useEditMemberCustomField = createMutation<MemberCustomFieldsRespons
     body: ({key: _key, ...patch}) => ({members_custom_fields: [patch]}),
     invalidateQueries: {dataType}
 });
+
+/**
+ * Set the order of the whole list.
+ *
+ * Order is a property of the list rather than of a field — no definition carries a rank
+ * — so it is stated by PUTting the collection in the order it should have. The payload
+ * has to name every field the site has, archived ones included: the API rejects a list
+ * that doesn't, which is what stops a client that loaded before a colleague added a
+ * field from writing an order that was never true of the whole list.
+ */
+export const useReorderMemberCustomFields = createMutation<MemberCustomFieldsResponseType, MemberCustomField[]>({
+    method: 'PUT',
+    path: () => '/members/custom_fields/',
+    body: fields => ({members_custom_fields: fields.map(({key}) => ({key}))}),
+    // The response is the settled order, so it is written straight to the cached lists
+    // rather than refetched. A reorder only succeeds when it named exactly the fields the
+    // site has, so a success carries no news about the set — only about its order — and
+    // there is nothing a GET would add.
+    //
+    // Several lists live under this data type, one per set of query params, and they do
+    // not hold the same fields: Settings asked for every status, a member's details and
+    // the importer asked for active fields only. So each is put into the new order rather
+    // than replaced by the response, which would hand those two archived fields they are
+    // written to assume they never see.
+    updateQueries: {
+        dataType,
+        emberUpdateType: 'skip',
+        update: (newData, currentData) => {
+            const current = currentData as MemberCustomFieldsResponseType | undefined;
+            if (!current?.members_custom_fields) {
+                return currentData;
+            }
+            const settledOrder = newData.members_custom_fields.map(({key}) => key);
+            return {...current, members_custom_fields: inOrderOf(settledOrder, current.members_custom_fields)};
+        }
+    }
+});
+
+/**
+ * A list of fields arranged to match an order given as keys, keeping whatever it holds.
+ *
+ * Takes keys rather than fields because an order is only ever a sequence of keys — which
+ * is what the API is told, and what a screen holds while a drag settles.
+ *
+ * A field the order does not mention keeps to the end rather than jumping to the front,
+ * which is where an unknown place would otherwise sort it.
+ */
+export const inOrderOf = (order: readonly string[], fields: MemberCustomField[]): MemberCustomField[] => {
+    const placeOf = new Map(order.map((key, place) => [key, place]));
+    return [...fields].sort((a, b) => (placeOf.get(a.key) ?? Infinity) - (placeOf.get(b.key) ?? Infinity));
+};
 
 // DELETE permanently removes an archived field and its collected values;
 // addressed by key. The API only allows it on an already-archived field —
