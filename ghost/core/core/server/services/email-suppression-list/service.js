@@ -7,8 +7,7 @@ const MailgunEmailSuppressionList = require('./mailgun-email-suppression-list');
 
 const mailgunClient = new MailgunClient({
     config: configService,
-    settings: settingsCache,
-    labs
+    settings: settingsCache
 });
 
 module.exports = new MailgunEmailSuppressionList({
