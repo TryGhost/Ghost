@@ -1,8 +1,14 @@
 const logging = require('@tryghost/logging');
 const querystring = require('node:querystring');
-const {QUERY_PARAMETER_ALLOWLIST} = require('./query-parameter-allowlist');
+const {
+    CONTENT_API_QUERY_PARAMETER_ALLOWLIST,
+    QUERY_PARAMETER_ALLOWLIST
+} = require('./query-parameter-allowlist');
 
 const allowedQueryParameters = new Set(QUERY_PARAMETER_ALLOWLIST);
+const allowedContentApiQueryParameters = new Set(CONTENT_API_QUERY_PARAMETER_ALLOWLIST);
+
+const CONTENT_API_PATH_PATTERN = /\/ghost\/api\/(?:(?:v[0-9]+|canary)\/content|content)(?:\/|$)/;
 
 const EXEMPT_PATH_PATTERNS = [
     /\/ghost\/api(?:\/|$)/,
@@ -24,11 +30,11 @@ const splitRequestTarget = (requestTarget) => {
     };
 };
 
-const removeUnknownParameters = (searchParams) => {
+const removeUnknownParameters = (searchParams, allowlist) => {
     const removed = new Set();
 
     for (const parameter of [...searchParams.keys()]) {
-        if (!allowedQueryParameters.has(parameter)) {
+        if (!allowlist.has(parameter)) {
             searchParams.delete(parameter);
             removed.add(parameter);
         }
@@ -39,17 +45,19 @@ const removeUnknownParameters = (searchParams) => {
 
 const filterRequestTarget = (requestTarget) => {
     const {pathname, searchParams} = splitRequestTarget(requestTarget);
+    const contentApiRequest = CONTENT_API_PATH_PATTERN.test(pathname);
     const bypass = searchParams.get('force_params') === 'true';
     const exemptPath = EXEMPT_PATH_PATTERNS.some(pattern => pattern.test(pathname));
 
-    if (bypass || exemptPath) {
+    if (!contentApiRequest && (bypass || exemptPath)) {
         return {
             requestTarget,
             removedUnknownParameters: []
         };
     }
 
-    const removedUnknownParameters = removeUnknownParameters(searchParams);
+    const allowlist = contentApiRequest ? allowedContentApiQueryParameters : allowedQueryParameters;
+    const removedUnknownParameters = removeUnknownParameters(searchParams, allowlist);
     searchParams.sort();
     const query = searchParams.toString();
 
@@ -64,6 +72,7 @@ const filterRequestTarget = (requestTarget) => {
  *
  * Keep query-parameter-allowlist.ts in sync with:
  * - TryGhost/terraform modules/ghost-fastly/variables.tf
+ * - TryGhost/pro-infra infrastructure/fastly/vcl/shared/recv_100_clean_query_string.vcl.tftpl
  *
  * Update the production policy and this manifest together when adding a parameter.
  * This middleware is enabled by the root pnpm dev Docker Compose configuration.

@@ -33,3 +33,17 @@ export const QUERY_PARAMETER_ALLOWLIST = [
     'gift', // Gift-link unlock token on canonical post URLs
     'step' // Used in automations
 ] as const;
+
+export const CONTENT_API_QUERY_PARAMETER_ALLOWLIST = [
+    'absolute_urls', // Converts relative URLs to absolute URLs
+    'collection', // Filters by collection
+    'debug', // Enables debug mode where available
+    'fields', // Limits returned fields
+    'filter', // Filters resources using NQL
+    'formats', // Selects content formats
+    'include', // Includes related resources
+    'key', // Content API authentication key
+    'limit', // Number of resources per page
+    'order', // Sort order
+    'page' // Page number for paginated results
+] as const;

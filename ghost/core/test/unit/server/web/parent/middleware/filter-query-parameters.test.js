@@ -45,11 +45,18 @@ describe('Middleware: filterQueryParameters', function () {
             assert.deepEqual(result.removedUnknownParameters, []);
         });
 
-        it('does not filter Content API parameters', function () {
+        it('applies the Content API allowlist', function () {
             const result = filterQueryParameters.filterRequestTarget('/ghost/api/content/posts/?key=content-key&include=authors&unknown=value&m=member-id');
 
-            assert.equal(result.requestTarget, '/ghost/api/content/posts/?key=content-key&include=authors&unknown=value&m=member-id');
-            assert.deepEqual(result.removedUnknownParameters, []);
+            assert.equal(result.requestTarget, '/ghost/api/content/posts/?include=authors&key=content-key');
+            assert.deepEqual(result.removedUnknownParameters, ['m', 'unknown']);
+        });
+
+        it('does not allow force_params to bypass Content API filtering', function () {
+            const result = filterQueryParameters.filterRequestTarget('/ghost/api/canary/content/posts/?key=content-key&force_params=true&unknown=value');
+
+            assert.equal(result.requestTarget, '/ghost/api/canary/content/posts/?key=content-key');
+            assert.deepEqual(result.removedUnknownParameters, ['force_params', 'unknown']);
         });
 
         it('preserves repeated allowed parameters', function () {
