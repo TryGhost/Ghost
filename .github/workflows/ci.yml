@@ -143,6 +143,12 @@ jobs:
               - 'package.json'
               - 'scripts/check-agent-skill-links.js'
               - 'scripts/test/check-agent-skill-links.test.js'
+            package-standards:
+              - 'packages/**'
+              - 'package.json'
+              - 'scripts/check-internal-packages.js'
+              - 'scripts/test/check-internal-packages.test.js'
+              - '.github/workflows/ci.yml'
             core:
               - *shared
               - 'ghost/**'
@@ -269,6 +275,7 @@ jobs:
       changed_core: ${{ steps.changed.outputs.core }}
       changed_any_code: ${{ steps.changed.outputs.any-code }}
       changed_docs: ${{ steps.changed.outputs.docs }}
+      changed_package_standards: ${{ steps.changed.outputs.package-standards }}
       changed_tb_cli: ${{ steps.changed.outputs.tb-cli }}
       # Single gate for the build + browser-E2E lane. True for tags, or when a
       # changed file could affect a running Ghost instance (see the `e2e` path
@@ -410,6 +417,24 @@ jobs:
 
       - name: Lint agent skills
         run: node scripts/check-agent-skill-links.js
+
+  job_lint_packages:
+    name: Lint packages
+    runs-on: ubuntu-slim
+    needs: [job_setup]
+    if: needs.job_setup.outputs.changed_package_standards == 'true'
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Check internal package golden path
+        run: node scripts/check-internal-packages.js
+
+      - name: Test internal package checker
+        run: node --test scripts/test/check-internal-packages.test.js
 
   job_i18n:
     runs-on: ubuntu-latest
@@ -2041,6 +2066,7 @@ jobs:
         job_migration_integrity_check,
         job_lint,
         job_lint_docs,
+        job_lint_packages,
         job_i18n,
         job_build_admin,
         job_pack,

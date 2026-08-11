@@ -108,4 +108,4 @@ for (const file of await walk(targetDir)) {
 // Clean any stray build artifacts the template dir may have accumulated.
 await rm(join(targetDir, 'build'), {recursive: true, force: true});
 
-process.stdout.write(`\n\x1b[32m✓ Created @tryghost/${name}\x1b[0m at ${packageDir} (ESM-only)\n\nNext steps:\n  1. pnpm install                     # link the new workspace member\n  2. pnpm --filter @tryghost/${name} test\n  3. Add real code in ${packageDir}/src/index.ts\n\n`);
+process.stdout.write(`\n\x1b[32m✓ Created @tryghost/${name}\x1b[0m at ${packageDir} (ESM-only)\n\nNext steps:\n  1. pnpm install                     # link the new workspace member\n  2. cd ${packageDir} && pnpm test\n  3. Add real code in ${packageDir}/src/index.ts\n\n`);
