@@ -157,9 +157,9 @@ function getAssetUrl(assetPath, hasMinFile) {
     // Card assets are assembled in memory, so their content hash is always
     // available and always matches the bytes we serve — there's no file to miss
     // and therefore no reason to gate this on contentBasedHash
-    const cardAssetType = hashPath.match(/^public\/cards\.min\.(css|js)$/)?.[1];
-    if (cardAssetType) {
-        hash = cardAssets.getHash(cardAssetType);
+    const cardType = cardAssets.getCardType(hashPath);
+    if (cardType !== null) {
+        hash = cardAssets.getHash(cardType);
     } else if (config.get('caching:assets:contentBasedHash:enabled')) {
         if (isThemeAsset) {
             // Theme assets resolve relative to the theme's assets/ directory, so an

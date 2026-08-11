@@ -58,7 +58,7 @@ module.exports = class CardAssets {
         // The manifest is a build artefact, so it's absent when Ghost is run
         // from a source checkout without `pnpm build:assets`. Fall back to the
         // unminified sources so development still works.
-        logging.warn(`Card asset manifest not found at ${this.manifestPath}, serving unminified card assets. Run \`pnpm build:assets\` to build it.`);
+        logging.error(`Card asset manifest not found at ${this.manifestPath}, serving unminified card assets. Run \`pnpm build:assets\` to build it.`);
 
         return this.readSources();
     }
@@ -162,6 +162,14 @@ module.exports = class CardAssets {
      */
     getHash(type) {
         return this.getBundle(type)?.hash ?? null;
+    }
+
+    /**
+     * @param {string} assetPath e.g. `public/cards.min.css`
+     * @returns {'css'|'js'|null} the card asset type this path refers to, if any
+     */
+    getCardType(assetPath) {
+        return assetPath.match(/^public\/cards\.min\.(css|js)$/)?.[1] ?? null;
     }
 
     /**

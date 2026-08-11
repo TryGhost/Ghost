@@ -16,6 +16,7 @@ const testUtils = require('../utils');
 const configUtils = require('../utils/config-utils');
 const config = require('../../core/shared/config');
 const settingsCache = require('../../core/shared/settings-cache');
+const {cardAssets} = require('../../core/frontend/services/assets-minification');
 const origCache = _.cloneDeep(settingsCache);
 
 function assertCorrectFrontendHeaders(res) {
@@ -419,6 +420,15 @@ describe('Default Frontend routing', function () {
             // restart and match across processes — see card-assets.js
             const asset = await request.get(`/public/cards.min.css?v=${renderedHash}`).expect(200);
             assert.equal(asset.headers.etag, `"${renderedHash}"`);
+        });
+
+        it('should 404 card assets when the theme has asked for none', async function () {
+            // What a theme with `card_assets: false` leaves us with — there's no
+            // bundle to serve, so there's nothing at this URL
+            sinon.stub(cardAssets, 'getBundle').returns(null);
+
+            await request.get('/public/cards.min.css').expect(404);
+            await request.get('/public/cards.min.js').expect(404);
         });
     });
 
