@@ -82,12 +82,13 @@ export class CustomFieldValuesService {
             return new Map();
         }
 
+        // Not ordered by field: these rows become an object keyed by field, and an object
+        // cannot carry an order. `path` is ordered so composite parts assemble the same
+        // way every time.
         const rows = await this.knex(VALUES_TABLE)
             .join(FIELDS_TABLE, `${VALUES_TABLE}.custom_field_key`, `${FIELDS_TABLE}.key`)
             .whereIn(`${VALUES_TABLE}.member_id`, memberIds)
             .where(`${FIELDS_TABLE}.status`, FIELD_STATUS.active)
-            .orderBy(`${FIELDS_TABLE}.created_at`, 'asc')
-            .orderBy(`${FIELDS_TABLE}.id`, 'asc')
             .orderBy(`${VALUES_TABLE}.path`, 'asc')
             .select(`${VALUES_TABLE}.member_id`, `${FIELDS_TABLE}.key`, `${FIELDS_TABLE}.type`, `${VALUES_TABLE}.path`, `${VALUES_TABLE}.value_text`);
 

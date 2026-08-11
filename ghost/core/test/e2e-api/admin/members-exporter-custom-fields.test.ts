@@ -221,6 +221,31 @@ describe('Members API — exportCSV with custom fields', function () {
         assert.deepEqual(columns, [...CORE_COLUMNS, columnFor(numeric.key)]);
     });
 
+    // The export builds its columns from the definition list, so the publisher's order
+    // reaches the spreadsheet without the exporter knowing anything about ordering.
+    // Pinned here because it is the consumer that would regress most quietly.
+    it('writes the custom field columns in the publisher\'s order', async function () {
+        const nickname = await createField('Nickname', 'short_text');
+        const address = await createField('Shipping Address', 'address');
+        const bio = await createField('Bio', 'long_text');
+
+        await agent
+            .put('members/custom_fields/')
+            .body({members_custom_fields: [{key: address.key}, {key: bio.key}, {key: nickname.key}]})
+            .expectStatus(200);
+
+        await createMember();
+
+        const {columns} = await exportCSV();
+
+        assert.deepEqual(columns, [
+            ...CORE_COLUMNS,
+            ...addressColumnsFor(address.key),
+            columnFor(bio.key),
+            columnFor(nickname.key)
+        ]);
+    });
+
     it('escapes values that would otherwise break the CSV', async function () {
         const notes = await createField('Notes', 'short_text');
 
