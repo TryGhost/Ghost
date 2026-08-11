@@ -9,7 +9,7 @@ import {NewsletterEmailAnalyticsBatchProcessor} from './newsletter-email-analyti
 import NewsletterEmailEventStorage from '../email-service/newsletter-email-event-storage';
 // @ts-expect-error This module lacks type definitions.
 import EmailEventProcessor from '../email-service/email-event-processor';
-import membersService from '../members';
+import type membersService from '../members';
 // @ts-expect-error This module lacks type definitions.
 import emailSuppressionList from '../email-suppression-list';
 // @ts-expect-error This module lacks type definitions.
@@ -36,6 +36,7 @@ export const init = ({
     config,
     db,
     domainEvents,
+    membersRepository,
     models: {
         Email,
         EmailRecipientFailure,
@@ -47,6 +48,7 @@ export const init = ({
     config: Pick<ConfigInstance, 'get'>;
     db: {knex: Knex},
     domainEvents: Pick<DomainEvents, 'subscribe'>;
+    membersRepository: Pick<typeof membersService.api.members, 'get' | 'update'>;
     models: {
         Email: Email;
         EmailRecipientFailure: EmailRecipientFailure;
@@ -61,7 +63,7 @@ export const init = ({
         db,
         eventStorage: new NewsletterEmailEventStorage({
             db,
-            membersRepository: membersService.api.members,
+            membersRepository,
             models: {
                 Email,
                 EmailRecipientFailure,
