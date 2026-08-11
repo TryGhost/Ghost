@@ -121,6 +121,44 @@ describe('Members import — custom fields', function () {
         assert.equal(member.custom_fields?.[key], 'Bex');
     });
 
+    // The mapping step's deselected column. It has to name the column with an empty target
+    // rather than omit it: an omitted column carries through under its own header, and a
+    // custom_fields.* header is exactly what the importer reads a value from — so omitting
+    // it would import the very column the publisher switched off.
+    it('imports nothing from a namespaced column the mapping empties', async function () {
+        const key = await createField('Nickname', 'short_text');
+        const email = 'cf-deselected@example.com';
+
+        const res = await importCSV(
+            `email,custom_fields.${key}\n${email},Bex\n`,
+            {email: 'email', [`custom_fields.${key}`]: ''}
+        );
+        assert.equal(res.status, 201);
+        assert.equal(res.body.meta.stats.imported, 1, 'the member still imports, without that column');
+
+        const member = await findMember(email);
+        assert.equal(member.custom_fields?.[key], undefined);
+        assert.deepEqual(await storedLeaves(email), [], 'nothing was written for the emptied column');
+    });
+
+    // The same column, deselected after being pointed at a field: the target it was given is
+    // no reason to import it, and the request carries the emptied target rather than that one.
+    it('imports nothing from a column the mapping empties after it had a field', async function () {
+        const key = await createField('Nickname', 'short_text');
+        const email = 'cf-deselected-mapped@example.com';
+
+        const res = await importCSV(
+            `Email Address,Preferred Name\n${email},Bex\n`,
+            {'Email Address': 'email', 'Preferred Name': ''}
+        );
+        assert.equal(res.status, 201);
+        assert.equal(res.body.meta.stats.imported, 1);
+
+        const member = await findMember(email);
+        assert.equal(member.custom_fields?.[key], undefined);
+        assert.deepEqual(await storedLeaves(email), []);
+    });
+
     it('reads an address from its sub-field columns', async function () {
         const key = await createField('Shipping Address', 'address');
         const email = 'cf-address@example.com';
