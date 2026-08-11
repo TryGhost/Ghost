@@ -1,6 +1,5 @@
-import type {SetOptional} from 'type-fest';
 import {GIFT_EXPIRY_DAYS} from './constants';
-import type {GiftCadence, GiftData, GiftDeliveryMethod, GiftDeliveryOutcome, GiftDeliveryStatus, GiftStatus} from './gift-schema';
+import type {GiftCadence, GiftData, GiftDataInput, GiftDeliveryMethod, GiftDeliveryOutcome, GiftDeliveryStatus, GiftStatus} from './gift-schema';
 
 export type {GiftCadence, GiftStatus} from './gift-schema';
 
@@ -14,7 +13,7 @@ export type ReassignableCheckResult =
     | {reassignable: true}
     | {reassignable: false; reason: ReassignableCheckFailureReason};
 
-export type GiftFromPurchaseData = Pick<GiftData,
+export type GiftFromPurchaseData = Pick<GiftDataInput,
     | 'token'
     | 'buyerEmail'
     | 'buyerMemberId'
@@ -25,30 +24,12 @@ export type GiftFromPurchaseData = Pick<GiftData,
     | 'amount'
     | 'stripeCheckoutSessionId'
     | 'stripePaymentIntentId'
-> & Partial<Pick<GiftData,
     | 'buyerName'
     | 'deliveryMethod'
     | 'recipientEmail'
     | 'recipientName'
     | 'personalMessage'
     | 'deliverAt'
->>;
-
-type GiftConstructorData = SetOptional<GiftData,
-    | 'buyerName'
-    | 'deliveryMethod'
-    | 'recipientEmail'
-    | 'recipientName'
-    | 'personalMessage'
-    | 'deliverAt'
-    | 'deliveryStatus'
-    | 'deliveryAttempts'
-    | 'deliveryAttemptAt'
-    | 'emailSentAt'
-    | 'emailProviderMessageId'
-    | 'deliveryOutcome'
-    | 'deliveryOutcomeAt'
-    | 'deliveryOutcomeError'
 >;
 
 export class Gift implements GiftData {
@@ -87,7 +68,7 @@ export class Gift implements GiftData {
     refundedAt: Date | null;
     consumesSoonReminderSentAt: Date | null;
 
-    constructor(data: GiftConstructorData) {
+    constructor(data: GiftDataInput) {
         this.token = data.token;
         this.buyerEmail = data.buyerEmail;
         this.buyerMemberId = data.buyerMemberId;
@@ -121,7 +102,7 @@ export class Gift implements GiftData {
         this.consumedAt = data.consumedAt;
         this.expiredAt = data.expiredAt;
         this.refundedAt = data.refundedAt;
-        this.consumesSoonReminderSentAt = data.consumesSoonReminderSentAt;
+        this.consumesSoonReminderSentAt = data.consumesSoonReminderSentAt ?? null;
     }
 
     static fromPurchase(data: GiftFromPurchaseData) {

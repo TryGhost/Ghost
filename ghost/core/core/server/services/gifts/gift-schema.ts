@@ -1,3 +1,4 @@
+import type {OptionalKeysOf, SetOptional} from 'type-fest';
 import {z} from 'zod';
 import {DbDate} from '../../lib/db-date';
 import type {CamelKeys} from '../../lib/case-keys';
@@ -55,5 +56,7 @@ export const DbGift = z.object({
     consumes_soon_reminder_sent_at: DbDate.nullable().default(null)
 });
 
+type GiftInputRow = z.input<typeof DbGift>;
 export type GiftRow = z.output<typeof DbGift>;
 export type GiftData = CamelKeys<GiftRow>;
+export type GiftDataInput = SetOptional<GiftData, OptionalKeysOf<CamelKeys<GiftInputRow>>>;
