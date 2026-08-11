@@ -4,12 +4,12 @@ import sinon from 'sinon';
 import {GiftDeliveryScheduler} from '../../../../../core/server/services/gifts/gift-delivery-scheduler';
 import {AutoFillingMap} from '../../../../../core/server/lib/auto-filling-map';
 import type {InternalApiKey, InternalIntegrationSlug} from '../../../../../core/server/services/internal-keys';
-import type {Gift} from '../../../../../core/server/services/gifts/gift';
-import {buildGift} from './utils';
+import type {GiftDeliverySchedule} from '../../../../../core/server/services/gifts/gift-delivery-bookshelf-repository';
+import {buildGiftDelivery} from './utils';
 
 const KEY: InternalApiKey = {id: 'kid', secret: 'aa'.repeat(32)};
 
-function buildDeps(pending: Gift[] = []) {
+function buildDeps(pending: GiftDeliverySchedule[] = []) {
     const internalKeys = new AutoFillingMap<InternalIntegrationSlug, Promise<InternalApiKey>>(() => {
         throw new Error('Unexpected scheduler key');
     });
@@ -62,13 +62,14 @@ describe('GiftDeliveryScheduler', function () {
     it('performs one startup pass that wakes due gifts and re-arms future retries', async function () {
         const retryAt = new Date(Date.now() + 60_000);
         const deps = buildDeps([
-            buildGift({deliveryMethod: 'email', recipientEmail: 'now@example.com'}),
-            buildGift({
-                token: 'future-gift',
-                deliveryMethod: 'email',
-                recipientEmail: 'future@example.com',
-                deliveryAttemptAt: retryAt
-            })
+            {
+                delivery: buildGiftDelivery(),
+                availableAt: new Date(Date.now() - 60_000)
+            },
+            {
+                delivery: buildGiftDelivery({id: 'future-delivery', attemptAt: retryAt}),
+                availableAt: new Date(Date.now() - 60_000)
+            }
         ]);
         const scheduler = new GiftDeliveryScheduler(deps);
 
@@ -105,7 +106,10 @@ describe('GiftDeliveryScheduler', function () {
         const error = new Error('database unavailable');
         const errorLog = sinon.stub(logging, 'error');
         const deps = buildDeps([
-            buildGift({deliveryMethod: 'email', recipientEmail: 'now@example.com'})
+            {
+                delivery: buildGiftDelivery(),
+                availableAt: new Date(Date.now() - 60_000)
+            }
         ]);
         deps.countStuckDeliveries.rejects(error);
         const scheduler = new GiftDeliveryScheduler(deps);

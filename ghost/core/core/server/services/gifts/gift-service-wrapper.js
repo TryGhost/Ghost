@@ -23,8 +23,9 @@ class GiftServiceWrapper {
             return;
         }
 
-        const {Gift: GiftModel, MemberStripeCustomer: StripeCustomerModel} = require('../../models');
+        const {Gift: GiftModel, GiftDelivery: GiftDeliveryModel, MemberStripeCustomer: StripeCustomerModel} = require('../../models');
         const {GiftBookshelfRepository} = require('./gift-bookshelf-repository');
+        const {GiftDeliveryBookshelfRepository} = require('./gift-delivery-bookshelf-repository');
         const {GiftService} = require('./gift-service');
         const {GiftReminderScheduler} = require('./gift-reminder-scheduler');
         const {GiftDeliveryScheduler} = require('./gift-delivery-scheduler');
@@ -56,6 +57,9 @@ class GiftServiceWrapper {
         const repository = new GiftBookshelfRepository({
             GiftModel
         });
+        const deliveryRepository = new GiftDeliveryBookshelfRepository({
+            GiftDeliveryModel
+        });
         const checkoutAdapter = new GiftCheckoutAdapter({
             StripeCustomerModel,
             getStripeApi: () => require('../stripe').api
@@ -81,13 +85,14 @@ class GiftServiceWrapper {
             apiUrl: options.apiUrl,
             adapter: options.schedulerAdapter,
             internalKeys: options.internalKeys,
-            findPendingDeliveries: () => repository.findPendingDeliveries(),
-            countStuckDeliveries: before => repository.countStuckDeliveries(before),
+            findPendingDeliveries: () => deliveryRepository.findPending(),
+            countStuckDeliveries: before => deliveryRepository.countStuck(before),
             wake: () => DomainEvents.dispatch(StartGiftDeliveryFlushEvent.create())
         });
 
         this.service = new GiftService({
             giftRepository: repository,
+            giftDeliveryRepository: deliveryRepository,
             get memberRepository() {
                 return membersService.api.members;
             },
@@ -98,6 +103,9 @@ class GiftServiceWrapper {
             },
             giftReminderScheduler,
             giftDeliveryScheduler,
+            giftEmailAnalytics: {
+                schedule: () => Promise.resolve()
+            },
             checkoutAdapter,
             labsService,
             settingsCache

@@ -4,8 +4,10 @@ import sinon from 'sinon';
 import type {Knex} from 'knex';
 import {GiftService, type GiftPurchaseData} from '../../../../../core/server/services/gifts/gift-service';
 import {Gift} from '../../../../../core/server/services/gifts/gift';
+import {GiftDelivery} from '../../../../../core/server/services/gifts/gift-delivery';
 import type {FindPendingReminderOptions, GiftRepository} from '../../../../../core/server/services/gifts/gift-bookshelf-repository';
-import {buildGift} from './utils';
+import type {GiftDeliveryRepository} from '../../../../../core/server/services/gifts/gift-delivery-bookshelf-repository';
+import {buildGift, buildGiftDelivery} from './utils';
 
 const transacting = 'trx' as unknown as Knex.Transaction;
 const outerTransacting = 'outer_trx' as unknown as Knex.Transaction;
@@ -47,11 +49,6 @@ describe('GiftService', function () {
         findPendingExpiration: sinon.SinonStub<[], Promise<Gift[]>>;
         findPendingReminder: sinon.SinonStub<[FindPendingReminderOptions], Promise<Gift[]>>;
         findUnsentReminders: sinon.SinonStub<[], Promise<Gift[]>>;
-        findPendingDeliveries: sinon.SinonStub<[], Promise<Gift[]>>;
-        claimPendingDelivery: sinon.SinonStub;
-        markDeliverySent: sinon.SinonStub;
-        markDeliveryForRetry: sinon.SinonStub;
-        markDeliveryFailed: sinon.SinonStub;
         browsePurchaseEvents: sinon.SinonStub<Parameters<GiftRepository['browsePurchaseEvents']>, ReturnType<GiftRepository['browsePurchaseEvents']>>;
         browseRedemptionEvents: sinon.SinonStub<Parameters<GiftRepository['browseRedemptionEvents']>, ReturnType<GiftRepository['browseRedemptionEvents']>>;
         create: sinon.SinonStub;
@@ -59,7 +56,12 @@ describe('GiftService', function () {
         transaction: sinon.SinonStub<Parameters<GiftRepository['transaction']>, Promise<unknown>>;
     };
 
+    type GiftDeliveryRepositoryStub = {
+        [K in keyof GiftDeliveryRepository]: sinon.SinonStub;
+    };
+
     let giftRepository: GiftRepositoryStub;
+    let giftDeliveryRepository: GiftDeliveryRepositoryStub;
     let memberRepository: {
         get: sinon.SinonStub;
         update: sinon.SinonStub;
@@ -104,18 +106,28 @@ describe('GiftService', function () {
             findPendingExpiration: sinon.stub<[], Promise<Gift[]>>().resolves([]),
             findPendingReminder: sinon.stub<[FindPendingReminderOptions], Promise<Gift[]>>().resolves([]),
             findUnsentReminders: sinon.stub<[], Promise<Gift[]>>().resolves([]),
-            findPendingDeliveries: sinon.stub<[], Promise<Gift[]>>().resolves([]),
-            claimPendingDelivery: sinon.stub().resolves(null),
-            markDeliverySent: sinon.stub().resolves(true),
-            markDeliveryForRetry: sinon.stub().resolves(true),
-            markDeliveryFailed: sinon.stub().resolves(true),
             browsePurchaseEvents: sinon.stub<Parameters<GiftRepository['browsePurchaseEvents']>, ReturnType<GiftRepository['browsePurchaseEvents']>>().resolves({data: [], meta: {}}),
             browseRedemptionEvents: sinon.stub<Parameters<GiftRepository['browseRedemptionEvents']>, ReturnType<GiftRepository['browseRedemptionEvents']>>().resolves({data: [], meta: {}}),
-            create: sinon.stub(),
+            create: sinon.stub().resolves('gift_1'),
             update: sinon.stub(),
             transaction: sinon.stub<Parameters<GiftRepository['transaction']>, Promise<unknown>>().callsFake(async (callback) => {
                 return await callback(transacting);
             })
+        };
+        giftDeliveryRepository = {
+            getById: sinon.stub().resolves(null),
+            getByGiftId: sinon.stub().resolves(null),
+            findPending: sinon.stub().resolves([]),
+            countStuck: sinon.stub().resolves(0),
+            tryStartAttempt: sinon.stub().resolves(null),
+            markSent: sinon.stub().resolves(true),
+            markForRetry: sinon.stub().resolves(true),
+            markFailed: sinon.stub().resolves(true),
+            markCancelled: sinon.stub().resolves(true),
+            cancelPendingForGift: sinon.stub().resolves(false),
+            recordOutcome: sinon.stub().resolves(true),
+            create: sinon.stub().resolves(undefined),
+            transaction: sinon.stub()
         };
         memberRepository = {
             get: sinon.stub().callsFake(() => {
@@ -166,10 +178,12 @@ describe('GiftService', function () {
 
     let giftReminderScheduler: {scheduleFor: sinon.SinonStub};
     let giftDeliveryScheduler: {wake: sinon.SinonStub; scheduleAt: sinon.SinonStub};
+    let giftEmailAnalytics: {schedule: sinon.SinonStub};
 
     function createService(overrides: {
         giftReminderScheduler?: {scheduleFor: sinon.SinonStub};
         giftDeliveryScheduler?: {wake: sinon.SinonStub; scheduleAt: sinon.SinonStub};
+        giftEmailAnalytics?: {schedule: sinon.SinonStub};
     } = {}) {
         giftReminderScheduler = overrides.giftReminderScheduler ?? {
             scheduleFor: sinon.stub().resolves()
@@ -178,14 +192,19 @@ describe('GiftService', function () {
             wake: sinon.stub(),
             scheduleAt: sinon.stub().resolves()
         };
+        giftEmailAnalytics = overrides.giftEmailAnalytics ?? {
+            schedule: sinon.stub().resolves()
+        };
         return new GiftService({
             giftRepository: giftRepository as any,
+            giftDeliveryRepository: giftDeliveryRepository as any,
             memberRepository,
             tiersService,
             giftEmailService,
             staffServiceEmails,
             giftReminderScheduler,
             giftDeliveryScheduler,
+            giftEmailAnalytics,
             checkoutAdapter: {
                 getCustomerId: sinon.stub().resolves(null),
                 createSession: sinon.stub().resolves('https://checkout.example/')
@@ -223,6 +242,63 @@ describe('GiftService', function () {
 
             assert.equal(result, false);
 
+            sinon.assert.notCalled(giftRepository.create);
+        });
+
+        it('persists gift presentation and a separate email delivery before waking', async function () {
+            const service = createService();
+
+            await service.completePurchase({
+                ...purchaseData,
+                deliveryMethod: 'email',
+                recipientEmail: 'recipient@example.com',
+                recipientName: 'Recipient',
+                buyerName: 'Buyer',
+                personalMessage: 'Enjoy this gift',
+                deliverAt: null
+            });
+
+            const gift = giftRepository.create.firstCall.firstArg;
+            assert.equal(gift.recipientName, 'Recipient');
+            assert.equal(gift.buyerName, 'Buyer');
+            assert.equal(gift.personalMessage, 'Enjoy this gift');
+            assert.equal(gift.availableAt, gift.purchasedAt);
+            assert.equal(
+                Math.round((gift.expiresAt.getTime() - gift.availableAt.getTime()) / (24 * 60 * 60 * 1000)),
+                365
+            );
+
+            const delivery = giftDeliveryRepository.create.firstCall.firstArg;
+            assert.ok(delivery instanceof GiftDelivery);
+            assert.equal(delivery.giftId, 'gift_1');
+            assert.equal(delivery.recipientEmail, 'recipient@example.com');
+            assert.equal(delivery.status, 'pending');
+            sinon.assert.callOrder(giftRepository.create, giftDeliveryRepository.create, giftDeliveryScheduler.wake);
+        });
+
+        it('does not create a delivery row for a link gift', async function () {
+            const service = createService();
+
+            await service.completePurchase(purchaseData);
+
+            sinon.assert.notCalled(giftDeliveryRepository.create);
+            sinon.assert.notCalled(giftDeliveryScheduler.wake);
+        });
+
+        it('rejects inconsistent webhook delivery metadata instead of truncating or ignoring it', async function () {
+            const service = createService();
+
+            await assert.rejects(() => service.completePurchase({
+                ...purchaseData,
+                deliveryMethod: 'link',
+                recipientEmail: 'recipient@example.com'
+            } as unknown as GiftPurchaseData), {errorType: 'ValidationError'});
+            await assert.rejects(() => service.completePurchase({
+                ...purchaseData,
+                deliveryMethod: 'email',
+                recipientEmail: 'recipient@example.com',
+                personalMessage: 'x'.repeat(501)
+            } as GiftPurchaseData), {errorType: 'ValidationError'});
             sinon.assert.notCalled(giftRepository.create);
         });
 
@@ -668,6 +744,7 @@ describe('GiftService', function () {
             const savedGift = giftRepository.update.getCall(0).args[0];
             assert.equal(savedGift.status, 'expired');
             assert.notEqual(savedGift.expiredAt, null);
+            sinon.assert.calledOnceWithExactly(giftDeliveryRepository.cancelPendingForGift, gift.token, {transacting});
         });
 
         it('skips gifts that are no longer purchased when re-loaded', async function () {
@@ -717,12 +794,15 @@ describe('GiftService', function () {
     });
 
     describe('processDeliveries', function () {
-        function claimedGift(attempts = 1) {
+        function startedDelivery(attempts = 1) {
+            return buildGiftDelivery({
+                status: 'sending',
+                attempts
+            });
+        }
+
+        function deliveryGift() {
             return buildGift({
-                deliveryMethod: 'email',
-                deliveryStatus: 'sending',
-                deliveryAttempts: attempts,
-                recipientEmail: 'recipient@example.com',
                 recipientName: 'Recipient',
                 buyerName: 'Buyer',
                 personalMessage: 'Enjoy this gift'
@@ -730,8 +810,12 @@ describe('GiftService', function () {
         }
 
         beforeEach(function () {
-            giftRepository.findPendingDeliveries.resolves([claimedGift()]);
-            giftRepository.claimPendingDelivery.resolves(claimedGift());
+            giftDeliveryRepository.findPending.resolves([{
+                delivery: startedDelivery(),
+                availableAt: new Date('2026-01-01T00:00:00.000Z')
+            }]);
+            giftDeliveryRepository.tryStartAttempt.resolves(startedDelivery());
+            giftRepository.getById.resolves(deliveryGift());
         });
 
         it('claims, sends, and records mail transport acceptance', async function () {
@@ -741,37 +825,49 @@ describe('GiftService', function () {
             const result = await service.processDeliveries();
 
             assert.deepEqual(result, {sentCount: 1, skippedCount: 0, failedCount: 0});
-            sinon.assert.calledOnceWithExactly(giftRepository.claimPendingDelivery, 'gift-token', sinon.match.date, 10);
-            sinon.assert.calledOnceWithExactly(giftRepository.markDeliverySent, 'gift-token', sinon.match.date, 'provider-123');
+            sinon.assert.calledOnceWithExactly(giftDeliveryRepository.tryStartAttempt, 'delivery_1', sinon.match.date, 10);
+            sinon.assert.calledOnceWithExactly(giftDeliveryRepository.markSent, 'delivery_1', sinon.match.date, 'provider-123');
+            sinon.assert.calledOnce(giftEmailAnalytics.schedule);
         });
 
         it('leaves an accepted handoff in sending when the durable sent fact cannot be persisted', async function () {
             giftEmailService.sendGiftDelivery.resolves({providerMessageId: 'provider-123'});
-            giftRepository.markDeliverySent.resolves(false);
+            giftDeliveryRepository.markSent.resolves(false);
             const service = createService();
 
             const result = await service.processDeliveries();
 
             assert.deepEqual(result, {sentCount: 0, skippedCount: 0, failedCount: 1});
-            sinon.assert.notCalled(giftRepository.markDeliveryForRetry);
-            sinon.assert.notCalled(giftRepository.markDeliveryFailed);
+            sinon.assert.notCalled(giftDeliveryRepository.markForRetry);
+            sinon.assert.notCalled(giftDeliveryRepository.markFailed);
         });
 
         it('does not retry an accepted handoff when persistence fails with a recoverable-looking code', async function () {
             giftEmailService.sendGiftDelivery.resolves({providerMessageId: 'provider-123'});
-            giftRepository.markDeliverySent.rejects({code: 'ECONNREFUSED'});
+            giftDeliveryRepository.markSent.rejects({code: 'ECONNREFUSED'});
             const service = createService();
 
             const result = await service.processDeliveries();
 
             assert.deepEqual(result, {sentCount: 0, skippedCount: 0, failedCount: 1});
-            sinon.assert.notCalled(giftRepository.markDeliveryForRetry);
-            sinon.assert.notCalled(giftRepository.markDeliveryFailed);
+            sinon.assert.notCalled(giftDeliveryRepository.markForRetry);
+            sinon.assert.notCalled(giftDeliveryRepository.markFailed);
             sinon.assert.notCalled(giftDeliveryScheduler.scheduleAt);
         });
 
-        it('does not send when another worker or lifecycle transition wins the claim', async function () {
-            giftRepository.claimPendingDelivery.resolves(null);
+        it('keeps accepted delivery sent when provider analytics scheduling fails', async function () {
+            giftEmailService.sendGiftDelivery.resolves({providerMessageId: 'provider-123'});
+            giftEmailAnalytics.schedule.rejects(new Error('scheduler unavailable'));
+            const service = createService();
+
+            const result = await service.processDeliveries();
+
+            assert.deepEqual(result, {sentCount: 1, skippedCount: 0, failedCount: 0});
+            sinon.assert.calledOnceWithExactly(giftDeliveryRepository.markSent, 'delivery_1', sinon.match.date, 'provider-123');
+        });
+
+        it('does not send when another worker or lifecycle transition starts the attempt first', async function () {
+            giftDeliveryRepository.tryStartAttempt.resolves(null);
             const service = createService();
 
             const result = await service.processDeliveries();
@@ -780,21 +876,30 @@ describe('GiftService', function () {
             sinon.assert.notCalled(giftEmailService.sendGiftDelivery);
         });
 
-        it('fails a claimed email delivery that has no recipient email', async function () {
-            giftRepository.claimPendingDelivery.resolves(buildGift({
-                deliveryMethod: 'email',
-                deliveryStatus: 'sending',
-                deliveryAttempts: 1,
-                recipientEmail: null
-            }));
+        it('fails a started delivery attempt whose gift is missing', async function () {
+            giftRepository.getById.resolves(null);
             const service = createService();
 
             const result = await service.processDeliveries();
 
             assert.deepEqual(result, {sentCount: 0, skippedCount: 0, failedCount: 1});
-            sinon.assert.calledOnceWithExactly(giftRepository.markDeliveryFailed, 'gift-token');
+            sinon.assert.calledOnceWithExactly(giftDeliveryRepository.markFailed, 'delivery_1');
             sinon.assert.notCalled(giftEmailService.sendGiftDelivery);
-            sinon.assert.notCalled(giftRepository.markDeliveryForRetry);
+            sinon.assert.notCalled(giftDeliveryRepository.markForRetry);
+        });
+
+        it('cancels a started delivery attempt when its gift is no longer purchased', async function () {
+            giftRepository.getById.resolves(buildGift({
+                status: 'refunded',
+                refundedAt: new Date()
+            }));
+            const service = createService();
+
+            const result = await service.processDeliveries();
+
+            assert.deepEqual(result, {sentCount: 0, skippedCount: 1, failedCount: 0});
+            sinon.assert.calledOnceWithExactly(giftDeliveryRepository.markCancelled, 'delivery_1');
+            sinon.assert.notCalled(giftEmailService.sendGiftDelivery);
         });
 
         it('schedules a recoverable non-acceptance exactly ten minutes later', async function () {
@@ -804,20 +909,20 @@ describe('GiftService', function () {
 
             await service.processDeliveries();
 
-            const retryAt = giftRepository.markDeliveryForRetry.firstCall.args[1] as Date;
+            const retryAt = giftDeliveryRepository.markForRetry.firstCall.args[1] as Date;
             assert.ok(retryAt.getTime() >= before);
             assert.ok(retryAt.getTime() <= before + 1000);
             sinon.assert.calledOnceWithExactly(giftDeliveryScheduler.scheduleAt, retryAt);
         });
 
         it('fails a recoverable non-acceptance at the attempt cap', async function () {
-            giftRepository.claimPendingDelivery.resolves(claimedGift(10));
+            giftDeliveryRepository.tryStartAttempt.resolves(startedDelivery(10));
             giftEmailService.sendGiftDelivery.rejects({err: {responseCode: 421}});
             const service = createService();
 
             await service.processDeliveries();
 
-            sinon.assert.calledOnceWithExactly(giftRepository.markDeliveryFailed, 'gift-token');
+            sinon.assert.calledOnceWithExactly(giftDeliveryRepository.markFailed, 'delivery_1');
             sinon.assert.notCalled(giftDeliveryScheduler.scheduleAt);
         });
 
@@ -827,8 +932,8 @@ describe('GiftService', function () {
 
             await service.processDeliveries();
 
-            sinon.assert.calledOnceWithExactly(giftRepository.markDeliveryFailed, 'gift-token');
-            sinon.assert.notCalled(giftRepository.markDeliveryForRetry);
+            sinon.assert.calledOnceWithExactly(giftDeliveryRepository.markFailed, 'delivery_1');
+            sinon.assert.notCalled(giftDeliveryRepository.markForRetry);
         });
 
         it('leaves an ambiguous handoff in sending to avoid a duplicate', async function () {
@@ -838,8 +943,8 @@ describe('GiftService', function () {
             const result = await service.processDeliveries();
 
             assert.deepEqual(result, {sentCount: 0, skippedCount: 0, failedCount: 1});
-            sinon.assert.notCalled(giftRepository.markDeliveryForRetry);
-            sinon.assert.notCalled(giftRepository.markDeliveryFailed);
+            sinon.assert.notCalled(giftDeliveryRepository.markForRetry);
+            sinon.assert.notCalled(giftDeliveryRepository.markFailed);
         });
     });
 
@@ -1139,6 +1244,7 @@ describe('GiftService', function () {
                 transacting
             });
             sinon.assert.calledOnceWithExactly(giftRepository.update, redeemed, {transacting});
+            sinon.assert.calledOnceWithExactly(giftDeliveryRepository.cancelPendingForGift, redeemed.token, {transacting});
             sinon.assert.calledTwice(tiersService.api.read);
             sinon.assert.alwaysCalledWithExactly(tiersService.api.read, 'tier_1');
             sinon.assert.calledOnceWithExactly(staffServiceEmails.notifyGiftSubscriptionStarted, {
@@ -1486,6 +1592,7 @@ describe('GiftService', function () {
             assert.ok(saved.refundedAt);
             assert.notEqual(saved, gift);
             assert.deepEqual(options, {transacting});
+            sinon.assert.calledOnceWithExactly(giftDeliveryRepository.cancelPendingForGift, saved.token, {transacting});
         });
 
         it('returns false when no gift matches the payment intent', async function () {
