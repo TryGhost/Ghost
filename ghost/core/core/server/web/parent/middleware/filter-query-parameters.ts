@@ -84,7 +84,7 @@ const filterRequestTarget = (requestTarget: string): FilterResult => {
  * Update the production policy and this manifest together when adding a parameter.
  * This middleware is enabled by the root pnpm dev Docker Compose configuration.
  */
-function filterQueryParameters(req: Request, res: Response, next: NextFunction) {
+function filterQueryParameters(req: Request, _res: Response, next: NextFunction) {
     const result = filterRequestTarget(req.originalUrl || req.url);
 
     req.originalUrl = result.requestTarget;
@@ -93,7 +93,6 @@ function filterQueryParameters(req: Request, res: Response, next: NextFunction) 
 
     if (result.removedUnknownParameters.length > 0) {
         const strippedParameters = result.removedUnknownParameters.map(encodeURIComponent).join(', ');
-        res.setHeader('X-Ghost-Dev-Stripped-Query-Parameters', strippedParameters);
         logging.warn(`[query-parameter-filter] Stripped undeclared query parameter(s) from ${req.path}: ${strippedParameters}`);
     }
 
