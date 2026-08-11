@@ -34,21 +34,27 @@ setup, development variants, and troubleshooting.
 
 ```
 Ghost/
-├── apps/              # Frontend applications
-│   ├── admin-x-*/     # New React-based admin apps
-│   ├── portal/        # Member portal
-│   ├── comments-ui/   # Comments widget
-│   ├── signup-form/   # Signup form widget
-│   └── ...
-├── ghost/             # Core Ghost application
-│   ├── core/          # Main Ghost backend
-│   ├── admin/         # Admin build output
-│   └── i18n/          # Internationalization
-├── koenig/            # Ghost editor (Koenig) packages
-│   ├── koenig-lexical/  # Lexical-based rich text editor UI
-│   └── kg-*/          # Editor renderers, converters, and support packages
-└── e2e/               # End-to-end tests
+├── apps/              # Admin and public frontend apps
+│   ├── admin/          # React Admin
+│   ├── ember-admin/    # Legacy Ember Admin
+│   ├── portal/         # Member Portal
+│   ├── comments-ui/    # Comments
+│   └── shade/          # Admin design system
+├── ghost/core/        # Ghost server and frontend rendering
+│   ├── core/server/    # APIs, models, and services
+│   ├── core/frontend/  # Theme rendering and helpers
+│   ├── content/        # Default themes, adapters, and local content
+│   └── test/           # Server tests
+├── koenig/            # Editor and content-format packages
+├── packages/          # Shared libraries and adapter contracts
+├── configs/           # Shared build, lint, test, and TypeScript config
+├── e2e/               # Browser end-to-end tests
+├── docker/            # Local development containers and services
+└── scripts/           # Repository tooling
 ```
+
+pnpm links the workspaces and Nx runs their tasks in dependency order. For more
+detail, see the [monorepo structure guide](codebase/monorepo-structure.md).
 
 ## Contributing
 
