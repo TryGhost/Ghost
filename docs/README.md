@@ -83,6 +83,17 @@ For more detail, see the [testing guide](contributing/testing.md) including how
 to choose a test suite, run focused tests, and use the separate browser and
 Ember Admin test lanes.
 
+### Shipping
+
+Admin uses continuous delivery on Ghost(Pro), so every commit to `main` can ship
+before the next server release. Keep Admin compatible with server versions that
+are still live. Public Ghost releases include Admin and the server every
+Tuesday.
+
+For more detail, see the [shipping guide](contributing/shipping.md) including
+when changes reach Ghost(Pro), self-hosted installs, npm, jsDelivr, and the
+Docker Official Image.
+
 ## Additional Resources
 
 - **[Official Documentation](https://ghost.org/docs/)** - User and developer docs
