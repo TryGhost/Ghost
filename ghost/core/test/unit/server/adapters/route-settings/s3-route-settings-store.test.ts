@@ -292,11 +292,6 @@ describe('UNIT: S3RouteSettingsStore', function () {
                 await assert.rejects(createStore(client).get(), /Something went wrong, please try again\./);
             });
 
-            // The bug this replacement exists for: an AWS SDK exception holds a
-            // circular reference to its own HTTP response, and the API error
-            // handler deep-clones the error before rendering it. That clone used
-            // to recurse until the stack blew, so the caller was told "Maximum
-            // call stack size exceeded" instead of anything about S3.
             it('reports an error the API error handler can clone', async function () {
                 const sdkException = Object.assign(new Error('Access Denied'), {name: 'AccessDenied'}) as Error & {$response?: unknown};
                 sdkException.$response = {error: sdkException};
