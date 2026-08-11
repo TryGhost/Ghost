@@ -40,10 +40,10 @@ test.describe('Reply submission', () => {
         await replyForm.getByTestId('submit-form-button').click();
 
         // All three replies should be visible after refetch
-        const replies = mainComment.getByTestId('comment-component');
-        await expect(replies).toHaveCount(3);
-        await expect(replies.nth(0)).toContainText('First reply');
-        await expect(replies.nth(1)).toContainText('Concurrent reply from User B');
-        await expect(replies.nth(2)).toContainText('User A reply');
+        const comments = frame.getByTestId('comment-component');
+        await expect(comments).toHaveCount(4);
+        await expect(comments.nth(1)).toContainText('First reply');
+        await expect(comments.nth(2)).toContainText('Concurrent reply from User B');
+        await expect(comments.nth(3)).toContainText('User A reply');
     });
 });

@@ -5,15 +5,14 @@ import {buildThreadedReplies} from '../../utils/thread-graph';
 
 export type ThreadedRepliesProps = {
     comment: Comment;
-    useThreading: boolean;
 };
 
-const ThreadedReplies: React.FC<ThreadedRepliesProps> = ({comment, useThreading}) => {
+const ThreadedReplies: React.FC<ThreadedRepliesProps> = ({comment}) => {
     const threadedReplies = useMemo(() => buildThreadedReplies(comment), [comment]);
 
     return (
         <div>
-            <ReplyTree replies={threadedReplies} threadParentComment={comment} useThreading={useThreading} />
+            <ReplyTree replies={threadedReplies} threadParentComment={comment} />
         </div>
     );
 };

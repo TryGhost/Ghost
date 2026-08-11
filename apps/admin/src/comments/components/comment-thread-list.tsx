@@ -8,7 +8,6 @@ import {CommentMetrics} from './comment-metrics';
 import {buildThreadLink} from './thread-link';
 import {Link, useSearchParams} from '@tryghost/admin-x-framework';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
-import {useCommentsPinningEnabled} from '@/comments/hooks/use-comments-pinning-enabled';
 
 function RepliesLine({hasReplies}: {hasReplies: boolean}) {
     if (!hasReplies) {
@@ -36,7 +35,6 @@ function CommentRow({comment, dislikesEnabled, isReply = false, isSelectedCommen
     const {mutate: hideComment} = useHideComment();
     const {mutate: showComment} = useShowComment();
     const {mutate: unpinComment} = useUnpinComment();
-    const commentsPinningEnabled = useCommentsPinningEnabled();
 
     // Check replies array for loaded objects, or count.direct_replies for unloaded
     // TODO: remove count.replies fallback once backend is fully rolled out
@@ -64,10 +62,10 @@ function CommentRow({comment, dislikesEnabled, isReply = false, isSelectedCommen
                             canComment={comment.member?.can_comment}
                             createdAt={comment.created_at}
                             isHidden={comment.status === 'hidden'}
-                            isPinned={commentsPinningEnabled && comment.pinned}
+                            isPinned={comment.pinned}
                             memberId={comment.member?.id}
                             memberName={comment.member?.name}
-                            onUnpinClick={commentsPinningEnabled ? () => unpinComment({id: comment.id}) : undefined}
+                            onUnpinClick={() => unpinComment({id: comment.id})}
                         />
 
                         {comment.in_reply_to_snippet && isSelectedComment && (

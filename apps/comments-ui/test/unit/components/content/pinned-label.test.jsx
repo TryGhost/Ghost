@@ -21,23 +21,10 @@ const contextualRender = (ui, {appContext, ...renderOptions} = {}) => {
 };
 
 describe('<PinnedLabel>', function () {
-    it('returns null when commentsPinning labs flag is disabled', function () {
-        const comment = buildComment({pinned: true});
-
-        const {container} = contextualRender(<PinnedLabel comment={comment} />, {
-            appContext: {labs: {}}
-        });
-
-        expect(container).toBeEmptyDOMElement();
-        expect(screen.queryByTestId('pinned-comment-label')).not.toBeInTheDocument();
-    });
-
-    it('returns null when the comment is not pinned even with the flag on', function () {
+    it('returns null when the comment is not pinned', function () {
         const comment = buildComment({pinned: false});
 
-        const {container} = contextualRender(<PinnedLabel comment={comment} />, {
-            appContext: {labs: {commentsPinning: true}}
-        });
+        const {container} = contextualRender(<PinnedLabel comment={comment} />);
 
         expect(container).toBeEmptyDOMElement();
     });
@@ -46,7 +33,7 @@ describe('<PinnedLabel>', function () {
         const comment = buildComment({pinned: true});
 
         contextualRender(<PinnedLabel comment={comment} />, {
-            appContext: {labs: {commentsPinning: true}, isAdmin: false}
+            appContext: {isAdmin: false}
         });
 
         const label = screen.getByTestId('pinned-comment-label');
@@ -59,7 +46,7 @@ describe('<PinnedLabel>', function () {
         const dispatchAction = vi.fn();
 
         contextualRender(<PinnedLabel comment={comment} />, {
-            appContext: {labs: {commentsPinning: true}, isAdmin: true, dispatchAction}
+            appContext: {isAdmin: true, dispatchAction}
         });
 
         const button = screen.getByRole('button', {name: 'Unpin comment'});

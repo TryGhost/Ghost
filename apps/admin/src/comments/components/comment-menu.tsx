@@ -2,7 +2,6 @@ import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMen
 import {type Comment, usePinComment, useUnpinComment} from '@tryghost/admin-x-framework/api/comments';
 import {DisableCommentingDialog} from './disable-commenting-dialog';
 import {LucideIcon} from '@tryghost/shade/utils';
-import {useCommentsPinningEnabled} from '@/comments/hooks/use-comments-pinning-enabled';
 import {useDisableMemberCommenting, useEnableMemberCommenting} from '@tryghost/admin-x-framework/api/members';
 import {useState} from 'react';
 
@@ -18,13 +17,12 @@ export function CommentMenu({
     const {mutate: pinComment} = usePinComment();
     const {mutate: unpinComment} = useUnpinComment();
     const [disableDialogOpen, setDisableDialogOpen] = useState(false);
-    const commentsPinningEnabled = useCommentsPinningEnabled();
 
     const {id: commentId, post, member} = comment;
     const postUrl = post?.url;
     const memberId = member?.id;
     const canComment = member?.can_comment;
-    const canPin = commentsPinningEnabled && !comment.parent_id && comment.status !== 'deleted';
+    const canPin = !comment.parent_id && comment.status !== 'deleted';
 
     const handleDisableCommenting = (hideComments: boolean) => {
         if (memberId) {
