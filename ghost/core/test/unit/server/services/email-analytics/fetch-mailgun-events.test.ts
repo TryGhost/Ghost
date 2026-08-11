@@ -1,7 +1,10 @@
-const sinon = require('sinon');
+import sinon from 'sinon';
 
-const MailgunClient = require('../../../../../core/server/services/lib/mailgun-client');
-const {fetchMailgunEvents} = require('../../../../../core/server/services/email-analytics/fetch-mailgun-events');
+// @ts-expect-error This module lacks type definitions.
+import MailgunClient from '../../../../../core/server/services/lib/mailgun-client';
+import {fetchMailgunEvents} from '../../../../../core/server/services/email-analytics/fetch-mailgun-events';
+
+type FetchMailgunEventsOptions = Parameters<typeof fetchMailgunEvents>[0];
 
 const DEFAULT_TAGS = ['bulk-email'];
 const LATEST_TIMESTAMP = new Date('Thu Feb 25 2021 12:00:00 GMT+0000');
@@ -16,7 +19,8 @@ const MAILGUN_OPTIONS = {
 };
 
 describe('fetchMailgunEvents', function () {
-    let config, settings;
+    let config: FetchMailgunEventsOptions['config'];
+    let settings: FetchMailgunEventsOptions['settings'];
 
     beforeEach(function () {
         config = {get() {}};
@@ -27,7 +31,7 @@ describe('fetchMailgunEvents', function () {
         sinon.restore();
     });
 
-    async function fetchEvents(options = {}) {
+    async function fetchEvents(options: Partial<Omit<FetchMailgunEventsOptions, 'config' | 'settings' | 'batchHandler'>> = {}) {
         const batchHandler = sinon.spy();
         const mailgunFetchEventsStub = sinon.stub(MailgunClient.prototype, 'fetchEvents').resolves();
 
