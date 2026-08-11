@@ -33,8 +33,7 @@ const GA_FEATURES = [
     'commentsThreads',
     'commentsPinning',
     'featurebaseFeedback',
-    'dangerZoneResetAuth',
-    'llmsTxt'
+    'dangerZoneResetAuth'
 ];
 
 // These features are considered publicly available and can be enabled/disabled by users

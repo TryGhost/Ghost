@@ -32,7 +32,6 @@ Object {
       "giftSubCustomization": true,
       "importMemberTier": true,
       "lexicalIndicators": true,
-      "llmsTxt": true,
       "memberDetailsReact": true,
       "members": true,
       "membersCustomFields": true,

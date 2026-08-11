@@ -12,12 +12,10 @@ function fakeImageUpload(url: string): void {
 }
 
 describe("SEO meta settings", () => {
-    it("toggles LLM structured data when the feature flag is on", async () => {
+    it("toggles LLM structured data", async () => {
         fakeSettingsScreens();
         const settingsApi = fakeEditSettings();
-        await renderAdminApp("/settings", {
-            labs: { llmsTxt: true },
-        });
+        await renderAdminApp("/settings");
 
         const section = settingsScreen.seoMeta();
         const toggle = section.getByLabelText("Enable structured data for LLMs and AI search engines");
@@ -33,8 +31,7 @@ describe("SEO meta settings", () => {
         fakeSettingsScreens();
         const settingsApi = fakeEditSettings();
         await renderAdminApp("/settings", {
-            labs: { llmsTxt: true },
-            boot: { browseSettings: { response: settingsResponse({ labs: { llmsTxt: true }, settings: { llms_enabled: false } }) } },
+            boot: { browseSettings: { response: settingsResponse({ settings: { llms_enabled: false } }) } },
         });
 
         const section = settingsScreen.seoMeta();
@@ -44,15 +41,6 @@ describe("SEO meta settings", () => {
         await section.getByRole("button", { name: "Save" }).click();
 
         await expect(settingsApi).toHaveEditedSettings([{ key: "llms_enabled", value: true }]);
-    });
-
-    it("hides LLM structured data when the feature flag is off", async () => {
-        fakeSettingsScreens();
-        await renderAdminApp("/settings");
-
-        const section = settingsScreen.seoMeta();
-        await expect.element(section.getByLabelText("Meta title")).toBeVisible();
-        await expect(section.getByLabelText("Enable structured data for LLMs and AI search engines")).toHaveCount(0);
     });
 
     it("edits search metadata", async () => {

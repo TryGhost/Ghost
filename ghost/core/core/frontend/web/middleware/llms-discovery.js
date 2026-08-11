@@ -15,9 +15,9 @@ function appendHeaderValue(existingValue, newValue) {
     return raw.concat(newValue).join(', ');
 }
 
-function createLlmsDiscovery({settingsCache, labs}) {
+function createLlmsDiscovery({settingsCache}) {
     function isDiscoveryEnabled() {
-        return labs.isSet('llmsTxt') && !settingsCache.get('is_private') && settingsCache.get('llms_enabled') !== false;
+        return !settingsCache.get('is_private') && settingsCache.get('llms_enabled') !== false;
     }
 
     return function llmsDiscovery(req, res, next) {
