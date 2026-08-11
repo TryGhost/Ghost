@@ -8,32 +8,37 @@ const mw = require('./middleware');
  * @returns {import('express').Application}
  */
 module.exports = function setupParentApp() {
-  debug('ParentApp setup start');
-  const parentApp = express('parent');
+    debug('ParentApp setup start');
+    const parentApp = express('parent');
 
-  parentApp.use(mw.requestId);
-  parentApp.use(mw.logRequest);
+    parentApp.use(mw.requestId);
 
-  // Register event emitter on req/res to trigger cache invalidation webhook event
-  parentApp.use(mw.emitEvents);
+    if (config.get('queryParameterFiltering:enabled')) {
+        parentApp.use(mw.filterQueryParameters);
+    }
 
-  // enabled gzip compression by default
-  if (config.get('compress') !== false) {
-    parentApp.use(compress());
-  }
+    parentApp.use(mw.logRequest);
 
-  // This sets global res.locals which are needed everywhere
-  // @TODO: figure out if this is really needed everywhere? Is it not frontend only...
-  parentApp.use(mw.ghostLocals);
+    // Register event emitter on req/res to trigger cache invalidation webhook event
+    parentApp.use(mw.emitEvents);
 
-  // Enable request queuing if configured
-  const queueConfig = config.get('optimization:requestQueue');
+    // enabled gzip compression by default
+    if (config.get('compress') !== false) {
+        parentApp.use(compress());
+    }
 
-  if (queueConfig) {
-    parentApp.use(mw.queueRequest(queueConfig));
-  }
+    // This sets global res.locals which are needed everywhere
+    // @TODO: figure out if this is really needed everywhere? Is it not frontend only...
+    parentApp.use(mw.ghostLocals);
 
-  debug('ParentApp setup end');
+    // Enable request queuing if configured
+    const queueConfig = config.get('optimization:requestQueue');
 
-  return parentApp;
+    if (queueConfig) {
+        parentApp.use(mw.queueRequest(queueConfig));
+    }
+
+    debug('ParentApp setup end');
+
+    return parentApp;
 };
