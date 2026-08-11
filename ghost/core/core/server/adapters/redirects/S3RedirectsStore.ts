@@ -22,7 +22,8 @@ const messages = {
     missingBucket: 'S3RedirectsStore requires a bucket name',
     missingStaticFileURLPrefix: 'S3RedirectsStore requires a staticFileURLPrefix',
     partialCredentials: 'S3RedirectsStore requires both accessKeyId and secretAccessKey when either is provided',
-    missingResponseBody: 'S3 GetObject returned no body'
+    missingResponseBody: 'S3 GetObject returned no body',
+    requestFailed: 'Something went wrong, please try again.'
 };
 
 const stripLeadingAndTrailingSlashes = (value = '') => value.replace(/^\/+|\/+$/g, '');
@@ -134,7 +135,7 @@ export default class S3RedirectsStore extends RedirectsStoreBase {
             if (this._isNotFound(err)) {
                 return [];
             }
-            throw err;
+            throw this._requestError(err);
         }
 
         return parseJson(body);
@@ -143,20 +144,24 @@ export default class S3RedirectsStore extends RedirectsStoreBase {
     async replaceAll(redirects: RedirectConfig[]): Promise<void> {
         const key = this.buildKey();
 
-        if (await this._canonicalExists()) {
-            await this.client.send(new CopyObjectCommand({
-                Bucket: this.bucket,
-                Key: getBackupRedirectsFilePath(key),
-                CopySource: `${this.bucket}/${key}`
-            }));
-        }
+        try {
+            if (await this._canonicalExists()) {
+                await this.client.send(new CopyObjectCommand({
+                    Bucket: this.bucket,
+                    Key: getBackupRedirectsFilePath(key),
+                    CopySource: `${this.bucket}/${key}`
+                }));
+            }
 
-        await this.client.send(new PutObjectCommand({
-            Bucket: this.bucket,
-            Key: key,
-            Body: JSON.stringify(redirects),
-            ContentType: 'application/json'
-        }));
+            await this.client.send(new PutObjectCommand({
+                Bucket: this.bucket,
+                Key: key,
+                Body: JSON.stringify(redirects),
+                ContentType: 'application/json'
+            }));
+        } catch (err) {
+            throw this._requestError(err);
+        }
     }
 
     private buildKey(): string {
@@ -175,8 +180,36 @@ export default class S3RedirectsStore extends RedirectsStoreBase {
             if (this._isNotFound(err)) {
                 return false;
             }
-            throw err;
+            throw this._requestError(err);
         }
+    }
+
+    /**
+     * An AWS SDK exception holds `$response`, a reference to its own live HTTP
+     * response — a circular object graph. Ghost's API error handler deep-clones
+     * the error it renders, with no cycle detection, so letting one escape made
+     * that clone recurse until the stack blew and the caller was told "Maximum
+     * call stack size exceeded". Nothing is taken off the SDK exception by
+     * reference, which is what makes the replacement safe to serialise; the
+     * origin frames are carried across as a string so the real failure is still
+     * diagnosable from the logs.
+     */
+    private _requestError(err: unknown): Error {
+        // The only Ghost errors reaching here are this store's own, which are
+        // already safe to render — re-wrapping them would hide the reason.
+        if (err instanceof errors.InternalServerError) {
+            return err;
+        }
+
+        const requestError = new errors.InternalServerError({
+            message: tpl(messages.requestFailed)
+        });
+
+        if (typeof (err as {stack?: string})?.stack === 'string') {
+            requestError.stack = `${requestError.stack}\n\nCaused by: ${(err as {stack: string}).stack}`;
+        }
+
+        return requestError;
     }
 
     private _isNotFound(err: unknown): boolean {
