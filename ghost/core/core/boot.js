@@ -356,6 +356,7 @@ async function initServices({ghostServer} = {}) {
     const adapterManager = require('./server/services/adapter-manager').default;
     const {withErrorCapture} = require('./server/adapters/scheduling/error-capture');
 
+    const db = require('./server/data/db');
     const urlUtils = require('./shared/url-utils').default;
     const settingsCache = require('./shared/settings-cache');
     const internalKeys = require('./server/services/internal-keys').default;
@@ -383,6 +384,7 @@ async function initServices({ghostServer} = {}) {
         audienceFeedback.init(),
         emailService.init({ghostServer}),
         emailAnalytics.init({
+            db,
             domainEvents
         }),
         webhooks.listen(),

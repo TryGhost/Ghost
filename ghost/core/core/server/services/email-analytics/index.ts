@@ -1,3 +1,4 @@
+import type {Knex} from 'knex';
 // @ts-expect-error This module lacks type definitions.
 import EmailAnalyticsServiceWrapper from './email-analytics-service-wrapper';
 import config from '../../../shared/config';
@@ -7,7 +8,6 @@ import {NewsletterEmailAnalyticsBatchProcessor} from './newsletter-email-analyti
 import NewsletterEmailEventStorage from '../email-service/newsletter-email-event-storage';
 // @ts-expect-error This module lacks type definitions.
 import EmailEventProcessor from '../email-service/email-event-processor';
-import * as db from '../../data/db';
 import membersService from '../members';
 // @ts-expect-error This module lacks type definitions.
 import emailSuppressionList from '../email-suppression-list';
@@ -33,8 +33,10 @@ export const automations = new EmailAnalyticsServiceWrapper({
 });
 
 export const init = ({
+    db,
     domainEvents
 }: {
+    db: {knex: Knex},
     domainEvents: Pick<DomainEvents, 'subscribe'>;
 }) => {
     const queries = new Queries(db.knex);
