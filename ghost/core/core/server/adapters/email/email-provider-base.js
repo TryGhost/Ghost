@@ -26,6 +26,23 @@ class EmailProviderBase {
         this.config = config || {};
     }
 
+    /**
+     * @param {object} data
+     * @param {string} data.subject
+     * @param {string} data.from
+     * @param {string} [data.replyTo]
+     * @param {string} data.html
+     * @param {string} data.plaintext
+     * @param {object[]} data.recipients
+     * @param {string} data.emailId Ghost's own Email id for this send. Providers that report a
+     *     per-recipient message id rather than a per-batch one (e.g. SES, Postmark) should echo
+     *     this back via provider-side message tags/metadata, so it can be read off the webhook
+     *     event later and used as the correlation field in `parseWebhookEvents()` - see
+     *     `EmailAnalyticsEvent.emailId` above.
+     * @param {string} [data.domainOverride]
+     * @param {object} options
+     * @returns {Promise<object>}
+     */
     async send() {
         throw new errors.IncorrectUsageError({
             message: 'send() must be implemented by email provider adapter'
