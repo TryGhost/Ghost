@@ -31,6 +31,11 @@ const NODE_VISUAL_GAP_Y = 112;
 const REGULAR_NODE_HEIGHT = 68;
 const EMAIL_NODE_WITH_STATS_HEIGHT = 133;
 const INITIAL_VIEWPORT_Y = 40;
+// Rendered height of the tail node (h-12) — used to derive the content's bottom edge for the pan bound.
+const TAIL_NODE_HEIGHT = 48;
+// The default view is as close as you need, so zoom only goes out from there.
+const MIN_ZOOM = 0.5;
+const MAX_ZOOM = 1;
 const NODE_ENTER_ANIMATION_DURATION = 250;
 const DISABLED_REASON = 'Maximum steps added';
 const DEFAULT_EDGE_STROKE = 'var(--xy-edge-stroke)';
@@ -169,7 +174,9 @@ type BuildGraphParams = {
     selectedStepId: string | null;
 }
 
-const buildGraph = ({actionErrors, automation, automationAnalyticsEnabled, disabled, onDelete, onEditEmailBody, onPick, onPreviewEmail, onSelectStep, newStepId, selectedStepId}: BuildGraphParams): { nodes: AutomationFlowNode[]; edges: Edge[] } => {
+type ContentBounds = {left: number; right: number; bottom: number};
+
+const buildGraph = ({actionErrors, automation, automationAnalyticsEnabled, disabled, onDelete, onEditEmailBody, onPick, onPreviewEmail, onSelectStep, newStepId, selectedStepId}: BuildGraphParams): { nodes: AutomationFlowNode[]; edges: Edge[]; contentBounds: ContentBounds } => {
     const ordered = getInitialActionOrder(automation);
     const baseNodeProps = {
         draggable: false,
@@ -251,6 +258,14 @@ const buildGraph = ({actionErrors, automation, automationAnalyticsEnabled, disab
         draggable: false,
         connectable: false
     });
+    // Content bounds in flow coordinates, derived from node positions so the pan bound keeps
+    // working if the graph ever grows wider (e.g. branching).
+    const xs = nodes.map(node => node.position.x);
+    const contentBounds: ContentBounds = {
+        left: Math.min(...xs),
+        right: Math.max(...xs) + NODE_WIDTH,
+        bottom: cursorY + TAIL_NODE_HEIGHT
+    };
 
     // Every connecting line between existing nodes gets a circular + on hover. The trailing edge into the
     // tail node intentionally has none — the rectangular tail button already covers that slot.
@@ -284,7 +299,7 @@ const buildGraph = ({actionErrors, automation, automationAnalyticsEnabled, disab
         style: {stroke: DEFAULT_EDGE_STROKE}
     });
 
-    return {nodes, edges};
+    return {nodes, edges, contentBounds};
 };
 
 const getInitialViewport = (canvasWidth: number): { x: number; y: number; zoom: number } => ({
@@ -292,6 +307,24 @@ const getInitialViewport = (canvasWidth: number): { x: number; y: number; zoom: 
     y: INITIAL_VIEWPORT_Y,
     zoom: 1
 });
+
+// Bounds panning so the viewport center always stays over the content — panning stops when a
+// content edge reaches the center of the screen, so the flow can never be lost off screen at any
+// viewport size or zoom. The bottom bound also contains the initial top-anchored viewport, so
+// short flows load at the top and can't be pushed above it.
+const panTranslateExtent = (
+    content: ContentBounds,
+    size: {width: number; height: number},
+    zoom: number
+): [[number, number], [number, number]] => {
+    const halfWidth = size.width / (2 * zoom);
+    const halfHeight = size.height / (2 * zoom);
+    const initialVisibleBottom = (size.height - INITIAL_VIEWPORT_Y) / zoom;
+    return [
+        [content.left - halfWidth, -halfHeight],
+        [content.right + halfWidth, Math.max(content.bottom + halfHeight, initialVisibleBottom)]
+    ];
+};
 
 type AutomationCanvasProps = {
     actionErrors?: Record<string, string>;
@@ -473,6 +506,29 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
         });
     }, [actionErrors, automation, automationAnalyticsEnabled, handleContextMenuEditEmail, handleContextMenuPreviewEmail, handlePick, handleRequestDelete, newStepId, selectedStepId]);
 
+    // Canvas size and zoom feed the pan bound. Size is measured via callback ref — the canvas node
+    // only exists once loading/error states clear, so a mount-time effect would never see it.
+    const [canvasSize, setCanvasSize] = useState({width: 0, height: 0});
+    const [zoom, setZoom] = useState(1);
+    const observerRef = useRef<ResizeObserver | null>(null);
+    const measureCanvas = useCallback((el: HTMLDivElement | null) => {
+        observerRef.current?.disconnect();
+        if (!el) {
+            observerRef.current = null;
+            return;
+        }
+        const update = () => setCanvasSize({width: el.clientWidth, height: el.clientHeight});
+        update();
+        observerRef.current = new ResizeObserver(update);
+        observerRef.current.observe(el);
+    }, []);
+
+    // Unbounded until the canvas is measured — a zero-size extent would lock panning entirely.
+    const translateExtent = useMemo(
+        () => (graph && canvasSize.width ? panTranslateExtent(graph.contentBounds, canvasSize, zoom) : undefined),
+        [graph, canvasSize, zoom]
+    );
+
     const clearDetail = useCallback(() => {
         setSelectedStep(null);
     }, []);
@@ -539,22 +595,27 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     }
 
     return (
-        <div className='relative flex-1 overflow-hidden bg-background' data-testid='automation-canvas'>
+        <div ref={measureCanvas} className='relative flex-1 overflow-hidden bg-background' data-testid='automation-canvas'>
             <ReactFlow
                 className='[--xy-background-color:var(--color-grey-50)] [--xy-background-pattern-color:var(--color-grey-500)] [--xy-edge-stroke:var(--color-grey-300)] dark:[--xy-background-color:var(--background)] dark:[--xy-background-pattern-color:var(--color-grey-900)] dark:[--xy-edge-stroke:var(--color-grey-800)]'
                 defaultViewport={initialViewport.current}
                 edges={graph.edges}
                 edgesFocusable={false}
                 edgeTypes={edgeTypes}
+                maxZoom={MAX_ZOOM}
+                minZoom={MIN_ZOOM}
                 nodes={graph.nodes}
                 nodesConnectable={false}
                 nodesDraggable={false}
                 nodesFocusable={false}
                 nodeTypes={nodeTypes}
                 proOptions={{hideAttribution: true}}
+                translateExtent={translateExtent}
                 zoomOnDoubleClick={false}
                 zoomOnScroll={false}
                 panOnScroll
+                onInit={instance => setZoom(instance.getViewport().zoom)}
+                onMove={(_, viewport) => setZoom(viewport.zoom)}
                 onNodeClick={(event, node) => {
                     if (event.button !== 0) {
                         return;
