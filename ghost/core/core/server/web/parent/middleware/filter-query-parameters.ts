@@ -1,12 +1,14 @@
-const logging = require('@tryghost/logging');
-const querystring = require('node:querystring');
-const {
+import logging from '@tryghost/logging';
+import querystring from 'node:querystring';
+import type {NextFunction, Request, Response} from 'express';
+
+import {
     CONTENT_API_QUERY_PARAMETER_ALLOWLIST,
     QUERY_PARAMETER_ALLOWLIST
-} = require('./query-parameter-allowlist');
+} from './query-parameter-allowlist';
 
-const allowedQueryParameters = new Set(QUERY_PARAMETER_ALLOWLIST);
-const allowedContentApiQueryParameters = new Set(CONTENT_API_QUERY_PARAMETER_ALLOWLIST);
+const allowedQueryParameters: ReadonlySet<string> = new Set(QUERY_PARAMETER_ALLOWLIST);
+const allowedContentApiQueryParameters: ReadonlySet<string> = new Set(CONTENT_API_QUERY_PARAMETER_ALLOWLIST);
 
 const CONTENT_API_PATH_PATTERN = /\/ghost\/api\/(?:(?:v[0-9]+|canary)\/content|content)(?:\/|$)/;
 
@@ -17,7 +19,12 @@ const EXEMPT_PATH_PATTERNS = [
     /\/socket\.io(?:\/|$)/
 ];
 
-const splitRequestTarget = (requestTarget) => {
+type FilterResult = {
+    requestTarget: string;
+    removedUnknownParameters: string[];
+};
+
+const splitRequestTarget = (requestTarget: string) => {
     const queryStart = requestTarget.indexOf('?');
 
     if (queryStart === -1) {
@@ -30,8 +37,8 @@ const splitRequestTarget = (requestTarget) => {
     };
 };
 
-const removeUnknownParameters = (searchParams, allowlist) => {
-    const removed = new Set();
+const removeUnknownParameters = (searchParams: URLSearchParams, allowlist: ReadonlySet<string>) => {
+    const removed = new Set<string>();
 
     for (const parameter of [...searchParams.keys()]) {
         if (!allowlist.has(parameter)) {
@@ -43,7 +50,7 @@ const removeUnknownParameters = (searchParams, allowlist) => {
     return removed;
 };
 
-const filterRequestTarget = (requestTarget) => {
+const filterRequestTarget = (requestTarget: string): FilterResult => {
     const {pathname, searchParams} = splitRequestTarget(requestTarget);
     const contentApiRequest = CONTENT_API_PATH_PATTERN.test(pathname);
     const bypass = searchParams.get('force_params') === 'true';
@@ -76,12 +83,8 @@ const filterRequestTarget = (requestTarget) => {
  *
  * Update the production policy and this manifest together when adding a parameter.
  * This middleware is enabled by the root pnpm dev Docker Compose configuration.
- *
- * @param {import('express').Request} req
- * @param {import('express').Response} res
- * @param {import('express').NextFunction} next
  */
-module.exports = function filterQueryParameters(req, res, next) {
+function filterQueryParameters(req: Request, res: Response, next: NextFunction) {
     const result = filterRequestTarget(req.originalUrl || req.url);
 
     req.originalUrl = result.requestTarget;
@@ -95,6 +98,6 @@ module.exports = function filterQueryParameters(req, res, next) {
     }
 
     next();
-};
+}
 
-module.exports.filterRequestTarget = filterRequestTarget;
+export default Object.assign(filterQueryParameters, {filterRequestTarget});
