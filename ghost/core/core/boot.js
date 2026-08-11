@@ -353,6 +353,7 @@ async function initServices({ghostServer} = {}) {
     const explorePingService = require('./server/services/explore-ping');
     const domainEvents = require('@tryghost/domain-events');
     const automations = require('./server/services/automations');
+    const automationsApi = require('./server/services/automations/automations-api');
     const adapterManager = require('./server/services/adapter-manager').default;
     const {withErrorCapture} = require('./server/adapters/scheduling/error-capture');
 
@@ -384,6 +385,7 @@ async function initServices({ghostServer} = {}) {
         audienceFeedback.init(),
         emailService.init({ghostServer}),
         emailAnalytics.init({
+            automationsApi,
             db,
             domainEvents
         }),

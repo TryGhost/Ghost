@@ -21,7 +21,7 @@ import {Queries} from './lib/queries';
 import {StartEmailAnalyticsJobEvent} from './events/start-email-analytics-job-event';
 import {StartAutomationEmailAnalyticsJobEvent} from './events/start-automation-email-analytics-job-event';
 import {AUTOMATION_EMAIL_TAG} from '../member-welcome-emails/constants';
-import * as automationsApi from '../automations/automations-api';
+import type * as AutomationsApi from '../automations/automations-api';
 import {AutomationEmailAnalyticsBatchProcessor} from './automation-email-analytics-batch-processor';
 
 export const newsletters = new EmailAnalyticsServiceWrapper({
@@ -33,9 +33,11 @@ export const automations = new EmailAnalyticsServiceWrapper({
 });
 
 export const init = ({
+    automationsApi,
     db,
     domainEvents
 }: {
+    automationsApi: Pick<typeof AutomationsApi, 'getAutomatedEmailRecipientsByMailgunIds' | 'trackEmailDeliveredAndOpened'>;
     db: {knex: Knex},
     domainEvents: Pick<DomainEvents, 'subscribe'>;
 }) => {
