@@ -19,6 +19,20 @@ Explain every cross-repository or administrative action before it happens.
   PR, deprecating npm versions, or force-pushing.
 - Never ask for, display, or store credentials or OTPs.
 
+## Work in isolated checkouts
+
+Never manipulate history in a checkout containing unrelated work. Fetch both
+repositories, confirm the source checkout is clean, and create a dedicated
+Ghost worktree from the freshly fetched `origin/main`.
+
+Run history-changing commands individually or in a fail-fast shell. A failed
+`git worktree add` must not be followed by `git subtree add` in whichever
+checkout happens to be current. Stop if the destination branch or path already
+exists and inspect that state rather than reusing it implicitly.
+
+Before importing, record and compare the destination `HEAD` and `origin/main`;
+they must match. Recheck the first parent immediately after the subtree commit.
+
 ## Confirm this workflow applies
 
 Before changing either repository, record the source repository, its default
@@ -35,6 +49,17 @@ the package has been published to npm. Then:
 Publication or download counts alone do not prove that a package must remain a
 supported public API. If supported external consumers still need new releases,
 stop: this internal-only workflow is the wrong publishing model.
+
+For the public-consumer audit, check npm metadata, first-party repositories and
+documentation, plus GitHub code search for package dependencies and runtime
+imports. Classify results as first-party consumers, independent integrations,
+Ghost forks, or deployed Ghost installation snapshots. Forks and installation
+snapshots show historical presence only. Require a recent update, current
+deployment, active dependency or another freshness signal before treating them
+as evidence of continued installation needs; even then, they do not establish
+an independently supported API. Record the evidence and confidence behind the
+ownership decision; stop and ask if current support expectations remain
+unclear.
 
 ## Produce these work products in order
 
@@ -68,8 +93,32 @@ After the subtree commit, add focused integration commits that:
 - minimally adapt configuration and tests to work in Ghost;
 - retain runtime behavior for the later modernization PR.
 
+Before editing package metadata, map each source `workspace:*` dependency to
+its destination state:
+
+- use `workspace:*` when the dependency already exists in Ghost;
+- use `catalog:` when Ghost's catalog version satisfies the imported package;
+- add a named migration catalog with the exact published version when changing
+  the shared catalog would broaden the migration or alter runtime behavior;
+- stop if a required dependency is unpublished or exists only in the source
+  workspace.
+
+Document temporary named-catalog entries for the modernization follow-up. Never
+inline dependency versions; Ghost's strict catalog policy still applies. Do not
+import additional packages implicitly.
+
+If the package is legacy JavaScript or CommonJS, read
+[`references/legacy-integration.md`](references/legacy-integration.md)
+completely before creating integration commits.
+
 Verify that the subtree commit has two parents and that representative file
 history crosses into the source repository before opening the PR.
+
+Before opening the PR, also verify the source split is reachable from the branch
+tip, the consumer resolves the workspace package through its production import
+path, package lint and tests pass through Nx, relevant consumer tests pass, the
+full build passes, and the Ghost archive contains the internal package. Record
+the exact commit IDs and commands in the handoff.
 
 ## 2. Merge the import without rewriting history
 
