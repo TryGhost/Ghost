@@ -1,6 +1,8 @@
 const logging = require('@tryghost/logging');
 const querystring = require('node:querystring');
-const allowedQueryParameters = new Set(require('./query-parameter-allowlist.json'));
+const {QUERY_PARAMETER_ALLOWLIST} = require('./query-parameter-allowlist');
+
+const allowedQueryParameters = new Set(QUERY_PARAMETER_ALLOWLIST);
 
 const EXEMPT_PATH_PATTERNS = [
     /\/ghost\/api(?:\/|$)/,
@@ -60,7 +62,7 @@ const filterRequestTarget = (requestTarget) => {
 /**
  * Applies Ghost(Pro)'s public query parameter allowlist in local development.
  *
- * Keep query-parameter-allowlist.json in sync with:
+ * Keep query-parameter-allowlist.ts in sync with:
  * - TryGhost/terraform modules/ghost-fastly/variables.tf
  *
  * Update the production policy and this manifest together when adding a parameter.
