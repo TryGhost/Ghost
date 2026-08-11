@@ -40,10 +40,6 @@ const features: Feature[] = [{
     description: 'Enable Admin UI refresh (exploration)',
     flag: 'adminUIRefresh'
 }, {
-    title: 'Explore',
-    description: 'Enables keeping in touch with the new Explore API',
-    flag: 'explore'
-}, {
     title: 'Tags X',
     description: 'Enables the new Tags UI',
     flag: 'tagsX'

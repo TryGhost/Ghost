@@ -1,7 +1,6 @@
 import {ExplorePingService} from './explore-ping-service';
 
 const config = require('../../../shared/config');
-const labs = require('../../../shared/labs');
 const logging = require('@tryghost/logging');
 const ghostVersion = require('@tryghost/version');
 const request = require('@tryghost/request');
@@ -15,7 +14,6 @@ export function createService(): ExplorePingService {
     return new ExplorePingService({
         settingsCache,
         config,
-        labs,
         logging,
         ghostVersion,
         request,
