@@ -382,7 +382,9 @@ async function initServices({ghostServer} = {}) {
         slack.init(),
         audienceFeedback.init(),
         emailService.init({ghostServer}),
-        emailAnalytics.init(),
+        emailAnalytics.init({
+            domainEvents
+        }),
         webhooks.listen(),
         comments.init(),
         linkTracking.init(),

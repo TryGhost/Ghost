@@ -14,7 +14,7 @@ import emailSuppressionList from '../email-suppression-list';
 // @ts-expect-error This module lacks type definitions.
 import {EmailRecipientFailure, EmailSpamComplaintEvent, Email} from '../../models';
 // @ts-expect-error This module lacks type definitions.
-import domainEvents from '@tryghost/domain-events';
+import type DomainEvents from '@tryghost/domain-events';
 // @ts-expect-error This module lacks type definitions.
 import prometheusClient from '../../../shared/prometheus-client';
 import {Queries} from './lib/queries';
@@ -32,7 +32,11 @@ export const automations = new EmailAnalyticsServiceWrapper({
     logName: 'automations',
 });
 
-export const init = () => {
+export const init = ({
+    domainEvents
+}: {
+    domainEvents: Pick<DomainEvents, 'subscribe'>;
+}) => {
     const queries = new Queries(db.knex);
 
     const newsletterEmailEventProcessor = new EmailEventProcessor({
