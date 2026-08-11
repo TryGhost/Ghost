@@ -31,7 +31,6 @@ const GA_FEATURES = [
     'customFonts',
     'commentsThreads',
     'commentsPinning',
-    'featurebaseFeedback',
     'dangerZoneResetAuth'
 ];
 
