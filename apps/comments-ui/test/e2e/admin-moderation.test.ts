@@ -124,7 +124,7 @@ test.describe('Admin moderation', async () => {
             html: `<p>This is comment 1</p>`,
             member: {id: '1', uuid: '12345'}
         });
-        const {frame} = await initializeTest(page, {labs: {commentsPinning: true}});
+        const {frame} = await initializeTest(page);
 
         const moreButtons = frame.getByTestId('more-button');
         await expect(moreButtons).toHaveCount(1);
@@ -136,7 +136,7 @@ test.describe('Admin moderation', async () => {
 
     test('has pin option when signed in to Ghost admin and viewing another member comment', async ({page}) => {
         mockedApi.addComment({html: `<p>This is comment 1</p>`});
-        const {frame} = await initializeTest(page, {labs: {commentsPinning: true}});
+        const {frame} = await initializeTest(page);
 
         const moreButtons = frame.getByTestId('more-button');
         await expect(moreButtons).toHaveCount(1);
