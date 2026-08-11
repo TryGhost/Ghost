@@ -7,7 +7,7 @@ const {agentProvider} = require('../../../utils/e2e-framework');
 const testUtils = require('../../../utils');
 const MailgunClient = require('../../../../core/server/services/lib/mailgun-client');
 const {AUTOMATION_EMAIL_TAG, DEFAULT_EMAIL_DESIGN_SETTING_SLUG} = require('../../../../core/server/services/member-welcome-emails/constants');
-const {queries} = require('../../../../core/server/services/email-analytics/lib/queries');
+const {Queries} = require('../../../../core/server/services/email-analytics/lib/queries');
 const emailAnalytics = require('../../../../core/server/services/email-analytics');
 const automationsApi = require('../../../../core/server/services/automations/automations-api');
 
@@ -28,9 +28,9 @@ describe('Automation email analytics', function () {
     let emailDesignSettingId;
 
     beforeAll(async function () {
-        sinon.stub(queries, 'getLastEventTimestamp').resolves(new Date(2000, 0, 1));
+        sinon.stub(Queries.prototype, 'getLastEventTimestamp').resolves(new Date(2000, 0, 1));
         // Same reason, for the cursor fetchMissing starts from.
-        sinon.stub(queries, 'getLastJobRunTimestamp').resolves(new Date(2000, 0, 1));
+        sinon.stub(Queries.prototype, 'getLastJobRunTimestamp').resolves(new Date(2000, 0, 1));
 
         await agentProvider.getAdminAPIAgent();
 

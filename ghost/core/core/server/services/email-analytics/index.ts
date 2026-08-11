@@ -34,7 +34,7 @@ export const automations = new EmailAnalyticsServiceWrapper({
 });
 
 export const init = () => {
-    const queries = new Queries();
+    const queries = new Queries(db.knex);
 
     const newsletterEmailEventProcessor = new EmailEventProcessor({
         domainEvents,
