@@ -591,10 +591,10 @@ describe('EmailAnalyticsService', function () {
                         getJobData: sinon.stub().resolves({
                             finished_at: finishedAt,
                             started_at: null,
-                            metadata: JSON.stringify({
+                            metadata: {
                                 begin: begin.toISOString(),
                                 end: end.toISOString()
-                            })
+                            }
                         }),
                         setJobMetadata: sinon.stub().resolves()
                     }
@@ -628,7 +628,10 @@ describe('EmailAnalyticsService', function () {
                         getJobData: sinon.stub().resolves({
                             finished_at: null,
                             started_at: null,
-                            metadata: null
+                            metadata: {
+                                begin: null,
+                                end: null
+                            }
                         }),
                         setJobMetadata: sinon.stub().resolves()
                     }
@@ -649,10 +652,10 @@ describe('EmailAnalyticsService', function () {
                         getJobData: sinon.stub().resolves({
                             finished_at: null,
                             started_at: null,
-                            metadata: JSON.stringify({
+                            metadata: {
                                 begin: begin.toISOString(),
                                 end: end.toISOString()
-                            })
+                            }
                         }),
                         setJobMetadata: sinon.stub().resolves()
                     }
@@ -671,7 +674,10 @@ describe('EmailAnalyticsService', function () {
                         getJobData: sinon.stub().resolves({
                             finished_at: null,
                             started_at: null,
-                            metadata: 'not-valid-json'
+                            metadata: {
+                                begin: null,
+                                end: null
+                            }
                         }),
                         setJobMetadata: sinon.stub().resolves()
                     }
