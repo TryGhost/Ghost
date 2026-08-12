@@ -25,6 +25,9 @@ const CustomFieldFilterRenderer: React.FC<CustomRendererProps<string>> = ({field
     const parts = definition
         ? (memberCustomFieldParts(definition.type) ?? []).map(({key, label}) => ({value: key, label}))
         : [];
+    // Name the field in each segment's aria-label so two custom-field pills on one row
+    // are distinguishable to a screen reader rather than all reading "Operator"/"Value".
+    const fieldLabel = field.label ?? definition?.name ?? 'Custom field';
     const isComposite = parts.length > 0;
 
     const [subfield = '', value = ''] = values;
@@ -54,7 +57,7 @@ const CustomFieldFilterRenderer: React.FC<CustomRendererProps<string>> = ({field
         <>
             {isComposite && (
                 <FilterSegmentSelect
-                    ariaLabel="Field part"
+                    ariaLabel={`${fieldLabel} part`}
                     options={partOptions}
                     testId="custom-field-filter-subfield"
                     value={subfield}
@@ -64,7 +67,7 @@ const CustomFieldFilterRenderer: React.FC<CustomRendererProps<string>> = ({field
 
             {onOperatorChange && (
                 <FilterSegmentSelect
-                    ariaLabel="Operator"
+                    ariaLabel={`${fieldLabel} operator`}
                     options={createOperatorOptions(operators)}
                     testId="custom-field-filter-operator"
                     value={operator}
@@ -74,7 +77,7 @@ const CustomFieldFilterRenderer: React.FC<CustomRendererProps<string>> = ({field
 
             {needsValue && (
                 <FilterSegmentInput
-                    ariaLabel="Value"
+                    ariaLabel={`${fieldLabel} value`}
                     placeholder="Enter value..."
                     testId="custom-field-filter-value"
                     value={value}
