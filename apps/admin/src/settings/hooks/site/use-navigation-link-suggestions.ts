@@ -1,22 +1,13 @@
-import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
 import {useCallback, useMemo} from 'react';
 import {useFilterableApi} from '@tryghost/admin-x-framework/hooks';
 import {useGlobalData} from '@/settings/providers/global-data-context';
+import {type Suggestion, type SuggestionGroup} from '@/settings/site/navigation/url-suggestion-input';
 
-export type NavigationLinkSuggestion = {
-    /** Human readable name, e.g. "Tips and donations" or a post title */
-    label: string;
-    /** The value written into the URL field when picked */
-    value: string;
-    /** Secondary line under the label — the URL for portal links, the path for content */
-    description?: string;
-};
-
-export type NavigationLinkSuggestionGroup = {
-    label: string;
-    items: NavigationLinkSuggestion[];
-};
+export type NavigationLinkSuggestion = Suggestion;
+export type NavigationLinkSuggestionGroup = SuggestionGroup;
 
 /**
  * The search-index endpoints ignore `filter` and `limit` and always return the
@@ -33,7 +24,8 @@ type SearchIndexPost = {
 };
 
 // Unpublished content resolves to /404/ in the URL service — never offer it
-// as a destination.
+// as a destination. The fallback format is `notFoundUrl` in the server's
+// lazy-url-service.ts; keep the two in sync.
 const isRoutable = (url?: string) => Boolean(url) && !url!.endsWith('/404/');
 
 /** Content rows are subtitled with their path — the full absolute URL is just noise. */
@@ -52,18 +44,25 @@ const matches = (suggestion: NavigationLinkSuggestion, term: string) => {
 };
 
 const useNavigationLinkSuggestions = () => {
-    const {settings, siteData} = useGlobalData();
-    const {data: offersData} = useBrowseOffers();
+    const {config, settings, siteData} = useGlobalData();
 
     const [
-        membersSignupAccess,
+        paidMembersEnabled = false,
         donationsEnabled = false
-    ] = getSettingValues(settings, [
-        'members_signup_access',
+    ] = getSettingValues<boolean>(settings, [
+        'paid_members_enabled',
         'donations_enabled'
     ]);
 
-    const paidMembersEnabled = membersSignupAccess === 'all';
+    // Both portal destinations below open Stripe checkout flows, so they are
+    // gated the same way as the other surfaces that offer them
+    // (membership-settings.tsx, portal-links.tsx)
+    const stripeEnabled = checkStripeEnabled(settings, config);
+
+    // Offers can only exist with working paid membership — skip the request
+    // entirely otherwise (the modal mounts this hook whether or not a URL
+    // field is ever focused)
+    const {data: offersData} = useBrowseOffers({enabled: paidMembersEnabled && stripeEnabled});
 
     const searchPosts = useFilterableApi<SearchIndexPost, 'posts', 'title'>({
         path: '/search-index/posts/',
@@ -79,19 +78,20 @@ const useNavigationLinkSuggestions = () => {
     const staticGroups = useMemo<NavigationLinkSuggestionGroup[]>(() => {
         const membership: NavigationLinkSuggestion[] = [];
 
-        if (paidMembersEnabled) {
+        if (paidMembersEnabled && stripeEnabled) {
             membership.push({label: 'Gift subscriptions', value: '#/portal/gift'});
         }
 
-        if (donationsEnabled) {
+        if (donationsEnabled && stripeEnabled) {
             membership.push({label: 'Tips and donations', value: '#/portal/support'});
         }
 
         const offers: NavigationLinkSuggestion[] = (offersData?.offers || [])
             .filter(offer => offer.status === 'active' && offer.redemption_type === 'signup')
+            .slice(0, CONTENT_LIMIT)
             .map(offer => ({
                 label: `Offer — ${offer.name}`,
-                value: new URL(offer.code, siteData.url).toString()
+                value: new URL(offer.code, getHomepageUrl(siteData)).toString()
             }));
 
         return [
@@ -101,29 +101,29 @@ const useNavigationLinkSuggestions = () => {
             ...group,
             items: group.items.map(item => ({...item, description: item.value}))
         }));
-    }, [donationsEnabled, offersData?.offers, paidMembersEnabled, siteData.url]);
+    }, [donationsEnabled, offersData?.offers, paidMembersEnabled, siteData, stripeEnabled]);
 
     const loadSuggestions = useCallback(async (term: string): Promise<NavigationLinkSuggestionGroup[]> => {
+        // Always fetch with an empty term: the endpoints serve the full index
+        // regardless, and useFilterableApi only caches (`allLoaded`) after an
+        // empty-term fetch — so this makes every call after the first one free.
+        // Each source degrades independently: one failing search shouldn't take
+        // the membership and offer groups down with it.
         const [pages, posts] = await Promise.all([
-            searchPages.loadData(term),
-            searchPosts.loadData(term)
+            searchPages.loadData('').catch(() => []),
+            searchPosts.loadData('').catch(() => [])
         ]);
 
+        const needle = term.toLowerCase();
+        const toItems = (results: SearchIndexPost[]): NavigationLinkSuggestion[] => results
+            .filter(result => result.status === 'published' && isRoutable(result.url))
+            .filter(result => !term || result.title.toLowerCase().includes(needle))
+            .slice(0, CONTENT_LIMIT)
+            .map(result => ({label: result.title, value: result.url, description: toPath(result.url)}));
+
         const contentGroups: NavigationLinkSuggestionGroup[] = [
-            {
-                label: 'Pages',
-                items: pages
-                    .filter(page => page.status === 'published' && isRoutable(page.url))
-                    .slice(0, CONTENT_LIMIT)
-                    .map(page => ({label: page.title, value: page.url, description: toPath(page.url)}))
-            },
-            {
-                label: 'Posts',
-                items: posts
-                    .filter(post => post.status === 'published' && isRoutable(post.url))
-                    .slice(0, CONTENT_LIMIT)
-                    .map(post => ({label: post.title, value: post.url, description: toPath(post.url)}))
-            }
+            {label: 'Pages', items: toItems(pages)},
+            {label: 'Posts', items: toItems(posts)}
         ];
 
         const filteredStaticGroups = term

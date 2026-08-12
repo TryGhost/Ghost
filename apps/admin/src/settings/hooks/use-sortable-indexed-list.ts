@@ -1,5 +1,5 @@
 import { arrayMove } from '@dnd-kit/sortable';
-import { useEffect, useState } from 'react';
+import { type Dispatch, type SetStateAction, useEffect, useRef, useState } from 'react';
 
 const stableStringify = (value: unknown) =>
   JSON.stringify(value, (_key, nestedValue: unknown) => {
@@ -16,7 +16,12 @@ const stableStringify = (value: unknown) =>
 
 export type SortableIndexedList<Item> = {
   items: Array<{ item: Item; id: string }>;
-  updateItem: (id: string, item: Item) => void;
+  /**
+   * Accepts a plain value or an updater. Use the updater form when several
+   * updates can land in one event (commit a URL, then clear its error) —
+   * plain values built from the render snapshot would each revert the other.
+   */
+  updateItem: (id: string, item: Item | ((current: Item) => Item)) => void;
   /**
    * `overrides` are merged over the current new item. Pass them when the
    * caller already knows a field's value but the state update carrying it
@@ -26,7 +31,7 @@ export type SortableIndexedList<Item> = {
   removeItem: (id: string) => void;
   moveItem: (activeId: string, overId?: string) => void;
   newItem: Item;
-  setNewItem: (item: Item) => void;
+  setNewItem: Dispatch<SetStateAction<Item>>;
 };
 
 const useSortableIndexedList = <Item>({
@@ -41,9 +46,18 @@ const useSortableIndexedList = <Item>({
   canAddNewItem: (item: Item) => boolean;
 }): SortableIndexedList<Item> => {
   // Copy items to a local state we can reorder without changing IDs, so that drag and drop animations work nicely
-  const [editableItems, setEditableItems] = useState<Array<{ item: Item; id: string }>>(
+  const [editableItems, setEditableItemsState] = useState<Array<{ item: Item; id: string }>>(
     items.map((item, index) => ({ item, id: index.toString() })),
   );
+
+  // Mirror of `editableItems` that is readable in the same event it was
+  // written, so consecutive mutations in one event build on each other
+  // instead of on the shared pre-event render snapshot
+  const editableItemsRef = useRef(editableItems);
+  const setEditableItems = (nextItems: Array<{ item: Item; id: string }>) => {
+    editableItemsRef.current = nextItems;
+    setEditableItemsState(nextItems);
+  };
 
   const [newItem, setNewItem] = useState<Item>(blank);
 
@@ -60,10 +74,16 @@ const useSortableIndexedList = <Item>({
     }
   }, [editableItems, newItem, items, setItems, canAddNewItem]);
 
-  const updateItem = (id: string, item: Item) => {
-    const updatedItems = editableItems.map((current) =>
-      current.id === id ? { ...current, item } : current,
-    );
+  const updateItem = (id: string, item: Item | ((current: Item) => Item)) => {
+    const updatedItems = editableItemsRef.current.map((current) => {
+      if (current.id !== id) {
+        return current;
+      }
+      return {
+        ...current,
+        item: typeof item === 'function' ? (item as (value: Item) => Item)(current.item) : item,
+      };
+    });
     setEditableItems(updatedItems);
     setItems(updatedItems.map((updatedItem) => updatedItem.item));
   };
@@ -72,8 +92,9 @@ const useSortableIndexedList = <Item>({
     const item = overrides ? { ...newItem, ...overrides } : newItem;
 
     if (canAddNewItem(item)) {
-      const maxId = editableItems.reduce((max, current) => Math.max(max, parseInt(current.id)), 0);
-      const updatedItems = editableItems.concat({ item, id: (maxId + 1).toString() });
+      const currentItems = editableItemsRef.current;
+      const maxId = currentItems.reduce((max, current) => Math.max(max, parseInt(current.id)), 0);
+      const updatedItems = currentItems.concat({ item, id: (maxId + 1).toString() });
       setEditableItems(updatedItems);
       setItems(updatedItems.map((updatedItem) => updatedItem.item));
       setNewItem(blank);
@@ -81,16 +102,17 @@ const useSortableIndexedList = <Item>({
   };
 
   const removeItem = (id: string) => {
-    const updatedItems = editableItems.filter((item) => item.id !== id);
+    const updatedItems = editableItemsRef.current.filter((item) => item.id !== id);
     setEditableItems(updatedItems);
     setItems(updatedItems.map((updatedItem) => updatedItem.item));
   };
 
   const moveItem = (activeId: string, overId?: string) => {
     if (activeId !== overId) {
-      const fromIndex = editableItems.findIndex((item) => item.id === activeId);
-      const toIndex = overId ? editableItems.findIndex((item) => item.id === overId) : 0;
-      const updatedItems = arrayMove(editableItems, fromIndex, toIndex);
+      const currentItems = editableItemsRef.current;
+      const fromIndex = currentItems.findIndex((item) => item.id === activeId);
+      const toIndex = overId ? currentItems.findIndex((item) => item.id === overId) : 0;
+      const updatedItems = arrayMove(currentItems, fromIndex, toIndex);
       setEditableItems(updatedItems);
       setItems(updatedItems.map((updatedItem) => updatedItem.item));
     }

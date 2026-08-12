@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { page, userEvent } from "vitest/browser";
 
-import { fakeEditSettings, fakeOffers, fakeSearchIndex, fakeSettingsScreens, offer, renderAdminApp } from "@test-utils/acceptance";
+import { fakeEditSettings, fakeOffers, fakeSearchIndex, fakeSettingsScreens, offer, renderAdminApp, settingsResponse } from "@test-utils/acceptance";
 import * as sel from "@tryghost/test-data/selectors/settings";
 import { settingsScreen } from "@/settings/settings.screen";
 
@@ -31,6 +31,21 @@ function fakeSiteContent() {
         ],
     });
 }
+
+// The portal checkout links (gift, tips) are only suggested when Stripe is
+// connected — the default fixture has it disconnected
+const stripeConnectedBoot = {
+    boot: {
+        browseSettings: {
+            response: settingsResponse({
+                settings: {
+                    stripe_connect_publishable_key: "pk_test_123",
+                    stripe_connect_secret_key: "sk_test_123",
+                },
+            }),
+        },
+    },
+};
 
 describe("Navigation settings", () => {
     it("edits primary and secondary navigation", async () => {
@@ -125,7 +140,7 @@ describe("Navigation settings", () => {
         fakeSettingsScreens();
         fakeSiteContent();
         fakeOffers([offer({ name: "Black Friday", code: "black-friday" })]);
-        await renderAdminApp("/settings/navigation/edit");
+        await renderAdminApp("/settings/navigation/edit", stripeConnectedBoot);
 
         // Starts empty rather than prefilled with the site root
         await expect.element(newItem().getByLabelText("URL")).toHaveValue("");
@@ -150,6 +165,19 @@ describe("Navigation settings", () => {
         await suggestions().getByRole("option", { name: /Gift subscriptions/ }).click();
         await expect(suggestions()).toHaveCount(0);
         await expect.element(newItem().getByLabelText("URL")).toHaveValue("#/portal/gift");
+    });
+
+    it("offers no checkout destinations while Stripe is disconnected", async () => {
+        fakeSettingsScreens();
+        fakeSiteContent();
+        await renderAdminApp("/settings/navigation/edit");
+
+        await newItem().getByLabelText("URL").click();
+        await expect.element(suggestions()).toBeInTheDocument();
+        await expect.element(suggestions().getByRole("option", { name: /^About/ })).toBeInTheDocument();
+        // Gift and tips open Stripe checkout flows — dead ends without Stripe
+        await expect(suggestions().getByRole("option", { name: /Gift subscriptions/ })).toHaveCount(0);
+        await expect(suggestions().getByRole("option", { name: /Tips and donations/ })).toHaveCount(0);
     });
 
     it("adds the item when Enter is pressed in the URL field", async () => {
@@ -222,7 +250,7 @@ describe("Navigation settings", () => {
     it("selects a suggestion with the keyboard", async () => {
         fakeSettingsScreens();
         fakeSiteContent();
-        await renderAdminApp("/settings/navigation/edit");
+        await renderAdminApp("/settings/navigation/edit", stripeConnectedBoot);
 
         await newItem().getByLabelText("URL").click();
         await userEvent.keyboard("tips");
@@ -233,6 +261,37 @@ describe("Navigation settings", () => {
 
         await expect(suggestions()).toHaveCount(0);
         await expect.element(newItem().getByLabelText("URL")).toHaveValue("#/portal/support");
+    });
+
+    it("commits an in-progress URL edit when saving with Cmd+S", async () => {
+        fakeSettingsScreens();
+        const settingsApi = fakeEditSettings();
+        await renderAdminApp("/settings/navigation/edit");
+
+        // The URL only commits on blur — Cmd+S with the field still focused
+        // must flush the edit before saving
+        await existingItem().getByLabelText("URL").fill("/contact");
+        await userEvent.keyboard("{Meta>}s{/Meta}");
+
+        await expect(settingsScreen.navigationModal()).toHaveCount(0);
+        await expect(settingsApi).toHaveEditedSettings([
+            { key: "navigation", value: '[{"url":"/contact/","label":"Home"},{"url":"/about/","label":"About"}]' },
+        ]);
+    });
+
+    it("confirms before discarding a URL edit closed with Escape", async () => {
+        fakeSettingsScreens();
+        fakeSiteContent();
+        await renderAdminApp("/settings/navigation/edit");
+
+        // A term that matches nothing keeps the dropdown closed, so this
+        // Escape reaches the modal — the typed URL must count as dirty
+        await existingItem().getByLabelText("URL").click();
+        await userEvent.keyboard("zzz{Escape}");
+
+        await expect.element(settingsScreen.confirmationModal()).toHaveTextContent(/leave/i);
+        await settingsScreen.confirmationAction("Stay").click();
+        await expect.element(settingsScreen.navigationModal()).toBeInTheDocument();
     });
 
     it("confirms before discarding unsaved changes", async () => {
