@@ -29,11 +29,6 @@ const features: Feature[] = [
     flag: 'stripeAutomaticTax',
   },
   {
-    title: 'Import Member Tier',
-    description: 'Enables tier to be specified when importing members',
-    flag: 'importMemberTier',
-  },
-  {
     title: 'CSV Content Importer',
     description: 'Enables importing posts from CSV files in the Universal Importer',
     flag: 'csvContentImporter',

@@ -38,7 +38,6 @@ const PRIVATE_FEATURES = [
   'automations',
   'automationRunAnalytics',
   'stripeAutomaticTax',
-  'importMemberTier',
   'csvContentImporter',
   'adminUIRefresh',
   'tagsX',

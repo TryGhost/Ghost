@@ -80,16 +80,14 @@ describe('mapping helpers', () => {
     expect(mapping.labels).toBe('labels');
   });
 
-  it('detects import tier mapping when enabled', () => {
-    const mapping = detectFieldTypes([{ email: 'member@example.com', import_tier: 'Gold' }], {
-      importMemberTier: true,
-    });
+  it('detects import tier mapping', () => {
+    const mapping = detectFieldTypes([{ email: 'member@example.com', import_tier: 'Gold' }]);
 
     expect(mapping.import_tier).toBe('import_tier');
   });
 
-  it('adds tier as an available field mapping when enabled', () => {
-    const fieldMappings = getFieldMappings({ importMemberTier: true });
+  it('includes tier as an available field mapping', () => {
+    const fieldMappings = getFieldMappings();
 
     expect(fieldMappings).toContainEqual({ label: 'Tier', value: 'import_tier' });
   });
