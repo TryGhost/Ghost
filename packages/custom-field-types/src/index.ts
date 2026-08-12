@@ -193,9 +193,25 @@ export type Address = z.infer<typeof AddressValue>;
  */
 export type FieldValue = {[T in FieldType]: z.infer<typeof FIELD_TYPES[T]['value']>}[FieldType];
 
-/** The parts of a record type in declaration order, or null for a type with none. */
-export function subFieldsOf(type: FieldType): string[] | null {
+/**
+ * The parts a record type declares, or never for a type whose value is a single thing.
+ *
+ * Distributed over `T`, so a caller holding a type it only knows as `FieldType` gets every
+ * part any type declares rather than the empty intersection of all of them.
+ */
+export type PartsOf<T extends FieldType> = T extends FieldType
+    ? typeof FIELD_TYPES[T] extends {fields: infer F} ? Extract<keyof F, string> : never
+    : never;
+
+/**
+ * The parts of a record type in declaration order, or null for a type with none.
+ *
+ * Typed to the parts the caller's type declares, so a caller holding one of these can
+ * index a value of that type without restating which parts exist.
+ */
+export function subFieldsOf<T extends FieldType>(type: T): PartsOf<T>[] | null {
     // Through the interface, not the literal: a type with no parts has no `fields` key.
     const {fields}: FieldTypeDefinition = FIELD_TYPES[type];
-    return fields ? Object.keys(fields) : null;
+    // The keys are `PartsOf<T>` by construction: `fields` is the object it reads `keyof` from.
+    return fields ? Object.keys(fields) as PartsOf<T>[] : null;
 }

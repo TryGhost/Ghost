@@ -1,4 +1,4 @@
-import {FIELD_TYPES, FIELD_TYPE_IDS, subFieldsOf, type FieldType} from '@tryghost/custom-field-types';
+import {FIELD_TYPE_IDS, subFieldsOf, type FieldType, type PartsOf} from '@tryghost/custom-field-types';
 import {csvColumnsForField} from '@tryghost/custom-field-types/csv';
 import {Meta, createMutation, createQuery, createQueryWithId} from '../utils/api/hooks';
 
@@ -46,10 +46,6 @@ export type MemberCustomFieldUserType = {
     subFields?: Record<string, string>;
 };
 
-/** The parts a type's value schema declares, or never for a type whose value is one thing. */
-type PartKeys<T extends FieldType> =
-    typeof FIELD_TYPES[T] extends {fields: infer F} ? Extract<keyof F, string> : never;
-
 /**
  * How one field type is presented, constrained by what its value is: a composite names
  * every part its schema declares and no others, a scalar names none.
@@ -62,7 +58,7 @@ type PartKeys<T extends FieldType> =
 export type FieldTypePresentation<T extends FieldType> = {
     label: string;
     input: MemberCustomFieldUserType['input'];
-} & ([PartKeys<T>] extends [never] ? {subFields?: never} : {subFields: Record<PartKeys<T>, string>});
+} & ([PartsOf<T>] extends [never] ? {subFields?: never} : {subFields: Record<PartsOf<T>, string>});
 
 // Presentation for every field type in the shared catalog. The mapped type keeps this
 // exhaustive: adding a field type upstream fails to compile here until it has one.
@@ -126,7 +122,7 @@ export const memberCustomFieldCsvColumns = (fields: MemberCustomField[]): Member
 };
 
 /** One part of a composite field type: the key the value schema declares, and its label. */
-export type MemberCustomFieldPart = {key: string; label: string};
+export type MemberCustomFieldPart<T extends FieldType = FieldType> = {key: PartsOf<T>; label: string};
 
 /**
  * The parts of a composite field type, or null for a scalar.
@@ -134,7 +130,7 @@ export type MemberCustomFieldPart = {key: string; label: string};
  * Which parts exist, and in what order, comes from the value schema; naming them is this
  * catalog's job.
  */
-export const memberCustomFieldParts = (type: FieldType): MemberCustomFieldPart[] | null => {
+export const memberCustomFieldParts = <T extends FieldType>(type: T): MemberCustomFieldPart<T>[] | null => {
     const partKeys = subFieldsOf(type);
     if (!partKeys) {
         return null;
