@@ -84,10 +84,6 @@ const filterRequestTarget = (requestTarget: string): FilterResult => {
 /**
  * Applies Ghost(Pro)'s public query parameter allowlist in local development.
  *
- * Keep query-parameter-allowlist.ts in sync with:
- * - TryGhost/terraform modules/ghost-fastly/variables.tf
- * - TryGhost/pro-infra infrastructure/fastly/vcl/shared/recv_100_clean_query_string.vcl.tftpl
- *
  * Update the production policy and this manifest together when adding a parameter.
  * This middleware is enabled by the root pnpm dev Docker Compose configuration.
  */
