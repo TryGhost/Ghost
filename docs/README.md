@@ -77,8 +77,7 @@ Ghost/
 ├── koenig/            # Ghost editor (Koenig) packages
 │   ├── koenig-lexical/  # Lexical-based rich text editor UI
 │   └── kg-*/          # Editor renderers, converters, and support packages
-├── e2e/               # End-to-end tests
-├── adr/               # Architecture Decision Records
+└── e2e/               # End-to-end tests
 ```
 
 ## Contributing
@@ -108,10 +107,6 @@ Before contributing, please read:
 - **[Ghost Forum](https://forum.ghost.org)** - Community support and discussions
 - **[API Documentation](https://ghost.org/docs/content-api/)** - Content and Admin API reference
 - **[Theme Documentation](https://ghost.org/docs/themes/)** - Theme development
-
-## Architecture Decision Records
-
-The [adr/](../adr/) directory contains Architecture Decision Records (ADRs) that document significant architectural decisions made in the project.
 
 ## Getting Help
 

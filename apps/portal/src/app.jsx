@@ -672,8 +672,8 @@ export default class App extends React.Component {
                         showPopup: true,
                         page: 'feedback',
                         pageData: {
-                            uuid: member ? null : hashQuery.get('uuid'),
-                            key: member ? null : hashQuery.get('key'),
+                            uuid: hashQuery.get('uuid'),
+                            key: hashQuery.get('key'),
                             postId,
                             score
                         }

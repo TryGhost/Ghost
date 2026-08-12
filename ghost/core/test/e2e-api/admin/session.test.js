@@ -223,5 +223,75 @@ describe('Sessions API', function () {
                 .expectStatus(401)
                 .expectEmptyBody();
         });
+
+        it('requires 2FA again when a different user logs in after logout', async function () {
+            // Seed staff users beyond the owner so we have a second account
+            await fixtureManager.init('users');
+
+            const owner = await fixtureManager.get('users', 0);
+            const otherUser = await fixtureManager.get('users', 1);
+
+            // Establish the second user as having logged in before, so their
+            // later login is subject to device verification rather than the
+            // first-login skip
+            await agent
+                .post('session/')
+                .body({
+                    grant_type: 'password',
+                    username: otherUser.email,
+                    password: otherUser.password
+                })
+                .expectStatus(201);
+            await agent
+                .delete('session/')
+                .expectStatus(204);
+
+            // Owner logs in and completes device verification on this session
+            await agent
+                .post('session/')
+                .body({
+                    grant_type: 'password',
+                    username: owner.email,
+                    password: owner.password
+                })
+                .expectStatus(403);
+
+            const ownerEmail = assert.sentEmail({
+                subject: /[0-9]{6} is your Ghost sign in verification code/
+            });
+            const ownerToken = ownerEmail.subject.match(/[0-9]{6}/)[0];
+
+            await agent
+                .put('session/verify')
+                .body({
+                    token: ownerToken
+                })
+                .expectStatus(200);
+
+            // Owner logs out — in trusted-device mode logout keeps the
+            // session's verified flag but clears the user
+            await agent
+                .delete('session/')
+                .expectStatus(204);
+
+            // The second user logging in on the same session must verify again
+            // rather than inheriting the owner's verification
+            await agent
+                .post('session/')
+                .body({
+                    grant_type: 'password',
+                    username: otherUser.email,
+                    password: otherUser.password
+                })
+                .expectStatus(403)
+                .matchBodySnapshot({
+                    errors: [{
+                        code: '2FA_NEW_DEVICE_DETECTED',
+                        id: anyUuid,
+                        message: 'User must verify session to login.',
+                        type: 'Needs2FAError'
+                    }]
+                });
+        });
     });
 });

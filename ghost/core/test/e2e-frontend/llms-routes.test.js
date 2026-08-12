@@ -20,21 +20,6 @@ describe('llms.txt routing', function () {
         request = supertest.agent(configUtils.config.get('url'));
     });
 
-    beforeEach(function () {
-        const originalGet = settingsCache.get;
-        sinon.stub(settingsCache, 'get').callsFake(function (key, options) {
-            if (key === 'labs') {
-                return {llmsTxt: true};
-            }
-
-            return originalGet(key, options);
-        });
-    });
-
-    afterEach(function () {
-        sinon.restore();
-    });
-
     it('serves llms.txt with published public entries and absolute urls', async function () {
         const res = await request.get('/llms.txt')
             .expect('Content-Type', /text\/plain/)
@@ -79,7 +64,7 @@ describe('llms.txt routing', function () {
             const originalGet = settingsCache.get;
             sinon.stub(settingsCache, 'get').callsFake(function (key, options) {
                 if (key === 'labs') {
-                    return {llmsTxt: true, machinePayments: true};
+                    return {machinePayments: true};
                 }
                 if (key === 'llms_enabled') {
                     return true;
@@ -95,6 +80,10 @@ describe('llms.txt routing', function () {
                 }
                 return originalGet(key, options);
             });
+        });
+
+        afterAll(function () {
+            sinon.restore();
         });
 
         it('includes purchasable paid posts in llms.txt', async function () {

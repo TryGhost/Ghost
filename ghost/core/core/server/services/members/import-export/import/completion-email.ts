@@ -1,22 +1,28 @@
 import {serialize} from '../csv';
+import renderImportEmail, {headingFor, type ImportEmailSummary} from './email-template';
 import {isCustomFieldColumn} from '@tryghost/custom-field-types/csv';
 import type {MemberImportRow, ImportErrorRow, ImportLabel, Label} from './row';
-
-const emailTemplate = require('./email-template');
 
 // The finished import as the email reads it: how many imported and which rows
 // failed. Structural, so the importer's richer result satisfies it directly.
 interface ImportSummary {
     imported: number;
     errors: ImportErrorRow[];
+    importLabel?: ImportLabel;
 }
 
-interface CompletionEmailInput {
-    result: ImportSummary;
+export interface EmailLinks {
+    siteUrl(): URL;
+    membersUrl(labelSlug?: string): URL;
+}
+
+// A null result is an import that never produced one. It stopped before writing anything,
+// which by then can only be our doing: the file was parsed and mapped inside the request.
+interface ImportEmailInput {
+    result: ImportSummary | null;
     recipient: string;
     labelName: string;
-    importLabel: ImportLabel | null;
-    urlFor: (type: string, data: unknown, absolute: boolean) => string;
+    links: EmailLinks;
 }
 
 interface EmailPayload {
@@ -102,15 +108,12 @@ function toErrorReportRow(row: ImportErrorRow): ErrorReportRow {
     };
 }
 
-// The error report attached to the completion email: the failed rows as CSV. It shares
-// the serialiser with the export but not the shaping -- the export writes db members,
-// this echoes submitted rows. Member columns come from the shaper's keys (so the type
+// The error report attached to the completion email: the failed rows as CSV, called only
+// when there are rows to list. It shares the serialiser with the export but not the
+// shaping -- the export writes db members, this echoes submitted rows. Member columns come from the shaper's keys (so the type
 // stays the single source); the custom_fields.* columns across the rows are threaded in
 // before the last error column, and each row's custom cells merged on.
 function buildErrorReport(errors: ImportErrorRow[]): string {
-    if (errors.length === 0) {
-        return serialize([]);
-    }
     const memberColumns = Object.keys(toErrorReportRow(errors[0])).filter(column => column !== 'error');
     const customColumns = [...new Set(errors.flatMap(row => Object.keys(customFieldCells(row))))];
     const columns = [...memberColumns, ...customColumns, 'error'];
@@ -118,29 +121,32 @@ function buildErrorReport(errors: ImportErrorRow[]): string {
     return serialize(rows, {columns});
 }
 
-// Compose the completion email for a finished import: the summary and its links,
-// plus the attached error report. Owns how the outcome is presented, so the
-// importer yields only the result and never touches email or CSV formatting.
-export default function buildCompletionEmail({result, recipient, labelName, importLabel, urlFor}: CompletionEmailInput): EmailPayload {
-    const siteUrl = new URL(urlFor('home', null, true));
-    const membersUrl = new URL('members', urlFor('admin', null, true));
-    if (importLabel) {
-        membersUrl.searchParams.set('label', importLabel.slug);
-    }
-
-    const html = emailTemplate({result, siteUrl, membersUrl, emailRecipient: recipient, importLabel});
-    const subject = result.imported > 0 ? 'Your member import is complete' : 'Your member import was unsuccessful';
+// The one email an import sends, whatever became of it. What the publisher is told and
+// what is attached both follow from the result: no result means nothing was written, so
+// there is nothing in their file to fix and an attached CSV would say there was, and no
+// failed rows means there is nothing for a report to list.
+export default function buildImportEmail({result, recipient, labelName, links}: ImportEmailInput): EmailPayload {
+    const summary: ImportEmailSummary = !result ? 'did-not-run' : (result.imported > 0 ? 'added' : 'all-failed');
 
     return {
         to: recipient,
-        subject,
-        html,
+        subject: headingFor[summary],
+        html: renderImportEmail({
+            summary,
+            imported: result?.imported ?? 0,
+            errorCount: result?.errors.length ?? 0,
+            siteUrl: links.siteUrl(),
+            membersUrl: links.membersUrl(result?.importLabel?.slug),
+            emailRecipient: recipient
+        }),
         forceTextContent: true,
-        attachments: [{
-            filename: `${labelName} - Errors.csv`,
-            content: buildErrorReport(result.errors),
-            contentType: 'text/csv',
-            contentDisposition: 'attachment'
-        }]
+        attachments: result?.errors.length
+            ? [{
+                filename: `${labelName} - Errors.csv`,
+                content: buildErrorReport(result.errors),
+                contentType: 'text/csv',
+                contentDisposition: 'attachment'
+            }]
+            : []
     };
 }

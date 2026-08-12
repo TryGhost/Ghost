@@ -35,7 +35,6 @@ describe('Integration: machine-payments orchestration coverage', function () {
                         return values[key];
                     }
                 },
-                labs: {isSet: flag => flag === 'llmsTxt'},
                 config: {get: key => (key === 'url' ? 'https://example.com' : undefined)},
                 urlUtils: {
                     urlFor(options, absolute) {

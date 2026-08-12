@@ -1,8 +1,6 @@
 import AdvancedThemeSettings from './theme/advanced-theme-settings';
-import ConfirmationModal from '@/settings/app/components/confirmation-modal';
 import InvalidThemeModal, {type FatalErrors} from './theme/invalid-theme-modal';
-import LimitModal from '@/settings/app/components/limit-modal';
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
+import NiceModal from '@ebay/nice-modal-react';
 import OfficialThemes from './theme/official-themes';
 import React, {useEffect, useState} from 'react';
 import ThemeInstalledModal from './theme/theme-installed-modal';
@@ -14,6 +12,7 @@ import {type OfficialTheme} from '@/settings/app/components/providers/settings-a
 import {PageHeader, SettingsModal} from '@tryghost/shade/patterns';
 import {toast} from 'sonner';
 import {useCheckThemeLimitError} from '@/settings/app/hooks/use-check-theme-limit-error';
+import {type ConfirmationHandle, useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 
@@ -34,14 +33,11 @@ interface ThemeModalContentProps {
 }
 
 const UploadModalContent: React.FC<{onUpload: (file: File) => void}> = ({onUpload}) => {
-    const modal = useModal();
-
     return (
         <Dropzone
             accept={{'application/zip': ['.zip']}}
             inputId="theme-upload"
             onDropAccepted={([file]) => {
-                modal.remove();
                 onUpload(file);
             }}
         >
@@ -59,6 +55,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
     const {mutateAsync: uploadTheme} = useUploadTheme();
     const {checkThemeLimitError, isThemeLimited} = useCheckThemeLimitError();
     const handleError = useHandleError();
+    const {confirm, showLimit} = useConfirmation();
 
     const [uploadConfig, setUploadConfig] = useState<{enabled: boolean; error?: string} | undefined>();
     const [isUploading, setUploading] = useState(false);
@@ -86,7 +83,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
         const themeFileName = file?.name.replace(/\.zip$/, '');
         const existingThemeNames = themes.map(t => t.name);
         if (isDefaultOrLegacyTheme({name: themeFileName})) {
-            NiceModal.show(ConfirmationModal, {
+            confirm({
                 title: 'Upload failed',
                 cancelLabel: 'Cancel',
                 okLabel: '',
@@ -101,7 +98,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
                 }
             });
         } else if (existingThemeNames.includes(themeFileName)) {
-            NiceModal.show(ConfirmationModal, {
+            confirm({
                 title: 'Overwrite theme',
                 prompt: (
                     <>
@@ -228,14 +225,18 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
         }
 
         if (uploadConfig.enabled) {
-            NiceModal.show(ConfirmationModal, {
+            const handleRef: {current: ConfirmationHandle | null} = {current: null};
+            handleRef.current = confirm({
                 title: 'Upload theme',
-                prompt: <UploadModalContent onUpload={onThemeUpload} />,
+                prompt: <UploadModalContent onUpload={(file) => {
+                    handleRef.current?.remove();
+                    onThemeUpload(file);
+                }} />,
                 okLabel: '',
                 formSheet: false
             });
         } else {
-            NiceModal.show(LimitModal, {
+            showLimit({
                 title: 'Upgrade to enable custom themes',
                 prompt: uploadConfig.error || <>Your current plan only supports official themes. You can install them from the <a href="https://ghost.org/marketplace/">Ghost theme marketplace</a>.</>,
                 onOk: () => updateRoute({route: '/pro', isExternal: true})
@@ -308,6 +309,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
     const {mutateAsync: activateTheme} = useActivateTheme();
     const {checkThemeLimitError} = useCheckThemeLimitError();
     const handleError = useHandleError();
+    const {confirm, showLimit} = useConfirmation();
 
     const onSelectTheme = (theme: OfficialTheme|null) => {
         setSelectedTheme(theme);
@@ -353,7 +355,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
                     </>
                     }
                 </>;
-                NiceModal.show(ConfirmationModal, {
+                confirm({
                     title: titleText,
                     prompt,
                     okLabel: 'Install',
@@ -388,7 +390,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
         };
 
         handleUrlInstallation();
-    }, [themeRef, source, installTheme, handleError, activateTheme, updateRoute, themes, installedFromMarketplace, checkThemeLimitError, isMounted]);
+    }, [themeRef, source, installTheme, handleError, activateTheme, updateRoute, themes, installedFromMarketplace, checkThemeLimitError, confirm, isMounted]);
 
     if (!themes) {
         return;
@@ -402,7 +404,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
             // Check theme limit FIRST, before any confirmation modals
             const limitError = await checkThemeLimitError(selectedTheme.name);
             if (limitError) {
-                NiceModal.show(LimitModal, {
+                showLimit({
                     prompt: limitError,
                     onOk: () => updateRoute({route: '/pro', isExternal: true})
                 });
@@ -412,7 +414,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
             // Handle the overwrite confirmation if needed
             if (installedTheme && !isDefaultOrLegacyTheme(selectedTheme)) {
                 return new Promise<void>((resolve) => {
-                    NiceModal.show(ConfirmationModal, {
+                    confirm({
                         title: 'Overwrite theme',
                         prompt: (
                             <>

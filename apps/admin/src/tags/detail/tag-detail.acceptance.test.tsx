@@ -37,6 +37,98 @@ describe('Tag detail (tagDetailsReact on)', () => {
         await expect.element(page.getByRole('button', {name: 'Delete tag', exact: true})).toBeVisible();
     });
 
+    it('edits and saves tag code injection with CodeMirror', async () => {
+        const head = '<script>\n    head();\n</script>';
+        const foot = '<style>\n    .footer { display: block; }\n</style>';
+        const t = tag({name: 'News', slug: 'news', codeinjection_head: head, codeinjection_foot: foot});
+        const saveApi = fakeTagWorld(t);
+        await renderAdminApp(`/tags/${t.slug}`, FLAGS);
+
+        await page.getByRole('button', {name: /Code injection/}).click();
+        const headerEditor = page.getByRole('textbox', {name: /^Tag header/});
+        const footerEditor = page.getByRole('textbox', {name: /^Tag footer/});
+        await expect.element(headerEditor).toBeVisible();
+        await expect.element(footerEditor).toBeVisible();
+        await expect.poll(() => (headerEditor.element() as HTMLElement).innerText).toBe(head);
+        await expect.poll(() => (footerEditor.element() as HTMLElement).innerText).toBe(foot);
+
+        const updatedHead = '<script>updatedHead();</script>';
+        const updatedFoot = '<style>.footer { display: grid; }</style>';
+
+        // Playwright manipulates contenteditable DOM directly when clearing,
+        // which can race CodeMirror's document reconciliation. Clear through
+        // CodeMirror's keyboard handling before filling the empty editor.
+        await headerEditor.click();
+        await userEvent.keyboard('{ControlOrMeta>}a{/ControlOrMeta}');
+        await userEvent.keyboard('{Backspace}');
+        await expect.poll(() => headerEditor.element().textContent).toBe('');
+        await headerEditor.fill(updatedHead);
+        await expect.poll(() => (headerEditor.element() as HTMLElement).innerText).toBe(updatedHead);
+
+        await footerEditor.click();
+        await userEvent.keyboard('{ControlOrMeta>}a{/ControlOrMeta}');
+        await userEvent.keyboard('{Backspace}');
+        await expect.poll(() => footerEditor.element().textContent).toBe('');
+        await footerEditor.fill(updatedFoot);
+        await expect.poll(() => (footerEditor.element() as HTMLElement).innerText).toBe(updatedFoot);
+        await page.getByRole('button', {name: 'Save'}).click();
+
+        await expect.element(page.getByRole('button', {name: 'Saved'})).toBeVisible();
+        const saved = (saveApi.lastRequest?.body as {tags: Array<Record<string, unknown>>}).tags[0];
+        expect(saved.codeinjection_head).toBe(updatedHead);
+        expect(saved.codeinjection_foot).toBe(updatedFoot);
+    });
+
+    it('keeps CodeMirror autocomplete outside the clipped editor surface', async () => {
+        const t = tag({name: 'News', slug: 'news'});
+        fakeTagWorld(t);
+        await renderAdminApp(`/tags/${t.slug}`, FLAGS);
+
+        await page.getByRole('button', {name: /Code injection/}).click();
+        await new Promise((resolve) => {
+            window.setTimeout(resolve, 250);
+        });
+        const headerEditor = page.getByRole('textbox', {name: /^Tag header/});
+        await headerEditor.fill('<');
+
+        await new Promise((resolve) => {
+            window.setTimeout(resolve, 75);
+        });
+
+        await expect.poll(() => {
+            const tooltip = document.querySelector<HTMLElement>('.cm-tooltip-autocomplete');
+            const tooltipParent = tooltip?.closest<HTMLElement>('.cm-tooltip-parent');
+            const container = tooltipParent?.firstElementChild as HTMLElement | null;
+            const editor = headerEditor.element().closest<HTMLElement>('[data-testid="codeinjection-head"]');
+
+            if (!tooltip || !tooltipParent || !container || !editor) {
+                return null;
+            }
+
+            const tooltipRect = tooltip.getBoundingClientRect();
+            const editorRect = editor.getBoundingClientRect();
+
+            return {
+                containerBackground: getComputedStyle(container).backgroundColor,
+                containerHeight: container.getBoundingClientRect().height,
+                escapesEditor: tooltipRect.bottom > editorRect.bottom || tooltipRect.top < editorRect.top,
+                hostParent: tooltipParent.parentElement?.tagName,
+                tooltipOnscreen: tooltipRect.bottom > 0
+                    && tooltipRect.right > 0
+                    && tooltipRect.top < window.innerHeight
+                    && tooltipRect.left < window.innerWidth,
+                tooltipPosition: getComputedStyle(tooltip).position
+            };
+        }).toEqual({
+            containerBackground: 'rgba(0, 0, 0, 0)',
+            containerHeight: 0,
+            escapesEditor: true,
+            hostParent: 'BODY',
+            tooltipOnscreen: true,
+            tooltipPosition: 'fixed'
+        });
+    });
+
     it('redirects to billing during a force upgrade', async () => {
         const config = configResponse(FLAGS);
         config.config.hostSettings = {forceUpgrade: true};
@@ -133,6 +225,7 @@ describe('Tag detail (tagDetailsReact on)', () => {
 
         await expect.element(page.getByTestId('tag-detail-title')).toHaveTextContent('New tag');
         const nameInput = page.getByLabelText('Name', {exact: true});
+        await expect.element(nameInput).toBeVisible();
         await userEvent.type(nameInput.element(), 'Weekly News');
         await expect.element(page.getByLabelText('Slug', {exact: true})).toHaveValue('weekly-news');
 

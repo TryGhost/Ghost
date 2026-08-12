@@ -1,5 +1,3 @@
-import LimitModal from '@/settings/app/components/limit-modal';
-import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef, useState} from 'react';
 import StripeButton from '@/settings/app/components/stripe-button';
 import TiersList from './tiers/tiers-list';
@@ -14,6 +12,7 @@ import {type Setting, checkStripeEnabled, getSettingValues, useEditSettings} fro
 import {type Tier, getActiveTiers, getArchivedTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {currencySelectGroups, validateCurrencyAmount} from '@/settings/app/utils/currency';
 import {formatNumber} from '@tryghost/shade/utils';
+import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
@@ -45,6 +44,7 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const defaultPaidTierCurrency = activeTiers.find(tier => tier.type === 'paid' && tier.currency)?.currency || 'USD';
     const {updateRoute} = useSettingsNavigation();
     const limiter = useLimiter();
+    const {showLimit} = useConfirmation();
     const handleError = useHandleError();
     const stripeEnabled = checkStripeEnabled(settings, config);
 
@@ -93,12 +93,14 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     }, [machinePaymentsEnabled, canEnableMachinePayments]);
 
     const openConnectModal = async () => {
+        // Allow Stripe despite the limit when it's already connected, so it's
+        // possible to disconnect or update the settings.
         if (limiter?.isDisabled('limitStripeConnect') && !stripeEnabled) {
             try {
                 await limiter.errorIfWouldGoOverLimit('limitStripeConnect');
             } catch (error) {
                 if (error instanceof HostLimitError) {
-                    NiceModal.show(LimitModal, {
+                    showLimit({
                         prompt: error.message || `Your current plan doesn't support Stripe Connect.`,
                         onOk: () => updateRoute({route: '/pro', isExternal: true})
                     });

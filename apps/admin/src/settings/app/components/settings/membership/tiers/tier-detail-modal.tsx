@@ -1,5 +1,3 @@
-import ConfirmationModal from '@/settings/app/components/confirmation-modal';
-import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
 import TierDetailPreview from './tier-detail-preview';
 import useCurrencyInput from '@/settings/app/hooks/use-currency-input';
@@ -17,6 +15,7 @@ import {type Tier, useAddTier, useBrowseTiers, useEditTier} from '@tryghost/admi
 import {currencies, currencySelectGroups, validateCurrencyAmount} from '@/settings/app/utils/currency';
 import {getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'sonner';
+import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
 
 export type TierFormState = Partial<Omit<Tier, 'trial_days'>> & {
     trial_days: string;
@@ -32,6 +31,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
     const {mutateAsync: editSettings} = useEditSettings();
     const [hasFreeTrial, setHasFreeTrial] = React.useState(!!tier?.trial_days);
     const handleError = useHandleError();
+    const {confirm} = useConfirmation();
     const {localSettings, siteData} = useSettingGroup();
     const [portalPlansJson] = getSettingValues(localSettings, ['portal_plans']) as string[];
     const portalPlans = JSON.parse(portalPlansJson?.toString() || '[]') as string[];
@@ -181,7 +181,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                 <div>Existing members will remain unchanged.</div>
             </>;
             const okLabel = tier.active ? 'Archive' : 'Reactivate';
-            NiceModal.show(ConfirmationModal, {
+            confirm({
                 title: promptTitle,
                 prompt: prompt,
                 okLabel: okLabel,

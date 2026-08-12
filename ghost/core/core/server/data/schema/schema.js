@@ -675,12 +675,23 @@ module.exports = {
             }
         },
         status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'active', validations: {isIn: [['active', 'archived']]}},
+        // The publisher's order for the list, rewritten across every row whenever the
+        // list is reordered. Only the relative order carries meaning: creates append past
+        // the highest rank and deletes leave gaps, so the values are not a dense
+        // sequence. The default leaves a site that has never reordered with one value
+        // repeated, so reads tie-break on created_at and fall back to the order the
+        // fields were created in.
+        sort_order: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true}
     },
     members_custom_field_values: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        custom_field_id: {type: 'string', maxlength: 24, nullable: false, references: 'members_custom_fields.id', cascadeDelete: true},
+        // The field's stable key, not its id: a value is addressed by key everywhere it
+        // matters (the write names it, a filter names it, the key is immutable), so the row
+        // carries it directly and the read and filter paths skip an id-to-key join. Matches
+        // the referenced column's 191, as a foreign key must.
+        custom_field_key: {type: 'string', maxlength: 191, nullable: false, references: 'members_custom_fields.key', cascadeDelete: true},
         member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', cascadeDelete: true},
         // Which part of the field's value this row carries. A scalar has one part and
         // stores it under the empty path; a composite stores one row per sub-field it
@@ -696,12 +707,12 @@ module.exports = {
         value_text: {type: 'text', maxlength: 65535, nullable: true},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
-        // Named, because the name knex derives from the table and all three columns is
-        // 65 characters and MySQL stops at 64. The migration that first created this
-        // table already shortened a column for the same reason; a third column spends
-        // what headroom that bought.
+        // Named, because the name knex derives from the table and all three columns
+        // overruns MySQL's 64-character identifier limit. The migration that first
+        // created this table already shortened a column for the same reason; a third
+        // column spends what headroom that bought.
         '@@UNIQUE_CONSTRAINTS@@': [
-            {columns: ['member_id', 'custom_field_id', 'path'], indexName: 'members_custom_field_values_leaf_unique'}
+            {columns: ['member_id', 'custom_field_key', 'path'], indexName: 'members_custom_field_values_leaf_unique'}
         ],
         // What a segment filter looks up: every member holding a given value for a
         // given part of a given field. The value itself is not in the index — it is
@@ -709,7 +720,7 @@ module.exports = {
         // applies one length to every column in a composite index rather than to a
         // single chosen one.
         '@@INDEXES@@': [
-            ['custom_field_id', 'path']
+            ['custom_field_key', 'path']
         ]
     },
     members_stripe_customers: {

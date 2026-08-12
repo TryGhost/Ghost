@@ -38,7 +38,6 @@ function shouldOutputMarkdownAlternate({context, post}) {
         !context
         || !_.includes(context, 'post')
         || !post
-        || !labs.isSet('llmsTxt')
         || settingsCache.get('is_private')
         || settingsCache.get('llms_enabled') === false
     ) {

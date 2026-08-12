@@ -40,10 +40,6 @@ const features: Feature[] = [{
     description: 'Enable Admin UI refresh (exploration)',
     flag: 'adminUIRefresh'
 }, {
-    title: 'Explore',
-    description: 'Enables keeping in touch with the new Explore API',
-    flag: 'explore'
-}, {
     title: 'Tags X',
     description: 'Enables the new Tags UI',
     flag: 'tagsX'
@@ -55,10 +51,6 @@ const features: Feature[] = [{
     title: 'Updated theme translation (beta)',
     description: 'Enable theme translation using i18next instead of the old translation package.',
     flag: 'themeTranslation'
-}, {
-    title: 'Featurebase Feedback',
-    description: 'Display a Feedback menu item in the admin sidebar. Requires the new admin experience.',
-    flag: 'featurebaseFeedback'
 }, {
     title: 'Picture Element',
     description: 'Use the HTML picture element to serve modern image formats (AVIF, WebP) with automatic fallbacks',

@@ -71,13 +71,13 @@ catalog:
   '@storybook/react-vite': 10.4.6
   '@tailwindcss/postcss': 4.2.2
   '@tailwindcss/vite': 4.2.2
-  '@tanstack/react-query': 5.101.2
+  '@tanstack/react-query': 5.101.4
   '@tanstack/react-virtual': 3.14.6
   '@testing-library/jest-dom': 6.9.1
   '@testing-library/react': 14.3.1
   '@tryghost/api-framework': 3.3.5
   '@tryghost/brute-knex': 3.2.1
-  '@tryghost/color-utils': 0.2.19
+  '@tryghost/color-utils': 0.2.20
   '@tryghost/custom-fonts': 1.0.11
   '@tryghost/debug': 2.3.5
   '@tryghost/domain-events': 3.3.5
@@ -183,6 +183,7 @@ catalog:
   '@dnd-kit/sortable': 7.0.2
   '@dnd-kit/utilities': 3.2.2
   shell-quote: 1.10.0
+  unidecode: 1.1.0
   mppx: 0.6.20
   '@x402/core': 2.12.0
   '@x402/evm': 2.12.0

@@ -72,7 +72,7 @@ test.describe('Pagination', async () => {
         await expect(frame.getByTestId('reply-pagination-button')).not.toBeVisible();
     });
 
-    test('collapses replies beyond 3 and expands client-side on click', async ({page}) => {
+    test('shows all replies without collapsing when there are more than 3', async ({page}) => {
         const mockedApi = new MockedApi({});
 
         mockedApi.addComment({
@@ -91,21 +91,12 @@ test.describe('Pagination', async () => {
             publication: 'Publisher Weekly'
         });
 
-        await expect(frame.getByTestId('reply-pagination-button')).toBeVisible();
-        await expect(frame.getByTestId('reply-pagination-button')).toContainText('Show 1 more reply');
-
-        // Only first 3 replies visible (plus the parent)
-        await expect(frame.getByTestId('comment-component')).toHaveCount(4);
+        await expect(frame.getByTestId('comment-component')).toHaveCount(5);
         await expect(frame.getByText('This is reply 1')).toBeVisible();
         await expect(frame.getByText('This is reply 2')).toBeVisible();
         await expect(frame.getByText('This is reply 3')).toBeVisible();
-        await expect(frame.getByText('This is reply 4')).not.toBeVisible();
-
-        await frame.getByTestId('reply-pagination-button').click();
-
-        await expect(frame.getByTestId('reply-pagination-button')).not.toBeVisible();
-        await expect(frame.getByTestId('comment-component')).toHaveCount(5);
         await expect(frame.getByText('This is reply 4')).toBeVisible();
+        await expect(frame.getByTestId('reply-pagination-button')).not.toBeVisible();
     });
 
     test('Can handle comments with deleted member', async ({page}) => {

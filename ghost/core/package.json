@@ -243,6 +243,7 @@
         "tldts": "catalog:",
         "type-fest": "catalog:",
         "ua-parser-js": "1.0.41",
+        "unidecode": "catalog:",
         "xml": "1.0.1",
         "zod": "catalog:"
     },

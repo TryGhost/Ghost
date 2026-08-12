@@ -1,7 +1,5 @@
 import BrandIcon from '@/settings/app/components/icons/brand-icon';
-import ConfirmationModal from '@/settings/app/components/confirmation-modal';
 import IntegrationsSettingsImg from '@/settings/app/assets/images/integrations-settings.png';
-import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import TopLevelGroup from '@/settings/app/components/top-level-group';
 import usePinturaEditor from '@/settings/app/hooks/use-pintura-editor';
@@ -11,6 +9,7 @@ import {LucideIcon} from '@tryghost/shade/utils';
 import {Plug} from 'lucide-react';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'sonner';
+import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
@@ -201,6 +200,7 @@ const CustomIntegrations: React.FC<{integrations: Integration[]}> = ({integratio
     const {updateRoute} = useSettingsNavigation();
     const {mutateAsync: deleteIntegration} = useDeleteIntegration();
     const handleError = useHandleError();
+    const {confirm} = useConfirmation();
 
     if (integrations.length) {
         return (
@@ -220,7 +220,7 @@ const CustomIntegrations: React.FC<{integrations: Integration[]}> = ({integratio
                         title={integration.name}
                         custom
                         onDelete={() => {
-                            NiceModal.show(ConfirmationModal, {
+                            confirm({
                                 title: 'Are you sure?',
                                 prompt: 'Deleting this integration will remove all webhooks and api keys associated with it.',
                                 okVariant: 'destructive',

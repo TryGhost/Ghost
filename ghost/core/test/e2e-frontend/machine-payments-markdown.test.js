@@ -18,7 +18,7 @@ describe('Machine payments markdown routing', function () {
         const originalGet = settingsCache.get;
         sinon.stub(settingsCache, 'get').callsFake(function (key, options) {
             if (key === 'labs') {
-                return {llmsTxt: true, machinePayments: true};
+                return {machinePayments: true};
             }
             if (key === 'llms_enabled') {
                 return true;

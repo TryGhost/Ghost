@@ -232,6 +232,7 @@ export class SlackPingService {
             }
 
             return this.request(slackSettings.url, {
+                method: 'POST',
                 body: JSON.stringify(slackData),
                 headers: {
                     'Content-type': 'application/json'

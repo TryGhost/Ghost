@@ -52,12 +52,12 @@ describe("Advanced settings", () => {
         await expect.poll(() => api.requests.length).toBe(1);
     });
 
-    it("resets authentication when the feature is enabled", async () => {
+    it("resets authentication after confirmation", async () => {
         fakeSettingsScreens();
         // Success intentionally navigates to /ghost/ after locking users;
         // the isolated E2E danger-zone test covers that successful mutation.
         const api = fakeAdminEndpoint("POST", "/authentication/reset/", {errors: [{message: "stop after request"}]}, {status: 400});
-        await renderAdminApp("/settings/advanced", {labs: {dangerZoneResetAuth: true}});
+        await renderAdminApp("/settings/advanced");
 
         await settingsScreen.section("dangerzone").getByRole("button", {name: "Reset all authentication"}).click();
         await settingsScreen.confirmationModal().getByRole("button", {name: "Reset all authentication"}).click();
