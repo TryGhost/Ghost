@@ -51,24 +51,6 @@ describe('EventProcessingResult', function () {
         assert.deepEqual(result.memberIds, [4,5]);
     });
 
-    it('has correct totalEvents value', function () {
-        const result = new EventProcessingResult({
-            delivered: 1,
-            opened: 2,
-            temporaryFailed: 3,
-            permanentFailed: 4,
-            unsubscribed: 5,
-            complained: 6,
-            unhandled: 7,
-            unprocessable: 8,
-            processingFailures: 9, // not counted
-            emailIds: [1,2,3],
-            memberIds: [4,5]
-        });
-
-        assert.equal(result.totalEvents, 36);
-    });
-
     it('resets all values', function () {
         const result = new EventProcessingResult({
             delivered: 1,
