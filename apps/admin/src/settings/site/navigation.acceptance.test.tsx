@@ -1,12 +1,35 @@
 import { describe, expect, it } from 'vitest';
-import { userEvent } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 
-import { fakeEditSettings, fakeSettingsScreens, renderAdminApp } from '@test-utils/acceptance';
+import {
+  fakeEditSettings,
+  fakeOffers,
+  fakeSearchIndex,
+  fakeSettingsScreens,
+  offer,
+  renderAdminApp,
+} from '@test-utils/acceptance';
+import * as sel from '@tryghost/test-data/selectors/settings';
 import { settingsScreen } from '@/settings/settings.screen';
 
 const primaryNavigation = settingsScreen.navigationPrimaryPanel;
 const existingItem = (index = 0) => primaryNavigation().itemEditor(index);
 const newItem = () => primaryNavigation().newItem();
+
+// The suggestion dropdown renders in a portal, outside the modal
+function suggestions() {
+  return page.getByRole('listbox', { name: 'URL suggestions' });
+}
+
+function fakeSiteContent() {
+  fakeSearchIndex({
+    pages: [{ id: 'p1', title: 'About', url: 'http://test.com/about/', status: 'published' }],
+    posts: [
+      { id: 'p2', title: 'Welcome to Ghost', url: 'http://test.com/welcome/', status: 'published' },
+      { id: 'p3', title: 'Draft thoughts', url: 'http://test.com/404/', status: 'draft' },
+    ],
+  });
+}
 
 describe('Navigation settings', () => {
   it('edits primary and secondary navigation', async () => {
@@ -102,7 +125,141 @@ describe('Navigation settings', () => {
     await expect.element(added.getByLabelText('Label')).toHaveValue('Label');
     await expect.element(added.getByLabelText('URL')).toHaveValue('https://google.com/');
     await expect.element(item.getByLabelText('Label')).toHaveValue('');
-    await expect.element(item.getByLabelText('URL')).toHaveValue('http://test.com/');
+    await expect.element(item.getByLabelText('URL')).toHaveValue('');
+  });
+
+  it('suggests membership links, offers and content in the URL dropdown', async () => {
+    fakeSettingsScreens();
+    fakeSiteContent();
+    fakeOffers([offer({ name: 'Black Friday', code: 'black-friday' })]);
+    await renderAdminApp('/settings/navigation/edit');
+
+    // Starts empty rather than prefilled with the site root
+    await expect.element(newItem().getByLabelText('URL')).toHaveValue('');
+
+    await newItem().getByLabelText('URL').click();
+    await expect.element(suggestions()).toBeInTheDocument();
+    await expect
+      .element(suggestions().getByRole('option', { name: /Gift subscriptions/ }))
+      .toBeInTheDocument();
+    await expect
+      .element(suggestions().getByRole('option', { name: /Tips and donations/ }))
+      .toBeInTheDocument();
+    await expect
+      .element(suggestions().getByRole('option', { name: /Offer — Black Friday/ }))
+      .toBeInTheDocument();
+    await expect.element(suggestions().getByRole('option', { name: /^About/ })).toBeInTheDocument();
+    await expect
+      .element(suggestions().getByRole('option', { name: /^Welcome to Ghost/ }))
+      .toBeInTheDocument();
+
+    // Unpublished content is never offered as a destination
+    await expect(suggestions().getByRole('option', { name: /Draft thoughts/ })).toHaveCount(0);
+
+    // Typing filters the static links and searches content
+    await userEvent.keyboard('gift');
+    await expect
+      .element(suggestions().getByRole('option', { name: /Gift subscriptions/ }))
+      .toBeInTheDocument();
+    await expect(suggestions().getByRole('option', { name: /Tips and donations/ })).toHaveCount(0);
+    await expect(suggestions().getByRole('option', { name: /^About/ })).toHaveCount(0);
+
+    await suggestions()
+      .getByRole('option', { name: /Gift subscriptions/ })
+      .click();
+    await expect(suggestions()).toHaveCount(0);
+    await expect.element(newItem().getByLabelText('URL')).toHaveValue('#/portal/gift');
+  });
+
+  it('adds the item when Enter is pressed in the URL field', async () => {
+    fakeSettingsScreens();
+    fakeSiteContent();
+    await renderAdminApp('/settings/navigation/edit');
+
+    await expect(primaryNavigation().getByTestId(sel.navigationItemEditor)).toHaveCount(2);
+    await newItem().getByLabelText('Label').fill('Contact');
+    await newItem().getByLabelText('URL').click();
+    // The typed URL is only committed on Enter, so it has to reach the add
+    await userEvent.keyboard('/contact{Enter}');
+
+    await expect(primaryNavigation().getByTestId(sel.navigationItemEditor)).toHaveCount(3);
+    const added = existingItem(2);
+    await expect.element(added.getByLabelText('Label')).toHaveValue('Contact');
+    await expect.element(added.getByLabelText('URL')).toHaveValue('http://test.com/contact/');
+  });
+
+  it('keeps the dropdown shut for a field that already holds a URL', async () => {
+    fakeSettingsScreens();
+    fakeSiteContent();
+    await renderAdminApp('/settings/navigation/edit');
+
+    // Focusing an existing item offers nothing — it is being reviewed, not filled in
+    await existingItem(1).getByLabelText('URL').click();
+    await expect(suggestions()).toHaveCount(0);
+
+    // And a typed term that matches nothing shows no empty dropdown either
+    await newItem().getByLabelText('URL').click();
+    await expect.element(suggestions()).toBeInTheDocument();
+    await userEvent.keyboard('zzzzz');
+    await expect(suggestions()).toHaveCount(0);
+  });
+
+  it('closes the dropdown with Escape without closing the modal', async () => {
+    fakeSettingsScreens();
+    fakeSiteContent();
+    await renderAdminApp('/settings/navigation/edit');
+
+    await newItem().getByLabelText('URL').click();
+    await expect.element(suggestions()).toBeInTheDocument();
+    await userEvent.keyboard('{Escape}');
+
+    await expect(suggestions()).toHaveCount(0);
+    await expect.element(settingsScreen.navigationModal()).toBeInTheDocument();
+  });
+
+  it('stores a picked page as a relative URL', async () => {
+    fakeSettingsScreens();
+    fakeSiteContent();
+    const settingsApi = fakeEditSettings();
+    await renderAdminApp('/settings/navigation/edit');
+
+    await newItem().getByLabelText('Label').fill('About us');
+    await newItem().getByLabelText('URL').click();
+    await userEvent.keyboard('abo');
+    await suggestions()
+      .getByRole('option', { name: /^About/ })
+      .click();
+
+    // Shown absolute, stored relative to the site
+    await expect.element(newItem().getByLabelText('URL')).toHaveValue('http://test.com/about/');
+    await settingsScreen.navigationModal().getByRole('button', { name: 'Save' }).click();
+
+    await expect(settingsScreen.navigationModal()).toHaveCount(0);
+    await expect(settingsApi).toHaveEditedSettings([
+      {
+        key: 'navigation',
+        value:
+          '[{"url":"/","label":"Home"},{"url":"/about/","label":"About"},{"url":"/about/","label":"About us"}]',
+      },
+    ]);
+  });
+
+  it('selects a suggestion with the keyboard', async () => {
+    fakeSettingsScreens();
+    fakeSiteContent();
+    await renderAdminApp('/settings/navigation/edit');
+
+    await newItem().getByLabelText('URL').click();
+    await userEvent.keyboard('tips');
+    // Wait for the debounced search to narrow the list before arrowing into it
+    await expect(suggestions().getByRole('option', { name: /Gift subscriptions/ })).toHaveCount(0);
+    await expect
+      .element(suggestions().getByRole('option', { name: /Tips and donations/ }))
+      .toBeInTheDocument();
+    await userEvent.keyboard('{ArrowDown}{Enter}');
+
+    await expect(suggestions()).toHaveCount(0);
+    await expect.element(newItem().getByLabelText('URL')).toHaveValue('#/portal/support');
   });
 
   it('confirms before discarding unsaved changes', async () => {

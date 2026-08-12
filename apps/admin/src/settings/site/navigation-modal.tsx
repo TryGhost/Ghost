@@ -2,6 +2,7 @@ import NavigationEditForm from './navigation/navigation-edit-form';
 import useNavigationEditor, {
   type NavigationItem,
 } from '@/settings/hooks/site/use-navigation-editor';
+import useNavigationLinkSuggestions from '@/settings/hooks/site/use-navigation-link-suggestions';
 import useSettingGroup from '@/settings/hooks/use-setting-group';
 import { SettingsModal } from '@tryghost/shade/patterns';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@tryghost/shade/components';
@@ -60,6 +61,9 @@ function NavigationModal() {
     setItems: setSecondaryNavigationItems,
   });
 
+  // Shared across both tabs so the search-index responses are only fetched once
+  const { loadSuggestions } = useNavigationLinkSuggestions();
+
   const [selectedTab, setSelectedTab] = useState('primary-nav');
 
   const uploadIcon = async (file: File) => {
@@ -105,6 +109,7 @@ function NavigationModal() {
             <NavigationEditForm
               baseUrl={siteData!.url}
               idPrefix="primary-navigation"
+              loadSuggestions={loadSuggestions}
               navigation={navigation}
               showIcon={showIcon}
               showPaidVisibility={showPaidVisibility}
@@ -116,6 +121,7 @@ function NavigationModal() {
             <NavigationEditForm
               baseUrl={siteData!.url}
               idPrefix="secondary-navigation"
+              loadSuggestions={loadSuggestions}
               navigation={secondaryNavigation}
               showIcon={showIcon}
               showPaidVisibility={showPaidVisibility}
