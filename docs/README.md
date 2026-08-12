@@ -32,7 +32,7 @@ setup, development variants, and troubleshooting.
 
 ## Repository Structure
 
-```
+```text
 Ghost/
 ├── apps/              # Admin and public frontend apps
 │   ├── admin/          # React Admin

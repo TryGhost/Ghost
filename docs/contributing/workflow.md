@@ -51,9 +51,9 @@ pull request.
 
 ## Record package release intent
 
-Changes to publishable `@tryghost/*` packages under `koenig/` and `packages/`
-need a changeset so the package receives an appropriate version and changelog
-entry:
+Changes that affect a publishable `@tryghost/*` package under `koenig/` or
+`packages/`, including changes to catalog entries consumed by that package, need
+a changeset so the package receives an appropriate version and changelog entry:
 
 ```bash
 pnpm change
@@ -70,9 +70,9 @@ test-only or internal tooling change—record that explicitly:
 pnpm change --bump none
 ```
 
-Use `pnpm change status` to inspect pending release intent. CI rejects changes to
-publishable packages that have no covering changeset. Changes outside publishable
-packages do not need one.
+Use `pnpm change status` to inspect pending release intent. CI rejects changes
+that affect publishable packages without a covering changeset. Changes that do
+not affect a publishable package do not need one.
 
 ## Commit Messages
 

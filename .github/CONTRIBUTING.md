@@ -53,7 +53,7 @@ There is no need to include what modules have changed in the commit message, as 
 
 ## Changesets
 
-Ghost publishes several workspace packages to npm — the `@tryghost/*` editor and adapter packages under `koenig/` and `packages/`. When your change touches one of these publishable packages, add a **changeset** so it gets a version bump and a changelog entry:
+Ghost publishes several workspace packages to npm — the `@tryghost/*` editor and adapter packages under `koenig/` and `packages/`. When your change affects one of these publishable packages, including by changing a catalog entry it consumes, add a **changeset** so it gets a version bump and a changelog entry:
 
 ```bash
 pnpm change
@@ -65,7 +65,7 @@ This records which packages changed and the bump type (patch / minor / major); t
 pnpm change --bump none
 ```
 
-CI enforces this — the **Check app version bump** job fails a pull request that modifies a publishable package without a covering changeset. The pre-commit hook prints a non-blocking reminder locally, and `pnpm change status` shows what's currently pending.
+CI enforces this — the **Check app version bump** job fails a pull request that affects a publishable package without a covering changeset. The pre-commit hook prints a non-blocking reminder locally, and `pnpm change status` shows what's currently pending.
 
 For more detail, see the [contribution workflow](../docs/contributing/workflow.md).
 

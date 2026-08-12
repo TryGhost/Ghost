@@ -8,7 +8,7 @@ continuous delivery.
 
 | Track | Current cadence |
 | --- | --- |
-| Admin (Pro only) | Every commit to `main` that passes CI |
+| Admin (Pro only) | Every commit to `main` after its Admin release-path checks pass |
 | Portal and other public apps | When the app changes on `main` |
 | Admin + Server (Public Release) | Weekly on Tuesdays |
 | Admin + Server (Docker Official Image) | Follows public release after Docker team review |
@@ -16,8 +16,9 @@ continuous delivery.
 
 ## Admin
 
-Admin on Ghost(Pro) uses continuous delivery. Every commit to `main` that passes
-CI publishes a new Admin build and makes it live.
+Admin on Ghost(Pro) uses continuous delivery. Every commit to `main` publishes a
+new Admin build and makes it live after its Admin build and Docker release-path
+checks pass.
 
 The public Ghost release contains a Ghost Admin build to keep self-hosted
 installs easy to manage.

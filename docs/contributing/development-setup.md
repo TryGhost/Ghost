@@ -87,8 +87,10 @@ runs.
 | Service | Address |
 | --- | --- |
 | Ghost site | [http://localhost:2368](http://localhost:2368) |
+| Ghost site (gateway alias) | [http://localhost](http://localhost) |
 | Ghost Admin | [http://localhost:2368/ghost/](http://localhost:2368/ghost/) |
 | Mailpit | [http://localhost:8025](http://localhost:8025) |
+| Mailpit (E2E) | [http://localhost:8026](http://localhost:8026) |
 | MySQL | `localhost:3306` using the `ghost_dev` database |
 | Redis | `localhost:6379` |
 | Tinybird | [http://localhost:7181](http://localhost:7181) with `pnpm dev:analytics` |
