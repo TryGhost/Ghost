@@ -18,7 +18,8 @@ describe('Job handler registration (v2)', function () {
 
     it('registers every job type in one place', function () {
         assert.deepEqual(jobsServiceV2.registeredTypes, [
-            'media-inliner'
+            'media-inliner',
+            'clean-tokens'
         ]);
     });
 
@@ -32,7 +33,8 @@ describe('Job handler registration (v2)', function () {
         registerJobHandlers();
 
         assert.deepEqual(jobsServiceV2.registeredTypes, [
-            'media-inliner'
+            'media-inliner',
+            'clean-tokens'
         ]);
     });
 });

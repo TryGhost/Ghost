@@ -490,6 +490,21 @@ async function initBackgroundServices({config}) {
         ]);
     }
 
+    // Recurring cleanup of expired member tokens through the v2 jobs service
+    // when the jobsV2 flag is on (the method self-gates; with the flag off
+    // the members service already set up the legacy bree schedule).
+    // Scheduled here rather than in the members service because job handlers
+    // register at the end of initServices. initBackgroundServices is
+    // fire-and-forget, so a scheduling failure is reported rather than left
+    // as an unhandled rejection.
+    try {
+        const memberJobs = require('./server/services/members/jobs');
+        await memberJobs.scheduleTokenCleanupJobV2();
+    } catch (err) {
+        const logging = require('@tryghost/logging');
+        logging.error(err);
+    }
+
     const updateCheck = require('./server/services/update-check');
     updateCheck.scheduleRecurringJobs();
     if (config.get('updateCheck:forceUpdate')) {

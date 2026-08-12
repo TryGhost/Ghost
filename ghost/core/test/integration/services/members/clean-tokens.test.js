@@ -6,7 +6,7 @@ const models = require('../../../../core/server/models');
 
 describe('Job: Clean tokens', function () {
     let agent;
-    let jobsService;
+    let jobsServiceV2;
     let clock;
 
     beforeAll(async function () {
@@ -15,7 +15,7 @@ describe('Job: Clean tokens', function () {
         await agent.loginAsOwner();
 
         // Only reference services after Ghost boot
-        jobsService = require('../../../../core/server/services/jobs');
+        jobsServiceV2 = require('../../../../core/server/services/jobs/v2').default;
     });
 
     afterAll(function () {
@@ -27,17 +27,10 @@ describe('Job: Clean tokens', function () {
     // assertions below pin behaviour and must survive a trigger change
     // unmodified.
     async function runCleanTokensJob() {
-        const completedPromise = jobsService.awaitCompletion('clean-tokens');
-        const job = require('path').resolve(__dirname, '../../../../core/server/services/members/jobs', 'clean-tokens.js');
+        const CleanTokensJob = require('../../../../core/server/services/members/jobs/clean-tokens-job');
 
-        // NOTE: the job will not use the fake clock.
-        await jobsService.addJob({
-            job,
-            name: 'clean-tokens'
-        });
-        // We need to tick the clock to activate 'bree' and run the job
-        await clock.tickAsync(1000);
-        await completedPromise;
+        await jobsServiceV2.dispatch(new CleanTokensJob());
+        await jobsServiceV2.allSettled();
     }
 
     it('Deletes tokens that are older than 24 hours', async function () {

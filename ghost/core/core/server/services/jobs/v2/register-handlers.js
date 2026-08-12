@@ -21,6 +21,26 @@ function registerJobHandlers() {
     jobsService.handle(MediaInlinerJob, async (job) => {
         await mediaInlinerService.api.inline(job.domains);
     });
+
+    // Expired token cleanup: delete single-use (magic link) tokens older
+    // than 24 hours. Scheduled with a randomised daily cron by
+    // initBackgroundServices once handlers are registered. Idempotent, so
+    // redelivery on a future durable backend is safe. Mirrors the legacy
+    // worker in services/members/jobs/clean-tokens.js, which keeps serving
+    // the jobsV2-flag-off path until the flag graduates.
+    const CleanTokensJob = require('../../members/jobs/clean-tokens-job');
+    jobsService.handle(CleanTokensJob, async () => {
+        const debug = require('@tryghost/debug')('jobs:clean-tokens');
+        const moment = require('moment');
+        const db = require('../../../data/db');
+
+        const d = moment.utc().subtract(24, 'hours');
+        const deletedTokens = await db.knex('tokens')
+            .where('created_at', '<', d.format('YYYY-MM-DD HH:mm:ss')) // we need to be careful about the type here. .format() is the only thing that works across SQLite and MySQL
+            .delete();
+
+        debug(`Removed ${deletedTokens} tokens created before ${d.toISOString()}`);
+    });
 }
 
 module.exports = {registerJobHandlers};
