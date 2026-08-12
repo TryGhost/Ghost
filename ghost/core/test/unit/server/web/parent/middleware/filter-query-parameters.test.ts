@@ -1,11 +1,29 @@
 import assert from 'node:assert/strict';
 import logging from '@tryghost/logging';
-import type {NextFunction, Request, Response} from 'express';
+import express from 'express';
 import sinon from 'sinon';
+import request from 'supertest';
 
 import {filterQueryParameters, filterRequestTarget} from '../../../../../../core/server/web/parent/middleware/filter-query-parameters';
 
 describe('Middleware: filterQueryParameters', function () {
+    function createApp() {
+        const app = express();
+
+        app.use(filterQueryParameters);
+        app.use((req, res) => {
+            res.json({
+                originalUrl: req.originalUrl,
+                url: req.url,
+                path: req.path,
+                query: req.query,
+                queryHasOwnProperty: typeof req.query.hasOwnProperty === 'function'
+            });
+        });
+
+        return app;
+    }
+
     afterEach(function () {
         sinon.restore();
     });
@@ -89,69 +107,57 @@ describe('Middleware: filterQueryParameters', function () {
         });
     });
 
-    it('updates the Express request and logs stripped undeclared parameters', function () {
-        const req = {
-            originalUrl: '/r/example?step=run-step-id&m=member-id&unknown=value',
-            url: '/r/example?step=run-step-id&m=member-id&unknown=value',
-            path: '/r/example',
-            query: {
-                step: 'run-step-id',
-                m: 'member-id',
-                unknown: 'value'
-            }
-        };
-        const res = {};
-        const next = sinon.spy();
+    it('updates the Express request and logs stripped undeclared parameters', async function () {
         const warn = sinon.stub(logging, 'warn');
 
-        filterQueryParameters(req as unknown as Request, res as unknown as Response, next as NextFunction);
+        await request(createApp())
+            .get('/r/example?step=run-step-id&m=member-id&unknown=value')
+            .expect(200)
+            .expect({
+                originalUrl: '/r/example?step=run-step-id&m=member-id',
+                url: '/r/example?step=run-step-id&m=member-id',
+                path: '/r/example',
+                query: {
+                    step: 'run-step-id',
+                    m: 'member-id'
+                },
+                queryHasOwnProperty: true
+            });
 
-        assert.equal(req.originalUrl, '/r/example?step=run-step-id&m=member-id');
-        assert.equal(req.url, '/r/example?step=run-step-id&m=member-id');
-        assert.deepEqual({...req.query}, {m: 'member-id', step: 'run-step-id'});
-        assert.equal(Object.getPrototypeOf(req.query), Object.prototype);
         sinon.assert.calledOnceWithExactly(warn, '[query-parameter-filter] Stripped undeclared query parameter(s) from /r/example: unknown');
-        sinon.assert.calledOnce(next);
     });
 
-    it('does not warn when all parameters are allowed', function () {
-        const req = {
-            originalUrl: '/welcome/?utm_source=newsletter',
-            url: '/welcome/?utm_source=newsletter',
-            path: '/welcome/',
-            query: {
-                utm_source: 'newsletter'
-            }
-        };
-        const res = {};
-        const next = sinon.spy();
+    it('does not warn when all parameters are allowed', async function () {
         const warn = sinon.stub(logging, 'warn');
 
-        filterQueryParameters(req as unknown as Request, res as unknown as Response, next as NextFunction);
+        await request(createApp())
+            .get('/welcome/?utm_source=newsletter')
+            .expect(200)
+            .expect({
+                originalUrl: '/welcome/?utm_source=newsletter',
+                url: '/welcome/?utm_source=newsletter',
+                path: '/welcome/',
+                query: {
+                    utm_source: 'newsletter'
+                },
+                queryHasOwnProperty: true
+            });
 
-        assert.equal(req.originalUrl, '/welcome/?utm_source=newsletter');
-        assert.deepEqual({...req.query}, {utm_source: 'newsletter'});
         sinon.assert.notCalled(warn);
-        sinon.assert.calledOnce(next);
     });
 
-    it('preserves the existing query object for exempt paths', function () {
-        const query = {
-            include: 'roles'
-        };
-        const req = {
-            originalUrl: '/ghost/api/admin/session/?include=roles',
-            url: '/ghost/api/admin/session/?include=roles',
-            path: '/ghost/api/admin/session/',
-            query
-        };
-        const res = {};
-        const next = sinon.spy();
-
-        filterQueryParameters(req as unknown as Request, res as unknown as Response, next as NextFunction);
-
-        assert.equal(req.query, query);
-        assert.equal(typeof req.query.hasOwnProperty, 'function');
-        sinon.assert.calledOnce(next);
+    it('preserves query parameters on exempt paths', async function () {
+        await request(createApp())
+            .get('/ghost/api/admin/session/?include=roles')
+            .expect(200)
+            .expect({
+                originalUrl: '/ghost/api/admin/session/?include=roles',
+                url: '/ghost/api/admin/session/?include=roles',
+                path: '/ghost/api/admin/session/',
+                query: {
+                    include: 'roles'
+                },
+                queryHasOwnProperty: true
+            });
     });
 });
