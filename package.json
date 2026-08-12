@@ -33,7 +33,6 @@
     "build:clean": "nx reset && rimraf -g 'ghost/*/build' && rimraf -g 'ghost/*/tsconfig.tsbuildinfo'",
     "clean:hard": "node ./scripts/clean.js",
     "dev": "pnpm nx run ghost-monorepo:docker:dev",
-    "dev:sqlite": "DEV_COMPOSE_FILES='-f compose.dev.sqlite.yaml' pnpm nx run ghost-monorepo:docker:dev",
     "dev:mailgun": "DEV_COMPOSE_FILES='-f compose.dev.mailgun.yaml' pnpm nx run ghost-monorepo:docker:dev",
     "dev:lexical": "EDITOR_URL=http://localhost:2368/ghost/assets/koenig-lexical/ pnpm nx run ghost-monorepo:docker:dev:lexical",
     "dev:public": "pnpm nx run ghost-monorepo:docker:dev:public",
