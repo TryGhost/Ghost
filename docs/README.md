@@ -58,6 +58,12 @@ detail, see the [monorepo structure guide](codebase/monorepo-structure.md). The
 [configuration guide](codebase/configuration.md) explains how Ghost Core loads
 defaults, local overrides, and environment variables.
 
+## Development Practices
+
+The [internationalization guide](practices/internationalization.md) explains
+how to write translatable copy, update locale files, and validate translation
+changes.
+
 ## Contributing a change
 
 Before contributing, please read:
