@@ -268,6 +268,15 @@ describe('Members filtering by custom fields', function () {
                 .get(`members/?filter=${encodeURIComponent("custom_fields.path:'country'")}`)
                 .expectStatus(400);
         });
+
+        // A recognised (key + …) compound that also carries a clause naming no leaf
+        // column is rejected rather than silently dropped, which would leave a wider
+        // match on the key alone.
+        it('rejects an unsupported clause inside a field compound', async function () {
+            await agent
+                .get(`members/?filter=${encodeURIComponent("(custom_fields.key:'company'+custom_fields.invalid:'x')")}`)
+                .expectStatus(400);
+        });
     });
 
     describe('composition with other filters', function () {

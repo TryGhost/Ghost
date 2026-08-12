@@ -101,24 +101,49 @@ export function createCustomFieldsFilterTransformer() {
     // is-not-set — no such leaf — which negates the whole match.
     function toElemMatch(clauses: QueryNode[]): QueryNode {
         let fieldKey = '';
+        let hasKey = false;
+        let hasLeaf = false;
         const conditions: QueryNode = {};
         let negate = false;
+
+        const oneLeafOnly = () => {
+            if (hasLeaf) {
+                throw new errors.BadRequestError({
+                    message: 'A custom field filter takes one value or path clause.'
+                });
+            }
+            hasLeaf = true;
+        };
 
         for (const clause of clauses) {
             const [attribute, value] = Object.entries(clause)[0];
 
             if (attribute === KEY_ATTRIBUTE) {
+                if (hasKey) {
+                    throw new errors.BadRequestError({
+                        message: `A custom field filter takes one "${KEY_ATTRIBUTE}" clause.`
+                    });
+                }
+                hasKey = true;
                 fieldKey = keyOf(value);
             } else if (attribute === PATH_ATTRIBUTE) {
+                oneLeafOnly();
                 const negatedPath = negatedString(value);
                 conditions.path = negatedPath ?? value;
                 negate = negatedPath !== null;
             } else {
                 const path = pathForValueAttribute(attribute);
-                if (path !== null) {
-                    conditions.path = path;
-                    conditions.value_text = value;
+                if (path === null) {
+                    // Not the key, a value/value.<part>, or a path: it names no leaf
+                    // column, so dropping it would silently widen the match to the key
+                    // alone. Fail closed instead.
+                    throw new errors.BadRequestError({
+                        message: `Unsupported custom field filter clause "${attribute}".`
+                    });
                 }
+                oneLeafOnly();
+                conditions.path = path;
+                conditions.value_text = value;
             }
         }
 
