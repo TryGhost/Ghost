@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-import ObjectID from 'bson-objectid';
 import {GiftBookshelfRepository} from '../../../../core/server/services/gifts/gift-bookshelf-repository';
 import {GiftDeliveryBookshelfRepository} from '../../../../core/server/services/gifts/gift-delivery-bookshelf-repository';
 
@@ -65,7 +64,6 @@ describe('GiftDeliveryBookshelfRepository (integration)', function () {
             consumes_soon_reminder_sent_at: null
         });
         const delivery = await models.GiftDelivery.add({
-            id: new ObjectID().toHexString(),
             gift_id: gift.id,
             recipient_email: `recipient-${giftSequence}@example.com`,
             status: 'pending',
@@ -148,6 +146,48 @@ describe('GiftDeliveryBookshelfRepository (integration)', function () {
         assert.equal(await deliveryRepository.tryStartAttempt(futureRetry.delivery.id, attemptAt, 10), null);
         assert.equal((await deliveryRepository.getById(futureAvailability.delivery.id))?.attempts, 0);
         assert.equal((await deliveryRepository.getById(futureRetry.delivery.id))?.attempts, 0);
+    });
+
+    it('finds only the oldest due deliveries within the requested batch size', async function () {
+        const now = new Date();
+        now.setMilliseconds(0);
+        const oldestDue = await createPendingEmailGift({
+            availableAt: new Date(now.getTime() - 120_000)
+        });
+        await createPendingEmailGift({
+            availableAt: new Date(now.getTime() - 60_000)
+        });
+        await createPendingEmailGift({
+            availableAt: new Date(now.getTime() + 60_000)
+        });
+        await createPendingEmailGift({
+            availableAt: new Date(now.getTime() - 120_000),
+            attemptAt: new Date(now.getTime() + 60_000)
+        });
+
+        const due = await deliveryRepository.findDue(now, 1);
+
+        assert.equal(due.length, 1);
+        assert.equal(due[0]?.delivery.id, oldestDue.delivery.id);
+    });
+
+    it('does not start an attempt once the attempt cap is reached', async function () {
+        const attemptAt = new Date();
+        const {delivery} = await createPendingEmailGift({
+            availableAt: new Date(attemptAt.getTime() - 60_000)
+        });
+        await delivery.save({attempts: 10}, {patch: true});
+
+        assert.equal(await deliveryRepository.tryStartAttempt(delivery.id, attemptAt, 10), null);
+        assert.equal((await deliveryRepository.getById(delivery.id))?.attempts, 10);
+    });
+
+    it('does not complete or retry a delivery that is not sending', async function () {
+        const {delivery} = await createPendingEmailGift({availableAt: new Date()});
+
+        assert.equal(await deliveryRepository.markSent(delivery.id, new Date(), 'provider-1'), false);
+        assert.equal(await deliveryRepository.markForRetry(delivery.id, new Date()), false);
+        assert.equal((await deliveryRepository.getById(delivery.id))?.status, 'pending');
     });
 
     it('does not start an attempt when the parent gift is no longer purchased', async function () {

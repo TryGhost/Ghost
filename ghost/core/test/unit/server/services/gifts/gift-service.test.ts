@@ -117,6 +117,7 @@ describe('GiftService', function () {
         giftDeliveryRepository = {
             getById: sinon.stub().resolves(null),
             getByGiftId: sinon.stub().resolves(null),
+            findDue: sinon.stub().resolves([]),
             findPending: sinon.stub().resolves([]),
             countStuck: sinon.stub().resolves(0),
             tryStartAttempt: sinon.stub().resolves(null),
@@ -810,7 +811,7 @@ describe('GiftService', function () {
         }
 
         beforeEach(function () {
-            giftDeliveryRepository.findPending.resolves([{
+            giftDeliveryRepository.findDue.resolves([{
                 delivery: startedDelivery(),
                 availableAt: new Date('2026-01-01T00:00:00.000Z')
             }]);
@@ -825,6 +826,7 @@ describe('GiftService', function () {
             const result = await service.processDeliveries();
 
             assert.deepEqual(result, {sentCount: 1, skippedCount: 0, failedCount: 0});
+            sinon.assert.calledOnceWithExactly(giftDeliveryRepository.findDue, sinon.match.date, 100);
             sinon.assert.calledOnceWithExactly(giftDeliveryRepository.tryStartAttempt, 'delivery_1', sinon.match.date, 10);
             sinon.assert.calledOnceWithExactly(giftDeliveryRepository.markSent, 'delivery_1', sinon.match.date, 'provider-123');
             sinon.assert.calledOnce(giftEmailAnalytics.schedule);
@@ -874,6 +876,20 @@ describe('GiftService', function () {
 
             assert.deepEqual(result, {sentCount: 0, skippedCount: 1, failedCount: 0});
             sinon.assert.notCalled(giftEmailService.sendGiftDelivery);
+        });
+
+        it('wakes another delivery batch when the current batch is full', async function () {
+            giftDeliveryRepository.findDue.resolves(Array.from({length: 100}, (_, index) => ({
+                delivery: buildGiftDelivery({id: `delivery_${index}`}),
+                availableAt: new Date('2026-01-01T00:00:00.000Z')
+            })));
+            giftDeliveryRepository.tryStartAttempt.resolves(null);
+            const service = createService();
+
+            const result = await service.processDeliveries();
+
+            assert.deepEqual(result, {sentCount: 0, skippedCount: 100, failedCount: 0});
+            sinon.assert.calledOnce(giftDeliveryScheduler.wake);
         });
 
         it('fails a started delivery attempt whose gift is missing', async function () {

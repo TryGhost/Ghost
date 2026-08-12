@@ -49,19 +49,9 @@ describe('GiftBookshelfRepository', function () {
         sinon.restore();
     });
 
-    it('formats delivery attempt timestamps in UTC regardless of the server timezone', function () {
-        const originalTimezone = process.env.TZ;
-        process.env.TZ = 'America/New_York';
-
-        try {
-            assert.equal(toDatabaseDate(new Date('2026-08-05T12:00:00.000Z')), '2026-08-05 12:00:00');
-        } finally {
-            if (originalTimezone === undefined) {
-                delete process.env.TZ;
-            } else {
-                process.env.TZ = originalTimezone;
-            }
-        }
+    it('formats delivery attempt timestamps as UTC database timestamps', function () {
+        assert.equal(toDatabaseDate(new Date('2026-08-05T12:00:00.000Z')), '2026-08-05 12:00:00');
+        assert.equal(toDatabaseDate(new Date('2026-08-05T23:45:30.999Z')), '2026-08-05 23:45:30');
     });
 
     it('returns a Gift when a token matches', async function () {

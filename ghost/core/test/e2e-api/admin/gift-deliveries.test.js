@@ -102,4 +102,36 @@ describe('Gift Deliveries API', function () {
         assert.equal(reloaded.get('attempts'), 1);
         assert.ok(reloaded.get('email_sent_at'));
     });
+
+    it('rejects a flush request without a scheduler token', async function () {
+        const {gift} = await createPendingEmailGift();
+
+        await agent
+            .put('gifts/flush_deliveries/')
+            .expectStatus(401)
+            .expect(cacheInvalidateHeaderNotSet());
+        await DomainEvents.allSettled();
+
+        emailMockReceiver.assertSentEmailCount(0);
+        const reloaded = await models.GiftDelivery.findOne({gift_id: gift.id}, {require: true});
+        assert.equal(reloaded.get('status'), 'pending');
+        assert.equal(reloaded.get('attempts'), 0);
+    });
+
+    it('does not process deliveries when gift customization is disabled', async function () {
+        mockManager.mockLabsDisabled('giftSubCustomization');
+        const {gift} = await createPendingEmailGift();
+
+        await agent
+            .put(`gifts/flush_deliveries/?token=${schedulerToken}`)
+            .expectStatus(204)
+            .expectEmptyBody()
+            .expect(cacheInvalidateHeaderNotSet());
+        await DomainEvents.allSettled();
+
+        emailMockReceiver.assertSentEmailCount(0);
+        const reloaded = await models.GiftDelivery.findOne({gift_id: gift.id}, {require: true});
+        assert.equal(reloaded.get('status'), 'pending');
+        assert.equal(reloaded.get('attempts'), 0);
+    });
 });

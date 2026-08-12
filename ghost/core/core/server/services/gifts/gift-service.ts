@@ -23,7 +23,9 @@ const GIFT_REMINDER_LEAD_MS = GIFT_REMINDER_LEAD_DAYS * MS_PER_DAY;
 const GIFT_REMINDER_FLOOR_MS = GIFT_REMINDER_FLOOR_DAYS * MS_PER_DAY;
 export const GIFT_DELIVERY_RETRY_MS = 10 * 60 * 1000;
 export const GIFT_DELIVERY_MAX_ATTEMPTS = 10;
+const GIFT_DELIVERY_BATCH_SIZE = 100;
 const GIFT_NAME_MAX_LENGTH = 191;
+const GIFT_EMAIL_MAX_LENGTH = 191;
 const GIFT_CHECKOUT_MESSAGE_MAX_LENGTH = 250;
 const GIFT_STORED_MESSAGE_MAX_LENGTH = 500;
 
@@ -137,7 +139,7 @@ interface StaffServiceEmails {
 
 const GiftPurchaseBaseSchema = z.object({
     token: z.string().min(1),
-    buyerEmail: z.string().email().max(GIFT_NAME_MAX_LENGTH),
+    buyerEmail: z.string().email().max(GIFT_EMAIL_MAX_LENGTH),
     stripeCustomerId: z.string().min(1).nullable(),
     tierId: z.string().min(1),
     cadence: GiftCadenceSchema,
@@ -159,7 +161,7 @@ const GiftPurchaseDeliverySchema = z.discriminatedUnion('deliveryMethod', [
     }),
     z.object({
         deliveryMethod: z.literal('email'),
-        recipientEmail: z.string().email().max(GIFT_NAME_MAX_LENGTH),
+        recipientEmail: z.string().email().max(GIFT_EMAIL_MAX_LENGTH),
         recipientName: z.string().max(GIFT_NAME_MAX_LENGTH).nullable().default(null),
         buyerName: z.string().max(GIFT_NAME_MAX_LENGTH).nullable().default(null),
         personalMessage: z.string().max(GIFT_STORED_MESSAGE_MAX_LENGTH).nullable().default(null),
@@ -259,7 +261,7 @@ const GiftCheckoutDeliverySchema = z.preprocess((value) => {
     }),
     z.object({
         deliveryMethod: z.literal('email'),
-        recipientEmail: z.string().trim().email().max(GIFT_NAME_MAX_LENGTH),
+        recipientEmail: z.string().trim().email().max(GIFT_EMAIL_MAX_LENGTH),
         recipientName: NullableCheckoutStringSchema(GIFT_NAME_MAX_LENGTH),
         personalMessage: NullableCheckoutStringSchema(GIFT_CHECKOUT_MESSAGE_MAX_LENGTH),
         deliverAt: z.null().optional().default(null),
@@ -1101,7 +1103,7 @@ export class GiftService {
     }
 
     async processDeliveries(): Promise<{sentCount: number; skippedCount: number; failedCount: number}> {
-        const pending = await this.deps.giftDeliveryRepository.findPending();
+        const pending = await this.deps.giftDeliveryRepository.findDue(new Date(), GIFT_DELIVERY_BATCH_SIZE);
         let sentCount = 0;
         let skippedCount = 0;
         let failedCount = 0;
@@ -1120,6 +1122,10 @@ export class GiftService {
                 logging.error(err);
                 failedCount += 1;
             }
+        }
+
+        if (pending.length === GIFT_DELIVERY_BATCH_SIZE) {
+            this.deps.giftDeliveryScheduler.wake();
         }
 
         return {sentCount, skippedCount, failedCount};

@@ -13,6 +13,7 @@ export interface GiftDeliverySchedule {
 export interface GiftDeliveryRepository {
     getById(id: string, options?: RepositoryTransactionOptions): Promise<GiftDelivery | null>;
     getByGiftId(giftId: string, options?: RepositoryTransactionOptions): Promise<GiftDelivery | null>;
+    findDue(now: Date, limit: number): Promise<GiftDeliverySchedule[]>;
     findPending(): Promise<GiftDeliverySchedule[]>;
     countStuck(before: Date): Promise<number>;
     tryStartAttempt(id: string, now: Date, maxAttempts: number): Promise<GiftDelivery | null>;
@@ -64,12 +65,35 @@ export class GiftDeliveryBookshelfRepository implements GiftDeliveryRepository {
         return model ? decodeGiftDeliveryRow(model.toJSON()) : null;
     }
 
+    async findDue(now: Date, limit: number): Promise<GiftDeliverySchedule[]> {
+        return this.transaction(async (transacting) => {
+            const dueAt = toDatabaseDate(now);
+            const rows = await transacting<PendingDeliveryRow>('gift_deliveries as delivery')
+                .innerJoin('gifts as gift', 'gift.id', 'delivery.gift_id')
+                .where('gift.status', 'purchased')
+                .whereRaw('COALESCE(gift.available_at, gift.purchased_at) <= ?', [dueAt])
+                .where('delivery.status', 'pending')
+                .where((builder) => {
+                    builder.whereNull('delivery.attempt_at').orWhere('delivery.attempt_at', '<=', dueAt);
+                })
+                .orderByRaw('COALESCE(delivery.attempt_at, gift.available_at, gift.purchased_at) ASC')
+                .limit(limit)
+                .select('delivery.*', 'gift.available_at', 'gift.purchased_at');
+
+            return rows.map(row => ({
+                delivery: decodeGiftDeliveryRow(row),
+                availableAt: DbDate.parse(row.available_at ?? row.purchased_at)
+            }));
+        });
+    }
+
     async findPending(): Promise<GiftDeliverySchedule[]> {
         return this.transaction(async (transacting) => {
             const rows = await transacting<PendingDeliveryRow>('gift_deliveries as delivery')
                 .innerJoin('gifts as gift', 'gift.id', 'delivery.gift_id')
                 .where('gift.status', 'purchased')
                 .where('delivery.status', 'pending')
+                .orderByRaw('COALESCE(delivery.attempt_at, gift.available_at, gift.purchased_at) ASC')
                 .select('delivery.*', 'gift.available_at', 'gift.purchased_at');
 
             return rows.map(row => ({
