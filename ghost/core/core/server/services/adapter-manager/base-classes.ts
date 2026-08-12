@@ -2,6 +2,7 @@ import {StorageBase} from 'ghost-storage-base';
 import {SchedulingBase} from '@tryghost/adapter-base-scheduling';
 import {SSOBase} from '@tryghost/adapter-base-sso';
 import {CacheBase} from '@tryghost/adapter-base-cache';
+import {JobsBackendBase} from '@tryghost/adapter-base-jobs';
 import {RedirectsStoreBase} from '@tryghost/adapter-base-redirects';
 import {RouteSettingsStoreBase} from '@tryghost/adapter-base-route-settings';
 
@@ -17,6 +18,7 @@ export const baseClasses = {
     scheduling: SchedulingBase,
     sso: SSOBase,
     cache: CacheBase,
+    jobs: JobsBackendBase,
     redirects: RedirectsStoreBase,
     'route-settings': RouteSettingsStoreBase
 } satisfies BaseClassMap;

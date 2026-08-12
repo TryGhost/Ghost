@@ -47,6 +47,9 @@
             "imageSizes": {},
             "gscan": {}
         },
+        "jobs": {
+            "active": "InMemoryJobsBackend"
+        },
         "redirects": {
             "active": "FileStore",
             "FileStore": {},
