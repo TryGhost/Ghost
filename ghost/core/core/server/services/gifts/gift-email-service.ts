@@ -249,7 +249,10 @@ export class GiftEmailService {
             }
         });
         const subject = buyerName
-            ? this.t('{buyerName} sent you a gift', {buyerName})
+            ? this.t('{buyerName} sent you a gift', {
+                buyerName,
+                interpolation: {escapeValue: false}
+            })
             : this.t('You\'ve received a gift');
         const response = await this.mailer.send({
             to: recipientEmail,

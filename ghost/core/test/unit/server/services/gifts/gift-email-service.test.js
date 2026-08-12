@@ -31,6 +31,7 @@ describe('GiftEmailService', function () {
 
     const translate = (translations = {}) => (key, options = {}) => {
         const translatedKey = translations[key] || key;
+        const escapeValue = options.interpolation?.escapeValue !== false;
         const params = {...options};
         delete params.interpolation;
 
@@ -38,7 +39,13 @@ describe('GiftEmailService', function () {
             if (params[name] === undefined) {
                 return `{${name}}`;
             }
-            return String(params[name]);
+            const value = String(params[name]);
+
+            return escapeValue ? value
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/'/g, '&#39;') : value;
         });
     };
 
@@ -274,6 +281,47 @@ describe('GiftEmailService', function () {
             assert.ok(!html.includes('<img src=x onerror=alert(1)>'));
             assert.ok(!html.includes('<b>not markup</b>'));
             assert.ok(!html.includes('<i>benefit</i>'));
+        });
+
+        it('preserves literal interpolation characters in the subject and plain-text body', async function () {
+            const literalSettingsCache = {
+                get: (key) => {
+                    if (key === 'title') {
+                        return 'Research & <Notes>';
+                    }
+                    if (key === 'accent_color') {
+                        return '#ff5500';
+                    }
+                    return '';
+                }
+            };
+            const literalService = new GiftEmailService({
+                mailer,
+                settingsCache: literalSettingsCache,
+                urlUtils,
+                getFromAddress,
+                blogIcon,
+                t: translate()
+            });
+
+            await literalService.sendGiftDelivery({
+                recipientEmail: 'recipient@example.com',
+                recipientName: 'Pat O\'Neil & Co',
+                buyerName: 'Sam & Alex <Team>',
+                personalMessage: null,
+                token: 'abc-123',
+                tierName: 'Gold & Silver <Plus>',
+                benefits: [],
+                cadence: 'year',
+                duration: 1,
+                expiresAt: new Date('2027-04-07')
+            });
+
+            const message = mailer.send.firstCall.firstArg;
+            assert.equal(message.subject, 'Sam & Alex <Team> sent you a gift');
+            assert.match(message.text, /Hi Pat O'Neil & Co,/);
+            assert.match(message.text, /Sam & Alex <Team> has gifted you a 1-year Gold & Silver <Plus> membership to Research & <Notes>/);
+            assert.doesNotMatch(message.text, /&(amp|lt|gt|#39);/);
         });
 
         it('does not invent provider telemetry for transports without a Mailgun ID', async function () {
