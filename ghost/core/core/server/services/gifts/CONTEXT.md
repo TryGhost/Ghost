@@ -15,7 +15,7 @@ The member who claims a gift subscription and receives its access. The redeemer 
 _Avoid_: Recipient, buyer
 
 **Recipient**:
-The person for whom a gift subscription is intended. A recipient need not be a member and does not become the redeemer until they claim the gift.
+The person for whom a gift subscription is intended. Their email routes delivery but does not reserve redemption; they need not be a member and do not become the redeemer until they claim the gift.
 _Avoid_: Receiver, redeemer
 
 ### Purchase and claim
@@ -25,7 +25,7 @@ A prepaid, non-renewing entitlement to one membership tier for a fixed period. I
 _Avoid_: Gift membership, recurring subscription
 
 **Gift purchase**:
-A one-time purchase that creates a gift subscription for the buyer to share.
+A one-time purchase that creates a gift subscription for the buyer to share. Completing a gift purchase does not mean that an emailed gift has been sent.
 _Avoid_: Gift checkout
 
 **Delivery method**:
@@ -33,7 +33,7 @@ The buyer's chosen way of handing over a gift subscription: the publication emai
 _Avoid_: Delivery mode
 
 **Redemption link**:
-A single-use, time-limited link through which a purchased gift subscription can be claimed.
+A single-use, time-limited link through which a purchased gift subscription can be viewed and claimed. Its bearer may see the gift's buyer name, intended recipient name, and personal message, but not email-routing or delivery details.
 _Avoid_: Gift Link
 
 **Gift redemption**:

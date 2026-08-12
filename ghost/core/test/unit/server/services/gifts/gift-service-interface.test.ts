@@ -116,6 +116,7 @@ describe('GiftService interface', function () {
         assert.equal(successUrl.searchParams.get('gift_tier'), 'tier_1');
         assert.equal(successUrl.searchParams.get('gift_cadence'), 'year');
         assert.equal(successUrl.searchParams.get('gift_duration'), null);
+        assert.equal(successUrl.searchParams.get('gift_delivery'), 'link');
     });
 
     it('validates email delivery and writes only normalized reserved metadata', async function () {
@@ -143,12 +144,14 @@ describe('GiftService interface', function () {
         });
 
         const metadata = checkoutAdapter.createSession.firstCall.firstArg.metadata;
+        const successUrl = new URL(checkoutAdapter.createSession.firstCall.firstArg.successUrl);
         assert.equal(metadata.gift_delivery_method, 'email');
         assert.equal(metadata.gift_recipient_email, 'recipient@example.com');
         assert.equal(metadata.gift_recipient_name, 'Recipient');
         assert.equal(metadata.gift_buyer_name, 'Buyer');
         assert.equal(metadata.gift_personal_message, 'Enjoy your gift');
         assert.equal(metadata.gift_deliver_at, '');
+        assert.equal(successUrl.searchParams.get('gift_delivery'), 'email');
     });
 
     it('prefers the checkout buyer name over the authenticated member name', async function () {
@@ -434,7 +437,10 @@ describe('GiftService interface', function () {
         const {service, giftRepository} = createService();
         giftRepository.getByToken.resolves(buildGift({
             token: 'gift-token',
-            tierId: 'tier_1'
+            tierId: 'tier_1',
+            buyerName: 'Jamie',
+            recipientName: 'Taylor',
+            personalMessage: 'Enjoy!'
         }));
 
         const result = await service.getRedeemable({
@@ -448,6 +454,9 @@ describe('GiftService interface', function () {
             duration: 1,
             currency: 'usd',
             amount: 5000,
+            buyer_name: 'Jamie',
+            recipient_name: 'Taylor',
+            message: 'Enjoy!',
             expires_at: new Date('2030-01-01T00:00:00.000Z'),
             consumes_at: null,
             tier: {

@@ -330,6 +330,9 @@ export interface GiftRedemption {
     duration: number;
     currency: string;
     amount: number;
+    buyer_name: string | null;
+    recipient_name: string | null;
+    message: string | null;
     expires_at: Date;
     consumes_at: Date | null;
     tier: {
@@ -485,6 +488,7 @@ export class GiftService {
         successUrl.searchParams.set('gift_token', token);
         successUrl.searchParams.set('gift_tier', tierId);
         successUrl.searchParams.set('gift_cadence', cadence);
+        successUrl.searchParams.set('gift_delivery', delivery.deliveryMethod);
         if (totalMonths !== undefined) {
             successUrl.searchParams.set('gift_duration', String(totalMonths));
         }
@@ -1378,6 +1382,9 @@ export class GiftService {
             duration: gift.duration,
             currency: gift.currency,
             amount: gift.amount,
+            buyer_name: gift.buyerName,
+            recipient_name: gift.recipientName,
+            message: gift.personalMessage,
             expires_at: gift.expiresAt,
             consumes_at: gift.consumesAt,
             tier: {

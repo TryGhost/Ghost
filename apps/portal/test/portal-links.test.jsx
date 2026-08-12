@@ -567,8 +567,8 @@ describe('Portal Data links:', () => {
 
             const popupIframeDocument = popupFrame.contentDocument;
             expect(await within(popupIframeDocument).findByText(/You've been gifted a membership/i)).toBeInTheDocument();
-            expect(within(popupIframeDocument).queryByText(/Bronze/i)).toBeInTheDocument();
-            expect(within(popupIframeDocument).queryByText(/1 year/i)).toBeInTheDocument();
+            expect(within(popupIframeDocument).queryAllByText(/Bronze/i).length).toBeGreaterThan(0);
+            expect(within(popupIframeDocument).queryAllByText(/1 year/i).length).toBeGreaterThan(0);
             expect(within(popupIframeDocument).queryByText(/Five great stories to read every day/i)).toBeInTheDocument();
             expect(within(popupIframeDocument).queryByLabelText(/your name/i)).not.toBeInTheDocument();
             expect(within(popupIframeDocument).queryByLabelText(/your email/i)).not.toBeInTheDocument();
@@ -601,10 +601,13 @@ describe('Portal Data links:', () => {
 
     describe('?stripe=gift-purchase-success', () => {
         test('opens gift success page', async () => {
-            const site = FixtureSite.singleTier.basic;
+            const site = {
+                ...FixtureSite.singleTier.basic,
+                labs: {giftSubCustomization: true}
+            };
             const tierId = site.products.find(product => product.type === 'paid').id;
-            window.location.href = `https://portal.localhost/?stripe=gift-purchase-success&gift_token=abc123&gift_tier=${tierId}&gift_cadence=year&gift_duration=12`;
-            window.location.search = `?stripe=gift-purchase-success&gift_token=abc123&gift_tier=${tierId}&gift_cadence=year&gift_duration=12`;
+            window.location.href = `https://portal.localhost/?stripe=gift-purchase-success&gift_token=abc123&gift_tier=${tierId}&gift_cadence=year&gift_duration=12&gift_delivery=email`;
+            window.location.search = `?stripe=gift-purchase-success&gift_token=abc123&gift_tier=${tierId}&gift_cadence=year&gift_duration=12&gift_delivery=email`;
             window.location.hash = '';
             window.location.pathname = '/';
 
@@ -620,7 +623,7 @@ describe('Portal Data links:', () => {
             popupFrame = await utils.findByTitle(/portal-popup/i);
             expect(popupFrame).toBeInTheDocument();
 
-            const giftTitle = within(popupFrame.contentDocument).queryByText(/your gift is ready/i);
+            const giftTitle = within(popupFrame.contentDocument).queryByText(/your gift is on its way/i);
             expect(giftTitle).toBeInTheDocument();
 
             const redeemUrl = within(popupFrame.contentDocument).queryByText(/\/gift\/abc123$/);

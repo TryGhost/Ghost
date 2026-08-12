@@ -18,7 +18,8 @@ const renderGiftRedemptionPage = (overrideContext = {}) => {
         overrideContext: {
             site: {
                 ...testSite,
-                url: 'https://example.com/'
+                url: 'https://example.com/',
+                labs: {giftSubCustomization: true}
             },
             pageData: {
                 token: 'gift-token-123',
@@ -43,7 +44,7 @@ describe('GiftRedemptionPage', () => {
         expect(queryByLabelText(/your name/i)).not.toBeInTheDocument();
         expect(queryByLabelText(/your email/i)).not.toBeInTheDocument();
 
-        fireEvent.click(getByRole('button', {name: 'Redeem your membership'}));
+        fireEvent.click(getByRole('button', {name: 'Redeem your gift'}));
 
         expect(mockDoActionFn).toHaveBeenCalledWith('redeemGift', {
             giftToken: 'gift-token-123'
@@ -53,7 +54,7 @@ describe('GiftRedemptionPage', () => {
     test('shows validation errors for anonymous visitors and only submits once valid', async () => {
         const {getByLabelText, getByRole, mockDoActionFn, getByText} = renderGiftRedemptionPage();
         const emailInput = getByLabelText(/your email/i);
-        const submitButton = getByRole('button', {name: 'Redeem your membership'});
+        const submitButton = getByRole('button', {name: 'Redeem your gift'});
 
         fireEvent.click(submitButton);
         expect(getByText('Enter your email address')).toBeInTheDocument();
@@ -115,5 +116,28 @@ describe('GiftRedemptionPage', () => {
         });
 
         expect(mockDoActionFn).toHaveBeenCalledWith('closePopup');
+    });
+
+    test('presents the buyer details and prefills the intended recipient name', () => {
+        const personalizedGift = {
+            ...gift,
+            buyer_name: 'Jamie',
+            recipient_name: 'Taylor',
+            message: 'Enjoy this!',
+            expires_at: '2030-01-01T00:00:00.000Z'
+        };
+        const {container, getByLabelText, getByTestId, getByText} = renderGiftRedemptionPage({
+            pageData: {
+                token: 'gift-token-123',
+                gift: personalizedGift
+            }
+        });
+
+        expect(getByLabelText(/your name/i)).toHaveValue('Taylor');
+        expect(getByLabelText(/your email/i)).toHaveFocus();
+        expect(container.querySelector('.gh-portal-gift-checkout-subtitle')).toHaveTextContent('Jamie has gifted you a 1 year Premium membership to The Blueprint');
+        expect(getByTestId('gift-message')).toHaveTextContent('Enjoy this!');
+        expect(getByTestId('gift-message')).toHaveTextContent('Jamie');
+        expect(getByText(/This gift can only be redeemed once and expires on/i)).toBeInTheDocument();
     });
 });

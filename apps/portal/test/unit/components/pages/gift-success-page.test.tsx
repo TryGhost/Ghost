@@ -2,7 +2,7 @@ import GiftSuccessPage from '../../../../src/components/pages/gift-success-page'
 import {getPriceData, getProductData, getSiteData} from '../../../../src/utils/fixtures-generator';
 import {render} from '../../../utils/test-utils';
 
-function setup({monthlyPrice}: {monthlyPrice: ReturnType<typeof getPriceData> | null}) {
+function setup({monthlyPrice, deliveryMethod = 'link'}: {monthlyPrice: ReturnType<typeof getPriceData> | null; deliveryMethod?: 'email' | 'link'}) {
     const product = {
         ...getProductData({
             id: 'tier_123',
@@ -13,7 +13,8 @@ function setup({monthlyPrice}: {monthlyPrice: ReturnType<typeof getPriceData> | 
     };
     const site = getSiteData({
         products: [product],
-        portalProducts: [product.id]
+        portalProducts: [product.id],
+        labs: {giftSubCustomization: true}
     });
 
     return render(<GiftSuccessPage />, {
@@ -23,7 +24,8 @@ function setup({monthlyPrice}: {monthlyPrice: ReturnType<typeof getPriceData> | 
                 token: 'abc123',
                 tierId: 'tier_123',
                 cadence: 'month',
-                duration: 3
+                duration: 3,
+                deliveryMethod
             }
         }
     });
@@ -46,5 +48,17 @@ describe('GiftSuccessPage', () => {
         expect(getByTestId('gift-redeem-link')).toHaveTextContent('/gift/abc123');
         expect(queryByTestId('gift-card-duration')).not.toBeInTheDocument();
         expect(queryByTestId('gift-card-value')).not.toBeInTheDocument();
+    });
+
+    test('uses future delivery wording and keeps the redemption link for email delivery', () => {
+        const {getByText, getByTestId} = setup({
+            monthlyPrice: getPriceData({amount: 500, interval: 'month'}),
+            deliveryMethod: 'email'
+        });
+
+        expect(getByText('Your gift is on its way')).toBeInTheDocument();
+        expect(getByText("We'll email it to the recipient. A copy will be in your inbox too.")).toBeInTheDocument();
+        expect(getByText('Share it yourself')).toBeInTheDocument();
+        expect(getByTestId('gift-redeem-link')).toHaveTextContent('/gift/abc123');
     });
 });

@@ -1,6 +1,8 @@
 import {getMemberTierName, getSubscriptionExpiry} from './helpers';
 import {t} from './i18n';
 
+// Standalone form, for when the duration stands on its own as a noun phrase:
+// the gift card face, the duration picker ("6 months").
 export function getGiftDurationLabel({cadence, duration} = {}) {
     if (cadence === 'year') {
         return duration === 1
@@ -11,6 +13,22 @@ export function getGiftDurationLabel({cadence, duration} = {}) {
     return duration === 1
         ? t('1 month')
         : t('{months} months', {months: duration});
+}
+
+// Attributive form, for when the duration modifies a following noun. English
+// takes the singular unit there: "a 6 month Gold membership", not "a 6 months
+// Gold membership". Must match the backend's getCadenceLabel so the delivery
+// email and the redemption page describe the gift identically.
+export function getGiftDurationAttributiveLabel({cadence, duration} = {}) {
+    if (cadence === 'year') {
+        return duration === 1
+            ? t('1 year')
+            : t('{years} year', {years: duration});
+    }
+
+    return duration === 1
+        ? t('1 month')
+        : t('{months} month', {months: duration});
 }
 
 export function getGiftRedemptionSuccessMessage({member} = {}) {

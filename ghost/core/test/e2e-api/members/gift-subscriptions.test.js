@@ -629,7 +629,11 @@ describe('Gift Subscriptions', function () {
 
     describe('Check if a gift is redeemable', function () {
         it('returns gift details for an anonymous visitor when the token is redeemable', async function () {
-            const gift = await createGift();
+            const gift = await createGift({
+                buyer_name: 'Jamie',
+                recipient_name: 'Taylor',
+                personal_message: 'Enjoy!'
+            });
 
             const {body} = await membersAgent
                 .get(`/api/gifts/${gift.get('token')}/redeem/`)
@@ -641,6 +645,9 @@ describe('Gift Subscriptions', function () {
             assert.equal(body.gifts[0].duration, 1);
             assert.equal(body.gifts[0].currency, 'usd');
             assert.equal(body.gifts[0].amount, 5000);
+            assert.equal(body.gifts[0].buyer_name, 'Jamie');
+            assert.equal(body.gifts[0].recipient_name, 'Taylor');
+            assert.equal(body.gifts[0].message, 'Enjoy!');
             assert.equal(body.gifts[0].expires_at, new Date(gift.get('expires_at')).toISOString());
             assert.deepEqual(body.gifts[0].tier, {
                 id: paidProduct.id,
@@ -649,6 +656,8 @@ describe('Gift Subscriptions', function () {
                 benefits: paidProduct.related('benefits').toJSON().map(item => item.name)
             });
             assert.equal(body.gifts[0].buyer_email, undefined);
+            assert.equal(body.gifts[0].recipient_email, undefined);
+            assert.equal(body.gifts[0].delivery_status, undefined);
             assert.equal(body.gifts[0].redeemed_at, undefined);
             assert.equal(body.gifts[0].status, undefined);
             assert.equal(body.gifts[0].consumes_at, null);

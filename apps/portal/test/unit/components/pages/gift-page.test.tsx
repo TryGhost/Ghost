@@ -54,25 +54,36 @@ describe('GiftPage', () => {
                 giftSubCustomization: true
             }
         });
-        const {getAllByText, getByRole, mockDoActionFn} = setup(site);
+        const {getAllByText, getByLabelText, getByRole, mockDoActionFn} = setup(site);
 
-        expect(getByRole('button', {name: '1 month'})).toHaveAttribute('aria-pressed', 'true');
-        expect(getByRole('button', {name: '3 months'})).toHaveAttribute('aria-pressed', 'false');
-        expect(getByRole('button', {name: '6 months'})).toBeInTheDocument();
-        expect(getByRole('button', {name: '12 months'})).toBeInTheDocument();
+        expect(getByRole('radio', {name: '1 month'})).toHaveAttribute('aria-checked', 'true');
+        expect(getByRole('radio', {name: '3 months'})).toHaveAttribute('aria-checked', 'false');
+        expect(getByRole('radio', {name: '6 months'})).toBeInTheDocument();
+        expect(getByRole('radio', {name: '12 months'})).toBeInTheDocument();
         expect(getAllByText('$5').length).toBeGreaterThan(0);
 
-        fireEvent.click(getByRole('button', {name: '3 months'}));
+        fireEvent.click(getByRole('radio', {name: '3 months'}));
 
-        expect(getByRole('button', {name: '1 month'})).toHaveAttribute('aria-pressed', 'false');
-        expect(getByRole('button', {name: '3 months'})).toHaveAttribute('aria-pressed', 'true');
+        expect(getByRole('radio', {name: '1 month'})).toHaveAttribute('aria-checked', 'false');
+        expect(getByRole('radio', {name: '3 months'})).toHaveAttribute('aria-checked', 'true');
         expect(getAllByText('$15').length).toBeGreaterThan(0);
 
-        fireEvent.click(getByRole('button', {name: 'Continue'}));
+        fireEvent.change(getByLabelText('Your name'), {target: {value: 'Jamie'}});
+        fireEvent.click(getByRole('button', {name: 'Continue to delivery details'}));
+        fireEvent.change(getByLabelText('Recipient\'s name'), {target: {value: 'Taylor'}});
+        fireEvent.change(getByLabelText('Recipient\'s email'), {target: {value: 'recipient@example.com'}});
+        fireEvent.change(getByLabelText('Optional message'), {target: {value: 'Enjoy!'}});
+        fireEvent.click(getByRole('button', {name: 'Continue to payment'}));
 
         expect(mockDoActionFn).toHaveBeenCalledWith('checkoutGift', {
             tierId: 'tier_123',
-            duration: 3
+            duration: 3,
+            deliveryMethod: 'email',
+            recipientEmail: 'recipient@example.com',
+            recipientName: 'Taylor',
+            buyerName: 'Jamie',
+            personalMessage: 'Enjoy!',
+            deliverAt: null
         });
     });
 
@@ -83,16 +94,9 @@ describe('GiftPage', () => {
             },
             portalDefaultPlan: 'yearly'
         });
-        const {getByRole, mockDoActionFn} = setup(site);
+        const {getByRole} = setup(site);
 
-        expect(getByRole('button', {name: '12 months'})).toHaveAttribute('aria-pressed', 'true');
-
-        fireEvent.click(getByRole('button', {name: 'Continue'}));
-
-        expect(mockDoActionFn).toHaveBeenCalledWith('checkoutGift', {
-            tierId: 'tier_123',
-            duration: 12
-        });
+        expect(getByRole('radio', {name: '12 months'})).toHaveAttribute('aria-checked', 'true');
     });
 
     test('omits the selector when only one duration is available', () => {
@@ -102,16 +106,10 @@ describe('GiftPage', () => {
             },
             portalPlans: ['yearly']
         });
-        const {getByRole, mockDoActionFn, queryByRole} = setup(site);
+        const {getByText, queryByRole} = setup(site);
 
-        expect(queryByRole('group', {name: 'Plan'})).not.toBeInTheDocument();
-
-        fireEvent.click(getByRole('button', {name: 'Continue'}));
-
-        expect(mockDoActionFn).toHaveBeenCalledWith('checkoutGift', {
-            tierId: 'tier_123',
-            duration: 12
-        });
+        expect(queryByRole('radiogroup', {name: 'Gift duration'})).not.toBeInTheDocument();
+        expect(getByText('12 month membership')).toBeInTheDocument();
     });
 
     test('falls back to the first available duration when the default plan is unavailable', () => {
@@ -124,9 +122,36 @@ describe('GiftPage', () => {
         });
         const {getByRole, queryByRole} = setup(site);
 
-        expect(getByRole('button', {name: '1 month'})).toHaveAttribute('aria-pressed', 'true');
-        expect(getByRole('button', {name: '3 months'})).toBeInTheDocument();
-        expect(getByRole('button', {name: '6 months'})).toBeInTheDocument();
-        expect(queryByRole('button', {name: '12 months'})).not.toBeInTheDocument();
+        expect(getByRole('radio', {name: '1 month'})).toHaveAttribute('aria-checked', 'true');
+        expect(getByRole('radio', {name: '3 months'})).toBeInTheDocument();
+        expect(getByRole('radio', {name: '6 months'})).toBeInTheDocument();
+        expect(queryByRole('radio', {name: '12 months'})).not.toBeInTheDocument();
+    });
+
+    test('keeps email details locally but omits them from link delivery', () => {
+        const site = buildSite({labs: {giftSubCustomization: true}});
+        const {getByLabelText, getByRole, mockDoActionFn} = setup(site);
+
+        fireEvent.click(getByRole('button', {name: 'Continue to delivery details'}));
+        fireEvent.change(getByLabelText('Recipient\'s name'), {target: {value: 'Taylor'}});
+        fireEvent.change(getByLabelText('Recipient\'s email'), {target: {value: 'recipient@example.com'}});
+        fireEvent.change(getByLabelText('Optional message'), {target: {value: 'Enjoy!'}});
+
+        fireEvent.click(getByRole('radio', {name: 'I\'ll share it myself'}));
+        fireEvent.click(getByRole('radio', {name: 'Email it to them now'}));
+
+        expect(getByLabelText('Recipient\'s name')).toHaveValue('Taylor');
+        expect(getByLabelText('Recipient\'s email')).toHaveValue('recipient@example.com');
+        expect(getByLabelText('Optional message')).toHaveValue('Enjoy!');
+
+        fireEvent.click(getByRole('radio', {name: 'I\'ll share it myself'}));
+        fireEvent.click(getByRole('button', {name: 'Continue to payment'}));
+
+        expect(mockDoActionFn).toHaveBeenCalledWith('checkoutGift', {
+            tierId: 'tier_123',
+            duration: 1,
+            deliveryMethod: 'link',
+            deliverAt: null
+        });
     });
 });
