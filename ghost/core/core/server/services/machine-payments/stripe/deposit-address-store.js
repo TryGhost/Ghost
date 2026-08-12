@@ -6,11 +6,12 @@ const settingsCache = require('../../../../shared/settings-cache');
 
 // Preview API required for crypto deposit addresses / machine payments.
 const STRIPE_MACHINE_PAYMENTS_API_VERSION = '2026-05-27.preview';
+const DEPOSIT_ADDRESS_SETTING = 'machine_payments_deposit_address';
 
 /**
- * Durable deposit-address store.
- * Persists the address in settings so settlement can succeed after process restarts
- * (unlike a short TTL process cache).
+ * Durable per-network deposit-address store.
+ * Persists a JSON map of network → address in settings so Tempo and Base
+ * rails cannot share a single chain address.
  */
 class DepositAddressStore {
     /**
@@ -32,8 +33,10 @@ class DepositAddressStore {
         this._settingsModel = settingsModel;
         this.stripe = null;
         this.stripeSecretKey = null;
-        this.#inflight = null;
     }
+
+    #addresses = {};
+    #inflight = new Map();
 
     get settingsModel() {
         if (!this._settingsModel) {
@@ -42,28 +45,29 @@ class DepositAddressStore {
         return this._settingsModel;
     }
 
-    #inflight;
-
     /**
      * @param {{network?: string}} [options]
      * @returns {Promise<string>}
      */
     async getOrCreateAddress({network = 'tempo'} = {}) {
-        const existing = this.settingsCache.get('machine_payments_deposit_address');
-        if (existing) {
-            return existing;
+        const cached = this.#addresses[network] || this.#readMap()[network];
+        if (cached) {
+            this.#addresses[network] = cached;
+            return cached;
         }
 
-        if (this.#inflight) {
-            return await this.#inflight;
+        const inflight = this.#inflight.get(network);
+        if (inflight) {
+            return await inflight;
         }
 
-        this.#inflight = this.#createAndPersist({network})
+        const pending = this.#createAndPersist({network})
             .finally(() => {
-                this.#inflight = null;
+                this.#inflight.delete(network);
             });
+        this.#inflight.set(network, pending);
 
-        return await this.#inflight;
+        return await pending;
     }
 
     async #createAndPersist({network}) {
@@ -75,7 +79,7 @@ class DepositAddressStore {
                 const depositAddress = await stripe.crypto.depositAddresses.create({network});
                 const address = depositAddress?.address;
                 if (address) {
-                    await this.#persist(address);
+                    await this.#persist(network, address);
                     return address;
                 }
             } catch (err) {
@@ -120,14 +124,47 @@ class DepositAddressStore {
             logging.warn(err);
         }
 
-        await this.#persist(address);
+        await this.#persist(network, address);
         return address;
     }
 
-    async #persist(address) {
+    #readMap() {
+        const raw = this.settingsCache.get(DEPOSIT_ADDRESS_SETTING);
+        if (!raw) {
+            return {};
+        }
+
+        if (typeof raw === 'object' && !Array.isArray(raw)) {
+            return raw;
+        }
+
+        if (typeof raw === 'string') {
+            try {
+                const parsed = JSON.parse(raw);
+                if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+                    return parsed;
+                }
+            } catch {
+                // Legacy single-address string — treat as Tempo-only.
+            }
+
+            return {tempo: raw};
+        }
+
+        return {};
+    }
+
+    async #persist(network, address) {
+        this.#addresses[network] = address;
+        const map = {
+            ...this.#readMap(),
+            ...this.#addresses,
+            [network]: address
+        };
+
         await this.settingsModel.edit([{
-            key: 'machine_payments_deposit_address',
-            value: address
+            key: DEPOSIT_ADDRESS_SETTING,
+            value: JSON.stringify(map)
         }], {context: {internal: true}});
     }
 

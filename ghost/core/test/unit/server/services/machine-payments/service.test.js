@@ -43,6 +43,7 @@ describe('Unit: server/services/machine-payments/service', function () {
         };
 
         contentLoader = {
+            isPurchasable: sinon.stub().resolves(true),
             loadFullEntry: sinon.stub().resolves({
                 id: 'post1',
                 title: 'Paid',
@@ -52,7 +53,7 @@ describe('Unit: server/services/machine-payments/service', function () {
             })
         };
 
-        eventRepository = {save: sinon.stub().resolves()};
+        eventRepository = {save: sinon.stub().resolves({created: true, event: {id: 'evt1'}})};
         paymentRecorder = {record: sinon.stub().resolves('pi_123')};
     });
 
@@ -101,8 +102,47 @@ describe('Unit: server/services/machine-payments/service', function () {
 
         assert.equal(response.status, 402);
         assert.equal(response.headers.get('WWW-Authenticate'), 'Payment realm="mpp"');
+        sinon.assert.calledOnce(contentLoader.isPurchasable);
         sinon.assert.notCalled(contentLoader.loadFullEntry);
         sinon.assert.notCalled(renderMarkdown);
+    });
+
+    it('returns 403 before charging mixed free+paid tier posts', async function () {
+        contentLoader.isPurchasable.resolves(false);
+        mppAdapter.canHandle.returns(true);
+        const service = createService();
+
+        const response = await service.challengeOrFulfill(new Request('http://example.com/mixed.md', {
+            headers: {authorization: 'Payment abc'}
+        }), {
+            entryId: 'post1',
+            resourceType: 'posts',
+            contentLocation: '/mixed.md',
+            renderMarkdown: () => '# body'
+        });
+
+        assert.equal(response.status, 403);
+        sinon.assert.notCalled(mppAdapter.fulfill);
+        sinon.assert.notCalled(contentLoader.loadFullEntry);
+    });
+
+    it('refuses replayed credentials when the ledger insert is not new', async function () {
+        mppAdapter.canHandle.returns(true);
+        eventRepository.save.resolves({created: false, event: {id: 'evt1'}});
+        const service = createService();
+
+        const response = await service.challengeOrFulfill(new Request('http://example.com/paid.md', {
+            headers: {authorization: 'Payment abc'}
+        }), {
+            entryId: 'post1',
+            resourceType: 'posts',
+            contentLocation: '/paid.md',
+            renderMarkdown: () => '# Secret'
+        });
+
+        assert.equal(response.status, 403);
+        assert.match(await response.text(), /already been used/);
+        sinon.assert.notCalled(contentLoader.loadFullEntry);
     });
 
     it('loads content only after fulfill succeeds', async function () {

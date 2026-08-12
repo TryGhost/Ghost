@@ -19,19 +19,29 @@ class ContentLoader {
     }
 
     /**
+     * Raw-model eligibility check. Use this before issuing a 402 so Content API
+     * tier stripping cannot mark a mixed free+paid post as purchasable.
+     * @param {'posts'|'pages'} resourceType
+     * @param {string} id
+     * @returns {Promise<boolean>}
+     */
+    async isPurchasable(resourceType, id) {
+        const model = await this.#findPublished(resourceType, id, ['tiers']);
+        if (!model) {
+            return false;
+        }
+
+        return isPurchasableEntry(model.toJSON());
+    }
+
+    /**
      * @param {'posts'|'pages'} resourceType
      * @param {string} id
      * @returns {Promise<object|null>}
      */
     async loadFullEntry(resourceType, id) {
         const type = resourceType === 'pages' ? 'page' : 'post';
-        const model = await this.postModel.findOne({
-            id,
-            type,
-            status: 'published'
-        }, {
-            withRelated: ['authors', 'tags', 'tiers']
-        });
+        const model = await this.#findPublished(resourceType, id, ['authors', 'tags', 'tiers']);
 
         if (!model) {
             return null;
@@ -57,6 +67,15 @@ class ContentLoader {
         }
 
         return entry;
+    }
+
+    async #findPublished(resourceType, id, withRelated) {
+        const type = resourceType === 'pages' ? 'page' : 'post';
+        return await this.postModel.findOne({
+            id,
+            type,
+            status: 'published'
+        }, {withRelated});
     }
 }
 

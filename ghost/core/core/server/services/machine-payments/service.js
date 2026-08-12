@@ -50,14 +50,6 @@ class MachinePaymentsService {
         this.defaultCurrencyProvider = defaultCurrencyProvider;
     }
 
-    /**
-     * Replace adapters after construction (used when wiring Stripe-backed rails).
-     * @param {Array} adapters
-     */
-    setAdapters(adapters) {
-        this.adapters = adapters || [];
-    }
-
     isEnabled() {
         return isMachinePaymentsEnabled({
             labs: this.labs,
@@ -117,6 +109,24 @@ class MachinePaymentsService {
             });
         }
 
+        // Check raw model eligibility before challenging or charging. Content API
+        // serialization strips free tiers, which would otherwise 402 a mixed post
+        // and 403 after settlement.
+        if (typeof this.contentLoader.isPurchasable === 'function') {
+            const purchasable = await this.contentLoader.isPurchasable(
+                options.resourceType,
+                options.entryId
+            );
+            if (!purchasable) {
+                return this.#problemResponse({
+                    type: 'https://paymentauth.org/problems/payment-forbidden',
+                    title: 'Content unavailable',
+                    status: 403,
+                    detail: 'This content is not available for machine payment.'
+                });
+            }
+        }
+
         const terms = await this.getTerms({
             url: request.url,
             description: options.description
@@ -158,8 +168,9 @@ class MachinePaymentsService {
         }
 
         if (this.eventRepository) {
+            let saved;
             try {
-                await this.eventRepository.save({
+                saved = await this.eventRepository.save({
                     postId: options.entryId,
                     amount: fulfillment.amount ?? terms.amount,
                     currency: fulfillment.currency ?? terms.currency,
@@ -170,6 +181,21 @@ class MachinePaymentsService {
                 });
             } catch (err) {
                 logging.warn(err);
+                return this.#problemResponse({
+                    type: 'https://paymentauth.org/problems/payment-unavailable',
+                    title: 'Machine payment temporarily unavailable',
+                    status: 503,
+                    detail: 'Machine payment verification is temporarily unavailable.'
+                });
+            }
+
+            if (saved && saved.created === false) {
+                return this.#problemResponse({
+                    type: 'https://paymentauth.org/problems/payment-forbidden',
+                    title: 'Payment credential already used',
+                    status: 403,
+                    detail: 'This machine payment credential has already been used.'
+                });
             }
         }
 
@@ -294,7 +320,8 @@ function safePathname(url) {
     }
 }
 
-module.exports = new MachinePaymentsService();
-module.exports.MachinePaymentsService = MachinePaymentsService;
-module.exports.getDefaultTiersCurrency = getDefaultTiersCurrency;
-module.exports.PAID_MARKDOWN_CACHE_CONTROL = PAID_MARKDOWN_CACHE_CONTROL;
+module.exports = {
+    MachinePaymentsService,
+    getDefaultTiersCurrency,
+    PAID_MARKDOWN_CACHE_CONTROL
+};

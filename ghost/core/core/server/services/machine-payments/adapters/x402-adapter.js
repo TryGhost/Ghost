@@ -1,3 +1,4 @@
+const crypto = require('node:crypto');
 const errors = require('@tryghost/errors');
 const config = require('../../../../shared/config');
 
@@ -9,6 +10,51 @@ function formatPrice({amount, currency}) {
     }
 
     return `$${(amount / 100).toFixed(2)}`;
+}
+
+/**
+ * Stable ledger reference from an x402 PAYMENT-RESPONSE header.
+ * The raw header is base64 JSON and overflows varchar(255); prefer the
+ * settlement transaction hash, and hash the header if that is missing.
+ * @param {string} paymentResponse
+ * @returns {string}
+ */
+function settlementReference(paymentResponse) {
+    const decoded = decodeJsonHeader(paymentResponse);
+    const reference = decoded?.transaction
+        || decoded?.txHash
+        || decoded?.hash
+        || decoded?.settlement?.transaction;
+
+    if (typeof reference === 'string' && reference.length > 0 && reference.length <= 255) {
+        return reference;
+    }
+
+    if (typeof paymentResponse === 'string' && paymentResponse.length <= 255) {
+        return paymentResponse;
+    }
+
+    return crypto.createHash('sha256').update(String(paymentResponse)).digest('hex');
+}
+
+function decodeJsonHeader(header) {
+    if (!header) {
+        return null;
+    }
+
+    for (const encoding of ['base64url', 'base64']) {
+        try {
+            return JSON.parse(Buffer.from(header, encoding).toString('utf8'));
+        } catch {
+            // try the next encoding
+        }
+    }
+
+    try {
+        return JSON.parse(header);
+    } catch {
+        return null;
+    }
 }
 
 /**
@@ -58,7 +104,7 @@ class X402Adapter {
         return {
             protocol: 'x402',
             method: 'base',
-            reference: paymentResponse,
+            reference: settlementReference(paymentResponse),
             amount: terms.amount,
             currency: terms.currency,
             stripePaymentIntentId: null,
@@ -118,3 +164,4 @@ class X402Adapter {
 
 module.exports = X402Adapter;
 module.exports.formatPrice = formatPrice;
+module.exports.settlementReference = settlementReference;

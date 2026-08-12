@@ -35,4 +35,20 @@ describe('Unit: server/services/machine-payments/content-loader', function () {
         assert.equal(entry.url, 'http://example.com/post/');
         assert.equal(entry.type, 'post');
     });
+
+    it('treats mixed free+paid tiers as not purchasable on the raw model', async function () {
+        const postModel = {
+            findOne: async () => ({
+                toJSON: () => ({
+                    id: '1',
+                    visibility: 'tiers',
+                    tiers: [{type: 'paid'}, {type: 'free'}]
+                })
+            })
+        };
+        const loader = new ContentLoader({postModel});
+
+        assert.equal(await loader.isPurchasable('posts', '1'), false);
+        assert.equal(await loader.loadFullEntry('posts', '1'), null);
+    });
 });

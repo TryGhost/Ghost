@@ -137,6 +137,7 @@ describe('Integration: machine-payments orchestration coverage', function () {
             };
 
             contentLoader = {
+                isPurchasable: sinon.stub().resolves(true),
                 loadFullEntry: sinon.stub().resolves({
                     id: 'post1',
                     title: 'Paid',
@@ -145,7 +146,7 @@ describe('Integration: machine-payments orchestration coverage', function () {
                     visibility: 'paid'
                 })
             };
-            eventRepository = {save: sinon.stub().resolves()};
+            eventRepository = {save: sinon.stub().resolves({created: true, event: {id: 'evt1'}})};
             paymentRecorder = {record: sinon.stub().resolves('pi_123')};
         });
 

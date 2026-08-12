@@ -20,16 +20,19 @@ class MachinePaymentEventRepository {
      * @param {string|null} [data.stripePaymentIntentId]
      * @param {string} data.reference
      */
+    /**
+     * @returns {Promise<{event: object, created: boolean}>}
+     */
     async save(data) {
         const event = MachinePaymentEvent.create(data);
 
         const existing = await this.#findByProtocolReference(event.protocol, event.reference);
         if (existing) {
-            return existing;
+            return {event: existing, created: false};
         }
 
         try {
-            return await this.#Model.add({
+            const created = await this.#Model.add({
                 post_id: event.postId,
                 amount: event.amount,
                 currency: event.currency,
@@ -39,6 +42,7 @@ class MachinePaymentEventRepository {
                 reference: event.reference,
                 created_at: event.timestamp
             }, {context: {internal: true}});
+            return {event: created, created: true};
         } catch (err) {
             if (!isUniqueConstraintError(err)) {
                 throw err;
@@ -46,7 +50,7 @@ class MachinePaymentEventRepository {
 
             const raced = await this.#findByProtocolReference(event.protocol, event.reference);
             if (raced) {
-                return raced;
+                return {event: raced, created: false};
             }
 
             throw new errors.InternalServerError({

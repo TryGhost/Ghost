@@ -2,7 +2,6 @@ const errors = require('@tryghost/errors');
 
 const DEFAULT_AMOUNT = 100;
 const DEFAULT_CURRENCY = 'USD';
-const SPT_MINIMUM_AMOUNT_CENTS = 50;
 
 /**
  * @param {{settingsCache: {get: (key: string) => unknown}, defaultCurrencyProvider?: () => Promise<string|null>}} deps
@@ -67,4 +66,3 @@ class Pricing {
 module.exports = Pricing;
 module.exports.DEFAULT_AMOUNT = DEFAULT_AMOUNT;
 module.exports.DEFAULT_CURRENCY = DEFAULT_CURRENCY;
-module.exports.SPT_MINIMUM_AMOUNT_CENTS = SPT_MINIMUM_AMOUNT_CENTS;
