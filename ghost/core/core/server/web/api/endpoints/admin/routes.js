@@ -5,6 +5,7 @@ const auth = require('../../../../services/auth');
 const apiMw = require('../../middleware');
 const mw = require('./middleware');
 const labs = require('../../../../../shared/labs');
+const automationPerformance = require('./automation-performance');
 
 const shared = require('../../../shared');
 
@@ -18,6 +19,9 @@ module.exports = function apiRoutes() {
 
     // ## Public
     router.get('/site', mw.publicAdminApi, http(api.site.read));
+    router.get('/automation-performance', automationPerformance.page);
+    router.post('/automation-performance/setup', automationPerformance.setup);
+    router.post('/automation-performance/query', automationPerformance.query);
 
     // ## Configuration
     router.get('/config', mw.authAdminApi, http(api.config.read));
