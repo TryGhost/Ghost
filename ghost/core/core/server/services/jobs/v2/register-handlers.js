@@ -10,6 +10,17 @@
 function registerJobHandlers() {
     // Handlers are registered here as their call sites migrate from the
     // legacy @tryghost/job-manager to the v2 jobs service.
+    const jobsService = require('./index').default;
+
+    // Media inlining: fetch external media from the given domains and store
+    // it locally. Dispatched by the media-inliner service on demand (admin
+    // API `db/media/inline`). The handler reads the api off the module on
+    // every run so it always uses the current boot's service instance.
+    const MediaInlinerJob = require('../../media-inliner/media-inliner-job');
+    const mediaInlinerService = require('../../media-inliner');
+    jobsService.handle(MediaInlinerJob, async (job) => {
+        await mediaInlinerService.api.inline(job.domains);
+    });
 }
 
 module.exports = {registerJobHandlers};

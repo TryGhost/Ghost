@@ -2,8 +2,11 @@ module.exports = {
     async init() {
         const debug = require('@tryghost/debug')('mediaInliner');
         const MediaInliner = require('./external-media-inliner');
+        const MediaInlinerJob = require('./media-inliner-job');
         const models = require('../../models');
         const jobsService = require('../jobs');
+        const jobsServiceV2 = require('../jobs/v2').default;
+        const labs = require('../../../shared/labs');
         const adapterManager = require('../../services/adapter-manager').default;
 
         const mediaStorage = adapterManager.getAdapter('storage:media');
@@ -43,20 +46,36 @@ module.exports = {
 
                 debug('[Inliner] Starting media inlining job for domains: ', domains);
 
-                // @NOTE: the job is "inline" (aka non-offloaded into a thread), because usecases are currently
-                //        limited to migrational, so there is no expectations for site's availability etc.
-                await jobsService.addJob({
-                    name: 'external-media-inliner',
-                    job: (data) => {
-                        return mediaInliner.inline(data.domains);
-                    },
-                    data: {domains},
-                    offloaded: false
-                });
+                if (labs.isSet('jobsV2')) {
+                    // Resolves on acceptance: the job runs in the background
+                    // and its outcome never surfaces here — matching the
+                    // legacy non-offloaded job below.
+                    await jobsServiceV2.dispatch(new MediaInlinerJob({domains}));
+                } else {
+                    // @NOTE: the job is "inline" (aka non-offloaded into a thread), because usecases are currently
+                    //        limited to migrational, so there is no expectations for site's availability etc.
+                    await jobsService.addJob({
+                        name: 'external-media-inliner',
+                        job: (data) => {
+                            return mediaInliner.inline(data.domains);
+                        },
+                        data: {domains},
+                        offloaded: false
+                    });
+                }
 
                 return {
                     status: 'success'
                 };
+            },
+
+            /**
+             * The inlining work itself — invoked by the MediaInlinerJob
+             * handler registered in services/jobs/v2/register-handlers.js.
+             * @param {string[]} domains
+             */
+            inline: async (domains) => {
+                return mediaInliner.inline(domains);
             }
         };
     }
