@@ -216,7 +216,9 @@ export type PartsOf<T extends FieldType> = T extends FieldType
  */
 export function subFieldsOf<T extends FieldType>(type: T): PartsOf<T>[] | null {
     // Through the interface, not the literal: a type with no parts has no `fields` key.
-    const {fields}: FieldTypeDefinition = FIELD_TYPES[type];
+    // Optional because a caller built against an older catalog than the server it talks to
+    // reaches here with a type this build has never heard of, which reads as no parts.
+    const definition: FieldTypeDefinition | undefined = FIELD_TYPES[type];
     // The keys are `PartsOf<T>` by construction: `fields` is the object it reads `keyof` from.
-    return fields ? Object.keys(fields) as PartsOf<T>[] : null;
+    return definition?.fields ? Object.keys(definition.fields) as PartsOf<T>[] : null;
 }

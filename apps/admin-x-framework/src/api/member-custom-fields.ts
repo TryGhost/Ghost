@@ -78,12 +78,16 @@ const fieldTypePresentation: {[T in FieldType]: FieldTypePresentation<T>} = {
 };
 
 /**
- * A type's part labels, keyed by part; empty for a type with no parts.
+ * A type's part labels, keyed by part; empty for a type with no parts, and for one this
+ * build has never heard of.
  *
  * Total for every key the value schema declares, which is the only kind of key that
  * reaches it: `FieldTypePresentation` refuses to compile a catalog missing one.
  */
-const partLabelsFor = (type: FieldType): Record<string, string> => fieldTypePresentation[type].subFields ?? {};
+const partLabelsFor = (type: FieldType): Record<string, string> => {
+    const labels: Record<string, string> | undefined = fieldTypePresentation[type]?.subFields;
+    return labels ?? {};
+};
 
 // The catalog in the shared catalog's declared order, so every admin surface
 // offers and renders the field types in the same order.

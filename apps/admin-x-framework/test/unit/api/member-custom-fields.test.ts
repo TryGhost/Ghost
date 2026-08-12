@@ -55,6 +55,16 @@ describe('member custom fields api helpers', () => {
         it('returns no targets for an empty field set', () => {
             expect(memberCustomFieldCsvColumns([])).toEqual([]);
         });
+
+        // An admin build older than the server it talks to is handed a type it has no
+        // presentation for. The mapping picker offering one fewer column beats it throwing.
+        it('offers a whole-column target for a type it has never heard of', () => {
+            const future = field({key: 'mystery', name: 'Mystery', type: 'a_type_from_the_future' as MemberCustomField['type']});
+
+            expect(memberCustomFieldCsvColumns([future])).toEqual([
+                {label: 'Mystery', value: 'custom_fields.mystery'}
+            ]);
+        });
     });
 
     describe('memberCustomFieldParts', () => {
