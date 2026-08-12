@@ -1,7 +1,29 @@
-import {MembersFieldMapping, detectFieldTypes, formatImportError, getFieldMappings, sampleData} from '@/members/components/bulk-action-modals/import-members/mapping';
+import {MembersFieldMapping, columnsOf, detectFieldTypes, formatImportError, getFieldMappings, sampleData} from '@/members/components/bulk-action-modals/import-members/mapping';
 import {describe, expect, it} from 'vitest';
 
 describe('mapping helpers', () => {
+    // Papaparse omits keys for a row with fewer cells than the header rather than padding it,
+    // so reading the first row alone loses every column a short first row does not reach — and
+    // a column nothing names is carried through by the importer, imported without ever being
+    // shown to the publisher.
+    it('finds every column even when the first row is short', () => {
+        const ragged = [
+            {email: 'one@example.com'},
+            {email: 'two@example.com', name: 'Two', note: 'hello'}
+        ] as unknown as Record<string, string>[];
+
+        expect(columnsOf(ragged)).toEqual(['email', 'name', 'note']);
+        expect(Object.keys(detectFieldTypes(ragged))).toContain('note');
+    });
+
+    it('does not offer papaparse overflow as a column', () => {
+        const overflowing = [
+            {email: 'one@example.com', __parsed_extra: 'spare'}
+        ] as unknown as Record<string, string>[];
+
+        expect(columnsOf(overflowing)).toEqual(['email']);
+    });
+
     it('samples non-empty entries per column', () => {
         const sampled = sampleData([
             {email: '', name: 'A'},
