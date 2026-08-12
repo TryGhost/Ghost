@@ -24,10 +24,6 @@ const features: Feature[] = [{
     description: 'Use Stripe Automatic Tax at Stripe Checkout. Needs to be enabled in Stripe',
     flag: 'stripeAutomaticTax'
 }, {
-    title: 'Email customization (internal beta)',
-    description: 'Newsletter customization settings that have been released to Ghost\'s own production sites',
-    flag: 'emailCustomization'
-}, {
     title: 'Import Member Tier',
     description: 'Enables tier to be specified when importing members',
     flag: 'importMemberTier'

@@ -48,7 +48,6 @@ const PRIVATE_FEATURES = [
     'csvContentImporter',
     'lexicalIndicators',
     'adminUIRefresh',
-    'emailCustomization',
     'tagsX',
     'emailUniqueid',
     'themeTranslation',
