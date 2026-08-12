@@ -75,6 +75,10 @@ const features: Feature[] = [{
     title: 'Gift subscription customization',
     description: 'Enables fixed-duration gift subscription purchases before publisher configuration is available',
     flag: 'giftSubCustomization'
+}, {
+    title: 'Self-serve archives',
+    description: 'Replaces the individual export buttons with a single "Export data" flow for downloading a full site archive',
+    flag: 'selfServeArchives'
 }];
 
 const AlphaFeatures: React.FC = () => {
