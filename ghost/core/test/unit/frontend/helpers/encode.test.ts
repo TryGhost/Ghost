@@ -1,8 +1,7 @@
-const assert = require('node:assert/strict');
-const {assertExists} = require('../../../utils/assertions');
-
-// Stuff we are testing
-const encode = require('../../../../core/frontend/helpers/encode');
+import assert from 'node:assert/strict';
+import {assertExists} from '../../../utils/assertions';
+// @ts-expect-error encode currently lacks type definitions.
+import encode from '../../../../core/frontend/helpers/encode';
 
 describe('{{encode}} helper', function () {
     it('can escape URI', function () {
