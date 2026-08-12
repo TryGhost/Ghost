@@ -27,6 +27,10 @@ interface UseMemberFilterFieldsOptions {
     emailTrackClicks?: boolean;
     customFieldsEnabled?: boolean;
     customFields?: Array<{key: string; name: string; type: MemberCustomField['type']}>;
+    // Archived fields still referenced by the current filter. Rendered as disabled,
+    // removable-only pills so a saved segment stays visible and undoable even though
+    // the field is no longer offered in the picker.
+    archivedCustomFields?: Array<{key: string; name: string}>;
     siteTimezone?: string;
 }
 
@@ -92,8 +96,6 @@ function getFieldIcon(key: string) {
         return React.createElement(LucideIcon.MousePointerClick, {className: 'size-4'});
     case 'newsletter_feedback':
         return React.createElement(LucideIcon.MessageSquare, {className: 'size-4'});
-    case 'custom_field':
-        return React.createElement(LucideIcon.SlidersHorizontal, {className: 'size-4'});
     case 'offer_redemptions':
         return React.createElement(LucideIcon.Ticket, {className: 'size-4'});
     case MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FIELD:
@@ -101,10 +103,6 @@ function getFieldIcon(key: string) {
     default:
         if (key.startsWith('newsletters.')) {
             return React.createElement(LucideIcon.Newspaper, {className: 'size-4'});
-        }
-
-        if (key.startsWith('custom_field.')) {
-            return React.createElement(LucideIcon.SlidersHorizontal, {className: 'size-4'});
         }
 
         return undefined;
@@ -272,6 +270,7 @@ export function useMemberFilterFields({
     emailTrackClicks = false,
     customFieldsEnabled = false,
     customFields = [],
+    archivedCustomFields = [],
     siteTimezone = 'UTC'
 }: UseMemberFilterFieldsOptions): FilterFieldGroup[] {
     return useMemo(() => {
@@ -371,19 +370,43 @@ export function useMemberFilterFields({
         // for "Shipping address" directly rather than reaching it through a generic
         // "Custom field" door. A simple field filters on its value; a composite field's
         // renderer opens its parts (plus "Any") in the pill.
-        if (customFieldsEnabled && customFields.length > 0) {
+        if (customFieldsEnabled) {
             const customFieldFields = customFields.map(field => createFieldConfig(`custom_field.${field.key}`, {
                 label: field.name,
                 // The dropdown entry and the added filter show the field type's own icon
                 // rather than a generic custom-field mark.
                 icon: React.createElement(CustomFieldIcon, {type: field.type, className: 'size-4'}),
+                // Text fields default to "contains" to match native Name/Email; a
+                // composite defaults to whole-field "is set" (the renderer coerces it).
+                defaultOperator: 'contains',
                 // The field's type decides its parts and operators, so the operator
                 // control lives in the renderer, after any part is chosen.
                 renderOperatorInValue: true,
                 customRenderer: props => React.createElement(CustomFieldFilterRenderer, props as React.ComponentProps<typeof CustomFieldFilterRenderer>)
             }));
 
-            groups.push({group: 'Custom fields', fields: customFieldFields, previewLimit: CUSTOM_FIELDS_PREVIEW_LIMIT});
+            // An archived field the current filter still references: a disabled,
+            // removable-only pill with an archive icon. Its key is already in the filter,
+            // so the picker's own de-dup keeps it out of the add-list — it only ever
+            // renders as an existing pill.
+            const archivedFieldFields = archivedCustomFields.map(field => createFieldConfig(`custom_field.${field.key}`, {
+                label: field.name,
+                icon: React.createElement(LucideIcon.Archive, {className: 'size-4'}),
+                // Read-only: the operator and value stay visible so the segment reads
+                // clearly, but the field is gone from the picker, so the pill can only
+                // be removed, never re-edited.
+                readOnly: true,
+                renderOperatorInValue: true,
+                customRenderer: props => React.createElement(CustomFieldFilterRenderer, props as React.ComponentProps<typeof CustomFieldFilterRenderer>)
+            }));
+
+            const allCustomFieldFields = [...customFieldFields, ...archivedFieldFields];
+
+            // Nothing defined yet means nothing to filter on, so the group stays out of
+            // the picker entirely rather than showing a section that can't be used.
+            if (allCustomFieldFields.length > 0) {
+                groups.push({group: 'Custom fields', fields: allCustomFieldFields, previewLimit: CUSTOM_FIELDS_PREVIEW_LIMIT});
+            }
         }
 
         if (activeNewsletters.length > 1) {
@@ -495,6 +518,7 @@ export function useMemberFilterFields({
         emailValueSource,
         customFieldsEnabled,
         customFields,
+        archivedCustomFields,
         emailTrackClicks,
         emailTrackOpens,
         hasMultipleTiers,

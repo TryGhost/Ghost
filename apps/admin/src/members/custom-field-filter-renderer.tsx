@@ -2,7 +2,7 @@ import React, {useEffect} from 'react';
 import {CUSTOM_FIELD_OPERATORS, CUSTOM_FIELD_SET_OPERATORS} from './member-fields';
 import {FilterSegmentInput, FilterSegmentSelect} from '@tryghost/shade/patterns';
 import {createOperatorOptions} from '@/shared/filters';
-import {memberCustomFieldParts, useBrowseMemberCustomFields} from '@tryghost/admin-x-framework/api/member-custom-fields';
+import {memberCustomFieldParts, useBrowseMemberCustomFieldsIncludingArchived} from '@tryghost/admin-x-framework/api/member-custom-fields';
 import type {CustomRendererProps} from '@tryghost/shade/patterns';
 
 // The dropdown entry has already chosen the field (its key is in `field.key` as
@@ -14,8 +14,10 @@ import type {CustomRendererProps} from '@tryghost/shade/patterns';
 
 const KEY_PREFIX = 'custom_field.';
 
-const CustomFieldFilterRenderer: React.FC<CustomRendererProps<string>> = ({field, values, onChange, operator, onOperatorChange}) => {
-    const {data} = useBrowseMemberCustomFields();
+const CustomFieldFilterRenderer: React.FC<CustomRendererProps<string>> = ({field, values, onChange, operator, onOperatorChange, readOnly}) => {
+    // Include-archived so an archived composite field's pill can still resolve its parts
+    // and show which one the saved segment filters on.
+    const {data} = useBrowseMemberCustomFieldsIncludingArchived();
     const definitions = data?.members_custom_fields ?? [];
 
     const fieldKey = (field.key ?? '').slice(KEY_PREFIX.length);
@@ -44,11 +46,12 @@ const CustomFieldFilterRenderer: React.FC<CustomRendererProps<string>> = ({field
         : CUSTOM_FIELD_OPERATORS;
 
     useEffect(() => {
-        if (!onOperatorChange || operators.includes(operator)) {
+        // A read-only pill never rewrites its own operator; it just displays what's set.
+        if (readOnly || !onOperatorChange || operators.includes(operator)) {
             return;
         }
         onOperatorChange('is-set');
-    }, [operator, operators, onOperatorChange]);
+    }, [readOnly, operator, operators, onOperatorChange]);
 
     const needsValue = !CUSTOM_FIELD_SET_OPERATORS.includes(operator);
     const partOptions = [{value: '', label: 'Any'}, ...parts];
@@ -59,6 +62,7 @@ const CustomFieldFilterRenderer: React.FC<CustomRendererProps<string>> = ({field
                 <FilterSegmentSelect
                     ariaLabel={`${fieldLabel} part`}
                     options={partOptions}
+                    readOnly={readOnly}
                     testId="custom-field-filter-subfield"
                     value={subfield}
                     onChange={nextSubfield => onChange([nextSubfield, value])}
@@ -69,6 +73,7 @@ const CustomFieldFilterRenderer: React.FC<CustomRendererProps<string>> = ({field
                 <FilterSegmentSelect
                     ariaLabel={`${fieldLabel} operator`}
                     options={createOperatorOptions(operators)}
+                    readOnly={readOnly}
                     testId="custom-field-filter-operator"
                     value={operator}
                     onChange={onOperatorChange}
@@ -79,6 +84,7 @@ const CustomFieldFilterRenderer: React.FC<CustomRendererProps<string>> = ({field
                 <FilterSegmentInput
                     ariaLabel={`${fieldLabel} value`}
                     placeholder="Enter value..."
+                    readOnly={readOnly}
                     testId="custom-field-filter-value"
                     value={value}
                     onChange={nextValue => onChange([subfield, nextValue])}
