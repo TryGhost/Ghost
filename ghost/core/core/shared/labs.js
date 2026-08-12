@@ -51,7 +51,6 @@ const PRIVATE_FEATURES = [
     'emailUniqueid',
     'themeTranslation',
     'pictureImageFormats',
-    'smarterCounts',
     'getHelperDeduplication',
     'memberDetailsReact',
     'membersCustomFields',
