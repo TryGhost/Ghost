@@ -83,6 +83,10 @@ const features: Feature[] = [{
     title: 'Gift subscription customization',
     description: 'Enables fixed-duration gift subscription purchases before publisher configuration is available',
     flag: 'giftSubCustomization'
+}, {
+    title: 'Jobs service v2',
+    description: 'Runs migrated background jobs through the new class-based jobs service instead of the legacy job manager',
+    flag: 'jobsV2'
 }];
 
 const AlphaFeatures: React.FC = () => {

@@ -31,6 +31,7 @@ const urlServiceUtils = require('./url-service-utils');
 const mockManager = require('./e2e-framework-mock-manager');
 const mentionsJobsService = require('../../core/server/services/mentions-jobs');
 const jobsService = require('../../core/server/services/jobs');
+const jobsServiceV2 = require('../../core/server/services/jobs/v2').default;
 
 const boot = require('../../core/boot');
 const {AdminAPITestAgent, ContentAPITestAgent, GhostAPITestAgent, MembersAPITestAgent} = require('./agents');
@@ -60,6 +61,7 @@ let totalBoots = 0;
 const startGhost = async (options = {}) => {
     await mentionsJobsService.allSettled();
     await jobsService.allSettled();
+    await jobsServiceV2.allSettled();
     await DomainEvents.allSettled();
 
     /**

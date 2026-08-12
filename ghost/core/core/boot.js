@@ -134,6 +134,33 @@ async function initCore({ghostServer, config}) {
     memberCustomFieldsService.init();
     debug('End: Member Custom Fields Service');
 
+    // The v2 jobs service dispatches serialisable job classes through the
+    // adapter-selected backend (in-memory by default). Handlers are
+    // registered at the end of initServices, once every service they close
+    // over exists. Initialised on every boot — including server-less test
+    // boots — because dispatch call sites exist regardless of the server.
+    debug('Begin: Job Service (v2)');
+    const jobsServiceV2 = require('./server/services/jobs/v2').default;
+    const logging = require('@tryghost/logging');
+    const sentry = require('./shared/sentry');
+
+    jobsServiceV2.init({
+        backend: adapterManager.getAdapter('jobs'),
+        // Mirrors the legacy job service's error handler: report, never throw
+        errorReporter: (error, {jobType}) => {
+            logging.info(`Capturing error for v2 job of type: ${jobType}`);
+            logging.error(error);
+            sentry.captureException(error);
+        }
+    });
+
+    if (ghostServer) {
+        ghostServer.registerCleanupTask(async () => {
+            await jobsServiceV2.shutdown();
+        });
+    }
+    debug('End: Job Service (v2)');
+
     if (ghostServer) {
         // Job Service allows parts of Ghost to run in the background
         debug('Begin: Job Service');
@@ -411,6 +438,13 @@ async function initServices({ghostServer} = {}) {
     }
 
     debug('End: Services');
+
+    // Every v2 job handler is registered by this one step, after all the
+    // services handlers close over have been initialised.
+    debug('Begin: Register job handlers');
+    const {registerJobHandlers} = require('./server/services/jobs/v2/register-handlers');
+    registerJobHandlers();
+    debug('End: Register job handlers');
 
     debug('End: initServices');
 }
