@@ -33,4 +33,16 @@ describe('Automation performance route', function () {
             assert.equal(typeof count, 'number');
         }
     });
+
+    it('sets up demo data within SQLite batch limits', async function () {
+        const response = await agent
+            .post('automation-performance/setup')
+            .expectStatus(200);
+
+        assert.deepEqual(response.body, {
+            automation_id: response.body.automation_id,
+            automation_runs: 10000,
+            automation_run_steps: 100000
+        });
+    });
 });

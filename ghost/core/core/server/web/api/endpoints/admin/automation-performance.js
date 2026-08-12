@@ -3,7 +3,8 @@ const db = require('../../../../data/db');
 
 const AUTOMATION_STEP_COUNT = 10;
 const AUTOMATION_RUN_COUNT = 10000;
-const INSERT_CHUNK_SIZE = 1000;
+// Each run has 10 steps. Keep step inserts below SQLite's 500-term compound SELECT limit.
+const INSERT_CHUNK_SIZE = 50;
 
 function createPage() {
     return `<!doctype html>
