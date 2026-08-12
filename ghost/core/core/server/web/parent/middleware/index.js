@@ -1,6 +1,6 @@
 module.exports = {
   emitEvents: require('./emit-events'),
-  filterQueryParameters: require('./filter-query-parameters').default,
+  filterQueryParameters: require('./filter-query-parameters').filterQueryParameters,
   ghostLocals: require('./ghost-locals').ghostLocals,
   logRequest: require('./log-request'),
   queueRequest: require('./queue-request'),

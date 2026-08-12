@@ -3,7 +3,7 @@ import logging from '@tryghost/logging';
 import type {NextFunction, Request, Response} from 'express';
 import sinon from 'sinon';
 
-import filterQueryParameters from '../../../../../../core/server/web/parent/middleware/filter-query-parameters';
+import {filterQueryParameters, filterRequestTarget} from '../../../../../../core/server/web/parent/middleware/filter-query-parameters';
 
 describe('Middleware: filterQueryParameters', function () {
     afterEach(function () {
@@ -12,77 +12,77 @@ describe('Middleware: filterQueryParameters', function () {
 
     describe('filterRequestTarget', function () {
         it('keeps globally allowed parameters and strips undeclared parameters', function () {
-            const result = filterQueryParameters.filterRequestTarget('/r/example?step=run-step-id&m=member-id&unknown=value');
+            const result = filterRequestTarget('/r/example?step=run-step-id&m=member-id&unknown=value');
 
             assert.equal(result.requestTarget, '/r/example?step=run-step-id&m=member-id');
             assert.deepEqual(result.removedUnknownParameters, ['unknown']);
         });
 
         it('preserves allowed attribution parameters', function () {
-            const result = filterQueryParameters.filterRequestTarget('/welcome/?utm_source=newsletter&ref=weekly&m=member-id');
+            const result = filterRequestTarget('/welcome/?utm_source=newsletter&ref=weekly&m=member-id');
 
             assert.equal(result.requestTarget, '/welcome/?utm_source=newsletter&ref=weekly&m=member-id');
             assert.deepEqual(result.removedUnknownParameters, []);
         });
 
         it('does not filter Admin API query parameters', function () {
-            const result = filterQueryParameters.filterRequestTarget('/ghost/api/admin/posts/?utm_source=newsletter&unknown=value');
+            const result = filterRequestTarget('/ghost/api/admin/posts/?utm_source=newsletter&unknown=value');
 
             assert.equal(result.requestTarget, '/ghost/api/admin/posts/?utm_source=newsletter&unknown=value');
             assert.deepEqual(result.removedUnknownParameters, []);
         });
 
         it('allows arbitrary parameters on exempt paths', function () {
-            const result = filterQueryParameters.filterRequestTarget('/.ghost/activitypub/inbox?utm_source=newsletter&unknown=value');
+            const result = filterRequestTarget('/.ghost/activitypub/inbox?utm_source=newsletter&unknown=value');
 
             assert.equal(result.requestTarget, '/.ghost/activitypub/inbox?utm_source=newsletter&unknown=value');
             assert.deepEqual(result.removedUnknownParameters, []);
         });
 
         it('allows arbitrary parameters when force_params=true', function () {
-            const result = filterQueryParameters.filterRequestTarget('/welcome/?unknown=value&force_params=true');
+            const result = filterRequestTarget('/welcome/?unknown=value&force_params=true');
 
             assert.equal(result.requestTarget, '/welcome/?unknown=value&force_params=true');
             assert.deepEqual(result.removedUnknownParameters, []);
         });
 
         it('applies the Content API allowlist', function () {
-            const result = filterQueryParameters.filterRequestTarget('/ghost/api/content/posts/?key=content-key&include=authors&unknown=value&m=member-id');
+            const result = filterRequestTarget('/ghost/api/content/posts/?key=content-key&include=authors&unknown=value&m=member-id');
 
             assert.equal(result.requestTarget, '/ghost/api/content/posts/?key=content-key&include=authors');
             assert.deepEqual(result.removedUnknownParameters, ['m', 'unknown']);
         });
 
         it('does not allow force_params to bypass Content API filtering', function () {
-            const result = filterQueryParameters.filterRequestTarget('/ghost/api/canary/content/posts/?key=content-key&force_params=true&unknown=value');
+            const result = filterRequestTarget('/ghost/api/canary/content/posts/?key=content-key&force_params=true&unknown=value');
 
             assert.equal(result.requestTarget, '/ghost/api/canary/content/posts/?key=content-key');
             assert.deepEqual(result.removedUnknownParameters, ['force_params', 'unknown']);
         });
 
         it('preserves repeated allowed parameters', function () {
-            const result = filterQueryParameters.filterRequestTarget('/members/?ids=one&ids=two&unknown=value');
+            const result = filterRequestTarget('/members/?ids=one&ids=two&unknown=value');
 
             assert.equal(result.requestTarget, '/members/?ids=one&ids=two');
             assert.deepEqual(result.removedUnknownParameters, ['unknown']);
         });
 
         it('preserves admin toolbar, gift link, and automation parameters', function () {
-            const result = filterQueryParameters.filterRequestTarget('/post/?admin=true&admin_toolbar=0&gift=unlock-token&step=run-step-id');
+            const result = filterRequestTarget('/post/?admin=true&admin_toolbar=0&gift=unlock-token&step=run-step-id');
 
             assert.equal(result.requestTarget, '/post/?admin=true&admin_toolbar=0&gift=unlock-token&step=run-step-id');
             assert.deepEqual(result.removedUnknownParameters, []);
         });
 
         it('preserves notification unsubscribe and tier preview parameters', function () {
-            const result = filterQueryParameters.filterRequestTarget('/unsubscribe/?comments=1&updatesandannouncements=1&member_tier=silver');
+            const result = filterRequestTarget('/unsubscribe/?comments=1&updatesandannouncements=1&member_tier=silver');
 
             assert.equal(result.requestTarget, '/unsubscribe/?comments=1&updatesandannouncements=1&member_tier=silver');
             assert.deepEqual(result.removedUnknownParameters, []);
         });
 
         it('preserves fields for the frontend comments API', function () {
-            const result = filterQueryParameters.filterRequestTarget('/members/api/comments/post/post-id/?fields=id%2Cpinned');
+            const result = filterRequestTarget('/members/api/comments/post/post-id/?fields=id%2Cpinned');
 
             assert.equal(result.requestTarget, '/members/api/comments/post/post-id/?fields=id%2Cpinned');
             assert.deepEqual(result.removedUnknownParameters, []);

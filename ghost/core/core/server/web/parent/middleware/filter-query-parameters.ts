@@ -50,7 +50,7 @@ const removeUnknownParameters = (searchParams: URLSearchParams, allowlist: Reado
     return removed;
 };
 
-const filterRequestTarget = (requestTarget: string): FilterResult => {
+export const filterRequestTarget = (requestTarget: string): FilterResult => {
     const {pathname, searchParams} = splitRequestTarget(requestTarget);
     const contentApiRequest = CONTENT_API_PATH_PATTERN.test(pathname);
     const bypass = searchParams.get('force_params') === 'true';
@@ -87,7 +87,7 @@ const filterRequestTarget = (requestTarget: string): FilterResult => {
  * Update the production policy and this manifest together when adding a parameter.
  * This middleware is enabled by the root pnpm dev Docker Compose configuration.
  */
-function filterQueryParameters(req: Request, _res: Response, next: NextFunction) {
+export function filterQueryParameters(req: Request, _res: Response, next: NextFunction) {
     const requestTarget = req.originalUrl || req.url;
     const result = filterRequestTarget(requestTarget);
 
@@ -104,5 +104,3 @@ function filterQueryParameters(req: Request, _res: Response, next: NextFunction)
 
     next();
 }
-
-export default Object.assign(filterQueryParameters, {filterRequestTarget});
