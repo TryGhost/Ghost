@@ -1,6 +1,6 @@
-const assert = require('node:assert/strict');
-
-const {escapeJsonLd} = require('../../../../core/frontend/helpers/ghost_head');
+import assert from 'node:assert/strict';
+// @ts-expect-error ghost_head currently lacks type definitions.
+import {escapeJsonLd} from '../../../../core/frontend/helpers/ghost_head';
 
 describe('ghost_head escapeJsonLd', function () {
     it('neutralises a </script> breakout without losing the data', function () {

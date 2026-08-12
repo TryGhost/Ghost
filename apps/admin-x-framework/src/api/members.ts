@@ -2,7 +2,7 @@ import {InfiniteData, useIsFetching, useQueryClient} from '@tanstack/react-query
 import {useEffect} from 'react';
 import {Meta, createInfiniteQuery, createMutation, createQuery, createQueryWithId} from '../utils/api/hooks';
 import {apiUrl} from '../utils/api/fetch-api';
-import type {Address} from '@tryghost/custom-field-types';
+import type {FieldValue} from '@tryghost/custom-field-types';
 import {useCurrentUser} from './current-user';
 import {canManageMembers} from './users';
 
@@ -507,11 +507,10 @@ export interface EditMemberData {
     newsletters?: Array<{id: string}>;
     tiers?: Array<{id: string; expiry_at?: string | null}>;
     // Merge semantics: only the keys present are written; `null` clears a
-    // value. Values are strings for text-backed fields and composite objects
-    // for address — every sub-field of which is optional, the server asking
-    // only that one of them is filled in. Requires the `membersCustomFields`
-    // flag server-side.
-    custom_fields?: Record<string, string | Address | null>;
+    // value. The value union is derived from the shared schemas, so a field type
+    // added there is writable here without this line being edited. Requires the
+    // `membersCustomFields` flag server-side.
+    custom_fields?: Record<string, FieldValue | null>;
 }
 
 export const useEditMember = createMutation<MembersResponseType, EditMemberData>({

@@ -1,4 +1,4 @@
-import {FIELD_TYPE_IDS, type Address, type FieldType} from '@tryghost/custom-field-types';
+import {FIELD_TYPE_IDS, subFieldsOf, type FieldType, type PartsOf} from '@tryghost/custom-field-types';
 import {csvColumnsForField} from '@tryghost/custom-field-types/csv';
 import {Meta, createMutation, createQuery, createQueryWithId} from '../utils/api/hooks';
 
@@ -30,32 +30,42 @@ export type MemberCustomField = {
  * The user-type catalog: the presentation layer over the shared field types.
  *
  * The shared catalog (@tryghost/custom-field-types) owns what a field type *is*
- * - its storage and validation. This catalog owns what it *looks like* in admin:
- * label, icon, and which control collects a value. Admin surfaces (settings
+ * - its storage and validation. This catalog owns what a publisher is told it is:
+ * its name, and which control collects a value. Admin surfaces (settings
  * list/modal, member detail) render from here so every surface presents fields
  * identically. The backend never sees any of this.
+ *
+ * The icon is not here: it is a component, so it sits with admin's, under the same type ids.
  */
 export type MemberCustomFieldUserType = {
     id: FieldType;
     label: string;
     // Which control collects/edits a value of this type
     input: 'text' | 'textarea' | 'address';
-    // Composite types only: label per sub-field, keyed by the sub-field key the shared
-    // value schema defines. Kept with the type's other presentation, not a parallel map.
-    subFields?: Record<string, string>;
 };
 
-// Presentation for every field type in the shared catalog. The explicit
-// Record<FieldType, ...> annotation keeps this exhaustive: adding a field type
-// upstream fails to compile here until it has a presentation.
-const fieldTypePresentation: Record<FieldType, Omit<MemberCustomFieldUserType, 'id'>> = {
+/**
+ * How one field type is presented, constrained by what its value is: a composite names
+ * every part its schema declares and no others, a scalar names none.
+ *
+ * The shared catalog owns which parts exist; this one owns what they are called, so adding,
+ * removing or renaming a part upstream fails the build here rather than reaching a publisher
+ * as a raw key. Enforced against a literal, which is how the catalog below is written; a
+ * pre-widened `Record<string, string>` would satisfy it.
+ */
+export type FieldTypePresentation<T extends FieldType> = {
+    label: string;
+    input: MemberCustomFieldUserType['input'];
+} & ([PartsOf<T>] extends [never] ? {subFields?: never} : {subFields: Record<PartsOf<T>, string>});
+
+// Presentation for every field type in the shared catalog. The mapped type keeps this
+// exhaustive: adding a field type upstream fails to compile here until it has one.
+const fieldTypePresentation: {[T in FieldType]: FieldTypePresentation<T>} = {
     short_text: {label: 'Short text', input: 'text'},
     long_text: {label: 'Long text', input: 'textarea'},
     address: {
         label: 'Address',
         input: 'address',
-        // Keyed to the shared value schema's parts (`satisfies`), so a part added, removed,
-        // or mistyped upstream is a compile error here rather than a silently missing label.
         subFields: {
             line1: 'Address line 1',
             line2: 'Address line 2',
@@ -63,8 +73,20 @@ const fieldTypePresentation: Record<FieldType, Omit<MemberCustomFieldUserType, '
             state: 'State',
             postal_code: 'Postal code',
             country: 'Country'
-        } satisfies Record<keyof Address, string>
+        }
     }
+};
+
+/**
+ * A type's part labels, keyed by part; empty for a type with no parts, and for one this
+ * build has never heard of.
+ *
+ * Total for every key the value schema declares, which is the only kind of key that
+ * reaches it: `FieldTypePresentation` refuses to compile a catalog missing one.
+ */
+const partLabelsFor = (type: FieldType): Record<string, string> => {
+    const labels: Record<string, string> | undefined = fieldTypePresentation[type]?.subFields;
+    return labels ?? {};
 };
 
 // The catalog in the shared catalog's declared order, so every admin surface
@@ -93,16 +115,30 @@ export type MemberCustomFieldCsvColumn = {label: string; value: string};
  */
 export const memberCustomFieldCsvColumns = (fields: MemberCustomField[]): MemberCustomFieldCsvColumn[] => {
     return fields.flatMap((field) => {
-        const columns = csvColumnsForField({key: field.key, type: field.type});
-        return columns.map((column) => {
-            if (columns.length === 1) {
-                return {label: field.name, value: column};
-            }
-            const sub = column.slice(column.lastIndexOf('.') + 1);
-            const subLabel = userTypeForFieldType(field.type).subFields?.[sub] ?? sub;
-            return {label: `${field.name} (${subLabel})`, value: column};
-        });
+        const labels = partLabelsFor(field.type);
+        return csvColumnsForField({key: field.key, type: field.type}).map(({column, subField}) => ({
+            label: subField === null ? field.name : `${field.name} (${labels[subField]})`,
+            value: column
+        }));
     });
+};
+
+/** One part of a composite field type: the key the value schema declares, and its label. */
+export type MemberCustomFieldPart<T extends FieldType = FieldType> = {key: PartsOf<T>; label: string};
+
+/**
+ * The parts of a composite field type, or null for a scalar.
+ *
+ * Which parts exist, and in what order, comes from the value schema; naming them is this
+ * catalog's job.
+ */
+export const memberCustomFieldParts = <T extends FieldType>(type: T): MemberCustomFieldPart<T>[] | null => {
+    const partKeys = subFieldsOf(type);
+    if (!partKeys) {
+        return null;
+    }
+    const labels = partLabelsFor(type);
+    return partKeys.map(key => ({key, label: labels[key]}));
 };
 
 export interface MemberCustomFieldsResponseType {

@@ -1,14 +1,16 @@
 import moment from 'moment-timezone';
-import {MEMBER_CUSTOM_FIELD_TYPES} from '@tryghost/admin-x-framework/api/member-custom-fields';
+import {MEMBER_CUSTOM_FIELD_TYPES, memberCustomFieldParts} from '@tryghost/admin-x-framework/api/member-custom-fields';
 import {dequal} from 'dequal';
 import type {EditMemberData, Member} from '@tryghost/admin-x-framework/api/members';
 import type {MemberCustomField, MemberCustomFieldAddress} from '@tryghost/admin-x-framework/api/member-custom-fields';
 
-// The sub-fields of the address composite, in display order. Partial because a
-// draft mid-edit (or a normalized sparse value) may hold any subset; the shared
-// AddressValue schema — enforced by the server — decides completeness.
-export const ADDRESS_SUBFIELD_KEYS = ['line1', 'line2', 'city', 'state', 'postal_code', 'country'] as const;
-export type EditableAddressValue = Partial<Pick<MemberCustomFieldAddress, typeof ADDRESS_SUBFIELD_KEYS[number]>>;
+// The parts of the address composite, in the order its value schema declares them, each
+// with the label every other surface shows it under.
+export const ADDRESS_PARTS = memberCustomFieldParts('address') ?? [];
+
+// Partial because a draft mid-edit (or a normalized sparse value) may hold any subset; the
+// shared AddressValue schema — enforced by the server — decides completeness.
+export type EditableAddressValue = Partial<MemberCustomFieldAddress>;
 export type EditableCustomFieldValue = string | EditableAddressValue;
 
 export interface MemberEditableLabel {
@@ -99,10 +101,10 @@ export function getEditableCustomFieldValues(customFields: Record<string, unknow
  */
 function addressToSave(value: Record<string, unknown>): EditableAddressValue | undefined {
     const address: EditableAddressValue = {};
-    for (const subfield of ADDRESS_SUBFIELD_KEYS) {
-        const subvalue = value[subfield];
+    for (const {key} of ADDRESS_PARTS) {
+        const subvalue = value[key];
         if (typeof subvalue === 'string') {
-            address[subfield] = subvalue.trim();
+            address[key] = subvalue.trim();
         }
     }
     return Object.values(address).some(part => part !== '') ? address : undefined;
@@ -115,10 +117,10 @@ function addressToSave(value: Record<string, unknown>): EditableAddressValue | u
  */
 function normalizeAddressValue(value: Record<string, unknown>): EditableAddressValue | undefined {
     const address: EditableAddressValue = {};
-    for (const subfield of ADDRESS_SUBFIELD_KEYS) {
-        const subvalue = value[subfield];
+    for (const {key} of ADDRESS_PARTS) {
+        const subvalue = value[key];
         if (typeof subvalue === 'string' && subvalue.trim() !== '') {
-            address[subfield] = subvalue.trim();
+            address[key] = subvalue.trim();
         }
     }
     return Object.keys(address).length ? address : undefined;

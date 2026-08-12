@@ -3,7 +3,7 @@ run-name: "Release — ${{ inputs.bump-type || 'auto' }} from ${{ inputs.branch 
 
 on:
   schedule:
-    - cron: '0 15 * * 5' # Friday 3pm UTC
+    - cron: '0 15 * * 2' # Tuesday 3pm UTC
   workflow_dispatch:
     inputs:
       branch:

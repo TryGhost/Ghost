@@ -1,6 +1,6 @@
-const assert = require('node:assert/strict');
-
-const json = require('../../../../core/frontend/helpers/json');
+import assert from 'node:assert/strict';
+// @ts-expect-error json currently lacks type definitions.
+import json from '../../../../core/frontend/helpers/json';
 
 describe('{{json}} helper', function () {
     it('serializes values safely for inline JSON', function () {
