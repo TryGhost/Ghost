@@ -10,8 +10,11 @@ export const QUERY_PARAMETER_ALLOWLIST = [
     'key', // Members key used to sign unsubscribe paths
     'portal-action', // Members Portal actions
     'newsletter', // Used for multiple newsletters, including unsubscribe links
+    'comments', // Used for unsubscribing from comment notifications
+    'updatesandannouncements', // Used for unsubscribing from automations emails
     'firstStart', // Opens the getting-started modal
     'include', // Used by the frontend comments API
+    'fields', // Used by the frontend comments API
     'limit', // Used by the frontend comments API
     'order', // Used by the frontend comments API
     'filter', // Used by the frontend comments API
@@ -27,6 +30,7 @@ export const QUERY_PARAMETER_ALLOWLIST = [
     'resource', // Used for /.well-known/webfinger
     'sr_id', // Used for signup redirect tracking
     'member_status', // Used for testing card and paywall content visibility
+    'member_tier', // Used for previewing card and paywall visibility for a specific tier
     'otc_verification', // Used for one-time codes in member sign-ins
     'admin', // Used for admin toolbar activation
     'admin_toolbar', // Used for admin toolbar suppression

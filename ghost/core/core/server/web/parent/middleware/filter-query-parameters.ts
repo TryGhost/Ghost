@@ -65,7 +65,14 @@ const filterRequestTarget = (requestTarget: string): FilterResult => {
 
     const allowlist = contentApiRequest ? allowedContentApiQueryParameters : allowedQueryParameters;
     const removedUnknownParameters = removeUnknownParameters(searchParams, allowlist);
-    searchParams.sort();
+
+    if (removedUnknownParameters.size === 0) {
+        return {
+            requestTarget,
+            removedUnknownParameters: []
+        };
+    }
+
     const query = searchParams.toString();
 
     return {

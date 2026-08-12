@@ -14,14 +14,14 @@ describe('Middleware: filterQueryParameters', function () {
         it('keeps globally allowed parameters and strips undeclared parameters', function () {
             const result = filterQueryParameters.filterRequestTarget('/r/example?step=run-step-id&m=member-id&unknown=value');
 
-            assert.equal(result.requestTarget, '/r/example?m=member-id&step=run-step-id');
+            assert.equal(result.requestTarget, '/r/example?step=run-step-id&m=member-id');
             assert.deepEqual(result.removedUnknownParameters, ['unknown']);
         });
 
         it('preserves allowed attribution parameters', function () {
             const result = filterQueryParameters.filterRequestTarget('/welcome/?utm_source=newsletter&ref=weekly&m=member-id');
 
-            assert.equal(result.requestTarget, '/welcome/?m=member-id&ref=weekly&utm_source=newsletter');
+            assert.equal(result.requestTarget, '/welcome/?utm_source=newsletter&ref=weekly&m=member-id');
             assert.deepEqual(result.removedUnknownParameters, []);
         });
 
@@ -49,7 +49,7 @@ describe('Middleware: filterQueryParameters', function () {
         it('applies the Content API allowlist', function () {
             const result = filterQueryParameters.filterRequestTarget('/ghost/api/content/posts/?key=content-key&include=authors&unknown=value&m=member-id');
 
-            assert.equal(result.requestTarget, '/ghost/api/content/posts/?include=authors&key=content-key');
+            assert.equal(result.requestTarget, '/ghost/api/content/posts/?key=content-key&include=authors');
             assert.deepEqual(result.removedUnknownParameters, ['m', 'unknown']);
         });
 
@@ -73,6 +73,20 @@ describe('Middleware: filterQueryParameters', function () {
             assert.equal(result.requestTarget, '/post/?admin=true&admin_toolbar=0&gift=unlock-token&step=run-step-id');
             assert.deepEqual(result.removedUnknownParameters, []);
         });
+
+        it('preserves notification unsubscribe and tier preview parameters', function () {
+            const result = filterQueryParameters.filterRequestTarget('/unsubscribe/?comments=1&updatesandannouncements=1&member_tier=silver');
+
+            assert.equal(result.requestTarget, '/unsubscribe/?comments=1&updatesandannouncements=1&member_tier=silver');
+            assert.deepEqual(result.removedUnknownParameters, []);
+        });
+
+        it('preserves fields for the frontend comments API', function () {
+            const result = filterQueryParameters.filterRequestTarget('/members/api/comments/post/post-id/?fields=id%2Cpinned');
+
+            assert.equal(result.requestTarget, '/members/api/comments/post/post-id/?fields=id%2Cpinned');
+            assert.deepEqual(result.removedUnknownParameters, []);
+        });
     });
 
     it('updates the Express request and logs stripped undeclared parameters', function () {
@@ -92,8 +106,8 @@ describe('Middleware: filterQueryParameters', function () {
 
         filterQueryParameters(req as unknown as Request, res as unknown as Response, next as NextFunction);
 
-        assert.equal(req.originalUrl, '/r/example?m=member-id&step=run-step-id');
-        assert.equal(req.url, '/r/example?m=member-id&step=run-step-id');
+        assert.equal(req.originalUrl, '/r/example?step=run-step-id&m=member-id');
+        assert.equal(req.url, '/r/example?step=run-step-id&m=member-id');
         assert.deepEqual({...req.query}, {m: 'member-id', step: 'run-step-id'});
         assert.equal(Object.getPrototypeOf(req.query), Object.prototype);
         sinon.assert.calledOnceWithExactly(warn, '[query-parameter-filter] Stripped undeclared query parameter(s) from /r/example: unknown');
