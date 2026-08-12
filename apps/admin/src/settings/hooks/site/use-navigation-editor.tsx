@@ -118,8 +118,7 @@ const useNavigationEditor = ({
   };
 
   const updateItem = (id: string, item: Partial<NavigationItem>) => {
-    const currentItem = list.items.find((current) => current.id === id)!;
-    list.updateItem(id, mergeItemUpdates(currentItem.item, item));
+    list.updateItem(id, (current) => mergeItemUpdates(current, item));
   };
 
   // `overrides` let a caller submit a value it has just committed but which
@@ -132,7 +131,9 @@ const useNavigationEditor = ({
     if (Object.values(errors).some((message) => message)) {
       list.setNewItem({ ...candidate, errors });
     } else {
-      list.addItem(overrides);
+      // Pass the merged object down so the added item is exactly what
+      // was validated — a second independent merge could drift
+      list.addItem(candidate);
     }
   };
 
@@ -146,12 +147,20 @@ const useNavigationEditor = ({
 
   const newItemId = 'new';
 
+  // Functional updates throughout: clearing an error often lands in the same
+  // event as the change that fixed it (picking a suggestion commits the URL
+  // and clears in one go), and a snapshot-based merge would revert the URL
   const clearError = (id: string, key: keyof NavigationItem) => {
     if (id === newItemId) {
-      list.setNewItem({ ...list.newItem, errors: { ...list.newItem.errors, [key]: undefined } });
+      list.setNewItem((current) => ({
+        ...current,
+        errors: { ...current.errors, [key]: undefined },
+      }));
     } else {
-      const currentItem = list.items.find((current) => current.id === id)!.item;
-      list.updateItem(id, { ...currentItem, errors: { ...currentItem.errors, [key]: undefined } });
+      list.updateItem(id, (current) => ({
+        ...current,
+        errors: { ...current.errors, [key]: undefined },
+      }));
     }
   };
 
@@ -164,7 +173,7 @@ const useNavigationEditor = ({
     moveItem,
 
     newItem: { ...list.newItem, id: newItemId },
-    setNewItem: (item) => list.setNewItem(mergeItemUpdates(list.newItem, item)),
+    setNewItem: (item) => list.setNewItem((current) => mergeItemUpdates(current, item)),
 
     clearError,
     validate: () => {

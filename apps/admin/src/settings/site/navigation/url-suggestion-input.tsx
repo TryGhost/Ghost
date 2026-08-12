@@ -2,21 +2,31 @@ import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from 
 import clsx from 'clsx';
 import useUrlInput from '@/settings/hooks/use-url-input';
 import { Input, Popover, PopoverAnchor, PopoverContent } from '@tryghost/shade/components';
-import {
-  type NavigationLinkSuggestion,
-  type NavigationLinkSuggestionGroup,
-} from '@/settings/hooks/site/use-navigation-link-suggestions';
 import { formatUrl } from '@/settings/utils/format-url';
 
 const SUGGESTION_DEBOUNCE_MS = 150;
 
-type IndexedSuggestion = NavigationLinkSuggestion & { index: number };
+export type Suggestion = {
+  /** Human readable name, e.g. "Tips and donations" or a post title */
+  label: string;
+  /** The value written into the URL field when picked */
+  value: string;
+  /** Secondary line under the label — the URL for portal links, the path for content */
+  description?: string;
+};
+
+export type SuggestionGroup = {
+  label: string;
+  items: Suggestion[];
+};
+
+type IndexedSuggestion = Suggestion & { index: number };
 
 /**
  * Assign each item its position in the flattened list, so arrow-key navigation
  * and `aria-activedescendant` can address items across group boundaries.
  */
-const indexGroups = (groups: NavigationLinkSuggestionGroup[]) => {
+const indexGroups = (groups: SuggestionGroup[]) => {
   let offset = 0;
   return groups.map((group) => {
     const items = group.items.map((item, itemIndex) => ({ ...item, index: offset + itemIndex }));
@@ -33,7 +43,7 @@ export type UrlSuggestionInputProps = Omit<
   baseUrl: string;
   /** The stored (usually relative) value */
   value: string;
-  loadSuggestions: (term: string) => Promise<NavigationLinkSuggestionGroup[]>;
+  loadSuggestions: (term: string) => Promise<SuggestionGroup[]>;
   /** Called with the value to store */
   onChange: (value: string) => void;
   /**
@@ -64,7 +74,7 @@ const UrlSuggestionInput: React.FC<UrlSuggestionInputProps> = ({
   });
 
   const [open, setOpen] = useState(false);
-  const [groups, setGroups] = useState<NavigationLinkSuggestionGroup[]>([]);
+  const [groups, setGroups] = useState<SuggestionGroup[]>([]);
   const [activeIndex, setActiveIndex] = useState(-1);
 
   const listId = useId();
@@ -123,7 +133,7 @@ const UrlSuggestionInput: React.FC<UrlSuggestionInputProps> = ({
   const isVisible = open && suggestions.length > 0;
 
   const selectSuggestion = useCallback(
-    (suggestion: NavigationLinkSuggestion) => {
+    (suggestion: Suggestion) => {
       const urls = formatUrl(suggestion.value, baseUrl, true);
       urlInput.setDisplayValue(urls.display);
       onChange(urls.save || '');
@@ -174,7 +184,11 @@ const UrlSuggestionInput: React.FC<UrlSuggestionInputProps> = ({
       }
 
       close();
-      onSubmit?.(urlInput.commitValue() || '');
+      // Commit unconditionally — an optional call doesn't evaluate its
+      // arguments when the callee is undefined, and Enter should
+      // normalize the field whether or not anyone listens for it
+      const committed = urlInput.commitValue() || '';
+      onSubmit?.(committed);
       return;
     }
 
@@ -232,6 +246,10 @@ const UrlSuggestionInput: React.FC<UrlSuggestionInputProps> = ({
             event.preventDefault();
           }
         }}
+        // Prevent default on the whole surface — a mousedown on a group
+        // heading, padding, or a scrollbar drag would otherwise blur
+        // the input, which closes the list mid-interaction
+        onMouseDown={(event) => event.preventDefault()}
         onOpenAutoFocus={(event) => event.preventDefault()}
       >
         {/* Geometry mirrors Shade's CommandList / CommandGroup / CommandItem so this
@@ -259,12 +277,11 @@ const UrlSuggestionInput: React.FC<UrlSuggestionInputProps> = ({
                     )}
                     id={`${listId}-option-${item.index}`}
                     role="option"
-                    // Capture phase + preventDefault so the input keeps focus and
-                    // its blur handler doesn't close the list before the click lands
-                    onMouseDownCapture={(event) => {
-                      event.preventDefault();
-                      selectSuggestion(item);
-                    }}
+                    // The popover's mousedown handler keeps focus in the input,
+                    // so the click lands normally — and only fires for the main
+                    // button, unlike mousedown (right-click opens a context menu,
+                    // it shouldn't also pick the option)
+                    onClick={() => selectSuggestion(item)}
                     onMouseMove={() => setActiveIndex(item.index)}
                   >
                     <span className="block truncate text-control text-foreground">
