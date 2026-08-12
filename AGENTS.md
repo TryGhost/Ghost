@@ -2,223 +2,33 @@
 
 This file provides guidance to AI Agents when working with code in this repository.
 
+Human-readable setup, workflow, testing, shipping, and architecture guidance
+lives in the [codebase documentation](docs/README.md). Treat those guides and
+nearby package READMEs as the source of truth for facts shared by humans and
+agents. This file adds agent-specific execution rules and code constraints.
+
+Start with:
+
+- [Development setup](docs/contributing/development-setup.md)
+- [Contribution workflow](docs/contributing/workflow.md)
+- [Testing](docs/contributing/testing.md)
+- [Shipping](docs/contributing/shipping.md)
+- [Monorepo structure](docs/codebase/monorepo-structure.md)
+
 ## Package Manager
 
 **Always use `pnpm` for all commands.** This repository uses pnpm workspaces, not npm.
 
 Shared dependency versions are pinned in `pnpm-workspace.yaml` under `catalog:` and referenced as `"pkg": "catalog:"` (or `catalog:<name>` for named catalogs). `catalogMode` is `strict`, so `pnpm add` routes new deps into the catalog automatically — don't inline the version.
 
-## Monorepo Structure
+## Required Workflow
 
-Ghost is a pnpm + Nx monorepo with four workspace groups:
-
-### ghost/* - Core Ghost packages
-- **ghost/core** - Main Ghost application (Node.js/Express backend)
-  - Core server: `ghost/core/core/server/`
-  - Frontend rendering: `ghost/core/core/frontend/`
-
-### apps/* - React-based UI applications
-Two categories of apps:
-
-**Admin Apps** (embedded in Ghost Admin):
-- `ember-admin` - Ember.js admin client (legacy, being migrated to React)
-- `admin` - The consolidated React admin shell, organized by domain (`src/{analytics,members,posts,tags,comments,automations,settings,...}`)
-- `activitypub` - ActivityPub integration (route-composed into `admin`)
-- Built with Vite + React + `@tanstack/react-query`
-
-**Public Apps** (served to site visitors):
-- `portal`, `comments-ui`, `signup-form`, `sodo-search`, `announcement-bar`
-- Built as UMD bundles, loaded via CDN in site themes
-
-**Foundation Libraries**:
-- `admin-x-framework` - Shared API hooks, routing, utilities
-- `admin-x-design-system` - Legacy design system (being phased out)
-- `shade` - New design system (shadcn/ui + Radix UI + react-hook-form + zod)
-
-### koenig/* - Ghost editor (Koenig) packages
-Merged from the former TryGhost/Koenig repo with full git history:
-
-- **koenig-lexical** - The Lexical-based rich text editor UI. Bundled into
-  Ghost Admin at build time (`apps/ember-admin` copies its UMD build into admin
-  assets; `apps/admin` imports it directly)
-- **kg-*** - Editor support packages: server-side renderers and converters
-  consumed by `ghost/core` (kg-default-nodes, kg-lexical-html-renderer,
-  kg-html-to-lexical, ...) plus frontend helpers (kg-unsplash-selector)
-
-All Koenig packages resolve via `workspace:` — nothing in dev, CI, or the
-release archive installs them from npm. They are published to npm for
-external consumers only, automatically as part of the Ghost release lane
-(see `publish_koenig_packages` in ci.yml).
-
-**Zero-build dev via the `source` export condition.** The `kg-*` libraries
-consumed by `ghost/core` declare a `source` condition in their `package.json`
-`exports` that points at the raw `src/*.ts`, listed *before*
-`types`/`import`/`require`:
-
-```jsonc
-".": {
-  "source": "./src/index.ts",     // dev/test: read raw TS
-  "types": "./build/esm/index.d.ts",
-  "import": "./build/esm/index.js",
-  "require": "./build/cjs/index.js" // prod/published: compiled JS
-}
-```
-
-`ghost/core`'s dev runner (`nodemon.json`: `node --conditions=source --import=tsx`)
-and its Vitest configs (`resolve.conditions: ['source', 'node']` +
-`--import tsx --conditions=source`) activate this condition, so a source change
-in a `kg-*` package is picked up with **no `tsc` rebuild**. Production and the
-published npm tarball run plain `node`, which ignores `source` and uses
-`build/` — and `src/` is excluded from each package's `files` array, so it is
-never shipped. The separate ESM and CommonJS outputs are part of Koenig's public
-package contract; new internal packages use the ESM-only shape documented below.
-
-### packages/* - Shared workspace libraries
-Backend and shared libraries. Internal packages are consumed via `workspace:*`;
-selected adapter bases also have supported public releases:
-
-Read [`packages/README.md`](packages/README.md) before creating or modernizing an
-internal package. It is the canonical lifetime contract; `packages/_template`
-is its scaffold.
-
-- **i18n** - Centralized internationalization for all apps
-- **parse-email-address** - Email address parsing
-- **adapters/** - Adapter base classes (`adapter-base-*`: scheduling, storage,
-  SSO, redirects, route settings)
-- **custom-field-types**, **testing** - Shared field-type definitions and test
-  helpers
-- **_template** - Scaffold for new packages; excluded from the workspace
-
-### e2e/ - End-to-end tests
-- Playwright-based E2E tests with Docker container isolation
-- See `e2e/CLAUDE.md` for detailed testing guidance
-
-## Common Commands
-
-### Development
-```bash
-corepack enable pnpm           # Enable corepack to use the correct pnpm version
-pnpm run setup                 # First-time setup (installs deps + submodules + builds workspace packages)
-pnpm dev                       # Start development (Docker backend + host frontend dev servers)
-```
-
-> **Fresh worktree / first run — run `pnpm setup` before anything else.** It installs deps and syncs submodules. `pnpm fix` does a clean reinstall if anything misbehaves after a branch switch.
-
-### Building
-```bash
-pnpm build                     # Build all packages (Nx handles dependencies)
-pnpm build:clean               # Clean build artifacts and rebuild
-```
-
-### Testing
-```bash
-# Unit tests (from root)
-pnpm test:unit                 # Run all unit tests in all packages
-pnpm test:watch                # Watch mode — unified Vitest watcher (ghost/core + all apps)
-
-# Ghost core tests (from ghost/core/)
-cd ghost/core
-pnpm test:unit                 # Unit tests only (Vitest, run once)
-pnpm test:watch                # Watch mode — ghost/core unit tests only
-pnpm test:integration          # Integration tests
-pnpm test:e2e                  # Server-side e2e suites (webhooks/server/frontend/api) — not browser
-pnpm test:all                  # All test types
-
-# These run on sqlite with no extra services. The Redis/MinIO/S3 adapter suites
-# probe for their service and auto-skip when it's down (run `pnpm dev:storage`
-# etc. to exercise them); they always run in CI, which starts the services.
-
-# E2E browser tests (from root)
-pnpm test:e2e                  # Run e2e/ Playwright tests
-
-# Running a single test
-cd ghost/core
-pnpm test:single test/unit/path/to/test.test.js   # routes test/unit/* → unit config, test/* → DB config
-
-# Watch a single DB-backed file (integration/e2e) — the default test:watch only
-# covers unit tests, so point it at the DB config explicitly:
-pnpm exec vitest -c vitest.config.db.ts test/integration/path/to/test.test.js
-
-# Ember Admin tests (from the repository root)
-pnpm nx run ghost-admin:test
-
-# Run one Ember Admin test file. Paths are relative to apps/ember-admin.
-# The explicit `1` supplies the numeric value required by the test script's
-# trailing `--parallel` option before additional Ember Exam arguments.
-pnpm nx run ghost-admin:test -- 1 --file-path=tests/acceptance/editor/publish-flow-test.js
-```
-
-> **Always run Ember Admin tests through Nx.** Running `ember test` or
-> `ember exam` directly from `apps/ember-admin` skips the dependency build
-> graph and commonly fails in fresh worktrees with missing outputs such as
-> `koenig-lexical.umd.js`, `@tryghost/admin-x-framework/hooks`, or
-> `@tryghost/kg-converters`. For focused runs, use Ember Exam's `--file-path`
-> as shown above rather than appending `--filter` to the package script.
-
-### Linting
-```bash
-pnpm lint                      # Lint all packages
-cd ghost/core && pnpm lint     # Lint Ghost core (server, shared, frontend, tests)
-cd apps/ember-admin && pnpm lint    # Lint Ember admin
-```
-
-### Database
-```bash
-pnpm knex-migrator migrate     # Run database migrations
-pnpm reset:data                # Reset database with test data (1000 members, 100 posts) (requires pnpm dev running)
-pnpm reset:data:empty          # Reset database with no data (requires pnpm dev running)
-```
-
-### Docker
-```bash
-pnpm docker:build              # Build Docker images
-pnpm docker:clean              # Stop containers, remove volumes and local images
-pnpm docker:down               # Stop containers
-```
-
-### How `pnpm dev` works
-
-The `pnpm dev` command uses a **hybrid Docker + host development** setup:
-
-**What runs in Docker:**
-- Ghost Core backend (with hot-reload via mounted source)
-- MySQL, Redis, Mailpit
-- Caddy gateway/reverse proxy
-
-**What runs on host by default:**
-- Admin, legacy Ember admin, Portal, and foundation library dev watchers
-- Optional public UMD app watchers can be added when needed
-
-**Setup:**
-```bash
-# Start Ghost backend, Admin, Portal, and Docker services
-pnpm dev
-
-# Add optional public apps (comments-ui, sodo-search, signup-form, admin-toolbar)
-pnpm dev:public
-
-# Develop the Koenig editor against Ghost Admin (adds a koenig-lexical rebuild
-# watcher + preview server; Admin loads the editor from your local build)
-pnpm dev:lexical
-
-# With optional services (uses Docker Compose file composition)
-pnpm dev:analytics             # Include Tinybird analytics
-pnpm dev:storage               # Include MinIO S3-compatible object storage
-pnpm dev:stripe                # Include Stripe webhook forwarding
-pnpm dev:full                  # Include analytics, storage, Stripe, and public app watchers
-
-# Everything available
-pnpm dev:all                   #
-```
-
-**Accessing Services:**
-- Ghost: `http://localhost:2368` (database: `ghost_dev`)
-- Mailpit UI: `http://localhost:8025` (email testing)
-- MySQL: `localhost:3306`
-- Redis: `localhost:6379`
-- Tinybird: `http://localhost:7181` (when analytics enabled)
-- MinIO Console: `http://localhost:9001` (when storage enabled)
-- MinIO S3 API: `http://localhost:9000` (when storage enabled)
+- Run `pnpm setup` before other commands in a fresh checkout or worktree.
+- Use `pnpm check` as the default full validation command. Follow the
+  [testing guide](docs/contributing/testing.md) for focused commands and the
+  browser E2E and Ember Admin suites that run separately.
+- Read the nearest `AGENTS.md`, `CLAUDE.md`, and README files before changing a
+  package or subsystem. More specific instructions override this file.
 
 ## Architecture Patterns
 
@@ -387,16 +197,3 @@ Conventions:
 - **Config:** Add Tinybird config to `ghost/core/config.development.json`
 - **Scripts:** `ghost/core/core/server/data/tinybird/scripts/`
 - **Datafiles:** `ghost/core/core/server/data/tinybird/`
-
-## Troubleshooting
-
-### Build Issues
-```bash
-pnpm fix                       # Clean cache + node_modules + reinstall
-pnpm build:clean               # Clean build artifacts
-pnpm nx reset                  # Reset Nx cache
-```
-
-### Test Issues
-- **E2E failures:** Check `e2e/CLAUDE.md` for debugging tips
-- **Docker issues:** `pnpm docker:clean && pnpm docker:build`
