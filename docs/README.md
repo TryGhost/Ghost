@@ -62,7 +62,8 @@ defaults, local overrides, and environment variables.
 
 The [internationalization guide](practices/internationalization.md) explains
 how to write translatable copy, update locale files, and validate translation
-changes.
+changes. The [error handling guide](practices/error-handling.md) covers server
+errors, API responses, safe user messages, and tests.
 
 ## Contributing a change
 
