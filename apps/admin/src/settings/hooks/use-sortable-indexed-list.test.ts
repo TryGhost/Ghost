@@ -54,6 +54,29 @@ describe('useSortableIndexedList', () => {
     assert.deepEqual(items, [...initialItems, { name: 'New Item' }]);
   });
 
+  it('should add a new item from overrides that have not been set yet', () => {
+    let items = initialItems;
+    const setItems = (newItems: { name: string }[]) => {
+      items = newItems;
+    };
+
+    const { result } = renderHook(() =>
+      useSortableIndexedList({
+        items,
+        setItems,
+        blank: blankItem,
+        canAddNewItem,
+      }),
+    );
+
+    // No setNewItem call — the value is only known to the caller
+    act(() => {
+      result.current.addItem({ name: 'Overridden' });
+    });
+
+    assert.deepEqual(items, [...initialItems, { name: 'Overridden' }]);
+  });
+
   it('should update an item', () => {
     let items = initialItems;
     const setItems = (newItems: { name: string }[]) => {
