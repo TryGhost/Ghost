@@ -19,6 +19,14 @@ describe('custom-field-types catalog', function () {
         });
     });
 
+    it('reads a type it has never heard of as having no parts', function () {
+        // Only reachable by lying about the type, which is what an admin build older than
+        // the server it talks to does: the type is a string off the wire, asserted not
+        // checked. Failing here would take the surface down over a field it merely cannot
+        // render, so it degrades and the server stays authoritative.
+        assert.equal(subFieldsOf('a_type_from_the_future' as FieldType), null);
+    });
+
     describe('text is trimmed, whatever type it belongs to', function () {
         // Trimming decides whether a value is stored at all: a value that trims to
         // nothing is a clear. Two text types disagreeing about that would mean the same
