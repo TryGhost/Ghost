@@ -149,24 +149,8 @@ class MachinePaymentsService {
             return this.#paymentCredentialErrorResponse(err);
         }
 
-        // Record settlement before content load so a missing entry cannot drop
-        // an already-consumed payment credential without a ledger row.
-        if (this.paymentRecorder) {
-            try {
-                const stripePaymentIntentId = await this.paymentRecorder.record({
-                    ...fulfillment,
-                    postId: options.entryId,
-                    amount: terms.amount,
-                    currency: terms.currency
-                });
-                if (stripePaymentIntentId) {
-                    fulfillment.stripePaymentIntentId = stripePaymentIntentId;
-                }
-            } catch (err) {
-                logging.warn(err);
-            }
-        }
-
+        // Ledger first: Stripe idempotency keys can expire (~24h), so a durable
+        // protocol+reference check must gate PaymentIntent creation on replay.
         if (this.eventRepository) {
             let saved;
             try {
@@ -196,6 +180,22 @@ class MachinePaymentsService {
                     status: 403,
                     detail: 'This machine payment credential has already been used.'
                 });
+            }
+        }
+
+        if (this.paymentRecorder) {
+            try {
+                const stripePaymentIntentId = await this.paymentRecorder.record({
+                    ...fulfillment,
+                    postId: options.entryId,
+                    amount: terms.amount,
+                    currency: terms.currency
+                });
+                if (stripePaymentIntentId) {
+                    fulfillment.stripePaymentIntentId = stripePaymentIntentId;
+                }
+            } catch (err) {
+                logging.warn(err);
             }
         }
 
@@ -251,8 +251,11 @@ class MachinePaymentsService {
         for (const challenge of challenges) {
             if (challenge.headers) {
                 challenge.headers.forEach((value, key) => {
-                    // Preserve both x402 payment-required and MPP WWW-Authenticate when present.
-                    if (!headers.has(key) || key.toLowerCase() === 'www-authenticate') {
+                    // Preserve every WWW-Authenticate (mpp compose can emit several)
+                    // and keep distinct x402 payment-required headers.
+                    if (key.toLowerCase() === 'www-authenticate') {
+                        headers.append(key, value);
+                    } else if (!headers.has(key)) {
                         headers.set(key, value);
                     }
                 });

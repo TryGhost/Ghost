@@ -82,11 +82,7 @@ describe('llms.txt routing', function () {
             });
         });
 
-        afterAll(function () {
-            sinon.restore();
-        });
-
-        it('includes purchasable paid posts in llms.txt', async function () {
+        beforeAll(async function () {
             const paid = testUtils.DataGenerator.forKnex.createPost({
                 slug: 'llms-paid-discoverable',
                 title: 'Paid Discoverable Post',
@@ -104,7 +100,13 @@ describe('llms.txt routing', function () {
                 lexical: testUtils.DataGenerator.markdownToLexical('members secret')
             });
             await testUtils.fixtures.insertPosts([paid, membersOnly]);
+        });
 
+        afterAll(function () {
+            sinon.restore();
+        });
+
+        it('includes purchasable paid posts in llms.txt', async function () {
             const res = await request.get('/llms.txt')
                 .expect('Content-Type', /text\/plain/)
                 .expect(200);

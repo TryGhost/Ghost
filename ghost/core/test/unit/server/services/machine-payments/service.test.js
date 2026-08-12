@@ -143,6 +143,37 @@ describe('Unit: server/services/machine-payments/service', function () {
         assert.equal(response.status, 403);
         assert.match(await response.text(), /already been used/);
         sinon.assert.notCalled(contentLoader.loadFullEntry);
+        sinon.assert.notCalled(paymentRecorder.record);
+    });
+
+    it('appends multiple WWW-Authenticate challenges from adapters', async function () {
+        const x402Adapter = {
+            name: 'x402',
+            canHandle: sinon.stub().returns(false),
+            challenge: sinon.stub().resolves(new Response('', {
+                status: 402,
+                headers: {
+                    'PAYMENT-REQUIRED': 'x402-challenge',
+                    'WWW-Authenticate': 'Payment realm="x402"'
+                }
+            })),
+            fulfill: sinon.stub()
+        };
+        const service = createService({adapters: [mppAdapter, x402Adapter]});
+
+        const response = await service.challengeOrFulfill(new Request('http://example.com/paid.md'), {
+            entryId: 'post1',
+            resourceType: 'posts',
+            contentLocation: '/paid.md',
+            renderMarkdown: () => '# body'
+        });
+
+        assert.equal(response.status, 402);
+        assert.equal(response.headers.get('PAYMENT-REQUIRED'), 'x402-challenge');
+        // Headers.get joins duplicate WWW-Authenticate values with ", "
+        const wwwAuthenticate = response.headers.get('WWW-Authenticate');
+        assert.match(wwwAuthenticate, /Payment realm="mpp"/);
+        assert.match(wwwAuthenticate, /Payment realm="x402"/);
     });
 
     it('loads content only after fulfill succeeds', async function () {
