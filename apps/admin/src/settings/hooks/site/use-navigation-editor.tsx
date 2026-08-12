@@ -26,12 +26,12 @@ export type EditableItem = NavigationItem & { id: string; errors: NavigationItem
 
 const hasTextValue = (value?: string) => Boolean(value && !value.match(/^\s*$/));
 const hasNewItem = (newItem: NavigationItem) =>
-  Boolean(hasTextValue(newItem.label) || newItem.url !== '/' || hasTextValue(newItem.icon));
+  Boolean(hasTextValue(newItem.label) || newItem.url || hasTextValue(newItem.icon));
 
 export type NavigationEditor = {
   items: EditableItem[];
   updateItem: (id: string, item: Partial<NavigationItem>) => void;
-  addItem: () => void;
+  addItem: (overrides?: Partial<NavigationItem>) => void;
   removeItem: (id: string) => void;
   moveItem: (activeId: string, overId?: string) => void;
   newItem: EditableItem;
@@ -72,7 +72,9 @@ const useNavigationEditor = ({
   const list = useSortableIndexedList<Omit<EditableItem, 'id'>>({
     items: editableItems,
     setItems: setNavigationItems,
-    blank: { url: '/', label: '', icon: '', visibility: 'public', errors: {} },
+    // Blank rather than '/' so the URL field starts empty and the suggestion
+    // dropdown is the obvious way in, instead of prefilling the site root
+    blank: { url: '', label: '', icon: '', visibility: 'public', errors: {} },
     canAddNewItem: hasNewItem,
   });
 
@@ -120,13 +122,17 @@ const useNavigationEditor = ({
     list.updateItem(id, mergeItemUpdates(currentItem.item, item));
   };
 
-  const addItem = () => {
-    const errors = validateItem(list.newItem);
+  // `overrides` let a caller submit a value it has just committed but which
+  // hasn't flushed into `list.newItem` yet — pressing Enter in the URL field
+  // commits and adds within a single event.
+  const addItem = (overrides?: Partial<NavigationItem>) => {
+    const candidate = { ...list.newItem, ...overrides };
+    const errors = validateItem(candidate);
 
     if (Object.values(errors).some((message) => message)) {
-      list.setNewItem({ ...list.newItem, errors });
+      list.setNewItem({ ...candidate, errors });
     } else {
-      list.addItem();
+      list.addItem(overrides);
     }
   };
 
