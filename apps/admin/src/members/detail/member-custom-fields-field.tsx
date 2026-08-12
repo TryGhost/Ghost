@@ -61,10 +61,15 @@ const AddressInput: React.FC<{
     );
 };
 
+// Exists so the switch has to account for every control the catalog can name.
+function assertNoControl(input: never): null {
+    void input;
+    return null;
+}
+
 // The control for one field, picked from the presentation catalog's `input`
 // hint — the same hint the collection forms render from, so the editor and
-// the member-facing forms never diverge per type. Unknown future inputs
-// render nothing rather than degrading to a wrong text input.
+// the member-facing forms never diverge per type.
 const CustomFieldInput: React.FC<{
     field: MemberCustomField;
     inputId: string;
@@ -75,7 +80,8 @@ const CustomFieldInput: React.FC<{
     onChange: (value: EditableCustomFieldValue) => void;
 }> = ({field, inputId, value, errors, disabled, onChange}) => {
     const fieldError = errors?.[''];
-    switch (userTypeForField(field).input) {
+    const {input} = userTypeForField(field);
+    switch (input) {
     case 'text':
         return <Input aria-invalid={fieldError ? true : undefined} disabled={disabled} id={inputId} value={typeof value === 'string' ? value : ''} onChange={e => onChange(e.target.value)} />;
     case 'textarea':
@@ -93,7 +99,9 @@ const CustomFieldInput: React.FC<{
             />
         );
     default:
-        return null;
+        // Unreachable: `input` comes from the catalog, not the server. Typed never so a
+        // control added to the catalog fails the build here rather than rendering nothing.
+        return assertNoControl(input);
     }
 };
 
