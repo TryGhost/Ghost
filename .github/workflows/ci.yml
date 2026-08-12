@@ -145,6 +145,10 @@ jobs:
               - 'scripts/test/check-agent-skill-links.test.js'
             core:
               - *shared
+              # Repository documentation and ownership metadata do not affect
+              # Ghost runtime behaviour, even though they live in .github.
+              - '!.github/**/*.md'
+              - '!.github/CODEOWNERS'
               - 'ghost/**'
               - '!ghost/core/core/server/data/tinybird/**'
               # Unit tests + vitest config are exercised only by job_unit-tests;
