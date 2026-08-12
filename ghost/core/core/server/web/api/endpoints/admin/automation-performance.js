@@ -123,8 +123,26 @@ async function setup() {
 }
 
 async function query() {
-    const result = await db.knex.raw('SELECT COUNT(*) FROM automation_runs');
-    return Array.isArray(result[0]) ? result[0] : result;
+    const queryResult = await db.knex.raw(`
+        SELECT
+            COALESCE(SUM(CASE WHEN has_pending THEN 1 ELSE 0 END), 0) AS pendingCount,
+            COALESCE(SUM(CASE WHEN NOT has_pending AND has_member_changed_status THEN 1 ELSE 0 END), 0) AS memberChangedStatusCount,
+            COALESCE(SUM(CASE WHEN NOT has_pending AND NOT has_member_changed_status AND has_failed THEN 1 ELSE 0 END), 0) AS failedCount,
+            COALESCE(SUM(CASE WHEN NOT has_pending AND NOT has_member_changed_status AND NOT has_failed THEN 1 ELSE 0 END), 0) AS finishedCount
+        FROM (
+            SELECT
+                automation_runs.id,
+                MAX(automation_run_steps.status = 'pending') AS has_pending,
+                MAX(automation_run_steps.status = 'member changed status') AS has_member_changed_status,
+                MAX(automation_run_steps.status = 'failed') AS has_failed
+            FROM automation_runs
+            LEFT JOIN automation_run_steps ON automation_run_steps.automation_run_id = automation_runs.id
+            GROUP BY automation_runs.id
+        ) AS run_statuses
+    `);
+    const rows = Array.isArray(queryResult[0]) ? queryResult[0] : queryResult;
+
+    return Object.fromEntries(Object.entries(rows[0]).map(([key, value]) => [key, Number(value)]));
 }
 
 module.exports = {
