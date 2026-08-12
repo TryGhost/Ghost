@@ -48,6 +48,11 @@ import {z} from 'zod';
  * rule was broken. No storage: columns and codecs belong to the backend. One exception
  * lives in `./csv` — how a value maps onto CSV columns — because both tiers need the same
  * answer and a disagreement between them is a file that silently stops round-tripping.
+ *
+ * The line is whether more than one renderer must agree on a string, not presentation
+ * against validity — the sentences above are presentation. Admin is the only renderer
+ * today, so a part's label lives there, held against this file by a type. A Portal
+ * collection form, which cannot reach admin's packages, moves the labels here.
  */
 
 /** The source for the union type, the zod enum and the `FIELD_TYPES` keys alike. */

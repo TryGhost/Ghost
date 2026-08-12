@@ -30,20 +30,18 @@ export type MemberCustomField = {
  * The user-type catalog: the presentation layer over the shared field types.
  *
  * The shared catalog (@tryghost/custom-field-types) owns what a field type *is*
- * - its storage and validation. This catalog owns what it *looks like* in admin:
- * label, icon, and which control collects a value. Admin surfaces (settings
+ * - its storage and validation. This catalog owns what a publisher is told it is:
+ * its name, and which control collects a value. Admin surfaces (settings
  * list/modal, member detail) render from here so every surface presents fields
  * identically. The backend never sees any of this.
+ *
+ * The icon is not here: it is a component, so it sits with admin's, under the same type ids.
  */
 export type MemberCustomFieldUserType = {
     id: FieldType;
     label: string;
     // Which control collects/edits a value of this type
     input: 'text' | 'textarea' | 'address';
-    // Composite types only: label per sub-field, keyed by the sub-field key the shared
-    // value schema defines. Widened from the catalog below, which is exact, because a
-    // caller resolving a type at runtime cannot know which one it holds.
-    subFields?: Record<string, string>;
 };
 
 /**
