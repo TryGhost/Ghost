@@ -136,10 +136,13 @@ Some parts of Ghost live in separate repositories:
 - [`TryGhost/Ghost-CLI`](https://github.com/TryGhost/Ghost-CLI) installs and
   manages production Ghost sites.
 - [`TryGhost/Source`](https://github.com/TryGhost/Source),
-  [`TryGhost/Casper`](https://github.com/TryGhost/Casper), and the other
-  repositories in the [TryGhost/Themes](https://github.com/TryGhost/Themes)
-  organisation contain official themes. Some theme repositories are synced
-  copies of private source repositories.
+  [`TryGhost/Casper`](https://github.com/TryGhost/Casper), and
+  [`TryGhost/Themes`](https://github.com/TryGhost/Themes) contain official
+  themes.
+- [`TryGhost/framework`](https://github.com/TryGhost/framework) contains shared
+  Node.js packages used by Ghost.
+- [`TryGhost/SDK`](https://github.com/TryGhost/SDK) contains tools for working
+  with Ghost's APIs.
 
-Framework, SDK, and Koenig packages that previously lived in separate
-repositories are now part of this monorepo.
+Of these projects, only Koenig has moved into this monorepo. Framework and SDK
+packages still live in their own repositories.

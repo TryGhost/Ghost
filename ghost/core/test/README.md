@@ -29,7 +29,7 @@ add focused assertions for important behavior such as ordering and side effects.
 Use `fixtureManager.init()` to insert fixture tasks in a known state. The
 framework includes the owner fixture by default. Named tasks add the data
 required by a test; for example, `users` creates staff users for each role and
-`users:inactive` adds an inactive user.
+`user:inactive` adds an inactive user.
 
 Older tests may use `localUtils.doAuth()` or `testUtils.setup()`, but new
 end-to-end tests should use the fixture manager and request agents.
@@ -78,6 +78,7 @@ pnpm test:single test/e2e-api/path/to/test.test.js
 ```
 
 The main groups are `test/e2e-api/`, `test/e2e-frontend/`,
-`test/e2e-webhooks/`, `test/e2e-server/`, and `test/e2e-isolated/`. Start from a
-nearby test in the same group because boot options, agent choice, and cleanup
-requirements vary by boundary.
+`test/e2e-webhooks/`, and `test/e2e-server/`. Isolated tests use an
+`.isolated.test.js` or `.isolated.test.ts` suffix inside `test/e2e-server/`.
+Start from a nearby test in the same group because boot options, agent choice,
+and cleanup requirements vary by boundary.

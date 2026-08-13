@@ -52,8 +52,8 @@ The following conventions should hold:
   ```
 
 - Resource bodies use a top-level key containing an array, including singular
-  requests. Settings are an exception because the key-value pairs are the list
-  of resources.
+  requests. Settings use the same shape, with each key-value pair represented
+  as a resource in the array.
 - Responses can include a top-level `meta` key for additional information.
 - Pagination metadata is nested under `meta.pagination`:
 

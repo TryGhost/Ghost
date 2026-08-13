@@ -107,8 +107,8 @@ pnpm test:single test/integration/migrations/migration.test.js
 ```
 
 Add focused tests for any non-trivial transformation, then run the affected Core
-tests. The migration review checklist requires verification with both MySQL and
-SQLite because Knex and the database engines do not always behave identically.
+tests. CI runs the database-backed Core suites with both MySQL and SQLite
+because Knex and the database engines do not always behave identically.
 
 ### Reviewing
 
