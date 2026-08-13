@@ -173,7 +173,7 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                 </Card>
             </Stack>
 
-            <Card data-testid='tag-metadata-card'>
+            <Card className='overflow-hidden' data-testid='tag-metadata-card'>
                 <CardHeader>
                     <CardTitle className='text-[14px]'>Meta data</CardTitle>
                     <CardDescription className='text-[13px]'>Extra content for search engines and social accounts.</CardDescription>
