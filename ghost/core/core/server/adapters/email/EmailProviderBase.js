@@ -1,3 +1,5 @@
+const errors = require('@tryghost/errors');
+
 /**
  * Base class for email provider adapters
  *
@@ -37,8 +39,10 @@ class EmailProviderBase {
      *
      * @returns {Promise<{id: string}>} Provider message ID
      */
-    async send(data, options) {
-        throw new Error('EmailProviderBase.send must be implemented by the email adapter');
+    async send() {
+        throw new errors.IncorrectUsageError({
+            message: 'EmailProviderBase.send must be implemented by the email adapter'
+        });
     }
 
     /**
@@ -47,7 +51,9 @@ class EmailProviderBase {
      * @returns {number} Maximum recipients
      */
     getMaximumRecipients() {
-        throw new Error('EmailProviderBase.getMaximumRecipients must be implemented by the email adapter');
+        throw new errors.IncorrectUsageError({
+            message: 'EmailProviderBase.getMaximumRecipients must be implemented by the email adapter'
+        });
     }
 
     /**
@@ -56,7 +62,9 @@ class EmailProviderBase {
      * @returns {number} Delivery window in milliseconds
      */
     getTargetDeliveryWindow() {
-        throw new Error('EmailProviderBase.getTargetDeliveryWindow must be implemented by the email adapter');
+        throw new errors.IncorrectUsageError({
+            message: 'EmailProviderBase.getTargetDeliveryWindow must be implemented by the email adapter'
+        });
     }
 
     /**
@@ -70,8 +78,10 @@ class EmailProviderBase {
      * @param {String[]} [options.events] - Event types to fetch
      * @returns {Promise<void>}
      */
-    async fetchLatest(batchHandler, options) {
-        throw new Error('EmailProviderBase.fetchLatest must be implemented by the email adapter');
+    async fetchLatest() {
+        throw new errors.IncorrectUsageError({
+            message: 'EmailProviderBase.fetchLatest must be implemented by the email adapter'
+        });
     }
 }
 
