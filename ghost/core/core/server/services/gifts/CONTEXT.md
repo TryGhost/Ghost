@@ -49,12 +49,16 @@ A note from the buyer that forms part of the gift and can be presented wherever 
 _Avoid_: Delivery message, email message
 
 **Gift sent**:
-The recipient email has been accepted by the publication's configured mail transport. This completes gift delivery.
+The recipient email has been accepted by the publication's configured mail transport. This completes gift delivery even when no later provider outcome is available.
 _Avoid_: Gift delivered, provider delivery
 
 **Email delivery status**:
-The current progress of handing a recipient email to the configured mail transport: pending, sending, sent, failed, or cancelled.
-_Avoid_: Gift status
+The current progress of handing a recipient email to the configured mail transport: pending, sending, sent, failed, or cancelled. It is separate from any later provider-reported outcome.
+_Avoid_: Delivery outcome
+
+**Delivery outcome**:
+A gift email's latest provider-reported result, such as delivered, temporarily failed, or permanently failed. The outcome remains unknown when the configured transport provides no delivery telemetry.
+_Avoid_: Gift sent, delivery state
 
 ### Time and lifecycle
 

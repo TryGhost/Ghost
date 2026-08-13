@@ -67,7 +67,10 @@ describe('Gift delivery processing', function () {
             status: 'pending',
             started_at: null,
             email_sent_at: null,
-            email_provider_message_id: null
+            email_provider_message_id: null,
+            outcome: 'unknown',
+            outcome_at: null,
+            outcome_error: null
         });
 
         return {gift, delivery};

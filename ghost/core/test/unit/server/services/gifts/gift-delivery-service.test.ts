@@ -37,6 +37,10 @@ describe('GiftDeliveryService', function () {
     let giftDeliveryRepository: GiftDeliveryRepositoryStub;
     let giftEmailService: {
         sendGiftDelivery: sinon.SinonStub;
+        sendDeliveryFailureNotification: sinon.SinonStub;
+    };
+    let giftEmailAnalytics: {
+        schedule: sinon.SinonStub;
     };
     let dispatchDelivery: sinon.SinonStub;
     let tiersService: {
@@ -56,16 +60,22 @@ describe('GiftDeliveryService', function () {
         giftDeliveryRepository = {
             getById: sinon.stub().resolves(null),
             getByGiftId: sinon.stub().resolves(null),
+            getByProviderMessageId: sinon.stub().resolves(null),
             tryStartDelivery: sinon.stub().resolves(buildGiftDelivery({status: 'sending'})),
             markSent: sinon.stub().resolves(true),
             markFailed: sinon.stub().resolves(true),
             markCancelled: sinon.stub().resolves(true),
             cancelPendingForGift: sinon.stub().resolves(false),
+            recordOutcome: sinon.stub().resolves('recorded'),
             create: sinon.stub().resolves(undefined),
             transaction: sinon.stub()
         };
         giftEmailService = {
-            sendGiftDelivery: sinon.stub().resolves({providerMessageId: 'provider-123'})
+            sendGiftDelivery: sinon.stub().resolves({providerMessageId: 'provider-123'}),
+            sendDeliveryFailureNotification: sinon.stub().resolves(undefined)
+        };
+        giftEmailAnalytics = {
+            schedule: sinon.stub().resolves(undefined)
         };
         dispatchDelivery = sinon.stub(DomainEvents, 'dispatch');
         tiersService = {
@@ -83,7 +93,8 @@ describe('GiftDeliveryService', function () {
             giftRepository,
             giftDeliveryRepository,
             tiersService,
-            giftEmailService
+            giftEmailService,
+            giftEmailAnalytics
         });
     }
 
@@ -110,7 +121,10 @@ describe('GiftDeliveryService', function () {
             status: 'pending',
             startedAt: null,
             emailSentAt: null,
-            emailProviderMessageId: null
+            emailProviderMessageId: null,
+            outcome: 'unknown',
+            outcomeAt: null,
+            outcomeError: null
         }, {transacting: transaction.transacting});
         sinon.assert.notCalled(dispatchDelivery);
 
@@ -168,6 +182,7 @@ describe('GiftDeliveryService', function () {
         assert.equal(result, 'sent');
         sinon.assert.calledOnceWithExactly(giftDeliveryRepository.tryStartDelivery, 'delivery_1', sinon.match.date);
         sinon.assert.calledOnceWithExactly(giftDeliveryRepository.markSent, 'delivery_1', sinon.match.date, 'provider-123');
+        sinon.assert.calledOnce(giftEmailAnalytics.schedule);
     });
 
     it('records transactional transport acceptance without a provider message ID', async function () {
@@ -178,6 +193,7 @@ describe('GiftDeliveryService', function () {
 
         assert.equal(result, 'sent');
         sinon.assert.calledOnceWithExactly(giftDeliveryRepository.markSent, 'delivery_1', sinon.match.date, null);
+        sinon.assert.notCalled(giftEmailAnalytics.schedule);
     });
 
     it('leaves an accepted handoff in sending when the durable sent fact cannot be persisted', async function () {
@@ -198,6 +214,16 @@ describe('GiftDeliveryService', function () {
 
         assert.equal(result, 'failed');
         sinon.assert.notCalled(giftDeliveryRepository.markFailed);
+    });
+
+    it('keeps an accepted delivery sent when analytics scheduling fails', async function () {
+        giftEmailAnalytics.schedule.rejects(new Error('scheduler unavailable'));
+        const service = createService();
+
+        const result = await service.send('delivery_1');
+
+        assert.equal(result, 'sent');
+        sinon.assert.calledOnceWithExactly(giftDeliveryRepository.markSent, 'delivery_1', sinon.match.date, 'provider-123');
     });
 
     it('does not send when another worker or lifecycle transition starts the delivery first', async function () {
@@ -243,5 +269,74 @@ describe('GiftDeliveryService', function () {
 
         assert.equal(result, 'failed');
         sinon.assert.calledOnceWithExactly(giftDeliveryRepository.markFailed, 'delivery_1');
+    });
+
+    describe('recordOutcome', function () {
+        const permanentFailure = {
+            providerMessageId: 'provider-123',
+            outcome: 'permanent_failed' as const,
+            timestamp: new Date('2026-08-13T10:00:00.000Z'),
+            error: 'recipient rejected'
+        };
+
+        it('sends the buyer the gift link after recording a permanent delivery failure', async function () {
+            const delivery = buildGiftDelivery({status: 'sent', outcome: 'permanent_failed'});
+            const gift = buildGift();
+            giftDeliveryRepository.getByProviderMessageId.resolves(delivery);
+            giftRepository.getById.resolves(gift);
+            const service = createService();
+
+            assert.equal(await service.recordOutcome(permanentFailure), 'recorded');
+
+            sinon.assert.calledOnceWithExactly(giftDeliveryRepository.recordOutcome, permanentFailure);
+            sinon.assert.calledOnceWithExactly(giftDeliveryRepository.getByProviderMessageId, 'provider-123');
+            sinon.assert.calledOnceWithExactly(giftEmailService.sendDeliveryFailureNotification, {
+                buyerEmail: gift.buyerEmail,
+                recipientEmail: delivery.recipientEmail,
+                token: gift.token,
+                expiresAt: gift.expiresAt
+            });
+        });
+
+        it('does not notify again when the provider outcome was not newly recorded', async function () {
+            giftDeliveryRepository.recordOutcome.resolves('stale');
+            const service = createService();
+
+            assert.equal(await service.recordOutcome(permanentFailure), 'stale');
+
+            sinon.assert.notCalled(giftDeliveryRepository.getByProviderMessageId);
+            sinon.assert.notCalled(giftEmailService.sendDeliveryFailureNotification);
+        });
+
+        it('does not notify the buyer for temporary provider failures', async function () {
+            const service = createService();
+
+            await service.recordOutcome({...permanentFailure, outcome: 'temporary_failed'});
+
+            sinon.assert.notCalled(giftDeliveryRepository.getByProviderMessageId);
+            sinon.assert.notCalled(giftEmailService.sendDeliveryFailureNotification);
+        });
+
+        it('does not notify for a gift that can no longer be redeemed', async function () {
+            giftDeliveryRepository.getByProviderMessageId.resolves(buildGiftDelivery());
+            giftRepository.getById.resolves(buildGift({
+                status: 'refunded',
+                refundedAt: new Date()
+            }));
+            const service = createService();
+
+            await service.recordOutcome(permanentFailure);
+
+            sinon.assert.notCalled(giftEmailService.sendDeliveryFailureNotification);
+        });
+
+        it('logs and ignores a buyer notification failure', async function () {
+            giftDeliveryRepository.getByProviderMessageId.resolves(buildGiftDelivery());
+            giftRepository.getById.resolves(buildGift());
+            giftEmailService.sendDeliveryFailureNotification.rejects({responseCode: 550});
+            const service = createService();
+
+            assert.equal(await service.recordOutcome(permanentFailure), 'recorded');
+        });
     });
 });

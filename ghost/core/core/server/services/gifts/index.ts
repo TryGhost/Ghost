@@ -21,6 +21,7 @@ export interface GiftServiceInitOptions {
 // test/unit/server/web/gift-preview/controller.test.js).
 export let controller: GiftController | undefined;
 export let service: GiftService | undefined;
+export let deliveryService: GiftDeliveryService | undefined;
 
 export async function init(options: GiftServiceInitOptions): Promise<void> {
     if (service) {
@@ -38,6 +39,7 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
     const StartGiftReminderFlushEvent = require('./events/start-gift-reminder-flush-event');
     const StartGiftCleanupEvent = require('./events/start-gift-cleanup-event');
     const jobs = require('./jobs');
+    const emailAnalyticsJobs = require('../email-analytics/jobs');
 
     const {GhostMailer} = require('../mail');
     const MailgunClient = require('../lib/mailgun-client');
@@ -70,11 +72,14 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
         blogIcon,
         t
     });
-    const giftDeliveryService = new GiftDeliveryService({
+    deliveryService = new GiftDeliveryService({
         giftRepository: repository,
         giftDeliveryRepository: deliveryRepository,
         tiersService,
-        giftEmailService
+        giftEmailService,
+        giftEmailAnalytics: {
+            schedule: () => emailAnalyticsJobs.scheduleRecurringGiftDeliveriesJob(true)
+        }
     });
 
     const giftReminderScheduler = new GiftReminderScheduler({
@@ -85,7 +90,7 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
     });
     const giftService = new GiftService({
         giftRepository: repository,
-        giftDeliveryService,
+        giftDeliveryService: deliveryService,
         get memberRepository() {
             return membersService.api.members;
         },
@@ -125,7 +130,7 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
     DomainEvents.subscribe(SendGiftDeliveryEvent, async (event: {data: {deliveryId: string}}) => {
         const start = Date.now();
         try {
-            const result = await giftDeliveryService.send(event.data.deliveryId);
+            const result = await deliveryService!.send(event.data.deliveryId);
             logging.info(`Gift delivery ${event.data.deliveryId} ${result} in ${Date.now() - start}ms`);
         } catch (err) {
             logging.error(err, `Failed to process gift delivery ${event.data.deliveryId}`);

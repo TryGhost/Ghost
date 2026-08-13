@@ -1,7 +1,7 @@
 import ObjectID from 'bson-objectid';
 import logging from '@tryghost/logging';
 import type {GiftRepository, RepositoryTransactionOptions} from './gift-bookshelf-repository';
-import type {GiftDeliveryRepository} from './gift-delivery-bookshelf-repository';
+import type {GiftDeliveryOutcomeRecordResult, GiftDeliveryRepository} from './gift-delivery-bookshelf-repository';
 import type {GiftDeliveryData} from './gift-delivery-schema';
 import type {GiftCadence} from './gift-schema';
 import {SendGiftDeliveryEvent} from './events/send-gift-delivery-event';
@@ -34,6 +34,12 @@ interface GiftEmailService {
         duration: number;
         expiresAt: Date;
     }): Promise<{providerMessageId: string | null}>;
+    sendDeliveryFailureNotification(data: {
+        buyerEmail: string;
+        recipientEmail: string;
+        token: string;
+        expiresAt: Date;
+    }): Promise<void>;
 }
 
 interface GiftDeliveryServiceDeps {
@@ -41,6 +47,9 @@ interface GiftDeliveryServiceDeps {
     giftDeliveryRepository: GiftDeliveryRepository;
     tiersService: TiersService;
     giftEmailService: GiftEmailService;
+    giftEmailAnalytics: {
+        schedule(): Promise<void>;
+    };
 }
 
 export class GiftDeliveryService {
@@ -58,7 +67,10 @@ export class GiftDeliveryService {
             status: 'pending',
             startedAt: null,
             emailSentAt: null,
-            emailProviderMessageId: null
+            emailProviderMessageId: null,
+            outcome: 'unknown',
+            outcomeAt: null,
+            outcomeError: null
         };
 
         await this.deps.giftDeliveryRepository.create(delivery, options);
@@ -157,6 +169,57 @@ export class GiftDeliveryService {
             return 'failed';
         }
 
+        if (result.providerMessageId) {
+            try {
+                await this.deps.giftEmailAnalytics.schedule();
+            } catch (err) {
+                logging.error('Failed to schedule gift delivery analytics', err);
+            }
+        }
+
         return 'sent';
+    }
+
+    async recordOutcome(data: {providerMessageId: string; outcome: 'delivered' | 'temporary_failed' | 'permanent_failed'; timestamp: Date; error: string | null}): Promise<GiftDeliveryOutcomeRecordResult> {
+        const result = await this.deps.giftDeliveryRepository.recordOutcome(data);
+
+        if (result === 'recorded' && data.outcome === 'permanent_failed') {
+            await this.notifyBuyerOfDeliveryFailure(data.providerMessageId);
+        }
+
+        return result;
+    }
+
+    private async notifyBuyerOfDeliveryFailure(providerMessageId: string): Promise<void> {
+        try {
+            const delivery = await this.deps.giftDeliveryRepository.getByProviderMessageId(providerMessageId);
+            if (!delivery) {
+                return;
+            }
+
+            const gift = await this.deps.giftRepository.getById(delivery.giftId);
+            if (!gift || gift.status !== 'purchased' || gift.expiresAt.getTime() <= Date.now()) {
+                return;
+            }
+
+            await this.deps.giftEmailService.sendDeliveryFailureNotification({
+                buyerEmail: gift.buyerEmail,
+                recipientEmail: delivery.recipientEmail,
+                token: gift.token,
+                expiresAt: gift.expiresAt
+            });
+
+            logging.info({
+                event: {name: 'gift_delivery.failure_notification.sent'},
+                giftId: delivery.giftId,
+                deliveryId: delivery.id
+            }, 'Sent gift delivery failure notification to buyer');
+        } catch (err) {
+            logging.error({
+                event: {name: 'gift_delivery.failure_notification.failed'},
+                err,
+                providerMessageId
+            }, 'Failed to send gift delivery failure notification to buyer');
+        }
     }
 }
