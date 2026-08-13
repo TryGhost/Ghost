@@ -72,9 +72,27 @@ To contribute or add translations, see
 adding translatable product copy, see the
 [internationalization guide](practices/internationalization.md).
 
-The [error handling guide](practices/error-handling.md) explains how to design
-failure states for logs, APIs, and user interfaces without exposing raw
-technical errors.
+## Guides
+
+Codebase guides explain how the main systems fit together:
+
+- [Authentication](codebase/authentication.md)
+- [Configuration](codebase/configuration.md)
+- [Database structure](codebase/database.md)
+- [Internal caching](codebase/internal-caching.md)
+- [Jobs system](codebase/jobs.md)
+- [Post analytics](codebase/post-analytics.md)
+- [Site UUID](codebase/site-uuid.md)
+- [Stripe flows](codebase/stripe-flows.md)
+
+Practice and contributor guides explain how to make and verify changes:
+
+- [API design](practices/api-design.md)
+- [Database migrations](practices/database-migrations.md)
+- [Email testing](contributing/testing-email.md)
+- [Error handling](practices/error-handling.md)
+- [Internationalization](practices/internationalization.md)
+- [Performance testing](contributing/performance-testing.md)
 
 ### Finding Issues to Work On
 

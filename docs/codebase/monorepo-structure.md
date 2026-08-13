@@ -127,3 +127,19 @@ documented in [`packages/README.md`](../../packages/README.md).
 This means a source edit may work immediately in development while a production
 build still needs `pnpm build`. Run the build when changing package exports,
 build configuration, or code included in a release artifact.
+
+## Related repositories
+
+Some parts of Ghost live in separate repositories:
+
+- [`TryGhost/gscan`](https://github.com/TryGhost/gscan) validates Ghost themes.
+- [`TryGhost/Ghost-CLI`](https://github.com/TryGhost/Ghost-CLI) installs and
+  manages production Ghost sites.
+- [`TryGhost/Source`](https://github.com/TryGhost/Source),
+  [`TryGhost/Casper`](https://github.com/TryGhost/Casper), and
+  [`TryGhost/Themes`](https://github.com/TryGhost/Themes) contain official
+  themes.
+- [`TryGhost/framework`](https://github.com/TryGhost/framework) contains shared
+  Node.js packages used by Ghost.
+- [`TryGhost/SDK`](https://github.com/TryGhost/SDK) contains tools for working
+  with Ghost's APIs.
