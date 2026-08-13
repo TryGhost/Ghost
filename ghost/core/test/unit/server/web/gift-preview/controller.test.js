@@ -1,9 +1,9 @@
 const assert = require('node:assert/strict');
+const Module = require('node:module');
 const sinon = require('sinon');
 
 const urlUtils = require('../../../../../core/shared/url-utils').default;
 const settingsCache = require('../../../../../core/shared/settings-cache');
-const giftServiceWrapper = require('../../../../../core/server/services/gifts');
 
 // Initialise i18n before requiring the controller so its destructured `t`
 // import resolves to the live i18next instance. The init helper falls back
@@ -12,12 +12,30 @@ require('../../../../../core/server/services/i18n').init();
 
 const controller = require('../../../../../core/server/web/gift-preview/controller');
 
+// The gifts module's exports are getter-only under tsx, so the service can't be
+// stubbed by assignment. Intercept the controller's lazy require of the module
+// instead, matching on the resolved file path so renames or moved requires can't
+// silently defeat the stub.
+const giftsModulePath = require.resolve('../../../../../core/server/services/gifts');
+
 describe('Gift Preview Controller', function () {
+    let giftService;
+    let originalModuleLoad;
     let req;
     let res;
-    let originalGiftService;
 
     beforeEach(function () {
+        giftService = {
+            getPreview: sinon.stub()
+        };
+        originalModuleLoad = Module._load;
+        Module._load = function (request, parent, isMain) {
+            if (parent && Module._resolveFilename(request, parent, isMain) === giftsModulePath) {
+                return {service: giftService};
+            }
+
+            return originalModuleLoad.call(this, request, parent, isMain);
+        };
         req = {
             params: {
                 token: 'test-token-123'
@@ -29,7 +47,6 @@ describe('Gift Preview Controller', function () {
             sendStatus: sinon.stub(),
             set: sinon.stub()
         };
-        originalGiftService = giftServiceWrapper.service;
 
         sinon.stub(urlUtils, 'getSiteUrl').returns('https://example.com/');
         sinon.stub(settingsCache, 'get');
@@ -38,16 +55,13 @@ describe('Gift Preview Controller', function () {
     });
 
     afterEach(function () {
-        giftServiceWrapper.service = originalGiftService;
-
+        Module._load = originalModuleLoad;
         sinon.restore();
     });
 
     describe('giftPreview', function () {
         it('redirects to homepage when gift token is invalid', async function () {
-            giftServiceWrapper.service = {
-                getPreview: sinon.stub().rejects(new Error('Not found'))
-            };
+            giftService.getPreview.rejects(new Error('Not found'));
 
             await controller.giftPreview(req, res);
 
@@ -56,9 +70,7 @@ describe('Gift Preview Controller', function () {
         });
 
         it('redirects to homepage when gift token is not found (null)', async function () {
-            giftServiceWrapper.service = {
-                getPreview: sinon.stub().resolves(null)
-            };
+            giftService.getPreview.resolves(null);
 
             await controller.giftPreview(req, res);
 
@@ -67,13 +79,11 @@ describe('Gift Preview Controller', function () {
         });
 
         it('returns HTML with OG tags for a valid gift', async function () {
-            giftServiceWrapper.service = {
-                getPreview: sinon.stub().resolves({
-                    tier: {id: 'tier_1', name: 'Premium'},
-                    cadence: 'year',
-                    duration: 1
-                })
-            };
+            giftService.getPreview.resolves({
+                tier: {id: 'tier_1', name: 'Premium'},
+                cadence: 'year',
+                duration: 1
+            });
 
             await controller.giftPreview(req, res);
 
@@ -96,13 +106,11 @@ describe('Gift Preview Controller', function () {
 
         it('escapes HTML in site title', async function () {
             settingsCache.get.withArgs('title').returns('Blog <script>alert("xss")</script>');
-            giftServiceWrapper.service = {
-                getPreview: sinon.stub().resolves({
-                    tier: {id: 'tier_1', name: 'Premium'},
-                    cadence: 'month',
-                    duration: 3
-                })
-            };
+            giftService.getPreview.resolves({
+                tier: {id: 'tier_1', name: 'Premium'},
+                cadence: 'month',
+                duration: 3
+            });
 
             await controller.giftPreview(req, res);
 
@@ -113,13 +121,11 @@ describe('Gift Preview Controller', function () {
         });
 
         it('uses monthly cadence label', async function () {
-            giftServiceWrapper.service = {
-                getPreview: sinon.stub().resolves({
-                    tier: {id: 'tier_1', name: 'Premium'},
-                    cadence: 'month',
-                    duration: 3
-                })
-            };
+            giftService.getPreview.resolves({
+                tier: {id: 'tier_1', name: 'Premium'},
+                cadence: 'month',
+                duration: 3
+            });
 
             await controller.giftPreview(req, res);
 
@@ -131,13 +137,11 @@ describe('Gift Preview Controller', function () {
 
         it('defaults site title to Ghost', async function () {
             settingsCache.get.withArgs('title').returns(null);
-            giftServiceWrapper.service = {
-                getPreview: sinon.stub().resolves({
-                    tier: {id: 'tier_1', name: 'Premium'},
-                    cadence: 'year',
-                    duration: 1
-                })
-            };
+            giftService.getPreview.resolves({
+                tier: {id: 'tier_1', name: 'Premium'},
+                cadence: 'year',
+                duration: 1
+            });
 
             await controller.giftPreview(req, res);
 
@@ -149,13 +153,11 @@ describe('Gift Preview Controller', function () {
 
     describe('giftPreviewImage', function () {
         it('returns a PNG image for a valid gift', async function () {
-            giftServiceWrapper.service = {
-                getPreview: sinon.stub().resolves({
-                    tier: {id: 'tier_1', name: 'Gold'},
-                    cadence: 'year',
-                    duration: 1
-                })
-            };
+            giftService.getPreview.resolves({
+                tier: {id: 'tier_1', name: 'Gold'},
+                cadence: 'year',
+                duration: 1
+            });
 
             await controller.giftPreviewImage(req, res);
 
