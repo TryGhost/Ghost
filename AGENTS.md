@@ -88,7 +88,7 @@ import Interpolate from '@doist/react-interpolate';
 {t('Could not sign in.')} <a href={link}>{t('Click here to retry')}</a>
 ```
 
-See `apps/portal/src/components/pages/email-receiving-faq.js` for a canonical example of correct `Interpolate` usage.
+See `apps/portal/src/components/pages/email-receiving-faq.jsx` for a canonical example of correct `Interpolate` usage.
 
 ### Build Dependencies (Nx)
 
