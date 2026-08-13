@@ -1,25 +1,72 @@
 const sinon = require('sinon');
-const metrics = require('@tryghost/metrics');
-
-const configUtils = require('../../../../utils/config-utils');
 const EmailAnalyticsServiceWrapper = require('../../../../../core/server/services/email-analytics/email-analytics-service-wrapper');
+const {Queries} = require('../../../../../core/server/services/email-analytics/lib/queries');
+
+class FakeEvent {
+    timestamp = new Date();
+    data = null;
+}
 
 describe('EmailAnalyticsServiceWrapper', function () {
+    /** @type {sinon.SinonStub} */
     let metricStub;
 
     beforeEach(function () {
-        configUtils.set('emailAnalytics:metrics:openThroughput:enabled', true);
-        configUtils.set('emailAnalytics:metrics:openThroughput:threshold', 0);
-        metricStub = sinon.stub(metrics, 'metric');
+        metricStub = sinon.stub();
     });
 
     afterEach(async function () {
         sinon.restore();
-        await configUtils.restore();
     });
 
     function logLatestOpenedJob(logName) {
         const wrapper = new EmailAnalyticsServiceWrapper({logName});
+        wrapper.init({
+            config: {
+                get: (key) => {
+                    switch (key) {
+                    case 'emailAnalytics:metrics:openThroughput:enabled':
+                        return true;
+                    case 'emailAnalytics:metrics:openThroughput:threshold':
+                        return 0;
+                    default:
+                        return undefined;
+                    }
+                }
+            },
+            domainEvents: {
+                subscribe: sinon.stub(),
+            },
+            event: FakeEvent,
+            queries: sinon.createStubInstance(Queries),
+            mailgunTags: [],
+            jobNames: {
+                latestNonOpened: 'email-analytics-latest-others',
+                missing: 'email-analytics-missing',
+                latestOpened: 'email-analytics-latest-opened',
+                scheduled: 'email-analytics-scheduled'
+            },
+            cursorSeed: {
+                tableName: 'email_recipients',
+                eventColumns: {
+                    delivered: 'delivered_at',
+                    opened: 'opened_at',
+                    failed: 'failed_at'
+                }
+            },
+            settingsCache: {
+                get: sinon.stub()
+            },
+            createEventProcessor: sinon.stub().returns({
+                process: sinon.stub().resolves()
+            }),
+            metrics: {
+                metric: metricStub
+            },
+            prometheusClient: {
+                registerCounter: sinon.stub()
+            },
+        });
         wrapper._logJobCompletion('latest-opened', {
             eventCount: 10,
             apiPollingTimeMs: 500,
