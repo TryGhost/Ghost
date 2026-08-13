@@ -2,7 +2,7 @@ import React from 'react';
 import TagColorField from './tag-color-field';
 import TagImageField from './tag-image-field';
 import {Accordion, AccordionContent, AccordionItem, AccordionTrigger, Card, CardContent, CodeEditor, FieldError, Input, Label, Textarea} from '@tryghost/shade/components';
-import {Stack} from '@tryghost/shade/primitives';
+import {Stack, Text} from '@tryghost/shade/primitives';
 import {DESCRIPTION_MAX_LENGTH, FACEBOOK_DESCRIPTION_RECOMMENDED_LENGTH, FACEBOOK_TITLE_RECOMMENDED_LENGTH, META_DESCRIPTION_RECOMMENDED_LENGTH, META_TITLE_RECOMMENDED_LENGTH, X_DESCRIPTION_RECOMMENDED_LENGTH, X_TITLE_RECOMMENDED_LENGTH, charLength, getBlogDomain, getSeoDescription, getSeoTitle, getSeoUrl, getSlugUrlPreview, validateTagField} from './tag-detail-edit';
 import {FacebookCardPreview, SeoPreview, XCardPreview} from './tag-detail-previews';
 import {cn, formatNumber} from '@tryghost/shade/utils';
@@ -36,10 +36,10 @@ const UsedCharacters: React.FC<{value: string; limit: number; prefix: 'Maximum' 
 
 const SectionTrigger: React.FC<{title: string; description: string}> = ({title, description}) => (
     <AccordionTrigger className='hover:no-underline'>
-        <span className='flex flex-col gap-0.5 text-left'>
-            <span className='text-base font-semibold'>{title}</span>
-            <span className='text-sm font-normal text-muted-foreground'>{description}</span>
-        </span>
+        <Stack className='text-left' gap='none'>
+            <Text as='span' leading='tight' size='lg' weight='semibold'>{title}</Text>
+            <Text as='span' leading='tight' size='md' tone='secondary'>{description}</Text>
+        </Stack>
     </AccordionTrigger>
 );
 
