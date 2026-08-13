@@ -1,7 +1,10 @@
 import type {SchedulerAdapter} from '@tryghost/adapter-base-scheduling';
 import type {InternalKeys} from '../internal-keys';
-import type {GiftController} from './gift-controller';
-import type {GiftService} from './gift-service';
+import {GiftBookshelfRepository} from './gift-bookshelf-repository';
+import {GiftService} from './gift-service';
+import {GiftReminderScheduler} from './gift-reminder-scheduler';
+import {GiftEmailService} from './gift-email-service';
+import {GiftController} from './gift-controller';
 
 export interface GiftServiceInitOptions {
     apiUrl: string;
@@ -10,22 +13,18 @@ export interface GiftServiceInitOptions {
 }
 
 // Constructed by init() at boot, once the database and scheduling adapter are ready.
+// Under the dev/test loader (tsx) these compile to getter-only exports, so tests
+// can't assign to them — stub the module load instead (see
+// test/unit/server/web/gift-preview/controller.test.js).
 export let controller: GiftController | undefined;
 export let service: GiftService | undefined;
 
-let initialized = false;
-
 export async function init(options: GiftServiceInitOptions): Promise<void> {
-    if (initialized) {
+    if (service) {
         return;
     }
 
     const {Gift: GiftModel, MemberStripeCustomer: StripeCustomerModel} = require('../../models');
-    const {GiftBookshelfRepository} = require('./gift-bookshelf-repository') as typeof import('./gift-bookshelf-repository');
-    const {GiftService} = require('./gift-service') as typeof import('./gift-service');
-    const {GiftReminderScheduler} = require('./gift-reminder-scheduler') as typeof import('./gift-reminder-scheduler');
-    const {GiftEmailService} = require('./gift-email-service') as typeof import('./gift-email-service');
-    const {GiftController} = require('./gift-controller') as typeof import('./gift-controller');
     const GiftCheckoutAdapter = require('./gift-checkout-adapter');
     const membersService = require('../members');
     const tiersService = require('../tiers');
@@ -130,6 +129,4 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
 
     jobs.scheduleGiftCleanupJob();
     jobs.scheduleGiftReminderJob();
-
-    initialized = true;
 }

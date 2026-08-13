@@ -12,6 +12,12 @@ require('../../../../../core/server/services/i18n').init();
 
 const controller = require('../../../../../core/server/web/gift-preview/controller');
 
+// The gifts module's exports are getter-only under tsx, so the service can't be
+// stubbed by assignment. Intercept the controller's lazy require of the module
+// instead, matching on the resolved file path so renames or moved requires can't
+// silently defeat the stub.
+const giftsModulePath = require.resolve('../../../../../core/server/services/gifts');
+
 describe('Gift Preview Controller', function () {
     let giftService;
     let originalModuleLoad;
@@ -24,7 +30,7 @@ describe('Gift Preview Controller', function () {
         };
         originalModuleLoad = Module._load;
         Module._load = function (request, parent, isMain) {
-            if (request === '../../services/gifts' && parent?.filename.endsWith('/server/web/gift-preview/controller.js')) {
+            if (parent && Module._resolveFilename(request, parent, isMain) === giftsModulePath) {
                 return {service: giftService};
             }
 
