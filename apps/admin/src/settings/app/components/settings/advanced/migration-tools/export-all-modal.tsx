@@ -7,10 +7,10 @@ import {
     DialogDescription,
     DialogFooter,
     DialogHeader,
-    DialogTitle,
-    LoadingIndicator
+    DialogTitle
 } from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
+import {downloadFromEndpoint} from '@tryghost/admin-x-framework/helpers';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
 
 export type ExportMode = 'sync' | 'async';
@@ -34,7 +34,7 @@ const EXPORT_COMPONENTS: ExportComponent[] = [
     {key: 'media', label: 'Media files', description: 'All images, video and audio files. May significantly increase export size and duration', defaultChecked: false, asyncOnly: true}
 ];
 
-type ExportPhase = 'select' | 'confirmed' | 'preparing' | 'done';
+type ExportPhase = 'select' | 'confirmed' | 'downloading';
 
 const ExportAllModal: React.FC<{open: boolean; onOpenChange: (open: boolean) => void; mode: ExportMode}> = ({open, onOpenChange, mode}) => {
     const {data: currentUser} = useCurrentUser();
@@ -46,7 +46,6 @@ const ExportAllModal: React.FC<{open: boolean; onOpenChange: (open: boolean) => 
         });
         return initial;
     });
-    const mockTimerRef = useRef<ReturnType<typeof setTimeout>>();
     const resetTimerRef = useRef<ReturnType<typeof setTimeout>>();
 
     const email = currentUser?.email;
@@ -60,40 +59,30 @@ const ExportAllModal: React.FC<{open: boolean; onOpenChange: (open: boolean) => 
             setPhase('select');
             return;
         }
-        clearTimeout(mockTimerRef.current);
         clearTimeout(resetTimerRef.current);
         // Reset for the next open, after the close animation
         resetTimerRef.current = setTimeout(() => setPhase('select'), 200);
     };
 
-    // Static UX/UI mockup, nothing is wired to a backend
     const startExport = () => {
         if (mode === 'async') {
+            // Host mode is not wired to a backend yet — mocked confirmation only
             setPhase('confirmed');
             return;
         }
-        setPhase('preparing');
-        mockTimerRef.current = setTimeout(() => {
-            triggerMockDownload();
-            setPhase('done');
-        }, 10000);
-    };
 
-    const triggerMockDownload = () => {
-        const emptyZip = new Uint8Array([0x50, 0x4b, 0x05, 0x06, ...new Array(18).fill(0)]);
-        const url = URL.createObjectURL(new Blob([emptyZip], {type: 'application/zip'}));
-        const anchor = document.createElement('a');
-        anchor.href = url;
-        anchor.download = 'ghost-export.zip';
-        document.body.appendChild(anchor);
-        anchor.click();
-        anchor.remove();
-        URL.revokeObjectURL(url);
+        const components = visibleComponents
+            .filter(component => selected[component.key])
+            .map(component => component.key);
+
+        // A plain navigation download: the browser's download manager streams
+        // the zip to disk, so even a large export never sits in tab memory
+        downloadFromEndpoint(`/exports/download/?components=${components.join(',')}`);
+        setPhase('downloading');
     };
 
     useEffect(() => {
         return () => {
-            clearTimeout(mockTimerRef.current);
             clearTimeout(resetTimerRef.current);
         };
     }, []);
@@ -166,31 +155,16 @@ const ExportAllModal: React.FC<{open: boolean; onOpenChange: (open: boolean) => 
                     </>
                 )}
 
-                {phase === 'preparing' && (
+                {phase === 'downloading' && (
                     <>
                         <DialogHeader>
                             <DialogTitle className='flex items-center gap-2'>
-                                <LoadingIndicator size='sm' /> Preparing your export&hellip;
+                                <LucideIcon.CircleCheck className='size-5 text-green-600' /> Preparing your export&hellip;
                             </DialogTitle>
                         </DialogHeader>
                         <DialogDescription>
-                            Your download will start automatically when it&rsquo;s ready. Keep this window open.
-                        </DialogDescription>
-                        <DialogFooter className='sm:justify-end'>
-                            <Button variant='outline' onClick={() => handleOpenChange(false)}>Cancel</Button>
-                        </DialogFooter>
-                    </>
-                )}
-
-                {phase === 'done' && (
-                    <>
-                        <DialogHeader>
-                            <DialogTitle className='flex items-center gap-2'>
-                                <LucideIcon.CircleCheck className='size-5 text-green-600' /> Export downloaded
-                            </DialogTitle>
-                        </DialogHeader>
-                        <DialogDescription>
-                            Your export has been downloaded as a zip file.
+                            Your download will start automatically and appear in your browser&rsquo;s downloads.
+                            You can now close this window.
                         </DialogDescription>
                         <DialogFooter className='sm:justify-end'>
                             <Button onClick={() => handleOpenChange(false)}>Close</Button>

@@ -35,6 +35,25 @@ describe("Migration tools export", () => {
 
         await dialog.getByRole("button", {name: "Export", exact: true}).click();
         await expect.element(dialog.getByText("Preparing your export", {exact: false})).toBeVisible();
+
+        // The download itself is a plain navigation via the shared download iframe
+        const iframe = document.getElementById("iframeDownload");
+        expect(iframe?.getAttribute("src")).toContain("/exports/download/?components=content,members,analytics,themes,routes");
+    });
+
+    it("only requests the selected components", async () => {
+        fakeSettingsScreens();
+        await renderAdminApp("/settings/advanced", {labs: {selfServeArchives: true}});
+
+        const section = await openExportTab();
+        await section.getByRole("button", {name: "Export data"}).click();
+
+        const dialog = page.getByRole("dialog");
+        await dialog.getByRole("checkbox", {name: "Members"}).click();
+        await dialog.getByRole("button", {name: "Export", exact: true}).click();
+
+        const iframe = document.getElementById("iframeDownload");
+        expect(iframe?.getAttribute("src")).toContain("/exports/download/?components=content,analytics,themes,routes");
     });
 
     it("offers media and email delivery when an archive host is configured", async () => {
