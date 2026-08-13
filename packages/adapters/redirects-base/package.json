@@ -3,6 +3,9 @@
   "version": "0.0.0",
   "description": "The adapter-base-redirects package for Ghost.",
   "private": true,
+  "ghostPackage": {
+    "goldenPath": "compliant"
+  },
   "type": "module",
   "repository": {
     "type": "git",

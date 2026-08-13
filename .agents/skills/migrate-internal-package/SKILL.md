@@ -88,6 +88,8 @@ commits manually.
 After the subtree commit, add focused integration commits that:
 
 - make the package private with an internal placeholder version;
+- set `ghostPackage.goldenPath` to `migration` and `ghostPackage.reason` to a
+  concise explanation of the remaining modernization work;
 - switch Ghost consumers to `workspace:*`;
 - update the lockfile with `pnpm`;
 - minimally adapt configuration and tests to work in Ghost;

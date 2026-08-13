@@ -9,6 +9,8 @@ modernize the implementation.
 Change only what Ghost needs to consume and verify the package:
 
 - set `"private": true` and the internal placeholder version;
+- set `ghostPackage.goldenPath` to `migration` and describe the remaining
+  modernization work in `ghostPackage.reason`;
 - point repository metadata at Ghost;
 - remove public publishing configuration;
 - switch Ghost consumers to `workspace:*`;

@@ -66,7 +66,6 @@ const tokenPermissionCheck = function tokenPermissionCheck(req, res, next) {
         newsletters: ['GET', 'PUT', 'POST'],
         automations: ['PUT'],
         config: ['GET'],
-        explore: ['GET'],
         schedules: ['PUT'],
         gifts: ['PUT'],
         files: ['POST'],

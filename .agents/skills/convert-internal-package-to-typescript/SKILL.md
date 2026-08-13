@@ -62,6 +62,9 @@ Use the subject `Changed <package> file extensions to TypeScript`.
 Apply the package contract from `packages/README.md`: shared config packages,
 minimal package-local config, ESM metadata and exports, standard scripts, and a
 single compiled output unless a verified consumer requires an exception.
+Replace the package's `migration` status with
+`ghostPackage.goldenPath: compliant` only after every mechanical golden-path
+check passes.
 
 Use the subject `Converted <package> to TypeScript`.
 

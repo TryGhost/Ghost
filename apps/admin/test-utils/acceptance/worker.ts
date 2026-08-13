@@ -211,6 +211,42 @@ export interface FakeEndpointOptions {
  * to resource fakes / boot overrides / `fakeAdminEndpoint`. Returns a
  * capture of every matched request for payload assertions.
  */
+/**
+ * A request body as something a test can assert against.
+ *
+ * JSON where the request is JSON. Multipart bodies are read as an object too, keyed by field
+ * name, with files reduced to their name and type — otherwise a file upload's body is invisible
+ * to tests and the only assertable thing about it is that it happened. Repeated fields (labels,
+ * `mapping[column]`) collect into arrays. Anything else stays undefined, including a request
+ * with no body at all.
+ */
+async function parseRequestBody(request: Request): Promise<unknown> {
+    const contentType = request.headers.get('content-type') ?? '';
+
+    if (!contentType.includes('multipart/form-data') && !contentType.includes('application/x-www-form-urlencoded')) {
+        try {
+            return await request.clone().json();
+        } catch {
+            return undefined;
+        }
+    }
+
+    try {
+        const form = await request.clone().formData();
+        // Collected as a Map so a field named after a prototype method cannot read as one
+        // already seen, then collapsed: a field that appeared once is worth asserting against
+        // as its own value rather than as a one-element array.
+        const fields = new Map<string, unknown[]>();
+        form.forEach((value, key) => {
+            const parsed = value instanceof File ? {filename: value.name, type: value.type} : value;
+            fields.set(key, [...(fields.get(key) ?? []), parsed]);
+        });
+        return Object.fromEntries([...fields].map(([key, values]) => [key, values.length === 1 ? values[0] : values]));
+    } catch {
+        return undefined;
+    }
+}
+
 export function fakeEndpoint(method: string, url: string, response: unknown, { status = 200 }: FakeEndpointOptions = {}): EndpointCapture {
     const expectedMethod = method.toUpperCase();
     const requests: CapturedEndpointRequest[] = [];
@@ -221,13 +257,7 @@ export function fakeEndpoint(method: string, url: string, response: unknown, { s
                 return undefined;
             }
 
-            let body: unknown;
-            try {
-                body = await request.clone().json();
-            } catch {
-                body = undefined;
-            }
-            requests.push({ url: request.url, body });
+            requests.push({ url: request.url, body: await parseRequestBody(request) });
 
             return HttpResponse.json(response as Record<string, unknown>, { status });
         })
@@ -322,14 +352,7 @@ export function fakeAdminEndpoint(
             return undefined;
         }
 
-        let body: unknown;
-        try {
-            body = await request.clone().json();
-        } catch {
-            body = undefined;
-        }
-
-        const captured: CapturedEndpointRequest = { url: request.url, body };
+        const captured: CapturedEndpointRequest = { url: request.url, body: await parseRequestBody(request) };
         requests.push(captured);
 
         const responseBody: unknown =
