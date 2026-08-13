@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import os from 'os';
 import path from 'path';
 import fs from 'fs-extra';
+import {once} from 'node:events';
 import {PassThrough, Readable, Writable, pipeline} from 'stream';
 import {SiteExporter, EXPORT_COMPONENTS, type SiteExporterDeps} from '../../../../../core/server/services/exports/site-exporter';
 
@@ -53,6 +54,21 @@ async function stageThemeZip(contents: string): Promise<{zipPath: string, cleanu
     const zipPath = path.join(dir, 'theme.zip');
     await fs.writeFile(zipPath, contents);
     return {zipPath, cleanup: () => fs.remove(dir)};
+}
+
+/** Polls a condition instead of sleeping a fixed time — loaded CI machines
+ * make fixed sleeps flaky. */
+async function waitFor(condition: () => boolean | Promise<boolean>, description: string, timeoutMs = 2000): Promise<void> {
+    const deadline = Date.now() + timeoutMs;
+    while (Date.now() < deadline) {
+        if (await condition()) {
+            return;
+        }
+        await new Promise((resolve) => {
+            setTimeout(resolve, 10);
+        });
+    }
+    throw new Error(`Timed out waiting for: ${description}`);
 }
 
 function buildDeps(overrides: Partial<SiteExporterDeps> = {}): SiteExporterDeps {
@@ -152,10 +168,9 @@ describe('SiteExporter', function () {
 
         const collected = collectArchive(archive);
 
-        // Let populate append the entry before the source blows up mid-flight
-        await new Promise((resolve) => {
-            setTimeout(resolve, 50);
-        });
+        // The entry's local header bytes flow as soon as the source is wired
+        // to the archive — only then can it blow up "mid-flight"
+        await once(archive, 'data');
         source.write('id,email\r\n');
         source.destroy(new Error('db connection lost'));
 
@@ -176,21 +191,49 @@ describe('SiteExporter', function () {
 
         const collected = collectArchive(archive).catch(() => {});
 
-        // Give populate a tick to append the entries, then simulate the
-        // client hanging up
-        await new Promise((resolve) => {
-            setTimeout(resolve, 50);
-        });
+        // Wait until the first entry's bytes flow (the entries are appended),
+        // then simulate the client hanging up
+        await once(archive, 'data');
         archive.destroy(new Error('client disconnected'));
         await collected;
 
         // The paused row stream must be released (frees its DB connection)…
-        await new Promise((resolve) => {
-            setTimeout(resolve, 50);
-        });
-        assert.equal(source.destroyed, true);
+        await waitFor(() => source.destroyed, 'the members stream to be destroyed');
 
         // …and the staged theme zip must be removed
-        assert.equal(await fs.pathExists(staged.zipPath), false);
+        await waitFor(async () => !(await fs.pathExists(staged.zipPath)), 'the staged theme zip to be removed');
+    });
+
+    it('removes a theme zip that finishes staging after the client disconnects', async function () {
+        let resolveZip!: (staged: {zipPath: string, cleanup(): Promise<void>}) => void;
+        const pendingZip = new Promise<{zipPath: string, cleanup(): Promise<void>}>((resolve) => {
+            resolveZip = resolve;
+        });
+        let zipRequested!: () => void;
+        const zipRequestedPromise = new Promise<void>((resolve) => {
+            zipRequested = resolve;
+        });
+
+        const exporter = new SiteExporter(buildDeps({
+            listThemes: () => ['casper'],
+            zipTheme: () => {
+                zipRequested();
+                return pendingZip;
+            }
+        }));
+        const archive = exporter.createArchive(['themes']);
+        collectArchive(archive).catch(() => {});
+
+        await zipRequestedPromise;
+
+        // The client hangs up while the theme is still being zipped — the
+        // archive's close handler has already run its cleanups, so the
+        // exporter must remove the late-staged temp file itself
+        archive.destroy(new Error('client disconnected'));
+
+        const staged = await stageThemeZip('fake-zip-bytes');
+        resolveZip(staged);
+
+        await waitFor(async () => !(await fs.pathExists(staged.zipPath)), 'the late-staged theme zip to be removed');
     });
 });

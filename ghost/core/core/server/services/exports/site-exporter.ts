@@ -149,12 +149,21 @@ export class SiteExporter {
      *   holding it for as long as the client takes to download.
      */
     #appendStream(archive: Archiver, source: NodeJS.ReadableStream, name: string): void {
+        const destroyable = source as NodeJS.ReadableStream & {destroy?: () => void};
+
+        // The archive can close while the source was still being acquired —
+        // a 'close' listener registered now would never fire, so release the
+        // source straight away instead of appending it
+        if (archive.destroyed) {
+            destroyable.destroy?.();
+            return;
+        }
+
         source.on('error', (err: Error) => {
             archive.destroy(err);
         });
 
         archive.once('close', () => {
-            const destroyable = source as NodeJS.ReadableStream & {destroy?: () => void};
             destroyable.destroy?.();
         });
 
@@ -170,8 +179,22 @@ export class SiteExporter {
      */
     async #appendThemes(archive: Archiver, cleanups: Array<() => Promise<void>>): Promise<void> {
         for (const name of this.#deps.listThemes()) {
+            if (archive.destroyed) {
+                return;
+            }
+
             try {
                 const {zipPath, cleanup} = await this.#deps.zipTheme(name);
+
+                // The archive can close while the theme was still zipping —
+                // its 'close' handler has already run the cleanups, so a
+                // cleanup registered now would leak the temp file. Remove it
+                // straight away and stop staging.
+                if (archive.destroyed) {
+                    cleanup().catch(() => {});
+                    return;
+                }
+
                 cleanups.push(cleanup);
                 archive.file(zipPath, {name: `themes/${name}.zip`, store: true});
             } catch (err) {
