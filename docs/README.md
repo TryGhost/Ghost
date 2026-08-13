@@ -76,6 +76,10 @@ The [error handling guide](practices/error-handling.md) explains how to design
 failure states for logs, APIs, and user interfaces without exposing raw
 technical errors.
 
+The [database migrations guide](practices/database-migrations.md) covers the
+current migration workflow, required schema and export updates, safety rules,
+and validation commands.
+
 ### Finding Issues to Work On
 
 - [Good First Issues](https://github.com/TryGhost/Ghost/labels/good%20first%20issue) - Great for newcomers

@@ -31,22 +31,28 @@ Create a migration file from `ghost/core`:
 
 ```bash
 cd ghost/core
-yarn migrate:create <slug>
+pnpm migrate:create <slug>
 ```
 
 The slug must be kebab-case, for example `add-column-to-posts`. The script:
 
 - Places the file in the next minor-version folder under
   `core/server/data/migrations/versions/`.
-- Bumps the Ghost Core and Admin package versions to the next release candidate
-  when this is the first migration since the last release.
+- Bumps the Ghost Core package to the target minor release candidate when
+  needed so `knex-migrator` will run the new version folder.
+
+Always use this command rather than creating or naming the file manually. It
+compares the current package version with the latest published Ghost tag to
+avoid placing a migration in a version that has already shipped. CI repeats
+these version and placement checks with
+[`scripts/check-migration-integrity.cjs`](../../scripts/check-migration-integrity.cjs).
 
 ### Writing the migration
 
 1. Open the generated migration file in
    `core/server/data/migrations/versions/`.
 2. Add the database changes, using similar existing migrations as examples.
-3. Run the migration with `yarn knex-migrator migrate` while following the
+3. Run the migration with `pnpm knex-migrator migrate` while following the
    iteration guidance below.
 4. For schema changes, update `core/server/data/schema/schema.js` to match.
 5. Update the schema integrity tests and any other affected tests.
@@ -69,8 +75,9 @@ During development, run migrations with Ghost's custom
 [`knex-migrator`](https://github.com/TryGhost/knex-migrator):
 
 ```bash
-yarn knex-migrator migrate
-yarn knex-migrator rollback
+cd ghost/core
+pnpm knex-migrator migrate --v <version-directory> --force
+pnpm knex-migrator rollback --v <previous-version> --force
 ```
 
 `migrate` calls the migration's `up()` method and `rollback` calls its `down()`
@@ -82,9 +89,26 @@ state that existed before `up()`.
 Test migrations against both MySQL and SQLite because Knex can behave
 differently between database clients.
 
-Migration tests should cover idempotency. A simple manual check is to run the
-migration, remove its row from the `migrations` table, and start Ghost again. It
-should start with a warning rather than fail.
+Run the schema integrity test after changing `schema.js`, fixtures, default
+settings, or default routes. Update only the expected hash for the change you
+made:
+
+```bash
+cd ghost/core
+pnpm test:single test/unit/server/data/schema/integrity.test.js
+```
+
+Run the migration integration test to exercise initialization, rollback,
+forward migration, and idempotency:
+
+```bash
+cd ghost/core
+pnpm test:single test/integration/migrations/migration.test.js
+```
+
+Add focused tests for any non-trivial transformation, then run the affected Core
+tests. The migration review checklist requires verification with both MySQL and
+SQLite because Knex and the database engines do not always behave identically.
 
 ### Reviewing
 
@@ -118,6 +142,11 @@ Examples include:
 Schema changes, index changes, and data updates can be expensive on large
 tables. Consider how the migration behaves with a large dataset and remember
 that migrations block Ghost from booting until they finish.
+
+Avoid unbounded loops and mass updates. Batch large data changes, and do not mix
+DDL and DML operations in the same migration. Performance measured against a
+small local database is not evidence that a migration is safe for large sites;
+flag uncertain changes explicitly for reviewer attention.
 
 ### Idempotency
 
@@ -153,6 +182,12 @@ Use the helpers in
 [`core/server/data/migrations/utils/`](../../ghost/core/core/server/data/migrations/utils/)
 wherever possible. They contain tested implementations of common operations,
 including idempotency and logging protections.
+
+Choose the wrapper that matches the operation. DML normally uses
+`createTransactionalMigration`; many DDL operations require
+`createNonTransactionalMigration` or a focused schema helper such as
+`addTable` or `createAddColumnMigration`. Copy a recent comparable migration
+rather than assuming every operation has the same transaction behavior.
 
 ### Migrations are immutable
 
