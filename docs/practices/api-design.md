@@ -1,8 +1,8 @@
 # API Design
 
 Ghost's APIs are mature and widely used. There is no need for a wholesale
-redesign; we should follow the established principles and patterns carefully,
-and add new patterns only when existing ones do not serve API consumers.
+redesign; follow the established principles and patterns carefully, and add new
+patterns only when existing ones do not serve API consumers.
 
 ## Principles
 
@@ -10,11 +10,11 @@ and add new patterns only when existing ones do not serve API consumers.
 
 > Be conservative in what you send, and liberal in what you accept.
 
-Ghost APIs are used by many different clients. Be flexible and permissive about
+Ghost APIs are used by many different apps and integrations. Be flexible about
 useful input while keeping responses specific and predictable.
 
 Being liberal in what we accept does not mean accepting arbitrary properties.
-For example, a client should be able to pass a resource returned by `read` back
+For example, a caller should be able to pass a resource returned by `read` back
 to `edit`; known non-writable fields can be ignored. A misspelled field such as
 `member: {naem: "John"}` is not useful input and should produce an error rather
 than being silently ignored.
@@ -29,21 +29,14 @@ weigh the value of new behavior against its long-term compatibility and
 maintenance cost.
 
 Good API design balances these principles: preserve useful flexibility for
-clients without making outputs or behavior accidental and unpredictable.
-
-### API maturity
-
-Ghost's APIs are around level 2 of the Richardson and Amundsen maturity models.
-Ghost borrowed heavily from JSON:API when standardising its APIs, but did not
-adopt its hypermedia concepts. When improving APIs, focus on useful affordances
-for consumers rather than API aesthetics alone.
+callers without making outputs or behavior accidental and unpredictable.
 
 ## Patterns
 
-The foundation of Ghost's HTTP API is to follow RESTful principles. REST and
-JSON:API provide useful CRUD patterns for top-level resources such as posts and
-members, although less standard operations such as file uploads and bulk changes
-need additional patterns.
+Ghost's HTTP APIs follow RESTful principles. REST and JSON:API provide useful
+CRUD patterns for top-level resources such as posts and members, although less
+standard operations such as file uploads and bulk changes need additional
+patterns.
 
 The following conventions should hold:
 
@@ -62,16 +55,21 @@ The following conventions should hold:
   requests. Settings are an exception because the key-value pairs are the list
   of resources.
 - Responses can include a top-level `meta` key for additional information.
-- Pagination metadata follows this shape:
+- Pagination metadata is nested under `meta.pagination`:
 
   ```json
   {
-      "page": 3,
-      "prev": 2,
-      "next": 4,
-      "limit": 15,
-      "total": 38,
-      "pages": 3
+      "members": [],
+      "meta": {
+          "pagination": {
+              "page": 3,
+              "prev": 2,
+              "next": null,
+              "limit": 15,
+              "total": 38,
+              "pages": 3
+          }
+      }
   }
   ```
 
@@ -86,8 +84,8 @@ copied for ordinary data interactions.
 
 ### Bulk endpoints
 
-Ghost uses `/bulk` as a nested resource for some bulk operations, such as
-`/members/bulk`. Define the request body and client behavior carefully before
+Ghost uses `/bulk` as a nested resource for bulk operations such as
+`/members/bulk`. Define the request body and app behavior carefully before
 adding another bulk endpoint.
 
 ## Conventions
@@ -95,7 +93,7 @@ adding another bulk endpoint.
 ### Function signatures and API calls
 
 The HTTP API should map closely to the SDK and internal package APIs, including
-function signatures and parameters. For example, a client call such as
+function signatures and parameters. For example, a call such as
 `api.posts.browse({filter, fields})` maps those options to a `GET` request for
 the posts resource with `filter` and `fields` query parameters.
 
@@ -110,7 +108,7 @@ corresponding `edit` or `PUT` operation without first removing read-only fields.
 API endpoints use middleware to set `Cache-Control`. Design every response on
 the assumption that a greedy cache can exist in front of Ghost.
 
-Mutation responses can include an `X-Cache-Invalidate` header telling clients
+Mutation responses can include an `X-Cache-Invalidate` header telling callers
 which paths need to be purged. Cache behavior must be deliberate for every API
 response.
 
@@ -123,9 +121,9 @@ new internal property is added.
 
 ## Settings
 
-Do not add new object values to the settings table. Settings values can be a
-string, number, boolean, or an array of values of the same type. The existing
-`labs` object is a special case and should not be used as precedent.
+Settings values can be strings, numbers, booleans, arrays, or objects. Object
+settings are used for a small number of structured values and should not be the
+default for new settings.
 
 Settings keys:
 
@@ -134,13 +132,9 @@ Settings keys:
 - Match the name exposed by the API where the key is public.
 
 The `type` field declares the type stored in `value`. The `group` field collects
-settings that are fetched and updated together and implies their API exposure:
-
-- `site` settings are available to the Admin and Content Settings APIs.
-- `core` settings are not available through an API.
-- Other groups are available through the Admin Settings API.
-
-Settings flags can make a setting public, read-only, or both.
+settings that are fetched and updated together. Groups and flags control which
+settings are exposed through the Admin and Content APIs, so follow an existing
+setting with the same intended exposure.
 
 ## Permissions
 

@@ -76,6 +76,9 @@ The [error handling guide](practices/error-handling.md) explains how to design
 failure states for logs, APIs, and user interfaces without exposing raw
 technical errors.
 
+The [API design guide](practices/api-design.md) documents resource envelopes,
+controller conventions, validation, permissions, caching, and compatibility.
+
 The [database migrations guide](practices/database-migrations.md) covers the
 current migration workflow, required schema and export updates, safety rules,
 and validation commands.
