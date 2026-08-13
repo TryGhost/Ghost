@@ -1,8 +1,14 @@
-const assert = require('node:assert/strict');
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
 
-const sinon = require('sinon');
+import {EmailAnalyticsService} from '../../../../../core/server/services/email-analytics/email-analytics-service';
+import {Queries} from '../../../../../core/server/services/email-analytics/lib/queries';
 
-const {EmailAnalyticsService} = require('../../../../../core/server/services/email-analytics/email-analytics-service');
+type ServiceOptions = ConstructorParameters<typeof EmailAnalyticsService>[0];
+type ServiceDependencies = Omit<ServiceOptions, 'queries'> & {
+    queries?: Partial<ServiceOptions['queries']>;
+};
+type BatchHandler = (events: any[]) => Promise<void>;
 
 const JOB_NAMES = {
     latestNonOpened: 'email-analytics-latest-others',
@@ -20,11 +26,17 @@ const NEWSLETTER_CURSOR_SEED = {
     }
 };
 
-function createService(dependencies = {}) {
+function createService({queries: queryOverrides, ...serviceOverrides}: Partial<ServiceDependencies> = {}) {
+    const queries = sinon.createStubInstance(Queries);
+    Object.assign(queries, queryOverrides);
+
     return new EmailAnalyticsService({
+        queries,
+        fetchEvents: sinon.stub().resolves(),
+        createEventProcessor: createStubEventProcessor,
         jobNames: JOB_NAMES,
         cursorSeed: NEWSLETTER_CURSOR_SEED,
-        ...dependencies
+        ...serviceOverrides
     });
 }
 
@@ -39,7 +51,7 @@ function createStubEventProcessor() {
 }
 
 describe('EmailAnalyticsService', function () {
-    let clock;
+    let clock: sinon.SinonFakeTimers;
 
     beforeEach(function () {
         clock = sinon.useFakeTimers(new Date(2024, 0, 1));
@@ -214,8 +226,8 @@ describe('EmailAnalyticsService', function () {
         });
 
         it('persists the "started" cursor before fetching events', async function () {
-            let resolveStartedTimestamp;
-            const startedTimestamp = new Promise((resolve) => {
+            let resolveStartedTimestamp!: (value: void | PromiseLike<void>) => void;
+            const startedTimestamp = new Promise<void>((resolve) => {
                 resolveStartedTimestamp = resolve;
             });
             const fetchLatestSpy = sinon.spy();
@@ -326,11 +338,11 @@ describe('EmailAnalyticsService', function () {
         });
 
         describe('fetchScheduled', function () {
-            let service;
-            let eventProcessor;
-            let setJobTimestampStub;
-            let setJobStatusStub;
-            let setJobMetadataStub;
+            let service: EmailAnalyticsService;
+            let eventProcessor: ReturnType<typeof createStubEventProcessor>;
+            let setJobTimestampStub: sinon.SinonStub;
+            let setJobStatusStub: sinon.SinonStub;
+            let setJobMetadataStub: sinon.SinonStub;
 
             beforeEach(function () {
                 setJobTimestampStub = sinon.stub().resolves();
@@ -343,7 +355,7 @@ describe('EmailAnalyticsService', function () {
                         setJobStatus: setJobStatusStub,
                         setJobMetadata: setJobMetadataStub
                     },
-                    fetchEvents: ({batchHandler}) => {
+                    fetchEvents: ({batchHandler}: {batchHandler: BatchHandler}) => {
                         const events = [1,2,3,4,5,6,7,8,9,10];
                         return batchHandler(events);
                     },
@@ -404,7 +416,7 @@ describe('EmailAnalyticsService', function () {
                         setJobStatus: sinon.stub().resolves(),
                         setJobMetadata: sinon.stub().resolves()
                     },
-                    fetchEvents: ({batchHandler}) => {
+                    fetchEvents: ({batchHandler}: {batchHandler: BatchHandler}) => {
                         return batchHandler([]);
                     },
                     createEventProcessor: createStubEventProcessor
@@ -420,8 +432,8 @@ describe('EmailAnalyticsService', function () {
         });
 
         describe('schedule persistence', function () {
-            let setJobMetadataStub;
-            let service;
+            let setJobMetadataStub: sinon.SinonStub;
+            let service: EmailAnalyticsService;
 
             beforeEach(function () {
                 setJobMetadataStub = sinon.stub().resolves();
@@ -431,7 +443,7 @@ describe('EmailAnalyticsService', function () {
                         setJobTimestamp: sinon.stub().resolves(),
                         setJobStatus: sinon.stub().resolves()
                     },
-                    fetchEvents: ({batchHandler}) => {
+                    fetchEvents: ({batchHandler}: {batchHandler: BatchHandler}) => {
                         return batchHandler([]);
                     },
                     createEventProcessor: createStubEventProcessor
@@ -513,14 +525,14 @@ describe('EmailAnalyticsService', function () {
         });
 
         describe('aggregation error handling', function () {
-            function createServiceWithEventProcessor(eventProcessor) {
+            function createServiceWithEventProcessor(eventProcessor: ReturnType<typeof createStubEventProcessor>) {
                 return createService({
                     queries: {
                         getLastEventTimestamp: sinon.stub().resolves(),
                         setJobTimestamp: sinon.stub().resolves(),
                         setJobStatus: sinon.stub().resolves()
                     },
-                    fetchEvents: async ({batchHandler}) => {
+                    fetchEvents: async ({batchHandler}: {batchHandler: BatchHandler}) => {
                         await batchHandler([{type: 'delivered', timestamp: new Date(1)}]);
                     },
                     createEventProcessor: () => eventProcessor
