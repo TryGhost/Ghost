@@ -86,6 +86,9 @@ and validation commands.
 The [Stripe flows guide](codebase/stripe-flows.md) describes how Stripe Connect,
 checkout sessions, and tier prices fit together.
 
+The [jobs system guide](codebase/jobs.md) explains when work runs inline or in a
+worker and how scheduled jobs behave.
+
 ### Finding Issues to Work On
 
 - [Good First Issues](https://github.com/TryGhost/Ghost/labels/good%20first%20issue) - Great for newcomers

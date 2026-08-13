@@ -1,12 +1,12 @@
 # Jobs System
 
-Ghost's jobs system runs work inline or in a worker thread. Jobs can be
-scheduled, queued, or persisted so they can resume after Ghost restarts.
+Ghost's jobs system runs work inline or in a worker thread. Jobs can run once or
+on a schedule.
 
-Use inline jobs for short work which does not block the event loop. Use worker
-threads for CPU-heavy or long-running work that should not affect requests.
-Persist a job when losing it during a restart would leave Ghost in an incorrect
-state.
+Use inline jobs for short work which does not block the event loop. Inline jobs
+cannot be scheduled. Scheduled and offloaded jobs run in worker threads, so
+they must initialize their own dependencies and cannot rely on the main Ghost
+process's memory.
 
 ## Adding a job
 
@@ -17,19 +17,22 @@ events.
 
 Existing examples include:
 
-- Update checks, which run inline on a schedule.
+- Update checks, which run in a worker on a schedule.
 - Imports, which run as inline jobs.
-- Email analytics, which uses offloaded and persisted jobs.
+- Email analytics, which uses scheduled worker jobs.
 
 Prefer an existing job with similar lifecycle and failure requirements as the
 starting point for a new one.
 
 ## Testing
 
-Integration tests for the jobs system live in `ghost/core/test/integration/jobs/`.
-Tests should cover the job's result and any state that must survive a restart.
+Tests for the jobs wrapper live in
+`ghost/core/test/unit/server/services/jobs/`, with update-check integration
+coverage in `ghost/core/test/integration/jobs/`. Tests should cover the job's
+result and failure behavior.
 
 ## Scheduling
 
 The jobs system uses Bree for scheduled work. Schedules use the server's system
-timezone, so take care when a job needs to run at a specific local time.
+timezone. Offloaded jobs should have unique names, be safe to run more than
+once, and receive identifiers rather than large objects where possible.
