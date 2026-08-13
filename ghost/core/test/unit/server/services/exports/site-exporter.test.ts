@@ -69,14 +69,13 @@ function buildDeps(overrides: Partial<SiteExporterDeps> = {}): SiteExporterDeps 
 }
 
 describe('SiteExporter', function () {
-    it('composes every component into one zip with an all-ok report', async function () {
+    it('composes every component into one zip', async function () {
         const exporter = new SiteExporter(buildDeps());
         const archive = exporter.createArchive([...EXPORT_COMPONENTS]);
 
         const zip = await readZip(await collectArchive(archive));
 
         assert.deepEqual(zip.files, [
-            'export-report.json',
             'export.json',
             'members.csv',
             'post-analytics.csv',
@@ -84,16 +83,6 @@ describe('SiteExporter', function () {
             'routes.yaml',
             'themes/casper.zip'
         ]);
-
-        const report = JSON.parse(await zip.read('export-report.json'));
-        assert.ok(report.generated_at);
-        assert.deepEqual(report.components, {
-            content: {status: 'ok'},
-            members: {status: 'ok'},
-            analytics: {status: 'ok'},
-            themes: {status: 'ok'},
-            routes: {status: 'ok'}
-        });
     });
 
     it('only includes the selected components', async function () {
@@ -102,10 +91,10 @@ describe('SiteExporter', function () {
 
         const zip = await readZip(await collectArchive(archive));
 
-        assert.deepEqual(zip.files, ['export-report.json', 'export.json', 'redirects.yaml', 'routes.yaml']);
+        assert.deepEqual(zip.files, ['export.json', 'redirects.yaml', 'routes.yaml']);
     });
 
-    it('skips a component that fails to acquire and records it as failed', async function () {
+    it('skips a component that fails to acquire and completes the zip', async function () {
         const exporter = new SiteExporter(buildDeps({
             exportPostAnalyticsCSV: async () => {
                 throw new Error('analytics blew up');
@@ -116,12 +105,11 @@ describe('SiteExporter', function () {
         const zip = await readZip(await collectArchive(archive));
 
         assert.ok(!zip.files.includes('post-analytics.csv'));
-        const report = JSON.parse(await zip.read('export-report.json'));
-        assert.deepEqual(report.components.analytics, {status: 'failed'});
-        assert.deepEqual(report.components.members, {status: 'ok'});
+        assert.ok(zip.files.includes('members.csv'), 'the other components still make it into the bundle');
+        assert.ok(zip.files.includes('export.json'), 'the other components still make it into the bundle');
     });
 
-    it('keeps the remaining themes when one fails to zip and reports partial', async function () {
+    it('keeps the remaining themes when one fails to zip', async function () {
         const exporter = new SiteExporter(buildDeps({
             listThemes: () => ['casper', 'broken-theme'],
             zipTheme: (name) => {
@@ -135,17 +123,11 @@ describe('SiteExporter', function () {
 
         const zip = await readZip(await collectArchive(archive));
 
-        assert.ok(zip.files.includes('themes/casper.zip'));
-        assert.ok(!zip.files.includes('themes/broken-theme.zip'));
-        const report = JSON.parse(await zip.read('export-report.json'));
-        assert.deepEqual(report.components.themes, {status: 'partial', skipped: ['broken-theme']});
+        assert.deepEqual(zip.files, ['themes/casper.zip']);
     });
 
-    it('reports a component failed when every part of it fails', async function () {
+    it('keeps routes.yaml when the redirects export fails', async function () {
         const exporter = new SiteExporter(buildDeps({
-            exportRoutesYaml: async () => {
-                throw new Error('no routes');
-            },
             exportRedirectsYaml: async () => {
                 throw new Error('no redirects');
             }
@@ -154,8 +136,7 @@ describe('SiteExporter', function () {
 
         const zip = await readZip(await collectArchive(archive));
 
-        const report = JSON.parse(await zip.read('export-report.json'));
-        assert.deepEqual(report.components.routes, {status: 'failed', skipped: ['routes.yaml', 'redirects.yaml']});
+        assert.deepEqual(zip.files, ['routes.yaml']);
     });
 
     it('fails the download when a streaming source errors mid-flight', async function () {

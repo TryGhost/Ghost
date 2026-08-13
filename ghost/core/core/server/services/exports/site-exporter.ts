@@ -14,12 +14,6 @@ export const EXPORT_COMPONENTS = ['members', 'analytics', 'content', 'themes', '
 
 export type ExportComponent = typeof EXPORT_COMPONENTS[number];
 
-interface ComponentReportEntry {
-    status: 'ok' | 'partial' | 'failed';
-    /** Entries that did not make it into the bundle (theme names, filenames). */
-    skipped?: string[];
-}
-
 export interface SiteExporterDeps {
     /** Full site JSON in the same shape the `/db/` download produces. */
     exportContent(): Promise<unknown>;
@@ -47,10 +41,10 @@ export interface SiteExporterDeps {
  * routes and redirects. No HTTP self-calls, no background jobs: the zip is
  * streamed while it is being built.
  *
- * A component that fails before its data is acquired is skipped rather than
- * failing the request — the response headers are typically already sent, so a
- * mid-flight HTTP error is impossible. `export-report.json` records what made
- * it into the bundle and what did not.
+ * A component that fails before its data is acquired is skipped (and logged)
+ * rather than failing the request — the response headers are typically already
+ * sent, so a mid-flight HTTP error is impossible and a bundle missing one
+ * piece beats a broken download.
  */
 export class SiteExporter {
     #deps: SiteExporterDeps;
@@ -87,11 +81,6 @@ export class SiteExporter {
     }
 
     async #populate(archive: Archiver, components: Set<ExportComponent>, cleanups: Array<() => Promise<void>>): Promise<void> {
-        const report: {generated_at: string; components: Partial<Record<ExportComponent, ComponentReportEntry>>} = {
-            generated_at: new Date().toISOString(),
-            components: {}
-        };
-
         for (const component of EXPORT_COMPONENTS) {
             // Stop composing when the archive is gone — the client hung up
             if (archive.destroyed) {
@@ -102,49 +91,48 @@ export class SiteExporter {
                 continue;
             }
 
-            report.components[component] = await this.#appendComponent(archive, component, cleanups);
+            await this.#appendComponent(archive, component, cleanups);
         }
 
         if (archive.destroyed) {
             return;
         }
 
-        archive.append(JSON.stringify(report, null, 4), {name: 'export-report.json'});
-
         await archive.finalize();
     }
 
     /**
-     * An `ok` status means the component's data was *acquired* — for the
-     * streaming CSV entries, a failure while the rows are still flowing
-     * happens after the report is written and instead tears the whole
-     * download down (see `#appendStream`).
+     * A failure while acquiring a component's data skips that component; for
+     * the streaming CSV entries, a failure while the rows are still flowing
+     * happens after this returns and instead tears the whole download down
+     * (see `#appendStream`).
      */
-    async #appendComponent(archive: Archiver, component: ExportComponent, cleanups: Array<() => Promise<void>>): Promise<ComponentReportEntry> {
+    async #appendComponent(archive: Archiver, component: ExportComponent, cleanups: Array<() => Promise<void>>): Promise<void> {
         try {
             switch (component) {
             case 'content': {
                 const data = await this.#deps.exportContent();
                 archive.append(JSON.stringify(data), {name: 'export.json'});
-                return {status: 'ok'};
+                break;
             }
             case 'members':
                 this.#appendStream(archive, await this.#deps.exportMembersCSV(), 'members.csv');
-                return {status: 'ok'};
+                break;
             case 'analytics':
                 this.#appendStream(archive, await this.#deps.exportPostAnalyticsCSV(), 'post-analytics.csv');
-                return {status: 'ok'};
+                break;
             case 'themes':
-                return await this.#appendThemes(archive, cleanups);
+                await this.#appendThemes(archive, cleanups);
+                break;
             case 'routes':
-                return await this.#appendYamlFiles(archive);
+                await this.#appendYamlFiles(archive);
+                break;
             }
         } catch (err) {
             logging.error(new errors.InternalServerError({
                 message: `Site export: the ${component} component failed and was skipped`,
                 err: err instanceof Error ? err : undefined
             }));
-            return {status: 'failed'};
         }
     }
 
@@ -180,54 +168,36 @@ export class SiteExporter {
      * many large themes doesn't hold them all in memory. A theme that fails to
      * zip is skipped so the remaining themes still make it into the bundle.
      */
-    async #appendThemes(archive: Archiver, cleanups: Array<() => Promise<void>>): Promise<ComponentReportEntry> {
-        const themeNames = this.#deps.listThemes();
-        const skipped: string[] = [];
-
-        for (const name of themeNames) {
+    async #appendThemes(archive: Archiver, cleanups: Array<() => Promise<void>>): Promise<void> {
+        for (const name of this.#deps.listThemes()) {
             try {
                 const {zipPath, cleanup} = await this.#deps.zipTheme(name);
                 cleanups.push(cleanup);
                 archive.file(zipPath, {name: `themes/${name}.zip`, store: true});
             } catch (err) {
-                skipped.push(name);
                 logging.error(new errors.InternalServerError({
                     message: `Site export: the ${name} theme failed to zip and was skipped`,
                     err: err instanceof Error ? err : undefined
                 }));
             }
         }
-
-        return this.#reportEntry(themeNames.length, skipped);
     }
 
-    async #appendYamlFiles(archive: Archiver): Promise<ComponentReportEntry> {
+    async #appendYamlFiles(archive: Archiver): Promise<void> {
         const files: Array<[string, () => Promise<string>]> = [
             ['routes.yaml', () => this.#deps.exportRoutesYaml()],
             ['redirects.yaml', () => this.#deps.exportRedirectsYaml()]
         ];
-        const skipped: string[] = [];
 
         for (const [filename, getContents] of files) {
             try {
                 archive.append(await getContents(), {name: filename});
             } catch (err) {
-                skipped.push(filename);
                 logging.error(new errors.InternalServerError({
                     message: `Site export: ${filename} failed and was skipped`,
                     err: err instanceof Error ? err : undefined
                 }));
             }
         }
-
-        return this.#reportEntry(files.length, skipped);
-    }
-
-    #reportEntry(total: number, skipped: string[]): ComponentReportEntry {
-        if (skipped.length === 0) {
-            return {status: 'ok'};
-        }
-
-        return {status: skipped.length === total ? 'failed' : 'partial', skipped};
     }
 }

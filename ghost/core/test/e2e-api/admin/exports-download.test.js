@@ -84,13 +84,12 @@ describe('Exports API — download', function () {
         const outPath = await extractZipResponse(res.body);
         const files = await listFiles(outPath);
 
-        // Every component is present, plus the report
+        // Every component is present
         assert.ok(files.includes('export.json'), `export.json missing from ${files}`);
         assert.ok(files.includes('members.csv'), `members.csv missing from ${files}`);
         assert.ok(files.includes('post-analytics.csv'), `post-analytics.csv missing from ${files}`);
         assert.ok(files.includes('routes.yaml'), `routes.yaml missing from ${files}`);
         assert.ok(files.includes('redirects.yaml'), `redirects.yaml missing from ${files}`);
-        assert.ok(files.includes('export-report.json'), `export-report.json missing from ${files}`);
         assert.ok(files.includes('themes/casper.zip'), `themes/casper.zip missing from ${files}`);
         assert.ok(files.includes('themes/source.zip'), `themes/source.zip missing from ${files}`);
 
@@ -120,17 +119,6 @@ describe('Exports API — download', function () {
         const themeOut = path.join(outPath, 'themes-check');
         await extract(path.join(outPath, 'themes/casper.zip'), themeOut);
         assert.ok(await fs.pathExists(path.join(themeOut, 'package.json')), 'theme zip should contain the theme files');
-
-        // The report records every component as included
-        const report = await fs.readJSON(path.join(outPath, 'export-report.json'));
-        assert.ok(report.generated_at, 'report should carry a timestamp');
-        assert.deepEqual(report.components, {
-            content: {status: 'ok'},
-            members: {status: 'ok'},
-            analytics: {status: 'ok'},
-            themes: {status: 'ok'},
-            routes: {status: 'ok'}
-        });
     });
 
     it('Can download a subset of components', async function () {
@@ -145,12 +133,6 @@ describe('Exports API — download', function () {
         const outPath = await extractZipResponse(res.body);
         const files = await listFiles(outPath);
 
-        assert.deepEqual(files, ['export-report.json', 'export.json', 'redirects.yaml', 'routes.yaml']);
-
-        const report = await fs.readJSON(path.join(outPath, 'export-report.json'));
-        assert.deepEqual(report.components, {
-            content: {status: 'ok'},
-            routes: {status: 'ok'}
-        });
+        assert.deepEqual(files, ['export.json', 'redirects.yaml', 'routes.yaml']);
     });
 });
