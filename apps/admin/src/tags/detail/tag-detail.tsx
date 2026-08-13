@@ -2,7 +2,7 @@ import React from 'react';
 import TagDeleteModal from './tag-delete-modal';
 import TagDetailForm from './tag-detail-form';
 import {Box, Container} from '@tryghost/shade/primitives';
-import {Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, type ButtonProps, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, LoadingIndicator, Skeleton} from '@tryghost/shade/components';
+import {Badge, Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, type ButtonProps, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, LoadingIndicator, Skeleton} from '@tryghost/shade/components';
 import {DetailPage} from '@tryghost/shade/page-templates';
 import {DirtyConfirmDialog, PageHeader} from '@tryghost/shade/patterns';
 import {Link, useConfirmUnload, useHandleError, useNavigate, useParams} from '@tryghost/admin-x-framework';
@@ -352,6 +352,9 @@ const TagDetail: React.FC = () => {
                                             <BreadcrumbPage className='truncate' data-testid='tag-detail-title'>
                                                 {title}
                                             </BreadcrumbPage>
+                                        )}
+                                        {tag?.visibility === 'internal' && (
+                                            <Badge className='px-1 py-px text-[10px] leading-none tracking-wider' data-testid='tag-detail-internal-badge' variant='secondary'>INTERNAL</Badge>
                                         )}
                                     </BreadcrumbItem>
                                 </BreadcrumbList>

@@ -28,6 +28,7 @@ describe('Tag detail (tagDetailsReact on)', () => {
         await renderAdminApp(`/tags/${t.slug}`, FLAGS);
 
         await expect.element(page.getByTestId('tag-detail-title')).toHaveTextContent('News');
+        await expect.element(page.getByTestId('tag-detail-internal-badge')).not.toBeInTheDocument();
         await expect.element(page.getByLabelText('Name', {exact: true})).toHaveValue('News');
         await expect.element(page.getByLabelText('Slug', {exact: true})).toHaveValue('news');
         // The host comes from the site endpoint's `url` (config has no
@@ -37,6 +38,15 @@ describe('Tag detail (tagDetailsReact on)', () => {
         await page.getByRole('button', {name: 'Tag actions'}).click();
         await expect.element(page.getByRole('menuitem', {name: 'View posts'})).toHaveAttribute('target', '_blank');
         await expect.element(page.getByRole('menuitem', {name: 'Delete tag', exact: true})).toBeVisible();
+    });
+
+    it('shows an internal badge after the name for internal tags', async () => {
+        const t = tag({name: '#News', slug: 'hash-news', visibility: 'internal'});
+        fakeTagWorld(t);
+        await renderAdminApp(`/tags/${t.slug}`, FLAGS);
+
+        await expect.element(page.getByTestId('tag-detail-title')).toHaveTextContent('#News');
+        await expect.element(page.getByTestId('tag-detail-internal-badge')).toHaveTextContent('INTERNAL');
     });
 
     it('edits and saves tag code injection with CodeMirror', async () => {
