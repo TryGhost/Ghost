@@ -2,7 +2,7 @@ import React from 'react';
 import TagColorField from './tag-color-field';
 import TagImageField from './tag-image-field';
 import {Accordion, AccordionContent, AccordionItem, AccordionTrigger, Card, CardContent, CodeEditor, FieldError, Input, Label, Textarea} from '@tryghost/shade/components';
-import {Stack, Text} from '@tryghost/shade/primitives';
+import {Grid, Stack, Text} from '@tryghost/shade/primitives';
 import {DESCRIPTION_MAX_LENGTH, FACEBOOK_DESCRIPTION_RECOMMENDED_LENGTH, FACEBOOK_TITLE_RECOMMENDED_LENGTH, META_DESCRIPTION_RECOMMENDED_LENGTH, META_TITLE_RECOMMENDED_LENGTH, X_DESCRIPTION_RECOMMENDED_LENGTH, X_TITLE_RECOMMENDED_LENGTH, charLength, getBlogDomain, getSeoDescription, getSeoTitle, getSeoUrl, getSlugUrlPreview, validateTagField} from './tag-detail-edit';
 import {FacebookCardPreview, SeoPreview, XCardPreview} from './tag-detail-previews';
 import {cn, formatNumber} from '@tryghost/shade/utils';
@@ -61,9 +61,9 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
     const blogDomain = getBlogDomain(blogUrl);
 
     return (
-        <div className='flex flex-col gap-8' data-testid='tag-detail-form'>
-            {/* Card 1 mirrors Ember's main form block; card 2 groups the
-                collapsible sections — the member detail screen's card idiom. */}
+        <Grid align='start' className='lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]' data-testid='tag-detail-form' gap='2xl'>
+            {/* The main form and advanced settings collapse into one column
+                below the large breakpoint. */}
             <Card>
                 <CardContent className='p-6'>
                     <div className='grid items-start gap-6 lg:grid-cols-2'>
@@ -342,7 +342,7 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                     </Accordion>
                 </CardContent>
             </Card>
-        </div>
+        </Grid>
     );
 };
 
