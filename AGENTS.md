@@ -174,6 +174,7 @@ Conventions:
 - **Use:** `admin-x-framework` for API hooks (`useBrowse`, `useEdit`, etc.)
 - **Use:** `shade` design system for new components (not admin-x-design-system)
 - **Translations:** Add to `packages/i18n/locales/en/ghost.json`
+- **Deploy skew:** Ghost Admin and Ghost core deploy independently. New admin UI that depends on new settings, endpoints, or config must feature-detect backend support (e.g. settings-key presence in the browse response, as in `social-accounts.tsx`) and hide or no-op when absent. Labs flags alone are not a deploy-skew guard. Add an acceptance test for the “backend not deployed yet” case.
 
 ### When Working on Public UI
 - **Edit:** `apps/portal`, `apps/comments-ui`, etc.
@@ -187,6 +188,8 @@ Conventions:
 - **Services:** `ghost/core/core/server/services/`
 - **Models:** `ghost/core/core/server/models/`
 - **Frontend & theme rendering:** `ghost/core/core/frontend/`
+- **TypeScript by default:** New code under `ghost/core/core/server/services/` is TypeScript unless extending an existing JS module. Follow the gifts/donations pattern: domain logic as `.ts` with named exports; thin CJS `index.js` / `*-wrapper.js` only where boot/`require` still needs them.
+- **Service init:** New services get an explicit `init()` call from `ghost/core/core/boot.js` (same Promise.all as donations/gifts). Keep the wrapper’s `init()` idempotent so early callers are safe, but boot owns construction — not first request.
 
 ### Design System Usage
 - **New components:** Use `shade` (shadcn/ui-inspired)
