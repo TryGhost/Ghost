@@ -341,6 +341,7 @@ describe('Tag detail (tagDetailsReact on)', () => {
         await page.getByLabelText('Name', {exact: true}).fill('Renamed');
         await page.getByRole('button', {name: 'Save'}).click();
         await expect.poll(() => saveApi.requests.length).toBe(1);
+        await expect.element(page.getByRole('button', {name: 'Accent color picker'})).toBeDisabled();
 
         await page.getByRole('button', {name: 'Tag actions'}).click();
         await expect.element(page.getByRole('menuitem', {name: 'Delete tag'})).toBeDisabled();
@@ -361,6 +362,30 @@ describe('Tag detail (tagDetailsReact on)', () => {
         await renderAdminApp(`/tags/${current.slug}`, FLAGS);
 
         await page.getByLabelText('Accent color hex value').fill('AABBCC');
+        await userEvent.keyboard('{Meta>}s{/Meta}');
+        await expect.poll(() => saveApi.requests.length).toBe(1);
+
+        const savedPayload = (saveApi.lastRequest?.body as {tags: Array<Record<string, unknown>>}).tags[0];
+        expect(savedPayload.accent_color).toBe('#AABBCC');
+        pendingSave.resolve({tags: [{...current, accent_color: '#AABBCC'}]});
+        await expect.element(page.getByRole('button', {name: 'Saved'})).toBeVisible();
+    });
+
+    it('uses the Shade color picker and includes its value in a keyboard save', async () => {
+        let current = tag({name: 'News', slug: 'news', accent_color: '#112233'});
+        fakeAdminEndpoint('GET', new RegExp(`^/tags/slug/${current.slug}/`), () => ({tags: [current]}));
+        const pendingSave = deferred<{tags: Tag[]}>();
+        const saveApi = fakeAdminEndpoint('PUT', new RegExp(`^/tags/${current.id}/`), async () => {
+            const response = await pendingSave.promise;
+            current = response.tags[0];
+            return response;
+        });
+        await renderAdminApp(`/tags/${current.slug}`, FLAGS);
+
+        await page.getByRole('button', {name: 'Accent color picker'}).click();
+        await page.getByRole('textbox', {name: 'Hex color'}).fill('#AABBCC');
+        await expect.element(page.getByLabelText('Accent color hex value')).toHaveValue('AABBCC');
+
         await userEvent.keyboard('{Meta>}s{/Meta}');
         await expect.poll(() => saveApi.requests.length).toBe(1);
 
