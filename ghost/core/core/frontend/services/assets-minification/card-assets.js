@@ -1,5 +1,5 @@
 const debug = require('@tryghost/debug')('card-assets');
-const logging = require('@tryghost/logging');
+const errors = require('@tryghost/errors');
 const _ = require('lodash');
 const crypto = require('crypto');
 const fs = require('fs');
@@ -9,7 +9,10 @@ const config = require('../../../shared/config');
 // Must match the asset-hash service so both flavours of ?v= look alike
 const HASH_LENGTH = 16;
 
-const TYPES = ['css', 'js'];
+// Each type maps card names to minified chunks; anything else still indexes
+// and concatenates, serving garbage under a valid content hash
+const isChunkMap = chunks => _.isPlainObject(chunks) &&
+    Object.values(chunks).every(chunk => typeof chunk === 'string');
 
 /**
  * Card assets are built ahead of time by scripts/build-card-assets.mjs, which
@@ -24,72 +27,50 @@ const TYPES = ['css', 'js'];
  */
 module.exports = class CardAssets {
     constructor(options = {}) {
-        this.src = options.src || path.join(config.get('paths').assetSrc, 'cards');
         this.manifestPath = options.manifest || path.join(config.get('paths').publicFilePath, 'cards.manifest.json');
 
         if ('config' in options) {
             this.config = options.config;
         }
 
-        this.manifest = null;
+        // Read eagerly so a broken build fails at boot rather than at render time
+        this.manifest = this.readManifest();
         this.bundles = new Map();
     }
 
     /**
-     * @returns {{css: Object<string, string>, js: Object<string, string>}}
+     * @returns {{css?: Object<string, string>, js?: Object<string, string>}}
      */
-    getManifest() {
-        if (!this.manifest) {
-            this.manifest = this.readManifest();
-        }
-
-        return this.manifest;
-    }
-
     readManifest() {
+        let reason;
+
         try {
-            return JSON.parse(fs.readFileSync(this.manifestPath, 'utf8'));
-        } catch (err) {
-            if (err.code !== 'ENOENT') {
-                throw err;
-            }
-        }
+            const manifest = JSON.parse(fs.readFileSync(this.manifestPath, 'utf8'));
 
-        // The manifest is a build artefact, so it's absent when Ghost is run
-        // from a source checkout without `pnpm build:assets`. Fall back to the
-        // unminified sources so development still works.
-        logging.error(`Card asset manifest not found at ${this.manifestPath}, serving unminified card assets. Run \`pnpm build:assets\` to build it.`);
+            // Well-formed JSON isn't necessarily a manifest
+            if (!_.isPlainObject(manifest)) {
+                reason = `Expected an object, got ${JSON.stringify(manifest).slice(0, 50)}`;
+            } else {
+                const present = ['css', 'js'].filter(type => type in manifest);
+                const badType = present.find(type => !isChunkMap(manifest[type]));
 
-        return this.readSources();
-    }
-
-    readSources() {
-        const manifest = {};
-
-        for (const type of TYPES) {
-            manifest[type] = {};
-
-            const dir = path.join(this.src, type);
-            const suffix = `.${type}`;
-
-            let entries;
-            try {
-                entries = fs.readdirSync(dir);
-            } catch (err) {
-                if (err.code === 'ENOENT') {
-                    continue;
+                if (!present.length) {
+                    reason = 'Expected at least one of `css` or `js`';
+                } else if (badType) {
+                    reason = `Expected \`${badType}\` to map card names to minified chunks`;
+                } else {
+                    return manifest;
                 }
-                throw err;
             }
-
-            // Sorted so the concatenation order — and therefore the hash — doesn't
-            // depend on the order the filesystem happens to return entries in
-            for (const entry of entries.filter(file => file.endsWith(suffix)).sort()) {
-                manifest[type][entry.slice(0, -suffix.length)] = fs.readFileSync(path.join(dir, entry), 'utf8');
-            }
+        } catch (err) {
+            reason = err.message;
         }
 
-        return manifest;
+        throw new errors.InternalServerError({
+            message: `Could not use the card asset manifest at ${this.manifestPath}`,
+            context: reason,
+            help: 'Card assets ship with Ghost — reinstall, or run `pnpm build:assets` when running from source'
+        });
     }
 
     /**
@@ -100,7 +81,7 @@ module.exports = class CardAssets {
      * @returns {string[]} card names, in bundle order
      */
     getCardNames(type) {
-        const available = Object.keys(this.getManifest()[type] || {});
+        const available = Object.keys(this.manifest[type] || {});
 
         // CASE: The theme has asked for all card assets to be included by default
         if (this.config === true) {
@@ -132,7 +113,7 @@ module.exports = class CardAssets {
             return this.bundles.get(type);
         }
 
-        const chunks = this.getManifest()[type] || {};
+        const chunks = this.manifest[type] || {};
         const names = this.getCardNames(type);
 
         debug('bundling', type, names);
@@ -180,7 +161,6 @@ module.exports = class CardAssets {
             this.config = cardAssetConfig;
         }
 
-        this.manifest = null;
         this.bundles.clear();
     }
 };

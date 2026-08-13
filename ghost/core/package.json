@@ -346,21 +346,25 @@
             },
             "test:e2e": {
                 "dependsOn": [
+                    "build:assets",
                     "^build"
                 ]
             },
             "test:integration": {
                 "dependsOn": [
+                    "build:assets",
                     "^build"
                 ]
             },
             "test:legacy": {
                 "dependsOn": [
+                    "build:assets",
                     "^build"
                 ]
             },
             "test:ci:e2e": {
                 "dependsOn": [
+                    "build:assets",
                     "^build"
                 ],
                 "outputs": [
@@ -369,11 +373,13 @@
             },
             "test:ci:legacy": {
                 "dependsOn": [
+                    "build:assets",
                     "^build"
                 ]
             },
             "test:ci:integration": {
                 "dependsOn": [
+                    "build:assets",
                     "^build"
                 ],
                 "outputs": [
