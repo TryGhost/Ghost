@@ -1,69 +1,123 @@
 # Configuration
 
-Ghost's configuration system is based on
-[nconf](https://www.npmjs.com/package/nconf). Use of config for certain settings
-allows Ghost to be more flexible across different environments and more tunable
-for specific use cases. It's also a common way to test changes or roll out new
-code paths in a controlled manner (ones that wouldn't be appropriate for a user
-Labs flag).
+Ghost Core uses `nconf` to combine defaults with environment-specific and local
+configuration. This makes Ghost configurable across different environments and
+allows developers to test code paths that are not suitable for a user-facing
+Labs flag.
 
-In our framework repository we have a `@tryghost/config` wrapper library, which
-we use in lots of other smaller projects, but not Ghost itself.
+The loader and shared configuration live in
+[`ghost/core/core/shared/config/`](../../ghost/core/core/shared/config/). Ghost
+reads configuration when the process starts, so restart it after changing a
+configuration file or environment variable.
 
-Ghost's own configuration "lib" lives in `/core/core/shared/config` alongside a
-lot of the configuration. The files are all loaded in a specific order, in
-order to create a cascade that looks like this:
+For supported self-hosting options, see the
+[public configuration reference](https://docs.ghost.org/config).
 
-- `core/shared/config/defaults.json` - global defaults
-- `core/shared/config/env/config.${env}.json` - env-specific defaults
-- `config.${env}.json` - overrides you might have locally (note,
-  `config.development.json` should not be modified)
-- `config.local.json` - for local dev
-- environment variables (all lowercase 🙈)
-- argv - command line flags
-- `core/shared/config/overrides.json` - these can't be changed
+## Configuration precedence
+
+When the same key appears in more than one place, Ghost uses the first value in
+this list:
+
+1. Internal overrides in `core/shared/config/overrides.json`
+2. Command-line arguments
+3. Secret files referenced by environment variables
+4. Environment variables
+5. `config.<NODE_ENV>.json` in `ghost/core/`
+6. Docker development defaults when `GHOST_DEV_IS_DOCKER=true`
+7. `config.local.json` in `ghost/core/`
+8. `config.local.jsonc` in `ghost/core/`
+9. Environment defaults in `core/shared/config/env/config.<NODE_ENV>.json`
+10. Global defaults in `core/shared/config/defaults.json`
+
+Internal overrides cannot be replaced by another configuration source.
+`NODE_ENV` defaults to `development`. Environments whose names begin with
+`testing` do not load the Docker or local configuration files.
 
 ## Developing locally
 
-To change config when you're developing locally, you should create a
-`config.local.json` in the core folder, and change config there.
-
-Config changes require a restart - hot reload will not recognize the file
-change so you'll need to do this manually.
-
-## Accessing Config Settings
-
-Access the setting using the nconf loader in `ghost/core/core/shared/config`.
-
-For the given config below:
+Create `ghost/core/config.local.json` for local overrides:
 
 ```json
 {
-    "server": {
-        "port": 2368
+    "logging": {
+        "level": "debug"
     }
 }
 ```
 
-You can access the settings by either grabbing the group or an individual item.
+Use `config.local.jsonc` instead if comments are useful. If both local files
+define the same key, `config.local.json` takes precedence. Do not modify the
+tracked `config.development.json`, or commit credentials and local overrides.
 
-```javascript
-const serverPort = config.get('server:port') // 2368
+The standard `pnpm dev` environment also supplies container connection values
+as environment variables and loads
+`core/shared/config/env/config.development.docker.json`. Environment variables
+have higher precedence than local configuration files.
 
-// note you do not access properties using .get if grabbing a nested setting
-const serverConfig = config.get('server'); // {port: 2368};
-console.log(serverConfig.port) // 2368
-console.log(serverConfig.get('port')) // undefined
+## Environment variables
+
+Environment variable names match configuration keys, including case. Use two
+underscores to represent a nested key:
+
+```bash
+logging__level=debug pnpm dev
 ```
 
-## Creating a New Config Setting
+Values are parsed, so use valid JSON syntax for arrays and objects:
 
-Adding a new config setting is a simple endeavor.
+```bash
+logging__transports='["stdout"]' pnpm dev
+```
 
-> `camelCase` is preferred for settings, though you will also see `snake_case`.
+To load a secret from a file, append `_FILE` to a nested configuration variable
+and set its value to the file path:
 
-Add the setting to `core/shared/config/defaults.json`; this is the easiest way
-for all developers to understand what flags are out there and aids with keeping
-the settings organized and avoids duplicates. Note that has not been
-consistently done in the past, so you should always check for existing flags.
-See above for accessing the setting.
+```bash
+database__connection__password_FILE=/run/secrets/db_password
+```
+
+Do not set both the normal variable and its `_FILE` form. Secret-file contents
+remain strings rather than being parsed as JSON.
+
+## Accessing configuration
+
+Import the shared configuration instance and use colon-separated paths for
+nested values:
+
+```javascript
+const config = require('../../shared/config');
+
+const port = config.get('server:port');
+const server = config.get('server');
+```
+
+`config.get('server')` returns a plain object, so read `server.port` rather than
+calling `server.get('port')`.
+
+Use the shared instance rather than creating another `nconf` provider. The
+loader also normalizes paths and database configuration, validates the site URL,
+and checks that the content path exists.
+
+## Adding a configuration setting
+
+Before adding a setting, search the defaults, environment files, and call sites
+for an existing setting with the same purpose. Add new shared defaults to
+[`defaults.json`](../../ghost/core/core/shared/config/defaults.json) so the
+available configuration remains discoverable.
+
+Use `camelCase` for new settings. Add focused tests when changing loading,
+precedence, parsing, validation, or environment-specific behavior. The loader
+tests live in
+[`ghost/core/test/unit/shared/config/`](../../ghost/core/test/unit/shared/config/).
+
+## Debugging
+
+To print the resolved configuration while starting Ghost Core, enable its debug
+namespace:
+
+```bash
+DEBUG=ghost:*,ghost-config pnpm dev
+```
+
+Resolved configuration can contain secrets. Only inspect it locally and never
+paste unredacted output into issues or pull requests.
