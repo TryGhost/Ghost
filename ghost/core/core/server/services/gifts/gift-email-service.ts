@@ -1,5 +1,6 @@
 import {GiftEmailRenderer, Translate} from './gift-email-renderer';
 import type {GiftCadence} from './gift-schema';
+import errors from '@tryghost/errors';
 
 const DEFAULT_DATE_LOCALE = 'en-gb';
 const DEFAULT_ACCENT_COLOR = '#15212A';
@@ -39,6 +40,21 @@ interface Mailer {
         trackClicks?: boolean;
         disableTracking?: boolean;
     }): Promise<unknown>;
+}
+
+interface DeliveryMailer {
+    send(
+        message: {
+            subject: string;
+            html: string;
+            plaintext: string;
+            from: string;
+            tags: string[];
+            disable_tracking: boolean;
+        },
+        recipientData: Record<string, Record<string, never>>,
+        replacements: never[]
+    ): Promise<unknown>;
 }
 
 interface SettingsCache {
@@ -83,8 +99,16 @@ interface GiftDeliverySendData {
     expiresAt: Date;
 }
 
+interface GiftDeliveryFailureNotificationData {
+    buyerEmail: string;
+    recipientEmail: string;
+    token: string;
+    expiresAt: Date;
+}
+
 export class GiftEmailService {
     private readonly mailer: Mailer;
+    private readonly deliveryMailer: DeliveryMailer;
     private readonly settingsCache: SettingsCache;
     private readonly urlUtils: UrlUtils;
     private readonly getFromAddress: () => string;
@@ -92,8 +116,9 @@ export class GiftEmailService {
     private readonly renderer: GiftEmailRenderer;
     private readonly t: Translate;
 
-    constructor({mailer, settingsCache, urlUtils, getFromAddress, blogIcon, t}: {mailer: Mailer; settingsCache: SettingsCache; urlUtils: UrlUtils; getFromAddress: () => string; blogIcon: BlogIcon; t: Translate}) {
+    constructor({mailer, deliveryMailer, settingsCache, urlUtils, getFromAddress, blogIcon, t}: {mailer: Mailer; deliveryMailer: DeliveryMailer; settingsCache: SettingsCache; urlUtils: UrlUtils; getFromAddress: () => string; blogIcon: BlogIcon; t: Translate}) {
         this.mailer = mailer;
+        this.deliveryMailer = deliveryMailer;
         this.settingsCache = settingsCache;
         this.urlUtils = urlUtils;
         this.getFromAddress = getFromAddress;
@@ -189,6 +214,35 @@ export class GiftEmailService {
         });
     }
 
+    async sendDeliveryFailureNotification({buyerEmail, recipientEmail, token, expiresAt}: GiftDeliveryFailureNotificationData): Promise<void> {
+        const siteDomain = this.siteDomain;
+        const siteUrl = this.urlUtils.getSiteUrl();
+        const siteTitle = this.settingsCache.get('title') ?? siteDomain;
+        const giftLink = `${siteUrl.replace(/\/$/, '')}/gift/${token}`;
+        const {html, text} = await this.renderer.renderDeliveryFailure({
+            siteTitle,
+            siteUrl,
+            siteIconUrl: this.blogIcon.getIconUrl({absolute: true, fallbackToDefault: false}),
+            siteDomain,
+            toEmail: buyerEmail,
+            gift: {
+                link: giftLink,
+                expiresAt: this.formatDate(expiresAt),
+                recipientEmail
+            }
+        });
+
+        await this.mailer.send({
+            to: buyerEmail,
+            subject: this.t('We couldn\'t deliver your gift'),
+            html,
+            text,
+            from: this.getFromAddress(),
+            forceTextContent: true,
+            disableTracking: true
+        });
+    }
+
     async sendReminder({memberEmail, memberName, tierName, consumesAt}: ReminderData): Promise<void> {
         const siteDomain = this.siteDomain;
         const siteUrl = this.urlUtils.getSiteUrl();
@@ -222,7 +276,7 @@ export class GiftEmailService {
         });
     }
 
-    async sendGiftDelivery({recipientEmail, recipientName, buyerName, personalMessage, token, tierName, benefits, cadence, duration, expiresAt}: GiftDeliverySendData): Promise<{providerMessageId: string | null}> {
+    async sendGiftDelivery({recipientEmail, recipientName, buyerName, personalMessage, token, tierName, benefits, cadence, duration, expiresAt}: GiftDeliverySendData): Promise<{providerMessageId: string}> {
         const siteDomain = this.siteDomain;
         const siteUrl = this.urlUtils.getSiteUrl();
         const siteTitle = this.settingsCache.get('title') ?? siteDomain;
@@ -254,19 +308,24 @@ export class GiftEmailService {
                 interpolation: {escapeValue: false}
             })
             : this.t('You\'ve received a gift');
-        const response = await this.mailer.send({
-            to: recipientEmail,
+        const response = await this.deliveryMailer.send({
             subject,
             html,
-            text,
+            plaintext: text,
             from: this.getFromAddress(),
-            forceTextContent: true,
             tags: ['gift-delivery'],
-            disableTracking: true
-        });
+            disable_tracking: true
+        }, {[recipientEmail]: {}}, []);
         const providerMessageId = response && typeof response === 'object' && 'id' in response && typeof response.id === 'string'
             ? response.id.trim().replace(/^<|>$/g, '')
             : null;
+
+        if (!providerMessageId) {
+            throw new errors.EmailError({
+                message: 'Bulk Mailgun did not accept gift delivery',
+                code: 'EMAIL_NOT_ACCEPTED'
+            });
+        }
 
         return {providerMessageId};
     }

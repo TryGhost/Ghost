@@ -41,6 +41,8 @@ class GiftServiceWrapper {
         const jobs = require('./jobs');
 
         const {GhostMailer} = require('../mail');
+        const MailgunClient = require('../lib/mailgun-client');
+        const config = require('../../../shared/config');
         const settingsCache = require('../../../shared/settings-cache');
         const labsService = require('../../../shared/labs');
         const urlUtils = require('../../../shared/url-utils').default;
@@ -59,6 +61,7 @@ class GiftServiceWrapper {
 
         const giftEmailService = new GiftEmailService({
             mailer: new GhostMailer(),
+            deliveryMailer: new MailgunClient({config, settings: settingsCache}),
             settingsCache,
             urlUtils,
             getFromAddress: () => EmailAddressParser.stringify(settingsHelpers.getDefaultEmail()),

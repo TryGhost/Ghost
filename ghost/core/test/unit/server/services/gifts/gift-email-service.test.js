@@ -4,6 +4,7 @@ const {GiftEmailService} = require('../../../../../core/server/services/gifts/gi
 
 describe('GiftEmailService', function () {
     let mailer;
+    let deliveryMailer;
     let service;
 
     const settingsCache = {
@@ -60,7 +61,8 @@ describe('GiftEmailService', function () {
 
     beforeEach(function () {
         mailer = {send: sinon.stub().resolves()};
-        service = new GiftEmailService({mailer, settingsCache, urlUtils, getFromAddress, blogIcon, t: translate()});
+        deliveryMailer = {send: sinon.stub().resolves({id: '<provider-123>'})};
+        service = new GiftEmailService({mailer, deliveryMailer, settingsCache, urlUtils, getFromAddress, blogIcon, t: translate()});
     });
 
     afterEach(function () {
@@ -91,6 +93,28 @@ describe('GiftEmailService', function () {
             sinon.assert.match(message[field], sinon.match('is on its way to'));
             sinon.assert.match(message[field], sinon.match(value => !value.includes('has been sent to')));
             sinon.assert.match(message[field], sinon.match('You can also share the link below yourself'));
+        }
+    });
+
+    it('tells the buyer to share the gift link after permanent delivery failure', async function () {
+        await service.sendDeliveryFailureNotification({
+            buyerEmail: 'buyer@example.com',
+            recipientEmail: 'recipient@example.com',
+            token: 'abc-123',
+            expiresAt: new Date('2027-04-07')
+        });
+
+        const message = mailer.send.firstCall.firstArg;
+        sinon.assert.match(message, {
+            to: 'buyer@example.com',
+            subject: 'We couldn\'t deliver your gift',
+            disableTracking: true
+        });
+        assert.equal(message.tags, undefined);
+        for (const field of ['html', 'text']) {
+            sinon.assert.match(message[field], sinon.match('recipient@example.com'));
+            sinon.assert.match(message[field], sinon.match('https://example.com/gift/abc-123'));
+            sinon.assert.match(message[field], sinon.match('Send them the gift link below'));
         }
     });
 
@@ -128,7 +152,7 @@ describe('GiftEmailService', function () {
                 return '';
             }
         };
-        const localizedService = new GiftEmailService({mailer, settingsCache: localizedSettingsCache, urlUtils, getFromAddress, blogIcon, t: translate()});
+        const localizedService = new GiftEmailService({mailer, deliveryMailer, settingsCache: localizedSettingsCache, urlUtils, getFromAddress, blogIcon, t: translate()});
 
         await localizedService.sendPurchaseConfirmation(defaultData);
 
@@ -157,7 +181,7 @@ describe('GiftEmailService', function () {
             }
         };
 
-        const noTitleService = new GiftEmailService({mailer, settingsCache: noTitleSettingsCache, urlUtils, getFromAddress, blogIcon, t: translate()});
+        const noTitleService = new GiftEmailService({mailer, deliveryMailer, settingsCache: noTitleSettingsCache, urlUtils, getFromAddress, blogIcon, t: translate()});
         await noTitleService.sendPurchaseConfirmation(defaultData);
 
         sinon.assert.calledWith(mailer.send, sinon.match.has('text', sinon.match('membership to example.com')));
@@ -176,7 +200,7 @@ describe('GiftEmailService', function () {
             }
         };
 
-        const hostileService = new GiftEmailService({mailer, settingsCache: hostileSettingsCache, urlUtils, getFromAddress, blogIcon, t: translate()});
+        const hostileService = new GiftEmailService({mailer, deliveryMailer, settingsCache: hostileSettingsCache, urlUtils, getFromAddress, blogIcon, t: translate()});
         await hostileService.sendPurchaseConfirmation({
             ...defaultData,
             buyerEmail: 'buyer">@example.com',
@@ -196,9 +220,7 @@ describe('GiftEmailService', function () {
     });
 
     describe('sendGiftDelivery', function () {
-        it('sends the prototype delivery content transactionally without open or click tracking', async function () {
-            mailer.send.resolves({id: '<provider-123>'});
-
+        it('sends the prototype delivery content through bulk Mailgun without open or click tracking', async function () {
             const result = await service.sendGiftDelivery({
                 recipientEmail: 'recipient@example.com',
                 recipientName: 'Recipient',
@@ -213,26 +235,27 @@ describe('GiftEmailService', function () {
             });
 
             assert.deepEqual(result, {providerMessageId: 'provider-123'});
-            const message = mailer.send.firstCall.firstArg;
+            sinon.assert.notCalled(mailer.send);
+            const message = deliveryMailer.send.firstCall.firstArg;
             sinon.assert.match(message, {
-                to: 'recipient@example.com',
                 subject: 'Buyer sent you a gift',
                 tags: ['gift-delivery'],
-                disableTracking: true
+                disable_tracking: true
             });
-            for (const field of ['html', 'text']) {
+            assert.deepEqual(deliveryMailer.send.firstCall.args[1], {'recipient@example.com': {}});
+            for (const field of ['html', 'plaintext']) {
                 sinon.assert.match(message[field], sinon.match('Recipient'));
                 sinon.assert.match(message[field], sinon.match('Enjoy this gift'));
                 sinon.assert.match(message[field], sinon.match('All stories'));
                 sinon.assert.match(message[field], sinon.match('https://example.com/gift/abc-123'));
             }
-            sinon.assert.match(message.text, sinon.match('Buyer has gifted you a 1-year Gold membership to Test Site'));
+            sinon.assert.match(message.plaintext, sinon.match('Buyer has gifted you a 1-year Gold membership to Test Site'));
             sinon.assert.match(message.html, sinon.match('<strong>Buyer</strong> has gifted you a <strong>1</strong>-year <strong>Gold</strong> membership to Test Site'));
         });
 
         it('uses an attributive plural cadence for multi-month gifts', async function () {
             const t = sinon.spy(translate());
-            const translatedService = new GiftEmailService({mailer, settingsCache, urlUtils, getFromAddress, blogIcon, t});
+            const translatedService = new GiftEmailService({mailer, deliveryMailer, settingsCache, urlUtils, getFromAddress, blogIcon, t});
 
             await translatedService.sendGiftDelivery({
                 recipientEmail: 'recipient@example.com',
@@ -247,11 +270,11 @@ describe('GiftEmailService', function () {
                 expiresAt: new Date('2027-04-07')
             });
 
-            const message = mailer.send.firstCall.firstArg;
-            sinon.assert.match(message.text, sinon.match('a 3-month Gold membership'));
+            const message = deliveryMailer.send.firstCall.firstArg;
+            sinon.assert.match(message.plaintext, sinon.match('a 3-month Gold membership'));
             sinon.assert.match(message.html, sinon.match('<strong>3</strong>-month'));
             sinon.assert.match(message.html, sinon.match(value => !value.includes('3 months')));
-            sinon.assert.match(message.text, sinon.match(value => !value.includes('3 months')));
+            sinon.assert.match(message.plaintext, sinon.match(value => !value.includes('3 months')));
 
             const introKey = '{buyerName} has gifted you a {duration}-month {tierName} membership to {siteTitle}';
             const introCalls = t.getCalls().filter(call => call.firstArg === introKey);
@@ -276,7 +299,7 @@ describe('GiftEmailService', function () {
                 expiresAt: new Date('2027-04-07')
             });
 
-            const html = mailer.send.firstCall.firstArg.html;
+            const html = deliveryMailer.send.firstCall.firstArg.html;
             assert.ok(!html.includes('<script>alert(1)</script>'));
             assert.ok(!html.includes('<img src=x onerror=alert(1)>'));
             assert.ok(!html.includes('<b>not markup</b>'));
@@ -297,6 +320,7 @@ describe('GiftEmailService', function () {
             };
             const literalService = new GiftEmailService({
                 mailer,
+                deliveryMailer,
                 settingsCache: literalSettingsCache,
                 urlUtils,
                 getFromAddress,
@@ -317,19 +341,17 @@ describe('GiftEmailService', function () {
                 expiresAt: new Date('2027-04-07')
             });
 
-            const message = mailer.send.firstCall.firstArg;
+            const message = deliveryMailer.send.firstCall.firstArg;
             assert.equal(message.subject, 'Sam & Alex <Team> sent you a gift');
-            assert.match(message.text, /Hi Pat O'Neil & Co,/);
-            assert.match(message.text, /Sam & Alex <Team> has gifted you a 1-year Gold & Silver <Plus> membership to Research & <Notes>/);
-            assert.doesNotMatch(message.text, /&(amp|lt|gt|#39);/);
+            assert.match(message.plaintext, /Hi Pat O'Neil & Co,/);
+            assert.match(message.plaintext, /Sam & Alex <Team> has gifted you a 1-year Gold & Silver <Plus> membership to Research & <Notes>/);
+            assert.doesNotMatch(message.plaintext, /&(amp|lt|gt|#39);/);
         });
 
-        it('does not invent provider telemetry for transports without a Mailgun ID', async function () {
-            mailer.send.resolves('Message sent');
-            const t = sinon.spy(translate());
-            const translatedService = new GiftEmailService({mailer, settingsCache, urlUtils, getFromAddress, blogIcon, t});
+        it('rejects delivery when bulk Mailgun does not return an acceptance ID', async function () {
+            deliveryMailer.send.resolves('Message sent');
 
-            const result = await translatedService.sendGiftDelivery({
+            await assert.rejects(service.sendGiftDelivery({
                 recipientEmail: 'recipient@example.com',
                 recipientName: null,
                 buyerName: null,
@@ -340,12 +362,7 @@ describe('GiftEmailService', function () {
                 cadence: 'month',
                 duration: 1,
                 expiresAt: new Date('2027-04-07')
-            });
-
-            assert.deepEqual(result, {providerMessageId: null});
-            const introKey = 'You\'ve been gifted a {duration}-month {tierName} membership to {siteTitle}';
-            const introCalls = t.getCalls().filter(call => call.firstArg === introKey);
-            assert.equal(introCalls.length, 2);
+            }), {code: 'EMAIL_NOT_ACCEPTED'});
         });
     });
 
@@ -431,6 +448,7 @@ describe('GiftEmailService', function () {
             };
             const localizedService = new GiftEmailService({
                 mailer,
+                deliveryMailer,
                 settingsCache: localizedSettingsCache,
                 urlUtils,
                 getFromAddress,
