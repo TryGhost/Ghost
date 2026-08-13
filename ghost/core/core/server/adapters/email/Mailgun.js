@@ -22,11 +22,13 @@ class Mailgun extends EmailProviderBase {
      * @param {Object} config.settingsCache - Ghost settings cache
      * @param {Object} config.labs - Ghost labs service
      * @param {Function} [config.errorHandler] - Custom error handler
+     * @param {Object} [config.emailProvider] - Pre-built email provider (primarily for testing)
+     * @param {Object} [config.analyticsProvider] - Pre-built analytics provider (primarily for testing)
      */
     constructor(config = {}) {
         super(config);
 
-        const {configService, settingsCache, labs, errorHandler} = config;
+        const {configService, settingsCache, labs, errorHandler, emailProvider, analyticsProvider} = config;
 
         // Only initialize providers if we have the required dependencies
         if (configService && settingsCache) {
@@ -49,6 +51,15 @@ class Mailgun extends EmailProviderBase {
                 settings: settingsCache,
                 labs
             });
+        }
+
+        // Allow explicit provider injection, which overrides the auto-built
+        // providers above. Used to supply test doubles for the private fields.
+        if (emailProvider) {
+            this.#emailProvider = emailProvider;
+        }
+        if (analyticsProvider) {
+            this.#analyticsProvider = analyticsProvider;
         }
     }
 
