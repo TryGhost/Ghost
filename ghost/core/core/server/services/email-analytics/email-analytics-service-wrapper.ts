@@ -140,7 +140,7 @@ export class EmailAnalyticsServiceWrapper {
         }
     }
 
-    async fetchLatestOpenedEvents({maxEvents}: {maxEvents: number} = {maxEvents: Infinity}): Promise<number> {
+    async fetchLatestOpenedEvents({maxEvents = Infinity}: {maxEvents?: number} = {}): Promise<number> {
         const config = this.#getConfig();
 
         const beginTimestamp = await this.service.getLastOpenedEventTimestamp();
@@ -163,7 +163,7 @@ export class EmailAnalyticsServiceWrapper {
         return fetchResult.eventCount;
     }
 
-    async fetchLatestNonOpenedEvents({maxEvents}: {maxEvents: number} = {maxEvents: Infinity}): Promise<number> {
+    async fetchLatestNonOpenedEvents({maxEvents = Infinity}: {maxEvents?: number} = {}): Promise<number> {
         const fetchStartedAt = Date.now();
         const fetchResult = await this.service.fetchLatestNonOpenedEvents({maxEvents});
         const totalDuration = Date.now() - fetchStartedAt;
@@ -173,7 +173,7 @@ export class EmailAnalyticsServiceWrapper {
         return fetchResult.eventCount;
     }
 
-    async fetchMissing({maxEvents}: {maxEvents: number} = {maxEvents: Infinity}): Promise<number> {
+    async fetchMissing({maxEvents = Infinity}: {maxEvents?: number} = {}): Promise<number> {
         const fetchStartedAt = Date.now();
         const fetchResult = await this.service.fetchMissing({maxEvents});
         const totalDuration = Date.now() - fetchStartedAt;
