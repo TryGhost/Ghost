@@ -147,13 +147,13 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
 
             <Card>
                 <CardContent className='px-6 py-2'>
-                    <Accordion type='multiple'>
+                    <Accordion defaultValue='metadata' type='single' collapsible>
                         <AccordionItem className='last:border-b-0' value='metadata'>
                             <SectionTrigger description='Extra content for search engines.' title='Meta data' />
                             <AccordionContent>
-                                <div className='grid items-start gap-6 pt-2 lg:grid-cols-3'>
-                                    <div className='flex flex-col gap-5 lg:col-span-2'>
-                                        <div className='flex flex-col gap-1.5'>
+                                <Stack className='pt-2' gap='xl'>
+                                    <Stack gap='lg'>
+                                        <Stack gap='sm'>
                                             <Label htmlFor='meta-title'>Meta title</Label>
                                             <Input
                                                 aria-describedby={errors.metaTitle ? errorId('metaTitle') : undefined}
@@ -167,8 +167,8 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                                             />
                                             <FieldError className='text-sm' id={errorId('metaTitle')}>{errors.metaTitle}</FieldError>
                                             <UsedCharacters limit={META_TITLE_RECOMMENDED_LENGTH} prefix='Recommended' value={draft.metaTitle} />
-                                        </div>
-                                        <div className='flex flex-col gap-1.5'>
+                                        </Stack>
+                                        <Stack gap='sm'>
                                             <Label htmlFor='meta-description'>Meta description</Label>
                                             <Textarea
                                                 aria-describedby={errors.metaDescription ? errorId('metaDescription') : undefined}
@@ -182,8 +182,8 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                                             />
                                             <FieldError className='text-sm' id={errorId('metaDescription')}>{errors.metaDescription}</FieldError>
                                             <UsedCharacters limit={META_DESCRIPTION_RECOMMENDED_LENGTH} prefix='Recommended' value={draft.metaDescription} />
-                                        </div>
-                                        <div className='flex flex-col gap-1.5'>
+                                        </Stack>
+                                        <Stack gap='sm'>
                                             <Label htmlFor='canonical-url'>Canonical URL</Label>
                                             <Input
                                                 aria-describedby={errors.canonicalUrl ? errorId('canonicalUrl') : undefined}
@@ -195,21 +195,21 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                                                 onChange={e => onChange({canonicalUrl: e.target.value})}
                                             />
                                             <FieldError className='text-sm' id={errorId('canonicalUrl')}>{errors.canonicalUrl}</FieldError>
-                                        </div>
-                                    </div>
-                                    <div className='flex flex-col gap-1.5'>
+                                        </Stack>
+                                    </Stack>
+                                    <Stack gap='sm'>
                                         <Label>Search Engine Result Preview</Label>
                                         <SeoPreview description={seoDescription} title={seoTitle} url={seoUrl} />
-                                    </div>
-                                </div>
+                                    </Stack>
+                                </Stack>
                             </AccordionContent>
                         </AccordionItem>
 
                         <AccordionItem className='last:border-b-0' value='x-card'>
                             <SectionTrigger description='Customized structured data for X.' title='X card' />
                             <AccordionContent>
-                                <div className='grid items-start gap-6 pt-2 lg:grid-cols-3'>
-                                    <div className='flex flex-col gap-5 lg:col-span-2'>
+                                <Stack className='pt-2' gap='xl'>
+                                    <Stack gap='lg'>
                                         <TagImageField
                                             disabled={disabled}
                                             id='twitter-image'
@@ -221,7 +221,7 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                                             onChange={twitterImage => onChange({twitterImage})}
                                             onUploadPendingChange={pending => onImageUploadPendingChange('twitterImage', pending)}
                                         />
-                                        <div className='flex flex-col gap-1.5'>
+                                        <Stack gap='sm'>
                                             <Label htmlFor='twitter-title'>X title</Label>
                                             <Input
                                                 disabled={disabled}
@@ -231,8 +231,8 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                                                 onChange={e => onChange({twitterTitle: e.target.value})}
                                             />
                                             <UsedCharacters limit={X_TITLE_RECOMMENDED_LENGTH} prefix='Recommended' value={draft.twitterTitle} />
-                                        </div>
-                                        <div className='flex flex-col gap-1.5'>
+                                        </Stack>
+                                        <Stack gap='sm'>
                                             <Label htmlFor='twitter-description'>X description</Label>
                                             <Textarea
                                                 disabled={disabled}
@@ -242,9 +242,9 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                                                 onChange={e => onChange({twitterDescription: e.target.value})}
                                             />
                                             <UsedCharacters limit={X_DESCRIPTION_RECOMMENDED_LENGTH} prefix='Recommended' value={draft.twitterDescription} />
-                                        </div>
-                                    </div>
-                                    <div className='flex flex-col gap-1.5'>
+                                        </Stack>
+                                    </Stack>
+                                    <Stack gap='sm'>
                                         <Label>X preview</Label>
                                         <XCardPreview
                                             description={draft.twitterDescription || seoDescription || siteMetaDescription || ''}
@@ -253,16 +253,16 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                                             siteHeader={socialSiteHeader}
                                             title={draft.twitterTitle || seoTitle}
                                         />
-                                    </div>
-                                </div>
+                                    </Stack>
+                                </Stack>
                             </AccordionContent>
                         </AccordionItem>
 
                         <AccordionItem className='last:border-b-0' value='facebook-card'>
                             <SectionTrigger description='Customize Open Graph data.' title='Facebook card' />
                             <AccordionContent>
-                                <div className='grid items-start gap-6 pt-2 lg:grid-cols-3'>
-                                    <div className='flex flex-col gap-5 lg:col-span-2'>
+                                <Stack className='pt-2' gap='xl'>
+                                    <Stack gap='lg'>
                                         <TagImageField
                                             disabled={disabled}
                                             id='og-image'
@@ -274,7 +274,7 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                                             onChange={ogImage => onChange({ogImage})}
                                             onUploadPendingChange={pending => onImageUploadPendingChange('ogImage', pending)}
                                         />
-                                        <div className='flex flex-col gap-1.5'>
+                                        <Stack gap='sm'>
                                             <Label htmlFor='og-title'>Facebook title</Label>
                                             <Input
                                                 disabled={disabled}
@@ -284,8 +284,8 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                                                 onChange={e => onChange({ogTitle: e.target.value})}
                                             />
                                             <UsedCharacters limit={FACEBOOK_TITLE_RECOMMENDED_LENGTH} prefix='Recommended' value={draft.ogTitle} />
-                                        </div>
-                                        <div className='flex flex-col gap-1.5'>
+                                        </Stack>
+                                        <Stack gap='sm'>
                                             <Label htmlFor='og-description'>Facebook description</Label>
                                             <Textarea
                                                 disabled={disabled}
@@ -295,9 +295,9 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                                                 onChange={e => onChange({ogDescription: e.target.value})}
                                             />
                                             <UsedCharacters limit={FACEBOOK_DESCRIPTION_RECOMMENDED_LENGTH} prefix='Recommended' value={draft.ogDescription} />
-                                        </div>
-                                    </div>
-                                    <div className='flex flex-col gap-1.5'>
+                                        </Stack>
+                                    </Stack>
+                                    <Stack gap='sm'>
                                         <Label>Facebook preview</Label>
                                         {/* The description chain deliberately skips ogDescription: Ember read a
                                             nonexistent `facebookDescription` attribute, so ogDescription never
@@ -309,8 +309,8 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                                             siteHeader={socialSiteHeader}
                                             title={draft.ogTitle || seoTitle}
                                         />
-                                    </div>
-                                </div>
+                                    </Stack>
+                                </Stack>
                             </AccordionContent>
                         </AccordionItem>
 

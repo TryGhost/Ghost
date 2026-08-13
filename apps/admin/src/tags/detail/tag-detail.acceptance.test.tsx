@@ -55,6 +55,51 @@ describe('Tag detail (tagDetailsReact on)', () => {
         await expect.element(page.getByTestId('tag-detail-internal-badge')).toHaveTextContent('INTERNAL');
     });
 
+    it('opens Meta data by default and keeps one advanced section open at a time', async () => {
+        const t = tag({name: 'News', slug: 'news'});
+        fakeTagWorld(t);
+        await renderAdminApp(`/tags/${t.slug}`, FLAGS);
+
+        const metaTrigger = page.getByRole('button', {name: /Meta data/});
+        const xTrigger = page.getByRole('button', {name: /X card/});
+        const facebookTrigger = page.getByRole('button', {name: /Facebook card/});
+        const codeInjectionTrigger = page.getByRole('button', {name: /Code injection/});
+
+        await expect.element(metaTrigger).toHaveAttribute('aria-expanded', 'true');
+        await expect.element(xTrigger).toHaveAttribute('aria-expanded', 'false');
+        await expect.element(facebookTrigger).toHaveAttribute('aria-expanded', 'false');
+        await expect.element(codeInjectionTrigger).toHaveAttribute('aria-expanded', 'false');
+
+        const metaTitle = page.getByLabelText('Meta title');
+        const searchPreview = page.getByText('Search Engine Result Preview', {exact: true});
+        await expect.element(metaTitle).toBeVisible();
+        expect(metaTitle.element().compareDocumentPosition(searchPreview.element()) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+
+        await xTrigger.click();
+        await expect.element(metaTrigger).toHaveAttribute('aria-expanded', 'false');
+        await expect.element(xTrigger).toHaveAttribute('aria-expanded', 'true');
+        const xTitle = page.getByLabelText('X title');
+        const xPreview = page.getByText('X preview', {exact: true});
+        await expect.element(xTitle).toBeVisible();
+        expect(xTitle.element().compareDocumentPosition(xPreview.element()) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+
+        await facebookTrigger.click();
+        await expect.element(xTrigger).toHaveAttribute('aria-expanded', 'false');
+        await expect.element(facebookTrigger).toHaveAttribute('aria-expanded', 'true');
+        const facebookTitle = page.getByLabelText('Facebook title');
+        const facebookPreview = page.getByText('Facebook preview', {exact: true});
+        await expect.element(facebookTitle).toBeVisible();
+        expect(facebookTitle.element().compareDocumentPosition(facebookPreview.element()) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+
+        await codeInjectionTrigger.click();
+        await expect.element(facebookTrigger).toHaveAttribute('aria-expanded', 'false');
+        await expect.element(codeInjectionTrigger).toHaveAttribute('aria-expanded', 'true');
+        await expect.element(page.getByRole('textbox', {name: /^Tag header/})).toBeVisible();
+
+        await codeInjectionTrigger.click();
+        await expect.element(codeInjectionTrigger).toHaveAttribute('aria-expanded', 'false');
+    });
+
     it('edits and saves tag code injection with CodeMirror', async () => {
         const head = '<script>\n    head();\n</script>';
         const foot = '<style>\n    .footer { display: block; }\n</style>';
