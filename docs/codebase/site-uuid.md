@@ -1,15 +1,14 @@
 # Site UUID
 
 Each Ghost site has a `site_uuid` in its settings table. It is a unique site
-identifier which is safe to expose publicly. It is used when Ghost talks to
-shared services such as Tinybird, where records need to be associated with the
-correct site.
+identifier exposed by Ghost's public site configuration. Ghost uses it to keep
+site data separate when talking to services such as Tinybird.
 
 ## Generation
 
-On first boot, Ghost uses the configured `site_uuid` when it is a valid UUID.
-Otherwise it generates a random UUID. The resulting value is stored as the
-`site_uuid` setting.
+When the setting is first created, Ghost uses the configured `site_uuid` when it
+is a valid UUID. Otherwise it generates a random UUID. The value is normalized
+to lowercase before it is stored.
 
 The value is immutable. It cannot be changed through the Admin API or a JSON
 import. To choose it, configure `site_uuid` before the site's first boot.
@@ -25,3 +24,8 @@ Read the stored value inside Ghost with:
 ```js
 settingsCache.get('site_uuid')
 ```
+
+Generation is implemented in
+[`settings-utils.js`](../../ghost/core/core/server/services/settings/settings-utils.js),
+and the boot-time check is in
+[`settings-service.js`](../../ghost/core/core/server/services/settings/settings-service.js).
