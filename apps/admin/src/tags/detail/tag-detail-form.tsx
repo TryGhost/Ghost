@@ -150,7 +150,7 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                     <Accordion defaultValue='metadata' type='single' collapsible>
                         <AccordionItem className='last:border-b-0' value='metadata'>
                             <SectionTrigger description='Extra content for search engines.' title='Meta data' />
-                            <AccordionContent className='bg-muted px-6'>
+                            <AccordionContent className='bg-surface-elevated px-6'>
                                 <Stack className='pt-2' gap='xl'>
                                     <Stack gap='lg'>
                                         <Stack gap='sm'>
@@ -207,7 +207,7 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
 
                         <AccordionItem className='last:border-b-0' value='x-card'>
                             <SectionTrigger description='Customized structured data for X.' title='X card' />
-                            <AccordionContent className='bg-muted px-6'>
+                            <AccordionContent className='bg-surface-elevated px-6'>
                                 <Stack className='pt-2' gap='xl'>
                                     <Stack gap='lg'>
                                         <TagImageField
@@ -260,7 +260,7 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
 
                         <AccordionItem className='last:border-b-0' value='facebook-card'>
                             <SectionTrigger description='Customize Open Graph data.' title='Facebook card' />
-                            <AccordionContent className='bg-muted px-6'>
+                            <AccordionContent className='bg-surface-elevated px-6'>
                                 <Stack className='pt-2' gap='xl'>
                                     <Stack gap='lg'>
                                         <TagImageField
@@ -316,7 +316,7 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
 
                         <AccordionItem className='last:border-b-0' value='code-injection'>
                             <SectionTrigger description='Add styles/scripts to the header and footer.' title='Code injection' />
-                            <AccordionContent className='bg-muted px-6'>
+                            <AccordionContent className='bg-surface-elevated px-6'>
                                 <Stack className='pt-2' gap='lg'>
                                     <CodeEditor
                                         data-testid='codeinjection-head'
