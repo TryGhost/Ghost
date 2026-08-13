@@ -324,6 +324,65 @@ describe('Posts Bulk API', function () {
             assert.equal(posts.meta.pagination.total, 0, `Expect all matching posts (${amount}) to be deleted`);
         });
 
+        it('Can delete a post with a threaded comment replying to another reply', async function () {
+            const {body: {posts: [post]}} = await agent
+                .post('/posts/')
+                .body({posts: [{title: 'Post with a threaded comment', status: 'draft'}]})
+                .expectStatus(201);
+
+            const memberId = fixtureManager.get('members', 0).id;
+            const root = await models.Comment.add({
+                post_id: post.id,
+                member_id: memberId,
+                html: '<p>Root comment</p>',
+                status: 'published'
+            });
+            const reply = await models.Comment.add({
+                post_id: post.id,
+                member_id: memberId,
+                parent_id: root.id,
+                html: '<p>Reply</p>',
+                status: 'published'
+            });
+            await models.Comment.add({
+                post_id: post.id,
+                member_id: memberId,
+                parent_id: root.id,
+                in_reply_to_id: reply.id,
+                html: '<p>Reply to the reply</p>',
+                status: 'published'
+            });
+
+            // A long back-and-forth conversation, where each reply replies to the
+            // previous one, chains more levels than MySQL can cascade: InnoDB
+            // hard-limits nested foreign key cascades to 15 levels and fails the
+            // delete with error 3008 beyond that, so `in_reply_to_id` cannot use
+            // ON DELETE CASCADE and must be cleared in the delete transaction
+            // https://dev.mysql.com/doc/mysql-reslimits-excerpt/8.0/en/ansi-diff-foreign-keys.html
+            let previous = reply;
+            for (let i = 0; i < 20; i++) {
+                previous = await models.Comment.add({
+                    post_id: post.id,
+                    member_id: memberId,
+                    parent_id: root.id,
+                    in_reply_to_id: previous.id,
+                    html: `<p>Reply ${i} in a long conversation</p>`,
+                    status: 'published'
+                });
+            }
+
+            const filter = `id:['${post.id}']`;
+            const response = await agent
+                .delete('/posts/?filter=' + encodeURIComponent(filter))
+                .expectStatus(200)
+                .matchBodySnapshot();
+
+            assert.equal(response.body.bulk.meta.stats.successful, 1, 'Expect the post with threaded comments to be deleted');
+
+            const comments = await models.Base.knex('comments').where('post_id', post.id);
+            assert.equal(comments.length, 0, 'Expected all comments on the post to be deleted with the post');
+        });
+
         it('Can delete all posts', async function () {
             const filter = 'status:[published,draft,scheduled,sent]';
 

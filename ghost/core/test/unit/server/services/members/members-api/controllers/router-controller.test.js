@@ -17,6 +17,7 @@ describe('RouterController', function () {
     let settingsHelpers;
     let emailAddressService;
     let urlUtils;
+    let giftService;
 
     beforeEach(async function () {
         // Mock emailAddressService for inbox links sender address transformation
@@ -45,6 +46,12 @@ describe('RouterController', function () {
                 configured: true
             },
             getDonationPaymentLink: getDonationLinkSpy
+        };
+        giftService = {
+            service: {
+                startCheckout: sinon.stub().resolves({url: 'https://checkout.stripe.com/gift'}),
+                preparePaidContinuation: sinon.stub()
+            }
         };
 
         offersAPI = {
@@ -78,7 +85,7 @@ describe('RouterController', function () {
             configured: true
         };
         labsService = {
-            isSet: sinon.stub().returns(true)
+            isSet: sinon.stub().callsFake(flag => flag !== 'giftSubCustomization')
         };
         settingsCache = {
             get: sinon.stub().withArgs('all_blocked_email_domains').returns(['spam.xyz'])
@@ -762,13 +769,6 @@ describe('RouterController', function () {
         });
 
         describe('gift checkout', function () {
-            let getGiftLinkSpy;
-
-            beforeEach(function () {
-                getGiftLinkSpy = sinon.stub().resolves('https://checkout.stripe.com/gift');
-                paymentsService.getGiftPaymentLink = getGiftLinkSpy;
-            });
-
             function createGiftController(overrides = {}) {
                 return new RouterController({
                     tiersService,
@@ -782,6 +782,7 @@ describe('RouterController', function () {
                     urlUtils: {getSiteUrl: sinon.stub().returns('https://example.com/')},
                     memberAttributionService: {getAttribution: sinon.stub().resolves({})},
                     emailAddressService,
+                    giftService,
                     ...overrides
                 });
             }
@@ -794,23 +795,45 @@ describe('RouterController', function () {
                         read: sinon.stub().resolves({
                             id: {toHexString: () => 'tier_123'},
                             status: 'active',
+                            visibility: 'public',
+                            type: 'paid',
+                            currency: 'USD',
+                            monthlyPrice: price,
+                            yearlyPrice: price * 10,
                             getPrice: sinon.stub().returns(price)
                         })
                     }
                 };
             }
 
-            it('calls getGiftPaymentLink with correct options', async function () {
+            it('maps gift checkout requests to the module interface', async function () {
                 const controller = createGiftController({tiersService: paidTierService()});
 
                 await controller.createCheckoutSession({
                     body: {type: 'gift', tierId: 'tier_123', cadence: 'month', metadata: {}}
                 }, mockRes);
 
-                sinon.assert.calledOnce(getGiftLinkSpy);
-                sinon.assert.calledWith(getGiftLinkSpy, sinon.match({
+                sinon.assert.calledOnce(giftService.service.startCheckout);
+                sinon.assert.calledWith(giftService.service.startCheckout, sinon.match({
+                    tierId: 'tier_123',
+                    cadence: 'month',
+                    duration: undefined,
                     successUrl: 'https://example.com/',
                     cancelUrl: 'https://example.com/'
+                }));
+            });
+
+            it('passes an explicit duration through for the gifts module to resolve', async function () {
+                const controller = createGiftController({tiersService: paidTierService()});
+
+                await controller.createCheckoutSession({
+                    body: {type: 'gift', tierId: 'tier_123', duration: 3, metadata: {}}
+                }, mockRes);
+
+                sinon.assert.calledWith(giftService.service.startCheckout, sinon.match({
+                    tierId: 'tier_123',
+                    cadence: undefined,
+                    duration: 3
                 }));
             });
 
@@ -827,8 +850,8 @@ describe('RouterController', function () {
                     }
                 }, mockRes);
 
-                sinon.assert.calledOnce(getGiftLinkSpy);
-                sinon.assert.calledWith(getGiftLinkSpy, sinon.match({
+                sinon.assert.calledOnce(giftService.service.startCheckout);
+                sinon.assert.calledWith(giftService.service.startCheckout, sinon.match({
                     successUrl: 'https://example.com/',
                     cancelUrl: 'https://example.com/post/#/portal/gift'
                 }));
@@ -847,14 +870,20 @@ describe('RouterController', function () {
                     }
                 }, mockRes);
 
-                sinon.assert.calledOnce(getGiftLinkSpy);
-                sinon.assert.calledWith(getGiftLinkSpy, sinon.match({
-                    email: 'jamie@example.com',
-                    isAuthenticated: false
+                sinon.assert.calledOnce(giftService.service.startCheckout);
+                sinon.assert.calledWith(giftService.service.startCheckout, sinon.match({
+                    buyer: sinon.match({
+                        email: 'jamie@example.com',
+                        isAuthenticated: false
+                    })
                 }));
             });
 
             it('rejects when offerId is provided', async function () {
+                giftService.service.startCheckout.rejects(new errors.BadRequestError({
+                    message: 'Bad Request.',
+                    context: 'Offers cannot be applied to gift subscriptions'
+                }));
                 const controller = createGiftController();
 
                 try {
@@ -884,7 +913,7 @@ describe('RouterController', function () {
                     assert.fail('Should have thrown');
                 } catch (error) {
                     assert(error instanceof errors.DisabledFeatureError);
-                    sinon.assert.notCalled(getGiftLinkSpy);
+                    sinon.assert.notCalled(giftService.service.startCheckout);
                 }
             });
 
@@ -909,7 +938,7 @@ describe('RouterController', function () {
                     body: {type: 'gift', tierId: 'tier_123', cadence: 'month', identity: 'valid-token', metadata: {}}
                 }, mockRes);
 
-                sinon.assert.calledOnce(getGiftLinkSpy);
+                sinon.assert.calledOnce(giftService.service.startCheckout);
             });
         });
 
@@ -956,6 +985,7 @@ describe('RouterController', function () {
                     memberRepository: {get: sinon.stub().resolves(null)},
                     memberAttributionService: {getAttribution: sinon.stub().resolves({})},
                     urlUtils,
+                    giftService,
                     ...overrides
                 });
             }
@@ -1162,13 +1192,6 @@ describe('RouterController', function () {
             });
 
             describe('gift checkout', function () {
-                let giftLinkSpy;
-
-                beforeEach(function () {
-                    giftLinkSpy = sinon.stub().resolves('https://checkout.stripe.com/gift');
-                    paymentsService.getGiftPaymentLink = giftLinkSpy;
-                });
-
                 it('falls back to the site URL when cancelUrl is cross-origin (Stripe requires cancel_url for gifts)', async function () {
                     const controller = createGiftReturnController();
 
@@ -1182,8 +1205,8 @@ describe('RouterController', function () {
                         }
                     }, mockRes);
 
-                    sinon.assert.calledOnce(giftLinkSpy);
-                    sinon.assert.calledWith(giftLinkSpy, sinon.match({
+                    sinon.assert.calledOnce(giftService.service.startCheckout);
+                    sinon.assert.calledWith(giftService.service.startCheckout, sinon.match({
                         successUrl: 'https://example.com/',
                         cancelUrl: 'https://example.com/'
                     }));
@@ -1202,8 +1225,8 @@ describe('RouterController', function () {
                         }
                     }, mockRes);
 
-                    sinon.assert.calledOnce(giftLinkSpy);
-                    sinon.assert.calledWith(giftLinkSpy, sinon.match({
+                    sinon.assert.calledOnce(giftService.service.startCheckout);
+                    sinon.assert.calledWith(giftService.service.startCheckout, sinon.match({
                         successUrl: 'https://example.com/',
                         cancelUrl: 'https://example.com/post/#/portal/gift'
                     }));

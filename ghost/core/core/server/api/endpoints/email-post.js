@@ -36,7 +36,7 @@ const controller = {
             }
         },
         async query(frame) {
-            urlSerializerUtils.forceUrlRelationsWhenLazy(frame, 'posts');
+            urlSerializerUtils.forceUrlRelations(frame, 'posts');
 
             const model = await models.Post.findOne(Object.assign(frame.data, {status: 'sent'}), frame.options);
 

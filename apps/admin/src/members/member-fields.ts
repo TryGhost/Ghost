@@ -1,4 +1,5 @@
-import {DATE_FILTER_OPERATORS, DEFAULT_DATE_OPERATOR, type FilterCodec, dateCodec, defineFields, escapeNqlString, extractComparator, numberCodec, scalarCodec, setCodec, textCodec, withFutureRelativeOperator, withPastRelativeOperator} from '@/shared/filters';
+import {DATE_FILTER_OPERATORS, DEFAULT_DATE_OPERATOR, type FilterCodec, dateCodec, defineFields, extractComparator, numberCodec, scalarCodec, setCodec, textCodec, withFutureRelativeOperator, withPastRelativeOperator} from '@/shared/filters';
+import {escapeNqlString} from '@tryghost/nql-string';
 import {MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FIELD, MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FILTER, NO_MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FILTER} from './multiple-active-subscriptions';
 
 const TEXT_OPERATORS = ['is', 'contains', 'does-not-contain', 'starts-with', 'ends-with'] as const;

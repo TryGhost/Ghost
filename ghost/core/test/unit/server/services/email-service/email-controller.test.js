@@ -26,7 +26,7 @@ describe('Email Controller', function () {
             assert.equal(newsletter.get('slug'), 'post-newsletter');
         });
 
-        it('loads the URL service relations the lazy backend needs', async function () {
+        it('loads the relations the URL service needs', async function () {
             // On sites whose routes.yaml filters collections by tag/author the
             // lazy URL service refuses a post without those relations as thin,
             // which would turn email previews into a 500 in pure-lazy mode.

@@ -44,6 +44,8 @@ export interface SettingsModalProps {
     onCancel?: () => void;
     topRightContent?: 'close' | React.ReactNode;
     hideXOnMobile?: boolean;
+    /** Supersedes the NiceModal close path; without it the modal must be mounted through NiceModal. Keep its presence stable across renders — toggling defined/undefined remounts the modal subtree. */
+    onClose?: () => void;
     afterClose?: () => void;
     children?: React.ReactNode;
     backDrop?: boolean;
@@ -65,11 +67,11 @@ const settingsModalVariants = cva(
     {
         variants: {
             size: {
-                sm: 'max-w-[480px] rounded',
-                md: 'max-w-[720px] rounded',
-                lg: 'max-w-[1020px] rounded',
-                xl: 'max-w-[1240px] rounded',
-                full: 'h-full rounded',
+                sm: 'max-w-[480px] rounded-lg',
+                md: 'max-w-[720px] rounded-lg',
+                lg: 'max-w-[1020px] rounded-lg',
+                xl: 'max-w-[1240px] rounded-lg',
+                full: 'h-full rounded-lg',
                 bleed: 'h-full'
             },
             align: {
@@ -122,7 +124,9 @@ const headerOffsets: Record<SettingsModalSize, string> = {
     bleed: '-inset-x-10'
 };
 
-const SettingsModal = forwardRef<HTMLElement, SettingsModalProps>(({
+type SettingsModalContentProps = Omit<SettingsModalProps, 'onClose'> & {requestClose: () => void};
+
+const SettingsModalContent = forwardRef<HTMLElement, SettingsModalContentProps>(({
     'aria-label': ariaLabel,
     className,
     size = 'md',
@@ -146,6 +150,7 @@ const SettingsModal = forwardRef<HTMLElement, SettingsModalProps>(({
     onCancel,
     topRightContent,
     hideXOnMobile = false,
+    requestClose,
     afterClose,
     children,
     backDrop = true,
@@ -159,7 +164,6 @@ const SettingsModal = forwardRef<HTMLElement, SettingsModalProps>(({
     enableCMDS = true,
     allowBackgroundInteraction = false
 }, ref) => {
-    const modal = useModal();
     const {setGlobalDirtyState} = useGlobalDirtyState();
     const {confirm, dialogProps} = useDirtyConfirmation();
     const [animationFinished, setAnimationFinished] = useState(false);
@@ -169,7 +173,7 @@ const SettingsModal = forwardRef<HTMLElement, SettingsModalProps>(({
 
     const removeModal = () => {
         confirm(dirty, () => {
-            modal.remove();
+            requestClose();
             afterClose?.();
         });
     };
@@ -185,19 +189,24 @@ const SettingsModal = forwardRef<HTMLElement, SettingsModalProps>(({
                 return;
             }
 
-            if (activeElement instanceof HTMLElement) {
-                activeElement.blur();
-            }
-
             setTimeout(() => {
+                // Radix layers may handle Escape from a document listener that
+                // was registered after this modal. Wait until propagation is
+                // complete before deciding whether the modal should close.
+                if (event.defaultPrevented) {
+                    return;
+                }
+
+                if (activeElement instanceof HTMLElement && document.activeElement === activeElement) {
+                    activeElement.blur();
+                }
+
                 if (onCancel) {
                     onCancel();
                 } else {
                     removeModal();
                 }
             });
-
-            event.stopPropagation();
         };
 
         document.addEventListener('keydown', handleEscapeKey);
@@ -281,12 +290,12 @@ const SettingsModal = forwardRef<HTMLElement, SettingsModalProps>(({
                 <Box>{leftButton}</Box>
                 <Inline gap='md'>
                     {cancelLabel && (
-                        <Button className='font-semibold' data-testid='cancel-modal' disabled={buttonsDisabled} type='button' variant='ghost' onClick={onCancel || removeModal}>
+                        <Button data-testid='cancel-modal' disabled={buttonsDisabled} type='button' variant='outline' onClick={onCancel || removeModal}>
                             {cancelLabel}
                         </Button>
                     )}
                     {okLabel && (
-                        <Button className='min-w-20' data-testid='ok-modal' disabled={buttonsDisabled || okDisabled || okLoading} type='button' variant={okVariant} onClick={onOk}>
+                        <Button data-testid='ok-modal' disabled={buttonsDisabled || okDisabled || okLoading} type='button' variant={okVariant} onClick={onOk}>
                             {okLoading && <LoadingIndicator size='sm' />}
                             {okLabel}
                         </Button>
@@ -348,6 +357,22 @@ const SettingsModal = forwardRef<HTMLElement, SettingsModalProps>(({
             <DirtyConfirmDialog {...dialogProps} />
         </>
     );
+});
+
+SettingsModalContent.displayName = 'SettingsModalContent';
+
+const NiceSettingsModal = forwardRef<HTMLElement, Omit<SettingsModalContentProps, 'requestClose'>>((props, ref) => {
+    const modal = useModal();
+    return <SettingsModalContent ref={ref} {...props} requestClose={() => modal.remove()} />;
+});
+
+NiceSettingsModal.displayName = 'NiceSettingsModal';
+
+const SettingsModal = forwardRef<HTMLElement, SettingsModalProps>(({onClose, ...props}, ref) => {
+    if (onClose) {
+        return <SettingsModalContent ref={ref} {...props} requestClose={onClose} />;
+    }
+    return <NiceSettingsModal ref={ref} {...props} />;
 });
 
 SettingsModal.displayName = 'SettingsModal';

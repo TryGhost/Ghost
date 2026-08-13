@@ -2,7 +2,7 @@
 name: Shade tokens, not hex
 description: Use Shade semantic tokens (bg-background, text-foreground, border-border-default, bg-surface-elevated) — never hex, hsl(), or bg-gray-200-style raw palette utilities for UI chrome. Trigger when editing TSX/CSS in Shade-consuming apps.
 autoTrigger:
-  - fileEdit: "apps/{shade,admin,admin-x-settings,admin-x-framework,posts,stats,activitypub}/**/*.{tsx,css}"
+  - fileEdit: "apps/{shade,admin,admin-x-framework,activitypub}/**/*.{tsx,css}"
 ---
 
 # Shade tokens, not hex

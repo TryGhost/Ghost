@@ -1220,7 +1220,7 @@
                     "gift_link": "manage"
                 },
                 "Editor": {
-                    "notification": "all",
+                    "notification": ["browse", "destroy"],
                     "post": "all",
                     "setting": ["browse", "read"],
                     "slug": "all",
@@ -1257,7 +1257,7 @@
                     "recommendation": ["browse", "read"]
                 },
                 "Super Editor": {
-                    "notification": "all",
+                    "notification": ["browse", "destroy"],
                     "post": "all",
                     "setting": ["browse", "read"],
                     "slug": "all",

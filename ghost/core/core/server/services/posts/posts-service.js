@@ -312,6 +312,17 @@ class PostsService {
             });
         }
 
+        // The `comments.in_reply_to_id` references form chains between a post's
+        // comments, which MySQL cannot resolve while cascade-deleting them
+        // alongside `comments.parent_id`. Clear the references first so the
+        // `comments.post_id` cascade delete can do its job
+        await this.models.Post.bulkEdit(deleteIds, 'comments', {
+            data: {in_reply_to_id: null},
+            column: 'post_id',
+            transacting: options.transacting,
+            throwErrors: true
+        });
+
         // Posts and emails
         await this.models.Post.bulkDestroy(deleteEmailIds, 'emails', {transacting: options.transacting, throwErrors: true});
         const result = await this.models.Post.bulkDestroy(deleteIds, 'posts', {...options, throwErrors: true});

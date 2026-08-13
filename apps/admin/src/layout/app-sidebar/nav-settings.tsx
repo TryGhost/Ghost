@@ -25,9 +25,9 @@ function NavSettings({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
 
                     <NavMenuItem>
                         <NavMenuItem.Link
-                            to="https://ghost.org/help?utm_source=admin&utm_campaign=help"
-                            target="_blank"
                             rel="noopener noreferrer"
+                            target="_blank"
+                            to="https://ghost.org/help?utm_source=admin&utm_campaign=help"
                         >
                             <LucideIcon.HelpCircle />
                             <NavMenuItem.Label>Help</NavMenuItem.Label>

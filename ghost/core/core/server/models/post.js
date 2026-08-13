@@ -1006,8 +1006,8 @@ Post = ghostBookshelf.Model.extend({
      *     - `slug`: /:slug/
      *     - `published_at`: /:year/:slug
      *     - `author_id`: /:author/:slug, /:primary_author/:slug
-     *     - now, the UrlService pre-generates urls based on the resources
-     *     - you can ask `urlService.getUrlByResourceId(post.id)`
+     *     - now, the UrlService computes urls from the routing config
+     *     - you can ask `urlService.getUrlForResource(post)`
      *
      * ### events
      *   - you call `findAll` with `columns: id`
@@ -1346,7 +1346,16 @@ Post = ghostBookshelf.Model.extend({
     destroy: function destroy(unfilteredOptions) {
         let options = this.filterOptions(unfilteredOptions, 'destroy', {extraAllowedProperties: ['id']});
 
-        const destroyPost = () => {
+        const destroyPost = async () => {
+            // The `comments.in_reply_to_id` references form chains between a post's
+            // comments, which MySQL cannot resolve while cascade-deleting them
+            // alongside `comments.parent_id`. Clear the references first so the
+            // `comments.post_id` cascade delete can do its job
+            await ghostBookshelf.knex('comments')
+                .where('post_id', options.id)
+                .update('in_reply_to_id', null)
+                .transacting(options.transacting);
+
             return ghostBookshelf.Model.destroy.call(this, options);
         };
 

@@ -675,22 +675,52 @@ module.exports = {
             }
         },
         status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'active', validations: {isIn: [['active', 'archived']]}},
+        // The publisher's order for the list, rewritten across every row whenever the
+        // list is reordered. Only the relative order carries meaning: creates append past
+        // the highest rank and deletes leave gaps, so the values are not a dense
+        // sequence. The default leaves a site that has never reordered with one value
+        // repeated, so reads tie-break on created_at and fall back to the order the
+        // fields were created in.
+        sort_order: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true}
     },
     members_custom_field_values: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        custom_field_id: {type: 'string', maxlength: 24, nullable: false, references: 'members_custom_fields.id', cascadeDelete: true},
+        // The field's stable key, not its id: a value is addressed by key everywhere it
+        // matters (the write names it, a filter names it, the key is immutable), so the row
+        // carries it directly and the read and filter paths skip an id-to-key join. Matches
+        // the referenced column's 191, as a foreign key must.
+        custom_field_key: {type: 'string', maxlength: 191, nullable: false, references: 'members_custom_fields.key', cascadeDelete: true},
         member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', cascadeDelete: true},
-        // Exactly one value column is populated per row, chosen by the field
-        // type's storage type in @tryghost/custom-field-types, whose byte bound
-        // on long_text matches this column exactly.
+        // Which part of the field's value this row carries. A scalar has one part and
+        // stores it under the empty path; a composite stores one row per sub-field it
+        // fills, under that sub-field's key. Not nullable, because MySQL counts NULLs
+        // as distinct in a unique index and the constraint below would stop holding.
+        path: {type: 'string', maxlength: 191, nullable: false, defaultTo: ''},
+        // One row, one value: a part a member has not filled in has no row at all. The
+        // column stays nullable even so, because making it NOT NULL is only reachable
+        // through knex's dropNullable, which rewrites the column on MySQL and widens
+        // TEXT to MEDIUMTEXT — a migrated site would then accept sixteen megabytes in a
+        // column a fresh install bounds at 65,535 bytes. The bound matching long_text's
+        // exactly is worth more than the schema restating what the write path enforces.
         value_text: {type: 'text', maxlength: 65535, nullable: true},
-        value_json: {type: 'text', maxlength: 65535, nullable: true},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
+        // Named, because the name knex derives from the table and all three columns
+        // overruns MySQL's 64-character identifier limit. The migration that first
+        // created this table already shortened a column for the same reason; a third
+        // column spends what headroom that bought.
         '@@UNIQUE_CONSTRAINTS@@': [
-            ['member_id', 'custom_field_id']
+            {columns: ['member_id', 'custom_field_key', 'path'], indexName: 'members_custom_field_values_leaf_unique'}
+        ],
+        // What a segment filter looks up: every member holding a given value for a
+        // given part of a given field. The value itself is not in the index — it is
+        // TEXT, so MySQL would need a prefix length, and the schema's index builder
+        // applies one length to every column in a composite index rather than to a
+        // single chosen one.
+        '@@INDEXES@@': [
+            ['custom_field_key', 'path']
         ]
     },
     members_stripe_customers: {
@@ -1339,6 +1369,7 @@ module.exports = {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         automated_email_id: {type: 'string', maxlength: 24, nullable: true, references: 'welcome_email_automated_emails.id'},
         automation_action_revision_id: {type: 'string', maxlength: 24, nullable: true, references: 'automation_action_revisions.id'},
+        automation_run_step_id: {type: 'string', maxlength: 24, nullable: true, references: 'automation_run_steps.id'},
         member_id: {type: 'string', maxlength: 24, nullable: false, index: true},
         member_uuid: {type: 'string', maxlength: 36, nullable: false},
         member_email: {type: 'string', maxlength: 191, nullable: false},

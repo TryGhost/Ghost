@@ -40,6 +40,11 @@ function toWebhookMetadata(metadata) {
     return result;
 }
 
+function enableGiftCustomization() {
+    mockManager.mockLabsEnabled('giftSubCustomization');
+    mockManager.mockSetting('portal_plans', ['free', 'monthly', 'yearly']);
+}
+
 function addYears(date, years) {
     const nextDate = new Date(date);
     nextDate.setFullYear(nextDate.getFullYear() + years);
@@ -135,6 +140,7 @@ describe('Gift Subscriptions', function () {
     beforeEach(function () {
         mockManager.mockStripe();
         mockManager.mockMail();
+        mockManager.mockLabsDisabled('giftSubCustomization');
     });
 
     afterEach(async function () {
@@ -271,6 +277,139 @@ describe('Gift Subscriptions', function () {
             assert.equal(gift.get('status'), 'purchased');
         });
 
+        it('traces a customized 3-month gift from checkout through redemption and member access', async function () {
+            enableGiftCustomization();
+
+            const paidTier = await getPaidTier();
+            const buyerEmail = `gift-multi-month-buyer-${giftSequence + 1}@example.com`;
+            const redeemerEmail = `gift-multi-month-redeemer-${giftSequence + 1}@example.com`;
+            const expectedAmount = paidTier.monthly_price * 3;
+
+            await membersAgent.post('/api/create-stripe-checkout-session/')
+                .body({
+                    type: 'gift',
+                    tierId: paidTier.id,
+                    duration: 3,
+                    metadata: {}
+                })
+                .expectStatus(200);
+
+            const checkoutSession = getLatestCheckoutSession();
+
+            assert.equal(checkoutSession.metadata.cadence, 'month');
+            assert.equal(String(checkoutSession.metadata.duration), '3');
+            assert.equal(checkoutSession.metadata.tier_id, paidTier.id);
+            assert.ok(checkoutSession.success_url.includes('gift_duration=3'));
+
+            await stripeMocker.sendWebhook({
+                type: 'checkout.session.completed',
+                data: {
+                    object: {
+                        id: checkoutSession.id,
+                        mode: 'payment',
+                        amount_total: expectedAmount,
+                        currency: paidTier.currency.toLowerCase(),
+                        customer: checkoutSession.customer,
+                        customer_details: {email: buyerEmail},
+                        metadata: toWebhookMetadata(checkoutSession.metadata),
+                        payment_intent: `pi_gift_multi_month_${giftSequence + 1}`
+                    }
+                }
+            });
+
+            await DomainEvents.allSettled();
+
+            const gift = await models.Gift.findOne({
+                token: checkoutSession.metadata.gift_token
+            }, {require: true});
+
+            assert.equal(gift.get('cadence'), 'month');
+            assert.equal(gift.get('duration'), 3);
+            assert.equal(gift.get('amount'), expectedAmount);
+
+            const {body: redeemableBody} = await membersAgent
+                .get(`/api/gifts/${gift.get('token')}/redeem/`)
+                .expectStatus(200);
+
+            assert.equal(redeemableBody.gifts[0].duration, 3);
+            assert.equal(redeemableBody.gifts[0].amount, expectedAmount);
+
+            const redeemerAgent = membersAgent.duplicate();
+            await redeemerAgent.loginAs(redeemerEmail);
+
+            const {body: redeemedBody} = await redeemerAgent
+                .post(`/api/gifts/${gift.get('token')}/redeem/`)
+                .body({})
+                .expectStatus(200);
+
+            await DomainEvents.allSettled();
+            await gift.refresh();
+
+            const redeemer = await models.Member.findOne({email: redeemerEmail}, {
+                require: true,
+                withRelated: ['products']
+            });
+            const expectedConsumption = new Date(gift.get('redeemed_at'));
+            expectedConsumption.setMonth(expectedConsumption.getMonth() + 3);
+
+            assert.equal(redeemedBody.gifts[0].duration, 3);
+            assert.equal(redeemer.get('status'), 'gift');
+            assert.equal(redeemer.related('products').models[0].id, paidTier.id);
+            assert.equal(gift.get('consumes_at').toISOString(), expectedConsumption.toISOString());
+
+            mockManager.assert.sentEmail({
+                subject: /gift subscription purchased/i,
+                to: 'jbloggs@example.com'
+            });
+            mockManager.assert.sentEmail({
+                subject: /your gift is ready/i,
+                to: buyerEmail
+            });
+            mockManager.assert.sentEmail({
+                subject: /gift subscription redeemed/i,
+                to: 'jbloggs@example.com'
+            });
+            mockManager.assert.sentEmailCount(3);
+        });
+
+        it('rejects unsupported, malformed, conflicting and non-paid customized gift offers', async function () {
+            enableGiftCustomization();
+
+            for (const request of [
+                {duration: 2},
+                {duration: '3'},
+                {duration: 3, cadence: 'year'}
+            ]) {
+                await expectGiftCheckoutError(request);
+            }
+
+            const freeTier = await models.Product.findOne({type: 'free'}, {require: true});
+            await expectGiftCheckoutError({
+                tierId: freeTier.id,
+                duration: 3
+            });
+        });
+
+        it('keeps legacy cadence-only gift checkout compatible when customization is enabled', async function () {
+            mockManager.mockLabsEnabled('giftSubCustomization');
+            // legacy clients predate the Portal plan gate, so a disabled yearly plan must not block them
+            mockManager.mockSetting('portal_plans', ['free', 'monthly']);
+            const paidTier = await getPaidTier();
+
+            await membersAgent.post('/api/create-stripe-checkout-session/')
+                .body({
+                    type: 'gift',
+                    tierId: paidTier.id,
+                    cadence: 'year',
+                    metadata: {}
+                })
+                .expectStatus(200);
+
+            const checkoutSession = getLatestCheckoutSession();
+            assert.equal(checkoutSession.metadata.cadence, 'year');
+            assert.equal(String(checkoutSession.metadata.duration), '1');
+        });
+
         it('Includes gift token in the purchase success URL', async function () {
             const paidTier = await getPaidTier();
 
@@ -343,14 +482,16 @@ describe('Gift Subscriptions', function () {
     });
 
     describe('Refund a gift', function () {
-        it('Marks gift as refunded when Stripe charge.refunded webhook is received', async function () {
+        it('Marks a multi-month gift as refunded when Stripe charge.refunded webhook is received', async function () {
+            enableGiftCustomization();
             const paidTier = await getPaidTier();
+            const expectedAmount = paidTier.monthly_price * 3;
 
             await membersAgent.post('/api/create-stripe-checkout-session/')
                 .body({
                     type: 'gift',
                     tierId: paidTier.id,
-                    cadence: 'month',
+                    duration: 3,
                     metadata: {}
                 })
                 .expectStatus(200);
@@ -365,7 +506,7 @@ describe('Gift Subscriptions', function () {
                     object: {
                         id: checkoutSession.id,
                         mode: 'payment',
-                        amount_total: paidTier.monthly_price,
+                        amount_total: expectedAmount,
                         currency: paidTier.currency.toLowerCase(),
                         customer: checkoutSession.customer,
                         customer_details: {email: 'refund-buyer@example.com'},
@@ -383,6 +524,8 @@ describe('Gift Subscriptions', function () {
             }, {require: true});
 
             assert.equal(gift.get('status'), 'purchased');
+            assert.equal(gift.get('duration'), 3);
+            assert.equal(gift.get('amount'), expectedAmount);
 
             // Send charge.refunded webhook
             await stripeMocker.sendWebhook({
@@ -1067,7 +1210,7 @@ describe('Gift Subscriptions', function () {
     describe('Continue a gift subscription as paid subscription', function () {
         let continueSequence = 0;
 
-        async function setupGiftMember({cadence = 'year', consumesInDays = 30, tierId, giftTierId} = {}) {
+        async function setupGiftMember({cadence = 'year', duration = 1, consumesInDays = 30, tierId, giftTierId} = {}) {
             continueSequence += 1;
             const paidTier = await getPaidTier();
             const effectiveTierId = tierId ?? paidTier.id;
@@ -1087,7 +1230,7 @@ describe('Gift Subscriptions', function () {
                 redeemer_member_id: member.id,
                 tier_id: effectiveGiftTierId,
                 cadence,
-                duration: 1,
+                duration,
                 currency: 'usd',
                 amount: 5000,
                 stripe_checkout_session_id: `cs_gift_continue_${continueSequence}`,
@@ -1113,7 +1256,7 @@ describe('Gift Subscriptions', function () {
         }
 
         it('applies remaining gift days as trial and continues to checkout on the same tier/cadence', async function () {
-            const {identityToken, gift, paidTier} = await setupGiftMember({cadence: 'month', consumesInDays: 30});
+            const {identityToken, gift, paidTier} = await setupGiftMember({cadence: 'month', duration: 3, consumesInDays: 30});
 
             await membersAgent.post('/api/create-stripe-checkout-session/')
                 .body({

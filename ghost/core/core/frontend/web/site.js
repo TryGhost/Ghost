@@ -69,7 +69,6 @@ module.exports = function setupSiteApp(routerConfig) {
     servePublicFiles(siteApp);
 
     const settingsCache = require('../../shared/settings-cache');
-    const labs = require('../../shared/labs');
     const routing = require('../services/routing');
     const {api} = require('../services/proxy');
     const {createLlmsService} = require('../services/llms/service');
@@ -78,7 +77,6 @@ module.exports = function setupSiteApp(routerConfig) {
 
     const llmsService = createLlmsService({
         settingsCache,
-        labs,
         config,
         urlUtils,
         routing,
@@ -93,7 +91,7 @@ module.exports = function setupSiteApp(routerConfig) {
         settingsCache
     });
 
-    siteApp.use(createLlmsDiscovery({settingsCache, labs}));
+    siteApp.use(createLlmsDiscovery({settingsCache}));
 
     // Serve site images using the storage adapter
     siteApp.use(STATIC_IMAGE_URL_PREFIX, mw.handleImageSizes, adapterManager.getAdapter('storage:images').serve());

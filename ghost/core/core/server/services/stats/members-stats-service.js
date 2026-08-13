@@ -111,13 +111,6 @@ class MembersStatsService {
         const startDateMoment = moment.utc(startDate).startOf('day');
         const endDateMoment = moment.utc(today).startOf('day');
         
-        // Create a map of events by date for fast lookup
-        const eventsMap = new Map();
-        rows.forEach((row) => {
-            const date = moment(row.date).format('YYYY-MM-DD');
-            eventsMap.set(date, row);
-        });
-
         // Sort rows chronologically to calculate historical totals
         rows.sort((a, b) => moment(a.date).valueOf() - moment(b.date).valueOf());
 

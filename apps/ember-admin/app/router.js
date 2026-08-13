@@ -9,8 +9,6 @@ const Router = EmberRouter.extend({
 
 // eslint-disable-next-line array-callback-return
 Router.map(function () {
-    this.route('home', {path: '/'});
-
     this.route('setup');
 
     this.route('signin');
@@ -20,8 +18,6 @@ Router.map(function () {
     this.route('reset', {path: '/reset/:token'});
 
     this.route('site');
-    this.route('dashboard');
-    this.route('launch');
 
     this.route('pro', function () {
         this.route('pro-sub', {path: '/*sub'});
@@ -62,8 +58,6 @@ Router.map(function () {
     this.route('members-activity');
 
     this.route('react-fallback', {path: '/*path'});
-
-    this.route('designsandbox');
 });
 
 export default Router;

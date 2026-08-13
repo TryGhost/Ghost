@@ -9,7 +9,7 @@ test.describe('Ghost Admin - Portal Settings', () => {
         await settingsPage.goto();
         await settingsPage.portalSection.openCustomizeModal();
 
-        const portalUrl = await settingsPage.portalSection.getLinkValue('Default:');
+        const portalUrl = await settingsPage.portalSection.getLinkValue('Default');
         await page.goto(portalUrl);
 
         const portalPage = new PortalPage(page);

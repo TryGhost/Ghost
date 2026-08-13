@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { page } from "vitest/browser";
+import { page, userEvent } from "vitest/browser";
 
 import {
     configResponse,
@@ -115,6 +115,22 @@ describe("Theme settings", () => {
         expect(deleteApi.requests).toHaveLength(1);
     });
 
+    it("closes an installed-theme menu with Escape without closing the theme modal", async () => {
+        fakeThemeWorld();
+        await renderAdminApp("/settings/design/change-theme");
+
+        const modal = settingsScreen.themeModal();
+        await modal.getByRole("tab", { name: "Installed" }).click();
+        await installedTheme("casper").getByRole("button", { name: "Menu" }).click();
+        await expect.element(settingsScreen.menuItem("Download")).toBeVisible();
+
+        await userEvent.keyboard("{Escape}");
+
+        await expect(settingsScreen.menuItem("Download")).toHaveCount(0);
+        await expect.element(modal).toBeVisible();
+        await expect.poll(currentRoute).toBe("/settings/design/change-theme");
+    });
+
     it("uploads a theme archive", async () => {
         fakeThemeWorld();
         const uploaded = theme({ name: "mytheme" });
@@ -225,7 +241,10 @@ describe("Theme settings", () => {
         fakeThemeWorld();
         await fakeThemeDownload("casper");
         await fakeThemeDownload("casper-edited");
-        const uploadApi = fakeAdminEndpoint("POST", "/themes/upload/", { themes: [theme({ name: "casper-edited" })] });
+        // saving under a new name carries over the original theme's settings
+        const uploadApi = fakeAdminEndpoint("POST", "/themes/upload/?copy_settings_from=casper", {
+            themes: [theme({ name: "casper-edited" })],
+        });
         await renderAdminApp("/settings/theme/edit/casper");
 
         const editor = await editorTextbox();

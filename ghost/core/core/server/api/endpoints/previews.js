@@ -82,7 +82,7 @@ const controller = {
             await _addMemberContextToFrame(frame);
 
             // previews has no input serializer, so the URL force-load happens here
-            urlSerializerUtils.forceUrlRelationsWhenLazy(frame, 'posts');
+            urlSerializerUtils.forceUrlRelations(frame, 'posts');
 
             const model = await models.Post.findOne(Object.assign({status: 'all'}, frame.data), frame.options);
             if (!model) {

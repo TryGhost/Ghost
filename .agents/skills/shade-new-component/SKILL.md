@@ -25,7 +25,6 @@ Before marking a Shade component or pattern done, this checklist must pass.
 | Component | `Components / <Name>` |
 | Recipe | `Recipes / <Name>` |
 | Pattern | `Patterns / <Name>` |
-| Posts–Stats interim | `Posts–Stats / <Name>` |
 | Token gallery | `Tokens / <Topic>` |
 
 Required on every story file:

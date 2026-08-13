@@ -56,17 +56,16 @@ const Content = () => {
     const showMainForm = canComment;
     const showDisabledBox = !canComment && isCommentingDisabled;
     const showCtaBox = !canComment && !isCommentingDisabled;
-    const useThreading = !!labs.commentsThreads;
     const focusedThread = useMemo(() => (
-        useThreading ? getFocusedThread(comments, commentIdFromHash, maxThreadDepth) : null
-    ), [comments, commentIdFromHash, maxThreadDepth, useThreading]);
+        getFocusedThread(comments, commentIdFromHash, maxThreadDepth)
+    ), [comments, commentIdFromHash, maxThreadDepth]);
 
     const navActions = useCommentNavigation({
         containerRef,
         focusedThread
     });
 
-    const commentsComponents = comments.map(comment => <Comment key={comment.id} comment={comment} useThreading={useThreading} />);
+    const commentsComponents = comments.map(comment => <Comment key={comment.id} comment={comment} />);
 
     const content = focusedThread ? (
         <>

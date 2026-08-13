@@ -39,7 +39,7 @@
     --text-tertiary: var(--color-gray-400);
     --text-inverse: var(--color-white);
     --border-subtle: var(--color-gray-200);
-    --border-default: var(--color-gray-200);
+    --border-default: color-mix(in oklab, var(--color-gray-200), var(--color-gray-300));
     --border-strong: var(--color-gray-500);
     --focus-ring: var(--color-gray-600);
     --state-info: var(--color-blue-500);
@@ -81,7 +81,9 @@
     --button-hover: var(--color-gray-100);
     --interactive-hover: var(--button-hover);
     --control-surface: var(--surface-elevated);
-    --control-border: var(--color-gray-200);
+    --control-readonly-surface: var(--color-gray-50);
+    --control-disabled-surface: var(--color-gray-100);
+    --control-border: color-mix(in oklab, var(--color-gray-200), var(--color-gray-300));
     --table-row-hover: var(--color-gray-50);
     --members-sticky-hover-bg: var(--table-row-hover);
     --mobile-navbar-height: 64px;
@@ -120,6 +122,8 @@
     --button-hover: color-mix(in oklab, var(--color-gray-900) 30%, transparent);
     --interactive-hover: var(--button-hover);
     --control-surface: transparent;
+    --control-readonly-surface: var(--color-gray-950);
+    --control-disabled-surface: var(--color-gray-950);
     --control-border: color-mix(in oklab, var(--color-gray-900) 70%, transparent);
     --table-row-hover: var(--color-sidebar-bg);
     --members-sticky-hover-bg: var(--table-row-hover);

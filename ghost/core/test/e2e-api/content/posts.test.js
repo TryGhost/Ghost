@@ -214,6 +214,18 @@ describe('Posts Content API', function () {
             .matchBodySnapshot();
     });
 
+    it('Can request the url of a single post with a narrowed fields list', async function () {
+        // `findOne` drops the primary key when `?fields` omits it, and the URL
+        // is looked up by id — so without the serializer forcing it back in,
+        // the post serializes /404/ instead of its own URL.
+        const {body} = await agent
+            .get('posts/slug/welcome/?fields=title,url')
+            .expectStatus(200);
+
+        assert.doesNotMatch(body.posts[0].url, /\/404\//);
+        assert.deepEqual(Object.keys(body.posts[0]).sort(), ['slug', 'title', 'url']);
+    });
+
     it('Can include relations', async function () {
         await agent
             .get('posts/?include=tags,authors')

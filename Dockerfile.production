@@ -82,6 +82,7 @@ RUN cd /home/ghost && node -e "require('better-sqlite3'); console.log('better-sq
 FROM node:$NODE_VERSION-bookworm-slim AS core
 
 ENV NODE_ENV=production
+ENV NODE_COMPILE_CACHE=/home/ghost/.compile-cache
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends libjemalloc2 fontconfig && \

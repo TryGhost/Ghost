@@ -400,7 +400,7 @@ describe('{{ghost_head}} helper', function () {
     });
 
     beforeEach(function () {
-        sinon.stub(urlService, 'getUrlByResourceId').returns('https://mysite.com/fakeauthor/');
+        sinon.stub(urlService, 'getUrlForResource').returns('https://mysite.com/fakeauthor/');
 
         // @TODO: this is a LOT of mocking :/
         routingRegistryGetRssUrlStub = sinon.stub(routing.registry, 'getRssUrl').returns('http://localhost:65530/rss/');

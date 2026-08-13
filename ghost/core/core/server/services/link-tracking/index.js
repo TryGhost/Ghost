@@ -5,6 +5,13 @@ const urlUtils = require('../../../shared/url-utils').default;
 
 class LinkTrackingServiceWrapper {
     #initPromise;
+    #automationsApi;
+
+    constructor({
+        automationsApi = require('../automations/automations-api')
+    } = {}) {
+        this.#automationsApi = automationsApi;
+    }
 
     async init() {
         if (this.service) {
@@ -57,7 +64,9 @@ class LinkTrackingServiceWrapper {
             linkClickRepository,
             postLinkRepository,
             DomainEvents,
-            urlUtils
+            urlUtils,
+            automationsApi: this.#automationsApi,
+            runInTransaction: callback => models.Base.transaction(callback)
         });
 
         await service.init();

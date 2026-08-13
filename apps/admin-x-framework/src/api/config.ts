@@ -90,6 +90,16 @@ export type Config = {
                 logoDark?: string // Logo shown in dark mode, falls back to logo
                 logoAlt?: string // Alt text for the logo
             }
+            // Search entries for billing paths, defined in host config (hostSettings.billing.search: {})
+            search?: {
+                groupName?: string
+                items?: {
+                    id?: string
+                    title?: string
+                    path?: string
+                    keywords?: string
+                }[]
+            }
         },
         pintura?: {
             js?: string

@@ -7,7 +7,8 @@ import {
     CardFooter,
     CardTitle,
     CardDescription,
-    CardContent
+    CardContent,
+    EmptyCard
 } from '../../../../src/components/ui/card';
 import {render} from '../../utils/test-utils';
 
@@ -18,7 +19,7 @@ describe('Card Components', () => {
 
         assert.ok(card, 'Card should be rendered');
         assert.equal(card.textContent, 'Card Content', 'Card should render its content');
-        assert.ok(card.className.includes('rounded-xl border'), 'Should have outline variant styling');
+        assert.ok(card.className.includes('rounded-xl border border-border-default'), 'Should have outline variant styling');
     });
 
     it('renders Card with plain variant', () => {
@@ -34,6 +35,13 @@ describe('Card Components', () => {
         const card = screen.getByTestId('card');
 
         assert.ok(card.className.includes('custom-card-class'), 'Should have custom class');
+    });
+
+    it('renders EmptyCard with the default container border', () => {
+        render(<EmptyCard data-testid="empty-card">Empty Card</EmptyCard>);
+
+        const card = screen.getByTestId('empty-card');
+        assert.ok(card.className.includes('border border-border-default'), 'Should use the default container border');
     });
 
     it('renders CardHeader with correct styling based on Card variant', () => {
@@ -57,7 +65,7 @@ describe('Card Components', () => {
         );
 
         const header = screen.getByTestId('card-header');
-        assert.ok(header.className.includes('border-b py-5'), 'Should have plain variant styling');
+        assert.ok(header.className.includes('border-b border-border-default py-5'), 'Should have plain variant styling');
     });
 
     it('renders CardTitle with correct styling', () => {
@@ -99,7 +107,7 @@ describe('Card Components', () => {
         );
 
         const content = screen.getByTestId('card-content');
-        assert.ok(content.className.includes('border-b'), 'Should have plain variant styling');
+        assert.ok(content.className.includes('border-b border-border-default'), 'Should have plain variant styling');
     });
 
     it('renders CardFooter with correct styling based on Card variant', () => {

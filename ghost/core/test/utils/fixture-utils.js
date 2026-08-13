@@ -716,7 +716,7 @@ const fixtures = {
 
     insertEmailsAndRecipients: async function insertEmailsAndRecipients(withFailed = false) {
         // NOTE: This require touches the database, so it can't be done at the top of the file as test setup is being performed.
-        const emailAnalyticsQueries = require('../../core/server/services/email-analytics/lib/queries');
+        const {queries: emailAnalyticsQueries} = require('../../core/server/services/email-analytics/lib/queries');
 
         for (const email of _.cloneDeep(DataGenerator.forKnex.emails)) {
             await models.Email.add(email, context.internal);

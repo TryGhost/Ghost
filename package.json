@@ -62,8 +62,11 @@
     "docker:rebase": "git fetch ${GHOST_UPSTREAM:-origin} main && git rebase ${GHOST_UPSTREAM:-origin}/main && pnpm install && pnpm nx run-many -t build --projects=@tryghost/shade,@tryghost/admin-x-framework && docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} up -d --build --force-recreate ghost-dev",
     "knip": "knip",
     "knip:fix": "knip --fix --allow-remove-files=false",
-    "lint": "pnpm nx run-many -t lint lint:boundaries",
+    "lint": "pnpm nx run-many -t lint lint:boundaries && pnpm lint:packages && pnpm lint:docs",
+    "lint:agent-skills": "node scripts/check-agent-skill-links.js",
     "lint:boundaries": "depcruise ghost/core/core apps --config .dependency-cruiser.cjs",
+    "lint:packages": "node scripts/check-internal-packages.js",
+    "lint:docs": "pnpm lint:agent-skills",
     "check": "pnpm lint && pnpm test",
     "test": "pnpm nx run-many -t test --exclude @tryghost/e2e --exclude ghost-admin",
     "test:unit": "pnpm nx run-many -t test:unit",
@@ -119,7 +122,7 @@
       "docker:up": {
         "executor": "nx:run-commands",
         "options": {
-          "command": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} up -d --force-recreate --wait --quiet-pull"
+          "command": "if [ -n \"$CODESPACES$REMOTE_CONTAINERS\" ]; then echo 'Skipping docker compose up --force-recreate: already running inside a devcontainer, whose own compose lifecycle brought these services up.'; else docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} up -d --force-recreate --wait --quiet-pull; fi"
         },
         "dependsOn": [
           "docker:build"
@@ -134,7 +137,7 @@
       "docker:build": {
         "executor": "nx:run-commands",
         "options": {
-          "command": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} build"
+          "command": "if [ -n \"$CODESPACES$REMOTE_CONTAINERS\" ]; then echo 'Skipping docker compose build: already running inside a devcontainer, whose own compose lifecycle built/pulled these images.'; else docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} build; fi"
         }
       },
       "docker:dev": {

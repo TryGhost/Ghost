@@ -87,6 +87,21 @@ describe('parse', function () {
         assert.deepEqual(result[1], {id: '2', email: 'test@example.com', nombre: 'test'});
     });
 
+    // The only way a caller can exclude a column: leaving it out of the mapping carries it
+    // through under its own header instead, which for a custom_fields.* column means
+    // importing it. Admin's import mapping relies on this to honour a deselected column.
+    it('drops a column the mapping gives an empty target', async function () {
+        const result = await parse(csvPath + 'two-columns-mapping-header.csv', {
+            id: 'id',
+            correo_electronico: 'email',
+            nombre: ''
+        });
+
+        assert.equal(result.length, 2);
+        assert.deepEqual(result[0], {id: '1', email: 'jbloggs@example.com'});
+        assert.deepEqual(result[1], {id: '2', email: 'test@example.com'});
+    });
+
     it('leaves cell values as raw strings -- coercion is the schema\'s job', async function () {
         const result = await parse(csvPath + 'subscribed-to-emails-header.csv', {
             email: 'email',

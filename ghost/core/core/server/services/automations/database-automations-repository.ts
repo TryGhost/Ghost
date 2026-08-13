@@ -4,7 +4,6 @@ import crypto from 'node:crypto';
 import ObjectId from 'bson-objectid';
 import {dequal} from 'dequal';
 import {type Knex} from 'knex';
-import moment from 'moment';
 // @ts-expect-error This module currently lacks type definitions.
 import lexicalLib from '../../lib/lexical';
 import urlUtils from '../../../shared/url-utils';
@@ -22,11 +21,11 @@ import type {
     EditAutomationData,
     Page
 } from './automations-repository';
+import {fromDatabaseDate, toDatabaseDate, type DatabaseDate} from './database-date';
 import {getStaleLockCutoff} from './stale-lock-cutoff';
 import type {ExclusifyUnion, ReadonlyDeep} from 'type-fest';
 
 const HOUR_MS = 60 * 60 * 1000;
-const DATABASE_DATE_FORMAT = 'YYYY-MM-DD HH:mm:ss';
 const DEFAULT_WELCOME_EMAIL_AUTOMATIONS = [{
     name: 'Free member welcome flow',
     slug: MEMBER_WELCOME_EMAIL_SLUGS.free
@@ -49,13 +48,10 @@ interface AutomationRow {
     slug: string;
     name: string;
     status: string;
-    created_at: string;
-    updated_at: string;
+    created_at: DatabaseDate;
+    updated_at: DatabaseDate;
 }
 
-function toDatabaseDate(date: Date | string): string {
-    return moment(date).format(DATABASE_DATE_FORMAT);
-}
 
 interface ActionRow {
     id: string;
@@ -73,9 +69,14 @@ type ActionStatsRow = {
     email_opened_count: number | null;
 };
 
+type ActionLinkRow = {
+    url: string;
+    clicked_count: string | number;
+};
+
 type ActionRevisionRow = {
     action_id: string;
-    created_at: string;
+    created_at: DatabaseDate;
     wait_hours: number | null;
     email_subject: string | null;
     email_lexical: string | null;
@@ -107,7 +108,7 @@ type StepToRunRow = {
     action_id: string;
     automation_action_revision_id: string;
     type: string;
-    ready_at: string;
+    ready_at: DatabaseDate;
     step_attempts: number;
     wait_hours: number | null;
     email_subject: string | null;
@@ -167,6 +168,37 @@ export function createDatabaseAutomationsRepository({
 
                 return await buildAutomation(trx, automation);
             });
+        },
+
+        async getAutomationActionLinks(automationId, actionId) {
+            const action = await knex('automation_actions')
+                .select('id')
+                .where({
+                    id: actionId,
+                    automation_id: automationId
+                })
+                .whereNull('deleted_at')
+                .first();
+
+            if (!action) {
+                return null;
+            }
+
+            const rows = await knex('redirects as redirects')
+                .countDistinct({clicked_count: 'members_click_events.member_id'})
+                .select<ActionLinkRow[]>(knex.raw('MIN(??) as ??', ['redirects.to', 'url']))
+                .innerJoin('automation_action_revisions as revisions', 'revisions.id', 'redirects.automation_action_revision_id')
+                .leftJoin('members_click_events', 'members_click_events.redirect_id', 'redirects.id')
+                .where('revisions.action_id', actionId)
+                .whereNotNull('redirects.to_hash')
+                .groupBy('redirects.to_hash')
+                .orderBy('clicked_count', 'desc')
+                .orderBy('url', 'asc');
+
+            return rows.map(row => ({
+                url: urlUtils.transformReadyToAbsolute(row.url),
+                clicked_count: Number(row.clicked_count)
+            }));
         },
 
         async edit(id: string, data: EditAutomationData): Promise<Automation | null> {
@@ -244,6 +276,7 @@ export function createDatabaseAutomationsRepository({
                     member_email: options.memberEmail,
                     member_name: options.memberName,
                     automation_action_revision_id: options.automationActionRevisionId,
+                    automation_run_step_id: options.automationRunStepId,
                     ...(options.mailgunMessageId ? {mailgun_message_id: options.mailgunMessageId} : {}),
                     track_clicks: options.trackClicks,
                     track_opens: options.trackOpens,
@@ -269,6 +302,15 @@ export function createDatabaseAutomationsRepository({
             }
 
             await knex.transaction(async (trx) => {
+                const revisionIds = new Set<string>();
+                for (const {openedAt, automationActionRevisionId} of eventsByAutomatedEmailRecipientId.values()) {
+                    if (openedAt) {
+                        revisionIds.add(automationActionRevisionId);
+                    }
+                }
+
+                const orderedRevisionIds = await lockActionRevisions(trx, revisionIds);
+
                 const notYetOpened = await lockNotYetOpened(trx, eventsByAutomatedEmailRecipientId);
                 const newOpensPerRevision = new Map<string, number>();
 
@@ -295,11 +337,11 @@ export function createDatabaseAutomationsRepository({
                     }
                 }
 
-                // Keep lock acquisition order consistent across concurrent transactions to avoid deadlocks.
-                const revisions = [...newOpensPerRevision.entries()]
-                    .sort(([left], [right]) => left.localeCompare(right));
-
-                for (const [id, opens] of revisions) {
+                for (const id of orderedRevisionIds) {
+                    const opens = newOpensPerRevision.get(id);
+                    if (!opens) {
+                        continue;
+                    }
                     await trx('automation_action_revisions')
                         .where({id})
                         .update({
@@ -307,8 +349,75 @@ export function createDatabaseAutomationsRepository({
                         });
                 }
             });
+        },
+
+        async trackEmailClicked({automationActionRevisionId, automationRunStepId, memberId, clickedAt}, {transacting} = {}) {
+            const trackClick = async (trx: Knex.Transaction) => {
+                await lockActionRevisions(trx, [automationActionRevisionId]);
+
+                const recipient = await trx('automated_email_recipients')
+                    .select('id', 'clicked_at')
+                    .where({
+                        automation_action_revision_id: automationActionRevisionId,
+                        automation_run_step_id: automationRunStepId,
+                        member_id: memberId,
+                        track_clicks: true
+                    })
+                    .forUpdate()
+                    .first();
+
+                if (!recipient || recipient.clicked_at !== null) {
+                    return;
+                }
+
+                const updated = await trx('automated_email_recipients')
+                    .where({id: recipient.id})
+                    .whereNull('clicked_at')
+                    .update({clicked_at: clickedAt});
+
+                if (updated === 0) {
+                    return;
+                }
+
+                await trx('automation_action_revisions')
+                    .where({id: automationActionRevisionId})
+                    .update({
+                        email_clicked_count: trx.raw('COALESCE(email_clicked_count, 0) + 1')
+                    });
+
+            };
+
+            if (transacting) {
+                await trackClick(transacting);
+                return;
+            }
+
+            await knex.transaction(trackClick);
         }
     };
+}
+
+/**
+ * Lock revisions before recipients because inserting a recipient takes a shared
+ * foreign-key lock on its revision. Updating that revision later can deadlock
+ * with another transaction that has already locked the revision and is waiting
+ * for the recipient. Keep multi-revision lock acquisition deterministic.
+ */
+async function lockActionRevisions(
+    trx: Knex.Transaction,
+    revisionIds: Iterable<string>
+): Promise<string[]> {
+    const sortedRevisionIds = [...new Set(revisionIds)]
+        .sort((left, right) => left.localeCompare(right));
+
+    if (sortedRevisionIds.length > 0) {
+        await trx('automation_action_revisions')
+            .select('id')
+            .whereIn('id', sortedRevisionIds)
+            .forUpdate();
+    }
+
+    return sortedRevisionIds;
 }
 
 /**
@@ -600,14 +709,14 @@ async function findNextPendingReadyAt(trx: Knex.Transaction, staleLockCutoff: Re
         })
         .orderBy('ready_at')
         .first();
-    return row?.next_ready_at ? new Date(row.next_ready_at) : null;
+    return row?.next_ready_at ? fromDatabaseDate(row.next_ready_at) : null;
 }
 
 function buildStepToRun(row: ReadonlyDeep<StepToRunRow>): AutomationStepToRun {
     const base = {
         id: row.id,
         step_attempts: row.step_attempts,
-        ready_at: new Date(row.ready_at),
+        ready_at: fromDatabaseDate(row.ready_at),
         locked_by: row.locked_by,
         automation_run_id: row.automation_run_id,
         automation_id: row.automation_id,
@@ -1150,13 +1259,13 @@ async function insertActionRevisions(
     );
 }
 
-function getNextRevisionCreatedAt(latestCreatedAt: string | null, requestedCreatedAt: string) {
+function getNextRevisionCreatedAt(latestCreatedAt: DatabaseDate | null, requestedCreatedAt: string) {
     if (!latestCreatedAt) {
         return toDatabaseDate(requestedCreatedAt);
     }
 
-    const requestedTime = new Date(requestedCreatedAt).getTime();
-    const latestTime = new Date(latestCreatedAt).getTime();
+    const requestedTime = fromDatabaseDate(requestedCreatedAt).getTime();
+    const latestTime = fromDatabaseDate(latestCreatedAt).getTime();
 
     if (requestedTime > latestTime) {
         return toDatabaseDate(requestedCreatedAt);
@@ -1246,8 +1355,8 @@ function buildAutomationSummary(automation: AutomationRow): AutomationSummary {
     };
 }
 
-function serializeDate(date: string) {
-    const normalizedDate = new Date(date);
+function serializeDate(date: DatabaseDate) {
+    const normalizedDate = fromDatabaseDate(date);
     normalizedDate.setMilliseconds(0);
     return normalizedDate.toISOString();
 }

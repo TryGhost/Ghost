@@ -7,5 +7,14 @@
 
         Setting `disableAnalytics` to true will prevent any data from being sent.
     */
-    "disableAnalytics": true
+    "disableAnalytics": true,
+
+    /**
+        Default to Node's native FS watcher instead of Watchman. Watchman
+        repeatedly trips its "MustScanSubDirs UserDropped" recrawl warning
+        in this monorepo (Docker bind mounts + Vite dev writes), spamming
+        ~6 lines per rebuild. The node watcher is quieter and good enough
+        for our tree size.
+    */
+    "watcher": "node"
 }

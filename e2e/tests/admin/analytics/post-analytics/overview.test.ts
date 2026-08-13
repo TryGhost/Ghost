@@ -1,18 +1,23 @@
 import {
-    AnalyticsOverviewPage,
     PostAnalyticsGrowthPage,
+    PostAnalyticsOverviewPage,
     PostAnalyticsPage,
     PostAnalyticsWebTrafficPage
 } from '@/admin-pages';
 import {SettingsService} from '@/helpers/services/settings/settings-service';
+import {createPostFactory} from '@/data-factory';
 import {expect, test} from '@/helpers/playwright';
 
 test.describe('Ghost Admin - Post Analytics - Overview', () => {
     test.beforeEach(async ({page}) => {
-        const analyticsOverviewPage = new AnalyticsOverviewPage(page);
-        await analyticsOverviewPage.goto();
+        const postFactory = createPostFactory(page.request);
+        const post = await postFactory.create({
+            title: 'Post analytics overview test',
+            status: 'published'
+        });
 
-        await analyticsOverviewPage.latestPost.analyticsButton.click();
+        const postAnalyticsOverviewPage = new PostAnalyticsOverviewPage(page);
+        await postAnalyticsOverviewPage.gotoForPost(post.id);
     });
 
     test('empty page with all tabs', async ({page}) => {

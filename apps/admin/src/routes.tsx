@@ -11,11 +11,14 @@ import MyProfileRedirect from "./my-profile-redirect";
 // Ember
 import { EmberFallback, ForceUpgradeGuard } from "./ember-bridge";
 import type { RouteHandle } from "./ember-bridge";
+import HomeRedirect from "./home-redirect";
 import { EmberListWithGiftLinks } from "./gift-link-modal-host";
 import { MemberDetailGate } from "./member-detail-gate";
+import { TagDetailGate } from "./tag-detail-gate";
 import { OnboardingRedirect } from "./onboarding/onboarding-redirect";
 import { type AccessRouteHandle, RouteAccessGuard } from "./route-access-guard";
 import { canAccessSettingsRoute } from "./settings/settings-access";
+import { settingsRouteChildren } from "./settings/routes";
 import { canManageAutomations, canManageMembers, canManageTags } from "@tryghost/admin-x-framework/api/users";
 
 import { NotFound } from "./not-found";
@@ -23,26 +26,19 @@ import { NotFound } from "./not-found";
 // Routes handled by the Ember admin app. React delegates these to Ember via
 // EmberFallback. When migrating a route to React, remove its entry from here.
 const EMBER_ROUTES: string[] = [
-    "/",
-    "/dashboard",
     "/site",
-    "/launch",
     "/setup",
     "/signin/*",
     "/signout",
     "/signup/*",
     "/reset/*",
     "/pro/*",
-    "/posts/analytics/:postId/mentions",
     "/posts/analytics/:postId/debug",
     "/restore",
     "/editor/*",
-    "/tags/new",
     "/explore/*",
     "/migrate/*",
     "/members-activity",
-    "/designsandbox",
-    "/mentions",
 ];
 
 const emberFallbackHandle = { allowInForceUpgrade: true } satisfies RouteHandle;
@@ -82,6 +78,18 @@ const membersRoute: RouteObject = {
 
 const appRoutes: RouteObject[] = [
     {
+        // Role-based landing dispatch, including the hosted-signup
+        // `/?firstStart=true` onboarding entry.
+        path: "/",
+        Component: HomeRedirect,
+        handle: { allowInForceUpgrade: true } satisfies RouteHandle,
+    },
+    {
+        // The dashboard screen is retired; the URL redirects for old links.
+        path: "dashboard",
+        loader: () => redirect("/analytics"),
+    },
+    {
         path: "/tags",
         handle: { requiresAccess: canManageTags } satisfies AccessRouteHandle,
         lazy: lazyComponent(() => import("./tags/tags")),
@@ -104,12 +112,15 @@ const appRoutes: RouteObject[] = [
         lazy: lazyComponent(() => import("./automations/editor")),
     },
     {
-        // The tag detail route delegates to Ember. It must be declared
-        // so navigating from the tag list to a detail page doesn't trip
-        // the router error fallback before Ember takes over.
+        // Covers both edit (`:tagSlug`) and create (the sentinel `new`) —
+        // Ember's router declared `/tags/new` before `/tags/:tag_slug`, so a
+        // tag with the literal slug "new" was already unreachable.
+        //
+        // TagDetailGate serves Ember or React depending on the
+        // `tagDetailsReact` Labs flag.
         path: "/tags/:tagSlug",
-        Component: EmberFallback,
-        handle: { ...emberFallbackHandle, requiresAccess: canManageTags } satisfies RouteHandle & AccessRouteHandle,
+        Component: TagDetailGate,
+        handle: {requiresAccess: canManageTags} satisfies AccessRouteHandle,
     },
     membersRoute,
     {
@@ -128,10 +139,10 @@ const appRoutes: RouteObject[] = [
             };
         },
         children: [
-            { path: "", lazy: lazyComponent(() => import("./posts/analytics/Overview/overview")) },
-            { path: "web", lazy: lazyComponent(() => import("./posts/analytics/Web/web")) },
-            { path: "growth", lazy: lazyComponent(() => import("./posts/analytics/Growth/growth")) },
-            { path: "newsletter", lazy: lazyComponent(() => import("./posts/analytics/Newsletter/newsletter")) },
+            { path: "", lazy: lazyComponent(() => import("./posts/analytics/overview/overview")) },
+            { path: "web", lazy: lazyComponent(() => import("./posts/analytics/web/web")) },
+            { path: "growth", lazy: lazyComponent(() => import("./posts/analytics/growth/growth")) },
+            { path: "newsletter", lazy: lazyComponent(() => import("./posts/analytics/newsletter/newsletter")) },
         ],
     },
     {
@@ -172,9 +183,16 @@ const appRoutes: RouteObject[] = [
         children: activityPubRoutes,
     },
     {
-        path: `settings/*`,
+        // hideAdminSidebar lives on the handle, not the lazy module, so the shell
+        // hides at first paint instead of waiting on the settings chunk.
+        path: `settings`,
         lazy: lazyComponent(() => import("./settings/settings")),
-        handle: { allowInForceUpgrade: true, requiresAccess: canAccessSettingsRoute } satisfies RouteHandle & AccessRouteHandle,
+        children: settingsRouteChildren,
+        handle: {
+            allowInForceUpgrade: true,
+            hideAdminSidebar: true,
+            requiresAccess: canAccessSettingsRoute
+        } satisfies RouteHandle & AdminRouteHandle & AccessRouteHandle,
     },
     {path: "/posts", Component: EmberListWithGiftLinks, handle: emberFallbackHandle},
     {path: "/pages", Component: EmberListWithGiftLinks, handle: emberFallbackHandle},

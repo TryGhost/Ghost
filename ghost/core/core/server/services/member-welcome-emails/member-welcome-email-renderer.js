@@ -119,9 +119,10 @@ class MemberWelcomeEmailRenderer {
      * @param {string} [options.unsubscribeUrl] - When set, the footer shows an "Unsubscribe from these emails" link instead of "Manage your preferences"
      * @param {boolean} [options.trackClicks]
      * @param {string | null} [options.automationActionRevisionId]
+     * @param {string | null} [options.automationRunStepId]
      * @returns {Promise<{html: string, text: string, subject: string}>}
      */
-    async render({lexical, subject, designSettings, member, siteSettings, unsubscribeUrl, trackClicks = false, automationActionRevisionId = null}) {
+    async render({lexical, subject, designSettings, member, siteSettings, unsubscribeUrl, trackClicks = false, automationActionRevisionId = null, automationRunStepId = null}) {
         designSettings = designSettings || {};
 
         const design = emailDesign.getEmailDesign({
@@ -171,9 +172,9 @@ class MemberWelcomeEmailRenderer {
                 return originalPath;
             }
             const isTrackable = ['http:', 'https:'].includes(url.protocol);
-            if (trackClicks && automationActionRevisionId && member.uuid && isTrackable) {
+            if (trackClicks && automationActionRevisionId && automationRunStepId && member.uuid && isTrackable) {
                 await linkTracking.init();
-                return await linkTracking.service.addAutomationTrackingToUrl(url, automationActionRevisionId, member.uuid);
+                return await linkTracking.service.addAutomationTrackingToUrl(url, automationActionRevisionId, automationRunStepId, member.uuid);
             }
             return url;
         }, {base: siteSettings.url});

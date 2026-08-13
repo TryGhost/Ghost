@@ -16,16 +16,11 @@ function createService() {
     settingsCache.get.withArgs('is_private').returns(false);
     settingsCache.get.withArgs('indexnow_api_key').returns(VALID_API_KEY);
 
-    const config = {isPrivacyDisabled: sinon.stub()};
+    const config = {get: sinon.stub(), isPrivacyDisabled: sinon.stub()};
     config.isPrivacyDisabled.withArgs('useIndexNow').returns(false);
 
-    const labs = {isSet: sinon.stub()};
-    labs.isSet.withArgs('indexnow').returns(true);
-
     const urlService = {
-        facade: {
-            getUrlForResource: sinon.stub().returns('https://example.com/my-post/')
-        }
+        getUrlForResource: sinon.stub().returns('https://example.com/my-post/')
     };
 
     const urlUtils = {
@@ -38,7 +33,7 @@ function createService() {
     // Chainable so `events.removeListener(...).on(...)` works.
     const events = {removeListener: sinon.stub().returnsThis(), on: sinon.stub().returnsThis()};
 
-    const deps = {settingsCache, config, labs, urlService, urlUtils, request, logging, events};
+    const deps = {settingsCache, config, urlService, urlUtils, request, logging, events};
     const service = new IndexNowPingService(deps);
 
     return {service, deps};
@@ -112,7 +107,7 @@ describe('IndexNow', function () {
 
             sinon.assert.calledOnce(pingStub);
             // tags and authors must reach ping() (and onward the URL service) so
-            // the lazy backend can evaluate collection filters (e.g. `tag:foo`)
+            // the URL service can evaluate collection filters (e.g. `tag:foo`)
             // when building the URL
             sinon.assert.calledWith(
                 pingStub,
@@ -268,6 +263,16 @@ describe('IndexNow', function () {
     });
 
     describe('ping()', function () {
+        it('does not ping in development', async function () {
+            const {service, deps} = createService();
+            deps.config.get.withArgs('env').returns('development');
+            const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
+
+            await service.ping(testPost);
+
+            sinon.assert.notCalled(deps.urlService.getUrlForResource);
+        });
+
         it('with a post should execute ping', async function () {
             const {service, deps} = createService();
             nock('https://api.indexnow.org')
@@ -284,7 +289,7 @@ describe('IndexNow', function () {
 
         it('does not ping when the post has no resolvable URL (/404/)', async function () {
             const {service, deps} = createService();
-            deps.urlService.facade.getUrlForResource.returns('https://example.com/404/');
+            deps.urlService.getUrlForResource.returns('https://example.com/404/');
             const pingRequest = nock('https://api.indexnow.org')
                 .get(/\/indexnow/)
                 .reply(200);
@@ -323,20 +328,6 @@ describe('IndexNow', function () {
             const testPage = _.clone(testUtils.DataGenerator.Content.posts[5]);
 
             await service.ping(testPage);
-
-            assert.equal(pingRequest.isDone(), false);
-        });
-
-        it('when labs.indexnow is false should not execute ping', async function () {
-            const {service, deps} = createService();
-            deps.labs.isSet.withArgs('indexnow').returns(false);
-
-            const pingRequest = nock('https://api.indexnow.org')
-                .get(/\/indexnow/)
-                .reply(200);
-            const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
-
-            await service.ping(testPost);
 
             assert.equal(pingRequest.isDone(), false);
         });
@@ -517,7 +508,7 @@ describe('IndexNow', function () {
         // would vanish without a trace).
         it('logs and swallows a throw from URL resolution as ping_failed', async function () {
             const {service, deps} = createService();
-            deps.urlService.facade.getUrlForResource.throws(new Error('filter evaluation failed'));
+            deps.urlService.getUrlForResource.throws(new Error('filter evaluation failed'));
             const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
 
             await service.ping(testPost);
@@ -548,7 +539,7 @@ describe('IndexNow', function () {
     // Pin which URL ping() actually sends. The ping() block above uses nock to
     // intercept the HTTP request but never inspects the `?url=...` query
     // parameter; that's the exact value a future change to the url-service call
-    // shape (e.g. swapping the legacy id-based method for a resource-based facade
+    // shape (e.g. swapping the legacy id-based method for a resource-based
     // method) could regress without anyone noticing.
     describe('ping() URL output', function () {
         const POST_URL = 'https://my-blog.example/some-post/';
@@ -559,7 +550,7 @@ describe('IndexNow', function () {
             // Bind the stub to the exact resource shape production passes
             // (`{...post, type: 'posts'}`) so a regression that drops the type
             // override or the spread surfaces here.
-            deps.urlService.facade.getUrlForResource
+            deps.urlService.getUrlForResource
                 .withArgs(sinon.match({id: 'abc', type: 'posts'}), {absolute: true})
                 .returns(POST_URL);
 
@@ -572,7 +563,7 @@ describe('IndexNow', function () {
 
             await service.ping(post);
 
-            sinon.assert.calledOnce(deps.urlService.facade.getUrlForResource);
+            sinon.assert.calledOnce(deps.urlService.getUrlForResource);
             assert.equal(pingRequest.isDone(), true);
         });
     });

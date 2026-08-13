@@ -67,7 +67,7 @@ export function OnboardingChecklist({
 
                 {allStepsCompleted &&
                     <Button
-                        className="mt-6 h-auto w-full max-w-[540px] px-3 py-3 text-[16px] max-[480px]:text-[15px]"
+                        className="mt-6 h-auto w-full max-w-[540px] p-3 text-[16px] max-[480px]:text-[15px]"
                         data-testid="onboarding-complete"
                         id="ob-completed"
                         type="button"
@@ -79,7 +79,7 @@ export function OnboardingChecklist({
 
                 <p className="mt-8 mb-0 text-[15px] text-muted-foreground max-[480px]:text-[14px]">
                     More questions? Check out our{" "}
-                    <Button asChild className="h-auto p-0 align-baseline text-[15px] text-green hover:text-green/90 max-[480px]:text-[14px]" variant="link">
+                    <Button className="h-auto p-0 align-baseline text-[15px] text-green hover:text-green/90 max-[480px]:text-[14px]" variant="link" asChild>
                         <a href="https://ghost.org/help?utm_source=admin&utm_campaign=onboarding" id="ob-help-center" rel="noreferrer" target="_blank">Help Center</a>
                     </Button>.
                 </p>

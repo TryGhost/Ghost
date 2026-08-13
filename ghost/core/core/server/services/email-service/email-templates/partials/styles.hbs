@@ -161,6 +161,14 @@ img.is-dark-background {
     color: {{postTitleColor}};
 }
 
+/* Outlook's Word engine ignores `inherit`, so repeat the `.post-title > table td` values */
+.post-title-heading {
+    margin: 0;
+    font-size: 36px;
+    line-height: 1.1;
+    font-weight: {{titleWeight}};
+}
+
 .post-title a {
     color: {{postTitleColor}} !important;
 }

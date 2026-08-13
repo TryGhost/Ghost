@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('services:routing:controllers:static');
 const renderer = require('../../rendering');
+const {resolveRouteData} = require('../api-adapter');
 
 function processQuery(query, locals) {
     const api = require('../../proxy').api;
@@ -35,10 +36,10 @@ function processQuery(query, locals) {
 module.exports = function staticController(req, res, next) {
     debug('staticController', res.routerOptions);
 
-    let promises = [];
+    const apiCalls = resolveRouteData(res.routerOptions.data);
 
-    _.each(res.routerOptions.data, function (query) {
-        promises.push(processQuery(query, res.locals));
+    const promises = _.map(apiCalls, function (apiCall) {
+        return processQuery(apiCall, res.locals);
     });
 
     return Promise.all(promises)
@@ -49,13 +50,13 @@ module.exports = function staticController(req, res, next) {
                 response.data = {};
 
                 let resultIndex = 0;
-                _.each(res.routerOptions.data, function (config, name) {
-                    response.data[name] = result[resultIndex][config.resource];
+                _.each(apiCalls, function (apiCall, name) {
+                    response.data[name] = result[resultIndex][apiCall.resource];
 
-                    if (config.type === 'browse') {
+                    if (apiCall.type === 'browse') {
                         response.data[name].meta = result[resultIndex].meta;
                         // @TODO: remove in Ghost 3.0 (see https://github.com/TryGhost/Ghost/issues/10434)
-                        response.data[name][config.resource] = result[resultIndex][config.resource];
+                        response.data[name][apiCall.resource] = result[resultIndex][apiCall.resource];
                     }
 
                     resultIndex = resultIndex + 1;

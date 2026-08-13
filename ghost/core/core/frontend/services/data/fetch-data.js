@@ -3,14 +3,7 @@
  * Dynamically build and execute queries on the API
  */
 const _ = require('lodash');
-
-// The default settings for a default post query
-const queryDefaults = {
-    type: 'browse',
-    resource: 'posts',
-    controller: 'postsPublic',
-    options: {}
-};
+const {resolveApiCall, resolveRouteData} = require('../routing/api-adapter');
 
 /**
  * The theme expects to have access to the relations by default e.g. {{post.authors}}
@@ -28,13 +21,16 @@ const defaultDataQueryOptions = {
     author: null
 };
 
-const defaultPostQuery = _.cloneDeep(queryDefaults);
-defaultPostQuery.options = defaultQueryOptions.options;
+const defaultPostQuery = {
+    ...resolveApiCall({type: 'browse', resource: 'posts'}),
+    options: _.cloneDeep(defaultQueryOptions.options)
+};
 
 /**
  * Process query request.
  *
- * Takes a 'query' object, ensures that type, resource and options are set
+ * Takes a resolved query spec, which already carries type, resource,
+ * controller and options.
  * Replaces occurrences of `%s` in options with slugParam
  * Converts the query config to a promise for the result
  *
@@ -46,8 +42,6 @@ function processQuery(query, slugParam, locals) {
     const api = require('../proxy').api;
 
     query = _.cloneDeep(query);
-
-    _.defaultsDeep(query, queryDefaults);
 
     // Replace any slugs, see TaxonomyRouter. We replace any '%s' by the slug
     _.each(query.options, function (option, name) {
@@ -93,9 +87,13 @@ async function fetchData(pathOptions, routerOptions, locals) {
     // The filter can in theory contain a "%s" e.g. filter="primary_tag:%s"
     promises.push(processQuery(postQuery, pathOptions.slug, locals));
 
+    const apiCalls = resolveRouteData(routerOptions.data);
+
     // CASE: fetch more data defined by the router e.g. tags, authors - see TaxonomyRouter
-    _.each(routerOptions.data, function (query, name) {
-        const dataQueryOptions = _.merge(query, defaultDataQueryOptions[name]);
+    _.each(apiCalls, function (apiCall, name) {
+        // Merge into a fresh object: the resolved spec is read again below to
+        // shape the response, so it must stay as the adapter resolved it.
+        const dataQueryOptions = _.merge({}, apiCall, defaultDataQueryOptions[name]);
         promises.push(processQuery(dataQueryOptions, pathOptions.slug, locals));
     });
 
@@ -107,11 +105,11 @@ async function fetchData(pathOptions, routerOptions, locals) {
 
         let resultIndex = 1;
 
-        _.each(routerOptions.data, function (config, name) {
+        _.each(apiCalls, function (apiCall, name) {
             if (results[resultIndex]) {
-                response.data[name] = results[resultIndex][config.resource];
+                response.data[name] = results[resultIndex][apiCall.resource];
 
-                if (config.type === 'browse') {
+                if (apiCall.type === 'browse') {
                     response.data[name].meta = results[resultIndex].meta;
                 }
 

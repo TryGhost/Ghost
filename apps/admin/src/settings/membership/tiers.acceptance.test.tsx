@@ -1,4 +1,5 @@
-import {describe, expect, it} from "vitest";
+import {describe, expect, it, vi} from "vitest";
+import {userEvent} from "vitest/browser";
 
 import {
     configResponse,
@@ -129,6 +130,48 @@ describe("Tier settings", () => {
         await expect.element(modal.getByRole("button", {name: "Saved"})).toBeVisible();
 
         expect(editApi.lastRequest?.body).toMatchObject({tiers: [{id: freeTier.id, description: updated.description, welcome_page_url: updated.welcome_page_url, benefits: updated.benefits}]});
+    });
+
+    it("keeps the benefit editor focused and visible when adding with the button or Enter", async () => {
+        const scrollingTier = {...supporterTier, benefits: Array.from({length: 12}, (_, index) => `Benefit ${index + 1}`)};
+        fakeSettingsScreens();
+        fakeTiers([freeTier, scrollingTier]);
+        await renderAdminApp("/settings", {boot: {browseSettings: {response: stripeSettings()}}});
+
+        await settingsScreen.tiers().getByText(scrollingTier.name, {exact: true}).click();
+        const modal = settingsScreen.tierDetailModal();
+        await expect.element(modal).toBeVisible();
+        const modalElement = modal.element() as HTMLElement;
+        const newBenefit = modal.getByLabelText("New benefit");
+        const addBenefit = modal.getByRole("button", {name: "Add benefit"});
+        const pageScrollTop = document.scrollingElement?.scrollTop ?? 0;
+        const scrollBy = vi.spyOn(modalElement, "scrollBy");
+
+        // Empty benefits are ignored without moving either scroll container.
+        await addBenefit.click();
+        expect(scrollBy).not.toHaveBeenCalled();
+
+        const reducedMotion = vi.spyOn(window, "matchMedia").mockReturnValue({matches: true} as MediaQueryList);
+        await newBenefit.fill("Added with button");
+        await addBenefit.click();
+        await expect.element(newBenefit).toHaveFocus();
+        await expect.poll(() => scrollBy.mock.calls.length).toBe(1);
+        expect(scrollBy).toHaveBeenLastCalledWith(expect.objectContaining({behavior: "auto"}));
+
+        reducedMotion.mockRestore();
+        await newBenefit.fill("Added with Enter");
+        await userEvent.keyboard("{Enter}");
+        await expect.element(newBenefit).toHaveFocus();
+        await expect.poll(() => scrollBy.mock.calls.length).toBe(2);
+        expect(scrollBy).toHaveBeenLastCalledWith(expect.objectContaining({behavior: "smooth"}));
+
+        await expect.poll(() => {
+            const inputRect = newBenefit.element().getBoundingClientRect();
+            const modalRect = modalElement.getBoundingClientRect();
+            return inputRect.top >= modalRect.top && inputRect.bottom <= modalRect.bottom;
+        }).toBe(true);
+        expect(document.scrollingElement?.scrollTop ?? 0).toBe(pageScrollTop);
+        expect(Array.from(modalElement.querySelectorAll<HTMLInputElement>('input[aria-label="Benefit"]')).map(input => input.value)).toEqual(expect.arrayContaining(["Added with button", "Added with Enter"]));
     });
 
     it("moves a tier between the Active and Archived tabs when archived and reactivated", async () => {

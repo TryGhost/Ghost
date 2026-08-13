@@ -15,23 +15,25 @@ minimumReleaseAge: 4320 # 3 days in minutes; matches Renovate's minimumReleaseAg
 blockExoticSubdeps: true
 
 allowBuilds:
+  # Permitted builds are version-scoped. Adding or updating a permitted version
+  # requires an explicit Platform security review.
   # sentry-cli's postinstall downloads its binary, which is only used for
   # sourcemap upload — that was gated on the old Koenig repo's IS_SHIPPING
   # publish flow and isn't part of dev or CI builds here.
   '@sentry/cli': false
-  '@swc/core': true
-  better-sqlite3: true
-  core-js: true
+  '@swc/core@1.15.43': true
+  'better-sqlite3@12.11.1': true
+  'core-js@2.6.12': true
   cpu-features: false
-  dtrace-provider: true
-  esbuild: true
-  fsevents: true
-  msw: true
-  nx: true
-  protobufjs: true
-  re2: true
-  sharp: true
-  sqlite3: true
+  'dtrace-provider@0.8.8': true
+  'esbuild@0.25.12 || 0.28.1': true
+  'fsevents@1.2.13 || 2.3.2 || 2.3.3': true
+  'msw@2.14.6': true
+  'nx@23.0.1': true
+  'protobufjs@7.6.4': true
+  're2@1.25.0': true
+  'sharp@0.35.3': true
+  'sqlite3@5.1.7': true
   ssh2: false
 
 catalog:
@@ -69,13 +71,13 @@ catalog:
   '@storybook/react-vite': 10.4.6
   '@tailwindcss/postcss': 4.2.2
   '@tailwindcss/vite': 4.2.2
-  '@tanstack/react-query': 5.101.2
+  '@tanstack/react-query': 5.101.4
   '@tanstack/react-virtual': 3.14.6
   '@testing-library/jest-dom': 6.9.1
   '@testing-library/react': 14.3.1
   '@tryghost/api-framework': 3.3.5
   '@tryghost/brute-knex': 3.2.1
-  '@tryghost/color-utils': 0.2.19
+  '@tryghost/color-utils': 0.2.20
   '@tryghost/custom-fonts': 1.0.11
   '@tryghost/debug': 2.3.5
   '@tryghost/domain-events': 3.3.5
@@ -181,6 +183,10 @@ catalog:
   '@dnd-kit/sortable': 7.0.2
   '@dnd-kit/utilities': 3.2.2
   shell-quote: 1.10.0
+  unidecode: 1.1.0
+  '@octokit/core': 7.0.7
+  '@octokit/plugin-retry': 8.1.1
+  '@octokit/plugin-throttling': 11.0.5
 
 catalogs:
   react17:

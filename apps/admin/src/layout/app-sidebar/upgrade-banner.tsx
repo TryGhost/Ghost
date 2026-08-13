@@ -1,5 +1,6 @@
 import {Fragment} from "react";
 import {Banner, Button} from "@tryghost/shade/components"
+import {formatNumber} from "@tryghost/shade/utils";
 import {useBrowseConfig} from "@tryghost/admin-x-framework/api/config";
 
 import ghostProLogo from "@/assets/images/ghost-pro-logo.png";
@@ -24,16 +25,18 @@ function UpgradeBanner({ trialDaysRemaining }: { trialDaysRemaining: number }) {
     const logoAlt = bannerConfig?.logoAlt ?? ((bannerConfig?.logo || bannerConfig?.logoDark) ? "" : DEFAULT_LOGO_ALT);
 
     return (
-        <Banner variant='gradient' size='lg' className="mx-2 flex flex-col items-stretch">
+        <Banner className="mx-2 flex flex-col items-stretch" size='lg' variant='gradient'>
             <div>
-                <img src={logo} alt={logoAlt} className="max-h-[33px] dark:hidden" />
-                <img src={logoDark} alt={logoAlt} className="hidden max-h-[33px] dark:block" />
+                <img alt={logoAlt} className="max-h-[33px] dark:hidden" src={logo} />
+                <img alt={logoAlt} className="hidden max-h-[33px] dark:block" src={logoDark} />
             </div>
             <div className="mt-3 text-base font-semibold">{bannerConfig?.title || DEFAULT_TITLE}</div>
             <div className="mt-2 mb-4 text-sm text-gray-700">
                 {messageParts.map((part, index) => (
+                    // These fragments are positional interpolation segments and never reorder.
+                    // eslint-disable-next-line react/no-array-index-key
                     <Fragment key={index}>
-                        {index > 0 && <span className="font-semibold text-foreground">{trialDaysRemaining} days</span>}
+                        {index > 0 && <span className="font-semibold text-foreground">{formatNumber(trialDaysRemaining)} days</span>}
                         {part}
                     </Fragment>
                 ))}

@@ -1,16 +1,22 @@
 import {
-    AnalyticsOverviewPage,
     MembersPage,
     PostAnalyticsGrowthPage,
+    PostAnalyticsOverviewPage,
     PostAnalyticsPage
 } from '@/admin-pages';
+import {createPostFactory} from '@/data-factory';
 import {expect, test} from '@/helpers/playwright';
 
 test.describe('Ghost Admin - Post Analytics - Growth', () => {
     test.beforeEach(async ({page}) => {
-        const analyticsOverviewPage = new AnalyticsOverviewPage(page);
-        await analyticsOverviewPage.goto();
-        await analyticsOverviewPage.latestPost.analyticsButton.click();
+        const postFactory = createPostFactory(page.request);
+        const post = await postFactory.create({
+            title: 'Post analytics growth test',
+            status: 'published'
+        });
+
+        const postAnalyticsOverviewPage = new PostAnalyticsOverviewPage(page);
+        await postAnalyticsOverviewPage.gotoForPost(post.id);
 
         // TODO: check post analytics component, we shouldn't need to wait on page load to be able to click growth link
         const postAnalyticsPage = new PostAnalyticsPage(page);
