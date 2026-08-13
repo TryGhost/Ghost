@@ -1,83 +1,84 @@
 # Translating Ghost
 
-Ghost has support for translating strings in Portal and emails. Under the hood,
-we use [i18next](https://github.com/i18next/i18next) and
-[i18next-parser](https://github.com/i18next/i18next-parser), so be sure to read
-their [docs](https://www.i18next.com/) if you have questions about the tooling.
+Ghost can be translated into many languages. Translations cover Ghost's public
+apps, parts of Ghost Core, and emails sent to members.
 
-All translations are stored within the
-[`i18n`](https://github.com/TryGhost/Ghost/tree/main/ghost/i18n) package in the
-Ghost monorepo. The
-[`locales`](https://github.com/TryGhost/Ghost/tree/main/ghost/i18n/locales)
-folder contains the languages we currently have configured, and each subfolder
-contains the translations in a JSON file, separated by the project they're for.
-For example, `portal.json` contains Portal-specific strings, and `test.json` is
-just for testing purposes.
+Ghost uses [i18next](https://www.i18next.com/) and keeps translations in
+[`packages/i18n/locales/`](../../packages/i18n/locales/). Each language has its
+own folder containing separate JSON files for Ghost, Portal, Comments, Signup
+form, and Search.
 
-Within a JSON file, you'll see a key-value pair of strings. The key (the
-left-hand side of the colon) is what we use in code. If the value (the
-right-hand side of the colon) is `""`, the string has not yet been translated
-and we default back to the key.
+Within each file, the key on the left is the original English string and the
+value on the right is its translation. An empty value falls back to the English
+string.
 
-## Translating strings
+## Translating existing strings
 
-If you'd like to translate a string, open up a JSON file within
-[`ghost/i18n/locales`](https://github.com/TryGhost/Ghost/tree/main/ghost/i18n/locales)
-and start writing.
+1. Find your language in `packages/i18n/locales/`.
+2. Open the JSON file for the part of Ghost you want to translate:
 
-Keep in mind:
+   | File | Where the translation appears |
+   | --- | --- |
+   | `ghost.json` | Ghost Core and emails |
+   | `portal.json` | Portal |
+   | `comments.json` | Comments |
+   | `signup-form.json` | Signup form |
+   | `search.json` | Search |
 
-- If the string contains curly braces—e.g. `{{something}}`—it's a variable in
-  the code, so we need to keep that in the translated string.
+3. Add or improve the translated values. Leave the English keys unchanged.
+4. Run the translation checks from the repository root:
 
-Once you're done, commit the changes and open a pull request on the Ghost repo
-so the team can review and merge it 🎉
-
-Be sure to follow our
-[contributing guide](https://github.com/TryGhost/Ghost/blob/main/.github/CONTRIBUTING.md)
-when opening a pull request, particularly the part about commit messages. Please
-do `refs https://github.com/TryGhost/Team/issues/2795` on the third line.
-
-## Adding a new language
-
-> We only support **ISO 639-1** language codes, listed
-> [here](https://www.w3schools.com/tags/ref_language_codes.asp).
-
-1. Add the language code to the
-   [list of supported locales](https://github.com/TryGhost/Ghost/blob/1c9327ce33d730232a497c9fcecfae78d8c1ece2/ghost/i18n/lib/i18n.js#L3).
-2. Inside `ghost/i18n`, run `yarn translate`. A new folder for your locale will
-   be created inside `ghost/i18n/locales`.
-3. Commit the new changes and open a pull request on the Ghost repo so the team
-   can review and merge it 🎉
-
-## Translating a new string
-
-To translate a new string, you'll need to wrap it in the translate helper. In
-Portal, we pass this around in the `AppContext` as `t`. Here is a
-[link to existing uses of the translation helper within Portal](https://github.com/search?q=repo%3ATryGhost%2FGhost+%7Bt%28%27+path%3A%2F%5Eghost%5C%2Fportal%5C%2F%2F&type=code),
-so you get an idea:
-
-1. Ensure you have access to the `t` function by importing it from the
-   `AppContext`.
-2. Wrap your string in it, e.g. `{t('Hello world')}`.
-3. Add this to the JSON translation files by running `yarn translate` inside
-   `ghost/i18n`.
-4. Translate the string in all locales, if applicable.
-5. Commit the new changes using the following format:
-
-   ```text
-   🌐 Updated/Added [Language] translations for [Component]
-
-   - [Any specific details about why this particular change is the right change]
+   ```bash
+   pnpm --filter @tryghost/i18n lint:translations
    ```
 
-   Real example:
+5. Commit the changes and open a pull request following the
+   [contribution workflow](workflow.md).
 
-   ```text
-   🌐 Updated Spanish translations for Newsletter
+Keep every `{variable}` and `<tag>` from the English string in the translation.
+The words around them can move to suit the language, but their names and
+spelling must not change.
 
-   - This translates the email newsletter CTA into Spanish.
-   - Other tweaks improve the accuracy of the translations, making them feel more natural
+```json
+{
+    "Welcome back, {name}!": "Bon retour, {name} !"
+}
+```
+
+Translate the meaning of the complete message rather than translating each word
+literally. The description for a string in
+[`packages/i18n/locales/context.json`](../../packages/i18n/locales/context.json)
+explains where it appears and what it is intended to communicate.
+
+## Adding a language
+
+Before starting a new language, open an issue or discussion so the locale code
+and scope can be agreed. Ghost supports base languages as well as some regional
+and script variants.
+
+To add an agreed language:
+
+1. Add its code and English label to
+   [`packages/i18n/lib/locale-data.json`](../../packages/i18n/lib/locale-data.json).
+2. From the repository root, run:
+
+   ```bash
+   pnpm --filter @tryghost/i18n translate
    ```
 
-6. Open a pull request on the Ghost repo so the team can review and merge it 🎉
+3. Translate the generated files in `packages/i18n/locales/<locale>/`.
+4. Run the translation checks and package tests:
+
+   ```bash
+   pnpm --filter @tryghost/i18n lint:translations
+   pnpm --filter @tryghost/i18n test
+   ```
+
+5. Commit the locale metadata and translation files together, then open a pull
+   request.
+
+## Adding product copy
+
+If you are adding or changing translatable strings in the code, see the
+[internationalization guide](../practices/internationalization.md). It covers
+translation helpers, extraction, interpolation, context, and CI checks.
