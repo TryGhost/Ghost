@@ -36,4 +36,4 @@ To use the new version of Announcement Bar in Ghost, update the version in Ghost
 
 # Copyright & License 
 
-Copyright (c) 2013-2026 Ghost Foundation - Released under the [MIT license](LICENSE).
+Copyright (c) 2013-2026 Ghost Foundation - Released under the [MIT license](https://github.com/TryGhost/Ghost/blob/main/LICENSE).
