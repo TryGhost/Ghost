@@ -136,14 +136,14 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                 </CardContent>
             </Card>
 
-            <Stack gap='2xl'>
+            <Stack gap='md'>
                 <Card className='overflow-hidden' data-testid='tag-metadata-card'>
                     <Accordion type='single' collapsible>
                         <AccordionItem className='border-b-0' value='metadata'>
                             <AccordionTrigger className='px-6 py-5 hover:no-underline'>
                                 <Stack className='text-left' gap='none'>
                                     <span className='text-[14px] font-semibold'>Meta data</span>
-                                    <span className='text-[13px] font-normal text-muted-foreground'>Extra content for search engines and social accounts.</span>
+                                    <span className='text-[13px] leading-[16px] font-normal text-muted-foreground'>Extra content for search engines and social accounts.</span>
                                 </Stack>
                             </AccordionTrigger>
                             <AccordionContent className='px-6'>
@@ -298,7 +298,7 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                             <AccordionTrigger className='px-6 py-5 hover:no-underline'>
                                 <Stack className='text-left' gap='none'>
                                     <span className='text-[14px] font-semibold'>Code injection</span>
-                                    <span className='text-[13px] font-normal text-muted-foreground'>Add styles/scripts to the header and footer.</span>
+                                    <span className='text-[13px] leading-[16px] font-normal text-muted-foreground'>Add styles/scripts to the header and footer.</span>
                                 </Stack>
                             </AccordionTrigger>
                             <AccordionContent className='px-6'>
