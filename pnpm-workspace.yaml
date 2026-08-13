@@ -241,6 +241,10 @@ overrides:
   'braces@<3.0.3': ^3.0.3
   'clean-css@<4.1.11': ^4.1.11
   'codemirror@<5.58.2': ^5.58.2
+  # consolidate 0.15 pulls in a bunch of legacy dependencies that ultimately
+  # make their way into the Ghost docker image, forcing a 1.x upgrade trims
+  # the final dependency list
+  'consolidate@0.15.1': ^1.0.4
   'debug@>=4.0.0 <4.3.1': ^4.3.1
   'debug@<2.6.9': ^2.6.9
   'diff@<3.5.1': ^3.5.1
