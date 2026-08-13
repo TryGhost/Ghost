@@ -1,6 +1,9 @@
-import {readdir, readFile, stat} from 'node:fs/promises';
+import {execFile} from 'node:child_process';
+import {readdir, readFile, realpath, stat} from 'node:fs/promises';
 import path from 'node:path';
-import {fileURLToPath} from 'node:url';
+import {promisify} from 'node:util';
+
+const execFileAsync = promisify(execFile);
 
 const GOLDEN_PATH_STATUSES = new Set(['compliant', 'migration', 'exempt']);
 const REQUIRED_SCRIPTS = {
@@ -37,51 +40,13 @@ async function readJson(filePath) {
     return JSON.parse(await readFile(filePath, 'utf8'));
 }
 
-async function discoverPackageDirectories(packagesDirectory) {
-    const directories = [];
+async function listWorkspacePackages(rootDirectory) {
+    const {stdout} = await execFileAsync('pnpm', [
+        '--dir', rootDirectory,
+        'm', 'ls', '--depth', '-1', '--json'
+    ], {maxBuffer: 10 * 1024 * 1024});
 
-    async function visit(directory) {
-        const entries = await readdir(directory, {withFileTypes: true});
-        if (entries.some(entry => entry.isFile() && entry.name === 'package.json')) {
-            directories.push(directory);
-            return;
-        }
-
-        for (const entry of entries) {
-            if (!entry.isDirectory() || entry.name === '_template' || entry.name === 'node_modules' || entry.name === 'build') {
-                continue;
-            }
-            await visit(path.join(directory, entry.name));
-        }
-    }
-
-    await visit(packagesDirectory);
-    return directories.sort();
-}
-
-async function discoverWorkspacePackageDirectories(rootDirectory, packageDirectories) {
-    const directories = [...packageDirectories];
-
-    for (const workspaceRoot of ['ghost', 'apps', 'koenig', 'configs']) {
-        const directory = path.join(rootDirectory, workspaceRoot);
-        if (!await exists(directory)) {
-            continue;
-        }
-        for (const entry of await readdir(directory, {withFileTypes: true})) {
-            if (entry.isDirectory() && await exists(path.join(directory, entry.name, 'package.json'))) {
-                directories.push(path.join(directory, entry.name));
-            }
-        }
-    }
-
-    for (const workspace of ['e2e', 'scripts']) {
-        const directory = path.join(rootDirectory, workspace);
-        if (await exists(path.join(directory, 'package.json'))) {
-            directories.push(directory);
-        }
-    }
-
-    return directories;
+    return JSON.parse(stdout);
 }
 
 function sameArray(actual, expected) {
@@ -266,8 +231,13 @@ async function validateCompliantPackage({rootDirectory, packageDirectory, manife
 }
 
 export async function checkInternalPackages(rootDirectory) {
+    rootDirectory = await realpath(rootDirectory);
     const packagesDirectory = path.join(rootDirectory, 'packages');
-    const packageDirectories = await discoverPackageDirectories(packagesDirectory);
+    const workspacePackages = await listWorkspacePackages(rootDirectory);
+    const packageDirectories = workspacePackages
+        .map(workspace => workspace.path)
+        .filter(directory => directory.startsWith(`${packagesDirectory}${path.sep}`))
+        .sort();
     const packages = [];
     const errors = [];
 
@@ -281,15 +251,9 @@ export async function checkInternalPackages(rootDirectory) {
     }
 
     const workspaceNames = new Set();
-    for (const workspaceDirectory of await discoverWorkspacePackageDirectories(rootDirectory, packageDirectories)) {
-        try {
-            const manifest = await readJson(path.join(workspaceDirectory, 'package.json'));
-            if (manifest.name) {
-                workspaceNames.add(manifest.name);
-            }
-        } catch {
-            // Invalid packages/ manifests are reported above; other workspace
-            // manifests are validated by their normal lint and package-manager lanes.
+    for (const workspace of workspacePackages) {
+        if (workspace.name) {
+            workspaceNames.add(workspace.name);
         }
     }
 
@@ -349,9 +313,7 @@ export async function checkInternalPackages(rootDirectory) {
     return errors;
 }
 
-const isMain = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
-
-if (isMain) {
+if (import.meta.main) {
     const errors = await checkInternalPackages(process.cwd());
     if (errors.length > 0) {
         console.error(`Internal package golden path check failed:\n\n${errors.join('\n')}`);

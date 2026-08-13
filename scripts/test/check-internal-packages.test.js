@@ -16,6 +16,11 @@ async function writeJson(filePath, value) {
 async function createRepository() {
     const rootDirectory = await mkdtemp(path.join(os.tmpdir(), 'ghost-internal-packages-'));
     temporaryDirectories.push(rootDirectory);
+    await writeJson(path.join(rootDirectory, 'package.json'), {
+        name: 'test-workspace',
+        private: true
+    });
+    await writeFile(path.join(rootDirectory, 'pnpm-workspace.yaml'), "packages:\n  - 'packages/**'\n  - '!packages/_template'\n  - 'koenig/*'\n");
     const templateManifest = compliantManifest('packages/template');
     templateManifest.name = '@tryghost/{{NAME}}';
     templateManifest.description = '{{DESCRIPTION}}';
