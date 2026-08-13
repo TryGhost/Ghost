@@ -1,0 +1,29 @@
+{
+    "$schema": "./node_modules/oxfmt/configuration_schema.json",
+    "arrowParens": "avoid",
+    "bracketSpacing": false,
+    "ignorePatterns": [
+        "**/build/**",
+        "**/built/**",
+        "**/coverage/**",
+        "**/dist/**",
+        "**/*.min.*",
+        "**/*.hbs",
+        "package.json",
+        "skills-lock.json",
+        "koenig/kg-default-nodes/**",
+        "koenig/kg-lexical-html-renderer/**",
+        "koenig/kg-simplemde/debug/**",
+        "koenig/koenig-lexical/**"
+    ],
+    "jsdoc": {
+        "addDefaultToDescription": false,
+        "bracketSpacing": false
+    },
+    "jsxSingleQuote": true,
+    "printWidth": 120,
+    "singleQuote": true,
+    "sortPackageJson": false,
+    "tabWidth": 4,
+    "trailingComma": "none"
+}
