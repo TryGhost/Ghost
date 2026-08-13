@@ -19,6 +19,7 @@ export function createCSVStreamResponse({source, transform, filename}: CSVStream
         source,
         transform,
         filename,
-        contentType: 'text/csv; charset=utf-8'
+        contentType: 'text/csv; charset=utf-8',
+        missingFilenameMessage: 'Missing CSV export filename'
     });
 }

@@ -11,6 +11,8 @@ interface StreamResponseOptions {
     filename: string;
     /** Value for the `Content-Type` header. */
     contentType: string;
+    /** Error message when `filename` is missing — format-specific for callers that pin it. */
+    missingFilenameMessage?: string;
 }
 
 /**
@@ -20,11 +22,11 @@ interface StreamResponseOptions {
  * (so proxies don't recompress and corrupt the byte stream), and `pipeline()`
  * piping that tears down every stream on error.
  */
-export function createStreamResponse({source, transform, filename, contentType}: StreamResponseOptions) {
+export function createStreamResponse({source, transform, filename, contentType, missingFilenameMessage = 'Missing export filename'}: StreamResponseOptions) {
     return function streamResponse(req: IncomingMessage, res: ServerResponse, next: (err?: unknown) => void) {
         if (!filename) {
             return next(new InternalServerError({
-                message: 'Missing export filename'
+                message: missingFilenameMessage
             }));
         }
 

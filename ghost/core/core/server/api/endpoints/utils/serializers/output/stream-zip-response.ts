@@ -15,6 +15,7 @@ export function createZipStreamResponse({source, filename}: ZipStreamResponseOpt
     return createStreamResponse({
         source,
         filename,
-        contentType: 'application/zip'
+        contentType: 'application/zip',
+        missingFilenameMessage: 'Missing zip export filename'
     });
 }
