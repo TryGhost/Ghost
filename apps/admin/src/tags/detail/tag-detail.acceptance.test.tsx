@@ -95,9 +95,10 @@ describe('Tag detail (tagDetailsReact on)', () => {
         expect(facebookTitle.element().compareDocumentPosition(facebookPreview.element()) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 
         const codeInjectionCard = page.getByTestId('tag-code-injection-card');
-        await expect.element(codeInjectionCard.getByText('Code injection', {exact: true})).toBeVisible();
-        await expect.element(codeInjectionCard.getByRole('textbox', {name: /^Tag header/})).toBeVisible();
-        await expect.element(codeInjectionCard.getByRole('textbox', {name: /^Tag footer/})).toBeVisible();
+        const codeInjectionTrigger = codeInjectionCard.getByRole('button', {name: /Code injection/});
+        await expect.element(codeInjectionTrigger).toHaveAttribute('aria-expanded', 'false');
+        expect(codeInjectionCard.getByRole('textbox', {name: /^Tag header/}).query()).toBeNull();
+        expect(codeInjectionCard.getByRole('textbox', {name: /^Tag footer/}).query()).toBeNull();
     });
 
     it('edits and saves tag code injection with CodeMirror', async () => {
@@ -107,6 +108,7 @@ describe('Tag detail (tagDetailsReact on)', () => {
         const saveApi = fakeTagWorld(t);
         await renderAdminApp(`/tags/${t.slug}`, FLAGS);
 
+        await page.getByRole('button', {name: /Code injection/}).click();
         const headerEditor = page.getByRole('textbox', {name: /^Tag header/});
         const footerEditor = page.getByRole('textbox', {name: /^Tag footer/});
         await expect.element(headerEditor).toBeVisible();
@@ -146,6 +148,7 @@ describe('Tag detail (tagDetailsReact on)', () => {
         fakeTagWorld(t);
         await renderAdminApp(`/tags/${t.slug}`, FLAGS);
 
+        await page.getByRole('button', {name: /Code injection/}).click();
         await new Promise((resolve) => {
             window.setTimeout(resolve, 250);
         });
