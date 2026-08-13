@@ -47,14 +47,21 @@ describe('GiftService', function () {
         findPendingExpiration: sinon.SinonStub<[], Promise<Gift[]>>;
         findPendingReminder: sinon.SinonStub<[FindPendingReminderOptions], Promise<Gift[]>>;
         findUnsentReminders: sinon.SinonStub<[], Promise<Gift[]>>;
+        findAbandonedCheckouts: sinon.SinonStub;
         browsePurchaseEvents: sinon.SinonStub<Parameters<GiftRepository['browsePurchaseEvents']>, ReturnType<GiftRepository['browsePurchaseEvents']>>;
         browseRedemptionEvents: sinon.SinonStub<Parameters<GiftRepository['browseRedemptionEvents']>, ReturnType<GiftRepository['browseRedemptionEvents']>>;
         create: sinon.SinonStub;
         update: sinon.SinonStub;
+        deletePendingCheckout: sinon.SinonStub;
         transaction: sinon.SinonStub<Parameters<GiftRepository['transaction']>, Promise<unknown>>;
     };
 
     let giftRepository: GiftRepositoryStub;
+    let giftDeliveryService: {
+        createForCheckout: sinon.SinonStub;
+        dispatchForGift: sinon.SinonStub;
+        cancelPendingForGift: sinon.SinonStub;
+    };
     let memberRepository: {
         get: sinon.SinonStub;
         update: sinon.SinonStub;
@@ -98,13 +105,20 @@ describe('GiftService', function () {
             findPendingExpiration: sinon.stub<[], Promise<Gift[]>>().resolves([]),
             findPendingReminder: sinon.stub<[FindPendingReminderOptions], Promise<Gift[]>>().resolves([]),
             findUnsentReminders: sinon.stub<[], Promise<Gift[]>>().resolves([]),
+            findAbandonedCheckouts: sinon.stub().resolves([]),
             browsePurchaseEvents: sinon.stub<Parameters<GiftRepository['browsePurchaseEvents']>, ReturnType<GiftRepository['browsePurchaseEvents']>>().resolves({data: [], meta: {}}),
             browseRedemptionEvents: sinon.stub<Parameters<GiftRepository['browseRedemptionEvents']>, ReturnType<GiftRepository['browseRedemptionEvents']>>().resolves({data: [], meta: {}}),
-            create: sinon.stub(),
+            create: sinon.stub().resolves('gift_1'),
             update: sinon.stub(),
+            deletePendingCheckout: sinon.stub().resolves(true),
             transaction: sinon.stub<Parameters<GiftRepository['transaction']>, Promise<unknown>>().callsFake(async (callback) => {
                 return await callback(transacting);
             })
+        };
+        giftDeliveryService = {
+            createForCheckout: sinon.stub().resolves(undefined),
+            dispatchForGift: sinon.stub().resolves(null),
+            cancelPendingForGift: sinon.stub().resolves(false),
         };
         memberRepository = {
             get: sinon.stub().callsFake(() => {
@@ -153,6 +167,10 @@ describe('GiftService', function () {
     });
 
     let giftReminderScheduler: {scheduleFor: sinon.SinonStub};
+    let checkoutAdapter: {
+        getCustomerId: sinon.SinonStub;
+        createSession: sinon.SinonStub;
+    };
 
     function createService(overrides: {
         giftReminderScheduler?: {scheduleFor: sinon.SinonStub};
@@ -160,17 +178,19 @@ describe('GiftService', function () {
         giftReminderScheduler = overrides.giftReminderScheduler ?? {
             scheduleFor: sinon.stub().resolves()
         };
+        checkoutAdapter = {
+            getCustomerId: sinon.stub().resolves(null),
+            createSession: sinon.stub().resolves({id: 'cs_checkout', url: 'https://checkout.example/'})
+        };
         return new GiftService({
             giftRepository: giftRepository as any,
+            giftDeliveryService,
             memberRepository,
             tiersService,
             giftEmailService,
             staffServiceEmails,
             giftReminderScheduler,
-            checkoutAdapter: {
-                getCustomerId: sinon.stub().resolves(null),
-                createSession: sinon.stub().resolves('https://checkout.example/')
-            },
+            checkoutAdapter,
             labsService: {
                 isSet: sinon.stub().returns(false)
             },
@@ -181,6 +201,42 @@ describe('GiftService', function () {
     }
 
     describe('completePurchase', function () {
+        it('completes a pre-created pending gift without reconstructing recipient data from Stripe', async function () {
+            const pending = Gift.fromCheckout({
+                token: 'pending-token',
+                buyerEmail: null,
+                buyerMemberId: null,
+                buyerName: 'Buyer',
+                recipientName: 'Recipient',
+                personalMessage: 'Enjoy this gift',
+                tierId: 'tier_1',
+                cadence: 'year',
+                duration: 1,
+                currency: 'usd',
+                amount: 5000
+            }).bindCheckoutSession('cs_pending')!;
+            giftRepository.getById.resolves(pending);
+            giftDeliveryService.dispatchForGift.resolves('recipient@example.com');
+            const service = createService();
+
+            assert.equal(await service.completePurchase({
+                giftId: 'gift_1',
+                buyerEmail: 'buyer@example.com',
+                stripeCustomerId: null,
+                currency: 'usd',
+                amount: 5000,
+                stripeCheckoutSessionId: 'cs_pending',
+                stripePaymentIntentId: 'pi_pending'
+            }), true);
+
+            const purchased = giftRepository.update.firstCall.firstArg;
+            assert.equal(purchased.status, 'purchased');
+            assert.equal(purchased.recipientName, 'Recipient');
+            assert.equal(purchased.stripePaymentIntentId, 'pi_pending');
+            sinon.assert.notCalled(giftRepository.create);
+            sinon.assert.calledOnceWithExactly(giftDeliveryService.dispatchForGift, 'gift_1');
+        });
+
         it('creates a Gift entity and saves it', async function () {
             const service = createService();
 
@@ -640,6 +696,7 @@ describe('GiftService', function () {
             const savedGift = giftRepository.update.getCall(0).args[0];
             assert.equal(savedGift.status, 'expired');
             assert.notEqual(savedGift.expiredAt, null);
+            sinon.assert.calledOnceWithExactly(giftDeliveryService.cancelPendingForGift, gift.token, {transacting});
         });
 
         it('skips gifts that are no longer purchased when re-loaded', async function () {
@@ -685,6 +742,31 @@ describe('GiftService', function () {
 
             assert.equal(result.expiredCount, 2);
             assert.equal(giftRepository.update.callCount, 2);
+        });
+    });
+
+    describe('processAbandonedCheckouts', function () {
+        function pendingGift() {
+            return buildGift({
+                status: 'payment_pending',
+                buyerEmail: 'buyer@example.com',
+                stripeCheckoutSessionId: 'cs_abandoned',
+                stripePaymentIntentId: null,
+                checkoutStartedAt: new Date(Date.now() - 31 * 24 * 60 * 60 * 1000),
+                purchasedAt: null,
+                expiresAt: null
+            });
+        }
+
+        it('hard-deletes a pending checkout after 30 days without calling Stripe', async function () {
+            const gift = pendingGift();
+            giftRepository.findAbandonedCheckouts.resolves([{id: 'gift_1', gift}]);
+            const service = createService();
+
+            const result = await service.processAbandonedCheckouts();
+
+            assert.deepEqual(result, {deletedCount: 1});
+            sinon.assert.calledOnce(giftRepository.deletePendingCheckout);
         });
     });
 
@@ -984,6 +1066,7 @@ describe('GiftService', function () {
                 transacting
             });
             sinon.assert.calledOnceWithExactly(giftRepository.update, redeemed, {transacting});
+            sinon.assert.calledOnceWithExactly(giftDeliveryService.cancelPendingForGift, redeemed.token, {transacting});
             sinon.assert.calledTwice(tiersService.api.read);
             sinon.assert.alwaysCalledWithExactly(tiersService.api.read, 'tier_1');
             sinon.assert.calledOnceWithExactly(staffServiceEmails.notifyGiftSubscriptionStarted, {
@@ -1331,6 +1414,7 @@ describe('GiftService', function () {
             assert.ok(saved.refundedAt);
             assert.notEqual(saved, gift);
             assert.deepEqual(options, {transacting});
+            sinon.assert.calledOnceWithExactly(giftDeliveryService.cancelPendingForGift, saved.token, {transacting});
         });
 
         it('returns false when no gift matches the payment intent', async function () {

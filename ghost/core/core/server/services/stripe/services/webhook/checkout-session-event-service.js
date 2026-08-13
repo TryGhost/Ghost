@@ -15,7 +15,7 @@ function hasStripeMetadataKey(metadata, key) {
 }
 
 function isGiftCheckoutSession(session) {
-    return isStripeMetadataTrue(session.metadata?.ghost_gift);
+    return hasStripeMetadataKey(session.metadata, 'ghost_gift_id') || isStripeMetadataTrue(session.metadata?.ghost_gift);
 }
 
 function isDonationCheckoutSession(session) {
@@ -134,6 +134,19 @@ module.exports = class CheckoutSessionEventService {
      * @param {import('stripe').Stripe.Checkout.Session} session
      */
     async handleGiftEvent(session) {
+        if (session.metadata?.ghost_gift_id) {
+            await this.deps.giftService.completePurchase({
+                giftId: session.metadata.ghost_gift_id,
+                buyerEmail: session.customer_details?.email,
+                stripeCustomerId: getStripeResourceId(session.customer),
+                currency: session.currency,
+                amount: session.amount_total,
+                stripeCheckoutSessionId: session.id,
+                stripePaymentIntentId: getStripeResourceId(session.payment_intent)
+            });
+            return;
+        }
+
         await this.deps.giftService.completePurchase({
             token: session.metadata?.gift_token,
             buyerEmail: session.customer_details?.email,

@@ -674,6 +674,29 @@ describe('CheckoutSessionEventService', function () {
     });
 
     describe('handleGiftEvent', function () {
+        it('completes a pre-created gift using only its Stripe metadata identifier', async function () {
+            const service = createService();
+            await service.handleGiftEvent({
+                id: 'cs_test_123',
+                amount_total: 5000,
+                currency: 'usd',
+                customer: 'cust_123',
+                payment_intent: 'pi_test_456',
+                customer_details: {email: 'buyer@example.com'},
+                metadata: {ghost_gift_id: 'gift_123'}
+            });
+
+            sinon.assert.calledOnceWithExactly(giftService.completePurchase, {
+                giftId: 'gift_123',
+                buyerEmail: 'buyer@example.com',
+                stripeCustomerId: 'cust_123',
+                currency: 'usd',
+                amount: 5000,
+                stripeCheckoutSessionId: 'cs_test_123',
+                stripePaymentIntentId: 'pi_test_456'
+            });
+        });
+
         it('calls giftService.completePurchase with session data', async function () {
             const service = createService();
             const session = {
