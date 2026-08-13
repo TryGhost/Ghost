@@ -317,6 +317,40 @@ async function setupSettingsDb() {
   return knex;
 }
 
+async function setupRolesDb() {
+    const knex = Knex({
+        client: 'better-sqlite3',
+        connection: {
+            filename: ':memory:'
+        },
+        useNullAsDefault: true
+    });
+
+    await knex.schema.createTable('roles', (table) => {
+        table.string('id', 24).primary();
+        table.string('name', 50).notNullable().unique();
+        table.string('description', 2000);
+        table.dateTime('created_at').notNullable();
+        table.dateTime('updated_at');
+    });
+    await knex.schema.createTable('api_keys', (table) => {
+        table.string('id', 24).primary();
+        table.string('role_id', 24);
+    });
+    await knex.schema.createTable('permissions_roles', (table) => {
+        table.string('id', 24).primary();
+        table.string('role_id', 24).notNullable();
+        table.string('permission_id', 24).notNullable();
+    });
+    await knex.schema.createTable('roles_users', (table) => {
+        table.string('id', 24).primary();
+        table.string('role_id', 24).notNullable();
+        table.string('user_id', 24).notNullable();
+    });
+
+    return knex;
+}
+
 async function runUpMigration(knex, migration) {
   // Non-transactional migrations receive a plain connection rather than a
   // transaction. Wrapping them in knex.transaction() here would also deadlock,
@@ -647,6 +681,77 @@ describe('migrations/utils/permissions', function () {
       );
     });
   });
+});
+
+describe('migrations/utils/roles', function () {
+    const role = {
+        name: 'Test Role',
+        description: 'A role used by migration utility tests'
+    };
+
+    describe('addRole', function () {
+        it('Adds a role and removes it on rollback', async function () {
+            const knex = await setupRolesDb();
+            const migration = utils.addRole(role);
+
+            assert(migration.config.transaction, 'addRole creates a transactional migration');
+
+            const runDownMigration = await runUpMigration(knex, migration);
+            const addedRole = await knex('roles').where({name: role.name}).first();
+
+            assert.equal(addedRole.description, role.description);
+
+            await runDownMigration();
+            assert.equal(await knex('roles').where({name: role.name}).first(), undefined);
+        });
+
+        it('Does not replace an existing role', async function () {
+            const knex = await setupRolesDb();
+            await knex('roles').insert({
+                id: ObjectId().toHexString(),
+                name: role.name,
+                description: 'Existing description',
+                created_at: knex.raw('CURRENT_TIMESTAMP')
+            });
+
+            await runUpMigration(knex, utils.addRole(role));
+
+            const roles = await knex('roles').where({name: role.name});
+            assert.equal(roles.length, 1);
+            assert.equal(roles[0].description, 'Existing description');
+        });
+    });
+
+    describe('removeRole', function () {
+        it('Removes the role and its relationships, then restores the role on rollback', async function () {
+            const knex = await setupRolesDb();
+            await runUpMigration(knex, utils.addRole(role));
+            const existingRole = await knex('roles').where({name: role.name}).first();
+
+            await knex('api_keys').insert({id: ObjectId().toHexString(), role_id: existingRole.id});
+            await knex('permissions_roles').insert({id: ObjectId().toHexString(), role_id: existingRole.id, permission_id: ObjectId().toHexString()});
+            await knex('roles_users').insert({id: ObjectId().toHexString(), role_id: existingRole.id, user_id: ObjectId().toHexString()});
+
+            const runDownMigration = await runUpMigration(knex, utils.removeRole(role));
+
+            assert.equal(await knex('roles').where({name: role.name}).first(), undefined);
+            assert.equal(await knex('api_keys').where({role_id: existingRole.id}).first(), undefined);
+            assert.equal(await knex('permissions_roles').where({role_id: existingRole.id}).first(), undefined);
+            assert.equal(await knex('roles_users').where({role_id: existingRole.id}).first(), undefined);
+
+            await runDownMigration();
+            const restoredRole = await knex('roles').where({name: role.name}).first();
+            assert.equal(restoredRole.description, role.description);
+        });
+
+        it('Does nothing when the role does not exist', async function () {
+            const knex = await setupRolesDb();
+
+            await runUpMigration(knex, utils.removeRole(role));
+
+            assert.equal(await knex('roles').where({name: role.name}).first(), undefined);
+        });
+    });
 });
 
 describe('migrations/utils/settings', function () {
