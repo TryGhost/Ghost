@@ -66,12 +66,9 @@ export async function getChangedFiles(path, baseCommit, headCommit = 'HEAD', onl
 }
 
 /**
- * Builds a matcher for ignore patterns written relative to a directory, as
- * `git diff --name-only` reports repo-relative paths.
- *
- * Matches with `dot: true` so `**` reaches into dot-directories: an ignore
- * pattern that skipped `docs/notes.md` but not `.claude/notes.md` would be a
- * trap, and git reports both alike.
+ * Builds a matcher for ignore patterns, which are written relative to a
+ * directory while git reports repo-relative paths. Matches with `dot: true` so
+ * `**` reaches into `.claude`-style directories.
  *
  * @param {string} path - The directory the patterns are relative to.
  * @param {string[]} ignorePatterns - Patterns relative to `path`.

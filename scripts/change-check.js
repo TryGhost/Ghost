@@ -27,8 +27,7 @@ const [
     baseCommit = process.env.PR_BASE_SHA || 'main',
     headCommit = process.env.PR_COMPARE_SHA || process.env.GITHUB_SHA || 'HEAD'
 ] = positionals;
-// INTERNAL_DOCS_PATTERN sits on top of any caller-supplied patterns rather than
-// being a default they replace: it's the release policy, not a convenience.
+// Always applied — the release policy, not a default callers can replace.
 const ignorePatterns = [INTERNAL_DOCS_PATTERN, ...testPattern, ...changedFilesIgnorePattern];
 
 const missing = await findPackagesNeedingChangeset(baseCommit, headCommit, ignorePatterns);
