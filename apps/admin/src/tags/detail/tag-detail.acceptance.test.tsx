@@ -61,6 +61,12 @@ describe('Tag detail (tagDetailsReact on)', () => {
         await renderAdminApp(`/tags/${t.slug}`, FLAGS);
 
         const metadataCard = page.getByTestId('tag-metadata-card');
+        const metadataTrigger = metadataCard.getByRole('button', {name: /Meta data/});
+        await expect.element(metadataTrigger).toHaveAttribute('aria-expanded', 'false');
+        expect(metadataCard.getByRole('tab', {name: 'Search'}).query()).toBeNull();
+
+        await metadataTrigger.click();
+        await expect.element(metadataTrigger).toHaveAttribute('aria-expanded', 'true');
         const searchTab = metadataCard.getByRole('tab', {name: 'Search'});
         const xTab = metadataCard.getByRole('tab', {name: 'X card'});
         const facebookTab = metadataCard.getByRole('tab', {name: 'Facebook card'});
@@ -99,6 +105,7 @@ describe('Tag detail (tagDetailsReact on)', () => {
         await expect.element(codeInjectionTrigger).toHaveAttribute('aria-expanded', 'false');
         expect(codeInjectionCard.getByRole('textbox', {name: /^Tag header/}).query()).toBeNull();
         expect(codeInjectionCard.getByRole('textbox', {name: /^Tag footer/}).query()).toBeNull();
+        expect(metadataCard.element().compareDocumentPosition(codeInjectionCard.element()) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     });
 
     it('edits and saves tag code injection with CodeMirror', async () => {

@@ -1,7 +1,7 @@
 import React from 'react';
 import TagColorField from './tag-color-field';
 import TagImageField from './tag-image-field';
-import {Accordion, AccordionContent, AccordionItem, AccordionTrigger, Card, CardContent, CardDescription, CardHeader, CardTitle, CodeEditor, FieldError, Input, Label, Tabs, TabsContent, TabsList, TabsTrigger, Textarea} from '@tryghost/shade/components';
+import {Accordion, AccordionContent, AccordionItem, AccordionTrigger, Card, CardContent, CodeEditor, FieldError, Input, Label, Tabs, TabsContent, TabsList, TabsTrigger, Textarea} from '@tryghost/shade/components';
 import {Grid, Inline, Stack} from '@tryghost/shade/primitives';
 import {DESCRIPTION_MAX_LENGTH, FACEBOOK_DESCRIPTION_RECOMMENDED_LENGTH, FACEBOOK_TITLE_RECOMMENDED_LENGTH, META_DESCRIPTION_RECOMMENDED_LENGTH, META_TITLE_RECOMMENDED_LENGTH, X_DESCRIPTION_RECOMMENDED_LENGTH, X_TITLE_RECOMMENDED_LENGTH, charLength, getBlogDomain, getSeoDescription, getSeoTitle, getSeoUrl, getSlugUrlPreview, validateTagField} from './tag-detail-edit';
 import {FacebookCardPreview, SeoPreview, XCardPreview} from './tag-detail-previews';
@@ -55,8 +55,7 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
         <Grid align='start' className='lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]' data-testid='tag-detail-form' gap='2xl'>
             {/* The main form and advanced settings collapse into one column
                 below the large breakpoint. */}
-            <Stack gap='2xl'>
-                <Card data-testid='tag-core-data-card'>
+            <Card data-testid='tag-core-data-card'>
                 <CardContent className='p-6'>
                     <Stack gap='lg'>
                         <Stack gap='sm'>
@@ -135,51 +134,20 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                         </Stack>
                     </Stack>
                 </CardContent>
-                </Card>
+            </Card>
 
-                <Card data-testid='tag-code-injection-card'>
+            <Stack gap='2xl'>
+                <Card className='overflow-hidden' data-testid='tag-metadata-card'>
                     <Accordion type='single' collapsible>
-                        <AccordionItem className='border-b-0' value='code-injection'>
+                        <AccordionItem className='border-b-0' value='metadata'>
                             <AccordionTrigger className='px-6 py-5 hover:no-underline'>
                                 <Stack className='text-left' gap='none'>
-                                    <span className='text-[14px] font-semibold'>Code injection</span>
-                                    <span className='text-[13px] font-normal text-muted-foreground'>Add styles/scripts to the header and footer.</span>
+                                    <span className='text-[14px] font-semibold'>Meta data</span>
+                                    <span className='text-[13px] font-normal text-muted-foreground'>Extra content for search engines and social accounts.</span>
                                 </Stack>
                             </AccordionTrigger>
                             <AccordionContent className='px-6'>
-                                <Stack className='pt-1' gap='lg'>
-                                    <CodeEditor
-                                        data-testid='codeinjection-head'
-                                        editable={!disabled}
-                                        extensions={htmlExtensions}
-                                        height='128px'
-                                        title={<>Tag header <code className='ml-1 font-normal'>{'{{ghost_head}}'}</code></>}
-                                        value={draft.codeinjectionHead}
-                                        onChange={value => onChange({codeinjectionHead: value})}
-                                    />
-                                    <CodeEditor
-                                        data-testid='codeinjection-foot'
-                                        editable={!disabled}
-                                        extensions={htmlExtensions}
-                                        height='128px'
-                                        title={<>Tag footer <code className='ml-1 font-normal'>{'{{ghost_foot}}'}</code></>}
-                                        value={draft.codeinjectionFoot}
-                                        onChange={value => onChange({codeinjectionFoot: value})}
-                                    />
-                                </Stack>
-                            </AccordionContent>
-                        </AccordionItem>
-                    </Accordion>
-                </Card>
-            </Stack>
-
-            <Card className='overflow-hidden' data-testid='tag-metadata-card'>
-                <CardHeader>
-                    <CardTitle className='text-[14px]'>Meta data</CardTitle>
-                    <CardDescription className='text-[13px]'>Extra content for search engines and social accounts.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Tabs defaultValue='search' variant='underline'>
+                                <Tabs defaultValue='search' variant='underline'>
                         <TabsList aria-label='Tag metadata'>
                             <TabsTrigger value='search'>Search</TabsTrigger>
                             <TabsTrigger value='x-card'>X card</TabsTrigger>
@@ -318,9 +286,47 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                                 </Stack>
                             </Stack>
                         </TabsContent>
-                    </Tabs>
-                </CardContent>
-            </Card>
+                                </Tabs>
+                            </AccordionContent>
+                        </AccordionItem>
+                    </Accordion>
+                </Card>
+
+                <Card data-testid='tag-code-injection-card'>
+                    <Accordion type='single' collapsible>
+                        <AccordionItem className='border-b-0' value='code-injection'>
+                            <AccordionTrigger className='px-6 py-5 hover:no-underline'>
+                                <Stack className='text-left' gap='none'>
+                                    <span className='text-[14px] font-semibold'>Code injection</span>
+                                    <span className='text-[13px] font-normal text-muted-foreground'>Add styles/scripts to the header and footer.</span>
+                                </Stack>
+                            </AccordionTrigger>
+                            <AccordionContent className='px-6'>
+                                <Stack className='pt-1' gap='lg'>
+                                    <CodeEditor
+                                        data-testid='codeinjection-head'
+                                        editable={!disabled}
+                                        extensions={htmlExtensions}
+                                        height='128px'
+                                        title={<>Tag header <code className='ml-1 font-normal'>{'{{ghost_head}}'}</code></>}
+                                        value={draft.codeinjectionHead}
+                                        onChange={value => onChange({codeinjectionHead: value})}
+                                    />
+                                    <CodeEditor
+                                        data-testid='codeinjection-foot'
+                                        editable={!disabled}
+                                        extensions={htmlExtensions}
+                                        height='128px'
+                                        title={<>Tag footer <code className='ml-1 font-normal'>{'{{ghost_foot}}'}</code></>}
+                                        value={draft.codeinjectionFoot}
+                                        onChange={value => onChange({codeinjectionFoot: value})}
+                                    />
+                                </Stack>
+                            </AccordionContent>
+                        </AccordionItem>
+                    </Accordion>
+                </Card>
+            </Stack>
         </Grid>
     );
 };
