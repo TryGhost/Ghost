@@ -12,8 +12,8 @@ const GIFT_REMINDER_LEAD_MS = GIFT_REMINDER_LEAD_DAYS * MS_PER_DAY;
 
 interface GiftReminderSchedulerDeps {
     apiUrl: string;
-    // Optional in deps so the JS wrapper can pass options.schedulerAdapter
-    // through without TS complaining at the JS/TS boundary. The class field
+    // Optional in deps so init() can preserve its existing optional options
+    // contract. The class field
     // below is non-optional; the constructor's adapter.register(this) call
     // throws if undefined is passed through in practice.
     adapter?: SchedulerAdapter;
