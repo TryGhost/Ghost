@@ -11,6 +11,7 @@ import {DEFAULT_EMAIL_DESIGN_SETTING_SLUG, MEMBER_WELCOME_EMAIL_SLUGS} from '../
 import type {
     AutomatedEmailEvents,
     Automation,
+    AutomationBrowseResult,
     AutomationAction,
     AutomationEdge,
     AutomationEmailStats,
@@ -52,6 +53,8 @@ interface AutomationRow {
     updated_at: DatabaseDate;
 }
 
+interface AutomationBrowseRow extends AutomationRow {
+}
 
 interface ActionRow {
     id: string;
@@ -145,12 +148,12 @@ export function createDatabaseAutomationsRepository({
     fakeWaitHoursMultiplier: number | null;
 }): AutomationsRepository {
     return {
-        async browse(): Promise<Page<AutomationSummary>> {
+        async browse(): Promise<Page<AutomationBrowseResult>> {
             return await knex.transaction(async (trx) => {
                 await ensureDefaultAutomations(trx);
                 const rows = await loadAutomations(trx);
                 return {
-                    data: rows.map(row => buildAutomationSummary(row)),
+                    data: rows.map(row => buildAutomationBrowseResult(row)),
                     meta: {
                         pagination: buildPagination(rows.length)
                     }
@@ -1013,7 +1016,7 @@ async function loadAutomationBySlug(trx: Knex.Transaction, slug: string): Promis
     return row ?? null;
 }
 
-async function loadAutomations(trx: Knex.Transaction): Promise<AutomationRow[]> {
+async function loadAutomations(trx: Knex.Transaction): Promise<AutomationBrowseRow[]> {
     return await trx('automations')
         .select('id', 'slug', 'name', 'status', 'created_at', 'updated_at')
         .orderBy('name');
@@ -1352,6 +1355,14 @@ function buildAutomationSummary(automation: AutomationRow): AutomationSummary {
         status: automation.status,
         created_at: serializeDate(automation.created_at),
         updated_at: serializeDate(automation.updated_at)
+    };
+}
+
+function buildAutomationBrowseResult(automation: AutomationBrowseRow): AutomationBrowseResult {
+    return {
+        ...buildAutomationSummary(automation),
+        stats: {
+        }
     };
 }
 

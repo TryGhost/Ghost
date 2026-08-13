@@ -15,14 +15,19 @@ const {anyContentVersion, anyEtag, anyErrorId, anyISODateTime, anyObjectId} = ma
 const {cacheInvalidateHeaderNotSet} = assertions;
 const hashRedirectDestination = url => createHash('sha256').update(url).digest();
 
-const matchAutomationSummary = () => ({
+const matchAutomationBase = () => ({
     id: anyObjectId,
     created_at: anyISODateTime,
     updated_at: anyISODateTime
 });
 
+const matchAutomationSummary = () => ({
+    ...matchAutomationBase(),
+    stats: {}
+});
+
 const matchAutomation = () => ({
-    ...matchAutomationSummary(),
+    ...matchAutomationBase(),
     actions: [{
         id: anyObjectId
     }, {
