@@ -208,6 +208,41 @@ describe('Portal API gift checkout', () => {
         });
         expect(body).not.toHaveProperty('cadence');
     });
+
+    test('sends immediate gift delivery details', async () => {
+        const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
+        const requestSpy = vi.spyOn(window, 'fetch').mockImplementation((url) => {
+            if (url.includes('/members/api/session/')) {
+                return Promise.resolve(new Response('identity-token', {status: 200}));
+            }
+
+            return Promise.resolve(new Response(JSON.stringify({
+                url: 'https://checkout.stripe.com/gift-session'
+            }), {status: 200, headers: {'Content-Type': 'application/json'}}));
+        });
+
+        await ghostApi.member.checkoutGift({
+            tierId: 'tier_123',
+            duration: 3,
+            deliveryMethod: 'email',
+            recipientEmail: 'recipient@example.com',
+            recipientName: 'Taylor',
+            buyerName: 'Jamie',
+            personalMessage: 'Enjoy!'
+        });
+
+        const [, request] = requestSpy.mock.calls.at(-1);
+        expect(JSON.parse(request.body)).toMatchObject({
+            type: 'gift',
+            tierId: 'tier_123',
+            duration: 3,
+            deliveryMethod: 'email',
+            recipientEmail: 'recipient@example.com',
+            recipientName: 'Taylor',
+            buyerName: 'Jamie',
+            personalMessage: 'Enjoy!'
+        });
+    });
 });
 
 describe('Portal API member checkout', () => {
