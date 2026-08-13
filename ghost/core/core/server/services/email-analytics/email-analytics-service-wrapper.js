@@ -29,6 +29,7 @@ class EmailAnalyticsServiceWrapper {
      * @param {object} options
      * @param {Parameters<typeof domainEvents.subscribe>[0]} options.event
      * @param {string[]} options.mailgunTags
+     * @param {() => {apiKey: string, domain: string, baseUrl: string}|null} [options.getMailgunConfig]
      * @param {JobNames} options.jobNames
      * @param {CursorSeed} options.cursorSeed
      * @param {() => BatchEventProcessor} options.createEventProcessor
@@ -37,6 +38,7 @@ class EmailAnalyticsServiceWrapper {
     init({
         event,
         mailgunTags,
+        getMailgunConfig,
         jobNames,
         cursorSeed,
         createEventProcessor,
@@ -52,7 +54,7 @@ class EmailAnalyticsServiceWrapper {
         const {queries} = require('./lib/queries');
 
         this.service = new EmailAnalyticsService({
-            fetchEvents: (options) => fetchMailgunEvents({...options, config, settings, tags: mailgunTags}),
+            fetchEvents: (options) => fetchMailgunEvents({...options, config, settings, tags: mailgunTags, getMailgunConfig}),
             queries,
             prometheusClient,
             jobNames,

@@ -29,6 +29,7 @@ describe('GiftDelivery', function () {
             email_provider_message_id: 'provider-123',
             outcome: 'delivered',
             outcome_at: '2026-08-11T11:01:00.000Z',
+            outcome_at_ms: 123,
             outcome_error: null
         } as const;
 
@@ -39,7 +40,7 @@ describe('GiftDelivery', function () {
         assert.deepEqual(encodeGiftDelivery(delivery), {
             ...row,
             email_sent_at: new Date(row.email_sent_at),
-            outcome_at: new Date(row.outcome_at)
+            outcome_at: new Date('2026-08-11T11:01:00.123Z')
         });
     });
 

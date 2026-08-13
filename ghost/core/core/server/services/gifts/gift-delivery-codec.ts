@@ -2,6 +2,16 @@ import {z} from 'zod';
 import {GiftDelivery} from './gift-delivery';
 import {DbGiftDelivery} from './gift-delivery-schema';
 
+function withMilliseconds(date: Date | null, milliseconds: number): Date | null {
+    if (!date) {
+        return date;
+    }
+
+    const preciseDate = new Date(date);
+    preciseDate.setUTCMilliseconds(milliseconds);
+    return preciseDate;
+}
+
 export const giftDeliveryCodec = z.codec(DbGiftDelivery, z.instanceof(GiftDelivery), {
     decode: row => new GiftDelivery({
         id: row.id,
@@ -12,7 +22,7 @@ export const giftDeliveryCodec = z.codec(DbGiftDelivery, z.instanceof(GiftDelive
         emailSentAt: row.email_sent_at,
         emailProviderMessageId: row.email_provider_message_id,
         outcome: row.outcome,
-        outcomeAt: row.outcome_at,
+        outcomeAt: withMilliseconds(row.outcome_at, row.outcome_at_ms),
         outcomeError: row.outcome_error
     }),
     encode: delivery => ({
@@ -25,6 +35,7 @@ export const giftDeliveryCodec = z.codec(DbGiftDelivery, z.instanceof(GiftDelive
         email_provider_message_id: delivery.emailProviderMessageId,
         outcome: delivery.outcome,
         outcome_at: delivery.outcomeAt,
+        outcome_at_ms: delivery.outcomeAt?.getUTCMilliseconds() ?? 0,
         outcome_error: delivery.outcomeError
     })
 });

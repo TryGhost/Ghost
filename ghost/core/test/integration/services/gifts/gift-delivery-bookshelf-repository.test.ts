@@ -28,17 +28,17 @@ describe('GiftDeliveryBookshelfRepository (integration)', function () {
 
     async function createPendingEmailGift({
         availableAt,
-        startedAt = null,
+        attemptAt = null,
         giftStatus = 'purchased'
     }: {
         availableAt: Date;
-        startedAt?: Date | null;
+        attemptAt?: Date | null;
         giftStatus?: string;
     }) {
         giftSequence += 1;
         const now = new Date();
         const gift = await models.Gift.add({
-            token: `delivery-start-test-token-${giftSequence}`,
+            token: `delivery-attempt-test-token-${giftSequence}`,
             buyer_email: `buyer-${giftSequence}@example.com`,
             buyer_member_id: null,
             buyer_name: 'Gift Buyer',
@@ -67,7 +67,8 @@ describe('GiftDeliveryBookshelfRepository (integration)', function () {
             gift_id: gift.id,
             recipient_email: `recipient-${giftSequence}@example.com`,
             status: 'pending',
-            started_at: startedAt,
+            attempts: 0,
+            attempt_at: attemptAt,
             email_sent_at: null,
             email_provider_message_id: null,
             outcome: 'unknown',
@@ -109,34 +110,42 @@ describe('GiftDeliveryBookshelfRepository (integration)', function () {
         assert.equal(await deliveryRepository.getByGiftId(gift.id), null);
     });
 
-    it('allows exactly one concurrent caller to start a due delivery', async function () {
-        const startedAt = new Date();
-        startedAt.setMilliseconds(0);
+    it('allows exactly one concurrent caller to start a due delivery attempt', async function () {
+        const attemptAt = new Date();
+        attemptAt.setMilliseconds(0);
         const {delivery} = await createPendingEmailGift({
-            availableAt: new Date(startedAt.getTime() - 60_000)
+            availableAt: new Date(attemptAt.getTime() - 60_000),
+            attemptAt: new Date(attemptAt.getTime() - 30_000)
         });
 
-        const starts = await Promise.all([
-            deliveryRepository.tryStartDelivery(delivery.id, startedAt),
-            deliveryRepository.tryStartDelivery(delivery.id, startedAt)
+        const attempts = await Promise.all([
+            deliveryRepository.tryStartAttempt(delivery.id, attemptAt, 10),
+            deliveryRepository.tryStartAttempt(delivery.id, attemptAt, 10)
         ]);
         const reloaded = await deliveryRepository.getById(delivery.id);
 
-        assert.equal(starts.filter(Boolean).length, 1);
-        assert.equal(starts.filter(start => start === null).length, 1);
+        assert.equal(attempts.filter(Boolean).length, 1);
+        assert.equal(attempts.filter(attempt => attempt === null).length, 1);
         assert.equal(reloaded?.status, 'sending');
-        assert.equal(reloaded?.startedAt?.toISOString(), startedAt.toISOString());
+        assert.equal(reloaded?.attempts, 1);
+        assert.equal(reloaded?.attemptAt?.toISOString(), attemptAt.toISOString());
     });
 
-    it('does not start a delivery before gift availability', async function () {
-        const startedAt = new Date();
-        startedAt.setMilliseconds(0);
+    it('does not start an attempt before gift availability or the retry time', async function () {
+        const attemptAt = new Date();
+        attemptAt.setMilliseconds(0);
         const futureAvailability = await createPendingEmailGift({
-            availableAt: new Date(startedAt.getTime() + 60_000)
+            availableAt: new Date(attemptAt.getTime() + 60_000)
+        });
+        const futureRetry = await createPendingEmailGift({
+            availableAt: new Date(attemptAt.getTime() - 60_000),
+            attemptAt: new Date(attemptAt.getTime() + 60_000)
         });
 
-        assert.equal(await deliveryRepository.tryStartDelivery(futureAvailability.delivery.id, startedAt), null);
-        assert.equal((await deliveryRepository.getById(futureAvailability.delivery.id))?.status, 'pending');
+        assert.equal(await deliveryRepository.tryStartAttempt(futureAvailability.delivery.id, attemptAt, 10), null);
+        assert.equal(await deliveryRepository.tryStartAttempt(futureRetry.delivery.id, attemptAt, 10), null);
+        assert.equal((await deliveryRepository.getById(futureAvailability.delivery.id))?.attempts, 0);
+        assert.equal((await deliveryRepository.getById(futureRetry.delivery.id))?.attempts, 0);
     });
 
     it('finds only the oldest due deliveries within the requested batch size', async function () {
@@ -151,27 +160,44 @@ describe('GiftDeliveryBookshelfRepository (integration)', function () {
         await createPendingEmailGift({
             availableAt: new Date(now.getTime() + 60_000)
         });
+        await createPendingEmailGift({
+            availableAt: new Date(now.getTime() - 120_000),
+            attemptAt: new Date(now.getTime() + 60_000)
+        });
+
         const due = await deliveryRepository.findDue(now, 1);
 
         assert.equal(due.length, 1);
         assert.equal(due[0]?.delivery.id, oldestDue.delivery.id);
     });
 
-    it('does not complete a delivery that is not sending', async function () {
+    it('does not start an attempt once the attempt cap is reached', async function () {
+        const attemptAt = new Date();
+        const {delivery} = await createPendingEmailGift({
+            availableAt: new Date(attemptAt.getTime() - 60_000)
+        });
+        await delivery.save({attempts: 10}, {patch: true});
+
+        assert.equal(await deliveryRepository.tryStartAttempt(delivery.id, attemptAt, 10), null);
+        assert.equal((await deliveryRepository.getById(delivery.id))?.attempts, 10);
+    });
+
+    it('does not complete or retry a delivery that is not sending', async function () {
         const {delivery} = await createPendingEmailGift({availableAt: new Date()});
 
         assert.equal(await deliveryRepository.markSent(delivery.id, new Date(), 'provider-1'), false);
+        assert.equal(await deliveryRepository.markForRetry(delivery.id, new Date()), false);
         assert.equal((await deliveryRepository.getById(delivery.id))?.status, 'pending');
     });
 
-    it('does not start a delivery when the parent gift is no longer purchased', async function () {
-        const startedAt = new Date();
+    it('does not start an attempt when the parent gift is no longer purchased', async function () {
+        const attemptAt = new Date();
         const {delivery} = await createPendingEmailGift({
-            availableAt: new Date(startedAt.getTime() - 60_000),
+            availableAt: new Date(attemptAt.getTime() - 60_000),
             giftStatus: 'refunded'
         });
 
-        assert.equal(await deliveryRepository.tryStartDelivery(delivery.id, startedAt), null);
+        assert.equal(await deliveryRepository.tryStartAttempt(delivery.id, attemptAt, 10), null);
     });
 
     it('cancels a pending delivery by gift token', async function () {
@@ -210,4 +236,33 @@ describe('GiftDeliveryBookshelfRepository (integration)', function () {
         assert.equal(reloaded?.outcomeError, null);
     });
 
+    it('orders provider outcomes within the same second', async function () {
+        const {delivery} = await createPendingEmailGift({availableAt: new Date()});
+        await delivery.save({
+            email_provider_message_id: 'provider-123',
+            outcome: 'temporary_failed',
+            outcome_at: new Date('2026-08-11T10:00:00.000Z'),
+            outcome_at_ms: 900,
+            outcome_error: 'temporary rejection'
+        }, {patch: true});
+
+        assert.equal(await deliveryRepository.recordOutcome({
+            providerMessageId: 'provider-123',
+            outcome: 'permanent_failed',
+            timestamp: new Date('2026-08-11T10:00:00.100Z'),
+            error: 'older rejection'
+        }), false);
+
+        assert.equal(await deliveryRepository.recordOutcome({
+            providerMessageId: 'provider-123',
+            outcome: 'delivered',
+            timestamp: new Date('2026-08-11T10:00:00.950Z'),
+            error: null
+        }), true);
+
+        const reloaded = await deliveryRepository.getById(delivery.id);
+        assert.equal(reloaded?.outcome, 'delivered');
+        assert.equal(reloaded?.outcomeAt?.toISOString(), '2026-08-11T10:00:00.950Z');
+        assert.equal(reloaded?.outcomeError, null);
+    });
 });

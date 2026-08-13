@@ -16,8 +16,9 @@ export interface GiftDeliveryRepository {
     findDue(now: Date, limit: number): Promise<GiftDeliverySchedule[]>;
     findPending(): Promise<GiftDeliverySchedule[]>;
     countStuck(before: Date): Promise<number>;
-    tryStartDelivery(id: string, now: Date): Promise<GiftDelivery | null>;
+    tryStartAttempt(id: string, now: Date, maxAttempts: number): Promise<GiftDelivery | null>;
     markSent(id: string, sentAt: Date, providerMessageId: string | null): Promise<boolean>;
+    markForRetry(id: string, nextAttemptAt: Date): Promise<boolean>;
     markFailed(id: string): Promise<boolean>;
     markCancelled(id: string): Promise<boolean>;
     cancelPendingForGift(token: string, options?: RepositoryTransactionOptions): Promise<boolean>;
@@ -72,7 +73,10 @@ export class GiftDeliveryBookshelfRepository implements GiftDeliveryRepository {
                 .where('gift.status', 'purchased')
                 .whereRaw('COALESCE(gift.available_at, gift.purchased_at) <= ?', [dueAt])
                 .where('delivery.status', 'pending')
-                .orderByRaw('COALESCE(gift.available_at, gift.purchased_at) ASC')
+                .where((builder) => {
+                    builder.whereNull('delivery.attempt_at').orWhere('delivery.attempt_at', '<=', dueAt);
+                })
+                .orderByRaw('COALESCE(delivery.attempt_at, gift.available_at, gift.purchased_at) ASC')
                 .limit(limit)
                 .select('delivery.*', 'gift.available_at', 'gift.purchased_at');
 
@@ -89,7 +93,7 @@ export class GiftDeliveryBookshelfRepository implements GiftDeliveryRepository {
                 .innerJoin('gifts as gift', 'gift.id', 'delivery.gift_id')
                 .where('gift.status', 'purchased')
                 .where('delivery.status', 'pending')
-                .orderByRaw('COALESCE(gift.available_at, gift.purchased_at) ASC')
+                .orderByRaw('COALESCE(delivery.attempt_at, gift.available_at, gift.purchased_at) ASC')
                 .select('delivery.*', 'gift.available_at', 'gift.purchased_at');
 
             return rows.map(row => ({
@@ -105,7 +109,7 @@ export class GiftDeliveryBookshelfRepository implements GiftDeliveryRepository {
                 .innerJoin('gifts as gift', 'gift.id', 'delivery.gift_id')
                 .where('gift.status', 'purchased')
                 .where('delivery.status', 'sending')
-                .where('delivery.started_at', '<=', toDatabaseDate(before))
+                .where('delivery.attempt_at', '<=', toDatabaseDate(before))
                 .count({count: 'delivery.id'})
                 .first();
 
@@ -113,21 +117,26 @@ export class GiftDeliveryBookshelfRepository implements GiftDeliveryRepository {
         });
     }
 
-    async tryStartDelivery(id: string, now: Date): Promise<GiftDelivery | null> {
+    async tryStartAttempt(id: string, now: Date, maxAttempts: number): Promise<GiftDelivery | null> {
         return this.transaction(async (transacting) => {
-            const startedAt = toDatabaseDate(now);
+            const claimAt = toDatabaseDate(now);
             const eligibleGifts = transacting('gifts')
                 .select('id')
                 .where('status', 'purchased')
-                .whereRaw('COALESCE(available_at, purchased_at) <= ?', [startedAt]);
+                .whereRaw('COALESCE(available_at, purchased_at) <= ?', [claimAt]);
 
             const updated = await transacting('gift_deliveries')
                 .where({id, status: 'pending'})
                 .whereIn('gift_id', eligibleGifts)
+                .where('attempts', '<', maxAttempts)
+                .where((builder) => {
+                    builder.whereNull('attempt_at').orWhere('attempt_at', '<=', claimAt);
+                })
                 .update({
                     status: 'sending',
-                    started_at: startedAt
-                });
+                    attempt_at: claimAt
+                })
+                .increment('attempts', 1);
 
             if (updated !== 1) {
                 return null;
@@ -142,21 +151,28 @@ export class GiftDeliveryBookshelfRepository implements GiftDeliveryRepository {
             status: 'sent',
             email_sent_at: toDatabaseDate(sentAt),
             email_provider_message_id: providerMessageId,
-            started_at: null
+            attempt_at: null
+        });
+    }
+
+    async markForRetry(id: string, nextAttemptAt: Date): Promise<boolean> {
+        return this.updateState(id, 'sending', {
+            status: 'pending',
+            attempt_at: toDatabaseDate(nextAttemptAt)
         });
     }
 
     async markFailed(id: string): Promise<boolean> {
         return this.updateState(id, 'sending', {
             status: 'failed',
-            started_at: null
+            attempt_at: null
         });
     }
 
     async markCancelled(id: string): Promise<boolean> {
         return this.updateState(id, 'sending', {
             status: 'cancelled',
-            started_at: null
+            attempt_at: null
         });
     }
 
@@ -166,7 +182,7 @@ export class GiftDeliveryBookshelfRepository implements GiftDeliveryRepository {
             const updated = await transacting('gift_deliveries')
                 .where({status: 'pending'})
                 .whereIn('gift_id', gift)
-                .update({status: 'cancelled', started_at: null});
+                .update({status: 'cancelled', attempt_at: null});
 
             return updated === 1;
         };
@@ -177,14 +193,23 @@ export class GiftDeliveryBookshelfRepository implements GiftDeliveryRepository {
     async recordOutcome({providerMessageId, outcome, timestamp, error}: {providerMessageId: string; outcome: GiftDeliveryOutcome; timestamp: Date; error: string | null}): Promise<boolean> {
         return this.transaction(async (transacting) => {
             const outcomeAt = toDatabaseDate(timestamp);
+            const outcomeAtMilliseconds = timestamp.getUTCMilliseconds();
             const updated = await transacting('gift_deliveries')
                 .where({email_provider_message_id: providerMessageId})
                 .where((builder) => {
-                    builder.whereNull('outcome_at').orWhere('outcome_at', '<', outcomeAt);
+                    builder
+                        .whereNull('outcome_at')
+                        .orWhere('outcome_at', '<', outcomeAt)
+                        .orWhere((sameSecond) => {
+                            sameSecond
+                                .where('outcome_at', '=', outcomeAt)
+                                .where('outcome_at_ms', '<', outcomeAtMilliseconds);
+                        });
                 })
                 .update({
                     outcome,
                     outcome_at: outcomeAt,
+                    outcome_at_ms: outcomeAtMilliseconds,
                     outcome_error: error
                 });
 
@@ -209,5 +234,4 @@ export class GiftDeliveryBookshelfRepository implements GiftDeliveryRepository {
             return updated === 1;
         });
     }
-
 }
