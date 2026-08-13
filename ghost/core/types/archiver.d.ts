@@ -1,5 +1,7 @@
 // archiver v8 ships no types and the DefinitelyTyped package targets the old
-// (v7) factory API, so we declare the small surface we actually use.
+// (v7) factory API, so we declare the surface we actually use. This types
+// every `import 'archiver'` in ghost/core — extend it here when a caller
+// needs more of the real API.
 declare module 'archiver' {
     import {Transform} from 'stream';
 
