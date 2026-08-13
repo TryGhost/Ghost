@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if ! amp orb service status docker >/dev/null 2>&1 || ! amp orb service status ghost >/dev/null 2>&1; then
+if ! systemctl is-active --quiet amp-svc-docker.service || ! systemctl is-active --quiet amp-svc-ghost.service; then
     amp orb services ensure
 fi
