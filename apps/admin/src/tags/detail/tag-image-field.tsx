@@ -133,6 +133,7 @@ const TagImageField: React.FC<TagImageFieldProps> = ({id, label, uploadText, val
                     <>
                         <ImageUploadDropzone
                             accept={ACCEPTED_IMAGE_TYPES}
+                            className='group/dropzone transition-colors hover:bg-interactive-hover'
                             disabled={fieldDisabled}
                             inputAriaLabel={uploadText}
                             inputId={id}
@@ -147,15 +148,15 @@ const TagImageField: React.FC<TagImageFieldProps> = ({id, label, uploadText, val
                                 <LoadingIndicator size='sm' />
                             ) : (
                                 <Stack align='center' gap='sm'>
-                                    <LucideIcon.Upload aria-hidden='true' className='size-6 text-muted-foreground' />
-                                    <span className='text-sm text-muted-foreground'>{uploadText}</span>
+                                    <LucideIcon.Upload aria-hidden='true' className='size-6 stroke-[1.5px] text-muted-foreground transition-colors group-hover/dropzone:text-foreground' />
+                                    <span className='text-sm text-muted-foreground transition-colors group-hover/dropzone:text-foreground'>{uploadText}</span>
                                 </Stack>
                             )}
                         </ImageUploadDropzone>
                         {unsplashEnabled && (
                             <ImageUploadActions className='top-1 right-1 opacity-100'>
-                                <Button aria-label={`Select ${label.toLowerCase()} from Unsplash`} disabled={fieldDisabled} size='icon' type='button' variant='ghost' onClick={() => setShowUnsplash(true)}>
-                                    <BrandIcon className='size-4 text-muted-foreground' name='unsplash' />
+                                <Button aria-label={`Select ${label.toLowerCase()} from Unsplash`} className='group/unsplash hover:bg-button-hover' disabled={fieldDisabled} size='icon' type='button' variant='ghost' onClick={() => setShowUnsplash(true)}>
+                                    <BrandIcon className='size-4 text-muted-foreground transition-colors group-hover/unsplash:text-foreground' name='unsplash' />
                                 </Button>
                             </ImageUploadActions>
                         )}
