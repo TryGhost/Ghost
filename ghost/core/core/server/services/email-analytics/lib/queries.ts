@@ -9,6 +9,28 @@ const debug = debugFactory('services:email-analytics');
 
 const MIN_EMAIL_COUNT_FOR_OPEN_RATE = 5;
 
+type JobRow = {
+    id: string;
+    name: string;
+    status: 'started' | 'finished' | 'failed' | 'queued';
+    started_at: Date | null;
+    finished_at: Date | null;
+    created_at: Date;
+    updated_at: Date | null;
+    metadata: string | null;
+    queue_entry: number | null;
+};
+
+type JobInsert =
+    Pick<JobRow, 'id' | 'name' | 'created_at'>
+    & Partial<Omit<JobRow, 'id' | 'name' | 'created_at'>>;
+
+declare module 'knex/types/tables' {
+    interface Tables {
+        jobs: Knex.CompositeTableType<JobRow, JobInsert, Partial<JobRow>>;
+    }
+}
+
 type EmailAnalyticsJobName = string;
 type EmailAnalyticsEvent = 'delivered' | 'opened' | 'failed';
 type CursorSeed = {
@@ -164,7 +186,6 @@ export class Queries {
      * This is used to keep track of the last time the job was run to avoid expensive queries following reboot.
      */
     async setJobTimestamp(jobName: EmailAnalyticsJobName, field: 'finished' | 'started', date: Date): Promise<void> {
-        // Convert string dates to Date objects for SQLite compatibility
         try {
             debug(`Setting ${field} timestamp for job ${jobName} to ${date}`);
             const updateField = field === 'finished' ? 'finished_at' : 'started_at';
@@ -174,8 +195,9 @@ export class Queries {
                 await this.#knex('jobs').insert({
                     id: new ObjectID().toHexString(),
                     name: jobName,
-                    [updateField]: date.toISOString(), // force to iso string for sqlite
-                    updated_at: date.toISOString(), // force to iso string for sqlite
+                    [updateField]: date,
+                    created_at: new Date(),
+                    updated_at: date,
                     status: status
                 });
             }
