@@ -73,6 +73,35 @@ describe('MagicLinkPage', () => {
         });
     });
 
+    describe('Gift redemption', () => {
+        test('keeps the submitted recipient name on the gift card', () => {
+            const {getByText} = setupTest({
+                lastPage: 'gift',
+                site: {
+                    title: 'The Blueprint',
+                    labs: {
+                        giftSubCustomization: true
+                    }
+                },
+                pageData: {
+                    email: 'taylor@example.com',
+                    name: 'Taylor',
+                    gift: {
+                        cadence: 'year',
+                        duration: 1,
+                        tier: {
+                            name: 'Premium',
+                            benefits: []
+                        }
+                    }
+                }
+            });
+
+            expect(getByText('To')).toBeInTheDocument();
+            expect(getByText('Taylor')).toBeInTheDocument();
+        });
+    });
+
     describe('OTC form conditional rendering', () => {
         test('renders OTC form when otcRef exists', () => {
             const utils = setupOTCTest();

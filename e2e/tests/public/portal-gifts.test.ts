@@ -29,7 +29,11 @@ test.describe('Ghost Public - Portal Gifts', () => {
 
         await expect(tier).toContainText('$15');
         await expect(portalGiftPage.giftCardValue).toHaveText('$15');
-        await portalGiftPage.continueButton.click();
+        await portalGiftPage.continueToDeliveryButton.click();
+        await portalGiftPage.recipientNameInput.fill('Test Gift Recipient');
+        await portalGiftPage.recipientEmailInput.fill('gift-recipient@example.com');
+        await portalGiftPage.personalMessageInput.fill('Enjoy your gift!');
+        await portalGiftPage.continueToPaymentButton.click();
 
         const checkoutPage = new FakeStripeCheckoutPage(page);
         await checkoutPage.waitUntilPaymentReady();

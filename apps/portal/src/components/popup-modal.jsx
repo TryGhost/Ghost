@@ -3,7 +3,7 @@ import Frame from './frame';
 import {hasMode} from '../utils/check-mode';
 import AppContext from '../app-context';
 import {getFrameStyles} from './frame.styles';
-import Pages, {getActivePage} from '../pages';
+import {getActivePage, getPages} from '../pages';
 import PopupNotification from './common/popup-notification';
 import PoweredBy from './common/powered-by';
 import {getSiteProducts, hasAvailablePrices, isInviteOnly, isCookiesDisabled, hasFreeProductPrice} from '../utils/helpers';
@@ -49,7 +49,7 @@ function CookieDisabledBanner({message}) {
     return null;
 }
 
-class PopupContent extends React.Component {
+export class PopupContent extends React.Component {
     static contextType = AppContext;
 
     componentDidMount() {
@@ -69,8 +69,9 @@ class PopupContent extends React.Component {
 
     dismissPopup(event) {
         const eventTargetTag = (event.target && event.target.tagName);
-        // If focused on input field, only allow close if no value entered
-        const allowClose = eventTargetTag !== 'INPUT' || (eventTargetTag === 'INPUT' && !event?.target?.value);
+        const isTextField = eventTargetTag === 'INPUT' || eventTargetTag === 'TEXTAREA';
+        // If focused on a text field, only allow close if no value is entered.
+        const allowClose = !isTextField || !event?.target?.value;
         if (allowClose) {
             this.context.doAction('closePopup');
         }
@@ -117,8 +118,9 @@ class PopupContent extends React.Component {
     }
 
     renderActivePage() {
-        const {page} = this.context;
+        const {page, site} = this.context;
         getActivePage({page});
+        const Pages = getPages({site});
         const PageComponent = Pages[page];
 
         return (
@@ -267,6 +269,7 @@ export default class PopupModal extends React.Component {
     }
 
     renderCurrentPage(page) {
+        const Pages = getPages({site: this.context.site});
         const PageComponent = Pages[page];
 
         return (
