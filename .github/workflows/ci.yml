@@ -163,8 +163,10 @@ jobs:
               - 'scripts/test/check-agent-skill-links.test.js'
             package-standards:
               - 'packages/**'
+              - 'ghost/core/LICENSE'
               - 'package.json'
               - 'pnpm-workspace.yaml'
+              - 'scripts/check-package-licenses.js'
               - 'scripts/check-internal-packages.js'
               - 'scripts/create-package.js'
               - 'scripts/lib/constants.js'
@@ -445,9 +447,13 @@ jobs:
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
 
-      - name: Check internal package golden path
-        run: node scripts/check-internal-packages.js
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Check package standards
+        run: pnpm lint:packages
 
       - name: Test internal package checker
         run: node --test scripts/test/check-internal-packages.test.js
