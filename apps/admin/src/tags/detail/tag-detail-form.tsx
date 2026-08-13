@@ -143,7 +143,7 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                             <AccordionTrigger className='px-6 py-5 hover:no-underline'>
                                 <Stack className='text-left' gap='none'>
                                     <span className='text-[14px] font-semibold'>Meta data</span>
-                                    <span className='text-[13px] leading-[16px] font-normal text-muted-foreground'>Extra content for search engines and social accounts.</span>
+                                    <span className='text-[13px] leading-[16px] font-normal tracking-normal text-muted-foreground'>Extra content for search engines and social accounts.</span>
                                 </Stack>
                             </AccordionTrigger>
                             <AccordionContent className='px-6'>
@@ -298,7 +298,7 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                             <AccordionTrigger className='px-6 py-5 hover:no-underline'>
                                 <Stack className='text-left' gap='none'>
                                     <span className='text-[14px] font-semibold'>Code injection</span>
-                                    <span className='text-[13px] leading-[16px] font-normal text-muted-foreground'>Add styles/scripts to the header and footer.</span>
+                                    <span className='text-[13px] leading-[16px] font-normal tracking-normal text-muted-foreground'>Add styles/scripts to the header and footer.</span>
                                 </Stack>
                             </AccordionTrigger>
                             <AccordionContent className='px-6'>
