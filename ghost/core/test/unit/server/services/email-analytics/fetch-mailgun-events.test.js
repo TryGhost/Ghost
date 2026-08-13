@@ -1,8 +1,7 @@
-const assert = require('node:assert/strict');
 const sinon = require('sinon');
 
 const MailgunClient = require('../../../../../core/server/services/lib/mailgun-client');
-const {fetchMailgunEvents, getTransactionalMailgunConfig} = require('../../../../../core/server/services/email-analytics/fetch-mailgun-events');
+const {fetchMailgunEvents} = require('../../../../../core/server/services/email-analytics/fetch-mailgun-events');
 
 const DEFAULT_TAGS = ['bulk-email'];
 const LATEST_TIMESTAMP = new Date('Thu Feb 25 2021 12:00:00 GMT+0000');
@@ -96,36 +95,5 @@ describe('fetchMailgunEvents', function () {
             ...MAILGUN_OPTIONS,
             event: 'delivered'
         }, batchHandler, {maxEvents: undefined});
-    });
-
-    it('maps the transactional Mailgun transport configuration', function () {
-        const transactionalConfig = {
-            get: sinon.stub().withArgs('mail').returns({
-                transport: 'Mailgun',
-                options: {
-                    auth: {
-                        api_key: 'apiKey',
-                        domain: 'transactional.example.com'
-                    },
-                    host: 'api.eu.mailgun.net'
-                }
-            })
-        };
-
-        assert.deepEqual(getTransactionalMailgunConfig(transactionalConfig), {
-            apiKey: 'apiKey',
-            domain: 'transactional.example.com',
-            baseUrl: 'https://api.eu.mailgun.net'
-        });
-    });
-
-    it('does not fall back to bulk Mailgun configuration for other transactional transports', function () {
-        const transactionalConfig = {
-            get: sinon.stub().withArgs('mail').returns({
-                transport: 'SMTP'
-            })
-        };
-
-        assert.equal(getTransactionalMailgunConfig(transactionalConfig), null);
     });
 });

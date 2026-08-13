@@ -9,12 +9,10 @@ const DEFAULT_BATCH_SIZE = 1000;
 module.exports = class MailgunClient {
     #config;
     #settings;
-    #getMailgunConfig;
 
-    constructor({config, settings, getMailgunConfig}) {
+    constructor({config, settings}) {
         this.#config = config;
         this.#settings = settings;
-        this.#getMailgunConfig = getMailgunConfig;
     }
 
     /**
@@ -197,7 +195,7 @@ module.exports = class MailgunClient {
     #getDomainsToFetch(mailgunConfig) {
         const domains = [mailgunConfig.domain];
 
-        const fallbackDomain = this.#getMailgunConfig ? null : this.#config.get('hostSettings:managedEmail:fallbackDomain');
+        const fallbackDomain = this.#config.get('hostSettings:managedEmail:fallbackDomain');
         if (fallbackDomain && fallbackDomain !== mailgunConfig.domain) {
             domains.push(fallbackDomain);
             logging.info(`[MailgunClient] Domain warming enabled, fetching from both primary (${mailgunConfig.domain}) and fallback (${fallbackDomain}) domains`);
@@ -333,10 +331,6 @@ module.exports = class MailgunClient {
     }
 
     #getConfig() {
-        if (this.#getMailgunConfig) {
-            return this.#getMailgunConfig();
-        }
-
         const bulkEmailConfig = this.#config.get('bulkEmail');
         const bulkEmailSetting = {
             apiKey: this.#settings.get('mailgun_api_key'),

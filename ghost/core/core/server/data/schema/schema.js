@@ -1464,7 +1464,6 @@ module.exports = {
             }
         },
         outcome_at: {type: 'dateTime', nullable: true},
-        outcome_at_ms: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
         outcome_error: {type: 'text', maxlength: 65535, nullable: true},
         '@@INDEXES@@': [
             {columns: ['email_provider_message_id'], length: 31},

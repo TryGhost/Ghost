@@ -165,43 +165,6 @@ describe('MailgunClient', function () {
         assert.equal(mailgunClient.isConfigured(), false);
     });
 
-    it('uses an explicit Mailgun configuration source without the managed bulk fallback domain', async function () {
-        const configStub = sinon.stub(config, 'get');
-        configStub.withArgs('bulkEmail').returns({
-            mailgun: {
-                apiKey: 'bulk-api-key',
-                domain: 'bulk.example.com',
-                baseUrl: 'https://api.mailgun.net'
-            }
-        });
-        configStub.withArgs('hostSettings:managedEmail:fallbackDomain').returns('fallback.example.com');
-        const getMailgunConfig = sinon.stub().returns({
-            apiKey: 'apiKey',
-            domain: 'transactional.example.com',
-            baseUrl: 'https://api.mailgun.net'
-        });
-        const transactionalApiMock = nock('https://api.mailgun.net')
-            .get('/v3/transactional.example.com/events')
-            .query(MAILGUN_OPTIONS)
-            .replyWithFile(200, `${__dirname}/fixtures/empty.json`, {
-                'Content-Type': 'application/json'
-            });
-        const fallbackApiMock = nock('https://api.mailgun.net')
-            .get('/v3/fallback.example.com/events')
-            .query(MAILGUN_OPTIONS)
-            .replyWithFile(200, `${__dirname}/fixtures/empty.json`, {
-                'Content-Type': 'application/json'
-            });
-
-        const mailgunClient = new MailgunClient({config, settings, getMailgunConfig});
-        await mailgunClient.fetchEvents(MAILGUN_OPTIONS, () => {});
-
-        assert.equal(transactionalApiMock.isDone(), true);
-        assert.equal(fallbackApiMock.isDone(), false);
-        sinon.assert.neverCalledWith(configStub, 'bulkEmail');
-        sinon.assert.neverCalledWith(configStub, 'hostSettings:managedEmail:fallbackDomain');
-    });
-
     it('respects changes in settings', async function () {
         const settingsStub = sinon.stub(settings, 'get');
         settingsStub.withArgs('mailgun_api_key').returns('settingsApiKey');

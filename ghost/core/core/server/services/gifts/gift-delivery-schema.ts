@@ -9,7 +9,7 @@ export const GiftDeliveryOutcomeSchema = z.enum(['unknown', 'delivered', 'tempor
 export type GiftDeliveryStatus = z.infer<typeof GiftDeliveryStatusSchema>;
 export type GiftDeliveryOutcome = z.infer<typeof GiftDeliveryOutcomeSchema>;
 
-const DbGiftDeliveryData = z.object({
+export const DbGiftDelivery = z.object({
     id: z.string(),
     gift_id: z.string(),
     recipient_email: z.string().email(),
@@ -22,11 +22,7 @@ const DbGiftDeliveryData = z.object({
     outcome_error: z.string().nullable().default(null)
 });
 
-export const DbGiftDelivery = DbGiftDeliveryData.extend({
-    outcome_at_ms: z.number().int().min(0).max(999).default(0)
-});
-
-type GiftDeliveryInputRow = z.input<typeof DbGiftDeliveryData>;
+type GiftDeliveryInputRow = z.input<typeof DbGiftDelivery>;
 export type GiftDeliveryRow = z.output<typeof DbGiftDelivery>;
-export type GiftDeliveryData = CamelKeys<z.output<typeof DbGiftDeliveryData>>;
+export type GiftDeliveryData = CamelKeys<GiftDeliveryRow>;
 export type GiftDeliveryDataInput = SetOptional<GiftDeliveryData, OptionalKeysOf<CamelKeys<GiftDeliveryInputRow>>>;

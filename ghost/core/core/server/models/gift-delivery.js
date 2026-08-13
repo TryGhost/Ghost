@@ -7,9 +7,7 @@ const GiftDelivery = ghostBookshelf.Model.extend({
 
     defaults: {
         status: 'pending',
-        attempts: 0,
-        outcome: 'unknown',
-        outcome_at_ms: 0
+        outcome: 'unknown'
     },
 
     gift() {

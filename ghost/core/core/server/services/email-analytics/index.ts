@@ -26,8 +26,6 @@ import * as automationsApi from '../automations/automations-api';
 import {AutomationEmailAnalyticsBatchProcessor} from './automation-email-analytics-batch-processor';
 import {GiftEmailAnalyticsBatchProcessor} from './gift-email-analytics-batch-processor';
 import {StartGiftEmailAnalyticsJobEvent} from './events/start-gift-email-analytics-job-event';
-// @ts-expect-error This CommonJS helper lacks type declarations.
-import {getTransactionalMailgunConfig} from './fetch-mailgun-events';
 // @ts-expect-error This CommonJS service wrapper lacks type declarations.
 import giftsService from '../gifts';
 // @ts-expect-error This CommonJS service lacks type declarations.
@@ -123,7 +121,6 @@ export const init = () => {
         gifts.init({
             event: StartGiftEmailAnalyticsJobEvent,
             mailgunTags: ['gift-delivery'],
-            getMailgunConfig: () => getTransactionalMailgunConfig(config),
             jobNames: {
                 latestNonOpened: 'email-analytics-gifts-latest-others',
                 missing: 'email-analytics-gifts-missing',

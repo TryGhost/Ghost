@@ -111,6 +111,12 @@ interface GiftEmailService {
         duration: number;
         expiresAt: Date;
     }): Promise<{providerMessageId: string}>;
+    sendDeliveryFailureNotification(data: {
+        buyerEmail: string;
+        recipientEmail: string;
+        token: string;
+        expiresAt: Date;
+    }): Promise<void>;
 }
 
 interface StaffServiceEmails {
@@ -1180,7 +1186,46 @@ export class GiftService {
     }
 
     async recordDeliveryOutcome(data: {providerMessageId: string; outcome: 'delivered' | 'temporary_failed' | 'permanent_failed'; timestamp: Date; error: string | null}): Promise<boolean> {
-        return this.deps.giftDeliveryRepository.recordOutcome(data);
+        const recorded = await this.deps.giftDeliveryRepository.recordOutcome(data);
+
+        if (recorded && data.outcome === 'permanent_failed') {
+            await this.notifyBuyerOfDeliveryFailure(data.providerMessageId);
+        }
+
+        return recorded;
+    }
+
+    private async notifyBuyerOfDeliveryFailure(providerMessageId: string): Promise<void> {
+        try {
+            const delivery = await this.deps.giftDeliveryRepository.getByProviderMessageId(providerMessageId);
+            if (!delivery) {
+                return;
+            }
+
+            const gift = await this.deps.giftRepository.getById(delivery.giftId);
+            if (!gift || gift.status !== 'purchased' || gift.expiresAt.getTime() <= Date.now()) {
+                return;
+            }
+
+            await this.deps.giftEmailService.sendDeliveryFailureNotification({
+                buyerEmail: gift.buyerEmail,
+                recipientEmail: delivery.recipientEmail,
+                token: gift.token,
+                expiresAt: gift.expiresAt
+            });
+
+            logging.info({
+                event: {name: 'gift_delivery.failure_notification.sent'},
+                giftId: delivery.giftId,
+                deliveryId: delivery.id
+            }, 'Sent gift delivery failure notification to buyer');
+        } catch (err) {
+            logging.error({
+                event: {name: 'gift_delivery.failure_notification.failed'},
+                err,
+                providerMessageId
+            }, 'Failed to send gift delivery failure notification to buyer');
+        }
     }
 
     async processReminders(): Promise<{remindedCount: number; skippedCount: number; failedCount: number}> {
