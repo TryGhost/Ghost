@@ -29,7 +29,7 @@ allowBuilds:
   'esbuild@0.25.12 || 0.28.1': true
   'fsevents@1.2.13 || 2.3.2 || 2.3.3': true
   'msw@2.14.6': true
-  'nx@23.0.1': true
+  'nx@23.1.1': true
   'protobufjs@7.6.4': true
   're2@1.25.0': true
   'sharp@0.35.3': true
@@ -121,7 +121,7 @@ catalog:
   concurrently: 10.0.3
   country-flag-icons: 1.6.20
   cross-fetch: 4.1.0
-  dependency-cruiser: ^18.0.0
+  dependency-cruiser: ^18.1.1
   dequal: 2.0.3
   dompurify: 3.4.11
   dotenv: 17.4.2
@@ -188,6 +188,11 @@ catalog:
   '@octokit/core': 7.0.7
   '@octokit/plugin-retry': 8.1.1
   '@octokit/plugin-throttling': 11.0.5
+  '@secretlint/secretlint-rule-pattern': 13.0.4
+  '@secretlint/secretlint-rule-preset-recommend': 13.0.4
+  knip: 6.32.1
+  lint-staged: 17.3.0
+  secretlint: 13.0.4
 
 catalogs:
   react17:
