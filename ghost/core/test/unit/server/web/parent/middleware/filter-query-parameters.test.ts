@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import logging from '@tryghost/logging';
 import express from 'express';
+import type {NextFunction, Request, Response} from 'express';
 import sinon from 'sinon';
 import request from 'supertest';
 
@@ -16,8 +17,7 @@ describe('Middleware: filterQueryParameters', function () {
                 originalUrl: req.originalUrl,
                 url: req.url,
                 path: req.path,
-                query: req.query,
-                queryHasOwnProperty: typeof req.query.hasOwnProperty === 'function'
+                query: req.query
             });
         });
 
@@ -120,8 +120,7 @@ describe('Middleware: filterQueryParameters', function () {
                 query: {
                     step: 'run-step-id',
                     m: 'member-id'
-                },
-                queryHasOwnProperty: true
+                }
             });
 
         sinon.assert.calledOnceWithExactly(warn, '[query-parameter-filter] Stripped undeclared query parameter(s) from /r/example: unknown');
@@ -139,8 +138,7 @@ describe('Middleware: filterQueryParameters', function () {
                 path: '/welcome/',
                 query: {
                     utm_source: 'newsletter'
-                },
-                queryHasOwnProperty: true
+                }
             });
 
         sinon.assert.notCalled(warn);
@@ -156,8 +154,33 @@ describe('Middleware: filterQueryParameters', function () {
                 path: '/ghost/api/admin/session/',
                 query: {
                     include: 'roles'
-                },
-                queryHasOwnProperty: true
+                }
             });
+    });
+
+    it('supports a getter-only query property', function () {
+        let url = '/r/example?step=run-step-id&unknown=value';
+        const req = {
+            originalUrl: url,
+            path: '/r/example',
+            get url() {
+                return url;
+            },
+            set url(value: string) {
+                url = value;
+            },
+            get query() {
+                return Object.fromEntries(new URLSearchParams(url.split('?')[1] || ''));
+            }
+        };
+        const next = sinon.spy();
+        sinon.stub(logging, 'warn');
+
+        filterQueryParameters(req as unknown as Request, {} as Response, next as NextFunction);
+
+        assert.equal(req.originalUrl, '/r/example?step=run-step-id');
+        assert.equal(req.url, '/r/example?step=run-step-id');
+        assert.deepEqual(req.query, {step: 'run-step-id'});
+        sinon.assert.calledOnce(next);
     });
 });
