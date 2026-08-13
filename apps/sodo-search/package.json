@@ -59,7 +59,7 @@
         "cross-fetch": "catalog:",
         "eslint": "catalog:",
         "jsdom": "catalog:",
-        "nock": "14.0.16",
+        "nock": "catalog:",
         "postcss": "catalog:",
         "postcss-import": "16.1.1",
         "tailwindcss": "catalog:tailwind3",
