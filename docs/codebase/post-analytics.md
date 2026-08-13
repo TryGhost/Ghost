@@ -1,8 +1,12 @@
 # Post Analytics
 
-Ghost provides post analytics for newsletter opens and link clicks. Summary
-information appears in the posts list, with more detail on each post's analytics
-page.
+Ghost provides post analytics for web traffic, member growth, newsletter opens,
+and link clicks. Summary information appears in the posts list, with more detail
+on each post's analytics page.
+
+Web traffic comes from Ghost's Tinybird integration. Member and revenue
+attribution comes from Ghost's event data. Newsletter analytics uses the local
+email, recipient, redirect, and click-event tables.
 
 ## Click tracking
 
@@ -18,6 +22,9 @@ member once.
 When an email is prepared, `LinkClickTrackingService` replaces a link with a
 Ghost redirect. A request to `/r/{redirectId}?m={memberUuid}` records the event
 and redirects the member to the destination.
+
+The implementation lives in
+[`services/link-tracking/`](../../ghost/core/core/server/services/link-tracking/).
 
 Click tracking can be disabled in Admin or with the `email_track_clicks`
 setting.
@@ -36,4 +43,9 @@ then uses a delayed missing-events pass because Mailgun events do not always
 arrive in order. Progress is stored so the job can continue from its previous
 position.
 
-Email analytics can be disabled with the `emailAnalytics` configuration.
+Email analytics can be disabled with `emailAnalytics.enabled`. The service and
+its scheduled jobs live in
+[`services/email-analytics/`](../../ghost/core/core/server/services/email-analytics/).
+
+The endpoints that combine web, member, and newsletter figures use
+[`posts-stats-service.js`](../../ghost/core/core/server/services/stats/posts-stats-service.js).
