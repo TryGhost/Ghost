@@ -35,6 +35,12 @@ describe('Tag detail (tagDetailsReact on)', () => {
         // blogUrl), scheme-stripped — never a bare `/tag/news/` path.
         await expect.element(page.getByTestId('tag-slug-preview')).toHaveTextContent('test.com/tag/news/');
         await expect.element(page.getByLabelText('Description', {exact: true})).toHaveValue('All the news');
+        const coreDataCard = page.getByTestId('tag-core-data-card');
+        await expect.element(coreDataCard.getByLabelText('Name', {exact: true})).toBeVisible();
+        await expect.element(coreDataCard.getByRole('button', {name: 'Accent color picker'})).toBeVisible();
+        await expect.element(coreDataCard.getByText('Tag image', {exact: true})).toBeVisible();
+        await expect.element(coreDataCard.getByLabelText('Slug', {exact: true})).toBeVisible();
+        await expect.element(coreDataCard.getByLabelText('Description', {exact: true})).toBeVisible();
         await page.getByRole('button', {name: 'Tag actions'}).click();
         await expect.element(page.getByRole('menuitem', {name: 'View posts'})).toHaveAttribute('target', '_blank');
         await expect.element(page.getByRole('menuitem', {name: 'Delete tag', exact: true})).toBeVisible();

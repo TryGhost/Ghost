@@ -2,7 +2,7 @@ import React from 'react';
 import TagColorField from './tag-color-field';
 import TagImageField from './tag-image-field';
 import {Accordion, AccordionContent, AccordionItem, AccordionTrigger, Card, CardContent, CodeEditor, FieldError, Input, Label, Textarea} from '@tryghost/shade/components';
-import {Grid, Stack, Text} from '@tryghost/shade/primitives';
+import {Grid, Inline, Stack, Text} from '@tryghost/shade/primitives';
 import {DESCRIPTION_MAX_LENGTH, FACEBOOK_DESCRIPTION_RECOMMENDED_LENGTH, FACEBOOK_TITLE_RECOMMENDED_LENGTH, META_DESCRIPTION_RECOMMENDED_LENGTH, META_TITLE_RECOMMENDED_LENGTH, X_DESCRIPTION_RECOMMENDED_LENGTH, X_TITLE_RECOMMENDED_LENGTH, charLength, getBlogDomain, getSeoDescription, getSeoTitle, getSeoUrl, getSlugUrlPreview, validateTagField} from './tag-detail-edit';
 import {FacebookCardPreview, SeoPreview, XCardPreview} from './tag-detail-previews';
 import {cn, formatNumber} from '@tryghost/shade/utils';
@@ -64,12 +64,12 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
         <Grid align='start' className='lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]' data-testid='tag-detail-form' gap='2xl'>
             {/* The main form and advanced settings collapse into one column
                 below the large breakpoint. */}
-            <Card>
+            <Card data-testid='tag-core-data-card'>
                 <CardContent className='p-6'>
-                    <div className='grid items-start gap-6 lg:grid-cols-2'>
-                        <div className='flex flex-col gap-5'>
-                            <div className='flex items-start gap-3'>
-                                <div className='flex flex-1 flex-col gap-1.5'>
+                    <Stack gap='lg'>
+                        <Stack gap='sm'>
+                            <Inline align='start' gap='md'>
+                                <Stack className='min-w-0 flex-1' gap='sm'>
                                     <Label htmlFor='tag-name'>Name</Label>
                                     <Input
                                         aria-describedby={errors.name ? errorId('name') : undefined}
@@ -80,7 +80,7 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                                         onBlur={() => validateOnBlur('name')}
                                         onChange={e => onChange({name: e.target.value})}
                                     />
-                                </div>
+                                </Stack>
                                 <TagColorField
                                     disabled={disabled}
                                     errorId={errors.accentColor ? errorId('accentColor') : undefined}
@@ -88,47 +88,16 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                                     onChange={accentColor => onChange({accentColor})}
                                     onError={message => onFieldError('accentColor', message)}
                                 />
-                            </div>
-                            <div className='-mt-4 flex flex-col gap-1'>
+                            </Inline>
+                            <Stack gap='xs'>
                                 <FieldError className='text-sm' id={errorId('name')}>{errors.name}</FieldError>
                                 <FieldError className='text-sm' id={errorId('accentColor')}>{errors.accentColor}</FieldError>
                                 <p className='text-sm text-muted-foreground'>
                                     Start with # to create internal tags.{' '}
                                     <a className='underline' href='https://ghost.org/help/organising-content/#private-tags' rel='noopener noreferrer' target='_blank'>Learn more</a>
                                 </p>
-                            </div>
-
-                            <div className='flex flex-col gap-1.5'>
-                                <Label htmlFor='tag-slug'>Slug</Label>
-                                <Input
-                                    aria-describedby={errors.slug ? errorId('slug') : undefined}
-                                    aria-invalid={!!errors.slug}
-                                    disabled={disabled}
-                                    id='tag-slug'
-                                    value={draft.slug}
-                                    onBlur={() => validateOnBlur('slug')}
-                                    onChange={e => onChange({slug: e.target.value})}
-                                />
-                                <p className='text-sm text-muted-foreground' data-testid='tag-slug-preview'>{getSlugUrlPreview(draft.slug, blogUrl)}</p>
-                                <FieldError className='text-sm' id={errorId('slug')}>{errors.slug}</FieldError>
-                            </div>
-
-                            <div className='flex flex-col gap-1.5'>
-                                <Label htmlFor='tag-description'>Description</Label>
-                                <Textarea
-                                    aria-describedby={errors.description ? errorId('description') : undefined}
-                                    aria-invalid={!!errors.description}
-                                    className='min-h-24'
-                                    disabled={disabled}
-                                    id='tag-description'
-                                    value={draft.description}
-                                    onBlur={() => validateOnBlur('description')}
-                                    onChange={e => onChange({description: e.target.value})}
-                                />
-                                <FieldError className='text-sm' id={errorId('description')}>{errors.description}</FieldError>
-                                <UsedCharacters limit={DESCRIPTION_MAX_LENGTH} prefix='Maximum' value={draft.description} />
-                            </div>
-                        </div>
+                            </Stack>
+                        </Stack>
 
                         <TagImageField
                             disabled={disabled}
@@ -141,7 +110,38 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                             onChange={featureImage => onChange({featureImage})}
                             onUploadPendingChange={pending => onImageUploadPendingChange('featureImage', pending)}
                         />
-                    </div>
+
+                        <Stack gap='sm'>
+                            <Label htmlFor='tag-slug'>Slug</Label>
+                            <Input
+                                aria-describedby={errors.slug ? errorId('slug') : undefined}
+                                aria-invalid={!!errors.slug}
+                                disabled={disabled}
+                                id='tag-slug'
+                                value={draft.slug}
+                                onBlur={() => validateOnBlur('slug')}
+                                onChange={e => onChange({slug: e.target.value})}
+                            />
+                            <p className='text-sm text-muted-foreground' data-testid='tag-slug-preview'>{getSlugUrlPreview(draft.slug, blogUrl)}</p>
+                            <FieldError className='text-sm' id={errorId('slug')}>{errors.slug}</FieldError>
+                        </Stack>
+
+                        <Stack gap='sm'>
+                            <Label htmlFor='tag-description'>Description</Label>
+                            <Textarea
+                                aria-describedby={errors.description ? errorId('description') : undefined}
+                                aria-invalid={!!errors.description}
+                                className='min-h-24'
+                                disabled={disabled}
+                                id='tag-description'
+                                value={draft.description}
+                                onBlur={() => validateOnBlur('description')}
+                                onChange={e => onChange({description: e.target.value})}
+                            />
+                            <FieldError className='text-sm' id={errorId('description')}>{errors.description}</FieldError>
+                            <UsedCharacters limit={DESCRIPTION_MAX_LENGTH} prefix='Maximum' value={draft.description} />
+                        </Stack>
+                    </Stack>
                 </CardContent>
             </Card>
 
