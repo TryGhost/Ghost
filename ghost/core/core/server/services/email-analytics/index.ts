@@ -63,7 +63,7 @@ export const init = ({
         EmailSpamComplaintEvent: EmailSpamComplaintEvent;
     };
     metrics: Pick<Metrics, 'metric'>;
-    prometheusClient: Pick<PrometheusClient, 'registerCounter'> | null;
+    prometheusClient: Pick<PrometheusClient, 'registerCounter' | 'getMetric'> | null;
     settingsCache: Pick<typeof SettingsCache, 'get'>;
 }) => {
     const queries = new Queries(db.knex);

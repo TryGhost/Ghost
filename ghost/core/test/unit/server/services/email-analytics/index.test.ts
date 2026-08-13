@@ -120,7 +120,10 @@ describe('email analytics service', function () {
 
         init({
             ...dependencies,
-            prometheusClient: {registerCounter}
+            prometheusClient: {
+                registerCounter,
+                getMetric: sinon.stub()
+            }
         });
 
         sinon.assert.calledWith(registerCounter, sinon.match({
