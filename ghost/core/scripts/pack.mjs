@@ -28,6 +28,7 @@ import os from 'node:os';
 import {execFile} from 'node:child_process';
 import {promisify} from 'node:util';
 import yaml from 'js-yaml';
+import {prune, reportPrune} from './prune.mts';
 
 const execFileAsync = promisify(execFile);
 
@@ -205,9 +206,16 @@ await pnpm(
     {cwd: BUILD_DIR}
 );
 
-// 5. Validate before tarring — guard against a valid-looking but broken archive.
+// 5. Prune, then validate — the checks below have to see the tree that actually
+// ships, so a prune that ate the entry point, the install metadata or a component
+// tarball fails here rather than at a consumer's install.
+await fs.rm(path.join(BUILD_DIR, 'node_modules'), {recursive: true, force: true});
+
+console.log('\nPruning build output...');
+reportPrune(await prune(BUILD_DIR, {profile: 'archive'}));
+
 console.log('\nValidating build output...');
-const requiredFiles = ['pnpm-workspace.yaml', 'pnpm-lock.yaml', 'package.json'];
+const requiredFiles = ['pnpm-workspace.yaml', 'pnpm-lock.yaml', 'package.json', 'index.js'];
 const [packagedPkg, packagedWorkspace, missingFiles, componentTgzCount, packagedFiles] = await Promise.all([
     readJson(pkgPath),
     readYaml(path.join(BUILD_DIR, 'pnpm-workspace.yaml')),
@@ -249,7 +257,6 @@ if (!packagedWorkspace?.overrides || Object.keys(packagedWorkspace.overrides).le
 // 6. Create the tarball (npm layout: top-level package/ dir, no node_modules).
 const version = pkg.version;
 const tgzPath = path.join(CORE_DIR, `ghost-${version}.tgz`);
-await fs.rm(path.join(BUILD_DIR, 'node_modules'), {recursive: true, force: true});
 
 console.log(`\nCreating tarball: ghost-${version}.tgz`);
 await execFileAsync('tar', ['czf', tgzPath, 'package'], {cwd: CORE_DIR});
