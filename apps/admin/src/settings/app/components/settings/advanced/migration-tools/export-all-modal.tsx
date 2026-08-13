@@ -13,6 +13,7 @@ import {
 import {LucideIcon} from '@tryghost/shade/utils';
 import {downloadSiteExport, type SiteExportComponent} from '@tryghost/admin-x-framework/api/exports';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 export type ExportMode = 'sync' | 'async';
 
@@ -35,10 +36,11 @@ const EXPORT_COMPONENTS: ExportComponent[] = [
     {key: 'media', label: 'Media files', description: 'All images, video and audio files. May significantly increase export size and duration', defaultChecked: false, asyncOnly: true}
 ];
 
-type ExportPhase = 'select' | 'confirmed' | 'downloading';
+type ExportPhase = 'select' | 'confirmed' | 'preparing' | 'done';
 
 const ExportAllModal: React.FC<{open: boolean; onOpenChange: (open: boolean) => void; mode: ExportMode}> = ({open, onOpenChange, mode}) => {
     const {data: currentUser} = useCurrentUser();
+    const handleError = useHandleError();
     const [phase, setPhase] = useState<ExportPhase>('select');
     const [selected, setSelected] = useState<Record<ExportComponentKey, boolean>>(() => {
         const initial = {} as Record<ExportComponentKey, boolean>;
@@ -48,6 +50,7 @@ const ExportAllModal: React.FC<{open: boolean; onOpenChange: (open: boolean) => 
         return initial;
     });
     const resetTimerRef = useRef<ReturnType<typeof setTimeout>>();
+    const abortRef = useRef<AbortController>();
 
     const email = currentUser?.email;
     const visibleComponents = EXPORT_COMPONENTS.filter(component => mode === 'async' || !component.asyncOnly);
@@ -60,12 +63,14 @@ const ExportAllModal: React.FC<{open: boolean; onOpenChange: (open: boolean) => 
             setPhase('select');
             return;
         }
+        // Closing while an export is in flight cancels it
+        abortRef.current?.abort();
         clearTimeout(resetTimerRef.current);
         // Reset for the next open, after the close animation
         resetTimerRef.current = setTimeout(() => setPhase('select'), 200);
     };
 
-    const startExport = () => {
+    const startExport = async () => {
         if (mode === 'async') {
             // Host mode is not wired to a backend yet — mocked confirmation only
             setPhase('confirmed');
@@ -76,12 +81,26 @@ const ExportAllModal: React.FC<{open: boolean; onOpenChange: (open: boolean) => 
             .filter(component => selected[component.key] && component.key !== 'media')
             .map(component => component.key as SiteExportComponent);
 
-        downloadSiteExport(components);
-        setPhase('downloading');
+        const controller = new AbortController();
+        abortRef.current = controller;
+        setPhase('preparing');
+
+        try {
+            await downloadSiteExport(components, {signal: controller.signal});
+            // Guard against a stale transition after the dialog was closed
+            setPhase(current => (current === 'preparing' ? 'done' : current));
+        } catch (error) {
+            if (error instanceof DOMException && error.name === 'AbortError') {
+                return;
+            }
+            handleError(error);
+            setPhase(current => (current === 'preparing' ? 'select' : current));
+        }
     };
 
     useEffect(() => {
         return () => {
+            abortRef.current?.abort();
             clearTimeout(resetTimerRef.current);
         };
     }, []);
@@ -154,7 +173,7 @@ const ExportAllModal: React.FC<{open: boolean; onOpenChange: (open: boolean) => 
                     </>
                 )}
 
-                {phase === 'downloading' && (
+                {phase === 'preparing' && (
                     <>
                         <DialogHeader>
                             <DialogTitle className='flex items-center gap-2'>
@@ -162,11 +181,26 @@ const ExportAllModal: React.FC<{open: boolean; onOpenChange: (open: boolean) => 
                             </DialogTitle>
                         </DialogHeader>
                         <DialogDescription>
-                            Your download will start automatically and appear in your browser&rsquo;s downloads.
-                            You can close this window once it has started.
+                            Your download will start automatically when it&rsquo;s ready. Keep this window open.
                         </DialogDescription>
                         <DialogFooter className='sm:justify-end'>
-                            <Button variant='outline' onClick={() => handleOpenChange(false)}>Close</Button>
+                            <Button variant='outline' onClick={() => handleOpenChange(false)}>Cancel</Button>
+                        </DialogFooter>
+                    </>
+                )}
+
+                {phase === 'done' && (
+                    <>
+                        <DialogHeader>
+                            <DialogTitle className='flex items-center gap-2'>
+                                <LucideIcon.CircleCheck className='size-5 text-green-600' /> Export downloaded
+                            </DialogTitle>
+                        </DialogHeader>
+                        <DialogDescription>
+                            Your export has been downloaded as a zip file.
+                        </DialogDescription>
+                        <DialogFooter className='sm:justify-end'>
+                            <Button onClick={() => handleOpenChange(false)}>Close</Button>
                         </DialogFooter>
                     </>
                 )}
