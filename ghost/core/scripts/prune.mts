@@ -51,8 +51,9 @@ const RULES: Rule[] = [
         summary: 'TypeScript sources, declarations and sourcemaps',
         // build:tsc emits a .js beside every .ts in the shipped set, and nothing
         // runs node with --enable-source-maps (Sentry resolves frames from maps
-        // uploaded at release time, not from disk). `.ts` covers `.d.ts`.
-        match: rel => /\.(tsx?|map)$/.test(rel)
+        // uploaded at release time, not from disk). `[cm]?ts` covers the
+        // declaration variants too — .d.ts, .d.mts, .d.cts.
+        match: rel => /\.(?:[cm]?ts|tsx|map)$/.test(rel)
     },
     {
         name: 'docs',

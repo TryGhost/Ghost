@@ -14,6 +14,11 @@ catalogMode: strict
 minimumReleaseAge: 4320 # 3 days in minutes; matches Renovate's minimumReleaseAge
 blockExoticSubdeps: true
 
+ignoredOptionalDependencies:
+  # sqlite3 was replaced by better-sqlite3 so it can be ignored
+  # TODO: remove once knex-migrator no longer depends on sqlite3
+  - sqlite3
+
 allowBuilds:
   # Permitted builds are version-scoped. Adding or updating a permitted version
   # requires an explicit Platform security review.
@@ -33,7 +38,6 @@ allowBuilds:
   'protobufjs@7.6.4': true
   're2@1.25.0': true
   'sharp@0.35.3': true
-  'sqlite3@5.1.7': true
   ssh2: false
 
 catalog:
