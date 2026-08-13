@@ -27,14 +27,7 @@ const messages = {
 
 // flags in this list always return `true`, allows quick global enable prior to full flag removal
 const GA_FEATURES = [
-    'automationAnalytics',
-    'customFonts',
-    'explore',
-    'commentsThreads',
-    'commentsPinning',
-    'featurebaseFeedback',
-    'dangerZoneResetAuth',
-    'llmsTxt'
+    'automationAnalytics'
 ];
 
 // These features are considered publicly available and can be enabled/disabled by users
@@ -52,14 +45,11 @@ const PRIVATE_FEATURES = [
     'stripeAutomaticTax',
     'importMemberTier',
     'csvContentImporter',
-    'lexicalIndicators',
     'adminUIRefresh',
-    'emailCustomization',
     'tagsX',
     'emailUniqueid',
     'themeTranslation',
     'pictureImageFormats',
-    'smarterCounts',
     'getHelperDeduplication',
     'memberDetailsReact',
     'membersCustomFields',

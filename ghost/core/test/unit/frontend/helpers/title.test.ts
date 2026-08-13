@@ -1,8 +1,7 @@
-const assert = require('node:assert/strict');
-const {assertExists} = require('../../../utils/assertions');
-
-// Stuff we are testing
-const title = require('../../../../core/frontend/helpers/title');
+import assert from 'node:assert/strict';
+import {assertExists} from '../../../utils/assertions';
+// @ts-expect-error title currently lacks type definitions.
+import title from '../../../../core/frontend/helpers/title';
 
 describe('{{title}} Helper', function () {
     it('can render title', function () {

@@ -4,6 +4,7 @@ import debugFactory from '@tryghost/debug';
 import db from '../../../data/db';
 import logging from '@tryghost/logging';
 import ObjectID from 'bson-objectid';
+import type {JsonObject} from 'type-fest';
 
 const debug = debugFactory('services:email-analytics');
 
@@ -14,6 +15,16 @@ type EmailAnalyticsEvent = 'delivered' | 'opened' | 'failed';
 type CursorSeed = {
     tableName: string;
     eventColumns: Partial<Record<EmailAnalyticsEvent, string>>;
+};
+
+type JobMetadata = {
+    begin: null | string;
+    end: null | string;
+};
+type JobData = {
+    finished_at: null | Date;
+    started_at: null | Date;
+    metadata: JobMetadata;
 };
 
 /**
@@ -28,6 +39,32 @@ async function createJobIfNotExists(jobName: EmailAnalyticsJobName): Promise<voi
         created_at: new Date(),
         status: 'started'
     }).onConflict('name').ignore();
+}
+
+function parseJsonObject(raw: unknown): JsonObject | null {
+    if (typeof raw !== 'string') {
+        return null;
+    }
+    let result;
+    try {
+        result = JSON.parse(raw);
+    } catch {
+        return null;
+    }
+    return result && typeof result === 'object' && !Array.isArray(result) ? result : null;
+}
+
+function getStringValue(obj: JsonObject, key: string): string | null {
+    const result = obj[key];
+    return typeof result === 'string' ? result : null;
+}
+
+function parseJobMetadata(rawMetadata: unknown): JobMetadata {
+    const parsed = parseJsonObject(rawMetadata) || {};
+    return {
+        begin: getStringValue(parsed, 'begin'),
+        end: getStringValue(parsed, 'end')
+    };
 }
 
 export const queries = {
@@ -88,8 +125,16 @@ export const queries = {
      * @param jobName - The name of the job to retrieve data for.
      * @returns The job data, or null if no job data is found.
      */
-    async getJobData(jobName: EmailAnalyticsJobName) {
-        return await db.knex('jobs').select('finished_at', 'started_at', 'metadata').where('name', jobName).first();
+    async getJobData(jobName: EmailAnalyticsJobName): Promise<JobData | null> {
+        const row = await db.knex('jobs')
+            .select('finished_at', 'started_at', 'metadata')
+            .where('name', jobName)
+            .first();
+        return row ? {
+            finished_at: row.finished_at,
+            started_at: row.started_at,
+            metadata: parseJobMetadata(row.metadata)
+        } : null;
     },
 
     /**
@@ -138,17 +183,9 @@ export const queries = {
      * @param jobName - The name of the job.
      * @returns The parsed metadata object, or null.
      */
-    async getJobMetadata(jobName: EmailAnalyticsJobName): Promise<object | null> {
-        try {
-            const row = await db.knex('jobs').select('metadata').where('name', jobName).first();
-            if (row && row.metadata) {
-                return JSON.parse(row.metadata);
-            }
-        } catch (err: unknown) {
-            const message = err instanceof Error ? err.message : String(err);
-            logging.error(`Error reading metadata for job ${jobName}: ${message}`);
-        }
-        return null;
+    async getJobMetadata(jobName: EmailAnalyticsJobName): Promise<JobMetadata | null> {
+        const row = await db.knex('jobs').select('metadata').where('name', jobName).first();
+        return row ? parseJobMetadata(row.metadata) : null;
     },
 
     /**
@@ -156,7 +193,7 @@ export const queries = {
      * @param jobName - The name of the job.
      * @param metadata - The metadata to store, or null to clear.
      */
-    async setJobMetadata(jobName: EmailAnalyticsJobName, metadata: object | null): Promise<void> {
+    async setJobMetadata(jobName: EmailAnalyticsJobName, metadata: JobMetadata | null): Promise<void> {
         try {
             const value = metadata ? JSON.stringify(metadata) : null;
             await db.knex.transaction(async (trx: typeof db.knex) => {

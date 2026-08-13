@@ -48,6 +48,11 @@ import {z} from 'zod';
  * rule was broken. No storage: columns and codecs belong to the backend. One exception
  * lives in `./csv` — how a value maps onto CSV columns — because both tiers need the same
  * answer and a disagreement between them is a file that silently stops round-tripping.
+ *
+ * The line is whether more than one renderer must agree on a string, not presentation
+ * against validity — the sentences above are presentation. Admin is the only renderer
+ * today, so a part's label lives there, held against this file by a type. A Portal
+ * collection form, which cannot reach admin's packages, moves the labels here.
  */
 
 /** The source for the union type, the zod enum and the `FIELD_TYPES` keys alike. */
@@ -185,9 +190,35 @@ export const FIELD_TYPES = defineFieldTypes({
 export const AddressValue = FIELD_TYPES.address.value;
 export type Address = z.infer<typeof AddressValue>;
 
-/** The parts of a record type in declaration order, or null for a type with none. */
-export function subFieldsOf(type: FieldType): string[] | null {
+/**
+ * A value of any field type, as a caller holding a field of unknown type must accept it.
+ *
+ * Derived from the schemas rather than listed, so a type added here widens it without
+ * anyone remembering to.
+ */
+export type FieldValue = {[T in FieldType]: z.infer<typeof FIELD_TYPES[T]['value']>}[FieldType];
+
+/**
+ * The parts a record type declares, or never for a type whose value is a single thing.
+ *
+ * Distributed over `T`, so a caller holding a type it only knows as `FieldType` gets every
+ * part any type declares rather than the empty intersection of all of them.
+ */
+export type PartsOf<T extends FieldType> = T extends FieldType
+    ? typeof FIELD_TYPES[T] extends {fields: infer F} ? Extract<keyof F, string> : never
+    : never;
+
+/**
+ * The parts of a record type in declaration order, or null for a type with none.
+ *
+ * Typed to the parts the caller's type declares, so a caller holding one of these can
+ * index a value of that type without restating which parts exist.
+ */
+export function subFieldsOf<T extends FieldType>(type: T): PartsOf<T>[] | null {
     // Through the interface, not the literal: a type with no parts has no `fields` key.
-    const {fields}: FieldTypeDefinition = FIELD_TYPES[type];
-    return fields ? Object.keys(fields) : null;
+    // Optional because a caller built against an older catalog than the server it talks to
+    // reaches here with a type this build has never heard of, which reads as no parts.
+    const definition: FieldTypeDefinition | undefined = FIELD_TYPES[type];
+    // The keys are `PartsOf<T>` by construction: `fields` is the object it reads `keyof` from.
+    return definition?.fields ? Object.keys(definition.fields) as PartsOf<T>[] : null;
 }

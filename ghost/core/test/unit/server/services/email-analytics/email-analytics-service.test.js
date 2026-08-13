@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 
 const sinon = require('sinon');
 
-const EmailAnalyticsService = require('../../../../../core/server/services/email-analytics/email-analytics-service');
+const {EmailAnalyticsService} = require('../../../../../core/server/services/email-analytics/email-analytics-service');
 
 const JOB_NAMES = {
     latestNonOpened: 'email-analytics-latest-others',
@@ -248,9 +248,7 @@ describe('EmailAnalyticsService', function () {
                     setJobTimestamp: sinon.stub().returns(startedTimestamp),
                     setJobStatus: sinon.stub().resolves()
                 },
-                provider: {
-                    fetchLatest: fetchLatestSpy
-                },
+                fetchEvents: fetchLatestSpy,
                 createEventProcessor: createStubEventProcessor
             });
 
@@ -278,14 +276,12 @@ describe('EmailAnalyticsService', function () {
                         setJobTimestamp: sinon.stub().resolves(),
                         setJobStatus: sinon.stub().resolves()
                     },
-                    provider: {
-                        fetchLatest: fetchLatestSpy
-                    },
+                    fetchEvents: fetchLatestSpy,
                     createEventProcessor: () => eventProcessor
                 });
                 await service.fetchLatestOpenedEvents();
                 sinon.assert.calledOnce(fetchLatestSpy);
-                assert.deepEqual(fetchLatestSpy.getCall(0).args[1].events, ['opened']);
+                assert.deepEqual(fetchLatestSpy.getCall(0).args[0].events, ['opened']);
 
                 // The final aggregation is delegated to the event processor
                 sinon.assert.calledOnce(eventProcessor.aggregate);
@@ -303,9 +299,7 @@ describe('EmailAnalyticsService', function () {
                         setJobTimestamp: sinon.stub().resolves(),
                         setJobStatus: sinon.stub().resolves()
                     },
-                    provider: {
-                        fetchLatest: fetchLatestSpy
-                    },
+                    fetchEvents: fetchLatestSpy,
                     createEventProcessor: createStubEventProcessor
                 });
                 await service.fetchLatestOpenedEvents();
@@ -323,14 +317,12 @@ describe('EmailAnalyticsService', function () {
                         setJobTimestamp: sinon.stub().resolves(),
                         setJobStatus: sinon.stub().resolves()
                     },
-                    provider: {
-                        fetchLatest: fetchLatestSpy
-                    },
+                    fetchEvents: fetchLatestSpy,
                     createEventProcessor: () => eventProcessor
                 });
                 await service.fetchLatestNonOpenedEvents();
                 sinon.assert.calledOnce(fetchLatestSpy);
-                assert.deepEqual(fetchLatestSpy.getCall(0).args[1].events, ['delivered', 'failed', 'unsubscribed', 'complained']);
+                assert.deepEqual(fetchLatestSpy.getCall(0).args[0].events, ['delivered', 'failed', 'unsubscribed', 'complained']);
 
                 // The final aggregation is delegated to the event processor
                 sinon.assert.calledOnce(eventProcessor.aggregate);
@@ -348,9 +340,7 @@ describe('EmailAnalyticsService', function () {
                         setJobTimestamp: sinon.stub().resolves(),
                         setJobStatus: sinon.stub().resolves()
                     },
-                    provider: {
-                        fetchLatest: fetchLatestSpy
-                    },
+                    fetchEvents: fetchLatestSpy,
                     createEventProcessor: createStubEventProcessor
                 });
                 await service.fetchLatestNonOpenedEvents();
@@ -376,11 +366,9 @@ describe('EmailAnalyticsService', function () {
                         setJobStatus: setJobStatusStub,
                         setJobMetadata: setJobMetadataStub
                     },
-                    provider: {
-                        fetchLatest: (fn) => {
-                            const events = [1,2,3,4,5,6,7,8,9,10];
-                            fn(events);
-                        }
+                    fetchEvents: ({batchHandler}) => {
+                        const events = [1,2,3,4,5,6,7,8,9,10];
+                        return batchHandler(events);
                     },
                     createEventProcessor: () => eventProcessor
                 });
@@ -439,10 +427,8 @@ describe('EmailAnalyticsService', function () {
                         setJobStatus: sinon.stub().resolves(),
                         setJobMetadata: sinon.stub().resolves()
                     },
-                    provider: {
-                        fetchLatest: (fn) => {
-                            fn([]);
-                        }
+                    fetchEvents: ({batchHandler}) => {
+                        return batchHandler([]);
                     },
                     createEventProcessor: createStubEventProcessor
                 });
@@ -468,10 +454,8 @@ describe('EmailAnalyticsService', function () {
                         setJobTimestamp: sinon.stub().resolves(),
                         setJobStatus: sinon.stub().resolves()
                     },
-                    provider: {
-                        fetchLatest: (fn) => {
-                            fn([]);
-                        }
+                    fetchEvents: ({batchHandler}) => {
+                        return batchHandler([]);
                     },
                     createEventProcessor: createStubEventProcessor
                 });
@@ -559,10 +543,8 @@ describe('EmailAnalyticsService', function () {
                         setJobTimestamp: sinon.stub().resolves(),
                         setJobStatus: sinon.stub().resolves()
                     },
-                    provider: {
-                        fetchLatest: async (fn) => {
-                            await fn([{type: 'delivered', timestamp: new Date(1)}]);
-                        }
+                    fetchEvents: async ({batchHandler}) => {
+                        await batchHandler([{type: 'delivered', timestamp: new Date(1)}]);
                     },
                     createEventProcessor: () => eventProcessor
                 });
@@ -609,10 +591,10 @@ describe('EmailAnalyticsService', function () {
                         getJobData: sinon.stub().resolves({
                             finished_at: finishedAt,
                             started_at: null,
-                            metadata: JSON.stringify({
+                            metadata: {
                                 begin: begin.toISOString(),
                                 end: end.toISOString()
-                            })
+                            }
                         }),
                         setJobMetadata: sinon.stub().resolves()
                     }
@@ -646,7 +628,10 @@ describe('EmailAnalyticsService', function () {
                         getJobData: sinon.stub().resolves({
                             finished_at: null,
                             started_at: null,
-                            metadata: null
+                            metadata: {
+                                begin: null,
+                                end: null
+                            }
                         }),
                         setJobMetadata: sinon.stub().resolves()
                     }
@@ -667,10 +652,10 @@ describe('EmailAnalyticsService', function () {
                         getJobData: sinon.stub().resolves({
                             finished_at: null,
                             started_at: null,
-                            metadata: JSON.stringify({
+                            metadata: {
                                 begin: begin.toISOString(),
                                 end: end.toISOString()
-                            })
+                            }
                         }),
                         setJobMetadata: sinon.stub().resolves()
                     }
@@ -689,7 +674,10 @@ describe('EmailAnalyticsService', function () {
                         getJobData: sinon.stub().resolves({
                             finished_at: null,
                             started_at: null,
-                            metadata: 'not-valid-json'
+                            metadata: {
+                                begin: null,
+                                end: null
+                            }
                         }),
                         setJobMetadata: sinon.stub().resolves()
                     }
@@ -711,9 +699,7 @@ describe('EmailAnalyticsService', function () {
                         setJobStatus: sinon.stub().resolves(),
                         getLastJobRunTimestamp: sinon.stub().resolves(new Date(Date.now() - 2.5 * 60 * 60 * 1000))
                     },
-                    provider: {
-                        fetchLatest: fetchLatestSpy
-                    },
+                    fetchEvents: fetchLatestSpy,
                     createEventProcessor: createStubEventProcessor
                 });
                 await service.fetchMissing();

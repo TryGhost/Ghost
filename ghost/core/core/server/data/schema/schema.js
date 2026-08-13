@@ -675,6 +675,13 @@ module.exports = {
             }
         },
         status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'active', validations: {isIn: [['active', 'archived']]}},
+        // The publisher's order for the list, rewritten across every row whenever the
+        // list is reordered. Only the relative order carries meaning: creates append past
+        // the highest rank and deletes leave gaps, so the values are not a dense
+        // sequence. The default leaves a site that has never reordered with one value
+        // repeated, so reads tie-break on created_at and fall back to the order the
+        // fields were created in.
+        sort_order: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true}
     },

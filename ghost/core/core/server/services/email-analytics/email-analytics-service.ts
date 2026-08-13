@@ -1,58 +1,76 @@
-const {EventProcessingResult} = require('./event-processing-result');
-const logging = require('@tryghost/logging');
-const errors = require('@tryghost/errors');
-/** @import {PrometheusClient} from '@tryghost/prometheus-metrics' */
-/** @import {BatchEventProcessor} from './batch-event-processor' */
-/** @import {Queries} from './lib/queries' */
+import {EventProcessingResult} from './event-processing-result';
+import logging from '@tryghost/logging';
+import errors from '@tryghost/errors';
+import type {PrometheusClient} from '@tryghost/prometheus-metrics';
+import type {BatchEventProcessor} from './batch-event-processor';
+import type {Queries} from './lib/queries';
 
 /**
- * @typedef {object} FetchData
- * @property {boolean} running
- * @property {string} jobName Name of the job that is running
- * @property {Date} [lastStarted] Date the last fetch started on
- * @property {Date} [lastBegin] The begin time used during the last fetch
- * @property {Date} [lastEventTimestamp]
- * @property {boolean} [canceled] Set to quit the job early
+ * Data stored for the progress of a fetch operation.
  */
+export type FetchData = {
+    running: boolean;
+    /** Name of the job that is running */
+    jobName: string;
+    /** Date the last fetch started on */
+    lastStarted?: Date;
+    /** The begin time used during the last fetch */
+    lastBegin?: Date;
+    lastEventTimestamp?: Date;
+    /** Set to quit the job early */
+    canceled?: boolean;
+};
 
-/**
- * @typedef {FetchData & {schedule?: {begin: Date, end: Date}}} FetchDataScheduled
- */
+type FetchDataScheduled = FetchData & {schedule?: {begin: Date; end: Date}};
 
-/**
- * @typedef {'delivered' | 'opened' | 'failed' | 'unsubscribed' | 'complained'} EmailAnalyticsEvent
- */
+type EmailAnalyticsEvent = 'delivered' | 'opened' | 'failed' | 'unsubscribed' | 'complained';
 
 /**
  * Names of the jobs this service runs. Each pipeline needs its own set so their
  * cursors don't overwrite each other in the jobs table.
- *
- * @typedef {object} JobNames
- * @property {string} latestNonOpened
- * @property {string} missing
- * @property {string} latestOpened
- * @property {string} scheduled
  */
+export type JobNames = {
+    latestNonOpened: string;
+    missing: string;
+    latestOpened: string;
+    scheduled: string;
+};
 
 /**
  * Recipient table and timestamp columns used to seed a job's cursor the first
  * time it runs, before there's any job data to resume from.
  *
- * @typedef {object} CursorSeed
- * @prop {string} tableName
- * @prop {Partial<Record<EmailAnalyticsEvent, string>>} eventColumns
  */
+export type CursorSeed = {
+    tableName: string;
+    eventColumns: Partial<Record<EmailAnalyticsEvent, string>>;
+};
 
-/**
- * @typedef {object} EmailAnalyticsFetchResult
- * @property {number} eventCount - The number of events fetched
- * @property {number} apiPollingTimeMs - Time spent polling the API in milliseconds
- * @property {number} processingTimeMs - Time spent processing events in milliseconds
- * @property {number} aggregationTimeMs - Time spent aggregating stats in milliseconds
- * @property {number} emailAggregationTimeMs - Time spent aggregating email stats in milliseconds
- * @property {number} memberAggregationTimeMs - Time spent aggregating member stats in milliseconds
- * @property {EventProcessingResult} result - The processing result with event breakdown
- */
+export type EmailAnalyticsFetchResult = {
+    /** The number of events fetched */
+    eventCount: number;
+    /** Time spent polling the API in milliseconds */
+    apiPollingTimeMs: number;
+    /** Time spent processing events in milliseconds */
+    processingTimeMs: number;
+    /** Time spent aggregating stats in milliseconds */
+    aggregationTimeMs: number;
+    /** Time spent aggregating email stats in milliseconds */
+    emailAggregationTimeMs: number;
+    /** Time spent aggregating member stats in milliseconds */
+    memberAggregationTimeMs: number;
+    /** The processing result with event breakdown */
+    result: EventProcessingResult;
+};
+
+
+type FetchEvents = (options: {
+    batchHandler: (events: any[]) => Promise<void>;
+    begin: Date;
+    end: Date;
+    maxEvents: number;
+    events?: EmailAnalyticsEvent[];
+}) => Promise<void>;
 
 const TRUST_THRESHOLD_MS = 30 * 60 * 1000; // 30 minutes
 const FETCH_LATEST_END_MARGIN_MS = 1 * 60 * 1000; // Do not fetch events newer than 1 minute (yet). Reduces the chance of having missed events in fetchLatest.
@@ -62,7 +80,7 @@ const AGGREGATE_MEMBER_STATS_METRIC_NAME = 'email_analytics_aggregate_member_sta
  * Helper function to create an empty fetch result
  * @returns {EmailAnalyticsFetchResult}
  */
-function createEmptyResult() {
+function createEmptyResult(): EmailAnalyticsFetchResult {
     return {
         eventCount: 0,
         apiPollingTimeMs: 0,
@@ -74,46 +92,30 @@ function createEmptyResult() {
     };
 }
 
-module.exports = class EmailAnalyticsService {
-    /** @type {Queries} */ queries;
-    provider;
-    #createEventProcessor;
+export class EmailAnalyticsService {
+    queries: Queries;
+    #fetchEvents: FetchEvents;
+    prometheusClient?: PrometheusClient;
+    #createEventProcessor: () => BatchEventProcessor;
 
-    /** @type {JobNames} */ #jobNames;
-    /** @type {CursorSeed} */ #cursorSeed;
+    #jobNames: JobNames;
+    #cursorSeed: CursorSeed;
 
-    /**
-     * @type {FetchData}
-     */
-    #fetchLatestNonOpenedData;
+    #fetchLatestNonOpenedData: FetchData;
+    #fetchMissingData: FetchData;
+    #fetchLatestOpenedData: FetchData;
+    #fetchScheduledData: FetchDataScheduled;
 
-    /**
-     * @type {FetchData}
-     */
-    #fetchMissingData;
-
-    /**
-     * @type {FetchData}
-     */
-    #fetchLatestOpenedData;
-
-    /**
-     * @type {FetchDataScheduled}
-     */
-    #fetchScheduledData;
-
-    /**
-     * @param {object} dependencies
-     * @param {Queries} dependencies.queries
-     * @param {object} dependencies.provider
-     * @param {PrometheusClient} [dependencies.prometheusClient]
-     * @param {() => BatchEventProcessor} dependencies.createEventProcessor
-     * @param {JobNames} dependencies.jobNames
-     * @param {CursorSeed} dependencies.cursorSeed
-     */
-    constructor({queries, provider, prometheusClient, createEventProcessor, jobNames, cursorSeed}) {
+    constructor({queries, fetchEvents, prometheusClient, createEventProcessor, jobNames, cursorSeed}: {
+        queries: Queries;
+        fetchEvents: FetchEvents;
+        prometheusClient?: PrometheusClient;
+        createEventProcessor: () => BatchEventProcessor;
+        jobNames: JobNames;
+        cursorSeed: CursorSeed;
+    }) {
         this.queries = queries;
-        this.provider = provider;
+        this.#fetchEvents = fetchEvents;
         this.prometheusClient = prometheusClient;
         this.#createEventProcessor = createEventProcessor;
         this.#jobNames = jobNames;
@@ -181,11 +183,8 @@ module.exports = class EmailAnalyticsService {
 
     /**
      * Fetches the latest opened events.
-     * @param {Object} options - The options for fetching events.
-     * @param {number} [options.maxEvents=Infinity] - The maximum number of events to fetch.
-     * @returns {Promise<EmailAnalyticsFetchResult>} Fetch results with timing metrics
      */
-    async fetchLatestOpenedEvents({maxEvents = Infinity} = {}) {
+    async fetchLatestOpenedEvents({maxEvents = Infinity}: {maxEvents?: number} = {}): Promise<EmailAnalyticsFetchResult> {
         const begin = await this.getLastOpenedEventTimestamp();
         const end = new Date(Date.now() - FETCH_LATEST_END_MARGIN_MS); // Always stop at x minutes ago to give Mailgun a bit more time to stabilize storage
 
@@ -195,16 +194,13 @@ module.exports = class EmailAnalyticsService {
             return createEmptyResult();
         }
 
-        return await this.#fetchEvents(this.#fetchLatestOpenedData, {begin, end, maxEvents, eventTypes: ['opened']});
+        return await this.#fetchEventsForJob(this.#fetchLatestOpenedData, {begin, end, maxEvents, eventTypes: ['opened']});
     }
 
     /**
      * Fetches the latest non-opened events.
-     * @param {Object} options - The options for fetching events.
-     * @param {number} [options.maxEvents=Infinity] - The maximum number of events to fetch.
-     * @returns {Promise<EmailAnalyticsFetchResult>} Fetch results with timing metrics
      */
-    async fetchLatestNonOpenedEvents({maxEvents = Infinity} = {}) {
+    async fetchLatestNonOpenedEvents({maxEvents = Infinity}: {maxEvents?: number} = {}): Promise<EmailAnalyticsFetchResult> {
         const begin = await this.getLastNonOpenedEventTimestamp();
         const end = new Date(Date.now() - FETCH_LATEST_END_MARGIN_MS); // Always stop at x minutes ago to give Mailgun a bit more time to stabilize storage
 
@@ -214,16 +210,14 @@ module.exports = class EmailAnalyticsService {
             return createEmptyResult();
         }
 
-        return await this.#fetchEvents(this.#fetchLatestNonOpenedData, {begin, end, maxEvents, eventTypes: ['delivered', 'failed', 'unsubscribed', 'complained']});
+        return await this.#fetchEventsForJob(this.#fetchLatestNonOpenedData, {begin, end, maxEvents, eventTypes: ['delivered', 'failed', 'unsubscribed', 'complained']});
     }
 
     /**
      * Fetches events that are older than 30 minutes, because then the 'storage' of the Mailgun API is stable. And we are sure we don't miss any events.
-     * @param {object} options
-     * @param {number} [options.maxEvents] Not a strict maximum. We stop fetching after we reached the maximum AND received at least one event after begin (not equal) to prevent deadlocks.
-     * @returns {Promise<EmailAnalyticsFetchResult>} Fetch results with timing metrics
+     * @param [options.maxEvents] Not a strict maximum. We stop fetching after we reached the maximum AND received at least one event after begin (not equal) to prevent deadlocks.
      */
-    async fetchMissing({maxEvents = Infinity} = {}) {
+    async fetchMissing({maxEvents = Infinity}: {maxEvents?: number} = {}): Promise<EmailAnalyticsFetchResult> {
         const begin = await this.getLastMissingEventTimestamp();
 
         // Always stop at the earlier of the time the fetchLatest started fetching on or 30 minutes ago
@@ -240,17 +234,14 @@ module.exports = class EmailAnalyticsService {
             return createEmptyResult();
         }
 
-        return await this.#fetchEvents(this.#fetchMissingData, {begin, end, maxEvents});
+        return await this.#fetchEventsForJob(this.#fetchMissingData, {begin, end, maxEvents});
     }
 
     /**
      * Schedule a new fetch for email analytics events.
-     * @param {Object} options - The options for scheduling the fetch.
-     * @param {Date} options.begin - The start date for the scheduled fetch.
-     * @param {Date} options.end - The end date for the scheduled fetch.
      * @throws {errors.ValidationError} Throws an error if a fetch is already in progress.
      */
-    async schedule({begin, end}) {
+    async schedule({begin, end}: {begin: Date; end: Date}): Promise<void> {
         if (this.#fetchScheduledData && this.#fetchScheduledData.running) {
             throw new errors.ValidationError({
                 message: 'Already fetching scheduled events. Wait for it to finish before scheduling a new one.'
@@ -275,7 +266,6 @@ module.exports = class EmailAnalyticsService {
      * Cancels the scheduled fetch of email analytics events.
      * If a fetch is currently running, it marks it for cancellation.
      * If no fetch is running, it clears the scheduled fetch data.
-     * @method cancelScheduled
      */
     cancelScheduled() {
         if (this.#fetchScheduledData) {
@@ -296,11 +286,11 @@ module.exports = class EmailAnalyticsService {
     async restoreScheduled() {
         try {
             const jobData = await this.queries.getJobData(this.#jobNames.scheduled);
-            if (!jobData || !jobData.metadata) {
+            if (!jobData) {
                 return;
             }
 
-            const metadata = JSON.parse(jobData.metadata);
+            const {metadata} = jobData;
             if (metadata.begin && metadata.end) {
                 const begin = new Date(metadata.begin);
                 const end = new Date(metadata.end);
@@ -325,12 +315,8 @@ module.exports = class EmailAnalyticsService {
 
     /**
      * Continues fetching the scheduled events (does not start one). Resets the scheduled event when received 0 events.
-     * @method fetchScheduled
-     * @param {Object} [options] - The options for fetching scheduled events.
-     * @param {number} [options.maxEvents=Infinity] - The maximum number of events to fetch.
-     * @returns {Promise<EmailAnalyticsFetchResult>} Fetch results with timing metrics
      */
-    async fetchScheduled({maxEvents = Infinity} = {}) {
+    async fetchScheduled({maxEvents = Infinity}: {maxEvents?: number} = {}): Promise<EmailAnalyticsFetchResult> {
         if (!this.#fetchScheduledData || !this.#fetchScheduledData.schedule) {
             // Nothing scheduled
             return createEmptyResult();
@@ -355,25 +341,25 @@ module.exports = class EmailAnalyticsService {
             return createEmptyResult();
         }
 
-        const fetchResult = await this.#fetchEvents(this.#fetchScheduledData, {begin, end, maxEvents});
+        const fetchResult = await this.#fetchEventsForJob(this.#fetchScheduledData, {begin, end, maxEvents});
         if (fetchResult.eventCount === 0 || this.#fetchScheduledData.canceled) {
             this.#clearScheduledData();
         }
 
-        this.queries.setJobTimestamp(this.#fetchScheduledData.jobName, 'finished', this.#fetchScheduledData.lastEventTimestamp);
+        this.queries.setJobTimestamp(this.#fetchScheduledData.jobName, 'finished', this.#fetchScheduledData.lastEventTimestamp!);
         return fetchResult;
     }
     /**
      * Start fetching analytics and store the data of the progress inside fetchData
-     * @param {FetchData} fetchData - Object to store the progress of the fetch operation
-     * @param {object} options - Options for fetching events
-     * @param {Date} options.begin - Start date for fetching events
-     * @param {Date} options.end - End date for fetching events
-     * @param {number} [options.maxEvents=Infinity] - Maximum number of events to fetch. Not a strict maximum. We stop fetching after we reached the maximum AND received at least one event after begin (not equal) to prevent deadlocks.
-     * @param {EmailAnalyticsEvent[]} [options.eventTypes] - Array of event types to fetch. If not provided, Mailgun will return all event types.
-     * @returns {Promise<EmailAnalyticsFetchResult>} Fetch results with timing metrics
+     * @param [options.maxEvents=Infinity] - Maximum number of events to fetch. Not a strict maximum. We stop fetching after we reached the maximum AND received at least one event after begin (not equal) to prevent deadlocks.
+     * @param [options.eventTypes] - Array of event types to fetch. If not provided, Mailgun will return all event types.
      */
-    async #fetchEvents(fetchData, {begin, end, maxEvents = Infinity, eventTypes}) {
+    async #fetchEventsForJob(fetchData: FetchData, {begin, end, maxEvents = Infinity, eventTypes}: {
+        begin: Date;
+        end: Date;
+        maxEvents?: number;
+        eventTypes?: EmailAnalyticsEvent[];
+    }): Promise<EmailAnalyticsFetchResult> {
         // Start where we left of, or the last stored event in the database, or start 30 minutes ago if we have nothing available
         // Store that we started fetching
         fetchData.running = true;
@@ -397,13 +383,9 @@ module.exports = class EmailAnalyticsService {
         let processingResult = new EventProcessingResult();
         // Track cumulative event counts separately since processingResult gets reset during intermediate aggregations
         const cumulativeResult = new EventProcessingResult();
-        let error = null;
+        let error: unknown = null;
 
-        /**
-         * @param {boolean} isFinal
-         * @returns {Promise<void>}
-         */
-        const aggregate = async (isFinal) => {
+        const aggregate = async (isFinal: boolean): Promise<void> => {
             if (!eventProcessor.aggregate) {
                 return;
             }
@@ -417,12 +399,7 @@ module.exports = class EmailAnalyticsService {
             memberAggregationTimeMs += timings.memberAggregationTimeMs;
         };
 
-        /**
-         * Process a batch of events
-         * @param {Array<Object>} events - Array of event objects to process
-         * @returns {Promise<void>}
-         */
-        const processBatch = async (events) => {
+        const processBatch = async (events: any[]): Promise<void> => {
             // Even if the fetching is interrupted because of an error, we still store the last event timestamp
             const processingStart = Date.now();
             // Capture the state before processing to calculate delta
@@ -476,9 +453,9 @@ module.exports = class EmailAnalyticsService {
         };
 
         try {
-            await this.provider.fetchLatest(processBatch, {begin, end, maxEvents, events: eventTypes});
+            await this.#fetchEvents({batchHandler: processBatch, begin, end, maxEvents, events: eventTypes});
         } catch (err) {
-            if (err.message !== 'Fetching canceled') {
+            if (!(err instanceof Error) || err.message !== 'Fetching canceled') {
                 logging.error('[EmailAnalytics] Error while fetching');
                 logging.error(err);
                 error = err;
@@ -534,4 +511,4 @@ module.exports = class EmailAnalyticsService {
             result: cumulativeResult
         };
     }
-};
+}

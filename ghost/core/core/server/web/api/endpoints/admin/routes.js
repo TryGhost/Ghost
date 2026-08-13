@@ -161,6 +161,8 @@ module.exports = function apiRoutes() {
     // Registered before /members/:id so the literal path isn't captured by :id.
     router.get('/members/custom_fields', mw.authAdminApi, labs.enabledMiddleware('membersCustomFields'), http(api.membersCustomFields.browse));
     router.post('/members/custom_fields', mw.authAdminApi, labs.enabledMiddleware('membersCustomFields'), http(api.membersCustomFields.add));
+    // A PUT on the collection sets the publisher's order for the whole list.
+    router.put('/members/custom_fields', mw.authAdminApi, labs.enabledMiddleware('membersCustomFields'), http(api.membersCustomFields.reorder));
     router.get('/members/custom_fields/:key', mw.authAdminApi, labs.enabledMiddleware('membersCustomFields'), http(api.membersCustomFields.read));
     router.put('/members/custom_fields/:key', mw.authAdminApi, labs.enabledMiddleware('membersCustomFields'), http(api.membersCustomFields.edit));
     router.delete('/members/custom_fields/:key', mw.authAdminApi, labs.enabledMiddleware('membersCustomFields'), http(api.membersCustomFields.destroy));

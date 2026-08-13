@@ -24,10 +24,6 @@ const features: Feature[] = [{
     description: 'Use Stripe Automatic Tax at Stripe Checkout. Needs to be enabled in Stripe',
     flag: 'stripeAutomaticTax'
 }, {
-    title: 'Email customization (internal beta)',
-    description: 'Newsletter customization settings that have been released to Ghost\'s own production sites',
-    flag: 'emailCustomization'
-}, {
     title: 'Import Member Tier',
     description: 'Enables tier to be specified when importing members',
     flag: 'importMemberTier'
@@ -39,10 +35,6 @@ const features: Feature[] = [{
     title: 'Admin UI Refresh',
     description: 'Enable Admin UI refresh (exploration)',
     flag: 'adminUIRefresh'
-}, {
-    title: 'Explore',
-    description: 'Enables keeping in touch with the new Explore API',
-    flag: 'explore'
 }, {
     title: 'Tags X',
     description: 'Enables the new Tags UI',
@@ -56,17 +48,9 @@ const features: Feature[] = [{
     description: 'Enable theme translation using i18next instead of the old translation package.',
     flag: 'themeTranslation'
 }, {
-    title: 'Featurebase Feedback',
-    description: 'Display a Feedback menu item in the admin sidebar. Requires the new admin experience.',
-    flag: 'featurebaseFeedback'
-}, {
     title: 'Picture Element',
     description: 'Use the HTML picture element to serve modern image formats (AVIF, WebP) with automatic fallbacks',
     flag: 'pictureImageFormats'
-}, {
-    title: 'Smarter Counts',
-    description: 'Use optimized COUNT queries for API pagination when safe',
-    flag: 'smarterCounts'
 }, {
     title: 'Get helper deduplication',
     description: 'Deduplicate identical {{#get}} helper queries within a single request to avoid redundant database calls',

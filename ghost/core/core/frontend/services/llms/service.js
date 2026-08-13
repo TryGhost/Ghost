@@ -25,7 +25,7 @@ const LLMS_FULL_TXT_RECENT_POSTS_FOOTER = '\n_Includes the latest 500 public pos
 const LLMS_TXT_FIELDS = 'id,title,slug,custom_excerpt,featured,published_at,url';
 const LLMS_FULL_TXT_FIELDS = 'id,title,slug,featured,published_at,updated_at,created_at,url,visibility,custom_excerpt';
 
-function createLlmsService({settingsCache, labs, config, urlUtils, routing, api, fullTxtBudget}) {
+function createLlmsService({settingsCache, config, urlUtils, routing, api, fullTxtBudget}) {
     const footerBudget = Math.max(
         Buffer.byteLength(LLMS_FULL_TXT_TRUNCATION_FOOTER, 'utf8'),
         Buffer.byteLength(LLMS_FULL_TXT_RECENT_POSTS_FOOTER, 'utf8')
@@ -33,7 +33,7 @@ function createLlmsService({settingsCache, labs, config, urlUtils, routing, api,
     const BUDGET = (fullTxtBudget || LLMS_FULL_TXT_BUDGET) - footerBudget;
 
     function isEnabled() {
-        return labs.isSet('llmsTxt') && !settingsCache.get('is_private') && settingsCache.get('llms_enabled') !== false;
+        return !settingsCache.get('is_private') && settingsCache.get('llms_enabled') !== false;
     }
 
     async function fetchPublicEntry(resourceType, id, member = null) {

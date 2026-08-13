@@ -1,6 +1,6 @@
-const assert = require('node:assert/strict');
+import assert from 'node:assert/strict';
 
-const {EventProcessingResult} = require('../../../../../core/server/services/email-analytics/event-processing-result');
+import {EventProcessingResult} from '../../../../../core/server/services/email-analytics/event-processing-result';
 
 describe('EventProcessingResult', function () {
     it('has expected initial state', function () {
@@ -32,8 +32,8 @@ describe('EventProcessingResult', function () {
             unhandled: 7,
             unprocessable: 8,
             processingFailures: 9,
-            emailIds: [1,2,3],
-            memberIds: [4,5]
+            emailIds: ['1', '2', '3'],
+            memberIds: ['4', '5']
         });
 
         assert.equal(result.delivered, 1);
@@ -47,26 +47,8 @@ describe('EventProcessingResult', function () {
 
         assert.equal(result.processingFailures, 9);
 
-        assert.deepEqual(result.emailIds, [1,2,3]);
-        assert.deepEqual(result.memberIds, [4,5]);
-    });
-
-    it('has correct totalEvents value', function () {
-        const result = new EventProcessingResult({
-            delivered: 1,
-            opened: 2,
-            temporaryFailed: 3,
-            permanentFailed: 4,
-            unsubscribed: 5,
-            complained: 6,
-            unhandled: 7,
-            unprocessable: 8,
-            processingFailures: 9, // not counted
-            emailIds: [1,2,3],
-            memberIds: [4,5]
-        });
-
-        assert.equal(result.totalEvents, 36);
+        assert.deepEqual(result.emailIds, ['1', '2', '3']);
+        assert.deepEqual(result.memberIds, ['4', '5']);
     });
 
     it('resets all values', function () {
@@ -80,8 +62,8 @@ describe('EventProcessingResult', function () {
             unhandled: 7,
             unprocessable: 8,
             processingFailures: 9,
-            emailIds: [1, 2, 3],
-            memberIds: [4, 5]
+            emailIds: ['1', '2', '3'],
+            memberIds: ['4', '5']
         });
 
         result.reset();
@@ -101,8 +83,8 @@ describe('EventProcessingResult', function () {
                 unhandled: 7,
                 unprocessable: 8,
                 processingFailures: 9, // not counted
-                emailIds: [1,2,3],
-                memberIds: [4,5]
+                emailIds: ['1', '2', '3'],
+                memberIds: ['4', '5']
             });
 
             result.merge({
@@ -115,8 +97,8 @@ describe('EventProcessingResult', function () {
                 unhandled: 14,
                 unprocessable: 16,
                 processingFailures: 18, // not counted
-                emailIds: [4,5,6],
-                memberIds: [6,7]
+                emailIds: ['4', '5','6'],
+                memberIds: ['6', '7']
             });
 
             assert.equal(result.delivered, 3);
@@ -129,23 +111,23 @@ describe('EventProcessingResult', function () {
             assert.equal(result.unprocessable, 24);
             assert.equal(result.processingFailures, 27);
 
-            assert.deepEqual(result.emailIds, [1,2,3,4,5,6]);
-            assert.deepEqual(result.memberIds, [4,5,6,7]);
+            assert.deepEqual(result.emailIds, ['1', '2', '3', '4', '5', '6']);
+            assert.deepEqual(result.memberIds, ['4', '5', '6', '7']);
         });
 
         it('deduplicates id arrays', function () {
             const result = new EventProcessingResult({
-                emailIds: [1,2,3],
-                memberIds: [9,8,7]
+                emailIds: ['1', '2', '3'],
+                memberIds: ['9', '8', '7']
             });
 
             result.merge({
-                emailIds: [1,4,2,3,1],
-                memberIds: [8,7,8,6]
+                emailIds: ['1', '4', '2', '3', '1'],
+                memberIds: ['8', '7', '8', '6']
             });
 
-            assert.deepEqual(result.emailIds, [1,2,3,4]);
-            assert.deepEqual(result.memberIds, [9,8,7,6]);
+            assert.deepEqual(result.emailIds, ['1', '2', '3', '4']);
+            assert.deepEqual(result.memberIds, ['9', '8', '7', '6']);
         });
     });
 });

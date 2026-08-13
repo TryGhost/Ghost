@@ -1,6 +1,5 @@
 import React, {useState} from 'react';
 import TopLevelGroup from '@/settings/app/components/top-level-group';
-import useFeatureFlag from '@/settings/app/hooks/use-feature-flag';
 import usePinturaEditor from '@/settings/app/hooks/use-pintura-editor';
 import useSettingGroup from '@/settings/app/hooks/use-setting-group';
 import {APIError} from '@tryghost/admin-x-framework/errors';
@@ -82,7 +81,6 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const handleError = useHandleError();
     const {mutateAsync: uploadImage} = useUploadImage();
     const editor = usePinturaEditor();
-    const hasLlmsTxt = useFeatureFlag('llmsTxt');
 
     // Get all settings needed for all tabs
     const [
@@ -171,12 +169,10 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const metadataTabContent = (
         <>
             <SettingGroupContent className="my-6 gap-3">
-                {hasLlmsTxt && (
-                    <Field orientation='horizontal'>
-                        <FieldLabel htmlFor='llms-enabled'>Enable structured data for LLMs and AI search engines</FieldLabel>
-                        <Switch checked={llmsEnabled} id='llms-enabled' onCheckedChange={handleLlmsToggleChange} />
-                    </Field>
-                )}
+                <Field orientation='horizontal'>
+                    <FieldLabel htmlFor='llms-enabled'>Enable structured data for LLMs and AI search engines</FieldLabel>
+                    <Switch checked={llmsEnabled} id='llms-enabled' onCheckedChange={handleLlmsToggleChange} />
+                </Field>
                 <Field><FieldLabel htmlFor='meta-title'>Meta title</FieldLabel><Input ref={focusRef} id='meta-title' maxLength={300} placeholder={siteTitle} value={metaTitle} onChange={handleMetaTitleChange} /><FieldDescription>Recommended: 70 characters</FieldDescription></Field>
                 <Field><FieldLabel htmlFor='meta-description'>Meta description</FieldLabel><Input id='meta-description' maxLength={500} placeholder={siteDescription} value={metaDescription} onChange={handleMetaDescriptionChange} /><FieldDescription>Recommended: 156 characters</FieldDescription></Field>
             </SettingGroupContent>

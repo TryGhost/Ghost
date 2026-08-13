@@ -211,9 +211,6 @@ describe('Public-config Service', function () {
         });
 
         it('should return featurebase config with enabled=false when configured but disabled', function () {
-            configUtils.set('labs', {
-                featurebaseFeedback: true
-            });
             configUtils.set('featurebase', {
                 enabled: false,
                 organization: 'test-org',
@@ -227,9 +224,6 @@ describe('Public-config Service', function () {
         });
 
         it('should return only public featurebase config properties, not sensitive ones', function () {
-            configUtils.set('labs', {
-                featurebaseFeedback: true
-            });
             configUtils.set('featurebase', {
                 enabled: true,
                 organization: 'test-org',

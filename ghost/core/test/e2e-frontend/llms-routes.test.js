@@ -4,11 +4,9 @@
 // instance so the request runs through the real controllers and serializers,
 // covering the fields/formats/url interaction the unit tests mock away.
 const assert = require('node:assert/strict');
-const sinon = require('sinon');
 const supertest = require('supertest');
 const testUtils = require('../utils');
 const configUtils = require('../utils/config-utils');
-const settingsCache = require('../../core/shared/settings-cache');
 
 describe('llms.txt routing', function () {
     let request;
@@ -18,21 +16,6 @@ describe('llms.txt routing', function () {
         await testUtils.startGhost();
         siteUrl = configUtils.config.get('url').replace(/\/$/, '');
         request = supertest.agent(configUtils.config.get('url'));
-    });
-
-    beforeEach(function () {
-        const originalGet = settingsCache.get;
-        sinon.stub(settingsCache, 'get').callsFake(function (key, options) {
-            if (key === 'labs') {
-                return {llmsTxt: true};
-            }
-
-            return originalGet(key, options);
-        });
-    });
-
-    afterEach(function () {
-        sinon.restore();
     });
 
     it('serves llms.txt with published public entries and absolute urls', async function () {
