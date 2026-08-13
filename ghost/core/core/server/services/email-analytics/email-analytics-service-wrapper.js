@@ -1,5 +1,6 @@
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
+const {EmailAnalyticsService} = require('./email-analytics-service');
 /** @import {ConfigInstance} from '../../../shared/config/loader' */
 /** @import DomainEvents from '@tryghost/domain-events' */
 /** @import {Queries} from './lib/queries' */
@@ -11,6 +12,7 @@ class EmailAnalyticsServiceWrapper {
     /** @type {string} */ #logName;
     /** @type {Pick<ConfigInstance, 'get'> | undefined} */ #config;
     /** @type {Pick<Metrics, 'metric'> | undefined} */ #metrics;
+    /** @type {EmailAnalyticsService | undefined} */ #service;
     #fetching = false;
     #restoredSchedule = false;
 
@@ -53,17 +55,16 @@ class EmailAnalyticsServiceWrapper {
         metrics,
         settingsCache
     }) {
-        if (this.service) {
+        if (this.#service) {
             return;
         }
 
         this.#config = config;
         this.#metrics = metrics;
 
-        const {EmailAnalyticsService} = require('./email-analytics-service');
         const {fetchMailgunEvents} = require('./fetch-mailgun-events');
 
-        this.service = new EmailAnalyticsService({
+        this.#service = new EmailAnalyticsService({
             fetchEvents: (options) => fetchMailgunEvents({...options, config, settings: settingsCache, tags: mailgunTags}),
             queries,
             jobNames,
@@ -80,6 +81,17 @@ class EmailAnalyticsServiceWrapper {
         domainEvents.subscribe(event, async () => {
             await this.startFetch();
         });
+    }
+
+    /**
+     * @returns {EmailAnalyticsService}
+     */
+    get service() {
+        const result = this.#service;
+        if (!result) {
+            throw new errors.InternalServerError({message: "EmailAnalyticsServiceWrapper is not initialized with service"});
+        }
+        return result;
     }
 
     #getConfig() {
