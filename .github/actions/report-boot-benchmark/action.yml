@@ -148,7 +148,7 @@ runs:
     # means summary-only, so callers can use this action without publishing.
     - name: Publish to benchmark series
       if: github.event_name != 'pull_request' && inputs.github-token != ''
-      uses: benchmark-action/github-action-benchmark@4bdcce38c94cec68da58d012ac24b7b1155efe8b # v1.20.7
+      uses: benchmark-action/github-action-benchmark@52576c92bccf6ac60c8223ec7eb2565637cae9ba # v1.22.1
       with:
         name: ${{ inputs.series }}
         tool: 'customSmallerIsBetter'

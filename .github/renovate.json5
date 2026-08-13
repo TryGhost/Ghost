@@ -4,7 +4,10 @@
         // Track `# renovate:`-annotated `ARG/ENV *_VERSION` pins in Dockerfiles,
         // for tool versions that no native manager sees (e.g. the Tinybird CLI
         // installed via `uv tool install` in docker/tb-cli/Dockerfile).
-        "customManagers:dockerfileVersions"
+        "customManagers:dockerfileVersions",
+        // Same, for `# renovate:`-annotated `env:` version pins in workflows
+        // (the Tinybird CLI in .github/workflows/tinybird.yml).
+        "customManagers:githubActionsVersions"
     ],
     // Keep Renovate's own concurrency guardrails in place. The shared preset
     // extends :disableRateLimiting (prConcurrentLimit: 0, prHourlyLimit: 0),
@@ -301,6 +304,20 @@
                 "python"
             ],
             "allowedVersions": "<3.14"
+        },
+
+        // Stay on the MySQL 8 line — that's what Ghost supports and what CI and
+        // local dev run against. Capping (rather than disabling) keeps 8.x
+        // patches and digest re-pins flowing.
+        {
+            "description": "Cap MySQL at the 8.x line",
+            "matchDatasources": [
+                "docker"
+            ],
+            "matchPackageNames": [
+                "mysql"
+            ],
+            "allowedVersions": "<9"
         },
 
         // Keep `@types/*` aligned with the runtime major they describe. Type defs

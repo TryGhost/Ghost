@@ -14,8 +14,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /home/tinybird
 
+# Held at 4.6.13: 4.6.14 ingests a nested JSON object into a String column as
+# ClickHouse Tuple syntax instead of raw JSON, so JSONExtractString on
+# `analytics_events.payload` returns '' (see .github/workflows/tinybird.yml).
 # renovate: datasource=pypi depName=tinybird versioning=pep440
-ARG TINYBIRD_VERSION=4.6.14
+ARG TINYBIRD_VERSION=4.6.13
 
 RUN uv tool install tinybird@${TINYBIRD_VERSION} --python 3.13 --force
 

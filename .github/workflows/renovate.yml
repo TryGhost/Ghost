@@ -67,7 +67,7 @@ jobs:
           repositories: Ghost
 
       - name: Checkout
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       # Enforce a live cap on open Renovate PRs while still letting Renovate
       # maintain and automerge the PRs that already exist.
@@ -126,7 +126,7 @@ jobs:
           echo "RENOVATE_FORCE=$force" >> "$GITHUB_ENV"
 
       - name: Self-hosted Renovate
-        uses: renovatebot/github-action@dd5302ec17783b2fc721b19ae7209b57b1587765 # v46.1.17
+        uses: renovatebot/github-action@e09d604f8f803bb527bd8321ed5be06c460b8682 # v46.2.2
         with:
           token: ${{ steps.app-token.outputs.token }}
         env:
