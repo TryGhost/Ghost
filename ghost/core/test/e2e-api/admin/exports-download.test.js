@@ -121,6 +121,56 @@ describe('Exports API — download', function () {
         assert.ok(await fs.pathExists(path.join(themeOut, 'package.json')), 'theme zip should contain the theme files');
     });
 
+    it('Produces artifacts the existing import surfaces accept', async function () {
+        const res = await request
+            .get(localUtils.API.getApiQuery('exports/download/'))
+            .set('Origin', config.get('url'))
+            .buffer(true)
+            .parse(binaryParser)
+            .expect(200);
+
+        const outPath = await extractZipResponse(res.body);
+
+        // export.json → universal importer
+        await request
+            .post(localUtils.API.getApiQuery('db/'))
+            .set('Origin', config.get('url'))
+            .attach('importfile', path.join(outPath, 'export.json'))
+            .expect(200);
+
+        // members.csv → members importer (existing members show up as
+        // per-row duplicates, not a rejected file)
+        await request
+            .post(localUtils.API.getApiQuery('members/upload/'))
+            .set('Origin', config.get('url'))
+            .attach('membersfile', path.join(outPath, 'members.csv'))
+            .expect((response) => {
+                assert.ok([201, 202].includes(response.status), `expected 201/202, got ${response.status}`);
+            });
+
+        // themes/{name}.zip → theme upload (test-theme rather than casper:
+        // overriding default themes is blocked by design)
+        await request
+            .post(localUtils.API.getApiQuery('themes/upload/'))
+            .set('Origin', config.get('url'))
+            .attach('file', path.join(outPath, 'themes/test-theme.zip'))
+            .expect(200);
+
+        // routes.yaml → routes upload
+        await request
+            .post(localUtils.API.getApiQuery('settings/routes/yaml/'))
+            .set('Origin', config.get('url'))
+            .attach('routes', path.join(outPath, 'routes.yaml'))
+            .expect(200);
+
+        // redirects.yaml → redirects upload
+        await request
+            .post(localUtils.API.getApiQuery('redirects/upload/'))
+            .set('Origin', config.get('url'))
+            .attach('redirects', path.join(outPath, 'redirects.yaml'))
+            .expect(200);
+    });
+
     it('Can download a subset of components', async function () {
         const res = await request
             .get(localUtils.API.getApiQuery('exports/download/?components=content,routes'))
