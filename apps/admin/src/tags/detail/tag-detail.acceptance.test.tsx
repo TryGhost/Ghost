@@ -34,7 +34,9 @@ describe('Tag detail (tagDetailsReact on)', () => {
         // blogUrl), scheme-stripped — never a bare `/tag/news/` path.
         await expect.element(page.getByTestId('tag-slug-preview')).toHaveTextContent('test.com/tag/news/');
         await expect.element(page.getByLabelText('Description', {exact: true})).toHaveValue('All the news');
-        await expect.element(page.getByRole('button', {name: 'Delete tag', exact: true})).toBeVisible();
+        await page.getByRole('button', {name: 'Tag actions'}).click();
+        await expect.element(page.getByRole('menuitem', {name: 'View posts'})).toHaveAttribute('target', '_blank');
+        await expect.element(page.getByRole('menuitem', {name: 'Delete tag', exact: true})).toBeVisible();
     });
 
     it('edits and saves tag code injection with CodeMirror', async () => {
@@ -266,7 +268,9 @@ describe('Tag detail (tagDetailsReact on)', () => {
         await userEvent.upload(uploadInput.element(), new File(['image'], 'tag.png', {type: 'image/png'}));
         await expect.poll(() => uploadApi.requests.length).toBe(1);
         await expect.element(page.getByRole('button', {name: 'Save'})).toBeDisabled();
-        await expect.element(page.getByRole('button', {name: 'Delete tag'})).toBeDisabled();
+        await page.getByRole('button', {name: 'Tag actions'}).click();
+        await expect.element(page.getByRole('menuitem', {name: 'Delete tag'})).toBeDisabled();
+        await userEvent.keyboard('{Escape}');
         await expect.element(page.getByRole('button', {name: 'Select tag image from Unsplash'})).toBeDisabled();
 
         pendingUpload.resolve({images: [{url: 'https://example.com/tag.png', ref: null}]});
@@ -328,10 +332,11 @@ describe('Tag detail (tagDetailsReact on)', () => {
         await page.getByRole('button', {name: 'Save'}).click();
         await expect.poll(() => saveApi.requests.length).toBe(1);
 
-        await expect.element(page.getByRole('button', {name: 'Delete tag'})).toBeDisabled();
+        await page.getByRole('button', {name: 'Tag actions'}).click();
+        await expect.element(page.getByRole('menuitem', {name: 'Delete tag'})).toBeDisabled();
 
         pendingSave.resolve({tags: [{...t, name: 'Renamed'}]});
-        await expect.element(page.getByRole('button', {name: 'Delete tag'})).toBeEnabled();
+        await expect.element(page.getByRole('menuitem', {name: 'Delete tag'})).toBeEnabled();
     });
 
     it('includes an immediately typed accent color in a keyboard save', async () => {
@@ -428,7 +433,8 @@ describe('Tag detail (tagDetailsReact on)', () => {
         const deleteApi = fakeAdminEndpoint('DELETE', new RegExp(`^/tags/${t.id}/`), null, {status: 204});
         await renderAdminApp(`/tags/${t.slug}`, FLAGS);
 
-        await page.getByRole('button', {name: 'Delete tag', exact: true}).click();
+        await page.getByRole('button', {name: 'Tag actions'}).click();
+        await page.getByRole('menuitem', {name: 'Delete tag', exact: true}).click();
 
         await expect.element(page.getByText('Are you sure you want to delete this tag?')).toBeVisible();
         await expect.element(page.getByTestId('delete-tag-posts-count')).toHaveTextContent('3 posts');
@@ -445,7 +451,8 @@ describe('Tag detail (tagDetailsReact on)', () => {
         await renderAdminApp(`/tags/${t.slug}`, FLAGS);
 
         await page.getByLabelText('Name', {exact: true}).fill('Draft name');
-        await page.getByRole('button', {name: 'Delete tag', exact: true}).click();
+        await page.getByRole('button', {name: 'Tag actions'}).click();
+        await page.getByRole('menuitem', {name: 'Delete tag', exact: true}).click();
 
         await expect.element(page.getByTestId('delete-tag-modal').getByText('Draft name', {exact: true})).toBeVisible();
     });

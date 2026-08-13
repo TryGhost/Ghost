@@ -2,7 +2,7 @@ import React from 'react';
 import TagDeleteModal from './tag-delete-modal';
 import TagDetailForm from './tag-detail-form';
 import {Box, Container} from '@tryghost/shade/primitives';
-import {Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, type ButtonProps, LoadingIndicator, Skeleton} from '@tryghost/shade/components';
+import {Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, type ButtonProps, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, LoadingIndicator, Skeleton} from '@tryghost/shade/components';
 import {DetailPage} from '@tryghost/shade/page-templates';
 import {DirtyConfirmDialog, PageHeader} from '@tryghost/shade/patterns';
 import {Link, useConfirmUnload, useHandleError, useNavigate, useParams} from '@tryghost/admin-x-framework';
@@ -360,12 +360,32 @@ const TagDetail: React.FC = () => {
                         {showEditor && draft && (
                             <PageHeader.Actions>
                                 <PageHeader.ActionGroup>
-                                    <Button variant='outline' asChild>
-                                        <a href={getTagUrl(draft, blogUrl)} rel='noopener noreferrer' target='_blank'>
-                                            View
-                                            <LucideIcon.ExternalLink />
-                                        </a>
-                                    </Button>
+                                    {!isCreating && tag && (
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button aria-label='Tag actions' className='size-(--control-height)' size='icon' variant='outline'>
+                                                    <LucideIcon.Ellipsis size={16} />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align='end'>
+                                                <DropdownMenuItem asChild>
+                                                    <a href={getTagUrl(draft, blogUrl)} rel='noopener noreferrer' target='_blank'>
+                                                        <LucideIcon.ExternalLink />
+                                                        View posts
+                                                    </a>
+                                                </DropdownMenuItem>
+                                                <DropdownMenuSeparator />
+                                                <DropdownMenuItem
+                                                    className='text-destructive focus:text-destructive'
+                                                    disabled={activeMutation.isPending || hasBusyImageField}
+                                                    onSelect={() => setShowDelete(true)}
+                                                >
+                                                    <LucideIcon.Trash />
+                                                    Delete tag
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    )}
                                     <Button className='min-w-16' disabled={isBusy} variant={saveVariant} onClick={onSave}>
                                         {saveLabel}
                                     </Button>
@@ -396,11 +416,6 @@ const TagDetail: React.FC = () => {
                                 onImageBusyChange={onImageBusyChange}
                                 onImageUploadPendingChange={onImageUploadPendingChange}
                             />
-                            {!isCreating && tag && (
-                                <div>
-                                    <Button disabled={activeMutation.isPending || hasBusyImageField} variant='destructive' onClick={() => setShowDelete(true)}>Delete tag</Button>
-                                </div>
-                            )}
                         </div>
                     )}
                 </DetailPage.Body>
