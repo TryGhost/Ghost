@@ -7,8 +7,7 @@ import {NewsletterEmailAnalyticsBatchProcessor} from './newsletter-email-analyti
 import NewsletterEmailEventStorage from '../email-service/newsletter-email-event-storage';
 // @ts-expect-error This module lacks type definitions.
 import EmailEventProcessor from '../email-service/email-event-processor';
-// @ts-expect-error This module lacks type definitions.
-import db from '../../data/db';
+import * as db from '../../data/db';
 import membersService from '../members';
 // @ts-expect-error This module lacks type definitions.
 import emailSuppressionList from '../email-suppression-list';
