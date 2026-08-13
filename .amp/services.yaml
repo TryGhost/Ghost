@@ -1,0 +1,16 @@
+services:
+  docker:
+    command: sudo dockerd --group root
+
+  ghost:
+    command: |
+      export PATH="$PWD/.agents/bin:$HOME/.local/node-v$(cat .node-version)-linux-x64/bin:$PATH"
+      until docker info >/dev/null 2>&1; do sleep 1; done
+      export DEV_COMPOSE_FILES="-f compose.dev.orb.yaml"
+      export GHOST_URL="$PUBLIC_URL"
+      unset PORT
+      exec pnpm dev
+    port: 2370
+    portal:
+      title: Ghost development
+      description: Full source environment with Admin HMR, backend reloads, MySQL, Redis, and Mailpit.

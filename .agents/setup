@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+node_version="$(cat .node-version)"
+node_dir="$HOME/.local/node-v${node_version}-linux-x64"
+
+if [[ ! -x "$node_dir/bin/node" ]]; then
+    archive="/tmp/node-v${node_version}-linux-x64.tar.xz"
+    curl -fsSLo "$archive" "https://nodejs.org/dist/v${node_version}/node-v${node_version}-linux-x64.tar.xz"
+    mkdir -p "$HOME/.local"
+    tar -xJf "$archive" -C "$HOME/.local"
+    rm -f "$archive"
+fi
+
+export PATH="$node_dir/bin:$PATH"
+corepack enable --install-directory "$node_dir/bin"
+
+profile_marker="# Ghost orb Node.js"
+if ! grep -Fqx "$profile_marker" "$HOME/.bash_profile" 2>/dev/null; then
+    cat >> "$HOME/.bash_profile" <<EOF
+
+$profile_marker
+export PATH="$node_dir/bin:\$PATH"
+EOF
+fi
+
+if ! command -v docker >/dev/null 2>&1; then
+    sudo install -m 0755 -d /etc/apt/keyrings
+    sudo curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
+    sudo chmod a+r /etc/apt/keyrings/docker.asc
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | sudo tee /etc/apt/sources.list.d/docker.list >/dev/null
+    sudo apt-get update
+    sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+fi
+
+pnpm setup
