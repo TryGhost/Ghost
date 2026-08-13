@@ -92,6 +92,9 @@ worker and how scheduled jobs behave.
 The [site UUID guide](codebase/site-uuid.md) covers how Ghost creates, exposes,
 and protects a site's stable identifier.
 
+The [email testing guide](contributing/testing-email.md) explains local Mailpit
+capture and when external delivery configuration is needed.
+
 ### Finding Issues to Work On
 
 - [Good First Issues](https://github.com/TryGhost/Ghost/labels/good%20first%20issue) - Great for newcomers

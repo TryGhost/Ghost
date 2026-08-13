@@ -2,36 +2,24 @@
 
 ## Local email
 
-Install MailDev globally:
+The normal development environment starts Mailpit with Ghost. Run:
 
 ```bash
-npm install -g maildev
-maildev
+pnpm dev
 ```
 
-MailDev starts an SMTP server and a web interface at
-[http://localhost:1080](http://localhost:1080). Configure Ghost to send mail to
-the local SMTP server:
-
-```json
-{
-    "mail": {
-        "transport": "SMTP",
-        "options": {
-            "host": "localhost",
-            "port": 1025
-        }
-    }
-}
-```
-
-Emails sent by Ghost will appear in the MailDev interface rather than being
-delivered.
+Emails sent by the development site are captured at
+[http://localhost:8025](http://localhost:8025) rather than delivered. The Docker
+development configuration connects Ghost to Mailpit automatically.
 
 ## Testing with Mailgun
 
-For testing real delivery, create a Mailgun account and configure Ghost with
-the SMTP credentials for a Mailgun domain. Sandbox domains only send to
-authorized recipients, which must be added and verified in Mailgun first.
+For testing transactional email delivery, configure Ghost's `mail` setting with
+an SMTP provider. For testing newsletter delivery, configure the separate
+Mailgun settings used by Ghost's bulk email service. Mailgun sandbox domains
+only send to recipients that have been added and verified in Mailgun.
 
 Keep credentials in your local configuration and do not commit them.
+
+Most development does not need real delivery. Use Mailpit unless the behavior
+being tested depends on the external provider.
