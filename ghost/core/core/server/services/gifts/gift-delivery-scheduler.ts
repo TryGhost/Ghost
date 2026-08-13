@@ -83,8 +83,8 @@ export class GiftDeliveryScheduler {
         const bootstrap = !previousKey;
         let hasDueDelivery = false;
 
-        for (const {delivery, availableAt} of pending) {
-            const time = delivery.attemptAt ?? availableAt;
+        for (const {availableAt} of pending) {
+            const time = availableAt;
             if (time.getTime() <= Date.now()) {
                 hasDueDelivery = true;
                 continue;

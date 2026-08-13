@@ -21,8 +21,6 @@ import {
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const GIFT_REMINDER_LEAD_MS = GIFT_REMINDER_LEAD_DAYS * MS_PER_DAY;
 const GIFT_REMINDER_FLOOR_MS = GIFT_REMINDER_FLOOR_DAYS * MS_PER_DAY;
-export const GIFT_DELIVERY_RETRY_MS = 10 * 60 * 1000;
-export const GIFT_DELIVERY_MAX_ATTEMPTS = 10;
 const GIFT_DELIVERY_BATCH_SIZE = 100;
 const GIFT_NAME_MAX_LENGTH = 191;
 const GIFT_EMAIL_MAX_LENGTH = 191;
@@ -112,7 +110,7 @@ interface GiftEmailService {
         cadence: GiftCadence;
         duration: number;
         expiresAt: Date;
-    }): Promise<{providerMessageId: string | null}>;
+    }): Promise<{providerMessageId: string}>;
 }
 
 interface StaffServiceEmails {
@@ -192,7 +190,6 @@ interface GiftServiceDeps {
     giftReminderScheduler: Pick<GiftReminderScheduler, 'scheduleFor'>;
     giftDeliveryScheduler: {
         wake(): void;
-        scheduleAt(time: Date): Promise<void>;
     };
     giftEmailAnalytics: {
         schedule(): Promise<void>;
@@ -270,48 +267,6 @@ const GiftCheckoutDeliverySchema = z.preprocess((value) => {
 ]));
 
 type GiftCheckoutDelivery = z.infer<typeof GiftCheckoutDeliverySchema>;
-
-type DeliveryFailureKind = 'recoverable' | 'permanent' | 'ambiguous';
-
-function classifyDeliveryFailure(error: unknown): DeliveryFailureKind {
-    const chain: Array<Record<string, unknown>> = [];
-    let current = error;
-
-    for (let depth = 0; depth < 4 && current && typeof current === 'object'; depth += 1) {
-        const value = current as Record<string, unknown>;
-        chain.push(value);
-        current = value.err ?? value.error;
-    }
-
-    for (const value of chain.reverse()) {
-        const responseCode = typeof value.responseCode === 'number' ? value.responseCode : null;
-        if (responseCode !== null) {
-            return responseCode >= 500 ? 'permanent' : 'recoverable';
-        }
-
-        const status = typeof value.status === 'number' ? value.status : null;
-        if (status !== null) {
-            if (status === 408 || status === 429 || status >= 500) {
-                return 'recoverable';
-            }
-            if (status >= 400) {
-                return 'permanent';
-            }
-        }
-
-        if (value.code === 'ENOTFOUND' || value.code === 'EAI_AGAIN' || value.code === 'ECONNREFUSED') {
-            return 'recoverable';
-        }
-        if (value.code === 'EMAIL_TEMPORARILY_REJECTED') {
-            return 'recoverable';
-        }
-        if (value.statusCode === 400) {
-            return 'permanent';
-        }
-    }
-
-    return 'ambiguous';
-}
 
 interface GiftCheckoutSession {
     amount: number;
@@ -1113,7 +1068,7 @@ export class GiftService {
                 const result = await this.sendDelivery(delivery.id);
                 if (result === 'sent') {
                     sentCount += 1;
-                } else if (result === 'failed' || result === 'ambiguous') {
+                } else if (result === 'failed') {
                     failedCount += 1;
                 } else {
                     skippedCount += 1;
@@ -1131,12 +1086,8 @@ export class GiftService {
         return {sentCount, skippedCount, failedCount};
     }
 
-    private async sendDelivery(id: string): Promise<'sent' | 'skipped' | 'retry' | 'failed' | 'ambiguous'> {
-        const delivery = await this.deps.giftDeliveryRepository.tryStartAttempt(
-            id,
-            new Date(),
-            GIFT_DELIVERY_MAX_ATTEMPTS
-        );
+    private async sendDelivery(id: string): Promise<'sent' | 'skipped' | 'failed'> {
+        const delivery = await this.deps.giftDeliveryRepository.tryStartDelivery(id, new Date());
 
         if (!delivery) {
             return 'skipped';
@@ -1148,7 +1099,7 @@ export class GiftService {
                 event: {name: 'gift_delivery.gift_missing'},
                 deliveryId: delivery.id,
                 giftId: delivery.giftId
-            }, 'Started gift delivery attempt has no gift');
+            }, 'Started gift delivery has no gift');
             await this.deps.giftDeliveryRepository.markFailed(delivery.id);
             return 'failed';
         }
@@ -1163,15 +1114,17 @@ export class GiftService {
             tier = await this.deps.tiersService.api.read(gift.tierId);
         } catch (err) {
             logging.error(err);
-            return this.retryDelivery(delivery);
+            await this.deps.giftDeliveryRepository.markFailed(delivery.id);
+            return 'failed';
         }
 
         if (!tier) {
             logging.error(`Tier not found for gift delivery: ${gift.tierId}`);
-            return this.retryDelivery(delivery);
+            await this.deps.giftDeliveryRepository.markFailed(delivery.id);
+            return 'failed';
         }
 
-        let result: {providerMessageId: string | null};
+        let result: {providerMessageId: string};
         try {
             result = await this.deps.giftEmailService.sendGiftDelivery({
                 recipientEmail: delivery.recipientEmail,
@@ -1187,18 +1140,8 @@ export class GiftService {
             });
         } catch (err) {
             logging.error(err);
-            const kind = classifyDeliveryFailure(err);
-
-            if (kind === 'ambiguous') {
-                return 'ambiguous';
-            }
-
-            if (kind === 'permanent') {
-                await this.deps.giftDeliveryRepository.markFailed(delivery.id);
-                return 'failed';
-            }
-
-            return this.retryDelivery(delivery);
+            await this.deps.giftDeliveryRepository.markFailed(delivery.id);
+            return 'failed';
         }
 
         let persisted: boolean;
@@ -1215,7 +1158,7 @@ export class GiftService {
                 giftToken: gift.token,
                 deliveryId: delivery.id
             }, 'Failed to persist accepted gift delivery');
-            return 'ambiguous';
+            return 'failed';
         }
 
         if (!persisted) {
@@ -1224,30 +1167,16 @@ export class GiftService {
                 giftToken: gift.token,
                 deliveryId: delivery.id
             }, 'Failed to persist accepted gift delivery');
-            return 'ambiguous';
-        }
-
-        if (result.providerMessageId) {
-            try {
-                await this.deps.giftEmailAnalytics.schedule();
-            } catch (err) {
-                logging.error('Failed to schedule gift delivery analytics', err);
-            }
-        }
-
-        return 'sent';
-    }
-
-    private async retryDelivery(delivery: GiftDelivery): Promise<'retry' | 'failed'> {
-        if (delivery.attempts >= GIFT_DELIVERY_MAX_ATTEMPTS) {
-            await this.deps.giftDeliveryRepository.markFailed(delivery.id);
             return 'failed';
         }
 
-        const nextAttemptAt = new Date(Date.now() + GIFT_DELIVERY_RETRY_MS);
-        await this.deps.giftDeliveryRepository.markForRetry(delivery.id, nextAttemptAt);
-        await this.deps.giftDeliveryScheduler.scheduleAt(nextAttemptAt);
-        return 'retry';
+        try {
+            await this.deps.giftEmailAnalytics.schedule();
+        } catch (err) {
+            logging.error('Failed to schedule gift delivery analytics', err);
+        }
+
+        return 'sent';
     }
 
     async recordDeliveryOutcome(data: {providerMessageId: string; outcome: 'delivered' | 'temporary_failed' | 'permanent_failed'; timestamp: Date; error: string | null}): Promise<boolean> {

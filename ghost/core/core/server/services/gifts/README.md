@@ -22,7 +22,8 @@ transactions, or Stripe objects.
   stable read models.
 - `processDeliveries()`, `processReminders()`, `processConsumed()`, and
   `processExpired()` own due lifecycle work; scheduler and HTTP triggers remain
-  adapters. Delivery claims are atomic and retry wakeups are one-shot.
+  adapters. Delivery claims are atomic and each delivery makes one Mailgun
+  acceptance attempt.
 - `recordDeliveryOutcome(...)` retains only the newest Mailgun delivery outcome;
   mail transport acceptance remains the authoritative sent fact.
 - `reassignRedeemer(...)` is the import capability.

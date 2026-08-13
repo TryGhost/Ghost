@@ -1,5 +1,7 @@
 const assert = require('node:assert/strict');
+const sinon = require('sinon');
 const DomainEvents = require('@tryghost/domain-events');
+const MailgunClient = require('../../../core/server/services/lib/mailgun-client');
 const models = require('../../../core/server/models');
 const {getSignedAdminToken} = require('../../../core/server/adapters/scheduling/utils');
 const {agentProvider, fixtureManager, mockManager, assertions} = require('../../utils/e2e-framework');
@@ -10,7 +12,7 @@ describe('Gift Deliveries API', function () {
     let agent;
     let paidTier;
     let schedulerToken;
-    let emailMockReceiver;
+    let deliverySend;
     let giftSequence = 0;
 
     beforeAll(async function () {
@@ -27,7 +29,7 @@ describe('Gift Deliveries API', function () {
     });
 
     beforeEach(function () {
-        emailMockReceiver = mockManager.mockMail();
+        deliverySend = sinon.stub(MailgunClient.prototype, 'send').resolves({id: '<provider-123>'});
         mockManager.mockLabsEnabled('giftSubCustomization');
     });
 
@@ -35,6 +37,7 @@ describe('Gift Deliveries API', function () {
         await DomainEvents.allSettled();
         await models.GiftDelivery.query().del();
         await models.Gift.query().del();
+        sinon.restore();
         mockManager.restore();
     });
 
@@ -72,8 +75,7 @@ describe('Gift Deliveries API', function () {
             gift_id: gift.id,
             recipient_email: `recipient-${giftSequence}@example.com`,
             status: 'pending',
-            attempts: 0,
-            attempt_at: null,
+            started_at: null,
             email_sent_at: null,
             email_provider_message_id: null,
             outcome: 'unknown',
@@ -94,12 +96,12 @@ describe('Gift Deliveries API', function () {
             .expect(cacheInvalidateHeaderNotSet());
         await DomainEvents.allSettled();
 
-        emailMockReceiver.assertSentEmailCount(1);
-        assert.equal(emailMockReceiver.getSentEmail(0).to, delivery.get('recipient_email'));
+        sinon.assert.calledOnce(deliverySend);
+        assert.deepEqual(deliverySend.firstCall.args[1], {[delivery.get('recipient_email')]: {}});
 
         const reloaded = await models.GiftDelivery.findOne({gift_id: gift.id}, {require: true});
         assert.equal(reloaded.get('status'), 'sent');
-        assert.equal(reloaded.get('attempts'), 1);
+        assert.equal(reloaded.get('started_at'), null);
         assert.ok(reloaded.get('email_sent_at'));
     });
 
@@ -112,10 +114,10 @@ describe('Gift Deliveries API', function () {
             .expect(cacheInvalidateHeaderNotSet());
         await DomainEvents.allSettled();
 
-        emailMockReceiver.assertSentEmailCount(0);
+        sinon.assert.notCalled(deliverySend);
         const reloaded = await models.GiftDelivery.findOne({gift_id: gift.id}, {require: true});
         assert.equal(reloaded.get('status'), 'pending');
-        assert.equal(reloaded.get('attempts'), 0);
+        assert.equal(reloaded.get('started_at'), null);
     });
 
     it('does not process deliveries when gift customization is disabled', async function () {
@@ -129,9 +131,9 @@ describe('Gift Deliveries API', function () {
             .expect(cacheInvalidateHeaderNotSet());
         await DomainEvents.allSettled();
 
-        emailMockReceiver.assertSentEmailCount(0);
+        sinon.assert.notCalled(deliverySend);
         const reloaded = await models.GiftDelivery.findOne({gift_id: gift.id}, {require: true});
         assert.equal(reloaded.get('status'), 'pending');
-        assert.equal(reloaded.get('attempts'), 0);
+        assert.equal(reloaded.get('started_at'), null);
     });
 });

@@ -59,16 +59,16 @@ describe('GiftDeliveryScheduler', function () {
         sinon.assert.notCalled(deps.adapter.schedule);
     });
 
-    it('performs one startup pass that wakes due gifts and re-arms future retries', async function () {
-        const retryAt = new Date(Date.now() + 60_000);
+    it('performs one startup pass that wakes due gifts and re-arms future deliveries', async function () {
+        const availableAt = new Date(Date.now() + 60_000);
         const deps = buildDeps([
             {
                 delivery: buildGiftDelivery(),
                 availableAt: new Date(Date.now() - 60_000)
             },
             {
-                delivery: buildGiftDelivery({id: 'future-delivery', attemptAt: retryAt}),
-                availableAt: new Date(Date.now() - 60_000)
+                delivery: buildGiftDelivery({id: 'future-delivery'}),
+                availableAt
             }
         ]);
         const scheduler = new GiftDeliveryScheduler(deps);
@@ -78,7 +78,7 @@ describe('GiftDeliveryScheduler', function () {
         sinon.assert.calledOnce(deps.wake);
         sinon.assert.calledOnce(deps.adapter.unschedule);
         sinon.assert.calledOnce(deps.adapter.schedule);
-        assert.equal(deps.adapter.schedule.firstCall.firstArg.time, retryAt.getTime());
+        assert.equal(deps.adapter.schedule.firstCall.firstArg.time, availableAt.getTime());
     });
 
     it('warns about deliveries that have been sending for more than 10 minutes', async function () {

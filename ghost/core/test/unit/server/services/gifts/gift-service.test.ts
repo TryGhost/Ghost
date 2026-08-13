@@ -120,9 +120,8 @@ describe('GiftService', function () {
             findDue: sinon.stub().resolves([]),
             findPending: sinon.stub().resolves([]),
             countStuck: sinon.stub().resolves(0),
-            tryStartAttempt: sinon.stub().resolves(null),
+            tryStartDelivery: sinon.stub().resolves(null),
             markSent: sinon.stub().resolves(true),
-            markForRetry: sinon.stub().resolves(true),
             markFailed: sinon.stub().resolves(true),
             markCancelled: sinon.stub().resolves(true),
             cancelPendingForGift: sinon.stub().resolves(false),
@@ -178,20 +177,19 @@ describe('GiftService', function () {
     });
 
     let giftReminderScheduler: {scheduleFor: sinon.SinonStub};
-    let giftDeliveryScheduler: {wake: sinon.SinonStub; scheduleAt: sinon.SinonStub};
+    let giftDeliveryScheduler: {wake: sinon.SinonStub};
     let giftEmailAnalytics: {schedule: sinon.SinonStub};
 
     function createService(overrides: {
         giftReminderScheduler?: {scheduleFor: sinon.SinonStub};
-        giftDeliveryScheduler?: {wake: sinon.SinonStub; scheduleAt: sinon.SinonStub};
+        giftDeliveryScheduler?: {wake: sinon.SinonStub};
         giftEmailAnalytics?: {schedule: sinon.SinonStub};
     } = {}) {
         giftReminderScheduler = overrides.giftReminderScheduler ?? {
             scheduleFor: sinon.stub().resolves()
         };
         giftDeliveryScheduler = overrides.giftDeliveryScheduler ?? {
-            wake: sinon.stub(),
-            scheduleAt: sinon.stub().resolves()
+            wake: sinon.stub()
         };
         giftEmailAnalytics = overrides.giftEmailAnalytics ?? {
             schedule: sinon.stub().resolves()
@@ -795,10 +793,9 @@ describe('GiftService', function () {
     });
 
     describe('processDeliveries', function () {
-        function startedDelivery(attempts = 1) {
+        function startedDelivery() {
             return buildGiftDelivery({
-                status: 'sending',
-                attempts
+                status: 'sending'
             });
         }
 
@@ -815,7 +812,7 @@ describe('GiftService', function () {
                 delivery: startedDelivery(),
                 availableAt: new Date('2026-01-01T00:00:00.000Z')
             }]);
-            giftDeliveryRepository.tryStartAttempt.resolves(startedDelivery());
+            giftDeliveryRepository.tryStartDelivery.resolves(startedDelivery());
             giftRepository.getById.resolves(deliveryGift());
         });
 
@@ -827,7 +824,7 @@ describe('GiftService', function () {
 
             assert.deepEqual(result, {sentCount: 1, skippedCount: 0, failedCount: 0});
             sinon.assert.calledOnceWithExactly(giftDeliveryRepository.findDue, sinon.match.date, 100);
-            sinon.assert.calledOnceWithExactly(giftDeliveryRepository.tryStartAttempt, 'delivery_1', sinon.match.date, 10);
+            sinon.assert.calledOnceWithExactly(giftDeliveryRepository.tryStartDelivery, 'delivery_1', sinon.match.date);
             sinon.assert.calledOnceWithExactly(giftDeliveryRepository.markSent, 'delivery_1', sinon.match.date, 'provider-123');
             sinon.assert.calledOnce(giftEmailAnalytics.schedule);
         });
@@ -840,7 +837,6 @@ describe('GiftService', function () {
             const result = await service.processDeliveries();
 
             assert.deepEqual(result, {sentCount: 0, skippedCount: 0, failedCount: 1});
-            sinon.assert.notCalled(giftDeliveryRepository.markForRetry);
             sinon.assert.notCalled(giftDeliveryRepository.markFailed);
         });
 
@@ -852,9 +848,7 @@ describe('GiftService', function () {
             const result = await service.processDeliveries();
 
             assert.deepEqual(result, {sentCount: 0, skippedCount: 0, failedCount: 1});
-            sinon.assert.notCalled(giftDeliveryRepository.markForRetry);
             sinon.assert.notCalled(giftDeliveryRepository.markFailed);
-            sinon.assert.notCalled(giftDeliveryScheduler.scheduleAt);
         });
 
         it('keeps accepted delivery sent when provider analytics scheduling fails', async function () {
@@ -868,8 +862,8 @@ describe('GiftService', function () {
             sinon.assert.calledOnceWithExactly(giftDeliveryRepository.markSent, 'delivery_1', sinon.match.date, 'provider-123');
         });
 
-        it('does not send when another worker or lifecycle transition starts the attempt first', async function () {
-            giftDeliveryRepository.tryStartAttempt.resolves(null);
+        it('does not send when another worker or lifecycle transition starts the delivery first', async function () {
+            giftDeliveryRepository.tryStartDelivery.resolves(null);
             const service = createService();
 
             const result = await service.processDeliveries();
@@ -883,7 +877,7 @@ describe('GiftService', function () {
                 delivery: buildGiftDelivery({id: `delivery_${index}`}),
                 availableAt: new Date('2026-01-01T00:00:00.000Z')
             })));
-            giftDeliveryRepository.tryStartAttempt.resolves(null);
+            giftDeliveryRepository.tryStartDelivery.resolves(null);
             const service = createService();
 
             const result = await service.processDeliveries();
@@ -892,7 +886,7 @@ describe('GiftService', function () {
             sinon.assert.calledOnce(giftDeliveryScheduler.wake);
         });
 
-        it('fails a started delivery attempt whose gift is missing', async function () {
+        it('fails a started delivery whose gift is missing', async function () {
             giftRepository.getById.resolves(null);
             const service = createService();
 
@@ -901,10 +895,9 @@ describe('GiftService', function () {
             assert.deepEqual(result, {sentCount: 0, skippedCount: 0, failedCount: 1});
             sinon.assert.calledOnceWithExactly(giftDeliveryRepository.markFailed, 'delivery_1');
             sinon.assert.notCalled(giftEmailService.sendGiftDelivery);
-            sinon.assert.notCalled(giftDeliveryRepository.markForRetry);
         });
 
-        it('cancels a started delivery attempt when its gift is no longer purchased', async function () {
+        it('cancels a started delivery when its gift is no longer purchased', async function () {
             giftRepository.getById.resolves(buildGift({
                 status: 'refunded',
                 refundedAt: new Date()
@@ -918,49 +911,14 @@ describe('GiftService', function () {
             sinon.assert.notCalled(giftEmailService.sendGiftDelivery);
         });
 
-        it('schedules a recoverable non-acceptance exactly ten minutes later', async function () {
+        it('fails a delivery when Mailgun does not accept it', async function () {
             giftEmailService.sendGiftDelivery.rejects({err: {responseCode: 421}});
-            const service = createService();
-            const before = Date.now() + (10 * 60 * 1000);
-
-            await service.processDeliveries();
-
-            const retryAt = giftDeliveryRepository.markForRetry.firstCall.args[1] as Date;
-            assert.ok(retryAt.getTime() >= before);
-            assert.ok(retryAt.getTime() <= before + 1000);
-            sinon.assert.calledOnceWithExactly(giftDeliveryScheduler.scheduleAt, retryAt);
-        });
-
-        it('fails a recoverable non-acceptance at the attempt cap', async function () {
-            giftDeliveryRepository.tryStartAttempt.resolves(startedDelivery(10));
-            giftEmailService.sendGiftDelivery.rejects({err: {responseCode: 421}});
-            const service = createService();
-
-            await service.processDeliveries();
-
-            sinon.assert.calledOnceWithExactly(giftDeliveryRepository.markFailed, 'delivery_1');
-            sinon.assert.notCalled(giftDeliveryScheduler.scheduleAt);
-        });
-
-        it('fails a definite permanent non-acceptance without retrying', async function () {
-            giftEmailService.sendGiftDelivery.rejects({err: {responseCode: 550}});
-            const service = createService();
-
-            await service.processDeliveries();
-
-            sinon.assert.calledOnceWithExactly(giftDeliveryRepository.markFailed, 'delivery_1');
-            sinon.assert.notCalled(giftDeliveryRepository.markForRetry);
-        });
-
-        it('leaves an ambiguous handoff in sending to avoid a duplicate', async function () {
-            giftEmailService.sendGiftDelivery.rejects({err: {code: 'ETIMEDOUT'}});
             const service = createService();
 
             const result = await service.processDeliveries();
 
             assert.deepEqual(result, {sentCount: 0, skippedCount: 0, failedCount: 1});
-            sinon.assert.notCalled(giftDeliveryRepository.markForRetry);
-            sinon.assert.notCalled(giftDeliveryRepository.markFailed);
+            sinon.assert.calledOnceWithExactly(giftDeliveryRepository.markFailed, 'delivery_1');
         });
     });
 
