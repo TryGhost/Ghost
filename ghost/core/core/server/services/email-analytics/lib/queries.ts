@@ -175,6 +175,7 @@ export class Queries {
                     id: new ObjectID().toHexString(),
                     name: jobName,
                     [updateField]: date.toISOString(), // force to iso string for sqlite
+                    created_at: date.toISOString(), // force to iso string for sqlite
                     updated_at: date.toISOString(), // force to iso string for sqlite
                     status: status
                 });
