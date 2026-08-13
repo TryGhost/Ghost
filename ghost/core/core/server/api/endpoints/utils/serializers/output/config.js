@@ -24,7 +24,8 @@ module.exports = {
             'stats',
             'security',
             'exploreTestimonialsUrl',
-            'featurebase'
+            'featurebase',
+            'exports'
         ];
 
         frame.response = {
