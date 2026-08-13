@@ -1,8 +1,8 @@
 import React from 'react';
 import TagColorField from './tag-color-field';
 import TagImageField from './tag-image-field';
-import {Accordion, AccordionContent, AccordionItem, AccordionTrigger, Card, CardContent, CodeEditor, FieldError, Input, Label, Textarea} from '@tryghost/shade/components';
-import {Grid, Inline, Stack, Text} from '@tryghost/shade/primitives';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, CodeEditor, FieldError, Input, Label, Tabs, TabsContent, TabsList, TabsTrigger, Textarea} from '@tryghost/shade/components';
+import {Grid, Inline, Stack} from '@tryghost/shade/primitives';
 import {DESCRIPTION_MAX_LENGTH, FACEBOOK_DESCRIPTION_RECOMMENDED_LENGTH, FACEBOOK_TITLE_RECOMMENDED_LENGTH, META_DESCRIPTION_RECOMMENDED_LENGTH, META_TITLE_RECOMMENDED_LENGTH, X_DESCRIPTION_RECOMMENDED_LENGTH, X_TITLE_RECOMMENDED_LENGTH, charLength, getBlogDomain, getSeoDescription, getSeoTitle, getSeoUrl, getSlugUrlPreview, validateTagField} from './tag-detail-edit';
 import {FacebookCardPreview, SeoPreview, XCardPreview} from './tag-detail-previews';
 import {cn, formatNumber} from '@tryghost/shade/utils';
@@ -34,15 +34,6 @@ const UsedCharacters: React.FC<{value: string; limit: number; prefix: 'Maximum' 
     );
 };
 
-const SectionTrigger: React.FC<{title: string; description: string}> = ({title, description}) => (
-    <AccordionTrigger className='px-6 hover:no-underline'>
-        <Stack className='text-left' gap='none'>
-            <Text as='span' leading='tight' size='md' weight='semibold'>{title}</Text>
-            <Text as='span' className='text-base' leading='tight' tone='secondary'>{description}</Text>
-        </Stack>
-    </AccordionTrigger>
-);
-
 const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, disabled, onChange, onFieldError, onImageBusyChange, onImageUploadPendingChange}) => {
     const {data: settingsData} = useBrowseSettings({});
     const siteTitle = getSettingValue<string>(settingsData?.settings ?? [], 'title') ?? '';
@@ -64,7 +55,8 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
         <Grid align='start' className='lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]' data-testid='tag-detail-form' gap='2xl'>
             {/* The main form and advanced settings collapse into one column
                 below the large breakpoint. */}
-            <Card data-testid='tag-core-data-card'>
+            <Stack gap='2xl'>
+                <Card data-testid='tag-core-data-card'>
                 <CardContent className='p-6'>
                     <Stack gap='lg'>
                         <Stack gap='sm'>
@@ -143,203 +135,184 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                         </Stack>
                     </Stack>
                 </CardContent>
-            </Card>
+                </Card>
 
-            <Card>
-                <CardContent className='px-0 py-2'>
-                    <Accordion defaultValue='metadata' type='single' collapsible>
-                        <AccordionItem className='last:border-b-0' value='metadata'>
-                            <SectionTrigger description='Extra content for search engines.' title='Meta data' />
-                            <AccordionContent className='bg-surface-elevated px-6'>
-                                <Stack className='pt-2' gap='xl'>
-                                    <Stack gap='lg'>
-                                        <Stack gap='sm'>
-                                            <Label htmlFor='meta-title'>Meta title</Label>
-                                            <Input
-                                                aria-describedby={errors.metaTitle ? errorId('metaTitle') : undefined}
-                                                aria-invalid={!!errors.metaTitle}
-                                                disabled={disabled}
-                                                id='meta-title'
-                                                placeholder={draft.name}
-                                                value={draft.metaTitle}
-                                                onBlur={() => validateOnBlur('metaTitle')}
-                                                onChange={e => onChange({metaTitle: e.target.value})}
-                                            />
-                                            <FieldError className='text-sm' id={errorId('metaTitle')}>{errors.metaTitle}</FieldError>
-                                            <UsedCharacters limit={META_TITLE_RECOMMENDED_LENGTH} prefix='Recommended' value={draft.metaTitle} />
-                                        </Stack>
-                                        <Stack gap='sm'>
-                                            <Label htmlFor='meta-description'>Meta description</Label>
-                                            <Textarea
-                                                aria-describedby={errors.metaDescription ? errorId('metaDescription') : undefined}
-                                                aria-invalid={!!errors.metaDescription}
-                                                disabled={disabled}
-                                                id='meta-description'
-                                                placeholder={draft.description}
-                                                value={draft.metaDescription}
-                                                onBlur={() => validateOnBlur('metaDescription')}
-                                                onChange={e => onChange({metaDescription: e.target.value})}
-                                            />
-                                            <FieldError className='text-sm' id={errorId('metaDescription')}>{errors.metaDescription}</FieldError>
-                                            <UsedCharacters limit={META_DESCRIPTION_RECOMMENDED_LENGTH} prefix='Recommended' value={draft.metaDescription} />
-                                        </Stack>
-                                        <Stack gap='sm'>
-                                            <Label htmlFor='canonical-url'>Canonical URL</Label>
-                                            <Input
-                                                aria-describedby={errors.canonicalUrl ? errorId('canonicalUrl') : undefined}
-                                                aria-invalid={!!errors.canonicalUrl}
-                                                disabled={disabled}
-                                                id='canonical-url'
-                                                value={draft.canonicalUrl}
-                                                onBlur={() => validateOnBlur('canonicalUrl')}
-                                                onChange={e => onChange({canonicalUrl: e.target.value})}
-                                            />
-                                            <FieldError className='text-sm' id={errorId('canonicalUrl')}>{errors.canonicalUrl}</FieldError>
-                                        </Stack>
-                                    </Stack>
+                <Card data-testid='tag-code-injection-card'>
+                    <CardHeader>
+                        <CardTitle>Code injection</CardTitle>
+                        <CardDescription>Add styles/scripts to the header and footer.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Stack gap='lg'>
+                            <CodeEditor
+                                data-testid='codeinjection-head'
+                                editable={!disabled}
+                                extensions={htmlExtensions}
+                                height='128px'
+                                title={<>Tag header <code className='ml-1 font-normal'>{'{{ghost_head}}'}</code></>}
+                                value={draft.codeinjectionHead}
+                                onChange={value => onChange({codeinjectionHead: value})}
+                            />
+                            <CodeEditor
+                                data-testid='codeinjection-foot'
+                                editable={!disabled}
+                                extensions={htmlExtensions}
+                                height='128px'
+                                title={<>Tag footer <code className='ml-1 font-normal'>{'{{ghost_foot}}'}</code></>}
+                                value={draft.codeinjectionFoot}
+                                onChange={value => onChange({codeinjectionFoot: value})}
+                            />
+                        </Stack>
+                    </CardContent>
+                </Card>
+            </Stack>
+
+            <Card data-testid='tag-metadata-card'>
+                <CardHeader>
+                    <CardTitle>Meta data</CardTitle>
+                    <CardDescription>Extra content for search engines and social accounts.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Tabs defaultValue='search' variant='underline'>
+                        <TabsList aria-label='Tag metadata' className='gap-2'>
+                            <TabsTrigger value='search'>Search</TabsTrigger>
+                            <TabsTrigger value='x-card'>X card</TabsTrigger>
+                            <TabsTrigger value='facebook-card'>Facebook card</TabsTrigger>
+                        </TabsList>
+
+                        <TabsContent className='pt-5' value='search'>
+                            <Stack gap='xl'>
+                                <Stack gap='lg'>
                                     <Stack gap='sm'>
-                                        <Label>Search Engine Result Preview</Label>
-                                        <SeoPreview description={seoDescription} title={seoTitle} url={seoUrl} />
-                                    </Stack>
-                                </Stack>
-                            </AccordionContent>
-                        </AccordionItem>
-
-                        <AccordionItem className='last:border-b-0' value='x-card'>
-                            <SectionTrigger description='Customized structured data for X.' title='X card' />
-                            <AccordionContent className='bg-surface-elevated px-6'>
-                                <Stack className='pt-2' gap='xl'>
-                                    <Stack gap='lg'>
-                                        <TagImageField
+                                        <Label htmlFor='meta-title'>Meta title</Label>
+                                        <Input
+                                            aria-describedby={errors.metaTitle ? errorId('metaTitle') : undefined}
+                                            aria-invalid={!!errors.metaTitle}
                                             disabled={disabled}
-                                            id='twitter-image'
-                                            label='X image'
-                                            unsplashEnabled={unsplashEnabled}
-                                            uploadText='Add X image'
-                                            value={draft.twitterImage}
-                                            onBusyChange={busy => onImageBusyChange('twitterImage', busy)}
-                                            onChange={twitterImage => onChange({twitterImage})}
-                                            onUploadPendingChange={pending => onImageUploadPendingChange('twitterImage', pending)}
+                                            id='meta-title'
+                                            placeholder={draft.name}
+                                            value={draft.metaTitle}
+                                            onBlur={() => validateOnBlur('metaTitle')}
+                                            onChange={e => onChange({metaTitle: e.target.value})}
                                         />
-                                        <Stack gap='sm'>
-                                            <Label htmlFor='twitter-title'>X title</Label>
-                                            <Input
-                                                disabled={disabled}
-                                                id='twitter-title'
-                                                placeholder={draft.name}
-                                                value={draft.twitterTitle}
-                                                onChange={e => onChange({twitterTitle: e.target.value})}
-                                            />
-                                            <UsedCharacters limit={X_TITLE_RECOMMENDED_LENGTH} prefix='Recommended' value={draft.twitterTitle} />
-                                        </Stack>
-                                        <Stack gap='sm'>
-                                            <Label htmlFor='twitter-description'>X description</Label>
-                                            <Textarea
-                                                disabled={disabled}
-                                                id='twitter-description'
-                                                placeholder={draft.description}
-                                                value={draft.twitterDescription}
-                                                onChange={e => onChange({twitterDescription: e.target.value})}
-                                            />
-                                            <UsedCharacters limit={X_DESCRIPTION_RECOMMENDED_LENGTH} prefix='Recommended' value={draft.twitterDescription} />
-                                        </Stack>
+                                        <FieldError className='text-sm' id={errorId('metaTitle')}>{errors.metaTitle}</FieldError>
+                                        <UsedCharacters limit={META_TITLE_RECOMMENDED_LENGTH} prefix='Recommended' value={draft.metaTitle} />
                                     </Stack>
                                     <Stack gap='sm'>
-                                        <Label>X preview</Label>
-                                        <XCardPreview
-                                            description={draft.twitterDescription || seoDescription || siteMetaDescription || ''}
-                                            domain={blogDomain}
-                                            image={draft.twitterImage || draft.featureImage}
-                                            siteHeader={socialSiteHeader}
-                                            title={draft.twitterTitle || seoTitle}
-                                        />
-                                    </Stack>
-                                </Stack>
-                            </AccordionContent>
-                        </AccordionItem>
-
-                        <AccordionItem className='last:border-b-0' value='facebook-card'>
-                            <SectionTrigger description='Customize Open Graph data.' title='Facebook card' />
-                            <AccordionContent className='bg-surface-elevated px-6'>
-                                <Stack className='pt-2' gap='xl'>
-                                    <Stack gap='lg'>
-                                        <TagImageField
+                                        <Label htmlFor='meta-description'>Meta description</Label>
+                                        <Textarea
+                                            aria-describedby={errors.metaDescription ? errorId('metaDescription') : undefined}
+                                            aria-invalid={!!errors.metaDescription}
                                             disabled={disabled}
-                                            id='og-image'
-                                            label='Facebook image'
-                                            unsplashEnabled={unsplashEnabled}
-                                            uploadText='Add Facebook image'
-                                            value={draft.ogImage}
-                                            onBusyChange={busy => onImageBusyChange('ogImage', busy)}
-                                            onChange={ogImage => onChange({ogImage})}
-                                            onUploadPendingChange={pending => onImageUploadPendingChange('ogImage', pending)}
+                                            id='meta-description'
+                                            placeholder={draft.description}
+                                            value={draft.metaDescription}
+                                            onBlur={() => validateOnBlur('metaDescription')}
+                                            onChange={e => onChange({metaDescription: e.target.value})}
                                         />
-                                        <Stack gap='sm'>
-                                            <Label htmlFor='og-title'>Facebook title</Label>
-                                            <Input
-                                                disabled={disabled}
-                                                id='og-title'
-                                                placeholder={draft.name}
-                                                value={draft.ogTitle}
-                                                onChange={e => onChange({ogTitle: e.target.value})}
-                                            />
-                                            <UsedCharacters limit={FACEBOOK_TITLE_RECOMMENDED_LENGTH} prefix='Recommended' value={draft.ogTitle} />
-                                        </Stack>
-                                        <Stack gap='sm'>
-                                            <Label htmlFor='og-description'>Facebook description</Label>
-                                            <Textarea
-                                                disabled={disabled}
-                                                id='og-description'
-                                                placeholder={draft.description}
-                                                value={draft.ogDescription}
-                                                onChange={e => onChange({ogDescription: e.target.value})}
-                                            />
-                                            <UsedCharacters limit={FACEBOOK_DESCRIPTION_RECOMMENDED_LENGTH} prefix='Recommended' value={draft.ogDescription} />
-                                        </Stack>
+                                        <FieldError className='text-sm' id={errorId('metaDescription')}>{errors.metaDescription}</FieldError>
+                                        <UsedCharacters limit={META_DESCRIPTION_RECOMMENDED_LENGTH} prefix='Recommended' value={draft.metaDescription} />
                                     </Stack>
                                     <Stack gap='sm'>
-                                        <Label>Facebook preview</Label>
-                                        {/* The description chain deliberately skips ogDescription: Ember read a
-                                            nonexistent `facebookDescription` attribute, so ogDescription never
-                                            fed this preview (`tag-form.js` `facebookDescription`). */}
-                                        <FacebookCardPreview
-                                            description={seoDescription || siteMetaDescription || ''}
-                                            domain={blogDomain}
-                                            image={draft.ogImage || draft.featureImage}
-                                            siteHeader={socialSiteHeader}
-                                            title={draft.ogTitle || seoTitle}
+                                        <Label htmlFor='canonical-url'>Canonical URL</Label>
+                                        <Input
+                                            aria-describedby={errors.canonicalUrl ? errorId('canonicalUrl') : undefined}
+                                            aria-invalid={!!errors.canonicalUrl}
+                                            disabled={disabled}
+                                            id='canonical-url'
+                                            value={draft.canonicalUrl}
+                                            onBlur={() => validateOnBlur('canonicalUrl')}
+                                            onChange={e => onChange({canonicalUrl: e.target.value})}
                                         />
+                                        <FieldError className='text-sm' id={errorId('canonicalUrl')}>{errors.canonicalUrl}</FieldError>
                                     </Stack>
                                 </Stack>
-                            </AccordionContent>
-                        </AccordionItem>
+                                <Stack gap='sm'>
+                                    <Label>Search Engine Result Preview</Label>
+                                    <SeoPreview description={seoDescription} title={seoTitle} url={seoUrl} />
+                                </Stack>
+                            </Stack>
+                        </TabsContent>
 
-                        <AccordionItem className='last:border-b-0' value='code-injection'>
-                            <SectionTrigger description='Add styles/scripts to the header and footer.' title='Code injection' />
-                            <AccordionContent className='bg-surface-elevated px-6'>
-                                <Stack className='pt-2' gap='lg'>
-                                    <CodeEditor
-                                        data-testid='codeinjection-head'
-                                        editable={!disabled}
-                                        extensions={htmlExtensions}
-                                        height='128px'
-                                        title={<>Tag header <code className='ml-1 font-normal'>{'{{ghost_head}}'}</code></>}
-                                        value={draft.codeinjectionHead}
-                                        onChange={value => onChange({codeinjectionHead: value})}
+                        <TabsContent className='pt-5' value='x-card'>
+                            <Stack gap='xl'>
+                                <Stack gap='lg'>
+                                    <TagImageField
+                                        disabled={disabled}
+                                        id='twitter-image'
+                                        label='X image'
+                                        unsplashEnabled={unsplashEnabled}
+                                        uploadText='Add X image'
+                                        value={draft.twitterImage}
+                                        onBusyChange={busy => onImageBusyChange('twitterImage', busy)}
+                                        onChange={twitterImage => onChange({twitterImage})}
+                                        onUploadPendingChange={pending => onImageUploadPendingChange('twitterImage', pending)}
                                     />
-                                    <CodeEditor
-                                        data-testid='codeinjection-foot'
-                                        editable={!disabled}
-                                        extensions={htmlExtensions}
-                                        height='128px'
-                                        title={<>Tag footer <code className='ml-1 font-normal'>{'{{ghost_foot}}'}</code></>}
-                                        value={draft.codeinjectionFoot}
-                                        onChange={value => onChange({codeinjectionFoot: value})}
+                                    <Stack gap='sm'>
+                                        <Label htmlFor='twitter-title'>X title</Label>
+                                        <Input disabled={disabled} id='twitter-title' placeholder={draft.name} value={draft.twitterTitle} onChange={e => onChange({twitterTitle: e.target.value})} />
+                                        <UsedCharacters limit={X_TITLE_RECOMMENDED_LENGTH} prefix='Recommended' value={draft.twitterTitle} />
+                                    </Stack>
+                                    <Stack gap='sm'>
+                                        <Label htmlFor='twitter-description'>X description</Label>
+                                        <Textarea disabled={disabled} id='twitter-description' placeholder={draft.description} value={draft.twitterDescription} onChange={e => onChange({twitterDescription: e.target.value})} />
+                                        <UsedCharacters limit={X_DESCRIPTION_RECOMMENDED_LENGTH} prefix='Recommended' value={draft.twitterDescription} />
+                                    </Stack>
+                                </Stack>
+                                <Stack gap='sm'>
+                                    <Label>X preview</Label>
+                                    <XCardPreview
+                                        description={draft.twitterDescription || seoDescription || siteMetaDescription || ''}
+                                        domain={blogDomain}
+                                        image={draft.twitterImage || draft.featureImage}
+                                        siteHeader={socialSiteHeader}
+                                        title={draft.twitterTitle || seoTitle}
                                     />
                                 </Stack>
-                            </AccordionContent>
-                        </AccordionItem>
-                    </Accordion>
+                            </Stack>
+                        </TabsContent>
+
+                        <TabsContent className='pt-5' value='facebook-card'>
+                            <Stack gap='xl'>
+                                <Stack gap='lg'>
+                                    <TagImageField
+                                        disabled={disabled}
+                                        id='og-image'
+                                        label='Facebook image'
+                                        unsplashEnabled={unsplashEnabled}
+                                        uploadText='Add Facebook image'
+                                        value={draft.ogImage}
+                                        onBusyChange={busy => onImageBusyChange('ogImage', busy)}
+                                        onChange={ogImage => onChange({ogImage})}
+                                        onUploadPendingChange={pending => onImageUploadPendingChange('ogImage', pending)}
+                                    />
+                                    <Stack gap='sm'>
+                                        <Label htmlFor='og-title'>Facebook title</Label>
+                                        <Input disabled={disabled} id='og-title' placeholder={draft.name} value={draft.ogTitle} onChange={e => onChange({ogTitle: e.target.value})} />
+                                        <UsedCharacters limit={FACEBOOK_TITLE_RECOMMENDED_LENGTH} prefix='Recommended' value={draft.ogTitle} />
+                                    </Stack>
+                                    <Stack gap='sm'>
+                                        <Label htmlFor='og-description'>Facebook description</Label>
+                                        <Textarea disabled={disabled} id='og-description' placeholder={draft.description} value={draft.ogDescription} onChange={e => onChange({ogDescription: e.target.value})} />
+                                        <UsedCharacters limit={FACEBOOK_DESCRIPTION_RECOMMENDED_LENGTH} prefix='Recommended' value={draft.ogDescription} />
+                                    </Stack>
+                                </Stack>
+                                <Stack gap='sm'>
+                                    <Label>Facebook preview</Label>
+                                    {/* The description chain deliberately skips ogDescription: Ember read a
+                                        nonexistent `facebookDescription` attribute, so ogDescription never
+                                        fed this preview (`tag-form.js` `facebookDescription`). */}
+                                    <FacebookCardPreview
+                                        description={seoDescription || siteMetaDescription || ''}
+                                        domain={blogDomain}
+                                        image={draft.ogImage || draft.featureImage}
+                                        siteHeader={socialSiteHeader}
+                                        title={draft.ogTitle || seoTitle}
+                                    />
+                                </Stack>
+                            </Stack>
+                        </TabsContent>
+                    </Tabs>
                 </CardContent>
             </Card>
         </Grid>

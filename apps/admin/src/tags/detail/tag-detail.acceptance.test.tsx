@@ -55,49 +55,49 @@ describe('Tag detail (tagDetailsReact on)', () => {
         await expect.element(page.getByTestId('tag-detail-internal-badge')).toHaveTextContent('INTERNAL');
     });
 
-    it('opens Meta data by default and keeps one advanced section open at a time', async () => {
+    it('shows metadata in Search, X card, and Facebook card tabs', async () => {
         const t = tag({name: 'News', slug: 'news'});
         fakeTagWorld(t);
         await renderAdminApp(`/tags/${t.slug}`, FLAGS);
 
-        const metaTrigger = page.getByRole('button', {name: /Meta data/});
-        const xTrigger = page.getByRole('button', {name: /X card/});
-        const facebookTrigger = page.getByRole('button', {name: /Facebook card/});
-        const codeInjectionTrigger = page.getByRole('button', {name: /Code injection/});
+        const metadataCard = page.getByTestId('tag-metadata-card');
+        const searchTab = metadataCard.getByRole('tab', {name: 'Search'});
+        const xTab = metadataCard.getByRole('tab', {name: 'X card'});
+        const facebookTab = metadataCard.getByRole('tab', {name: 'Facebook card'});
 
-        await expect.element(metaTrigger).toHaveAttribute('aria-expanded', 'true');
-        await expect.element(xTrigger).toHaveAttribute('aria-expanded', 'false');
-        await expect.element(facebookTrigger).toHaveAttribute('aria-expanded', 'false');
-        await expect.element(codeInjectionTrigger).toHaveAttribute('aria-expanded', 'false');
+        await expect.element(metadataCard.getByText('Meta data', {exact: true})).toBeVisible();
+        await expect.element(metadataCard.getByText('Extra content for search engines and social accounts.', {exact: true})).toBeVisible();
+        await expect.element(searchTab).toHaveAttribute('aria-selected', 'true');
+        await expect.element(xTab).toHaveAttribute('aria-selected', 'false');
+        await expect.element(facebookTab).toHaveAttribute('aria-selected', 'false');
 
         const metaTitle = page.getByLabelText('Meta title');
         const searchPreview = page.getByText('Search Engine Result Preview', {exact: true});
         await expect.element(metaTitle).toBeVisible();
         expect(metaTitle.element().compareDocumentPosition(searchPreview.element()) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 
-        await xTrigger.click();
-        await expect.element(metaTrigger).toHaveAttribute('aria-expanded', 'false');
-        await expect.element(xTrigger).toHaveAttribute('aria-expanded', 'true');
+        await xTab.click();
+        await expect.element(searchTab).toHaveAttribute('aria-selected', 'false');
+        await expect.element(xTab).toHaveAttribute('aria-selected', 'true');
+        expect(page.getByLabelText('Meta title').query()).toBeNull();
         const xTitle = page.getByLabelText('X title');
         const xPreview = page.getByText('X preview', {exact: true});
         await expect.element(xTitle).toBeVisible();
         expect(xTitle.element().compareDocumentPosition(xPreview.element()) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 
-        await facebookTrigger.click();
-        await expect.element(xTrigger).toHaveAttribute('aria-expanded', 'false');
-        await expect.element(facebookTrigger).toHaveAttribute('aria-expanded', 'true');
+        await facebookTab.click();
+        await expect.element(xTab).toHaveAttribute('aria-selected', 'false');
+        await expect.element(facebookTab).toHaveAttribute('aria-selected', 'true');
+        expect(page.getByLabelText('X title').query()).toBeNull();
         const facebookTitle = page.getByLabelText('Facebook title');
         const facebookPreview = page.getByText('Facebook preview', {exact: true});
         await expect.element(facebookTitle).toBeVisible();
         expect(facebookTitle.element().compareDocumentPosition(facebookPreview.element()) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 
-        await codeInjectionTrigger.click();
-        await expect.element(facebookTrigger).toHaveAttribute('aria-expanded', 'false');
-        await expect.element(codeInjectionTrigger).toHaveAttribute('aria-expanded', 'true');
-        await expect.element(page.getByRole('textbox', {name: /^Tag header/})).toBeVisible();
-
-        await codeInjectionTrigger.click();
-        await expect.element(codeInjectionTrigger).toHaveAttribute('aria-expanded', 'false');
+        const codeInjectionCard = page.getByTestId('tag-code-injection-card');
+        await expect.element(codeInjectionCard.getByText('Code injection', {exact: true})).toBeVisible();
+        await expect.element(codeInjectionCard.getByRole('textbox', {name: /^Tag header/})).toBeVisible();
+        await expect.element(codeInjectionCard.getByRole('textbox', {name: /^Tag footer/})).toBeVisible();
     });
 
     it('edits and saves tag code injection with CodeMirror', async () => {
@@ -107,7 +107,6 @@ describe('Tag detail (tagDetailsReact on)', () => {
         const saveApi = fakeTagWorld(t);
         await renderAdminApp(`/tags/${t.slug}`, FLAGS);
 
-        await page.getByRole('button', {name: /Code injection/}).click();
         const headerEditor = page.getByRole('textbox', {name: /^Tag header/});
         const footerEditor = page.getByRole('textbox', {name: /^Tag footer/});
         await expect.element(headerEditor).toBeVisible();
@@ -147,7 +146,6 @@ describe('Tag detail (tagDetailsReact on)', () => {
         fakeTagWorld(t);
         await renderAdminApp(`/tags/${t.slug}`, FLAGS);
 
-        await page.getByRole('button', {name: /Code injection/}).click();
         await new Promise((resolve) => {
             window.setTimeout(resolve, 250);
         });
