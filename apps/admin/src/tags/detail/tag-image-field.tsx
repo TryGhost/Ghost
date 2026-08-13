@@ -146,7 +146,10 @@ const TagImageField: React.FC<TagImageFieldProps> = ({id, label, uploadText, val
                             {isPending ? (
                                 <LoadingIndicator size='sm' />
                             ) : (
-                                <span className='text-sm text-muted-foreground'>{uploadText}</span>
+                                <Stack align='center' gap='sm'>
+                                    <LucideIcon.Upload aria-hidden='true' className='size-6 text-muted-foreground' />
+                                    <span className='text-sm text-muted-foreground'>{uploadText}</span>
+                                </Stack>
                             )}
                         </ImageUploadDropzone>
                         {unsplashEnabled && (
