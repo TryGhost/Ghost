@@ -136,7 +136,7 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                 </CardContent>
             </Card>
 
-            <Stack gap='md'>
+            <Stack gap='lg'>
                 <Card className='overflow-hidden' data-testid='tag-metadata-card'>
                     <Accordion type='single' collapsible>
                         <AccordionItem className='border-b-0' value='metadata'>
