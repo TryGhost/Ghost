@@ -482,10 +482,17 @@ async function initBackgroundServices({config}) {
     // Load email analytics recurring jobs
     if (config.get('backgroundJobs:emailAnalytics')) {
         const emailAnalyticsJobs = require('./server/services/email-analytics/jobs');
-        await Promise.all([
+        const analyticsJobs = [
             emailAnalyticsJobs.scheduleRecurringNewslettersJob(),
             emailAnalyticsJobs.scheduleRecurringAutomationsJob()
-        ]);
+        ];
+
+        const labs = require('./shared/labs');
+        if (labs.isSet('giftSubCustomization')) {
+            analyticsJobs.push(emailAnalyticsJobs.scheduleRecurringGiftDeliveriesJob());
+        }
+
+        await Promise.all(analyticsJobs);
     }
 
     const updateCheck = require('./server/services/update-check');

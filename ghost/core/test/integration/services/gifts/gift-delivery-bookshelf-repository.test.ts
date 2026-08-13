@@ -73,7 +73,10 @@ describe('GiftDeliveryBookshelfRepository (integration)', function () {
             status: deliveryStatus,
             started_at: startedAt,
             email_sent_at: null,
-            email_provider_message_id: null
+            email_provider_message_id: null,
+            outcome: 'unknown',
+            outcome_at: null,
+            outcome_error: null
         });
 
         return {gift, delivery};
@@ -222,4 +225,41 @@ describe('GiftDeliveryBookshelfRepository (integration)', function () {
             assert.equal((await deliveryRepository.getById(delivery.id))?.status, 'cancelled');
         });
     }
+
+    it('only replaces provider outcomes with newer provider timestamps', async function () {
+        const {delivery} = await createPendingEmailGift();
+        await delivery.save({
+            email_provider_message_id: 'provider-123',
+            outcome: 'temporary_failed',
+            outcome_at: new Date('2026-08-11T10:00:00.000Z'),
+            outcome_error: 'temporary rejection'
+        }, {patch: true});
+
+        assert.equal(await deliveryRepository.recordOutcome({
+            providerMessageId: 'provider-123',
+            outcome: 'delivered',
+            timestamp: new Date('2026-08-11T09:00:00.000Z'),
+            error: null
+        }), 'stale');
+
+        assert.equal(await deliveryRepository.recordOutcome({
+            providerMessageId: 'unknown-provider',
+            outcome: 'delivered',
+            timestamp: new Date('2026-08-11T11:00:00.000Z'),
+            error: null
+        }), 'not_found');
+
+        assert.equal(await deliveryRepository.recordOutcome({
+            providerMessageId: 'provider-123',
+            outcome: 'delivered',
+            timestamp: new Date('2026-08-11T11:00:00.000Z'),
+            error: null
+        }), 'recorded');
+
+        const reloaded = await deliveryRepository.getById(delivery.id);
+        assert.equal(reloaded?.outcome, 'delivered');
+        assert.equal(reloaded?.outcomeAt?.toISOString(), '2026-08-11T11:00:00.000Z');
+        assert.equal(reloaded?.outcomeError, null);
+        assert.equal((await deliveryRepository.getByProviderMessageId('provider-123'))?.id, delivery.id);
+    });
 });

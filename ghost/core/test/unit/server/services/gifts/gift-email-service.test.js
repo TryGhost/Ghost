@@ -102,6 +102,28 @@ describe('GiftEmailService', function () {
         }
     });
 
+    it('tells the buyer to share the gift link after permanent delivery failure', async function () {
+        await service.sendDeliveryFailureNotification({
+            buyerEmail: 'buyer@example.com',
+            recipientEmail: 'recipient@example.com',
+            token: 'abc-123',
+            expiresAt: new Date('2027-04-07')
+        });
+
+        const message = transactionalMailer.send.firstCall.firstArg;
+        sinon.assert.match(message, {
+            to: 'buyer@example.com',
+            subject: 'We couldn\'t deliver your gift',
+            disableTracking: true
+        });
+        assert.equal(message.tags, undefined);
+        for (const field of ['html', 'text']) {
+            sinon.assert.match(message[field], sinon.match('recipient@example.com'));
+            sinon.assert.match(message[field], sinon.match('https://example.com/gift/abc-123'));
+            sinon.assert.match(message[field], sinon.match('Send them the gift link below'));
+        }
+    });
+
     it('includes gift link, tier name, and cadence in both HTML and text', async function () {
         await service.sendPurchaseConfirmation(defaultData);
 

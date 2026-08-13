@@ -28,21 +28,27 @@ function buildScheduler({
     emailAnalyticsEnabled = true,
     backgroundJobEnabled = true,
     emailCount = 1,
-    automatedEmailRecipient = null
+    automatedEmailRecipient = null,
+    giftDelivery = null
 }: {
     emailAnalyticsEnabled?: boolean;
     backgroundJobEnabled?: boolean;
     emailCount?: string | number;
     automatedEmailRecipient?: unknown;
+    giftDelivery?: unknown;
 } = {}) {
     const newsletterQuery = buildNewsletterQuery(emailCount);
     const automationsQuery = buildAutomationsQuery(automatedEmailRecipient);
+    const giftQuery = buildAutomationsQuery(giftDelivery);
     const models = {
         Email: {
             where: newsletterQuery.where
         },
         AutomatedEmailRecipient: {
             query: sinon.stub().returns(automationsQuery)
+        },
+        GiftDelivery: {
+            query: sinon.stub().returns(giftQuery)
         }
     };
     const config = {
@@ -65,6 +71,7 @@ function buildScheduler({
         jobManager,
         newsletterQuery,
         automationsQuery,
+        giftQuery,
         models
     };
 }
@@ -280,5 +287,25 @@ describe('EmailAnalyticsJobScheduler', function () {
 
         sinon.assert.notCalled(jobManager.addJob);
         sinon.assert.calledOnce(automationsQuery.first);
+    });
+
+    it('adds the existing recurring analytics collector for accepted gift email telemetry', async function () {
+        const {scheduler, jobManager, giftQuery, models} = buildScheduler({
+            emailCount: 0,
+            giftDelivery: {id: 'gift-id'}
+        });
+
+        await scheduler.scheduleRecurringGiftDeliveriesJob();
+
+        sinon.assert.calledOnceWithMatch(jobManager.addJob, {
+            job: sinon.match((value: unknown) => (
+                typeof value === 'string' && value.endsWith('gift-fetch-latest/index.js')
+            )),
+            name: 'email-analytics-gift-fetch-latest'
+        });
+        sinon.assert.calledOnce(models.GiftDelivery.query);
+        sinon.assert.calledOnceWithExactly(giftQuery.where, 'email_sent_at', '>', sinon.match.date);
+        sinon.assert.calledOnceWithExactly(giftQuery.whereNotNull, 'email_provider_message_id');
+        sinon.assert.calledOnceWithExactly(giftQuery.first, 'id');
     });
 });

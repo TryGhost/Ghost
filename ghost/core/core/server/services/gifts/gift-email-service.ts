@@ -80,6 +80,13 @@ interface GiftDeliverySendData {
     expiresAt: Date;
 }
 
+interface GiftDeliveryFailureNotificationData {
+    buyerEmail: string;
+    recipientEmail: string;
+    token: string;
+    expiresAt: Date;
+}
+
 export class GiftEmailService {
     private readonly transactionalMailer: TransactionalMailer;
     private readonly bulkMailer: BulkMailer;
@@ -166,6 +173,35 @@ export class GiftEmailService {
         await this.transactionalMailer.send({
             to: buyerEmail,
             subject: recipientEmail ? this.t('Your gift is on its way') : this.t('Your gift is ready'),
+            html,
+            text,
+            from: this.getFromAddress(),
+            forceTextContent: true,
+            disableTracking: true
+        });
+    }
+
+    async sendDeliveryFailureNotification({buyerEmail, recipientEmail, token, expiresAt}: GiftDeliveryFailureNotificationData): Promise<void> {
+        const siteDomain = this.siteDomain;
+        const siteUrl = this.urlUtils.getSiteUrl();
+        const siteTitle = this.settingsCache.get('title') ?? siteDomain;
+        const giftLink = `${siteUrl.replace(/\/$/, '')}/gift/${token}`;
+        const {html, text} = await this.renderer.renderDeliveryFailure({
+            siteTitle,
+            siteUrl,
+            siteIconUrl: this.blogIcon.getIconUrl({absolute: true, fallbackToDefault: false}),
+            siteDomain,
+            toEmail: buyerEmail,
+            gift: {
+                link: giftLink,
+                expiresAt: this.formatDate(expiresAt),
+                recipientEmail
+            }
+        });
+
+        await this.transactionalMailer.send({
+            to: buyerEmail,
+            subject: this.t('We couldn\'t deliver your gift'),
             html,
             text,
             from: this.getFromAddress(),
