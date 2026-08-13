@@ -5,8 +5,7 @@ import type {ConfigInstance} from '../../../shared/config/loader';
 import type Metrics from '@tryghost/metrics';
 // @ts-expect-error This module lacks type definitions.
 import type SettingsCache from '../../../shared/settings-cache';
-// @ts-expect-error This module lacks type definitions.
-import EmailAnalyticsServiceWrapper from './email-analytics-service-wrapper';
+import {EmailAnalyticsServiceWrapper} from './email-analytics-service-wrapper';
 // @ts-expect-error This module lacks type definitions.
 import {AGGREGATE_MEMBER_STATS_METRIC_NAME, NewsletterEmailAnalyticsBatchProcessor} from './newsletter-email-analytics-batch-processor';
 // @ts-expect-error This module lacks type definitions.
@@ -117,7 +116,6 @@ export const init = ({
             }
         },
         metrics,
-        prometheusClient,
         settingsCache,
         createEventProcessor: () => (
             new NewsletterEmailAnalyticsBatchProcessor({

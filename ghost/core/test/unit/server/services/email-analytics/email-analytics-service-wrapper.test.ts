@@ -1,6 +1,7 @@
-const sinon = require('sinon');
-const EmailAnalyticsServiceWrapper = require('../../../../../core/server/services/email-analytics/email-analytics-service-wrapper');
-const {Queries} = require('../../../../../core/server/services/email-analytics/lib/queries');
+import sinon from 'sinon';
+import {EmailAnalyticsServiceWrapper} from '../../../../../core/server/services/email-analytics/email-analytics-service-wrapper';
+import {EventProcessingResult} from '../../../../../core/server/services/email-analytics/event-processing-result';
+import {Queries} from '../../../../../core/server/services/email-analytics/lib/queries';
 
 class FakeEvent {
     timestamp = new Date();
@@ -8,8 +9,7 @@ class FakeEvent {
 }
 
 describe('EmailAnalyticsServiceWrapper', function () {
-    /** @type {sinon.SinonStub} */
-    let metricStub;
+    let metricStub: sinon.SinonStub;
 
     beforeEach(function () {
         metricStub = sinon.stub();
@@ -19,7 +19,7 @@ describe('EmailAnalyticsServiceWrapper', function () {
         sinon.restore();
     });
 
-    function logLatestOpenedJob(logName) {
+    function logLatestOpenedJob(logName: string) {
         const wrapper = new EmailAnalyticsServiceWrapper({logName});
         wrapper.init({
             config: {
@@ -62,10 +62,7 @@ describe('EmailAnalyticsServiceWrapper', function () {
             }),
             metrics: {
                 metric: metricStub
-            },
-            prometheusClient: {
-                registerCounter: sinon.stub()
-            },
+            }
         });
         wrapper._logJobCompletion('latest-opened', {
             eventCount: 10,
@@ -74,13 +71,7 @@ describe('EmailAnalyticsServiceWrapper', function () {
             aggregationTimeMs: 500,
             emailAggregationTimeMs: 300,
             memberAggregationTimeMs: 200,
-            result: {
-                opened: 10,
-                delivered: 0,
-                permanentFailed: 0,
-                temporaryFailed: 0,
-                unprocessable: 0
-            }
+            result: new EventProcessingResult()
         }, 2000);
     }
 
