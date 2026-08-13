@@ -7,9 +7,13 @@ scripts where bundle size matters more than ecosystem compatibility.
 
 ## Development
 
+Run `pnpm dev:public` from the monorepo root to start the standard development
+environment and the Admin Toolbar watcher. To work on this package by itself,
+run these commands from this directory:
+
 ```bash
 pnpm build    # one-off build
-pnpm dev      # build + preview with watch (started automatically by pnpm dev from root)
+pnpm dev      # watch the UMD build
 pnpm test     # build + run tests against UMD bundle
 ```
 
