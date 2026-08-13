@@ -14,7 +14,7 @@ describe('INTERNAL_DOCS_PATTERN', () => {
     });
 
     it('does not ignore a README in any casing npm would resolve', () => {
-        for (const name of ['readme.md', 'Readme.md', 'ReadMe.md']) {
+        for (const name of ['readme.md', 'Readme.md', 'ReadMe.md', 'READme.md', 'rEaDmE.md']) {
             assert.strictEqual(isIgnored(`${PACKAGE_DIR}/${name}`), false, name);
         }
     });

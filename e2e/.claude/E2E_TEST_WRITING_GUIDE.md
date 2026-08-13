@@ -251,6 +251,7 @@ test.describe('Ghost Admin - Feature', () => {
         const post = await postFactory.create({title: 'Test Post'});
 
         await featurePage.goto();
+        await featurePage.fillForm({name: post.title});
         await featurePage.save();
 
         await expect(featurePage.statusMessage).toBeVisible();

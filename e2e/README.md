@@ -206,22 +206,22 @@ import {AdminPage} from './admin-page';
 import type {Locator, Page} from '@playwright/test';
 
 export class LoginPage extends AdminPage {
-    public readonly emailInput: Locator;
-    public readonly passwordInput: Locator;
-    public readonly signInButton: Locator;
+    readonly emailAddressField: Locator;
+    readonly passwordField: Locator;
+    readonly signInButton: Locator;
 
     constructor(page: Page) {
         super(page);
         this.pageUrl = '/ghost/#/signin';
 
-        this.emailInput = page.getByRole('textbox', {name: 'Email address'});
-        this.passwordInput = page.getByRole('textbox', {name: 'Password'});
+        this.emailAddressField = page.getByRole('textbox', {name: 'Email address'});
+        this.passwordField = page.getByRole('textbox', {name: 'Password'});
         this.signInButton = page.getByRole('button', {name: 'Sign in →'});
     }
 
     async signIn(email: string, password: string) {
-        await this.emailInput.fill(email);
-        await this.passwordInput.fill(password);
+        await this.emailAddressField.fill(email);
+        await this.passwordField.fill(password);
         await this.signInButton.click();
     }
 }
