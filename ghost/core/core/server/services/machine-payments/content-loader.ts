@@ -44,6 +44,8 @@ export class ContentLoader {
     /**
      * Raw-model eligibility check. Use this before issuing a 402 so Content API
      * tier stripping cannot mark a mixed free+paid post as purchasable.
+     * Includes the same URL deliverability gate as loadFullEntry so we never
+     * challenge/charge for content we cannot serve.
      */
     async isPurchasable(resourceType: 'posts' | 'pages', id: string): Promise<boolean> {
         const model = await this.#findPublished(resourceType, id, ['tiers']);
@@ -51,7 +53,12 @@ export class ContentLoader {
             return false;
         }
 
-        return isPurchasableEntry(model.toJSON());
+        const entry = model.toJSON();
+        if (!isPurchasableEntry(entry)) {
+            return false;
+        }
+
+        return this.#hasDeliverableUrl(entry, resourceType);
     }
 
     async loadFullEntry(resourceType: 'posts' | 'pages', id: string): Promise<Record<string, unknown> | null> {
@@ -70,18 +77,40 @@ export class ContentLoader {
 
         entry.type = type;
 
-        if (this.urlService) {
-            entry.url = this.urlService.getUrlForResource({
-                ...entry,
-                type: type === 'page' ? 'pages' : 'posts'
-            }, {absolute: true});
-
-            if (!entry.url || String(entry.url).endsWith('/404/')) {
-                return null;
-            }
+        const url = this.#resolveAbsoluteUrl(entry, resourceType);
+        if (url === null) {
+            return null;
+        }
+        if (url !== undefined) {
+            entry.url = url;
         }
 
         return entry;
+    }
+
+    /**
+     * @returns `undefined` when no url service is configured, `null` when the
+     * resource is not deliverable, otherwise the absolute URL.
+     */
+    #resolveAbsoluteUrl(entry: Record<string, unknown>, resourceType: 'posts' | 'pages'): string | null | undefined {
+        if (!this.urlService) {
+            return undefined;
+        }
+
+        const url = this.urlService.getUrlForResource({
+            ...entry,
+            type: resourceType === 'pages' ? 'pages' : 'posts'
+        }, {absolute: true});
+
+        if (!url || String(url).endsWith('/404/')) {
+            return null;
+        }
+
+        return url;
+    }
+
+    #hasDeliverableUrl(entry: Record<string, unknown>, resourceType: 'posts' | 'pages'): boolean {
+        return this.#resolveAbsoluteUrl(entry, resourceType) !== null;
     }
 
     async #findPublished(resourceType: 'posts' | 'pages', id: string, withRelated: string[]) {

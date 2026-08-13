@@ -1,3 +1,5 @@
+const logging = require('@tryghost/logging');
+const config = require('../../../shared/config');
 const settingsCache = require('../../../shared/settings-cache');
 const labs = require('../../../shared/labs');
 const settingsHelpers = require('../settings-helpers');
@@ -53,6 +55,15 @@ class MachinePaymentsServiceWrapper {
             isStripeConnected: () => settingsHelpers.isStripeConnected(),
             defaultCurrencyProvider: getDefaultTiersCurrency
         });
+
+        // Mint Tempo deposit addresses off the request path (Stripe guidance).
+        // Failures leave SPT-only challenges available; Tempo warms on next try.
+        if (settingsHelpers.isStripeConnected()) {
+            const network = config.get('machinePayments:mpp:stripeNetwork') || 'tempo';
+            depositAddressStore.getOrCreateAddress({network}).catch((err) => {
+                logging.warn(err);
+            });
+        }
 
         this.#initialized = true;
         return this.service;

@@ -140,7 +140,7 @@ describe('Unit: server/services/machine-payments/adapters', function () {
                     status: 200,
                     withReceipt(response) {
                         const headers = new Headers(response.headers);
-                        headers.set('payment-receipt', encodeReceipt({reference: '0xtx'}));
+                        headers.set('payment-receipt', encodeReceipt({method: 'tempo', reference: '0xtx'}));
                         return new Response('', {status: 200, headers});
                     }
                 }
@@ -247,6 +247,32 @@ describe('Unit: server/services/machine-payments/adapters', function () {
             await assert.rejects(
                 () => adapter.fulfill(request, terms),
                 /stable settlement reference/
+            );
+        });
+
+        it('rejects a successful payment that has no settlement method', async function () {
+            const {factory} = createMppxFactory({
+                payment: {
+                    status: 200,
+                    withReceipt(response) {
+                        const headers = new Headers(response.headers);
+                        headers.set('payment-receipt', encodeReceipt({reference: '0xtx'}));
+                        return new Response('', {status: 200, headers});
+                    }
+                }
+            });
+            const adapter = new MppAdapter({
+                depositAddressStore: {
+                    getOrCreateAddress: async () => '0xrecipient'
+                },
+                settingsCache: {get: () => null},
+                stripeClientFactory: () => null,
+                mppxFactory: factory
+            });
+
+            await assert.rejects(
+                () => adapter.fulfill(request, terms),
+                /settlement method/
             );
         });
     });

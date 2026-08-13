@@ -6,9 +6,12 @@
  */
 
 import logging from '@tryghost/logging';
-import {Pricing, type PaymentAmountTerms} from './pricing';
+import {Pricing} from './pricing';
 import {isPurchasableEntry, isMachinePaymentsEnabled} from './eligibility';
 import {ContentLoader} from './content-loader';
+import type {Fulfillment, PaymentAdapter, PaymentTerms} from './types';
+
+export type {Fulfillment, PaymentAdapter, PaymentTerms} from './types';
 
 export const PAID_MARKDOWN_CACHE_CONTROL = 'private, no-store';
 
@@ -22,30 +25,6 @@ type LabsService = {
 
 const settingsCache = require('../../../shared/settings-cache') as SettingsCache;
 const labs = require('../../../shared/labs') as LabsService;
-
-type PaymentAdapter = {
-    name?: string;
-    canHandle: (request: Request) => boolean;
-    challenge: (request: Request, terms: PaymentTerms) => Promise<Response | null | undefined>;
-    fulfill: (request: Request, terms: PaymentTerms) => Promise<Fulfillment>;
-};
-
-type PaymentTerms = PaymentAmountTerms & {
-    description: string;
-    method: string;
-    mimeType: string;
-    url: string;
-};
-
-type Fulfillment = {
-    protocol?: string;
-    method: string;
-    reference: string;
-    amount?: number;
-    currency?: string;
-    stripePaymentIntentId?: string | null;
-    receiptHeaders?: Record<string, string>;
-};
 
 type EventRepository = {
     save: (data: {
@@ -222,6 +201,18 @@ export class MachinePaymentsService {
         terms: PaymentTerms,
         options: ChallengeOrFulfillOptions
     ): Promise<Response> {
+        // Confirm we can deliver before settling. Charging first then failing the
+        // load burns the agent’s money and (with a ledger write) their credential.
+        const entry = await this.contentLoader.loadFullEntry(options.resourceType, options.entryId);
+        if (!entry) {
+            return this.#problemResponse({
+                type: 'https://paymentauth.org/problems/payment-forbidden',
+                title: 'Content unavailable',
+                status: 403,
+                detail: 'This content is not available for machine payment.'
+            });
+        }
+
         let fulfillment: Fulfillment;
         try {
             fulfillment = await adapter.fulfill(request, terms);
@@ -229,7 +220,7 @@ export class MachinePaymentsService {
             return this.#paymentCredentialErrorResponse(err);
         }
 
-        // Ledger first: Stripe idempotency keys can expire (~24h), so a durable
+        // Ledger next: Stripe idempotency keys can expire (~24h), so a durable
         // protocol+reference check must gate PaymentIntent creation on replay.
         if (this.eventRepository) {
             let saved: {created?: boolean; event?: unknown} | null | undefined;
@@ -277,16 +268,6 @@ export class MachinePaymentsService {
             } catch (err) {
                 logging.warn(err);
             }
-        }
-
-        const entry = await this.contentLoader.loadFullEntry(options.resourceType, options.entryId);
-        if (!entry) {
-            return this.#problemResponse({
-                type: 'https://paymentauth.org/problems/payment-forbidden',
-                title: 'Content unavailable',
-                status: 403,
-                detail: 'Paid content could not be loaded after payment.'
-            });
         }
 
         const body = options.renderMarkdown(entry);

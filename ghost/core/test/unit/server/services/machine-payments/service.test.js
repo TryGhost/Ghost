@@ -142,7 +142,30 @@ describe('Unit: server/services/machine-payments/service', function () {
 
         assert.equal(response.status, 403);
         assert.match(await response.text(), /already been used/);
-        sinon.assert.notCalled(contentLoader.loadFullEntry);
+        sinon.assert.calledOnce(contentLoader.loadFullEntry);
+        sinon.assert.calledOnce(mppAdapter.fulfill);
+        sinon.assert.notCalled(paymentRecorder.record);
+    });
+
+    it('loads content before settling so undeliverable posts never charge', async function () {
+        mppAdapter.canHandle.returns(true);
+        contentLoader.loadFullEntry.resolves(null);
+        const service = createService();
+
+        const response = await service.challengeOrFulfill(new Request('http://example.com/paid.md', {
+            headers: {authorization: 'Payment abc'}
+        }), {
+            entryId: 'post1',
+            resourceType: 'posts',
+            contentLocation: '/paid.md',
+            renderMarkdown: () => '# Secret'
+        });
+
+        assert.equal(response.status, 403);
+        assert.match(await response.text(), /not available for machine payment/);
+        sinon.assert.calledOnce(contentLoader.loadFullEntry);
+        sinon.assert.notCalled(mppAdapter.fulfill);
+        sinon.assert.notCalled(eventRepository.save);
         sinon.assert.notCalled(paymentRecorder.record);
     });
 
@@ -176,7 +199,7 @@ describe('Unit: server/services/machine-payments/service', function () {
         assert.match(wwwAuthenticate, /Payment realm="secondary"/);
     });
 
-    it('loads content only after fulfill succeeds', async function () {
+    it('loads content before fulfill, then writes the ledger', async function () {
         mppAdapter.canHandle.returns(true);
         const service = createService();
         const renderMarkdown = sinon.stub().returns('# Secret');
@@ -194,10 +217,8 @@ describe('Unit: server/services/machine-payments/service', function () {
         assert.equal(response.status, 200);
         assert.equal(await response.text(), '# Secret');
         assert.equal(response.headers.get('Cache-Control'), 'private, no-store');
-        sinon.assert.calledOnce(contentLoader.loadFullEntry);
+        sinon.assert.callOrder(contentLoader.loadFullEntry, mppAdapter.fulfill, eventRepository.save, paymentRecorder.record);
         sinon.assert.calledOnce(renderMarkdown);
-        sinon.assert.calledOnce(eventRepository.save);
-        sinon.assert.calledOnce(paymentRecorder.record);
     });
 
     it('returns 503 when no adapter can challenge', async function () {

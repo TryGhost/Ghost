@@ -3,6 +3,7 @@ import logging from '@tryghost/logging';
 import config from '../../../../shared/config';
 import {Pricing, type PaymentAmountTerms} from '../pricing';
 import {STRIPE_MACHINE_PAYMENTS_API_VERSION} from '../stripe/deposit-address-store';
+import type {Fulfillment, PaymentAdapter, PaymentTerms} from '../types';
 
 export const TEMPO_USDC = '0x20c000000000000000000000b9537d11c60e8b50';
 export const TEMPO_DECIMALS = 6;
@@ -56,7 +57,7 @@ type MppAdapterDeps = {
  * MPP adapter (Tempo USDC + Stripe SPT/card).
  * Implements the protocol-agnostic canHandle / challenge / fulfill contract.
  */
-export class MppAdapter {
+export class MppAdapter implements PaymentAdapter {
     depositAddressStore: DepositAddressStoreLike;
     settingsCache: SettingsCache;
     pricing: Pricing;
@@ -88,7 +89,7 @@ export class MppAdapter {
         return Boolean(authHeader && /^Payment\s+/i.test(authHeader));
     }
 
-    async challenge(request: Request, terms: PaymentAmountTerms): Promise<Response | null> {
+    async challenge(request: Request, terms: PaymentTerms): Promise<Response | null> {
         const payment = await this.#run(request, terms);
         if (payment.status === 402) {
             return payment.challenge ?? null;
@@ -97,7 +98,7 @@ export class MppAdapter {
         return null;
     }
 
-    async fulfill(request: Request, terms: PaymentAmountTerms) {
+    async fulfill(request: Request, terms: PaymentTerms): Promise<Fulfillment> {
         const payment = await this.#run(request, terms);
         if (payment.status === 402) {
             throw new errors.NoPermissionError({
@@ -117,6 +118,11 @@ export class MppAdapter {
         if (!receipt.reference) {
             throw new errors.InternalServerError({
                 message: 'Machine payment succeeded without a stable settlement reference'
+            });
+        }
+        if (typeof receipt.method !== 'string' || !receipt.method) {
+            throw new errors.InternalServerError({
+                message: 'Machine payment succeeded without a settlement method'
             });
         }
 

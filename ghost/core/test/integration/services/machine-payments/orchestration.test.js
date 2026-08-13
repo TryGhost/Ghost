@@ -193,10 +193,15 @@ describe('Integration: machine-payments orchestration coverage', function () {
             sinon.assert.calledOnce(contentLoader.loadFullEntry);
             sinon.assert.calledOnce(eventRepository.save);
             sinon.assert.calledOnce(paymentRecorder.record);
-            // Ledger is written before Stripe recording so replays cannot mint a
-            // second PaymentIntent after Stripe's idempotency key expires.
+            // Content is confirmed deliverable before settle; ledger still gates
+            // PaymentIntent recording so replays cannot mint a second PI.
             assert.equal(eventRepository.save.firstCall.args[0].stripePaymentIntentId, null);
-            sinon.assert.callOrder(eventRepository.save, paymentRecorder.record);
+            sinon.assert.callOrder(
+                contentLoader.loadFullEntry,
+                mppAdapter.fulfill,
+                eventRepository.save,
+                paymentRecorder.record
+            );
         });
 
         it('is purchasable only when enabled and the entry is paid', function () {

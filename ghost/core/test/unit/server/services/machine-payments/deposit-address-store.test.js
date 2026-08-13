@@ -34,28 +34,18 @@ describe('Unit: server/services/machine-payments/deposit-address-store', functio
             }))
         };
         const edit = sinon.stub().resolves();
-        const create = sinon.stub().resolves({
-            id: 'pi_deposit',
-            next_action: {
-                crypto_display_details: {
-                    deposit_addresses: {base: {address: '0xbase'}}
-                }
-            }
-        });
-        const cancel = sinon.stub().resolves();
+        const createCryptoDepositAddress = sinon.stub().resolves({address: '0xbase'});
         const store = new DepositAddressStore({
             settingsCacheFacade: settingsCache,
-            stripeFactory: sinon.stub().returns({
-                paymentIntents: {create, cancel}
-            }),
+            stripeFactory: sinon.stub().returns({createCryptoDepositAddress}),
             settingsHelpersFacade: {getActiveStripeKeys: () => ({secretKey: 'sk_test'})},
             settingsModel: {edit}
         });
 
         assert.equal(await store.getOrCreateAddress({network: 'tempo'}), '0xtempo');
         assert.equal(await store.getOrCreateAddress({network: 'base'}), '0xbase');
-        sinon.assert.calledOnce(create);
-        assert.deepEqual(create.firstCall.args[0].payment_method_options.crypto.deposit_options.networks, ['base']);
+        sinon.assert.calledOnce(createCryptoDepositAddress);
+        assert.deepEqual(createCryptoDepositAddress.firstCall.args[0], {network: 'base'});
         const persisted = JSON.parse(edit.firstCall.args[0][0].value);
         assert.equal(persisted.tempo, '0xtempo');
         assert.equal(persisted.base, '0xbase');
@@ -64,18 +54,8 @@ describe('Unit: server/services/machine-payments/deposit-address-store', functio
     it('deduplicates in-flight creates and persists the result', async function () {
         const settingsCache = {get: sinon.stub().returns(null)};
         const edit = sinon.stub().resolves();
-        const create = sinon.stub().resolves({
-            id: 'pi_deposit',
-            next_action: {
-                crypto_display_details: {
-                    deposit_addresses: {tempo: {address: '0xcreated'}}
-                }
-            }
-        });
-        const cancel = sinon.stub().resolves();
-        const stripeFactory = sinon.stub().returns({
-            paymentIntents: {create, cancel}
-        });
+        const createCryptoDepositAddress = sinon.stub().resolves({address: '0xcreated'});
+        const stripeFactory = sinon.stub().returns({createCryptoDepositAddress});
 
         const store = new DepositAddressStore({
             settingsCacheFacade: settingsCache,
@@ -91,8 +71,26 @@ describe('Unit: server/services/machine-payments/deposit-address-store', functio
 
         assert.equal(a, '0xcreated');
         assert.equal(b, '0xcreated');
-        sinon.assert.calledOnce(create);
-        sinon.assert.calledOnce(cancel);
+        sinon.assert.calledOnce(createCryptoDepositAddress);
         sinon.assert.calledOnce(edit);
+    });
+
+    it('never mints addresses via PaymentIntent create', async function () {
+        const settingsCache = {get: sinon.stub().returns(null)};
+        const createCryptoDepositAddress = sinon.stub().resolves({address: '0xdirect'});
+        const paymentIntentsCreate = sinon.stub();
+        const store = new DepositAddressStore({
+            settingsCacheFacade: settingsCache,
+            stripeFactory: sinon.stub().returns({
+                createCryptoDepositAddress,
+                paymentIntents: {create: paymentIntentsCreate}
+            }),
+            settingsHelpersFacade: {getActiveStripeKeys: () => ({secretKey: 'sk_test'})},
+            settingsModel: {edit: sinon.stub().resolves()}
+        });
+
+        assert.equal(await store.getOrCreateAddress({network: 'tempo'}), '0xdirect');
+        sinon.assert.calledOnce(createCryptoDepositAddress);
+        sinon.assert.notCalled(paymentIntentsCreate);
     });
 });

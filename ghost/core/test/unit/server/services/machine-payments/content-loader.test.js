@@ -51,4 +51,23 @@ describe('Unit: server/services/machine-payments/content-loader', function () {
         assert.equal(await loader.isPurchasable('posts', '1'), false);
         assert.equal(await loader.loadFullEntry('posts', '1'), null);
     });
+
+    it('treats published paid posts without a deliverable URL as not purchasable', async function () {
+        const postModel = {
+            findOne: async () => ({
+                toJSON: () => ({
+                    id: '1',
+                    visibility: 'paid',
+                    html: '<p>hi</p>'
+                })
+            })
+        };
+        const loader = new ContentLoader({
+            postModel,
+            urlServiceFacade: {getUrlForResource: () => 'http://example.com/404/'}
+        });
+
+        assert.equal(await loader.isPurchasable('posts', '1'), false);
+        assert.equal(await loader.loadFullEntry('posts', '1'), null);
+    });
 });

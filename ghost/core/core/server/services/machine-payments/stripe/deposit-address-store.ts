@@ -1,5 +1,4 @@
 import errors from '@tryghost/errors';
-import logging from '@tryghost/logging';
 import {Stripe} from 'stripe';
 
 // Preview API required for crypto deposit addresses / machine payments.
@@ -18,23 +17,21 @@ type SettingsModel = {
     edit: (settings: Array<{key: string; value: string}>, options?: Record<string, unknown>) => Promise<unknown>;
 };
 
+type DepositAddress = {
+    address?: string;
+};
+
 type StripeDepositAddressClient = {
     crypto?: {
         depositAddresses?: {
-            create: (params: {network: string}) => Promise<{address?: string} | null | undefined>;
+            create: (params: {network: string}) => Promise<DepositAddress | null | undefined>;
         };
     };
-    paymentIntents: {
-        create: (params: Record<string, unknown>) => Promise<{
-            id: string;
-            next_action?: {
-                crypto_display_details?: {
-                    deposit_addresses?: Record<string, {address?: string} | undefined>;
-                };
-            };
-        }>;
-        cancel?: (id: string) => Promise<unknown>;
-    };
+    /**
+     * stripe@8 has no crypto namespace; we attach a StripeResource-backed helper
+     * that POSTs /v1/crypto/deposit_addresses with the preview API version.
+     */
+    createCryptoDepositAddress?: (params: {network: string}) => Promise<DepositAddress | null | undefined>;
 };
 
 type DepositAddressStoreDeps = {
@@ -48,9 +45,37 @@ const settingsHelpers = require('../../settings-helpers') as SettingsHelpersFaca
 const settingsCache = require('../../../../shared/settings-cache') as SettingsCacheFacade;
 
 /**
+ * Build a client that can mint crypto deposit addresses on stripe@8, which
+ * lacks the typed `crypto.depositAddresses` namespace.
+ */
+export function createStripeDepositAddressClient(secretKey: string): StripeDepositAddressClient {
+    const stripe = new Stripe(secretKey, {
+        // Preview crypto APIs are not yet in the published Stripe types.
+        apiVersion: STRIPE_MACHINE_PAYMENTS_API_VERSION as never
+    });
+
+    const DepositAddresses = Stripe.StripeResource.extend({
+        path: 'crypto/deposit_addresses',
+        includeBasic: ['create']
+    });
+    const depositAddresses = new DepositAddresses(stripe) as {
+        create: (params: {network: string}) => Promise<DepositAddress | null | undefined>;
+    };
+
+    return {
+        crypto: (stripe as unknown as StripeDepositAddressClient).crypto,
+        createCryptoDepositAddress: params => depositAddresses.create(params)
+    };
+}
+
+/**
  * Durable per-network deposit-address store.
  * Persists a JSON map of network → address in settings so per-network deposit
  * addresses cannot share a single chain address.
+ *
+ * Stripe's machine-payments docs recommend minting deposit addresses off the
+ * request path via POST /v1/crypto/deposit_addresses — never by confirming a
+ * PaymentIntent from an anonymous GET.
  */
 export class DepositAddressStore {
     stripeFactory: (secretKey: string) => StripeDepositAddressClient;
@@ -64,10 +89,7 @@ export class DepositAddressStore {
     #inflight = new Map<string, Promise<string>>();
 
     constructor({
-        stripeFactory = secretKey => new Stripe(secretKey, {
-            // Preview crypto APIs are not yet in the published Stripe types.
-            apiVersion: STRIPE_MACHINE_PAYMENTS_API_VERSION as never
-        }) as unknown as StripeDepositAddressClient,
+        stripeFactory = createStripeDepositAddressClient,
         settingsHelpersFacade = settingsHelpers,
         settingsCacheFacade = settingsCache,
         settingsModel
@@ -111,55 +133,22 @@ export class DepositAddressStore {
     async #createAndPersist({network}: {network: string}): Promise<string> {
         const stripe = this.#getStripe();
 
-        // Prefer the dedicated deposit address API when available.
-        if (stripe.crypto?.depositAddresses?.create) {
-            try {
-                const depositAddress = await stripe.crypto.depositAddresses.create({network});
-                const address = depositAddress?.address;
-                if (address) {
-                    await this.#persist(network, address);
-                    return address;
-                }
-            } catch (err) {
-                logging.warn(err);
-            }
-        }
-
-        return await this.#createViaPaymentIntent({network, stripe});
-    }
-
-    async #createViaPaymentIntent({network, stripe}: {network: string; stripe: StripeDepositAddressClient}): Promise<string> {
-        const paymentIntent = await stripe.paymentIntents.create({
-            amount: 100,
-            currency: 'usd',
-            payment_method_types: ['crypto'],
-            payment_method_data: {type: 'crypto'},
-            payment_method_options: {
-                crypto: {
-                    mode: 'deposit',
-                    deposit_options: {networks: [network]}
-                }
-            },
-            confirm: true
-        });
-
-        const depositDetails = paymentIntent.next_action?.crypto_display_details;
-        const address = depositDetails?.deposit_addresses?.[network]?.address;
-
-        if (!address) {
+        let depositAddress: DepositAddress | null | undefined;
+        if (typeof stripe.crypto?.depositAddresses?.create === 'function') {
+            depositAddress = await stripe.crypto.depositAddresses.create({network});
+        } else if (typeof stripe.createCryptoDepositAddress === 'function') {
+            depositAddress = await stripe.createCryptoDepositAddress({network});
+        } else {
             throw new errors.InternalServerError({
-                message: 'PaymentIntent did not return expected crypto deposit details'
+                message: 'Stripe crypto deposit address API is unavailable'
             });
         }
 
-        try {
-            // The deposit-mode PaymentIntent is only used to mint an address.
-            // Cancel it so it does not linger as requires_action in Dashboard.
-            if (typeof stripe.paymentIntents.cancel === 'function') {
-                await stripe.paymentIntents.cancel(paymentIntent.id);
-            }
-        } catch (err) {
-            logging.warn(err);
+        const address = depositAddress?.address;
+        if (!address) {
+            throw new errors.InternalServerError({
+                message: 'Stripe did not return a crypto deposit address'
+            });
         }
 
         await this.#persist(network, address);
