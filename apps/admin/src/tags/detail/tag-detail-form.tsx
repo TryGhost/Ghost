@@ -28,7 +28,7 @@ const UsedCharacters: React.FC<{value: string; limit: number; prefix: 'Maximum' 
     const used = charLength(value);
     return (
         <p className='text-sm text-muted-foreground'>
-            {prefix}: <span className='font-semibold text-foreground'>{formatNumber(limit)}</span> characters. You’ve used{' '}
+            {prefix}: <span className={prefix === 'Maximum' ? 'font-semibold text-foreground' : undefined}>{formatNumber(limit)}</span> characters. You’ve used{' '}
             <span className={cn('font-semibold', used > limit ? 'text-destructive' : 'text-state-success')}>{formatNumber(used)}</span>
         </p>
     );
