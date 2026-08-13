@@ -100,7 +100,7 @@ export const FacebookCardPreview: React.FC<{
             </div>
         </div>
         <div className='mt-2 flex items-center gap-4 text-sm text-muted-foreground'>
-            <span className='flex items-center gap-1'><LucideIcon.ThumbsUp className='size-3.5' /><LucideIcon.Heart className='size-3.5' />{formatNumber(182)}</span>
+            <span className='flex items-center gap-1'><LucideIcon.ThumbsUp className='size-3.5' />{formatNumber(182)}</span>
             <span>{formatNumber(7)} comments</span>
             <span>{formatNumber(2)} shares</span>
         </div>
