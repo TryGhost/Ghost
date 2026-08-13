@@ -185,6 +185,9 @@ catalog:
   shell-quote: 1.10.0
   unidecode: 1.1.0
   mppx: 0.6.20
+  '@octokit/core': 7.0.7
+  '@octokit/plugin-retry': 8.1.1
+  '@octokit/plugin-throttling': 11.0.5
 
 catalogs:
   react17:

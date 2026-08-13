@@ -1,86 +1,62 @@
-# Ghost Contributor Documentation
+# Ghost Codebase Documentation
 
-Welcome to the Ghost contributor documentation! This guide will help you understand the codebase, set up your development environment, and start contributing to Ghost.
+Welcome to the Ghost codebase documentation! These docs are for anyone wanting
+to work on the Ghost codebase. For self-hosting, themes, or using Ghost APIs,
+see the [official Ghost documentation](https://ghost.org/docs/).
 
 ## Quick Start
 
-### Prerequisites
-
-- **Node.js** - Recommended to install via [nvm](https://github.com/nvm-sh/nvm)
-- **pnpm** - Package manager
-- **Docker** - For MySQL database and development services
-
-### Initial Setup
-
-#### 1. Fork and Clone
-
-First, [fork the Ghost repository](https://github.com/TryGhost/Ghost/fork) on GitHub, then:
+With the [prerequisites](contributing/development-setup.md#prerequisites)
+installed:
 
 ```bash
-# Clone your fork with submodules
-git clone --recurse-submodules git@github.com:<YourUsername>/Ghost.git
+git clone --recurse-submodules git@github.com:TryGhost/Ghost.git
 cd Ghost
 
-# Configure remotes
-git remote rename origin upstream
-git remote add origin git@github.com:<YourUsername>/Ghost.git
-```
-
-#### 2. Install and Setup
-
-```bash
-# Install dependencies and initialize submodules
-corepack enable pnpm
-pnpm run setup
-```
-
-#### 3. Start Ghost
-
-```bash
-# Start development (runs Docker backend services + frontend dev servers)
+pnpm setup
 pnpm dev
 ```
 
 Ghost will be available at:
-- **Main site**: http://localhost:2368/
-- **Admin panel**: http://localhost:2368/ghost/
 
-### Troubleshooting Setup
+- **Main site**: [http://localhost:2368](http://localhost:2368)
+- **Admin panel**: [http://localhost:2368/ghost/](http://localhost:2368/ghost/)
+- **Development email**: [http://localhost:8025](http://localhost:8025)
 
-If you encounter issues during setup:
+`pnpm dev` also starts the supporting MySQL and Redis containers, plus Admin and
+Portal development watchers.
 
-```bash
-# Fix dependency issues
-pnpm fix
-
-# Update to latest main branch
-pnpm main
-
-# Reset running dev data
-pnpm reset:data
-```
+For more detail, see the
+[development setup guide](contributing/development-setup.md) including first-run
+setup, development variants, and troubleshooting.
 
 ## Repository Structure
 
-```
+```text
 Ghost/
-├── apps/              # Frontend applications
-│   ├── admin-x-*/     # New React-based admin apps
-│   ├── portal/        # Member portal
-│   ├── comments-ui/   # Comments widget
-│   ├── signup-form/   # Signup form widget
-│   └── ...
-├── ghost/             # Core Ghost application
-│   ├── core/          # Main Ghost backend
-│   ├── admin/         # Admin build output
-│   └── i18n/          # Internationalization
-├── koenig/            # Ghost editor (Koenig) packages
-│   ├── koenig-lexical/  # Lexical-based rich text editor UI
-│   └── kg-*/          # Editor renderers, converters, and support packages
-└── e2e/               # End-to-end tests
+├── apps/              # Admin and public frontend apps
+│   ├── admin/          # React Admin
+│   ├── ember-admin/    # Legacy Ember Admin
+│   ├── portal/         # Member Portal
+│   ├── comments-ui/    # Comments
+│   └── shade/          # Admin design system
+├── ghost/core/        # Ghost server and frontend rendering
+│   ├── core/server/    # APIs, models, and services
+│   ├── core/frontend/  # Theme rendering and helpers
+│   ├── content/        # Default themes, adapters, and local content
+│   └── test/           # Server tests
+├── koenig/            # Editor and content-format packages
+├── packages/          # Shared libraries and adapter contracts
+├── configs/           # Shared build, lint, test, and TypeScript config
+├── e2e/               # Browser end-to-end tests
+├── docker/            # Local development containers and services
+└── scripts/           # Repository tooling
 ```
 
-## Contributing
+pnpm links the workspaces and Nx runs their tasks in dependency order. For more
+detail, see the [monorepo structure guide](codebase/monorepo-structure.md).
+
+## Contributing a change
 
 Before contributing, please read:
 
@@ -94,12 +70,35 @@ Before contributing, please read:
 
 ### Development Workflow
 
-1. **Fork and clone** the repository
+1. **Clone** the repository
 2. **Create a branch** for your changes
 3. **Make your changes** and write tests
-4. **Run tests** to ensure everything works
+4. **Run `pnpm check`** to ensure everything works
 5. **Commit** following our commit message conventions
 6. **Submit a pull request** to the `main` branch
+
+For more detail, see the [contribution workflow](contributing/workflow.md).
+
+### Testing
+
+Use `pnpm check` as the default one-stop command for linting and testing. Add
+tests at the closest layer to the behavior you changed. Browser end-to-end tests
+and Ember Admin tests run separately from `pnpm check`.
+
+For more detail, see the [testing guide](contributing/testing.md) including how
+to choose a test suite, run focused tests, and use the separate browser and
+Ember Admin test lanes.
+
+### Shipping
+
+Admin uses continuous delivery on Ghost(Pro), so every commit to `main` can ship
+before the next server release. Keep Admin compatible with server versions that
+are still live. Public Ghost releases include Admin and the server every
+Tuesday.
+
+For more detail, see the [shipping guide](contributing/shipping.md) including
+when changes reach Ghost(Pro), self-hosted installs, npm, jsDelivr, and the
+Docker Official Image.
 
 ## Additional Resources
 

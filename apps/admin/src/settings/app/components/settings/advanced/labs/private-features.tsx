@@ -24,10 +24,6 @@ const features: Feature[] = [{
     description: 'Use Stripe Automatic Tax at Stripe Checkout. Needs to be enabled in Stripe',
     flag: 'stripeAutomaticTax'
 }, {
-    title: 'Email customization (internal beta)',
-    description: 'Newsletter customization settings that have been released to Ghost\'s own production sites',
-    flag: 'emailCustomization'
-}, {
     title: 'Import Member Tier',
     description: 'Enables tier to be specified when importing members',
     flag: 'importMemberTier'
@@ -55,10 +51,6 @@ const features: Feature[] = [{
     title: 'Picture Element',
     description: 'Use the HTML picture element to serve modern image formats (AVIF, WebP) with automatic fallbacks',
     flag: 'pictureImageFormats'
-}, {
-    title: 'Smarter Counts',
-    description: 'Use optimized COUNT queries for API pagination when safe',
-    flag: 'smarterCounts'
 }, {
     title: 'Get helper deduplication',
     description: 'Deduplicate identical {{#get}} helper queries within a single request to avoid redundant database calls',

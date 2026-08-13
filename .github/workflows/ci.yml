@@ -78,12 +78,30 @@ jobs:
           echo "GITHUB_EVENT_NAME: ${{ github.event_name }}"
           echo "GITHUB_CONTEXT: ${{ toJson(github.event) }}"
 
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+      - name: Set up Node
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        env:
+          FORCE_COLOR: 0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
+      # Replaced nrwl/nx-set-shas, which verified each candidate commit over the
+      # API and hid the errors — see scripts/nx-set-shas.js.
       - name: Set SHAs for Nx Commands
         if: env.IS_TAG != 'true'
-        uses: nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1 # v5.0.1
-        with:
-          main-branch-name: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref_name }}
-          error-on-no-successful-workflow: ${{ env.IS_MAIN == 'true' && github.repository == 'TryGhost/Ghost' }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          BRANCH: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref_name }}
+          # Canonical main is the one branch where too narrow a base means
+          # untested commits land, so there a lookup that comes up empty fails
+          # the run rather than falling back to the previous commit.
+          ON_MISSING: ${{ (env.IS_MAIN == 'true' && github.repository == 'TryGhost/Ghost') && 'error' || 'previous-commit' }}
+        run: node scripts/nx-set-shas.js --branch "$BRANCH" --head "$HEAD_COMMIT" --on-missing "$ON_MISSING"
 
       - name: Check user org membership
         id: check_user_org_membership
@@ -145,6 +163,10 @@ jobs:
               - 'scripts/test/check-agent-skill-links.test.js'
             core:
               - *shared
+              # Repository documentation and ownership metadata do not affect
+              # Ghost runtime behaviour, even though they live in .github.
+              - '!.github/**/*.md'
+              - '!.github/CODEOWNERS'
               - 'ghost/**'
               - '!ghost/core/core/server/data/tinybird/**'
               # Unit tests + vitest config are exercised only by job_unit-tests;
@@ -195,18 +217,6 @@ jobs:
         id: node_matrix
         run: |
           echo 'matrix=["22.23.1"]' >> $GITHUB_OUTPUT
-
-      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
-      - name: Set up Node
-        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
-        env:
-          FORCE_COLOR: 0
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Start Nx Cloud CI run
         run: pnpm nx start-ci-run
