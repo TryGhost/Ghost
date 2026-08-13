@@ -14,8 +14,11 @@ or
 
 ## Develop
 
-This package is part of the Ghost monorepo, managed with pnpm workspaces.
-Run `pnpm setup` in the monorepo root, then work in this directory.
+This is a mono repository, managed with [lerna](https://lernajs.io/).
+
+Follow the instructions for the top-level repo.
+1. `git clone` this repo & `cd` into it as usual
+2. Run `pnpm install` from the Ghost monorepo root.
 
 
 ## Run
