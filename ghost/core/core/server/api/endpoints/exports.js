@@ -26,9 +26,9 @@ const messages = {
 };
 
 /**
- * Pipes object-mode export rows through their CSV transform, returning the
- * text stream. `pipeline` (rather than `.pipe`) so a source error destroys the
- * transform too — the zip stream then errors instead of hanging.
+ * Pipes export rows through their CSV transform. `pipeline` (rather than
+ * `.pipe`) so a source error destroys the transform too — the zip stream
+ * then errors instead of hanging.
  *
  * @param {string} label - Which export the stream belongs to, for the error log
  * @param {NodeJS.ReadableStream} rows
@@ -69,19 +69,13 @@ async function zipThemeToTempFile(name) {
     }
 }
 
-/**
- * The sync site export composes the same services the individual export
- * endpoints call, wired here — in the API layer — because the CSV transforms
- * belong to the endpoint serializers, not the domain services.
- */
 function createSiteExporter() {
     return new SiteExporter({
         // Same shape the `/db/` download produces, so the file stays importable
         exportContent: async () => ({db: [await exporter.doExport()]}),
-        // `limit: 'all'` keeps both exporters on their unfiltered streaming
-        // path — the same call the standalone endpoints make. Without it the
-        // members exporter materialises every id into a WHERE IN, and the
-        // posts exporter caps the export at its default page size.
+        // `limit: 'all'` keeps both CSV exporters on their unfiltered
+        // streaming path — without it the members exporter materialises every
+        // id into a WHERE IN and the posts exporter caps at its default page
         exportMembersCSV: async () => toCSVStream(
             'members',
             await membersService.export({limit: 'all'}),
@@ -114,23 +108,18 @@ const controller = {
         validation: {
             options: {
                 components: {
-                    // `media` is deliberately not accepted: it is only
-                    // available through a host archive webhook, never through
-                    // this synchronous bundle
                     values: [...EXPORT_COMPONENTS]
                 }
             }
         },
-        // A site export contains everything a database export contains, so it
-        // requires the same permission — Owner/Administrator only, a superset
-        // of every composed component's own requirement
+        // A site export contains everything a database export contains, so
+        // the same Owner/Administrator-only gate applies
         permissions: {
             docName: 'db',
             method: 'exportContent'
         },
         query(frame) {
-            // Normalized to an array by the input serializer; absent means
-            // everything, explicitly-empty means the caller selected nothing
+            // Absent means everything; explicitly empty means nothing selected
             const components = frame.options.components ?? [...EXPORT_COMPONENTS];
 
             if (components.length === 0) {

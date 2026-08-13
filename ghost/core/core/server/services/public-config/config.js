@@ -63,9 +63,8 @@ module.exports = function getConfigProperties() {
         pintura: config.get('pintura'),
         signupForm: config.get('signupForm'),
         security: config.get('security'),
-        // Capability signal for Admin: this Ghost can serve the sync site
-        // export endpoint. Admin deploys independently of core, so it must
-        // feature-detect the endpoint rather than trust the labs flag alone.
+        // Capability signal: Admin deploys independently of core and
+        // feature-detects the exports download endpoint through this
         exports: {
             download: true
         }

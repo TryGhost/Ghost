@@ -17,9 +17,8 @@ const MigrationToolsExport: React.FC = () => {
     const {data: configData} = useBrowseConfig();
     const mode: ExportMode = configData?.config.hostSettings?.export?.generate_archive_url ? 'async' : 'sync';
 
-    // Admin deploys independently of core: sync mode needs the exports
-    // download endpoint, so require its capability signal from config — the
-    // labs flag alone doesn't prove the backend is deployed
+    // Admin can deploy ahead of core, so the labs flag alone doesn't prove
+    // the backend serves the exports endpoint
     const backendSupportsSyncExport = Boolean(configData?.config.exports?.download);
     const showExportAll = hasSelfServeArchives && (mode === 'async' || backendSupportsSyncExport);
 

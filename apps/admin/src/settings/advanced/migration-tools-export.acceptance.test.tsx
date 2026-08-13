@@ -96,7 +96,8 @@ describe("Migration tools export", () => {
         const dialog = page.getByRole("dialog");
         await dialog.getByRole("button", {name: "Export", exact: true}).click();
 
-        // Back on the selection so the user can retry
+        // The error is surfaced, and we're back on the selection for a retry
+        await expect.element(page.getByText("Something went wrong, please try again.")).toBeVisible();
         await expect.element(dialog.getByRole("button", {name: "Export", exact: true})).toBeVisible();
         await expect.element(dialog.getByText("Export downloaded", {exact: false})).not.toBeInTheDocument();
     });

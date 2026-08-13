@@ -5,9 +5,8 @@ module.exports = {
     download(apiConfig, frame) {
         debug('download');
 
-        // `components` can arrive as a comma-separated string or, when the
-        // query param is repeated, as an array — normalize both to a clean
-        // array. An absent param stays absent (the query defaults it).
+        // `components` arrives as a comma-separated string, or as an array
+        // when the query param is repeated; absent stays absent
         if (frame.options.components !== undefined) {
             frame.options.components = optionsUtil
                 .trimAndLowerCase(frame.options.components)

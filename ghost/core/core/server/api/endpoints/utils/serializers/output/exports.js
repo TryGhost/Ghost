@@ -8,8 +8,6 @@ module.exports = {
     download(data, apiConfig, frame) {
         debug('download');
 
-        // frame.response becomes a handler the http layer hands the express
-        // response to — the zip streams while it is being composed
         frame.response = createZipStreamResponse({
             source: data.archive,
             filename: data.filename

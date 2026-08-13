@@ -63,7 +63,6 @@ const ExportAllModal: React.FC<{open: boolean; onOpenChange: (open: boolean) => 
             setPhase('select');
             return;
         }
-        // Closing while an export is in flight cancels it
         abortRef.current?.abort();
         clearTimeout(resetTimerRef.current);
         // Reset for the next open, after the close animation
@@ -87,7 +86,8 @@ const ExportAllModal: React.FC<{open: boolean; onOpenChange: (open: boolean) => 
 
         try {
             await downloadSiteExport(components, {signal: controller.signal});
-            // Guard against a stale transition after the dialog was closed
+            // The functional updates guard against a stale transition after
+            // the dialog was closed and reset meanwhile
             setPhase(current => (current === 'preparing' ? 'done' : current));
         } catch (error) {
             if (error instanceof DOMException && error.name === 'AbortError') {

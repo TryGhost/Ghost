@@ -3,12 +3,11 @@ import * as errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
 
 /**
- * The components a sync site export can contain, in the order they are written
- * to the zip. The streaming CSV components come first so their database
- * connections drain and release while the (buffered) content JSON is still
- * being built. `media` is deliberately absent: media is the component that
- * needs background jobs and email delivery, so it is only available through a
- * host archive webhook — never through this synchronous bundle.
+ * The components a sync site export can contain, in zip-entry order. The
+ * streaming CSVs come first so their DB connections release while the
+ * (buffered) content JSON is still being built. `media` is deliberately
+ * absent: it needs background jobs and email delivery, so it is only
+ * available through a host archive webhook.
  */
 export const EXPORT_COMPONENTS = ['members', 'analytics', 'content', 'themes', 'routes'] as const;
 
@@ -25,8 +24,8 @@ export interface SiteExporterDeps {
     listThemes(): string[];
     /**
      * A single theme zipped to a temp file — the same artifact the theme
-     * download endpoint serves. `cleanup` removes the temp file; the exporter
-     * calls it once the archive is closed.
+     * download endpoint serves. The exporter calls `cleanup` once the
+     * archive is closed.
      */
     zipTheme(name: string): Promise<{zipPath: string; cleanup(): Promise<void>}>;
     /** The raw routes.yaml source. */
@@ -36,15 +35,11 @@ export interface SiteExporterDeps {
 }
 
 /**
- * Composes a full site export zip from the same services the individual export
- * endpoints call — content JSON, members CSV, post analytics CSV, themes,
- * routes and redirects. No HTTP self-calls, no background jobs: the zip is
- * streamed while it is being built.
- *
- * A component that fails before its data is acquired is skipped (and logged)
- * rather than failing the request — the response headers are typically already
- * sent, so a mid-flight HTTP error is impossible and a bundle missing one
- * piece beats a broken download.
+ * Composes a site export zip from the same services the individual export
+ * endpoints call, streamed while it is being built. A component that fails
+ * to acquire is skipped and logged rather than failing the request: the
+ * response headers are typically already sent, so a mid-flight HTTP error
+ * is impossible and a bundle missing one piece beats a broken download.
  */
 export class SiteExporter {
     #deps: SiteExporterDeps;
@@ -54,19 +49,16 @@ export class SiteExporter {
     }
 
     /**
-     * Builds a zip stream containing the selected components. Entries are
-     * appended asynchronously; the caller pipes the returned archive to the
-     * response while it fills. The archive is deflate-compressed (the JSON
-     * and CSV entries compress well); the nested theme zips opt out per-entry
-     * since they are already compressed.
+     * Builds a zip stream of the selected components; the caller pipes it to
+     * the response while it fills. Deflate-compressed — the nested theme zips
+     * opt out per-entry since they are already compressed.
      */
     createArchive(components: ExportComponent[]): Archiver {
         const archive = new ZipArchive();
         const cleanups: Array<() => Promise<void>> = [];
 
-        // 'close' fires both after the archive ends normally and when it is
-        // destroyed (e.g. the client disconnected), so temp files are removed
-        // on every path.
+        // 'close' fires on normal end and on destroy (client disconnect),
+        // so temp files are removed on every path
         archive.once('close', () => {
             for (const cleanup of cleanups) {
                 cleanup().catch(() => {});
@@ -82,7 +74,6 @@ export class SiteExporter {
 
     async #populate(archive: Archiver, components: Set<ExportComponent>, cleanups: Array<() => Promise<void>>): Promise<void> {
         for (const component of EXPORT_COMPONENTS) {
-            // Stop composing when the archive is gone — the client hung up
             if (archive.destroyed) {
                 return;
             }
@@ -101,12 +92,6 @@ export class SiteExporter {
         await archive.finalize();
     }
 
-    /**
-     * A failure while acquiring a component's data skips that component; for
-     * the streaming CSV entries, a failure while the rows are still flowing
-     * happens after this returns and instead tears the whole download down
-     * (see `#appendStream`).
-     */
     async #appendComponent(archive: Archiver, component: ExportComponent, cleanups: Array<() => Promise<void>>): Promise<void> {
         try {
             switch (component) {
@@ -137,23 +122,17 @@ export class SiteExporter {
     }
 
     /**
-     * Appends a streaming entry with its lifecycle tied to the archive, in
-     * both directions:
-     *
-     * - source error → archive destroyed. archiver wraps sources with
-     *   `.pipe()`, which never propagates errors — without this the response
-     *   would hang forever on e.g. a dropped database connection, instead of
-     *   failing the download.
-     * - archive closed (finished or client hung up) → source destroyed, so a
-     *   paused row stream releases its database connection instead of
-     *   holding it for as long as the client takes to download.
+     * Ties a streaming entry's lifecycle to the archive in both directions:
+     * a source error destroys the archive — archiver wraps sources with
+     * `.pipe()`, which never propagates errors, so the response would
+     * otherwise hang forever — and a closed archive destroys the source, so
+     * a paused row stream releases its DB connection.
      */
     #appendStream(archive: Archiver, source: NodeJS.ReadableStream, name: string): void {
         const destroyable = source as NodeJS.ReadableStream & {destroy?: () => void};
 
-        // The archive can close while the source was still being acquired —
-        // a 'close' listener registered now would never fire, so release the
-        // source straight away instead of appending it
+        // Closed while the source was being acquired — a 'close' listener
+        // registered now would never fire
         if (archive.destroyed) {
             destroyable.destroy?.();
             return;
@@ -171,11 +150,10 @@ export class SiteExporter {
     }
 
     /**
-     * Themes are appended as one nested zip per theme — the exact artifact the
-     * theme upload UI restores from. The zips are staged as temp files and
-     * streamed off disk (`archive.file`) rather than buffered, so a site with
-     * many large themes doesn't hold them all in memory. A theme that fails to
-     * zip is skipped so the remaining themes still make it into the bundle.
+     * One nested zip per theme — the exact artifact the theme upload UI
+     * restores from — staged as temp files and streamed off disk rather than
+     * buffered. A theme that fails to zip is skipped so the rest still make
+     * it into the bundle.
      */
     async #appendThemes(archive: Archiver, cleanups: Array<() => Promise<void>>): Promise<void> {
         for (const name of this.#deps.listThemes()) {
@@ -186,10 +164,8 @@ export class SiteExporter {
             try {
                 const {zipPath, cleanup} = await this.#deps.zipTheme(name);
 
-                // The archive can close while the theme was still zipping —
-                // its 'close' handler has already run the cleanups, so a
-                // cleanup registered now would leak the temp file. Remove it
-                // straight away and stop staging.
+                // Closed while this theme was zipping — the close handler has
+                // already run the cleanups, so remove the temp file directly
                 if (archive.destroyed) {
                     cleanup().catch(() => {});
                     return;

@@ -54,9 +54,8 @@ module.exports = {
         });
     },
     /**
-     * Zip an installed theme to the given path — the same artifact `getZip`
-     * serves, for callers that need a file instead of an express handler
-     * (e.g. the site export).
+     * The same artifact `getZip` serves, for callers that need a file
+     * instead of an express handler.
      *
      * @param {string} themeName
      * @param {string} zipPath - full path the zip is written to

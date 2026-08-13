@@ -121,9 +121,7 @@ export type Config = {
     security?: {
         staffDeviceVerification?: boolean;
     };
-    // Capability signal: this Ghost serves GET /exports/download/. Admin
-    // deploys independently of core, so the UI must feature-detect the
-    // endpoint rather than trust the labs flag alone.
+    // Capability signal: this Ghost serves GET /exports/download/
     exports?: {
         download?: boolean;
     };

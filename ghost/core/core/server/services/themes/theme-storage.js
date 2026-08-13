@@ -21,9 +21,8 @@ class ThemeStorage extends LocalStorageBase {
     }
 
     /**
-     * Zip an installed theme to the given path — the single place that knows
-     * how a theme is turned into a zip, shared by the theme download endpoint
-     * and the site export.
+     * The single place a theme is turned into a zip — shared by the theme
+     * download endpoint and the site export.
      *
      * @param {string} themeName
      * @param {string} zipPath - full path the zip is written to
