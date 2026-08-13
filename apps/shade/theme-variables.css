@@ -83,7 +83,7 @@
     --control-surface: var(--surface-elevated);
     --control-readonly-surface: var(--color-gray-50);
     --control-disabled-surface: var(--color-gray-100);
-    --control-border: var(--color-gray-200);
+    --control-border: var(--color-gray-300);
     --table-row-hover: var(--color-gray-50);
     --members-sticky-hover-bg: var(--table-row-hover);
     --mobile-navbar-height: 64px;
