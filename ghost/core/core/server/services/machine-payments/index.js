@@ -57,8 +57,9 @@ class MachinePaymentsServiceWrapper {
         });
 
         // Mint Tempo deposit addresses off the request path (Stripe guidance).
-        // Failures leave SPT-only challenges available; Tempo warms on next try.
-        if (settingsHelpers.isStripeConnected()) {
+        // Only when machine payments is enabled — otherwise every Stripe-connected
+        // boot (incl. E2E) would call Stripe. Failures leave SPT-only challenges.
+        if (this.service.isEnabled()) {
             const network = config.get('machinePayments:mpp:stripeNetwork') || 'tempo';
             depositAddressStore.getOrCreateAddress({network}).catch((err) => {
                 logging.warn(err);

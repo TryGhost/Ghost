@@ -1,5 +1,6 @@
 import {Stripe} from 'stripe';
 import {STRIPE_MACHINE_PAYMENTS_API_VERSION} from './deposit-address-store';
+import {getMachinePaymentsStripeOptions} from './stripe-client-options';
 
 type SettingsHelpersFacade = {
     getActiveStripeKeys: () => {secretKey?: string} | null | undefined;
@@ -42,8 +43,8 @@ export class PaymentRecorder {
 
     constructor({
         stripeFactory = secretKey => new Stripe(secretKey, {
-            apiVersion: STRIPE_MACHINE_PAYMENTS_API_VERSION as never
-        }) as unknown as StripeRecorderClient,
+            ...getMachinePaymentsStripeOptions(STRIPE_MACHINE_PAYMENTS_API_VERSION)
+        } as never) as unknown as StripeRecorderClient,
         settingsHelpersFacade = settingsHelpers
     }: PaymentRecorderDeps = {}) {
         this.stripeFactory = stripeFactory;

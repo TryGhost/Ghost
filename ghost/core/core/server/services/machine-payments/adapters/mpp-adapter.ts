@@ -3,6 +3,7 @@ import logging from '@tryghost/logging';
 import config from '../../../../shared/config';
 import {Pricing, type PaymentAmountTerms} from '../pricing';
 import {STRIPE_MACHINE_PAYMENTS_API_VERSION} from '../stripe/deposit-address-store';
+import {getMachinePaymentsStripeOptions} from '../stripe/stripe-client-options';
 import type {Fulfillment, PaymentAdapter, PaymentTerms} from '../types';
 
 export const TEMPO_USDC = '0x20c000000000000000000000b9537d11c60e8b50';
@@ -238,8 +239,8 @@ export class MppAdapter implements PaymentAdapter {
             }
             const {Stripe} = require('stripe') as typeof import('stripe');
             return new Stripe(keys.secretKey, {
-                apiVersion: STRIPE_MACHINE_PAYMENTS_API_VERSION as never
-            });
+                ...getMachinePaymentsStripeOptions(STRIPE_MACHINE_PAYMENTS_API_VERSION)
+            } as never);
         } catch {
             return null;
         }

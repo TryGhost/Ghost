@@ -1,5 +1,6 @@
 import errors from '@tryghost/errors';
 import {Stripe} from 'stripe';
+import {getMachinePaymentsStripeOptions} from './stripe-client-options';
 
 // Preview API required for crypto deposit addresses / machine payments.
 export const STRIPE_MACHINE_PAYMENTS_API_VERSION = '2026-05-27.preview';
@@ -51,8 +52,8 @@ const settingsCache = require('../../../../shared/settings-cache') as SettingsCa
 export function createStripeDepositAddressClient(secretKey: string): StripeDepositAddressClient {
     const stripe = new Stripe(secretKey, {
         // Preview crypto APIs are not yet in the published Stripe types.
-        apiVersion: STRIPE_MACHINE_PAYMENTS_API_VERSION as never
-    });
+        ...getMachinePaymentsStripeOptions(STRIPE_MACHINE_PAYMENTS_API_VERSION)
+    } as never);
 
     const DepositAddresses = Stripe.StripeResource.extend({
         path: 'crypto/deposit_addresses',
