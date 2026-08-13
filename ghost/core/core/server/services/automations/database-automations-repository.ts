@@ -54,6 +54,7 @@ interface AutomationRow {
 }
 
 interface AutomationBrowseRow extends AutomationRow {
+    last_run_created_at: DatabaseDate | null;
 }
 
 interface ActionRow {
@@ -1017,9 +1018,23 @@ async function loadAutomationBySlug(trx: Knex.Transaction, slug: string): Promis
 }
 
 async function loadAutomations(trx: Knex.Transaction): Promise<AutomationBrowseRow[]> {
+    const latestRunDates = trx('automation_runs')
+        .select('automation_id')
+        .max({last_run_created_at: 'created_at'})
+        .groupBy('automation_id')
+        .as('latest_run_dates');
     return await trx('automations')
-        .select('id', 'slug', 'name', 'status', 'created_at', 'updated_at')
-        .orderBy('name');
+        .select(
+            'automations.id',
+            'automations.slug',
+            'automations.name',
+            'automations.status',
+            'automations.created_at',
+            'automations.updated_at',
+            'latest_run_dates.last_run_created_at'
+        )
+        .leftJoin(latestRunDates, 'automations.id', 'latest_run_dates.automation_id')
+        .orderBy('automations.name');
 }
 
 async function updateAutomation(trx: Knex.Transaction, automation: AutomationRow): Promise<AutomationRow> {
@@ -1362,6 +1377,7 @@ function buildAutomationBrowseResult(automation: AutomationBrowseRow): Automatio
     return {
         ...buildAutomationSummary(automation),
         stats: {
+            last_run_created_at: automation.last_run_created_at ? fromDatabaseDate(automation.last_run_created_at) : null
         }
     };
 }
