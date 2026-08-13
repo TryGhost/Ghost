@@ -53,7 +53,6 @@
         "@testing-library/user-event": "14.6.1",
         "@tryghost/i18n": "workspace:*",
         "@vitest/coverage-v8": "catalog:",
-        "cross-fetch": "catalog:",
         "dompurify": "catalog:",
         "eslint": "catalog:",
         "jsdom": "catalog:",

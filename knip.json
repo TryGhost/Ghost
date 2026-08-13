@@ -62,11 +62,6 @@
                 "src/test/*.{ts,tsx}"
             ]
         },
-        "apps/announcement-bar": {
-            "ignoreDependencies": [
-                "cross-fetch"
-            ]
-        },
         "apps/comments-ui": {
             "ignoreDependencies": [
                 "@tryghost/debug",
@@ -77,7 +72,6 @@
         "apps/portal": {
             "ignoreDependencies": [
                 "@tryghost/debug",
-                "cross-fetch",
                 "@testing-library/jest-dom"
             ]
         },
@@ -108,7 +102,6 @@
         "apps/sodo-search": {
             "ignoreDependencies": [
                 "@tryghost/debug",
-                "cross-fetch",
                 "@testing-library/jest-dom"
             ]
         },

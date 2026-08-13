@@ -56,7 +56,6 @@
         "@testing-library/react": "catalog:react17",
         "@vitest/coverage-v8": "catalog:",
         "autoprefixer": "10.5.4",
-        "cross-fetch": "catalog:",
         "eslint": "catalog:",
         "jsdom": "catalog:",
         "nock": "14.0.16",
