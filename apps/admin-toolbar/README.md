@@ -28,4 +28,4 @@ watcher's output is picked up on the next request.
 
 # Copyright & License
 
-Copyright (c) 2013-2026 Ghost Foundation - Released under the [MIT license](LICENSE).
+Copyright (c) 2013-2026 Ghost Foundation - Released under the [MIT license](../../LICENSE).

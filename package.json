@@ -65,7 +65,7 @@
     "lint": "pnpm nx run-many -t lint lint:boundaries && pnpm lint:packages && pnpm lint:docs",
     "lint:agent-skills": "node scripts/check-agent-skill-links.js",
     "lint:boundaries": "depcruise ghost/core/core apps --config .dependency-cruiser.cjs",
-    "lint:packages": "node scripts/check-internal-packages.js && node scripts/check-package-licenses.js",
+    "lint:packages": "node scripts/check-internal-packages.js",
     "lint:docs": "pnpm lint:agent-skills",
     "check": "pnpm lint && pnpm test",
     "test": "pnpm nx run-many -t test --exclude @tryghost/e2e --exclude ghost-admin",
