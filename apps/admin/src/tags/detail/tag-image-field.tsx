@@ -1,13 +1,14 @@
 import React from 'react';
 import {UnsplashSearchModal} from '@tryghost/kg-unsplash-selector';
 import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
-import {Label, LoadingIndicator} from '@tryghost/shade/components';
+import {Button, Label, LoadingIndicator} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {Stack} from '@tryghost/shade/primitives';
 import {createPortal} from 'react-dom';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {useFramework} from '@tryghost/admin-x-framework';
 import {usePinturaEditor} from '@/hooks/use-pintura-editor';
+import BrandIcon from '@/settings/app/components/icons/brand-icon';
 import {JSONError, RequestEntityTooLargeError, UnsupportedMediaTypeError} from '@tryghost/admin-x-framework/errors';
 import {toast} from 'sonner';
 
@@ -150,9 +151,9 @@ const TagImageField: React.FC<TagImageFieldProps> = ({id, label, uploadText, val
                         </ImageUploadDropzone>
                         {unsplashEnabled && (
                             <ImageUploadActions className='top-1 right-1 opacity-100'>
-                                <ImageUploadAction aria-label={`Select ${label.toLowerCase()} from Unsplash`} disabled={fieldDisabled} onClick={() => setShowUnsplash(true)}>
-                                    <LucideIcon.Images />
-                                </ImageUploadAction>
+                                <Button aria-label={`Select ${label.toLowerCase()} from Unsplash`} disabled={fieldDisabled} size='icon' type='button' variant='ghost' onClick={() => setShowUnsplash(true)}>
+                                    <BrandIcon className='size-4' name='unsplash' />
+                                </Button>
                             </ImageUploadActions>
                         )}
                     </>
