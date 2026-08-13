@@ -11,8 +11,7 @@ export class GiftDelivery implements GiftDeliveryData {
     giftId: string;
     recipientEmail: string;
     status: GiftDeliveryStatus;
-    attempts: number;
-    attemptAt: Date | null;
+    startedAt: Date | null;
     emailSentAt: Date | null;
     emailProviderMessageId: string | null;
     outcome: GiftDeliveryOutcome;
@@ -24,8 +23,7 @@ export class GiftDelivery implements GiftDeliveryData {
         this.giftId = data.giftId;
         this.recipientEmail = data.recipientEmail;
         this.status = data.status ?? 'pending';
-        this.attempts = data.attempts ?? 0;
-        this.attemptAt = data.attemptAt ?? null;
+        this.startedAt = data.startedAt ?? null;
         this.emailSentAt = data.emailSentAt ?? null;
         this.emailProviderMessageId = data.emailProviderMessageId ?? null;
         this.outcome = data.outcome ?? 'unknown';
