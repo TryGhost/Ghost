@@ -58,7 +58,7 @@ export function createStripeDepositAddressClient(secretKey: string): StripeDepos
         path: 'crypto/deposit_addresses',
         includeBasic: ['create']
     });
-    const depositAddresses = new DepositAddresses(stripe) as {
+    const depositAddresses = new DepositAddresses(stripe) as unknown as {
         create: (params: {network: string}) => Promise<DepositAddress | null | undefined>;
     };
 
