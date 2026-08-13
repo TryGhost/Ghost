@@ -1,6 +1,9 @@
 # Ghost End-To-End Test Suite
 
-This test suite runs automated browser tests against a running Ghost instance to ensure critical user journeys work correctly.
+This top-level workspace is Ghost's end-to-end test suite. It runs automated
+browser tests against a complete, running Ghost instance to verify critical
+user journeys across packages and applications. Package-local Playwright suites
+are called acceptance tests; reserve "E2E" for this workspace.
 
 ## Quick Start
 
@@ -121,8 +124,7 @@ e2e/
 │   ├── admin/                  # Admin site tests
 │   │   └── testname.spec.ts    # Test cases
 │   ├── global.setup.ts         # Global setup script
-│   ├── global.teardown.ts      # Global teardown script
-│   └── .eslintrc.js            # Test-specific ESLint config
+│   └── global.teardown.ts      # Global teardown script
 ├── helpers/                    # All helpers that support the tests, utilities, fixtures, page objects etc.
 │   ├── playwright/             # Playwright specific helpers
 │   │   └── fixture.ts          # Playwright fixtures

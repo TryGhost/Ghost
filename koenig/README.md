@@ -92,10 +92,11 @@ edit/run/test loop against ghost/core.
   [vitest.shared.ts](./vitest.shared.ts) (`createKoenigVitestConfig`). Run
   `pnpm test:unit` in the package, or `pnpm test` for the full gate (types +
   coverage thresholds + lint).
-- `koenig-lexical` has Vitest unit tests and a large Playwright acceptance
-  suite: `pnpm test:unit`, `pnpm test:acceptance` (headless by default;
+- `koenig-lexical` has Vitest unit tests and a large Playwright browser
+  acceptance suite: `pnpm test:unit`, `pnpm test:acceptance` (headless by default;
   `:headed`, `:report`, and `test:slowmo` variants for debugging). See
-  [koenig-lexical/CLAUDE.md](./koenig-lexical/CLAUDE.md).
+  [koenig-lexical/CLAUDE.md](./koenig-lexical/CLAUDE.md). Ghost's end-to-end
+  suite is the separate top-level [`e2e/`](../e2e/) workspace.
 - `kg-unsplash-selector` also has a Playwright suite (`pnpm test:acceptance`).
 
 ## Shipping

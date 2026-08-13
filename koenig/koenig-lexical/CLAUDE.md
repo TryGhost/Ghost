@@ -48,7 +48,9 @@ For debugging and development:
 ## Test Structure
 
 - `test/unit/` - Unit tests (Vitest)
-- `test/e2e/` - Acceptance tests (Playwright, `test:acceptance` target)
+- `test/e2e/` - Package-level acceptance tests (Playwright,
+  `test:acceptance` target); Ghost's end-to-end suite lives in the repository's
+  top-level `e2e/` directory
 - `test/utils/` - Shared test utilities
 
 ## Development Workflow

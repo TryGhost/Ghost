@@ -181,7 +181,10 @@ export class PublicHomePage extends BasePage {
 
 ### Test Structure (AAA Pattern)
 
-**Important: Write self-documenting tests without comments. Test names and method names should clearly express intent. If complex logic is needed, extract it to a well-named method in the Page Object.**
+**Important: Prefer self-documenting tests. Test names and method names should
+clearly express intent, and complex reusable logic should move to a well-named
+Page Object method. Add comments only when the Arrange, Act, and Assert
+boundaries would otherwise be unclear.**
 
 Use **Arrange–Act–Assert (AAA)** as a readability heuristic:
 - **Arrange**: Set up test data and page objects
