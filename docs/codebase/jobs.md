@@ -24,6 +24,11 @@ Existing examples include:
 Prefer an existing job with similar lifecycle and failure requirements as the
 starting point for a new one.
 
+When adding a service which registers jobs, give it an explicit `init()` call
+from `ghost/core/core/boot.js`. Keep the wrapper's `init()` idempotent, but let
+boot own service construction and worker setup rather than initializing on the
+first request.
+
 ## Testing
 
 Tests for the jobs wrapper live in
