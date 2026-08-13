@@ -104,6 +104,9 @@ feature-specific cache adapters.
 The [database structure guide](codebase/database.md) gives a short orientation
 to the schema and commonly referenced domain values.
 
+The [performance testing guide](contributing/performance-testing.md) covers
+focused local load tests without exposing hosted-service procedures.
+
 ### Finding Issues to Work On
 
 - [Good First Issues](https://github.com/TryGhost/Ghost/labels/good%20first%20issue) - Great for newcomers

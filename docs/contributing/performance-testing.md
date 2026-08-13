@@ -6,26 +6,19 @@ tools commonly used with Ghost are `loadtest` for a simple endpoint and
 
 ## loadtest
 
-Install `loadtest` globally, then specify the total requests and concurrency:
+Run `loadtest` with pnpm and specify the total requests and concurrency:
 
 ```bash
-npm install -g loadtest
-loadtest -n 500 -c 5 http://localhost:2368/
+pnpm dlx loadtest -n 500 -c 5 http://localhost:2368/
 ```
 
 It can also run at a fixed request rate for a duration:
 
 ```bash
-loadtest -t 30 --rps 50 http://localhost:2368/
+pnpm dlx loadtest -t 30 --rps 50 http://localhost:2368/
 ```
 
 ## Artillery
-
-Install Artillery globally:
-
-```bash
-npm install -g artillery@latest
-```
 
 Artillery uses a YAML test definition and supports phased rates, several
 requests in one flow, and processor functions for variable input:
@@ -47,7 +40,7 @@ scenarios:
 Run it with:
 
 ```bash
-artillery run load-test.yml
+pnpm dlx artillery run load-test.yml
 ```
 
 ## Getting useful results
@@ -60,3 +53,11 @@ uncached requests.
 Local testing starts at [http://localhost:2368](http://localhost:2368). Local
 hardware and production hosting differ, but local results can still show whether
 a change improves or degrades a focused workflow.
+
+Only send load to a system you own or have explicit permission to test. The
+public repository does not document production or hosted-service load-testing
+procedures.
+
+See the [`loadtest` README](https://github.com/alexfernandez/loadtest) and
+[Artillery documentation](https://www.artillery.io/docs/get-started/core-concepts)
+for the current command and scenario options.
