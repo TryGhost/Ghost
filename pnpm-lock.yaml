@@ -279,9 +279,6 @@ catalogs:
     country-flag-icons:
       specifier: 1.6.20
       version: 1.6.20
-    cross-fetch:
-      specifier: 4.1.0
-      version: 4.1.0
     dependency-cruiser:
       specifier: ^18.1.1
       version: 18.1.1
@@ -1069,9 +1066,6 @@ importers:
       '@vitest/coverage-v8':
         specifier: 'catalog:'
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
-      cross-fetch:
-        specifier: 'catalog:'
-        version: 4.1.0(encoding@0.1.13)
       eslint:
         specifier: 'catalog:'
         version: 9.39.4(jiti@2.7.0)(supports-color@10.2.2)
@@ -1651,9 +1645,6 @@ importers:
       '@vitest/coverage-v8':
         specifier: 'catalog:'
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
-      cross-fetch:
-        specifier: 'catalog:'
-        version: 4.1.0(encoding@0.1.13)
       dompurify:
         specifier: 'catalog:'
         version: 3.4.11
@@ -2005,9 +1996,6 @@ importers:
       autoprefixer:
         specifier: 10.5.4
         version: 10.5.4(postcss@8.5.26)
-      cross-fetch:
-        specifier: 'catalog:'
-        version: 4.1.0(encoding@0.1.13)
       eslint:
         specifier: 'catalog:'
         version: 9.39.4(jiti@2.7.0)(supports-color@10.2.2)
@@ -2586,9 +2574,6 @@ importers:
       nconf:
         specifier: 0.13.0
         version: 0.13.0
-      node-fetch:
-        specifier: 2.7.0
-        version: 2.7.0(encoding@0.1.13)
       node-html-markdown:
         specifier: 'catalog:'
         version: 2.0.0
@@ -2710,9 +2695,6 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 22.20.1
-      '@types/node-fetch':
-        specifier: 2.6.13
-        version: 2.6.13
       '@types/node-jose':
         specifier: 1.1.13
         version: 1.1.13
@@ -9596,9 +9578,6 @@ packages:
 
   '@types/nconf@0.10.7':
     resolution: {integrity: sha512-ltJgbQX0XgjkeDrz0anTCXLBLatppWYFCxp88ILEwybfAuyNWr0Qb+ceFFqZ0VDR8fguEjr0hH37ZF+AF4gsxw==}
-
-  '@types/node-fetch@2.6.13':
-    resolution: {integrity: sha512-QGpRVpzSaUs30JBSGPjOg4Uveu384erbHBoT1zeONvyCfwQxIkUshLAOqN/k9EjGviPRmWTTe6aH2qySWKTVSw==}
 
   '@types/node-jose@1.1.13':
     resolution: {integrity: sha512-QjMd4yhwy1EvSToQn0YI3cD29YhyfxFwj7NecuymjLys2/P0FwxWnkgBlFxCai6Y3aBCe7rbwmqwJJawxlgcXw==}
@@ -29627,11 +29606,6 @@ snapshots:
   '@types/ms@2.1.0': {}
 
   '@types/nconf@0.10.7': {}
-
-  '@types/node-fetch@2.6.13':
-    dependencies:
-      '@types/node': 26.0.0
-      form-data: 4.0.6
 
   '@types/node-jose@1.1.13':
     dependencies:
