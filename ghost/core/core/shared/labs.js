@@ -56,6 +56,7 @@ const PRIVATE_FEATURES = [
     'paywallImprovements',
     'giftSubCustomization',
     'tagDetailsReact',
+    'selfServeArchives',
     'machinePayments'
 ];
 
