@@ -63,6 +63,11 @@ Before contributing, please read:
 1. [Contributing Guide](../.github/CONTRIBUTING.md) - Guidelines for contributions
 2. [Code of Conduct](../.github/CODE_OF_CONDUCT.md) - Community standards
 
+To contribute or add translations, see
+[Translating Ghost](contributing/translating-ghost.md). For more detail on
+adding translatable product copy, see the
+[internationalization guide](practices/internationalization.md).
+
 ### Finding Issues to Work On
 
 - [Good First Issues](https://github.com/TryGhost/Ghost/labels/good%20first%20issue) - Great for newcomers
