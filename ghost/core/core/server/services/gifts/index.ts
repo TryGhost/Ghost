@@ -4,9 +4,9 @@ import type {GiftController} from './gift-controller';
 import type {GiftService} from './gift-service';
 
 export interface GiftServiceInitOptions {
-    apiUrl?: string;
-    schedulerAdapter?: SchedulerAdapter;
-    internalKeys?: InternalKeys;
+    apiUrl: string;
+    schedulerAdapter: SchedulerAdapter;
+    internalKeys: InternalKeys;
 }
 
 // Constructed by init() at boot, once the database and scheduling adapter are ready.
@@ -15,7 +15,7 @@ export let service: GiftService | undefined;
 
 let initialized = false;
 
-export async function init(options: GiftServiceInitOptions = {}): Promise<void> {
+export async function init(options: GiftServiceInitOptions): Promise<void> {
     if (initialized) {
         return;
     }
@@ -64,9 +64,9 @@ export async function init(options: GiftServiceInitOptions = {}): Promise<void> 
     });
 
     const giftReminderScheduler = new GiftReminderScheduler({
-        apiUrl: options.apiUrl!,
+        apiUrl: options.apiUrl,
         adapter: options.schedulerAdapter,
-        internalKeys: options.internalKeys!,
+        internalKeys: options.internalKeys,
         findUnsentReminders: () => repository.findUnsentReminders()
     });
 
