@@ -5,6 +5,7 @@ import {existsSync} from 'node:fs';
 import {join, dirname, relative, resolve, sep} from 'node:path';
 
 import {ROOT_DIR} from './lib/constants.js';
+import {applyPackageTemplateTokens, isValidPackageName} from './lib/package-template.js';
 
 const TEMPLATE_DIR = join(ROOT_DIR, 'packages', '_template');
 const PACKAGES_DIR = join(ROOT_DIR, 'packages');
@@ -49,7 +50,7 @@ const name = positionals[0];
 if (!name) {
     fail('Missing package name.');
 }
-if (!/^[a-z0-9][a-z0-9-]*$/.test(name)) {
+if (!isValidPackageName(name)) {
     fail(`Invalid package name "${name}". Use lowercase kebab-case, e.g. "email-utils" (no @scope — it becomes @tryghost/${name}).`);
 }
 
@@ -81,10 +82,11 @@ async function walk(dir) {
 }
 
 function applyTokens(text) {
-    return text
-        .replaceAll('{{NAME}}', name)
-        .replaceAll('{{DIRECTORY}}', packageDir)
-        .replaceAll('{{DESCRIPTION}}', description);
+    return applyPackageTemplateTokens(text, {
+        name,
+        directory: packageDir,
+        description
+    });
 }
 
 await mkdir(dirname(targetDir), {recursive: true});

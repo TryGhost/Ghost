@@ -3,9 +3,15 @@ import {readdir, readFile, realpath, stat} from 'node:fs/promises';
 import path from 'node:path';
 import {promisify} from 'node:util';
 
+import {ROOT_DIR} from './lib/constants.js';
+import {applyPackageTemplateTokens, isValidPackageName} from './lib/package-template.js';
+
 const execFileAsync = promisify(execFile);
 
 const GOLDEN_PATH_STATUSES = new Set(['compliant', 'migration', 'exempt']);
+// These expectations intentionally remain independent of packages/_template.
+// Deriving them from the template would allow accidental template drift to
+// redefine the contract and approve itself.
 const REQUIRED_SCRIPTS = {
     build: 'tsc',
     'test:unit': 'NODE_ENV=testing vitest run --coverage',
@@ -42,9 +48,11 @@ async function readJson(filePath) {
 
 async function listWorkspacePackages(rootDirectory) {
     const {stdout} = await execFileAsync('pnpm', [
-        '--dir', rootDirectory,
         'm', 'ls', '--depth', '-1', '--json'
-    ], {maxBuffer: 10 * 1024 * 1024});
+    ], {
+        cwd: rootDirectory,
+        maxBuffer: 10 * 1024 * 1024
+    });
 
     return JSON.parse(stdout);
 }
@@ -57,6 +65,12 @@ function addExactValueError(errors, manifestPath, actual, expected, field) {
     if (actual !== expected) {
         errors.push(`${manifestPath}: ${field} must be ${JSON.stringify(expected)}`);
     }
+}
+
+function usesStandardConfigFactory(config, moduleName, factoryName) {
+    const importPattern = new RegExp(`^\\s*import\\s*\\{\\s*${factoryName}\\s*\\}\\s*from\\s*['"]${moduleName}['"];?\\s*$`, 'm');
+    const exportPattern = new RegExp(`^\\s*export\\s+default\\s+${factoryName}\\s*\\(`, 'm');
+    return importPattern.test(config) && exportPattern.test(config);
 }
 
 async function findJavaScriptFiles(directory) {
@@ -118,14 +132,14 @@ async function validateConfigFiles(packageDirectory, manifestPath, errors) {
 
     if (await exists(eslintPath)) {
         const config = await readFile(eslintPath, 'utf8');
-        if (!config.includes("from '@internal/cfg-eslint'") || !config.includes('nodeLibConfig(')) {
+        if (!usesStandardConfigFactory(config, '@internal/cfg-eslint', 'nodeLibConfig')) {
             errors.push(`${manifestPath}: eslint.config.mjs must use nodeLibConfig from @internal/cfg-eslint`);
         }
     }
 
     if (await exists(vitestPath)) {
         const config = await readFile(vitestPath, 'utf8');
-        if (!config.includes("from '@internal/cfg-vitest'") || !config.includes('createVitestConfig(')) {
+        if (!usesStandardConfigFactory(config, '@internal/cfg-vitest', 'createVitestConfig')) {
             errors.push(`${manifestPath}: vitest.config.ts must use createVitestConfig from @internal/cfg-vitest`);
         }
     }
@@ -136,7 +150,7 @@ async function validateCompliantPackage({rootDirectory, packageDirectory, manife
     const packagePath = explicitPackagePath ?? path.relative(rootDirectory, packageDirectory).split(path.sep).join('/');
     const errors = [];
 
-    if (!/^@tryghost\/[a-z0-9][a-z0-9-]*$/.test(manifest.name ?? '')) {
+    if (typeof manifest.name !== 'string' || !manifest.name.startsWith('@tryghost/') || !isValidPackageName(manifest.name.slice('@tryghost/'.length))) {
         errors.push(`${manifestPath}: name must use the @tryghost/<kebab-case-name> form`);
     }
     addExactValueError(errors, manifestPath, manifest.version, '0.0.0', 'version');
@@ -213,7 +227,7 @@ async function validateCompliantPackage({rootDirectory, packageDirectory, manife
         errors.push(`${manifestPath}: nx.targets.build.outputs must be ["{projectRoot}/build"]`);
     }
 
-    for (const section of ['dependencies', 'devDependencies', 'optionalDependencies']) {
+    for (const section of ['dependencies', 'devDependencies', 'optionalDependencies', 'peerDependencies']) {
         for (const [dependency, version] of Object.entries(manifest[section] ?? {})) {
             if (dependency !== manifest.name && workspaceNames.has(dependency) && version !== 'workspace:*') {
                 errors.push(`${manifestPath}: ${section}.${dependency} must use workspace:*`);
@@ -226,6 +240,9 @@ async function validateCompliantPackage({rootDirectory, packageDirectory, manife
     for (const javascriptFile of await findJavaScriptFiles(path.join(packageDirectory, 'src'))) {
         errors.push(`${manifestPath}: authored source must be TypeScript (${path.relative(packageDirectory, javascriptFile)})`);
     }
+    for (const javascriptFile of await findJavaScriptFiles(path.join(packageDirectory, 'test'))) {
+        errors.push(`${manifestPath}: authored tests must be TypeScript (${path.relative(packageDirectory, javascriptFile)})`);
+    }
 
     return errors;
 }
@@ -233,7 +250,13 @@ async function validateCompliantPackage({rootDirectory, packageDirectory, manife
 export async function checkInternalPackages(rootDirectory) {
     rootDirectory = await realpath(rootDirectory);
     const packagesDirectory = path.join(rootDirectory, 'packages');
-    const workspacePackages = await listWorkspacePackages(rootDirectory);
+    let workspacePackages;
+    try {
+        workspacePackages = await listWorkspacePackages(rootDirectory);
+    } catch (error) {
+        const detail = error.stderr?.trim() || error.message;
+        return [`Unable to list pnpm workspace packages (${detail})`];
+    }
     const packageDirectories = workspacePackages
         .map(workspace => workspace.path)
         .filter(directory => directory.startsWith(`${packagesDirectory}${path.sep}`))
@@ -292,10 +315,11 @@ export async function checkInternalPackages(rootDirectory) {
     let templateManifest;
     try {
         const templateManifestSource = await readFile(templateManifestPath, 'utf8');
-        templateManifest = JSON.parse(templateManifestSource
-            .replaceAll('{{NAME}}', 'template')
-            .replaceAll('{{DESCRIPTION}}', 'Template package')
-            .replaceAll('{{DIRECTORY}}', 'packages/template'));
+        templateManifest = JSON.parse(applyPackageTemplateTokens(templateManifestSource, {
+            name: 'template',
+            directory: 'packages/template',
+            description: 'Template package'
+        }));
     } catch (error) {
         errors.push(`packages/_template/package.json: unreadable or invalid JSON (${error.message})`);
     }
@@ -314,7 +338,7 @@ export async function checkInternalPackages(rootDirectory) {
 }
 
 if (import.meta.main) {
-    const errors = await checkInternalPackages(process.cwd());
+    const errors = await checkInternalPackages(ROOT_DIR);
     if (errors.length > 0) {
         console.error(`Internal package golden path check failed:\n\n${errors.join('\n')}`);
         process.exitCode = 1;

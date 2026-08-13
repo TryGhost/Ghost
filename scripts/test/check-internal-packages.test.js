@@ -110,6 +110,16 @@ test('accepts a compliant nested private package', async () => {
     assert.deepEqual(await checkInternalPackages(rootDirectory), []);
 });
 
+test('reports workspace discovery failures through the checker interface', async () => {
+    const rootDirectory = await createRepository();
+    await writeFile(path.join(rootDirectory, 'pnpm-workspace.yaml'), 'packages: [invalid\n');
+
+    assert.match(
+        (await checkInternalPackages(rootDirectory))[0],
+        /^Unable to list pnpm workspace packages/
+    );
+});
+
 test('requires every private package to declare its golden path status', async () => {
     const rootDirectory = await createRepository();
     const packageDirectory = await createCompliantPackage(rootDirectory);
@@ -164,12 +174,37 @@ test('reports manifest, export, config and source violations together', async ()
     delete manifest.scripts.build;
     await writeJson(path.join(packageDirectory, 'package.json'), manifest);
     await writeFile(path.join(packageDirectory, 'src', 'legacy.js'), 'module.exports = {};\n');
+    await writeFile(path.join(packageDirectory, 'test', 'legacy.test.js'), 'export {};\n');
 
     const errors = await checkInternalPackages(rootDirectory);
     assert.ok(errors.includes('packages/example/package.json: version must be "0.0.0"'));
     assert.ok(errors.includes('packages/example/package.json: exports.. conditions must be source, types, default in that order'));
     assert.ok(errors.includes('packages/example/package.json: scripts.build must be "tsc"'));
     assert.ok(errors.includes('packages/example/package.json: authored source must be TypeScript (src/legacy.js)'));
+    assert.ok(errors.includes('packages/example/package.json: authored tests must be TypeScript (test/legacy.test.js)'));
+});
+
+test('rejects package names that are not kebab-case', async () => {
+    const rootDirectory = await createRepository();
+    const packageDirectory = await createCompliantPackage(rootDirectory);
+    const manifest = compliantManifest();
+    manifest.name = '@tryghost/example--';
+    await writeJson(path.join(packageDirectory, 'package.json'), manifest);
+
+    assert.ok((await checkInternalPackages(rootDirectory)).includes(
+        'packages/example/package.json: name must use the @tryghost/<kebab-case-name> form'
+    ));
+});
+
+test('does not accept config factory names that appear only in comments', async () => {
+    const rootDirectory = await createRepository();
+    const packageDirectory = await createCompliantPackage(rootDirectory);
+    await writeFile(path.join(packageDirectory, 'eslint.config.mjs'), "// import {nodeLibConfig} from '@internal/cfg-eslint';\n// export default nodeLibConfig();\nexport default [];\n");
+    await writeFile(path.join(packageDirectory, 'vitest.config.ts'), "// import {createVitestConfig} from '@internal/cfg-vitest';\n// export default createVitestConfig();\nexport default {};\n");
+
+    const errors = await checkInternalPackages(rootDirectory);
+    assert.ok(errors.includes('packages/example/package.json: eslint.config.mjs must use nodeLibConfig from @internal/cfg-eslint'));
+    assert.ok(errors.includes('packages/example/package.json: vitest.config.ts must use createVitestConfig from @internal/cfg-vitest'));
 });
 
 test('reports non-string export conditions without terminating validation', async () => {
@@ -255,5 +290,20 @@ test('recognizes workspace packages outside packages/', async () => {
 
     assert.deepEqual(await checkInternalPackages(rootDirectory), [
         'packages/example/package.json: dependencies.@tryghost/koenig-example must use workspace:*'
+    ]);
+});
+
+test('requires peer dependencies on workspace packages to use workspace:*', async () => {
+    const rootDirectory = await createRepository();
+    const packageDirectory = await createCompliantPackage(rootDirectory);
+    const manifest = compliantManifest();
+    manifest.peerDependencies = {'@tryghost/koenig-example': '>=1'};
+    await writeJson(path.join(packageDirectory, 'package.json'), manifest);
+    await writeJson(path.join(rootDirectory, 'koenig', 'example', 'package.json'), {
+        name: '@tryghost/koenig-example'
+    });
+
+    assert.deepEqual(await checkInternalPackages(rootDirectory), [
+        'packages/example/package.json: peerDependencies.@tryghost/koenig-example must use workspace:*'
     ]);
 });

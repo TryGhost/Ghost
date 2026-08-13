@@ -164,7 +164,11 @@ jobs:
             package-standards:
               - 'packages/**'
               - 'package.json'
+              - 'pnpm-workspace.yaml'
               - 'scripts/check-internal-packages.js'
+              - 'scripts/create-package.js'
+              - 'scripts/lib/constants.js'
+              - 'scripts/lib/package-template.js'
               - 'scripts/test/check-internal-packages.test.js'
               - '.github/workflows/ci.yml'
             core:
