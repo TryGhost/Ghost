@@ -14,6 +14,7 @@ fi
 
 export PATH="$node_dir/bin:$PATH"
 corepack enable --install-directory "$node_dir/bin"
+pnpm setup
 
 profile_marker="# Ghost orb Node.js"
 profile_export="export PATH=\"$node_dir/bin:\$PATH\""
@@ -37,5 +38,3 @@ if ! /usr/bin/docker compose version >/dev/null 2>&1; then
     sudo apt-get update
     sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 fi
-
-pnpm setup
