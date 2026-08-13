@@ -54,7 +54,9 @@ Ghost/
 ```
 
 pnpm links the workspaces and Nx runs their tasks in dependency order. For more
-detail, see the [monorepo structure guide](codebase/monorepo-structure.md).
+detail, see the [monorepo structure guide](codebase/monorepo-structure.md). The
+[configuration guide](codebase/configuration.md) explains how Ghost Core loads
+defaults, local overrides, environment variables, and secrets.
 
 ## Contributing a change
 
