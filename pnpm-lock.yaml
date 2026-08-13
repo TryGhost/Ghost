@@ -4071,8 +4071,8 @@ importers:
         specifier: 'catalog:'
         version: 11.0.5(@octokit/core@7.0.7)
       '@pnpm/releasing.versioning':
-        specifier: 1100.1.0
-        version: 1100.1.0(@pnpm/logger@1100.0.0)
+        specifier: 1100.2.4
+        version: 1100.2.4(@pnpm/logger@1100.0.0)
       '@pnpm/workspace.workspace-manifest-reader':
         specifier: 1100.1.0
         version: 1100.1.0
@@ -7142,58 +7142,70 @@ packages:
     resolution: {integrity: sha512-CSJ5fKSUgqXrON5J2zQd1LwttU4gdqffJ3zYyHGAEhZ8u22fhQEVfCnc4+3aczDHbBNU0pNRX2ajiioPj46YtA==}
     engines: {node: '>=22.13'}
 
-  '@pnpm/core-loggers@1100.2.2':
-    resolution: {integrity: sha512-/TU7WIIXXMzXbOeUn78fihNIMDpBMgoCEEVhaL/HNXzt4thJugF/SAxORqXNJZMvFzkvcCLIYb+lr6OamZUokQ==}
+  '@pnpm/constants@1101.0.0':
+    resolution: {integrity: sha512-jJQU6y8lhic2at0+W246+tMDdEqhbS1WSRlTjmIXeXrrWU2rAbhixi11loE+lI3f/E1Ci1+3i5N6ewOumeNJdg==}
+    engines: {node: '>=22.13'}
+
+  '@pnpm/core-loggers@1100.3.2':
+    resolution: {integrity: sha512-dsxDByU2KFLxTzVdXZCMjsv0rIxMmFMhWWjo6e1Sq8+TqdoPXSAGcFMN0psVJHRj5+xxXqZen4+NfFhHHsRQMg==}
     engines: {node: '>=22.13'}
     peerDependencies:
       '@pnpm/logger': ^1100.0.0
 
-  '@pnpm/deps.peer-range@1100.0.2':
-    resolution: {integrity: sha512-kiPFbLNdasVrJohn5jnQ0evnTdLWzHWBpnMaCGqJmz0GwQQ5S/TqQLuLhnBYGnnUkEiN3sCaSGr2TFXcL3xrig==}
+  '@pnpm/deps.peer-range@1100.1.1':
+    resolution: {integrity: sha512-G3J83gBJ5XCKhoJ7XbnF0uVJw7D5FC2X1T+txoGtEV1e1dFLT98b05zlBjgaMonkbxFCIUCuwHxttyEyKJvXow==}
     engines: {node: '>=22.13'}
 
   '@pnpm/error@1100.0.1':
     resolution: {integrity: sha512-+SRTHRx9/etv+6AYMv6RX/uGW6CEQbV/o2Ojtjk4aHkmdVMe1Q9LekOV6gKmlEmeWOzv6zTzH/soFcuOWxIxTA==}
     engines: {node: '>=22.13'}
 
-  '@pnpm/fs.graceful-fs@1100.1.0':
-    resolution: {integrity: sha512-sqz/s9GmCpMdTL1CP7lteu6EzV2FpAB2xBTztWh7ZCZUoM2MFQZlQI1OuCqdkn6VI3WRnhkUgV0pIOlbqFTCSw==}
+  '@pnpm/error@1100.1.1':
+    resolution: {integrity: sha512-dqFXd5jTgBkGkwwI6AO9ON/WBXlQ8LIMRyyRysgSshix1XDyYjMmk7+bdPLuY2gjpB95j0Wu9Xq+3l7uuGZToQ==}
+    engines: {node: '>=22.13'}
+
+  '@pnpm/fs.graceful-fs@1100.1.1':
+    resolution: {integrity: sha512-knCLxjy9vx18Z1cwzzqD251jxrJhQpJ09Gch+AecX0rOWj/sygjk0UXSWZPaHPwVtK5Je7i2CIAoyYwsb8wZTg==}
     engines: {node: '>=22.13'}
 
   '@pnpm/logger@1100.0.0':
     resolution: {integrity: sha512-A3bRMTIZ5ptDPAE/KsDeY1J5UqqOiyo66+k/mUvaVjx++OJdMbp9If5kisEq9ljAV5r5TRpkxsJbSdrdJ5WtzQ==}
     engines: {node: '>=22.13'}
 
-  '@pnpm/pkg-manifest.utils@1100.2.7':
-    resolution: {integrity: sha512-+VNfp7Jh+9WvkJ6A0v2Jb4YEEi1qwxbltWFWOZFrOd347nwRre6hbsCfgeV4cu8HsJPfEQlNCTXi2wrfDKH3vA==}
+  '@pnpm/pkg-manifest.utils@1100.3.1':
+    resolution: {integrity: sha512-9gYZ0NFNac2+qYV8suA7KWmZia0eJJNQDeByAhTfFpM1ji3Md7SFoNY9WnqXntpx/p1r9rRTeww4iwou/NEztg==}
     engines: {node: '>=22.13'}
     peerDependencies:
       '@pnpm/logger': ^1100.0.0
 
-  '@pnpm/releasing.versioning@1100.1.0':
-    resolution: {integrity: sha512-U1g75Gfb9RQERK1fN5d20tiQEx+VtTJR5wWUDoIptUVO2fta8odl/se51KxpG8j4YHu0FrhB0nmijhdzzbDLyA==}
+  '@pnpm/releasing.versioning@1100.2.4':
+    resolution: {integrity: sha512-9ZlTz5+/nG2yhLMpV0gxBF4QH3MSOAj+xM3RhXCqTvnBQ+h6zaObVeCOChpzrIQtyWjf0wvJCdzyc3xaZakrMA==}
     engines: {node: '>=22.13'}
 
-  '@pnpm/text.comments-parser@1100.0.0':
-    resolution: {integrity: sha512-POntpaKUaDXaRBYLKZTnd0uxYZSMGLwpS3BqENlH4SEyz/8OK409573XtJgOQgtpmLM3DHZ6iJaRcr8ig6qSnw==}
+  '@pnpm/text.comments-parser@1100.0.1':
+    resolution: {integrity: sha512-10rRwfC9ffkuS4RugetHD+AiNZLdg9ZVv0rkbr/8o14EW6Vh6ZwFwAfTOlkp3Eyse8518jVFvXXPKQKyeh9kNw==}
     engines: {node: '>=22.13'}
 
   '@pnpm/types@1101.4.0':
     resolution: {integrity: sha512-s03f87SySGMvjOE16dWXmUOsXt+5Ic/DabWaB4/+L13l4q/tMjOusIu3t2plazCK0gCY9wYOIw2p9CQ9+CHbcA==}
     engines: {node: '>=22.13'}
 
-  '@pnpm/workspace.project-manifest-reader@1100.0.15':
-    resolution: {integrity: sha512-dEvDXnAVTnBw1/eQ1mvUzXB8gmAbdD6VmbJZhoTW4x9Y8zVGYH2/vS4wZiTz40TPM92BXxSEpSR7aE7uxk6oIQ==}
+  '@pnpm/types@1101.9.0':
+    resolution: {integrity: sha512-lB2aSB2h950UX1GX3JW4AZ86xjXD92YJbV92IBSQqHXXZdiemoVKADLA2cDQ4/wKeS7djY8fkITM6X+6iYF62A==}
+    engines: {node: '>=22.13'}
+
+  '@pnpm/workspace.project-manifest-reader@1100.0.23':
+    resolution: {integrity: sha512-sIZ9QLZJOVt9nf7qiWd/bUFqyF12T0HrkRhkkkAAzc50NpXEzvbZjRV1V6r9zoWfJwntFx2jzyzYVIn4Zn9Snw==}
     engines: {node: '>=22.13'}
     peerDependencies:
       '@pnpm/logger': ^1100.0.0
 
-  '@pnpm/workspace.project-manifest-writer@1100.0.9':
-    resolution: {integrity: sha512-QJh894R8HxUyp/FKPG6AbHihMRoLiMza8SI8B/BfqzRAz7eMo3KtqDULdooy16WZAtjk3nr76PNu+vrYy+QjVA==}
+  '@pnpm/workspace.project-manifest-writer@1100.0.14':
+    resolution: {integrity: sha512-1s+T0xtNHbfQ73LdyE5mEZ8+cXKPQRT0N8qUXp+AZio9Mbgu2R9Qsz2n68vh4tiBrNSndaDc6PlyIb1N/tAEUA==}
     engines: {node: '>=22.13'}
 
-  '@pnpm/workspace.spec-parser@1100.0.0':
-    resolution: {integrity: sha512-tjTU6mSIx38pxOlzzKkQXjEgYr68jZv2b4+uORFPq5rVPz95iSCooSfxMsXQcbxmqQ6yiMnZcCfOQFz88rNHNw==}
+  '@pnpm/workspace.spec-parser@1100.0.1':
+    resolution: {integrity: sha512-lEvwougkILMozWY/7wN1/uyxrOZJfOHSzmeaFBKa69EhzjoqM0Qn9bE+PrFiMr5xUEc1sln3en6bNh4kQJdfSw==}
     engines: {node: '>=22.13'}
 
   '@pnpm/workspace.workspace-manifest-reader@1100.1.0':
@@ -10195,6 +10207,7 @@ packages:
   '@xmldom/xmldom@0.9.10':
     resolution: {integrity: sha512-A9gOqLdi6cV4ibazAjcQufGj0B1y/vDqYrcuP6d/6x8P27gRS8643Dj9o1dEKtB6O7fwxb2FgBmJS2mX7gpvdw==}
     engines: {node: '>=14.6'}
+    deprecated: this version has critical issues, please update to the latest version
 
   '@xtuc/ieee754@1.2.0':
     resolution: {integrity: sha512-DX8nKgqcGwsc0eJSqYt5lwP4DH5FlHnmuWWBRy7X0NcaGR0ZtuyeESgMwTYVEtxmsNGY+qit4QYT/MIYTOTPeA==}
@@ -26481,12 +26494,14 @@ snapshots:
 
   '@pnpm/constants@1100.0.0': {}
 
-  '@pnpm/core-loggers@1100.2.2(@pnpm/logger@1100.0.0)':
+  '@pnpm/constants@1101.0.0': {}
+
+  '@pnpm/core-loggers@1100.3.2(@pnpm/logger@1100.0.0)':
     dependencies:
       '@pnpm/logger': 1100.0.0
-      '@pnpm/types': 1101.4.0
+      '@pnpm/types': 1101.9.0
 
-  '@pnpm/deps.peer-range@1100.0.2':
+  '@pnpm/deps.peer-range@1100.1.1':
     dependencies:
       semver: 7.8.5
 
@@ -26494,7 +26509,11 @@ snapshots:
     dependencies:
       '@pnpm/constants': 1100.0.0
 
-  '@pnpm/fs.graceful-fs@1100.1.0':
+  '@pnpm/error@1100.1.1':
+    dependencies:
+      '@pnpm/constants': 1101.0.0
+
+  '@pnpm/fs.graceful-fs@1100.1.1':
     dependencies:
       graceful-fs: 4.2.11
 
@@ -26503,42 +26522,44 @@ snapshots:
       bole: 5.0.29
       split2: 4.2.0
 
-  '@pnpm/pkg-manifest.utils@1100.2.7(@pnpm/logger@1100.0.0)':
+  '@pnpm/pkg-manifest.utils@1100.3.1(@pnpm/logger@1100.0.0)':
     dependencies:
-      '@pnpm/core-loggers': 1100.2.2(@pnpm/logger@1100.0.0)
-      '@pnpm/deps.peer-range': 1100.0.2
-      '@pnpm/error': 1100.0.1
+      '@pnpm/core-loggers': 1100.3.2(@pnpm/logger@1100.0.0)
+      '@pnpm/deps.peer-range': 1100.1.1
+      '@pnpm/error': 1100.1.1
       '@pnpm/logger': 1100.0.0
-      '@pnpm/types': 1101.4.0
+      '@pnpm/types': 1101.9.0
       semver: 7.8.5
 
-  '@pnpm/releasing.versioning@1100.1.0(@pnpm/logger@1100.0.0)':
+  '@pnpm/releasing.versioning@1100.2.4(@pnpm/logger@1100.0.0)':
     dependencies:
-      '@pnpm/error': 1100.0.1
-      '@pnpm/types': 1101.4.0
-      '@pnpm/workspace.project-manifest-reader': 1100.0.15(@pnpm/logger@1100.0.0)
-      '@pnpm/workspace.spec-parser': 1100.0.0
+      '@pnpm/error': 1100.1.1
+      '@pnpm/types': 1101.9.0
+      '@pnpm/workspace.project-manifest-reader': 1100.0.23(@pnpm/logger@1100.0.0)
+      '@pnpm/workspace.spec-parser': 1100.0.1
       human-id: 4.2.0
       semver: 7.8.5
       yaml: 2.9.0
     transitivePeerDependencies:
       - '@pnpm/logger'
 
-  '@pnpm/text.comments-parser@1100.0.0':
+  '@pnpm/text.comments-parser@1100.0.1':
     dependencies:
       strip-comments-strings: 1.2.0
 
   '@pnpm/types@1101.4.0': {}
 
-  '@pnpm/workspace.project-manifest-reader@1100.0.15(@pnpm/logger@1100.0.0)':
+  '@pnpm/types@1101.9.0': {}
+
+  '@pnpm/workspace.project-manifest-reader@1100.0.23(@pnpm/logger@1100.0.0)':
     dependencies:
-      '@pnpm/error': 1100.0.1
-      '@pnpm/fs.graceful-fs': 1100.1.0
+      '@pnpm/error': 1100.1.1
+      '@pnpm/fs.graceful-fs': 1100.1.1
       '@pnpm/logger': 1100.0.0
-      '@pnpm/pkg-manifest.utils': 1100.2.7(@pnpm/logger@1100.0.0)
-      '@pnpm/text.comments-parser': 1100.0.0
-      '@pnpm/types': 1101.4.0
-      '@pnpm/workspace.project-manifest-writer': 1100.0.9
+      '@pnpm/pkg-manifest.utils': 1100.3.1(@pnpm/logger@1100.0.0)
+      '@pnpm/text.comments-parser': 1100.0.1
+      '@pnpm/types': 1101.9.0
+      '@pnpm/workspace.project-manifest-writer': 1100.0.14
       detect-indent: 7.0.2
       fast-deep-equal: 3.1.3
       is-windows: 1.0.2
@@ -26548,15 +26569,15 @@ snapshots:
       read-yaml-file: 3.0.0
       strip-bom: 5.0.0
 
-  '@pnpm/workspace.project-manifest-writer@1100.0.9':
+  '@pnpm/workspace.project-manifest-writer@1100.0.14':
     dependencies:
-      '@pnpm/text.comments-parser': 1100.0.0
-      '@pnpm/types': 1101.4.0
+      '@pnpm/text.comments-parser': 1100.0.1
+      '@pnpm/types': 1101.9.0
       json5: 2.2.3
       write-file-atomic: 7.0.1
       write-yaml-file: 6.0.0
 
-  '@pnpm/workspace.spec-parser@1100.0.0': {}
+  '@pnpm/workspace.spec-parser@1100.0.1': {}
 
   '@pnpm/workspace.workspace-manifest-reader@1100.1.0':
     dependencies:
