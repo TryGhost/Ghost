@@ -2,10 +2,10 @@ import React from 'react';
 import {Button, Card, CardContent, Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, Input, Label, LoadingIndicator, Textarea} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {dequal} from 'dequal';
-import {ADDRESS_SUBFIELD_KEYS, buildCustomFieldSavePayload, getCustomFieldValidationErrors, getEditableCustomFieldValues, parseCustomFieldServerErrors} from './member-detail-edit';
+import {ADDRESS_PARTS, buildCustomFieldSavePayload, getCustomFieldValidationErrors, getEditableCustomFieldValues, parseCustomFieldServerErrors} from './member-detail-edit';
 import {formatAddressValue} from './member-detail-format';
 import {toast} from 'sonner';
-import {useBrowseMemberCustomFields, userTypeForField, userTypeForFieldType} from '@tryghost/admin-x-framework/api/member-custom-fields';
+import {useBrowseMemberCustomFields, userTypeForField} from '@tryghost/admin-x-framework/api/member-custom-fields';
 import {useEditMember} from '@tryghost/admin-x-framework/api/members';
 import type {EditableAddressValue, EditableCustomFieldValue} from './member-detail-edit';
 import type {MemberCustomField} from '@tryghost/admin-x-framework/api/member-custom-fields';
@@ -18,9 +18,6 @@ interface MemberCustomFieldsFieldProps {
     customFields: Record<string, unknown> | undefined;
     disabled?: boolean;
 }
-
-// Shared with the CSV import mapping so a sub-field reads the same on every surface.
-const ADDRESS_SUBFIELD_LABELS = userTypeForFieldType('address').subFields ?? {};
 
 // role='alert': after a save-attempt these render while focus stays on the Save
 // button, so an assertive live region is the only way a screen reader hears the
@@ -43,12 +40,12 @@ const AddressInput: React.FC<{
 }> = ({inputId, value, errors, disabled, onChange}) => {
     return (
         <div className='grid gap-x-4 gap-y-3 md:grid-cols-2'>
-            {ADDRESS_SUBFIELD_KEYS.map((subfield) => {
+            {ADDRESS_PARTS.map(({key: subfield, label}) => {
                 const subfieldId = `${inputId}-${subfield}`;
                 const error = errors?.[subfield];
                 return (
                     <div key={subfield} className='flex flex-col gap-1.5'>
-                        <Label htmlFor={subfieldId}>{ADDRESS_SUBFIELD_LABELS[subfield] ?? subfield}</Label>
+                        <Label htmlFor={subfieldId}>{label}</Label>
                         <Input
                             aria-invalid={error ? true : undefined}
                             disabled={disabled}
@@ -64,10 +61,15 @@ const AddressInput: React.FC<{
     );
 };
 
+// Exists so the switch has to account for every control the catalog can name.
+function assertNoControl(input: never): null {
+    void input;
+    return null;
+}
+
 // The control for one field, picked from the presentation catalog's `input`
 // hint — the same hint the collection forms render from, so the editor and
-// the member-facing forms never diverge per type. Unknown future inputs
-// render nothing rather than degrading to a wrong text input.
+// the member-facing forms never diverge per type.
 const CustomFieldInput: React.FC<{
     field: MemberCustomField;
     inputId: string;
@@ -78,7 +80,8 @@ const CustomFieldInput: React.FC<{
     onChange: (value: EditableCustomFieldValue) => void;
 }> = ({field, inputId, value, errors, disabled, onChange}) => {
     const fieldError = errors?.[''];
-    switch (userTypeForField(field).input) {
+    const {input} = userTypeForField(field);
+    switch (input) {
     case 'text':
         return <Input aria-invalid={fieldError ? true : undefined} disabled={disabled} id={inputId} value={typeof value === 'string' ? value : ''} onChange={e => onChange(e.target.value)} />;
     case 'textarea':
@@ -96,7 +99,9 @@ const CustomFieldInput: React.FC<{
             />
         );
     default:
-        return null;
+        // Unreachable: `input` comes from the catalog, not the server. Typed never so a
+        // control added to the catalog fails the build here rather than rendering nothing.
+        return assertNoControl(input);
     }
 };
 

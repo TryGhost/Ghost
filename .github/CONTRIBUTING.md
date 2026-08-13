@@ -6,28 +6,21 @@ For **help**, **support**, **questions** and **ideas** please use **[our forum](
 
 ## Where to Start
 
-If you're a developer looking to contribute, but you're not sure where to begin: Check out the [good first issue](https://github.com/TryGhost/Ghost/labels/good%20first%20issue) label on Github, which contains small piece of work that have been specifically flagged as being friendly to new contributors.
+The [codebase documentation](../docs/README.md) explains how to set up the
+monorepo and find your way around it. Start with the
+[development setup guide](../docs/contributing/development-setup.md), then use
+the [contribution workflow](../docs/contributing/workflow.md) when you are ready
+to make a change.
 
-After that, if you're looking for something a little more challenging to sink your teeth into, there's a broader [help wanted](https://github.com/TryGhost/Ghost/labels/help%20wanted) label encompassing issues which need some love.
+If you're not sure what to work on, start with
+[good first issues](https://github.com/TryGhost/Ghost/labels/good%20first%20issue)
+or browse the broader
+[help wanted](https://github.com/TryGhost/Ghost/labels/help%20wanted) list.
 
-If you've got an idea for a new feature, please start by suggesting it in the [forum](https://forum.ghost.org), as adding new features to Ghost first requires generating consensus around a design and spec.
+Discuss new features and substantial product or architectural changes in the
+[forum](https://forum.ghost.org) before implementing them.
 
-
-## Working on Ghost Core
-
-If you're going to work on Ghost core you'll need to go through a slightly more involved install and setup process than the usual Ghost CLI version.
-
-First you'll need to fork [Ghost](https://github.com/tryghost/ghost) to your personal Github account, and then follow the detailed [install from source](https://ghost.org/docs/install/source/) setup guide.
-
-
-### Branching Guide
-
-`main` on the main repository always contains the latest changes. This means that it is WIP for the next minor version and should NOT be considered stable. Stable versions are tagged using [semantic versioning](http://semver.org/).
-
-On your local repository, you should always work on a branch to make keeping up-to-date and submitting pull requests easier, but in most cases you should submit your pull requests to `main`. Where necessary, for example if multiple people are contributing on a large feature, or if a feature requires a database change, we make use of feature branches.
-
-
-### Commit Messages
+## Commit Messages
 
 We have a handful of simple standards for commit messages which help us to generate readable changelogs. Please follow this wherever possible and mention the associated issue number.
 
@@ -58,10 +51,9 @@ There is no need to include what modules have changed in the commit message, as 
 
 [Good example](https://github.com/TryGhost/Ghost/commit/95751a0e5fb719bb5bca74cb97fb5f29b225094f)
 
+## Changesets
 
-### Changesets
-
-Ghost publishes several workspace packages to npm — the `@tryghost/*` editor and adapter packages under `koenig/` and `packages/`. When your change touches one of these publishable packages, add a **changeset** so it gets a version bump and a changelog entry:
+Ghost publishes several workspace packages to npm — the `@tryghost/*` editor and adapter packages under `koenig/` and `packages/`. When your change affects one of these publishable packages, including by changing a catalog entry it consumes, add a **changeset** so it gets a version bump and a changelog entry:
 
 ```bash
 pnpm change
@@ -73,18 +65,18 @@ This records which packages changed and the bump type (patch / minor / major); t
 pnpm change --bump none
 ```
 
-CI enforces this — the **Check app version bump** job fails a pull request that modifies a publishable package without a covering changeset. The pre-commit hook prints a non-blocking reminder locally, and `pnpm change status` shows what's currently pending.
+CI enforces this — the **Check app version bump** job fails a pull request that affects a publishable package without a covering changeset. The pre-commit hook prints a non-blocking reminder locally, and `pnpm change status` shows what's currently pending.
 
+For more detail, see the [contribution workflow](../docs/contributing/workflow.md).
 
-### Submitting Pull Requests
+## Submitting Pull Requests
 
-We aim to merge any straightforward, well-understood bug fixes or improvements immediately, as long as they pass our tests (run `pnpm test` to check locally). We generally don’t merge new features and larger changes without prior discussion with the core product team for tech/design specification.
+We aim to merge any straightforward, well-understood bug fixes or improvements immediately, as long as they pass our tests (run `pnpm check` to ensure everything works). We generally don’t merge new features and larger changes without prior discussion with the core product team for tech/design specification.
 
 Please provide plenty of context and reasoning around your changes, to help us merge quickly. Closing an already open issue is our preferred workflow. If your PR gets out of date, we may ask you to rebase as you are more familiar with your changes than we will be.
 
-### Sharing feedback on Documentation
-
-While the Docs are no longer Open Source, we welcome revisions and ideas on the forum! Please create a Post with your questions or suggestions in the [Contributing to Ghost Category](https://forum.ghost.org/c/contributing/27). Thank you for helping us keep the Docs relevant and up-to-date.
+For branch, validation, and pull request details, follow the
+[contribution workflow](../docs/contributing/workflow.md).
 
 ---
 

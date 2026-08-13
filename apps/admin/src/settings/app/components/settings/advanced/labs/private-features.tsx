@@ -52,10 +52,6 @@ const features: Feature[] = [{
     description: 'Use the HTML picture element to serve modern image formats (AVIF, WebP) with automatic fallbacks',
     flag: 'pictureImageFormats'
 }, {
-    title: 'Smarter Counts',
-    description: 'Use optimized COUNT queries for API pagination when safe',
-    flag: 'smarterCounts'
-}, {
     title: 'Get helper deduplication',
     description: 'Deduplicate identical {{#get}} helper queries within a single request to avoid redundant database calls',
     flag: 'getHelperDeduplication'
