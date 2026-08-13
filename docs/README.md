@@ -98,6 +98,9 @@ capture and when external delivery configuration is needed.
 The [post analytics guide](codebase/post-analytics.md) explains the sources of
 web, member, newsletter, and click data shown for posts.
 
+The [internal caching guide](codebase/internal-caching.md) describes default and
+feature-specific cache adapters.
+
 ### Finding Issues to Work On
 
 - [Good First Issues](https://github.com/TryGhost/Ghost/labels/good%20first%20issue) - Great for newcomers
