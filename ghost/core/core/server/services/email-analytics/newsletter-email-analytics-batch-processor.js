@@ -3,6 +3,9 @@ const logging = require('@tryghost/logging');
 /** @import {BatchEventProcessor} from './batch-event-processor' */
 /** @import {FetchData} from './email-analytics-service' */
 
+const AGGREGATE_MEMBER_STATS_METRIC_NAME = 'email_analytics_aggregate_member_stats_count';
+exports.AGGREGATE_MEMBER_STATS_METRIC_NAME = AGGREGATE_MEMBER_STATS_METRIC_NAME;
+
 /**
  * @implements {BatchEventProcessor}
  */
@@ -222,7 +225,7 @@ class NewsletterEmailAnalyticsBatchProcessor {
         }
         const emailAggregationTimeMs = Date.now() - emailAggregationStart;
 
-        const memberMetric = this.#prometheusClient?.getMetric('email_analytics_aggregate_member_stats_count');
+        const memberMetric = this.#prometheusClient?.getMetric(AGGREGATE_MEMBER_STATS_METRIC_NAME);
 
         const memberAggregationStart = Date.now();
         if (useBatchProcessing) {

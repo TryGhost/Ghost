@@ -4,7 +4,6 @@ const logging = require('@tryghost/logging');
 /** @import DomainEvents from '@tryghost/domain-events' */
 /** @import {Queries} from './lib/queries' */
 /** @import Metrics from '@tryghost/metrics' */
-/** @import {PrometheusClient} from '@tryghost/prometheus-metrics' */
 /** @import {BatchEventProcessor} from './batch-event-processor' */
 /** @import {JobNames, CursorSeed, EmailAnalyticsFetchResult} from './email-analytics-service' */
 
@@ -40,7 +39,6 @@ class EmailAnalyticsServiceWrapper {
      * @param {CursorSeed} options.cursorSeed
      * @param {() => BatchEventProcessor} options.createEventProcessor
      * @param {Pick<Metrics, 'metric'>} options.metrics
-     * @param {PrometheusClient | null} options.prometheusClient
      * @param {{get: (key: string) => unknown}} options.settingsCache
      */
     init({
@@ -53,7 +51,6 @@ class EmailAnalyticsServiceWrapper {
         cursorSeed,
         createEventProcessor,
         metrics,
-        prometheusClient,
         settingsCache
     }) {
         if (this.service) {
@@ -71,8 +68,7 @@ class EmailAnalyticsServiceWrapper {
             queries,
             jobNames,
             cursorSeed,
-            createEventProcessor,
-            ...(prometheusClient ? {prometheusClient} : {})
+            createEventProcessor
         });
 
         // Log the processing mode on initialization
