@@ -936,10 +936,6 @@ input,
     stroke: #fff;
 }
 
-.gh-member-settings .gh-member-feed {
-    background: transparent;
-}
-
 .gh-member-feed-row {
     border-bottom: 1px solid var(--grey-900);
 }

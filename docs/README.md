@@ -54,7 +54,11 @@ Ghost/
 ```
 
 pnpm links the workspaces and Nx runs their tasks in dependency order. For more
-detail, see the [monorepo structure guide](codebase/monorepo-structure.md).
+detail, see the [monorepo structure guide](codebase/monorepo-structure.md). The
+[configuration guide](codebase/configuration.md) explains how Ghost Core loads
+defaults, local overrides, environment variables, and secrets. The
+[authentication guide](codebase/authentication.md) maps staff, integration, and
+member authentication to the current codebase.
 
 ## Contributing a change
 
@@ -67,6 +71,10 @@ To contribute or add translations, see
 [Translating Ghost](contributing/translating-ghost.md). For more detail on
 adding translatable product copy, see the
 [internationalization guide](practices/internationalization.md).
+
+The [error handling guide](practices/error-handling.md) explains how to design
+failure states for logs, APIs, and user interfaces without exposing raw
+technical errors.
 
 ### Finding Issues to Work On
 

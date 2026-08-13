@@ -56,10 +56,6 @@ const features: Feature[] = [{
     description: 'Deduplicate identical {{#get}} helper queries within a single request to avoid redundant database calls',
     flag: 'getHelperDeduplication'
 }, {
-    title: 'React member details',
-    description: 'Renders the member detail screen (/members/:id) from the React app instead of the Ember screen. Gates the migration behind a runtime toggle so we can compare both implementations.',
-    flag: 'memberDetailsReact'
-}, {
     title: 'React tag details',
     description: 'Renders the tag detail screen (/tags/:slug) from the React app instead of the Ember screen. Gates the migration behind a runtime toggle so we can compare both implementations.',
     flag: 'tagDetailsReact'
@@ -75,6 +71,14 @@ const features: Feature[] = [{
     title: 'Gift subscription customization',
     description: 'Enables fixed-duration gift subscription purchases before publisher configuration is available',
     flag: 'giftSubCustomization'
+}, {
+    title: 'Self-serve archives',
+    description: 'Replaces the individual export buttons with a single "Export data" flow for downloading a full site archive',
+    flag: 'selfServeArchives'
+}, {
+    title: 'Machine payments',
+    description: 'Let AI agents pay for access to paid-members markdown (.md) URLs via Stripe Machine Payments Protocol',
+    flag: 'machinePayments'
 }];
 
 const AlphaFeatures: React.FC = () => {

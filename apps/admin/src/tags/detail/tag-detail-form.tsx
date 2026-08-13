@@ -325,7 +325,7 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                                         height='128px'
                                         title={<>Tag header <code className='ml-1 font-normal'>{'{{ghost_head}}'}</code></>}
                                         value={draft.codeinjectionHead}
-                                        onChange={value => onChange({codeinjectionHead: value})}
+                                        onChange={(value: string) => onChange({codeinjectionHead: value})}
                                     />
                                     <CodeEditor
                                         data-testid='codeinjection-foot'
@@ -334,7 +334,7 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                                         height='128px'
                                         title={<>Tag footer <code className='ml-1 font-normal'>{'{{ghost_foot}}'}</code></>}
                                         value={draft.codeinjectionFoot}
-                                        onChange={value => onChange({codeinjectionFoot: value})}
+                                        onChange={(value: string) => onChange({codeinjectionFoot: value})}
                                     />
                                 </Stack>
                             </AccordionContent>

@@ -22,10 +22,10 @@ const LLMS_FULL_TXT_RECENT_POSTS_FOOTER = '\n_Includes the latest 500 public pos
 // Narrow field lists stop the content API selecting every column (e.g. the full
 // html of every post). The requested `formats` columns are appended to the
 // select by the input serializer, and `url` is resolved at serialization time.
-const LLMS_TXT_FIELDS = 'id,title,slug,custom_excerpt,featured,published_at,url';
+const LLMS_TXT_FIELDS = 'id,title,slug,custom_excerpt,featured,published_at,url,visibility';
 const LLMS_FULL_TXT_FIELDS = 'id,title,slug,featured,published_at,updated_at,created_at,url,visibility,custom_excerpt';
 
-function createLlmsService({settingsCache, config, urlUtils, routing, api, fullTxtBudget}) {
+function createLlmsService({settingsCache, config, urlUtils, routing, api, machinePaymentsService, fullTxtBudget}) {
     const footerBudget = Math.max(
         Buffer.byteLength(LLMS_FULL_TXT_TRUNCATION_FOOTER, 'utf8'),
         Buffer.byteLength(LLMS_FULL_TXT_RECENT_POSTS_FOOTER, 'utf8')
@@ -36,13 +36,32 @@ function createLlmsService({settingsCache, config, urlUtils, routing, api, fullT
         return !settingsCache.get('is_private') && settingsCache.get('llms_enabled') !== false;
     }
 
+    function isDiscoverable(entry) {
+        const {isPurchasableEntry} = require('../../../shared/machine-payments');
+
+        if (entry.visibility === 'public' || !entry.visibility) {
+            return true;
+        }
+
+        // Free-members-only stays undiscoverable for agents.
+        if (entry.visibility === 'members') {
+            return false;
+        }
+
+        if (!isPurchasableEntry(entry)) {
+            return false;
+        }
+
+        return machinePaymentsService?.isEnabled?.() === true;
+    }
+
     async function fetchPublicEntry(resourceType, id, member = null) {
         const controller = resourceType === 'pages' ? api.pagesPublic : api.postsPublic;
         const responseKey = resourceType === 'pages' ? 'pages' : 'posts';
         const response = await controller.read({
             id,
             formats: 'html',
-            include: 'authors,tags',
+            include: 'authors,tags,tiers',
             context: {member}
         });
 
@@ -288,13 +307,15 @@ function createLlmsService({settingsCache, config, urlUtils, routing, api, fullT
 
         const response = await controller.browse({
             ...options,
+            include: options.include || 'tiers',
             context: {member: null},
             filter: 'status:published',
-            ...(type === 'page' ? {order: 'id asc'} : {})
+            ...(type === 'page' ? {order: 'id asc'} : {order: 'published_at desc'})
         });
 
         const entries = (response?.[responseKey] || [])
-            .filter(entry => entry.url && !entry.url.endsWith('/404/'));
+            .filter(entry => entry.url && !entry.url.endsWith('/404/'))
+            .filter(isDiscoverable);
 
         return {entries, pagination: response?.meta?.pagination};
     }

@@ -273,6 +273,15 @@
     "adminFrameProtection": true,
     "sendWelcomeEmail": true,
     "stripeDirect": false,
+    "machinePayments": {
+        "mpp": {
+            "secretKey": null,
+            "stripeNetwork": "tempo",
+            "tempoCurrency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "testnet": false,
+            "networkId": null
+        }
+    },
     "enableStripePromoCodes": false,
     "enableTipsAndDonations": true,
     "emailAnalytics": {
