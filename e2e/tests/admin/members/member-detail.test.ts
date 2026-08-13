@@ -525,7 +525,7 @@ for (const {implementation, memberDetailsReact} of [
                 await page.goto(memberPath(member.id));
 
                 await expect(page.getByRole('heading', {name: 'Engagement'})).toBeVisible();
-                await expect(page.getByText(/We[’']ll show Ada[’']s email stats here/)).toBeVisible();
+                await expect(page.getByText(/We[’']ll show Ada[’']s newsletter stats here/)).toBeVisible();
             });
 
             test('member has received emails - shows counts and open rate', async ({page}) => {
@@ -541,9 +541,9 @@ for (const {implementation, memberDetailsReact} of [
                 await page.goto(memberPath(member.id));
 
                 const engagement = memberDetailsPage.engagementSection;
-                await expect(engagement.getByText('Emails received')).toBeVisible();
+                await expect(engagement.getByText('Newsletters received')).toBeVisible();
                 await expect(engagement.getByText('12', {exact: true})).toBeVisible();
-                await expect(engagement.getByText('Emails opened')).toBeVisible();
+                await expect(engagement.getByText('Newsletters opened')).toBeVisible();
                 await expect(engagement.getByText('9', {exact: true})).toBeVisible();
                 await expect(engagement.getByText('Average open rate')).toBeVisible();
                 await expect(engagement.getByText(/75\s*%/)).toBeVisible();
@@ -560,7 +560,7 @@ for (const {implementation, memberDetailsReact} of [
                 await page.goto(memberPath(member.id));
 
                 await expect(page.getByRole('heading', {name: 'Engagement'})).toBeVisible();
-                await expect(page.getByText(/We[’']ll show Ada[’']s email stats here/)).toBeVisible();
+                await expect(page.getByText(/We[’']ll show Ada[’']s newsletter stats here/)).toBeVisible();
             });
 
             test('open rate not yet calculated - shows the placeholder', async ({page}) => {

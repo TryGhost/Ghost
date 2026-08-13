@@ -346,7 +346,7 @@ const baseMemberFields = defineFields({
     email_count: {
         operators: NUMBER_OPERATORS,
         ui: {
-            label: 'Emails sent (all time)',
+            label: 'Newsletters sent (all time)',
             type: 'number',
             defaultOperator: 'is-greater',
             min: 0,
@@ -357,7 +357,7 @@ const baseMemberFields = defineFields({
     email_opened_count: {
         operators: NUMBER_OPERATORS,
         ui: {
-            label: 'Emails opened (all time)',
+            label: 'Newsletters opened (all time)',
             type: 'number',
             defaultOperator: 'is-greater',
             min: 0,
@@ -368,7 +368,7 @@ const baseMemberFields = defineFields({
     email_open_rate: {
         operators: NUMBER_OPERATORS,
         ui: {
-            label: 'Open rate (all time)',
+            label: 'Newsletter open rate (all time)',
             type: 'number',
             defaultOperator: 'is-greater',
             min: 0,
@@ -381,10 +381,10 @@ const baseMemberFields = defineFields({
     'emails.post_id': {
         operators: SCALAR_OPERATORS,
         ui: {
-            label: 'Sent email',
+            label: 'Sent newsletter',
             type: 'select',
             searchable: true,
-            placeholder: 'Select an email...',
+            placeholder: 'Select a newsletter...',
             className: 'w-64'
         },
         codec: scalarCodec({quoteStrings: true})
@@ -392,10 +392,10 @@ const baseMemberFields = defineFields({
     'opened_emails.post_id': {
         operators: SCALAR_OPERATORS,
         ui: {
-            label: 'Opened email',
+            label: 'Opened newsletter',
             type: 'select',
             searchable: true,
-            placeholder: 'Select an email...',
+            placeholder: 'Select a newsletter...',
             className: 'w-64'
         },
         codec: scalarCodec({quoteStrings: true})
@@ -403,10 +403,10 @@ const baseMemberFields = defineFields({
     'clicked_links.post_id': {
         operators: SCALAR_OPERATORS,
         ui: {
-            label: 'Clicked email',
+            label: 'Clicked newsletter',
             type: 'select',
             searchable: true,
-            placeholder: 'Select an email...',
+            placeholder: 'Select a newsletter...',
             className: 'w-64'
         },
         codec: scalarCodec({quoteStrings: true})
@@ -417,7 +417,7 @@ const baseMemberFields = defineFields({
             label: 'Responded with feedback',
             type: 'select',
             searchable: true,
-            placeholder: 'Select an email...',
+            placeholder: 'Select a newsletter...',
             className: 'w-64',
             defaultOperator: '1'
         },

@@ -65,7 +65,7 @@ export const MembersTableHeader = ({
                 </TableHead>
                 {showEmailOpenRate && (
                     <TableHead className="bg-transparent px-4" style={columnStyles.openRate}>
-                        Open rate
+                        Newsletter open rate
                     </TableHead>
                 )}
                 <TableHead className="bg-transparent px-4" style={columnStyles.location}>

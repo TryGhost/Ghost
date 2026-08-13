@@ -125,17 +125,17 @@ const MemberDetailSidebar: React.FC<MemberDetailSidebarProps> = ({member, draftN
                                 // "this member" when no name is known.
                                 <p className='text-muted-foreground'>
                                     {name
-                                        ? `We’ll show ${getFirstName(name)}’s email stats here once they receive their first newsletter.`
-                                        : 'We’ll show this member’s email stats here once they receive their first newsletter.'}
+                                        ? `We’ll show ${getFirstName(name)}’s newsletter stats here once they receive their first newsletter.`
+                                        : 'We’ll show this member’s newsletter stats here once they receive their first newsletter.'}
                                 </p>
                             ) : (
                                 <div className='flex flex-col gap-4'>
                                     <div className='flex flex-col gap-0.5'>
-                                        <p className='text-muted-foreground'>Emails received</p>
+                                        <p className='text-muted-foreground'>Newsletters received</p>
                                         <p className='text-2xl font-semibold'>{member.email_count}</p>
                                     </div>
                                     <div className='flex flex-col gap-0.5'>
-                                        <p className='text-muted-foreground'>Emails opened</p>
+                                        <p className='text-muted-foreground'>Newsletters opened</p>
                                         {/* Ember Data defaults this to `0`
                                             too (`ghost/admin/app/models/member.js:21`),
                                             so mirror that here for parity. */}
