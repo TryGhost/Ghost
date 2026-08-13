@@ -56,7 +56,8 @@ const PRIVATE_FEATURES = [
     'paywallImprovements',
     'giftSubCustomization',
     'tagDetailsReact',
-    'selfServeArchives'
+    'selfServeArchives',
+    'machinePayments'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

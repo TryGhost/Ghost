@@ -79,6 +79,10 @@ const features: Feature[] = [{
     title: 'Self-serve archives',
     description: 'Replaces the individual export buttons with a single "Export data" flow for downloading a full site archive',
     flag: 'selfServeArchives'
+}, {
+    title: 'Machine payments',
+    description: 'Let AI agents pay for access to paid-members markdown (.md) URLs via Stripe Machine Payments Protocol',
+    flag: 'machinePayments'
 }];
 
 const AlphaFeatures: React.FC = () => {

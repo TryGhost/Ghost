@@ -346,6 +346,7 @@ async function initServices({ghostServer} = {}) {
     const mediaInliner = require('./server/services/media-inliner');
     const donationService = require('./server/services/donations');
     const giftService = require('./server/services/gifts');
+    const machinePaymentsService = require('./server/services/machine-payments');
     const recommendationsService = require('./server/services/recommendations');
     const emailAddressService = require('./server/services/email-address');
     const statsService = require('./server/services/stats');
@@ -397,6 +398,7 @@ async function initServices({ghostServer} = {}) {
             schedulerAdapter,
             internalKeys
         }),
+        machinePaymentsService.init(),
         automations.init({
             domainEvents,
             apiUrl,
