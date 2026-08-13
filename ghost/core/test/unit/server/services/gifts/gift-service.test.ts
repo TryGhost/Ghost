@@ -55,6 +55,10 @@ describe('GiftService', function () {
     };
 
     let giftRepository: GiftRepositoryStub;
+    let giftDeliveryService: {
+        createForPurchase: sinon.SinonStub;
+        cancelPendingForGift: sinon.SinonStub;
+    };
     let memberRepository: {
         get: sinon.SinonStub;
         update: sinon.SinonStub;
@@ -100,11 +104,15 @@ describe('GiftService', function () {
             findUnsentReminders: sinon.stub<[], Promise<Gift[]>>().resolves([]),
             browsePurchaseEvents: sinon.stub<Parameters<GiftRepository['browsePurchaseEvents']>, ReturnType<GiftRepository['browsePurchaseEvents']>>().resolves({data: [], meta: {}}),
             browseRedemptionEvents: sinon.stub<Parameters<GiftRepository['browseRedemptionEvents']>, ReturnType<GiftRepository['browseRedemptionEvents']>>().resolves({data: [], meta: {}}),
-            create: sinon.stub(),
+            create: sinon.stub().resolves('gift_1'),
             update: sinon.stub(),
             transaction: sinon.stub<Parameters<GiftRepository['transaction']>, Promise<unknown>>().callsFake(async (callback) => {
                 return await callback(transacting);
             })
+        };
+        giftDeliveryService = {
+            createForPurchase: sinon.stub().resolves(undefined),
+            cancelPendingForGift: sinon.stub().resolves(false),
         };
         memberRepository = {
             get: sinon.stub().callsFake(() => {
@@ -162,6 +170,7 @@ describe('GiftService', function () {
         };
         return new GiftService({
             giftRepository: giftRepository as any,
+            giftDeliveryService,
             memberRepository,
             tiersService,
             giftEmailService,
@@ -204,6 +213,59 @@ describe('GiftService', function () {
 
             assert.equal(result, false);
 
+            sinon.assert.notCalled(giftRepository.create);
+        });
+
+        it('persists gift presentation and a separate email delivery', async function () {
+            const service = createService();
+
+            await service.completePurchase({
+                ...purchaseData,
+                deliveryMethod: 'email',
+                recipientEmail: 'recipient@example.com',
+                recipientName: 'Recipient',
+                buyerName: 'Buyer',
+                personalMessage: 'Enjoy this gift'
+            });
+
+            const gift = giftRepository.create.firstCall.firstArg;
+            assert.equal(gift.recipientName, 'Recipient');
+            assert.equal(gift.buyerName, 'Buyer');
+            assert.equal(gift.personalMessage, 'Enjoy this gift');
+            assert.equal(
+                Math.round((gift.expiresAt.getTime() - gift.purchasedAt.getTime()) / (24 * 60 * 60 * 1000)),
+                365
+            );
+
+            sinon.assert.calledOnceWithExactly(giftDeliveryService.createForPurchase, {
+                giftId: 'gift_1',
+                recipientEmail: 'recipient@example.com'
+            }, {transacting});
+            sinon.assert.callOrder(giftRepository.create, giftDeliveryService.createForPurchase);
+        });
+
+        it('does not create a delivery row for a link gift', async function () {
+            const service = createService();
+
+            await service.completePurchase(purchaseData);
+
+            sinon.assert.notCalled(giftDeliveryService.createForPurchase);
+        });
+
+        it('rejects inconsistent webhook delivery metadata instead of truncating or ignoring it', async function () {
+            const service = createService();
+
+            await assert.rejects(() => service.completePurchase({
+                ...purchaseData,
+                deliveryMethod: 'link',
+                recipientEmail: 'recipient@example.com'
+            } as unknown as GiftPurchaseData), {errorType: 'ValidationError'});
+            await assert.rejects(() => service.completePurchase({
+                ...purchaseData,
+                deliveryMethod: 'email',
+                recipientEmail: 'recipient@example.com',
+                personalMessage: 'x'.repeat(501)
+            } as GiftPurchaseData), {errorType: 'ValidationError'});
             sinon.assert.notCalled(giftRepository.create);
         });
 
@@ -640,6 +702,7 @@ describe('GiftService', function () {
             const savedGift = giftRepository.update.getCall(0).args[0];
             assert.equal(savedGift.status, 'expired');
             assert.notEqual(savedGift.expiredAt, null);
+            sinon.assert.calledOnceWithExactly(giftDeliveryService.cancelPendingForGift, gift.token, {transacting});
         });
 
         it('skips gifts that are no longer purchased when re-loaded', async function () {
@@ -984,6 +1047,7 @@ describe('GiftService', function () {
                 transacting
             });
             sinon.assert.calledOnceWithExactly(giftRepository.update, redeemed, {transacting});
+            sinon.assert.calledOnceWithExactly(giftDeliveryService.cancelPendingForGift, redeemed.token, {transacting});
             sinon.assert.calledTwice(tiersService.api.read);
             sinon.assert.alwaysCalledWithExactly(tiersService.api.read, 'tier_1');
             sinon.assert.calledOnceWithExactly(staffServiceEmails.notifyGiftSubscriptionStarted, {
@@ -1331,6 +1395,7 @@ describe('GiftService', function () {
             assert.ok(saved.refundedAt);
             assert.notEqual(saved, gift);
             assert.deepEqual(options, {transacting});
+            sinon.assert.calledOnceWithExactly(giftDeliveryService.cancelPendingForGift, saved.token, {transacting});
         });
 
         it('returns false when no gift matches the payment intent', async function () {

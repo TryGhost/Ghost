@@ -1,5 +1,5 @@
 import {GIFT_EXPIRY_DAYS} from './constants';
-import type {GiftCadence, GiftData, GiftStatus} from './gift-schema';
+import type {GiftCadence, GiftData, GiftDataInput, GiftStatus} from './gift-schema';
 
 export type {GiftCadence, GiftStatus} from './gift-schema';
 
@@ -13,7 +13,7 @@ export type ReassignableCheckResult =
     | {reassignable: true}
     | {reassignable: false; reason: ReassignableCheckFailureReason};
 
-export type GiftFromPurchaseData = Pick<GiftData,
+export type GiftFromPurchaseData = Pick<GiftDataInput,
     | 'token'
     | 'buyerEmail'
     | 'buyerMemberId'
@@ -24,12 +24,18 @@ export type GiftFromPurchaseData = Pick<GiftData,
     | 'amount'
     | 'stripeCheckoutSessionId'
     | 'stripePaymentIntentId'
+    | 'buyerName'
+    | 'recipientName'
+    | 'personalMessage'
 >;
 
 export class Gift implements GiftData {
     token: string;
     buyerEmail: string;
     buyerMemberId: string | null;
+    buyerName: string | null;
+    recipientName: string | null;
+    personalMessage: string | null;
     redeemerMemberId: string | null;
     tierId: string;
     cadence: GiftCadence;
@@ -48,10 +54,13 @@ export class Gift implements GiftData {
     refundedAt: Date | null;
     consumesSoonReminderSentAt: Date | null;
 
-    constructor(data: GiftData) {
+    constructor(data: GiftDataInput) {
         this.token = data.token;
         this.buyerEmail = data.buyerEmail;
         this.buyerMemberId = data.buyerMemberId;
+        this.buyerName = data.buyerName ?? null;
+        this.recipientName = data.recipientName ?? null;
+        this.personalMessage = data.personalMessage ?? null;
         this.redeemerMemberId = data.redeemerMemberId;
         this.tierId = data.tierId;
         this.cadence = data.cadence;
@@ -61,19 +70,19 @@ export class Gift implements GiftData {
         this.stripeCheckoutSessionId = data.stripeCheckoutSessionId;
         this.stripePaymentIntentId = data.stripePaymentIntentId;
         this.consumesAt = data.consumesAt;
+        this.purchasedAt = data.purchasedAt;
         this.expiresAt = data.expiresAt;
         this.status = data.status;
-        this.purchasedAt = data.purchasedAt;
         this.redeemedAt = data.redeemedAt;
         this.consumedAt = data.consumedAt;
         this.expiredAt = data.expiredAt;
         this.refundedAt = data.refundedAt;
-        this.consumesSoonReminderSentAt = data.consumesSoonReminderSentAt;
+        this.consumesSoonReminderSentAt = data.consumesSoonReminderSentAt ?? null;
     }
 
     static fromPurchase(data: GiftFromPurchaseData) {
-        const now = new Date();
-        const expiresAt = new Date(now);
+        const purchasedAt = new Date();
+        const expiresAt = new Date(purchasedAt);
 
         expiresAt.setDate(expiresAt.getDate() + GIFT_EXPIRY_DAYS);
 
@@ -83,7 +92,7 @@ export class Gift implements GiftData {
             consumesAt: null,
             expiresAt,
             status: 'purchased',
-            purchasedAt: now,
+            purchasedAt,
             redeemedAt: null,
             consumedAt: null,
             expiredAt: null,

@@ -15,6 +15,10 @@ const Gift = ghostBookshelf.Model.extend({
 
     tier() {
         return this.belongsTo('Product', 'tier_id', 'id');
+    },
+
+    delivery() {
+        return this.hasOne('GiftDelivery', 'gift_id', 'id');
     }
 }, {
     async destroy() {

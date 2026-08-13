@@ -105,7 +105,12 @@ module.exports = class CheckoutSessionEventService {
             currency: session.currency,
             amount: session.amount_total,
             stripeCheckoutSessionId: session.id,
-            stripePaymentIntentId: getStripeResourceId(session.payment_intent)
+            stripePaymentIntentId: getStripeResourceId(session.payment_intent),
+            deliveryMethod: session.metadata?.gift_delivery_method || 'link',
+            recipientEmail: session.metadata?.gift_recipient_email || null,
+            recipientName: session.metadata?.gift_recipient_name || null,
+            buyerName: session.metadata?.gift_buyer_name || null,
+            personalMessage: session.metadata?.gift_personal_message || null
         });
     }
 

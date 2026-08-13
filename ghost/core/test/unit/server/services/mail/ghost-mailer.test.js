@@ -424,6 +424,26 @@ describe('Mail: Ghostmailer', function () {
             assert.equal(sentMessage.trackOpens, undefined);
         });
 
+        it('should explicitly disable Mailgun open and click tracking for transactional messages that require it', async function () {
+            sandbox.stub(settingsCache, 'get').withArgs('email_track_opens').returns(true);
+
+            mailer = new mail.GhostMailer();
+            mailer.state.usingMailgun = true;
+            const sendMailSpy = sandbox.stub(mailer.transport, 'sendMail').resolves({});
+
+            await mailer.send({
+                to: 'recipient@example.com',
+                subject: 'Gift delivery',
+                html: 'content',
+                disableTracking: true
+            });
+
+            const sentMessage = sendMailSpy.firstCall.args[0];
+            assert.equal(sentMessage['o:tracking-opens'], false);
+            assert.equal(sentMessage['o:tracking-clicks'], false);
+            assert.equal(sentMessage.disableTracking, undefined);
+        });
+
         it('should not add site ID tag when site ID is missing', async function () {
             configUtils.set({
                 hostSettings: {} // No siteId

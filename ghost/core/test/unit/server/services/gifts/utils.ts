@@ -1,4 +1,5 @@
 import {Gift} from '../../../../../core/server/services/gifts/gift';
+import type {GiftDeliveryData} from '../../../../../core/server/services/gifts/gift-delivery-schema';
 
 export function buildGift(overrides: Partial<ConstructorParameters<typeof Gift>[0]> = {}) {
     return new Gift({
@@ -24,4 +25,17 @@ export function buildGift(overrides: Partial<ConstructorParameters<typeof Gift>[
         consumesSoonReminderSentAt: null,
         ...overrides
     });
+}
+
+export function buildGiftDelivery(overrides: Partial<GiftDeliveryData> = {}): GiftDeliveryData {
+    return {
+        id: 'delivery_1',
+        giftId: 'gift_1',
+        recipientEmail: 'recipient@example.com',
+        status: 'pending',
+        startedAt: null,
+        emailSentAt: null,
+        emailProviderMessageId: null,
+        ...overrides
+    };
 }

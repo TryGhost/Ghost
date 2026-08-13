@@ -1,10 +1,13 @@
 import type {SchedulerAdapter} from '@tryghost/adapter-base-scheduling';
 import type {InternalKeys} from '../internal-keys';
 import {GiftBookshelfRepository} from './gift-bookshelf-repository';
+import {GiftDeliveryBookshelfRepository} from './gift-delivery-bookshelf-repository';
+import {GiftDeliveryService} from './gift-delivery-service';
 import {GiftService} from './gift-service';
 import {GiftReminderScheduler} from './gift-reminder-scheduler';
 import {GiftEmailService} from './gift-email-service';
 import {GiftController} from './gift-controller';
+import {SendGiftDeliveryEvent} from './events/send-gift-delivery-event';
 
 export interface GiftServiceInitOptions {
     apiUrl: string;
@@ -24,7 +27,7 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
         return;
     }
 
-    const {Gift: GiftModel, MemberStripeCustomer: StripeCustomerModel} = require('../../models');
+    const {Gift: GiftModel, GiftDelivery: GiftDeliveryModel, MemberStripeCustomer: StripeCustomerModel} = require('../../models');
     const GiftCheckoutAdapter = require('./gift-checkout-adapter');
     const membersService = require('../members');
     const tiersService = require('../tiers');
@@ -37,6 +40,8 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
     const jobs = require('./jobs');
 
     const {GhostMailer} = require('../mail');
+    const MailgunClient = require('../lib/mailgun-client');
+    const config = require('../../../shared/config');
     const settingsCache = require('../../../shared/settings-cache');
     const labsService = require('../../../shared/labs');
     const urlUtils = require('../../../shared/url-utils').default;
@@ -48,18 +53,28 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
     const repository = new GiftBookshelfRepository({
         GiftModel
     });
+    const deliveryRepository = new GiftDeliveryBookshelfRepository({
+        GiftDeliveryModel
+    });
     const checkoutAdapter = new GiftCheckoutAdapter({
         StripeCustomerModel,
         getStripeApi: () => require('../stripe').api
     });
 
     const giftEmailService = new GiftEmailService({
-        mailer: new GhostMailer(),
+        transactionalMailer: new GhostMailer(),
+        bulkMailer: new MailgunClient({config, settings: settingsCache}),
         settingsCache,
         urlUtils,
         getFromAddress: () => EmailAddressParser.stringify(settingsHelpers.getDefaultEmail()),
         blogIcon,
         t
+    });
+    const giftDeliveryService = new GiftDeliveryService({
+        giftRepository: repository,
+        giftDeliveryRepository: deliveryRepository,
+        tiersService,
+        giftEmailService
     });
 
     const giftReminderScheduler = new GiftReminderScheduler({
@@ -68,9 +83,9 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
         internalKeys: options.internalKeys,
         findUnsentReminders: () => repository.findUnsentReminders()
     });
-
     const giftService = new GiftService({
         giftRepository: repository,
+        giftDeliveryService,
         get memberRepository() {
             return membersService.api.members;
         },
@@ -104,6 +119,16 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
             logging.info(`Sent ${remindedCount} gift reminders, skipped ${skippedCount}, failed ${failedCount} in ${Date.now() - start}ms`);
         } catch (err) {
             logging.error(err, 'Failed to process gift reminders');
+        }
+    });
+
+    DomainEvents.subscribe(SendGiftDeliveryEvent, async (event: {data: {deliveryId: string}}) => {
+        const start = Date.now();
+        try {
+            const result = await giftDeliveryService.send(event.data.deliveryId);
+            logging.info(`Gift delivery ${event.data.deliveryId} ${result} in ${Date.now() - start}ms`);
+        } catch (err) {
+            logging.error(err, `Failed to process gift delivery ${event.data.deliveryId}`);
         }
     });
 

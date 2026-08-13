@@ -69,6 +69,11 @@ const RESERVED_CHECKOUT_METADATA_KEYS = new Set([
     'ghost_gift',
     'ghostSignupContext',
     'gift_token',
+    'gift_delivery_method',
+    'gift_recipient_email',
+    'gift_recipient_name',
+    'gift_buyer_name',
+    'gift_personal_message',
     'tier_id',
     'cadence',
     'duration'
@@ -684,6 +689,11 @@ module.exports = class RouterController {
      * @param {string} [options.offerId]
      * @param {string} [options.cadence]
      * @param {number} [options.duration]
+     * @param {'link'|'email'} [options.deliveryMethod]
+     * @param {string} [options.recipientEmail]
+     * @param {string} [options.recipientName]
+     * @param {string} [options.buyerName]
+     * @param {string} [options.personalMessage]
      * @param {string} [options.email]
      * @param {string} options.successUrl
      * @param {string} options.cancelUrl
@@ -705,6 +715,11 @@ module.exports = class RouterController {
                 offerId: options.offerId,
                 cadence: options.cadence,
                 duration: options.duration,
+                deliveryMethod: options.deliveryMethod,
+                recipientEmail: options.recipientEmail,
+                recipientName: options.recipientName,
+                buyerName: options.buyerName,
+                personalMessage: options.personalMessage,
                 metadata: options.metadata,
                 successUrl: options.successUrl,
                 cancelUrl: options.cancelUrl,
@@ -857,6 +872,11 @@ module.exports = class RouterController {
                 offerId: req.body.offerId,
                 cadence: req.body.cadence,
                 duration: req.body.duration,
+                deliveryMethod: req.body.deliveryMethod,
+                recipientEmail: req.body.recipientEmail,
+                recipientName: req.body.recipientName,
+                buyerName: req.body.buyerName,
+                personalMessage: req.body.personalMessage,
                 successUrl: siteUrl,
                 cancelUrl: options.cancelUrl || siteUrl
             });

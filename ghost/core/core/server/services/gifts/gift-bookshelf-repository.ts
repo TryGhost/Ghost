@@ -70,7 +70,7 @@ export interface GiftRepository {
     getActiveByMembers(memberIds: string[], options?: RepositoryTransactionOptions): Promise<Map<string, Gift>>;
     browsePurchaseEvents(options?: GiftEventBrowseOptions, filter?: ParsedNqlFilter): Promise<GiftEventPage>;
     browseRedemptionEvents(options?: GiftEventBrowseOptions, filter?: ParsedNqlFilter): Promise<GiftEventPage>;
-    create(gift: Gift, options?: RepositoryTransactionOptions): Promise<void>;
+    create(gift: Gift, options?: RepositoryTransactionOptions): Promise<string>;
     update(gift: Gift, options?: RepositoryTransactionOptions): Promise<void>;
     transaction<T>(callback: (transacting: Knex.Transaction) => Promise<T>): Promise<T>;
 }
@@ -89,13 +89,14 @@ type GiftEventQueryOptions = GiftEventBrowseOptions & {
 };
 
 type BookshelfFindOptions = RepositoryTransactionOptions & {
+    columns?: string[];
     filter?: string;
     require?: boolean;
 };
 
 type BookshelfDocument<T> = {
     save(data: Partial<T>, options?: BookshelfSaveOptions): Promise<BookshelfDocument<T>>;
-    toJSON(): T;
+    toJSON(): T & {id?: string};
 };
 
 type BookshelfCollection<T> = {
@@ -266,8 +267,15 @@ export class GiftBookshelfRepository implements GiftRepository {
         return collection.models.map(model => this.toGift(model));
     }
 
-    async create(gift: Gift, options: RepositoryTransactionOptions = {}) {
-        await this.model.add(this.toRow(gift), options);
+    async create(gift: Gift, options: RepositoryTransactionOptions = {}): Promise<string> {
+        const created = await this.model.add(this.toRow(gift), options);
+        const id = created.toJSON().id;
+
+        if (!id) {
+            throw new errors.InternalServerError({message: 'Created gift is missing an id'});
+        }
+
+        return id;
     }
 
     async update(gift: Gift, options: RepositoryTransactionOptions = {}) {

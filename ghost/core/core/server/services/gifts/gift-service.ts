@@ -5,6 +5,7 @@ import type {Knex} from 'knex';
 import {z} from 'zod';
 import {Gift} from './gift';
 import type {GiftEventBrowseOptions, GiftEventPage, GiftRepository} from './gift-bookshelf-repository';
+import type {GiftDeliveryService} from './gift-delivery-service';
 import type {GiftReminderScheduler} from './gift-reminder-scheduler';
 import {GiftCadenceSchema, type GiftCadence} from './gift-schema';
 import tpl from '@tryghost/tpl';
@@ -19,6 +20,10 @@ import {
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const GIFT_REMINDER_LEAD_MS = GIFT_REMINDER_LEAD_DAYS * MS_PER_DAY;
 const GIFT_REMINDER_FLOOR_MS = GIFT_REMINDER_FLOOR_DAYS * MS_PER_DAY;
+const GIFT_NAME_MAX_LENGTH = 191;
+const GIFT_EMAIL_MAX_LENGTH = 191;
+const GIFT_CHECKOUT_MESSAGE_MAX_LENGTH = 250;
+const GIFT_STORED_MESSAGE_MAX_LENGTH = 500;
 
 const errorMessages = {
     giftNotFound: 'This gift does not exist.',
@@ -83,6 +88,7 @@ interface GiftEmailService {
         cadence: GiftCadence;
         duration: number;
         expiresAt: Date;
+        recipientEmail?: string | null;
     }): Promise<void>;
     sendReminder(data: {
         memberEmail: string;
@@ -114,9 +120,9 @@ interface StaffServiceEmails {
     }): Promise<void>;
 }
 
-const GiftPurchaseDataSchema = z.object({
+const GiftPurchaseBaseSchema = z.object({
     token: z.string().min(1),
-    buyerEmail: z.string().min(1),
+    buyerEmail: z.string().email().max(GIFT_EMAIL_MAX_LENGTH),
     stripeCustomerId: z.string().min(1).nullable(),
     tierId: z.string().min(1),
     cadence: GiftCadenceSchema,
@@ -127,10 +133,39 @@ const GiftPurchaseDataSchema = z.object({
     stripePaymentIntentId: z.string().min(1)
 });
 
-export type GiftPurchaseData = z.infer<typeof GiftPurchaseDataSchema>;
+const GiftPurchaseDeliverySchema = z.discriminatedUnion('deliveryMethod', [
+    z.object({
+        deliveryMethod: z.literal('link'),
+        recipientEmail: z.null().default(null),
+        recipientName: z.null().default(null),
+        buyerName: z.string().max(GIFT_NAME_MAX_LENGTH).nullable().default(null),
+        personalMessage: z.null().default(null)
+    }),
+    z.object({
+        deliveryMethod: z.literal('email'),
+        recipientEmail: z.string().email().max(GIFT_EMAIL_MAX_LENGTH),
+        recipientName: z.string().max(GIFT_NAME_MAX_LENGTH).nullable().default(null),
+        buyerName: z.string().max(GIFT_NAME_MAX_LENGTH).nullable().default(null),
+        personalMessage: z.string().max(GIFT_STORED_MESSAGE_MAX_LENGTH).nullable().default(null)
+    })
+]);
+
+const GiftPurchaseDataSchema = z.preprocess((value) => {
+    if (!value || typeof value !== 'object' || (value as {deliveryMethod?: unknown}).deliveryMethod !== undefined) {
+        return value;
+    }
+
+    return {...value, deliveryMethod: 'link'};
+}, GiftPurchaseBaseSchema.and(GiftPurchaseDeliverySchema));
+
+export type GiftPurchaseData = z.input<typeof GiftPurchaseBaseSchema> & (
+    | z.input<typeof GiftPurchaseDeliverySchema>
+    | {deliveryMethod?: undefined}
+);
 
 interface GiftServiceDeps {
     giftRepository: GiftRepository;
+    giftDeliveryService: Pick<GiftDeliveryService, 'createForPurchase' | 'cancelPendingForGift'>;
     memberRepository: MemberRepository;
     tiersService: TiersService;
     giftEmailService: GiftEmailService;
@@ -166,11 +201,46 @@ export interface StartGiftCheckoutInput {
     offerId?: string;
     cadence?: string;
     duration?: number;
+    deliveryMethod?: unknown;
+    recipientEmail?: unknown;
+    recipientName?: unknown;
+    buyerName?: unknown;
+    personalMessage?: unknown;
     metadata: Record<string, unknown>;
     successUrl: string;
     cancelUrl?: string;
     buyer: GiftCheckoutBuyer;
 }
+
+const NullableCheckoutStringSchema = (max: number) => z.preprocess(
+    value => typeof value === 'string' && value.trim() === '' ? null : value,
+    z.string().trim().max(max).nullable().optional().default(null)
+);
+
+const GiftCheckoutDeliverySchema = z.preprocess((value) => {
+    if (!value || typeof value !== 'object' || 'deliveryMethod' in value) {
+        return value;
+    }
+
+    return {...value, deliveryMethod: 'link'};
+}, z.discriminatedUnion('deliveryMethod', [
+    z.object({
+        deliveryMethod: z.literal('link'),
+        recipientEmail: z.null().optional().default(null),
+        recipientName: z.null().optional().default(null),
+        personalMessage: z.null().optional().default(null),
+        buyerName: NullableCheckoutStringSchema(GIFT_NAME_MAX_LENGTH)
+    }),
+    z.object({
+        deliveryMethod: z.literal('email'),
+        recipientEmail: z.string().trim().email().max(GIFT_EMAIL_MAX_LENGTH),
+        recipientName: NullableCheckoutStringSchema(GIFT_NAME_MAX_LENGTH),
+        personalMessage: NullableCheckoutStringSchema(GIFT_CHECKOUT_MESSAGE_MAX_LENGTH),
+        buyerName: NullableCheckoutStringSchema(GIFT_NAME_MAX_LENGTH)
+    })
+]));
+
+type GiftCheckoutDelivery = z.infer<typeof GiftCheckoutDeliverySchema>;
 
 interface GiftCheckoutSession {
     amount: number;
@@ -191,6 +261,9 @@ export interface GiftRedemption {
     duration: number;
     currency: string;
     amount: number;
+    buyer_name: string | null;
+    recipient_name: string | null;
+    message: string | null;
     expires_at: Date;
     consumes_at: Date | null;
     tier: {
@@ -230,6 +303,41 @@ export class GiftService {
     }
 
     async startCheckout(input: StartGiftCheckoutInput): Promise<{url: string}> {
+        const customizationEnabled = this.deps.labsService.isSet('giftSubCustomization');
+        const populatedDeliveryFields = [
+            input.recipientEmail,
+            input.recipientName,
+            input.buyerName,
+            input.personalMessage
+        ].some(value => value !== undefined && value !== null && value !== '');
+
+        if (!customizationEnabled && (input.deliveryMethod === 'email' || populatedDeliveryFields)) {
+            throw new errors.BadRequestError({
+                message: 'Bad Request.',
+                context: 'Gift email delivery is not available'
+            });
+        }
+
+        const parsedDelivery = GiftCheckoutDeliverySchema.safeParse(customizationEnabled ? {
+            deliveryMethod: input.deliveryMethod ?? 'link',
+            recipientEmail: input.recipientEmail,
+            recipientName: input.recipientName,
+            buyerName: input.buyerName,
+            personalMessage: input.personalMessage
+        } : {
+            deliveryMethod: 'link'
+        });
+
+        if (!parsedDelivery.success) {
+            const issue = parsedDelivery.error.issues[0];
+            throw new errors.BadRequestError({
+                message: 'Bad Request.',
+                context: `Invalid gift delivery data: ${issue.message}`
+            });
+        }
+
+        const delivery: GiftCheckoutDelivery = parsedDelivery.data;
+
         if (input.offerId) {
             throw new errors.BadRequestError({
                 message: 'Bad Request.',
@@ -247,7 +355,7 @@ export class GiftService {
         let resolvedDuration: ResolvedGiftDuration | null = null;
         let cadence: GiftCadence;
 
-        if (this.deps.labsService.isSet('giftSubCustomization')) {
+        if (customizationEnabled) {
             resolvedDuration = resolveGiftDuration(input);
             cadence = resolvedDuration.cadence;
         } else {
@@ -309,6 +417,7 @@ export class GiftService {
         successUrl.searchParams.set('gift_token', token);
         successUrl.searchParams.set('gift_tier', tierId);
         successUrl.searchParams.set('gift_cadence', cadence);
+        successUrl.searchParams.set('gift_delivery', delivery.deliveryMethod);
         if (totalMonths !== undefined) {
             successUrl.searchParams.set('gift_duration', String(totalMonths));
         }
@@ -316,6 +425,7 @@ export class GiftService {
         const customerId = input.buyer.isAuthenticated
             ? await this.deps.checkoutAdapter.getCustomerId(input.buyer)
             : null;
+        const buyerName = delivery.buyerName ?? input.buyer.name;
 
         const url = await this.deps.checkoutAdapter.createSession({
             amount,
@@ -329,7 +439,12 @@ export class GiftService {
                 gift_token: token,
                 tier_id: tierId,
                 cadence,
-                duration: String(duration)
+                duration: String(duration),
+                gift_delivery_method: delivery.deliveryMethod,
+                gift_recipient_email: delivery.recipientEmail ?? '',
+                gift_recipient_name: delivery.recipientName ?? '',
+                gift_buyer_name: buyerName ?? '',
+                gift_personal_message: delivery.personalMessage ?? ''
             },
             successUrl: successUrl.toString(),
             cancelUrl: input.cancelUrl,
@@ -379,6 +494,9 @@ export class GiftService {
             token: data.token,
             buyerEmail: data.buyerEmail,
             buyerMemberId: member?.id ?? null,
+            buyerName: data.buyerName,
+            recipientName: data.recipientName,
+            personalMessage: data.personalMessage,
             tierId: data.tierId,
             cadence: data.cadence,
             duration: data.duration,
@@ -388,7 +506,16 @@ export class GiftService {
             stripePaymentIntentId: data.stripePaymentIntentId
         });
 
-        await this.deps.giftRepository.create(gift);
+        await this.deps.giftRepository.transaction(async (transacting) => {
+            const giftId = await this.deps.giftRepository.create(gift, {transacting});
+
+            if (data.deliveryMethod === 'email') {
+                await this.deps.giftDeliveryService.createForPurchase({
+                    giftId,
+                    recipientEmail: data.recipientEmail
+                }, {transacting});
+            }
+        });
 
         const tier = await this.deps.tiersService.api.read(data.tierId);
 
@@ -418,7 +545,8 @@ export class GiftService {
                 tierName: tier.name,
                 cadence: data.cadence,
                 duration: data.duration,
-                expiresAt: gift.expiresAt
+                expiresAt: gift.expiresAt,
+                recipientEmail: data.recipientEmail
             });
         } catch (err) {
             logging.error('Failed to send gift purchase confirmation email', err);
@@ -565,6 +693,7 @@ export class GiftService {
         }, {id: memberId, transacting});
 
         await this.deps.giftRepository.update(redeemed, {transacting});
+        await this.deps.giftDeliveryService.cancelPendingForGift(redeemed.token, {transacting});
 
         // Gift members receive the paid welcome email, as they receive access to paid content
         await this.deps.memberRepository.triggerMemberSignupAutomation(
@@ -771,6 +900,7 @@ export class GiftService {
 
         await this.deps.giftRepository.transaction(async (transacting) => {
             await this.deps.giftRepository.update(refunded, {transacting});
+            await this.deps.giftDeliveryService.cancelPendingForGift(refunded.token, {transacting});
 
             if (gift.redeemerMemberId) {
                 const member = await this.deps.memberRepository.get({id: gift.redeemerMemberId}, {transacting});
@@ -883,6 +1013,7 @@ export class GiftService {
                 }
 
                 await this.deps.giftRepository.update(expired, {transacting});
+                await this.deps.giftDeliveryService.cancelPendingForGift(expired.token, {transacting});
 
                 expiredCount += 1;
             });
@@ -1021,6 +1152,9 @@ export class GiftService {
             duration: gift.duration,
             currency: gift.currency,
             amount: gift.amount,
+            buyer_name: gift.buyerName,
+            recipient_name: gift.recipientName,
+            message: gift.personalMessage,
             expires_at: gift.expiresAt,
             consumes_at: gift.consumesAt,
             tier: {

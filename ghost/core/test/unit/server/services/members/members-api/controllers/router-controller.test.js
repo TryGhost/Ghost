@@ -879,6 +879,38 @@ describe('RouterController', function () {
                 }));
             });
 
+            it('passes gift delivery fields separately and removes client-supplied reserved metadata', async function () {
+                const controller = createGiftController({tiersService: paidTierService()});
+
+                await controller.createCheckoutSession({
+                    body: {
+                        type: 'gift',
+                        tierId: 'tier_123',
+                        cadence: 'month',
+                        deliveryMethod: 'email',
+                        recipientEmail: 'recipient@example.com',
+                        recipientName: 'Recipient',
+                        buyerName: 'Buyer',
+                        personalMessage: 'Enjoy this gift',
+                        metadata: {
+                            gift_recipient_email: 'attacker@example.com',
+                            gift_delivery_method: 'link',
+                            custom_key: 'preserved'
+                        }
+                    }
+                }, mockRes);
+
+                const input = giftService.service.startCheckout.firstCall.firstArg;
+                assert.equal(input.deliveryMethod, 'email');
+                assert.equal(input.recipientEmail, 'recipient@example.com');
+                assert.equal(input.recipientName, 'Recipient');
+                assert.equal(input.buyerName, 'Buyer');
+                assert.equal(input.personalMessage, 'Enjoy this gift');
+                assert.equal(input.metadata.gift_recipient_email, undefined);
+                assert.equal(input.metadata.gift_delivery_method, undefined);
+                assert.equal(input.metadata.custom_key, 'preserved');
+            });
+
             it('rejects when offerId is provided', async function () {
                 giftService.service.startCheckout.rejects(new errors.BadRequestError({
                     message: 'Bad Request.',

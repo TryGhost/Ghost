@@ -638,7 +638,12 @@ describe('CheckoutSessionEventService', function () {
                     gift_token: 'abc-123-token',
                     tier_id: 'tier_456',
                     cadence: 'year',
-                    duration: '1'
+                    duration: '1',
+                    gift_delivery_method: 'email',
+                    gift_recipient_email: 'recipient@example.com',
+                    gift_recipient_name: 'Recipient',
+                    gift_buyer_name: 'Buyer',
+                    gift_personal_message: 'Enjoy this gift'
                 }
             };
 
@@ -658,6 +663,11 @@ describe('CheckoutSessionEventService', function () {
             assert.equal(purchaseData.amount, 5000);
             assert.equal(purchaseData.stripeCheckoutSessionId, 'cs_test_123');
             assert.equal(purchaseData.stripePaymentIntentId, 'pi_test_456');
+            assert.equal(purchaseData.deliveryMethod, 'email');
+            assert.equal(purchaseData.recipientEmail, 'recipient@example.com');
+            assert.equal(purchaseData.recipientName, 'Recipient');
+            assert.equal(purchaseData.buyerName, 'Buyer');
+            assert.equal(purchaseData.personalMessage, 'Enjoy this gift');
         });
 
         it('passes null stripeCustomerId for unauthenticated purchasers', async function () {
@@ -677,7 +687,8 @@ describe('CheckoutSessionEventService', function () {
                     gift_token: 'def-456-token',
                     tier_id: 'tier_111',
                     cadence: 'month',
-                    duration: '1'
+                    duration: '1',
+                    gift_delivery_method: ''
                 }
             };
 
@@ -686,6 +697,7 @@ describe('CheckoutSessionEventService', function () {
             const purchaseData = giftService.completePurchase.getCall(0).args[0];
 
             assert.equal(purchaseData.stripeCustomerId, null);
+            assert.equal(purchaseData.deliveryMethod, 'link');
         });
 
         it('normalizes expanded Stripe resources to IDs', async function () {
