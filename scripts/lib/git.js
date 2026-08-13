@@ -66,12 +66,29 @@ export async function getChangedFiles(path, baseCommit, headCommit = 'HEAD', onl
 }
 
 /**
+ * Builds a matcher for ignore patterns written relative to a directory, as
+ * `git diff --name-only` reports repo-relative paths.
+ *
+ * Matches with `dot: true` so `**` reaches into dot-directories: an ignore
+ * pattern that skipped `docs/notes.md` but not `.claude/notes.md` would be a
+ * trap, and git reports both alike.
+ *
+ * @param {string} path - The directory the patterns are relative to.
+ * @param {string[]} ignorePatterns - Patterns relative to `path`.
+ * @returns {(file: string) => boolean} - True when a repo-relative path is ignored.
+ */
+export function buildIgnoreMatcher(path, ignorePatterns) {
+    return pm(ignorePatterns.map(pattern => `${path}/${pattern}`), {dot: true});
+}
+
+/**
  * Checks if a given path has any changes between two commits
  *
  * @param {string} path - The path to check for changes.
  * @param {string} baseCommit - The first commit hash to compare.
  * @param {string} headCommit - The second commit hash to compare.
- * @param {string[]} [ignorePatterns] - Optional patterns to ignore
+ * @param {string[]} [ignorePatterns] - Optional patterns to ignore, relative to
+ *   `path`. See {@link buildIgnoreMatcher}.
  *
  * @returns {Promise<boolean>} - A promise that resolves to true if there are changes, false otherwise.
  */
@@ -79,7 +96,7 @@ export async function pathHasChanges(path, baseCommit, headCommit, ignorePattern
     let changedFiles = await getChangedFiles(path, baseCommit, headCommit);
 
     if (ignorePatterns.length > 0) {
-        const match = pm(ignorePatterns.map(pattern => `${path}/${pattern}`));
+        const match = buildIgnoreMatcher(path, ignorePatterns);
         changedFiles = changedFiles.filter(file => !match(file));
     }
 
