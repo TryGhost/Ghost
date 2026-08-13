@@ -203,6 +203,7 @@ catalog:
   '@octokit/plugin-throttling': 11.0.5
   '@secretlint/secretlint-rule-pattern': 13.0.4
   '@secretlint/secretlint-rule-preset-recommend': 13.0.4
+  archiver: ^8.0.0
   knip: 6.32.1
   lint-staged: 17.3.0
   secretlint: 13.0.4
