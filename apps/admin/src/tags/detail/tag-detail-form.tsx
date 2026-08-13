@@ -35,7 +35,7 @@ const UsedCharacters: React.FC<{value: string; limit: number; prefix: 'Maximum' 
 };
 
 const SectionTrigger: React.FC<{title: string; description: string}> = ({title, description}) => (
-    <AccordionTrigger className='hover:no-underline'>
+    <AccordionTrigger className='px-6 hover:no-underline'>
         <Stack className='text-left' gap='none'>
             <Text as='span' leading='tight' size='md' weight='semibold'>{title}</Text>
             <Text as='span' className='text-base' leading='tight' tone='secondary'>{description}</Text>
@@ -146,11 +146,11 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
             </Card>
 
             <Card>
-                <CardContent className='px-6 py-2'>
+                <CardContent className='px-0 py-2'>
                     <Accordion defaultValue='metadata' type='single' collapsible>
                         <AccordionItem className='last:border-b-0' value='metadata'>
                             <SectionTrigger description='Extra content for search engines.' title='Meta data' />
-                            <AccordionContent className='-mx-6 bg-muted px-6'>
+                            <AccordionContent className='bg-muted px-6'>
                                 <Stack className='pt-2' gap='xl'>
                                     <Stack gap='lg'>
                                         <Stack gap='sm'>
@@ -207,7 +207,7 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
 
                         <AccordionItem className='last:border-b-0' value='x-card'>
                             <SectionTrigger description='Customized structured data for X.' title='X card' />
-                            <AccordionContent className='-mx-6 bg-muted px-6'>
+                            <AccordionContent className='bg-muted px-6'>
                                 <Stack className='pt-2' gap='xl'>
                                     <Stack gap='lg'>
                                         <TagImageField
@@ -260,7 +260,7 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
 
                         <AccordionItem className='last:border-b-0' value='facebook-card'>
                             <SectionTrigger description='Customize Open Graph data.' title='Facebook card' />
-                            <AccordionContent className='-mx-6 bg-muted px-6'>
+                            <AccordionContent className='bg-muted px-6'>
                                 <Stack className='pt-2' gap='xl'>
                                     <Stack gap='lg'>
                                         <TagImageField
@@ -316,7 +316,7 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
 
                         <AccordionItem className='last:border-b-0' value='code-injection'>
                             <SectionTrigger description='Add styles/scripts to the header and footer.' title='Code injection' />
-                            <AccordionContent className='-mx-6 bg-muted px-6'>
+                            <AccordionContent className='bg-muted px-6'>
                                 <Stack className='pt-2' gap='lg'>
                                     <CodeEditor
                                         data-testid='codeinjection-head'
