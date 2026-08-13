@@ -21,6 +21,23 @@ describe("Migration tools export", () => {
         await expect.element(section.getByRole("button", {name: "Export data"})).not.toBeInTheDocument();
     });
 
+    it("keeps the individual export buttons when the backend has no exports endpoint", async () => {
+        // Admin can deploy ahead of core: the flag may be on while the
+        // backend lacks /exports/download/ — its config capability signal is
+        // absent and the new flow must not be offered
+        fakeSettingsScreens();
+        const config = configResponse({labs: {selfServeArchives: true}});
+        delete (config.config as {exports?: object}).exports;
+        await renderAdminApp("/settings/advanced", {
+            labs: {selfServeArchives: true},
+            boot: {browseConfig: {response: config}},
+        });
+
+        const section = await openExportTab();
+        await expect.element(section.getByRole("button", {name: "Content & settings"})).toBeVisible();
+        await expect.element(section.getByRole("button", {name: "Export data"})).not.toBeInTheDocument();
+    });
+
     it("offers the sync export dialog without media when no archive host is configured", async () => {
         fakeSettingsScreens();
         await renderAdminApp("/settings/advanced", {labs: {selfServeArchives: true}});

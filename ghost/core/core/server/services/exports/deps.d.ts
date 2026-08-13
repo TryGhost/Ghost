@@ -1,4 +1,3 @@
-// Type declarations for untyped modules used by the exports service.
 // archiver v8 ships no types and the DefinitelyTyped package targets the old
 // (v7) factory API, so we declare the small surface we actually use.
 declare module 'archiver' {
@@ -6,6 +5,8 @@ declare module 'archiver' {
 
     interface EntryData {
         name: string;
+        /** Write this entry uncompressed (STORE) — for already-compressed sources. */
+        store?: boolean;
     }
 
     export class Archiver extends Transform {
@@ -18,6 +19,3 @@ declare module 'archiver' {
         constructor(options?: {store?: boolean});
     }
 }
-
-declare module '@tryghost/security';
-declare module '@tryghost/zip';

@@ -5,12 +5,17 @@ const path = require('path');
 const supertest = require('supertest');
 const {extract} = require('@tryghost/zip');
 const config = require('../../../core/shared/config');
+const models = require('../../../core/server/models');
 const localUtils = require('./utils');
 
 // These tests make real HTTP requests (like the theme download tests) instead
 // of using the in-process test agent: the zip response streams with
 // backpressure, which the test agent's mock socket cannot signal — large
 // bodies deadlock it. The 4xx cases live in exports.test.js.
+
+// More posts than the posts exporter's default page cap, so the test proves
+// the export is not silently truncated to the default limit
+const EXTRA_POST_COUNT = 20;
 
 /**
  * Collects a binary response body into a Buffer (superagent only buffers
@@ -37,19 +42,13 @@ async function extractZipResponse(body) {
     return outPath;
 }
 
-async function listFilesRecursive(dir, prefix = '') {
-    const entries = await fs.readdir(dir, {withFileTypes: true});
-    const files = [];
+async function listFiles(dir) {
+    const entries = await fs.readdir(dir, {recursive: true, withFileTypes: true});
 
-    for (const entry of entries) {
-        if (entry.isDirectory()) {
-            files.push(...await listFilesRecursive(path.join(dir, entry.name), `${prefix}${entry.name}/`));
-        } else {
-            files.push(`${prefix}${entry.name}`);
-        }
-    }
-
-    return files.sort();
+    return entries
+        .filter(entry => entry.isFile())
+        .map(entry => path.relative(dir, path.join(entry.parentPath, entry.name)))
+        .sort();
 }
 
 describe('Exports API — download', function () {
@@ -59,6 +58,15 @@ describe('Exports API — download', function () {
         await localUtils.startGhost({copyThemes: true});
         request = supertest.agent(config.get('url'));
         await localUtils.doAuth(request, 'posts', 'newsletters', 'members:newsletters');
+
+        for (let i = 0; i < EXTRA_POST_COUNT; i++) {
+            await models.Post.add({
+                title: `Analytics post ${i}`,
+                slug: `analytics-post-${i}`,
+                status: 'published',
+                published_at: new Date()
+            }, {context: {internal: true}});
+        }
     });
 
     it('Can download a full site export zip', async function () {
@@ -74,7 +82,7 @@ describe('Exports API — download', function () {
         assert.match(res.headers['cache-control'], /no-transform/);
 
         const outPath = await extractZipResponse(res.body);
-        const files = await listFilesRecursive(outPath);
+        const files = await listFiles(outPath);
 
         // Every component is present, plus the report
         assert.ok(files.includes('export.json'), `export.json missing from ${files}`);
@@ -102,8 +110,11 @@ describe('Exports API — download', function () {
         assert.match(membersCSV, /^id,email,name/, 'members.csv should start with its header row');
         assert.ok(membersCSV.split('\r\n').length > 1, 'members.csv should contain member rows');
 
+        // Every published post makes it into the analytics CSV — the exporter
+        // must not fall back to its default page cap
         const analyticsCSV = await fs.readFile(path.join(outPath, 'post-analytics.csv'), 'utf8');
-        assert.ok(analyticsCSV.length > 0, 'post-analytics.csv should not be empty');
+        const analyticsRows = analyticsCSV.trim().split('\r\n').length - 1;
+        assert.ok(analyticsRows >= EXTRA_POST_COUNT, `expected at least ${EXTRA_POST_COUNT} analytics rows, got ${analyticsRows}`);
 
         // The nested theme zips are themselves valid archives
         const themeOut = path.join(outPath, 'themes-check');
@@ -112,12 +123,13 @@ describe('Exports API — download', function () {
 
         // The report records every component as included
         const report = await fs.readJSON(path.join(outPath, 'export-report.json'));
+        assert.ok(report.generated_at, 'report should carry a timestamp');
         assert.deepEqual(report.components, {
-            content: 'ok',
-            members: 'ok',
-            analytics: 'ok',
-            themes: 'ok',
-            routes: 'ok'
+            content: {status: 'ok'},
+            members: {status: 'ok'},
+            analytics: {status: 'ok'},
+            themes: {status: 'ok'},
+            routes: {status: 'ok'}
         });
     });
 
@@ -131,14 +143,14 @@ describe('Exports API — download', function () {
             .expect(200);
 
         const outPath = await extractZipResponse(res.body);
-        const files = await listFilesRecursive(outPath);
+        const files = await listFiles(outPath);
 
         assert.deepEqual(files, ['export-report.json', 'export.json', 'redirects.yaml', 'routes.yaml']);
 
         const report = await fs.readJSON(path.join(outPath, 'export-report.json'));
         assert.deepEqual(report.components, {
-            content: 'ok',
-            routes: 'ok'
+            content: {status: 'ok'},
+            routes: {status: 'ok'}
         });
     });
 });

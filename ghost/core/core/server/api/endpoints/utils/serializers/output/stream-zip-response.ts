@@ -1,6 +1,4 @@
-import {pipeline} from 'node:stream';
-import {IncomingMessage, ServerResponse} from 'node:http';
-import {InternalServerError} from '@tryghost/errors';
+import {createStreamResponse} from './stream-response';
 
 interface ZipStreamResponseOptions {
     /** Readable producing the zip bytes (e.g. an archiver instance). */
@@ -10,36 +8,13 @@ interface ZipStreamResponseOptions {
 }
 
 /**
- * Builds the `frame.response` handler for a streaming zip download — the zip
- * counterpart of `stream-csv-response`: Content-Type/Content-Disposition
- * headers, the `no-transform` cache directive (so proxies don't recompress and
- * corrupt the byte stream), and `pipeline()` piping that tears down every
- * stream on error.
+ * Builds the `frame.response` handler for a streaming zip download — the
+ * shared header/piping wiring lives in `stream-response`.
  */
 export function createZipStreamResponse({source, filename}: ZipStreamResponseOptions) {
-    return function streamResponse(req: IncomingMessage, res: ServerResponse, next: (err?: unknown) => void) {
-        if (!filename) {
-            return next(new InternalServerError({
-                message: 'Missing zip export filename'
-            }));
-        }
-
-        res.setHeader('Content-Type', 'application/zip');
-        res.setHeader('Content-Disposition', `Attachment; filename="${filename}"`);
-
-        const cacheControl = res.getHeader('Cache-Control');
-        const cacheControlDirectives = cacheControl ? String(cacheControl).split(',').map((value: string) => value.trim().toLowerCase()) : [];
-        if (!cacheControlDirectives.includes('no-transform')) {
-            res.setHeader('Cache-Control', cacheControl ? `${cacheControl}, no-transform` : 'no-transform');
-        }
-
-        pipeline(source, res, (err) => {
-            // On success, pipeline has already ended the response and there's no
-            // downstream middleware waiting. Only forward errors so the framework's
-            // error handler can log them and (if possible) send a status to the client.
-            if (err) {
-                next(err);
-            }
-        });
-    };
+    return createStreamResponse({
+        source,
+        filename,
+        contentType: 'application/zip'
+    });
 }

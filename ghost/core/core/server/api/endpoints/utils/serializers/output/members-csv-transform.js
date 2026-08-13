@@ -1,5 +1,8 @@
+//@ts-check
 const {Transform} = require('stream');
 const {serialize: serializeCSV} = require('../../../../../services/members/import-export/csv');
+// The export CSV row shape and its encode live in the domain (typed against the export
+// row) rather than here, so a change to the export row is caught by the compiler.
 const {toExportCsvRow} = require('../../../../../services/members/import-export/export/exporter');
 
 /**

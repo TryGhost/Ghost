@@ -53,6 +53,26 @@ module.exports = {
             name: themeName
         });
     },
+    /**
+     * Zip an installed theme to the given path — the same artifact `getZip`
+     * serves, for callers that need a file instead of an express handler
+     * (e.g. the site export).
+     *
+     * @param {string} themeName
+     * @param {string} zipPath - full path the zip is written to
+     * @returns {Promise<{path: string, size: number}>}
+     */
+    zipToFile: async (themeName, zipPath) => {
+        const theme = list.get(themeName);
+
+        if (!theme) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.invalidThemeName)
+            });
+        }
+
+        return await getStorage().zipToFile(themeName, zipPath);
+    },
     setFromZip: async (zip, {copySettingsFrom} = {}) => {
         const themeName = getStorage().getSanitizedFileName(zip.name.split('.zip')[0]);
         const backupName = `${themeName}_${ObjectID()}`;

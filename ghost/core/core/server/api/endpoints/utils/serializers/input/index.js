@@ -3,6 +3,10 @@ module.exports = {
         return require('./db');
     },
 
+    get exports() {
+        return require('./exports');
+    },
+
     get emails() {
         return require('./emails');
     },

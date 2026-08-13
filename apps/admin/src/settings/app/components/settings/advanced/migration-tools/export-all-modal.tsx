@@ -7,10 +7,11 @@ import {
     DialogDescription,
     DialogFooter,
     DialogHeader,
-    DialogTitle
+    DialogTitle,
+    LoadingIndicator
 } from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
-import {downloadFromEndpoint} from '@tryghost/admin-x-framework/helpers';
+import {downloadSiteExport, type SiteExportComponent} from '@tryghost/admin-x-framework/api/exports';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
 
 export type ExportMode = 'sync' | 'async';
@@ -72,12 +73,10 @@ const ExportAllModal: React.FC<{open: boolean; onOpenChange: (open: boolean) => 
         }
 
         const components = visibleComponents
-            .filter(component => selected[component.key])
-            .map(component => component.key);
+            .filter(component => selected[component.key] && component.key !== 'media')
+            .map(component => component.key as SiteExportComponent);
 
-        // A plain navigation download: the browser's download manager streams
-        // the zip to disk, so even a large export never sits in tab memory
-        downloadFromEndpoint(`/exports/download/?components=${components.join(',')}`);
+        downloadSiteExport(components);
         setPhase('downloading');
     };
 
@@ -159,15 +158,15 @@ const ExportAllModal: React.FC<{open: boolean; onOpenChange: (open: boolean) => 
                     <>
                         <DialogHeader>
                             <DialogTitle className='flex items-center gap-2'>
-                                <LucideIcon.CircleCheck className='size-5 text-green-600' /> Preparing your export&hellip;
+                                <LoadingIndicator size='sm' /> Preparing your export&hellip;
                             </DialogTitle>
                         </DialogHeader>
                         <DialogDescription>
                             Your download will start automatically and appear in your browser&rsquo;s downloads.
-                            You can now close this window.
+                            You can close this window once it has started.
                         </DialogDescription>
                         <DialogFooter className='sm:justify-end'>
-                            <Button onClick={() => handleOpenChange(false)}>Close</Button>
+                            <Button variant='outline' onClick={() => handleOpenChange(false)}>Close</Button>
                         </DialogFooter>
                     </>
                 )}

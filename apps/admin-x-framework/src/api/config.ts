@@ -111,10 +111,21 @@ export type Config = {
         managedEmail?: {
             enabled?: boolean
             sendingDomain?: string
+        },
+        export?: {
+            // Host archive webhook — when set, "Export data" delivers the
+            // archive by email instead of a synchronous download
+            generate_archive_url?: string
         }
     }
     security?: {
         staffDeviceVerification?: boolean;
+    };
+    // Capability signal: this Ghost serves GET /exports/download/. Admin
+    // deploys independently of core, so the UI must feature-detect the
+    // endpoint rather than trust the labs flag alone.
+    exports?: {
+        download?: boolean;
     };
     featurebase?: {
         enabled?: boolean;

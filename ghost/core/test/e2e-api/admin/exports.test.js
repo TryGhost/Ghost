@@ -16,6 +16,21 @@ describe('Exports API', function () {
         mockManager.restore();
     });
 
+    it('Accepts a repeated components query param', async function () {
+        // qs parses repeated params into an array — the endpoint must
+        // normalize it rather than 500 (a routes-only zip is small enough
+        // for the in-process agent to buffer)
+        await agent
+            .get('exports/download/?components=routes&components=routes')
+            .expectStatus(200);
+    });
+
+    it('Rejects an export with no components selected', async function () {
+        await agent
+            .get('exports/download/?components=')
+            .expectStatus(422);
+    });
+
     it('Cannot request the media component', async function () {
         await agent
             .get('exports/download/?components=media')

@@ -41,7 +41,8 @@ const expectedProperties = {
         'emailAnalytics',
         'klipy',
         'mailgunIsConfigured',
-        'signupForm'
+        'signupForm',
+        'exports'
     ],
 
     post: [

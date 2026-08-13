@@ -31,6 +31,7 @@ module.exports = {
         activate: activate.activate,
         getThemeErrors: validate.getThemeErrors,
         getZip: storage.getZip,
+        zipToFile: storage.zipToFile,
         setFromZip: storage.setFromZip,
         installFromGithub: installer.installFromGithub,
         destroy: storage.destroy

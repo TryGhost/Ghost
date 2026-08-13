@@ -1,11 +1,18 @@
 const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:output:exports');
+const {createZipStreamResponse} = require('./stream-zip-response');
 
 module.exports = {
-    // The query returns a stream-response handler; pass it through untouched so
-    // the http layer hands the express response to it (same as themes)
-    all(data, apiConfig, frame) {
-        debug('all');
+    /**
+     * @param {{archive: NodeJS.ReadableStream, filename: string}} data
+     */
+    download(data, apiConfig, frame) {
+        debug('download');
 
-        frame.response = data;
+        // frame.response becomes a handler the http layer hands the express
+        // response to — the zip streams while it is being composed
+        frame.response = createZipStreamResponse({
+            source: data.archive,
+            filename: data.filename
+        });
     }
 };

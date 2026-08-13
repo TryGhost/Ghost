@@ -4,15 +4,21 @@ import logging from '@tryghost/logging';
 
 /**
  * The components a sync site export can contain, in the order they are written
- * to the zip. `media` is deliberately absent: media is the component that needs
- * background jobs and email delivery, so it is only available through a host
- * archive webhook — never through this synchronous bundle.
+ * to the zip. The streaming CSV components come first so their database
+ * connections drain and release while the (buffered) content JSON is still
+ * being built. `media` is deliberately absent: media is the component that
+ * needs background jobs and email delivery, so it is only available through a
+ * host archive webhook — never through this synchronous bundle.
  */
-export const EXPORT_COMPONENTS = ['content', 'members', 'analytics', 'themes', 'routes'] as const;
+export const EXPORT_COMPONENTS = ['members', 'analytics', 'content', 'themes', 'routes'] as const;
 
 export type ExportComponent = typeof EXPORT_COMPONENTS[number];
 
-type ComponentStatus = 'ok' | 'failed';
+interface ComponentReportEntry {
+    status: 'ok' | 'partial' | 'failed';
+    /** Entries that did not make it into the bundle (theme names, filenames). */
+    skipped?: string[];
+}
 
 export interface SiteExporterDeps {
     /** Full site JSON in the same shape the `/db/` download produces. */
@@ -23,8 +29,12 @@ export interface SiteExporterDeps {
     exportPostAnalyticsCSV(): Promise<NodeJS.ReadableStream>;
     /** Names of all installed themes. */
     listThemes(): string[];
-    /** A single theme, zipped — the same artifact the theme download endpoint serves. */
-    zipTheme(name: string): Promise<Buffer>;
+    /**
+     * A single theme zipped to a temp file — the same artifact the theme
+     * download endpoint serves. `cleanup` removes the temp file; the exporter
+     * calls it once the archive is closed.
+     */
+    zipTheme(name: string): Promise<{zipPath: string; cleanup(): Promise<void>}>;
     /** The raw routes.yaml source. */
     exportRoutesYaml(): Promise<string>;
     /** The redirects config serialized to yaml. */
@@ -52,41 +62,51 @@ export class SiteExporter {
     /**
      * Builds a zip stream containing the selected components. Entries are
      * appended asynchronously; the caller pipes the returned archive to the
-     * response while it fills. STORE (no compression) keeps CPU low and
-     * time-to-first-byte short — theme zips are already compressed and the
-     * JSON/CSV entries are not worth stalling the stream for.
+     * response while it fills. The archive is deflate-compressed (the JSON
+     * and CSV entries compress well); the nested theme zips opt out per-entry
+     * since they are already compressed.
      */
     createArchive(components: ExportComponent[]): Archiver {
-        const archive = new ZipArchive({store: true});
+        const archive = new ZipArchive();
+        const cleanups: Array<() => Promise<void>> = [];
 
-        this.#populate(archive, new Set(components)).catch((err) => {
+        // 'close' fires both after the archive ends normally and when it is
+        // destroyed (e.g. the client disconnected), so temp files are removed
+        // on every path.
+        archive.once('close', () => {
+            for (const cleanup of cleanups) {
+                cleanup().catch(() => {});
+            }
+        });
+
+        this.#populate(archive, new Set(components), cleanups).catch((err) => {
             archive.destroy(err instanceof Error ? err : new errors.InternalServerError({message: String(err)}));
         });
 
         return archive;
     }
 
-    async #populate(archive: Archiver, components: Set<ExportComponent>): Promise<void> {
-        const report: {exported_on: string; components: Partial<Record<ExportComponent, ComponentStatus>>} = {
-            exported_on: new Date().toISOString(),
+    async #populate(archive: Archiver, components: Set<ExportComponent>, cleanups: Array<() => Promise<void>>): Promise<void> {
+        const report: {generated_at: string; components: Partial<Record<ExportComponent, ComponentReportEntry>>} = {
+            generated_at: new Date().toISOString(),
             components: {}
         };
 
         for (const component of EXPORT_COMPONENTS) {
+            // Stop composing when the archive is gone — the client hung up
+            if (archive.destroyed) {
+                return;
+            }
+
             if (!components.has(component)) {
                 continue;
             }
 
-            try {
-                await this.#appendComponent(archive, component);
-                report.components[component] = 'ok';
-            } catch (err) {
-                logging.error(new errors.InternalServerError({
-                    message: `Site export: the ${component} component failed and was skipped`,
-                    err: err instanceof Error ? err : undefined
-                }));
-                report.components[component] = 'failed';
-            }
+            report.components[component] = await this.#appendComponent(archive, component, cleanups);
+        }
+
+        if (archive.destroyed) {
+            return;
         }
 
         archive.append(JSON.stringify(report, null, 4), {name: 'export-report.json'});
@@ -94,44 +114,83 @@ export class SiteExporter {
         await archive.finalize();
     }
 
-    async #appendComponent(archive: Archiver, component: ExportComponent): Promise<void> {
-        switch (component) {
-        case 'content': {
-            const data = await this.#deps.exportContent();
-            archive.append(JSON.stringify(data), {name: 'export.json'});
-            break;
-        }
-        case 'members':
-            archive.append(await this.#deps.exportMembersCSV(), {name: 'members.csv'});
-            break;
-        case 'analytics':
-            archive.append(await this.#deps.exportPostAnalyticsCSV(), {name: 'post-analytics.csv'});
-            break;
-        case 'themes':
-            await this.#appendThemes(archive);
-            break;
-        case 'routes': {
-            archive.append(await this.#deps.exportRoutesYaml(), {name: 'routes.yaml'});
-            archive.append(await this.#deps.exportRedirectsYaml(), {name: 'redirects.yaml'});
-            break;
-        }
+    /**
+     * An `ok` status means the component's data was *acquired* — for the
+     * streaming CSV entries, a failure while the rows are still flowing
+     * happens after the report is written and instead tears the whole
+     * download down (see `#appendStream`).
+     */
+    async #appendComponent(archive: Archiver, component: ExportComponent, cleanups: Array<() => Promise<void>>): Promise<ComponentReportEntry> {
+        try {
+            switch (component) {
+            case 'content': {
+                const data = await this.#deps.exportContent();
+                archive.append(JSON.stringify(data), {name: 'export.json'});
+                return {status: 'ok'};
+            }
+            case 'members':
+                this.#appendStream(archive, await this.#deps.exportMembersCSV(), 'members.csv');
+                return {status: 'ok'};
+            case 'analytics':
+                this.#appendStream(archive, await this.#deps.exportPostAnalyticsCSV(), 'post-analytics.csv');
+                return {status: 'ok'};
+            case 'themes':
+                return await this.#appendThemes(archive, cleanups);
+            case 'routes':
+                return await this.#appendYamlFiles(archive);
+            }
+        } catch (err) {
+            logging.error(new errors.InternalServerError({
+                message: `Site export: the ${component} component failed and was skipped`,
+                err: err instanceof Error ? err : undefined
+            }));
+            return {status: 'failed'};
         }
     }
 
     /**
-     * Themes are appended as one nested zip per theme — the exact artifact the
-     * theme upload UI restores from. A theme that fails to zip is skipped so
-     * the remaining themes still make it into the bundle; any failure marks
-     * the whole component failed in the report.
+     * Appends a streaming entry with its lifecycle tied to the archive, in
+     * both directions:
+     *
+     * - source error → archive destroyed. archiver wraps sources with
+     *   `.pipe()`, which never propagates errors — without this the response
+     *   would hang forever on e.g. a dropped database connection, instead of
+     *   failing the download.
+     * - archive closed (finished or client hung up) → source destroyed, so a
+     *   paused row stream releases its database connection instead of
+     *   holding it for as long as the client takes to download.
      */
-    async #appendThemes(archive: Archiver): Promise<void> {
-        let failed = 0;
+    #appendStream(archive: Archiver, source: NodeJS.ReadableStream, name: string): void {
+        source.on('error', (err: Error) => {
+            archive.destroy(err);
+        });
 
-        for (const name of this.#deps.listThemes()) {
+        archive.once('close', () => {
+            const destroyable = source as NodeJS.ReadableStream & {destroy?: () => void};
+            destroyable.destroy?.();
+        });
+
+        archive.append(source, {name});
+    }
+
+    /**
+     * Themes are appended as one nested zip per theme — the exact artifact the
+     * theme upload UI restores from. The zips are staged as temp files and
+     * streamed off disk (`archive.file`) rather than buffered, so a site with
+     * many large themes doesn't hold them all in memory. A theme that fails to
+     * zip is skipped so the remaining themes still make it into the bundle.
+     */
+    async #appendThemes(archive: Archiver, cleanups: Array<() => Promise<void>>): Promise<ComponentReportEntry> {
+        const themeNames = this.#deps.listThemes();
+        const skipped: string[] = [];
+
+        for (const name of themeNames) {
             try {
-                archive.append(await this.#deps.zipTheme(name), {name: `themes/${name}.zip`});
+                const {zipPath, cleanup} = await this.#deps.zipTheme(name);
+                cleanups.push(cleanup);
+                archive.file(zipPath, {name: `themes/${name}.zip`, store: true});
             } catch (err) {
-                failed += 1;
+                skipped.push(name);
                 logging.error(new errors.InternalServerError({
                     message: `Site export: the ${name} theme failed to zip and was skipped`,
                     err: err instanceof Error ? err : undefined
@@ -139,8 +198,36 @@ export class SiteExporter {
             }
         }
 
-        if (failed > 0) {
-            throw new errors.InternalServerError({message: `${failed} theme(s) could not be zipped`});
+        return this.#reportEntry(themeNames.length, skipped);
+    }
+
+    async #appendYamlFiles(archive: Archiver): Promise<ComponentReportEntry> {
+        const files: Array<[string, () => Promise<string>]> = [
+            ['routes.yaml', () => this.#deps.exportRoutesYaml()],
+            ['redirects.yaml', () => this.#deps.exportRedirectsYaml()]
+        ];
+        const skipped: string[] = [];
+
+        for (const [filename, getContents] of files) {
+            try {
+                archive.append(await getContents(), {name: filename});
+            } catch (err) {
+                skipped.push(filename);
+                logging.error(new errors.InternalServerError({
+                    message: `Site export: ${filename} failed and was skipped`,
+                    err: err instanceof Error ? err : undefined
+                }));
+            }
         }
+
+        return this.#reportEntry(files.length, skipped);
+    }
+
+    #reportEntry(total: number, skipped: string[]): ComponentReportEntry {
+        if (skipped.length === 0) {
+            return {status: 'ok'};
+        }
+
+        return {status: skipped.length === total ? 'failed' : 'partial', skipped};
     }
 }

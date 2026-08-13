@@ -62,7 +62,13 @@ module.exports = function getConfigProperties() {
         klipy: config.get('klipy'),
         pintura: config.get('pintura'),
         signupForm: config.get('signupForm'),
-        security: config.get('security')
+        security: config.get('security'),
+        // Capability signal for Admin: this Ghost can serve the sync site
+        // export endpoint. Admin deploys independently of core, so it must
+        // feature-detect the endpoint rather than trust the labs flag alone.
+        exports: {
+            download: true
+        }
     };
 
     if (config.get('explore') && config.get('explore:testimonials_url')) {
