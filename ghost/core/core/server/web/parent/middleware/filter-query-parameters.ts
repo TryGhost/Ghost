@@ -1,5 +1,4 @@
 import logging from '@tryghost/logging';
-import querystring from 'node:querystring';
 import type {NextFunction, Request, Response} from 'express';
 
 import {
@@ -92,9 +91,14 @@ export function filterQueryParameters(req: Request, _res: Response, next: NextFu
     const result = filterRequestTarget(requestTarget);
 
     if (result.requestTarget !== requestTarget) {
+        const query = req.query;
+
         req.originalUrl = result.requestTarget;
         req.url = result.requestTarget;
-        req.query = {...querystring.parse(result.requestTarget.split('?')[1] || '')};
+
+        for (const parameter of result.removedUnknownParameters) {
+            delete query[parameter];
+        }
     }
 
     if (result.removedUnknownParameters.length > 0) {
