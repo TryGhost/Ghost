@@ -29,7 +29,8 @@ Put tests as close as possible to the code and behavior under test:
 - **Ghost Core server E2E tests** exercise the server, frontend rendering,
   webhooks, and APIs against a running Ghost instance and test database. They
   live under `ghost/core/test/e2e-*/`. These are Vitest suites, not browser
-  tests.
+  tests. See the [Ghost Core E2E guide](../../ghost/core/test/README.md) for the
+  request agents, fixtures, mocks, and snapshot helpers.
 - **App acceptance tests** exercise an individual app through its UI. The
   framework and command vary by app, so use that workspace's
   `test:acceptance` target.
