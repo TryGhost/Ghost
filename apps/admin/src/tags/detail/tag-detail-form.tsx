@@ -37,8 +37,8 @@ const UsedCharacters: React.FC<{value: string; limit: number; prefix: 'Maximum' 
 const SectionTrigger: React.FC<{title: string; description: string}> = ({title, description}) => (
     <AccordionTrigger className='hover:no-underline'>
         <Stack className='text-left' gap='none'>
-            <Text as='span' leading='tight' size='lg' weight='semibold'>{title}</Text>
-            <Text as='span' leading='tight' size='md' tone='secondary'>{description}</Text>
+            <Text as='span' leading='tight' size='md' weight='semibold'>{title}</Text>
+            <Text as='span' className='text-base' leading='tight' tone='secondary'>{description}</Text>
         </Stack>
     </AccordionTrigger>
 );

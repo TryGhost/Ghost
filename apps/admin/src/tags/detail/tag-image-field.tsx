@@ -155,7 +155,7 @@ const TagImageField: React.FC<TagImageFieldProps> = ({id, label, uploadText, val
                         {unsplashEnabled && (
                             <ImageUploadActions className='top-1 right-1 opacity-100'>
                                 <Button aria-label={`Select ${label.toLowerCase()} from Unsplash`} disabled={fieldDisabled} size='icon' type='button' variant='ghost' onClick={() => setShowUnsplash(true)}>
-                                    <BrandIcon className='size-4' name='unsplash' />
+                                    <BrandIcon className='size-4 text-muted-foreground' name='unsplash' />
                                 </Button>
                             </ImageUploadActions>
                         )}

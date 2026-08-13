@@ -345,7 +345,7 @@ const TagDetail: React.FC = () => {
                                         </BreadcrumbLink>
                                     </BreadcrumbItem>
                                     <BreadcrumbSeparator />
-                                    <BreadcrumbItem>
+                                    <BreadcrumbItem className='gap-2'>
                                         {!isCreating && isLoading ? (
                                             <Skeleton className='h-4 w-40' />
                                         ) : (
