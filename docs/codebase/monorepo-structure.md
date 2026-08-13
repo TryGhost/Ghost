@@ -144,5 +144,5 @@ Some parts of Ghost live in separate repositories:
 - [`TryGhost/SDK`](https://github.com/TryGhost/SDK) contains tools for working
   with Ghost's APIs.
 
-Of these projects, only Koenig has moved into this monorepo. Framework and SDK
-packages still live in their own repositories.
+Of the Ghost-related projects, only Koenig has moved into this monorepo.
+Framework and SDK packages still live in their own repositories.

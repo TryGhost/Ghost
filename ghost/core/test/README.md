@@ -9,9 +9,13 @@ the repository's `e2e/` directory.
 const {agentProvider, fixtureManager, mockManager, matchers} =
     require('../utils/e2e-framework');
 
-const agent = await agentProvider.getAdminAPIAgent();
-await fixtureManager.init('members');
-await agent.loginAsOwner();
+let agent;
+
+beforeAll(async function () {
+    agent = await agentProvider.getAdminAPIAgent();
+    await fixtureManager.init('members');
+    await agent.loginAsOwner();
+});
 ```
 
 ## Request agents

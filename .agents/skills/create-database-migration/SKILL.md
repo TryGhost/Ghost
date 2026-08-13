@@ -17,10 +17,12 @@ accompanies it.
 3. Update the migration file with the changes you want to make in the database, following the existing patterns in the codebase. Where appropriate, prefer to use the utility functions in `ghost/core/core/server/data/migrations/utils/*`.
 4. Update the schema definition file in `ghost/core/core/server/data/schema/schema.js`, and make sure it aligns with the latest changes from the migration.
 5. Test the migration manually: `cd ghost/core && pnpm knex-migrator migrate --v {version directory} --force`
-6. If adding or dropping a table, update `ghost/core/core/server/data/exporter/table-lists.js` as appropriate. The consistency assertion in `ghost/core/test/unit/server/data/exporter/index.test.js` checks that every schema table is classified in the exporter lists.
-7. Run the focused exporter unit test when the table lists change: `cd ghost/core && pnpm test:single test/unit/server/data/exporter/index.test.js`.
-8. Run the schema integrity test, and update the hash: `cd ghost/core && pnpm test:single test/unit/server/data/schema/integrity.test.js`
-9. Run unit tests in Ghost core, and iterate until they pass: `cd ghost/core && pnpm test:unit`
+6. Roll the migration back to test `down()`: `cd ghost/core && pnpm knex-migrator rollback --v {previous version} --force`, then migrate forward again.
+7. Run the migration integration test, which covers initialization, rollback, forward migration, and idempotency: `cd ghost/core && pnpm test:single test/integration/migrations/migration.test.js`. Migrations must pass the database-backed suites against both MySQL and SQLite.
+8. If adding or dropping a table, update `ghost/core/core/server/data/exporter/table-lists.js` as appropriate. The consistency assertion in `ghost/core/test/unit/server/data/exporter/index.test.js` checks that every schema table is classified in the exporter lists.
+9. Run the focused exporter unit test when the table lists change: `cd ghost/core && pnpm test:single test/unit/server/data/exporter/index.test.js`.
+10. Run the schema integrity test, and update the hash: `cd ghost/core && pnpm test:single test/unit/server/data/schema/integrity.test.js`
+11. Run unit tests in Ghost core, and iterate until they pass: `cd ghost/core && pnpm test:unit`
 
 ## Examples
 See [examples.md](examples.md) for example migrations.

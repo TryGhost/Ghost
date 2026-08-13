@@ -8,15 +8,16 @@ codebase, allowing any Ghost instance served over HTTPS to start the OAuth flow.
 1. The user selects **Connect with Stripe** in Ghost Admin and is redirected to
    Stripe.
 2. Stripe redirects the user to `stripe.ghost.org` after authorization.
-3. `stripe.ghost.org` exchanges the authorization code for the account's public
-   and secret keys.
-4. The connection data and OAuth state are encoded and returned to Ghost.
-5. Ghost checks the state, decodes the data, and stores the connection settings.
+3. `stripe.ghost.org` exchanges the authorization code and returns a
+   base64-encoded payload containing `s`, `p`, `a`, `l`, `n`, and `i`. The `a`
+   value is Stripe's OAuth `access_token`, not the account's secret key.
+4. Ghost validates the state in `s`, then maps and stores the connection
+   settings.
 
 This flow is implemented in
 [`services/members/stripe-connect.js`](../../ghost/core/core/server/services/members/stripe-connect.js).
 
-## Stripe Checkout
+## Stripe subscription checkout
 
 1. Ghost receives a request to create a checkout session for a tier and billing
    cadence.

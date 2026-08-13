@@ -38,7 +38,7 @@ The slug must be kebab-case, for example `add-column-to-posts`. The script:
 
 - Places the file in the next minor-version folder under
   `core/server/data/migrations/versions/`.
-- Bumps the Ghost Core package to the target minor release candidate when
+- Bumps the Ghost Core and Admin packages to the target minor release candidate when
   needed so `knex-migrator` will run the new version folder.
 
 Always use this command rather than creating or naming the file manually. It
