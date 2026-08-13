@@ -16,15 +16,20 @@ export PATH="$node_dir/bin:$PATH"
 corepack enable --install-directory "$node_dir/bin"
 
 profile_marker="# Ghost orb Node.js"
-if ! grep -Fqx "$profile_marker" "$HOME/.bash_profile" 2>/dev/null; then
+profile_export="export PATH=\"$node_dir/bin:\$PATH\""
+if grep -Fqx "$profile_marker" "$HOME/.bash_profile" 2>/dev/null; then
+    sed -i "/^${profile_marker}$/ { n; c\\
+$profile_export
+    }" "$HOME/.bash_profile"
+else
     cat >> "$HOME/.bash_profile" <<EOF
 
 $profile_marker
-export PATH="$node_dir/bin:\$PATH"
+$profile_export
 EOF
 fi
 
-if ! command -v docker >/dev/null 2>&1; then
+if ! /usr/bin/docker compose version >/dev/null 2>&1; then
     sudo install -m 0755 -d /etc/apt/keyrings
     sudo curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
     sudo chmod a+r /etc/apt/keyrings/docker.asc
