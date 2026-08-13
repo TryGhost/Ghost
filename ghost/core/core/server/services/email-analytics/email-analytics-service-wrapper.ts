@@ -1,48 +1,31 @@
-const errors = require('@tryghost/errors');
-const logging = require('@tryghost/logging');
-const {EmailAnalyticsService} = require('./email-analytics-service');
-/** @import {ConfigInstance} from '../../../shared/config/loader' */
-/** @import DomainEvents from '@tryghost/domain-events' */
-/** @import {Queries} from './lib/queries' */
-/** @import Metrics from '@tryghost/metrics' */
-/** @import {BatchEventProcessor} from './batch-event-processor' */
-/** @import {JobNames, CursorSeed, EmailAnalyticsFetchResult} from './email-analytics-service' */
+import errors from '@tryghost/errors';
+import logging from '@tryghost/logging';
+import type {ConfigInstance} from '../../../shared/config/loader';
+// @ts-expect-error This module lacks type definitions.
+import type DomainEvents from '@tryghost/domain-events';
+// @ts-expect-error This module lacks type definitions.
+import type Metrics from '@tryghost/metrics';
+import {EmailAnalyticsService, type CursorSeed, type EmailAnalyticsFetchResult, type JobNames} from './email-analytics-service';
+import type {BatchEventProcessor} from './batch-event-processor';
+import type {Queries} from './lib/queries';
+import {fetchMailgunEvents} from './fetch-mailgun-events';
 
-class EmailAnalyticsServiceWrapper {
-    /** @type {string} */ #logName;
-    /** @type {Pick<ConfigInstance, 'get'> | undefined} */ #config;
-    /** @type {Pick<Metrics, 'metric'> | undefined} */ #metrics;
-    /** @type {EmailAnalyticsService | undefined} */ #service;
+export class EmailAnalyticsServiceWrapper {
+    #logName: string;
+    #config?: Pick<ConfigInstance, 'get'>;
+    #metrics?: Pick<Metrics, 'metric'>;
+    #service?: EmailAnalyticsService;
     #fetching = false;
     #restoredSchedule = false;
 
-    get #logPrefix() {
+    get #logPrefix(): string {
         return `[EmailAnalytics:${this.#logName}]`;
     }
 
-    /**
-     * @param {object} options
-     * @param {string} options.logName
-     */
-    constructor({
-        logName,
-    }) {
+    constructor({logName}: {logName: string}) {
         this.#logName = logName;
     }
 
-    /**
-     * @param {object} options
-     * @param {Pick<ConfigInstance, 'get'>} options.config
-     * @param {Pick<DomainEvents, 'subscribe'>} options.domainEvents
-     * @param {Parameters<DomainEvents['subscribe']>[0]} options.event
-     * @param {Queries} options.queries
-     * @param {string[]} options.mailgunTags
-     * @param {JobNames} options.jobNames
-     * @param {CursorSeed} options.cursorSeed
-     * @param {() => BatchEventProcessor} options.createEventProcessor
-     * @param {Pick<Metrics, 'metric'>} options.metrics
-     * @param {{get: (key: string) => unknown}} options.settingsCache
-     */
     init({
         config,
         domainEvents,
@@ -54,15 +37,24 @@ class EmailAnalyticsServiceWrapper {
         createEventProcessor,
         metrics,
         settingsCache
-    }) {
+    }: Readonly<{
+        config: Pick<ConfigInstance, 'get'>;
+        domainEvents: Pick<DomainEvents, 'subscribe'>;
+        event: Parameters<DomainEvents['subscribe']>[0];
+        queries: Queries;
+        mailgunTags: string[];
+        jobNames: JobNames;
+        cursorSeed: CursorSeed;
+        createEventProcessor: () => BatchEventProcessor;
+        metrics: Pick<Metrics, 'metric'>;
+        settingsCache: {get: (key: string) => unknown};
+    }>): void {
         if (this.#service) {
             return;
         }
 
         this.#config = config;
         this.#metrics = metrics;
-
-        const {fetchMailgunEvents} = require('./fetch-mailgun-events');
 
         this.#service = new EmailAnalyticsService({
             fetchEvents: (options) => fetchMailgunEvents({...options, config, settings: settingsCache, tags: mailgunTags}),
@@ -83,10 +75,7 @@ class EmailAnalyticsServiceWrapper {
         });
     }
 
-    /**
-     * @returns {EmailAnalyticsService}
-     */
-    get service() {
+    get service(): EmailAnalyticsService {
         const result = this.#service;
         if (!result) {
             throw new errors.InternalServerError({message: "EmailAnalyticsServiceWrapper is not initialized with service"});
@@ -94,7 +83,7 @@ class EmailAnalyticsServiceWrapper {
         return result;
     }
 
-    #getConfig() {
+    #getConfig(): Pick<ConfigInstance, 'get'> {
         const result = this.#config;
         if (!result) {
             throw new errors.InternalServerError({message: "EmailAnalyticsServiceWrapper is not initialized with config"});
@@ -102,13 +91,7 @@ class EmailAnalyticsServiceWrapper {
         return result;
     }
 
-    /**
-     * Log comprehensive job completion with timing metrics
-     * @param {string} jobType - Type of job (e.g., 'latest-opened', 'latest', 'missing', 'scheduled')
-     * @param {EmailAnalyticsFetchResult} fetchResult - The fetch result from EmailAnalyticsService
-     * @param {number} totalDurationMs - Total duration in milliseconds
-     */
-    _logJobCompletion(jobType, fetchResult, totalDurationMs) {
+    _logJobCompletion(jobType: string, fetchResult: EmailAnalyticsFetchResult, totalDurationMs: number): void {
         const config = this.#getConfig();
 
         const {eventCount, apiPollingTimeMs, processingTimeMs, aggregationTimeMs, emailAggregationTimeMs, memberAggregationTimeMs, result} = fetchResult;
@@ -157,7 +140,7 @@ class EmailAnalyticsServiceWrapper {
         }
     }
 
-    async fetchLatestOpenedEvents({maxEvents} = {maxEvents: Infinity}) {
+    async fetchLatestOpenedEvents({maxEvents}: {maxEvents: number} = {maxEvents: Infinity}): Promise<number> {
         const config = this.#getConfig();
 
         const beginTimestamp = await this.service.getLastOpenedEventTimestamp();
@@ -180,7 +163,7 @@ class EmailAnalyticsServiceWrapper {
         return fetchResult.eventCount;
     }
 
-    async fetchLatestNonOpenedEvents({maxEvents} = {maxEvents: Infinity}) {
+    async fetchLatestNonOpenedEvents({maxEvents}: {maxEvents: number} = {maxEvents: Infinity}): Promise<number> {
         const fetchStartedAt = Date.now();
         const fetchResult = await this.service.fetchLatestNonOpenedEvents({maxEvents});
         const totalDuration = Date.now() - fetchStartedAt;
@@ -190,7 +173,7 @@ class EmailAnalyticsServiceWrapper {
         return fetchResult.eventCount;
     }
 
-    async fetchMissing({maxEvents} = {maxEvents: Infinity}) {
+    async fetchMissing({maxEvents}: {maxEvents: number} = {maxEvents: Infinity}): Promise<number> {
         const fetchStartedAt = Date.now();
         const fetchResult = await this.service.fetchMissing({maxEvents});
         const totalDuration = Date.now() - fetchStartedAt;
@@ -200,12 +183,7 @@ class EmailAnalyticsServiceWrapper {
         return fetchResult.eventCount;
     }
 
-    /**
-     * @param {object} options
-     * @param {number} options.maxEvents
-     * @returns {Promise<number>} The number of scheduled events fetched
-     */
-    async fetchScheduled({maxEvents}) {
+    async fetchScheduled({maxEvents}: {maxEvents: number}): Promise<number> {
         if (maxEvents < 300) {
             return 0;
         }
@@ -219,7 +197,7 @@ class EmailAnalyticsServiceWrapper {
         return fetchResult.eventCount;
     }
 
-    async startFetch() {
+    async startFetch(): Promise<void> {
         if (!this.#restoredSchedule) {
             this.#restoredSchedule = true;
             await this.service.restoreScheduled();
@@ -274,15 +252,9 @@ class EmailAnalyticsServiceWrapper {
         this.#fetching = false;
     }
 
-    /**
-     * @param {string} reason
-     * @returns {void}
-     */
-    _restartFetch(reason) {
+    _restartFetch(reason: string): void {
         this.#fetching = false;
         logging.info(`${this.#logPrefix} Restarting fetch due to ${reason}`);
         this.startFetch();
     }
 }
-
-module.exports = EmailAnalyticsServiceWrapper;

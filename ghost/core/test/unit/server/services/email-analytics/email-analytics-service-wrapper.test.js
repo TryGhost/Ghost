@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const EmailAnalyticsServiceWrapper = require('../../../../../core/server/services/email-analytics/email-analytics-service-wrapper');
+const {EmailAnalyticsServiceWrapper} = require('../../../../../core/server/services/email-analytics/email-analytics-service-wrapper');
 const {Queries} = require('../../../../../core/server/services/email-analytics/lib/queries');
 
 class FakeEvent {
