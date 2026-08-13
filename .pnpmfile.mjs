@@ -2,10 +2,10 @@ import {glob, readFile} from 'node:fs/promises';
 
 // Global pnpm hooks for the Ghost monorepo.
 //
-// Only `beforePacking` is defined. It runs during `pnpm pack` / `pnpm publish`
-// and mutates the package.json written *into the tarball* — the on-disk
-// manifest is never touched, and dependency resolution / the shared lockfile
-// are unaffected (no `readPackage`/`afterAllResolved` hook here).
+// `beforePacking` runs during `pnpm pack` / `pnpm publish` and mutates the
+// package.json written *into the tarball* — the on-disk manifest is never
+// touched. `readPackage` runs during resolution, so it *does* feed the shared
+// lockfile.
 //
 // Applied to every packed/published package:
 //   - drop `nx`            — Nx target config, meaningless to consumers
@@ -66,6 +66,23 @@ function beforePacking(pkg) {
 }
 
 /**
+ * consolidate declares 48 template engines as optional peers. pnpm links any
+ * that another workspace package happens to satisfy, so react, react-dom and
+ * @babel/core rode into ghost's production deploy closure via
+ * nodemailer-mailgun-transport — the only thing that pulls consolidate in, and
+ * it never renders through it. packageExtensions can only add, so dropping the
+ * peers outright needs this hook.
+ */
+function readPackage(pkg) {
+    if (pkg.name === 'consolidate') {
+        delete pkg.peerDependencies;
+        delete pkg.peerDependenciesMeta;
+    }
+
+    return pkg;
+}
+
+/**
  * Dynamic config update function to automatically exclude "private" packages
  * from pnpm's changelog detection. We can't remove the version fields
  * because that would break workspace resolution, but we can dynamically add them
@@ -105,4 +122,4 @@ async function updateConfig(config) {
     return config;
 }
 
-export const hooks = {beforePacking, updateConfig};
+export const hooks = {beforePacking, readPackage, updateConfig};
