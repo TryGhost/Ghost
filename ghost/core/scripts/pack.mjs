@@ -170,6 +170,12 @@ if (!buildFiles.some(isLicenseFile)) {
 //     native module post-install scripts like better-sqlite3, sharp, re2)
 //   - overrides + packageExtensions (root dependency policy must apply to the
 //     standalone install too)
+//   - ignoredOptionalDependencies: the archive gets no .pnpmfile.mjs, so the
+//     readPackage hook that strips knex's optional sqlite3 peer never runs here.
+//     This is what keeps sqlite3 out — dropping the provider (knex-migrator's
+//     optionalDependencies) leaves knex's optional peer with nothing to bind to.
+//     Without it the end-user install pulls sqlite3 back in and fails on
+//     ERR_PNPM_IGNORED_BUILDS, since allowBuilds no longer permits its build.
 // We drop:
 //   - packages: relative paths that don't exist in the standalone dir
 //   - minimumReleaseAge, blockExoticSubdeps, catalogMode: source-repo
@@ -177,7 +183,7 @@ if (!buildFiles.some(isLicenseFile)) {
 //     @tryghost/* component tarballs aren't on npm, so an age check would 404)
 console.log('\nWriting pnpm-workspace.yaml...');
 const buildWorkspace = {};
-for (const key of ['catalog', 'catalogs', 'allowBuilds', 'strictDepBuilds', 'overrides', 'packageExtensions']) {
+for (const key of ['catalog', 'catalogs', 'allowBuilds', 'strictDepBuilds', 'overrides', 'packageExtensions', 'ignoredOptionalDependencies']) {
     if (rootWorkspace[key] !== undefined) {
         buildWorkspace[key] = rootWorkspace[key];
     }
