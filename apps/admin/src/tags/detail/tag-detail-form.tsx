@@ -52,7 +52,7 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
     const blogDomain = getBlogDomain(blogUrl);
 
     return (
-        <Grid align='start' className='min-[800px]:grid-cols-2 lg:grid-cols-[minmax(0,5fr)_minmax(0,3fr)]' data-testid='tag-detail-form' gap='2xl'>
+        <Grid align='start' className='lg:grid-cols-2 sidebarlg:grid-cols-[minmax(0,5fr)_minmax(0,3fr)]' data-testid='tag-detail-form' gap='2xl'>
             {/* The main form and advanced settings collapse into one column
                 below the medium breakpoint. */}
             <Card data-testid='tag-core-data-card'>
