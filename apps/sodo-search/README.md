@@ -18,21 +18,15 @@ This starts the standard development environment and the Sodo Search watcher. To
 
 ## Release
 
-A patch release can be rolled out instantly in production, whereas a minor/major release requires the Ghost monorepo to be updated and released. 
-In either case, you need sufficient permissions to release `@tryghost` packages on NPM.
+Patch releases are automatic. When Sodo Search changes on `main`, CI publishes the next patch version to npm and clears the jsDelivr cache. Sites using that major/minor line receive the patch without a Ghost release.
 
-### Patch release
+For an intentional minor or major release:
 
-1. Run `pnpm ship` and select a patch version when prompted
+1. From a clean branch, run `pnpm ship` and select a minor or major version
 2. Merge the release commit to `main`
+3. Wait for a public Ghost release to ship the new default version line
 
-### Minor / major release
-
-1. Run `pnpm ship` and select a minor or major version when prompted
-2. Merge the release commit to `main`
-3. Wait until a new version of Ghost is released
-
-To use the new version of Sodo-Search in Ghost, update the version in Ghost core's default configuration (currently at `core/shared/config/default.json`)
+`pnpm ship` updates both the package version and Ghost's default Sodo Search version.
 
 # Copyright & License 
 

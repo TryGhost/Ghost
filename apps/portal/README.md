@@ -74,26 +74,17 @@ pnpm test:e2e
 
 ## Release
 
-A patch release can be rolled out instantly in production, whereas a minor/major release requires the Ghost monorepo to be updated and released. In either case, you need sufficient permissions to release `@tryghost` packages on NPM.
+Patch releases are automatic. When Portal changes on `main`, CI publishes the next patch version to npm and clears the jsDelivr cache. Sites using that major/minor line receive the patch without a Ghost release.
 
 If you're releasing new code that should not immediately go live _always_ use a minor or major version when publishing.
 
-In order to have Ghost's e2e tests run against the new code on CI or to test the new code in staging, you need to publish to npm following the Minor / major release process below.
+For an intentional minor or major release:
 
-### Patch release
-
-1. Run `pnpm ship` and select a patch version when prompted
+1. From a clean branch, run `pnpm ship` and select a minor or major version
 2. Merge the release commit to `main`
+3. Wait for a public Ghost release to ship the new default version line
 
-### Minor / major release
-
-1. Run `pnpm ship` and select a minor or major version when prompted
-2. Merge the release commit to `main`
-3. Wait until a new version of Ghost is released
-
-### JsDelivr cache
-If the CI doesn't clear JsDelivr cache to get the new version out instantly, you may want to do it yourself manually ([docs](https://www.notion.so/ghost/How-to-clear-jsDelivr-CDN-cache-2930bdbac02946eca07ac23ab3199bfa?pvs=4)). Typically, you'll need to open `https://purge.jsdelivr.net/ghost/portal@~${PORTAL_VERSION}/umd/portal.min.js` and
-`https://purge.jsdelivr.net/ghost/portal@~${PORTAL_VERSION}/umd/main.css` in your browser, where `PORTAL_VERSION` is the latest minor version in `ghost/core/core/shared/config/defaults.json` ([code](https://github.com/TryGhost/Ghost/blob/0aef3d3beeebcd79a4bfd3ad27e0ac67554b5744/ghost/core/core/shared/config/defaults.json#L185))
+`pnpm ship` updates both the package version and Ghost's default Portal version.
 
 # Copyright & License
 
