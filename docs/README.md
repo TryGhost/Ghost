@@ -83,6 +83,9 @@ The [database migrations guide](practices/database-migrations.md) covers the
 current migration workflow, required schema and export updates, safety rules,
 and validation commands.
 
+The [Stripe flows guide](codebase/stripe-flows.md) describes how Stripe Connect,
+checkout sessions, and tier prices fit together.
+
 ### Finding Issues to Work On
 
 - [Good First Issues](https://github.com/TryGhost/Ghost/labels/good%20first%20issue) - Great for newcomers

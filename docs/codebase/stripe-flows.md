@@ -3,15 +3,18 @@
 ## Stripe Connect
 
 Ghost has a Stripe Connect integration. The client ID is part of the Ghost
-codebase, allowing any Ghost instance to start the OAuth flow.
+codebase, allowing any Ghost instance served over HTTPS to start the OAuth flow.
 
 1. The user selects **Connect with Stripe** in Ghost Admin and is redirected to
    Stripe.
 2. Stripe redirects the user to `stripe.ghost.org` after authorization.
 3. `stripe.ghost.org` exchanges the authorization code for the account's public
    and secret keys.
-4. The connection data is encoded and returned to the user.
-5. Ghost decodes and stores the connection data to complete the connection.
+4. The connection data and OAuth state are encoded and returned to Ghost.
+5. Ghost checks the state, decodes the data, and stores the connection settings.
+
+This flow is implemented in
+[`services/members/stripe-connect.js`](../../ghost/core/core/server/services/members/stripe-connect.js).
 
 ## Stripe Checkout
 
@@ -29,3 +32,6 @@ codebase, allowing any Ghost instance to start the OAuth flow.
 1. Ghost receives a request to create a tier with monthly and yearly prices.
 2. Ghost creates the corresponding Stripe Product and Prices.
 3. Ghost stores their details in the database.
+
+The checkout and tier price flows are implemented by
+[`payments-service.js`](../../ghost/core/core/server/services/members/members-api/services/payments-service.js).
