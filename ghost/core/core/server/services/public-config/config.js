@@ -62,12 +62,7 @@ module.exports = function getConfigProperties() {
         klipy: config.get('klipy'),
         pintura: config.get('pintura'),
         signupForm: config.get('signupForm'),
-        security: config.get('security'),
-        // Capability signal: Admin deploys independently of core and
-        // feature-detects the exports download endpoint through this
-        exports: {
-            download: true
-        }
+        security: config.get('security')
     };
 
     if (config.get('explore') && config.get('explore:testimonials_url')) {

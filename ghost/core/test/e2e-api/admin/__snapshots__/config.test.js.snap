@@ -8,9 +8,6 @@ Object {
     "emailAnalytics": true,
     "enableDeveloperExperiments": false,
     "environment": StringMatching /\\^testing/,
-    "exports": Object {
-      "download": true,
-    },
     "klipy": Object {
       "apiKey": null,
       "contentFilter": "off",

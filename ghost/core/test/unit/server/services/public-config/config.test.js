@@ -24,8 +24,7 @@ const allowedKeys = [
     'klipy',
     'pintura',
     'signupForm',
-    'security',
-    'exports'
+    'security'
 ];
 
 describe('Public-config Service', function () {

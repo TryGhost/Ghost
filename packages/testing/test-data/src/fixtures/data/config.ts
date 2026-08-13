@@ -26,11 +26,6 @@ export const configData = {
         },
         security: {
             staffDeviceVerification: true
-        },
-        // Capability signal for the sync site export endpoint — present on any
-        // core new enough to serve GET /exports/download/
-        exports: {
-            download: true
         }
     }
 };
