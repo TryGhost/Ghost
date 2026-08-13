@@ -70,6 +70,10 @@ To contribute or add translations, see
 adding translatable product copy, see the
 [internationalization guide](practices/internationalization.md).
 
+The [error handling guide](practices/error-handling.md) explains how to design
+failure states for logs, APIs, and user interfaces without exposing raw
+technical errors.
+
 ### Finding Issues to Work On
 
 - [Good First Issues](https://github.com/TryGhost/Ghost/labels/good%20first%20issue) - Great for newcomers
