@@ -198,6 +198,9 @@ yalc.lock
 # useful for keeping local plans etc
 /ai
 
+# Amp generates thread-specific portal state at runtime
+/.amp/portals/
+
 # direnv environment loader files
 .envrc
 
