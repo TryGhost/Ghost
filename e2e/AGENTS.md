@@ -114,11 +114,14 @@ practical.
 
 ### Factory Pattern (Required)
 ```typescript
-import {PostFactory, UserFactory} from '../data-factory';
+import {createPostFactory} from '@/data-factory';
 
 const postFactory = createPostFactory(page.request);
-const post = await postFactory.create({userId: user.id});
+const post = await postFactory.create({title: 'Test Post'});
 ```
+
+Import through the `@/` path aliases in `tsconfig.json` (`@/data-factory`,
+`@/helpers/playwright`, `@/admin-pages`), never relative paths.
 
 ## Best Practices
 

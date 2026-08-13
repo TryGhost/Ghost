@@ -95,7 +95,7 @@ edit/run/test loop against ghost/core.
 - `koenig-lexical` has Vitest unit tests and a large Playwright browser
   acceptance suite: `pnpm test:unit`, `pnpm test:acceptance` (headless by default;
   `:headed`, `:report`, and `test:slowmo` variants for debugging). See
-  [koenig-lexical/CLAUDE.md](./koenig-lexical/CLAUDE.md). Ghost's end-to-end
+  [koenig-lexical/AGENTS.md](./koenig-lexical/AGENTS.md). Ghost's end-to-end
   suite is the separate top-level [`e2e/`](../e2e/) workspace.
 - `kg-unsplash-selector` also has a Playwright suite (`pnpm test:acceptance`).
 

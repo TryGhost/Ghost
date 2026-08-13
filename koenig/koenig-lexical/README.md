@@ -84,6 +84,8 @@ end-to-end test suite lives in the repository's top-level
 - `pnpm test:acceptance:headed` runs acceptance tests with the browser visible
 - `pnpm test:acceptance:report` generates an HTML report
 - `pnpm test:acceptance:quiet` uses minimal output, showing failures only
+- `pnpm test:acceptance --ui` opens Playwright's [UI mode](https://playwright.dev/docs/test-ui-mode)
+  in watch mode for exploring and re-running acceptance tests
 - `pnpm test:slowmo` runs headed acceptance tests with a 100ms delay between
   instructions (some tests may fail or time out due to the added delays)
 
