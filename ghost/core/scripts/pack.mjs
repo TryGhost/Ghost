@@ -14,7 +14,7 @@
  *     from the registry.
  *  2. Pack `ghost` itself; the beforePacking hook rewrites its workspace deps to
  *     `file:components/*.tgz`, strips devDependencies/nx/scripts. Extract it into
- *     package/.
+ *     package/ and add the repo-root LICENSE.
  *  3. Write a trimmed pnpm-workspace.yaml (catalogs + overrides, component
  *     tarball overrides, release-age check off).
  *  4. Seed the root lockfile, then regenerate it against the packed manifest so
@@ -35,6 +35,9 @@ const CORE_DIR = path.resolve(import.meta.dirname, '..');
 const ROOT_DIR = path.resolve(CORE_DIR, '../..');
 const BUILD_DIR = path.join(CORE_DIR, 'package');
 const COMPONENTS_DIR = path.join(BUILD_DIR, 'components');
+
+// Matches pnpm's own root-license glob (LICEN{S,C}E{,.*}).
+const isLicenseFile = name => /^licen[sc]e(\..+)?$/i.test(name);
 
 const readJson = async file => JSON.parse(await fs.readFile(file, 'utf8'));
 const writeJson = (file, data) => fs.writeFile(file, JSON.stringify(data, null, 2) + '\n');
@@ -148,6 +151,18 @@ pkg.packageManager = rootPkg.packageManager;
 await writeJson(pkgPath, pkg);
 console.log(`  Set packageManager: ${rootPkg.packageManager.split('+')[0]}`);
 
+// pnpm pack copies the repo-root license into a package that ships none, but it
+// tests the whole packed file list — the bundled Casper/Source themes ship their
+// own LICENSE, so ghost looks covered and the root one is skipped. Copy it here.
+const buildFiles = await fs.readdir(BUILD_DIR);
+if (!buildFiles.some(isLicenseFile)) {
+    const rootLicenses = (await fs.readdir(ROOT_DIR)).filter(isLicenseFile);
+    await Promise.all(rootLicenses.map(async (name) => {
+        await fs.copyFile(path.join(ROOT_DIR, name), path.join(BUILD_DIR, name));
+        console.log(`  Copied ${name} from the repo root`);
+    }));
+}
+
 // 3. Write a trimmed pnpm-workspace.yaml. We keep:
 //   - catalog + catalogs (lockfile records & validates these)
 //   - allowBuilds + strictDepBuilds (end-user installs need this to permit
@@ -193,15 +208,19 @@ await pnpm(
 // 5. Validate before tarring — guard against a valid-looking but broken archive.
 console.log('\nValidating build output...');
 const requiredFiles = ['pnpm-workspace.yaml', 'pnpm-lock.yaml', 'package.json'];
-const [packagedPkg, packagedWorkspace, missingFiles, componentTgzCount] = await Promise.all([
+const [packagedPkg, packagedWorkspace, missingFiles, componentTgzCount, packagedFiles] = await Promise.all([
     readJson(pkgPath),
     readYaml(path.join(BUILD_DIR, 'pnpm-workspace.yaml')),
     Promise.all(requiredFiles.map(async rel => (await exists(path.join(BUILD_DIR, rel)) ? null : rel))),
-    fs.readdir(COMPONENTS_DIR).then(files => files.filter(f => f.endsWith('.tgz')).length)
+    fs.readdir(COMPONENTS_DIR).then(files => files.filter(f => f.endsWith('.tgz')).length),
+    fs.readdir(BUILD_DIR)
 ]);
 const missing = missingFiles.filter(Boolean);
 if (missing.length > 0) {
     throw new Error(`Required file(s) missing from build output: ${missing.join(', ')}`);
+}
+if (!packagedFiles.some(isLicenseFile)) {
+    throw new Error('Build output is missing a top-level license file');
 }
 if (componentTgzCount !== components.size) {
     throw new Error('components/ tarball count does not match packed component set');
