@@ -72,40 +72,27 @@ To contribute or add translations, see
 adding translatable product copy, see the
 [internationalization guide](practices/internationalization.md).
 
-The [error handling guide](practices/error-handling.md) explains how to design
-failure states for logs, APIs, and user interfaces without exposing raw
-technical errors.
+## Guides
 
-The [API design guide](practices/api-design.md) documents resource envelopes,
-controller conventions, validation, permissions, caching, and compatibility.
+Codebase guides explain how the main systems fit together:
 
-The [database migrations guide](practices/database-migrations.md) covers the
-current migration workflow, required schema and export updates, safety rules,
-and validation commands.
+- [Authentication](codebase/authentication.md)
+- [Configuration](codebase/configuration.md)
+- [Database structure](codebase/database.md)
+- [Internal caching](codebase/internal-caching.md)
+- [Jobs system](codebase/jobs.md)
+- [Post analytics](codebase/post-analytics.md)
+- [Site UUID](codebase/site-uuid.md)
+- [Stripe flows](codebase/stripe-flows.md)
 
-The [Stripe flows guide](codebase/stripe-flows.md) describes how Stripe Connect,
-checkout sessions, and tier prices fit together.
+Practice and contributor guides explain how to make and verify changes:
 
-The [jobs system guide](codebase/jobs.md) explains when work runs inline or in a
-worker and how scheduled jobs behave.
-
-The [site UUID guide](codebase/site-uuid.md) covers how Ghost creates, exposes,
-and protects a site's stable identifier.
-
-The [email testing guide](contributing/testing-email.md) explains local Mailpit
-capture and when external delivery configuration is needed.
-
-The [post analytics guide](codebase/post-analytics.md) explains the sources of
-web, member, newsletter, and click data shown for posts.
-
-The [internal caching guide](codebase/internal-caching.md) describes default and
-feature-specific cache adapters.
-
-The [database structure guide](codebase/database.md) gives a short orientation
-to the schema and commonly referenced domain values.
-
-The [performance testing guide](contributing/performance-testing.md) covers
-focused local load tests without exposing hosted-service procedures.
+- [API design](practices/api-design.md)
+- [Database migrations](practices/database-migrations.md)
+- [Email testing](contributing/testing-email.md)
+- [Error handling](practices/error-handling.md)
+- [Internationalization](practices/internationalization.md)
+- [Performance testing](contributing/performance-testing.md)
 
 ### Finding Issues to Work On
 
