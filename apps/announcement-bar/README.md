@@ -14,9 +14,7 @@ Start Ghost with the public-app watchers enabled:
 pnpm dev:public
 ```
 
-This starts the standard development environment and the Announcement Bar
-watcher. To run only the package's build watcher, use `pnpm dev` from this
-directory.
+This starts the standard development environment and the Announcement Bar watcher. To run only the package's build watcher, use `pnpm dev` from this directory.
 
 ## Release
 
@@ -34,7 +32,7 @@ In either case, you need sufficient permissions to release `@tryghost` packages 
 2. Merge the release commit to `main`
 3. Wait until a new version of Ghost is released
 
-To use the new version of signup form in Ghost, update the version in Ghost core's default configuration (currently at `core/shared/config/default.json`)
+To use the new version of Announcement Bar in Ghost, update the version in Ghost core's default configuration (currently at `core/shared/config/default.json`)
 
 # Copyright & License 
 

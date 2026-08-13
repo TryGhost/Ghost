@@ -14,8 +14,7 @@ Start Ghost with the public-app watchers enabled:
 pnpm dev:public
 ```
 
-This starts the standard development environment and the Sodo Search watcher.
-To run only the package's build watcher, use `pnpm dev` from this directory.
+This starts the standard development environment and the Sodo Search watcher. To run only the package's build watcher, use `pnpm dev` from this directory.
 
 ## Release
 

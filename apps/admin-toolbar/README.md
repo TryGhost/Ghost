@@ -13,16 +13,18 @@ run these commands from this directory:
 
 ```bash
 pnpm build    # one-off build
-pnpm dev      # watch the UMD build
-pnpm test     # build + run tests against UMD bundle
+pnpm dev      # watch and rebuild umd/admin-toolbar.min.js
+pnpm test     # build + run tests against the built bundle
 ```
 
 ## How it's served
 
 In production, the script is loaded from jsDelivr via the `adminToolbar` config
 in `defaults.json`, following the same CDN pattern as portal, comments-ui, and
-the other public apps. In development, the Docker Dockerfile overrides the URL
-to proxy through Caddy to the local vite preview server on port 4176.
+the other public apps. In development, `docker/ghost-dev/Dockerfile` overrides
+that URL to `/ghost/assets/admin-toolbar/admin-toolbar.min.js`, which the dev
+gateway serves straight off disk from this package's `umd/` directory — so the
+watcher's output is picked up on the next request.
 
 # Copyright & License
 
