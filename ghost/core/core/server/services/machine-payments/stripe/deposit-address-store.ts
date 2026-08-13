@@ -1,32 +1,77 @@
-const errors = require('@tryghost/errors');
-const logging = require('@tryghost/logging');
-const {Stripe} = require('stripe');
-const settingsHelpers = require('../../settings-helpers');
-const settingsCache = require('../../../../shared/settings-cache');
+import errors from '@tryghost/errors';
+import logging from '@tryghost/logging';
+import {Stripe} from 'stripe';
 
 // Preview API required for crypto deposit addresses / machine payments.
-const STRIPE_MACHINE_PAYMENTS_API_VERSION = '2026-05-27.preview';
+export const STRIPE_MACHINE_PAYMENTS_API_VERSION = '2026-05-27.preview';
 const DEPOSIT_ADDRESS_SETTING = 'machine_payments_deposit_address';
+
+type SettingsCacheFacade = {
+    get: (key: string) => unknown;
+};
+
+type SettingsHelpersFacade = {
+    getActiveStripeKeys: () => {secretKey?: string} | null | undefined;
+};
+
+type SettingsModel = {
+    edit: (settings: Array<{key: string; value: string}>, options?: Record<string, unknown>) => Promise<unknown>;
+};
+
+type StripeDepositAddressClient = {
+    crypto?: {
+        depositAddresses?: {
+            create: (params: {network: string}) => Promise<{address?: string} | null | undefined>;
+        };
+    };
+    paymentIntents: {
+        create: (params: Record<string, unknown>) => Promise<{
+            id: string;
+            next_action?: {
+                crypto_display_details?: {
+                    deposit_addresses?: Record<string, {address?: string} | undefined>;
+                };
+            };
+        }>;
+        cancel?: (id: string) => Promise<unknown>;
+    };
+};
+
+type DepositAddressStoreDeps = {
+    stripeFactory?: (secretKey: string) => StripeDepositAddressClient;
+    settingsHelpersFacade?: SettingsHelpersFacade;
+    settingsCacheFacade?: SettingsCacheFacade;
+    settingsModel?: SettingsModel;
+};
+
+const settingsHelpers = require('../../settings-helpers') as SettingsHelpersFacade;
+const settingsCache = require('../../../../shared/settings-cache') as SettingsCacheFacade;
 
 /**
  * Durable per-network deposit-address store.
- * Persists a JSON map of network → address in settings so Tempo and Base
- * rails cannot share a single chain address.
+ * Persists a JSON map of network → address in settings so per-network deposit
+ * addresses cannot share a single chain address.
  */
-class DepositAddressStore {
-    /**
-     * @param {object} [deps]
-     * @param {(secretKey: string) => import('stripe').Stripe} [deps.stripeFactory]
-     * @param {object} [deps.settingsHelpersFacade]
-     * @param {object} [deps.settingsCacheFacade]
-     * @param {object} [deps.settingsModel]
-     */
+export class DepositAddressStore {
+    stripeFactory: (secretKey: string) => StripeDepositAddressClient;
+    settingsHelpers: SettingsHelpersFacade;
+    settingsCache: SettingsCacheFacade;
+    _settingsModel: SettingsModel | undefined;
+    stripe: StripeDepositAddressClient | null;
+    stripeSecretKey: string | null;
+
+    #addresses: Record<string, string> = {};
+    #inflight = new Map<string, Promise<string>>();
+
     constructor({
-        stripeFactory = secretKey => new Stripe(secretKey, {apiVersion: STRIPE_MACHINE_PAYMENTS_API_VERSION}),
+        stripeFactory = secretKey => new Stripe(secretKey, {
+            // Preview crypto APIs are not yet in the published Stripe types.
+            apiVersion: STRIPE_MACHINE_PAYMENTS_API_VERSION as never
+        }) as unknown as StripeDepositAddressClient,
         settingsHelpersFacade = settingsHelpers,
         settingsCacheFacade = settingsCache,
         settingsModel
-    } = {}) {
+    }: DepositAddressStoreDeps = {}) {
         this.stripeFactory = stripeFactory;
         this.settingsHelpers = settingsHelpersFacade;
         this.settingsCache = settingsCacheFacade;
@@ -35,21 +80,14 @@ class DepositAddressStore {
         this.stripeSecretKey = null;
     }
 
-    #addresses = {};
-    #inflight = new Map();
-
-    get settingsModel() {
+    get settingsModel(): SettingsModel {
         if (!this._settingsModel) {
-            this._settingsModel = require('../../../models').Settings;
+            this._settingsModel = require('../../../models').Settings as SettingsModel;
         }
         return this._settingsModel;
     }
 
-    /**
-     * @param {{network?: string}} [options]
-     * @returns {Promise<string>}
-     */
-    async getOrCreateAddress({network = 'tempo'} = {}) {
+    async getOrCreateAddress({network = 'tempo'}: {network?: string} = {}): Promise<string> {
         const cached = this.#addresses[network] || this.#readMap()[network];
         if (cached) {
             this.#addresses[network] = cached;
@@ -70,7 +108,7 @@ class DepositAddressStore {
         return await pending;
     }
 
-    async #createAndPersist({network}) {
+    async #createAndPersist({network}: {network: string}): Promise<string> {
         const stripe = this.#getStripe();
 
         // Prefer the dedicated deposit address API when available.
@@ -90,7 +128,7 @@ class DepositAddressStore {
         return await this.#createViaPaymentIntent({network, stripe});
     }
 
-    async #createViaPaymentIntent({network, stripe}) {
+    async #createViaPaymentIntent({network, stripe}: {network: string; stripe: StripeDepositAddressClient}): Promise<string> {
         const paymentIntent = await stripe.paymentIntents.create({
             amount: 100,
             currency: 'usd',
@@ -128,21 +166,21 @@ class DepositAddressStore {
         return address;
     }
 
-    #readMap() {
+    #readMap(): Record<string, string> {
         const raw = this.settingsCache.get(DEPOSIT_ADDRESS_SETTING);
         if (!raw) {
             return {};
         }
 
         if (typeof raw === 'object' && !Array.isArray(raw)) {
-            return raw;
+            return raw as Record<string, string>;
         }
 
         if (typeof raw === 'string') {
             try {
-                const parsed = JSON.parse(raw);
+                const parsed: unknown = JSON.parse(raw);
                 if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
-                    return parsed;
+                    return parsed as Record<string, string>;
                 }
             } catch {
                 // Legacy single-address string — treat as Tempo-only.
@@ -154,7 +192,7 @@ class DepositAddressStore {
         return {};
     }
 
-    async #persist(network, address) {
+    async #persist(network: string, address: string) {
         this.#addresses[network] = address;
         const map = {
             ...this.#readMap(),
@@ -168,7 +206,7 @@ class DepositAddressStore {
         }], {context: {internal: true}});
     }
 
-    #getStripe() {
+    #getStripe(): StripeDepositAddressClient {
         const keys = this.settingsHelpers.getActiveStripeKeys();
         const secretKey = keys?.secretKey;
 
@@ -187,6 +225,3 @@ class DepositAddressStore {
         return this.stripe;
     }
 }
-
-module.exports = DepositAddressStore;
-module.exports.STRIPE_MACHINE_PAYMENTS_API_VERSION = STRIPE_MACHINE_PAYMENTS_API_VERSION;

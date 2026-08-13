@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const ContentLoader = require('../../../../../core/server/services/machine-payments/content-loader');
+const {ContentLoader} = require('../../../../../core/server/services/machine-payments/content-loader');
 
 describe('Unit: server/services/machine-payments/content-loader', function () {
     it('returns null for non-purchasable entries', async function () {

@@ -3,11 +3,10 @@ const sinon = require('sinon');
 const logging = require('@tryghost/logging');
 const {createLlmsService} = require('../../../../core/frontend/services/llms/service');
 const {MachinePaymentsService} = require('../../../../core/server/services/machine-payments/service');
-const Pricing = require('../../../../core/server/services/machine-payments/pricing');
-const {formatPrice} = require('../../../../core/server/services/machine-payments/adapters/x402-adapter');
+const {Pricing} = require('../../../../core/server/services/machine-payments/pricing');
 const {TEMPO_USDC} = require('../../../../core/server/services/machine-payments/adapters/mpp-adapter');
-const DepositAddressStore = require('../../../../core/server/services/machine-payments/stripe/deposit-address-store');
-const PaymentRecorder = require('../../../../core/server/services/machine-payments/stripe/payment-recorder');
+const {DepositAddressStore} = require('../../../../core/server/services/machine-payments/stripe/deposit-address-store');
+const {PaymentRecorder} = require('../../../../core/server/services/machine-payments/stripe/payment-recorder');
 
 /**
  * Integration coverage for machine-payments + llms discoverability.
@@ -210,12 +209,6 @@ describe('Integration: machine-payments orchestration coverage', function () {
     });
 
     describe('pricing and adapters', function () {
-        it('formats USD prices and rejects non-USD for x402', function () {
-            assert.equal(formatPrice({amount: 100, currency: 'USD'}), '$1.00');
-            assert.throws(() => formatPrice({amount: 100, currency: 'EUR'}), /USD only/);
-            assert.equal(TEMPO_USDC, '0x20c000000000000000000000b9537d11c60e8b50');
-        });
-
         it('maps SPT and Tempo pricing terms', async function () {
             const pricing = new Pricing({
                 settingsCache: {
@@ -240,6 +233,7 @@ describe('Integration: machine-payments orchestration coverage', function () {
                 amount: 250,
                 majorAmount: '2.50'
             });
+            assert.equal(TEMPO_USDC, '0x20c000000000000000000000b9537d11c60e8b50');
         });
     });
 

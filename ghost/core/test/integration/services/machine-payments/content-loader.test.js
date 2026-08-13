@@ -1,9 +1,9 @@
 const assert = require('node:assert/strict');
 const testUtils = require('../../../utils');
 const models = require('../../../../core/server/models');
-const ContentLoader = require('../../../../core/server/services/machine-payments/content-loader');
-const MachinePaymentEventRepository = require('../../../../core/server/services/machine-payments/events/machine-payment-event-repository');
-const Pricing = require('../../../../core/server/services/machine-payments/pricing');
+const {ContentLoader} = require('../../../../core/server/services/machine-payments/content-loader');
+const {MachinePaymentEventRepository} = require('../../../../core/server/services/machine-payments/events/machine-payment-event-repository');
+const {Pricing} = require('../../../../core/server/services/machine-payments/pricing');
 
 describe('Integration: machine-payments', function () {
     beforeAll(testUtils.teardownDb);

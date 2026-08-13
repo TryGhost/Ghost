@@ -1,25 +1,58 @@
-const {Stripe} = require('stripe');
-const settingsHelpers = require('../../settings-helpers');
-const {STRIPE_MACHINE_PAYMENTS_API_VERSION} = require('./deposit-address-store');
+import {Stripe} from 'stripe';
+import {STRIPE_MACHINE_PAYMENTS_API_VERSION} from './deposit-address-store';
+
+type SettingsHelpersFacade = {
+    getActiveStripeKeys: () => {secretKey?: string} | null | undefined;
+};
+
+type StripeRecorderClient = {
+    paymentIntents: {
+        create: (
+            params: Record<string, unknown>,
+            options?: {idempotencyKey?: string}
+        ) => Promise<{id: string}>;
+    };
+};
+
+type PaymentRecorderDeps = {
+    stripeFactory?: (secretKey: string) => StripeRecorderClient;
+    settingsHelpersFacade?: SettingsHelpersFacade;
+};
+
+export type RecordablePayment = {
+    method: string;
+    reference: string;
+    amount: number;
+    currency: string;
+    postId: string;
+    protocol?: string;
+    stripePaymentIntentId?: string | null;
+};
+
+const settingsHelpers = require('../../settings-helpers') as SettingsHelpersFacade;
 
 /**
  * Records settled machine payments as Stripe PaymentIntents for Dashboard visibility.
  */
-class PaymentRecorder {
+export class PaymentRecorder {
+    stripeFactory: (secretKey: string) => StripeRecorderClient;
+    settingsHelpers: SettingsHelpersFacade;
+    stripe: StripeRecorderClient | null;
+    stripeSecretKey: string | null;
+
     constructor({
-        stripeFactory = secretKey => new Stripe(secretKey, {apiVersion: STRIPE_MACHINE_PAYMENTS_API_VERSION}),
+        stripeFactory = secretKey => new Stripe(secretKey, {
+            apiVersion: STRIPE_MACHINE_PAYMENTS_API_VERSION as never
+        }) as unknown as StripeRecorderClient,
         settingsHelpersFacade = settingsHelpers
-    } = {}) {
+    }: PaymentRecorderDeps = {}) {
         this.stripeFactory = stripeFactory;
         this.settingsHelpers = settingsHelpersFacade;
         this.stripe = null;
         this.stripeSecretKey = null;
     }
 
-    /**
-     * @param {{method: string, reference: string, amount: number, currency: string, postId: string, protocol?: string}} payment
-     */
-    async record(payment) {
+    async record(payment: RecordablePayment): Promise<string | null> {
         if (!payment?.reference) {
             return null;
         }
@@ -72,7 +105,7 @@ class PaymentRecorder {
         return pi.id;
     }
 
-    #getStripe() {
+    #getStripe(): StripeRecorderClient | null {
         const keys = this.settingsHelpers.getActiveStripeKeys();
         const secretKey = keys?.secretKey;
         if (!secretKey) {
@@ -86,5 +119,3 @@ class PaymentRecorder {
         return this.stripe;
     }
 }
-
-module.exports = PaymentRecorder;

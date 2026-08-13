@@ -5,29 +5,106 @@
  * gating stay outside this service — we only authorize emitting markdown bytes.
  */
 
-const settingsCache = require('../../../shared/settings-cache');
-const labs = require('../../../shared/labs');
-const logging = require('@tryghost/logging');
+import logging from '@tryghost/logging';
+import {Pricing, type PaymentAmountTerms} from './pricing';
+import {isPurchasableEntry, isMachinePaymentsEnabled} from './eligibility';
+import {ContentLoader} from './content-loader';
 
-const Pricing = require('./pricing');
-const {isPurchasableEntry, isMachinePaymentsEnabled} = require('./eligibility');
-const ContentLoader = require('./content-loader');
+export const PAID_MARKDOWN_CACHE_CONTROL = 'private, no-store';
 
-const PAID_MARKDOWN_CACHE_CONTROL = 'private, no-store';
+type SettingsCache = {
+    get: (key: string) => unknown;
+};
 
-class MachinePaymentsService {
-    /**
-     * @param {object} [deps]
-     * @param {object} [deps.settingsCache]
-     * @param {object} [deps.labsService]
-     * @param {import('./pricing')} [deps.pricing]
-     * @param {import('./content-loader')} [deps.contentLoader]
-     * @param {Array<{canHandle: Function, challenge: Function, fulfill: Function, name?: string}>} [deps.adapters]
-     * @param {object} [deps.eventRepository]
-     * @param {object} [deps.paymentRecorder]
-     * @param {() => boolean} [deps.isStripeConnected]
-     * @param {() => Promise<string|null>} [deps.defaultCurrencyProvider]
-     */
+type LabsService = {
+    isSet: (flag: string) => boolean;
+};
+
+const settingsCache = require('../../../shared/settings-cache') as SettingsCache;
+const labs = require('../../../shared/labs') as LabsService;
+
+type PaymentAdapter = {
+    name?: string;
+    canHandle: (request: Request) => boolean;
+    challenge: (request: Request, terms: PaymentTerms) => Promise<Response | null | undefined>;
+    fulfill: (request: Request, terms: PaymentTerms) => Promise<Fulfillment>;
+};
+
+type PaymentTerms = PaymentAmountTerms & {
+    description: string;
+    method: string;
+    mimeType: string;
+    url: string;
+};
+
+type Fulfillment = {
+    protocol?: string;
+    method: string;
+    reference: string;
+    amount?: number;
+    currency?: string;
+    stripePaymentIntentId?: string | null;
+    receiptHeaders?: Record<string, string>;
+};
+
+type EventRepository = {
+    save: (data: {
+        postId: string;
+        amount: number;
+        currency: string;
+        protocol: string;
+        method: string;
+        stripePaymentIntentId?: string | null;
+        reference: string;
+    }) => Promise<{created?: boolean; event?: unknown} | null | undefined>;
+};
+
+type PaymentRecorderLike = {
+    record: (payment: Record<string, unknown>) => Promise<string | null | undefined>;
+};
+
+type ChallengeOrFulfillOptions = {
+    entryId: string;
+    resourceType: 'posts' | 'pages';
+    description?: string;
+    renderMarkdown: (entry: Record<string, unknown>) => string;
+    contentLocation: string;
+};
+
+type MachinePaymentsServiceDeps = {
+    settingsCache?: SettingsCache;
+    labsService?: LabsService;
+    pricing?: Pricing;
+    contentLoader?: ContentLoader & {isPurchasable?: ContentLoader['isPurchasable']};
+    adapters?: PaymentAdapter[];
+    eventRepository?: EventRepository | null;
+    paymentRecorder?: PaymentRecorderLike | null;
+    isStripeConnected?: () => boolean;
+    defaultCurrencyProvider?: () => Promise<string | null>;
+};
+
+type ProblemDetails = {
+    type: string;
+    title: string;
+    status: number;
+    detail: string;
+};
+
+type PaymentCredentialError = {
+    statusCode?: number;
+};
+
+export class MachinePaymentsService {
+    settingsCache: SettingsCache;
+    labs: LabsService;
+    pricing: Pricing;
+    contentLoader: ContentLoader & {isPurchasable?: ContentLoader['isPurchasable']};
+    adapters: PaymentAdapter[];
+    eventRepository: EventRepository | null;
+    paymentRecorder: PaymentRecorderLike | null;
+    isStripeConnected: () => boolean;
+    defaultCurrencyProvider: () => Promise<string | null>;
+
     constructor({
         settingsCache: settings = settingsCache,
         labsService = labs,
@@ -38,7 +115,7 @@ class MachinePaymentsService {
         paymentRecorder = null,
         isStripeConnected = () => false,
         defaultCurrencyProvider = getDefaultTiersCurrency
-    } = {}) {
+    }: MachinePaymentsServiceDeps = {}) {
         this.settingsCache = settings;
         this.labs = labsService;
         this.pricing = pricing || new Pricing({settingsCache: settings, defaultCurrencyProvider});
@@ -50,7 +127,7 @@ class MachinePaymentsService {
         this.defaultCurrencyProvider = defaultCurrencyProvider;
     }
 
-    isEnabled() {
+    isEnabled(): boolean {
         return isMachinePaymentsEnabled({
             labs: this.labs,
             settingsCache: this.settingsCache,
@@ -58,19 +135,21 @@ class MachinePaymentsService {
         });
     }
 
-    /**
-     * @param {object} entry
-     * @returns {boolean}
-     */
-    isPurchasable(entry) {
+    isPurchasable(entry: {visibility?: string; tiers?: Array<{type?: string}>}): boolean {
         return this.isEnabled() && isPurchasableEntry(entry);
     }
 
-    /**
-     * @param {string} url
-     * @param {string} [description]
-     */
-    async getTerms({url, description, method = 'GET', mimeType = 'text/markdown'}) {
+    async getTerms({
+        url,
+        description,
+        method = 'GET',
+        mimeType = 'text/markdown'
+    }: {
+        url: string;
+        description?: string;
+        method?: string;
+        mimeType?: string;
+    }): Promise<PaymentTerms> {
         const {amount, currency} = await this.pricing.getTerms();
         return {
             amount,
@@ -85,12 +164,8 @@ class MachinePaymentsService {
     /**
      * Challenge or fulfill a paid markdown request.
      * Does not load full HTML until payment fulfills successfully.
-     *
-     * @param {Request} request Fetch API Request
-     * @param {{entryId: string, resourceType: 'posts'|'pages', description?: string, renderMarkdown: (entry: object) => string, contentLocation: string}} options
-     * @returns {Promise<Response>}
      */
-    async challengeOrFulfill(request, options) {
+    async challengeOrFulfill(request: Request, options: ChallengeOrFulfillOptions): Promise<Response> {
         if (!this.isEnabled()) {
             return this.#problemResponse({
                 type: 'https://paymentauth.org/problems/payment-unavailable',
@@ -141,8 +216,13 @@ class MachinePaymentsService {
         return await this.#paymentRequiredResponse(request, terms);
     }
 
-    async #handleFulfill(adapter, request, terms, options) {
-        let fulfillment;
+    async #handleFulfill(
+        adapter: PaymentAdapter,
+        request: Request,
+        terms: PaymentTerms,
+        options: ChallengeOrFulfillOptions
+    ): Promise<Response> {
+        let fulfillment: Fulfillment;
         try {
             fulfillment = await adapter.fulfill(request, terms);
         } catch (err) {
@@ -152,7 +232,7 @@ class MachinePaymentsService {
         // Ledger first: Stripe idempotency keys can expire (~24h), so a durable
         // protocol+reference check must gate PaymentIntent creation on replay.
         if (this.eventRepository) {
-            let saved;
+            let saved: {created?: boolean; event?: unknown} | null | undefined;
             try {
                 saved = await this.eventRepository.save({
                     postId: options.entryId,
@@ -225,13 +305,13 @@ class MachinePaymentsService {
         return new Response(body, {status: 200, headers});
     }
 
-    async #paymentRequiredResponse(request, terms) {
+    async #paymentRequiredResponse(request: Request, terms: PaymentTerms): Promise<Response> {
         const results = await Promise.allSettled(
             this.adapters.map(adapter => adapter.challenge(request, terms))
         );
 
         const challenges = results
-            .filter(result => result.status === 'fulfilled' && result.value)
+            .filter((result): result is PromiseFulfilledResult<Response> => result.status === 'fulfilled' && Boolean(result.value))
             .map(result => result.value);
 
         if (!challenges.length) {
@@ -252,7 +332,7 @@ class MachinePaymentsService {
             if (challenge.headers) {
                 challenge.headers.forEach((value, key) => {
                     // Preserve every WWW-Authenticate (mpp compose can emit several)
-                    // and keep distinct x402 payment-required headers.
+                    // and keep distinct payment challenge headers.
                     if (key.toLowerCase() === 'www-authenticate') {
                         headers.append(key, value);
                     } else if (!headers.has(key)) {
@@ -273,8 +353,8 @@ class MachinePaymentsService {
         });
     }
 
-    #paymentCredentialErrorResponse(err) {
-        if (err?.statusCode === 403) {
+    #paymentCredentialErrorResponse(err: unknown): Response {
+        if ((err as PaymentCredentialError)?.statusCode === 403) {
             return this.#problemResponse({
                 type: 'https://paymentauth.org/problems/payment-forbidden',
                 title: 'Payment credential rejected',
@@ -293,7 +373,7 @@ class MachinePaymentsService {
         });
     }
 
-    #problemResponse({type, title, status, detail}) {
+    #problemResponse({type, title, status, detail}: ProblemDetails): Response {
         return new Response(JSON.stringify({type, title, status, detail}), {
             status,
             headers: {
@@ -304,8 +384,14 @@ class MachinePaymentsService {
     }
 }
 
-async function getDefaultTiersCurrency() {
-    const models = require('../../models');
+export async function getDefaultTiersCurrency(): Promise<string | null> {
+    const models = require('../../models') as {
+        Product: {
+            findPage: (options: Record<string, unknown>) => Promise<{
+                data?: Array<{toJSON?: () => {currency?: string}; currency?: string}>;
+            }>;
+        };
+    };
     const page = await models.Product.findPage({
         filter: 'type:paid+active:true',
         limit: 1,
@@ -315,16 +401,10 @@ async function getDefaultTiersCurrency() {
     return tier?.currency || null;
 }
 
-function safePathname(url) {
+function safePathname(url: string): string {
     try {
         return new URL(url).pathname;
     } catch {
         return url;
     }
 }
-
-module.exports = {
-    MachinePaymentsService,
-    getDefaultTiersCurrency,
-    PAID_MARKDOWN_CACHE_CONTROL
-};

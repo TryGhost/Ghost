@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const DepositAddressStore = require('../../../../../core/server/services/machine-payments/stripe/deposit-address-store');
+const {DepositAddressStore} = require('../../../../../core/server/services/machine-payments/stripe/deposit-address-store');
 
 describe('Unit: server/services/machine-payments/deposit-address-store', function () {
     afterEach(function () {

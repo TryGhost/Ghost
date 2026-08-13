@@ -185,10 +185,6 @@ catalog:
   shell-quote: 1.10.0
   unidecode: 1.1.0
   mppx: 0.6.20
-  '@x402/core': 2.12.0
-  '@x402/evm': 2.12.0
-  '@x402/hono': 2.12.0
-  hono: 4.12.18
 
 catalogs:
   react17:

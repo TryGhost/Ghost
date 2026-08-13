@@ -1,33 +1,80 @@
-const errors = require('@tryghost/errors');
-const logging = require('@tryghost/logging');
-const config = require('../../../../shared/config');
-const settingsCache = require('../../../../shared/settings-cache');
-const Pricing = require('../pricing');
+import errors from '@tryghost/errors';
+import logging from '@tryghost/logging';
+import config from '../../../../shared/config';
+import {Pricing, type PaymentAmountTerms} from '../pricing';
+import {STRIPE_MACHINE_PAYMENTS_API_VERSION} from '../stripe/deposit-address-store';
 
-const TEMPO_USDC = '0x20c000000000000000000000b9537d11c60e8b50';
-const TEMPO_DECIMALS = 6;
+export const TEMPO_USDC = '0x20c000000000000000000000b9537d11c60e8b50';
+export const TEMPO_DECIMALS = 6;
 const SPT_DECIMALS = 2;
+
+type SettingsCache = {
+    get: (key: string) => unknown;
+};
+
+const settingsCache = require('../../../../shared/settings-cache') as SettingsCache;
+
+type DepositAddressStoreLike = {
+    getOrCreateAddress: (options: {network?: string}) => Promise<string>;
+};
+
+type PaymentReceipt = {
+    method?: string;
+    reference?: string;
+    status?: unknown;
+    timestamp?: unknown;
+};
+
+type MppPaymentResult = {
+    status: number;
+    challenge?: Response | null;
+    withReceipt?: (response: Response) => Response;
+};
+
+type MppxModule = {
+    Mppx: {
+        create: (options: {methods: unknown[]; secretKey: unknown}) => {
+            tempo: {charge: (options: unknown) => (request: Request) => Promise<MppPaymentResult>};
+            stripe: {charge: (options: unknown) => (request: Request) => Promise<MppPaymentResult>};
+            compose: (...entries: unknown[]) => (request: Request) => Promise<MppPaymentResult>;
+        };
+    };
+    tempo: {charge: (config: unknown) => unknown};
+    stripe: {charge: (config: unknown) => unknown};
+    Store: {memory: () => unknown};
+};
+
+type MppAdapterDeps = {
+    depositAddressStore: DepositAddressStoreLike;
+    settingsCache?: SettingsCache;
+    pricing?: Pricing;
+    mppxFactory?: () => MppxModule;
+    stripeClientFactory?: () => unknown | null;
+};
 
 /**
  * MPP adapter (Tempo USDC + Stripe SPT/card).
  * Implements the protocol-agnostic canHandle / challenge / fulfill contract.
  */
-class MppAdapter {
-    /**
-     * @param {object} deps
-     * @param {{getOrCreateAddress: Function}} deps.depositAddressStore
-     * @param {object} [deps.settingsCache]
-     * @param {object} [deps.pricing]
-     * @param {() => object} [deps.mppxFactory] test seam
-     * @param {() => object|null} [deps.stripeClientFactory] test seam
-     */
+export class MppAdapter {
+    depositAddressStore: DepositAddressStoreLike;
+    settingsCache: SettingsCache;
+    pricing: Pricing;
+    mppxFactory?: () => MppxModule;
+    stripeClientFactory?: () => unknown | null;
+    name: string;
+
+    #mppx: ReturnType<MppxModule['Mppx']['create']> | null = null;
+    #mppxKey: string | null = null;
+    #replayStore: unknown = null;
+
     constructor({
         depositAddressStore,
         settingsCache: settings = settingsCache,
         pricing = new Pricing({settingsCache: settings}),
         mppxFactory,
         stripeClientFactory
-    }) {
+    }: MppAdapterDeps) {
         this.depositAddressStore = depositAddressStore;
         this.settingsCache = settings;
         this.pricing = pricing;
@@ -36,25 +83,21 @@ class MppAdapter {
         this.name = 'mpp';
     }
 
-    #mppx = null;
-    #mppxKey = null;
-    #replayStore = null;
-
-    canHandle(request) {
+    canHandle(request: Request): boolean {
         const authHeader = request.headers.get('authorization');
         return Boolean(authHeader && /^Payment\s+/i.test(authHeader));
     }
 
-    async challenge(request, terms) {
+    async challenge(request: Request, terms: PaymentAmountTerms): Promise<Response | null> {
         const payment = await this.#run(request, terms);
         if (payment.status === 402) {
-            return payment.challenge;
+            return payment.challenge ?? null;
         }
         // Unexpected success without credential — treat as challenge unavailable.
         return null;
     }
 
-    async fulfill(request, terms) {
+    async fulfill(request: Request, terms: PaymentAmountTerms) {
         const payment = await this.#run(request, terms);
         if (payment.status === 402) {
             throw new errors.NoPermissionError({
@@ -88,17 +131,17 @@ class MppAdapter {
         };
     }
 
-    async #run(request, terms) {
+    async #run(request: Request, terms: PaymentAmountTerms): Promise<MppPaymentResult> {
         const {Mppx, tempo, stripe: mppStripe, Store} = this.mppxFactory
             ? this.mppxFactory()
-            : require('mppx/server');
+            : require('mppx/server') as MppxModule;
 
         const profileId = this.settingsCache.get('machine_payments_stripe_profile_id')
             || config.get('machinePayments:mpp:networkId');
         const stripeClient = this.#getStripeClient();
         const hasStripe = Boolean(stripeClient && profileId);
 
-        let recipient = null;
+        let recipient: string | null = null;
         try {
             recipient = await this.depositAddressStore.getOrCreateAddress({
                 network: config.get('machinePayments:mpp:stripeNetwork') || 'tempo'
@@ -124,7 +167,7 @@ class MppAdapter {
         const key = `${secretKey}:${recipient || ''}:${hasStripe ? profileId : ''}:${tempoCurrency}:${testnet}`;
 
         if (!this.#mppx || this.#mppxKey !== key) {
-            const methods = [];
+            const methods: unknown[] = [];
             if (hasTempo) {
                 methods.push(tempo.charge({
                     currency: tempoCurrency,
@@ -174,20 +217,23 @@ class MppAdapter {
             || this.settingsCache.get('machine_payments_secret');
     }
 
-    #getStripeClient() {
+    #getStripeClient(): unknown | null {
         if (this.stripeClientFactory) {
             return this.stripeClientFactory();
         }
 
         try {
-            const settingsHelpers = require('../../settings-helpers');
+            const settingsHelpers = require('../../settings-helpers') as {
+                getActiveStripeKeys: () => {secretKey?: string} | null | undefined;
+            };
             const keys = settingsHelpers.getActiveStripeKeys();
             if (!keys?.secretKey) {
                 return null;
             }
-            const {Stripe} = require('stripe');
-            const {STRIPE_MACHINE_PAYMENTS_API_VERSION} = require('../stripe/deposit-address-store');
-            return new Stripe(keys.secretKey, {apiVersion: STRIPE_MACHINE_PAYMENTS_API_VERSION});
+            const {Stripe} = require('stripe') as typeof import('stripe');
+            return new Stripe(keys.secretKey, {
+                apiVersion: STRIPE_MACHINE_PAYMENTS_API_VERSION as never
+            });
         } catch {
             return null;
         }
@@ -198,20 +244,15 @@ class MppAdapter {
  * mppx serializes Payment-Receipt as unpadded base64url JSON
  * `{method, reference, status, timestamp}`.
  */
-function parseReceipt(header) {
+export function parseReceipt(header: string | null): PaymentReceipt {
     if (!header) {
         return {};
     }
 
     try {
-        const parsed = JSON.parse(Buffer.from(header, 'base64url').toString('utf8'));
-        return parsed && typeof parsed === 'object' ? parsed : {};
+        const parsed: unknown = JSON.parse(Buffer.from(header, 'base64url').toString('utf8'));
+        return parsed && typeof parsed === 'object' ? parsed as PaymentReceipt : {};
     } catch {
         return {};
     }
 }
-
-module.exports = MppAdapter;
-module.exports.TEMPO_USDC = TEMPO_USDC;
-module.exports.TEMPO_DECIMALS = TEMPO_DECIMALS;
-module.exports.parseReceipt = parseReceipt;

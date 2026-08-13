@@ -63,6 +63,9 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const llmsEnabled = llmsEnabledValue !== false;
     const machinePaymentsEnabled = machinePaymentsEnabledValue === true;
     const hasMachinePaymentsLab = config?.labs?.machinePayments === true;
+    // Admin and core deploy independently — only render controls once the
+    // settings key exists in the browse payload (labs alone is not enough).
+    const backendSupportsMachinePayments = settings?.some(s => s.key === 'machine_payments_enabled');
     const canEnableMachinePayments = llmsEnabled && stripeEnabled;
     const machinePaymentsCurrency = (machinePaymentsCurrencyValue || defaultPaidTierCurrency) as string;
     const machinePaymentsAmount = Number(machinePaymentsAmountValue || 100);
@@ -87,10 +90,10 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     // Clear stored enablement when prerequisites drop so re-enabling llms/Stripe
     // does not silently reactivate charges.
     useEffect(() => {
-        if (machinePaymentsEnabled && !canEnableMachinePayments) {
+        if (backendSupportsMachinePayments && machinePaymentsEnabled && !canEnableMachinePayments) {
             saveMachinePaymentSettings([{key: 'machine_payments_enabled', value: false}]);
         }
-    }, [machinePaymentsEnabled, canEnableMachinePayments]);
+    }, [backendSupportsMachinePayments, machinePaymentsEnabled, canEnableMachinePayments]);
 
     const openConnectModal = async () => {
         // Allow Stripe despite the limit when it's already connected, so it's
@@ -172,7 +175,7 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 {`Load more (showing ${formatNumber(tiers?.length || 0)}/${formatNumber(meta?.pagination.total || 0)} tiers)`}
             </Button>}
 
-            {hasMachinePaymentsLab && (
+            {hasMachinePaymentsLab && backendSupportsMachinePayments && (
                 <SettingGroupContent className='border-t border-border pt-6' columns={1}>
                     <div className='flex items-start justify-between gap-4'>
                         <div className='space-y-1'>

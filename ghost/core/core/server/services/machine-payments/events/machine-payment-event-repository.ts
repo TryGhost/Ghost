@@ -1,29 +1,33 @@
-const errors = require('@tryghost/errors');
-const {MachinePaymentEvent} = require('./machine-payment-event');
+import errors from '@tryghost/errors';
+import {MachinePaymentEvent, type MachinePaymentEventData} from './machine-payment-event';
 
-const isUniqueConstraintError = err => err?.code === 'ER_DUP_ENTRY' || err?.code?.startsWith?.('SQLITE_CONSTRAINT');
+type BookshelfModelInstance = unknown;
+type BookshelfOptions = unknown;
+type BookshelfModel = {
+    add: (data: Record<string, unknown>, unfilteredOptions?: BookshelfOptions) => Promise<BookshelfModelInstance>;
+    findOne: (data: Record<string, unknown>) => Promise<BookshelfModelInstance | null | undefined>;
+};
 
-class MachinePaymentEventRepository {
-    #Model;
+type UniqueConstraintError = {
+    code?: string;
+};
 
-    constructor({MachinePaymentEventModel}) {
+const isUniqueConstraintError = (err: unknown): boolean => {
+    const code = (err as UniqueConstraintError)?.code;
+    return code === 'ER_DUP_ENTRY' || Boolean(code?.startsWith?.('SQLITE_CONSTRAINT'));
+};
+
+export class MachinePaymentEventRepository {
+    #Model: BookshelfModel;
+
+    constructor({MachinePaymentEventModel}: {MachinePaymentEventModel: BookshelfModel}) {
         this.#Model = MachinePaymentEventModel;
     }
 
     /**
-     * @param {object} data
-     * @param {string} data.postId
-     * @param {number} data.amount
-     * @param {string} data.currency
-     * @param {string} data.protocol
-     * @param {string} data.method
-     * @param {string|null} [data.stripePaymentIntentId]
-     * @param {string} data.reference
+     * @returns Promise resolving to the event and whether it was newly created
      */
-    /**
-     * @returns {Promise<{event: object, created: boolean}>}
-     */
-    async save(data) {
+    async save(data: MachinePaymentEventData): Promise<{event: BookshelfModelInstance; created: boolean}> {
         const event = MachinePaymentEvent.create(data);
 
         const existing = await this.#findByProtocolReference(event.protocol, event.reference);
@@ -54,15 +58,13 @@ class MachinePaymentEventRepository {
             }
 
             throw new errors.InternalServerError({
-                err,
+                err: err instanceof Error ? err : undefined,
                 message: 'Failed to persist machine payment event after unique constraint conflict'
             });
         }
     }
 
-    async #findByProtocolReference(protocol, reference) {
+    async #findByProtocolReference(protocol: string, reference: string) {
         return await this.#Model.findOne({protocol, reference});
     }
 }
-
-module.exports = MachinePaymentEventRepository;

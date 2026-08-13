@@ -4,13 +4,12 @@ const settingsHelpers = require('../settings-helpers');
 const models = require('../../models');
 
 const {MachinePaymentsService, getDefaultTiersCurrency} = require('./service');
-const DepositAddressStore = require('./stripe/deposit-address-store');
-const PaymentRecorder = require('./stripe/payment-recorder');
-const MppAdapter = require('./adapters/mpp-adapter');
-const X402Adapter = require('./adapters/x402-adapter');
-const MachinePaymentEventRepository = require('./events/machine-payment-event-repository');
-const ContentLoader = require('./content-loader');
-const Pricing = require('./pricing');
+const {DepositAddressStore} = require('./stripe/deposit-address-store');
+const {PaymentRecorder} = require('./stripe/payment-recorder');
+const {MppAdapter} = require('./adapters/mpp-adapter');
+const {MachinePaymentEventRepository} = require('./events/machine-payment-event-repository');
+const {ContentLoader} = require('./content-loader');
+const {Pricing} = require('./pricing');
 
 class MachinePaymentsServiceWrapper {
     /** @type {MachinePaymentsService|null} */
@@ -42,9 +41,6 @@ class MachinePaymentsServiceWrapper {
         const adapters = [
             new MppAdapter({depositAddressStore, settingsCache, pricing})
         ];
-
-        // x402 is registered as a second rail; agents that don't speak it ignore it.
-        adapters.push(new X402Adapter({depositAddressStore}));
 
         this.service = new MachinePaymentsService({
             settingsCache,

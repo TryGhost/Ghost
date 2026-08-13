@@ -1,21 +1,32 @@
-const errors = require('@tryghost/errors');
+import errors from '@tryghost/errors';
 
-const DEFAULT_AMOUNT = 100;
-const DEFAULT_CURRENCY = 'USD';
+export const DEFAULT_AMOUNT = 100;
+export const DEFAULT_CURRENCY = 'USD';
 
-/**
- * @param {{settingsCache: {get: (key: string) => unknown}, defaultCurrencyProvider?: () => Promise<string|null>}} deps
- */
-class Pricing {
-    constructor({settingsCache, defaultCurrencyProvider}) {
+type SettingsCache = {
+    get: (key: string) => unknown;
+};
+
+type PricingDeps = {
+    settingsCache: SettingsCache;
+    defaultCurrencyProvider?: () => Promise<string | null | undefined>;
+};
+
+export type PaymentAmountTerms = {
+    amount: number;
+    currency: string;
+};
+
+export class Pricing {
+    settingsCache: SettingsCache;
+    defaultCurrencyProvider?: () => Promise<string | null | undefined>;
+
+    constructor({settingsCache, defaultCurrencyProvider}: PricingDeps) {
         this.settingsCache = settingsCache;
         this.defaultCurrencyProvider = defaultCurrencyProvider;
     }
 
-    /**
-     * @returns {Promise<{amount: number, currency: string}>}
-     */
-    async getTerms() {
+    async getTerms(): Promise<PaymentAmountTerms> {
         const configuredAmount = this.settingsCache.get('machine_payments_amount');
         const amount = Number(configuredAmount === null || configuredAmount === undefined
             ? DEFAULT_AMOUNT
@@ -23,7 +34,7 @@ class Pricing {
         this.assertValidAmount(amount);
 
         const configuredCurrency = this.settingsCache.get('machine_payments_currency');
-        const currency = (configuredCurrency
+        const currency = String(configuredCurrency
             || (await this.defaultCurrencyProvider?.())
             || DEFAULT_CURRENCY
         ).toUpperCase();
@@ -34,9 +45,8 @@ class Pricing {
     /**
      * SPT/card rails use configured fiat. Tempo USDC uses the same minor-unit
      * amount as a USDC charge (documented product fence — not FX conversion).
-     * @param {{amount: number, currency: string}} terms
      */
-    forSpt(terms) {
+    forSpt(terms: PaymentAmountTerms) {
         return {
             amount: terms.amount,
             currency: terms.currency.toLowerCase(),
@@ -44,17 +54,14 @@ class Pricing {
         };
     }
 
-    /**
-     * @param {{amount: number}} terms
-     */
-    forTempoUsdc(terms) {
+    forTempoUsdc(terms: {amount: number}) {
         return {
             amount: terms.amount,
             majorAmount: (terms.amount / 100).toFixed(2)
         };
     }
 
-    assertValidAmount(amount) {
+    assertValidAmount(amount: number) {
         if (!Number.isSafeInteger(amount) || amount < 1) {
             throw new errors.ValidationError({
                 message: 'Machine payments amount must be an integer greater than 0'
@@ -62,7 +69,3 @@ class Pricing {
         }
     }
 }
-
-module.exports = Pricing;
-module.exports.DEFAULT_AMOUNT = DEFAULT_AMOUNT;
-module.exports.DEFAULT_CURRENCY = DEFAULT_CURRENCY;

@@ -1,19 +1,42 @@
-const {isPurchasableEntry} = require('./eligibility');
+import {isPurchasableEntry} from './eligibility';
+
+type UrlServiceFacade = {
+    getUrlForResource: (resource: Record<string, unknown>, options?: {absolute?: boolean}) => string;
+};
+
+type PostModelInstance = {
+    toJSON: () => Record<string, unknown>;
+};
+
+type PostModel = {
+    findOne: (
+        data: Record<string, unknown>,
+        options?: {withRelated?: string[]}
+    ) => Promise<PostModelInstance | null | undefined>;
+};
+
+type ContentLoaderDeps = {
+    postModel?: PostModel;
+    urlServiceFacade?: UrlServiceFacade | null;
+};
 
 /**
  * Loads full post/page HTML only after payment has been verified.
  * Bypasses Content API member gating intentionally — this is the privileged
  * unlock path for machine payments, not a membership grant.
  */
-class ContentLoader {
-    constructor({postModel, urlServiceFacade} = {}) {
+export class ContentLoader {
+    _postModel: PostModel | undefined;
+    urlService: UrlServiceFacade | null | undefined;
+
+    constructor({postModel, urlServiceFacade}: ContentLoaderDeps = {}) {
         this._postModel = postModel;
         this.urlService = urlServiceFacade;
     }
 
-    get postModel() {
+    get postModel(): PostModel {
         if (!this._postModel) {
-            this._postModel = require('../../models').Post;
+            this._postModel = require('../../models').Post as PostModel;
         }
         return this._postModel;
     }
@@ -21,11 +44,8 @@ class ContentLoader {
     /**
      * Raw-model eligibility check. Use this before issuing a 402 so Content API
      * tier stripping cannot mark a mixed free+paid post as purchasable.
-     * @param {'posts'|'pages'} resourceType
-     * @param {string} id
-     * @returns {Promise<boolean>}
      */
-    async isPurchasable(resourceType, id) {
+    async isPurchasable(resourceType: 'posts' | 'pages', id: string): Promise<boolean> {
         const model = await this.#findPublished(resourceType, id, ['tiers']);
         if (!model) {
             return false;
@@ -34,12 +54,7 @@ class ContentLoader {
         return isPurchasableEntry(model.toJSON());
     }
 
-    /**
-     * @param {'posts'|'pages'} resourceType
-     * @param {string} id
-     * @returns {Promise<object|null>}
-     */
-    async loadFullEntry(resourceType, id) {
+    async loadFullEntry(resourceType: 'posts' | 'pages', id: string): Promise<Record<string, unknown> | null> {
         const type = resourceType === 'pages' ? 'page' : 'post';
         const model = await this.#findPublished(resourceType, id, ['authors', 'tags', 'tiers']);
 
@@ -61,7 +76,7 @@ class ContentLoader {
                 type: type === 'page' ? 'pages' : 'posts'
             }, {absolute: true});
 
-            if (!entry.url || entry.url.endsWith('/404/')) {
+            if (!entry.url || String(entry.url).endsWith('/404/')) {
                 return null;
             }
         }
@@ -69,7 +84,7 @@ class ContentLoader {
         return entry;
     }
 
-    async #findPublished(resourceType, id, withRelated) {
+    async #findPublished(resourceType: 'posts' | 'pages', id: string, withRelated: string[]) {
         const type = resourceType === 'pages' ? 'page' : 'post';
         return await this.postModel.findOne({
             id,
@@ -78,5 +93,3 @@ class ContentLoader {
         }, {withRelated});
     }
 }
-
-module.exports = ContentLoader;

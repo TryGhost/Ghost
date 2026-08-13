@@ -1,10 +1,25 @@
 /**
  * Shared eligibility for agent-purchasable paid content.
- *
- * @param {{visibility?: string, tiers?: Array<{type?: string}>}} entry
- * @returns {boolean}
  */
-function isPurchasableEntry(entry) {
+
+type TierLike = {
+    type?: string;
+};
+
+type PurchasableEntry = {
+    visibility?: string;
+    tiers?: TierLike[];
+};
+
+type LabsService = {
+    isSet: (flag: string) => boolean;
+};
+
+type SettingsCache = {
+    get: (key: string) => unknown;
+};
+
+export function isPurchasableEntry(entry: PurchasableEntry | null | undefined): boolean {
     if (!entry) {
         return false;
     }
@@ -24,22 +39,18 @@ function isPurchasableEntry(entry) {
 
 /**
  * Shared enablement check for machine payments (labs + settings + Stripe).
- *
- * @param {{
- *   labs: {isSet: (flag: string) => boolean},
- *   settingsCache: {get: (key: string) => unknown},
- *   isStripeConnected: () => boolean
- * }} deps
- * @returns {boolean}
  */
-function isMachinePaymentsEnabled({labs, settingsCache, isStripeConnected}) {
+export function isMachinePaymentsEnabled({
+    labs,
+    settingsCache,
+    isStripeConnected
+}: {
+    labs: LabsService;
+    settingsCache: SettingsCache;
+    isStripeConnected: () => boolean;
+}): boolean {
     return labs.isSet('machinePayments')
         && settingsCache.get('machine_payments_enabled') === true
         && settingsCache.get('llms_enabled') !== false
         && isStripeConnected();
 }
-
-module.exports = {
-    isPurchasableEntry,
-    isMachinePaymentsEnabled
-};
