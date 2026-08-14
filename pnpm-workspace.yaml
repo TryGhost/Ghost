@@ -234,6 +234,11 @@ catalog:
   '@types/express-brute': 1.0.6
   '@tryghost/validator': 3.2.14
   '@types/probability-distributions': 0.1.3
+  handlebars: 4.7.9
+  '@tryghost/social-urls': 0.1.63
+  downsize-cjs: 1.1.2
+  human-number: 3.0.0
+  sanitize-html: 2.17.5
 
 catalogs:
   react17:

@@ -39,18 +39,37 @@
     "@internal/cfg-eslint": "workspace:*",
     "@internal/cfg-typescript": "workspace:*",
     "@internal/cfg-vitest": "workspace:*",
+    "@types/lodash": "catalog:",
     "@types/node": "catalog:",
+    "@types/sanitize-html": "catalog:",
+    "@typescript/native": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "eslint": "catalog:",
-    "@typescript/native": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@tryghost/custom-fonts": "catalog:",
+    "@tryghost/errors": "catalog:",
+    "@tryghost/helpers": "catalog:",
+    "@tryghost/nql-lang": "catalog:",
+    "@tryghost/social-urls": "catalog:",
+    "@tryghost/string": "catalog:",
+    "@tryghost/tpl": "catalog:",
+    "downsize-cjs": "catalog:",
+    "handlebars": "catalog:",
+    "human-number": "catalog:",
+    "lodash": "catalog:",
+    "moment": "catalog:",
+    "moment-timezone": "catalog:",
+    "sanitize-html": "catalog:"
+  },
   "nx": {
     "targets": {
       "build": {
-        "outputs": ["{projectRoot}/build"]
+        "outputs": [
+          "{projectRoot}/build"
+        ]
       }
     }
   }
