@@ -19,8 +19,5 @@ export default [{
         stats: {
             endpoint: 'https://api.tinybird.co'
         }
-    },
-    // Asset delivery configuration for stats component
-    statsFilename: 'stats.js',
-    statsHash: 'development'
+    }
 }];

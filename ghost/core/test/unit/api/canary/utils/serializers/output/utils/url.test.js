@@ -78,6 +78,32 @@ describe('Unit: endpoints/utils/serializers/output/utils/url', function () {
             assert.equal(resource.type, 'pages');
         });
 
+        it('skips url generation when columns excludes url', function () {
+            // A `?fields=id,title` request strips attrs to those columns, so
+            // the resource reaches the URL service without the fields the lazy
+            // backend needs (status for the base filter, tags/authors for
+            // filtered routers) — it throws LAZY_URL_THIN_RESOURCE, which the
+            // compare-mode facade reports as LAZY_URL_COMPARE_ERROR on every
+            // such request. The URL was computed only to be deleted below
+            // anyway, so don't compute it at all (forUser/forTag already
+            // guard like this).
+            const stripped = {id: 'post-id', title: 'Title'};
+
+            const attrs = urlUtil.forPost('post-id', stripped, {options: {columns: ['id', 'title']}});
+
+            sinon.assert.notCalled(getUrlForResourceStub);
+            assert.equal(Object.hasOwn(attrs, 'url'), false);
+        });
+
+        it('generates url when columns includes url', function () {
+            const stripped = {id: 'post-id', status: 'published'};
+
+            const attrs = urlUtil.forPost('post-id', stripped, {options: {columns: ['id', 'url']}});
+
+            sinon.assert.calledOnce(getUrlForResourceStub);
+            assert.equal(attrs.url, 'getUrlForResource');
+        });
+
         it('defaults to posts when no type is passed', function () {
             // Other callers of forPost (comments mapper, activity-feed-events)
             // pass post records and rely on the default.

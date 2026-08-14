@@ -20,7 +20,17 @@ function getUrl(data, absolute) {
         // model and only differ on the page-only `show_title_and_feature_image`
         // field). Disambiguate so the router-level type is correct in both
         // cases.
-        const postResource = {...data, type: checks.isPage(data) ? 'pages' : 'posts'};
+        //
+        // The Content API output serializer strips `status` (everything it
+        // serves is published), so theme-rendered posts arrive here without
+        // it. Default it back so the lazy URL service can evaluate its
+        // status:published base filter; a post that still carries a status
+        // (preview/email-post renders) keeps it via spread order.
+        //
+        // The preview-URL probe below stays keyed on the raw `data.status`:
+        // a status-stripped post that the URL service doesn't route (e.g. not
+        // matched by any collection) must keep falling back to /p/:uuid.
+        const postResource = {status: 'published', ...data, type: checks.isPage(data) ? 'pages' : 'posts'};
         if (data.status !== 'published' && urlService.facade.getUrlForResource(postResource) === '/404/') {
             return urlUtils.urlFor({relativeUrl: urlUtils.urlJoin('/p', data.uuid, '/')}, null, absolute);
         }

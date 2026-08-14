@@ -5,7 +5,6 @@ const fs = require('fs-extra');
 const crypto = require('crypto');
 const ObjectId = require('bson-objectid').default;
 const KnexMigrator = require('knex-migrator');
-const {sequence} = require('@tryghost/promise');
 // Resolve MigratorConfig.js from the package root, not process.cwd() — see db-utils.js.
 const knexMigrator = new KnexMigrator({knexMigratorFilePath: path.join(__dirname, '../..')});
 
@@ -25,45 +24,42 @@ let postsInserted = 0;
 
 /** TEST FIXTURES **/
 const fixtures = {
-    insertPosts: function insertPosts(posts) {
-        const tasks = posts.map(post => () => {
-            return models.Post.add(post, context.internal);
-        });
-
-        return sequence(tasks);
+    insertPosts: async function insertPosts(posts) {
+        const results = [];
+        for (const post of posts) {
+            results.push(await models.Post.add(post, context.internal));
+        }
+        return results;
     },
 
-    insertPostsAndTags: function insertPostsAndTags() {
-        return Promise.all(DataGenerator.forKnex.tags.map((tag) => {
+    insertPostsAndTags: async function insertPostsAndTags() {
+        await Promise.all(DataGenerator.forKnex.tags.map((tag) => {
             return models.Tag.add(tag, context.internal);
-        }))
-            .then(function () {
-                return sequence(_.cloneDeep(DataGenerator.forKnex.posts).map(post => () => {
-                    let postTagRelations = _.filter(DataGenerator.forKnex.posts_tags, {post_id: post.id});
-                    let postAuthorsRelations = _.filter(DataGenerator.forKnex.posts_authors, {post_id: post.id});
+        }));
 
-                    postTagRelations = _.map(postTagRelations, function (postTagRelation) {
-                        return _.find(DataGenerator.forKnex.tags, {id: postTagRelation.tag_id});
-                    });
+        for (const post of _.cloneDeep(DataGenerator.forKnex.posts)) {
+            let postTagRelations = _.filter(DataGenerator.forKnex.posts_tags, {post_id: post.id});
+            let postAuthorsRelations = _.filter(DataGenerator.forKnex.posts_authors, {post_id: post.id});
 
-                    postAuthorsRelations = _.map(postAuthorsRelations, function (postAuthorsRelation) {
-                        return _.find(DataGenerator.forKnex.users, {id: postAuthorsRelation.author_id});
-                    });
-
-                    post.tags = postTagRelations;
-                    post.authors = postAuthorsRelations;
-
-                    return models.Post.add(post, context.internal);
-                }));
-            })
-            .then(function () {
-                return Promise.all(DataGenerator.forKnex.posts_meta.map((postMeta) => {
-                    return models.PostsMeta.add(postMeta, context.internal);
-                }));
-            })
-            .then(function () {
-                return fixtures.restoreLegacyMobiledocPosts();
+            postTagRelations = _.map(postTagRelations, function (postTagRelation) {
+                return _.find(DataGenerator.forKnex.tags, {id: postTagRelation.tag_id});
             });
+
+            postAuthorsRelations = _.map(postAuthorsRelations, function (postAuthorsRelation) {
+                return _.find(DataGenerator.forKnex.users, {id: postAuthorsRelation.author_id});
+            });
+
+            post.tags = postTagRelations;
+            post.authors = postAuthorsRelations;
+
+            await models.Post.add(post, context.internal);
+        }
+
+        await Promise.all(DataGenerator.forKnex.posts_meta.map((postMeta) => {
+            return models.PostsMeta.add(postMeta, context.internal);
+        }));
+
+        return fixtures.restoreLegacyMobiledocPosts();
     },
 
     // New saves convert mobiledoc to lexical, but some fixtures need to remain
@@ -585,47 +581,50 @@ const fixtures = {
 
         const product = await models.Product.findOne({type: 'paid'}, context.internal);
 
-        await sequence(_.cloneDeep(DataGenerator.forKnex.stripe_products).map(stripeProduct => () => {
+        for (const stripeProduct of _.cloneDeep(DataGenerator.forKnex.stripe_products)) {
             stripeProduct.product_id = product.id;
-            return models.StripeProduct.add(stripeProduct, context.internal);
-        }));
+            await models.StripeProduct.add(stripeProduct, context.internal);
+        }
 
-        await sequence(_.cloneDeep(DataGenerator.forKnex.stripe_prices).map(stripePrice => () => {
-            return models.StripePrice.add(stripePrice, context.internal);
-        }));
+        for (const stripePrice of _.cloneDeep(DataGenerator.forKnex.stripe_prices)) {
+            await models.StripePrice.add(stripePrice, context.internal);
+        }
     },
 
-    insertMembersAndLabelsAndProducts: function insertMembersAndLabelsAndProducts(newsletters = false) {
-        return Promise.all(DataGenerator.forKnex.labels.map((label) => {
+    insertMembersAndLabelsAndProducts: async function insertMembersAndLabelsAndProducts(newsletters = false) {
+        await Promise.all(DataGenerator.forKnex.labels.map((label) => {
             return models.Label.add(label, context.internal);
-        })).then(function () {
-            let coreProductFixtures = fixtureManager.findModelFixtures('Product').entries;
-            return Promise.all(coreProductFixtures.map(async (product) => {
-                const found = await models.Product.findOne(product, context.internal);
-                if (!found) {
-                    await models.Product.add(product, context.internal);
-                }
-            }));
-        }).then(async function () {
-            let testProductFixtures = DataGenerator.forKnex.products;
-            for (const productFixture of testProductFixtures) {
-                if (productFixture.id) { // Not currently used - this is used to add new text fixtures, e.g. a Bronze/Silver/Gold Tier
-                    await models.Product.add(productFixture, context.internal);
-                } else { // Used to update the core fixtures
-                    // If it doesn't exist we have invalid fixtures, so require: true to ensure we throw
-                    const existing = await models.Product.findOne({slug: productFixture.slug}, {...context.internal, require: true});
-                    await models.Product.edit(productFixture, {...context.internal, id: existing.id});
-                }
+        }));
+
+        let coreProductFixtures = fixtureManager.findModelFixtures('Product').entries;
+        await Promise.all(coreProductFixtures.map(async (product) => {
+            const found = await models.Product.findOne(product, context.internal);
+            if (!found) {
+                await models.Product.add(product, context.internal);
             }
-        }).then(function () {
-            return models.Product.findOne({type: 'paid'}, context.internal);
-        }).then(function (product) {
-            return Promise.all([
-                sequence(_.cloneDeep(DataGenerator.forKnex.stripe_products).map(stripeProduct => () => {
+        }));
+
+        let testProductFixtures = DataGenerator.forKnex.products;
+        for (const productFixture of testProductFixtures) {
+            if (productFixture.id) { // Not currently used - this is used to add new text fixtures, e.g. a Bronze/Silver/Gold Tier
+                await models.Product.add(productFixture, context.internal);
+            } else { // Used to update the core fixtures
+                // If it doesn't exist we have invalid fixtures, so require: true to ensure we throw
+                const existing = await models.Product.findOne({slug: productFixture.slug}, {...context.internal, require: true});
+                await models.Product.edit(productFixture, {...context.internal, id: existing.id});
+            }
+        }
+
+        const product = await models.Product.findOne({type: 'paid'}, context.internal);
+        await Promise.all([
+            (async () => {
+                for (const stripeProduct of _.cloneDeep(DataGenerator.forKnex.stripe_products)) {
                     stripeProduct.product_id = product.id;
-                    return models.StripeProduct.add(stripeProduct, context.internal);
-                })),
-                sequence(_.cloneDeep(DataGenerator.forKnex.members).map(member => () => {
+                    await models.StripeProduct.add(stripeProduct, context.internal);
+                }
+            })(),
+            (async () => {
+                for (const member of _.cloneDeep(DataGenerator.forKnex.members)) {
                     let memberLabelRelations = _.filter(DataGenerator.forKnex.members_labels, {member_id: member.id});
 
                     memberLabelRelations = _.map(memberLabelRelations, function (memberLabelRelation) {
@@ -648,108 +647,106 @@ const fixtures = {
                         member.products = [{id: product.id}];
                     }
 
-                    return models.Member.add(member, context.internal);
-                }))
-            ]);
-        }).then(function () {
-            return sequence(_.cloneDeep(DataGenerator.forKnex.members_stripe_customers).map(customer => () => {
-                return models.MemberStripeCustomer.add(customer, context.internal);
-            }));
-        }).then(function () {
-            return sequence(_.cloneDeep(DataGenerator.forKnex.stripe_prices).map(stripePrice => () => {
-                return models.StripePrice.add(stripePrice, context.internal);
-            }));
-        }).then(async function () {
-            // Add monthly/yearly prices to default product for testing
-            const defaultProduct = await models.Product.findOne({slug: 'default-product'}, context.internal);
-            return models.Product.edit({
-                ...defaultProduct.toJSON(),
-                monthly_price_id: DataGenerator.forKnex.stripe_prices[1].id,
-                yearly_price_id: DataGenerator.forKnex.stripe_prices[2].id
-            }, _.merge({id: defaultProduct.id}, context.internal));
-        }).then(function () {
-            return sequence(_.cloneDeep(DataGenerator.forKnex.stripe_customer_subscriptions).map(subscription => () => {
-                return models.StripeCustomerSubscription.add(subscription, context.internal);
-            }));
-        }).then(async function () {
-            const members = (await models.Member.findAll({
-                withRelated: [
-                    'labels',
-                    'stripeSubscriptions',
-                    'stripeSubscriptions.customer',
-                    'stripeSubscriptions.stripePrice',
-                    'stripeSubscriptions.stripePrice.stripeProduct',
-                    'products',
-                    'offerRedemptions'
-                ]
-            })).toJSON();
-
-            for (const member of members) {
-                for (const subscription of member.subscriptions) {
-                    const product = subscription.price.product.product_id;
-                    await models.Member.edit({products: member.products.concat({
-                        id: product
-                    })}, {id: member.id});
+                    await models.Member.add(member, context.internal);
                 }
-            }
+            })()
+        ]);
 
-            // Populate members_current_subscription lookup table for each member
-            // that has subscriptions (uses the VIEW as single source of truth
-            // for subscription priority resolution)
-            await models.Base.knex.raw(`
-                INSERT INTO members_current_subscription (member_id, subscription_id)
-                SELECT member_id, subscription_id
-                FROM members_resolved_subscription
-            `);
-        }).then(async function () {
-            for (const event of DataGenerator.forKnex.members_paid_subscription_events) {
-                await models.MemberPaidSubscriptionEvent.add(event);
+        for (const customer of _.cloneDeep(DataGenerator.forKnex.members_stripe_customers)) {
+            await models.MemberStripeCustomer.add(customer, context.internal);
+        }
+
+        for (const stripePrice of _.cloneDeep(DataGenerator.forKnex.stripe_prices)) {
+            await models.StripePrice.add(stripePrice, context.internal);
+        }
+
+        // Add monthly/yearly prices to default product for testing
+        const defaultProduct = await models.Product.findOne({slug: 'default-product'}, context.internal);
+        await models.Product.edit({
+            ...defaultProduct.toJSON(),
+            monthly_price_id: DataGenerator.forKnex.stripe_prices[1].id,
+            yearly_price_id: DataGenerator.forKnex.stripe_prices[2].id
+        }, _.merge({id: defaultProduct.id}, context.internal));
+
+        for (const subscription of _.cloneDeep(DataGenerator.forKnex.stripe_customer_subscriptions)) {
+            await models.StripeCustomerSubscription.add(subscription, context.internal);
+        }
+
+        const members = (await models.Member.findAll({
+            withRelated: [
+                'labels',
+                'stripeSubscriptions',
+                'stripeSubscriptions.customer',
+                'stripeSubscriptions.stripePrice',
+                'stripeSubscriptions.stripePrice.stripeProduct',
+                'products',
+                'offerRedemptions'
+            ]
+        })).toJSON();
+
+        for (const member of members) {
+            for (const subscription of member.subscriptions) {
+                await models.Member.edit({products: member.products.concat({
+                    id: subscription.price.product.product_id
+                })}, {id: member.id});
             }
-        }).then(async function () {
-            for (const event of DataGenerator.forKnex.members_created_events) {
-                await models.MemberCreatedEvent.add(event);
-            }
-        }).then(async function () {
-            for (const event of DataGenerator.forKnex.members_subscription_created_events) {
-                await models.SubscriptionCreatedEvent.add(event);
-            }
-        });
+        }
+
+        // Populate members_current_subscription lookup table for each member
+        // that has subscriptions (uses the VIEW as single source of truth
+        // for subscription priority resolution)
+        await models.Base.knex.raw(`
+            INSERT INTO members_current_subscription (member_id, subscription_id)
+            SELECT member_id, subscription_id
+            FROM members_resolved_subscription
+        `);
+
+        for (const event of DataGenerator.forKnex.members_paid_subscription_events) {
+            await models.MemberPaidSubscriptionEvent.add(event);
+        }
+
+        for (const event of DataGenerator.forKnex.members_created_events) {
+            await models.MemberCreatedEvent.add(event);
+        }
+
+        for (const event of DataGenerator.forKnex.members_subscription_created_events) {
+            await models.SubscriptionCreatedEvent.add(event);
+        }
     },
 
-    insertEmailsAndRecipients: function insertEmailsAndRecipients(withFailed = false) {
+    insertEmailsAndRecipients: async function insertEmailsAndRecipients(withFailed = false) {
         // NOTE: This require results in the jobs service being loaded prematurely, which breaks any tests relevant to it.
         //  This MUST be done in here and not at the top of the file to prevent that from happening as test setup is being performed.
         const emailAnalyticsService = require('../../core/server/services/email-analytics');
-        return sequence(_.cloneDeep(DataGenerator.forKnex.emails).map(email => () => {
-            return models.Email.add(email, context.internal);
-        })).then(function () {
-            return sequence(_.cloneDeep(DataGenerator.forKnex.email_batches).map(emailBatch => () => {
-                return models.EmailBatch.add(emailBatch, context.internal);
-            }));
-        }).then(function () {
-            const email_recipients = withFailed ?
-                DataGenerator.forKnex.email_recipients
-                : DataGenerator.forKnex.email_recipients.filter(r => r.failed_at === null);
 
-            return sequence(_.cloneDeep(email_recipients).map(emailRecipient => () => {
-                return models.EmailRecipient.add(emailRecipient, context.internal);
-            }));
-        }).then(function () {
-            if (!withFailed) {
-                return;
+        for (const email of _.cloneDeep(DataGenerator.forKnex.emails)) {
+            await models.Email.add(email, context.internal);
+        }
+
+        for (const emailBatch of _.cloneDeep(DataGenerator.forKnex.email_batches)) {
+            await models.EmailBatch.add(emailBatch, context.internal);
+        }
+
+        const email_recipients = withFailed ?
+            DataGenerator.forKnex.email_recipients
+            : DataGenerator.forKnex.email_recipients.filter(r => r.failed_at === null);
+
+        for (const emailRecipient of _.cloneDeep(email_recipients)) {
+            await models.EmailRecipient.add(emailRecipient, context.internal);
+        }
+
+        if (withFailed) {
+            for (const failure of _.cloneDeep(DataGenerator.forKnex.email_recipient_failures)) {
+                await models.EmailRecipientFailure.add(failure, context.internal);
             }
+        }
 
-            return sequence(_.cloneDeep(DataGenerator.forKnex.email_recipient_failures).map(failure => () => {
-                return models.EmailRecipientFailure.add(failure, context.internal);
-            }));
-        }).then(function () {
-            const toAggregate = {
-                emailIds: DataGenerator.forKnex.emails.map(email => email.id),
-                memberIds: DataGenerator.forKnex.members.map(member => member.id)
-            };
+        const toAggregate = {
+            emailIds: DataGenerator.forKnex.emails.map(email => email.id),
+            memberIds: DataGenerator.forKnex.members.map(member => member.id)
+        };
 
-            return emailAnalyticsService.service.aggregateStats(toAggregate);
-        });
+        return emailAnalyticsService.service.aggregateStats(toAggregate);
     },
 
     insertNewsletters: async function insertNewsletters() {

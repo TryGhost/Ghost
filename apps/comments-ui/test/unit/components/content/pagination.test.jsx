@@ -1,5 +1,5 @@
 import Pagination from '../../../../src/components/content/pagination';
-import i18nLib from '@tryghost/i18n';
+import i18nLib from '@tryghost/i18n/registry/comments';
 import {AppContext} from '../../../../src/app-context';
 import {render, screen} from '@testing-library/react';
 

@@ -124,10 +124,10 @@ async function updateAutomation(automation, overrides = {}) {
     return body.automations[0];
 }
 
-function getMemberWelcomeEmailSends() {
+function getAutomationEmailSends() {
     return mailService.GhostMailer.prototype.send.getCalls()
         .map(call => call.args[0])
-        .filter(emailToSend => emailToSend.tags?.includes('member-welcome-email'));
+        .filter(emailToSend => emailToSend.tags?.includes('automation-email'));
 }
 
 describe('Members Automations', function () {
@@ -204,7 +204,7 @@ describe('Members Automations', function () {
             clock.restore();
         }
 
-        const sentEmails = getMemberWelcomeEmailSends();
+        const sentEmails = getAutomationEmailSends();
         assert.equal(sentEmails.length, 2);
         assert.deepEqual(sentEmails.map(({to}) => to), [email, email]);
         assert.deepEqual(sentEmails.map(({subject}) => subject), ['Welcome!', 'Follow up']);
@@ -213,8 +213,8 @@ describe('Members Automations', function () {
         assert.deepEqual(sentEmails.map(({forceTextContent}) => forceTextContent), [true, true]);
         assert.deepEqual(sentEmails.map(({replyTo}) => replyTo), [AUTOMATION_EMAIL_REPLY_TO, AUTOMATION_EMAIL_REPLY_TO]);
         assert.deepEqual(sentEmails.map(({tags}) => tags), [
-            ['member-welcome-email'],
-            ['member-welcome-email']
+            ['automation-email'],
+            ['automation-email']
         ]);
         sinon.assert.calledWithMatch(mailService.GhostMailer.prototype.send, {
             to: email,
@@ -242,7 +242,7 @@ describe('Members Automations', function () {
         await DomainEvents.allSettled();
         await runSchedulerPoll();
 
-        assert.equal(getMemberWelcomeEmailSends().length, 0);
+        assert.equal(getAutomationEmailSends().length, 0);
     });
 
     it('stops an automation run when its automation is deactivated before poll', async function () {
@@ -271,7 +271,7 @@ describe('Members Automations', function () {
             clock.restore();
         }
 
-        assert.equal(getMemberWelcomeEmailSends().length, 0);
+        assert.equal(getAutomationEmailSends().length, 0);
     });
 
     it('stops an automation run when the associated member changes their status', async function () {
@@ -305,6 +305,6 @@ describe('Members Automations', function () {
             clock.restore();
         }
 
-        assert.equal(getMemberWelcomeEmailSends().length, 0);
+        assert.equal(getAutomationEmailSends().length, 0);
     });
 });

@@ -27,6 +27,43 @@ describe('getUrl', function () {
         assert.equal(getUrl(post), 'post url');
     });
 
+    describe('Content-API-serialized posts (status stripped by the serializer)', function () {
+        it('defaults status to published so the lazy URL service can evaluate its base filter', function () {
+            const post = testUtils.DataGenerator.forKnex.createPost();
+            // The Content API output serializer deletes `status` (everything it
+            // serves is published) — theme-rendered posts arrive here without it.
+            delete post.status;
+
+            urlServiceGetUrlForResourceStub.withArgs(sinon.match({id: post.id, type: 'posts', status: 'published'}))
+                .returns('post url');
+
+            assert.equal(getUrl(post), 'post url');
+            // Every call (including the /p/:uuid fallback probe, which still
+            // runs for status-stripped posts) carries the defaulted status.
+            for (const call of urlServiceGetUrlForResourceStub.getCalls()) {
+                assert.equal(call.args[0].status, 'published');
+            }
+        });
+
+        it('still falls back to the preview URL when a status-stripped post is unrouted', function () {
+            const post = testUtils.DataGenerator.forKnex.createPost();
+            delete post.status;
+
+            urlServiceGetUrlForResourceStub.returns('/404/');
+            urlUtilsUrlForStub.withArgs({relativeUrl: '/p/' + post.uuid + '/'}, null, undefined).returns('preview url');
+
+            assert.equal(getUrl(post), 'preview url');
+        });
+
+        it('keeps the real status when present', function () {
+            const post = testUtils.DataGenerator.forKnex.createPost({status: 'draft'});
+            urlServiceGetUrlForResourceStub.withArgs(sinon.match({id: post.id, type: 'posts', status: 'draft'})).returns('/404/');
+            urlUtilsUrlForStub.withArgs({relativeUrl: '/p/' + post.uuid + '/'}, null, undefined).returns('preview url');
+
+            assert.equal(getUrl(post), 'preview url');
+        });
+    });
+
     describe('preview url: drafts/scheduled posts', function () {
         it('relative', function () {
             const post = testUtils.DataGenerator.forKnex.createPost({status: 'draft'});

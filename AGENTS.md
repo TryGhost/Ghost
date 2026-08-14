@@ -36,6 +36,21 @@ Two categories of apps:
 - `admin-x-design-system` - Legacy design system (being phased out)
 - `shade` - New design system (shadcn/ui + Radix UI + react-hook-form + zod)
 
+### koenig/* - Ghost editor (Koenig) packages
+Merged from the former TryGhost/Koenig repo with full git history:
+
+- **koenig-lexical** - The Lexical-based rich text editor UI. Bundled into
+  Ghost Admin at build time (`ghost/admin` copies its UMD build into admin
+  assets; `apps/posts` and `apps/admin` import it directly)
+- **kg-*** - Editor support packages: server-side renderers and converters
+  consumed by `ghost/core` (kg-default-nodes, kg-lexical-html-renderer,
+  kg-html-to-lexical, ...) plus frontend helpers (kg-unsplash-selector)
+
+All Koenig packages resolve via `workspace:` — nothing in dev, CI, or the
+release archive installs them from npm. They are published to npm for
+external consumers only, automatically as part of the Ghost release lane
+(see `publish_koenig_packages` in ci.yml).
+
 ### e2e/ - End-to-end tests
 - Playwright-based E2E tests with Docker container isolation
 - See `e2e/CLAUDE.md` for detailed testing guidance
@@ -117,19 +132,30 @@ The `pnpm dev` command uses a **hybrid Docker + host development** setup:
 - MySQL, Redis, Mailpit
 - Caddy gateway/reverse proxy
 
-**What runs on host:**
-- Frontend dev servers (Admin, Portal, Comments UI, etc.) in watch mode with HMR
-- Foundation libraries (shade, admin-x-framework, etc.)
+**What runs on host by default:**
+- Admin, legacy Ember admin, Portal, and foundation library dev watchers
+- Optional public UMD app watchers can be added when needed
 
 **Setup:**
 ```bash
-# Start everything (Docker + frontend dev servers)
+# Start Ghost backend, Admin, Portal, and Docker services
 pnpm dev
+
+# Add optional public apps (comments-ui, sodo-search, signup-form, admin-toolbar)
+pnpm dev:public
+
+# Develop the Koenig editor against Ghost Admin (adds a koenig-lexical rebuild
+# watcher + preview server; Admin loads the editor from your local build)
+pnpm dev:lexical
 
 # With optional services (uses Docker Compose file composition)
 pnpm dev:analytics             # Include Tinybird analytics
 pnpm dev:storage               # Include MinIO S3-compatible object storage
-pnpm dev:all                   # Include all optional services
+pnpm dev:stripe                # Include Stripe webhook forwarding
+pnpm dev:full                  # Include analytics, storage, Stripe, and public app watchers
+
+# Everything available
+pnpm dev:all                   #
 ```
 
 **Accessing Services:**

@@ -61,7 +61,8 @@ export const createQuery = <ResponseData>(options: QueryOptions<ResponseData>) =
 
     return {
         ...result,
-        data
+        data,
+        isLoading: result.isLoading && result.fetchStatus !== 'idle'
     };
 };
 
@@ -105,7 +106,8 @@ export const createPaginatedQuery = <ResponseData extends {meta?: Meta}>(options
     return {
         ...result,
         data,
-        pagination
+        pagination,
+        isLoading: result.isLoading && result.fetchStatus !== 'idle'
     };
 };
 
@@ -145,7 +147,8 @@ export const createInfiniteQuery = <ResponseData>(options: InfiniteQueryOptions<
 
     return {
         ...result,
-        data
+        data,
+        isLoading: result.isLoading && result.fetchStatus !== 'idle'
     };
 };
 

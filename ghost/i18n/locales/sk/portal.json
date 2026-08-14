@@ -191,8 +191,6 @@
     "Save": "Uložiť",
     "Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.": "",
     "Save {amountOff} on your next billing cycle. Then {currency}{originalPrice}/{cadence}.": "",
-    "Send an email and say hi!": "Pošlite e-mail a povedzte Ahoj!",
-    "Send an email to {senderEmail} and say hello. This can also help signal to your mail provider that emails to and from this address should be trusted.": "Pošlite e-mail na adresu {senderEmail} a pozdravte ho. To môže tiež pomôcť signalizovať vášmu poskytovateľovi e-mailu, že e-maily na túto adresu a z tejto adresy sú dôveryhodné.",
     "Send the link below to share it with whoever you'd like.": "",
     "Sending login link...": "Odosielanie prihlasovacieho odkazu...",
     "Sending...": "Odosielanie...",

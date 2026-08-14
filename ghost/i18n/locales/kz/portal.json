@@ -191,8 +191,6 @@
     "Save": "Сақтау",
     "Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.": "",
     "Save {amountOff} on your next billing cycle. Then {currency}{originalPrice}/{cadence}.": "",
-    "Send an email and say hi!": "Электрондық хат жіберіп, сәлем жолдаңыз!",
-    "Send an email to {senderEmail} and say hello. This can also help signal to your mail provider that emails to and from this address should be trusted.": "{senderEmail} мекенжайына электрондық хат жіберіп, сәлем жолдаңыз. Бұл сондай-ақ, пошта провайдеріне осы мекенжай бойынша кіріс-шығыс хаттардың сенімді екенін көрсетеді.",
     "Send the link below to share it with whoever you'd like.": "",
     "Sending login link...": "Кіру сілтемесі жіберілуде...",
     "Sending...": "Жіберілуде...",

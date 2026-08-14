@@ -157,6 +157,7 @@ if (sentryConfig && !sentryConfig.disabled) {
         errorHandler: expressNoop,
         tracingHandler: expressNoop,
         captureException: noop,
+        captureMessage: noop,
         initQueryTracing: noop
     };
 }

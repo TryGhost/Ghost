@@ -230,7 +230,7 @@ const Overview: React.FC = () => {
                                             <span className='text-sm text-muted-foreground'>
                                                 Visitors
                                             </span>
-                                            <span className='text-[2.2rem] leading-none font-semibold'>
+                                            <span className='text-[2.2rem] leading-none font-semibold' data-testid='gift-link-card-visitors'>
                                                 {formatNumber(giftLinkUsage?.visits ?? 0)}
                                             </span>
                                         </CardContent>
@@ -249,6 +249,7 @@ const Overview: React.FC = () => {
                     key={postId}
                     open={isGiftLinkOpen}
                     postId={postId}
+                    source='gift-link-card'
                     onOpenChange={setIsGiftLinkOpen}
                 />
             )}

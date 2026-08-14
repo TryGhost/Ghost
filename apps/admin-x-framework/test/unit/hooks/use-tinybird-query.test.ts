@@ -269,7 +269,7 @@ describe('useTinybirdQuery', () => {
             ({children}) => React.createElement(
                 QueryClientProvider,
                 {client: queryClient},
-                React.createElement(AppProvider, {appSettings: buildAppSettings(webAnalytics)}, children)
+                React.createElement(AppProvider, {appSettings: buildAppSettings(webAnalytics), children})
             );
 
         it('noops without a per-call flag when web analytics is disabled', () => {

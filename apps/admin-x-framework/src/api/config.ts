@@ -28,10 +28,6 @@ export type Config = {
         id?: string;
     };
     emailAnalytics?: boolean;
-    tenor?: {
-        googleApiKey?: string | null;
-        contentFilter?: string;
-    };
     klipy?: {
         apiKey?: string | null;
         contentFilter?: string;

@@ -1,5 +1,5 @@
 import GiftLinkModal from '../modals/gift-link-modal';
-import React, {useMemo, useState} from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, Navbar, PageMenu, PageMenuItem} from '@tryghost/shade/components';
 import {H1} from '@tryghost/shade/primitives';
 import {LucideIcon, formatDisplayDate, formatDisplayTime, formatNumber} from '@tryghost/shade/utils';
@@ -7,7 +7,7 @@ import {Post, useGlobalData} from '@src/providers/post-analytics-context';
 import {PostShareModal} from '@tryghost/shade/posts-stats';
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
 import {giftAccessLabel} from '@src/utils/gift-link';
-import {hasBeenEmailed, isEmailOnly, isPublishedAndEmailed, isPublishedOnly, useActiveVisitors, useNavigate} from '@tryghost/admin-x-framework';
+import {hasBeenEmailed, isEmailOnly, isPublishedAndEmailed, isPublishedOnly, trackEvent, useActiveVisitors, useNavigate} from '@tryghost/admin-x-framework';
 import {useAppContext} from '@src/providers/posts-app-context';
 import {useCanManageGiftLink} from '@src/hooks/use-can-manage-gift-link';
 import {useDeletePost} from '@tryghost/admin-x-framework/api/posts';
@@ -33,6 +33,21 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
     const canManageGiftLink = useCanManageGiftLink(post);
 
     const siteTimezone = getSiteTimezone(settings);
+
+    // Track once per open — canManageGiftLink can flip while the modal is open
+    // (current-user query resolving), which must not re-fire the event.
+    const shareOpenTrackedRef = useRef(false);
+    useEffect(() => {
+        if (!isShareOpen) {
+            shareOpenTrackedRef.current = false;
+            return;
+        }
+        if (shareOpenTrackedRef.current) {
+            return;
+        }
+        shareOpenTrackedRef.current = true;
+        trackEvent('Share Modal Opened', {giftLinkShown: canManageGiftLink, source: 'post-analytics'});
+    }, [isShareOpen, canManageGiftLink]);
 
     // Use the active visitors hook with post-specific filtering
     const {activeVisitors, isLoading: isActiveVisitorsLoading} = useActiveVisitors({
@@ -258,6 +273,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                     key={postId}
                     open={isGiftLinkOpen}
                     postId={postId}
+                    source='share-modal'
                     onOpenChange={setIsGiftLinkOpen}
                 />
             )}

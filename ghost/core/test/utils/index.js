@@ -1,7 +1,6 @@
 require('../../core/server/overrides');
 
 // Utility Packages
-const {sequence} = require('@tryghost/promise');
 const debug = require('@tryghost/debug')('test:utils');
 
 const _ = require('lodash');
@@ -24,14 +23,19 @@ require('./assertions');
 
 // ## Test Setup and Teardown
 
-const initFixtures = function initFixtures() {
+const initFixtures = async function initFixtures() {
     const options = _.merge({init: true}, _.transform(arguments, function (result, val) {
         result[val] = true;
     }));
 
     const fixtureOps = fixtureUtils.getFixtureOps(options);
 
-    return sequence(fixtureOps);
+    const results = [];
+    for (const fixtureOp of fixtureOps) {
+        results.push(await fixtureOp());
+    }
+
+    return results;
 };
 
 /**

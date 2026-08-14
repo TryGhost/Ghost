@@ -46,6 +46,21 @@ describe('Gift Preview Image', function () {
             assert.equal(first, second, 'Should return the exact same buffer reference from cache');
         });
 
+        it('returns the same cached result for concurrent calls with same params', async function () {
+            const params = {
+                accentColor: '#108775',
+                siteTitle: 'Test Blog',
+                tierLabel: 'Gold membership',
+                cadenceLabel: '1 year'
+            };
+
+            const results = await Promise.all(Array.from({length: 10}, () => (
+                imageModule.generateGiftPreviewImage(params)
+            )));
+
+            assert.equal(new Set(results).size, 1, 'Should return the same reference from the cache');
+        });
+
         it('returns different results for different gift details with the same accent color', async function () {
             const result1 = await imageModule.generateGiftPreviewImage({
                 tierLabel: 'Gold membership',

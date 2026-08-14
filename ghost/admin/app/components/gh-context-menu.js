@@ -10,6 +10,9 @@ export default class GhContextMenu extends Component {
     @service modals;
 
     @tracked isOpen = false;
+    // Bumped on every handled open request, including re-opens on a new target
+    // while the menu is already open (isOpen doesn't change in that case)
+    @tracked openCount = 0;
     @tracked left = 0;
     @tracked top = 0;
     @tracked yPlacement = 'bottom';
@@ -130,6 +133,9 @@ export default class GhContextMenu extends Component {
 
             this.calculatePlacement();
             this.open();
+            if (this.isOpen) {
+                this.openCount += 1;
+            }
         } else {
             this.close();
         }

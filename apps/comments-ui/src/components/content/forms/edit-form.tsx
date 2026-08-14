@@ -18,7 +18,7 @@ const EditForm: React.FC<Props> = ({comment, openForm, parent}) => {
         // warning: we cannot use autofocus on the edit field, because that sets
         // the cursor position at the beginning of the text field instead of the end
         autofocus: false,
-        content: comment.html
+        content: comment.html ?? undefined
     }), [comment]);
 
     const {editor} = useEditor(editorConfig);

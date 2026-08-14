@@ -1,11 +1,11 @@
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 
-import html2canvas from 'html2canvas-objectfit-fix';
+import html2canvas from 'html2canvas-pro';
 
-import {takeScreenshot} from '../../../src/utils/screenshot';
+import {fixFirefoxTextSpacing, takeScreenshot} from '../../../src/utils/screenshot';
 
 // Mock html2canvas
-vi.mock('html2canvas-objectfit-fix');
+vi.mock('html2canvas-pro');
 
 // Mock DOM methods
 Object.defineProperty(window, 'URL', {
@@ -78,7 +78,8 @@ describe('takeScreenshot', function () {
             logging: false,
             useCORS: true,
             allowTaint: true,
-            imageTimeout: 0
+            imageTimeout: 0,
+            onclone: expect.any(Function)
         });
     });
 
@@ -99,7 +100,8 @@ describe('takeScreenshot', function () {
             logging: false,
             useCORS: true,
             allowTaint: true,
-            imageTimeout: 0
+            imageTimeout: 0,
+            onclone: expect.any(Function)
         });
     });
 
@@ -188,5 +190,38 @@ describe('takeScreenshot', function () {
         });
 
         await expect(takeScreenshot(mockElement)).rejects.toThrow('DOM manipulation failed');
+    });
+});
+
+describe('fixFirefoxTextSpacing', function () {
+    afterEach(function () {
+        vi.restoreAllMocks();
+    });
+
+    const buildElement = () => {
+        const element = document.createElement('div');
+        const child = document.createElement('span');
+        element.appendChild(child);
+        return {element, child};
+    };
+
+    it('applies letter-spacing to the element and its descendants in Firefox', function () {
+        vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue('Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:140.0) Gecko/20100101 Firefox/140.0');
+
+        const {element, child} = buildElement();
+        fixFirefoxTextSpacing(element);
+
+        expect(element.style.letterSpacing).toBe('0.1px');
+        expect(child.style.letterSpacing).toBe('0.1px');
+    });
+
+    it('does nothing in non-Firefox browsers', function () {
+        vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36');
+
+        const {element, child} = buildElement();
+        fixFirefoxTextSpacing(element);
+
+        expect(element.style.letterSpacing).toBe('');
+        expect(child.style.letterSpacing).toBe('');
     });
 });

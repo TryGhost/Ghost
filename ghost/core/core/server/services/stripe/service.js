@@ -18,7 +18,7 @@ const settingsCache = require('../../../shared/settings-cache');
 async function configureApi() {
     const cfg = getConfig({settingsHelpers, config, urlUtils});
     if (cfg) {
-        cfg.testEnv = process.env.NODE_ENV.startsWith('test');
+        cfg.testEnv = config.isTestEnv();
         await module.exports.configure(cfg);
         return true;
     }

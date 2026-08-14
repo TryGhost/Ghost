@@ -191,8 +191,6 @@
     "Save": "Salvează",
     "Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.": "",
     "Save {amountOff} on your next billing cycle. Then {currency}{originalPrice}/{cadence}.": "",
-    "Send an email and say hi!": "Trimite un email și spune salut!",
-    "Send an email to {senderEmail} and say hello. This can also help signal to your mail provider that emails to and from this address should be trusted.": "Trimiteți un email la {senderEmail} și spuneți bună ziua. Acest lucru poate ajuta, de asemenea, să semnalizeze furnizorului dvs. de email că emailurile de la și către această adresă ar trebui considerate de încredere.",
     "Send the link below to share it with whoever you'd like.": "",
     "Sending login link...": "Se trimite link-ul de autentificare...",
     "Sending...": "Se trimite...",

@@ -1,6 +1,7 @@
 const sinon = require('sinon');
 const {agentProvider, fixtureManager, configUtils} = require('../../../utils/e2e-framework');
 const assert = require('node:assert/strict');
+const logging = require('@tryghost/logging');
 const MailgunClient = require('../../../../core/server/services/lib/mailgun-client');
 const DomainEvents = require('@tryghost/domain-events');
 const emailAnalytics = require('../../../../core/server/services/email-analytics');
@@ -1144,9 +1145,17 @@ processingModes.forEach(({name, batchProcessing}) => {
                 event: 'ceci-nest-pas-un-event'
             }];
 
+            // The event is missing user-variables/message headers, so normalizeEvent()
+            // deliberately logs and drops it. Stub the logger so we can assert that
+            // guard fired instead of spamming stdout.
+            const errorLog = sinon.stub(logging, 'error');
+
             // Fire event processing
             const result = await emailAnalytics.fetchLatestOpenedEvents();
             assert.equal(result, 0);
+
+            sinon.assert.called(errorLog);
+            sinon.assert.calledWith(errorLog, 'Received invalid event from Mailgun');
         });
     });
 });

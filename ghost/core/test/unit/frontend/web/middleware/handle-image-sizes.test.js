@@ -5,7 +5,7 @@ const activeTheme = require('../../../../../core/frontend/services/theme-engine/
 const handleImageSizes = require('../../../../../core/frontend/web/middleware/handle-image-sizes.js');
 const errors = require('@tryghost/errors');
 const imageTransform = require('@tryghost/image-transform');
-const deferred = require('../../../../utils/deferred');
+const {deferred} = require('../../../../utils/deferred')
 
 const fakeResBase = {
     setHeader() {}

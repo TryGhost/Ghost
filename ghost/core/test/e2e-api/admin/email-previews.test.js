@@ -468,7 +468,7 @@ describe('Email Preview API', function () {
         });
 
         it('cannot send test email', async function () {
-            const loggingStub = sinon.stub(logging, 'error');
+            const loggingStub = sinon.stub(logging, 'warn');
             await agent
                 .post(`email_previews/posts/${fixtureManager.get('posts', 0).id}/`)
                 .body({
@@ -494,7 +494,7 @@ describe('Email Preview API', function () {
         });
 
         it('cannot send test email', async function () {
-            const loggingStub = sinon.stub(logging, 'error');
+            const loggingStub = sinon.stub(logging, 'warn');
             await agent
                 .post(`email_previews/posts/${fixtureManager.get('posts', 0).id}/`)
                 .body({

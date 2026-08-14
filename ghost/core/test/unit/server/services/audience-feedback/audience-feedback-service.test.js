@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const sinon = require('sinon');
 const AudienceFeedbackService = require('../../../../../core/server/services/audience-feedback/audience-feedback-service');
 
 describe('audienceFeedbackService', function () {
@@ -98,6 +99,26 @@ describe('audienceFeedbackService', function () {
             // The hash fragment also depends on the post id, so the same bug
             // would surface in the produced URL.
             assert.match(link.href, new RegExp(`#/feedback/${mockData.postId}/`));
+        });
+    });
+
+    describe('build fallback link', function () {
+        it('builds the home-page feedback link without touching the url service', async function () {
+            // Used when the post no longer exists: an id-only resource can't
+            // be routed by the URL service (the lazy backend rejects it as
+            // thin), so the fallback goes straight to the base URL — the same
+            // destination buildLink picks when the service returns /404/.
+            const getUrlForResource = sinon.stub();
+            const instance = new AudienceFeedbackService({
+                urlService: {facade: {getUrlForResource}},
+                config: {baseURL: new URL('https://localhost:2368')}
+            });
+
+            const link = instance.buildFallbackLink(mockData.uuid, mockData.postId, mockData.score, mockData.key);
+
+            sinon.assert.notCalled(getUrlForResource);
+            const expectedLink = `https://localhost:2368/#/feedback/${mockData.postId}/${mockData.score}/?uuid=${mockData.uuid}&key=${mockData.key}`;
+            assert.equal(link.href, expectedLink);
         });
     });
 

@@ -191,8 +191,6 @@
     "Save": "Guardar",
     "Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.": "",
     "Save {amountOff} on your next billing cycle. Then {currency}{originalPrice}/{cadence}.": "",
-    "Send an email and say hi!": "Envie um email e diga olá!",
-    "Send an email to {senderEmail} and say hello. This can also help signal to your mail provider that emails to and from this address should be trusted.": "Envie um email para {senderEmail} e diga olá. Isso também pode ajudar a sinalizar ao seu provedor de email que os emails de e para este endereço devem ser confiáveis.",
     "Send the link below to share it with whoever you'd like.": "",
     "Sending login link...": "A enviar o link de acesso...",
     "Sending...": "A enviar...",

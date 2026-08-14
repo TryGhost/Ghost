@@ -70,15 +70,6 @@ module.exports = {
 
     // Labs utils for enabling/disabling helpers
     labs: require('../../shared/labs'),
-    // Gift links service — reached through this seam so the entry controller
-    // doesn't require a server module directly.
-    giftLinks: require('../../server/services/gift-links'),
-    // Paid-member shim for gift-link reads (shared with previews). Lazy getter so
-    // the members service resolves at call time, avoiding boot-time require-order
-    // coupling.
-    get createPaidMemberShim() {
-        return require('../../server/services/members').createPaidMemberShim;
-    },
     // URGH... Yuk (unhelpful comment :D)
     urlService: require('../../server/services/url'),
     urlUtils: require('../../shared/url-utils')

@@ -21,8 +21,10 @@ const generateItem = function generateItem(post) {
 
     // RSS feeds carry posts (pages don't appear in RSS), so the router-level
     // type is always 'posts'. The post object on the public API has its DB
-    // `type` column stripped by the serializer, so we tag the resource here.
-    const itemUrl = routerManager.getUrlForResource({...post, type: 'posts'}, {absolute: true});
+    // `type` and `status` columns stripped by the serializer, so we tag the
+    // type here and default status to published (RSS only ever carries
+    // published posts) so the lazy URL service can evaluate its base filter.
+    const itemUrl = routerManager.getUrlForResource({status: 'published', ...post, type: 'posts'}, {absolute: true});
     const htmlContent = cheerio.load(post.html || '');
 
     // Tidy up cards for RSS readers (no Ghost CSS/JS available). This runs

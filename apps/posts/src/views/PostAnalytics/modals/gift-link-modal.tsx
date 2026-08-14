@@ -4,6 +4,7 @@ import {GiftLinkResource, useCreateGiftLink, useEnsureGiftLink} from '@tryghost/
 import {ShareModal} from '@tryghost/shade/patterns';
 import {buildGiftLinkUrl} from '@src/utils/gift-link';
 import {formatNumber} from '@tryghost/shade/utils';
+import {trackEvent} from '@tryghost/admin-x-framework';
 import {useGiftLinkUsage} from '@src/hooks/use-gift-link-usage';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {usePostDetails} from '@src/hooks/use-post-details';
@@ -17,14 +18,17 @@ function visitorsLabel(count: number) {
 
 type ResetState = 'idle' | 'confirm';
 
+export type GiftLinkModalSource = 'share-modal' | 'context-menu' | 'gift-link-card';
+
 interface GiftLinkModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     postId: string;
     resource?: GiftLinkResource;
+    source: GiftLinkModalSource;
 }
 
-const GiftLinkModal: React.FC<GiftLinkModalProps> = ({open, onOpenChange, postId, resource = 'posts'}) => {
+const GiftLinkModal: React.FC<GiftLinkModalProps> = ({open, onOpenChange, postId, resource = 'posts', source}) => {
     const handleError = useHandleError();
     const {mutateAsync: ensureGiftLink} = useEnsureGiftLink();
     const {mutateAsync: createGiftLink} = useCreateGiftLink();
@@ -35,20 +39,39 @@ const GiftLinkModal: React.FC<GiftLinkModalProps> = ({open, onOpenChange, postId
     const [resetting, setResetting] = useState(false);
     const [ensuring, setEnsuring] = useState(false);
     const cancelResetRef = useRef<HTMLButtonElement>(null);
+    const ensureGiftLinkRequestRef = useRef<{
+        postId: string;
+        resource: GiftLinkResource;
+        request: ReturnType<typeof ensureGiftLink>;
+    } | null>(null);
 
     // Usage is best-effort: undefined when analytics is off / unavailable, in
     // which case we simply omit the visitor count.
     const {usage} = useGiftLinkUsage({postUuid: post?.uuid, token, enabled: open});
 
     // Ensure (create-or-get) the link as soon as the modal opens so there's a
-    // URL to show. Idempotent on the server.
+    // URL to show. Share one request per open target so StrictMode effect replay
+    // and local re-renders don't mint competing same-moment links.
     useEffect(() => {
         if (!open) {
+            ensureGiftLinkRequestRef.current = null;
+            setEnsuring(false);
             return;
         }
+
+        let ensureRequest = ensureGiftLinkRequestRef.current;
+        if (ensureRequest?.postId !== postId || ensureRequest.resource !== resource) {
+            ensureRequest = {
+                postId,
+                resource,
+                request: ensureGiftLink({id: postId, resource})
+            };
+            ensureGiftLinkRequestRef.current = ensureRequest;
+        }
+
         let cancelled = false;
         setEnsuring(true);
-        ensureGiftLink({id: postId, resource})
+        ensureRequest.request
             .then((response) => {
                 if (cancelled) {
                     return;
@@ -76,10 +99,27 @@ const GiftLinkModal: React.FC<GiftLinkModalProps> = ({open, onOpenChange, postId
         }
     }, [resetState]);
 
+    const postType = resource === 'pages' ? 'page' : 'post';
+    const visibility = post?.visibility ?? 'unknown';
+
+    // Track the open once per open, but only after post details load so the
+    // visibility property is populated.
+    const openTrackedRef = useRef(false);
+    useEffect(() => {
+        if (!open) {
+            openTrackedRef.current = false;
+            return;
+        }
+        if (openTrackedRef.current || !post) {
+            return;
+        }
+        openTrackedRef.current = true;
+        trackEvent('Gift Link Modal Opened', {postType, visibility, source});
+    }, [open, post, postType, visibility, source]);
+
     const giftLinkUrl = buildGiftLinkUrl(post?.url, token);
     const memberType = post?.visibility === 'members' ? 'member' : 'paid member';
-    const resourceLabel = resource === 'pages' ? 'page' : 'post';
-    const description = `Anyone you share this link with will be able to access this ${resourceLabel} without becoming a ${memberType}.`;
+    const description = `Anyone you share this link with will be able to access this ${postType} without becoming a ${memberType}.`;
 
     const handleConfirmReset = useCallback(async () => {
         if (resetting) {
@@ -90,12 +130,13 @@ const GiftLinkModal: React.FC<GiftLinkModalProps> = ({open, onOpenChange, postId
             const response = await createGiftLink({id: postId, resource});
             setToken(response.gift_links[0]?.token);
             setResetState('idle');
+            trackEvent('Gift Link Reset', {postType, visibility, source});
         } catch (e) {
             handleError(e);
         } finally {
             setResetting(false);
         }
-    }, [resetting, createGiftLink, postId, resource, handleError]);
+    }, [resetting, createGiftLink, postId, resource, handleError, postType, visibility, source]);
 
     const handleOpenChange = useCallback((isOpen: boolean) => {
         if (!isOpen) {
@@ -134,6 +175,7 @@ const GiftLinkModal: React.FC<GiftLinkModalProps> = ({open, onOpenChange, postId
                                 disabled={ensuring || !giftLinkUrl}
                                 icon='link'
                                 size='sm'
+                                onClick={() => trackEvent('Gift Link Copied', {postType, visibility, source})}
                             />
                         </ShareModal.CopyURLBox>
 
@@ -159,7 +201,7 @@ const GiftLinkModal: React.FC<GiftLinkModalProps> = ({open, onOpenChange, postId
                         <DialogHeader>
                             <DialogTitle>Reset gift link</DialogTitle>
                             <DialogDescription>
-                                Are you sure you want to reset this link? Anyone with the current link will lose access to this {resourceLabel}.
+                                Are you sure you want to reset this link? Anyone with the current link will lose access to this {postType}.
                             </DialogDescription>
                         </DialogHeader>
                         <DialogFooter>

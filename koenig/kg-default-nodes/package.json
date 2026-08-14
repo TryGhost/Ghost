@@ -1,0 +1,83 @@
+{
+  "name": "@tryghost/kg-default-nodes",
+  "version": "2.1.3",
+  "repository": "https://github.com/TryGhost/Koenig/tree/main/packages/kg-default-nodes",
+  "author": "Ghost Foundation",
+  "license": "MIT",
+  "engines": {
+    "node": "^22.13.1 || ^24.0.0"
+  },
+  "main": "build/cjs/index.js",
+  "module": "build/esm/index.js",
+  "types": "build/esm/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./build/esm/index.d.ts",
+      "import": "./build/esm/index.js",
+      "require": "./build/cjs/index.js"
+    },
+    "./visibility": {
+      "types": "./build/esm/visibility.d.ts",
+      "import": "./build/esm/visibility.js",
+      "require": "./build/cjs/visibility.js"
+    }
+  },
+  "scripts": {
+    "dev": "tsc --watch --preserveWatchOutput",
+    "clean": "rm -rf build",
+    "build": "pnpm clean && tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json",
+    "pretest": "pnpm clean && tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json && tsc -p tsconfig.test.json",
+    "test:unit": "NODE_ENV=testing c8 --src src --all --check-coverage --reporter text --reporter cobertura mocha --exit --require tsx './test/**/*.test.ts'",
+    "test": "pnpm test:unit",
+    "lint:code": "eslint src/ --cache",
+    "lint": "pnpm lint:code && pnpm lint:test",
+    "lint:test": "eslint test/ --cache"
+  },
+  "files": [
+    "LICENSE",
+    "README.md",
+    "build"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@eslint/js": "catalog:",
+    "@lexical/headless": "0.13.1",
+    "@lexical/html": "0.13.1",
+    "@prettier/sync": "0.6.1",
+    "@types/jsdom": "28.0.3",
+    "@types/lodash": "4.17.24",
+    "@types/luxon": "3.7.2",
+    "@types/mocha": "10.0.10",
+    "@types/node": "catalog:",
+    "@types/should": "13.0.0",
+    "@types/sinon": "21.0.1",
+    "c8": "catalog:",
+    "chai": "catalog:",
+    "html-minifier": "4.0.0",
+    "mocha": "11.7.6",
+    "prettier": "3.9.4",
+    "should": "13.2.3",
+    "sinon": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:"
+  },
+  "dependencies": {
+    "@lexical/clipboard": "0.13.1",
+    "@lexical/rich-text": "0.13.1",
+    "@lexical/selection": "0.13.1",
+    "@lexical/utils": "0.13.1",
+    "@tryghost/color-utils": "catalog:",
+    "@tryghost/kg-clean-basic-html": "workspace:~",
+    "@tryghost/kg-markdown-html-renderer": "workspace:~",
+    "clsx": "catalog:",
+    "entities": "catalog:",
+    "html-minifier": "4.0.0",
+    "jsdom": "catalog:",
+    "lexical": "0.13.1",
+    "lodash": "catalog:",
+    "luxon": "3.7.2"
+  }
+}

@@ -7,20 +7,22 @@
   "main": "index.js",
   "exports": {
     ".": {
-      "browser": "./index.browser.js",
+      "types": "./index.d.ts",
+      "require": "./index.js",
       "default": "./index.js"
     },
-    "./lib/locale-data.json": "./lib/locale-data.json"
+    "./registry/*": {
+      "types": "./registry.d.ts",
+      "default": "./lib/registry/*.mjs"
+    },
+    "./lib/locale-data.json": "./lib/locale-data.json",
+    "./package.json": "./package.json"
   },
-  "browser": {
-    "./index.js": "./index.browser.js",
-    "./lib/i18n.js": "./lib/i18n.browser.js"
-  },
-  "types": "./build/i18n.d.ts",
+  "types": "./index.d.ts",
   "scripts": {
     "test:base": "NODE_ENV=testing vitest run --coverage",
     "test": "pnpm test:base && pnpm translate",
-    "lint:code": "eslint *.js lib/ --cache",
+    "lint:code": "eslint *.js *.mjs lib/ --cache",
     "lint": "pnpm lint:code && pnpm lint:test && pnpm lint:translations",
     "lint:test": "eslint test/ --cache",
     "lint:translations": "node ./test/i18n.lint.js",
@@ -33,7 +35,8 @@
   },
   "files": [
     "index.js",
-    "index.browser.js",
+    "index.d.ts",
+    "registry.d.ts",
     "lib",
     "locales"
   ],

@@ -4,7 +4,6 @@ const {http} = require('@tryghost/api-framework');
 const auth = require('../../../../services/auth');
 const apiMw = require('../../middleware');
 const mw = require('./middleware');
-const labs = require('../../../../../shared/labs');
 
 const shared = require('../../../shared');
 
@@ -63,14 +62,14 @@ module.exports = function apiRoutes() {
     router.delete('/pages/:id', mw.authAdminApi, http(api.pages.destroy));
     router.post('/pages/:id/copy', mw.authAdminApi, http(api.pages.copy));
 
-    // Gift links (behind the giftLinks flag)
-    router.get('/posts/:id/gift_links', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.browse));
-    router.put('/posts/:id/gift_links', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.ensure));
-    router.post('/posts/:id/gift_links', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.create));
-    router.get('/pages/:id/gift_links', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.browse));
-    router.put('/pages/:id/gift_links', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.ensure));
-    router.post('/pages/:id/gift_links', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.create));
-    router.put('/gift_links/remove_all', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.removeAll));
+    // Gift links
+    router.get('/posts/:id/gift_links', mw.authAdminApi, http(api.giftLinks.browse));
+    router.put('/posts/:id/gift_links', mw.authAdminApi, http(api.giftLinks.ensure));
+    router.post('/posts/:id/gift_links', mw.authAdminApi, http(api.giftLinks.create));
+    router.get('/pages/:id/gift_links', mw.authAdminApi, http(api.giftLinks.browse));
+    router.put('/pages/:id/gift_links', mw.authAdminApi, http(api.giftLinks.ensure));
+    router.post('/pages/:id/gift_links', mw.authAdminApi, http(api.giftLinks.create));
+    router.put('/gift_links/remove_all', mw.authAdminApi, http(api.giftLinks.removeAll));
 
     // # Integrations
 

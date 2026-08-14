@@ -17,7 +17,8 @@ class AudienceFeedbackService {
     }
     /**
      * @param {string} uuid
-     * @param {{id: string}} post
+     * @param {{id: string}} post - full post record (model or plain data);
+     *   the URL service needs its status/tags/authors to route it
      * @param {0 | 1} score
      * @param {string} key - hashed uuid value
      */
@@ -28,8 +29,33 @@ class AudienceFeedbackService {
         if (postUrl.match(/\/404\//)) {
             postUrl = this.#baseURL;
         }
-        const url = new URL(postUrl);
-        url.hash = `#/feedback/${postData.id}/${score}/?uuid=${encodeURIComponent(uuid)}&key=${encodeURIComponent(key)}`;
+        return this.#withFeedbackHash(new URL(postUrl), postData.id, score, uuid, key);
+    }
+
+    /**
+     * Feedback link for a post that no longer exists. Goes straight to the
+     * home page — the same destination buildLink picks when the URL service
+     * has no URL for the post — without asking the URL service: an id-only
+     * resource can't be routed (the lazy backend rejects it as thin).
+     *
+     * @param {string} uuid
+     * @param {string} postId
+     * @param {0 | 1} score
+     * @param {string} key - hashed uuid value
+     */
+    buildFallbackLink(uuid, postId, score, key) {
+        return this.#withFeedbackHash(new URL(this.#baseURL), postId, score, uuid, key);
+    }
+
+    /**
+     * @param {URL} url
+     * @param {string} postId
+     * @param {0 | 1} score
+     * @param {string} uuid
+     * @param {string} key
+     */
+    #withFeedbackHash(url, postId, score, uuid, key) {
+        url.hash = `#/feedback/${postId}/${score}/?uuid=${encodeURIComponent(uuid)}&key=${encodeURIComponent(key)}`;
         return url;
     }
 

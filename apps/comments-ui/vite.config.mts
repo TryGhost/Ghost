@@ -7,7 +7,6 @@ export default publicAppViteConfig({
     packageRoot: import.meta.dirname,
     packageName: pkg.name,
     entry: 'src/index.tsx',
-    i18nNamespace: 'comments',
     sourcemap: false,
     overrides: {
         plugins: [stripFingerprintingPlugin()],
@@ -31,11 +30,6 @@ export default publicAppViteConfig({
             alias: {
                 react: resolve(import.meta.dirname, 'node_modules/react'),
                 'react-dom': resolve(import.meta.dirname, 'node_modules/react-dom')
-            }
-        },
-        build: {
-            rollupOptions: {
-                output: {}
             }
         },
         test: {

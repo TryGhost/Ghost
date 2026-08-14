@@ -6,7 +6,7 @@ describe("navigateTo", () => {
 
     beforeEach(() => {
         locationMock = { href: "", hash: "" };
-        vi.stubGlobal("location", locationMock as unknown as Location);
+        vi.stubGlobal("location", locationMock);
     });
 
     afterEach(() => {

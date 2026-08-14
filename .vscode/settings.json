@@ -8,6 +8,9 @@
         },
         {
             "pattern": "./ghost/*/"
+        },
+        {
+            "pattern": "./koenig/*/"
         }
     ],
     "search.exclude": {

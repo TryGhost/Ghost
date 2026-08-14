@@ -191,8 +191,6 @@
     "Save": "Kaydet",
     "Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.": "Bir sonraki {durationInMonths} faturalandırma döngüsünde {amountOff} tasarruf edin. Sonrasında {currency}{originalPrice}/{cadence}.",
     "Save {amountOff} on your next billing cycle. Then {currency}{originalPrice}/{cadence}.": "Bir sonraki faturalandırma döngünüzde {amountOff} tasarruf edin. Sonrasında {currency}{originalPrice}/{cadence}.",
-    "Send an email and say hi!": "Bir e-posta gönderin ve merhaba deyin!",
-    "Send an email to {senderEmail} and say hello. This can also help signal to your mail provider that emails to and from this address should be trusted.": "{senderEmail} adresine bir e-posta gönderin ve merhaba deyin. Bu aynı zamanda posta sağlayıcınıza bu adrese gelen ve bu adresten giden e-postalara güvenilmesi gerektiği sinyalini de iletebilir.",
     "Send the link below to share it with whoever you'd like.": "Aşağıdaki bağlantıyı, paylaşmak istediğiniz kişiye gönderebilirsiniz.",
     "Sending login link...": "Giriş bağlantısı gönderiliyor...",
     "Sending...": "Gönderiliyor...",

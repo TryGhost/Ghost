@@ -47,8 +47,6 @@ test.describe('DangerZone', async () => {
     });
 
     test('Reset all gift links', async ({page}) => {
-        toggleLabsFlag('giftLinks', true);
-
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
             removeAllGiftLinks: {

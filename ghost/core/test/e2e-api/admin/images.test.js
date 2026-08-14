@@ -247,7 +247,7 @@ describe('Images API', function () {
     it('Will error when filename is too long', async function () {
         const originalFilePath = p.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png');
         const fileContents = await fs.readFile(originalFilePath);
-        const loggingStub = sinon.stub(logging, 'error');
+        const loggingStub = sinon.stub(logging, 'warn');
         await uploadImageRequest({fileContents, filename: `${'a'.repeat(300)}.png`, contentType: 'image/png'})
             .expectStatus(400)
             .matchBodySnapshot({
@@ -261,7 +261,7 @@ describe('Images API', function () {
     it('Can not upload a json file', async function () {
         const originalFilePath = p.join(__dirname, '/../../utils/fixtures/data/redirects.json');
         const fileContents = await fs.readFile(originalFilePath);
-        const loggingStub = sinon.stub(logging, 'error');
+        const loggingStub = sinon.stub(logging, 'warn');
         await uploadImageRequest({fileContents, filename: 'redirects.json', contentType: 'application/json'})
             .expectStatus(415)
             .matchBodySnapshot({
@@ -275,7 +275,7 @@ describe('Images API', function () {
     it('Can not upload a file without extension', async function () {
         const originalFilePath = p.join(__dirname, '/../../utils/fixtures/data/redirects.json');
         const fileContents = await fs.readFile(originalFilePath);
-        const loggingStub = sinon.stub(logging, 'error');
+        const loggingStub = sinon.stub(logging, 'warn');
         await uploadImageRequest({fileContents, filename: 'redirects', contentType: 'image/png'})
             .expectStatus(415)
             .matchBodySnapshot({
@@ -289,7 +289,7 @@ describe('Images API', function () {
     it('Can not upload a json file with image mime type', async function () {
         const originalFilePath = p.join(__dirname, '/../../utils/fixtures/data/redirects.json');
         const fileContents = await fs.readFile(originalFilePath);
-        const loggingStub = sinon.stub(logging, 'error');
+        const loggingStub = sinon.stub(logging, 'warn');
         await uploadImageRequest({fileContents, filename: 'redirects.json', contentType: 'image/gif'})
             .expectStatus(415)
             .matchBodySnapshot({
@@ -303,7 +303,7 @@ describe('Images API', function () {
     it('Can not upload a json file with image file extension', async function () {
         const originalFilePath = p.join(__dirname, '/../../utils/fixtures/data/redirects.json');
         const fileContents = await fs.readFile(originalFilePath);
-        const loggingStub = sinon.stub(logging, 'error');
+        const loggingStub = sinon.stub(logging, 'warn');
         await uploadImageRequest({fileContents, filename: 'redirects.png', contentType: 'application/json'})
             .expectStatus(415)
             .matchBodySnapshot({
@@ -465,7 +465,7 @@ describe('Images API', function () {
         const originalFilePath = p.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png');
         const fileContents = await fs.readFile(originalFilePath);
 
-        const loggingStub = sinon.stub(logging, 'error');
+        const loggingStub = sinon.stub(logging, 'warn');
         await uploadImageRequest({fileContents, filename: 'test.png', contentType: 'image/png'})
             .expectStatus(400)
             .matchBodySnapshot({

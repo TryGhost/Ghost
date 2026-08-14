@@ -1,0 +1,50 @@
+{
+  "name": "@tryghost/kg-card-factory",
+  "version": "5.2.3",
+  "repository": "https://github.com/TryGhost/Koenig/tree/main/packages/kg-card-factory",
+  "author": "Ghost Foundation",
+  "license": "MIT",
+  "main": "build/cjs/index.js",
+  "module": "build/esm/index.js",
+  "types": "build/esm/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./build/esm/index.d.ts",
+      "import": "./build/esm/index.js",
+      "require": "./build/cjs/index.js"
+    }
+  },
+  "scripts": {
+    "dev": "echo \"Implement me!\"",
+    "build": "tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json",
+    "pretest": "tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json && tsc -p tsconfig.test.json",
+    "test": "NODE_ENV=testing c8 --all --reporter text --reporter cobertura mocha --require tsx './test/**/*.test.ts'",
+    "test:unit": "NODE_ENV=testing c8 --all --reporter text --reporter cobertura mocha --require tsx './test/**/*.test.ts'",
+    "lint": "eslint . --cache",
+    "posttest": "pnpm lint"
+  },
+  "engines": {
+    "node": "^22.13.1 || ^24.0.0"
+  },
+  "files": [
+    "build"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@eslint/js": "catalog:",
+    "@types/mocha": "10.0.10",
+    "@types/node": "catalog:",
+    "@types/should": "13.0.0",
+    "@types/sinon": "21.0.1",
+    "c8": "catalog:",
+    "mocha": "11.7.6",
+    "should": "13.2.3",
+    "simple-dom": "1.4.0",
+    "sinon": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:"
+  }
+}

@@ -1,6 +1,5 @@
-module.exports = (event, model) => {
+module.exports = async (event, model) => {
     const _ = require('lodash');
-    const {sequence} = require('@tryghost/promise');
     const api = require('../../api').endpoints;
     const apiFramework = require('@tryghost/api-framework');
 
@@ -15,86 +14,65 @@ module.exports = (event, model) => {
         'newsletters'
     ];
 
-    const ops = [];
+    let current = {};
+    let previous = {};
 
     if (Object.keys(model.attributes).length) {
-        ops.push(async () => {
-            let frame = {options: {previous: false, context: {user: true}}};
+        let frame = {options: {previous: false, context: {user: true}}};
 
-            // @NOTE: below options are lost during event processing, a more holistic approach would be
-            //       to pass them somehow along with the model
-            switch (docName) {
-            case 'posts':
-            case 'pages':
-                frame.options.formats = POST_FORMATS;
-                frame.options.withRelated = POST_WITH_RELATED;
-                model._originalOptions = {
-                    withRelated: POST_WITH_RELATED
-                };
-                break;
-            case 'members':
-                await model.load(MEMBER_WITH_RELATED);
-                break;
-            default:
-                break;
-            }
+        // @NOTE: below options are lost during event processing, a more holistic approach would be
+        //       to pass them somehow along with the model
+        switch (docName) {
+        case 'posts':
+        case 'pages':
+            frame.options.formats = POST_FORMATS;
+            frame.options.withRelated = POST_WITH_RELATED;
+            model._originalOptions = {
+                withRelated: POST_WITH_RELATED
+            };
+            break;
+        case 'members':
+            await model.load(MEMBER_WITH_RELATED);
+            break;
+        default:
+            break;
+        }
 
-            return apiFramework
-                .serializers
-                .handle
-                .output(model, {docName: docName, method: 'read'}, api.serializers.output, frame)
-                .then(() => {
-                    return frame.response[docName][0];
-                });
-        });
-    } else {
-        ops.push(() => {
-            return Promise.resolve({});
-        });
+        await apiFramework
+            .serializers
+            .handle
+            .output(model, {docName: docName, method: 'read'}, api.serializers.output, frame);
+        current = frame.response[docName][0];
     }
 
     if (Object.keys(model._previousAttributes).length) {
-        ops.push(() => {
-            const frame = {options: {previous: true, context: {user: true}}};
+        const frame = {options: {previous: true, context: {user: true}}};
 
-            switch (docName) {
-            case 'posts':
-            case 'pages':
-                frame.options.formats = POST_FORMATS;
-                frame.options.withRelated = POST_WITH_RELATED;
-                break;
-            default:
-                break;
-            }
+        switch (docName) {
+        case 'posts':
+        case 'pages':
+            frame.options.formats = POST_FORMATS;
+            frame.options.withRelated = POST_WITH_RELATED;
+            break;
+        default:
+            break;
+        }
 
-            return apiFramework
-                .serializers
-                .handle
-                .output(model, {docName: docName, method: 'read'}, api.serializers.output, frame)
-                .then(() => {
-                    return frame.response[docName][0];
-                });
-        });
-    } else {
-        ops.push(() => {
-            return Promise.resolve({});
-        });
+        await apiFramework
+            .serializers
+            .handle
+            .output(model, {docName: docName, method: 'read'}, api.serializers.output, frame);
+        previous = frame.response[docName][0];
     }
 
-    return sequence(ops)
-        .then((results) => {
-            const current = results[0];
-            const previous = results[1];
+    const changed = model._changed ? Object.keys(model._changed) : [];
 
-            const changed = model._changed ? Object.keys(model._changed) : {};
+    const payload = {
+        [docName.replace(/s$/, '')]: {
+            current: current,
+            previous: _.pick(previous, changed)
+        }
+    };
 
-            const payload = {
-                [docName.replace(/s$/, '')]: {
-                    current: current,
-                    previous: _.pick(previous, changed)
-                }
-            };
-
-            return payload;
-        });
+    return payload;
 };

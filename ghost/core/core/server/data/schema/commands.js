@@ -99,7 +99,7 @@ function dropNullable(tableName, column, transaction = db.knex) {
  * @param {import('knex').Knex.Transaction} [transaction]
  * @param {object} columnSpec
   * @param {object} [options]
- * @param {'inplace'|'copy'|'auto'} [options.algorithm] - MySQL only
+ * @param {'instant'|'inplace'|'copy'|'auto'} [options.algorithm] - MySQL only
  */
 async function addColumn(tableName, column, transaction = db.knex, columnSpec, options = {}) {
     const addColumnBuilder = transaction.schema.table(tableName, function (table) {
@@ -136,7 +136,7 @@ async function addColumn(tableName, column, transaction = db.knex, columnSpec, o
  * @param {import('knex').Knex} [transaction]
  * @param {object} [columnSpec]
  * @param {object} [options]
- * @param {'inplace'|'copy'|'auto'} [options.algorithm] - MySQL only
+ * @param {'instant'|'inplace'|'copy'|'auto'} [options.algorithm] - MySQL only
  */
 async function dropColumn(tableName, column, transaction = db.knex, columnSpec = {}, options = {}) {
     if (Object.prototype.hasOwnProperty.call(columnSpec, 'references')) {

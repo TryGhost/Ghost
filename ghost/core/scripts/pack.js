@@ -97,34 +97,84 @@ fs.writeFileSync(workspaceDst, yaml.dump(deployWorkspace));
 
 console.log('Wrote trimmed pnpm-workspace.yaml (catalogs + overrides + allowBuilds, age check off)');
 
-// Pack private workspace packages as component tarballs.
-// These are not on npm, so ghost-cli can't install them from the registry.
-// pnpm deploy writes absolute file:// refs that won't work on another machine.
+// Pack workspace packages as component tarballs.
+// The versions in this archive are the ones that shipped with this Ghost
+// build — they must never be fetched from the registry, so ghost-cli installs
+// them from bundled tarballs. pnpm deploy writes absolute file:// refs that
+// won't work on another machine. The set is discovered transitively: the
+// koenig kg-* packages depend on each other via workspace: specs, so a direct
+// dependency of ghost/core can pull in further workspace packages.
 const componentsDir = path.join(DEPLOY_DIR, 'components');
 fs.mkdirSync(componentsDir, {recursive: true});
 
-for (const [key, val] of Object.entries(pkg.dependencies || {})) {
-    if (typeof val !== 'string' || !val.includes('file:')) {
+// name → source dir for every package in the root workspace
+const workspacePackageDirs = new Map();
+for (const pattern of rootWorkspace.packages || []) {
+    const candidates = pattern.endsWith('/*')
+        ? fs.readdirSync(path.join(ROOT_DIR, pattern.slice(0, -2)), {withFileTypes: true})
+            .filter(entry => entry.isDirectory())
+            .map(entry => path.join(ROOT_DIR, pattern.slice(0, -2), entry.name))
+        : [path.join(ROOT_DIR, pattern)];
+    for (const dir of candidates) {
+        const pkgJsonPath = path.join(dir, 'package.json');
+        if (fs.existsSync(pkgJsonPath)) {
+            workspacePackageDirs.set(fsExtra.readJsonSync(pkgJsonPath).name, dir);
+        }
+    }
+}
+
+const componentQueue = Object.entries(pkg.dependencies || {})
+    .filter(([, val]) => typeof val === 'string' && val.includes('file:'))
+    .map(([key]) => key);
+const directComponents = new Set(componentQueue);
+const packedComponents = new Map(); // name → tarball filename
+
+while (componentQueue.length > 0) {
+    const name = componentQueue.shift();
+    if (packedComponents.has(name)) {
         continue;
     }
 
-    const depDir = path.join(DEPLOY_DIR, 'node_modules', key);
-    if (!fs.existsSync(depDir)) {
-        throw new Error(`${key} has a file: dependency ref but is missing from node_modules (${depDir})`);
+    const srcDir = workspacePackageDirs.get(name);
+    if (!srcDir) {
+        throw new Error(`${name} is referenced as a workspace dependency but is not a workspace package`);
     }
 
-    const depPkg = fsExtra.readJsonSync(path.join(depDir, 'package.json'));
-    const slug = key.replaceAll('@', '').replaceAll('/', '-');
+    const depPkg = fsExtra.readJsonSync(path.join(srcDir, 'package.json'));
+    const slug = name.replaceAll('@', '').replaceAll('/', '-');
     const tgzName = `${slug}-${depPkg.version}.tgz`;
 
-    console.log(`  Packing ${key} → components/${tgzName}`);
+    console.log(`  Packing ${name} → components/${tgzName}`);
+    // Pack from the source workspace so pnpm itself rewrites workspace: specs
+    // (packing the deploy-dir copy fails on them — no workspace context there).
     execFileSync(
         'pnpm',
         ['pack', '--pack-destination', componentsDir],
-        {cwd: depDir, stdio: 'pipe'}
+        {cwd: srcDir, stdio: 'pipe'}
     );
-    pkg.dependencies[key] = `file:components/${tgzName}`;
+    packedComponents.set(name, tgzName);
+
+    for (const [depName, spec] of Object.entries(depPkg.dependencies || {})) {
+        if (typeof spec === 'string' && spec.startsWith('workspace:')) {
+            componentQueue.push(depName);
+        }
+    }
 }
+
+for (const name of directComponents) {
+    pkg.dependencies[name] = `file:components/${packedComponents.get(name)}`;
+}
+
+// Force every component to resolve to its bundled tarball wherever it appears
+// in the graph. pnpm pack rewrote the components' own workspace: specs to
+// registry ranges (e.g. ~2.1.3), which must not be resolved from npm — the
+// bundled tarballs are the versions this Ghost build was tested against.
+deployWorkspace.overrides = {...deployWorkspace.overrides};
+for (const [name, tgzName] of packedComponents) {
+    deployWorkspace.overrides[name] = `file:components/${tgzName}`;
+}
+fs.writeFileSync(workspaceDst, yaml.dump(deployWorkspace));
+console.log('Added component tarball overrides to pnpm-workspace.yaml');
 
 // Carry over root-level fields that pnpm deploy doesn't preserve.
 const rootPkg = fsExtra.readJsonSync(path.join(ROOT_DIR, 'package.json'));

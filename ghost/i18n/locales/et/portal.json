@@ -191,8 +191,6 @@
     "Save": "Salvesta",
     "Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.": "",
     "Save {amountOff} on your next billing cycle. Then {currency}{originalPrice}/{cadence}.": "",
-    "Send an email and say hi!": "Saatke e-kiri ja öelge tere!",
-    "Send an email to {senderEmail} and say hello. This can also help signal to your mail provider that emails to and from this address should be trusted.": "Saatke e-kiri aadressile {senderEmail} ja öelge tere. See võib aidata anda teie e-posti teenusepakkujale märku, et selle aadressiga seotud e-kirju tuleks usaldada.",
     "Send the link below to share it with whoever you'd like.": "",
     "Sending login link...": "Sisselogimislingi saatmine...",
     "Sending...": "Saatmine...",

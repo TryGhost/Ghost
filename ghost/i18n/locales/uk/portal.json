@@ -191,8 +191,6 @@
     "Save": "Зберегти",
     "Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.": "",
     "Save {amountOff} on your next billing cycle. Then {currency}{originalPrice}/{cadence}.": "",
-    "Send an email and say hi!": "Надішліть електронний лист і привітайтеся!",
-    "Send an email to {senderEmail} and say hello. This can also help signal to your mail provider that emails to and from this address should be trusted.": "Надішліть електронний лист на адресу {senderEmail} і привітайтеся. Це також може допомогти повідомити вашому постачальнику послуг електронної пошти, що електронні листи на цю адресу та з неї слід довіряти.",
     "Send the link below to share it with whoever you'd like.": "",
     "Sending login link...": "Відправляється посилання для входу...",
     "Sending...": "Відправляється...",

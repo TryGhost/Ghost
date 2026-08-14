@@ -191,8 +191,6 @@
     "Save": "Spara",
     "Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.": "Spara {amountOff} på dina nästa {durationInMonths} faktureringsperioder. Sedan {currency}{originalPrice}/{cadence}.",
     "Save {amountOff} on your next billing cycle. Then {currency}{originalPrice}/{cadence}.": "Spara {amountOff} på din nästa faktureringsperiod. Sedan {currency}{originalPrice}/{cadence}.",
-    "Send an email and say hi!": "Skicka e-post och säg hej!",
-    "Send an email to {senderEmail} and say hello. This can also help signal to your mail provider that emails to and from this address should be trusted.": "Skicka ett e-postmeddelande till {senderEmail} och säg hej. Detta blir en signal till din e-postleverantör att meddelanden till/från {senderEmail} är viktiga.",
     "Send the link below to share it with whoever you'd like.": "Skicka länken nedan för att dela den med vem du vill.",
     "Sending login link...": "Skickar inloggningslänk...",
     "Sending...": "Skickar...",

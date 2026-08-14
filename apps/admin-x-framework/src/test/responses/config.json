@@ -11,10 +11,6 @@
         "stripeDirect": false,
         "mailgunIsConfigured": false,
         "emailAnalytics": true,
-        "tenor": {
-            "googleApiKey": null,
-            "contentFilter": "off"
-        },
         "klipy": {
             "apiKey": null,
             "contentFilter": "off"

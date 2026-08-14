@@ -12,7 +12,7 @@ const mail = require('../mail');
 const labs = require('../../../shared/labs');
 const {Automation, EmailDesignSetting, Newsletter} = require('../../models');
 const MemberWelcomeEmailRenderer = require('./member-welcome-email-renderer');
-const {DEFAULT_EMAIL_DESIGN_SETTING_SLUG, MEMBER_WELCOME_EMAIL_LOG_KEY, MEMBER_WELCOME_EMAIL_TAG, MEMBER_WELCOME_EMAIL_SLUGS, MESSAGES} = require('./constants');
+const {AUTOMATION_EMAIL_TAG, DEFAULT_EMAIL_DESIGN_SETTING_SLUG, MEMBER_WELCOME_EMAIL_LOG_KEY, MEMBER_WELCOME_EMAIL_TAG, MEMBER_WELCOME_EMAIL_SLUGS, MESSAGES} = require('./constants');
 
 const VERIFIED_SENDER_PROPERTIES = ['sender_reply_to'];
 const WELCOME_EMAIL_FILTER = `slug:${MEMBER_WELCOME_EMAIL_SLUGS.free},slug:${MEMBER_WELCOME_EMAIL_SLUGS.paid}`;
@@ -407,13 +407,29 @@ class MemberWelcomeEmailService {
             'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click'
         } : undefined;
 
+        /** @type {string[]} */ let tags;
+        switch (emailType) {
+        case 'welcome':
+            tags = [MEMBER_WELCOME_EMAIL_TAG];
+            break;
+        case 'automation':
+            tags = [AUTOMATION_EMAIL_TAG];
+            break;
+        default: {
+            /** @type {never} */ const _exhaustive = emailType;
+            throw new errors.InternalServerError({
+                message: `Unexpected email type ${_exhaustive}`
+            });
+        }
+        }
+
         await this.#mailer.send({
             to: member.email,
             subject,
             html,
             text,
             forceTextContent: true,
-            tags: [MEMBER_WELCOME_EMAIL_TAG],
+            tags,
             ...(headers ? {headers} : {}),
             ...senderOptions
         });

@@ -108,9 +108,10 @@ export class UrlServiceFacade {
         }
         const url = this.urlService.getUrlByResourceId(resource.id, options);
         if (this.isComparing()) {
+            const context = this._compareContext(resource);
             setImmediate(() => this._compare('getUrlForResource', url,
                 () => this.lazyUrlService!.getUrlForResource(resource, options),
-                {type: resource.type, id: resource.id}));
+                context));
         }
         return url;
     }
@@ -121,11 +122,30 @@ export class UrlServiceFacade {
         }
         const owns = this.urlService.owns(routerIdentifier, resource.id);
         if (this.isComparing()) {
+            const context = this._compareContext(resource, {routerIdentifier});
             setImmediate(() => this._compare('ownsResource', owns,
                 () => this.lazyUrlService!.ownsResource(routerIdentifier, resource),
-                {type: resource.type, id: resource.id, routerIdentifier}));
+                context));
         }
         return owns;
+    }
+
+    // Context for a compare report. Must be built synchronously in the calling
+    // frame: the comparison itself runs from setImmediate, where the caller's
+    // stack is gone — so a lazy throw reported there names only the URL service
+    // internals, not which caller handed over the (possibly thin) resource.
+    // `caller` recaptures those frames; `resourceKeys` fingerprints the shape
+    // the caller passed (e.g. a Content-API-serialized post vs a full model).
+    private _compareContext(resource: Resource, extra: Record<string, unknown> = {}): Record<string, unknown> {
+        const caller: {stack?: string} = {};
+        Error.captureStackTrace(caller, this._compareContext);
+        return {
+            type: resource.type,
+            id: resource.id,
+            resourceKeys: Object.keys(resource),
+            caller: caller.stack,
+            ...extra
+        };
     }
 
     /**

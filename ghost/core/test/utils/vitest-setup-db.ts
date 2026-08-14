@@ -192,6 +192,7 @@ beforeAll(async () => {
         await mochaHooks.beforeAll();
     }
     mockManager.disableNetwork();
+    mockManager.mockWebmentionDiscoveryDomains();
 });
 
 // Bridge jest-snapshot's per-test config. The mocha hook reads
@@ -246,8 +247,12 @@ afterEach(async () => {
     } finally {
         // Individual test afterEach hooks often call sinon.restore() which
         // strips the DNS stubs set in beforeAll; reapply so subsequent tests
-        // don't hit real DNS on nocked domains.
+        // don't hit real DNS on nocked domains. Some test files also call
+        // nock.cleanAll() directly (bypassing mockManager.restore()), which
+        // would otherwise silently drop the webmention mocks for every test
+        // that runs afterward in this worker.
         mockManager.disableNetwork();
+        mockManager.mockWebmentionDiscoveryDomains();
     }
 });
 

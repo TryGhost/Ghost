@@ -12,6 +12,16 @@ const forPost = (id, attrs, frame, type = 'posts') => {
     //
     // `id` is passed separately for the same reason: without it, the eager
     // facade's id-based fallback hits /404/ for every record.
+    //
+    // When `url` was not requested (`?fields=id,title`), don't compute it at
+    // all — attrs is stripped to the requested columns, so the resource would
+    // reach the lazy URL service without the fields it needs (status,
+    // tags/authors) and be rejected as thin. The value would only be deleted
+    // at the end of this function anyway. forUser/forTag guard the same way.
+    if (frame.options.columns && !frame.options.columns.includes('url')) {
+        return attrs;
+    }
+
     attrs.url = urlService.facade.getUrlForResource({...attrs, id, type}, {absolute: true});
 
     /**
@@ -42,10 +52,6 @@ const forPost = (id, attrs, frame, type = 'posts') => {
                 }, null, true);
             }
         }
-    }
-
-    if (frame.options.columns && !frame.options.columns.includes('url')) {
-        delete attrs.url;
     }
 
     return attrs;

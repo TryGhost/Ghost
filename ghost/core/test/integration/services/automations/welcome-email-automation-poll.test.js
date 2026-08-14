@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
 const ObjectId = require('bson-objectid').default;
 const sinon = require('sinon');
+const logging = require('@tryghost/logging');
 const {mockSystemTime} = require('../../../utils/clock-utils');
 const testUtils = require('../../../utils');
 
@@ -314,6 +315,11 @@ describe('automations poll', function () {
         const sendError = new Error('send failed');
         options.memberWelcomeEmailService.api.send.rejects(sendError);
 
+        // The rejected send hits processRun's catch block and logs an expected
+        // error. Stub the logger so we can assert that path fired instead of
+        // spamming stdout.
+        const errorLog = sinon.stub(logging, 'error');
+
         // poll() computes retryAt = Date.now() + RETRY_DELAY_MS internally; the clock
         // is frozen, so compare against pollStart + RETRY_DELAY_MS (a small bracket
         // absorbs MySQL's whole-second flooring of the persisted ready_at).
@@ -323,6 +329,7 @@ describe('automations poll', function () {
         sinon.assert.calledOnce(options.memberWelcomeEmailService.init);
         sinon.assert.calledOnce(options.memberWelcomeEmailService.api.loadMemberWelcomeEmails);
         sinon.assert.calledOnce(options.memberWelcomeEmailService.api.send);
+        sinon.assert.calledOnce(errorLog);
 
         const enqueuedAt = options.enqueueAnotherPollAt.firstCall.args[0];
         const enqueuedDrift = Math.abs(enqueuedAt.getTime() - (pollStart + RETRY_DELAY_MS));
@@ -362,10 +369,16 @@ describe('automations poll', function () {
             return originalEdit.apply(this, arguments);
         });
 
+        // The failed edit hits processRun's catch block and logs an expected
+        // error. Stub the logger so we can assert that path fired instead of
+        // spamming stdout.
+        const errorLog = sinon.stub(logging, 'error');
+
         const pollStart = Date.now();
         await welcomeEmailAutomationPoll(options);
 
         sinon.assert.calledOnce(options.memberWelcomeEmailService.api.send);
+        sinon.assert.calledOnce(errorLog);
         const enqueuedAt = options.enqueueAnotherPollAt.firstCall.args[0];
         const enqueuedDrift = Math.abs(enqueuedAt.getTime() - (pollStart + RETRY_DELAY_MS));
         assert.ok(enqueuedDrift < 2000, `enqueueAnotherPollAt should be ~RETRY_DELAY_MS after pollStart (drift: ${enqueuedDrift}ms)`);

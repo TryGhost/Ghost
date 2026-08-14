@@ -55,8 +55,9 @@ export class AnalyticsWebTrafficPage extends AdminPage {
     }
 
     getFilterOptionValue(name: string): Locator {
-        // Filter option values show as "count name" (e.g., "1 Direct"), so use regex
-        return this.page.getByRole('option', {name: new RegExp(`^\\d+\\s+${name}$`)});
+        // Filter option values usually show as "count name" (e.g., "1 Direct");
+        // some dimensions (e.g. Gift link) show a plain label without a count
+        return this.page.getByRole('option', {name: new RegExp(`^(\\d+\\s+)?${name}$`)});
     }
 
     async selectFilterField(label: string) {

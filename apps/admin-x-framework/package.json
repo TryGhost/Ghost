@@ -81,7 +81,7 @@
         "@playwright/test": "catalog:",
         "@testing-library/jest-dom": "catalog:",
         "@testing-library/react": "catalog:",
-        "@tryghost/koenig-lexical": "catalog:",
+        "@tryghost/koenig-lexical": "workspace:*",
         "@types/react": "catalog:",
         "@types/react-dom": "catalog:",
         "@vitejs/plugin-react": "catalog:",
@@ -126,6 +126,12 @@
     "nx": {
         "targets": {
             "dev": {
+                "continuous": true,
+                "executor": "nx:run-commands",
+                "options": {
+                    "cwd": "apps/admin-x-framework",
+                    "command": "vite build --watch"
+                },
                 "dependsOn": [
                     "^build"
                 ]

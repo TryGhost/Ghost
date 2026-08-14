@@ -74,6 +74,9 @@ Ghost/
 │   ├── core/          # Main Ghost backend
 │   ├── admin/         # Admin build output
 │   └── i18n/          # Internationalization
+├── koenig/            # Ghost editor (Koenig) packages
+│   ├── koenig-lexical/  # Lexical-based rich text editor UI
+│   └── kg-*/          # Editor renderers, converters, and support packages
 ├── e2e/               # End-to-end tests
 ├── adr/               # Architecture Decision Records
 ```

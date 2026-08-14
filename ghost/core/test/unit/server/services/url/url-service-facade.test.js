@@ -252,6 +252,33 @@ describe('UrlServiceFacade', function () {
             assert.equal(logging.error.firstCall.args[0].code, 'LAZY_URL_COMPARE_ERROR');
         });
 
+        it('reports the caller stack and resource keys with a lazy throw from getUrlForResource', async function () {
+            lazyUrlService.getUrlForResource.throws(new Error('boom'));
+            compareFacade.getUrlForResource({type: 'posts', id: 'a', slug: 'hello'});
+            await flush();
+            const details = logging.error.firstCall.args[0].errorDetails;
+            // The compare runs in setImmediate, so the throw's own stack has no
+            // caller frames; the facade captures them at call time instead.
+            assert.match(details.caller, /url-service-facade\.test\.js/);
+            assert.deepEqual(details.resourceKeys, ['type', 'id', 'slug']);
+        });
+
+        it('reports the caller stack and resource keys with a forward URL mismatch', async function () {
+            compareFacade.getUrlForResource({type: 'posts', id: 'a', slug: 'hello'});
+            await flush();
+            const details = logging.error.firstCall.args[0].errorDetails;
+            assert.match(details.caller, /url-service-facade\.test\.js/);
+            assert.deepEqual(details.resourceKeys, ['type', 'id', 'slug']);
+        });
+
+        it('reports the caller stack and resource keys with an ownership mismatch', async function () {
+            compareFacade.ownsResource('routerA', {type: 'posts', id: 'a', status: 'published'});
+            await flush();
+            const details = logging.error.firstCall.args[0].errorDetails;
+            assert.match(details.caller, /url-service-facade\.test\.js/);
+            assert.deepEqual(details.resourceKeys, ['type', 'id', 'status']);
+        });
+
         it('resolveUrl returns the eager answer without awaiting lazy', async function () {
             urlService.getResource.returns({config: {type: 'posts'}, data: {id: 'eager', slug: 's'}});
             lazyUrlService.resolveUrl.resolves({type: 'posts', id: 'lazy', slug: 's'});

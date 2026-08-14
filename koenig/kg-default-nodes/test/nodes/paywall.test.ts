@@ -1,0 +1,126 @@
+import {createHeadlessEditor} from '@lexical/headless';
+import {$getRoot} from 'lexical';
+import {createDocument, dom, html} from '../test-utils/index.js';
+import {PaywallNode, $createPaywallNode, $isPaywallNode, type ExportDOMOptions} from '../../src/index.js';
+import {$generateNodesFromDOM} from '@lexical/html';
+import type {LexicalEditor} from 'lexical';
+
+const editorNodes = [PaywallNode];
+
+function getHTMLElement(element: HTMLElement | Text | null): HTMLElement {
+    if (!element || !('innerHTML' in element)) {
+        throw new Error('Expected exportDOM to return an HTMLElement');
+    }
+
+    return element as HTMLElement;
+}
+
+describe('PaywallNode', function () {
+    let editor: LexicalEditor;
+    let dataset: Record<string, unknown>;
+    let exportOptions: ExportDOMOptions;
+
+    // NOTE: all tests should use this function, without it you need manual
+    // try/catch and done handling to avoid assertion failures not triggering
+    // failed tests
+    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
+        editor.update(() => {
+            try {
+                testFn();
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+    };
+
+    beforeEach(function () {
+        editor = createHeadlessEditor({
+            nodes: editorNodes
+        });
+
+        dataset = {};
+
+        exportOptions = {
+            exportFormat: 'html',
+            dom
+        };
+    });
+
+    it('matches node with $isPaywallNode', editorTest(function () {
+        const paywallNode = $createPaywallNode(dataset);
+        $isPaywallNode(paywallNode).should.be.true();
+    }));
+
+    describe('exportJSON', function () {
+        it('contains all data', editorTest(function () {
+            const paywallNode = $createPaywallNode(dataset);
+            const json = paywallNode.exportJSON();
+
+            json.should.deepEqual({
+                type: 'paywall',
+                version: 1
+            });
+        }));
+    });
+
+    describe('importJSON', function () {
+        it('imports all data', function (done) {
+            const serializedState = JSON.stringify({
+                root: {
+                    children: [{
+                        type: 'paywall',
+                        ...dataset
+                    }],
+                    type: 'root',
+                    version: 1
+                }
+            });
+
+            const editorState = editor.parseEditorState(serializedState);
+            editor.setEditorState(editorState);
+
+            editor.getEditorState().read(() => {
+                try {
+                    const [paywallNode] = $getRoot().getChildren();
+                    paywallNode.should.be.instanceof(PaywallNode);
+
+                    done();
+                } catch (e) {
+                    done(e);
+                }
+            });
+        });
+    });
+
+    describe('exportDOM', function () {
+        it('renders a paywall node', editorTest(function () {
+            const paywallNode = $createPaywallNode(dataset);
+            const {element, type} = paywallNode.exportDOM(editor, exportOptions);
+
+            type.should.equal('inner');
+            getHTMLElement(element).innerHTML.should.equal('<!--members-only-->');
+        }));
+    });
+
+    describe('importDOM', function () {
+        it('parses a paywall node', editorTest(function () {
+            const document = createDocument(html`
+                <span><!--members-only--></span>
+            `);
+            const nodes = $generateNodesFromDOM(editor, document);
+
+            nodes.length.should.equal(1);
+            nodes[0].should.be.instanceof(PaywallNode);
+        }));
+    });
+
+    describe('getTextContent', function () {
+        it('returns contents', editorTest(function () {
+            const node = $createPaywallNode(dataset);
+
+            // paywall nodes don't have text content
+            node.getTextContent().should.equal('');
+        }));
+    });
+});

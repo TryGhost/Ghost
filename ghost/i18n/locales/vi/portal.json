@@ -191,8 +191,6 @@
     "Save": "Lưu",
     "Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.": "Tiết kiệm {amountOff} cho kỳ thanh toán {durationInMonths} tiếp theo của bạn. Sau đó là {currency}{originalPrice}/{cadence}.",
     "Save {amountOff} on your next billing cycle. Then {currency}{originalPrice}/{cadence}.": "Tiết kiệm {amountOff} cho kỳ thanh toán tiếp theo của bạn. Sau đó là {currency}{originalPrice}/{cadence}.",
-    "Send an email and say hi!": "Gửi một email và nói xin chào!",
-    "Send an email to {senderEmail} and say hello. This can also help signal to your mail provider that emails to and from this address should be trusted.": "Gửi email tới {senderEmail} và gửi lời chào. Điều này cũng có thể giúp báo hiệu cho nhà cung cấp dịch vụ email của bạn rằng các email đến và đi từ địa chỉ này là đáng tin cậy.",
     "Send the link below to share it with whoever you'd like.": "Gửi liên kết bên dưới để chia sẻ nó với bất cứ ai mà bạn thích.",
     "Sending login link...": "Đang gửi liên kết đăng nhập...",
     "Sending...": "Đang gửi...",

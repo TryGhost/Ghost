@@ -35,6 +35,7 @@ function GiftLinkModalHost() {
                 open={open}
                 postId={entry.id}
                 resource={entry.resource}
+                source="context-menu"
                 onOpenChange={setOpen}
             />
         </Suspense>

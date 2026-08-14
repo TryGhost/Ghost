@@ -1,6 +1,6 @@
 {
     "name": "@tryghost/posts",
-  "type": "module",
+    "type": "module",
     "version": "0.0.0",
     "license": "MIT",
     "repository": {
@@ -41,7 +41,7 @@
     "devDependencies": {
         "@playwright/test": "catalog:",
         "@tanstack/react-query": "catalog:",
-        "@tanstack/react-virtual": "3.14.4",
+        "@tanstack/react-virtual": "3.14.5",
         "@testing-library/jest-dom": "catalog:",
         "@testing-library/react": "catalog:",
         "@types/jest": "catalog:",
@@ -69,7 +69,7 @@
         "@ebay/nice-modal-react": "catalog:",
         "@tryghost/color-utils": "catalog:",
         "@tryghost/admin-x-framework": "workspace:*",
-        "@tryghost/koenig-lexical": "catalog:",
+        "@tryghost/koenig-lexical": "workspace:*",
         "@tryghost/nql-lang": "catalog:",
         "@tryghost/shade": "workspace:*",
         "@xyflow/react": "12.11.1",

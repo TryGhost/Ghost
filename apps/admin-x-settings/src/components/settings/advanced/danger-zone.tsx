@@ -1,6 +1,7 @@
 import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
+import trackEvent from '../../../utils/analytics';
 import useStaffUsers from '../../../hooks/use-staff-users';
 import {Button, ConfirmationModal, ListItem, SettingGroupHeader, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
@@ -21,7 +22,6 @@ const DangerZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {totalUsers} = useStaffUsers();
 
     const resetAuthEnabled = Boolean(config?.labs?.dangerZoneResetAuth);
-    const giftLinksEnabled = Boolean(config?.labs?.giftLinks);
 
     const resetAuthStaffSentence = totalUsers === 1
         ? 'You will be signed out and must reset your password before signing back in.'
@@ -97,6 +97,7 @@ const DangerZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 try {
                     const response = await removeAllGiftLinks(null);
                     const count = response?.meta?.count ?? 0;
+                    trackEvent('All Gift Links Reset');
                     showToast({
                         title: `Reset ${count} gift ${count === 1 ? 'link' : 'links'}.`,
                         type: 'success'
@@ -135,15 +136,13 @@ const DangerZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         title='Reset all authentication'
                     />
                 )}
-                {giftLinksEnabled && (
-                    <ListItem
-                        action={<Button aria-label='Reset all gift links' color='red' label='Reset' onClick={handleRemoveAllGiftLinks} />}
-                        bgOnHover={false}
-                        detail='Invalidate every active gift link across your site. Anyone holding one will lose access.'
-                        testId='reset-all-gift-links'
-                        title='Reset all gift links'
-                    />
-                )}
+                <ListItem
+                    action={<Button aria-label='Reset all gift links' color='red' label='Reset' onClick={handleRemoveAllGiftLinks} />}
+                    bgOnHover={false}
+                    detail='Invalidate every active gift link across your site. Anyone holding one will lose access.'
+                    testId='reset-all-gift-links'
+                    title='Reset all gift links'
+                />
             </div>
         </TopLevelGroup>
     );

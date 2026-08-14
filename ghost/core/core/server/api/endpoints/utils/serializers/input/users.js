@@ -2,8 +2,17 @@ const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:input:
 const url = require('./utils/url');
 
 module.exports = {
+    browse(apiConfig, frame) {
+        debug('browse');
+
+        // Staff users route through the authors router types.
+        url.forceUrlColumnsWhenLazy(frame, 'authors');
+    },
+
     read(apiConfig, frame) {
         debug('read');
+
+        url.forceUrlColumnsWhenLazy(frame, 'authors');
 
         if (frame.data.id === 'me' && frame.options.context && frame.options.context.user) {
             frame.data.id = frame.options.context.user;

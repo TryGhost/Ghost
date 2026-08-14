@@ -4,7 +4,7 @@ import AuthFrame from './auth-frame';
 import ContentBox from './components/content-box';
 import PopupBox from './components/popup-box';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import i18nLib from '@tryghost/i18n';
+import i18nLib from '@tryghost/i18n/registry/comments';
 import setupGhostApi from './utils/api';
 import {ActionHandler, SyncActionHandler, isSyncAction} from './actions';
 import {AppContext, Comment, DispatchActionType, EditableAppContext} from './app-context';

@@ -191,8 +191,6 @@
     "Save": "Ruaj",
     "Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.": "",
     "Save {amountOff} on your next billing cycle. Then {currency}{originalPrice}/{cadence}.": "",
-    "Send an email and say hi!": "Dergo nje email dhe thuaj pershendetje!",
-    "Send an email to {senderEmail} and say hello. This can also help signal to your mail provider that emails to and from this address should be trusted.": "Dërgo një email te {senderEmail} dhe thuaj përshëndetje. Kjo mund të ndihmojë gjithashtu t'i sinjalizojë ofruesit tuaj të postës elektronike se emailet drejt-dhe-nga kjo adresë duhet të jenë të besueshme.",
     "Send the link below to share it with whoever you'd like.": "",
     "Sending login link...": "Duke derguar linkun e identifikimit...",
     "Sending...": "Duke derguar...",

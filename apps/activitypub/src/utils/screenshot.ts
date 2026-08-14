@@ -1,4 +1,21 @@
-import html2canvas from 'html2canvas-objectfit-fix';
+import html2canvas from 'html2canvas-pro';
+
+/**
+ * In Firefox, html2canvas positions whole-word text segments incorrectly
+ * (spaces between words collapse, punctuation overlaps the previous glyph).
+ * A tiny non-zero letter-spacing forces the per-glyph rendering path, where
+ * every glyph is positioned from its own DOM-measured bounds and renders
+ * correctly. Apply to the cloned subtree via the html2canvas `onclone` hook.
+ */
+export function fixFirefoxTextSpacing(element: HTMLElement): void {
+    if (!navigator.userAgent.includes('Firefox')) {
+        return;
+    }
+    element.style.letterSpacing = '0.1px';
+    element.querySelectorAll<HTMLElement>('*').forEach((el) => {
+        el.style.letterSpacing = '0.1px';
+    });
+}
 
 export interface ScreenshotOptions {
     filename?: string;
@@ -25,7 +42,8 @@ export async function takeScreenshot(
             logging: false,
             useCORS: true,
             allowTaint: true,
-            imageTimeout: 0
+            imageTimeout: 0,
+            onclone: (_document, clonedElement) => fixFirefoxTextSpacing(clonedElement)
         });
 
         await new Promise<void>((resolve, reject) => {

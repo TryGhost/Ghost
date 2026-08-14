@@ -1,7 +1,7 @@
 import {HumanReadableError, chooseBestErrorMessage} from '../src/utils/errors';
 import {vi} from 'vitest';
 
-vi.mock('@tryghost/i18n', () => {
+vi.mock('@tryghost/i18n/registry/portal', () => {
     const mockT = vi.fn((message, params) => {
         if (params?.number) {
             return `translated ${message.replace('{number}', params.number)}`;

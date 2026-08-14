@@ -12,7 +12,8 @@
         "port": 2369
     },
     "logging": {
-        "level": "error"
+        "level": "error",
+        "logClientErrorsAsError": false
     },
     "adapters": {
         "Redis": {

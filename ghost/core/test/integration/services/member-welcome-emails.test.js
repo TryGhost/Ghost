@@ -475,6 +475,14 @@ describe('Member Welcome Emails Integration', function () {
             }));
         });
 
+        it('tags automation emails for automation analytics', async function () {
+            await sendAutomationEmail();
+
+            sinon.assert.calledOnce(mailService.GhostMailer.prototype.send);
+            const sendCall = mailService.GhostMailer.prototype.send.firstCall;
+            assert.deepEqual(sendCall.args[0].tags, ['automation-email']);
+        });
+
         it('uses email design sender details for automation emails', async function () {
             const defaultNewsletter = await models.Newsletter.getDefaultNewsletter();
 

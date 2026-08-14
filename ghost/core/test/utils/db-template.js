@@ -3,7 +3,6 @@ const path = require('path');
 const fs = require('fs-extra');
 const knex = require('knex');
 const KnexMigrator = require('knex-migrator');
-const {sequence} = require('@tryghost/promise');
 
 const config = require('../../core/shared/config');
 const db = require('../../core/server/data/db');
@@ -246,10 +245,10 @@ const restoreFromTemplateSQLite = async () => {
                 'SELECT name FROM template.sqlite_master WHERE type = ?', ['table']
             )).map(row => row.name);
 
-            await sequence(dataTables.map(table => async () => {
+            for (const table of dataTables) {
                 await run('DELETE FROM ??', [table]);
                 await run('INSERT INTO ?? SELECT * FROM template.??', [table, table]);
-            }));
+            }
         } finally {
             await run('PRAGMA foreign_keys = ON');
         }
@@ -306,12 +305,12 @@ const restoreFromTemplate = async () => {
     // This makes the restore byte-faithful to a fresh init.
     await db.knex.raw('SET FOREIGN_KEY_CHECKS=0;');
     try {
-        await sequence(tables.map(table => async () => {
+        for (const table of tables) {
             const [[{'Create Table': createTableSql}]] = await db.knex.raw('SHOW CREATE TABLE ??.??', [templateDb, table]);
             await db.knex.schema.dropTableIfExists(table);
             await db.knex.raw(createTableSql);
             await db.knex.raw('INSERT INTO ?? SELECT * FROM ??.??', [table, templateDb, table]);
-        }));
+        }
     } finally {
         await db.knex.raw('SET FOREIGN_KEY_CHECKS=1;');
     }
