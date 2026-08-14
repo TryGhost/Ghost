@@ -18,8 +18,10 @@ async function resolveGhostSiteUrl() {
                 host: new URL(data.site.url).host,
             };
         } catch (error) {
-            if (attempt === MAX_ATTEMPTS) throw error;
-            await new Promise((resolve) => setTimeout(resolve, attempt * 1000));
+            if (attempt === MAX_ATTEMPTS) {throw error;}
+            await new Promise((resolve) => {
+                setTimeout(resolve, attempt * 1000);
+            });
         }
     }
 
@@ -93,7 +95,7 @@ export function ghostBackendProxyPlugin(): Plugin {
 
         async configResolved(config) {
             // Only resolve backend URL for dev/preview, not for builds or tests
-            if (config.command !== 'serve' || config.mode === 'test') return;
+            if (config.command !== 'serve' || config.mode === 'test') {return;}
 
             try {
                 // We expect this to succeed immediately, but if the backend
@@ -120,7 +122,7 @@ Ensure the Ghost backend is running. If needed, set the GHOST_URL environment va
         },
 
         configureServer(server) {
-            if (!siteUrl) return;
+            if (!siteUrl) {return;}
 
             server.config.server.proxy = {
                 ...server.config.server.proxy,
@@ -130,7 +132,7 @@ Ensure the Ghost backend is running. If needed, set the GHOST_URL environment va
         },
 
         configurePreviewServer(server) {
-            if (!siteUrl) return;
+            if (!siteUrl) {return;}
 
             server.config.preview.proxy = {
                 ...server.config.preview.proxy,

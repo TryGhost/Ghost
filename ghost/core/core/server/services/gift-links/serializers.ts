@@ -5,8 +5,6 @@ import {GiftLink} from './models';
 // Response schemas — the shapes the admin endpoints emit.
 const GiftLinkResource = z.object({
     token: z.string(),
-    redeemed_count: z.number(),
-    last_redeemed_at: z.date().nullable(),
     created_at: z.date()
 });
 const GiftLinksResponse = z.object({gift_links: z.array(GiftLinkResource)});

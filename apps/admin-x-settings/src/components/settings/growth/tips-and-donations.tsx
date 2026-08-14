@@ -39,7 +39,7 @@ const TipsAndDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     useEffect(() => {
         validate();
-    }, [donationsCurrency]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [donationsCurrency]);  
 
     const [copied, setCopied] = useState(false);
     const [isEditing, setIsEditing] = useState(false);

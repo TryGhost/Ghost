@@ -132,7 +132,6 @@ module.exports.enabledHelper = function enabledHelper(options, callback) {
     });
     errDetails.help = tpl(options.errorHelp || messages.errorHelp, {url: options.helpUrl});
 
-    // eslint-disable-next-line no-restricted-syntax
     logging.error(new errors.DisabledFeatureError({
         message: errDetails.message,
         context: errDetails.context,

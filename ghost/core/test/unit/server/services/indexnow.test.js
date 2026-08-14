@@ -58,12 +58,29 @@ describe('IndexNow', function () {
             listener = eventStub.firstCall.args[1];
         });
 
-        it('calls ping() with toJSONified model when content changed', function () {
+        it('calls ping() with toJSONified model including tags and authors when content changed', function () {
             const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
+            const testAuthor = _.clone(testUtils.DataGenerator.Content.users[0]);
+            const testTag = _.clone(testUtils.DataGenerator.Content.tags[0]);
 
             const testModel = {
                 toJSON: function () {
                     return testPost;
+                },
+                related: function (relation) {
+                    return {
+                        toJSON: function () {
+                            if (relation === 'authors') {
+                                return [testAuthor];
+                            }
+
+                            if (relation === 'tags') {
+                                return [testTag];
+                            }
+
+                            return [];
+                        }
+                    };
                 },
                 get: function (key) {
                     if (key === 'status') {
@@ -86,7 +103,13 @@ describe('IndexNow', function () {
             listener(testModel);
 
             sinon.assert.calledOnce(urlStub);
-            sinon.assert.calledWith(urlStub, sinon.match({...testPost, type: 'posts'}), {absolute: true});
+            // tags and authors must reach the URL service so the lazy backend
+            // can evaluate collection filters (e.g. `tag:foo`) when building the URL
+            sinon.assert.calledWith(
+                urlStub,
+                sinon.match({...testPost, type: 'posts', authors: [testAuthor], tags: [testTag]}),
+                {absolute: true}
+            );
         });
 
         it('does not call ping() when importing', function () {
@@ -156,6 +179,9 @@ describe('IndexNow', function () {
                 toJSON: function () {
                     return testPost;
                 },
+                related: function () {
+                    return {toJSON: () => []};
+                },
                 get: function (key) {
                     if (key === 'title') {
                         return 'New Title';
@@ -182,6 +208,9 @@ describe('IndexNow', function () {
                 toJSON: function () {
                     return testPost;
                 },
+                related: function () {
+                    return {toJSON: () => []};
+                },
                 get: function (key) {
                     if (key === 'slug') {
                         return 'new-slug';
@@ -207,6 +236,9 @@ describe('IndexNow', function () {
             const testModel = {
                 toJSON: function () {
                     return testPost;
+                },
+                related: function () {
+                    return {toJSON: () => []};
                 },
                 get: function (key) {
                     if (key === 'meta_description') {

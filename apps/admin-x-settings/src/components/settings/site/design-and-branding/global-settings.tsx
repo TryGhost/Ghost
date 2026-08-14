@@ -160,13 +160,13 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
 
     // Populate the heading and body font options
     const customHeadingFonts: HeadingFontOption[] = CUSTOM_FONTS.heading.map((x) => {
-        let className = fontClassName(x.name, true);
+        const className = fontClassName(x.name, true);
         return {label: x.name, value: x.name, creator: x.creator, className};
     });
     customHeadingFonts.unshift({label: DEFAULT_FONT, value: DEFAULT_FONT, creator: themeNameVersion, className: 'font-sans font-normal'});
 
     const customBodyFonts: BodyFontOption[] = CUSTOM_FONTS.body.map((x) => {
-        let className = fontClassName(x.name, false);
+        const className = fontClassName(x.name, false);
         return {label: x.name, value: x.name, creator: x.creator, className};
     });
     customBodyFonts.unshift({label: DEFAULT_FONT, value: DEFAULT_FONT, creator: themeNameVersion, className: 'font-sans font-normal'});
@@ -286,7 +286,7 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
                         unsplashEnabled={unsplashEnabled}
                         width='160px'
                         onDelete={() => updateSetting('cover_image', null)}
-                        onUpload={async (file: any) => {
+                        onUpload={async (file: File) => {
                             try {
                                 updateSetting('cover_image', getImageUrl(await uploadImage({file})));
                             } catch (e) {

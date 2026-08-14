@@ -79,7 +79,15 @@ const useSearchService = () => {
             const wordsPattern = words.map(word => word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
             const parts = text.split(new RegExp(`(${wordsPattern})`, 'gi'));
 
-            return parts.map(part => (words.includes(part.toLowerCase()) ? <span className='bg-yellow-500/40'>{part}</span> : part));
+            const seen = new Map<string, number>();
+            return parts.map((part) => {
+                if (!words.includes(part.toLowerCase())) {
+                    return part;
+                }
+                const occurrence = (seen.get(part) ?? 0) + 1;
+                seen.set(part, occurrence);
+                return <span key={`${part}-${occurrence}`} className='bg-yellow-500/40'>{part}</span>;
+            });
         } else if (Array.isArray(text)) {
             return text.map(part => highlightKeywords(part));
         } else if (text && typeof text === 'object' && text) {

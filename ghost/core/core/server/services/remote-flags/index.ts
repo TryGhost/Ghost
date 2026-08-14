@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 import logging from '@tryghost/logging';
 import {RemoteFlagsService} from './remote-flags-service';
 import * as flagOverrides from '../../../shared/labs-flag-overrides';

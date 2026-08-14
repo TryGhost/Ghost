@@ -13,7 +13,7 @@ export const withMockFetch = async (
         ok
     } as Response));
 
-    globalThis.fetch = mockFetch as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+    globalThis.fetch = mockFetch as any;  
 
     try {
         await callback(mockFetch.mock);

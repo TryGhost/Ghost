@@ -179,7 +179,11 @@ function slackListener(model, options) {
 
     ping({
         ...model.toJSON(),
-        authors: model.related('authors').toJSON()
+        authors: model.related('authors').toJSON(),
+        // tags are needed so the lazy URL service can evaluate collection
+        // filters (e.g. `tag:foo`) when resolving the post URL; without them
+        // a tag-filtered post resolves to /404/
+        tags: model.related('tags').toJSON()
     });
 }
 

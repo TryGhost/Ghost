@@ -53,7 +53,7 @@ describe('Slack', function () {
         };
     }
 
-    function createPostModel(post, authors = []) {
+    function createPostModel(post, authors = [], tags = []) {
         return {
             toJSON: function () {
                 return post;
@@ -63,6 +63,10 @@ describe('Slack', function () {
                     toJSON: function () {
                         if (relation === 'authors') {
                             return authors;
+                        }
+
+                        if (relation === 'tags') {
+                            return tags;
                         }
 
                         return [];
@@ -96,9 +100,10 @@ describe('Slack', function () {
         assert.equal(eventStub.secondCall.args[1].name, 'slackTestPing');
     });
 
-    it('listener() sends a ping with toJSONified model and related authors', async function () {
+    it('listener() sends a ping with toJSONified model and related authors and tags', async function () {
         const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
         const testAuthor = _.clone(testUtils.DataGenerator.Content.users[0]);
+        const testTag = _.clone(testUtils.DataGenerator.Content.tags[0]);
         const settingsCacheStub = sinon.stub(settingsCache, 'get');
         const urlServiceGetUrlForResourceStub = sinon.stub(urlService.facade, 'getUrlForResource');
         const {requests, scope} = mockSlackWebhook();
@@ -115,12 +120,19 @@ describe('Slack', function () {
 
         configUtils.set('url', 'http://myblog.com');
 
-        slackListener(createPostModel(testPost, [testAuthor]));
+        slackListener(createPostModel(testPost, [testAuthor], [testTag]));
 
         await waitFor(() => scope.isDone());
 
         assert.equal(scope.isDone(), true);
         assert.equal(requests[0].attachments[1].fields[0].value, `<http://myblog.com/author/${testAuthor.slug}/ | ${testAuthor.name}>`);
+        // tags must reach the URL service so the lazy backend can evaluate
+        // collection filters like `tag:foo` when resolving the post URL
+        sinon.assert.calledWith(
+            urlServiceGetUrlForResourceStub,
+            sinon.match({id: testPost.id, type: 'posts', tags: [testTag]}),
+            {absolute: true}
+        );
     });
 
     it('listener() does not call ping() when importing', function () {

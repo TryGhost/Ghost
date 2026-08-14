@@ -2199,11 +2199,6 @@ describe('Members API', function () {
     });
 
     it('Returns an identical member format for read, edit and browse', async function () {
-        if (!memberWithPaidSubscription) {
-            // Previous test failed
-            this.skip();
-        }
-
         // Check status has been updated to 'free' after cancelling
         const {body: readBody} = await agent.get('/members/' + memberWithPaidSubscription.id + '/');
         assert.equal(readBody.members.length, 1, 'The member was not found in read');
@@ -2255,10 +2250,6 @@ describe('Members API', function () {
     });
 
     it('Cannot add complimentary subscriptions to a member with an active subscription', async function () {
-        if (!memberWithPaidSubscription) {
-            // Previous test failed
-            this.skip();
-        }
         const product = await getOtherPaidProduct();
 
         const compedPayload = {
@@ -2279,11 +2270,6 @@ describe('Members API', function () {
     });
 
     it('Cannot remove non complimentary subscriptions directly from a member', async function () {
-        if (!memberWithPaidSubscription) {
-            // Previous test failed
-            this.skip();
-        }
-
         const compedPayload = {
             id: memberWithPaidSubscription.id,
             // Remove all paid subscriptions (= not allowed atm)
@@ -2300,11 +2286,6 @@ describe('Members API', function () {
     it('Can remove a complimentary subscription directly from a member with other active subscriptions', async function () {
         // This tests for an edge case that shouldn't be possible, but the API should support this to resolve issues
         // refs https://github.com/TryGhost/Team/issues/1859
-
-        if (!memberWithPaidSubscription) {
-            // Previous test failed
-            this.skip();
-        }
 
         // Check that the product that we are going to add is not the same as the existing one
         const product = await getOtherPaidProduct();
@@ -2358,11 +2339,6 @@ describe('Members API', function () {
     });
 
     it('Can keep tiers unchanged when modifying a paid member', async function () {
-        if (!memberWithPaidSubscription) {
-            // Previous test failed
-            this.skip();
-        }
-
         const compedPayload = {
             id: memberWithPaidSubscription.id,
             // Not changed tiers

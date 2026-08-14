@@ -15,7 +15,6 @@ const {blogIcon} = require('../../../lib/image');
 const url = require('url');
 
 // TODO: We have too many lines here, should move functions out into a utils module
-/* eslint-disable max-lines */
 
 function getOriginOfRequest(req) {
     const getHeader = (name) => {

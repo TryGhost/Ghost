@@ -58,7 +58,7 @@ const useStaffUsers = (): UsersHook => {
     const authorUsers = useMemo(() => getUsersByRole(users, 'Author'), [users]);
     const contributorUsers = useMemo(() => getUsersByRole(users, 'Contributor'), [users]);
     const mappedInvites = useMemo(() => invites.map((invite) => {
-        let role = roles?.find((r) => {
+        const role = roles?.find((r) => {
             return invite.role_id === r.id;
         });
         return {

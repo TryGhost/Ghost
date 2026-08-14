@@ -55,6 +55,7 @@ export default function OnboardingRoute() {
         } catch (error) {
             isLeavingRef.current = false;
             setIsLeaving(false);
+            // eslint-disable-next-line no-console
             console.error(error);
         }
     };

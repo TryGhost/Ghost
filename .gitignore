@@ -144,6 +144,9 @@ Caddyfile
 # Admin
 /ghost/admin/dist
 
+# Admin Toolbar
+/apps/admin-toolbar/umd
+
 # Comments-UI
 /apps/comments-ui/umd
 /apps/comments-ui/playwright-report

@@ -64,7 +64,6 @@ module.exports = class MemberRepository {
      * @param {any} deps.StripeCustomer
      * @param {any} deps.StripeCustomerSubscription
      * @param {any} deps.OfferRedemption
-     * @param {any} deps.Outbox
      * @param {import('../../../stripe/stripe-api')} deps.stripeAPIService
      * @param {any} deps.productRepository
      * @param {any} deps.offersAPI
@@ -86,7 +85,6 @@ module.exports = class MemberRepository {
         StripeCustomer,
         StripeCustomerSubscription,
         OfferRedemption,
-        Outbox,
         stripeAPIService,
         productRepository,
         offersAPI,
@@ -105,7 +103,6 @@ module.exports = class MemberRepository {
         this._MemberStatusEvent = MemberStatusEvent;
         this._MemberProductEvent = MemberProductEvent;
         this._OfferRedemption = OfferRedemption;
-        this._Outbox = Outbox;
         this._StripeCustomer = StripeCustomer;
         this._StripeCustomerSubscription = StripeCustomerSubscription;
         this._stripeAPIService = stripeAPIService;

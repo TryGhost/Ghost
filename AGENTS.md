@@ -254,6 +254,25 @@ Public-facing apps (`comments-ui`, `signup-form`, `sodo-search`, `portal`, `anno
 ### Commit Messages
 When the user asks you to create a commit or draft a commit message, load and follow the `commit` skill from `.agents/skills/commit`.
 
+### ESLint Config
+Source of truth: [eslint.shared.mjs](eslint.shared.mjs) at the repo root. Two factories cover most workspaces — `reactAppConfig` (every `apps/*` workspace) and `nodeLibConfig` (Node libs in `ghost/`). Each factory has full JSDoc with `@example`s; hover the call site in your editor.
+
+Minimal example for a new admin React app (`apps/new-feature/eslint.config.js`):
+
+```js
+import {reactAppConfig} from '../../eslint.shared.mjs';
+export default await reactAppConfig({
+    tailwindCssPath: `${import.meta.dirname}/../admin/src/index.css`,
+    shadeRestricted: true
+});
+```
+
+Conventions:
+- **Rules are `'error'` or `'off'` — never `'warn'`.** Warnings get ignored and pollute output. Applies to every workspace covered by the factories above + the standalones; `e2e/` has its own setup (see [e2e/CLAUDE.md](e2e/CLAUDE.md)) and currently still uses warn-level Playwright rules — a separate cleanup.
+- **Params prefixed `legacy*`** (`legacyTailwindV3ConfigPath`, `legacyJsTsSplit`) are escape hatches for migrations that haven't shipped yet. Intentional and visible — PRs to remove them are scoped.
+- **Standalone configs** (`ghost/core`, `ghost/admin`, `apps/admin`, `apps/admin-toolbar`) exist because their rule sets genuinely don't fit a factory — read the file directly. They import shared atoms (`correctnessRules`, `nodeLibRules`, `localFilenamesPlugin`, `strictLinterOptions`) where applicable.
+- **Plugin deps**: workspaces that use Tailwind must list `tailwindcss` as a (dev)Dependency themselves; other eslint plugins are root devDeps because the factory imports them dynamically.
+
 ### When Working on Admin UI
 - **New features:** Build in React (`apps/admin-x-*` or `apps/posts`)
 - **Use:** `admin-x-framework` for API hooks (`useBrowse`, `useEdit`, etc.)

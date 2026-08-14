@@ -57,8 +57,7 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
             one_click_subscribe: false
         },
         onSave: async () => {
-            let validatedUrl: URL;
-            validatedUrl = new URL(formState.url);
+            const validatedUrl: URL = new URL(formState.url);
 
             // Use the hostname as fallback title
             const defaultTitle = validatedUrl.hostname.replace('www.', '');
@@ -155,7 +154,6 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
             onOk();
             setEnterPressed(false); // Reset for future use
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [formState]);
 
     if (showLoadingView) {

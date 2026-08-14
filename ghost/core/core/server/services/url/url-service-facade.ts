@@ -15,11 +15,9 @@
  * swapped in behind a config flag without touching individual callers.
  */
 
-/* eslint-disable @typescript-eslint/no-require-imports */
 const _ = require('lodash');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
-/* eslint-enable @typescript-eslint/no-require-imports */
 
 /**
  * Routing-level resource. `type` is one of the plural router keys

@@ -2,9 +2,21 @@ import js from '@eslint/js';
 import globals from 'globals';
 import ghostPlugin from 'eslint-plugin-ghost';
 
+import {correctnessRules, strictLinterOptions} from '../../eslint.shared.mjs';
+
+// Standalone (not factory-based) because admin-toolbar is Preact (~3KB) + JS
+// hyperscript, served as a UMD bundle via CDN — see README. Neither factory
+// fits: reactAppConfig would load eslint-plugin-react/react-hooks for code
+// that doesn't use them, and nodeLibConfig assumes Node globals. The base
+// rules come from the shared correctnessRules atom.
+
 export default [
     {
         ignores: ['umd/**/*.js']
+    },
+    {
+        files: ['**/*'],
+        ...strictLinterOptions
     },
     {
         files: ['src/**/*.js'],
@@ -12,28 +24,13 @@ export default [
         languageOptions: {
             ecmaVersion: 2022,
             sourceType: 'module',
-            globals: {
-                ...globals.browser,
-                ...globals.jquery
-            }
+            globals: globals.browser
         },
         plugins: {
             ghost: ghostPlugin
         },
         rules: {
-            curly: 'error',
-            camelcase: ['error', {properties: 'never'}],
-            'dot-notation': 'error',
-            eqeqeq: ['error', 'always'],
-            'no-plusplus': ['error', {allowForLoopAfterthoughts: true}],
-            'no-eval': 'error',
-            'no-useless-call': 'error',
-            'no-console': 'error',
-            'no-shadow': 'error',
-            'array-callback-return': 'error',
-            'no-constructor-return': 'error',
-            'no-promise-executor-return': 'error',
-            'ghost/filenames/match-regex': ['error', '^[a-z0-9.-]+$', false]
+            ...correctnessRules
         }
     },
     {
@@ -53,19 +50,7 @@ export default [
             ghost: ghostPlugin
         },
         rules: {
-            curly: 'error',
-            camelcase: ['error', {properties: 'never'}],
-            'dot-notation': 'error',
-            eqeqeq: ['error', 'always'],
-            'no-plusplus': ['error', {allowForLoopAfterthoughts: true}],
-            'no-eval': 'error',
-            'no-useless-call': 'error',
-            'no-console': 'error',
-            'no-shadow': 'error',
-            'array-callback-return': 'error',
-            'no-constructor-return': 'error',
-            'no-promise-executor-return': 'error',
-            'ghost/filenames/match-regex': ['error', '^[a-z0-9.-]+$', false]
+            ...correctnessRules
         }
     }
 ];

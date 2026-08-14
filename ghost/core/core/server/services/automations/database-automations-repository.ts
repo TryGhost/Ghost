@@ -17,7 +17,7 @@ import type {
     EditAutomationData,
     Page
 } from './automations-repository';
-import {LOCK_TIMEOUT_MS} from './constants';
+import {getStaleLockCutoff} from './stale-lock-cutoff';
 import type {ExclusifyUnion, ReadonlyDeep} from 'type-fest';
 
 const HOUR_MS = 60 * 60 * 1000;
@@ -165,13 +165,19 @@ export function createDatabaseAutomationsRepository({
                     return null;
                 }
 
+                const now = new Date();
+
                 const updatedAutomation = await updateAutomation(trx, {
                     ...automation,
                     status: data.status,
-                    updated_at: toDatabaseDate(new Date())
+                    updated_at: toDatabaseDate(now)
                 });
 
                 await replaceAutomationGraph(trx, updatedAutomation.id, data.actions, data.edges);
+
+                if (updatedAutomation.status === 'inactive') {
+                    await cancelCancelablePendingStepsForAutomation(trx, updatedAutomation.id, now);
+                }
 
                 return await buildAutomation(trx, updatedAutomation);
             });
@@ -375,7 +381,7 @@ async function fetchAndLockSteps(trx: Knex.Transaction, limit: number): Promise<
 
     const now = new Date();
     const nowString = toDatabaseDate(now);
-    const staleLockCutoff = new Date(now.getTime() - LOCK_TIMEOUT_MS);
+    const staleLockCutoff = getStaleLockCutoff(now);
     const staleLockCutoffString = toDatabaseDate(staleLockCutoff);
     const lockId = crypto.randomUUID();
 
@@ -561,6 +567,10 @@ async function finishStepAndEnqueueNext(
         return null;
     }
 
+    if (!await isRunAutomationActive(trx, step.automation_run_id)) {
+        return null;
+    }
+
     const next = await findNextActionRevision(trx, step.action_id);
 
     if (!next) {
@@ -620,6 +630,11 @@ async function retryStep(
     step: Pick<AutomationStepToRun, 'id' | 'locked_by'>,
     retryAt: Readonly<Date>
 ): Promise<boolean> {
+    if (!await isStepRunAutomationActive(trx, step.id)) {
+        await markStepTerminal(trx, step, 'automation disabled');
+        return false;
+    }
+
     const nowString = toDatabaseDate(new Date());
     return await updateStep(trx, step, {
         status: 'pending',
@@ -653,6 +668,58 @@ function getReadyAtForAction(
         });
     }
     }
+}
+
+async function cancelCancelablePendingStepsForAutomation(
+    trx: Knex.Transaction,
+    automationId: string,
+    now: Readonly<Date>
+): Promise<void> {
+    const nowString = toDatabaseDate(now);
+    const staleLockCutoff = toDatabaseDate(getStaleLockCutoff(now));
+    await trx('automation_run_steps')
+        .update({
+            status: 'automation disabled',
+            finished_at: nowString,
+            updated_at: nowString,
+            locked_by: null,
+            locked_at: null
+        })
+        .where('status', 'pending')
+        .whereIn('automation_run_id', trx('automation_runs')
+            .select('id')
+            .where('automation_id', automationId))
+        .where((builder) => {
+            builder
+                .whereNull('locked_by')
+                .orWhere('locked_at', '<', staleLockCutoff);
+        });
+}
+
+async function isStepRunAutomationActive(trx: Knex.Transaction, stepId: string): Promise<boolean> {
+    const query = trx('automation_run_steps as step')
+        .select(trx.raw('1'))
+        .innerJoin('automation_runs as run', 'run.id', 'step.automation_run_id')
+        .innerJoin('automations as automation', 'automation.id', 'run.automation_id')
+        .where('step.id', stepId)
+        .where('automation.status', 'active');
+    return await selectExists(trx, query);
+}
+
+async function isRunAutomationActive(trx: Knex.Transaction, automationRunId: string): Promise<boolean> {
+    const query = trx('automation_runs as run')
+        .select(trx.raw('1'))
+        .innerJoin('automations as automation', 'automation.id', 'run.automation_id')
+        .where('run.id', automationRunId)
+        .where('automation.status', 'active');
+    return await selectExists(trx, query);
+}
+
+async function selectExists(trx: Knex.Transaction, query: Knex.QueryBuilder): Promise<boolean> {
+    const row = await trx
+        .select<{exists: boolean | number | string}>(trx.raw('exists ? as `exists`', [query]))
+        .first();
+    return Boolean(Number(row?.exists));
 }
 
 /**

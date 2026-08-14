@@ -78,7 +78,7 @@ const PortalModal: React.FC = () => {
     useEffect(() => {
         const checkToken = async ({token}: {token: string}) => {
             try {
-                let {settings: verifiedSettings} = await verifyToken({token});
+                const {settings: verifiedSettings} = await verifyToken({token});
                 const [supportEmail] = getSettingValues<string>(verifiedSettings, ['members_support_address']);
                 NiceModal.show(ConfirmationModal, {
                     title: 'Support address verified',
@@ -220,7 +220,7 @@ const PortalModal: React.FC = () => {
         selectedTab={selectedPreviewTab}
     />;
 
-    let previewTabs: Tab[] = [
+    const previewTabs: Tab[] = [
         {id: 'signup', title: 'Signup'},
         {id: 'account', title: 'Account page'},
         {id: 'links', title: 'Links'}

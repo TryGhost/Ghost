@@ -10,7 +10,7 @@ class EmailServiceWrapper {
         return jsonModel.url;
     }
 
-    init() {
+    init({ghostServer} = {}) {
         if (this.service) {
             return;
         }
@@ -150,13 +150,18 @@ class EmailServiceWrapper {
             debugStorageFilePath: configService.getContentPath('data')
         });
 
+        if (ghostServer) {
+            ghostServer.registerCleanupTask(() => batchSendingService.onShutdown());
+        }
+
         this.renderer = emailRenderer;
 
         this.service = new EmailService({
             batchSendingService,
             sendingService,
             models: {
-                Email
+                Email,
+                EmailBatch
             },
             settingsCache,
             emailRenderer,

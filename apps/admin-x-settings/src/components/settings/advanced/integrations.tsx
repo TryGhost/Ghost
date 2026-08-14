@@ -196,6 +196,7 @@ const CustomIntegrations: React.FC<{integrations: Integration[]}> = ({integratio
             <List borderTop={false}>
                 {integrations.map(integration => (
                     <IntegrationItem
+                        key={integration.id}
                         action={() => updateRoute({route: `integrations/${integration.id}`})}
                         detail={<div className="line-clamp-2 break-words">
                             <span title={`${integration.name}: ${integration.description || 'No description'}`}>{integration.description || 'No description'}</span>

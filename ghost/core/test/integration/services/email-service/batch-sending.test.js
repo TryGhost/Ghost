@@ -187,16 +187,27 @@ describe('Batch sending tests', function () {
         // Prepare a post and email model
         const {emailModel} = await sendEmail(agent);
 
-        // Retry sending a couple of times
-        const promises = [];
-        for (let i = 0; i < 100; i++) {
-            promises.push(emailService.service.retryEmail(emailModel));
-        }
-        await Promise.all(promises);
+        // Flip the email back to `failed` so retryEmail is allowed to reschedule it
+        // (retryEmail now rejects non-failed emails). This reproduces the real-world
+        // contention we care about: a failed email getting retried many times at once.
+        await emailModel.save({status: 'failed'}, {patch: true, autoRefresh: false});
+
+        // Each retryEmail mutates its email model in-memory (status -> pending) before
+        // scheduling, so concurrent calls must use independent model instances — otherwise
+        // they'd race on the shared model's status and trip the "only failed" guard.
+        const emailModels = await Promise.all(
+            Array.from({length: 50}, () => models.Email.findOne({id: emailModel.id}))
+        );
+
+        // Retry sending a couple of times concurrently
+        await Promise.all(emailModels.map(model => emailService.service.retryEmail(model)));
 
         // Await sending job
         await jobManager.allSettled();
 
+        // Despite 50 concurrent retries each scheduling a job, the emailJob status lock
+        // (pending/failed -> submitting) ensures only one job actually sends. The already
+        // submitted batch from the initial send is short-circuited, not re-sent.
         await emailModel.refresh();
         assert.equal(emailModel.get('status'), 'submitted');
         assert.equal(emailModel.get('email_count'), 4);

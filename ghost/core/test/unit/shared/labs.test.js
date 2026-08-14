@@ -6,6 +6,13 @@ const labs = require('../../../core/shared/labs');
 const flagOverrides = require('../../../core/shared/labs-flag-overrides');
 const settingsCache = require('../../../core/shared/settings-cache');
 
+// The labs allowlists (`WRITABLE_KEYS_ALLOWLIST`, `GA_KEYS`) drain to empty
+// once every flag in them graduates. Tests that pick the first allowlist
+// entry must skip when that happens, or they reference undefined.
+const itIfHasWritableFlag = it.skipIf(labs.WRITABLE_KEYS_ALLOWLIST.length === 0);
+const itIfHasGaFlag = it.skipIf(labs.GA_KEYS.length === 0);
+const itIfHasBothFlags = it.skipIf(labs.WRITABLE_KEYS_ALLOWLIST.length === 0 || labs.GA_KEYS.length === 0);
+
 function expectedLabsObject(obj) {
     let enabledFlags = {};
 
@@ -29,12 +36,7 @@ describe('Labs Service', function () {
         }));
     });
 
-    it('respects the value in config over settings', function () {
-        if (labs.WRITABLE_KEYS_ALLOWLIST.length === 0) {
-            this.skip();
-            return;
-        }
-
+    itIfHasWritableFlag('respects the value in config over settings', function () {
         const flag = labs.WRITABLE_KEYS_ALLOWLIST[0];
 
         configUtils.set('labs', {
@@ -54,12 +56,7 @@ describe('Labs Service', function () {
         assert.equal(labs.isSet(flag), false);
     });
 
-    it('respects the value in config over GA keys', function () {
-        if (labs.GA_KEYS.length === 0) {
-            this.skip();
-            return;
-        }
-
+    itIfHasGaFlag('respects the value in config over GA keys', function () {
         const gaKey = labs.GA_KEYS[0];
 
         configUtils.set('labs', {
@@ -85,12 +82,7 @@ describe('Labs Service', function () {
         assert.equal(labs.isSet('members'), true);
     });
 
-    it('returns other allowlisted flags along with members', function () {
-        if (labs.WRITABLE_KEYS_ALLOWLIST.length === 0) {
-            this.skip();
-            return;
-        }
-
+    itIfHasWritableFlag('returns other allowlisted flags along with members', function () {
         const flag = labs.WRITABLE_KEYS_ALLOWLIST[0];
 
         const getSpy = sinon.stub(settingsCache, 'get');
@@ -136,11 +128,7 @@ describe('Labs Service - remote overrides', function () {
         await configUtils.restore();
     });
 
-    it('overlays a remote override so an otherwise-off flag reads on', function () {
-        if (labs.WRITABLE_KEYS_ALLOWLIST.length === 0) {
-            this.skip();
-            return;
-        }
+    itIfHasWritableFlag('overlays a remote override so an otherwise-off flag reads on', function () {
         const flag = labs.WRITABLE_KEYS_ALLOWLIST[0];
 
         assert.equal(labs.isSet(flag), false);
@@ -149,11 +137,7 @@ describe('Labs Service - remote overrides', function () {
         assert.equal(labs.getAll()[flag], true);
     });
 
-    it('lets a remote override kill a GA flag (kill switch)', function () {
-        if (labs.GA_KEYS.length === 0) {
-            this.skip();
-            return;
-        }
+    itIfHasGaFlag('lets a remote override kill a GA flag (kill switch)', function () {
         const gaKey = labs.GA_KEYS[0];
 
         // GA forces the flag on by default.
@@ -164,11 +148,7 @@ describe('Labs Service - remote overrides', function () {
         assert.equal(labs.getAll()[gaKey], false);
     });
 
-    it('lets a remote override beat the DB settings value', function () {
-        if (labs.WRITABLE_KEYS_ALLOWLIST.length === 0) {
-            this.skip();
-            return;
-        }
+    itIfHasWritableFlag('lets a remote override beat the DB settings value', function () {
         const flag = labs.WRITABLE_KEYS_ALLOWLIST[0];
 
         const getSpy = sinon.stub(settingsCache, 'get');
@@ -178,11 +158,7 @@ describe('Labs Service - remote overrides', function () {
         assert.equal(labs.isSet(flag), true);
     });
 
-    it('lets a local config.labs pin beat a remote override', function () {
-        if (labs.WRITABLE_KEYS_ALLOWLIST.length === 0) {
-            this.skip();
-            return;
-        }
+    itIfHasWritableFlag('lets a local config.labs pin beat a remote override', function () {
         const flag = labs.WRITABLE_KEYS_ALLOWLIST[0];
 
         // config pins the flag OFF; remote tries to turn it ON; config must win.
@@ -201,11 +177,7 @@ describe('Labs Service - remote overrides', function () {
         assert.equal(labs.isSet('members'), true);
     });
 
-    it('is inert with no overrides set and after clearing', function () {
-        if (labs.GA_KEYS.length === 0) {
-            this.skip();
-            return;
-        }
+    itIfHasGaFlag('is inert with no overrides set and after clearing', function () {
         const gaKey = labs.GA_KEYS[0];
 
         flagOverrides.replace({[gaKey]: false});
@@ -213,11 +185,7 @@ describe('Labs Service - remote overrides', function () {
         assert.equal(labs.isSet(gaKey), true);
     });
 
-    it('treats a non-object override payload as empty without throwing', function () {
-        if (labs.GA_KEYS.length === 0) {
-            this.skip();
-            return;
-        }
+    itIfHasGaFlag('treats a non-object override payload as empty without throwing', function () {
         const gaKey = labs.GA_KEYS[0];
 
         flagOverrides.replace(null);
@@ -228,11 +196,7 @@ describe('Labs Service - remote overrides', function () {
         assert.equal(labs.isSet(gaKey), true);
     });
 
-    it('lets config.labs beat a remote override for a GA key', function () {
-        if (labs.GA_KEYS.length === 0) {
-            this.skip();
-            return;
-        }
+    itIfHasGaFlag('lets config.labs beat a remote override for a GA key', function () {
         const gaKey = labs.GA_KEYS[0];
 
         // Without config, the remote `false` would kill this GA flag; the config
@@ -242,11 +206,7 @@ describe('Labs Service - remote overrides', function () {
         assert.equal(labs.isSet(gaKey), true);
     });
 
-    it('applies multiple overrides in one payload key-by-key', function () {
-        if (labs.GA_KEYS.length === 0 || labs.WRITABLE_KEYS_ALLOWLIST.length === 0) {
-            this.skip();
-            return;
-        }
+    itIfHasBothFlags('applies multiple overrides in one payload key-by-key', function () {
         const gaKey = labs.GA_KEYS[0];
         const writable = labs.WRITABLE_KEYS_ALLOWLIST[0];
 
@@ -255,11 +215,7 @@ describe('Labs Service - remote overrides', function () {
         assert.equal(labs.isSet(writable), true);
     });
 
-    it('isolates stored overrides from later caller and getAll() mutation', function () {
-        if (labs.GA_KEYS.length === 0) {
-            this.skip();
-            return;
-        }
+    itIfHasGaFlag('isolates stored overrides from later caller and getAll() mutation', function () {
         const gaKey = labs.GA_KEYS[0];
 
         const payload = {[gaKey]: false};

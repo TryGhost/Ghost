@@ -3,6 +3,7 @@ import {ActivityPubService} from '../../../../../core/server/services/activitypu
 import knex, {Knex} from 'knex';
 import type {IdentityTokenService} from '../../../../../core/server/services/identity-tokens/identity-token-service';
 import nock from 'nock';
+import {vi, type Mock} from 'vitest';
 
 async function getKnexInstance() {
     const knexInstance = knex({
@@ -74,7 +75,32 @@ async function addActivityPubIntegration(knexInstance: Knex) {
     }).into('integrations');
 }
 
+// Matches the service's Logger interface method signature so the mock logger is
+// assignable to it, while staying a vi.fn() Mock so tests can read .mock.calls.
+type LogFn = (message: string) => void;
+
 describe('ActivityPubService', function () {
+    let logging: {
+        info: Mock<LogFn>;
+        warn: Mock<LogFn>;
+        error: Mock<LogFn>;
+    };
+
+    beforeEach(function () {
+        // Inject a silent logger so the service's operational info/warn logs are
+        // swallowed; error is a spy so tests can assert expected errors are logged.
+        logging = {
+            info: vi.fn<LogFn>(),
+            warn: vi.fn<LogFn>(),
+            error: vi.fn<LogFn>()
+        };
+    });
+
+    afterEach(function () {
+        // Restore any spies (isolate:false shares the module registry per worker).
+        vi.restoreAllMocks();
+    });
+
     it('Can initialise the webhooks', async function () {
         const knexInstance = await getKnexInstance();
         await addOwnerUser(knexInstance);
@@ -88,7 +114,6 @@ describe('ActivityPubService', function () {
                 webhook_secret: 'webhook_secret_baby!!'
             });
 
-        const logging = console;
         const identityTokenService = {
             getTokenForUser(email: string, role: string) {
                 return `token:${email}:${role}`;
@@ -134,7 +159,6 @@ describe('ActivityPubService', function () {
                 webhook_secret: 'webhook_secret_baby!!'
             });
 
-        const logging = console;
         const identityTokenService = {
             getTokenForUser(email: string, role: string) {
                 return `token:${email}:${role}`;
@@ -193,7 +217,6 @@ describe('ActivityPubService', function () {
                 webhook_secret: 'webhook_secret_baby!!'
             });
 
-        const logging = console;
         const identityTokenService = {
             getTokenForUser(email: string, role: string) {
                 return `token:${email}:${role}`;
@@ -245,6 +268,11 @@ describe('ActivityPubService', function () {
 
         assert.notDeepEqual(webhooksAfterSecondInitialisation, webhooks, 'Expected webhooks to be changed');
 
+        assert(
+            logging.error.mock.calls.some(([message]) => typeof message === 'string' && message.startsWith('Could not find webhook for')),
+            'Expected an error to be logged when a webhook is misconfigured'
+        );
+
         await knexInstance.destroy();
     });
 
@@ -260,7 +288,6 @@ describe('ActivityPubService', function () {
                 webhook_secret: 'webhook_secret_baby!!'
             });
 
-        const logging = console;
         const identityTokenService = {
             getTokenForUser(email: string, role: string) {
                 return `token:${email}:${role}`;
@@ -277,6 +304,11 @@ describe('ActivityPubService', function () {
 
         assert(!scope.isDone(), 'Expected the ActivityPub site endpoint not to be called');
 
+        assert(
+            logging.error.mock.calls.some(([message]) => typeof message === 'string' && message.startsWith('No ActivityPub integration found')),
+            'Expected an error to be logged when the integration is missing'
+        );
+
         await knexInstance.destroy();
     });
 
@@ -286,7 +318,6 @@ describe('ActivityPubService', function () {
 
         const siteUrl = new URL('http://fake-site-url');
 
-        const logging = console;
         const identityTokenService = {
             getTokenForUser(email: string, role: string) {
                 return `token:${email}:${role}`;
@@ -305,6 +336,11 @@ describe('ActivityPubService', function () {
 
         assert.equal(webhooks.length, 0, 'There should be no webhooks');
 
+        assert(
+            logging.error.mock.calls.some(([message]) => typeof message === 'string' && message.startsWith('Could not get webhook secret for ActivityPub')),
+            'Expected an error to be logged when the webhook secret could not be retrieved'
+        );
+
         await knexInstance.destroy();
     });
 
@@ -319,7 +355,6 @@ describe('ActivityPubService', function () {
             .matchHeader('authorization', 'Bearer token:owner@user.com:Owner')
             .reply(200);
 
-        const logging = console;
         const identityTokenService = {
             getTokenForUser(email: string, role: string) {
                 return `token:${email}:${role}`;

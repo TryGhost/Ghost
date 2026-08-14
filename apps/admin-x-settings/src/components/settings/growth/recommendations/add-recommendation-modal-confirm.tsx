@@ -51,7 +51,7 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
         okLabel = 'Added';
     }
 
-    let leftButtonProps = {
+    const leftButtonProps = {
         label: 'Back',
         icon: 'arrow-left',
         iconColorClass: 'text-black dark:text-white',

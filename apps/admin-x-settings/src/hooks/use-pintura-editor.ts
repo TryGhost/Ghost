@@ -54,7 +54,7 @@ export default function usePinturaEditor() {
     const [pinturaJsUrl] = getSettingValues<string>(settings, ['pintura_js_url']);
     const [pinturaCssUrl] = getSettingValues<string>(settings, ['pintura_css_url']);
 
-    let isEnabled = pintura && scriptLoaded && cssLoaded || false;
+    const isEnabled = pintura && scriptLoaded && cssLoaded || false;
     const pinturaConfig = globalConfig?.pintura as { js?: string; css?: string };
 
     useEffect(() => {
@@ -118,11 +118,11 @@ export default function usePinturaEditor() {
 
         try {
             // Check if the CSS file is already present in the document's head
-            let cssLink = document.querySelector(`link[href="${cssUrl}"]`);
+            const cssLink = document.querySelector(`link[href="${cssUrl}"]`);
             if (cssLink) {
                 setCssLoaded(true);
             } else {
-                let link = document.createElement('link');
+                const link = document.createElement('link');
                 link.rel = 'stylesheet';
                 link.type = 'text/css';
                 link.href = cssUrl;

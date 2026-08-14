@@ -1,4 +1,3 @@
-/* eslint-disable ghost/filenames/match-exported-class */
 
 type OembedMetadata<Type extends string> = {
     version: '1.0',

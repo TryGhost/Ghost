@@ -2,19 +2,13 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const moment = require('moment');
 const _ = require('lodash');
-const nock = require('nock');
-const SchedulingDefault = require('../../../../../core/server/adapters/scheduling/scheduling-default');
 const logging = require('@tryghost/logging');
+const SchedulingDefault = require('../../../../../core/server/adapters/scheduling/scheduling-default');
 
 describe('Scheduling Default Adapter', function () {
     const scope = {};
 
-    /** @type {import('sinon').SinonFakeTimers} */
-    let clock;
-
     beforeEach(function () {
-        // TODO: shouldAdvanceTime is a fake-timer + async-await workaround; see docs/dep-consolidation.md
-        clock = sinon.useFakeTimers({shouldAdvanceTime: true});
         scope.adapter = new SchedulingDefault();
     });
 
@@ -23,6 +17,15 @@ describe('Scheduling Default Adapter', function () {
     });
 
     describe('success', function () {
+        // The fake-timer tests below use clock.tick() to step Ghost's
+        // setTimeout-driven scheduler; install fake timers here only so the
+        // sibling pingUrl group doesn't see them.
+        /** @type {import('sinon').SinonFakeTimers} */
+        let clock;
+        beforeEach(function () {
+            clock = sinon.useFakeTimers({shouldAdvanceTime: true});
+        });
+
         it('addJob (schedule)', function () {
             sinon.stub(scope.adapter, 'run');
             sinon.stub(scope.adapter, '_execute');
@@ -241,123 +244,136 @@ describe('Scheduling Default Adapter', function () {
             scope.adapter._deleteJob({time: null, url: '/test'});
             assert.equal(Object.keys(scope.adapter.deletedJobs).length, 0);
         });
+    });
 
-        describe('pingUrl', function () {
-            // These tests exercise real HTTP via nock. The suite-level fake
-            // clock interferes with got's internal timers, so restore real
-            // timers for the pingUrl tests.
-            beforeEach(function () {
-                clock.restore();
+    describe('pingUrl', function () {
+        // _pingUrl wraps `@tryghost/request` (got + cacheable-lookup, with
+        // the cacheable-lookup instance held as a process-wide singleton).
+        // Earlier versions of these tests drove the real path through nock,
+        // but under the shared isolate:false unit worker the singleton was
+        // racy — the request occasionally never reached the interceptor and
+        // the test hit vitest's 5s testTimeout. The adapter exposes the
+        // HTTP client as `this.request` so we can swap it for a sync stub.
+        let requestStub;
+        beforeEach(function () {
+            requestStub = sinon.stub().resolves({statusCode: 200});
+            scope.adapter.request = requestStub;
+        });
+
+        it('pingUrl (PUT)', async function () {
+            await scope.adapter._pingUrl({
+                url: 'http://localhost:1111/ping',
+                time: moment().add(1, 'second').valueOf(),
+                extra: {
+                    httpMethod: 'PUT'
+                }
             });
 
-            it('pingUrl (PUT)', async function () {
-                const ping = nock('http://localhost:1111')
-                    .put('/ping')
-                    .query({})
-                    .reply(200);
+            sinon.assert.calledOnce(requestStub);
+            const [url, options] = requestStub.firstCall.args;
+            assert.equal(url, 'http://localhost:1111/ping');
+            assert.equal(options.method, 'PUT');
+            // not publishing in the past — no force flag added
+            assert.equal(options.searchParams, undefined);
+            assert.equal(options.json, undefined);
+        });
 
-                await scope.adapter._pingUrl({
-                    url: 'http://localhost:1111/ping',
-                    time: moment().add(1, 'second').valueOf(),
-                    extra: {
-                        httpMethod: 'PUT'
-                    }
-                });
-
-                assert.equal(ping.isDone(), true);
+        it('pingUrl (GET)', async function () {
+            await scope.adapter._pingUrl({
+                url: 'http://localhost:1111/ping',
+                time: moment().add(1, 'second').valueOf(),
+                extra: {
+                    httpMethod: 'GET'
+                }
             });
 
-            it('pingUrl (GET)', async function () {
-                const ping = nock('http://localhost:1111')
-                    .get('/ping')
-                    .query({})
-                    .reply(200);
+            sinon.assert.calledOnce(requestStub);
+            const [url, options] = requestStub.firstCall.args;
+            assert.equal(url, 'http://localhost:1111/ping');
+            assert.equal(options.method, 'GET');
+            assert.equal(options.searchParams, undefined);
+            assert.equal(options.json, undefined);
+        });
 
-                await scope.adapter._pingUrl({
-                    url: 'http://localhost:1111/ping',
-                    time: moment().add(1, 'second').valueOf(),
-                    extra: {
-                        httpMethod: 'GET'
-                    }
-                });
-
-                assert.equal(ping.isDone(), true);
+        it('pingUrl (PUT, and detect publish in the past)', async function () {
+            await scope.adapter._pingUrl({
+                url: 'http://localhost:1111/ping',
+                time: moment().subtract(10, 'minutes').valueOf(),
+                extra: {
+                    httpMethod: 'PUT'
+                }
             });
 
-            it('pingUrl (PUT, and detect publish in the past)', async function () {
-                const ping = nock('http://localhost:1111')
-                    .put('/ping')
-                    .query({})
-                    .reply(200);
+            sinon.assert.calledOnce(requestStub);
+            const [url, options] = requestStub.firstCall.args;
+            assert.equal(url, 'http://localhost:1111/ping');
+            assert.equal(options.method, 'PUT');
+            // publishing in the past with PUT — body carries the force flag
+            assert.deepEqual(options.json, {force: true});
+            assert.equal(options.searchParams, undefined);
+        });
 
-                await scope.adapter._pingUrl({
-                    url: 'http://localhost:1111/ping',
-                    time: moment().subtract(10, 'minutes').valueOf(),
-                    extra: {
-                        httpMethod: 'PUT'
-                    }
-                });
-
-                assert.equal(ping.isDone(), true);
+        it('pingUrl (GET, and detect publish in the past)', async function () {
+            await scope.adapter._pingUrl({
+                url: 'http://localhost:1111/ping',
+                time: moment().subtract(10, 'minutes').valueOf(),
+                extra: {
+                    httpMethod: 'GET'
+                }
             });
 
-            it('pingUrl (GET, and detect publish in the past)', async function () {
-                const ping = nock('http://localhost:1111')
-                    .get('/ping')
-                    .query({force: true})
-                    .reply(200);
+            sinon.assert.calledOnce(requestStub);
+            const [url, options] = requestStub.firstCall.args;
+            assert.equal(url, 'http://localhost:1111/ping');
+            assert.equal(options.method, 'GET');
+            // publishing in the past with GET — force flag in query string
+            assert.deepEqual(options.searchParams, {force: true});
+            assert.equal(options.json, undefined);
+        });
 
-                await scope.adapter._pingUrl({
-                    url: 'http://localhost:1111/ping',
-                    time: moment().subtract(10, 'minutes').valueOf(),
-                    extra: {
-                        httpMethod: 'GET'
-                    }
-                });
+        it('pingUrl, but blog returns 503', async function () {
+            scope.adapter.retryTimeoutInMs = 20;
 
-                assert.equal(ping.isDone(), true);
+            const loggingStub = sinon.stub(logging, 'error');
+            const pingSpy = sinon.spy(scope.adapter, '_pingUrl');
+
+            const rejection503 = Object.assign(new Error('Service Unavailable'), {statusCode: 503});
+            // Two 503s in a row, then a success — exercises the retry path.
+            requestStub.onCall(0).rejects(rejection503);
+            requestStub.onCall(1).rejects(rejection503);
+            requestStub.onCall(2).resolves({statusCode: 200});
+
+            // Wait for the nth _pingUrl attempt to be made, then for the
+            // promise it returned to settle.
+            const settle = async (callIndex) => {
+                for (let i = 0; i < 200 && pingSpy.callCount <= callIndex; i = i + 1) {
+                    await new Promise((resolve) => {
+                        setTimeout(resolve, 10);
+                    });
+                }
+                await pingSpy.returnValues[callIndex];
+            };
+
+            // Initial attempt + two retries: each 503 schedules a retry
+            // retryTimeoutInMs later, the third attempt succeeds.
+            scope.adapter._pingUrl({
+                url: 'http://localhost:1111/ping',
+                time: moment().valueOf(),
+                extra: {
+                    httpMethod: 'PUT'
+                }
             });
 
-            it('pingUrl, but blog returns 503', async function () {
-                scope.adapter.retryTimeoutInMs = 20;
+            await settle(0);
+            await settle(1);
+            await settle(2);
 
-                const loggingStub = sinon.stub(logging, 'error');
-                const pingSpy = sinon.spy(scope.adapter, '_pingUrl');
-
-                const ping = nock('http://localhost:1111')
-                    .put('/ping').reply(503)
-                    .put('/ping').reply(503)
-                    .put('/ping', {force: true}).reply(200);
-
-                // Wait for the nth _pingUrl attempt to be made, then for the
-                // promise it returned to settle.
-                const settle = async (callIndex) => {
-                    for (let i = 0; i < 200 && pingSpy.callCount <= callIndex; i = i + 1) {
-                        await new Promise((resolve) => {
-                            setTimeout(resolve, 10);
-                        });
-                    }
-                    await pingSpy.returnValues[callIndex];
-                };
-
-                // Initial attempt + two retries: each 503 schedules a retry
-                // retryTimeoutInMs later, the third attempt succeeds.
-                scope.adapter._pingUrl({
-                    url: 'http://localhost:1111/ping',
-                    time: moment().valueOf(),
-                    extra: {
-                        httpMethod: 'PUT'
-                    }
-                });
-
-                await settle(0);
-                await settle(1);
-                await settle(2);
-
-                assert.equal(ping.isDone(), true);
-                sinon.assert.calledThrice(pingSpy);
-                sinon.assert.calledTwice(loggingStub);
-            });
+            sinon.assert.calledThrice(requestStub);
+            // Third call (the retry after both 503s) goes through with a
+            // body force flag because the schedule time is now in the past.
+            assert.deepEqual(requestStub.thirdCall.args[1].json, {force: true});
+            sinon.assert.calledThrice(pingSpy);
+            sinon.assert.calledTwice(loggingStub);
         });
     });
 });

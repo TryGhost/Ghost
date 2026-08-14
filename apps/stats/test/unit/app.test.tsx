@@ -1,4 +1,3 @@
-/* eslint-disable ghost/sort-imports-es6-autofix/sort-imports-es6 */
 import React from 'react';
 import '@testing-library/jest-dom';
 import {render, screen} from '@testing-library/react';

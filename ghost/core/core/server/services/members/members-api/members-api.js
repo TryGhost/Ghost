@@ -65,7 +65,6 @@ module.exports = function MembersAPI({
         Settings,
         Comment,
         MemberFeedback,
-        Outbox,
         Automation,
         WelcomeEmailAutomationRun,
         AutomatedEmailRecipient,
@@ -119,7 +118,6 @@ module.exports = function MembersAPI({
         OfferRedemption,
         StripeCustomer,
         StripeCustomerSubscription,
-        Outbox,
         offersAPI
     });
 

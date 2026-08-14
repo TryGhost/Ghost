@@ -87,7 +87,7 @@ const useDefaultRecipientsOptions = (selectedOption: string, defaultEmailRecipie
         if (selectedOption === 'segment') {
             loadOptions('', () => {});
         }
-    }, [selectedOption]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [selectedOption]);  
 
     return {
         loadOptions: debounce(loadOptions, 500),

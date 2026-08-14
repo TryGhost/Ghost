@@ -232,4 +232,3 @@ export function paidMemberOnTier() {
         member: updatedMember
     };
 }
-/* eslint-enable no-unused-vars*/

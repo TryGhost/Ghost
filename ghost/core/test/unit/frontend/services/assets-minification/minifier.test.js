@@ -29,7 +29,7 @@ describe('Minifier', function () {
     });
 
     afterAll(async function () {
-        await fs.rmdir(testDir, {recursive: true});
+        await fs.rm(testDir, {recursive: true, force: true});
     });
 
     describe('getMatchingFiles expands globs correctly', function () {

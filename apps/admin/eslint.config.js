@@ -8,6 +8,8 @@ import { globalIgnores } from 'eslint/config'
 import noRelativeImportPaths from 'eslint-plugin-no-relative-import-paths'
 import ghostPlugin from 'eslint-plugin-ghost';
 
+import {correctnessRules, shadeLayeredImportsRule, strictLinterOptions} from '../../eslint.shared.mjs';
+
 const noHardcodedGhostPaths = {
   meta: {
     type: 'problem',
@@ -45,6 +47,7 @@ const tailwindCssConfig = `${import.meta.dirname}/src/index.css`;
 
 export default tseslint.config([
   globalIgnores(['dist']),
+  {files: ['**/*'], ...strictLinterOptions},
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
@@ -73,15 +76,14 @@ export default tseslint.config([
       },
     },
     rules: {
-      'ghost/filenames/match-regex': ['error', '^[a-z0-9.-]+$', false],
-      'no-restricted-imports': ['error', {
-        paths: [{
-          name: '@tryghost/shade',
-          message: 'Import from layered subpaths instead (components/primitives/patterns/utils/app/tokens).',
-        }],
-      }],
+      ...correctnessRules,
+      ...shadeLayeredImportsRule,
       'tailwindcss/classnames-order': 'error',
       'tailwindcss/no-contradicting-classname': 'error',
+      // Leaked warn from reactHooks.configs['recommended-latest']. The shared
+      // factory drops this to 'off' across the rest of the React apps; this
+      // workspace isn't on the factory yet, so override explicitly.
+      'react-hooks/exhaustive-deps': 'off',
     },
   },
   // Apply no-relative-import-paths rule for src files (auto-fix supported)

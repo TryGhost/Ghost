@@ -1,7 +1,5 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 const nql = require('@tryghost/nql');
 const logging = require('@tryghost/logging');
-/* eslint-enable @typescript-eslint/no-require-imports */
 
 // A deliberate copy of the eager UrlGenerator's NQL semantics: while both
 // services run side by side, eager is the parity oracle and must stay separate.

@@ -100,7 +100,6 @@ describe('Acceptance: Custom Post Templates', function () {
         it('disables template selector if slug matches slug-based template');
 
         it('doesn\'t query themes endpoint unncessarily', async function () {
-            // eslint-disable-next-line
             let themeRequests = () => {
                 return this.server.pretender.handledRequests.filter(function (request) {
                     return request.url.match(/\/themes\//);

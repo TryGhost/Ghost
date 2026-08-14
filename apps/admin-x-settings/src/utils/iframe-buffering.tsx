@@ -26,7 +26,7 @@ function debounce(func: any, wait: number) { // eslint-disable-line
 
 const IframeBuffering: React.FC<IframeBufferingProps> = ({generateContent, className, height, width, parentClassName, testId, addDelay = false}) => {
     const [visibleIframeIndex, setVisibleIframeIndex] = useState(0);
-    const iframes = [useRef<HTMLIFrameElement>(null), useRef<HTMLIFrameElement>(null)]; // eslint-disable-line
+    const iframes = [useRef<HTMLIFrameElement>(null), useRef<HTMLIFrameElement>(null)];  
     const [scrollPosition, setScrollPosition] = useState(0);
 
     useEffect(() => {
@@ -56,7 +56,6 @@ const IframeBuffering: React.FC<IframeBufferingProps> = ({generateContent, class
                 iframe.removeEventListener('load', onLoad);
             };
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [generateContent]);
 
     useEffect(() => {

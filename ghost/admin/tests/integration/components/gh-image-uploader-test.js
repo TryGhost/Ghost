@@ -249,7 +249,6 @@ describe('Integration: Component: gh-image-uploader', function () {
         await render(hbs`<GhImageUploader @image={{this.image}} @update={{this.update}} />`);
 
         run(() => {
-            // eslint-disable-next-line new-cap
             let dragover = $.Event('dragover', {
                 dataTransfer: {
                     files: []
@@ -268,7 +267,6 @@ describe('Integration: Component: gh-image-uploader', function () {
 
     it('triggers file upload on file drop', async function () {
         let uploadSuccess = sinon.spy();
-        // eslint-disable-next-line new-cap
         let drop = $.Event('drop', {
             dataTransfer: {
                 files: [createFile(['test'], {name: 'test.png'})]

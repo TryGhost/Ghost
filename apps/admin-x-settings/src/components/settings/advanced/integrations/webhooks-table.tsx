@@ -38,7 +38,7 @@ const WebhooksTable: React.FC<{integration: Integration}> = ({integration}) => {
                 <TableHead>Last triggered</TableHead>
             </TableRow>
             {integration.webhooks?.map(webhook => (
-                <TableRow action={
+                <TableRow key={webhook.id} action={
                     <Button color='red' label='Delete' link onClick={(e) => {
                         e?.stopPropagation();
                         handleDelete(webhook.id);

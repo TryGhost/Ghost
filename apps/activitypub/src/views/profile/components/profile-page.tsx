@@ -279,7 +279,7 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
                                     </>
                                 }
                                 {customFields?.map((attachment: {name: string, value: string}) => (
-                                    <span className='mt-3 line-clamp-1 flex flex-col text-[1.5rem]'>
+                                    <span key={attachment.name} className='mt-3 line-clamp-1 flex flex-col text-[1.5rem]'>
                                         <span className={`text-xs font-semibold`}>{attachment.name}</span>
                                         <span dangerouslySetInnerHTML={{__html: sanitizeHtml(attachment.value)}} className='ap-profile-content truncate'/>
                                     </span>

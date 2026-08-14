@@ -22,7 +22,7 @@ function VersionLink({label, version}: {label: string; version: string}) {
 const AboutModal = NiceModal.create<RoutingModalProps>(() => {
     const {updateRoute} = useRouting();
     const globalData = useGlobalData();
-    let config = globalData.config;
+    const config = globalData.config;
     const upgradeStatus = useUpgradeStatus();
 
     function copyrightYear():number {

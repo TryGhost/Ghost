@@ -426,7 +426,7 @@ describe('useEmberRouting', () => {
 
         let renderCount = 0;
         const { result } = renderHook(() => {
-            renderCount++;
+            renderCount += 1;
             return useEmberRouting();
         });
 

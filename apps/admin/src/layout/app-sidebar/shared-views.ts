@@ -29,6 +29,7 @@ export function useSharedViews(route?: string) {
         const parsed = parseAllSharedViewsJSON(sharedViewsJson);
 
         if (!parsed.ok) {
+            // eslint-disable-next-line no-console
             console.error('Failed to parse shared_views setting:', parsed.error);
             return [];
         }

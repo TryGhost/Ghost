@@ -1,10 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import type {Knex} from 'knex';
 import type {InternalApiKey, InternalKeys} from '../internal-keys';
 import internalKeysDefault from '../internal-keys';
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const modelsDefault = require('../../models');
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const {deleteAllSessions: deleteAllSessionsDefault} = require('./session');
 
 interface ResetAuthenticationArgs {

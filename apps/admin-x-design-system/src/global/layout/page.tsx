@@ -123,9 +123,9 @@ const Page: React.FC<PageProps> = ({
     const globalActions = (
         (customGlobalActions?.length || showGlobalActions) &&
         <div className='sticky flex items-center gap-7'>
-            {(customGlobalActions?.map((action) => {
+            {(customGlobalActions?.map((action, idx) => {
                 return (
-                    <Button icon={action.iconName} iconColorClass='text-black dark:text-white' size='sm' link onClick={action.onClick} />
+                    <Button key={action.iconName ?? idx} icon={action.iconName} iconColorClass='text-black dark:text-white' size='sm' link onClick={action.onClick} />
                 );
             }))}
             {showGlobalActions && <GlobalActions />}

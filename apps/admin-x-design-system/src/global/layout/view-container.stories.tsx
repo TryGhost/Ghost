@@ -36,16 +36,16 @@ export default meta;
 type Story = StoryObj<typeof ViewContainer>;
 
 export const exampleActions = [
-    <Button label='Filter' outlineOnMobile onClick={() => {
+    <Button key='filter' label='Filter' outlineOnMobile onClick={() => {
         alert('Clicked filter');
     }} />,
-    <Button label='Sort' outlineOnMobile onClick={() => {
+    <Button key='sort' label='Sort' outlineOnMobile onClick={() => {
         alert('Clicked sort');
     }} />,
-    <Button icon='magnifying-glass' iconSize='sm' outlineOnMobile onClick={() => {
+    <Button key='search' icon='magnifying-glass' iconSize='sm' outlineOnMobile onClick={() => {
         alert('Clicked search');
     }} />,
-    <ButtonGroup buttons={[
+    <ButtonGroup key='view-toggle' buttons={[
         {
             icon: 'listview',
             size: 'sm',
@@ -156,10 +156,10 @@ export const TabsWithPrimaryAction: Story = {
 };
 
 const sectionActions = [
-    <Button label='Filter' size='sm' onClick={() => {
+    <Button key='filter' label='Filter' size='sm' onClick={() => {
         alert('Clicked filter');
     }} />,
-    <ButtonGroup buttons={[
+    <ButtonGroup key='view-toggle' buttons={[
         {
             icon: 'listview',
             size: 'sm',

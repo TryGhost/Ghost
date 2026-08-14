@@ -64,6 +64,7 @@ function UserMenuSignOut() {
         }).then(() => {
             window.location.href = adminRoot;
         }).catch((error) => {
+            // eslint-disable-next-line no-console
             console.error(error);
         });
     };

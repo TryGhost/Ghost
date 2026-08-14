@@ -4,15 +4,16 @@
 const validator = require('@tryghost/validator');
 const {ValidationError} = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
+const lexicalLib = require('../../../../../lib/lexical');
 
 const messages = {
     invalidEmailReceived: 'The server did not receive a valid email',
-    invalidLexical: 'Lexical must be a valid JSON string',
+    invalidLexical: 'Lexical must be a well-formed Lexical document',
     subjectRequired: 'Subject is required',
     lexicalRequired: 'Email content is required'
 };
 
-const validatePreviewData = (frame) => {
+const validatePreviewData = async (frame) => {
     const subject = frame.data.subject;
     const lexical = frame.data.lexical;
 
@@ -30,9 +31,7 @@ const validatePreviewData = (frame) => {
         });
     }
 
-    try {
-        JSON.parse(lexical);
-    } catch (e) {
+    if (!await lexicalLib.validate(lexical)) {
         throw new ValidationError({
             message: tpl(messages.invalidLexical),
             property: 'lexical'
@@ -41,11 +40,11 @@ const validatePreviewData = (frame) => {
 };
 
 module.exports = {
-    preview(apiConfig, frame) {
-        validatePreviewData(frame);
+    async preview(apiConfig, frame) {
+        await validatePreviewData(frame);
     },
 
-    sendTestEmail(apiConfig, frame) {
+    async sendTestEmail(apiConfig, frame) {
         const email = frame.data.email;
 
         if (typeof email !== 'string' || !validator.isEmail(email)) {
@@ -55,6 +54,6 @@ module.exports = {
             });
         }
 
-        validatePreviewData(frame);
+        await validatePreviewData(frame);
     }
 };

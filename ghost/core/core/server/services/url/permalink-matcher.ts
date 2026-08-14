@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 const routeMatch = require('path-match')();
-/* eslint-enable @typescript-eslint/no-require-imports */
 
 import type {ResourceLookupParams} from './lazy-url-service';
 

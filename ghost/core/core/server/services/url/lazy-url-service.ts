@@ -1,10 +1,8 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 const debug = require('@tryghost/debug')('services:url:lazy');
 const errors = require('@tryghost/errors');
 const localUtils = require('../../../shared/url-utils');
 const {matchPermalink, toLookupParams} = require('./permalink-matcher');
 const {buildFilter, filterMatches, routerTypeOf} = require('./router-filter');
-/* eslint-enable @typescript-eslint/no-require-imports */
 
 import type {Resource, UrlOptions, LazyUrlServiceBackend} from './url-service-facade';
 import type {CompiledFilter} from './router-filter';

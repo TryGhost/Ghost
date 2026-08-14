@@ -90,7 +90,6 @@ export const getNewsletter = createQueryWithId<NewslettersResponseType>({
 export const useAddNewsletter = createMutation<NewslettersResponseType, Partial<Newsletter> & {opt_in_existing: boolean}>({
     method: 'POST',
     path: () => '/newsletters/',
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     body: ({opt_in_existing: _, ...newsletter}) => ({newsletters: [newsletter]}),
     searchParams: payload => ({opt_in_existing: payload.opt_in_existing.toString(), include: 'count.active_members,count.posts'}),
     updateQueries: {
