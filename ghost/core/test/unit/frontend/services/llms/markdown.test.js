@@ -151,9 +151,9 @@ describe('Unit: frontend/services/llms/markdown', function () {
             assert.equal(body, 'Hello');
         });
 
-        it('falls back to plaintext', function () {
+        it('derives only from html, ignoring a separate plaintext field', function () {
             const body = renderEntryMarkdownBody({html: '', plaintext: 'Fallback text'});
-            assert.equal(body, 'Fallback text');
+            assert.equal(body, '');
         });
     });
 

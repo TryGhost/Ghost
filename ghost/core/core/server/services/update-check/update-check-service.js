@@ -1,9 +1,5 @@
 const _ = require('lodash');
-const url = require('url');
-const crypto = require('crypto');
 const moment = require('moment');
-const exec = require('child_process').exec;
-const util = require('util');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
@@ -38,9 +34,8 @@ function normalizeNotifications(response) {
  * Update Checker Class
  *
  * Makes a request to Ghost.org to request release & custom notifications.
- * The service is provided in return for users opting in to anonymous usage data collection.
- *
- * Blog owners can opt-out of update checks by setting `privacy: { useUpdateCheck: false }` in their config file.
+ * The request only sends the Ghost version so the service can return the
+ * relevant release and security notifications - no site data is collected.
  */
 class UpdateCheckService {
     /**
@@ -50,18 +45,12 @@ class UpdateCheckService {
      * @param {Object} options.api.settings - Settings API methods
      * @param {Function} options.api.settings.read - method allowing to read Ghost's settings
      * @param {Function} options.api.settings.edit - method allowing to edit Ghost's settings
-     * @param {Object} options.api.posts - Posts API methods
-     * @param {Function} options.api.posts.browse - method allowing to read Ghost's posts
      * @param {Object} options.api.users - Users API methods
      * @param {Function} options.api.users.browse - method allowing to read Ghost's users
      * @param {Object} options.api.notifications - Notification API methods
      * @param {Function} options.api.notifications.add - method allowing to add Ghost notifications
      * @param {Object} options.config
-     * @param {Object} options.config.mail
-     * @param {string} options.config.env
-     * @param {string} options.config.databaseType
      * @param {string} options.config.checkEndpoint - update check service URL
-     * @param {boolean} [options.config.isPrivacyDisabled]
      * @param {string[]} [options.config.notificationGroups] - example values ["migration", "something"]
      * @param {boolean} [options.config.rethrowErrors] - allows to force throwing errors (useful in worker threads)
      * @param {string} options.config.siteUrl - Ghost instance URL
@@ -117,133 +106,32 @@ class UpdateCheckService {
     }
 
     /**
-     * @description Collect stats from your blog.
-     * @returns {Promise}
-     */
-    async updateCheckData() {
-        let data = {};
-        let mailConfig = this.config.mail;
-
-        data.ghost_version = this.config.ghostVersion;
-        data.node_version = process.versions.node;
-        data.env = this.config.env;
-        data.database_type = this.config.databaseType;
-        data.email_transport = mailConfig &&
-            (mailConfig.options && mailConfig.options.service ?
-                mailConfig.options.service :
-                mailConfig.transport);
-
-        // Telemetry sources are gathered in parallel; each is independently
-        // failure-tolerant so one bad source (e.g. a model-layer SQL error
-        // from posts.browse) doesn't prevent the rest of the data from being
-        // sent. Thunks (not pre-evaluated promises) so synchronous throws
-        // turn into rejections rather than escaping the resolution loop.
-        const sources = {
-            db_hash: () => this.api.settings.read(_.extend({key: 'db_hash'}, internal)),
-            active_theme: () => this.api.settings.read(_.extend({key: 'active_theme'}, internal)),
-            posts: () => this.api.posts.browse(),
-            users: () => this.api.users.browse({...internal, include: ['roles']}),
-            npm: () => util.promisify(exec)('npm -v')
-        };
-
-        const entries = Object.entries(sources);
-        const settled = await Promise.allSettled(entries.map(async ([, fn]) => fn()));
-
-        const values = {};
-        const failures = [];
-        settled.forEach((result, i) => {
-            const source = entries[i][0];
-            if (result.status === 'fulfilled') {
-                values[source] = result.value;
-            } else {
-                failures.push(source);
-                this.logging.error({
-                    event: {name: 'update-check.telemetry.error'},
-                    err: result.reason,
-                    source
-                }, 'Failed to gather telemetry source');
-            }
-        });
-
-        if (failures.length) {
-            this.logging.warn({
-                event: {name: 'update-check.telemetry.partial'},
-                failures,
-                attemptedCount: entries.length,
-                failedCount: failures.length
-            }, 'Update check telemetry collected partially');
-        }
-
-        const hash = values.db_hash && values.db_hash.settings && values.db_hash.settings[0];
-        const theme = values.active_theme && values.active_theme.settings && values.active_theme.settings[0];
-        const posts = values.posts;
-        const users = values.users;
-        const npm = values.npm;
-
-        const blogUrl = this.config.siteUrl;
-        const parsedBlogUrl = url.parse(blogUrl);
-
-        data.url = blogUrl;
-        data.blog_id = hash && hash.value
-            ? crypto.createHash('md5').update(parsedBlogUrl.hostname + parsedBlogUrl.pathname.replace(/\//, '') + hash.value).digest('hex')
-            : '';
-        data.theme = theme ? theme.value : '';
-        data.post_count = posts && posts.meta && posts.meta.pagination ? posts.meta.pagination.total : 0;
-        data.user_count = users && users.users && users.users.length ? users.users.length : 0;
-
-        let blogCreatedAt = null;
-        if (users && users.users && users.users.length > 0) {
-            const ownerUser = users.users.find(user => user.roles && user.roles.some(role => role.name === 'Owner'));
-            if (ownerUser) {
-                blogCreatedAt = ownerUser.created_at;
-            } else {
-                blogCreatedAt = users.users[0].created_at;
-            }
-        }
-
-        data.blog_created_at = blogCreatedAt ? moment(blogCreatedAt).unix() : '';
-        data.npm_version = npm && npm.stdout ? npm.stdout.trim() : '';
-
-        return data;
-    }
-
-    /**
      * @description Perform request to update check service.
      *
-     * With the privacy setting `useUpdateCheck` you can control if you want to expose data/stats from your blog to the
-     * service. Enabled or disabled, you will receive the latest notification available from the service.
+     * Only the Ghost version is sent so the service can return the relevant
+     * release and security notifications. No site data is collected.
      *
      * @see https://ghost.org/docs/concepts/config/#privacy
      * @returns {Promise}
      */
     async updateCheckRequest() {
-        const reqData = await this.updateCheckData();
+        const checkEndpoint = this.config.checkEndpoint;
 
-        let reqObj = {
+        const reqObj = {
+            method: 'GET',
             timeout: {
                 request: 1000
             },
-            headers: {}
+            headers: {},
+            searchParams: {
+                ghost_version: this.config.ghostVersion
+            }
         };
-
-        let checkEndpoint = this.config.checkEndpoint;
-        let checkMethod = this.config.isPrivacyDisabled ? 'GET' : 'POST';
-        reqObj.method = checkMethod;
-
-        // CASE: Expose stats and do a check-in
-        if (checkMethod === 'POST') {
-            reqObj.json = reqData;
-        } else {
-            reqObj.searchParams = {
-                ghost_version: reqData.ghost_version
-            };
-        }
 
         debug('Request Update Check Service', checkEndpoint);
         this.logging.info({
             event: {name: 'update-check.request.start'},
             endpoint: checkEndpoint,
-            method: checkMethod,
             ghostVersion: this.config.ghostVersion
         }, 'Sending update check request');
 

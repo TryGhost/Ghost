@@ -28,7 +28,8 @@ const GA_FEATURES = [
     'commentsPinning',
     'featurebaseFeedback',
     'dangerZoneResetAuth',
-    'indexnow'
+    'indexnow',
+    'llmsTxt'
 ];
 
 // These features are considered publicly available and can be enabled/disabled by users
@@ -42,6 +43,7 @@ const PUBLIC_BETA_FEATURES = [
 // Which is only visible if the developer experiments flag is enabled
 const PRIVATE_FEATURES = [
     'automations',
+    'automationAnalytics',
     'stripeAutomaticTax',
     'importMemberTier',
     'csvContentImporter',
@@ -54,7 +56,6 @@ const PRIVATE_FEATURES = [
     'themeTranslation',
     'pictureImageFormats',
     'smarterCounts',
-    'llmsTxt',
     'getHelperDeduplication',
     'giftLinks'
 ];
