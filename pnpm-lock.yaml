@@ -286,8 +286,8 @@ catalogs:
       specifier: 2.0.3
       version: 2.0.3
     dompurify:
-      specifier: 3.4.11
-      version: 3.4.11
+      specifier: 3.4.13
+      version: 3.4.13
     dotenv:
       specifier: 17.4.2
       version: 17.4.2
@@ -614,7 +614,7 @@ importers:
         version: 2.1.1
       dompurify:
         specifier: 'catalog:'
-        version: 3.4.11
+        version: 3.4.13
       html2canvas-pro:
         specifier: 2.2.1
         version: 2.2.1
@@ -1208,7 +1208,7 @@ importers:
     dependencies:
       dompurify:
         specifier: 'catalog:'
-        version: 3.4.11
+        version: 3.4.13
       lodash:
         specifier: 'catalog:'
         version: 4.18.1
@@ -1648,7 +1648,7 @@ importers:
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
       dompurify:
         specifier: 'catalog:'
-        version: 3.4.11
+        version: 3.4.13
       eslint:
         specifier: 'catalog:'
         version: 9.39.4(jiti@2.7.0)(supports-color@10.2.2)
@@ -2406,7 +2406,7 @@ importers:
         version: 2.0.3
       dompurify:
         specifier: 'catalog:'
-        version: 3.4.11
+        version: 3.4.13
       downsize-cjs:
         specifier: 1.1.2
         version: 1.1.2
@@ -3562,7 +3562,7 @@ importers:
         version: 10.0.3
       dompurify:
         specifier: 'catalog:'
-        version: 3.4.11
+        version: 3.4.13
       dotenv:
         specifier: 'catalog:'
         version: 17.4.2
@@ -12970,8 +12970,8 @@ packages:
     resolution: {integrity: sha512-cgwlv/1iFQiFnU96XXgROh8xTeetsnJiDsTc7TYCLFd9+/WNkIqPTxiM/8pSd8VIrhXGTf1Ny1q1hquVqDJB5w==}
     engines: {node: '>= 4'}
 
-  dompurify@3.4.11:
-    resolution: {integrity: sha512-zhlUV12GsaRzMsf9q5M254YhA4+VuF0fG+QFqu6aYpoGlKtz+w8//jBcGVYBgQkR5GHjUomejY84AV+/uPbWdw==}
+  dompurify@3.4.13:
+    resolution: {integrity: sha512-2vmYIoqjze2d+kakP8S/nS5shfsl587kzwEjcGlTdiksUVgFHnFCsLYDVj/JNqJVOQZGSYBTmuycv0PodwmnMQ==}
 
   domutils@1.5.1:
     resolution: {integrity: sha512-gSu5Oi/I+3wDENBsOWBiRK1eoGxcywYSqg3rR960/+EfY0CF4EX1VPkgHOZ3WiS/Jg2DtliF6BhWcHlfpYUcGw==}
@@ -33737,7 +33737,7 @@ snapshots:
     dependencies:
       domelementtype: 2.3.0
 
-  dompurify@3.4.11:
+  dompurify@3.4.13:
     optionalDependencies:
       '@types/trusted-types': 2.0.7
 
