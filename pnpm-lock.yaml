@@ -2345,8 +2345,8 @@ importers:
         specifier: 3.5.1
         version: 3.5.1(supports-color@10.2.2)
       body-parser:
-        specifier: 1.20.5
-        version: 1.20.5(supports-color@10.2.2)
+        specifier: 1.20.6
+        version: 1.20.6(supports-color@10.2.2)
       bookshelf:
         specifier: 1.2.0
         version: 1.2.0(knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(supports-color@10.2.2))
@@ -11162,8 +11162,8 @@ packages:
   bn.js@5.2.3:
     resolution: {integrity: sha512-EAcmnPkxpntVL+DS7bO1zhcZNvCkxqtkd0ZY53h06GNQ3DEkkGZ/gKgmDv6DdZQGj9BgfSPKtJJ7Dp1GPP8f7w==}
 
-  body-parser@1.20.5:
-    resolution: {integrity: sha512-3grm+/2tUOvu2cjJkvsIxrv/wVpfXQW4PsQHYm7yk4vfpu7Ekl6nEsYBoJUL6qDwZUx8wUhQ8tR2qz+ad9c9OA==}
+  body-parser@1.20.6:
+    resolution: {integrity: sha512-p5tAzS57i5MV9fZFDj9LeIiTZEufbSe2eDozP+ElheSUq1m74CRq1jI4mYNDdVs9vQztXFLuk/Gd6BWTdwRJ5g==}
     engines: {node: '>= 0.8', npm: 1.2.8000 || >= 1.4.16}
 
   body-parser@2.3.0:
@@ -31348,7 +31348,7 @@ snapshots:
 
   bn.js@5.2.3: {}
 
-  body-parser@1.20.5(supports-color@10.2.2):
+  body-parser@1.20.6(supports-color@10.2.2):
     dependencies:
       bytes: 3.1.2
       content-type: 1.0.5
@@ -34112,7 +34112,7 @@ snapshots:
   ember-cli-code-coverage@1.0.3(supports-color@10.2.2):
     dependencies:
       babel-plugin-istanbul: 6.1.1(supports-color@10.2.2)
-      body-parser: 1.20.5(supports-color@10.2.2)
+      body-parser: 1.20.6(supports-color@10.2.2)
       ember-cli-version-checker: 5.1.2(supports-color@10.2.2)
       fs-extra: 9.1.0
       istanbul-lib-coverage: 3.2.2
@@ -36283,7 +36283,7 @@ snapshots:
     dependencies:
       accepts: 1.3.8
       array-flatten: 1.1.1
-      body-parser: 1.20.5(supports-color@10.2.2)
+      body-parser: 1.20.6(supports-color@10.2.2)
       content-disposition: 0.5.4
       content-type: 1.0.5
       cookie: 0.7.2
@@ -36319,7 +36319,7 @@ snapshots:
     dependencies:
       accepts: 1.3.8
       array-flatten: 1.1.1
-      body-parser: 1.20.5(supports-color@10.2.2)
+      body-parser: 1.20.6(supports-color@10.2.2)
       content-disposition: 0.5.4
       content-type: 1.0.5
       cookie: 0.7.2
@@ -43883,7 +43883,7 @@ snapshots:
 
   sentry-testkit@6.4.1(supports-color@10.2.2):
     dependencies:
-      body-parser: 1.20.5(supports-color@10.2.2)
+      body-parser: 1.20.6(supports-color@10.2.2)
       express: 4.22.2(supports-color@10.2.2)
     transitivePeerDependencies:
       - supports-color
