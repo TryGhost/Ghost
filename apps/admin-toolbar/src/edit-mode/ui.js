@@ -4,7 +4,10 @@
  * the overlay survives every document swap (the swapper preserves the host).
  *
  * Three pieces, all driven by a plain state object via `update(patch)`:
- * - the edit-mode bar (theme name, dirty count, publish, exit, status line);
+ * - the edit-mode bar (theme name, dirty count, publish, exit, status line).
+ *   Publishing is a TWO-STEP confirm inside the bar: the first click arms the
+ *   button (`publishArmed`), the second click actually publishes — no
+ *   window.confirm, so the flow is testable through the session's UI seam;
  * - the hover highlight (an outline overlay positioned from the hovered
  *   element's bounding rect — NOT shadow-DOM-bound, it just draws on top);
  * - the inline text editor (a small floating input over the clicked element;
@@ -113,8 +116,15 @@ function InlineEditor({editor, onCommit, onCancel}) {
 }
 
 function App({state, handlers}) {
-    const {themeName, dirtyCount, status, statusText, statusIsError, highlight, editor} = state;
+    const {themeName, dirtyCount, status, statusText, statusIsError, highlight, editor, publishArmed} = state;
     const busy = status === 'loading' || status === 'publishing';
+
+    let publishLabel = 'Publish';
+    if (status === 'publishing') {
+        publishLabel = 'Publishing…';
+    } else if (publishArmed) {
+        publishLabel = 'Confirm publish';
+    }
 
     return h('div', null, [
         h('style', null, STYLES),
@@ -130,7 +140,7 @@ function App({state, handlers}) {
                 className: 'publish',
                 disabled: busy || dirtyCount === 0,
                 onClick: handlers.onPublish
-            }, status === 'publishing' ? 'Publishing…' : 'Publish'),
+            }, publishLabel),
             // Exit stays available during boot (a hung theme download must
             // not trap the user in edit mode) — only publishing locks it.
             h('button', {type: 'button', disabled: status === 'publishing', onClick: handlers.onExit}, 'Exit')
@@ -163,7 +173,8 @@ export function createEditModeUi({doc = document, handlers}) {
         statusText: 'Starting edit mode…',
         statusIsError: false,
         highlight: null,
-        editor: null
+        editor: null,
+        publishArmed: false
     };
 
     function renderApp() {

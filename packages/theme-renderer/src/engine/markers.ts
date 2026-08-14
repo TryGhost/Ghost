@@ -24,6 +24,12 @@
  * marker lands right after the tag name, always inside a single static
  * chunk).
  *
+ * This module is also exported standalone as the `./markers` subpath so
+ * consumers of marked render output (the admin-toolbar edit-mode chunk) can
+ * import parseEditMarker/EDIT_MARKER_ATTRIBUTE without dragging the engine
+ * barrel — and with it the whole renderer — into their bundle. Keep this
+ * file's imports limited to the source scanner for that reason.
+ *
  * Deliberate punts (documented in docs/markers.md): helper-emitted HTML,
  * dynamic tag names, raw-block ({{{{raw}}}}) content, and rawtext element
  * content (script/style/textarea/title) are never marked. Malformed tags

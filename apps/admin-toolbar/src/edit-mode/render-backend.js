@@ -1,19 +1,25 @@
-/* eslint ghost/ghost-custom/no-native-error: off */
+/* eslint ghost/ghost-custom/no-native-error: off -- browser-side chunk code:
+   errors surface in the edit-mode UI bar, not through Ghost's server error
+   pipeline, so @tryghost/errors classes would only add bundle weight. */
 
 /**
  * Renderer backend for edit mode — a thin session wrapper around
  * `@tryghost/theme-renderer`'s `createRenderer`. One module, two runtimes:
  *
  * - the render worker entry (worker.js) drives it inside a module Worker;
- * - the chunk itself drives it on the main thread when worker construction
- *   or boot fails (CSP blocking blob workers, etc.) — the mandatory fallback.
+ * - the chunk drives it on the main thread when worker construction or boot
+ *   fails, by dynamically importing the worker ARTIFACT (which re-exports
+ *   this factory) — the mandatory fallback, see render-client.js.
  *
  * The renderer is rebuilt from scratch on every setTheme(): per
  * docs/markers.md, a fresh renderer per edit is the supported path
- * (engine.resetCache() does not re-register partials).
+ * (engine.resetCache() does not re-register partials). A failed setTheme
+ * keeps the LAST GOOD renderer: the rejected attempt is never cached, so
+ * subsequent renders are not poisoned by one bad theme (the session reverts
+ * to the previous theme on edit failure and must be able to keep rendering).
  *
- * This file is chunk-only — it must never be imported by anything the main
- * toolbar bundle reaches, or the whole renderer gets inlined into the IIFE.
+ * This file is worker-artifact-only — it must never be imported by the chunk
+ * or the main toolbar bundle, or the whole renderer gets inlined into them.
  */
 import {createRenderer} from '@tryghost/theme-renderer';
 
@@ -25,14 +31,19 @@ const MAX_INTERNAL_REDIRECTS = 3;
  * @param {string} options.siteUrl — origin + subdir of the site, e.g. http://localhost:2368/
  * @param {string} options.contentApiKey
  * @param {Record<string, unknown>} [options.config] — instance config (assetHash, portal, sodoSearch)
+ * @param {typeof createRenderer} [options.rendererFactory] — test seam
  * @returns {{setTheme(theme: Record<string, string>): Promise<void>, render(url: string, options?: {markers?: boolean}): Promise<{status: number, html: string, url: string}>}}
  */
-export function createRenderBackend({siteUrl, contentApiKey, config}) {
+export function createRenderBackend({siteUrl, contentApiKey, config, rendererFactory = createRenderer}) {
     let rendererPromise = null;
 
     async function setTheme(theme) {
-        rendererPromise = createRenderer({siteUrl, contentApiKey, theme, config});
-        await rendererPromise;
+        // Await the new renderer BEFORE swapping it in: a rejected attempt
+        // must never become the cached rendererPromise, or every later
+        // render would re-reject with the same stale error.
+        const attempt = rendererFactory({siteUrl, contentApiKey, theme, config});
+        await attempt;
+        rendererPromise = attempt;
     }
 
     async function render(url, {markers = false} = {}) {

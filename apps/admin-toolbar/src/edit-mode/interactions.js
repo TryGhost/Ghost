@@ -8,7 +8,7 @@
  *   inside a link must open the editor, not navigate) → onSelect(el).
  *
  * Events originating in the preserved UI surfaces (the toolbar host, the
- * edit-mode overlay host, the admin auth iframe) are ignored — those nodes
+ * edit-mode overlay host) are ignored — those nodes
  * live in the swapped document but are not part of the preview. Elements
  * without a `data-edit` ancestor are helper-emitted or punted markup
  * (docs/markers.md) — hovering them clears the highlight, clicking them does

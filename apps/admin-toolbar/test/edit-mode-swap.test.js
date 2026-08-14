@@ -2,9 +2,11 @@ import assert from 'node:assert/strict';
 import {JSDOM} from 'jsdom';
 import {createDocumentSwapper} from '../src/edit-mode/swap.js';
 
+// Iframes are deliberately NOT preserved: moving an iframe between parents
+// discards its browsing context (it reloads), so the auth frame stays in the
+// detached original body and comes back on restore — see swap.js/session.js.
 const PRESERVE_SELECTORS = [
     '#ghost-admin-toolbar-root',
-    'iframe[data-frame="admin-auth"]',
     '#ghost-admin-toolbar-edit-overlay'
 ];
 
@@ -35,7 +37,7 @@ const RENDERED_HTML = `<!DOCTYPE html>
     </body></html>`;
 
 describe('edit-mode swap', function () {
-    it('swaps head and body in place while preserving the toolbar, auth frame, and overlay', function () {
+    it('swaps head and body in place while preserving the toolbar and overlay', function () {
         const {dom} = createLiveDom();
         const doc = dom.window.document;
         const swapper = createDocumentSwapper({doc, win: dom.window, preserveSelectors: PRESERVE_SELECTORS});
@@ -57,8 +59,10 @@ describe('edit-mode swap', function () {
         const toolbarAfter = doc.getElementById('ghost-admin-toolbar-root');
         assert.equal(toolbarAfter, toolbarBefore, 'toolbar host must be moved, not recreated');
         assert.ok(toolbarAfter.isConnected);
-        assert.ok(doc.querySelector('iframe[data-frame="admin-auth"]').isConnected);
         assert.ok(doc.getElementById('ghost-admin-toolbar-edit-overlay').isConnected);
+        // the auth iframe is NOT preserved (moving it would discard its
+        // browsing context) — it waits in the detached original body
+        assert.equal(doc.querySelector('iframe[data-frame="admin-auth"]'), null);
         assert.equal(swapper.hasSwapped(), true);
     });
 
@@ -112,6 +116,8 @@ describe('edit-mode swap', function () {
         // preserved nodes came back with the original body
         assert.equal(doc.getElementById('ghost-admin-toolbar-root'), toolbar);
         assert.ok(toolbar.isConnected);
+        // the non-preserved auth iframe returns with the original body
+        assert.ok(doc.querySelector('iframe[data-frame="admin-auth"]').isConnected);
         assert.equal(swapper.hasSwapped(), false);
     });
 

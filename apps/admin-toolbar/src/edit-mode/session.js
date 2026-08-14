@@ -1,4 +1,6 @@
-/* eslint ghost/ghost-custom/no-native-error: off */
+/* eslint ghost/ghost-custom/no-native-error: off -- browser-side chunk code:
+   errors surface in the edit-mode UI bar, not through Ghost's server error
+   pipeline, so @tryghost/errors classes would only add bundle weight. */
 
 /**
  * Edit-mode session — the orchestrator behind the chunk's mount() contract.
@@ -6,31 +8,53 @@
  * Boot: fetch the active theme name → download + extract its zip → scrape
  * instance config off the live document → boot the renderer (worker-first,
  * main-thread fallback) → render the current route with {markers: true} →
- * swap the live document in place → wire click-to-edit.
+ * swap the live document in place → wire click-to-edit. The theme zip is
+ * re-downloaded on EVERY entry into edit mode — accepted cost for this slice
+ * (theme zips are small and the download doubles as the freshness source for
+ * the draft key and the publish-time lost-update check).
  *
  * Edit loop: click a [data-edit] element → parse its marker → inline input →
- * applyThemeTextEdit (anchor-verified) → update the draft store → setTheme on
- * the render client (fresh renderer per edit, docs/markers.md) → re-render →
- * re-swap.
+ * applyThemeTextEdit (anchor-verified) on a CANDIDATE theme → setTheme +
+ * re-render the candidate → only when that whole pipeline succeeds does the
+ * session commit (snapshot/editCount/draft store) and keep the candidate; any
+ * failure re-points the renderer at the last-good theme and surfaces the
+ * error without counting the edit. Clicking another element while the inline
+ * editor is open COMMITS the pending edit (never silently discards it).
  *
- * Publish: confirm → packThemeArchive (rootPrefix preserved; the zip
- * FILENAME must be `<themeName>.zip` — it determines the installed name) →
- * POST /themes/upload/ → surface gscan 422s readably. Exit restores the
- * original pre-swap document.
+ * Publish: two-step confirm in the bar (first click arms, second publishes) →
+ * lost-update check (re-download the server's copy and compare its content
+ * hash against the boot-time base — on mismatch the publish aborts; there is
+ * deliberately NO force/overwrite option in this slice) → packThemeArchive
+ * (rootPrefix preserved; the zip FILENAME must be `<themeName>.zip` — it
+ * determines the installed name) → POST /themes/upload/ → surface 422s
+ * readably (gscan reports and server ValidationErrors are labelled
+ * differently). Default themes (casper/source) cannot be overwritten: the
+ * session prompts for a new theme name, uploads under that name with
+ * `?copy_settings_from=<activeTheme>` (custom settings carry over) and then
+ * activates the copy. After a successful publish the just-published snapshot
+ * IS the new base: the draft key is recomputed from it and the old entry
+ * cleared, so post-publish edits survive exit/re-enter.
+ *
+ * Exit restores the original pre-swap document and reports through onExit so
+ * the toolbar shell can reset (a fatal boot failure exits the same way).
  */
 import {ROOT_ID} from '../constants';
-import {parseEditMarker} from '@tryghost/theme-renderer';
+import {parseEditMarker} from '@tryghost/theme-renderer/markers';
 import {applyThemeTextEdit} from '@tryghost/theme-renderer/editor';
-import {extractThemeArchive, packThemeArchive} from '@tryghost/theme-renderer/editor/archive';
+import {extractThemeArchive, isDefaultThemeName, packThemeArchive} from '@tryghost/theme-renderer/editor/archive';
 import {scrapeContentApiKey, scrapeInstanceConfig} from '@tryghost/theme-renderer/editor/instance-config';
 import {createDocumentSwapper} from './swap';
 import {createEditModeUi, OVERLAY_HOST_ID} from './ui';
 import {attachEditInteractions} from './interactions';
 import {createMemoryDraftStore, computeThemeContentHash, draftKey} from './draft-store';
 import {startRenderClient, resolveWorkerUrl} from './render-client';
-import {downloadThemeArchive, fetchActiveThemeName, uploadThemeArchive, ThemeUploadError} from './theme-api';
-
-export const AUTH_FRAME_SELECTOR = 'iframe[data-frame="admin-auth"]';
+import {
+    activateTheme,
+    downloadThemeArchive,
+    fetchActiveThemeName,
+    uploadThemeArchive,
+    ThemeUploadError
+} from './theme-api';
 
 /**
  * The site root the renderer should treat as `siteUrl`: the admin URL minus
@@ -73,6 +97,47 @@ export function initialEditValue(element) {
     return (element.textContent || '').replace(/\s+/g, ' ').trim();
 }
 
+/**
+ * The Content API key from config, ignoring junk values: a helper that
+ * stringifies a missing key ends up sending the LITERAL 'null' (the
+ * ghost_head fix drops the attribute instead, but old cached pages linger).
+ */
+export function sanitizeContentApiKey(rawKey) {
+    const key = typeof rawKey === 'string' ? rawKey.trim() : '';
+
+    if (!key || key === 'null' || key === 'undefined') {
+        return null;
+    }
+
+    return key;
+}
+
+/**
+ * Save-as name validation for the default-theme publish path. Mirrors what
+ * the server will accept as a zip filename: non-empty, lowercase, no spaces,
+ * and not one of the protected default theme names.
+ *
+ * @returns {string|null} a user-readable rejection, or null when valid
+ */
+export function validateNewThemeName(name) {
+    const trimmed = (name ?? '').trim();
+
+    if (!trimmed) {
+        return 'Theme name cannot be empty.';
+    }
+    if (/\s/.test(trimmed)) {
+        return 'Theme name cannot contain spaces.';
+    }
+    if (trimmed !== trimmed.toLowerCase()) {
+        return 'Theme name must be lowercase.';
+    }
+    if (isDefaultThemeName(trimmed)) {
+        return `"${trimmed}" is a default theme name — pick a different one.`;
+    }
+
+    return null;
+}
+
 // Module-level so drafts survive exit/re-enter within one page view — the
 // in-memory store's documented lifetime. Server-backed persistence replaces
 // this singleton via the DraftStore seam.
@@ -81,17 +146,24 @@ const sessionDraftStore = createMemoryDraftStore();
 /**
  * @param {Object} options
  * @param {Object} options.config — toolbar config (adminUrl, key, scriptUrl, …)
+ * @param {(info?: {reason: string, message?: string}) => void} [options.onExit]
+ *   — invoked exactly once, after cleanup, whenever the session ends: the
+ *   user's Exit, an unmount from the shell, or a fatal boot failure
+ *   (`{reason: 'boot_failure'}`). Lets the loader/toolbar reset so edit mode
+ *   can be re-entered with a fresh session.
  * @param {Object} [options.deps] — test seams; every external effect is injectable
  * @returns {{start(): Promise<void>, destroy(): void}}
  */
-export function createEditSession({config, deps = {}}) {
+export function createEditSession({config, onExit, deps = {}}) {
     const {
         doc = document,
         win = window,
         fetchImpl = (...args) => fetch(...args),
         draftStore = sessionDraftStore,
-        confirmFn = message => win.confirm(message),
-        startClient = startRenderClient
+        promptFn = (message, defaultValue) => win.prompt(message, defaultValue),
+        startClient = startRenderClient,
+        uiFactory = createEditModeUi,
+        attachInteractions = attachEditInteractions
     } = deps;
 
     const adminUrl = config.adminUrl;
@@ -106,12 +178,22 @@ export function createEditSession({config, deps = {}}) {
     let themeName = null;
     let snapshot = null;
     let renderTheme = null;
+    let baseHash = null; // content hash of the base the session booted from (or last published)
     let storeKey = null;
     let editCount = 0;
-    let activeEdit = null; // {element, marker}
+    let activeEdit = null; // {element, marker, initialValue}
+    let publishArmed = false;
+    let publishing = false;
 
     async function renderAndSwap() {
         const result = await client.render(win.location.href, {markers: true});
+
+        // destroy() may have run while the render was in flight — swapping
+        // now would leave the page stuck on the preview after exit
+        if (destroyed) {
+            return;
+        }
+
         swapper.swap(result.html);
 
         if (result.status !== 200) {
@@ -124,72 +206,191 @@ export function createEditSession({config, deps = {}}) {
         ui.update({editor: null, highlight: null, ...patch});
     }
 
+    function disarmPublish(patch = {}) {
+        if (publishArmed) {
+            publishArmed = false;
+            ui.update({publishArmed: false, ...patch});
+        }
+    }
+
     async function commitEdit(value) {
         if (!activeEdit) {
             return;
         }
 
-        const {element, marker} = activeEdit;
+        const {element, marker, initialValue} = activeEdit;
         const newText = value.replace(/\s+/g, ' ').trim();
 
-        let nextTheme;
+        // An untouched commit (click-away without typing, Enter on the
+        // unchanged value) is a close, not an edit.
+        if (newText === initialValue) {
+            closeEditor();
+            return;
+        }
+
+        // Ordering: the candidate theme is only committed to session state
+        // AFTER it has compiled and rendered. The applier's own rejections
+        // ({{ injection, newlines, stale markers) land in the catch below.
+        let candidateTheme;
         try {
-            nextTheme = applyThemeTextEdit(renderTheme, marker, newText, {tagName: element.tagName});
+            candidateTheme = applyThemeTextEdit(renderTheme, marker, newText, {tagName: element.tagName});
         } catch (error) {
             closeEditor({statusText: `Could not apply the edit: ${error.message}`, statusIsError: true});
             return;
         }
 
-        renderTheme = nextTheme;
-        snapshot.files[marker.file].content = nextTheme[marker.file];
+        closeEditor({status: 'loading', statusText: 'Rendering…', statusIsError: false});
+        disarmPublish();
+
+        try {
+            await client.setTheme(candidateTheme);
+            await renderAndSwap();
+        } catch (error) {
+            if (destroyed) {
+                return;
+            }
+            // Revert the renderer to the last-good theme so the next edit
+            // starts from a working state; the failed candidate is dropped
+            // without counting the edit or touching the draft store.
+            try {
+                await client.setTheme(renderTheme);
+            } catch {
+                // the revert is best-effort — the original error is the story
+            }
+            ui.update({status: 'ready', statusText: `Edit failed: ${error.message}`, statusIsError: true});
+            return;
+        }
+
+        if (destroyed) {
+            return;
+        }
+
+        // Success — NOW mutate session state.
+        renderTheme = candidateTheme;
+        snapshot.files[marker.file].content = candidateTheme[marker.file];
         editCount += 1;
         await draftStore.set(storeKey, {files: renderTheme, editCount});
 
-        closeEditor({status: 'loading', statusText: 'Rendering…', statusIsError: false});
-
-        try {
-            await client.setTheme(renderTheme);
-            await renderAndSwap();
-            ui.update({status: 'ready', statusText: '', dirtyCount: editCount});
-        } catch (error) {
-            ui.update({status: 'ready', statusText: `Re-render failed: ${error.message}`, statusIsError: true});
+        if (destroyed) {
+            return;
         }
+        ui.update({status: 'ready', statusText: '', dirtyCount: editCount, statusIsError: false});
     }
 
     async function publish() {
-        if (editCount === 0) {
+        if (editCount === 0 || publishing) {
             return;
         }
 
-        const confirmed = confirmFn(
-            `Publish ${editCount} edit${editCount === 1 ? '' : 's'} to "${themeName}"?\n\n` +
-            'This OVERWRITES the live theme and re-activates it immediately for all visitors.'
-        );
-
-        if (!confirmed) {
+        // Two-step confirm inside the bar: first click arms, second commits.
+        if (!publishArmed) {
+            publishArmed = true;
+            ui.update({
+                publishArmed: true,
+                statusText: `Publishing overwrites "${themeName}" for all visitors — click "Confirm publish" to continue.`,
+                statusIsError: false
+            });
             return;
         }
 
-        ui.update({status: 'publishing', statusText: '', statusIsError: false});
+        publishArmed = false;
+        publishing = true;
+        ui.update({publishArmed: false, status: 'publishing', statusText: '', statusIsError: false});
 
         try {
-            const blob = await packThemeArchive(snapshot);
-            const uploadedTheme = await uploadThemeArchive(adminUrl, {themeName, blob}, fetchImpl);
+            // Lost-update check: the base this session booted from must still
+            // be what the server serves. No force option in this slice — the
+            // user exits, re-enters (drafts survive keyed by base) and
+            // re-applies against the fresh base.
+            const serverArchive = await downloadThemeArchive(adminUrl, themeName, fetchImpl);
+            if (destroyed) {
+                return;
+            }
+            const serverSnapshot = await extractThemeArchive(serverArchive);
+            const serverHash = computeThemeContentHash(buildRenderTheme(serverSnapshot));
 
+            if (serverHash !== baseHash) {
+                ui.update({
+                    status: 'ready',
+                    statusText: 'Not published — the theme changed on the server since you started editing. Exit and re-enter edit mode to load the latest version.',
+                    statusIsError: true
+                });
+                return;
+            }
+
+            // Default themes cannot be overwritten (the server rejects
+            // casper.zip/source.zip) — publish as a copy under a new name,
+            // carrying the active theme's custom settings over, then activate.
+            let uploadName = themeName;
+            let copySettingsFrom;
+
+            if (isDefaultThemeName(themeName)) {
+                const entered = promptFn(
+                    `"${themeName}" is a default theme and cannot be overwritten.\n\n` +
+                    'Enter a name to publish your edited copy as (lowercase, no spaces):',
+                    `${themeName}-edited`
+                );
+
+                if (entered === null) {
+                    ui.update({status: 'ready', statusText: 'Publish cancelled.', statusIsError: false});
+                    return;
+                }
+
+                const nameError = validateNewThemeName(entered);
+                if (nameError) {
+                    ui.update({status: 'ready', statusText: `Not published — ${nameError}`, statusIsError: true});
+                    return;
+                }
+
+                uploadName = entered.trim();
+                copySettingsFrom = themeName;
+            }
+
+            const blob = await packThemeArchive(snapshot);
+            const uploadedTheme = await uploadThemeArchive(adminUrl, {themeName: uploadName, blob, copySettingsFrom}, fetchImpl);
+            if (destroyed) {
+                return;
+            }
+
+            if (copySettingsFrom) {
+                // Uploading under a NEW name installs but does not activate.
+                await activateTheme(adminUrl, uploadedTheme.name, fetchImpl);
+                if (destroyed) {
+                    return;
+                }
+            }
+
+            // The just-published snapshot IS the new base: re-key the draft
+            // store against it so post-publish edits survive exit/re-enter,
+            // and clear the (now published) old draft.
+            const previousKey = storeKey;
+            themeName = uploadedTheme.name;
+            baseHash = computeThemeContentHash(buildRenderTheme(snapshot));
+            storeKey = draftKey({siteUrl, themeName, baseHash});
             editCount = 0;
-            await draftStore.clear(storeKey);
+            await draftStore.clear(previousKey);
+
+            if (destroyed) {
+                return;
+            }
             ui.update({
                 status: 'ready',
+                themeName,
                 dirtyCount: 0,
                 statusText: `Published — "${uploadedTheme.name}" is live.`,
                 statusIsError: false
             });
         } catch (error) {
+            if (destroyed) {
+                return;
+            }
             ui.update({
                 status: 'ready',
                 statusText: error instanceof ThemeUploadError ? error.message : `Publish failed: ${error.message}`,
                 statusIsError: true
             });
+        } finally {
+            publishing = false;
         }
     }
 
@@ -201,22 +402,35 @@ export function createEditSession({config, deps = {}}) {
     }
 
     function handleSelect(element) {
+        // A pending inline edit is COMMITTED when another element is clicked
+        // — never silently discarded. The commit re-renders and re-swaps the
+        // document, so the clicked element is stale by then; the user clicks
+        // again in the fresh preview to edit it.
+        if (activeEdit) {
+            if (activeEdit.element === element) {
+                return;
+            }
+            commitEdit(ui.getState().editor?.value ?? '');
+            return;
+        }
+
         const marker = parseEditMarker(element.getAttribute('data-edit'));
 
         if (!marker) {
             return;
         }
 
-        activeEdit = {element, marker};
+        disarmPublish();
+        activeEdit = {element, marker, initialValue: initialEditValue(element)};
         ui.update({
             highlight: toRect(element),
-            editor: {rect: toRect(element), value: initialEditValue(element)},
+            editor: {rect: toRect(element), value: activeEdit.initialValue},
             statusText: '',
             statusIsError: false
         });
     }
 
-    function destroy() {
+    function destroy(exitInfo) {
         if (destroyed) {
             return;
         }
@@ -226,36 +440,49 @@ export function createEditSession({config, deps = {}}) {
         swapper?.restore();
         client?.destroy();
         ui?.destroy();
+
+        try {
+            onExit?.(exitInfo);
+        } catch {
+            // the shell's callback must never break teardown
+        }
     }
 
     async function start() {
-        ui = createEditModeUi({
+        ui = uiFactory({
             doc,
             handlers: {
-                onExit: destroy,
-                onPublish: () => {
-                    publish();
-                },
-                onCommitEdit: (value) => {
-                    commitEdit(value);
-                },
-                onCancelEdit: () => {
-                    closeEditor();
-                }
+                onExit: () => destroy(),
+                onPublish: () => publish(),
+                onCommitEdit: value => commitEdit(value),
+                onCancelEdit: () => closeEditor()
             }
         });
 
         try {
             themeName = await fetchActiveThemeName(adminUrl, fetchImpl);
+            if (destroyed) {
+                return;
+            }
             ui.update({themeName, statusText: `Downloading "${themeName}"…`});
 
             const archive = await downloadThemeArchive(adminUrl, themeName, fetchImpl);
+            if (destroyed) {
+                return;
+            }
             snapshot = await extractThemeArchive(archive);
+            if (destroyed) {
+                return;
+            }
 
             const baseTheme = buildRenderTheme(snapshot);
-            storeKey = draftKey({siteUrl, themeName, baseHash: computeThemeContentHash(baseTheme)});
+            baseHash = computeThemeContentHash(baseTheme);
+            storeKey = draftKey({siteUrl, themeName, baseHash});
 
             const draft = await draftStore.get(storeKey);
+            if (destroyed) {
+                return;
+            }
             renderTheme = draft?.files ?? baseTheme;
             editCount = draft?.editCount ?? 0;
             if (draft) {
@@ -267,7 +494,7 @@ export function createEditSession({config, deps = {}}) {
             }
 
             const pageHtml = doc.documentElement.outerHTML;
-            const contentApiKey = config.key || scrapeContentApiKey(pageHtml);
+            const contentApiKey = sanitizeContentApiKey(config.key) || scrapeContentApiKey(pageHtml);
 
             if (!contentApiKey) {
                 throw new Error('No Content API key available (config.key empty and no data-key script tag on the page)');
@@ -290,14 +517,21 @@ export function createEditSession({config, deps = {}}) {
             swapper = createDocumentSwapper({
                 doc,
                 win,
-                preserveSelectors: [`#${ROOT_ID}`, AUTH_FRAME_SELECTOR, `#${OVERLAY_HOST_ID}`]
+                // The admin auth iframe is deliberately NOT preserved: moving
+                // an iframe between parents discards its browsing context (it
+                // would reload anyway), and the session doesn't need it — it
+                // stays in the detached original body and returns on restore.
+                preserveSelectors: [`#${ROOT_ID}`, `#${OVERLAY_HOST_ID}`]
             });
 
             await renderAndSwap();
+            if (destroyed) {
+                return;
+            }
 
-            interactions = attachEditInteractions({
+            interactions = attachInteractions({
                 doc,
-                ignoreSelectors: [`#${ROOT_ID}`, `#${OVERLAY_HOST_ID}`, AUTH_FRAME_SELECTOR],
+                ignoreSelectors: [`#${ROOT_ID}`, `#${OVERLAY_HOST_ID}`],
                 onHover: handleHover,
                 onSelect: handleSelect
             });
@@ -314,11 +548,9 @@ export function createEditSession({config, deps = {}}) {
             if (destroyed) {
                 return;
             }
-            ui.update({
-                status: 'error',
-                statusText: `Edit mode failed to start: ${error.message}`,
-                statusIsError: true
-            });
+            // A session that failed to boot cannot function — tear down and
+            // report through onExit so the toolbar can offer a clean retry.
+            destroy({reason: 'boot_failure', message: error.message});
         }
     }
 

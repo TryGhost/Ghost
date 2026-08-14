@@ -20,6 +20,11 @@
       "types": "./build/index.d.ts",
       "default": "./build/index.js"
     },
+    "./markers": {
+      "source": "./src/engine/markers.ts",
+      "types": "./build/engine/markers.d.ts",
+      "default": "./build/engine/markers.js"
+    },
     "./editor": {
       "source": "./src/editor/text-edit.ts",
       "types": "./build/editor/text-edit.d.ts",

@@ -13,6 +13,7 @@ import {
     detectCommonRoot,
     extractThemeArchive,
     getExtension,
+    isDefaultThemeName,
     isEditablePath,
     normaliseRelativePath,
     packThemeArchive
@@ -44,6 +45,21 @@ describe('editor/archive', function () {
         it('keeps binary assets non-editable', function () {
             assert.equal(isEditablePath('assets/logo.png'), false);
             assert.equal(isEditablePath('assets/font.woff2'), false);
+        });
+    });
+
+    describe('isDefaultThemeName', function () {
+        it('matches casper and source case-insensitively', function () {
+            assert.equal(isDefaultThemeName('casper'), true);
+            assert.equal(isDefaultThemeName('Casper'), true);
+            assert.equal(isDefaultThemeName('source'), true);
+            assert.equal(isDefaultThemeName('SOURCE'), true);
+        });
+
+        it('does not match other theme names', function () {
+            assert.equal(isDefaultThemeName('casper-edited'), false);
+            assert.equal(isDefaultThemeName('my-theme'), false);
+            assert.equal(isDefaultThemeName(''), false);
         });
     });
 

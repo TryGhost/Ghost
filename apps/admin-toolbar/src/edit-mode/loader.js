@@ -1,4 +1,6 @@
-/* eslint ghost/ghost-custom/no-native-error: off */
+/* eslint ghost/ghost-custom/no-native-error: off -- browser-side toolbar code:
+   errors surface in the toolbar UI, not through Ghost's server error
+   pipeline, so @tryghost/errors classes would only add bundle weight. */
 
 import {canManageThemes} from '../auth';
 
@@ -42,16 +44,28 @@ let mountedHandle = null;
  * The module load is memoized; a failed load clears the memo so a retry can
  * succeed. Mounting is idempotent — a second call returns the live handle.
  *
+ * When the mounted session exits from the inside (the edit bar's Exit button
+ * or a fatal boot failure), its onExit clears `mountedHandle` here — so the
+ * next call mounts a FRESH session (drafts survive via the chunk's
+ * module-level draft store) — and then forwards to the caller's onExit so
+ * the Edit button can reset instead of staying stuck in "active" forever.
+ *
+ * @param {Object} options
+ * @param {Object} options.config
+ * @param {Object} options.user
+ * @param {(info?: {reason: string, message?: string}) => void} [options.onExit]
+ * @param {(url: string) => Promise<Object>} [options.importModule] — test seam
  * @returns {Promise<{unmount: () => void}>}
  */
-export async function loadAndMountEditMode({config, user}) {
+export async function loadAndMountEditMode({config, user, onExit, importModule}) {
     if (mountedHandle) {
         return mountedHandle;
     }
 
     if (!editModulePromise) {
         const chunkUrl = new URL(EDITOR_CHUNK_FILENAME, config.scriptUrl);
-        editModulePromise = import(/* @vite-ignore */ chunkUrl.href).catch((err) => {
+        const load = importModule ?? (url => import(/* @vite-ignore */ url));
+        editModulePromise = Promise.resolve(load(chunkUrl.href)).catch((err) => {
             editModulePromise = null;
             throw err;
         });
@@ -65,7 +79,14 @@ export async function loadAndMountEditMode({config, user}) {
     }
 
     if (!mountedHandle) {
-        const handle = editModule.mount({config, user});
+        const handle = editModule.mount({
+            config,
+            user,
+            onExit: (info) => {
+                mountedHandle = null;
+                onExit?.(info);
+            }
+        });
         mountedHandle = {
             unmount() {
                 mountedHandle = null;

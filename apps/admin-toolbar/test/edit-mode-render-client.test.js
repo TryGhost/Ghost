@@ -150,4 +150,103 @@ describe('edit-mode render-client', function () {
         assert.equal(client.mode, 'main');
         assert.equal(log[0].event, 'backend-created');
     });
+
+    it('rejects when neither a worker URL nor a backend factory is available', async function () {
+        await assert.rejects(
+            startRenderClient({...BOOT_OPTIONS, workerUrl: ''}),
+            /edit_mode_renderer_unavailable/
+        );
+    });
+
+    describe('post-init failover', function () {
+        it('switches to the main-thread backend and retries once when the worker crashes mid-session', async function () {
+            const log = [];
+            const worker = new FakeWorker({
+                onCall(message, self) {
+                    if (message.type === 'render') {
+                        // post-init crash: worker-level error instead of a reply
+                        self.onerror?.({message: 'worker exploded'});
+                        return null;
+                    }
+                    return {ok: true, result: null};
+                }
+            });
+
+            const client = await startRenderClient({
+                ...BOOT_OPTIONS,
+                workerUrl: 'https://cdn.example.com/worker.min.js',
+                workerFactory: () => ({worker, blobUrl: null}),
+                backendFactory: fakeBackendFactory(log)
+            });
+            assert.equal(client.mode, 'worker');
+            assert.equal(log.length, 0, 'no fallback backend before the crash');
+
+            // the crashed call itself succeeds via the fallback retry
+            const result = await client.render('https://site.example.com/', {markers: true});
+            assert.equal(result.status, 200);
+            assert.equal(worker.terminated, true, 'the crashed worker is terminated');
+            assert.equal(log[0].event, 'backend-created');
+            assert.deepEqual(log[1], {event: 'set-theme', theme: BOOT_OPTIONS.theme}, 'the fallback boots with the current theme');
+            assert.deepEqual(log[2], {
+                event: 'render',
+                url: 'https://site.example.com/',
+                renderOptions: {markers: true}
+            });
+
+            // permanently on the main thread from here on
+            await client.setTheme({'index.hbs': '<h1>edited</h1>'});
+            assert.deepEqual(log.at(-1), {event: 'set-theme', theme: {'index.hbs': '<h1>edited</h1>'}});
+        });
+
+        it('switches to the main-thread backend when a call times out', async function () {
+            const log = [];
+            const worker = new FakeWorker({
+                onCall(message) {
+                    if (message.type === 'set-theme') {
+                        return null; // never replies → per-call timeout fires
+                    }
+                    return {ok: true, result: null};
+                }
+            });
+
+            const client = await startRenderClient({
+                ...BOOT_OPTIONS,
+                workerUrl: 'https://cdn.example.com/worker.min.js',
+                workerFactory: () => ({worker, blobUrl: null}),
+                backendFactory: fakeBackendFactory(log),
+                callTimeoutMs: 20
+            });
+
+            const nextTheme = {'index.hbs': '<h1>edited</h1>'};
+            await client.setTheme(nextTheme);
+
+            assert.equal(worker.terminated, true);
+            assert.equal(log[0].event, 'backend-created');
+            assert.deepEqual(log[1], {event: 'set-theme', theme: BOOT_OPTIONS.theme}, 'fallback boots with the last-good theme');
+            assert.deepEqual(log[2], {event: 'set-theme', theme: nextTheme}, 'the timed-out call is retried once');
+        });
+
+        it('does not fail over on renderer-level errors relayed by the worker', async function () {
+            const log = [];
+            const worker = new FakeWorker({
+                onCall(message) {
+                    if (message.type === 'render') {
+                        return {ok: false, error: 'template_error:index.hbs'};
+                    }
+                    return {ok: true, result: null};
+                }
+            });
+
+            const client = await startRenderClient({
+                ...BOOT_OPTIONS,
+                workerUrl: 'https://cdn.example.com/worker.min.js',
+                workerFactory: () => ({worker, blobUrl: null}),
+                backendFactory: fakeBackendFactory(log)
+            });
+
+            await assert.rejects(client.render('https://site.example.com/'), /template_error:index\.hbs/);
+            assert.equal(worker.terminated, false, 'a renderer error must not kill the worker');
+            assert.equal(log.length, 0, 'no fallback backend is created');
+        });
+    });
 });

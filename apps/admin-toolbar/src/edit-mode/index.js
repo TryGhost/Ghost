@@ -5,8 +5,12 @@
  * from the main toolbar bundle, or it would get inlined into the IIFE.
  *
  * Module contract (stable boundary between the toolbar shell and the editor):
- * - `mount({config, user})` starts edit mode and returns `{unmount()}`.
+ * - `mount({config, user, onExit})` starts edit mode and returns `{unmount()}`.
  * - `unmount()` tears everything down and restores the page.
+ * - `onExit(info?)` fires exactly once after cleanup whenever the session
+ *   ends from the inside (the bar's Exit button, or a fatal boot failure —
+ *   `info.reason === 'boot_failure'`), so the shell can reset its state and
+ *   allow re-entry with a fresh session.
  *
  * The internals live in session.js (orchestration), render-client.js /
  * render-backend.js / worker.js (worker-first rendering with main-thread
@@ -23,11 +27,11 @@ import {createEditSession} from './session';
 export const EDIT_MODE_SENTINEL = 'ghost-admin-toolbar-edit-mode-chunk-4f1c9d';
 
 /**
- * @param {{config: Object, user: Object}} context
+ * @param {{config: Object, user: Object, onExit?: (info?: {reason: string, message?: string}) => void}} context
  * @returns {{unmount(): void}}
  */
-export function mount({config, user}) {
-    const session = createEditSession({config, user});
+export function mount({config, user, onExit}) {
+    const session = createEditSession({config, user, onExit});
 
     // Boot is async (theme download, renderer compile); failures surface in
     // the session's own UI bar rather than rejecting mount — the toolbar

@@ -39,7 +39,7 @@ describe('edit-mode draft-store', function () {
     });
 
     describe('createMemoryDraftStore (the DraftStore seam)', function () {
-        it('implements the async get/set/list/clear interface', async function () {
+        it('implements the async get/set/clear interface', async function () {
             const store = createMemoryDraftStore();
 
             // every method is async — the seam contract a server-backed
@@ -54,15 +54,12 @@ describe('edit-mode draft-store', function () {
             assert.deepEqual(draft.files, {'index.hbs': 'a'});
             assert.equal(typeof draft.updatedAt, 'number');
 
-            const listed = await store.list();
-            assert.deepEqual(listed.map(entry => entry.key).sort(), ['key-1', 'key-2']);
-
             await store.clear('key-1');
             assert.equal(await store.get('key-1'), null);
             assert.notEqual(await store.get('key-2'), null);
 
             await store.clear();
-            assert.deepEqual(await store.list(), []);
+            assert.equal(await store.get('key-2'), null);
         });
 
         it('overwrites an existing draft on set and re-stamps updatedAt', async function () {

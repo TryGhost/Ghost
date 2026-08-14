@@ -9,8 +9,9 @@
  * stays out of the IIFE (which rollup would otherwise inline via
  * inlineDynamicImports).
  *
- * Run via `pnpm build` (after the main build — the main build empties umd/)
- * or `pnpm build:editor` / `pnpm dev:editor` on its own.
+ * Run via `pnpm build` (after the main build — the main build's one-off,
+ * non-watch mode empties umd/) or `pnpm build:editor` on its own. `pnpm dev`
+ * runs this watcher concurrently with the main and worker watchers.
  */
 import {publicAppViteConfig} from '@internal/cfg-vite-public-app';
 

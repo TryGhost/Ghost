@@ -9,8 +9,9 @@
  * the CDN, and `new Worker(url)` is same-origin-only, so the chunk creates a
  * same-origin blob module whose body just `import`s this artifact's URL.
  *
- * Run via `pnpm build` (after the main build — the main build empties umd/)
- * or `pnpm build:worker` / `pnpm dev:worker` on its own.
+ * Run via `pnpm build` (after the main build — the main build's one-off,
+ * non-watch mode empties umd/) or `pnpm build:worker` on its own. `pnpm dev`
+ * runs this watcher concurrently with the main and editor watchers.
  */
 import {publicAppViteConfig} from '@internal/cfg-vite-public-app';
 

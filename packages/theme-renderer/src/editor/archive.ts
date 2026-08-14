@@ -49,6 +49,17 @@ export class ThemeArchiveExtractionError extends Error {
     }
 }
 
+/**
+ * Ghost's bundled default themes. The server refuses `casper.zip` /
+ * `source.zip` uploads outright (core/server/services/themes/storage.js), so
+ * every editor that publishes by upload must rename first. Shared here (moved
+ * from apps/admin's theme-editor-utils) so the Admin code editor and the
+ * on-site edit mode agree on what counts as a default theme.
+ */
+export const isDefaultThemeName = (themeName: string): boolean => {
+    return ['casper', 'source'].includes(themeName.toLowerCase());
+};
+
 const editableExtensions = new Set([
     'css',
     'cjs',

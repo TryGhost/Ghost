@@ -65,9 +65,23 @@ function EditModeButton({config, user}) {
 
         setStatus('loading');
 
+        // The session reports its own end (Exit button, fatal boot failure)
+        // through onExit — resetting to idle/error keeps the Edit button
+        // usable for re-entry instead of being stuck "active" forever.
+        let exited = false;
+
         try {
-            await loadAndMountEditMode({config, user});
+            await loadAndMountEditMode({
+                config,
+                user,
+                onExit: (info) => {
+                    exited = true;
+                    setStatus(info?.reason === 'boot_failure' ? 'error' : 'idle');
+                }
+            });
+            if (!exited) {
             setStatus('active');
+            }
         } catch {
             setStatus('error');
         }

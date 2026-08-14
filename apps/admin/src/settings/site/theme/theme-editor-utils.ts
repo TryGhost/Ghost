@@ -15,6 +15,7 @@ export {
     detectCommonRoot,
     extractThemeArchive,
     getExtension,
+    isDefaultThemeName,
     isEditablePath,
     normaliseRelativePath,
     packThemeArchive
@@ -42,8 +43,6 @@ export const parseEditingThemeRoute = (path: string): {themeName: string | null;
         return {themeName: null, isInvalid: true};
     }
 };
-
-export const isDefaultThemeName = (themeName: string) => ['casper', 'source'].includes(themeName.toLowerCase());
 
 export type ThemeChange = {
     path: string;

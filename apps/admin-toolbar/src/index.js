@@ -1,4 +1,6 @@
-/* eslint ghost/ghost-custom/no-native-error: off */
+/* eslint ghost/ghost-custom/no-native-error: off -- browser-side toolbar code:
+   errors surface in the toolbar UI, not through Ghost's server error
+   pipeline, so @tryghost/errors classes would only add bundle weight. */
 
 import { createElement as h, render } from 'preact';
 

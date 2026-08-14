@@ -1,4 +1,6 @@
-/* eslint ghost/ghost-custom/no-native-error: off */
+/* eslint ghost/ghost-custom/no-native-error: off -- browser-side chunk code:
+   errors surface in the edit-mode UI bar, not through Ghost's server error
+   pipeline, so @tryghost/errors classes would only add bundle weight. */
 
 /**
  * Admin API theme calls for edit mode. Same-origin only (the loader refuses
@@ -90,16 +92,27 @@ export async function downloadThemeArchive(adminUrl, themeName, fetchImpl = fetc
  * the installed theme name, so it must be `<themeName>.zip`: uploading under
  * the active theme's name overwrites it in place and Ghost re-activates it.
  *
+ * `copySettingsFrom` maps to `?copy_settings_from=<theme>` — used by the
+ * save-as-new-name publish path (default themes cannot be overwritten) to
+ * carry the active theme's custom settings over to the new copy (see
+ * core/server/api/endpoints/themes.js upload options).
+ *
+ * A 422 is labelled by its content: gscan failures (any error carrying a
+ * `failures` list) read as a theme validation report; a plain server-side
+ * ValidationError (e.g. "cannot overwrite a default theme") is surfaced as
+ * the server's own message — the two need different user reactions.
+ *
  * @param {string} adminUrl
- * @param {{themeName: string, blob: Blob}} upload
+ * @param {{themeName: string, blob: Blob, copySettingsFrom?: string}} upload
  * @param {typeof fetch} [fetchImpl]
  * @returns {Promise<Object>} the uploaded theme object from the response
  */
-export async function uploadThemeArchive(adminUrl, {themeName, blob}, fetchImpl = fetch) {
+export async function uploadThemeArchive(adminUrl, {themeName, blob, copySettingsFrom}, fetchImpl = fetch) {
     const formData = new FormData();
     formData.append('file', blob, `${themeName}.zip`);
 
-    const response = await fetchImpl(apiUrl(adminUrl, 'themes/upload/'), {
+    const query = copySettingsFrom ? `?copy_settings_from=${encodeURIComponent(copySettingsFrom)}` : '';
+    const response = await fetchImpl(apiUrl(adminUrl, `themes/upload/${query}`), {
         method: 'POST',
         credentials: 'include',
         headers: {Accept: 'application/json'},
@@ -111,9 +124,16 @@ export async function uploadThemeArchive(adminUrl, {themeName, blob}, fetchImpl 
     if (!response.ok) {
         const errors = data?.errors ?? [];
         const formatted = formatUploadErrors(errors);
-        const message = response.status === 422
-            ? `Theme not published — the edited theme failed validation:\n${formatted || 'unknown validation error'}`
-            : (formatted || `Theme upload failed (${response.status})`);
+        const isGscanReport = errors.some(error => (error?.failures ?? []).length > 0);
+
+        let message;
+        if (response.status === 422 && isGscanReport) {
+            message = `Theme not published — the edited theme failed validation:\n${formatted || 'unknown validation error'}`;
+        } else if (response.status === 422) {
+            message = `Theme not published — the server rejected the upload:\n${formatted || 'unknown error'}`;
+        } else {
+            message = formatted || `Theme upload failed (${response.status})`;
+        }
 
         throw new ThemeUploadError(message, {status: response.status, errors});
     }
@@ -125,4 +145,34 @@ export async function uploadThemeArchive(adminUrl, {themeName, blob}, fetchImpl 
     }
 
     return uploadedTheme;
+}
+
+/**
+ * PUT /themes/:name/activate/ — used after a save-as-new-name upload (the
+ * server only auto-activates when the ACTIVE theme is overwritten in place).
+ *
+ * @param {string} adminUrl
+ * @param {string} themeName
+ * @param {typeof fetch} [fetchImpl]
+ * @returns {Promise<Object|null>} the activated theme object, when returned
+ */
+export async function activateTheme(adminUrl, themeName, fetchImpl = fetch) {
+    const response = await fetchImpl(apiUrl(adminUrl, `themes/${encodeURIComponent(themeName)}/activate/`), {
+        method: 'PUT',
+        credentials: 'include',
+        headers: {Accept: 'application/json'}
+    });
+
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok) {
+        const errors = data?.errors ?? [];
+        const formatted = formatUploadErrors(errors);
+        throw new ThemeUploadError(
+            formatted || `Theme activation failed (${response.status})`,
+            {status: response.status, errors}
+        );
+    }
+
+    return data?.themes?.[0] ?? null;
 }

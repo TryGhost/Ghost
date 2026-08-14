@@ -1,11 +1,18 @@
 /**
  * In-place document swap for edit-mode preview: replaces the live page's
  * <head> and <body> with worker-rendered HTML — same URL, no iframe — while
- * PRESERVING a set of live nodes (the toolbar host, the admin auth iframe,
- * and the edit-mode overlay root) by physically moving them into the
- * swapped-in body. The original head/body elements are kept detached and put
- * back on restore(), so their subtree state (listeners, form values, script
- * side-effects in the DOM) survives an edit session.
+ * PRESERVING a set of live nodes (the toolbar host and the edit-mode overlay
+ * root) by physically moving them into the swapped-in body. The original
+ * head/body elements are kept detached and put back on restore(), so their
+ * subtree state (listeners, form values, script side-effects in the DOM)
+ * survives an edit session.
+ *
+ * Iframes must NOT be in `preserveSelectors`: moving an iframe between
+ * parents discards its browsing context (the spec re-creates it, i.e. the
+ * frame reloads), so "preserving" one this way is a lie. The admin auth
+ * iframe is therefore left alone — it stays in the detached original body
+ * and comes back (reloading once) on restore, which is fine because the
+ * session talks to the Admin API with cookies, not through the frame.
  *
  * Theme JS re-init (the spec-accepted slice-4 risk) is resolved by NOT
  * executing scripts in the swapped-in DOM at all: the HTML goes through

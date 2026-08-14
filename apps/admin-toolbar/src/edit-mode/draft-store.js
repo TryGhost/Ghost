@@ -9,10 +9,10 @@
  * theme that has since changed on the server would apply stale positions, so
  * the key ties every draft to the exact base it was made from.
  *
- * DraftStore interface (all methods async):
+ * DraftStore interface (all methods async — deliberately minimal; grow it
+ * only when a caller exists):
  *   get(key)        → draft | null
  *   set(key, draft) → void       (stamps updatedAt)
- *   list()          → [{key, draft}]
  *   clear(key?)     → void       (no key = clear everything)
  *
  * Draft shape (by convention, the store is shape-agnostic):
@@ -62,7 +62,7 @@ export function draftKey({siteUrl, themeName, baseHash}) {
  * lost on navigation; the interface (not this implementation) is the
  * deliverable that the server-backed store will slot into.
  *
- * @returns {{get(key: string): Promise<Object|null>, set(key: string, draft: Object): Promise<void>, list(): Promise<Array<{key: string, draft: Object}>>, clear(key?: string): Promise<void>}}
+ * @returns {{get(key: string): Promise<Object|null>, set(key: string, draft: Object): Promise<void>, clear(key?: string): Promise<void>}}
  */
 export function createMemoryDraftStore() {
     const drafts = new Map();
@@ -73,9 +73,6 @@ export function createMemoryDraftStore() {
         },
         async set(key, draft) {
             drafts.set(key, {...draft, updatedAt: Date.now()});
-        },
-        async list() {
-            return Array.from(drafts.entries()).map(([key, draft]) => ({key, draft}));
         },
         async clear(key) {
             if (key === undefined) {

@@ -699,6 +699,35 @@ describe('admin-toolbar', function () {
         );
     });
 
+    it('ships the renderer ONLY in the worker artifact, keeping the chunk small', function () {
+        const editorSource = fs.readFileSync(EDITOR_BUNDLE_PATH, 'utf8');
+        const workerSource = fs.readFileSync(WORKER_BUNDLE_PATH, 'utf8');
+
+        // 'edit_mode_backend_no_theme' is a render-backend.js sentinel — the
+        // module (and the theme-renderer engine behind it) must live in the
+        // worker artifact only; the chunk reaches it via dynamic import()
+        assert.equal(
+            editorSource.includes('edit_mode_backend_no_theme'),
+            false,
+            'render-backend (and the renderer) leaked into the edit-mode chunk'
+        );
+        assert.ok(workerSource.includes('edit_mode_backend_no_theme'));
+        assert.ok(
+            workerSource.includes('createRenderBackend'),
+            'the worker artifact must export createRenderBackend for the main-thread fallback'
+        );
+
+        // Measured 2026-08 after the split: ~190KB raw (~50KB gz) — jszip +
+        // preact + editor tooling. The renderer alone is ~1.9MB raw, so any
+        // regression that drags it (or another heavyweight) back into the
+        // chunk blows straight through this threshold.
+        const chunkBytes = fs.statSync(EDITOR_BUNDLE_PATH).size;
+        assert.ok(
+            chunkBytes < 256 * 1024,
+            `edit-mode chunk is ${chunkBytes}B — expected < ${256 * 1024}B (did the renderer get inlined?)`
+        );
+    });
+
     it('builds the render-worker artifact beside the chunk', function () {
         const workerSource = fs.readFileSync(WORKER_BUNDLE_PATH, 'utf8');
 

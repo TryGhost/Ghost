@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {
     ThemeUploadError,
+    activateTheme,
     downloadThemeArchive,
     fetchActiveThemeName,
     formatUploadErrors,
@@ -142,6 +143,25 @@ describe('edit-mode theme-api', function () {
             assert.equal(snapshot.files['package.json'].content, JSON.stringify({name: 'fixture-theme'}));
         });
 
+        it('appends copy_settings_from to the upload URL when publishing under a new name', async function () {
+            const blob = await buildFixtureArchive();
+            const calls = [];
+            const fetchImpl = async (url, options) => {
+                calls.push({url, options});
+                return jsonResponse({themes: [{name: 'my-copy'}]});
+            };
+
+            const uploaded = await uploadThemeArchive(ADMIN_URL, {
+                themeName: 'my-copy',
+                blob,
+                copySettingsFrom: 'casper'
+            }, fetchImpl);
+
+            assert.equal(uploaded.name, 'my-copy');
+            assert.equal(calls[0].url, 'https://site.example.com/ghost/api/admin/themes/upload/?copy_settings_from=casper');
+            assert.equal(calls[0].options.body.get('file').name, 'my-copy.zip');
+        });
+
         it('surfaces gscan 422 errors as a readable ThemeUploadError', async function () {
             const blob = await buildFixtureArchive();
             const fetchImpl = async () => jsonResponse({
@@ -169,6 +189,30 @@ describe('edit-mode theme-api', function () {
             );
         });
 
+        it('labels a plain server ValidationError 422 without the gscan framing', async function () {
+            const blob = await buildFixtureArchive();
+            // storage.js rejects casper.zip/source.zip with a ValidationError
+            // that carries NO gscan failures list
+            const fetchImpl = async () => jsonResponse({
+                errors: [{
+                    type: 'ValidationError',
+                    message: 'Please rename your zip, it\'s not allowed to override the default themes'
+                }]
+            }, {status: 422});
+
+            await assert.rejects(
+                uploadThemeArchive(ADMIN_URL, {themeName: 'casper', blob}, fetchImpl),
+                (error) => {
+                    assert.ok(error instanceof ThemeUploadError);
+                    assert.equal(error.status, 422);
+                    assert.match(error.message, /server rejected the upload/);
+                    assert.match(error.message, /not allowed to override the default themes/);
+                    assert.doesNotMatch(error.message, /failed validation/);
+                    return true;
+                }
+            );
+        });
+
         it('throws a generic ThemeUploadError for non-422 failures', async function () {
             const blob = await buildFixtureArchive();
             const fetchImpl = async () => new Response('boom', {status: 500});
@@ -179,6 +223,39 @@ describe('edit-mode theme-api', function () {
                     assert.ok(error instanceof ThemeUploadError);
                     assert.equal(error.status, 500);
                     assert.match(error.message, /Theme upload failed \(500\)/);
+                    return true;
+                }
+            );
+        });
+    });
+
+    describe('activateTheme', function () {
+        it('PUTs /themes/:name/activate/ with credentials and returns the theme', async function () {
+            const calls = [];
+            const fetchImpl = async (url, options) => {
+                calls.push({url, options});
+                return jsonResponse({themes: [{name: 'my-copy', active: true}]});
+            };
+
+            const activated = await activateTheme(ADMIN_URL, 'my-copy', fetchImpl);
+
+            assert.equal(activated.name, 'my-copy');
+            assert.equal(calls[0].url, 'https://site.example.com/ghost/api/admin/themes/my-copy/activate/');
+            assert.equal(calls[0].options.method, 'PUT');
+            assert.equal(calls[0].options.credentials, 'include');
+        });
+
+        it('throws a readable ThemeUploadError on failure', async function () {
+            const fetchImpl = async () => jsonResponse({
+                errors: [{message: 'Theme not found'}]
+            }, {status: 404});
+
+            await assert.rejects(
+                activateTheme(ADMIN_URL, 'missing', fetchImpl),
+                (error) => {
+                    assert.ok(error instanceof ThemeUploadError);
+                    assert.equal(error.status, 404);
+                    assert.match(error.message, /Theme not found/);
                     return true;
                 }
             );

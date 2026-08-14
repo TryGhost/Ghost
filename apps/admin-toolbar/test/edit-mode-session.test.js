@@ -1,0 +1,760 @@
+import assert from 'node:assert/strict';
+import {JSDOM} from 'jsdom';
+import {
+    buildRenderTheme,
+    createEditSession,
+    deriveSiteUrl,
+    initialEditValue,
+    sanitizeContentApiKey,
+    validateNewThemeName
+} from '../src/edit-mode/session.js';
+import {createMemoryDraftStore} from '../src/edit-mode/draft-store.js';
+import {extractThemeArchive, packThemeArchive} from '@tryghost/theme-renderer/editor/archive';
+
+const ADMIN_URL = 'https://site.example.com/ghost/';
+const SCRIPT_URL = 'https://cdn.example.com/admin-toolbar/admin-toolbar.min.js';
+
+const BASE_THEME = {
+    'index.hbs': '<h1>Original title</h1><p>Second para</p>',
+    'package.json': '{"name":"fixture-theme"}'
+};
+
+function jsonResponse(payload, {status = 200} = {}) {
+    return new Response(JSON.stringify(payload), {
+        status,
+        headers: {'content-type': 'application/json'}
+    });
+}
+
+function toSnapshotFiles(files) {
+    return Object.fromEntries(Object.entries(files).map(([path, content]) => [path, {
+        path,
+        editable: true,
+        content,
+        binary: null,
+        date: new Date('2026-01-01T00:00:00.000Z'),
+        unixPermissions: null,
+        dosPermissions: null
+    }]));
+}
+
+function packFixtureArchive(files, rootPrefix) {
+    return packThemeArchive({rootPrefix, files: toSnapshotFiles(files)});
+}
+
+/**
+ * In-memory Admin API double covering the theme endpoints the session uses:
+ * active theme lookup, zip download, multipart upload (+copy_settings_from),
+ * and activation. Uploads update the stored theme so re-entry sees them.
+ */
+function createFakeAdminApi({activeName = 'fixture-theme', themes = {[activeName]: BASE_THEME}} = {}) {
+    const api = {
+        activeName,
+        themes: new Map(Object.entries(themes)),
+        uploads: [],
+        activations: [],
+        uploadResponse: null, // {status, body} override for error paths
+        failActiveLookup: false
+    };
+
+    api.fetchImpl = async (url, options = {}) => {
+        const parsed = new URL(url);
+        const method = (options.method || 'GET').toUpperCase();
+
+        if (method === 'GET' && parsed.pathname.endsWith('/api/admin/themes/active/')) {
+            if (api.failActiveLookup) {
+                return new Response('boom', {status: 500});
+            }
+            return jsonResponse({themes: [{name: api.activeName, active: true}]});
+        }
+
+        const downloadMatch = parsed.pathname.match(/\/api\/admin\/themes\/([^/]+)\/download\/$/);
+        if (method === 'GET' && downloadMatch) {
+            const name = decodeURIComponent(downloadMatch[1]);
+            const files = api.themes.get(name);
+            if (!files) {
+                return new Response('missing', {status: 404});
+            }
+            return new Response(await packFixtureArchive(files, `${name}/`), {status: 200});
+        }
+
+        if (method === 'POST' && parsed.pathname.endsWith('/api/admin/themes/upload/')) {
+            if (api.uploadResponse) {
+                return jsonResponse(api.uploadResponse.body, {status: api.uploadResponse.status});
+            }
+            const file = options.body.get('file');
+            const uploadedName = file.name.replace(/\.zip$/, '');
+            const snapshot = await extractThemeArchive(await file.arrayBuffer());
+            const uploadedFiles = Object.fromEntries(
+                Object.entries(snapshot.files).map(([path, entry]) => [path, entry.content])
+            );
+            api.uploads.push({
+                name: uploadedName,
+                copySettingsFrom: parsed.searchParams.get('copy_settings_from'),
+                files: uploadedFiles
+            });
+            api.themes.set(uploadedName, uploadedFiles);
+            return jsonResponse({themes: [{name: uploadedName}]});
+        }
+
+        const activateMatch = parsed.pathname.match(/\/api\/admin\/themes\/([^/]+)\/activate\/$/);
+        if (method === 'PUT' && activateMatch) {
+            const name = decodeURIComponent(activateMatch[1]);
+            api.activations.push(name);
+            api.activeName = name;
+            return jsonResponse({themes: [{name, active: true}]});
+        }
+
+        return new Response(`unexpected ${method} ${url}`, {status: 500});
+    };
+
+    return api;
+}
+
+/** The fake renderer: marks the fixture's h1/p so click-to-edit has targets. */
+function defaultRenderHtml(theme) {
+    const body = (theme['index.hbs'] ?? '')
+        .replace('<h1>', '<h1 data-edit="index.hbs:1:1">')
+        .replace('<p>', '<p data-edit="index.hbs:1:24">');
+    return `<!DOCTYPE html><html><head><title>Preview</title></head><body>${body}</body></html>`;
+}
+
+function createFakeClientFactory({renderHtml = defaultRenderHtml, setThemeShouldFail} = {}) {
+    const created = [];
+
+    const startClient = async (options) => {
+        const client = {
+            mode: 'main',
+            options,
+            theme: options.theme,
+            setThemeCalls: [],
+            destroyed: false,
+            async setTheme(theme) {
+                client.setThemeCalls.push(theme);
+                if (setThemeShouldFail?.(theme)) {
+                    throw new Error('candidate failed to compile');
+                }
+                client.theme = theme;
+            },
+            async render(url) {
+                return {status: 200, html: renderHtml(client.theme), url};
+            },
+            destroy() {
+                client.destroyed = true;
+            }
+        };
+        created.push(client);
+        return client;
+    };
+
+    return {startClient, created};
+}
+
+function createFakeUi() {
+    const ui = {
+        handlers: null,
+        state: {
+            themeName: null,
+            dirtyCount: 0,
+            status: 'loading',
+            statusText: '',
+            statusIsError: false,
+            highlight: null,
+            editor: null,
+            publishArmed: false
+        },
+        updates: [],
+        destroyed: false,
+        update(patch) {
+            ui.state = {...ui.state, ...patch};
+            ui.updates.push(patch);
+        },
+        getState() {
+            return ui.state;
+        },
+        destroy() {
+            ui.destroyed = true;
+        }
+    };
+
+    ui.factory = ({handlers}) => {
+        ui.handlers = handlers;
+        return ui;
+    };
+
+    return ui;
+}
+
+function createFakeInteractions() {
+    const record = {options: null, detached: false};
+
+    record.attach = (options) => {
+        record.options = options;
+        return {
+            detach() {
+                record.detached = true;
+            }
+        };
+    };
+
+    return record;
+}
+
+function createPageDom({withDataKey = true} = {}) {
+    const dom = new JSDOM(`<!DOCTYPE html><html><head><title>Live</title></head><body>
+        <main id="live-main">Live content</main>
+        ${withDataKey ? '<script defer src="https://cdn.example.com/sodo-search.min.js" data-key="abc123def456" data-styles="s" data-sodo-search="x"></script>' : ''}
+    </body></html>`, {url: 'https://site.example.com/'});
+
+    dom.window.scrollTo = () => {};
+    return dom;
+}
+
+async function waitFor(predicate, {timeout = 2000} = {}) {
+    const startedAt = Date.now();
+    while (!predicate()) {
+        if (Date.now() - startedAt > timeout) {
+            throw new Error('waitFor timed out');
+        }
+        await new Promise((resolve) => {
+            setTimeout(resolve, 0);
+        });
+    }
+}
+
+/** Boots a full fake-backed session and returns every seam for assertions. */
+async function bootSession({
+    api = createFakeAdminApi(),
+    dom = createPageDom(),
+    draftStore = createMemoryDraftStore(),
+    clientFactory = createFakeClientFactory(),
+    onExit,
+    promptFn,
+    configKey = ''
+} = {}) {
+    const ui = createFakeUi();
+    const interactions = createFakeInteractions();
+
+    const session = createEditSession({
+        config: {adminUrl: ADMIN_URL, key: configKey, scriptUrl: SCRIPT_URL},
+        onExit,
+        deps: {
+            doc: dom.window.document,
+            win: dom.window,
+            fetchImpl: api.fetchImpl,
+            ...(draftStore ? {draftStore} : {}),
+            ...(promptFn ? {promptFn} : {}),
+            startClient: clientFactory.startClient,
+            uiFactory: ui.factory,
+            attachInteractions: interactions.attach
+        }
+    });
+
+    await session.start();
+
+    return {session, ui, interactions, api, dom, draftStore, clientFactory};
+}
+
+function editableElement(dom, marker) {
+    const element = dom.window.document.querySelector(`[data-edit="${marker}"]`);
+    assert.ok(element, `expected a [data-edit="${marker}"] element in the preview`);
+    return element;
+}
+
+describe('edit-mode session', function () {
+    describe('helpers', function () {
+        it('deriveSiteUrl strips the trailing ghost/ segment', function () {
+            assert.equal(deriveSiteUrl('https://site.example.com/ghost/'), 'https://site.example.com/');
+            assert.equal(deriveSiteUrl('https://site.example.com/blog/ghost/'), 'https://site.example.com/blog/');
+        });
+
+        it('buildRenderTheme keeps only text .hbs and .json sources', function () {
+            const snapshot = {
+                rootPrefix: 'casper/',
+                files: {
+                    'index.hbs': {content: '{{!< default}}', binary: null},
+                    'package.json': {content: '{"name":"casper"}', binary: null},
+                    'assets/app.css': {content: 'body{}', binary: null},
+                    'assets/logo.png': {content: null, binary: new Uint8Array([1])}
+                }
+            };
+
+            assert.deepEqual(buildRenderTheme(snapshot), {
+                'index.hbs': '{{!< default}}',
+                'package.json': '{"name":"casper"}'
+            });
+        });
+
+        it('initialEditValue collapses rendered text to one line', function () {
+            const dom = new JSDOM('<!DOCTYPE html><body><h1>  Hello\n   world </h1></body>');
+            assert.equal(initialEditValue(dom.window.document.querySelector('h1')), 'Hello world');
+        });
+
+        it('sanitizeContentApiKey rejects empty and stringified-null keys', function () {
+            assert.equal(sanitizeContentApiKey('abc123'), 'abc123');
+            assert.equal(sanitizeContentApiKey(' abc123 '), 'abc123');
+            assert.equal(sanitizeContentApiKey(''), null);
+            assert.equal(sanitizeContentApiKey('   '), null);
+            assert.equal(sanitizeContentApiKey('null'), null);
+            assert.equal(sanitizeContentApiKey('undefined'), null);
+            assert.equal(sanitizeContentApiKey(undefined), null);
+        });
+
+        it('validateNewThemeName enforces lowercase, no spaces, non-default', function () {
+            assert.equal(validateNewThemeName('my-theme'), null);
+            assert.match(validateNewThemeName(''), /empty/);
+            assert.match(validateNewThemeName('my theme'), /spaces/);
+            assert.match(validateNewThemeName('MyTheme'), /lowercase/);
+            assert.match(validateNewThemeName('casper'), /default theme/);
+            assert.match(validateNewThemeName('source'), /default theme/);
+        });
+    });
+
+    describe('boot', function () {
+        it('downloads the active theme, renders, swaps, and reports ready', async function () {
+            const {ui, dom, clientFactory, interactions} = await bootSession();
+
+            assert.equal(ui.state.status, 'ready');
+            assert.equal(ui.state.themeName, 'fixture-theme');
+            assert.equal(ui.state.dirtyCount, 0);
+            assert.equal(dom.window.document.title, 'Preview');
+            assert.ok(editableElement(dom, 'index.hbs:1:1'));
+            assert.equal(clientFactory.created.length, 1);
+            assert.deepEqual(clientFactory.created[0].options.theme, BASE_THEME);
+            assert.ok(interactions.options, 'click-to-edit should be attached');
+        });
+
+        it('uses the scraped page data-key when config.key is the literal "null"', async function () {
+            const {clientFactory} = await bootSession({configKey: 'null'});
+
+            assert.equal(clientFactory.created[0].options.contentApiKey, 'abc123def456');
+        });
+
+        it('exits through onExit when no usable Content API key exists', async function () {
+            const exits = [];
+            const {ui} = await bootSession({
+                dom: createPageDom({withDataKey: false}),
+                configKey: 'null',
+                onExit: info => exits.push(info)
+            });
+
+            assert.equal(exits.length, 1);
+            assert.equal(exits[0].reason, 'boot_failure');
+            assert.match(exits[0].message, /Content API key/);
+            assert.equal(ui.destroyed, true);
+        });
+
+        it('tears down and reports boot_failure through onExit when the boot fails', async function () {
+            const api = createFakeAdminApi();
+            api.failActiveLookup = true;
+            const exits = [];
+
+            const {ui, dom} = await bootSession({api, onExit: info => exits.push(info)});
+
+            assert.equal(exits.length, 1);
+            assert.equal(exits[0].reason, 'boot_failure');
+            assert.equal(ui.destroyed, true);
+            // the live page was never swapped away
+            assert.ok(dom.window.document.getElementById('live-main'));
+        });
+    });
+
+    describe('exit', function () {
+        it('invokes onExit exactly once, after cleanup', async function () {
+            const exits = [];
+            let uiDestroyedAtExit = null;
+            const booted = await bootSession({
+                onExit: (info) => {
+                    exits.push(info);
+                    uiDestroyedAtExit = booted.ui.destroyed;
+                }
+            });
+
+            booted.session.destroy();
+            booted.session.destroy(); // idempotent
+
+            assert.equal(exits.length, 1);
+            assert.equal(exits[0], undefined);
+            assert.equal(uiDestroyedAtExit, true, 'onExit must fire after the UI is torn down');
+            assert.ok(booted.dom.window.document.getElementById('live-main'), 'the original page is restored');
+            assert.equal(booted.interactions.detached, true);
+            assert.equal(booted.clientFactory.created[0].destroyed, true);
+        });
+
+        it('does not swap the page when destroy() lands while the renderer is still booting', async function () {
+            const dom = createPageDom();
+            const api = createFakeAdminApi();
+            const ui = createFakeUi();
+            const interactions = createFakeInteractions();
+
+            let clientRequested = false;
+            let resolveClient;
+            const pendingClient = new Promise((resolve) => {
+                resolveClient = resolve;
+            });
+
+            const session = createEditSession({
+                config: {adminUrl: ADMIN_URL, key: '', scriptUrl: SCRIPT_URL},
+                deps: {
+                    doc: dom.window.document,
+                    win: dom.window,
+                    fetchImpl: api.fetchImpl,
+                    draftStore: createMemoryDraftStore(),
+                    startClient: () => {
+                        clientRequested = true;
+                        return pendingClient;
+                    },
+                    uiFactory: ui.factory,
+                    attachInteractions: interactions.attach
+                }
+            });
+
+            const startPromise = session.start();
+            await waitFor(() => clientRequested);
+
+            session.destroy();
+
+            const lateClient = {
+                mode: 'main',
+                destroyed: false,
+                async render() {
+                    return {status: 200, html: defaultRenderHtml(BASE_THEME), url: 'x'};
+                },
+                async setTheme() {},
+                destroy() {
+                    lateClient.destroyed = true;
+                }
+            };
+            resolveClient(lateClient);
+            await startPromise;
+
+            assert.ok(dom.window.document.getElementById('live-main'), 'the live page must not be swapped after exit');
+            assert.equal(dom.window.document.title, 'Live');
+            assert.equal(lateClient.destroyed, true, 'the late-arriving client is destroyed');
+            assert.equal(interactions.options, null, 'click-to-edit is never attached');
+        });
+
+        it('does not swap the page when destroy() lands while the first render is in flight', async function () {
+            const dom = createPageDom();
+            const api = createFakeAdminApi();
+            const ui = createFakeUi();
+            const interactions = createFakeInteractions();
+
+            let resolveRender;
+            let renderRequested = false;
+            const client = {
+                mode: 'main',
+                async setTheme() {},
+                render() {
+                    renderRequested = true;
+                    return new Promise((resolve) => {
+                        resolveRender = resolve;
+                    });
+                },
+                destroy() {}
+            };
+
+            const session = createEditSession({
+                config: {adminUrl: ADMIN_URL, key: '', scriptUrl: SCRIPT_URL},
+                deps: {
+                    doc: dom.window.document,
+                    win: dom.window,
+                    fetchImpl: api.fetchImpl,
+                    draftStore: createMemoryDraftStore(),
+                    startClient: async () => client,
+                    uiFactory: ui.factory,
+                    attachInteractions: interactions.attach
+                }
+            });
+
+            const startPromise = session.start();
+            await waitFor(() => renderRequested);
+
+            session.destroy();
+            resolveRender({status: 200, html: defaultRenderHtml(BASE_THEME), url: 'x'});
+            await startPromise;
+
+            assert.equal(dom.window.document.title, 'Live', 'the swapped preview must not land after exit');
+            assert.ok(dom.window.document.getElementById('live-main'));
+        });
+    });
+
+    describe('commitEdit', function () {
+        it('applies an edit, re-renders, and only then counts it', async function () {
+            const {ui, dom, interactions, clientFactory} = await bootSession();
+
+            interactions.options.onSelect(editableElement(dom, 'index.hbs:1:1'));
+            assert.ok(ui.state.editor, 'the inline editor opens');
+            assert.equal(ui.state.editor.value, 'Original title');
+
+            await ui.handlers.onCommitEdit('Edited title');
+
+            assert.equal(ui.state.dirtyCount, 1);
+            assert.equal(ui.state.status, 'ready');
+            assert.equal(ui.state.statusIsError, false);
+            assert.match(dom.window.document.querySelector('h1').textContent, /Edited title/);
+
+            const client = clientFactory.created[0];
+            assert.equal(client.setThemeCalls.length, 1);
+            assert.match(client.setThemeCalls[0]['index.hbs'], /Edited title/);
+        });
+
+        it('commits nothing when the value is unchanged', async function () {
+            const {ui, dom, interactions, clientFactory} = await bootSession();
+
+            interactions.options.onSelect(editableElement(dom, 'index.hbs:1:1'));
+            await ui.handlers.onCommitEdit('Original title');
+
+            assert.equal(ui.state.dirtyCount, 0);
+            assert.equal(ui.state.editor, null);
+            assert.equal(clientFactory.created[0].setThemeCalls.length, 0);
+        });
+
+        it('surfaces applier rejections ({{ injection) cleanly with no dirty count', async function () {
+            const {ui, dom, interactions, clientFactory} = await bootSession();
+
+            interactions.options.onSelect(editableElement(dom, 'index.hbs:1:1'));
+            await ui.handlers.onCommitEdit('{{@site.title}}');
+
+            assert.equal(ui.state.dirtyCount, 0);
+            assert.equal(ui.state.statusIsError, true);
+            assert.match(ui.state.statusText, /Could not apply the edit/);
+            // the rejected candidate never reached the renderer
+            assert.equal(clientFactory.created[0].setThemeCalls.length, 0);
+            // and the preview still shows the original
+            assert.match(dom.window.document.querySelector('h1').textContent, /Original title/);
+        });
+
+        it('reverts to the last-good theme when the candidate fails to render', async function () {
+            const clientFactory = createFakeClientFactory({
+                setThemeShouldFail: theme => /Poison/.test(theme['index.hbs'])
+            });
+            const {ui, dom, interactions} = await bootSession({clientFactory});
+
+            interactions.options.onSelect(editableElement(dom, 'index.hbs:1:1'));
+            await ui.handlers.onCommitEdit('Poison');
+
+            assert.equal(ui.state.dirtyCount, 0, 'a failed edit must not count');
+            assert.equal(ui.state.statusIsError, true);
+            assert.match(ui.state.statusText, /Edit failed/);
+
+            const client = clientFactory.created[0];
+            assert.equal(client.setThemeCalls.length, 2, 'candidate + revert');
+            assert.match(client.setThemeCalls[0]['index.hbs'], /Poison/);
+            assert.match(client.setThemeCalls[1]['index.hbs'], /Original title/, 'reverted to the last-good theme');
+
+            // the session still works: a good edit succeeds afterwards
+            interactions.options.onSelect(editableElement(dom, 'index.hbs:1:1'));
+            await ui.handlers.onCommitEdit('Recovered title');
+            assert.equal(ui.state.dirtyCount, 1);
+            assert.match(dom.window.document.querySelector('h1').textContent, /Recovered title/);
+        });
+
+        it('commits the pending inline edit when another element is clicked', async function () {
+            const {ui, dom, interactions} = await bootSession();
+
+            interactions.options.onSelect(editableElement(dom, 'index.hbs:1:1'));
+            ui.state.editor.value = 'Typed then clicked away';
+
+            interactions.options.onSelect(editableElement(dom, 'index.hbs:1:24'));
+            await waitFor(() => ui.state.dirtyCount === 1);
+
+            assert.match(dom.window.document.querySelector('h1').textContent, /Typed then clicked away/);
+            assert.equal(ui.state.editor, null, 'no new editor opens on the stale element');
+        });
+
+        it('closes without committing when clicking away with an untouched value', async function () {
+            const {ui, dom, interactions, clientFactory} = await bootSession();
+
+            interactions.options.onSelect(editableElement(dom, 'index.hbs:1:1'));
+            interactions.options.onSelect(editableElement(dom, 'index.hbs:1:24'));
+            await waitFor(() => ui.state.editor === null);
+
+            assert.equal(ui.state.dirtyCount, 0);
+            assert.equal(clientFactory.created[0].setThemeCalls.length, 0);
+        });
+    });
+
+    describe('publish', function () {
+        async function bootWithEdit(options = {}) {
+            const booted = await bootSession(options);
+            booted.interactions.options.onSelect(editableElement(booted.dom, 'index.hbs:1:1'));
+            await booted.ui.handlers.onCommitEdit('Edited title');
+            assert.equal(booted.ui.state.dirtyCount, 1);
+            return booted;
+        }
+
+        it('requires the two-step confirm before uploading', async function () {
+            const {ui, api} = await bootWithEdit();
+
+            await ui.handlers.onPublish();
+            assert.equal(ui.state.publishArmed, true);
+            assert.match(ui.state.statusText, /Confirm publish/);
+            assert.equal(api.uploads.length, 0, 'the first click must not upload');
+
+            await ui.handlers.onPublish();
+            assert.equal(api.uploads.length, 1);
+            assert.equal(api.uploads[0].name, 'fixture-theme');
+            assert.equal(api.uploads[0].copySettingsFrom, null);
+            assert.match(api.uploads[0].files['index.hbs'], /Edited title/);
+            assert.equal(api.activations.length, 0, 'overwriting the active theme needs no explicit activation');
+            assert.equal(ui.state.dirtyCount, 0);
+            assert.match(ui.state.statusText, /Published/);
+        });
+
+        it('disarms the publish confirm when a new edit starts', async function () {
+            const {ui, dom, interactions, api} = await bootWithEdit();
+
+            await ui.handlers.onPublish();
+            assert.equal(ui.state.publishArmed, true);
+
+            interactions.options.onSelect(editableElement(dom, 'index.hbs:1:24'));
+            assert.equal(ui.state.publishArmed, false);
+
+            await ui.handlers.onPublish();
+            assert.equal(api.uploads.length, 0, 'the click after disarming re-arms instead of publishing');
+            assert.equal(ui.state.publishArmed, true);
+        });
+
+        it('publishes a default theme as a renamed copy with settings carried over, then activates it', async function () {
+            const api = createFakeAdminApi({activeName: 'casper', themes: {casper: BASE_THEME}});
+            const prompts = [];
+            const {ui} = await bootWithEdit({
+                api,
+                promptFn: (message, defaultValue) => {
+                    prompts.push({message, defaultValue});
+                    return 'casper-edited';
+                }
+            });
+
+            await ui.handlers.onPublish();
+            await ui.handlers.onPublish();
+
+            assert.equal(prompts.length, 1);
+            assert.match(prompts[0].message, /cannot be overwritten/);
+            assert.equal(api.uploads.length, 1);
+            assert.equal(api.uploads[0].name, 'casper-edited');
+            assert.equal(api.uploads[0].copySettingsFrom, 'casper');
+            assert.deepEqual(api.activations, ['casper-edited']);
+            assert.equal(api.activeName, 'casper-edited');
+            assert.equal(ui.state.themeName, 'casper-edited');
+            assert.match(ui.state.statusText, /Published/);
+        });
+
+        it('aborts a default-theme publish when the prompt is cancelled', async function () {
+            const api = createFakeAdminApi({activeName: 'casper', themes: {casper: BASE_THEME}});
+            const {ui} = await bootWithEdit({api, promptFn: () => null});
+
+            await ui.handlers.onPublish();
+            await ui.handlers.onPublish();
+
+            assert.equal(api.uploads.length, 0);
+            assert.match(ui.state.statusText, /cancelled/i);
+            assert.equal(ui.state.statusIsError, false);
+            assert.equal(ui.state.dirtyCount, 1, 'the edit is still pending');
+        });
+
+        it('rejects an invalid save-as name without uploading', async function () {
+            const api = createFakeAdminApi({activeName: 'source', themes: {source: BASE_THEME}});
+            const {ui} = await bootWithEdit({api, promptFn: () => 'Has Spaces'});
+
+            await ui.handlers.onPublish();
+            await ui.handlers.onPublish();
+
+            assert.equal(api.uploads.length, 0);
+            assert.equal(ui.state.statusIsError, true);
+            assert.match(ui.state.statusText, /Not published/);
+        });
+
+        it('aborts when the theme changed on the server since boot (lost-update check)', async function () {
+            const {ui, api} = await bootWithEdit();
+
+            // someone else published while we were editing
+            api.themes.set('fixture-theme', {
+                ...BASE_THEME,
+                'index.hbs': '<h1>Changed elsewhere</h1><p>Second para</p>'
+            });
+
+            await ui.handlers.onPublish();
+            await ui.handlers.onPublish();
+
+            assert.equal(api.uploads.length, 0);
+            assert.equal(ui.state.statusIsError, true);
+            assert.match(ui.state.statusText, /changed on the server/);
+        });
+
+        it('labels a server-side ValidationError 422 differently from a gscan report', async function () {
+            const {ui, api} = await bootWithEdit();
+            api.uploadResponse = {
+                status: 422,
+                body: {errors: [{type: 'ValidationError', message: 'Please rename your zip, it\'s not allowed to override the default themes'}]}
+            };
+
+            await ui.handlers.onPublish();
+            await ui.handlers.onPublish();
+
+            assert.equal(ui.state.statusIsError, true);
+            assert.match(ui.state.statusText, /server rejected the upload/);
+            assert.match(ui.state.statusText, /not allowed to override the default themes/);
+            assert.doesNotMatch(ui.state.statusText, /failed validation/);
+        });
+    });
+
+    describe('draft persistence', function () {
+        it('drafts survive exit and re-enter through the shared draft-store seam', async function () {
+            const draftStore = createMemoryDraftStore();
+
+            const first = await bootSession({draftStore});
+            first.interactions.options.onSelect(editableElement(first.dom, 'index.hbs:1:1'));
+            await first.ui.handlers.onCommitEdit('Survives re-entry');
+            first.session.destroy();
+
+            assert.ok(first.dom.window.document.getElementById('live-main'), 'exit restores the page');
+
+            const second = await bootSession({api: first.api, draftStore});
+            assert.equal(second.ui.state.dirtyCount, 1);
+            assert.match(second.dom.window.document.querySelector('h1').textContent, /Survives re-entry/);
+        });
+
+        it('drafts survive exit and re-enter on the default module-level store', async function () {
+            // no draftStore dep — this exercises the singleton the docs
+            // promise survives exit/re-enter within one page view
+            const api = createFakeAdminApi({
+                activeName: 'singleton-theme',
+                themes: {'singleton-theme': BASE_THEME}
+            });
+
+            const first = await bootSession({api, draftStore: null});
+            first.interactions.options.onSelect(editableElement(first.dom, 'index.hbs:1:1'));
+            await first.ui.handlers.onCommitEdit('Singleton survivor');
+            first.session.destroy();
+
+            const second = await bootSession({api, draftStore: null});
+            assert.equal(second.ui.state.dirtyCount, 1);
+            assert.match(second.dom.window.document.querySelector('h1').textContent, /Singleton survivor/);
+        });
+
+        it('re-keys drafts after publish so post-publish edits survive re-entry', async function () {
+            const draftStore = createMemoryDraftStore();
+
+            const first = await bootSession({draftStore});
+            first.interactions.options.onSelect(editableElement(first.dom, 'index.hbs:1:1'));
+            await first.ui.handlers.onCommitEdit('Published edit');
+            await first.ui.handlers.onPublish();
+            await first.ui.handlers.onPublish();
+            assert.equal(first.api.uploads.length, 1);
+
+            // a fresh edit on top of the just-published base
+            first.interactions.options.onSelect(editableElement(first.dom, 'index.hbs:1:1'));
+            await first.ui.handlers.onCommitEdit('Post-publish edit');
+            assert.equal(first.ui.state.dirtyCount, 1);
+            first.session.destroy();
+
+            // re-enter: the server now serves the published theme, and the
+            // draft keyed against it is found
+            const second = await bootSession({api: first.api, draftStore});
+            assert.equal(second.ui.state.dirtyCount, 1);
+            assert.match(second.dom.window.document.querySelector('h1').textContent, /Post-publish edit/);
+        });
+    });
+});

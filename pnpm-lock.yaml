@@ -1196,6 +1196,9 @@ importers:
       '@internal/cfg-vite-public-app':
         specifier: workspace:*
         version: link:../../configs/vite-public-app
+      concurrently:
+        specifier: 'catalog:'
+        version: 10.0.4
       eslint:
         specifier: 'catalog:'
         version: 9.39.4(jiti@2.7.0)(supports-color@10.2.2)

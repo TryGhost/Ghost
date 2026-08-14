@@ -10,8 +10,8 @@ environment and the Admin Toolbar watcher. To work on this package by itself,
 run these commands from this directory:
 
 ```bash
-pnpm build    # one-off build (main bundle + edit-mode chunk)
-pnpm dev      # watch and rebuild umd/admin-toolbar.min.js
+pnpm build    # one-off build (main bundle + edit-mode chunk + render worker)
+pnpm dev      # watch and rebuild all three bundles concurrently
 pnpm test     # build + run tests against the built bundles
 ```
 
@@ -24,14 +24,17 @@ The toolbar ships in three bundles:
 - `umd/admin-toolbar-editor.min.js` — the edit-mode chunk, a plain ES module
   built from `src/edit-mode/index.js` by `vite.editor.config.mjs`. It is only
   fetched when a user with theme permissions clicks "Edit" on a site with the
-  `editModeOnSite` labs flag enabled. It bundles `@tryghost/theme-renderer`
-  (both for the main-thread render fallback and the editor tooling), so it is
-  large by design — which is exactly why it is lazy-loaded.
+  `editModeOnSite` labs flag enabled. It contains the editor tooling only
+  (archive round-trip, marker parsing, text edits, overlay UI) — the renderer
+  itself ships once, in the worker artifact.
 - `umd/admin-toolbar-editor-worker.min.js` — the render-worker entry, a plain
   ES module built from `src/edit-mode/worker.js` by `vite.worker.config.mjs`.
-  The chunk boots it as a module Web Worker via a blob bootstrap
-  (`src/edit-mode/render-client.js`) and falls back to rendering on the main
-  thread when workers are unavailable (CSP etc.).
+  This is the ONLY artifact that bundles `@tryghost/theme-renderer`. The
+  chunk boots it as a module Web Worker via a blob bootstrap
+  (`src/edit-mode/render-client.js`); when workers are unavailable (CSP etc.)
+  or the worker crashes mid-session, the chunk dynamically `import()`s this
+  same artifact — it re-exports `createRenderBackend` and only installs its
+  message loop inside a worker scope — and renders on the main thread.
 
 The main bundle must never statically import anything under `src/edit-mode/`
 except `loader.js` — the build inlines dynamic imports
@@ -49,19 +52,17 @@ in-memory only for now), `theme-api.js` (Admin API download/upload), and
 requires `@tryghost/theme-renderer`'s `build/` output (nx orders this via the
 workspace dependency).
 
-`pnpm build` builds all three (main first — it empties `umd/`). During
-development:
+`pnpm build` builds all three (main first — the one-off build empties `umd/`;
+the watchers never do). During development a single command watches all three
+bundles via `concurrently`:
 
 ```bash
-pnpm dev           # terminal 1: watch the main bundle
-pnpm dev:editor    # terminal 2 (only for edit-mode work): watch the chunk
-pnpm dev:worker    # terminal 3 (only for edit-mode work): watch the worker
+pnpm dev           # watch main + chunk + worker together
 ```
 
-Start `pnpm dev` before the others — the main watcher empties `umd/` once on
-startup. The nx `dev` target runs the main watcher, matching the pre-existing
-behaviour; `pnpm build:editor` / `pnpm build:worker` do one-off builds if you
-don't need the watchers.
+The nx `dev` target runs the same thing. `pnpm dev:main` / `pnpm dev:editor` /
+`pnpm dev:worker` watch a single bundle, and `pnpm build:editor` /
+`pnpm build:worker` do one-off builds if you don't need the watchers.
 
 ## How it's served
 
