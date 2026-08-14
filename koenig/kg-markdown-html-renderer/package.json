@@ -1,6 +1,7 @@
 {
   "name": "@tryghost/kg-markdown-html-renderer",
   "version": "7.2.3",
+  "description": "Markdown to HTML rendering for Ghost's markdown card",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/TryGhost/Ghost.git",

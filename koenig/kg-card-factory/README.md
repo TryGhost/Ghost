@@ -1,38 +1,41 @@
 # Koenig Card Factory
 
+Card definition factory for Ghost's Mobiledoc renderer.
+
+> Legacy: this package supports posts that have never been converted from
+> Mobiledoc. New editor work belongs in the Lexical packages.
+
 ## Install
-
-`npm install @tryghost/kg-card-factory --save`
-
-or
 
 `npm install @tryghost/kg-card-factory`
 
-
 ## Usage
 
+```js
+import {CardFactory} from '@tryghost/kg-card-factory';
+
+const factory = new CardFactory({siteUrl: 'https://example.com'});
+const card = factory.createCard(cardDefinition);
+```
+
+Options passed to the factory are merged into the render options of every card
+it creates, with per-render options taking precedence.
 
 ## Develop
 
-This is a mono repository, managed with [lerna](https://lernajs.io/).
+This package is part of the [Ghost monorepo](https://github.com/TryGhost/Ghost)
+and resolves through the pnpm workspace — there is no linking or per-package
+install step. Run `pnpm setup` in the monorepo root, then work in
+`koenig/kg-card-factory`.
 
-Follow the instructions for the top-level repo.
-1. `git clone` this repo & `cd` into it as usual
-2. Run `pnpm install` from the Ghost monorepo root.
-
-
-## Run
-
-- `pnpm dev`
-
+See the [Koenig README](../README.md) for the shared build, test and release
+workflow.
 
 ## Test
 
-- `pnpm lint` run just eslint
-- `pnpm test` run lint and tests
-
-
-
+- `pnpm test:unit` runs the unit tests
+- `pnpm test` runs the unit and type tests, including coverage thresholds
+- `pnpm lint` runs the lint checks
 
 # Copyright & License
 

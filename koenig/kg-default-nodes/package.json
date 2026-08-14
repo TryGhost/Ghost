@@ -1,6 +1,7 @@
 {
   "name": "@tryghost/kg-default-nodes",
   "version": "2.1.5",
+  "description": "Lexical node definitions and HTML renderers for Ghost's Koenig editor cards",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/TryGhost/Ghost.git",

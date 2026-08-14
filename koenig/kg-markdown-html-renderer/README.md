@@ -1,38 +1,46 @@
 # Koenig Markdown Html Renderer
 
+Markdown to HTML rendering for Ghost's markdown card.
+
 ## Install
-
-`npm install @tryghost/kg-markdown-html-renderer --save`
-
-or
 
 `npm install @tryghost/kg-markdown-html-renderer`
 
-
 ## Usage
 
+```js
+import {render} from '@tryghost/kg-markdown-html-renderer';
+
+render('# Hello');
+// '<h1 id="hello">Hello</h1>\n'
+```
+
+Headings are given generated ids. Pass `{ghostVersion: '3.0'}` to get the
+pre-4.0 slug format, which older content's anchor links depend on:
+
+```js
+render('## Hello, World!');
+// '<h2 id="hello-world">Hello, World!</h2>\n'
+
+render('## Hello, World!', {ghostVersion: '3.0'});
+// '<h2 id="helloworld">Hello, World!</h2>\n'
+```
 
 ## Develop
 
-This is a mono repository, managed with [lerna](https://lernajs.io/).
+This package is part of the [Ghost monorepo](https://github.com/TryGhost/Ghost)
+and resolves through the pnpm workspace — there is no linking or per-package
+install step. Run `pnpm setup` in the monorepo root, then work in
+`koenig/kg-markdown-html-renderer`.
 
-Follow the instructions for the top-level repo.
-1. `git clone` this repo & `cd` into it as usual
-2. Run `pnpm install` from the Ghost monorepo root.
-
-
-## Run
-
-- `pnpm dev`
-
+See the [Koenig README](../README.md) for the shared build, test and release
+workflow.
 
 ## Test
 
-- `pnpm lint` run just eslint
-- `pnpm test` run lint and tests
-
-
-
+- `pnpm test:unit` runs the unit tests
+- `pnpm test` runs the unit and type tests, including coverage thresholds
+- `pnpm lint` runs the lint checks
 
 # Copyright & License
 

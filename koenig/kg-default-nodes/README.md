@@ -1,43 +1,49 @@
 # Koenig Default Nodes
 
-Lexical node definitions for the default nodes used in Ghost&#39;s Koenig editor
+Lexical node definitions for all of Ghost's cards, including each node's HTML renderer. This is the single source of truth for node rendering — both the editor and the server render through it.
 
 ## Install
-
-`npm install @tryghost/kg-default-nodes --save`
-
-or
 
 `npm install @tryghost/kg-default-nodes`
 
 ## Usage
 
+```js
+const {createEditor} = require('lexical');
+const {DEFAULT_NODES, DEFAULT_CONFIG} = require('@tryghost/kg-default-nodes');
+
+const editor = createEditor({
+    nodes: DEFAULT_NODES,
+    html: DEFAULT_CONFIG.html
+});
+```
+
+`DEFAULT_NODES` covers Ghost's own cards, so pair it with the base Lexical
+nodes your content needs. `DEFAULT_CONFIG.html` supplies the import serializers
+that keep pasted HTML mapping onto the right nodes.
+
+Individual nodes are exported by name (`ImageNode`, `CalloutNode`, and so on)
+when you need a subset rather than the full set.
+
+This package must stay browser-safe: it runs inside the editor as well as on
+the server.
 
 ## Develop
 
-This is a monorepo package.
+This package is part of the [Ghost monorepo](https://github.com/TryGhost/Ghost)
+and resolves through the pnpm workspace — there is no linking or per-package
+install step. Run `pnpm setup` in the monorepo root, then work in
+`koenig/kg-default-nodes`.
 
-Follow the instructions for the top-level repo.
-1. `git clone` this repo & `cd` into it as usual
-2. Run `pnpm install` from the Ghost monorepo root.
-
-
+See the [Koenig README](../README.md) for the shared build, test and release
+workflow.
 
 ## Test
 
-- `pnpm lint` run just eslint
-- `pnpm test` run lint and tests
+- `pnpm test:unit` runs the unit tests
+- `pnpm test` runs the unit and type tests, including coverage thresholds
+- `pnpm lint` runs the lint checks
 
-
-## Running in Ghost Admin
-In order to run local changes, perform the following:
-This package is part of the Ghost monorepo workspace — `ghost/core` resolves
-it via `workspace:` automatically, so local changes are picked up with no
-linking. Run `pnpm dev` in this package for a rebuild-on-change watcher.
-
-`kg-lexical-html-renderer` must also be linked when linking this package as they are codependencies.
-
-
-# Copyright & License 
+# Copyright & License
 
 Copyright (c) 2013-2026 Ghost Foundation - Released under the [MIT license](https://github.com/TryGhost/Ghost/blob/main/LICENSE).

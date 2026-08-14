@@ -90,8 +90,10 @@ edit/run/test loop against ghost/core.
 
 - kg-* Node libraries share a Vitest base config —
   [vitest.shared.ts](./vitest.shared.ts) (`createKoenigVitestConfig`). Run
-  `pnpm test:unit` in the package, or `pnpm test` for the full gate (types +
-  coverage thresholds + lint).
+  `pnpm test:unit` in the package for unit tests, `pnpm test:types` for type
+  checks, and `pnpm lint` for lint. `pnpm test` runs the package's configured
+  test suites and enforces coverage thresholds; packages with a `posttest`
+  hook also run lint automatically.
 - `koenig-lexical` has Vitest unit tests and a large Playwright browser
   acceptance suite: `pnpm test:unit`, `pnpm test:acceptance` (headless by default;
   `:headed`, `:report`, and `test:slowmo` variants for debugging). See
