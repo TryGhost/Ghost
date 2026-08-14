@@ -172,6 +172,22 @@ Implemented consumers of this contract:
   Exact semantics and the deliberate limits (stops at nested tags and
   `{{#block}}` boundaries, tilde variants included; void/self-closing/rawtext
   refused) are documented in the module's doc block.
+- **`applyAttributeEdit` / `applyThemeAttributeEdit`** (`src/editor/attribute-edit.ts`,
+  same `./editor` subpath) — the slice-5 attribute half (image swaps: replace
+  `src`, clear `srcset`/`sizes`): sets, replaces, or — with `value: null` —
+  deletes the named attribute on the marked open tag ONLY, never past its
+  `>`. Deleting an absent attribute is a no-op, so an image swap clears
+  `srcset`/`sizes` unconditionally. Shares the anchor/stale-marker rules with
+  text edits verbatim (`src/editor/edit-common.ts`) and the same value
+  contract: `{{`/`}}` and newlines rejected, `&`/`"` escaped, value always
+  written double-quoted. Existing attributes (double-/single-quoted, unquoted,
+  bare) are replaced in place with quotes normalized to double; a missing
+  attribute is inserted immediately after the tag name — the same
+  always-static position the marker transform uses. Attribute edits never add
+  or remove lines (multi-line spans re-insert their newlines as whitespace);
+  attributes inside a handlebars block on the tag itself
+  (`<img {{#if x}}srcset="…"{{/if}}>`) are refused, and the `data-edit` name
+  is reserved.
 - **`test/browser/editor-loop.test.ts`** — the automated proof of the full
   loop in the editor's real runtime (Web Worker, Chromium): marked render →
   simulated click → edit → fresh renderer → re-render, untouched regions

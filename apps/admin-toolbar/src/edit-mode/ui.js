@@ -11,7 +11,11 @@
  * - the hover highlight (an outline overlay positioned from the hovered
  *   element's bounding rect — NOT shadow-DOM-bound, it just draws on top);
  * - the inline text editor (a small floating input over the clicked element;
- *   Enter commits, Escape cancels — deliberately spike-simple).
+ *   Enter commits, Escape cancels — deliberately spike-simple);
+ * - the image editor (`imageEditor` state, opened for marked <img> elements):
+ *   the same floating affordance with a Replace-image button instead of an
+ *   input — the file picker, upload, and attribute swap live in the session;
+ *   the bar's status line shows the uploading state.
  */
 import {h, render} from 'preact';
 
@@ -115,8 +119,27 @@ function InlineEditor({editor, onCommit, onCancel}) {
     ]);
 }
 
+function ImageEditor({imageEditor, busy, onReplace, onCancel}) {
+    if (!imageEditor) {
+        return null;
+    }
+
+    const top = Math.max(8, imageEditor.rect.top - 4);
+    const left = Math.max(8, imageEditor.rect.left);
+
+    return h('div', {className: 'editor', style: `top:${top}px;left:${left}px;`}, [
+        h('button', {
+            type: 'button',
+            className: 'save',
+            disabled: busy,
+            onClick: onReplace
+        }, busy ? 'Uploading…' : 'Replace image'),
+        h('button', {type: 'button', disabled: busy, onClick: onCancel}, 'Cancel')
+    ]);
+}
+
 function App({state, handlers}) {
-    const {themeName, dirtyCount, status, statusText, statusIsError, highlight, editor, publishArmed} = state;
+    const {themeName, dirtyCount, status, statusText, statusIsError, highlight, editor, imageEditor, publishArmed} = state;
     const busy = status === 'loading' || status === 'publishing';
 
     let publishLabel = 'Publish';
@@ -150,6 +173,12 @@ function App({state, handlers}) {
             editor,
             onCommit: handlers.onCommitEdit,
             onCancel: handlers.onCancelEdit
+        }),
+        h(ImageEditor, {
+            imageEditor,
+            busy,
+            onReplace: handlers.onReplaceImage,
+            onCancel: handlers.onCancelEdit
         })
     ]);
 }
@@ -157,7 +186,7 @@ function App({state, handlers}) {
 /**
  * @param {Object} options
  * @param {Document} [options.doc]
- * @param {{onExit(): void, onPublish(): void, onCommitEdit(value: string): void, onCancelEdit(): void}} options.handlers
+ * @param {{onExit(): void, onPublish(): void, onCommitEdit(value: string): void, onCancelEdit(): void, onReplaceImage(): void}} options.handlers
  * @returns {{host: HTMLElement, update(patch: Object): void, getState(): Object, destroy(): void}}
  */
 export function createEditModeUi({doc = document, handlers}) {
@@ -174,6 +203,7 @@ export function createEditModeUi({doc = document, handlers}) {
         statusIsError: false,
         highlight: null,
         editor: null,
+        imageEditor: null,
         publishArmed: false
     };
 

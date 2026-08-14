@@ -21,6 +21,15 @@
  * error without counting the edit. Clicking another element while the inline
  * editor is open COMMITS the pending edit (never silently discards it).
  *
+ * Image swap (slice 5): a click on a marked <img> opens the Replace-image
+ * panel instead of the text editor (an <img> is void — it has no text child).
+ * Replace image → file picker → POST /images/upload/ → applyThemeAttributeEdit
+ * swaps src to the returned URL and DELETES srcset/sizes (deleting an absent
+ * attribute is a no-op, so both are cleared unconditionally — a stale srcset
+ * would keep showing the old responsive candidates). The candidate then runs
+ * through the exact same commit pipeline as text edits (render-verify before
+ * count); an upload failure or applier rejection surfaces without dirtying.
+ *
  * Publish: two-step confirm in the bar (first click arms, second publishes) →
  * lost-update check (re-download the server's copy and compare its content
  * hash against the boot-time base — on mismatch the publish aborts; there is
@@ -40,7 +49,7 @@
  */
 import {ROOT_ID} from '../constants';
 import {parseEditMarker} from '@tryghost/theme-renderer/markers';
-import {applyThemeTextEdit} from '@tryghost/theme-renderer/editor';
+import {applyThemeAttributeEdit, applyThemeTextEdit} from '@tryghost/theme-renderer/editor';
 import {extractThemeArchive, isDefaultThemeName, packThemeArchive} from '@tryghost/theme-renderer/editor/archive';
 import {scrapeContentApiKey, scrapeInstanceConfig} from '@tryghost/theme-renderer/editor/instance-config';
 import {createDocumentSwapper} from './swap';
@@ -52,9 +61,39 @@ import {
     activateTheme,
     downloadThemeArchive,
     fetchActiveThemeName,
+    uploadImage,
     uploadThemeArchive,
     ThemeUploadError
 } from './theme-api';
+
+/**
+ * Default file-picker seam: a hidden `<input type="file" accept="image/*">`
+ * clicked programmatically. Resolves the picked File, or null on cancel
+ * (the `cancel` event fires in every modern browser; if it ever doesn't,
+ * the input is orphaned but invisible and removed with the document swap).
+ *
+ * @param {Document} doc
+ * @returns {Promise<File|null>}
+ */
+export function pickImageFile(doc) {
+    return new Promise((resolve) => {
+        const input = doc.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.style.display = 'none';
+
+        const finish = (file) => {
+            input.remove();
+            resolve(file);
+        };
+
+        input.addEventListener('change', () => finish(input.files?.[0] ?? null), {once: true});
+        input.addEventListener('cancel', () => finish(null), {once: true});
+
+        doc.body.appendChild(input);
+        input.click();
+    });
+}
 
 /**
  * The site root the renderer should treat as `siteUrl`: the admin URL minus
@@ -161,6 +200,7 @@ export function createEditSession({config, onExit, deps = {}}) {
         fetchImpl = (...args) => fetch(...args),
         draftStore = sessionDraftStore,
         promptFn = (message, defaultValue) => win.prompt(message, defaultValue),
+        pickFile = () => pickImageFile(doc),
         startClient = startRenderClient,
         uiFactory = createEditModeUi,
         attachInteractions = attachEditInteractions
@@ -182,6 +222,8 @@ export function createEditSession({config, onExit, deps = {}}) {
     let storeKey = null;
     let editCount = 0;
     let activeEdit = null; // {element, marker, initialValue}
+    let activeImageEdit = null; // {element, marker}
+    let replacingImage = false;
     let publishArmed = false;
     let publishing = false;
 
@@ -203,7 +245,8 @@ export function createEditSession({config, onExit, deps = {}}) {
 
     function closeEditor(patch = {}) {
         activeEdit = null;
-        ui.update({editor: null, highlight: null, ...patch});
+        activeImageEdit = null;
+        ui.update({editor: null, imageEditor: null, highlight: null, ...patch});
     }
 
     function disarmPublish(patch = {}) {
@@ -213,32 +256,14 @@ export function createEditSession({config, onExit, deps = {}}) {
         }
     }
 
-    async function commitEdit(value) {
-        if (!activeEdit) {
-            return;
-        }
-
-        const {element, marker, initialValue} = activeEdit;
-        const newText = value.replace(/\s+/g, ' ').trim();
-
-        // An untouched commit (click-away without typing, Enter on the
-        // unchanged value) is a close, not an edit.
-        if (newText === initialValue) {
-            closeEditor();
-            return;
-        }
-
-        // Ordering: the candidate theme is only committed to session state
-        // AFTER it has compiled and rendered. The applier's own rejections
-        // ({{ injection, newlines, stale markers) land in the catch below.
-        let candidateTheme;
-        try {
-            candidateTheme = applyThemeTextEdit(renderTheme, marker, newText, {tagName: element.tagName});
-        } catch (error) {
-            closeEditor({statusText: `Could not apply the edit: ${error.message}`, statusIsError: true});
-            return;
-        }
-
+    /**
+     * The shared commit pipeline behind every applier (text edits and image
+     * swaps): render-verify the candidate, and only when the whole pipeline
+     * succeeds mutate session state (snapshot/editCount/draft store). Any
+     * failure re-points the renderer at the last-good theme and surfaces the
+     * error without counting the edit.
+     */
+    async function commitCandidate(candidateTheme, marker) {
         closeEditor({status: 'loading', statusText: 'Rendering…', statusIsError: false});
         disarmPublish();
 
@@ -275,6 +300,91 @@ export function createEditSession({config, onExit, deps = {}}) {
             return;
         }
         ui.update({status: 'ready', statusText: '', dirtyCount: editCount, statusIsError: false});
+    }
+
+    async function commitEdit(value) {
+        if (!activeEdit) {
+            return;
+        }
+
+        const {element, marker, initialValue} = activeEdit;
+        const newText = value.replace(/\s+/g, ' ').trim();
+
+        // An untouched commit (click-away without typing, Enter on the
+        // unchanged value) is a close, not an edit.
+        if (newText === initialValue) {
+            closeEditor();
+            return;
+        }
+
+        // Ordering: the candidate theme is only committed to session state
+        // AFTER it has compiled and rendered. The applier's own rejections
+        // ({{ injection, newlines, stale markers) land in the catch below.
+        let candidateTheme;
+        try {
+            candidateTheme = applyThemeTextEdit(renderTheme, marker, newText, {tagName: element.tagName});
+        } catch (error) {
+            closeEditor({statusText: `Could not apply the edit: ${error.message}`, statusIsError: true});
+            return;
+        }
+
+        await commitCandidate(candidateTheme, marker);
+    }
+
+    async function replaceImage() {
+        if (!activeImageEdit || replacingImage) {
+            return;
+        }
+        replacingImage = true;
+
+        try {
+            const {element, marker} = activeImageEdit;
+
+            const file = await pickFile();
+            if (destroyed || !file) {
+                return; // cancelled — the panel stays open for another try
+            }
+
+            ui.update({status: 'loading', statusText: 'Uploading image…', statusIsError: false});
+            disarmPublish();
+
+            let imageUrl;
+            try {
+                ({url: imageUrl} = await uploadImage(file, {adminUrl, fetchImpl}));
+            } catch (error) {
+                if (destroyed) {
+                    return;
+                }
+                // Nothing was applied — the panel closes, the error shows,
+                // and the dirty count is untouched.
+                closeEditor({status: 'ready', statusText: error.message, statusIsError: true});
+                return;
+            }
+
+            if (destroyed) {
+                return;
+            }
+
+            // The swap: src → uploaded URL; srcset/sizes DELETED (a no-op
+            // when absent, so both are cleared unconditionally — a stale
+            // srcset would keep serving the old responsive candidates). All
+            // three edits target the same anchored tag, so a stale marker
+            // fails on the first one before anything is committed.
+            let candidateTheme;
+            try {
+                const anchor = {tagName: element.tagName};
+                candidateTheme = applyThemeAttributeEdit(renderTheme, marker, {name: 'src', value: imageUrl}, anchor);
+                candidateTheme = applyThemeAttributeEdit(candidateTheme, marker, {name: 'srcset', value: null}, anchor);
+                candidateTheme = applyThemeAttributeEdit(candidateTheme, marker, {name: 'sizes', value: null}, anchor);
+            } catch (error) {
+                closeEditor({status: 'ready', statusText: `Could not apply the image swap: ${error.message}`, statusIsError: true});
+                return;
+            }
+
+            await commitCandidate(candidateTheme, marker);
+        } finally {
+            replacingImage = false;
+        }
     }
 
     async function publish() {
@@ -395,7 +505,7 @@ export function createEditSession({config, onExit, deps = {}}) {
     }
 
     function handleHover(element) {
-        if (activeEdit) {
+        if (activeEdit || activeImageEdit) {
             return; // keep the highlight pinned to the element being edited
         }
         ui.update({highlight: element ? toRect(element) : null});
@@ -414,6 +524,15 @@ export function createEditSession({config, onExit, deps = {}}) {
             return;
         }
 
+        // The image panel has nothing pending (replacing is explicit) — a
+        // click elsewhere just closes it and falls through to the new target.
+        if (activeImageEdit) {
+            if (activeImageEdit.element === element) {
+                return;
+            }
+            closeEditor();
+        }
+
         const marker = parseEditMarker(element.getAttribute('data-edit'));
 
         if (!marker) {
@@ -421,6 +540,20 @@ export function createEditSession({config, onExit, deps = {}}) {
         }
 
         disarmPublish();
+
+        // A marked <img> gets the Replace-image panel: it is a void element,
+        // so there is no text child for the inline text editor to edit.
+        if (element.tagName.toLowerCase() === 'img') {
+            activeImageEdit = {element, marker};
+            ui.update({
+                highlight: toRect(element),
+                imageEditor: {rect: toRect(element)},
+                statusText: '',
+                statusIsError: false
+            });
+            return;
+        }
+
         activeEdit = {element, marker, initialValue: initialEditValue(element)};
         ui.update({
             highlight: toRect(element),
@@ -455,7 +588,8 @@ export function createEditSession({config, onExit, deps = {}}) {
                 onExit: () => destroy(),
                 onPublish: () => publish(),
                 onCommitEdit: value => commitEdit(value),
-                onCancelEdit: () => closeEditor()
+                onCancelEdit: () => closeEditor(),
+                onReplaceImage: () => replaceImage()
             }
         });
 

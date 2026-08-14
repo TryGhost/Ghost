@@ -26,9 +26,9 @@
       "default": "./build/engine/markers.js"
     },
     "./editor": {
-      "source": "./src/editor/text-edit.ts",
-      "types": "./build/editor/text-edit.d.ts",
-      "default": "./build/editor/text-edit.js"
+      "source": "./src/editor/index.ts",
+      "types": "./build/editor/index.d.ts",
+      "default": "./build/editor/index.js"
     },
     "./editor/archive": {
       "source": "./src/editor/archive.ts",

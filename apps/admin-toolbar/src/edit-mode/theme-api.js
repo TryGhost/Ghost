@@ -148,6 +148,47 @@ export async function uploadThemeArchive(adminUrl, {themeName, blob, copySetting
 }
 
 /**
+ * POST /images/upload/ — multipart field `file` (the route is wired with
+ * `apiMw.upload.single('file')` in ghost/core web/api/endpoints/admin/
+ * routes.js; the response is `{images: [{url, ref}]}` per the images output
+ * serializer). The File's own name is preserved — the server validates the
+ * image by its extension.
+ *
+ * Used by the image-swap flow: upload the picked file, then point the marked
+ * `<img>`'s src at the returned URL via the attribute applier.
+ *
+ * @param {File} file
+ * @param {{adminUrl: string, fetchImpl?: typeof fetch}} options
+ * @returns {Promise<{url: string}>} the uploaded image object (carries `url`)
+ */
+export async function uploadImage(file, {adminUrl, fetchImpl = fetch}) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetchImpl(apiUrl(adminUrl, 'images/upload/'), {
+        method: 'POST',
+        credentials: 'include',
+        headers: {Accept: 'application/json'},
+        body: formData
+    });
+
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok) {
+        const formatted = formatUploadErrors(data?.errors ?? []);
+        throw new Error(`Image upload failed (${response.status})${formatted ? `:\n${formatted}` : ''}`);
+    }
+
+    const image = data?.images?.[0];
+
+    if (!image?.url) {
+        throw new Error('Image upload succeeded but returned no image URL');
+    }
+
+    return image;
+}
+
+/**
  * PUT /themes/:name/activate/ — used after a save-as-new-name upload (the
  * server only auto-activates when the ACTIVE theme is overwritten in place).
  *

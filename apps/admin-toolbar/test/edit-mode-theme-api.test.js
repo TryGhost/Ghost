@@ -5,6 +5,7 @@ import {
     downloadThemeArchive,
     fetchActiveThemeName,
     formatUploadErrors,
+    uploadImage,
     uploadThemeArchive
 } from '../src/edit-mode/theme-api.js';
 import {extractThemeArchive, packThemeArchive} from '@tryghost/theme-renderer/editor/archive';
@@ -225,6 +226,71 @@ describe('edit-mode theme-api', function () {
                     assert.match(error.message, /Theme upload failed \(500\)/);
                     return true;
                 }
+            );
+        });
+    });
+
+    describe('uploadImage', function () {
+        // the endpoint contract lives in ghost/core: POST /images/upload/ is
+        // wired with apiMw.upload.single('file') (web/api/endpoints/admin/
+        // routes.js) and responds {images: [{url, ref}]} (serializers/output/
+        // images.js)
+        it('POSTs the image as multipart field "file" with credentials and returns the image', async function () {
+            const file = new File([new Uint8Array([137, 80, 78, 71])], 'hero.png', {type: 'image/png'});
+            const calls = [];
+            const fetchImpl = async (url, options) => {
+                calls.push({url, options});
+                return jsonResponse({images: [{url: 'https://site.example.com/content/images/2026/08/hero.png', ref: null}]}, {status: 201});
+            };
+
+            const image = await uploadImage(file, {adminUrl: ADMIN_URL, fetchImpl});
+
+            assert.equal(image.url, 'https://site.example.com/content/images/2026/08/hero.png');
+            assert.equal(calls.length, 1);
+            assert.equal(calls[0].url, 'https://site.example.com/ghost/api/admin/images/upload/');
+            assert.equal(calls[0].options.method, 'POST');
+            assert.equal(calls[0].options.credentials, 'include');
+
+            const sent = calls[0].options.body.get('file');
+            assert.ok(sent, 'multipart body should carry a "file" field');
+            // the server validates the image by its file name's extension
+            assert.equal(sent.name, 'hero.png');
+            assert.deepEqual(new Uint8Array(await sent.arrayBuffer()), new Uint8Array([137, 80, 78, 71]));
+        });
+
+        it('surfaces server validation errors readably', async function () {
+            const file = new File(['x'], 'nope.txt', {type: 'text/plain'});
+            const fetchImpl = async () => jsonResponse({
+                errors: [{type: 'UnsupportedMediaTypeError', message: 'Please select a valid image.'}]
+            }, {status: 415});
+
+            await assert.rejects(
+                uploadImage(file, {adminUrl: ADMIN_URL, fetchImpl}),
+                (error) => {
+                    assert.match(error.message, /Image upload failed/);
+                    assert.match(error.message, /Please select a valid image\./);
+                    return true;
+                }
+            );
+        });
+
+        it('throws a readable error for a non-JSON failure', async function () {
+            const file = new File(['x'], 'hero.png', {type: 'image/png'});
+            const fetchImpl = async () => new Response('boom', {status: 500});
+
+            await assert.rejects(
+                uploadImage(file, {adminUrl: ADMIN_URL, fetchImpl}),
+                /Image upload failed \(500\)/
+            );
+        });
+
+        it('throws when the response carries no image URL', async function () {
+            const file = new File(['x'], 'hero.png', {type: 'image/png'});
+            const fetchImpl = async () => jsonResponse({images: []}, {status: 201});
+
+            await assert.rejects(
+                uploadImage(file, {adminUrl: ADMIN_URL, fetchImpl}),
+                /no image URL/
             );
         });
     });

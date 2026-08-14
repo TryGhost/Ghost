@@ -15,9 +15,11 @@ const ADMIN_URL = 'https://site.example.com/ghost/';
 const SCRIPT_URL = 'https://cdn.example.com/admin-toolbar/admin-toolbar.min.js';
 
 const BASE_THEME = {
-    'index.hbs': '<h1>Original title</h1><p>Second para</p>',
+    'index.hbs': '<h1>Original title</h1><p>Second para</p><img class="hero" src="/old.jpg" srcset="/old-s.jpg 300w" sizes="100vw">',
     'package.json': '{"name":"fixture-theme"}'
 };
+
+const IMAGE_URL = 'https://site.example.com/content/images/2026/08/new-hero.png';
 
 function jsonResponse(payload, {status = 200} = {}) {
     return new Response(JSON.stringify(payload), {
@@ -53,7 +55,9 @@ function createFakeAdminApi({activeName = 'fixture-theme', themes = {[activeName
         themes: new Map(Object.entries(themes)),
         uploads: [],
         activations: [],
+        imageUploads: [],
         uploadResponse: null, // {status, body} override for error paths
+        imageUploadResponse: null, // {status, body} or {url} override
         failActiveLookup: false
     };
 
@@ -76,6 +80,17 @@ function createFakeAdminApi({activeName = 'fixture-theme', themes = {[activeName
                 return new Response('missing', {status: 404});
             }
             return new Response(await packFixtureArchive(files, `${name}/`), {status: 200});
+        }
+
+        if (method === 'POST' && parsed.pathname.endsWith('/api/admin/images/upload/')) {
+            if (api.imageUploadResponse?.status) {
+                return jsonResponse(api.imageUploadResponse.body, {status: api.imageUploadResponse.status});
+            }
+            const file = options.body.get('file');
+            api.imageUploads.push({fileName: file.name, type: file.type});
+            return jsonResponse({
+                images: [{url: api.imageUploadResponse?.url ?? IMAGE_URL, ref: null}]
+            }, {status: 201});
         }
 
         if (method === 'POST' && parsed.pathname.endsWith('/api/admin/themes/upload/')) {
@@ -111,11 +126,12 @@ function createFakeAdminApi({activeName = 'fixture-theme', themes = {[activeName
     return api;
 }
 
-/** The fake renderer: marks the fixture's h1/p so click-to-edit has targets. */
+/** The fake renderer: marks the fixture's h1/p/img so click-to-edit has targets. */
 function defaultRenderHtml(theme) {
     const body = (theme['index.hbs'] ?? '')
         .replace('<h1>', '<h1 data-edit="index.hbs:1:1">')
-        .replace('<p>', '<p data-edit="index.hbs:1:24">');
+        .replace('<p>', '<p data-edit="index.hbs:1:24">')
+        .replace('<img ', '<img data-edit="index.hbs:1:42" ');
     return `<!DOCTYPE html><html><head><title>Preview</title></head><body>${body}</body></html>`;
 }
 
@@ -161,6 +177,7 @@ function createFakeUi() {
             statusIsError: false,
             highlight: null,
             editor: null,
+            imageEditor: null,
             publishArmed: false
         },
         updates: [],
@@ -230,6 +247,7 @@ async function bootSession({
     clientFactory = createFakeClientFactory(),
     onExit,
     promptFn,
+    pickFile,
     configKey = ''
 } = {}) {
     const ui = createFakeUi();
@@ -244,6 +262,7 @@ async function bootSession({
             fetchImpl: api.fetchImpl,
             ...(draftStore ? {draftStore} : {}),
             ...(promptFn ? {promptFn} : {}),
+            ...(pickFile ? {pickFile} : {}),
             startClient: clientFactory.startClient,
             uiFactory: ui.factory,
             attachInteractions: interactions.attach
@@ -572,6 +591,167 @@ describe('edit-mode session', function () {
 
             assert.equal(ui.state.dirtyCount, 0);
             assert.equal(clientFactory.created[0].setThemeCalls.length, 0);
+        });
+    });
+
+    describe('image swap', function () {
+        const heroFile = () => new File([new Uint8Array([137, 80, 78, 71])], 'new-hero.png', {type: 'image/png'});
+
+        function clickImage(booted) {
+            booted.interactions.options.onSelect(editableElement(booted.dom, 'index.hbs:1:42'));
+        }
+
+        it('clicking a marked <img> opens the image editor, not the text editor', async function () {
+            const booted = await bootSession();
+
+            clickImage(booted);
+
+            assert.ok(booted.ui.state.imageEditor, 'the image editor panel opens');
+            assert.equal(booted.ui.state.editor, null, 'no text editor for a void element');
+            assert.ok(booted.ui.state.highlight, 'the clicked image stays highlighted');
+        });
+
+        it('happy path: uploads, swaps src, clears srcset/sizes, render-verifies, then counts', async function () {
+            const events = [];
+            const clientFactory = createFakeClientFactory();
+            const draftStore = createMemoryDraftStore();
+            const originalSet = draftStore.set.bind(draftStore);
+            const storedDrafts = [];
+            draftStore.set = async (key, draft) => {
+                storedDrafts.push(draft);
+                return originalSet(key, draft);
+            };
+            const booted = await bootSession({
+                clientFactory,
+                draftStore,
+                pickFile: async () => {
+                    events.push('pick');
+                    return heroFile();
+                }
+            });
+            const originalUpdate = booted.ui.update.bind(booted.ui);
+            booted.ui.update = (patch) => {
+                if (patch.dirtyCount === 1) {
+                    events.push('counted');
+                }
+                originalUpdate(patch);
+            };
+
+            clickImage(booted);
+            await booted.ui.handlers.onReplaceImage();
+
+            // the upload used the real multipart contract (field name asserted
+            // by the fake API route itself) and preserved the file's name
+            assert.deepEqual(booted.api.imageUploads, [{fileName: 'new-hero.png', type: 'image/png'}]);
+
+            // the candidate theme carries the swap: src replaced, srcset/sizes gone
+            const client = clientFactory.created[0];
+            assert.equal(client.setThemeCalls.length, 1);
+            const edited = client.setThemeCalls[0]['index.hbs'];
+            assert.ok(edited.includes(`src="${IMAGE_URL}"`), 'src points at the uploaded URL');
+            assert.ok(!edited.includes('srcset'), 'srcset is cleared on swap');
+            assert.ok(!edited.includes('sizes'), 'sizes is cleared on swap');
+            assert.ok(edited.includes('class="hero"'), 'unrelated attributes survive');
+            assert.ok(edited.includes('Original title'), 'text content untouched');
+
+            // committed only after the render verified: the swapped preview
+            // shows the new image and the count landed last
+            assert.equal(booted.ui.state.dirtyCount, 1);
+            assert.equal(booted.ui.state.status, 'ready');
+            assert.equal(booted.ui.state.imageEditor, null, 'the panel closes on success');
+            assert.equal(booted.dom.window.document.querySelector('img').getAttribute('src'), IMAGE_URL);
+            assert.deepEqual(events, ['pick', 'counted']);
+
+            // and the draft store saw the committed theme
+            assert.equal(storedDrafts.length, 1);
+            assert.ok(storedDrafts[0].files['index.hbs'].includes(`src="${IMAGE_URL}"`));
+            assert.equal(storedDrafts[0].editCount, 1);
+        });
+
+        it('a cancelled file pick does nothing', async function () {
+            const booted = await bootSession({pickFile: async () => null});
+
+            clickImage(booted);
+            await booted.ui.handlers.onReplaceImage();
+
+            assert.equal(booted.api.imageUploads.length, 0);
+            assert.equal(booted.ui.state.dirtyCount, 0);
+            assert.ok(booted.ui.state.imageEditor, 'the panel stays open for another try');
+        });
+
+        it('surfaces an upload failure without dirtying anything', async function () {
+            const clientFactory = createFakeClientFactory();
+            const booted = await bootSession({clientFactory, pickFile: async () => heroFile()});
+            booted.api.imageUploadResponse = {
+                status: 415,
+                body: {errors: [{message: 'Please select a valid image.'}]}
+            };
+
+            clickImage(booted);
+            await booted.ui.handlers.onReplaceImage();
+
+            assert.equal(booted.ui.state.dirtyCount, 0);
+            assert.equal(booted.ui.state.statusIsError, true);
+            assert.match(booted.ui.state.statusText, /Image upload failed/);
+            assert.match(booted.ui.state.statusText, /Please select a valid image\./);
+            assert.equal(clientFactory.created[0].setThemeCalls.length, 0, 'no candidate ever reached the renderer');
+            // the preview still shows the original image
+            assert.equal(booted.dom.window.document.querySelector('img').getAttribute('src'), '/old.jpg');
+        });
+
+        it('surfaces an applier rejection (handlebars in the returned URL) without dirtying', async function () {
+            const clientFactory = createFakeClientFactory();
+            const booted = await bootSession({clientFactory, pickFile: async () => heroFile()});
+            booted.api.imageUploadResponse = {url: '/content/{{evil}}.png'};
+
+            clickImage(booted);
+            await booted.ui.handlers.onReplaceImage();
+
+            assert.equal(booted.ui.state.dirtyCount, 0);
+            assert.equal(booted.ui.state.statusIsError, true);
+            assert.match(booted.ui.state.statusText, /Could not apply the image swap/);
+            assert.equal(clientFactory.created[0].setThemeCalls.length, 0);
+        });
+
+        it('reverts to the last-good theme when the swapped candidate fails to render', async function () {
+            const clientFactory = createFakeClientFactory({
+                setThemeShouldFail: theme => theme['index.hbs'].includes(IMAGE_URL)
+            });
+            const booted = await bootSession({clientFactory, pickFile: async () => heroFile()});
+
+            clickImage(booted);
+            await booted.ui.handlers.onReplaceImage();
+
+            assert.equal(booted.ui.state.dirtyCount, 0, 'a failed swap must not count');
+            assert.match(booted.ui.state.statusText, /Edit failed/);
+            const client = clientFactory.created[0];
+            assert.equal(client.setThemeCalls.length, 2, 'candidate + revert');
+            assert.ok(client.setThemeCalls[1]['index.hbs'].includes('src="/old.jpg"'), 'reverted to the last-good theme');
+        });
+
+        it('commits a pending text edit when the image is clicked (never silently discards)', async function () {
+            const booted = await bootSession();
+
+            booted.interactions.options.onSelect(editableElement(booted.dom, 'index.hbs:1:1'));
+            booted.ui.state.editor.value = 'Typed then clicked the image';
+
+            clickImage(booted);
+            await waitFor(() => booted.ui.state.dirtyCount === 1);
+
+            assert.match(booted.dom.window.document.querySelector('h1').textContent, /Typed then clicked the image/);
+            assert.equal(booted.ui.state.imageEditor, null, 'no image editor opens on the stale element');
+        });
+
+        it('clicking a text element while the image editor is open switches to the text editor', async function () {
+            const booted = await bootSession();
+
+            clickImage(booted);
+            assert.ok(booted.ui.state.imageEditor);
+
+            booted.interactions.options.onSelect(editableElement(booted.dom, 'index.hbs:1:1'));
+
+            assert.equal(booted.ui.state.imageEditor, null, 'nothing was pending — the panel just closes');
+            assert.ok(booted.ui.state.editor, 'the text editor opens for the new target');
         });
     });
 
