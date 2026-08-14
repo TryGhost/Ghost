@@ -28,9 +28,16 @@ pnpm exec playwright install chromium   # one-time browser download
 pnpm browser:test                       # vitest run --config vitest.browser.config.ts
 ```
 
-The static half of the browser guard — type-checking `src/` plus
-`test/browser/` against `lib: ["ES2022", "WebWorker"]` with no Node types —
-does run in every `pnpm test` via `test:types:browser`.
+The static half of the browser guard does run in every `pnpm test` via
+`test:types:browser`, as two separate projects:
+
+- `test/browser/tsconfig.src.json` — the worker guard proper: `src/` against
+  `lib: ["ES2022", "WebWorker"]` with no Node types. A `document`/`window`
+  reference (or a Node built-in) anywhere in `src/` fails `pnpm test`.
+- `test/browser/tsconfig.json` — the browser TEST files, which legitimately
+  need DOM libs (they drive DOMParser and the Worker from the page). Keeping
+  the DOM libs out of the src project is the point of the split — a single
+  project with DOM libs would silently disable the guard.
 
 To re-record the fixtures the suite replays (requires a running Ghost dev
 instance at `localhost:2368` or `GHOST_URL`):
@@ -66,11 +73,19 @@ live in [docs/provenance.md](docs/provenance.md).
   shapes (`any`-typed plumbing, aliasing) rather than being rewritten to
   satisfy lint; the disables are per-file and listed in the provenance
   headers.
-- **Second test project** (`test/browser/tsconfig.json` + `test:types:browser`
-  script, `vitest.browser.config.ts` + `browser:test` script) — the standard
-  surface has one test tsconfig; the extra project exists to statically prove
-  worker-compatibility (WebWorker lib, no Node types), and the browser suite
-  needs a Playwright Chromium so it stays out of the `test` glob (see above).
+- **Extra test projects** (`test/browser/tsconfig.src.json` +
+  `test/browser/tsconfig.json` behind the `test:types:browser` script,
+  `vitest.browser.config.ts` + `browser:test` script) — the standard surface
+  has one test tsconfig; the two extra projects exist to statically prove
+  worker-compatibility (src against the WebWorker lib with no Node types,
+  browser test files separately with their DOM libs — see "Browser (Web
+  Worker) parity suite" above), and the browser suite needs a Playwright
+  Chromium so it stays out of the `test` glob.
+- **`demo/` directory** (slice 3, throwaway) — a human-runnable harness for
+  the editor loop, deliberately outside the package's build, lint, test and
+  publish surface (`files` only ships `build/`; `tsconfig.json` only includes
+  `src/`; lint runs on `src/` and `test/`). Deleted when slice 4 lands the
+  real editor surface; see `demo/README.md`.
 - **Host-realm `process` shim** (`src/utils/process-env-guard.ts`, imported
   first in `src/index.ts`) — `@tryghost/nql-lang` reads `process.env`
   unguarded at import time *and* on every filter parse, so in browsers/workers

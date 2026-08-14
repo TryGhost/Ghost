@@ -25,15 +25,17 @@ let rendering = false;
 // One worker; each posted message builds a FRESH renderer inside it — the
 // slice-3 supported path (a live renderer's caches don't see theme edits).
 const worker = new Worker(new URL('../test/browser/render-worker.ts', import.meta.url), {type: 'module'});
-worker.onerror = event => setStatus(`worker crashed: ${event.message}`);
 
 function setStatus(text: string): void {
     statusEl.textContent = text;
 }
 
 function postRender(): Promise<WorkerRenderResult> {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
         worker.onmessage = (event: MessageEvent<WorkerRenderResult>) => resolve(event.data);
+        // a crashed worker (e.g. failed module load) must reject, not hang —
+        // render()'s finally clears the `rendering` latch either way
+        worker.onerror = event => reject(new Error(`worker crashed: ${event.message || 'unknown error'}`));
         const request: WorkerRenderRequest = {
             siteUrl: instance.siteUrl,
             contentApiKey: instance.contentApiKey,
@@ -73,16 +75,22 @@ async function render(reason: string): Promise<void> {
     rendering = true;
     setStatus(`${reason} — rendering in worker…`);
     const started = performance.now();
-    const result = await postRender();
-    const ms = Math.round(performance.now() - started);
-    rendering = false;
-    if (!result.ok) {
-        setStatus(`render failed after ${ms}ms — see console`);
-        console.error(result.error); // eslint-disable-line no-console
-        return;
+    try {
+        const result = await postRender();
+        const ms = Math.round(performance.now() - started);
+        if (!result.ok) {
+            setStatus(`render failed after ${ms}ms — see console`);
+            console.error(result.error); // eslint-disable-line no-console
+            return;
+        }
+        frame.srcdoc = injectDemoHead(result.html);
+        setStatus(`${reason} — fresh renderer + render: ${ms}ms. Hover to outline marked elements; click one to edit its text.`);
+    } catch (error) {
+        setStatus(error instanceof Error ? error.message : String(error));
+        console.error(error); // eslint-disable-line no-console
+    } finally {
+        rendering = false;
     }
-    frame.srcdoc = injectDemoHead(result.html);
-    setStatus(`${reason} — fresh renderer + render: ${ms}ms. Hover to outline marked elements; click one to edit its text.`);
 }
 
 frame.addEventListener('load', () => {

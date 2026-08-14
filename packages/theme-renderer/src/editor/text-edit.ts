@@ -7,7 +7,27 @@
  * element's immediate text child. `applyThemeTextEdit` is the ThemeFiles-level
  * wrapper the editor loop uses: it returns a NEW files object for a NEW
  * renderer (fresh renderer per edit is the supported path for this slice —
- * `engine.resetCache()` does not re-register partials).
+ * `engine.resetCache()` does not re-register partials). Both are exported
+ * from the `@tryghost/theme-renderer/editor` subpath — they are editor-side
+ * tools, not part of the render contract on the package root.
+ *
+ * NEWTEXT IS PLAIN TEXT, by contract:
+ *
+ * - Handlebars syntax (`{{` or `}}`) is REJECTED. The replacement is spliced
+ *   into template source, so mustaches in newText would compile and execute —
+ *   a clicked-in edit must never become template code (template injection:
+ *   think a visitor-suggested title of `{{@site.members_api_key}}`).
+ * - Newlines are REJECTED. Marker positions are line-based and edits must
+ *   never shift line numbers of untouched markers in the same file (the
+ *   no-line-drift invariant markers rely on, docs/markers.md).
+ * - `&` and `<` are HTML-ESCAPED (`&amp;`/`&lt;`), so the replacement always
+ *   renders literally — `Tom & Jerry` stays `Tom & Jerry`, and markup like
+ *   `</h1><script>` cannot smuggle elements into the page.
+ *
+ * All tag detection (exact-position and re-locate) goes through the shared
+ * source scanner (src/engine/source-scanner.ts) — the same primitives the
+ * marker transform uses, so the edit side can never accept a position the
+ * marker side would not have produced.
  *
  * Anchor verification: edits are positional, and positions go stale — in a
  * multi-edit batch, an earlier edit can shift every later marker in the same
@@ -15,8 +35,11 @@
  * the edit is only applied if `<tagname` is actually at the marker position;
  * on a mismatch a bounded re-locate looks for the anchored tag within
  * ±RELOCATE_LINES lines and uses it only when it is the UNIQUE candidate.
- * Anything else fails loudly as a stale marker rather than editing the wrong
- * element.
+ * Re-locate candidates are scanner-yielded tags only — markable static open
+ * tags outside HTML/hbs comments and rawtext bodies — because a marker can
+ * only ever have pointed at one of those. Positions outside the file, and
+ * anything else ambiguous, fail loudly as a stale marker rather than editing
+ * the wrong element.
  *
  * WHAT COUNTS AS THE "TEXT CHILD" — honest limits of this slice (this is a
  * loop proof, not a production editor):
@@ -24,9 +47,11 @@
  * - The run of plain text and INLINE handlebars expressions (`{{title}}`,
  *   `{{{html}}}`, partials, comments) immediately after the open tag, up to
  *   the first nested `<` tag or the first block-helper mustache
- *   (`{{#…}}`/`{{^…}}`/`{{/…}}`/`{{else}}`/`{{{{raw}}}}`). Leading/trailing
- *   whitespace of the run is preserved; the core is replaced wholesale, so a
- *   mustache child like `{{@site.title}}` becomes the literal replacement.
+ *   (`{{#…}}`/`{{^…}}`/`{{/…}}`/`{{else}}`/`{{{{raw}}}}`, with or without
+ *   whitespace-control tildes — `{{~#if}}` is the same block construct).
+ *   Leading/trailing whitespace of the run is preserved; the core is replaced
+ *   wholesale, so a mustache child like `{{@site.title}}` becomes the literal
+ *   replacement.
  * - Stopping at block boundaries is a safety rule, not laziness: replacing a
  *   `{{#block}}` opener whose `{{/close}}` lies past the first nested tag
  *   would orphan the closer and break the template.
@@ -40,8 +65,11 @@
  *   they genuinely have a single source position.
  */
 import errors from '@tryghost/errors';
-import {mustacheEnd, type EditMarker} from '../engine/markers.ts';
+import {mustacheEnd, openTagEnd, openTagNameAt, RAWTEXT_TAGS, scanSourceTags} from '../engine/source-scanner.ts';
+import type {EditMarker} from '../engine/markers.ts';
 import type {ThemeFiles} from '../theme/theme-source.ts';
+
+export type {EditMarker} from '../engine/markers.ts';
 
 export interface SourcePosition {
     /** 1-based line of the element's `<` in the original source */
@@ -67,9 +95,6 @@ const VOID_TAGS = new Set([
     'link', 'meta', 'param', 'source', 'track', 'wbr'
 ]);
 
-/** Content is raw text/RCDATA (JS/CSS/…), not editable text for this slice. */
-const RAWTEXT_TAGS = new Set(['script', 'style', 'textarea', 'title']);
-
 /** Offsets at which each 1-based line starts. */
 function lineStartOffsets(source: string): number[] {
     const offsets = [0];
@@ -92,23 +117,24 @@ function offsetAt(source: string, lineStarts: number[], position: SourcePosition
     return offset < end ? offset : null;
 }
 
-/** The element tag name if `offset` is at a static open tag's `<`, else null. */
-function openTagAt(source: string, offset: number): string | null {
-    if (source[offset] !== '<') {
-        return null;
-    }
-    return /^[a-zA-Z][a-zA-Z0-9-]*/.exec(source.slice(offset + 1, offset + 64))?.[0] ?? null;
-}
-
 /**
  * Anchor-verified offset resolution: exact position when the anchored tag is
  * there; otherwise a bounded re-locate (±RELOCATE_LINES) that only succeeds on
- * a UNIQUE candidate. Everything else is a stale marker and throws.
+ * a UNIQUE candidate. Both paths accept only scanner-yielded tags — markable
+ * static open tags the marker transform would have marked — so a stale marker
+ * can never re-locate into an HTML/hbs comment, a rawtext element body, or a
+ * dynamic tag. Everything else is a stale marker and throws.
  */
 function resolveAnchoredOffset(source: string, lineStarts: number[], position: SourcePosition, anchor: TextEditAnchor, offset: number | null): number {
     const want = anchor.tagName.toLowerCase();
-    if (offset !== null && openTagAt(source, offset)?.toLowerCase() === want) {
-        return offset;
+    const staleError = (detail: string): Error => new errors.IncorrectUsageError({
+        message: `stale marker: expected an <${want}> open tag at ${position.line}:${position.column}${detail}`
+    });
+
+    if (position.line < 1 || position.line > lineStarts.length) {
+        // a line outside the file belongs to a different revision of it —
+        // refuse instead of re-locating within a clamped window
+        throw staleError(` — line ${position.line} is outside the file (${lineStarts.length} lines)`);
     }
 
     const fromLine = Math.max(1, position.line - RELOCATE_LINES);
@@ -117,35 +143,65 @@ function resolveAnchoredOffset(source: string, lineStarts: number[], position: S
     const to = toLine < lineStarts.length ? lineStarts[toLine]! : source.length;
 
     const candidates: number[] = [];
-    for (let i = source.indexOf('<', from); i !== -1 && i < to; i = source.indexOf('<', i + 1)) {
-        if (openTagAt(source, i)?.toLowerCase() === want) {
-            candidates.push(i);
+    for (const tag of scanSourceTags(source)) {
+        if (tag.start >= to) {
+            break;
+        }
+        if (!tag.markable || !tag.closed || tag.tagName.toLowerCase() !== want) {
+            continue;
+        }
+        if (offset !== null && tag.start === offset) {
+            // the anchored tag is exactly at the marker position — fresh marker
+            return offset;
+        }
+        if (tag.start >= from) {
+            candidates.push(tag.start);
         }
     }
     if (candidates.length === 1) {
         return candidates[0]!;
     }
-    throw new errors.IncorrectUsageError({
-        message: `stale marker: expected an <${want}> open tag at ${position.line}:${position.column}` + (
-            candidates.length === 0
-                ? `, and none found within ±${RELOCATE_LINES} lines`
-                : `, and ${candidates.length} candidates found within ±${RELOCATE_LINES} lines — cannot re-locate safely`
-        )
-    });
+    throw staleError(
+        candidates.length === 0
+            ? `, and none found within ±${RELOCATE_LINES} lines`
+            : `, and ${candidates.length} candidates found within ±${RELOCATE_LINES} lines — cannot re-locate safely`
+    );
 }
 
 /** True when the mustache at `at` opens/closes/continues a block section. */
 function isBlockBoundary(source: string, at: number): boolean {
-    return /^\{\{\{\{|^\{\{\s*[#^/]|^\{\{\s*else\b/.test(source.slice(at, at + 16));
+    // {{#…}} {{^…}} {{/…}} {{else}} and {{{{raw}}}} blocks, with or without
+    // whitespace-control tildes ({{~#if}}, {{~/if}}, {{~else}}, {{{{~raw}}}})
+    return /^\{\{\{\{|^\{\{~?\s*[#^/]|^\{\{~?\s*else\b/.test(source.slice(at, at + 16));
+}
+
+/**
+ * Validates the newText contract (module doc block: plain text only) and
+ * returns the HTML-escaped replacement to splice into the source.
+ */
+function escapeNewText(newText: string): string {
+    if (newText.includes('{{') || newText.includes('}}')) {
+        throw new errors.IncorrectUsageError({
+            message: 'newText must be plain text — handlebars syntax ("{{" or "}}") is rejected because splicing it into template source would be a template-injection risk'
+        });
+    }
+    if (/[\r\n]/.test(newText)) {
+        throw new errors.IncorrectUsageError({
+            message: 'newText must be a single line — a newline would shift the line numbers of every later marker in the file'
+        });
+    }
+    return newText.replace(/&/g, '&amp;').replace(/</g, '&lt;');
 }
 
 /**
  * Replaces the immediate text child of the element whose open tag starts at
- * `position` (see the module doc block for the exact semantics and limits).
- * Throws IncorrectUsageError for positions the editor must treat as not
- * editable, and for stale anchored markers.
+ * `position` (see the module doc block for the exact semantics, the newText
+ * plain-text contract, and the limits). Throws IncorrectUsageError for
+ * positions the editor must treat as not editable, for stale anchored
+ * markers, and for newText that violates the contract.
  */
 export function applyTextEdit(source: string, position: SourcePosition, newText: string, anchor?: TextEditAnchor): string {
+    const replacement = escapeNewText(newText);
     const lineStarts = lineStartOffsets(source);
     const at = `${position.line}:${position.column}`;
 
@@ -156,41 +212,17 @@ export function applyTextEdit(source: string, position: SourcePosition, newText:
         throw new errors.IncorrectUsageError({message: `position ${at} is outside the source`});
     }
 
-    const tagName = openTagAt(source, offset);
-    if (!tagName) {
+    const tag = openTagNameAt(source, offset);
+    if (!tag || !tag.markable) {
         throw new errors.IncorrectUsageError({message: `position ${at} does not point at an element open tag`});
     }
-    const lower = tagName.toLowerCase();
+    const lower = tag.tagName.toLowerCase();
 
-    // Find the end of the open tag — quote- and mustache-aware, exactly like
-    // the marker scanner, so a '>' inside an attribute value or a handlebars
-    // argument never terminates the tag early.
-    let j = offset + 1 + tagName.length;
-    let closed = false;
-    while (j < source.length) {
-        const c = source[j];
-        if (c === '{' && source.startsWith('{{', j)) {
-            j = mustacheEnd(source, j);
-            continue;
-        }
-        if (c === '"' || c === '\'') {
-            j += 1;
-            while (j < source.length && source[j] !== c) {
-                j = source.startsWith('{{', j) ? mustacheEnd(source, j) : j + 1;
-            }
-            j += 1;
-            continue;
-        }
-        if (c === '>') {
-            closed = true;
-            break;
-        }
-        j += 1;
-    }
-    if (!closed) {
+    const tagEnd = openTagEnd(source, tag.nameEnd);
+    if (!tagEnd.closed) {
         throw new errors.IncorrectUsageError({message: `unterminated open tag <${lower}> at ${at}`});
     }
-    if (source[j - 1] === '/' || VOID_TAGS.has(lower)) {
+    if (tagEnd.selfClosing || VOID_TAGS.has(lower)) {
         throw new errors.IncorrectUsageError({message: `<${lower}> at ${at} has no text child to edit`});
     }
     if (RAWTEXT_TAGS.has(lower)) {
@@ -199,7 +231,7 @@ export function applyTextEdit(source: string, position: SourcePosition, newText:
 
     // The immediate text run: plain text + inline mustaches, up to the first
     // nested tag or block-helper boundary.
-    const contentStart = j + 1;
+    const contentStart = tagEnd.end + 1;
     let k = contentStart;
     while (k < source.length) {
         const c = source[k];
@@ -226,7 +258,7 @@ export function applyTextEdit(source: string, position: SourcePosition, newText:
         });
     }
 
-    return source.slice(0, contentStart) + run.slice(0, leadLength) + newText + run.slice(run.length - trailLength) + source.slice(k);
+    return source.slice(0, contentStart) + run.slice(0, leadLength) + replacement + run.slice(run.length - trailLength) + source.slice(k);
 }
 
 /**

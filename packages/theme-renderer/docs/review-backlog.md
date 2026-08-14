@@ -30,8 +30,26 @@ contentType handling fixed (templates defaults to `[]`, Express res.type
 charset/mime semantics restored), markdown alternate link documented as
 accepted delta (deltas.md row 11).
 
+Slice-3 review fix pass (2026-08-14): the marker/edit scanners were unified
+into `src/engine/source-scanner.ts` (markable predicate, quote/mustache-aware
+tag-end walk with malformed-tag recovery, offset-true rawtext skipping —
+no lowercased copy), `applyTextEdit` gained the plain-text newText contract
+(mustache/newline rejection, `&`/`<` escaping) and scanner-consistent
+re-locate, renders are serialized per renderer (mutex) with `getEngine(mode)`
+exposed as an invalidation handle, the editor exports moved to a `./editor`
+subpath, and the WebWorker src type-guard got its own tsc project
+(`test/browser/tsconfig.src.json`) so the browser tests' DOM libs no longer
+disable it.
+
 Still open:
 
+- **Dual-engine collapse (slice 5)** — the renderer holds two
+  `TemplateEngine`s (default + markers) that share module-singleton seam
+  state; the slice-3 fix serializes renders per renderer (mutex in
+  `src/index.ts:render`) and exposes `getEngine(mode)`, but the real fix is
+  ONE engine with `(name, markers)`-keyed template/layout caches and a
+  mode-prefixed partial namespace, so the seam binding is unambiguous and
+  renders can overlap again.
 - **posts_per_page global leak (latent)** — `controllers/collection.ts:41-48` (and now `controllers/channel.ts` with the same ported body) mutates engine-global template options per request; becomes live (request-order-dependent `@config.posts_per_page`) the moment routes.yaml collections/taxonomies with `limit` land. The minimal resolver never sets `routerOptions.limit`, so still latent.
 - **degradedRender signal has no exit** — `helpers/get.ts:344` writes `_locals.degradedRender` but `RenderResult` carries no headers, so the Cache-Control cap / `X-Ghost-Degraded-Render` contract (needed by slice-5 core retrofit) is unreachable. Widen the result union when headers land (the redirect-header fix starts this).
 

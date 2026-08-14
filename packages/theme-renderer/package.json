@@ -19,6 +19,11 @@
       "source": "./src/index.ts",
       "types": "./build/index.d.ts",
       "default": "./build/index.js"
+    },
+    "./editor": {
+      "source": "./src/editor/text-edit.ts",
+      "types": "./build/editor/text-edit.d.ts",
+      "default": "./build/editor/text-edit.js"
     }
   },
   "main": "build/index.js",
@@ -27,7 +32,7 @@
     "build": "tsc",
     "test:unit": "NODE_ENV=testing vitest run --coverage",
     "test:types": "tsc --noEmit -p test/tsconfig.json",
-    "test:types:browser": "tsc --noEmit -p test/browser/tsconfig.json",
+    "test:types:browser": "tsc --noEmit -p test/browser/tsconfig.src.json && tsc --noEmit -p test/browser/tsconfig.json",
     "test": "pnpm run '/^test:/'",
     "browser:test": "vitest run --config vitest.browser.config.ts",
     "lint:code": "eslint src/ --cache",

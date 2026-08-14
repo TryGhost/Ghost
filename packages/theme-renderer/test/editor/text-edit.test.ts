@@ -15,12 +15,12 @@ import assert from 'node:assert/strict';
 import {describe, it} from 'vitest';
 import {
     TemplateEngine,
-    applyTextEdit,
-    applyThemeTextEdit,
     injectEditMarkers,
     parseEditMarker,
     type TemplateResolver
 } from '../../src/index.ts';
+// the edit half lives on the './editor' subpath export, not the package root
+import {applyTextEdit, applyThemeTextEdit} from '../../src/editor/text-edit.ts';
 
 describe('applyTextEdit', function () {
     it('replaces a static text child', function () {
@@ -153,6 +153,44 @@ describe('applyTextEdit', function () {
             // anchor "h" must not match <h1
             assert.throws(() => applyTextEdit(tricky, {line: 1, column: 1}, 'x', {tagName: 'h'}), /stale/);
         });
+
+        it('throws stale-marker for a line past the end of the file (never edits a clamped line)', function () {
+            // a wildly out-of-range line means the marker belongs to a
+            // different revision of the file — refusing beats editing whatever
+            // a clamped window happens to contain
+            assert.throws(() => applyTextEdit(source, {line: 900, column: 3}, 'x', {tagName: 'h2'}), /stale/);
+            assert.throws(() => applyTextEdit(source, {line: 0, column: 1}, 'x', {tagName: 'h2'}), /stale/);
+        });
+
+        // The re-locate must only accept candidates the MARKER SCANNER would
+        // mark — a marker can only ever have pointed at a markable tag, so
+        // anything else in the window is a coincidence, not the moved element.
+        describe('re-locate candidates are scanner-consistent (markable tags only)', function () {
+            it('does not re-locate into an HTML comment', function () {
+                const commented = [
+                    '<section>',
+                    '  <!-- <h2 class="old">dead</h2> -->',
+                    '  <p>live</p>',
+                    '</section>'
+                ].join('\n');
+                assert.throws(() => applyTextEdit(commented, {line: 3, column: 3}, 'x', {tagName: 'h2'}), /stale/);
+            });
+
+            it('does not re-locate into a handlebars comment', function () {
+                const hbsCommented = '<section>\n{{!-- <h2>dead</h2> --}}\n<p>live</p>\n</section>';
+                assert.throws(() => applyTextEdit(hbsCommented, {line: 3, column: 1}, 'x', {tagName: 'h2'}), /stale/);
+            });
+
+            it('does not re-locate into a rawtext element body', function () {
+                const script = '<div>\n<script>document.write("<h2>dead</h2>");</script>\n</div>';
+                assert.throws(() => applyTextEdit(script, {line: 2, column: 1}, 'x', {tagName: 'h2'}), /stale/);
+            });
+
+            it('does not re-locate to a dynamic tag name', function () {
+                const dynamic = '<div>\n<h{{level}}>x</h{{level}}>\n</div>';
+                assert.throws(() => applyTextEdit(dynamic, {line: 1, column: 1}, 'x', {tagName: 'h'}), /stale/);
+            });
+        });
     });
 
     describe('errors (marker positions the editor must treat as not editable)', function () {
@@ -183,7 +221,24 @@ describe('applyTextEdit', function () {
             shouldThrow('<style>.a{}</style>', {line: 1, column: 1}, /rawtext/);
         });
 
-        it('rejects elements whose content starts with a block helper (Casper post-card-title shape)', function () {
+        it('treats whitespace-control blocks ({{~#if}} etc.) as block boundaries', function () {
+        // the tilde variants are the same block constructs; consuming one into
+        // the text run would orphan its closer and break the template
+        shouldThrow('<div>{{~#if @member}}Hi{{/if}}</div>', {line: 1, column: 1}, /no editable text/);
+        shouldThrow('<div>{{~/if}}</div>', {line: 1, column: 1}, /no editable text/);
+        shouldThrow('<div>{{~^}}fallback{{/each}}</div>', {line: 1, column: 1}, /no editable text/);
+        shouldThrow('<div>{{~else}}other{{/if}}</div>', {line: 1, column: 1}, /no editable text/);
+        shouldThrow('<div>{{{{~raw}}}}x{{{{/raw}}}}</div>', {line: 1, column: 1}, /no editable text/);
+    });
+
+    it('stops the text run at a whitespace-control block boundary', function () {
+        assert.equal(
+            applyTextEdit('<p>Hello {{~#if a}}<b>x</b>{{/if}}</p>', {line: 1, column: 1}, 'Bye'),
+            '<p>Bye {{~#if a}}<b>x</b>{{/if}}</p>'
+        );
+    });
+
+    it('rejects elements whose content starts with a block helper (Casper post-card-title shape)', function () {
             const source = [
                 '<h2 class="post-card-title">',
                 '    {{#unless access}}{{> "icons/lock"}}{{/unless}}',
@@ -202,6 +257,38 @@ describe('applyTextEdit', function () {
 
         it('rejects an unterminated open tag', function () {
             shouldThrow('<div class="x"', {line: 1, column: 1}, /unterminated/i);
+        });
+    });
+
+    // newText is PLAIN TEXT, by contract (module doc block + docs/markers.md):
+    // handlebars syntax is rejected (a clicked-in edit must never become
+    // template code — template injection), newlines are rejected (markers rely
+    // on edits never adding/removing lines), and HTML-significant characters
+    // are escaped so replacement text always renders literally.
+    describe('newText contract (plain text only)', function () {
+        const HI = '<h1 class="t">Hi</h1>';
+        const AT = {line: 1, column: 1};
+
+        it('rejects handlebars syntax in newText (template injection)', function () {
+            assert.throws(() => applyTextEdit(HI, AT, '{{@site.url}}'), /handlebars|injection/i);
+            assert.throws(() => applyTextEdit(HI, AT, 'stray }} braces'), /handlebars|injection/i);
+            assert.throws(() => applyTextEdit(HI, AT, '{{#if x}}'), /handlebars|injection/i);
+        });
+
+        it('rejects newlines in newText (edits must never shift line numbers)', function () {
+            assert.throws(() => applyTextEdit(HI, AT, 'two\nlines'), /single line|newline/i);
+            assert.throws(() => applyTextEdit(HI, AT, 'two\r\nlines'), /single line|newline/i);
+        });
+
+        it('HTML-escapes & so replacement text renders literally', function () {
+            assert.equal(applyTextEdit(HI, AT, 'Tom & Jerry'), '<h1 class="t">Tom &amp; Jerry</h1>');
+        });
+
+        it('HTML-escapes < so replacement text cannot smuggle markup', function () {
+            assert.equal(
+                applyTextEdit(HI, AT, '</h1><script>x</script>'),
+                '<h1 class="t">&lt;/h1>&lt;script>x&lt;/script></h1>'
+            );
         });
     });
 });

@@ -146,6 +146,54 @@ describe('injectEditMarkers', function () {
         const source = '{{title}}\nplain text';
         assert.equal(injectEditMarkers(source, FILE), source);
     });
+
+    // A malformed open tag (the quote/mustache-aware end walk runs away to
+    // EOF) must cost only ITS OWN marker: the scanner recovers at the next '<'
+    // and keeps marking the rest of the file, and the malformed tag itself is
+    // never stamped (a marker inside an unterminated tag is a corrupt marker).
+    describe('malformed-tag recovery', function () {
+        it('an unbalanced attribute quote unmarks only that tag, not the rest of the file', function () {
+            assert.equal(
+                injectEditMarkers('<div class="x>\n<p>after</p>', FILE),
+                '<div class="x>\n<p data-edit="t.hbs:2:1">after</p>'
+            );
+        });
+
+        it('a "}}" inside a quoted helper argument cannot swallow the rest of the file', function () {
+            // the inner "}}" ends the mustache early, so the walk re-opens a
+            // quote that never closes — recover, keep marking what follows
+            const source = '<a href="{{url "}}"}}">text</a>\n<p>after</p>';
+            assert.equal(
+                injectEditMarkers(source, FILE),
+                '<a href="{{url "}}"}}">text</a>\n<p data-edit="t.hbs:2:1">after</p>'
+            );
+        });
+
+        it('an unterminated mustache inside a quoted attribute recovers at the next tag', function () {
+            assert.equal(
+                injectEditMarkers('<div class="{{broken">x</div>\n<p>after</p>', FILE),
+                '<div class="{{broken">x</div>\n<p data-edit="t.hbs:2:1">after</p>'
+            );
+        });
+
+        it('a truncated tag at EOF gets no marker', function () {
+            assert.equal(
+                injectEditMarkers('<p>x</p>\n<div class="x', FILE),
+                '<p data-edit="t.hbs:1:1">x</p>\n<div class="x'
+            );
+        });
+    });
+
+    it('keeps rawtext close-tag search aligned when the content contains İ (U+0130)', function () {
+        // "İ".toLowerCase() is TWO characters (i + combining dot), so a
+        // lowercased copy of the source has shifted offsets — the close-tag
+        // search must index the ORIGINAL source only
+        const source = '<script>var t = "İstanbul";</script><h2>after</h2>';
+        assert.equal(
+            injectEditMarkers(source, FILE),
+            '<script data-edit="t.hbs:1:1">var t = "İstanbul";</script><h2 data-edit="t.hbs:1:37">after</h2>'
+        );
+    });
 });
 
 describe('parseEditMarker', function () {

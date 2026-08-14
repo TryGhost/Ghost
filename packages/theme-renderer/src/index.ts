@@ -42,8 +42,12 @@ import templates from './rendering/templates.ts';
 import type {ActiveThemePort, HelperRegistrar, LoggingPort, RendererDeps} from './seam/types.ts';
 import type {RenderLocals, RenderResult} from './ports.ts';
 
+// Root export surface: the render contract (docs/markers.md) — the engine,
+// plus parseEditMarker/EDIT_MARKER_ATTRIBUTE/injectEditMarkers for consumers
+// of marked render output. The editor-side edit tools (applyTextEdit,
+// applyThemeTextEdit) live on the './editor' subpath export, and the scanner
+// internals (src/engine/source-scanner.ts) are not exported at all.
 export * from './engine/index.ts';
-export * from './editor/text-edit.ts';
 export * from './ports.ts';
 export {createThemeSource, type ThemeFiles, type ThemeSource} from './theme/theme-source.ts';
 export {resolveRoutes, type RouteCandidate, type ResolveRoutesOptions} from './routing/resolve.ts';
@@ -98,8 +102,24 @@ export interface RenderRequestOptions {
 }
 
 export interface ThemeRenderer {
+    /**
+     * Renders one request. Renders on one renderer are SERIALIZED (an
+     * internal per-renderer mutex): the default and marker engines share
+     * module-singleton seam state (deps + handlebars binding), so concurrent
+     * renders would cross-bind them. Callers may fire render() calls without
+     * awaiting — they queue. (Collapsing the two engines so renders can
+     * overlap is the slice-5 item in docs/review-backlog.md.)
+     */
     render(request: Request, options?: RenderRequestOptions): Promise<Response>;
+    /** The default (markers-off) engine — same instance as getEngine('default'). */
     engine: TemplateEngine;
+    /**
+     * Per-mode engine access — the invalidation handle for callers that need
+     * to reach a specific engine's caches (e.g. resetCache()). 'markers'
+     * builds the marker engine on first call if no markers render has
+     * happened yet.
+     */
+    getEngine(mode: 'default' | 'markers'): TemplateEngine;
     deps: RendererDeps;
     themeSource: ThemeSource;
 }
@@ -284,7 +304,7 @@ export async function createRenderer(options: CreateRendererOptions): Promise<Th
         }
     }
 
-    async function render(request: Request, renderOptions: RenderRequestOptions = {}): Promise<Response> {
+    async function renderSerialized(request: Request, renderOptions: RenderRequestOptions = {}): Promise<Response> {
         // Per-render engine pick: the default engine, or the lazily-built
         // marker engine when source markers are requested (docs/markers.md).
         const activeEngine = renderOptions.markers ? getMarkerEngine() : engine;
@@ -429,5 +449,26 @@ export async function createRenderer(options: CreateRendererOptions): Promise<Th
         return renderErrorResponse(new errors.NotFoundError({message: tpl(messages.pageNotFound)}), req, locals, activeEngine);
     }
 
-    return {render, engine, deps, themeSource};
+    /**
+     * Per-renderer render mutex: the seam (deps + handlebars environment) is a
+     * module singleton re-asserted at the start of every render, so two
+     * in-flight renders — especially one per engine of the SAME renderer —
+     * would cross-bind engines mid-render (template-helper partials like
+     * navigation resolve against whichever engine was bound last). The spec
+     * assumes a single render at a time; the promise chain makes that
+     * assumption real instead of trusting callers. A failed render never
+     * poisons the chain.
+     */
+    let renderQueue: Promise<unknown> = Promise.resolve();
+    function render(request: Request, renderOptions: RenderRequestOptions = {}): Promise<Response> {
+        const next = renderQueue.then(() => renderSerialized(request, renderOptions));
+        renderQueue = next.then(() => undefined, () => undefined);
+        return next;
+    }
+
+    function getEngine(mode: 'default' | 'markers'): TemplateEngine {
+        return mode === 'markers' ? getMarkerEngine() : engine;
+    }
+
+    return {render, engine, getEngine, deps, themeSource};
 }

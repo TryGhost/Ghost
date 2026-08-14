@@ -25,9 +25,22 @@ const response = await renderer.render(request, {markers: true});
   transform and compiled templates/partials are cached per engine, so the two
   variants never share caches — a markers render cannot pollute the parity
   path (asserted by `test/integration/markers-render.test.ts`).
+- Renders on one renderer are **serialized** (an internal per-renderer
+  mutex): the two engines share module-singleton seam state (deps +
+  handlebars binding), so interleaved renders would cross-bind them —
+  template-helper partials (navigation/pagination) would resolve against
+  whichever engine was bound last. Callers may fire `render()` without
+  awaiting; calls queue. Collapsing the dual engines so renders can overlap
+  is the slice-5 item in `docs/review-backlog.md`.
+- `renderer.getEngine('default' | 'markers')` exposes the per-mode engines as
+  an invalidation handle (e.g. `resetCache()`); `'markers'` builds the marker
+  engine on first call.
 - `injectEditMarkers(source, filename)` (the pure transform) and
   `parseEditMarker(value)` / `EDIT_MARKER_ATTRIBUTE` are exported from the
-  package root for the editor loop (`src/engine/markers.ts`).
+  package root for consumers of marked render output (`src/engine/markers.ts`).
+  The editor-side edit tools live on the **`./editor` subpath export** (see
+  below); the scanner primitives (`src/engine/source-scanner.ts`) are
+  internal and not exported.
 
 ## Marker payload
 
@@ -48,9 +61,12 @@ const response = await renderer.render(request, {markers: true});
 
 ## How it works
 
-A lightweight HTML-open-tag scanner (`src/engine/markers.ts`) runs over each
-template/partial/layout source **before** `handlebars.compile`, inside the
-engine's `onCompile` hook — the filename the engine threads through compile
+A lightweight HTML-open-tag scanner runs over each template/partial/layout
+source **before** `handlebars.compile`, inside the engine's `onCompile` hook.
+The scanning primitives live in `src/engine/source-scanner.ts` — shared with
+the edit applier (`src/editor/text-edit.ts`), so both sides agree byte-for-byte
+on what counts as a markable tag; `src/engine/markers.ts` owns the transform
+itself — the filename the engine threads through compile
 (spec design principle #3) is the marker's file component. The attribute is
 inserted **immediately after the tag name**, which is always inside a single
 static chunk — so open tags whose attribute lists span mustache boundaries
@@ -76,7 +92,12 @@ The scanner understands:
   inside an inline script string like `document.write('<div>')` would corrupt
   the page);
 - void and self-closing tags (marked like any open tag);
-- pre-existing `data-edit` attributes in the tag (never double-marked).
+- pre-existing `data-edit` attributes in the tag (never double-marked);
+- malformed open tags — when the quote/mustache-aware tag-end walk runs away
+  to EOF (unbalanced attribute quote, `}}` inside a quoted helper argument,
+  unterminated mustache in a quote), that tag gets **no marker** and the
+  scanner recovers at the next `<`: one malformed tag never costs the rest of
+  the file its markers.
 
 Every compile path flows through the engine (`TemplateEngine.compile`):
 templates, recursive `{{!< }}` layouts, theme partials (registered with their
@@ -137,13 +158,20 @@ Reference numbers (recorded Casper home fixture): 282 markers —
 Implemented consumers of this contract:
 
 - **`applyTextEdit` / `applyThemeTextEdit`** (`src/editor/text-edit.ts`,
-  exported from the package root) — the loop's edit half: replaces an
-  element's immediate text child at a marker position, **anchor-verified**
-  (pass the clicked element's tag name; a mismatched position is a stale
-  marker — bounded ±3-line re-locate on a unique candidate, loud failure
-  otherwise). Exact semantics and the deliberate limits (stops at nested
-  tags and `{{#block}}` boundaries; void/self-closing/rawtext refused) are
-  documented in the module's doc block.
+  exported from the **`@tryghost/theme-renderer/editor` subpath**) — the
+  loop's edit half: replaces an element's immediate text child at a marker
+  position, **anchor-verified** (pass the clicked element's tag name; a
+  mismatched position is a stale marker — bounded ±3-line re-locate on a
+  unique candidate, loud failure otherwise; re-locate candidates are limited
+  to tags the marker scanner would mark, so a stale marker can never land in
+  commented-out or rawtext dead markup, and positions outside the file are
+  refused outright). **newText is plain text by contract**: handlebars syntax
+  (`{{`/`}}`) is rejected (template injection), newlines are rejected (edits
+  must never shift the line numbers of other markers in the file), and
+  `&`/`<` are HTML-escaped so the replacement always renders literally.
+  Exact semantics and the deliberate limits (stops at nested tags and
+  `{{#block}}` boundaries, tilde variants included; void/self-closing/rawtext
+  refused) are documented in the module's doc block.
 - **`test/browser/editor-loop.test.ts`** — the automated proof of the full
   loop in the editor's real runtime (Web Worker, Chromium): marked render →
   simulated click → edit → fresh renderer → re-render, untouched regions

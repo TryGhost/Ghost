@@ -122,4 +122,52 @@ describe('source markers over the recorded Casper fixtures (hermetic)', function
         assert.match(marked, jsonLd);
         assert.doesNotMatch(marked, /<script data-edit="[^"]*" type="application\/ld\+json">/);
     });
+
+    it('exposes the per-mode engines as invalidation handles (getEngine)', async function () {
+        const renderer = await getRenderer();
+        assert.equal(renderer.getEngine('default'), renderer.engine);
+        const markerEngine = renderer.getEngine('markers');
+        assert.notEqual(markerEngine, renderer.engine);
+        // stable: same instance on every call (single lazily-built engine)
+        assert.equal(renderer.getEngine('markers'), markerEngine);
+    });
+
+    // Renders on ONE renderer are serialized (a per-renderer mutex): the two
+    // engines share module-singleton seam state (deps + handlebars binding),
+    // so interleaving a marked and a plain render used to cross-bind them —
+    // template-helper partials (navigation here, overridden by the theme so
+    // the marked variant is data-edit-stamped) resolved against whichever
+    // engine was bound last. Both renders must come out fully correct.
+    it('interleaved marked and plain renders on one renderer both complete correctly', async function () {
+        const themeWithNavOverride = {
+            ...theme,
+            'partials/navigation.hbs': '<ul class="nav-override">{{#foreach navigation}}<li><a href="{{url absolute="true"}}">{{label}}</a></li>{{/foreach}}</ul>'
+        };
+        const renderer = await createRenderer({
+            siteUrl: instance.siteUrl,
+            contentApiKey: instance.contentApiKey,
+            theme: themeWithNavOverride,
+            config: instance.config,
+            fetch: createReplayFetch(JSON.parse(read('content-api.json')) as ApiFixtures)
+        });
+        const request = (): Request => new Request(new URL(instance.routes.home, instance.siteUrl).toString());
+
+        const [markedResponse, plainResponse] = await Promise.all([
+            renderer.render(request(), {markers: true}),
+            renderer.render(request())
+        ]);
+        assert.equal(markedResponse.status, 200);
+        assert.equal(plainResponse.status, 200);
+        const marked = await markedResponse.text();
+        const plain = await plainResponse.text();
+
+        // the plain render carries NO markers at all...
+        assert.doesNotMatch(plain, MARKER_ATTRS);
+        // ...the marked render is fully marked, including the theme-override
+        // navigation partial (registered with its resolver path)...
+        assert.match(marked, MARKER_ATTRS);
+        assert.match(marked, /<ul data-edit="partials\/navigation\.hbs:1:1" class="nav-override">/);
+        // ...and stripping the markers recovers the plain bytes exactly
+        assert.equal(marked.replace(MARKER_ATTRS, ''), plain);
+    });
 });

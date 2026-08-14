@@ -20,7 +20,7 @@ pnpm exec vite demo
 ```
 
 (`vite` is already in the package's dependency graph via vitest — no new
-deps. If `pnpm exec` can't find it: `npx vite demo`.)
+deps.)
 
 Open the printed URL. The page:
 
@@ -44,8 +44,9 @@ Open the printed URL. The page:
   unstyled HTML. The loop works either way.
 - **What's editable:** only the element's immediate text child — plain text
   and inline mustaches up to the first nested tag or `{{#block}}` boundary
-  (full limits in `src/editor/text-edit.ts`). Clicking anything else gets a
-  clear refusal. Elements without a `data-edit` ancestor (helper-emitted
+  (full limits in `src/editor/text-edit.ts`). Replacement text is plain text
+  by contract: handlebars syntax and newlines are refused (alert), `&`/`<`
+  render literally. Clicking anything else gets a clear refusal. Elements without a `data-edit` ancestor (helper-emitted
   HTML: `{{ghost_head}}` output, post content, navigation) are not editable
   in this slice.
 - **Repeated elements:** all post cards render from one source location in
