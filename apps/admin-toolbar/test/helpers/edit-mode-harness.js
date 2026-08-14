@@ -286,3 +286,19 @@ export function editableElement(dom, marker) {
     assert.ok(element, `expected a [data-edit="${marker}"] element in the preview`);
     return element;
 }
+
+/**
+ * Performs one in-place inline edit through the UI seam: select the marked
+ * element (which makes it contentEditable), type into it (the text lands in
+ * the element itself — there is no input box), and commit via the panel's
+ * Save handler. Omit `text` to commit untouched.
+ */
+export async function commitInlineEdit(booted, marker, text) {
+    const element = editableElement(booted.dom, marker);
+    booted.interactions.options.onSelect(element);
+    if (text !== undefined) {
+        element.textContent = text;
+    }
+    await booted.ui.handlers.onCommitEdit();
+    return element;
+}

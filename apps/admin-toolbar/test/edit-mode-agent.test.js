@@ -15,6 +15,7 @@ import {
     ADMIN_URL,
     SCRIPT_URL,
     bootSession,
+    commitInlineEdit,
     createFakeAdminApi,
     createFakeClientFactory,
     createFakeInteractions,
@@ -168,23 +169,24 @@ describe('edit-mode agent', function () {
             return {requests, fetchImpl};
         }
 
-        const textResponse = {choices: [{message: {content: 'hello', tool_calls: []}}]};
+        const textResponse = {output: [{type: 'message', role: 'assistant', content: [{type: 'output_text', text: 'hello'}]}]};
 
-        it('sends the key in the Authorization header ONLY, to the chat completions endpoint', async function () {
+        it('sends the key in the Authorization header ONLY, to the Responses endpoint', async function () {
             const {requests, fetchImpl} = capturingFetch(textResponse);
             const provider = createOpenAiProvider({apiKey: TEST_KEY, fetchImpl});
 
             await provider.complete({messages: [{role: 'user', content: 'hi'}], tools: []});
 
             assert.equal(requests.length, 1);
-            assert.equal(requests[0].url, 'https://api.openai.com/v1/chat/completions');
+            assert.equal(requests[0].url, 'https://api.openai.com/v1/responses');
             assert.equal(requests[0].options.headers.Authorization, `Bearer ${TEST_KEY}`);
             assert.equal(requests[0].url.includes(TEST_KEY), false, 'key never in the URL');
             assert.equal(requests[0].options.body.includes(TEST_KEY), false, 'key never in the body');
             assert.equal(requests[0].body.model, DEFAULT_OPENAI_MODEL, 'defaults to a mini-tier model');
+            assert.equal(requests[0].body.store, false, 'conversations are never persisted server-side');
         });
 
-        it('serializes the neutral message and tool shapes to OpenAI function calling', async function () {
+        it('serializes the neutral message and tool shapes to Responses-API function calling', async function () {
             const {requests, fetchImpl} = capturingFetch(textResponse);
             const provider = createOpenAiProvider({apiKey: TEST_KEY, model: 'gpt-5-mini', endpoint: 'https://proxy.example.com/v1/', fetchImpl});
 
@@ -199,33 +201,51 @@ describe('edit-mode agent', function () {
             });
 
             const {url, body} = requests[0];
-            assert.equal(url, 'https://proxy.example.com/v1/chat/completions', 'endpoint override, trailing slash normalized');
+            assert.equal(url, 'https://proxy.example.com/v1/responses', 'endpoint override, trailing slash normalized');
             assert.equal(body.model, 'gpt-5-mini');
             assert.equal(body.tool_choice, 'auto');
-            assert.deepEqual(body.messages[0], {role: 'system', content: 'sys'});
-            assert.deepEqual(body.messages[2], {
-                role: 'assistant',
-                content: null,
-                tool_calls: [{id: 'call_1', type: 'function', function: {name: 'read_theme_file', arguments: '{"path":"index.hbs"}'}}]
+            assert.deepEqual(body.input[0], {role: 'system', content: 'sys'});
+            assert.deepEqual(body.input[1], {role: 'user', content: 'change the title'});
+            assert.deepEqual(body.input[2], {
+                type: 'function_call',
+                call_id: 'call_1',
+                name: 'read_theme_file',
+                arguments: '{"path":"index.hbs"}'
             });
-            assert.deepEqual(body.messages[3], {role: 'tool', tool_call_id: 'call_1', content: '<h1>Hi</h1>'});
+            assert.deepEqual(body.input[3], {type: 'function_call_output', call_id: 'call_1', output: '<h1>Hi</h1>'});
 
             assert.equal(body.tools.length, AGENT_TOOLS.length);
-            const editTool = body.tools.find(tool => tool.function.name === 'edit_theme_file');
+            const editTool = body.tools.find(tool => tool.name === 'edit_theme_file');
             assert.equal(editTool.type, 'function');
-            assert.deepEqual(Object.keys(editTool.function.parameters.properties), ['path', 'old_string', 'new_string']);
-            assert.equal(body.tools.some(tool => /publish/.test(tool.function.name)), false, 'no publish tool is ever offered');
+            assert.equal(editTool.strict, false, 'strict mode (the API default) would reject the seam\'s optional-property schemas');
+            assert.deepEqual(Object.keys(editTool.parameters.properties), ['path', 'old_string', 'new_string']);
+            assert.equal(body.tools.some(tool => /publish/.test(tool.name)), false, 'no publish tool is ever offered');
         });
 
-        it('parses tool calls, surviving malformed argument JSON as arguments: null', async function () {
+        it('keeps assistant prose alongside its tool calls in the input mapping', async function () {
+            const {requests, fetchImpl} = capturingFetch(textResponse);
+            const provider = createOpenAiProvider({apiKey: TEST_KEY, fetchImpl});
+
+            await provider.complete({
+                messages: [
+                    {role: 'assistant', content: 'Reading the file first.', toolCalls: [{id: 'c1', name: 'preview', arguments: {}}]}
+                ],
+                tools: []
+            });
+
+            assert.deepEqual(requests[0].body.input, [
+                {role: 'assistant', content: 'Reading the file first.'},
+                {type: 'function_call', call_id: 'c1', name: 'preview', arguments: '{}'}
+            ]);
+        });
+
+        it('parses tool calls (ignoring reasoning items), surviving malformed argument JSON as arguments: null', async function () {
             const {fetchImpl} = capturingFetch({
-                choices: [{message: {
-                    content: null,
-                    tool_calls: [
-                        {id: 'a', type: 'function', function: {name: 'preview', arguments: '{}'}},
-                        {id: 'b', type: 'function', function: {name: 'edit_theme_file', arguments: '{not json'}}
-                    ]
-                }}]
+                output: [
+                    {type: 'reasoning', id: 'rs_1', summary: []},
+                    {type: 'function_call', call_id: 'a', name: 'preview', arguments: '{}'},
+                    {type: 'function_call', call_id: 'b', name: 'edit_theme_file', arguments: '{not json'}
+                ]
             });
             const provider = createOpenAiProvider({apiKey: TEST_KEY, fetchImpl});
 
@@ -236,22 +256,19 @@ describe('edit-mode agent', function () {
             assert.equal(result.toolCalls[1].arguments, null, 'malformed JSON becomes null for the loop to bounce back');
         });
 
-        it('surfaces unknown tool-call types as an error instead of a silent "done"', async function () {
+        it('surfaces unknown output item types as an error instead of a silent "done"', async function () {
             const {fetchImpl} = capturingFetch({
-                choices: [{message: {
-                    content: null,
-                    tool_calls: [
-                        // no `type` at all — e.g. a future API shape this
-                        // integration does not understand yet
-                        {id: 'a', function: {name: 'preview', arguments: '{}'}}
-                    ]
-                }}]
+                output: [
+                    // e.g. a built-in tool call this integration never asks
+                    // for, or a future API shape it does not understand yet
+                    {type: 'web_search_call', id: 'ws_1', status: 'completed'}
+                ]
             });
             const provider = createOpenAiProvider({apiKey: TEST_KEY, fetchImpl});
 
             await assert.rejects(
                 () => provider.complete({messages: [], tools: []}),
-                /unsupported tool call \(a missing type\)/
+                /unsupported output item \("web_search_call"\)/
             );
         });
 
@@ -622,8 +639,7 @@ describe('edit-mode agent', function () {
             ];
             const booted = await bootAgentSession({script});
 
-            booted.interactions.options.onSelect(editableElement(booted.dom, 'index.hbs:1:1'));
-            await booted.ui.handlers.onCommitEdit('Human title');
+            await commitInlineEdit(booted, 'index.hbs:1:1', 'Human title');
             assert.equal(booted.ui.state.dirtyCount, 1);
 
             await booted.session.runAgentTask('change the para');
@@ -642,8 +658,9 @@ describe('edit-mode agent', function () {
             ];
             const booted = await bootAgentSession({script});
 
-            booted.interactions.options.onSelect(editableElement(booted.dom, 'index.hbs:1:1'));
-            booted.ui.state.editor.value = 'Typed before the task';
+            const heading = editableElement(booted.dom, 'index.hbs:1:1');
+            booted.interactions.options.onSelect(heading);
+            heading.textContent = 'Typed before the task';
 
             await booted.session.runAgentTask('change the para');
 
@@ -678,8 +695,7 @@ describe('edit-mode agent', function () {
             })();
 
             // make an edit so publish is possible, then start publishing
-            scriptedBooted.interactions.options.onSelect(editableElement(scriptedBooted.dom, 'index.hbs:1:1'));
-            await scriptedBooted.ui.handlers.onCommitEdit('Edited title');
+            await commitInlineEdit(scriptedBooted, 'index.hbs:1:1', 'Edited title');
             await scriptedBooted.ui.handlers.onPublish(); // arm
             gated = true;
             const publishPromise = scriptedBooted.ui.handlers.onPublish(); // confirm — blocks on the download
@@ -763,8 +779,7 @@ describe('edit-mode agent', function () {
             ];
             const booted = await bootAgentSession({script});
 
-            booted.interactions.options.onSelect(editableElement(booted.dom, 'index.hbs:1:1'));
-            await booted.ui.handlers.onCommitEdit('Human title');
+            await commitInlineEdit(booted, 'index.hbs:1:1', 'Human title');
             await booted.session.runAgentTask('tweak package.json');
             assert.equal(booted.ui.state.dirtyCount, 2);
 

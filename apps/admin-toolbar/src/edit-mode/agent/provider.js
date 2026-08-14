@@ -3,7 +3,7 @@
    pipeline, so @tryghost/errors classes would only add bundle weight. */
 
 /**
- * Chat-completions provider seam for the edit-mode agent (slice 5).
+ * Provider seam for the edit-mode agent (slice 5).
  *
  * THE SEAM (provider-agnostic — an Anthropic/other implementation is a
  * drop-in as long as it satisfies this shape):
@@ -33,6 +33,13 @@
  *               (the loop feeds that back as a tool error, letting the
  *               model self-correct instead of crashing the task)
  *
+ * The OpenAI implementation speaks the RESPONSES API (`/v1/responses`), not
+ * chat completions: current reasoning models (gpt-5.x) reject function tools
+ * on `/v1/chat/completions` unless reasoning is disabled outright ("To use
+ * function tools, use /v1/responses"). The request is stateless — the full
+ * conversation is sent as `input` every turn, with `store: false` so OpenAI
+ * never persists it server-side.
+ *
  * SAFETY: the API key goes into the Authorization header of requests to the
  * provider endpoint and NOWHERE else — never into URLs, logs, thrown error
  * messages, or any Ghost/Admin API request.
@@ -50,47 +57,55 @@ function safeJsonParse(text) {
 }
 
 /**
- * Maps the seam's neutral message shape to OpenAI chat-completions messages.
- * Exported for the request-shape tests.
+ * Maps the seam's neutral message shape to Responses-API input items:
+ * plain role/content items for system/user/assistant prose, and dedicated
+ * `function_call` / `function_call_output` items (paired by `call_id`) for
+ * the tool loop. Exported for the request-shape tests.
  */
-export function toOpenAiMessages(messages) {
-    return messages.map((message) => {
+export function toOpenAiInput(messages) {
+    const input = [];
+
+    for (const message of messages) {
         if (message.role === 'tool') {
-            return {role: 'tool', tool_call_id: message.toolCallId, content: message.content};
-        }
-
-        if (message.role === 'assistant') {
-            const out = {role: 'assistant', content: message.content ?? null};
-            if (message.toolCalls?.length) {
-                out.tool_calls = message.toolCalls.map(call => ({
-                    id: call.id,
-                    type: 'function',
-                    function: {name: call.name, arguments: JSON.stringify(call.arguments ?? {})}
-                }));
+            input.push({type: 'function_call_output', call_id: message.toolCallId, output: message.content});
+        } else if (message.role === 'assistant') {
+            if (message.content) {
+                input.push({role: 'assistant', content: message.content});
             }
-            return out;
+            for (const call of message.toolCalls ?? []) {
+                input.push({
+                    type: 'function_call',
+                    call_id: call.id,
+                    name: call.name,
+                    arguments: JSON.stringify(call.arguments ?? {})
+                });
+            }
+        } else {
+            input.push({role: message.role, content: message.content});
         }
+    }
 
-        return {role: message.role, content: message.content};
-    });
+    return input;
 }
 
-/** Maps the seam's neutral tool shape to OpenAI function-calling tools. */
+/** Maps the seam's neutral tool shape to Responses-API function tools. */
 export function toOpenAiTools(tools) {
     return tools.map(tool => ({
         type: 'function',
-        function: {
-            name: tool.name,
-            description: tool.description,
-            parameters: tool.parameters
-        }
+        name: tool.name,
+        description: tool.description,
+        parameters: tool.parameters,
+        // strict mode is the Responses-API default and rejects schemas with
+        // optional properties (e.g. commit's optional `summary`) — the
+        // seam's schemas are deliberately lenient, so opt out explicitly
+        strict: false
     }));
 }
 
 /**
  * The OpenAI implementation of the provider seam — plain fetch against the
- * chat completions API with function/tool calling, no SDK (keeps the chunk
- * small; the endpoint is a single POST).
+ * Responses API with function calling, no SDK (keeps the chunk small; the
+ * endpoint is a single POST).
  *
  * @param {Object} options
  * @param {string} options.apiKey — BYOK key from the key store; sent ONLY as
@@ -110,7 +125,8 @@ export function createOpenAiProvider({apiKey, model = DEFAULT_OPENAI_MODEL, endp
         async complete({messages, tools = []}) {
             const body = {
                 model,
-                messages: toOpenAiMessages(messages)
+                input: toOpenAiInput(messages),
+                store: false
             };
 
             if (tools.length > 0) {
@@ -118,7 +134,7 @@ export function createOpenAiProvider({apiKey, model = DEFAULT_OPENAI_MODEL, endp
                 body.tool_choice = 'auto';
             }
 
-            const response = await fetchImpl(`${endpoint.replace(/\/$/, '')}/chat/completions`, {
+            const response = await fetchImpl(`${endpoint.replace(/\/$/, '')}/responses`, {
                 method: 'POST',
                 headers: {
                     Authorization: `Bearer ${apiKey}`,
@@ -138,30 +154,54 @@ export function createOpenAiProvider({apiKey, model = DEFAULT_OPENAI_MODEL, endp
                 throw new Error(`OpenAI request failed (${response.status})${detail}`);
             }
 
-            const choice = data?.choices?.[0]?.message;
+            const output = data?.output;
 
-            if (!choice) {
-                throw new Error('OpenAI returned no completion choice');
+            if (!Array.isArray(output)) {
+                throw new Error('OpenAI returned no output');
             }
 
-            // A tool call of an unknown/missing type must SURFACE, not be
-            // silently dropped — dropping every call would end the loop as a
-            // false 'done' while the model believes its calls are pending.
-            const rawToolCalls = choice.tool_calls ?? [];
-            const unsupported = rawToolCalls.find(call => call?.type !== 'function' || !call.function?.name);
-            if (unsupported) {
-                const label = typeof unsupported?.type === 'string' && unsupported.type ? `"${unsupported.type}"` : 'a missing type';
-                throw new Error(`OpenAI returned an unsupported tool call (${label}) — this provider integration only handles function calls`);
+            const textParts = [];
+            const toolCalls = [];
+            let sawMessage = false;
+
+            for (const item of output) {
+                if (item?.type === 'message') {
+                    sawMessage = true;
+                    for (const part of item.content ?? []) {
+                        if (part?.type === 'output_text' && typeof part.text === 'string') {
+                            textParts.push(part.text);
+                        } else if (part?.type === 'refusal' && typeof part.refusal === 'string') {
+                            textParts.push(part.refusal);
+                        }
+                    }
+                } else if (item?.type === 'function_call') {
+                    if (typeof item.name !== 'string' || !item.name) {
+                        throw new Error('OpenAI returned a function call without a name — this provider integration cannot route it');
+                    }
+                    toolCalls.push({
+                        id: item.call_id,
+                        name: item.name,
+                        arguments: safeJsonParse(item.arguments ?? '')
+                    });
+                } else if (item?.type === 'reasoning') {
+                    // reasoning traces ride along on reasoning models — no
+                    // content this integration consumes
+                } else {
+                    // An output item of an unknown type must SURFACE, not be
+                    // silently dropped — dropping a call-like item would end
+                    // the loop as a false 'done' while the model believes
+                    // its calls are pending.
+                    const label = typeof item?.type === 'string' && item.type ? `"${item.type}"` : 'a missing type';
+                    throw new Error(`OpenAI returned an unsupported output item (${label}) — this provider integration only handles messages and function calls`);
+                }
             }
 
-            const toolCalls = rawToolCalls.map(call => ({
-                id: call.id,
-                name: call.function.name,
-                arguments: safeJsonParse(call.function.arguments ?? '')
-            }));
+            if (!sawMessage && toolCalls.length === 0) {
+                throw new Error('OpenAI returned no completion');
+            }
 
             return {
-                text: choice.content ?? null,
+                text: sawMessage ? textParts.join('') : null,
                 toolCalls
             };
         }

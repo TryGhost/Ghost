@@ -15,6 +15,7 @@ import {
     IMAGE_URL,
     SCRIPT_URL,
     bootSession,
+    commitInlineEdit,
     createFakeAdminApi,
     createFakeClientFactory,
     createFakeInteractions,
@@ -247,11 +248,13 @@ describe('edit-mode session', function () {
         it('applies an edit, re-renders, and only then counts it', async function () {
             const {ui, dom, interactions, clientFactory} = await bootSession();
 
-            interactions.options.onSelect(editableElement(dom, 'index.hbs:1:1'));
-            assert.ok(ui.state.editor, 'the inline editor opens');
-            assert.equal(ui.state.editor.value, 'Original title');
+            const element = editableElement(dom, 'index.hbs:1:1');
+            interactions.options.onSelect(element);
+            assert.ok(ui.state.editor, 'the inline edit panel opens');
+            assert.ok(element.getAttribute('contenteditable'), 'the clicked element itself becomes editable');
 
-            await ui.handlers.onCommitEdit('Edited title');
+            element.textContent = 'Edited title';
+            await ui.handlers.onCommitEdit();
 
             assert.equal(ui.state.dirtyCount, 1);
             assert.equal(ui.state.status, 'ready');
@@ -264,39 +267,39 @@ describe('edit-mode session', function () {
         });
 
         it('commits nothing when the value is unchanged', async function () {
-            const {ui, dom, interactions, clientFactory} = await bootSession();
+            const booted = await bootSession();
 
-            interactions.options.onSelect(editableElement(dom, 'index.hbs:1:1'));
-            await ui.handlers.onCommitEdit('Original title');
+            await commitInlineEdit(booted, 'index.hbs:1:1');
 
-            assert.equal(ui.state.dirtyCount, 0);
-            assert.equal(ui.state.editor, null);
-            assert.equal(clientFactory.created[0].setThemeCalls.length, 0);
+            assert.equal(booted.ui.state.dirtyCount, 0);
+            assert.equal(booted.ui.state.editor, null);
+            assert.equal(booted.clientFactory.created[0].setThemeCalls.length, 0);
         });
 
         it('surfaces applier rejections ({{ injection) cleanly with no dirty count', async function () {
-            const {ui, dom, interactions, clientFactory} = await bootSession();
+            const booted = await bootSession();
 
-            interactions.options.onSelect(editableElement(dom, 'index.hbs:1:1'));
-            await ui.handlers.onCommitEdit('{{@site.title}}');
+            const element = await commitInlineEdit(booted, 'index.hbs:1:1', '{{@site.title}}');
 
-            assert.equal(ui.state.dirtyCount, 0);
-            assert.equal(ui.state.statusIsError, true);
-            assert.match(ui.state.statusText, /Could not apply the edit/);
+            assert.equal(booted.ui.state.dirtyCount, 0);
+            assert.equal(booted.ui.state.statusIsError, true);
+            assert.match(booted.ui.state.statusText, /Could not apply the edit/);
             // the rejected candidate never reached the renderer
-            assert.equal(clientFactory.created[0].setThemeCalls.length, 0);
-            // and the preview still shows the original
-            assert.match(dom.window.document.querySelector('h1').textContent, /Original title/);
+            assert.equal(booted.clientFactory.created[0].setThemeCalls.length, 0);
+            // and the preview element is restored — the rejected text does
+            // NOT linger in the (unchanged) preview
+            assert.match(booted.dom.window.document.querySelector('h1').textContent, /Original title/);
+            assert.equal(element.getAttribute('contenteditable'), null, 'the element is no longer editable');
         });
 
         it('reverts to the last-good theme when the candidate fails to render', async function () {
             const clientFactory = createFakeClientFactory({
                 setThemeShouldFail: theme => /Poison/.test(theme['index.hbs'])
             });
-            const {ui, dom, interactions} = await bootSession({clientFactory});
+            const booted = await bootSession({clientFactory});
+            const {ui, dom} = booted;
 
-            interactions.options.onSelect(editableElement(dom, 'index.hbs:1:1'));
-            await ui.handlers.onCommitEdit('Poison');
+            await commitInlineEdit(booted, 'index.hbs:1:1', 'Poison');
 
             assert.equal(ui.state.dirtyCount, 0, 'a failed edit must not count');
             assert.equal(ui.state.statusIsError, true);
@@ -306,10 +309,10 @@ describe('edit-mode session', function () {
             assert.equal(client.setThemeCalls.length, 2, 'candidate + revert');
             assert.match(client.setThemeCalls[0]['index.hbs'], /Poison/);
             assert.match(client.setThemeCalls[1]['index.hbs'], /Original title/, 'reverted to the last-good theme');
+            assert.match(dom.window.document.querySelector('h1').textContent, /Original title/, 'the failed text does not linger in the preview');
 
             // the session still works: a good edit succeeds afterwards
-            interactions.options.onSelect(editableElement(dom, 'index.hbs:1:1'));
-            await ui.handlers.onCommitEdit('Recovered title');
+            await commitInlineEdit(booted, 'index.hbs:1:1', 'Recovered title');
             assert.equal(ui.state.dirtyCount, 1);
             assert.match(dom.window.document.querySelector('h1').textContent, /Recovered title/);
         });
@@ -317,14 +320,36 @@ describe('edit-mode session', function () {
         it('commits the pending inline edit when another element is clicked', async function () {
             const {ui, dom, interactions} = await bootSession();
 
-            interactions.options.onSelect(editableElement(dom, 'index.hbs:1:1'));
-            ui.state.editor.value = 'Typed then clicked away';
+            const element = editableElement(dom, 'index.hbs:1:1');
+            interactions.options.onSelect(element);
+            element.textContent = 'Typed then clicked away';
 
             interactions.options.onSelect(editableElement(dom, 'index.hbs:1:24'));
             await waitFor(() => ui.state.dirtyCount === 1);
 
             assert.match(dom.window.document.querySelector('h1').textContent, /Typed then clicked away/);
             assert.equal(ui.state.editor, null, 'no new editor opens on the stale element');
+        });
+
+        it('Enter commits from inside the element; Escape cancels and restores it', async function () {
+            const {ui, dom, interactions} = await bootSession();
+
+            const heading = editableElement(dom, 'index.hbs:1:1');
+            interactions.options.onSelect(heading);
+            heading.textContent = 'Enter-committed title';
+            heading.dispatchEvent(new dom.window.KeyboardEvent('keydown', {key: 'Enter', bubbles: true, cancelable: true}));
+            await waitFor(() => ui.state.dirtyCount === 1);
+            assert.match(dom.window.document.querySelector('h1').textContent, /Enter-committed title/);
+
+            const para = editableElement(dom, 'index.hbs:1:24');
+            interactions.options.onSelect(para);
+            para.textContent = 'Discarded by Escape';
+            para.dispatchEvent(new dom.window.KeyboardEvent('keydown', {key: 'Escape', bubbles: true, cancelable: true}));
+
+            assert.equal(ui.state.editor, null, 'Escape closes the edit');
+            assert.equal(ui.state.dirtyCount, 1, 'the escaped edit never committed');
+            assert.match(dom.window.document.querySelector('p').textContent, /Second para/, 'the element content is restored');
+            assert.equal(para.getAttribute('contenteditable'), null, 'the element is no longer editable');
         });
 
         it('closes without committing when clicking away with an untouched value', async function () {
@@ -529,8 +554,9 @@ describe('edit-mode session', function () {
         it('commits a pending text edit when the image is clicked (never silently discards)', async function () {
             const booted = await bootSession();
 
-            booted.interactions.options.onSelect(editableElement(booted.dom, 'index.hbs:1:1'));
-            booted.ui.state.editor.value = 'Typed then clicked the image';
+            const heading = editableElement(booted.dom, 'index.hbs:1:1');
+            booted.interactions.options.onSelect(heading);
+            heading.textContent = 'Typed then clicked the image';
 
             clickImage(booted);
             await waitFor(() => booted.ui.state.dirtyCount === 1);
@@ -555,8 +581,7 @@ describe('edit-mode session', function () {
     describe('publish', function () {
         async function bootWithEdit(options = {}) {
             const booted = await bootSession(options);
-            booted.interactions.options.onSelect(editableElement(booted.dom, 'index.hbs:1:1'));
-            await booted.ui.handlers.onCommitEdit('Edited title');
+            await commitInlineEdit(booted, 'index.hbs:1:1', 'Edited title');
             assert.equal(booted.ui.state.dirtyCount, 1);
             return booted;
         }
@@ -682,8 +707,7 @@ describe('edit-mode session', function () {
             const draftStore = createMemoryDraftStore();
 
             const first = await bootSession({draftStore});
-            first.interactions.options.onSelect(editableElement(first.dom, 'index.hbs:1:1'));
-            await first.ui.handlers.onCommitEdit('Survives re-entry');
+            await commitInlineEdit(first, 'index.hbs:1:1', 'Survives re-entry');
             first.session.destroy();
 
             assert.ok(first.dom.window.document.getElementById('live-main'), 'exit restores the page');
@@ -702,8 +726,7 @@ describe('edit-mode session', function () {
             });
 
             const first = await bootSession({api, draftStore: null});
-            first.interactions.options.onSelect(editableElement(first.dom, 'index.hbs:1:1'));
-            await first.ui.handlers.onCommitEdit('Singleton survivor');
+            await commitInlineEdit(first, 'index.hbs:1:1', 'Singleton survivor');
             first.session.destroy();
 
             const second = await bootSession({api, draftStore: null});
@@ -715,15 +738,13 @@ describe('edit-mode session', function () {
             const draftStore = createMemoryDraftStore();
 
             const first = await bootSession({draftStore});
-            first.interactions.options.onSelect(editableElement(first.dom, 'index.hbs:1:1'));
-            await first.ui.handlers.onCommitEdit('Published edit');
+            await commitInlineEdit(first, 'index.hbs:1:1', 'Published edit');
             await first.ui.handlers.onPublish();
             await first.ui.handlers.onPublish();
             assert.equal(first.api.uploads.length, 1);
 
             // a fresh edit on top of the just-published base
-            first.interactions.options.onSelect(editableElement(first.dom, 'index.hbs:1:1'));
-            await first.ui.handlers.onCommitEdit('Post-publish edit');
+            await commitInlineEdit(first, 'index.hbs:1:1', 'Post-publish edit');
             assert.equal(first.ui.state.dirtyCount, 1);
             first.session.destroy();
 

@@ -13,13 +13,16 @@
  * (theme zips are small and the download doubles as the freshness source for
  * the draft key and the publish-time lost-update check).
  *
- * Edit loop: click a [data-edit] element → parse its marker → inline input →
+ * Edit loop: click a [data-edit] element → parse its marker → the element
+ * itself becomes contentEditable (in-place editing; Enter or the floating
+ * panel's Save commits, Escape cancels and restores the element) →
  * applyThemeTextEdit (anchor-verified) on a CANDIDATE theme → setTheme +
  * re-render the candidate → only when that whole pipeline succeeds does the
  * session commit (snapshot/editCount/draft store) and keep the candidate; any
- * failure re-points the renderer at the last-good theme and surfaces the
- * error without counting the edit. Clicking another element while the inline
- * editor is open COMMITS the pending edit (never silently discards it).
+ * failure restores the element, re-points the renderer at the last-good theme
+ * and surfaces the error without counting the edit. Clicking another element
+ * while an inline edit is open COMMITS the pending edit (never silently
+ * discards it).
  *
  * Image swap (slice 5): a click on a marked <img> opens the Replace-image
  * panel instead of the text editor (an <img> is void — it has no text child).
@@ -325,7 +328,7 @@ export function createEditSession({config, onExit, deps = {}}) {
     let storeKey = null;
     let editCount = 0;
     let changedFiles = new Set(); // cumulative committed paths since the base (human + agent)
-    let activeEdit = null; // {element, marker, initialValue}
+    let activeEdit = null; // {element, marker, initialValue, originalHtml, keyHandler}
     let activeImageEdit = null; // {element, marker}
     let replacingImage = false;
     let publishArmed = false;
@@ -355,7 +358,77 @@ export function createEditSession({config, onExit, deps = {}}) {
         }
     }
 
+    /**
+     * Makes the clicked element itself editable (in-place editing — no input
+     * box): `contenteditable="plaintext-only"` where supported so typing and
+     * pastes stay plain text, falling back to `"true"` (the commit flattens
+     * to textContent either way, matching the applier's plain-text contract).
+     * Enter commits, Escape cancels; both are also on the floating panel.
+     */
+    function beginInlineEdit(element, marker) {
+        const keyHandler = (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                event.stopPropagation();
+                commitEdit();
+            } else if (event.key === 'Escape') {
+                event.preventDefault();
+                event.stopPropagation();
+                closeEditor();
+            }
+        };
+
+        activeEdit = {
+            element,
+            marker,
+            initialValue: initialEditValue(element),
+            originalHtml: element.innerHTML,
+            keyHandler
+        };
+
+        element.setAttribute('contenteditable', 'plaintext-only');
+        if (!element.isContentEditable) {
+            element.setAttribute('contenteditable', 'true');
+        }
+        element.addEventListener('keydown', keyHandler);
+        element.focus();
+
+        try {
+            // Select the text (the old input-box behavior): a replacement is
+            // one keystroke, a tweak is one click.
+            const selection = win.getSelection();
+            const range = doc.createRange();
+            range.selectNodeContents(element);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        } catch {
+            // selection is a nicety — environments without Range support
+            // still get a focused editable element
+        }
+    }
+
+    /**
+     * Ends the in-place edit: detaches the key handler, drops
+     * contenteditable, and restores the element's pre-edit DOM. The restore
+     * keeps the preview in sync with the draft in every non-success path
+     * (cancel, applier rejection, failed render); on a successful commit the
+     * whole document is re-swapped from the re-render right after, so the
+     * momentary restore is invisible.
+     */
+    function endInlineEdit() {
+        if (!activeEdit) {
+            return;
+        }
+        const {element, originalHtml, keyHandler} = activeEdit;
+        element.removeEventListener('keydown', keyHandler);
+        element.removeAttribute('contenteditable');
+        if (element.innerHTML !== originalHtml) {
+            element.innerHTML = originalHtml;
+        }
+    }
+
     function closeEditor(patch = {}) {
+        endInlineEdit();
         activeEdit = null;
         activeImageEdit = null;
         ui.update({editor: null, imageEditor: null, highlight: null, ...patch});
@@ -479,7 +552,7 @@ export function createEditSession({config, onExit, deps = {}}) {
         return true;
     }
 
-    async function commitEdit(value) {
+    async function commitEdit() {
         if (!activeEdit) {
             return;
         }
@@ -488,7 +561,9 @@ export function createEditSession({config, onExit, deps = {}}) {
         }
 
         const {element, marker, initialValue} = activeEdit;
-        const newText = value.replace(/\s+/g, ' ').trim();
+        // The element IS the editor — the new text is whatever the user left
+        // in it, collapsed to one line (the applier rejects newlines).
+        const newText = initialEditValue(element);
 
         // An untouched commit (click-away without typing, Enter on the
         // unchanged value) is a close, not an edit.
@@ -805,7 +880,7 @@ export function createEditSession({config, onExit, deps = {}}) {
         // the task runs, and the pending one is COMMITTED first (never
         // silently discarded), exactly like clicking another element.
         if (activeEdit) {
-            await commitEdit(ui.getState().editor?.value ?? '');
+            await commitEdit();
         }
         if (activeEdit || activeImageEdit) {
             closeEditor();
@@ -1010,7 +1085,7 @@ export function createEditSession({config, onExit, deps = {}}) {
             if (activeEdit.element === element) {
                 return;
             }
-            commitEdit(ui.getState().editor?.value ?? '');
+            commitEdit();
             return;
         }
 
@@ -1044,10 +1119,10 @@ export function createEditSession({config, onExit, deps = {}}) {
             return;
         }
 
-        activeEdit = {element, marker, initialValue: initialEditValue(element)};
+        beginInlineEdit(element, marker);
         ui.update({
             highlight: toRect(element),
-            editor: {rect: toRect(element), value: activeEdit.initialValue},
+            editor: {rect: toRect(element)},
             statusText: '',
             statusIsError: false
         });
@@ -1077,7 +1152,7 @@ export function createEditSession({config, onExit, deps = {}}) {
             handlers: {
                 onExit: () => destroy(),
                 onPublish: () => publish(),
-                onCommitEdit: value => commitEdit(value),
+                onCommitEdit: () => commitEdit(),
                 onCancelEdit: () => closeEditor(),
                 onReplaceImage: () => replaceImage(),
                 onToggleChat: () => toggleChat(),

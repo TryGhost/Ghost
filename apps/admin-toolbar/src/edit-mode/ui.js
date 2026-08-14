@@ -10,8 +10,10 @@
  *   window.confirm, so the flow is testable through the session's UI seam;
  * - the hover highlight (an outline overlay positioned from the hovered
  *   element's bounding rect — NOT shadow-DOM-bound, it just draws on top);
- * - the inline text editor (a small floating input over the clicked element;
- *   Enter commits, Escape cancels — deliberately spike-simple);
+ * - the inline edit panel (`editor` state): the clicked element itself is
+ *   contentEditable (the SESSION owns that — in-place editing, no input box);
+ *   this overlay only floats a small Save/Cancel panel near it. Enter and
+ *   Escape are handled on the element, also by the session;
  * - the image editor (`imageEditor` state, opened for marked <img> elements):
  *   the same floating affordance with a Replace-image button instead of an
  *   input — the file picker, upload, and attribute swap live in the session;
@@ -55,14 +57,13 @@ const STYLES = `
     background: rgba(20, 184, 255, .08);
 }
 .editor {
-    position: fixed; z-index: 2147483001; display: flex; gap: 6px;
+    position: fixed; z-index: 2147483001; display: flex; gap: 6px; align-items: center;
     padding: 6px; border-radius: 8px; background: #15171a;
     box-shadow: 0 4px 16px rgba(0,0,0,.35);
 }
-.editor input {
-    min-width: 240px; border: 1px solid #394047; border-radius: 6px;
-    padding: 5px 8px; font: 400 13px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    background: #23262b; color: #fff; outline: none;
+.editor .hint {
+    color: #8b939e; padding: 0 4px;
+    font: 500 11px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 .editor button {
     appearance: none; border: 0; border-radius: 6px; padding: 5px 10px;
@@ -120,42 +121,14 @@ function InlineEditor({editor, onCommit, onCancel}) {
         return null;
     }
 
-    const top = Math.max(8, editor.rect.top - 4);
+    // Float ABOVE the element — the element itself is being edited in place,
+    // so the panel must not cover it.
+    const top = Math.max(8, editor.rect.top - 44);
     const left = Math.max(8, editor.rect.left);
 
     return h('div', {className: 'editor', style: `top:${top}px;left:${left}px;`}, [
-        h('input', {
-            type: 'text',
-            value: editor.value,
-            autoFocus: true,
-            ref: (node) => {
-                if (node && !node.dataset.focused) {
-                    node.dataset.focused = 'true';
-                    node.focus();
-                    node.select();
-                }
-            },
-            onInput: (event) => {
-                editor.value = event.currentTarget.value;
-            },
-            onKeyDown: (event) => {
-                if (event.key === 'Enter') {
-                    event.preventDefault();
-                    onCommit(event.currentTarget.value);
-                } else if (event.key === 'Escape') {
-                    event.preventDefault();
-                    onCancel();
-                }
-            }
-        }),
-        h('button', {
-            type: 'button',
-            className: 'save',
-            onClick: (event) => {
-                const input = event.currentTarget.parentElement.querySelector('input');
-                onCommit(input.value);
-            }
-        }, 'Save'),
+        h('span', {className: 'hint'}, 'Edit the text in place — Enter saves, Esc cancels'),
+        h('button', {type: 'button', className: 'save', onClick: () => onCommit()}, 'Save'),
         h('button', {type: 'button', onClick: onCancel}, 'Cancel')
     ]);
 }
@@ -330,7 +303,7 @@ function App({state, handlers}) {
 /**
  * @param {Object} options
  * @param {Document} [options.doc]
- * @param {{onExit(): void, onPublish(): void, onCommitEdit(value: string): void, onCancelEdit(): void, onReplaceImage(): void, onToggleChat(): void, onSendPrompt(text: string): Promise<{refused?: boolean}|void>, onSaveApiKey(value: string): void, onSaveModel(value: string): void, onClearApiKey(): void}} options.handlers
+ * @param {{onExit(): void, onPublish(): void, onCommitEdit(): void, onCancelEdit(): void, onReplaceImage(): void, onToggleChat(): void, onSendPrompt(text: string): Promise<{refused?: boolean}|void>, onSaveApiKey(value: string): void, onSaveModel(value: string): void, onClearApiKey(): void}} options.handlers
  * @returns {{host: HTMLElement, update(patch: Object): void, getState(): Object, destroy(): void}}
  */
 export function createEditModeUi({doc = document, handlers}) {
