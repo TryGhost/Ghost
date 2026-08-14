@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import errors from '@tryghost/errors';
 import {describe, it} from 'vitest';
-import {hasResolvers} from '../../src/engine/async-resolver.ts';
+import {TOKEN_PATTERN, hasResolvers, resolve} from '../../src/engine/async-resolver.ts';
 import {TemplateEngine, type TemplateResolver} from '../../src/engine/index.ts';
 
 function createResolver(files: Record<string, string>): TemplateResolver {
@@ -148,6 +148,24 @@ describe('TemplateEngine async helpers', function () {
             cb('__aSyNcId__<_NOTREGIS__');
         });
         await assert.rejects(engine.render('index.hbs', {}), /Unable to resolve async helper placeholders/);
+    });
+});
+
+describe('token grammar', function () {
+    // TOKEN_PATTERN's character class and length are derived from
+    // generate-id.ts — this pins the two modules together: any alphabet or
+    // length drift makes a freshly generated placeholder unmatchable.
+    it('TOKEN_PATTERN matches a freshly generated placeholder id, raw and HTML-escaped', function () {
+        const cache: Record<string, Promise<unknown>> = {};
+        const id = resolve(cache, (_context, cb) => cb('x'), null);
+
+        // replace with the global pattern → empty means the WHOLE token
+        // matched, not a substring
+        assert.equal(id.replace(TOKEN_PATTERN, ''), '', `raw token not fully matched: ${id}`);
+
+        // Handlebars escapeExpression only escapes '<' within the token
+        const escaped = id.replace('<', '&lt;');
+        assert.equal(escaped.replace(TOKEN_PATTERN, ''), '', `escaped token not fully matched: ${escaped}`);
     });
 });
 

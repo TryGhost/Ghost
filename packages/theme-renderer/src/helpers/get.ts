@@ -11,9 +11,9 @@ import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 
 import _ from '../utils/lodash.ts';
-// The guard must evaluate before nql-lang (which reads process.env unguarded
-// at import and parse time — crashes browsers/workers without it)
-import '../utils/process-env-guard.ts';
+// nql-lang reads process.env unguarded at import and parse time — the package
+// entry (src/index.ts) imports utils/process-env-guard.ts FIRST so browsers/
+// workers have a process global before this module (or any other path) loads.
 import nqlLang from '@tryghost/nql-lang';
 
 const messages = {

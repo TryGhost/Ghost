@@ -1,4 +1,5 @@
 import {createVitestConfig} from '@internal/cfg-vitest';
+import {configDefaults} from 'vitest/config';
 
 // Thresholds are tuned down from the internal-package default (100/100/80/100):
 // most of src/ is near-verbatim code copied from ghost/core/core/frontend
@@ -8,9 +9,10 @@ import {createVitestConfig} from '@internal/cfg-vitest';
 export default createVitestConfig({
     test: {
         // The browser-mode worker-parity suite runs in Chromium via
-        // vitest.browser.config.ts (pnpm test:browser) — its tests use Worker
-        // and would fail under the Node runtime.
-        exclude: ['test/browser/**'],
+        // vitest.browser.config.ts (pnpm browser:test) — its tests use Worker
+        // and would fail under the Node runtime. Extend (not replace) the
+        // default excludes so node_modules etc. stay excluded.
+        exclude: [...configDefaults.exclude, 'test/browser/**'],
         coverage: {
             thresholds: {
                 lines: 70,

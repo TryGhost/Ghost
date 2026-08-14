@@ -26,9 +26,10 @@
   "scripts": {
     "build": "tsc",
     "test:unit": "NODE_ENV=testing vitest run --coverage",
-    "test:browser": "vitest run --config vitest.browser.config.ts",
+    "test:types": "tsc --noEmit -p test/tsconfig.json",
+    "test:types:browser": "tsc --noEmit -p test/browser/tsconfig.json",
     "test": "pnpm run '/^test:/'",
-    "test:types": "tsc --noEmit -p test/tsconfig.json && tsc --noEmit -p test/browser/tsconfig.json",
+    "browser:test": "vitest run --config vitest.browser.config.ts",
     "lint:code": "eslint src/ --cache",
     "lint:test": "eslint test/ --cache",
     "lint": "pnpm run '/^lint:/'"

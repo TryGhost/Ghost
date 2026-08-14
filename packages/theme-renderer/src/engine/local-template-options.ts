@@ -10,7 +10,7 @@
  * updateLocalTemplateOptions @ 2.5.0.
  */
 
-export type LocalTemplateOptions = Record<string, unknown>;
+type LocalTemplateOptions = Record<string, unknown>;
 
 export function getLocalTemplateOptions(locals: Record<string, any>): LocalTemplateOptions {
     return (locals._templateOptions as LocalTemplateOptions | undefined) || {};

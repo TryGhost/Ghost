@@ -15,6 +15,12 @@
  * 5. register the Ghost helpers through the HelperRegistrar adapter,
  * 6. seed global template options (the `@site/@labs/@config/@custom` frame).
  */
+// FIRST import: browser/worker guard for @tryghost/nql-lang's unguarded
+// `process.env` reads (import-time via the browserify util polyfill, parse-time
+// via jison's yy.debug — upstream fix candidate, see the guard's doc block).
+// Importing it here, before anything else, covers every module in the graph
+// regardless of import order.
+import './utils/process-env-guard.ts';
 import _ from './utils/lodash.ts';
 import tpl from '@tryghost/tpl';
 import errors from '@tryghost/errors';

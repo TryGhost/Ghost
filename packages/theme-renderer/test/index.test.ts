@@ -200,6 +200,16 @@ describe('createRenderer', function () {
             const postRequests = requests.filter(u => u.pathname.startsWith('/ghost/api/content/posts'));
             assert.equal(postRequests.length, 0);
         });
+
+        it('404s /tag/:slug/page/0/ locally without calling the API (taxonomy pagination)', async function () {
+            const {renderer, requests} = await createTestRenderer();
+            const response = await renderer.render(new Request(`${SITE_URL}tag/news/page/0/`));
+            assert.equal(response.status, 404);
+            // settings load happens at createRenderer; the render itself must
+            // produce zero content requests (no posts browse, no tag read)
+            const contentRequests = requests.filter(u => u.pathname.startsWith('/ghost/api/content/') && !u.pathname.startsWith('/ghost/api/content/settings/'));
+            assert.equal(contentRequests.length, 0);
+        });
     });
 
     it('renders a post route with the post template and @page defaults', async function () {

@@ -4,6 +4,22 @@ The slice-1 review reported 10 confirmed correctness findings (fixed separately)
 These verified-but-lower-severity items from the same review feed the next slices.
 Remove entries as they land.
 
+Slice-2 review fix pass (2026-08-14) landed on top: taxonomy `/page/0/` 404s
+locally (resolve.ts page<1 arm), Express res.type content-type semantics now
+match the ghost/core oracle byte-for-byte (mime@1.6.0 table incl. `rss`,
+unanchored case-sensitive charset rule, octet-stream fallback — oracle table in
+test/rendering/pipeline.test.ts), the process-env guard moved to the package
+entry (first import, configurable/deletable shim), the ContentApiPort
+freshly-owned-JSON contract is dev/test-enforced (seam/payload-ownership.ts
+WeakSet assertion) and processQuery shallow-clones its tiny query argument, the
+permalink-matcher memo is capped (100, full clear) and cleared on
+resetRendererDeps, TOKEN_PATTERN's char class derives from generate-id's
+alphabet, the fixture recorder hard-fails on missed instance-config scrapes
+(shared harness.ts scrapeInstanceConfig/fetchFirstPost), and the script surface
+is checker-compliant again (`test:types` restored; WebWorker tsconfig checked
+by `test:types:browser`; Playwright suite moved to `browser:test`, outside the
+`test` glob).
+
 ## Correctness-adjacent
 
 Resolved in slice 2 (2026-08-14): deep-merge unified (engine's `mergeDeep`
@@ -49,11 +65,12 @@ Still open (deliberate, verbatim-port fidelity — upstream-fix candidates):
 ## Structure / conventions
 
 - ~~**Catalog entries duplicate inline pins**~~ — done in slice 2: `handlebars`, `@tryghost/social-urls`, `downsize-cjs`, `human-number`, `sanitize-html` (+ `common-tags`/`@types/common-tags`, added to the catalog for the comment_count port) flipped to `catalog:` in `ghost/core/package.json` and koenig's handlebars likewise; resolved versions unchanged.
-- **Integration suite runs under test:unit and silently skips in CI** — `test/integration/live-render.test.ts` skipIf-skips without Ghost, so CI green asserts nothing about live parity and coverage numbers differ by environment. Split into a `test:integration` target (excluded from unit coverage) once CI story exists; longer-term give CI a Ghost instance. (Softened in slice 2: `test/integration/fixture-parity.test.ts` renders the recorded fixtures hermetically, so CI does now pin the render output — just against recorded data, not a live instance. `test:browser` likewise needs a Playwright Chromium in CI or it fails rather than skips.)
+- **Integration suite runs under test:unit and silently skips in CI** — `test/integration/live-render.test.ts` skipIf-skips without Ghost, so CI green asserts nothing about live parity and coverage numbers differ by environment. Split into a `test:integration` target (excluded from unit coverage) once CI story exists; longer-term give CI a Ghost instance. (Softened in slice 2: `test/integration/fixture-parity.test.ts` renders the recorded fixtures hermetically, so CI does now pin the render output — just against recorded data, not a live instance.)
+- **No CI job runs the browser worker-parity suite** — `browser:test` (renamed out of the `/^test:/` glob in the slice-2 fix pass so `pnpm test` no longer requires a Playwright Chromium) is now run by NO CI job at all: the only lane touching this package is `.github/workflows/ci.yml` ~line 710 (`pnpm nx run-many -t test:unit -p ...`). The static half (`test:types:browser`, WebWorker-lib tsc) does run in `pnpm test`. Open item: add a CI job (or extend an existing browser-tooling job) that installs Chromium and runs `browser:test` for this package.
 - **Seam bypasses** — `helpers/services/handlebars.ts:16,41`, `rendering/templates.ts:126`, `rendering/template-options.ts:52`, `controllers/collection.ts:41,51` import `getRendererDeps`/`activeTheme` from `seam/deps.ts` directly instead of through `seam/proxy.ts`; add `config`/`themeEngine` delegates to proxy.ts to keep ports byte-diffable and slice-5's per-render-context swap single-file.
 - **Second compile path bypasses onCompile** — `seam/handlebars-env.ts:30-38` compiles core-helper partials with its own `{preventIndent: true}` instead of the engine's compile (where marker injection will land in slice 3); route core partials through the engine's registrar.
 - **i18n interpolation triplicated** — `seam/stubs.ts:203` `createSimpleThemeI18n` ≡ `theme/theme-source.ts:69` `interpolate` (+ a third in `utils/frontend-apps.ts:8`); the stub copy is what unit tests exercise while renders use the theme-source copy. Collapse to one.
 - **Content API client triplicated** — `seam/settings.ts:72` re-implements the fetch/base-URL/error handling `seam/content-api.ts` owns (with already-diverged error mapping: settings 401 → opaque error). Extract one request helper.
 - **Twin `themeI18n`/`themeI18next` ports always bound to the same object** — collapse to one dep exposing both wrapper names for the verbatim `t.js` body.
 - **Dead code** — `src/seam/index.ts` barrel (no importers), `settingsPayload` resolved in both `createDefaultDeps` and `loadDefaultDeps`, `resolve.ts` `permalink` option no production caller can reach (wire it or hardcode), `SettingsSnapshot.raw` and `ThemeSource.files` never read, `seam/stubs.ts:66` private `extname` duplicating `engine/paths.ts`.
-- **README lacks exception justification** — packages/README.md requires recording exceptions (lowered coverage thresholds, blanket eslint-disables on ported files, hybrid copy policy) in the README, not only in config/docs; add a short section linking docs/provenance.md.
+- ~~**README lacks exception justification**~~ — done in the slice-2 fix pass: README now carries an "Exceptions to the golden path" section (hybrid copy policy, coverage thresholds, ported-file eslint-disables, second test project, host-realm process shim) linking docs/provenance.md.

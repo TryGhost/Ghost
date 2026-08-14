@@ -4,7 +4,8 @@
  * routes against the live dev instance.
  *
  * Instance config the Content API cannot supply (docs/deltas.md rows 1 + 3) is
- * scraped from the live page and injected through `createRenderer({config})` —
+ * scraped from the live page (harness.ts scrapeInstanceConfig — shared with
+ * the fixture recorder) and injected through `createRenderer({config})` —
  * the real per-boot asset hash and the portal/sodo-search frontend-app URLs —
  * so those script tags must come out byte-identical, not normalized away.
  *
@@ -16,17 +17,13 @@
 import assert from 'node:assert/strict';
 import {describe, it} from 'vitest';
 import {createRenderer, type ThemeRenderer} from '../../src/index.ts';
-import {GHOST_URL, loadCasperTheme, probeLive, writeOutput} from './harness.ts';
+import {expectBytesEqual} from '../browser/expect-bytes-equal.ts';
+import {GHOST_URL, fetchFirstPost, loadCasperTheme, probeLive, scrapeInstanceConfig, writeOutput} from './harness.ts';
 
 const probe = await probeLive();
 
 // ---- instance config scraped from the live page (kills deltas 1 + 3) ----
-// Per-boot asset hash: any `?v=<hash>` on a built asset URL
-const assetHash = probe.liveHomeHtml.match(/\?v=([a-f0-9]+)"/)?.[1];
-// Portal script tag (data-i18n is portal-specific — see getMembersHelper)
-const portalUrl = probe.liveHomeHtml.match(/<script defer src="([^"]+)" data-i18n=/)?.[1];
-// Sodo-search script tag (data-sodo-search is search-specific)
-const sodoSearch = probe.liveHomeHtml.match(/<script defer src="([^"]+)" data-key="[^"]*" data-styles="([^"]*)" data-sodo-search=/);
+const scrape = scrapeInstanceConfig(probe.liveHomeHtml);
 
 /**
  * The documented-stub normalization list — ONE entry per surviving deltas.md
@@ -60,19 +57,7 @@ function normalizeLive(html: string): string {
 
 /** Byte-equality with first-divergence context in the failure message. */
 function assertBytesEqual(rendered: string, expected: string, route: string): void {
-    if (rendered === expected) {
-        return;
-    }
-    let i = 0;
-    while (i < rendered.length && i < expected.length && rendered[i] === expected[i]) {
-        i += 1;
-    }
-    const start = Math.max(0, i - 150);
-    assert.fail([
-        `byte divergence on ${route} at offset ${i} (rendered ${rendered.length}B vs live-normalized ${expected.length}B)`,
-        `rendered:          ${JSON.stringify(rendered.slice(start, i + 200))}`,
-        `live (normalized): ${JSON.stringify(expected.slice(start, i + 200))}`
-    ].join('\n'));
+    expectBytesEqual(rendered, expected, route, {actual: 'rendered', expected: 'live-normalized'});
 }
 
 let rendererPromise: Promise<ThemeRenderer> | null = null;
@@ -81,24 +66,17 @@ function getRenderer(): Promise<ThemeRenderer> {
         siteUrl: `${GHOST_URL}/`,
         contentApiKey: probe.contentApiKey,
         theme: loadCasperTheme(),
-        config: {
-            // deltas.md #1 — the live per-boot hash (upstream: config assetHash
-            // wins over the boot-time md5 in getGlobalAssetHash)
-            ...(assetHash && {assetHash}),
-            // deltas.md #3 — frontend-app instance config (Ghost server
-            // config keys, extraction-map §6)
-            ...(portalUrl && {portal: {url: portalUrl}}),
-            ...(sodoSearch && {sodoSearch: {url: sodoSearch[1], styles: sodoSearch[2]}})
-        }
+        config: scrape.config
     });
     return rendererPromise;
 }
 
 describe.skipIf(Boolean(probe.unavailableReason))(`byte parity (${probe.unavailableReason || GHOST_URL})`, function () {
     it('scrapes the instance config the Content API cannot supply', function () {
-        assert.ok(assetHash, 'live page carries a ?v= asset hash');
-        assert.ok(portalUrl, 'live page carries the portal script tag');
-        assert.ok(sodoSearch, 'live page carries the sodo-search script tag');
+        assert.deepEqual(scrape.missing, [], `live page scrapes missed: ${scrape.missing.join(', ')}`);
+        assert.ok(scrape.assetHash, 'live page carries a ?v= asset hash');
+        assert.ok(scrape.portalUrl, 'live page carries the portal script tag');
+        assert.ok(scrape.sodoSearch, 'live page carries the sodo-search script tag');
     });
 
     it('renders the home route byte-identical to live modulo documented stubs', async function () {
@@ -113,10 +91,9 @@ describe.skipIf(Boolean(probe.unavailableReason))(`byte parity (${probe.unavaila
     });
 
     it('renders the post route byte-identical to live modulo documented stubs', async function () {
-        const postsResponse = await fetch(`${GHOST_URL}/ghost/api/content/posts/?key=${probe.contentApiKey}&limit=1&fields=slug,url`);
-        const {posts} = await postsResponse.json() as any;
-        assert.ok(posts?.length, 'dev instance has at least one post');
-        const {slug, url} = posts[0];
+        const post = await fetchFirstPost(probe.contentApiKey);
+        assert.ok(post, 'dev instance has at least one post');
+        const {slug, url} = post;
 
         const liveResponse = await fetch(url);
         const livePostHtml = await liveResponse.text();

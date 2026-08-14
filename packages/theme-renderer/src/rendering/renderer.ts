@@ -11,10 +11,9 @@ import templates from './templates.ts';
 import type {PortRequest, PortResponse, RenderResult} from '../ports.ts';
 
 // Express `res.type(type)` resolves extension shorthands through the mime v1
-// table; this carries only the entries plausible as routes.yaml content_type
-// values. Unknown extensions pass through unchanged (mime v1 would produce
-// application/octet-stream — but sending the author's literal value is the
-// less surprising failure for a virtual renderer).
+// table (ghost/core oracle: express@4.22.2 → send@0.19.2 → mime@1.6.0); this
+// carries only the entries plausible as routes.yaml content_type values —
+// each verified against mime 1.6.0's table (incl. rss → application/rss+xml).
 const EXTENSION_CONTENT_TYPES: Record<string, string> = {
     html: 'text/html',
     txt: 'text/plain',
@@ -25,17 +24,38 @@ const EXTENSION_CONTENT_TYPES: Record<string, string> = {
     md: 'text/markdown'
 };
 
+// mime v1 Mime.prototype.lookup falls back to default_type for unknown
+// extensions
+const MIME_DEFAULT_TYPE = 'application/octet-stream';
+
+// express/lib/response.js `charsetRegExp` — detects an existing charset param
+// (deliberately case-sensitive, exactly as upstream)
+const CHARSET_PRESENT = /;\s*charset\s*=/;
+
+// mime v1 charsets.lookup "Assume text types are utf8" rule — deliberately
+// UNanchored (application/json-patch+json matches) and case-sensitive
+// (TEXT/HTML does not), exactly as upstream
+const UTF8_TYPES = /^text\/|^application\/(javascript|json)/;
+
 /**
- * Express `res.type()` semantics (response.js `contentType` + setHeader):
- * non-`/` values go through the mime table, and mime v1 `charsets.lookup`
- * appends `; charset=utf-8` for `text/*` and application/{json,javascript}.
+ * Express `res.type()` semantics (response.js `contentType` + `set`), matched
+ * to the ghost/core oracle byte for byte — see the RES_TYPE_ORACLE table in
+ * test/rendering/pipeline.test.ts.
  */
 function toContentTypeHeader(type: string): string {
-    const resolved = type.includes('/') ? type : (EXTENSION_CONTENT_TYPES[type] ?? type);
-    if (resolved.includes('charset')) {
+    let resolved = type;
+    if (!type.includes('/')) {
+        // mime v1 lookup: strip through the last '.'/'/'/'\\' and lowercase
+        // (the '/' arm is unreachable here — res.type only calls lookup for
+        // values without one)
+        const ext = type.replace(/^.*[./\\]/, '').toLowerCase();
+        resolved = EXTENSION_CONTENT_TYPES[ext] ?? MIME_DEFAULT_TYPE;
+    }
+    if (CHARSET_PRESENT.test(resolved)) {
         return resolved;
     }
-    if (/^text\/|^application\/(json|javascript)$/.test(resolved)) {
+    // charset is looked up against the bare type — before any ';' parameters
+    if (UTF8_TYPES.test(resolved.split(';')[0]!)) {
         return `${resolved}; charset=utf-8`;
     }
     return resolved;

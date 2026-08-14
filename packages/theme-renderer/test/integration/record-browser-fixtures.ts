@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, no-console */
+/* eslint-disable no-console */
 /**
  * Fixture recorder for the browser-mode worker-parity suite (slice 2).
  *
@@ -31,7 +31,7 @@
 import {mkdirSync, writeFileSync} from 'node:fs';
 import {join} from 'node:path';
 import {createRenderer} from '../../src/index.ts';
-import {GHOST_URL, loadCasperTheme, probeLive} from './harness.ts';
+import {GHOST_URL, fetchFirstPost, loadCasperTheme, probeLive, scrapeInstanceConfig} from './harness.ts';
 
 const FIXTURES_DIR = join(import.meta.dirname, '../browser/fixtures');
 
@@ -41,25 +41,24 @@ if (probe.unavailableReason) {
     process.exit(1);
 }
 
-// Instance config the Content API cannot supply — same scrapes as parity.test.ts
-const assetHash = probe.liveHomeHtml.match(/\?v=([a-f0-9]+)"/)?.[1];
-const portalUrl = probe.liveHomeHtml.match(/<script defer src="([^"]+)" data-i18n=/)?.[1];
-const sodoSearch = probe.liveHomeHtml.match(/<script defer src="([^"]+)" data-key="[^"]*" data-styles="([^"]*)" data-sodo-search=/);
-
-const config = {
-    ...(assetHash && {assetHash}),
-    ...(portalUrl && {portal: {url: portalUrl}}),
-    ...(sodoSearch && {sodoSearch: {url: sodoSearch[1], styles: sodoSearch[2]}})
-};
+// Instance config the Content API cannot supply — the exact scrapes
+// parity.test.ts uses (harness.ts scrapeInstanceConfig). A missed scrape means
+// the fixtures would silently record a degraded render (missing asset hash or
+// frontend-app script tags), so refuse to record rather than commit them.
+const scrape = scrapeInstanceConfig(probe.liveHomeHtml);
+if (scrape.missing.length > 0) {
+    console.error(`Cannot record fixtures: live page scrape missed ${scrape.missing.join(', ')} — refusing to record degraded fixtures`);
+    process.exit(1);
+}
+const config = scrape.config;
 
 // First post (for the entry route), as in parity.test.ts
-const postsResponse = await fetch(`${GHOST_URL}/ghost/api/content/posts/?key=${probe.contentApiKey}&limit=1&fields=slug,url`);
-const {posts} = await postsResponse.json() as any;
-if (!posts?.length) {
+const firstPost = await fetchFirstPost(probe.contentApiKey);
+if (!firstPost) {
     console.error('Cannot record fixtures: dev instance has no posts');
     process.exit(1);
 }
-const postPath = new URL(posts[0].url).pathname;
+const postPath = new URL(firstPost.url).pathname;
 
 // Recording fetch: capture every request the renderer makes
 const apiFixtures: Record<string, {status: number; body: string}> = {};

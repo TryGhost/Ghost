@@ -146,6 +146,10 @@ describe('resolveRoutes', function () {
             assert.deepEqual(paged!.params, {slug: 'news', page: 2});
         });
 
+        it('returns no candidates for /tag/:slug/page/0/ (page < 1 → 404, like the collection branch)', function () {
+            assert.deepEqual(resolveRoutes('/tag/news/page/0/'), []);
+        });
+
         it('turns /tag/:slug/page/1/ into a permanent redirect to the channel index', function () {
             const candidates = resolveRoutes('/tag/news/page/1/');
 

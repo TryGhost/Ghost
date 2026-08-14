@@ -11,6 +11,7 @@
 import sanitizeHtml from 'sanitize-html';
 import socialUrlsPkg from '@tryghost/social-urls';
 import {getRendererDeps} from './deps.ts';
+import {withPayloadOwnershipAssertion} from './payload-ownership.ts';
 import {SafeString} from './handlebars-env.ts';
 import type {ApiBrowseOptions} from './types.ts';
 
@@ -110,9 +111,15 @@ export const customThemeSettingsCache = {
 
 // In-process Content API surface: api[controller][method](options). A Proxy
 // forwards controller lookups to the injected ContentApiPort at call time.
+// In dev/test the controller is wrapped to enforce the freshly-owned-JSON
+// ownership contract (see ./payload-ownership.ts) — a no-op passthrough
+// otherwise.
 export const api: Record<string, any> = new Proxy({} as Record<string, any>, {
     get(_target, controller: string) {
-        return (getRendererDeps().api as Record<string, any>)[controller];
+        return withPayloadOwnershipAssertion(
+            (getRendererDeps().api as Record<string, any>)[controller],
+            controller
+        );
     },
     has(_target, controller: string) {
         return controller in (getRendererDeps().api as Record<string, any>);

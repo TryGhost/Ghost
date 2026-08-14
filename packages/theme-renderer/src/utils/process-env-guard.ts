@@ -6,18 +6,36 @@
  * at import time (its `require('util')` resolves to the browserify util
  * polyfill, whose module scope reads `process.env.NODE_DEBUG`), and at parse
  * time (the jison parser calls `yy.debug()`, whose first line reads
- * `process.env.DEBUG`). Real Node is untouched (the guard only acts when
- * `process` is absent); in browsers/workers the empty env makes both reads
- * resolve to `undefined`, which is exactly the "debug off" path.
+ * `process.env.DEBUG` on EVERY filter parse). The parse-time reads are why the
+ * shim must stay installed for the renderer's lifetime — an install-then-delete
+ * around the import would crash the first `{{#get}}` filter parse.
  *
- * Import this module ABOVE the offending dependency's import — module
- * evaluation order guarantees it runs first. Upstream fix candidate:
- * guard the reads in nql-lang itself, then delete this file.
+ * Host-realm impact is kept minimal:
+ * - only acts when `process` is entirely absent (Node/Deno/Bun untouched);
+ * - the property is defined configurable + writable, so a host that later
+ *   loads its own polyfill can overwrite or `delete` it;
+ * - the value is the minimal `{env: {}}` — both reads resolve to `undefined`,
+ *   which is exactly the "debug off" path.
+ *
+ * Imported FIRST by the package entry (src/index.ts) so the whole module graph
+ * is covered regardless of import order. Upstream fix candidate: guard the
+ * reads in nql-lang itself, then delete this file (also noted in the package
+ * README's exceptions section).
  */
-const globalScope = globalThis as {process?: {env: Record<string, string | undefined>}};
-
-if (typeof globalScope.process === 'undefined') {
-    globalScope.process = {env: {}};
+export interface ProcessGlobalScope {
+    process?: {env: Record<string, string | undefined>};
 }
 
-export {};
+/** Exported for unit tests — the module applies it to `globalThis` on import. */
+export function installProcessEnvGuard(globalScope: ProcessGlobalScope): void {
+    if (typeof globalScope.process === 'undefined') {
+        Object.defineProperty(globalScope, 'process', {
+            value: {env: {}},
+            configurable: true,
+            enumerable: true,
+            writable: true
+        });
+    }
+}
+
+installProcessEnvGuard(globalThis as ProcessGlobalScope);

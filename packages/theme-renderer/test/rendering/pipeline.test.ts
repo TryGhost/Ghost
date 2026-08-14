@@ -190,6 +190,49 @@ describe('rendering/renderer', function () {
         assert.equal(result.render.contentType, 'application/json; charset=utf-8');
     });
 
+    // Oracle-comparison table: every expectation below is the literal output
+    // of ghost/core's Express res.type() (express@4.22.2 → send@0.19.2 →
+    // mime@1.6.0), computed against that exact dependency graph:
+    //   ct = type.includes('/') ? type : mime.lookup(type)   [lowercased ext,
+    //        unknown → default_type application/octet-stream]
+    //   if (!/;\s*charset\s*=/.test(ct)) append mime.charsets.lookup on the
+    //        bare type before ';' — /^text\/|^application\/(javascript|json)/
+    //        (unanchored, case-sensitive) → '; charset=utf-8'
+    const RES_TYPE_ORACLE: Array<[string, string]> = [
+        // extension shorthands through the mime v1 table
+        ['rss', 'application/rss+xml'], // known to mime 1.6.0 — and rss+xml gets NO charset
+        ['html', 'text/html; charset=utf-8'],
+        ['HTML', 'text/html; charset=utf-8'], // mime.lookup lowercases the extension
+        ['json', 'application/json; charset=utf-8'],
+        ['md', 'text/markdown; charset=utf-8'],
+        ['xml', 'application/xml'], // application/xml is not a utf8 type in mime v1
+        ['unknownext', 'application/octet-stream'], // mime.lookup default_type
+        // full types pass through, charset per the mime v1 rule
+        ['text/html', 'text/html; charset=utf-8'],
+        ['TEXT/HTML', 'TEXT/HTML'], // charset rule is case-sensitive
+        ['application/rss+xml', 'application/rss+xml'],
+        ['application/json-patch+json', 'application/json-patch+json; charset=utf-8'], // rule is unanchored
+        ['image/png', 'image/png'],
+        // existing charset param wins (Express charsetRegExp)
+        ['text/html; charset=iso-8859-1', 'text/html; charset=iso-8859-1'],
+        ['text/html;charset=UTF-8', 'text/html;charset=UTF-8'],
+        // 'charset' appearing as a value is NOT a charset param — still appended
+        ['application/json; foo=charset', 'application/json; foo=charset; charset=utf-8']
+    ];
+
+    it('matches the Express res.type() oracle for extension, parameterized and case-variant types', function () {
+        configureTestDeps({depsOverrides: {activeTheme: fakeTheme(['custom-feed'])}});
+        for (const [contentType, expected] of RES_TYPE_ORACLE) {
+            const res = makeRes(
+                {type: 'custom', templates: ['custom-feed'], defaultTemplate: 'index', contentType},
+                {relativeUrl: '/feed/'}
+            );
+            const result = renderer(makeReq({path: '/feed/'}), res, {});
+            assert.ok('render' in result);
+            assert.equal(result.render.contentType, expected, `res.type(${JSON.stringify(contentType)})`);
+        }
+    });
+
     it('does not throw when routerOptions carries contentType but no templates (upstream default is [])', function () {
         configureTestDeps({depsOverrides: {activeTheme: fakeTheme(['index'])}});
         const res = makeRes(

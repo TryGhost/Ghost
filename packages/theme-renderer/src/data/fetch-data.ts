@@ -44,10 +44,13 @@ const defaultPostQuery = {
  * @returns {Promise}
  */
 function processQuery(query: any, slugParam: string | undefined, locals: any) {
-    // PERF (worker-readiness): upstream cloneDeep'd the query here; both call
-    // sites now pass a freshly-owned object (fetchData builds postQuery per
-    // call, and the taxonomy specs are `_.merge({}, ...)`d), so the in-place
-    // option mutations below cannot leak into module-level defaults.
+    // PERF (worker-readiness): upstream cloneDeep'd the query here. Queries
+    // are tiny (a spec plus a flat options map of primitives), so owning them
+    // with a shallow-safe clone at this boundary is effectively free and makes
+    // the no-leak guarantee local to this function instead of a contract on
+    // every caller. (The expensive clone that was removed — the 1–3MB posts
+    // payload — stays removed; see fetchData below.)
+    query = {...query, options: {...query.options}};
 
     // Replace any slugs, see TaxonomyRouter. We replace any '%s' by the slug
     _.each(query.options, function (option: any, name: string) {

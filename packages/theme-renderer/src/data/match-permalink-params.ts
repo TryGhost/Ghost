@@ -77,12 +77,33 @@ function constrainHyphenatedPermalinkParams(permalinks: string): string {
 
 // PERF (worker-readiness): path-to-regexp compilation was redone 3–4× per
 // request for the same permalink strings; the permalink set comes from route
-// config (a handful of strings per site), so memoize per permalink string.
+// config (a handful of strings per site), so memoize per permalink string
+// (constrainHyphenatedPermalinkParams is deterministic, so the raw string is
+// a sound key).
 const matchFuncCache = new Map<string, ReturnType<typeof routeMatch>>();
+
+// Bound the memo: >100 distinct permalink strings means something is
+// generating permalinks dynamically. A full clear at the cap is deliberately
+// simpler than LRU bookkeeping — recompiles are cheap and the steady state
+// re-fills with the handful of route-config strings immediately.
+export const MATCH_CACHE_MAX = 100;
+
+/** Called from resetRendererDeps() so renderer teardown drops the memo too. */
+export function clearMatchCache(): void {
+    matchFuncCache.clear();
+}
+
+/** Test seam — observability for the cap/clear behavior. */
+export function matchCacheSize(): number {
+    return matchFuncCache.size;
+}
 
 export default function matchPermalinkParams(permalinks: string, targetPath: string): Record<string, any> | false {
     let matchFunc = matchFuncCache.get(permalinks);
     if (!matchFunc) {
+        if (matchFuncCache.size >= MATCH_CACHE_MAX) {
+            matchFuncCache.clear();
+        }
         matchFunc = routeMatch(constrainHyphenatedPermalinkParams(permalinks));
         matchFuncCache.set(permalinks, matchFunc);
     }

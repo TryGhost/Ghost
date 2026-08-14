@@ -14,6 +14,7 @@
  */
 import errors from '@tryghost/errors';
 import {describe, expect, it} from 'vitest';
+import {expectBytesEqual} from './expect-bytes-equal.ts';
 import type {WorkerRenderRequest, WorkerRenderResult} from './render-worker.ts';
 import type {ApiFixtures} from './replay-fetch.ts';
 import instanceRaw from './fixtures/instance.json?raw';
@@ -52,21 +53,9 @@ function renderInWorker(path: string): Promise<WorkerRenderResult> {
     }).finally(() => worker.terminate());
 }
 
-/** Byte-equality with first-divergence context (huge-string-diff-friendly). */
-function expectBytesEqual(rendered: string, expected: string, route: string): void {
-    if (rendered === expected) {
-        return;
-    }
-    let i = 0;
-    while (i < rendered.length && i < expected.length && rendered[i] === expected[i]) {
-        i += 1;
-    }
-    const start = Math.max(0, i - 150);
-    expect.fail([
-        `byte divergence on ${route} at offset ${i} (worker ${rendered.length}B vs node-recorded ${expected.length}B)`,
-        `worker: ${JSON.stringify(rendered.slice(start, i + 200))}`,
-        `node:   ${JSON.stringify(expected.slice(start, i + 200))}`
-    ].join('\n'));
+/** Byte-equality with first-divergence context (shared runtime-neutral helper). */
+function expectWorkerBytesEqual(rendered: string, expected: string, route: string): void {
+    expectBytesEqual(rendered, expected, route, {actual: 'worker', expected: 'node-recorded'});
 }
 
 describe('worker render parity (real Web Worker, Chromium)', function () {
@@ -76,7 +65,7 @@ describe('worker render parity (real Web Worker, Chromium)', function () {
             expect.fail(`worker render failed:\n${result.error}`);
         }
         expect(result.status).toBe(200);
-        expectBytesEqual(result.html, expectedHome, instance.routes.home);
+        expectWorkerBytesEqual(result.html, expectedHome, instance.routes.home);
     });
 
     it('renders the post route byte-identical to the Node render', async function () {
@@ -85,6 +74,6 @@ describe('worker render parity (real Web Worker, Chromium)', function () {
             expect.fail(`worker render failed:\n${result.error}`);
         }
         expect(result.status).toBe(200);
-        expectBytesEqual(result.html, expectedPost, instance.routes.post);
+        expectWorkerBytesEqual(result.html, expectedPost, instance.routes.post);
     });
 });

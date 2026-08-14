@@ -1,4 +1,4 @@
-import {generateId} from './generate-id.ts';
+import {ID_ALPHABET, generateId} from './generate-id.ts';
 
 /**
  * Placeholder-token mechanism for async helpers, ported from
@@ -25,8 +25,10 @@ export type ResolverCache = Record<string, Promise<unknown>>;
 // so the escaped token form differs from the raw one by exactly '&lt;' vs '<'.
 const ID_ESCAPED_STRING_ESCAPED = '&lt;_';
 
-// Character class matching generate-id's alphabet (A-Z, a-z and '_').
-const ID_CHAR_CLASS = '[A-Za-z_]';
+// Character class over generate-id's exact alphabet (single source of truth —
+// alphabet drift cannot desync the pattern). Every character is class-safe:
+// letters plus '_', no ']', '^', '-' or '\'.
+const ID_CHAR_CLASS = `[${ID_ALPHABET}]`;
 
 /**
  * One anchored pattern over the fixed token grammar, matching both the raw

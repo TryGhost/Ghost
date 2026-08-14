@@ -212,6 +212,10 @@ export function resolveRoutes(path: string, options: ResolveRoutesOptions = {}):
                     controller: 'redirect',
                     redirect: {status: 301, url: path.replace(new RegExp('/page/(.*)?/'), '/')}
                 });
+            } else if (page < 1 || isNaN(page)) {
+                // CASE: page-param next(NotFoundError) — no candidate → 404
+                // (page 0 is the only reachable case behind \d+), mirroring
+                // the collection pagination branch above
             } else {
                 candidates.push({
                     controller: 'channel',

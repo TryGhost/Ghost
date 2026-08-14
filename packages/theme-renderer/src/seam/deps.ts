@@ -1,4 +1,5 @@
 import errors from '@tryghost/errors';
+import {clearMatchCache} from '../data/match-permalink-params.ts';
 import type {RendererDeps} from './types.ts';
 
 /**
@@ -19,6 +20,9 @@ export function configureRendererDeps(next: RendererDeps): void {
 
 export function resetRendererDeps(): void {
     deps = null;
+    // Module-singleton hygiene: the permalink matcher memo lives for the
+    // renderer's lifetime — drop it with the deps so teardown is complete.
+    clearMatchCache();
 }
 
 export function getRendererDeps(): RendererDeps {
