@@ -9,10 +9,11 @@ Lexical node definitions for all of Ghost's cards, including each node's HTML re
 ## Usage
 
 ```js
+const {createEditor} = require('lexical');
 const {DEFAULT_NODES, DEFAULT_CONFIG} = require('@tryghost/kg-default-nodes');
 
-const editor = createHeadlessEditor({
-    nodes: [HeadingNode, LinkNode, ListNode, ListItemNode, QuoteNode, ...DEFAULT_NODES],
+const editor = createEditor({
+    nodes: DEFAULT_NODES,
     html: DEFAULT_CONFIG.html
 });
 ```
@@ -40,7 +41,8 @@ workflow.
 ## Test
 
 - `pnpm test:unit` runs the unit tests
-- `pnpm test` runs the full gate: types, coverage thresholds and lint
+- `pnpm test` runs the unit and type tests, including coverage thresholds
+- `pnpm lint` runs the lint checks
 
 # Copyright & License
 

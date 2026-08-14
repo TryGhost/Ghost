@@ -19,9 +19,9 @@ cards.map(card => card.name);
 ```
 
 Each card exposes `name`, `type` and a `render` function, ready to hand to the
-Mobiledoc renderer, plus the URL transform helpers (`absoluteToRelative`,
-`relativeToAbsolute`, `toTransformReady`) that Ghost applies when storing and
-serving content.
+Mobiledoc renderer. Cards that contain URLs also expose the relevant transform
+helpers (`absoluteToRelative`, `relativeToAbsolute`, `toTransformReady`) that
+Ghost applies when storing and serving content.
 
 ## Develop
 
