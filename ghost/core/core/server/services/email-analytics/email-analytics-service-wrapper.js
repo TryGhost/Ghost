@@ -46,12 +46,51 @@ class EmailAnalyticsServiceWrapper {
         }
 
         const EmailAnalyticsService = require('./email-analytics-service');
-        const MailgunProvider = require('./email-analytics-provider-mailgun');
         const settings = require('../../../shared/settings-cache');
+        const labs = require('../../../shared/labs');
         const queries = require('./lib/queries');
 
+        // Build the analytics provider(s) through the unified email adapter, so
+        // analytics uses the same adapter as email sending. A fresh instance is
+        // created here (the email-sending service keeps its own) and is given
+        // this wrapper's Mailgun tags to keep newsletter and automation event
+        // streams separate.
+        const emailAdapterConfig = config.get('adapters:email');
+        const emailProvider = emailAdapterConfig?.active?.toLowerCase() || 'mailgun';
+        const emailAdapter = require('../../adapters/email');
+        const providers = [];
+        try {
+            const adapterInstance = emailAdapter.getEmailAdapter();
+            const AdapterClass = adapterInstance.constructor;
+
+            const sentry = require('../../../shared/sentry');
+            const errorHandler = (error) => {
+                logging.info(`${this.#logPrefix} Capturing error for ${emailProvider} email provider analytics`);
+                sentry.captureException(error);
+            };
+
+            const adapterConfig = {
+                configService: config,
+                settingsCache: settings,
+                labs,
+                errorHandler,
+                tags: mailgunTags
+            };
+
+            // Merge with provider-specific config from adapters.email[provider]
+            if (emailAdapterConfig?.[emailProvider]) {
+                Object.assign(adapterConfig, emailAdapterConfig[emailProvider]);
+            }
+
+            providers.push(new AdapterClass(adapterConfig));
+        } catch (error) {
+            logging.error(`${this.#logPrefix} Failed to load ${emailProvider} adapter: ${error.message}`);
+            logging.error(error.stack);
+            throw error;
+        }
+
         this.service = new EmailAnalyticsService({
-            provider: new MailgunProvider({config, settings, tags: mailgunTags}),
+            providers,
             queries,
             prometheusClient,
             jobNames,

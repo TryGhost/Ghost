@@ -21,10 +21,14 @@ const NEWSLETTER_CURSOR_SEED = {
 };
 
 function createService(dependencies = {}) {
+    // The service takes a `providers` array (the fork's multi-provider design).
+    // Tests express a single `provider` for convenience, so normalise it here.
+    const {provider, providers, ...rest} = dependencies;
     return new EmailAnalyticsService({
         jobNames: JOB_NAMES,
         cursorSeed: NEWSLETTER_CURSOR_SEED,
-        ...dependencies
+        providers: providers ?? (provider ? [provider] : []),
+        ...rest
     });
 }
 

@@ -7,6 +7,8 @@ import { RouteSettingsStoreBase } from '@tryghost/adapter-base-route-settings';
 
 import {AdapterManager} from './adapter-manager';
 import config from '../../../shared/config';
+// @ts-expect-error This module lacks type definitions.
+import EmailProviderBase from '../../adapters/email/EmailProviderBase';
 
 // A singleton adapter manager, preconfigured with the base classes for every
 // known adapter type. `getAdapter` resolves the active adapter and its options
@@ -25,7 +27,8 @@ const adapterManager = new AdapterManager({
         sso: SSOBase,
         cache: BaseCache,
         redirects: RedirectsStoreBase,
-        'route-settings': RouteSettingsStoreBase
+        'route-settings': RouteSettingsStoreBase,
+        email: EmailProviderBase
     }
 });
 

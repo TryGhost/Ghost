@@ -55,6 +55,10 @@
         "route-settings": {
             "active": "FileStore",
             "FileStore": {}
+        },
+        "email": {
+            "active": "Mailgun",
+            "Mailgun": {}
         }
     },
     "storage": {
