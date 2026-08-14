@@ -1,5 +1,5 @@
 const moment = require('moment-timezone');
-const {agentProvider, mockManager, fixtureManager, matchers} = require('../utils/e2e-framework');
+const {agentProvider, mockManager, fixtureManager, dbUtils, matchers} = require('../utils/e2e-framework');
 const {anyGhostAgent, anyArray, anyObjectId, anyISODateTime, anyUuid, anyContentVersion, anyContentLength, anyLocalURL, anyString} = matchers;
 
 const tierSnapshot = {
@@ -119,7 +119,8 @@ describe('post.* events', function () {
         await adminAPIAgent.loginAsOwner();
     });
 
-    beforeEach(function () {
+    beforeEach(async function () {
+        await dbUtils.truncate('webhooks');
         webhookMockReceiver = mockManager.mockWebhookRequests();
     });
 
@@ -191,7 +192,7 @@ describe('post.* events', function () {
             .body({
                 posts: [
                     {
-                        title: 'webhookz',
+                        title: 'webhookz unpublished',
                         status: 'published',
                         mobiledoc: fixtureManager.get('posts', 1).mobiledoc
                     }

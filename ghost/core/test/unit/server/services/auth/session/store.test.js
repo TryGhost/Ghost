@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const deferred = require('../../../../../utils/deferred');
 const SessionStore = require('../../../../../../core/server/services/auth/session/session-store');
-const models = require('../../../../../../core/server/models');
+const {Session} = require('../../../../../../core/server/models/session');
 const EventEmitter = require('events');
 const {Store} = require('express-session');
 const sinon = require('sinon');
@@ -26,10 +26,10 @@ describe('Auth Service SessionStore', function () {
     describe('SessionStore#destroy', function () {
         it('calls destroy on the model with the session_id `sid`', function () {
             const {promise, done} = deferred();
-            const destroyStub = sinon.stub(models.Session, 'destroy')
+            const destroyStub = sinon.stub(Session, 'destroy')
                 .resolves();
 
-            const store = new SessionStore(models.Session);
+            const store = new SessionStore(Session);
             const sid = 1;
             store.destroy(sid, function () {
                 const destroyStubCall = destroyStub.getCall(0);
@@ -41,10 +41,10 @@ describe('Auth Service SessionStore', function () {
 
         it('calls back with null if destroy resolve', function () {
             const {promise, done} = deferred();
-            sinon.stub(models.Session, 'destroy')
+            sinon.stub(Session, 'destroy')
                 .resolves();
 
-            const store = new SessionStore(models.Session);
+            const store = new SessionStore(Session);
             const sid = 1;
             store.destroy(sid, function (err) {
                 assert.equal(err, null);
@@ -56,10 +56,10 @@ describe('Auth Service SessionStore', function () {
         it('calls back with the error if destroy errors', function () {
             const {promise, done} = deferred();
             const error = new Error('beam me up scotty');
-            sinon.stub(models.Session, 'destroy')
+            sinon.stub(Session, 'destroy')
                 .rejects(error);
 
-            const store = new SessionStore(models.Session);
+            const store = new SessionStore(Session);
             const sid = 1;
             store.destroy(sid, function (err) {
                 assert.equal(err, error);
@@ -72,10 +72,10 @@ describe('Auth Service SessionStore', function () {
     describe('SessionStore#get', function () {
         it('calls findOne on the model with the session_id `sid`', function () {
             const {promise, done} = deferred();
-            const findOneStub = sinon.stub(models.Session, 'findOne')
+            const findOneStub = sinon.stub(Session, 'findOne')
                 .resolves();
 
-            const store = new SessionStore(models.Session);
+            const store = new SessionStore(Session);
             const sid = 1;
             store.get(sid, function () {
                 const findOneStubCall = findOneStub.getCall(0);
@@ -87,10 +87,10 @@ describe('Auth Service SessionStore', function () {
 
         it('callsback with null, null if findOne does not return a model', function () {
             const {promise, done} = deferred();
-            sinon.stub(models.Session, 'findOne')
+            sinon.stub(Session, 'findOne')
                 .resolves(null);
 
-            const store = new SessionStore(models.Session);
+            const store = new SessionStore(Session);
             const sid = 1;
             store.get(sid, function (err, session) {
                 assert.equal(err, null);
@@ -102,15 +102,15 @@ describe('Auth Service SessionStore', function () {
 
         it('callsback with null, model.session_data if findOne does return a model', function () {
             const {promise, done} = deferred();
-            const model = models.Session.forge({
+            const model = Session.forge({
                 session_data: {
                     ice: 'cube'
                 }
             });
-            sinon.stub(models.Session, 'findOne')
+            sinon.stub(Session, 'findOne')
                 .resolves(model);
 
-            const store = new SessionStore(models.Session);
+            const store = new SessionStore(Session);
             const sid = 1;
             store.get(sid, function (err, session) {
                 assert.equal(err, null);
@@ -125,10 +125,10 @@ describe('Auth Service SessionStore', function () {
         it('callsback with an error if the findOne does error', function () {
             const {promise, done} = deferred();
             const error = new Error('hot damn');
-            sinon.stub(models.Session, 'findOne')
+            sinon.stub(Session, 'findOne')
                 .rejects(error);
 
-            const store = new SessionStore(models.Session);
+            const store = new SessionStore(Session);
             const sid = 1;
             store.get(sid, function (err) {
                 assert.equal(err, error);
@@ -141,10 +141,10 @@ describe('Auth Service SessionStore', function () {
     describe('SessionStore#set', function () {
         it('calls upsert on the model with the session_id and the session_data', function () {
             const {promise, done} = deferred();
-            const upsertStub = sinon.stub(models.Session, 'upsert')
+            const upsertStub = sinon.stub(Session, 'upsert')
                 .resolves();
 
-            const store = new SessionStore(models.Session);
+            const store = new SessionStore(Session);
             const sid = 1;
             const session_data = {user_id: 100};
             store.set(sid, session_data, function () {
@@ -159,10 +159,10 @@ describe('Auth Service SessionStore', function () {
         it('calls back with an error if upsert errors', function () {
             const {promise, done} = deferred();
             const error = new Error('huuuuuurrr');
-            sinon.stub(models.Session, 'upsert')
+            sinon.stub(Session, 'upsert')
                 .rejects(error);
 
-            const store = new SessionStore(models.Session);
+            const store = new SessionStore(Session);
             const sid = 1;
             const session_data = {user_id: 100};
             store.set(sid, session_data, function (err) {
@@ -174,10 +174,10 @@ describe('Auth Service SessionStore', function () {
 
         it('calls back with null, null if upsert succeed', function () {
             const {promise, done} = deferred();
-            sinon.stub(models.Session, 'upsert')
+            sinon.stub(Session, 'upsert')
                 .resolves('success');
 
-            const store = new SessionStore(models.Session);
+            const store = new SessionStore(Session);
             const sid = 1;
             const session_data = {user_id: 100};
             store.set(sid, session_data, function (err, data) {

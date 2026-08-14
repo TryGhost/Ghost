@@ -2,11 +2,11 @@ const _ = require('lodash');
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const validators = require('../../../../../../../core/server/api/endpoints/utils/validators');
-const models = require('../../../../../../../core/server/models');
+const {Member} = require('../../../../../../../core/server/models/member');
 
 describe('Unit: endpoints/utils/validators/input/posts', function () {
     beforeEach(function () {
-        const memberFindPageStub = sinon.stub(models.Member, 'findPage').rejects();
+        const memberFindPageStub = sinon.stub(Member, 'findPage').rejects();
         memberFindPageStub.withArgs({filter: 'label:vip', limit: 1}).resolves();
     });
 

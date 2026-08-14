@@ -1020,10 +1020,6 @@ Post = ghostBookshelf.Model.extend({
         return this.hasOne('PostsMeta', 'post_id');
     },
 
-    gift_links: function giftLinks() {
-        return this.hasMany('GiftLink', 'post_id');
-    },
-
     email: function email() {
         return this.hasOne('Email', 'post_id');
     },

@@ -19,7 +19,7 @@ function VersionLink({label, version}: {label: string; version: string}) {
     );
 }
 
-const AboutModal = NiceModal.create<RoutingModalProps>(({}) => {
+const AboutModal = NiceModal.create<RoutingModalProps>(() => {
     const {updateRoute} = useRouting();
     const globalData = useGlobalData();
     let config = globalData.config;

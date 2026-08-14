@@ -277,6 +277,7 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
             }
 
             try {
+                // eslint-disable-next-line no-async-promise-executor
                 const blobPromise = new Promise<Blob>(async (resolve, reject) => {
                     try {
                         const canvas = await html2canvas(profileCardRef.current!, {

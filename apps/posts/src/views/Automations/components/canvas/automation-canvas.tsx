@@ -12,6 +12,7 @@ import {type StepPickerType} from './step-picker';
 import {StepSidebar} from './step-sidebar';
 import {formatWait} from './format-wait';
 import {isEmptyEmailLexical} from '../../utils';
+import {useLocation, useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
 import type {EmailModalMode} from '../types';
 
 const NODE_X = 0;
@@ -22,6 +23,7 @@ const INITIAL_VIEWPORT_Y = 40;
 const NODE_ENTER_ANIMATION_DURATION = 250;
 const DISABLED_REASON = 'Maximum steps added';
 const DEFAULT_EDGE_STROKE = 'var(--xy-edge-stroke)';
+export const EMAIL_STEP_QUERY_PARAM = 'emailStep';
 
 const edgeTypes = {
     'add-step-edge': AddStepEdge
@@ -269,9 +271,13 @@ const getInitialViewport = (canvasWidth: number): { x: number; y: number; zoom: 
 type AutomationCanvasProps = {
     actionErrors?: Record<string, string>;
     automation?: AutomationDetail;
+    isEmailNavigationBlocked?: boolean;
     isLoading: boolean;
     isError: boolean;
     onChange: (next: AutomationDetail) => void;
+    onDiscardBlockedEmailNavigation?: (closeEmailModal: () => void) => void;
+    onEmailDirtyChange?: (isDirty: boolean) => void;
+    onKeepEditingAfterBlockedEmailNavigation?: () => void;
 };
 
 type SelectedStep = {
@@ -283,13 +289,40 @@ const insertActionByType = {
     send_email: insertSendEmailAction
 };
 
-const AutomationCanvas: React.FC<AutomationCanvasProps> = ({actionErrors = {}, automation, isLoading, isError, onChange}) => {
+const hasAutomationEmailModalState = (state: unknown): state is {automationEmailModal: boolean} => (
+    !!state
+    && typeof state === 'object'
+    && 'automationEmailModal' in state
+    && typeof state.automationEmailModal === 'boolean'
+);
+
+const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
+    actionErrors = {},
+    automation,
+    isEmailNavigationBlocked = false,
+    isLoading,
+    isError,
+    onChange,
+    onDiscardBlockedEmailNavigation,
+    onEmailDirtyChange,
+    onKeepEditingAfterBlockedEmailNavigation
+}) => {
+    const location = useLocation();
+    const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
     const [newStepId, setNewStepId] = useState<string | null>(null);
     const [emailModalMode, setEmailModalMode] = useState<EmailModalMode>('edit');
-    const [emailModalStepId, setEmailModalStepId] = useState<string | null>(null);
     const [selectedStep, setSelectedStep] = useState<SelectedStep | null>(null);
     const [deleteConfirmationActionId, setDeleteConfirmationActionId] = useState<string | null>(null);
     const selectedStepId = selectedStep?.id ?? null;
+    const emailModalStepId = searchParams.get(EMAIL_STEP_QUERY_PARAM);
+    const isRouterOpenedEmailModal = hasAutomationEmailModalState(location.state) && location.state.automationEmailModal;
+
+    const removeEmailStepParam = useCallback((options?: {replace?: boolean}) => {
+        const nextSearchParams = new URLSearchParams(searchParams);
+        nextSearchParams.delete(EMAIL_STEP_QUERY_PARAM);
+        setSearchParams(nextSearchParams, {replace: options?.replace ?? true});
+    }, [searchParams, setSearchParams]);
 
     const handlePick = useCallback((type: StepPickerType, anchor: CanvasAnchor) => {
         if (!automation) {
@@ -324,11 +357,13 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({actionErrors = {}, a
             return;
         }
         const next = removeAction({detail: automation, actionId});
-        setEmailModalStepId(currentId => (currentId === actionId ? null : currentId));
+        if (emailModalStepId === actionId) {
+            removeEmailStepParam();
+        }
         setSelectedStep(null);
         setDeleteConfirmationActionId(null);
         onChange(next);
-    }, [automation, onChange]);
+    }, [automation, emailModalStepId, onChange, removeEmailStepParam]);
 
     const handleRequestDelete = useCallback((actionId: string) => {
         if (!automation) {
@@ -364,14 +399,20 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({actionErrors = {}, a
 
     const handleEditEmail = useCallback((actionId: string, mode: EmailModalMode = 'edit') => {
         setEmailModalMode(mode);
-        setEmailModalStepId(actionId);
-    }, []);
+        const nextSearchParams = new URLSearchParams(searchParams);
+        nextSearchParams.set(EMAIL_STEP_QUERY_PARAM, actionId);
+        setSearchParams(nextSearchParams, {
+            state: {
+                ...(location.state && typeof location.state === 'object' ? location.state : {}),
+                automationEmailModal: true
+            }
+        });
+    }, [location.state, searchParams, setSearchParams]);
 
     const handleContextMenuEditEmail = useCallback((actionId: string, mode: EmailModalMode = 'edit') => {
         setSelectedStep(null);
-        setEmailModalMode(mode);
-        setEmailModalStepId(actionId);
-    }, []);
+        handleEditEmail(actionId, mode);
+    }, [handleEditEmail]);
 
     const handleContextMenuPreviewEmail = useCallback((actionId: string) => {
         handleContextMenuEditEmail(actionId, 'preview');
@@ -410,9 +451,30 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({actionErrors = {}, a
     }, []);
 
     const closeEmailModal = () => {
-        setEmailModalStepId(null);
         setEmailModalMode('edit');
+        if (isRouterOpenedEmailModal) {
+            navigate(-1);
+            return;
+        }
+
+        removeEmailStepParam();
     };
+
+    const closeEmailModalWithoutHistoryNavigation = useCallback(() => {
+        setEmailModalMode('edit');
+        removeEmailStepParam();
+    }, [removeEmailStepParam]);
+
+    useEffect(() => {
+        if (!automation || !emailModalStepId) {
+            return;
+        }
+
+        const hasEmailAction = automation.actions.some(action => action.id === emailModalStepId && action.type === 'send_email');
+        if (!hasEmailAction) {
+            removeEmailStepParam();
+        }
+    }, [automation, emailModalStepId, removeEmailStepParam]);
 
     const handleNodeDoubleClick = useCallback((event: React.MouseEvent, node: AutomationFlowNode) => {
         event.stopPropagation();
@@ -492,10 +554,15 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({actionErrors = {}, a
             />
             {emailModalAction && automation && (
                 <EmailContentModal
+                    automationId={automation.id}
                     initialLexical={emailModalAction.data.email_lexical}
                     initialMode={emailModalMode}
                     initialSubject={emailModalAction.data.email_subject}
+                    isDiscardNavigationBlocked={isEmailNavigationBlocked}
                     onClose={closeEmailModal}
+                    onDirtyChange={onEmailDirtyChange}
+                    onDiscardBlockedNavigation={() => onDiscardBlockedEmailNavigation?.(closeEmailModalWithoutHistoryNavigation)}
+                    onKeepEditingAfterBlockedNavigation={onKeepEditingAfterBlockedEmailNavigation}
                     onSave={({subject, lexical}) => {
                         onChange(updateSendEmailAction({detail: automation, actionId: emailModalAction.id, emailSubject: subject, emailLexical: lexical}));
                     }}

@@ -50,7 +50,7 @@ export default defineConfig((config) => {
             outDir: resolve(__dirname, 'umd'),
             emptyOutDir: true,
             reportCompressedSize: false,
-            minify: true,
+            minify: config.mode === 'production',
             sourcemap: true,
             cssCodeSplit: true,
             lib: {

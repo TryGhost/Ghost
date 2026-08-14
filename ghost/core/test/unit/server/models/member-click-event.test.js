@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const models = require('../../../../core/server/models');
+const {MemberClickEvent} = require('../../../../core/server/models/member-click-event');
 
 describe('Unit: models/MemberClickEvent', function () {
     afterEach(function () {
@@ -7,13 +7,13 @@ describe('Unit: models/MemberClickEvent', function () {
     });
 
     it('Has link and member relations', function () {
-        const model = models.MemberClickEvent.forge({id: 'any'});
+        const model = MemberClickEvent.forge({id: 'any'});
         model.link();
         model.member();
     });
 
     it('Has filter relations', function () {
-        const model = models.MemberClickEvent.forge({id: 'any'});
+        const model = MemberClickEvent.forge({id: 'any'});
         model.filterRelations();
     });
 });

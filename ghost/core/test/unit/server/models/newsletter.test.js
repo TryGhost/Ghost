@@ -2,7 +2,7 @@
 const assert = require('node:assert/strict');
 const errors = require('@tryghost/errors');
 const sinon = require('sinon');
-const models = require('../../../../core/server/models');
+const {Newsletter} = require('../../../../core/server/models/newsletter');
 
 describe('Unit: models/newsletter', function () {
     afterAll(function () {
@@ -12,7 +12,7 @@ describe('Unit: models/newsletter', function () {
     describe('validation', function () {
         describe('blank', function () {
             it('throws validation error for mandatory fields', function () {
-                return models.Newsletter.add({})
+                return Newsletter.add({})
                     .then(function () {
                         throw new Error('expected ValidationError');
                     })

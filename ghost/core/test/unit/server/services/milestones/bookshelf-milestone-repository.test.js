@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 
-const models = require('../../../../../core/server/models');
+const {Milestone} = require('../../../../../core/server/models/milestone');
 const DomainEvents = require('@tryghost/domain-events');
 
 describe('BookshelfMilestoneRepository', function () {
@@ -10,7 +10,7 @@ describe('BookshelfMilestoneRepository', function () {
         const BookshelfMilestoneRepository = require('../../../../../core/server/services/milestones/bookshelf-milestone-repository');
         repository = new BookshelfMilestoneRepository({
             DomainEvents,
-            MilestoneModel: models.Milestone
+            MilestoneModel: Milestone
         });
 
         assert.ok(repository.save);

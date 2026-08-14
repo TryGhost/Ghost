@@ -1,12 +1,12 @@
 const assert = require('node:assert/strict');
-const models = require('../../../../core/server/models');
+const {Comment} = require('../../../../core/server/models/comment');
 
 describe('Unit: models/comment', function () {
     describe('defaultRelations', function () {
         it('includes member dislike state but not public dislike counts by default', function () {
             const options = {};
 
-            models.Comment.defaultRelations('findPage', options);
+            Comment.defaultRelations('findPage', options);
 
             assert.ok(options.withRelated.includes('count.likes'));
             assert.ok(!options.withRelated.includes('count.dislikes'));
@@ -19,7 +19,7 @@ describe('Unit: models/comment', function () {
                 isAdmin: true
             };
 
-            models.Comment.defaultRelations('findPage', options);
+            Comment.defaultRelations('findPage', options);
 
             assert.ok(options.withRelated.includes('count.likes'));
             assert.ok(options.withRelated.includes('count.dislikes'));
@@ -32,7 +32,7 @@ describe('Unit: models/comment', function () {
                 id: 'root-comment-id'
             };
 
-            models.Comment.defaultRelations('findOne', options);
+            Comment.defaultRelations('findOne', options);
 
             const repliesRelation = options.withRelated.find((relation) => {
                 return typeof relation === 'object' && relation.replies;
@@ -53,7 +53,7 @@ describe('Unit: models/comment', function () {
 
     describe('orderAttributes', function () {
         it('does not expose dislike count ordering directly', function () {
-            const attributes = models.Comment.forge().orderAttributes();
+            const attributes = Comment.forge().orderAttributes();
 
             assert.ok(attributes.includes('count__likes'));
             assert.ok(attributes.includes('count__net_score'));

@@ -961,31 +961,49 @@ export default class App extends React.Component {
     async handleOfferQuery({site, offerId, member = this.state.member}) {
         removePortalLinkFromUrl();
 
-        if (!isPaidMember({member}) || isComplimentaryMember({member})) {
-            try {
-                const offerData = await this.GhostApi.site.offer({offerId});
-                const offer = offerData?.offers[0];
+        const isEligibleMember = !isPaidMember({member}) || isComplimentaryMember({member});
 
-                if (!offer || !offer.tier) {
-                    return;
-                }
+        if (!isEligibleMember) {
+            const notification = createNotification({
+                type: 'offer:failed',
+                status: 'error',
+                autoHide: false,
+                closeable: true,
+                state: this.state,
+                message: t('You already have an active subscription.')
+            });
 
-                // Retention offers are only triggered during a member cancellation flow - they cannot be accessed via an offer link
-                if (isRetentionOffer({offer})) {
-                    return;
-                }
+            await this.dispatchAction('closePopup');
+            this.setState({
+                notification,
+                notificationSequence: notification.count
+            });
+            return;
+        }
 
-                if (!isActiveOffer({site, offer})) {
-                    return;
-                }
+        try {
+            const offerData = await this.GhostApi.site.offer({offerId});
+            const offer = offerData?.offers[0];
 
-                this.dispatchAction('openPopup', {
-                    page: 'offer',
-                    pageData: offer
-                });
-            } catch (e) {
-                // ignore invalid portal url
+            if (!offer || !offer.tier) {
+                return;
             }
+
+            // Retention offers are only triggered during a member cancellation flow - they cannot be accessed via an offer link
+            if (isRetentionOffer({offer})) {
+                return;
+            }
+
+            if (!isActiveOffer({site, offer})) {
+                return;
+            }
+
+            this.dispatchAction('openPopup', {
+                page: 'offer',
+                pageData: offer
+            });
+        } catch (e) {
+            // ignore invalid portal url
         }
     }
 

@@ -8,8 +8,8 @@ import {stripFingerprintingPlugin} from './vite-plugin-strip-fingerprinting';
 const outputFileName = pkg.name[0] === '@' ? pkg.name.slice(pkg.name.indexOf('/') + 1) : pkg.name;
 
 // https://vitejs.dev/config/
-export default (function viteConfig() {
-    return defineConfig({
+export default defineConfig((config) => {
+    return {
         logLevel: process.env.CI ? 'info' : 'warn',
         plugins: [
             stripFingerprintingPlugin(),
@@ -33,7 +33,7 @@ export default (function viteConfig() {
             reportCompressedSize: false,
             outDir: resolve(__dirname, 'umd'),
             emptyOutDir: true,
-            minify: true,
+            minify: config.mode === 'production',
             sourcemap: true,
             cssCodeSplit: true,
             lib: {
@@ -90,5 +90,5 @@ export default (function viteConfig() {
                 maxThreads: 2
             })
         }
-    });
+    };
 });

@@ -1,7 +1,39 @@
 const assert = require('node:assert/strict');
-const {checkPostAccess, checkGatedBlockAccess} = require('../../../../../core/server/services/members/content-gating');
+const {getPostAccessFilter, checkPostAccess, checkGatedBlockAccess} = require('../../../../../core/server/services/members/content-gating');
 
 describe('Members Service - Content gating', function () {
+    describe('getPostAccessFilter', function () {
+        it('returns status:-free for paid posts', function () {
+            assert.equal(getPostAccessFilter({visibility: 'paid'}), 'status:-free');
+        });
+
+        it('returns a product OR filter for tiers posts', function () {
+            const filter = getPostAccessFilter({visibility: 'tiers', tiers: [{slug: 'gold'}, {slug: 'silver'}]});
+            assert.equal(filter, 'product:\'gold\',product:\'silver\'');
+        });
+
+        it('returns null for a tiers post with no tiers relation', function () {
+            assert.equal(getPostAccessFilter({visibility: 'tiers'}), null);
+        });
+
+        it('returns null for a tiers post with an empty tiers list', function () {
+            assert.equal(getPostAccessFilter({visibility: 'tiers', tiers: []}), null);
+        });
+
+        it('passes through other visibility values', function () {
+            assert.equal(getPostAccessFilter({visibility: 'members'}), 'members');
+            assert.equal(getPostAccessFilter({visibility: 'public'}), 'public');
+        });
+
+        it('agrees with checkPostAccess for tiers posts', function () {
+            const post = {visibility: 'tiers', tiers: [{slug: 'gold'}]};
+            const onTier = {id: 'a', status: 'paid', products: [{slug: 'gold'}]};
+            const offTier = {id: 'b', status: 'paid', products: [{slug: 'silver'}]};
+            assert.equal(checkPostAccess(post, onTier), true);
+            assert.equal(checkPostAccess(post, offTier), false);
+        });
+    });
+
     describe('checkPostAccess', function () {
         let post;
         let member;

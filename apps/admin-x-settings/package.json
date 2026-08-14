@@ -1,5 +1,6 @@
 {
   "name": "@tryghost/admin-x-settings",
+  "type": "module",
   "version": "0.0.0",
   "license": "MIT",
   "repository": {
@@ -16,9 +17,9 @@
   "module": "./dist/admin-x-settings.js",
   "exports": {
     ".": {
+      "types": "./src/index.tsx",
       "import": "./dist/admin-x-settings.js",
-      "require": "./dist/admin-x-settings.umd.cjs",
-      "types": "./src/index.tsx"
+      "require": "./dist/admin-x-settings.umd.cjs"
     },
     "./src/*": {
       "import": "./src/*.tsx",
@@ -31,7 +32,7 @@
     "dev:start": "vite",
     "build": "tsc && vite build",
     "lint": "pnpm run lint:js",
-    "lint:js": "eslint --ext .js,.ts,.cjs,.tsx --cache src test",
+    "lint:js": "eslint --cache src test",
     "test": "pnpm test:unit",
     "test:unit": "vitest run --config vitest.config.ts",
     "test:acceptance": "NODE_OPTIONS='--experimental-specifier-resolution=node --no-warnings' playwright test",
@@ -83,14 +84,19 @@
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@types/validator": "catalog:",
+    "@eslint/js": "catalog:",
     "@typescript-eslint/eslint-plugin": "catalog:",
     "@typescript-eslint/parser": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "eslint": "catalog:",
+    "eslint-plugin-ghost": "catalog:",
+    "eslint-plugin-react": "catalog:",
     "eslint-plugin-react-hooks": "catalog:",
     "eslint-plugin-react-refresh": "catalog:",
     "eslint-plugin-tailwindcss": "catalog:",
+    "globals": "catalog:",
     "jsdom": "catalog:",
+    "typescript-eslint": "catalog:",
     "tailwindcss": "catalog:",
     "vite": "catalog:",
     "vitest": "catalog:"

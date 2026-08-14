@@ -5,6 +5,10 @@
 /* eslint-disable max-lines */
 
 module.exports = {
+    get automation_email_previews() {
+        return require('./automation_email_previews');
+    },
+
     get automated_emails() {
         return require('./automated_emails');
     },

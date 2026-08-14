@@ -12,6 +12,10 @@ module.exports = {
         return apiFramework.pipeline(require('./automations'), localUtils);
     },
 
+    get automationEmailPreviews() {
+        return apiFramework.pipeline(require('./automation-email-previews'), localUtils);
+    },
+
     get authentication() {
         return apiFramework.pipeline(require('./authentication'), localUtils);
     },
@@ -299,6 +303,10 @@ module.exports = {
 
     get giftsMembers() {
         return apiFramework.pipeline(require('./gifts-members'), localUtils, 'members');
+    },
+
+    get giftLinks() {
+        return apiFramework.pipeline(require('./gift-links'), localUtils);
     },
 
     get giftReminders() {

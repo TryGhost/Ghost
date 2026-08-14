@@ -95,7 +95,7 @@ const CloseButton = React.forwardRef<HTMLButtonElement, CloseButtonProps>(({
     <Button
         ref={ref}
         className={cn(
-            '-mr-2 cursor-pointer p-2 text-muted-foreground hover:text-foreground [&_svg]:size-6!',
+            'aspect-square cursor-pointer p-2 text-muted-foreground hover:text-foreground [&_svg]:size-6!',
             className
         )}
         size={size}

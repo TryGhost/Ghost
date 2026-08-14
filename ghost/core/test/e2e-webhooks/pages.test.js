@@ -3,6 +3,7 @@ const {
     agentProvider,
     mockManager,
     fixtureManager,
+    dbUtils,
     matchers
 } = require('../utils/e2e-framework');
 const {
@@ -111,7 +112,8 @@ describe('page.* events', function () {
         await adminAPIAgent.loginAsOwner();
     });
 
-    beforeEach(function () {
+    beforeEach(async function () {
+        await dbUtils.truncate('webhooks');
         webhookMockReceiver = mockManager.mockWebhookRequests();
     });
 

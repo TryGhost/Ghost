@@ -100,7 +100,7 @@ const LongFormContent: React.FC = () => {
             avatar: goneAvatar,
             publisher: 'Gone with the Wynns',
             title: 'How far can our electric boat go?',
-            excerpt: `Does an electric tender actually have the stamina needed to work for cruising life?  Until now, we honestly didn't know how long or far we could go with our electric jet propulsion. I guess we just haven't been...`,
+            excerpt: `Does an electric tender actually have the stamina needed to work for cruising life?  Until now, we honestly didn't know how long or far we could go with our electric jet propulsion. I guess we just haven't been...`,
             cover: goneCover
         },
         {
@@ -178,7 +178,7 @@ const ShortFormContent: React.FC = () => {
         {
             avatar: caseyAvatar,
             publisher: 'Casey Newton',
-            handle: `@caseynewton@mastodon.social — 2h`,
+            handle: `@caseynewton@mastodon.social — 2h`,
             post: (
                 <div>
                     This sucks. I met my wife on the basic HTML version of Gmail. <span className='text-purple'>techmeme.com/23092...</span>
@@ -192,7 +192,7 @@ const ShortFormContent: React.FC = () => {
         {
             avatar: evanAvatar,
             publisher: 'Evan Prodromou',
-            handle: '@evan@cosocial.ca — 2h',
+            handle: '@evan@cosocial.ca — 2h',
             post: (
                 <div>
                     At #FediverseHouse, after <span className='text-purple'>@pluralistic</span>&apos;s talk, I came up and thanked him for speaking. We&apos;ve never met before in person, so I asked if we could do a selfie.
@@ -276,7 +276,7 @@ const Reader: React.FC = () => {
                         }}></div>
                     <div className='mt-0.5 flex flex-col gap-0.5'>
                         <div className='leading-tighter font-semibold'>404 Media</div>
-                        <div className='leading-tighter text-gray-700 dark:text-gray-600'>@index@404media.co — Yesterday</div>
+                        <div className='leading-tighter text-gray-700 dark:text-gray-600'>@index@404media.co — Yesterday</div>
                     </div>
                 </div>
                 <div className='absolute right-0 flex items-center gap-4 text-gray-500'>

@@ -2,7 +2,9 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const models = require('../../models');
+const emailAddressService = require('../../services/email-address');
 const {DEFAULT_EMAIL_DESIGN_SETTING_SLUG} = require('../../services/member-welcome-emails/constants');
+const {validateEmailSenderFields} = require('./utils/validate-email-sender-fields');
 
 const messages = {
     defaultDesignNotFound: 'Default automated email design setting not found.'
@@ -69,6 +71,8 @@ const controller = {
                     message: 'The slug field cannot be modified.'
                 });
             }
+            emailAddressService.init();
+            validateEmailSenderFields(emailAddressService.service, data);
 
             const defaultDesign = await resolveDefaultDesign(frame.options);
 

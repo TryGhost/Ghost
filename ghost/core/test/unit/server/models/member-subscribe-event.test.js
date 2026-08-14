@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
-const models = require('../../../../core/server/models');
+const {MemberSubscribeEvent} = require('../../../../core/server/models/member-subscribe-event');
 
 describe('Unit: models/MemberSubscribeEvent', function () {
     afterEach(function () {
@@ -10,7 +10,7 @@ describe('Unit: models/MemberSubscribeEvent', function () {
 
     describe('validation', function () {
         it('throws if source is invalid', function () {
-            return models.MemberSubscribeEvent.add({member_id: '123', source: 'invalid'})
+            return MemberSubscribeEvent.add({member_id: '123', source: 'invalid'})
                 .then(function () {
                     throw new Error('expected ValidationError');
                 })

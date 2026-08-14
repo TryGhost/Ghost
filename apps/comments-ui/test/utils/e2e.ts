@@ -1,3 +1,4 @@
+import os from 'node:os';
 import {E2E_PORT} from '../../playwright.config';
 import {Locator, Page} from '@playwright/test';
 import {MockedApi} from './mocked-api';
@@ -224,7 +225,6 @@ export async function setClipboard(page, text) {
 }
 
 export function getModifierKey() {
-    const os = require('os'); // eslint-disable-line @typescript-eslint/no-var-requires
     const platform = os.platform();
     if (platform === 'darwin') {
         return 'Meta';

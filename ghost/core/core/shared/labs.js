@@ -44,6 +44,7 @@ const PRIVATE_FEATURES = [
     'automations',
     'stripeAutomaticTax',
     'importMemberTier',
+    'csvContentImporter',
     'urlCache',
     'lexicalIndicators',
     'adminUIRefresh',

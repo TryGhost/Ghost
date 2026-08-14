@@ -47,6 +47,19 @@
         "build"
       ]
     },
+    "test:ci:*": {
+      "cache": true,
+      "inputs": [
+        "default",
+        "^default",
+        {
+          "env": "DB"
+        },
+        {
+          "env": "NODE_ENV"
+        }
+      ]
+    },
     "dev": {
       "dependsOn": [
         "^dev"

@@ -364,8 +364,12 @@ describe('Settings Helpers', function () {
             });
         });
 
-        afterEach(function () {
+        afterEach(async function () {
             sinon.restore();
+            // beforeEach and some tests below set tinybird config (incl. a
+            // `stats` key); restore it so it can't leak into a co-scheduled
+            // file under the shared module registry (isolate: false).
+            await configUtils.restore();
         });
 
         it('returns false when the UI setting is set to false', function () {

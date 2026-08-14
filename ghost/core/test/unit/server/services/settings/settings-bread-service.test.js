@@ -5,6 +5,7 @@ const SettingsBreadService = require('../../../../../core/server/services/settin
 const urlUtils = require('../../../../../core/shared/url-utils.js');
 const {mockManager} = require('../../../../utils/e2e-framework');
 const emailAddress = require('../../../../../core/server/services/email-address');
+const logging = require('@tryghost/logging');
 describe('UNIT > Settings BREAD Service:', function () {
     let emailMockReceiver;
 
@@ -133,6 +134,38 @@ describe('UNIT > Settings BREAD Service:', function () {
     });
 
     describe('edit', function () {
+        function createLabsService({automations = false} = {}) {
+            const labsSetting = {
+                key: 'labs',
+                value: JSON.stringify({automations}),
+                group: 'labs'
+            };
+
+            return new SettingsBreadService({
+                SettingsModel: {
+                    async edit(changes) {
+                        return changes.map(change => ({
+                            toJSON: () => ({...labsSetting, ...change})
+                        }));
+                    }
+                },
+                settingsCache: {
+                    get: sinon
+                        .stub()
+                        .withArgs('labs', {resolve: false})
+                        .returns(labsSetting)
+                },
+                mail,
+                urlUtils,
+                singleUseTokenProvider: {},
+                labsService: {
+                    getAll() {
+                        return {automations};
+                    }
+                }
+            });
+        }
+
         it('cannot set stripe_connect_secret_key ', async function () {
             const defaultSettingsManager = new SettingsBreadService({
                 SettingsModel: {
@@ -214,6 +247,46 @@ describe('UNIT > Settings BREAD Service:', function () {
             emailMockReceiver.matchHTMLSnapshot();
             emailMockReceiver.matchPlaintextSnapshot();
             emailMockReceiver.matchMetadataSnapshot();
+        });
+
+        it('logs when automations labs flag is enabled', async function () {
+            const logStub = sinon.stub(logging, 'info');
+            const service = createLabsService({automations: false});
+
+            await service.edit([{
+                key: 'labs',
+                value: JSON.stringify({automations: true})
+            }], {}, null);
+
+            sinon.assert.calledOnceWithExactly(logStub, {
+                event: {
+                    name: 'automations.beta_flag_enabled'
+                }
+            }, 'Automations beta flag enabled');
+        });
+
+        it('does not log when automations labs flag is already enabled', async function () {
+            const logStub = sinon.stub(logging, 'info');
+            const service = createLabsService({automations: true});
+
+            await service.edit([{
+                key: 'labs',
+                value: JSON.stringify({automations: true})
+            }], {}, null);
+
+            sinon.assert.notCalled(logStub);
+        });
+
+        it('does not log when automations labs flag is disabled', async function () {
+            const logStub = sinon.stub(logging, 'info');
+            const service = createLabsService({automations: true});
+
+            await service.edit([{
+                key: 'labs',
+                value: JSON.stringify({automations: false})
+            }], {}, null);
+
+            sinon.assert.notCalled(logStub);
         });
     });
 

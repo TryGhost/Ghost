@@ -121,22 +121,22 @@ module.exports = {
         feature_image_caption: {type: 'text', maxlength: 65535, nullable: true},
         email_only: {type: 'boolean', nullable: false, defaultTo: false}
     },
+    // Every gift link issued for a post; reissued tokens remain as history. Liveness lives in post_gift_links.
     gift_links: {
-        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        token: {type: 'string', maxlength: 32, nullable: false, primary: true},
         post_id: {type: 'string', maxlength: 24, nullable: false, references: 'posts.id', cascadeDelete: true},
-        token: {type: 'string', maxlength: 64, nullable: false, unique: true},
-        status: {
-            type: 'string', maxlength: 50, nullable: false, defaultTo: 'active', validations: {
-                isIn: [['active', 'inactive']]
-            }
-        },
         redeemed_count: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
         last_redeemed_at: {type: 'dateTime', nullable: true},
+        revoked_at: {type: 'dateTime', nullable: true},
         created_at: {type: 'dateTime', nullable: false},
-        updated_at: {type: 'dateTime', nullable: true},
-        '@@INDEXES@@': [
-            ['post_id', 'status']
-        ]
+        updated_at: {type: 'dateTime', nullable: true}
+    },
+    // A row here is what makes a link live; UNIQUE(post_id) enforces "<=1 live link per post".
+    post_gift_links: {
+        post_id: {type: 'string', maxlength: 24, nullable: false, references: 'posts.id', cascadeDelete: true, unique: true},
+        gift_link_token: {type: 'string', maxlength: 32, nullable: false, references: 'gift_links.token', cascadeDelete: true, primary: true},
+        created_at: {type: 'dateTime', nullable: false},
+        updated_at: {type: 'dateTime', nullable: true}
     },
     // NOTE: this is the staff table
     users: {

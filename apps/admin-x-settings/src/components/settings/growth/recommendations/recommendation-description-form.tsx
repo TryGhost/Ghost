@@ -30,10 +30,11 @@ export const validateDescriptionFormField = function (errors: ErrorMessages, fie
             delete cloned.description;
         }
         break;
-    default:
+    default: {
         // Will throw a compile error if we forget to add a case for a field
         const f: never = field;
         throw new Error(`Unknown field ${f}`);
+    }
     }
     return cloned;
 };

@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const models = require('../../../../core/server/models');
+const {Tag} = require('../../../../core/server/models/tag');
 const {knex} = require('../../../../core/server/data/db');
 
 describe('Unit: models/tag', function () {
@@ -34,7 +34,7 @@ describe('Unit: models/tag', function () {
                 query.response([]);
             });
 
-            return models.Tag.findPage({
+            return Tag.findPage({
                 filter: 'count.posts:>=1',
                 order: 'count.posts DESC',
                 limit: 'all',

@@ -6,6 +6,10 @@ const configUtils = {};
 configUtils.config = config;
 configUtils.defaultConfig = _.cloneDeep(config.get());
 
+const clearDerivedContentPaths = function () {
+    config.set('adapters:redirects:FileStore:basePath', undefined);
+};
+
 /**
  * configUtils.set({});
  * configUtils.set('key', 'value');
@@ -18,8 +22,14 @@ configUtils.set = function () {
         _.each(key, function (settingValue, settingKey) {
             config.set(settingKey, settingValue);
         });
+        if (Object.prototype.hasOwnProperty.call(key, 'paths:contentPath')) {
+            clearDerivedContentPaths();
+        }
     } else {
         config.set(key, value);
+        if (key === 'paths:contentPath') {
+            clearDerivedContentPaths();
+        }
     }
 };
 

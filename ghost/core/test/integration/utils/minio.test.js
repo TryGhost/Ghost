@@ -9,7 +9,10 @@ const {
     deleteObject
 } = require('../../utils/minio');
 
-describe('Integration: MinIO test helper', function () {
+// Skip when MinIO is unreachable. The flag is set by the integration
+// globalSetup (vitest-globalsetup-services.ts), which probes MinIO once before
+// the forks spawn.
+describe.skipIf(process.env.GHOST_TEST_MINIO_AVAILABLE !== '1')('Integration: MinIO test helper', function () {
     let client;
     let bucket;
 

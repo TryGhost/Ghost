@@ -1,6 +1,8 @@
 import {expect, test} from '@playwright/test';
 import {globalDataRequests, mockApi, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
 
+const __dirname = import.meta.dirname;
+
 test.describe('Pintura integration', async () => {
     test('Can toggle Pintura', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: {

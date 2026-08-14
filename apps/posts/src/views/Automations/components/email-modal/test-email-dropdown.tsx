@@ -3,10 +3,10 @@ import {Button, Input} from '@tryghost/shade/components';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
 import {useEffect, useRef, useState} from 'react';
-import {useSendTestWelcomeEmail} from '@tryghost/admin-x-framework/api/automated-emails';
+import {useSendTestAutomationEmail} from '@tryghost/admin-x-framework/api/automations';
 
 export interface TestEmailDropdownProps {
-  automatedEmailId: string
+  automationId: string
   subject: string
   lexical: string
   validateForm: () => boolean
@@ -14,14 +14,14 @@ export interface TestEmailDropdownProps {
 }
 
 const TestEmailDropdown: React.FC<TestEmailDropdownProps> = ({
-    automatedEmailId,
+    automationId,
     subject,
     lexical,
     validateForm,
     onClose
 }) => {
     const {data: currentUser} = useCurrentUser();
-    const {mutateAsync: sendTestEmail} = useSendTestWelcomeEmail();
+    const {mutateAsync: sendTestEmail} = useSendTestAutomationEmail();
 
     const [testEmail, setTestEmail] = useState(currentUser?.email || '');
     const [testEmailError, setTestEmailError] = useState('');
@@ -72,7 +72,7 @@ const TestEmailDropdown: React.FC<TestEmailDropdownProps> = ({
 
         try {
             await sendTestEmail({
-                id: automatedEmailId,
+                id: automationId,
                 email: testEmail,
                 subject,
                 lexical

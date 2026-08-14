@@ -25,8 +25,12 @@ describe('MW Version Rewrites', function () {
         };
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         sinon.restore();
+        // beforeEach overrides the site/admin URL config; restore it so the
+        // override can't leak into a co-scheduled file under the shared module
+        // registry (isolate: false).
+        await configUtils.restore();
     });
 
     function assertVersionRewrittenWithHeaders(version, path, done) {

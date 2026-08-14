@@ -60,6 +60,16 @@ export interface AutomationDetailResponseType {
     automations: AutomationDetail[];
 }
 
+export type AutomationEmailPreview = {
+    html: string;
+    plaintext: string;
+    subject: string;
+}
+
+export interface AutomationEmailPreviewResponseType {
+    automation_email_previews: AutomationEmailPreview[];
+}
+
 const dataType = 'AutomationsResponseType';
 
 export const useBrowseAutomations = createQuery<AutomationsResponseType>({
@@ -85,6 +95,18 @@ export const useEditAutomation = createMutation<AutomationDetailResponseType, Ed
     invalidateQueries: {
         dataType
     }
+});
+
+export const usePreviewAutomationEmail = createMutation<AutomationEmailPreviewResponseType, {id: string; subject: string; lexical: string}>({
+    method: 'POST',
+    path: ({id}) => `/automations/${id}/email_preview`,
+    body: ({subject, lexical}) => ({subject, lexical})
+});
+
+export const useSendTestAutomationEmail = createMutation<unknown, {id: string; email: string; subject: string; lexical: string}>({
+    method: 'POST',
+    path: ({id}) => `/automations/${id}/email_test`,
+    body: ({email, subject, lexical}) => ({email, subject, lexical})
 });
 
 const generateActionId = (): string => ObjectId().toHexString();

@@ -52,6 +52,7 @@ export interface GhostManagerConfig {
  * Creates worker-scoped containers that persist across tests.
  */
 export class GhostManager {
+    private static verifiedBuildImageKey: string | null = null;
     private readonly docker: Docker;
     private readonly config: GhostManagerConfig;
     private ghostContainer: Container | null = null;
@@ -112,6 +113,12 @@ export class GhostManager {
      * Fails early with a helpful error message if the image is not available.
      */
     async verifyBuildImageExists(): Promise<void> {
+        const buildImageKey = `${BUILD_IMAGE}\n${BUILD_GATEWAY_IMAGE}`;
+        if (GhostManager.verifiedBuildImageKey === buildImageKey) {
+            debug(`Build images already verified: ${BUILD_IMAGE}, ${BUILD_GATEWAY_IMAGE}`);
+            return;
+        }
+
         try {
             const image = this.docker.getImage(BUILD_IMAGE);
             await image.inspect();
@@ -141,6 +148,8 @@ export class GhostManager {
                 `  2. Use a different gateway image: GHOST_E2E_MODE=build GHOST_E2E_GATEWAY_IMAGE=<image> pnpm --filter @tryghost/e2e test`
             );
         }
+
+        GhostManager.verifiedBuildImageKey = buildImageKey;
     }
 
     /**

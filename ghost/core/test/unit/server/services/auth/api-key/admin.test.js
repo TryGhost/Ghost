@@ -5,7 +5,7 @@ const errors = require('@tryghost/errors');
 const jwt = require('jsonwebtoken');
 const sinon = require('sinon');
 const apiKeyAuth = require('../../../../../../core/server/services/auth/api-key');
-const models = require('../../../../../../core/server/models');
+const {ApiKey} = require('../../../../../../core/server/models/api-key');
 
 describe('Admin API Key Auth', function () {
     const ADMIN_API_URL_VERSIONED = '/ghost/api/v4/admin/';
@@ -26,7 +26,7 @@ describe('Admin API Key Auth', function () {
         };
         secret = Buffer.from(fakeApiKey.secret, 'hex');
 
-        apiKeyStub = sinon.stub(models.ApiKey, 'findOne');
+        apiKeyStub = sinon.stub(ApiKey, 'findOne');
         apiKeyStub.resolves();
         apiKeyStub.withArgs({id: fakeApiKey.id}).resolves(fakeApiKey);
     });

@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import {describe, it} from 'vitest';
 import {parseEmailAddress} from '../src';
 
 describe('parseEmailAddress', function () {

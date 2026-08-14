@@ -1,10 +1,10 @@
-const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const path = require('path');
-const {JSDOM} = require('jsdom');
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import {JSDOM} from 'jsdom';
 
 const BUNDLE_PATH = path.join(
-    __dirname,
+    import.meta.dirname,
     '../umd/admin-toolbar.min.js'
 );
 

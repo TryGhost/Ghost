@@ -22,7 +22,7 @@ export type InstalledTheme = Theme & {
     warnings?: ThemeProblem<'warning'>[];
 }
 
-export type ThemeProblem<Level extends string = 'error' | 'warning'> = {
+export type ThemeProblem<Level extends string = 'error' | 'warning' | 'recommendation'> = {
     code: string
     details: string
     failures: Array<{

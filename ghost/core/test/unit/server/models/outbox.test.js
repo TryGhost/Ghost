@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const errors = require('@tryghost/errors');
-const models = require('../../../../core/server/models');
+const {Outbox} = require('../../../../core/server/models/outbox');
 const {OUTBOX_STATUSES} = require('../../../../core/server/models/outbox');
 
 describe('Unit: models/outbox', function () {
@@ -15,21 +15,21 @@ describe('Unit: models/outbox', function () {
 
     describe('defaults', function () {
         it('sets default status to pending', function () {
-            const model = new models.Outbox();
+            const model = new Outbox();
             const defaults = model.defaults();
 
             assert.equal(defaults.status, OUTBOX_STATUSES.PENDING);
         });
 
         it('sets default retry_count to 0', function () {
-            const model = new models.Outbox();
+            const model = new Outbox();
             const defaults = model.defaults();
 
             assert.equal(defaults.retry_count, 0);
         });
 
         it('returns both default values', function () {
-            const model = new models.Outbox();
+            const model = new Outbox();
             const defaults = model.defaults();
 
             assert.ok(defaults);
@@ -41,7 +41,7 @@ describe('Unit: models/outbox', function () {
 
     describe('validation', function () {
         it('rejects invalid status values', function () {
-            return models.Outbox.add({
+            return Outbox.add({
                 event_type: 'MemberCreatedEvent',
                 payload: '{}',
                 status: 'not-a-real-status'

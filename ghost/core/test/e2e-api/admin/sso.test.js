@@ -14,7 +14,7 @@ describe('SSO API', function () {
         // during boot); the owner is looked up lazily per request, because under
         // per-file isolation the DB isn't seeded until getGhostAPIAgent() /
         // fixtureManager.init() run below — an eager lookup hits an unmigrated
-        // database (the old serial suite inherited a prior file's schema). (PLA-153)
+        // database (the old serial suite inherited a prior file's schema).
         class MockSSOAdapter {
             async getRequestCredentials() {
                 return {

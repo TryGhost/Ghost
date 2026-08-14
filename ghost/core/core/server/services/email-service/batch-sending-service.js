@@ -206,7 +206,8 @@ class BatchSendingService {
             return await email.getLazyRelation('newsletter', {require: true});
         }, {...this.#getBeforeRetryConfig(email), description: `getLazyRelation newsletter for email ${email.id}`});
 
-        const postRelations = [...new Set(['posts_meta', 'authors', ...this.#getRequiredUrlRelations()])];
+        // 'tiers' is required by the email tier-gating logic (renderer/segmenter), not for URL generation
+        const postRelations = [...new Set(['posts_meta', 'authors', 'tiers', ...this.#getRequiredUrlRelations()])];
         const post = await this.retryDb(async () => {
             return await email.getLazyRelation('post', {require: true, withRelated: postRelations});
         }, {...this.#getBeforeRetryConfig(email), description: `getLazyRelation post for email ${email.id}`});

@@ -1,6 +1,8 @@
 import {expect, test} from '@playwright/test';
 import {globalDataRequests, mockApi} from '@tryghost/admin-x-framework/test/acceptance';
 
+const __dirname = import.meta.dirname;
+
 test.describe('Labs', async () => {
     test.skip('Uploading/downloading redirects', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: {

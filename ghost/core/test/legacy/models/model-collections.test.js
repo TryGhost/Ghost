@@ -6,7 +6,7 @@ const db = require('../../../core/server/data/db');
 // These two tests inspect raw sqlite query traffic (db.knex.client as an sqlite3
 // Database), so they only apply on the sqlite leg. Decide at registration from
 // NODE_ENV (the mysql leg sets testing-mysql) — db.knex isn't connected yet when
-// the file loads, and Vitest has no Mocha-style runtime this.skip(). (PLA-152)
+// the file loads, and Vitest has no Mocha-style runtime this.skip().
 const isMySQL = (process.env.NODE_ENV || '').includes('mysql');
 
 describe('Collection Model', function () {

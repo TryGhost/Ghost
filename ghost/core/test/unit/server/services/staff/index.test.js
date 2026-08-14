@@ -1,5 +1,6 @@
 const sinon = require('sinon');
 const staffService = require('../../../../../core/server/services/staff');
+const emailAddressService = require('../../../../../core/server/services/email-address');
 
 const DomainEvents = require('@tryghost/domain-events');
 const {mockManager} = require('../../../../utils/e2e-framework');
@@ -8,12 +9,6 @@ const models = require('../../../../../core/server/models');
 const {SubscriptionCancelledEvent, MemberCreatedEvent, SubscriptionActivatedEvent} = require('../../../../../core/shared/events');
 const MilestoneCreatedEvent = require('../../../../../core/server/services/milestones/milestone-created-event');
 
-// NOTE: the `sends email for …` tests are skipped. They render real staff
-// email templates, which only works when enough Ghost state (settings,
-// i18n, theme) is initialised — they pass in the full mocha suite but fail
-// in isolation under both mocha and vitest. They need to be made
-// isolation-safe (or moved to integration tests) as a follow-up.
-/* eslint-disable ghost/mocha/no-skipped-tests */
 describe('Staff Service:', function () {
     let emailMockReceiver;
 
@@ -21,6 +16,9 @@ describe('Staff Service:', function () {
         emailMockReceiver = mockManager.mockMail();
         mockManager.mockSlack();
         mockManager.mockSetting('title', 'The Weekly Roundup');
+
+        // GhostMailer's getFromAddress reads this singleton, normally set during boot.
+        emailAddressService.init();
 
         sinon.stub(models.User, 'getEmailAlertUsers').resolves([{
             email: 'owner@ghost.org',
@@ -80,7 +78,7 @@ describe('Staff Service:', function () {
             memberId: '1'
         };
 
-        it.skip('sends email for member source', async function () {
+        it('sends email for member source', async function () {
             await staffService.init();
             DomainEvents.dispatch(MemberCreatedEvent.create({
                 source: 'member',
@@ -96,7 +94,7 @@ describe('Staff Service:', function () {
             emailMockReceiver.assertSentEmailCount(1);
         });
 
-        it.skip('sends email for api source', async function () {
+        it('sends email for api source', async function () {
             await staffService.init();
             DomainEvents.dispatch(MemberCreatedEvent.create({
                 source: 'api',
@@ -137,7 +135,7 @@ describe('Staff Service:', function () {
             sinon.restore();
         });
 
-        it.skip('sends email for member source', async function () {
+        it('sends email for member source', async function () {
             await staffService.init();
             DomainEvents.dispatch(SubscriptionActivatedEvent.create({
                 source: 'member',
@@ -153,7 +151,7 @@ describe('Staff Service:', function () {
             emailMockReceiver.assertSentEmailCount(1);
         });
 
-        it.skip('sends email for api source', async function () {
+        it('sends email for api source', async function () {
             await staffService.init();
             DomainEvents.dispatch(SubscriptionActivatedEvent.create({
                 source: 'api',
@@ -189,7 +187,7 @@ describe('Staff Service:', function () {
             subscriptionId: 'sub-1'
         };
 
-        it.skip('sends email for member source', async function () {
+        it('sends email for member source', async function () {
             await staffService.init();
             DomainEvents.dispatch(SubscriptionCancelledEvent.create({
                 source: 'member',
@@ -205,7 +203,7 @@ describe('Staff Service:', function () {
             emailMockReceiver.assertSentEmailCount(1);
         });
 
-        it.skip('sends email for api source', async function () {
+        it('sends email for api source', async function () {
             await staffService.init();
             DomainEvents.dispatch(SubscriptionCancelledEvent.create({
                 source: 'api',
@@ -235,7 +233,7 @@ describe('Staff Service:', function () {
     });
 
     describe('milestone created event:', function () {
-        it.skip('sends email for achieved milestone', async function () {
+        it('sends email for achieved milestone', async function () {
             await staffService.init();
             DomainEvents.dispatch(MilestoneCreatedEvent.create({
                 milestone: {

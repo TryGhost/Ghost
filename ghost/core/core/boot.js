@@ -127,6 +127,12 @@ async function initCore({ghostServer, config, frontend}) {
     });
     debug('End: Url Service');
 
+    // Gift links service: wires the (knex-backed) repository once the DB is ready.
+    debug('Begin: Gift Links Service');
+    const giftLinksService = require('./server/services/gift-links');
+    giftLinksService.init();
+    debug('End: Gift Links Service');
+
     if (ghostServer) {
         // Job Service allows parts of Ghost to run in the background
         debug('Begin: Job Service');

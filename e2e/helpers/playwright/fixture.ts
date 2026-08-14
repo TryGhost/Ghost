@@ -1,7 +1,7 @@
 import baseDebug from '@tryghost/debug';
 import {AnalyticsOverviewPage} from '@/helpers/pages';
-import {Browser, BrowserContext, Page, Request, TestInfo, test as base} from '@playwright/test';
-import {EGRESS_ENFORCE, EGRESS_MONITOR_ENABLED} from '@/helpers/environment/constants';
+import {Browser, BrowserContext, Page, Request, Response, TestInfo, test as base} from '@playwright/test';
+import {EGRESS_ENFORCE, EGRESS_MOCK_RESPONSE_HEADER, EGRESS_MONITOR_ENABLED} from '@/helpers/environment/constants';
 import {EmailClient, MailPit} from '@/helpers/services/email/mail-pit';
 import {FakeMailgunServer, MailgunTestService} from '@/helpers/services/mailgun';
 import {FakeStripeServer, StripeTestService, WebhookClient} from '@/helpers/services/stripe';
@@ -556,7 +556,7 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
         // the Ghost container's resolver can't see requests the browser makes itself
         // (changelog.json, embeds, avatar services, …), so we watch them here and
         // hand off-allowlist hosts to the worker-level sweep (_egressSummary).
-        const browserEgressHosts = new Set<string>();
+        const browserEgressRequests = new Map<Request, string>();
         const onRequest = (request: Request) => {
             let host: string;
             try {
@@ -569,11 +569,17 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
                 return;
             }
             if (!isAllowedHost(host)) {
-                browserEgressHosts.add(host);
+                browserEgressRequests.set(request, host);
+            }
+        };
+        const onResponse = (response: Response) => {
+            if (response.headers()[EGRESS_MOCK_RESPONSE_HEADER] === '1') {
+                browserEgressRequests.delete(response.request());
             }
         };
         if (EGRESS_MONITOR_ENABLED) {
             page.on('request', onRequest);
+            page.on('response', onResponse);
         }
 
         const labsFlagsSpecified = labs && Object.keys(labs).length > 0;
@@ -593,7 +599,8 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
 
         if (EGRESS_MONITOR_ENABLED) {
             page.off('request', onRequest);
-            for (const host of browserEgressHosts) {
+            page.off('response', onResponse);
+            for (const host of browserEgressRequests.values()) {
                 workerBrowserEgressHosts.add(host);
             }
         }
