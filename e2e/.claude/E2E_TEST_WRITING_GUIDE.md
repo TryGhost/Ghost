@@ -1,55 +1,36 @@
 # E2E Test Writing Guide
 
-## Overview
-This guide provides instructions for writing E2E tests in the `/e2e/` directory using TypeScript and Playwright. Tests follow the Page Object Model pattern and utilize data factories for test data management.
+Worked examples for writing E2E tests in `/e2e/` with TypeScript and Playwright.
 
-## Environment Setup
+This guide covers *how to build the pieces* — page objects, common interaction
+patterns, and selector discovery. It deliberately does not repeat what is
+already documented elsewhere:
 
-### Running Tests
-```bash
-# From the e2e directory
-cd e2e
+| For | Read |
+| --- | --- |
+| Running tests, dev/build modes, debugging, folder layout, test isolation, fixtures | [README.md](../README.md) |
+| Rules, locator priority, AAA structure, DO/DON'T, validation checklist | [AGENTS.md](../AGENTS.md) |
+| Available factories and how to add one | [data-factory/README.md](../data-factory/README.md) |
 
-# Run all tests
-pnpm test
+## Conventions
 
-# Run specific test file
-pnpm test tests/admin/feature.test.ts
+**Filenames are kebab-case.** `eslint.config.js` enforces
+`^[a-z0-9.-]+$` at error level, so `FeaturePage.ts` fails lint.
 
-# Run with visible browser (debugging)
-pnpm test --debug
+- Test files: `<behaviour>.test.ts`, named after the behaviour under test rather
+  than the page — `two-factor-auth.test.ts`, `member-signup.test.ts`
+- Page objects: `<feature>-page.ts` — `login-page.ts`, `admin-page.ts`
+- Class names stay PascalCase: `login-page.ts` exports `class LoginPage`
 
-# Run with specific timeout
-pnpm test --timeout=60000
+**Import through the `@/` path aliases**, never relative paths. The aliases are
+defined in `tsconfig.json`:
 
-# Keep environment running after test (useful for Playwright MCP exploration)
-PRESERVE_ENV=true pnpm test
-
-# Enable debug logging
-DEBUG=@tryghost/e2e:* pnpm test
+```typescript
+import {expect, test} from '@/helpers/playwright';
+import {LoginPage, PostsPage} from '@/admin-pages';
+import {createPostFactory} from '@/data-factory';
+import {usePerTestIsolation} from '@/helpers/playwright/isolation';
 ```
-
-## Test Organization
-
-### Directory Structure
-```
-e2e/
-├── tests/
-│   ├── admin/           # Admin panel tests
-│   ├── public/          # Public site tests
-│   └── [area]/          # Other test areas
-├── helpers/
-│   ├── pages/           # Page Objects
-│   │   ├── admin/       # Admin page objects
-│   │   └── public/      # Public page objects
-│   └── playwright/      # Test fixtures and setup
-└── data-factory/        # Test data generators
-```
-
-### Test File Naming
-- Test files: `[PageName].test.ts` - Named after the page being tested (e.g., `PostEditor.test.ts`, `MembersList.test.ts`)
-- Page objects: `[Feature]Page.ts` (PascalCase)
-- Use descriptive names that clearly indicate what's being tested
 
 ## Page Object Pattern
 
@@ -65,15 +46,15 @@ interaction when a Page Object would add indirection without reuse.
 ### Creating a Page Object
 
 ```typescript
-// e2e/helpers/pages/admin/FeaturePage.ts
-import {Page, Locator} from '@playwright/test';
-import {AdminPage} from './AdminPage';
+// e2e/helpers/pages/admin/feature-page.ts
+import {AdminPage} from './admin-page';
+import {Locator, Page} from '@playwright/test';
 
 export class FeaturePage extends AdminPage {
     // Define locators as readonly properties
-    readonly elementName: Locator;
-    readonly buttonName: Locator;
-    readonly modalDialog: Locator;
+    readonly nameInput: Locator;
+    readonly saveButton: Locator;
+    readonly statusMessage: Locator;
 
     constructor(page: Page) {
         super(page);
@@ -81,87 +62,74 @@ export class FeaturePage extends AdminPage {
 
         // Selector priority (use in this order):
         // 1. ARIA roles with accessible names
-        this.buttonName = page.getByRole('button', {name: 'Button Text'});
+        this.saveButton = page.getByRole('button', {name: 'Save'});
 
         // 2. Labels for form elements
-        this.elementName = page.getByLabel('Field Label');
+        this.nameInput = page.getByLabel('Name');
 
         // 3. Text content (for unique text)
-        this.elementName = page.getByText('Unique text');
+        this.statusMessage = page.getByText('Saved');
 
         // 4. Stable test IDs when semantic locators are unavailable
-        this.elementName = page.getByTestId('element-id');
+        //    page.getByTestId('element-id');
 
         // 5. Stable structural selectors only when necessary
     }
 
     // Action methods
-    async performAction(): Promise<void> {
-        await this.buttonName.click();
+    async save(): Promise<void> {
+        await this.saveButton.click();
+        await this.statusMessage.waitFor({state: 'visible'});
     }
 
-    async fillForm(data: {field1: string; field2: string}): Promise<void> {
-        await this.field1Input.fill(data.field1);
-        await this.field2Input.fill(data.field2);
+    async fillForm(data: {name: string}): Promise<void> {
+        await this.nameInput.fill(data.name);
     }
 
-    // State verification methods
-    async isElementVisible(): Promise<boolean> {
-        return await this.elementName.isVisible();
-    }
-
-    async getElementText(): Promise<string> {
-        return await this.elementName.textContent() || '';
-    }
-
-    // Common utility methods (add to AdminPage or BasePage for reuse)
-    async pressEscape(): Promise<void> {
-        await this.page.keyboard.press('Escape');
-    }
-
-    async waitForAutoSave(): Promise<void> {
-        await this.page.waitForFunction(() => {
-            const status = document.querySelector('[data-test="status"]');
-            return status?.textContent?.includes('Saved');
-        });
+    // State verification methods — return locators or values, never assert
+    async getStatusText(): Promise<string> {
+        return await this.statusMessage.textContent() || '';
     }
 }
 ```
 
+`BasePage` already provides `goto()`, `refresh()`, `pressKey()` and the `body`
+locator, and sets `pageUrl` from the constructor. `AdminPage` extends it with
+the `/ghost` base URL — subclasses override `pageUrl` for their own route.
+
 ### Modal/Dialog Pattern
 
+Modals are plain classes rather than page subclasses, scoping their locators to
+the dialog and waiting on visibility state as part of each action:
+
 ```typescript
+import {Locator, Page} from '@playwright/test';
+
 export class FeatureModal {
     private readonly page: Page;
-    readonly modal: Locator;
-    readonly closeButton: Locator;
-    readonly saveButton: Locator;
+    public readonly modal: Locator;
+    public readonly saveButton: Locator;
+    public readonly cancelButton: Locator;
 
     constructor(page: Page) {
         this.page = page;
         this.modal = page.getByRole('dialog');
-        this.closeButton = this.modal.getByRole('button', {name: 'Close'});
         this.saveButton = this.modal.getByRole('button', {name: 'Save'});
+        this.cancelButton = this.modal.getByRole('button', {name: 'Cancel'});
     }
 
-    async waitForVisible(): Promise<void> {
+    async waitForModal(): Promise<void> {
         await this.modal.waitFor({state: 'visible'});
     }
 
-    async waitForHidden(): Promise<void> {
+    async save(): Promise<void> {
+        await this.saveButton.click();
         await this.modal.waitFor({state: 'hidden'});
-    }
-
-    async close(): Promise<void> {
-        await this.closeButton.click();
-        await this.waitForHidden();
-    }
-
-    async isVisible(): Promise<boolean> {
-        return await this.modal.isVisible();
     }
 }
 ```
+
+See `helpers/pages/admin/posts/custom-view-modal.ts` for a live example.
 
 ### Extending Base Pages
 
@@ -171,181 +139,49 @@ export class PostEditorPage extends AdminPage {
     // Implementation
 }
 
-// Public pages extend BasePage
+// Public and portal pages extend BasePage
 export class PublicHomePage extends BasePage {
     // Implementation
 }
 ```
-
-## Writing Tests
-
-### Test Structure (AAA Pattern)
-
-**Important: Write self-documenting tests without comments. Test names and method names should clearly express intent. If complex logic is needed, extract it to a well-named method in the Page Object.**
-
-Use **Arrange–Act–Assert (AAA)** as a readability heuristic:
-- **Arrange**: Set up test data and page objects
-- **Act**: Perform the actions being tested
-- **Assert**: Verify the expected outcomes
-
-The structure should be visually clear through spacing, not comments:
-
-```typescript
-import {test, expect} from '../../helpers/playwright';
-import {FeaturePage} from '../../helpers/pages/admin/FeaturePage';
-import {createPostFactory} from '../../data-factory';
-
-test.describe('Feature Name', () => {
-    test('should perform expected behavior', async ({page, ghostInstance}) => {
-        const featurePage = new FeaturePage(page);
-        const postFactory = createPostFactory(page.request);
-        const post = await postFactory.create({title: 'Test Post'});
-
-        await featurePage.goto();
-        await featurePage.performAction();
-
-        expect(await featurePage.isElementVisible()).toBe(true);
-        expect(await featurePage.getResultText()).toContain('Expected text');
-    });
-});
-```
-
-### Test Fixtures
-
-The `page` fixture provides:
-- Pre-authenticated browser session (logged into Ghost admin)
-- Automatic cleanup after test
-
-The `ghostInstance` fixture provides:
-- `baseUrl`: The URL of the Ghost instance
-- `database`: Database name for this test
-- `port`: Port number the instance is running on
-
-Additional standalone fixtures exported from `helpers/playwright/fixture.ts` and re-exported by `@/helpers/playwright`:
-- `resolvedIsolation`: `'per-file' | 'per-test'`
-- `resetEnvironment()`: force a full environment recycle in per-file mode before stateful fixtures are resolved
-
-```typescript
-test.beforeEach(async ({resetEnvironment, resolvedIsolation}) => {
-    if (resolvedIsolation === 'per-file') {
-        await resetEnvironment();
-    }
-});
-```
-
-Isolation rules:
-- Default is per-file isolation, so the underlying Ghost environment can be reused across tests in the same file.
-- Call `usePerTestIsolation()` at the root of a file to switch to per-test isolation and force a fresh Ghost environment for each test.
-- Import it from `@/helpers/playwright/isolation`.
-- `config` and `labs` participate in the per-file environment identity. If either changes, the shared environment is recycled.
-- `stripeEnabled` always forces per-test isolation because Ghost must boot against a per-test fake Stripe server.
-- `resetEnvironment()` is a hook-only escape hatch. Do not call it after `baseURL`, `page`, `pageWithAuthenticatedUser`, or `ghostAccountOwner` has already been resolved.
-- Do not treat `resetEnvironment()` as an in-test cleanup step. If you recycle the environment, you must re-establish any stateful fixtures, and the supported pattern is to call it in `beforeEach` before those fixtures are created.
-- ESLint catches direct misuse, but the runtime guard in the fixture is the final enforcement.
-
-When to use each option:
-- `config`: for boot-time Ghost config such as billing URLs or force-upgrade flags.
-- `labs`: for tests that need specific labs flags on or off.
-- `stripeEnabled`: for tests that need the fake Stripe server and Stripe-backed Ghost boot config.
-- `usePerTestIsolation()`: for whole files that mutate shared state heavily and should never reuse a Ghost environment across tests.
-
-## Data Factories
-
-### Using Data Factories
-
-Data factories provide a clean way to create test data. Import the factory you need and use it to generate data with specific attributes.
-
-```typescript
-import {createPostFactory, createMemberFactory} from '../../data-factory';
-
-test('test with data', async ({page}) => {
-    const postFactory = createPostFactory(page.request);
-    const memberFactory = createMemberFactory(page);
-
-    const post = await postFactory.create({
-        title: 'Test Post',
-        content: 'Test content',
-        status: 'published'
-    });
-
-    const member = await memberFactory.create({
-        name: 'Test Member',
-        email: 'test@example.com'
-    });
-
-    const postEditorPage = new PostEditorPage(page);
-    await postEditorPage.gotoExistingPost(post.id);
-});
-```
-
-### Factory Pattern
-Factories are available for various Ghost entities. Check the `data-factory` directory for available factories. Common examples include:
-- Creating posts with different statuses and content
-- Creating members with subscriptions
-- Creating staff users with specific roles
-- Creating tags, offers, and other entities
-
-New factories are added as needed. When you need test data that doesn't have a factory yet, consider creating one rather than manually constructing the data.
-
-## Best Practices
-
-### DO's
-✅ **Use Page Objects for reusable UI structure and interactions**
-✅ **Write self-documenting tests** with clear method and test names
-✅ **Check existing Page Objects before creating new ones**
-✅ **Use proper waits** (`waitForLoadState`, `waitFor`, etc.)
-✅ **Keep tests isolated** - Each test gets its own Ghost instance
-✅ **Use descriptive test names** that explain what's being tested
-✅ **Extract complex logic to well-named methods** in Page Objects
-✅ **Use data factories** for complex test data
-✅ **Add meaningful assertions** beyond just visibility checks
-
-### DON'Ts
-❌ **Don't duplicate reusable selectors and interactions across test files**
-❌ **Don't write comments** - make code self-documenting instead
-❌ **Don't use hardcoded waits** (`page.waitForTimeout`)
-❌ **Don't use networkidle in waits** (`page.waitForLoadState('networkidle')`) - rely on web assertions to assess readiness instead
-❌ **Don't depend on test execution order**
-❌ **Don't manually log in** - use the pre-authenticated fixture
-❌ **Avoid XPath and selectors coupled to styling or DOM position**
-❌ **Don't create test data manually** if a factory exists
 
 ## Common Patterns
 
 ### Waiting for Elements
 
 ```typescript
-// Good - explicit waits
+// Good - wait on a locator's state, or use a web assertion
 await element.waitFor({state: 'visible'});
-await page.waitForSelector('[data-test="element"]');
+await expect(page.getByRole('status')).toContainText('Saved');
 
-// Bad - arbitrary timeouts
-await page.waitForTimeout(5000); // Avoid this!
+// Bad - arbitrary timeouts and networkidle
+await page.waitForTimeout(5000);
+await page.waitForLoadState('networkidle');
 ```
 
 ### Handling Async Operations
 
+Wait for the UI signal the user would look for, not a fixed delay:
+
 ```typescript
-// Wait for save to complete
-await page.waitForFunction(() => {
-    const status = document.querySelector('[data-test="status"]');
-    return status?.textContent?.includes('Saved');
-});
+async waitForSave(): Promise<void> {
+    await this.saveButton.click();
+    await this.statusMessage.waitFor({state: 'visible'});
+}
 ```
 
 ### Working with iframes
 
+Use `frameLocator()` — it retries like any other locator:
+
 ```typescript
-// Access iframe content
-const iframe = page.locator('iframe[title="preview"]');
-const frameContent = iframe.contentFrame();
-await frameContent.click('button');
+this.portalFrame = page.frameLocator('[data-testid="portal-popup-frame"]');
+await this.portalFrame.getByRole('button', {name: 'Continue'}).click();
 ```
 
 ### Keyboard Shortcuts
 
 ```typescript
-// Press keyboard keys
 await page.keyboard.press('Escape');
 await page.keyboard.press('Control+S');
 await page.keyboard.type('Hello World');
@@ -356,20 +192,17 @@ await page.keyboard.type('Hello World');
 ### Common Selectors
 - Navigation: `data-test-nav="[section]"`
 - Buttons: `data-test-button="[action]"`
-- Lists: `data-test-list="[name]"`
-- Modals: `[role="dialog"]` or `.gh-modal`
+- Modals: `[role="dialog"]`
 - Loading states: `.gh-loading-spinner`
+
+Ember Admin uses `data-test-*` attributes; the React Admin apps use
+`data-testid`. Prefer a role or label over either where one exists.
 
 ### Admin URLs
 - Editor: `/ghost/#/editor/post/[id]`
 - Posts list: `/ghost/#/posts`
 - Settings: `/ghost/#/settings`
 - Members: `/ghost/#/members`
-
-### Common UI Elements
-- Buttons: `.gh-btn-[color]` (e.g., `.gh-btn-primary`)
-- Inputs: Often use `name` or `placeholder` attributes
-- Status indicators: `[data-test="status"]`
 
 ## Using Playwright MCP for Page Object Discovery
 
@@ -401,98 +234,27 @@ mcp__playwright__browser_take_screenshot({filename: "feature-state.png"})
 ### 3. Extract Selectors for Page Objects
 Based on your exploration, create the Page Object with discovered selectors:
 - Note the element references from snapshots
-- Identify the best selector strategy (testId, role, label, text)
+- Identify the best selector strategy (role, label, text, testId)
 - Test interactions before finalizing the Page Object
 
-## Debugging
+## Test Template
 
-### Debug Mode
-```bash
-# See browser while test runs
-pnpm test --debug
-
-# UI mode for interactive debugging
-pnpm test --ui
-```
-
-### Debug Logging
-```bash
-# Enable all e2e debug logs
-DEBUG=@tryghost/e2e:* pnpm test
-
-# Specific debug namespace
-DEBUG=@tryghost/e2e:ghost-fixture pnpm test
-```
-
-### Preserve Environment
-```bash
-# Keep containers running after test
-PRESERVE_ENV=true pnpm test
-```
-
-### Test Artifacts
-- Screenshots on failure: `test-results/`
-- Playwright traces: `test-results/`
-
-## Test Isolation
-
-Each test automatically gets:
-1. **Fresh Ghost instance** with unique database
-2. **Unique port** to avoid conflicts
-3. **Pre-authenticated session**
-4. **Automatic cleanup** after test completion
-
-You don't need to worry about:
-- Database cleanup
-- Port conflicts
-- Login/logout
-- Test data pollution
-
-## Validation Checklist
-
-Before submitting a test:
-- [ ] Reusable UI behavior is in Page Objects
-- [ ] Arrange, Act, and Assert phases are easy to identify
-- [ ] Test is deterministic (not flaky)
-- [ ] Uses proper waits (no arbitrary timeouts)
-- [ ] Has meaningful assertions
-- [ ] Follows naming conventions
-- [ ] Reuses existing Page Objects where possible
-- [ ] Test passes locally
-- [ ] Test fails for the right reason (if demonstrating a bug)
-
-## Quick Reference
-
-### Essential Imports
 ```typescript
-import {test, expect} from '../../helpers/playwright';
-import {PageName} from '../../helpers/pages/admin/PageName';
-import {createPostFactory} from '../../data-factory';
-```
+import {expect, test} from '@/helpers/playwright';
+import {FeaturePage} from '@/admin-pages';
+import {createPostFactory} from '@/data-factory';
 
-### Test Template
-```typescript
-test.describe('Feature', () => {
-    test('specific behavior', async ({page, ghostInstance}) => {
-        // Arrange
-        const pageObject = new PageObject(page);
+test.describe('Ghost Admin - Feature', () => {
+    test('action performed - expected result', async ({page}) => {
+        const featurePage = new FeaturePage(page);
+        const postFactory = createPostFactory(page.request);
+        const post = await postFactory.create({title: 'Test Post'});
 
-        // Act
-        await pageObject.goto();
-        await pageObject.action();
+        await featurePage.goto();
+        await featurePage.fillForm({name: post.title});
+        await featurePage.save();
 
-        // Assert
-        expect(await pageObject.getState()).toBe(expected);
+        await expect(featurePage.statusMessage).toBeVisible();
     });
 });
-```
-
-### Run Commands
-```bash
-pnpm test                           # All tests
-pnpm test path/to/test.ts          # Specific test
-pnpm test --debug                   # With browser
-pnpm test --grep "pattern"         # Pattern matching
-PRESERVE_ENV=true pnpm test         # Keep environment
-DEBUG=@tryghost/e2e:* pnpm test     # Debug logs
 ```
