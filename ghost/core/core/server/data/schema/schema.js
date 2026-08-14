@@ -1076,20 +1076,6 @@ module.exports = {
         metadata: {type: 'string', maxlength: 2000, nullable: true},
         queue_entry: {type: 'integer', nullable: true, unsigned: true}
     },
-    redirects: {
-        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        from: {type: 'string', maxlength: 191, nullable: false, index: true},
-        to: {type: 'string', maxlength: 2000, nullable: false},
-        post_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'posts.id', setNullDelete: true},
-        created_at: {type: 'dateTime', nullable: false},
-        updated_at: {type: 'dateTime', nullable: true}
-    },
-    members_click_events: {
-        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', cascadeDelete: true},
-        redirect_id: {type: 'string', maxlength: 24, nullable: false, references: 'redirects.id', cascadeDelete: true},
-        created_at: {type: 'dateTime', nullable: false}
-    },
     members_feedback: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         score: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
@@ -1265,11 +1251,26 @@ module.exports = {
         email_lexical: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         email_design_setting_id: {type: 'string', maxlength: 24, nullable: true, references: 'email_design_settings.id', setNullDelete: true},
         email_sent_count: {type: 'integer', nullable: true, unsigned: true},
-        email_tracked_sent_count: {type: 'integer', nullable: true, unsigned: true},
         email_opened_count: {type: 'integer', nullable: true, unsigned: true},
+        email_clicked_count: {type: 'integer', nullable: true, unsigned: true},
         '@@UNIQUE_CONSTRAINTS@@': [
             ['created_at', 'action_id']
         ]
+    },
+    redirects: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        from: {type: 'string', maxlength: 191, nullable: false, index: true},
+        to: {type: 'string', maxlength: 2000, nullable: false},
+        post_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'posts.id', setNullDelete: true},
+        automation_action_revision_id: {type: 'string', maxlength: 24, nullable: true, references: 'automation_action_revisions.id', setNullDelete: true},
+        created_at: {type: 'dateTime', nullable: false},
+        updated_at: {type: 'dateTime', nullable: true}
+    },
+    members_click_events: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', cascadeDelete: true},
+        redirect_id: {type: 'string', maxlength: 24, nullable: false, references: 'redirects.id', cascadeDelete: true},
+        created_at: {type: 'dateTime', nullable: false}
     },
     automation_action_edges: {
         source_action_id: {type: 'string', maxlength: 24, nullable: false, references: 'automation_actions.id', restrictDelete: true},
@@ -1296,7 +1297,10 @@ module.exports = {
         finished_at: {type: 'dateTime', nullable: true},
         status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'pending', validations: {isIn: [['pending', 'automation disabled', 'failed', 'finished', 'member changed status', 'member unsubscribed']]}},
         locked_by: {type: 'string', maxlength: 191, nullable: true},
-        locked_at: {type: 'dateTime', nullable: true}
+        locked_at: {type: 'dateTime', nullable: true},
+        '@@INDEXES@@': [
+            ['status', 'ready_at', 'created_at', 'id']
+        ]
     },
     welcome_email_automated_emails: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
@@ -1338,9 +1342,28 @@ module.exports = {
         mailgun_message_id: {type: 'string', maxlength: 1000, nullable: true},
         delivered_at: {type: 'dateTime', nullable: true},
         opened_at: {type: 'dateTime', nullable: true},
+        clicked_at: {type: 'dateTime', nullable: true},
         track_opens: {type: 'boolean', nullable: false, defaultTo: false},
+        track_clicks: {type: 'boolean', nullable: false, defaultTo: false},
         created_at: {type: 'dateTime', nullable: false},
-        updated_at: {type: 'dateTime', nullable: true}
+        updated_at: {type: 'dateTime', nullable: true},
+        '@@INDEXES@@': [
+            // `mailgun_message_id` is too long for a MySQL index, so we use a
+            // prefix.
+            //
+            // We choose 31 because Mailgun message IDs look like this:
+            //
+            //     20200420080647.ab01cd02ef03ba04@mailgun.domain.example
+            //     YYYYMMDDHHMMSS.RANDOM-HEX-BYTES@DOMAIN
+            //
+            // That first part is unlikely to have conflicts, so let's use
+            // that. This index is for performance, not uniqueness, so it's
+            // okay if there's a conflict.
+            //
+            // Note that this prefix index only happens for MySQL. SQLite
+            // indexes the full value.
+            {columns: ['mailgun_message_id'], length: 31}
+        ]
     },
     gifts: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},

@@ -4,7 +4,7 @@ const sinon = require('sinon');
 const configUtils = require('../../../../utils/config-utils');
 const controllers = require('../../../../../core/frontend/services/routing/controllers');
 const RSSRouter = require('../../../../../core/frontend/services/routing/rss-router');
-const urlUtils = require('../../../../../core/shared/url-utils');
+const urlUtils = require('../../../../../core/shared/url-utils').default;
 
 describe('UNIT - services/routing/RSSRouter', function () {
     describe('instantiate', function () {

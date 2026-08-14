@@ -1,4 +1,4 @@
-const adapterManager = require('../../services/adapter-manager');
+const adapterManager = require('../../services/adapter-manager').default;
 
 /**
  * @param {'settings'|'theme'|'urls'} [feature] - name for the "feature" to enable through adapter, e.g.: settings cache

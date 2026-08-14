@@ -1,8 +1,12 @@
-import {type SelectOption} from '@tryghost/admin-x-design-system';
 import {type Tier} from '@tryghost/admin-x-framework/api/tiers';
 
-export const getTiersCadences = (tiers: Tier[]): SelectOption[] => {
-    const cadences: SelectOption[] = [];
+export interface TierCadenceOption {
+    label: string;
+    value: string;
+}
+
+export const getTiersCadences = (tiers: Tier[]): TierCadenceOption[] => {
+    const cadences: TierCadenceOption[] = [];
 
     tiers.forEach((tier: Tier) => {
         cadences.push({

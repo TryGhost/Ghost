@@ -1,8 +1,12 @@
 import APIKeys from './api-keys';
+import BrandIcon from '../../../icons/brand-icon';
+import ConfirmationModal from '../../../confirmation-modal';
 import IntegrationHeader from './integration-header';
 import NiceModal from '@ebay/nice-modal-react';
 import ZapierLogo from '../../../../assets/images/zapier-logo.svg';
-import {Button, ConfirmationModal, Icon, List, ListItem, Modal} from '@tryghost/admin-x-design-system';
+import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Button} from '@tryghost/shade/components';
+import {LucideIcon} from '@tryghost/shade/utils';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useBrowseIntegrations} from '@tryghost/admin-x-framework/api/integrations';
 import {useEffect, useState} from 'react';
@@ -64,7 +68,7 @@ const ZapierModal = NiceModal.create(() => {
     };
 
     return (
-        <Modal
+        <SettingsModal
             afterClose={() => {
                 updateRoute('integrations');
             }}
@@ -78,13 +82,13 @@ const ZapierModal = NiceModal.create(() => {
                         target='_blank'>
                         View more Ghost integrations powered by <span><img alt='Zapier' className='relative top-[-2px] inline-block' src={ZapierLogo} /></span>
                     </a>
-                    <Button color='black' label='Close' onClick={() => {
+                    <Button type='button' onClick={() => {
                         modal.remove();
-                    }} />
+                    }}>Close</Button>
                 </div>
             }
-            okColor='black'
             okLabel='Close'
+            okVariant='default'
             testId='zapier-modal'
             title=''
             stickyFooter
@@ -105,32 +109,28 @@ const ZapierModal = NiceModal.create(() => {
                     },
                     {id: 'api-url', label: 'API URL', text: window.location.origin + getGhostPaths().subdir}
                 ]} /></div>}
-                icon={<Icon name='zapier' size={56} />}
+                icon={<BrandIcon name='zapier' size={56} />}
                 title='Zapier'
             />
 
-            <List>
+            <ActionList>
                 {zapierTemplates.map(template => (
-                    <ListItem
-                        key={template.url}
-                        action={<Button className='font-semibold whitespace-nowrap text-[#FF4A00]' href={template.url} label='Use this Zap' tag='a' target='_blank' link unstyled />}
-                        bgOnHover={false}
-                        className='flex items-center gap-3 py-2 pl-3'
-                        title={
+                    <ActionListItem key={template.url} hover={false}>
+                        <ActionListItemContent className='flex items-center gap-3 py-2 pl-3'>
                             <div className='flex flex-col gap-4 md:flex-row md:items-center'>
                                 <div className='flex shrink-0 flex-nowrap items-center gap-2'>
                                     <img className='size-8 object-contain dark:invert' role='presentation' src={template.ghostImage} />
-                                    <Icon name="arrow-right" size="xs" />
+                                    <LucideIcon.ArrowRight className='size-3' />
                                     <img className='size-8 object-contain' role='presentation' src={template.appImage} />
                                 </div>
                                 <span>{template.title}</span>
                             </div>
-                        }
-                        hideActions
-                    />
+                        </ActionListItemContent>
+                        <ActionListItemActions visibility='hover'><Button className='h-auto p-0 font-semibold whitespace-nowrap text-[#FF4A00] hover:text-[#FF4A00]' variant='link' asChild><a href={template.url} rel='noopener noreferrer' target='_blank'>Use this Zap</a></Button></ActionListItemActions>
+                    </ActionListItem>
                 ))}
-            </List>
-        </Modal>
+            </ActionList>
+        </SettingsModal>
     );
 });
 

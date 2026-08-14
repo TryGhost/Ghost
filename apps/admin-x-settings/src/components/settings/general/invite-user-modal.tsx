@@ -1,8 +1,10 @@
 import NiceModal from '@ebay/nice-modal-react';
 import validator from 'validator';
 import {APIError, ValidationError} from '@tryghost/admin-x-framework/errors';
+import {Field, FieldContent, FieldDescription, FieldError, FieldLabel, FieldLegend, FieldSeparator, FieldSet, Input, RadioGroup, RadioGroupItem} from '@tryghost/shade/components';
 import {HostLimitError, useLimiter} from '../../../hooks/use-limiter';
-import {Modal, Radio, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {SettingsModal} from '@tryghost/shade/patterns';
+import {toast} from 'sonner';
 import {useAddInvite, useBrowseInvites} from '@tryghost/admin-x-framework/api/invites';
 import {useBrowseRoles} from '@tryghost/admin-x-framework/api/roles';
 import {useBrowseUsers} from '@tryghost/admin-x-framework/api/users';
@@ -127,11 +129,7 @@ const InviteUserModal = NiceModal.create(() => {
 
             setSaveState('saved');
 
-            showToast({
-                title: `Invitation sent`,
-                message: `${email}`,
-                type: 'success'
-            });
+            toast.success(`Invitation sent`, {description: `${email}`});
 
             modal.remove();
             updateRoute('staff?tab=invited');
@@ -156,11 +154,7 @@ const InviteUserModal = NiceModal.create(() => {
                     message = (<span>Check your Mailgun configuration.</span>);
                 }
             }
-            showToast({
-                title,
-                message,
-                type: 'error'
-            });
+            toast.error(title, {description: message});
             handleError(e, {withToast: false});
             return;
         }
@@ -213,50 +207,63 @@ const InviteUserModal = NiceModal.create(() => {
     }
 
     return (
-        <Modal
+        <SettingsModal
             afterClose={() => {
                 updateRoute('staff');
             }}
             cancelLabel=''
-            okColor={saveState === 'error' || !!errors.email ? 'red' : 'black'}
             okLabel={okLabel}
+            okVariant={saveState === 'error' || !!errors.email ? 'destructive' : 'default'}
             testId='invite-user-modal'
             title='Invite a new staff user'
             width={540}
             onOk={handleSendInvitation}
         >
-            <div className='flex flex-col gap-6 py-4'>
+            <div className='flex flex-col gap-6 py-4 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
                 <p>
                     Send an invitation for a new person to create a staff account on your site, and select a role that matches what you’d like them to be able to do.
                 </p>
-                <TextField
-                    error={!!errors.email}
-                    hint={errors.email}
-                    inputRef={focusRef}
-                    placeholder='jamie@example.com'
-                    title='Email address'
-                    value={email}
-                    onChange={(event) => {
-                        setEmail(event.target.value);
-                    }}
-                    onKeyDown={() => setErrors(e => ({...e, email: undefined}))}
-                />
-                <div>
-                    <Radio
-                        error={!!errors.role}
-                        hint={errors.role}
-                        id='role'
-                        options={allowedRoleOptions}
-                        selectedOption={role}
-                        separator={true}
-                        title="Role"
-                        onSelect={(value) => {
-                            setRole(value as RoleType);
-                        }}
+                <Field data-invalid={Boolean(errors.email) || undefined}>
+                    <FieldLabel htmlFor='invite-email'>Email address</FieldLabel>
+                    <Input
+                        ref={focusRef}
+                        aria-invalid={Boolean(errors.email) || undefined}
+                        id='invite-email'
+                        placeholder='jamie@example.com'
+                        value={email}
+                        onChange={event => setEmail(event.target.value)}
+                        onKeyDown={() => setErrors(e => ({...e, email: undefined}))}
                     />
-                </div>
+                    {errors.email && <FieldError>{errors.email}</FieldError>}
+                </Field>
+                <FieldSet>
+                    <FieldLegend id='invite-role-legend' variant='label'>Role</FieldLegend>
+                    <RadioGroup
+                        aria-describedby={errors.role ? 'invite-role-error' : undefined}
+                        aria-invalid={!!errors.role || undefined}
+                        aria-labelledby='invite-role-legend'
+                        name='role'
+                        value={role}
+                        onValueChange={value => setRole(value as RoleType)}
+                    >
+                        {allowedRoleOptions.map((option) => {
+                            const id = `invite-role-${option.value.replace(/\s+/g, '-')}`;
+                            return (
+                                <Field key={option.value} className='has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=radio]]:mt-0' orientation='horizontal'>
+                                    <RadioGroupItem id={id} value={option.value} />
+                                    <FieldContent>
+                                        <FieldLabel htmlFor={id}>{option.label}</FieldLabel>
+                                        <FieldDescription>{option.hint}</FieldDescription>
+                                    </FieldContent>
+                                </Field>
+                            );
+                        })}
+                    </RadioGroup>
+                    <FieldError id='invite-role-error'>{errors.role}</FieldError>
+                    <FieldSeparator />
+                </FieldSet>
             </div>
-        </Modal>
+        </SettingsModal>
     );
 });
 

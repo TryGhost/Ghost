@@ -5,7 +5,7 @@ const {stripeMocker} = require('../../utils/e2e-framework-mock-manager');
 const models = require('../../../core/server/models');
 const membersService = require('../../../core/server/services/members');
 const tiersService = require('../../../core/server/services/tiers');
-const urlUtils = require('../../../core/shared/url-utils');
+const urlUtils = require('../../../core/shared/url-utils').default;
 const {anyErrorId} = matchers;
 
 let membersAgent, adminAgent;

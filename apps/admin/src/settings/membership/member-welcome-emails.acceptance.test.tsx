@@ -1,14 +1,17 @@
-import {describe, expect, it} from "vitest";
+import {describe, expect, it, onTestFinished, vi} from "vitest";
 import {page, userEvent} from "vitest/browser";
 
 import {
     configResponse,
+    currentRoute,
     fakeAdminEndpoint,
     fakeNewsletters,
     fakeSettingsScreens,
+    fakeTiers,
     newsletter,
     renderAdminApp,
     settingsResponse,
+    tier,
     type RenderAdminAppOptions,
 } from "@test-utils/acceptance";
 import {settingsScreen} from "@/settings/settings.screen";
@@ -116,9 +119,9 @@ async function renderWelcomeEmails(emails: AutomatedEmailFixture[] = [freeWelcom
 }
 
 async function openWelcomeEmailModal(emails: AutomatedEmailFixture[] = [freeWelcomeEmail], options?: RenderAdminAppOptions) {
-    const section = await renderWelcomeEmails(emails, options);
-    await section.getByTestId("free-welcome-email-preview").click();
-    const modal = page.getByTestId("welcome-email-modal");
+    await renderWelcomeEmails(emails, options);
+    await settingsScreen.freeWelcomeEmailPreview().click();
+    const modal = settingsScreen.welcomeEmailModal();
     await expect.element(modal).toBeVisible();
     await expect.element(modal.getByRole("textbox").first()).toBeVisible();
     return modal;
@@ -153,10 +156,6 @@ function pasteText(content: string) {
         bubbles: true,
         cancelable: true,
     }));
-}
-
-function pressEscape() {
-    document.dispatchEvent(new KeyboardEvent("keydown", {key: "Escape", code: "Escape", bubbles: true, cancelable: true}));
 }
 
 describe("Member welcome emails", () => {
@@ -274,7 +273,7 @@ describe("Member welcome emails", () => {
         const dropdown = page.getByTestId("test-email-dropdown");
         await expect.element(dropdown).toBeVisible();
 
-        pressEscape();
+        await userEvent.keyboard("{Escape}");
         await expect(dropdown).toHaveCount(0);
         await expect.element(modal).toBeVisible();
     });
@@ -282,7 +281,7 @@ describe("Member welcome emails", () => {
     it("only asks for close confirmation after the draft becomes dirty", async () => {
         const modal = await openWelcomeEmailModal();
         (modal.getByRole("button", {name: "Close"}).element() as HTMLElement).focus();
-        pressEscape();
+        await userEvent.keyboard("{Escape}");
         await expect(modal).toHaveCount(0);
         await expect(settingsScreen.confirmationModal()).toHaveCount(0);
 
@@ -305,7 +304,7 @@ describe("Member welcome emails", () => {
         document.body.appendChild(linkInput);
         linkInput.focus();
 
-        pressEscape();
+        await userEvent.keyboard("{Escape}");
 
         await expect.element(modal).toBeVisible();
         expect(window.location.hash).toContain("/settings/memberemails");
@@ -489,6 +488,104 @@ describe("Member welcome emails", () => {
         expect(editApi.lastRequest?.body).toMatchObject({automated_emails: [{id: freeWelcomeEmail.id, status: "inactive"}]});
     });
 
+    it("shows the paid welcome email row when Stripe is connected", async () => {
+        fakeSettingsScreens();
+        fakeDefaultNewsletter();
+        fakeAutomatedEmails();
+        fakeRecentPosts();
+        fakeTiers([tier({name: "Supporter"})]);
+        const stripe = settingsResponse({settings: {
+            stripe_connect_publishable_key: "pk_test_123",
+            stripe_connect_secret_key: "sk_test_123",
+            stripe_connect_display_name: "Dummy",
+            stripe_connect_account_id: "acct_123",
+        }});
+        await renderAdminApp("/settings/memberemails", {boot: {browseSettings: {response: stripe}}});
+
+        const paidRow = settingsScreen.paidWelcomeEmailRow();
+        await expect.element(paidRow).toBeVisible();
+        await expect.element(paidRow).toHaveTextContent("Paid members welcome email");
+        await expect.element(paidRow.getByRole("switch")).toHaveAttribute("aria-checked", "false");
+    });
+
+    it("keeps the newest draft's preview when a stale preview response arrives late", async () => {
+        const namedPreview = (text: string) => previewResponse("Preview Subject", `<!doctype html><html><body><p>${text}</p></body></html>`);
+        const modal = await openWelcomeEmailModal();
+        const heldResponses = new Map<string, (response: ReturnType<typeof previewResponse>) => void>();
+        const previewPath = `/automated_emails/${freeWelcomeEmail.id}/preview/`;
+        const previewApi = fakeAdminEndpoint("POST", previewPath, ({body}) => {
+            const {subject} = body as {subject: string};
+            return new Promise((resolve) => {
+                heldResponses.set(subject, resolve);
+            });
+        });
+        // Tap fetch so the test can await full delivery of a released preview
+        // response before asserting the app ignored it.
+        const deliveredPreviews: Array<Promise<string>> = [];
+        const originalFetch = window.fetch.bind(window);
+        const fetchSpy = vi.spyOn(window, "fetch").mockImplementation(async (...args: Parameters<typeof fetch>) => {
+            const response = await originalFetch(...args);
+            const url = String(args[0] instanceof Request ? args[0].url : args[0]);
+            if (url.includes(previewPath)) {
+                deliveredPreviews.push(response.clone().text());
+            }
+            return response;
+        });
+        // Cleanup registered up front so a mid-test failure can't leave fetch
+        // wrapped for later tests or held responses starving settleRequests().
+        onTestFinished(() => fetchSpy.mockRestore());
+        onTestFinished(() => {
+            heldResponses.forEach(resolve => resolve(namedPreview("drained")));
+        });
+        const frameText = () => {
+            const iframe = settingsScreen.welcomeEmailPreviewIframe().query() as HTMLIFrameElement | null;
+            return iframe?.contentDocument?.body?.textContent ?? "";
+        };
+
+        await settingsScreen.welcomeEmailModePreview().click();
+        await expect.poll(() => heldResponses.has(freeWelcomeEmail.subject)).toBe(true);
+        heldResponses.get(freeWelcomeEmail.subject)!(namedPreview("Initial preview"));
+        await expect.poll(frameText).toContain("Initial preview");
+
+        await settingsScreen.welcomeEmailPreviewSubject().fill("Stale draft");
+        await settingsScreen.welcomeEmailModeEdit().click();
+        await settingsScreen.welcomeEmailModePreview().click();
+        await expect.poll(() => heldResponses.has("Stale draft")).toBe(true);
+
+        await settingsScreen.welcomeEmailPreviewSubject().fill("Newest draft");
+        await settingsScreen.welcomeEmailModeEdit().click();
+        await settingsScreen.welcomeEmailModePreview().click();
+        await expect.poll(() => heldResponses.has("Newest draft")).toBe(true);
+        heldResponses.get("Newest draft")!(namedPreview("Newest preview"));
+        await expect.poll(frameText).toContain("Newest preview");
+
+        // Release the stale response and wait for its full delivery before
+        // asserting it did not clobber the newest draft's preview.
+        heldResponses.get("Stale draft")!(namedPreview("Stale preview"));
+        // Deliveries are recorded in arrival order: initial, newest, then stale.
+        await expect.poll(() => deliveredPreviews.length).toBe(3);
+        expect(await deliveredPreviews[2]).toContain("Stale preview");
+        await new Promise<void>((resolve) => {
+            requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+        });
+
+        expect(frameText()).toContain("Newest preview");
+        expect(frameText()).not.toContain("Stale preview");
+        // The iframe navigates srcdoc asynchronously, so also assert on state
+        // synchronous with the React commit: the srcdoc attribute itself, and
+        // the loading overlay a stale clobber would re-show.
+        const srcdoc = (settingsScreen.welcomeEmailPreviewIframe().query() as HTMLIFrameElement | null)?.getAttribute("srcdoc") ?? "";
+        expect(srcdoc).toContain("Newest preview");
+        expect(srcdoc).not.toContain("Stale preview");
+        await expect.element(page.getByTestId("welcome-email-preview-loading")).not.toBeInTheDocument();
+        expect(previewApi.requests.map(request => (request.body as {subject: string}).subject)).toEqual([
+            freeWelcomeEmail.subject,
+            "Stale draft",
+            "Newest draft",
+        ]);
+        await expect.element(modal).toBeVisible();
+    });
+
     describe("customization", () => {
         async function openCustomizeModal({icon}: {icon?: string} = {}) {
             fakeSettingsScreens();
@@ -593,6 +690,72 @@ describe("Member welcome emails", () => {
                 sender_reply_to: "shared-reply@example.com",
             });
             expect(addApi.requests).toHaveLength(0);
+        });
+
+        it("uses an explicit newsletter reply-to address as the reply-to placeholder", async () => {
+            fakeSettingsScreens();
+            fakeDefaultNewsletter({sender_email: "test@example.com", sender_reply_to: "custom-reply@example.com"});
+            fakeAutomatedEmails();
+            fakeAdminEndpoint("GET", "/automated_emails/design/", {automated_email_design: [automatedEmailDesign]});
+            await renderAdminApp("/settings/memberemails");
+            await settingsScreen.memberEmails().getByRole("button", {name: "Customize"}).click();
+            const modal = settingsScreen.welcomeEmailCustomizeModal();
+
+            await expect.element(modal.getByLabelText("Reply-to email")).toHaveAttribute("placeholder", "custom-reply@example.com");
+            await expect.element(modal.getByText(/Reply-to:\s*custom-reply@example\.com/)).toBeVisible();
+        });
+
+        it("closes a pristine customize modal on Escape without confirmation", async () => {
+            const modal = await openCustomizeModal();
+
+            await userEvent.keyboard("{Escape}");
+
+            await expect(modal).toHaveCount(0);
+            await expect(settingsScreen.welcomeEmailDirtyConfirmModal()).toHaveCount(0);
+            await expect.poll(currentRoute).toBe("/settings/memberemails");
+        });
+
+        it("prompts for confirmation on Escape once the customize modal is dirty", async () => {
+            const modal = await openCustomizeModal();
+            await modal.getByLabelText("Email footer").fill("Unsaved footer change");
+
+            await userEvent.keyboard("{Escape}");
+
+            const confirmation = settingsScreen.welcomeEmailDirtyConfirmModal();
+            await expect.element(confirmation).toBeVisible();
+            await expect.element(modal).toBeVisible();
+            await expect.poll(currentRoute).toBe("/settings/memberemails");
+
+            await userEvent.keyboard("{Escape}");
+
+            await expect(confirmation).toHaveCount(0);
+            await expect.element(modal).toBeVisible();
+        });
+
+        it("keeps unsaved customize changes behind the Stay action", async () => {
+            const modal = await openCustomizeModal();
+            const footer = modal.getByLabelText("Email footer");
+            await footer.fill("Unsaved footer change");
+
+            await modal.getByRole("button", {name: "Close"}).click();
+            const confirmation = settingsScreen.welcomeEmailDirtyConfirmModal();
+            await expect.element(confirmation).toBeVisible();
+            await confirmation.getByRole("button", {name: "Stay"}).click();
+
+            await expect(confirmation).toHaveCount(0);
+            await expect.element(modal).toBeVisible();
+            await expect.element(footer).toHaveValue("Unsaved footer change");
+        });
+
+        it("discards unsaved customize changes behind the Leave action", async () => {
+            const modal = await openCustomizeModal();
+            await modal.getByLabelText("Email footer").fill("Unsaved footer change");
+
+            await modal.getByRole("button", {name: "Close"}).click();
+            await settingsScreen.welcomeEmailDirtyConfirmModal().getByRole("button", {name: "Leave"}).click();
+
+            await expect(modal).toHaveCount(0);
+            await expect(settingsScreen.welcomeEmailDirtyConfirmModal()).toHaveCount(0);
         });
     });
 });

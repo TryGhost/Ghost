@@ -22,7 +22,8 @@ import {
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {oneDark} from '@codemirror/theme-one-dark';
 import {search} from '@codemirror/search';
-import {showToast} from '@tryghost/admin-x-design-system';
+
+import {toast} from 'sonner';
 import {useBrowseThemes} from '@tryghost/admin-x-framework/api/themes';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useQueryClient} from '@tanstack/react-query';
@@ -374,14 +375,14 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
         prompt,
         cancelLabel,
         okLabel,
-        okColor
+        okVariant
     }: ThemeEditorConfirmModalProps) => {
         const confirmed = await NiceModal.show(ThemeEditorConfirmModal, {
             title,
             prompt,
             cancelLabel,
             okLabel,
-            okColor
+            okVariant
         }) as boolean | undefined;
 
         return Boolean(confirmed);
@@ -413,7 +414,7 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
                 title: 'Discard changes?',
                 prompt: 'You have unsaved theme changes. Close the editor and discard them?',
                 okLabel: 'Discard changes',
-                okColor: 'red'
+                okVariant: 'destructive'
             });
 
             if (!shouldDiscard) {
@@ -500,19 +501,12 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
         }
 
         if (!isEditablePath(nextPath)) {
-            showToast({
-                type: 'error',
-                title: 'Only text files can be created here',
-                message: 'Use a text-based theme file extension such as .hbs, .css, .js, or .json.'
-            });
+            toast.error('Only text files can be created here', {description: 'Use a text-based theme file extension such as .hbs, .css, .js, or .json.'});
             return;
         }
 
         if (currentFiles[nextPath]) {
-            showToast({
-                type: 'error',
-                title: 'File already exists'
-            });
+            toast.error('File already exists');
             return;
         }
 
@@ -558,27 +552,17 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
             const fileToRename = currentFiles[selectedNode.path];
 
             if (!isEditablePath(nextPath) && fileToRename.editable) {
-                showToast({
-                    type: 'error',
-                    title: 'Text files must keep a text file extension'
-                });
+                toast.error('Text files must keep a text file extension');
                 return;
             }
 
             if (wouldRenameBinaryFileToEditable(fileToRename, nextPath)) {
-                showToast({
-                    type: 'error',
-                    title: 'Binary files cannot be renamed to a text file',
-                    message: 'Rename this file with a non-text extension to keep its contents intact.'
-                });
+                toast.error('Binary files cannot be renamed to a text file', {description: 'Rename this file with a non-text extension to keep its contents intact.'});
                 return;
             }
 
             if (currentFiles[nextPath]) {
-                showToast({
-                    type: 'error',
-                    title: 'A file with that name already exists'
-                });
+                toast.error('A file with that name already exists');
                 return;
             }
 
@@ -598,20 +582,14 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
         const nextDirectoryPath = `${nextPath}/`;
 
         if (nextDirectoryPath.startsWith(selectedNode.path)) {
-            showToast({
-                type: 'error',
-                title: 'A folder cannot be renamed inside itself'
-            });
+            toast.error('A folder cannot be renamed inside itself');
             return;
         }
 
         const conflictingPath = Object.keys(currentFiles).find(path => path.startsWith(nextDirectoryPath));
 
         if (conflictingPath) {
-            showToast({
-                type: 'error',
-                title: 'A folder with that path already exists'
-            });
+            toast.error('A folder with that path already exists');
             return;
         }
 
@@ -648,7 +626,7 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
                 title: 'Delete file',
                 prompt: <>Delete <strong>{selectedNode.path}</strong> from this theme?</>,
                 okLabel: 'Delete',
-                okColor: 'red'
+                okVariant: 'destructive'
             });
 
             if (!confirmed) {
@@ -671,7 +649,7 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
             title: 'Delete folder',
             prompt: <>Delete {matchingPaths.length} file{matchingPaths.length === 1 ? '' : 's'} from <strong>{selectedNode.path}</strong>?</>,
             okLabel: 'Delete',
-            okColor: 'red'
+            okVariant: 'destructive'
         });
 
         if (!confirmed) {
@@ -719,19 +697,12 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
         }
 
         if (!THEME_NAME_PATTERN.test(nextName)) {
-            showToast({
-                type: 'error',
-                title: 'Invalid theme name',
-                message: 'Use 1-64 characters, starting with a letter or number. Allowed: letters, numbers, dashes, and underscores.'
-            });
+            toast.error('Invalid theme name', {description: 'Use 1-64 characters, starting with a letter or number. Allowed: letters, numbers, dashes, and underscores.'});
             return null;
         }
 
         if (isDefaultThemeName(nextName)) {
-            showToast({
-                type: 'error',
-                title: 'Built-in themes cannot be overwritten'
-            });
+            toast.error('Built-in themes cannot be overwritten');
             return null;
         }
 
@@ -744,10 +715,7 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
         }
 
         if (changes.length === 0) {
-            showToast({
-                type: 'info',
-                title: 'No changes to save'
-            });
+            toast.info('No changes to save');
             return;
         }
 
@@ -779,7 +747,7 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
                 title: 'Overwrite theme',
                 prompt: <><strong>{nextThemeName}</strong> already exists. Do you want to overwrite it?</>,
                 okLabel: 'Overwrite',
-                okColor: 'red'
+                okVariant: 'destructive'
             });
 
             if (!confirmedOverwrite) {
@@ -821,11 +789,7 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
                 const serverError = (data as {errors?: Array<UploadSizeLimitError>} | null)?.errors?.[0];
 
                 if (serverError?.code && UPLOAD_SIZE_LIMIT_TITLES[serverError.code]) {
-                    showToast({
-                        type: 'error',
-                        title: UPLOAD_SIZE_LIMIT_TITLES[serverError.code],
-                        message: buildUploadSizeLimitMessage(serverError)
-                    });
+                    toast.error(UPLOAD_SIZE_LIMIT_TITLES[serverError.code], {description: buildUploadSizeLimitMessage(serverError)});
                     return;
                 }
 
@@ -852,11 +816,7 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
                     installedTheme: uploadedTheme
                 });
             } else {
-                showToast({
-                    type: 'success',
-                    title: 'Theme saved',
-                    message: <div><span className='capitalize'>{uploadedTheme.name}</span> has been updated.</div>
-                });
+                toast.success('Theme saved', {description: <div><span className='capitalize'>{uploadedTheme.name}</span> has been updated.</div>});
             }
         } catch (error) {
             handleError(error);

@@ -50,6 +50,7 @@ describe("Staff actions", () => {
         await settingsScreen.confirmationModal().getByRole("button", {name: "Delete user"}).click();
 
         await expect.element(settingsScreen.successToast()).toHaveTextContent("User deleted");
+        await expect(settingsScreen.notification("User not found")).toHaveCount(0);
         await expect(settingsScreen.userDetailModal()).toHaveCount(0);
         await expect(settingsScreen.users().getByText(author.email, {exact: true})).toHaveCount(0);
         expect(deleteApi.requests).toHaveLength(1);

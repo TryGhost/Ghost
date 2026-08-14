@@ -1,8 +1,11 @@
+import CodeEditor from '../../../code-editor';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import useSettingGroup from '../../../../hooks/use-setting-group';
-import {ButtonGroup, CodeEditor, Heading, Modal, TabView} from '@tryghost/admin-x-design-system';
+import {Button, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
+import {Inline, Text} from '@tryghost/shade/primitives';
 import {type ReactCodeMirrorRef} from '@uiw/react-codemirror';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useSaveButton} from '../../../../hooks/use-save-button';
 
@@ -44,23 +47,6 @@ const CodeModal: React.FC<CodeModalProps> = ({afterClose}) => {
         onChange: (value: string) => updateSetting('codeinjection_foot', value)
     };
 
-    const tabs = [
-        {
-            id: 'header',
-            title: 'Site header',
-            contents: (<CodeEditor height='full' {...headerProps} ref={headerEditorRef} className='mt-2' data-testid='header-code' autoFocus />),
-            tabWrapperClassName: 'flex-auto',
-            containerClassName: 'h-full'
-        },
-        {
-            id: 'footer',
-            title: 'Site footer',
-            contents: (<CodeEditor height='full' {...footerProps} ref={footerEditorRef} className='mt-2' data-testid='footer-code' />),
-            tabWrapperClassName: 'flex-auto',
-            containerClassName: 'h-full'
-        }
-    ] as const;
-
     const {savingTitle, isSaving, onSaveClick} = useSaveButton(handleSave, true);
 
     useEffect(() => {
@@ -76,7 +62,7 @@ const CodeModal: React.FC<CodeModalProps> = ({afterClose}) => {
         };
     });
 
-    return <Modal
+    return <SettingsModal
         afterClose={afterClose}
         backDropClick={false}
         cancelLabel='Close'
@@ -87,32 +73,29 @@ const CodeModal: React.FC<CodeModalProps> = ({afterClose}) => {
     >
         <div className='flex h-full flex-col'>
             <div className='mb-4 flex items-center justify-between'>
-                <Heading level={2}>Code injection</Heading>
-                <ButtonGroup buttons={[
-                    {
-                        label: 'Close',
-                        color: 'outline',
-                        onClick: () => {
-                            modal.remove();
-                            afterClose?.();
-                        }
-                    },
-                    {
-                        disabled: isSaving,
-                        label: savingTitle,
-                        color: savingTitle === 'Saved' ? 'green' : 'black',
-                        onClick: onSaveClick
-                    }
-                ]} />
+                <Text as='h2' className='md:text-3xl' leading='heading' size='2xl' weight='bold'>Code injection</Text>
+                <Inline gap='md'>
+                    <Button className='font-semibold' type='button' variant='ghost' onClick={() => {
+                        modal.remove();
+                        afterClose?.();
+                    }}>Close</Button>
+                    <Button disabled={isSaving} type='button' onClick={onSaveClick}>{savingTitle}</Button>
+                </Inline>
             </div>
-            <TabView<'header' | 'footer'>
-                containerClassName='flex-auto flex flex-col mb-16'
-                selectedTab={selectedTab}
-                tabs={tabs}
-                onTabChange={setSelectedTab}
-            />
+            <Tabs className='mb-16 flex flex-auto flex-col' value={selectedTab} variant='underline' onValueChange={value => setSelectedTab(value as typeof selectedTab)}>
+                <TabsList>
+                    <TabsTrigger value='header'>Site header</TabsTrigger>
+                    <TabsTrigger value='footer'>Site footer</TabsTrigger>
+                </TabsList>
+                <TabsContent className='h-full flex-auto' value='header'>
+                    <CodeEditor ref={headerEditorRef} className='mt-2' data-testid='header-code' height='full' autoFocus {...headerProps} />
+                </TabsContent>
+                <TabsContent className='h-full flex-auto' value='footer'>
+                    <CodeEditor ref={footerEditorRef} className='mt-2' data-testid='footer-code' height='full' {...footerProps} />
+                </TabsContent>
+            </Tabs>
         </div>
-    </Modal>;
+    </SettingsModal>;
 };
 
 export default NiceModal.create(CodeModal);

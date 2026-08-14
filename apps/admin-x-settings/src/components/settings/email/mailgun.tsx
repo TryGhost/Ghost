@@ -1,7 +1,10 @@
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
 import useSettingGroup from '../../../hooks/use-setting-group';
-import {IconLabel, Link, Select, SettingGroupContent, TextField} from '@tryghost/admin-x-design-system';
+import {Field, FieldDescription, FieldLabel, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
+import {Inline} from '@tryghost/shade/primitives';
+import {LucideIcon} from '@tryghost/shade/utils';
+import {SettingGroupContent, SettingGroupValue, SettingGroupValueContent, SettingGroupValueTitle} from '@tryghost/shade/patterns';
 import {getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {withErrorBoundary} from '../../error-boundary';
@@ -30,68 +33,69 @@ const MailGun: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const isMailgunSetup = mailgunDomain && mailgunApiKey;
 
-    const data = isMailgunSetup ? [
-        {
-            key: 'status',
-            value: (
-                <IconLabel icon='check-circle' iconColorClass='text-green'>
-                    Mailgun is set up
-                </IconLabel>
-            )
-        }
-    ] : [
-        {
-            heading: 'Status',
-            key: 'status',
-            value: 'Mailgun is not set up'
-        }
-    ];
-
     const values = (
-        <SettingGroupContent
-            columns={1}
-            values={data}
-        />
+        <SettingGroupContent>
+            <SettingGroupValue>
+                {!isMailgunSetup && <SettingGroupValueTitle>Status</SettingGroupValueTitle>}
+                <SettingGroupValueContent className={!isMailgunSetup ? 'mt-1' : undefined}>
+                    {isMailgunSetup ? (
+                        <Inline align='center' gap='sm'>
+                            <LucideIcon.Check className='size-4 text-state-success' />
+                            Mailgun is set up
+                        </Inline>
+                    ) : 'Mailgun is not set up'}
+                </SettingGroupValueContent>
+            </SettingGroupValue>
+        </SettingGroupContent>
     );
 
     const apiKeysHint = (
-        <>Find your Mailgun API keys <Link href="https://app.mailgun.com/settings/api_security" rel="noopener noreferrer" target="_blank">here</Link></>
+        <>Find your Mailgun API keys <a className='text-green hover:text-green-400' href="https://app.mailgun.com/settings/api_security" rel="noopener noreferrer" target="_blank">here</a></>
     );
     const inputs = (
         <SettingGroupContent>
             <div className='grid grid-cols-[120px_auto] gap-x-3 gap-y-6'>
-                <Select
-                    options={MAILGUN_REGIONS}
-                    selectedOption={MAILGUN_REGIONS.find(option => option.value === mailgunRegion)}
-                    title="Mailgun region"
-                    onSelect={(option) => {
-                        updateSetting('mailgun_base_url', option?.value || null);
-                    }}
-                />
-                <TextField
-                    title='Mailgun domain'
-                    value={mailgunDomain ?? ''}
-                    onChange={(e) => {
-                        updateSetting('mailgun_domain', e.target.value);
-                    }}
-                />
-                <div className='col-span-2'>
-                    <TextField
-                        hint={apiKeysHint}
-                        title='Mailgun private API key'
-                        type='password'
-                        value={mailgunApiKey ?? ''}
+                <Field>
+                    <FieldLabel>Mailgun region</FieldLabel>
+                    <Select value={mailgunRegion ?? ''} onValueChange={value => updateSetting('mailgun_base_url', value)}>
+                        <SelectTrigger aria-label='Mailgun region' className='border-transparent bg-muted hover:bg-muted'><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                            {MAILGUN_REGIONS.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                        </SelectContent>
+                    </Select>
+                </Field>
+                <Field>
+                    <FieldLabel htmlFor='mailgun-domain'>Mailgun domain</FieldLabel>
+                    <Input
+                        className='border-transparent bg-muted'
+                        id='mailgun-domain'
+                        value={mailgunDomain ?? ''}
                         onChange={(e) => {
-                            updateSetting('mailgun_api_key', e.target.value);
+                            updateSetting('mailgun_domain', e.target.value);
                         }}
                     />
+                </Field>
+                <div className='col-span-2'>
+                    <Field>
+                        <FieldLabel htmlFor='mailgun-api-key'>Mailgun private API key</FieldLabel>
+                        <Input
+                            className='border-transparent bg-muted'
+                            id='mailgun-api-key'
+                            type='password'
+                            value={mailgunApiKey ?? ''}
+                            onChange={(e) => {
+                                updateSetting('mailgun_api_key', e.target.value);
+                            }}
+                        />
+                        <FieldDescription>{apiKeysHint}</FieldDescription>
+                    </Field>
                 </div>
             </div>
         </SettingGroupContent>
     );
 
     const groupDescription = (
-        <>The Mailgun API is used for bulk email newsletter delivery. <Link href='https://ghost.org/docs/faq/mailgun-newsletters/' target='_blank'>Why is this required?</Link></>
+        <>The Mailgun API is used for bulk email newsletter delivery. <a className='text-green hover:text-green-400' href='https://ghost.org/docs/faq/mailgun-newsletters/' rel='noopener noreferrer' target='_blank'>Why is this required?</a></>
     );
 
     return (

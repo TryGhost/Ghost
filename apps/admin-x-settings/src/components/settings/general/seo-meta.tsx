@@ -4,7 +4,12 @@ import useFeatureFlag from '../../../hooks/use-feature-flag';
 import usePinturaEditor from '../../../hooks/use-pintura-editor';
 import useSettingGroup from '../../../hooks/use-setting-group';
 import {APIError} from '@tryghost/admin-x-framework/errors';
-import {FacebookLogo, GoogleLogo, Icon, ImageUpload, SettingGroupContent, TabView, TextField, Toggle, XLogo} from '@tryghost/admin-x-design-system';
+import {FacebookLogo, GoogleLogo, XLogo} from '@tryghost/admin-x-design-system';
+import {Field, FieldDescription, FieldLabel, Input, Switch, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
+import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
+import {LucideIcon} from '@tryghost/shade/utils';
+import {Pencil, Trash2} from 'lucide-react';
+import {SettingGroupContent} from '@tryghost/shade/patterns';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -37,7 +42,7 @@ const SearchEnginePreview: React.FC<SearchEnginePreviewProps> = ({
                         </div>
                         <div className='grow'>
                             <div className='flex w-full items-center justify-end rounded-full bg-white p-3 px-4 shadow dark:bg-grey-900'>
-                                <Icon className='stroke-[2px] text-blue-600' name='magnifying-glass' size='sm' />
+                                <LucideIcon.Search className='size-4 stroke-2 text-blue-600' />
                             </div>
                         </div>
                     </div>
@@ -142,8 +147,8 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
     };
 
     // Meta data handlers
-    const handleLlmsToggleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        updateSetting('llms_enabled', e.target.checked);
+    const handleLlmsToggleChange = (checked: boolean) => {
+        updateSetting('llms_enabled', checked);
         if (!isEditing) {
             handleEditingChange(true);
         }
@@ -166,32 +171,15 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
     // Tab contents
     const metadataTabContent = (
         <>
-            <SettingGroupContent className="my-6 gap-3">
+            <SettingGroupContent className="my-6 gap-3 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted">
                 {hasLlmsTxt && (
-                    <Toggle
-                        checked={llmsEnabled}
-                        direction='rtl'
-                        label='Enable structured data for LLMs and AI search engines'
-                        onChange={handleLlmsToggleChange}
-                    />
+                    <Field orientation='horizontal'>
+                        <FieldLabel htmlFor='llms-enabled'>Enable structured data for LLMs and AI search engines</FieldLabel>
+                        <Switch checked={llmsEnabled} id='llms-enabled' onCheckedChange={handleLlmsToggleChange} />
+                    </Field>
                 )}
-                <TextField
-                    hint="Recommended: 70 characters"
-                    inputRef={focusRef}
-                    maxLength={300}
-                    placeholder={siteTitle}
-                    title="Meta title"
-                    value={metaTitle}
-                    onChange={handleMetaTitleChange}
-                />
-                <TextField
-                    hint="Recommended: 156 characters"
-                    maxLength={500}
-                    placeholder={siteDescription}
-                    title="Meta description"
-                    value={metaDescription}
-                    onChange={handleMetaDescriptionChange}
-                />
+                <Field><FieldLabel htmlFor='meta-title'>Meta title</FieldLabel><Input ref={focusRef} id='meta-title' maxLength={300} placeholder={siteTitle} value={metaTitle} onChange={handleMetaTitleChange} /><FieldDescription>Recommended: 70 characters</FieldDescription></Field>
+                <Field><FieldLabel htmlFor='meta-description'>Meta description</FieldLabel><Input id='meta-description' maxLength={500} placeholder={siteDescription} value={metaDescription} onChange={handleMetaDescriptionChange} /><FieldDescription>Recommended: 156 characters</FieldDescription></Field>
             </SettingGroupContent>
             <SearchEnginePreview
                 description={metaDescription ? metaDescription : siteDescription}
@@ -217,43 +205,30 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 <div className="mb-2 h-3 w-full rounded bg-grey-200 dark:bg-grey-900"></div>
                 <div className="mb-4 h-3 w-3/5 rounded bg-grey-200 dark:bg-grey-900"></div>
                 <SettingGroupContent className="overflow-hidden rounded-md border border-grey-300 dark:border-grey-900">
-                    <ImageUpload
-                        fileUploadClassName='flex cursor-pointer items-center justify-center rounded rounded-b-none border border-grey-100 border-b-0 bg-grey-50 p-3 font-semibold text-grey-800 hover:text-black dark:border-grey-900'
-                        height='300px'
-                        id='facebook-image'
-                        imageURL={facebookImage}
-                        pintura={
-                            {
-                                isEnabled: editor.isEnabled,
-                                openEditor: async () => editor.openEditor({
-                                    image: facebookImage || '',
-                                    handleSave: async (file:File) => {
-                                        const imageUrl = getImageUrl(await uploadImage({file}));
-                                        updateSetting('og_image', imageUrl);
-                                    }
-                                })
-                            }
-                        }
-                        onDelete={handleFacebookImageDelete}
-                        onUpload={handleFacebookImageUpload}
-                    >
-                        Upload Facebook image
+                    <ImageUpload className='h-75 rounded-b-none'>
+                        {facebookImage ? (
+                            <ImageUploadPreview className='rounded-b-none'>
+                                <ImageUploadImage id='facebook-image' src={facebookImage} />
+                                <ImageUploadActions>
+                                    {editor.isEnabled && <ImageUploadAction aria-label='Edit Facebook image' onClick={() => editor.openEditor({
+                                        image: facebookImage,
+                                        handleSave: async (file: File) => {
+                                            const imageUrl = getImageUrl(await uploadImage({file}));
+                                            updateSetting('og_image', imageUrl);
+                                        }
+                                    })}><Pencil /></ImageUploadAction>}
+                                    <ImageUploadAction aria-label='Remove Facebook image' data-testid='image-delete-button' onClick={handleFacebookImageDelete}><Trash2 /></ImageUploadAction>
+                                </ImageUploadActions>
+                            </ImageUploadPreview>
+                        ) : (
+                            <ImageUploadDropzone className='rounded-b-none' inputAriaLabel='Upload Facebook image' inputId='facebook-image' onDropAccepted={files => handleFacebookImageUpload(files[0])}>
+                                Upload Facebook image
+                            </ImageUploadDropzone>
+                        )}
                     </ImageUpload>
-                    <div className="mt-5 flex flex-col gap-x-6 gap-y-7 px-4 pb-7">
-                        <TextField
-                            maxLength={300}
-                            placeholder={siteTitle}
-                            title="Facebook title"
-                            value={facebookTitle}
-                            onChange={handleFacebookTitleChange}
-                        />
-                        <TextField
-                            maxLength={300}
-                            placeholder={siteDescription}
-                            title="Facebook description"
-                            value={facebookDescription}
-                            onChange={handleFacebookDescriptionChange}
-                        />
+                    <div className="mt-5 flex flex-col gap-x-6 gap-y-7 px-4 pb-7 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted">
+                        <Field><FieldLabel htmlFor='facebook-title'>Facebook title</FieldLabel><Input id='facebook-title' maxLength={300} placeholder={siteTitle} value={facebookTitle} onChange={handleFacebookTitleChange} /></Field>
+                        <Field><FieldLabel htmlFor='facebook-description'>Facebook description</FieldLabel><Input id='facebook-description' maxLength={300} placeholder={siteDescription} value={facebookDescription} onChange={handleFacebookDescriptionChange} /></Field>
                     </div>
                 </SettingGroupContent>
             </div>
@@ -273,66 +248,35 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 <div className="mb-2 h-3 w-full rounded bg-grey-200 dark:bg-grey-900"></div>
                 <div className="mb-4 h-3 w-3/5 rounded bg-grey-200 dark:bg-grey-900"></div>
                 <SettingGroupContent className="overflow-hidden rounded-md border border-grey-300 dark:border-grey-900">
-                    <ImageUpload
-                        fileUploadClassName='flex cursor-pointer items-center justify-center rounded rounded-b-none border border-grey-100 border-b-0 bg-grey-50 p-3 font-semibold text-grey-800 hover:text-black dark:border-grey-900'
-                        height='300px'
-                        id='twitter-image'
-                        imageURL={twitterImage}
-                        pintura={
-                            {
-                                isEnabled: editor.isEnabled,
-                                openEditor: async () => editor.openEditor({
-                                    image: twitterImage || '',
-                                    handleSave: async (file:File) => {
-                                        const imageUrl = getImageUrl(await uploadImage({file}));
-                                        updateSetting('twitter_image', imageUrl);
-                                    }
-                                })
-                            }
-                        }
-                        onDelete={handleTwitterImageDelete}
-                        onUpload={handleTwitterImageUpload}
-                    >
-                        Upload X image
+                    <ImageUpload className='h-75 rounded-b-none'>
+                        {twitterImage ? (
+                            <ImageUploadPreview className='rounded-b-none'>
+                                <ImageUploadImage id='twitter-image' src={twitterImage} />
+                                <ImageUploadActions>
+                                    {editor.isEnabled && <ImageUploadAction aria-label='Edit X image' onClick={() => editor.openEditor({
+                                        image: twitterImage,
+                                        handleSave: async (file: File) => {
+                                            const imageUrl = getImageUrl(await uploadImage({file}));
+                                            updateSetting('twitter_image', imageUrl);
+                                        }
+                                    })}><Pencil /></ImageUploadAction>}
+                                    <ImageUploadAction aria-label='Remove X image' data-testid='image-delete-button' onClick={handleTwitterImageDelete}><Trash2 /></ImageUploadAction>
+                                </ImageUploadActions>
+                            </ImageUploadPreview>
+                        ) : (
+                            <ImageUploadDropzone className='rounded-b-none' inputAriaLabel='Upload X image' inputId='twitter-image' onDropAccepted={files => handleTwitterImageUpload(files[0])}>
+                                Upload X image
+                            </ImageUploadDropzone>
+                        )}
                     </ImageUpload>
-                    <div className="mt-6 flex flex-col gap-x-6 gap-y-7 px-4 pb-7">
-                        <TextField
-                            maxLength={300}
-                            placeholder={siteTitle}
-                            title="X title"
-                            value={twitterTitle}
-                            onChange={handleTwitterTitleChange}
-                        />
-                        <TextField
-                            maxLength={300}
-                            placeholder={siteDescription}
-                            title="X description"
-                            value={twitterDescription}
-                            onChange={handleTwitterDescriptionChange}
-                        />
+                    <div className="mt-6 flex flex-col gap-x-6 gap-y-7 px-4 pb-7 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted">
+                        <Field><FieldLabel htmlFor='x-title'>X title</FieldLabel><Input id='x-title' maxLength={300} placeholder={siteTitle} value={twitterTitle} onChange={handleTwitterTitleChange} /></Field>
+                        <Field><FieldLabel htmlFor='x-description'>X description</FieldLabel><Input id='x-description' maxLength={300} placeholder={siteDescription} value={twitterDescription} onChange={handleTwitterDescriptionChange} /></Field>
                     </div>
                 </SettingGroupContent>
             </div>
         </div>
     );
-
-    const tabs = [
-        {
-            id: 'metadata',
-            title: 'Search',
-            contents: metadataTabContent
-        },
-        {
-            id: 'twitter',
-            title: 'X card',
-            contents: twitterTabContent
-        },
-        {
-            id: 'facebook',
-            title: 'Facebook card',
-            contents: facebookTabContent
-        }
-    ];
 
     return (
         <TopLevelGroup
@@ -348,12 +292,16 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
             onEditingChange={handleEditingChange}
             onSave={handleSave}
         >
-            <TabView
-                selectedTab={selectedTab}
-                tabs={tabs}
-                testId='seo-tabview'
-                onTabChange={setSelectedTab}
-            />
+            <Tabs data-testid='seo-tabview' value={selectedTab} variant='underline' onValueChange={setSelectedTab}>
+                <TabsList>
+                    <TabsTrigger value='metadata'>Search</TabsTrigger>
+                    <TabsTrigger value='twitter'>X card</TabsTrigger>
+                    <TabsTrigger value='facebook'>Facebook card</TabsTrigger>
+                </TabsList>
+                <TabsContent value='metadata'>{metadataTabContent}</TabsContent>
+                <TabsContent value='twitter'>{twitterTabContent}</TabsContent>
+                <TabsContent value='facebook'>{facebookTabContent}</TabsContent>
+            </Tabs>
         </TopLevelGroup>
     );
 };

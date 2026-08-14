@@ -1,10 +1,11 @@
 import NiceModal from '@ebay/nice-modal-react';
 import React, {type ReactNode} from 'react';
 import useCustomFonts from '../../../../hooks/use-custom-fonts';
-import {ConfirmationModalContent, showToast} from '@tryghost/admin-x-design-system';
+import {ConfirmationModalContent} from '../../../confirmation-modal';
 import {type InstalledTheme, useActivateTheme} from '@tryghost/admin-x-framework/api/themes';
 import {OutcomeBanner, ThemeValidationDetailsDisclosure, getIssuesFromInstalledTheme} from './theme-validation-details';
 import {getHomepageUrl, useBrowseSite} from '@tryghost/admin-x-framework/api/site';
+import {toast} from 'sonner';
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
@@ -47,9 +48,9 @@ const ThemeInstalledModal: React.FC<{
 
     return <ConfirmationModalContent
         cancelLabel='Close'
-        okColor='black'
         okLabel={okLabel}
         okRunningLabel='Activating...'
+        okVariant='default'
         prompt={<>
             <div className='space-y-5'>
                 {installedTheme.active ? (
@@ -79,11 +80,7 @@ const ThemeInstalledModal: React.FC<{
                     const updatedTheme = resData.themes[0];
                     refreshActiveThemeData();
 
-                    showToast({
-                        title: 'Theme activated',
-                        type: 'success',
-                        message: <div><span className='capitalize'>{updatedTheme.name}</span> is now your active theme.</div>
-                    });
+                    toast.success('Theme activated', {description: <div><span className='capitalize'>{updatedTheme.name}</span> is now your active theme.</div>});
                 } catch (e) {
                     handleError(e);
                 }

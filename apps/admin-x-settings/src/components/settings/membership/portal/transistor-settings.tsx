@@ -1,6 +1,6 @@
 import React from 'react';
-import {Heading, TextField, Toggle} from '@tryghost/admin-x-design-system';
-import {Separator} from '@tryghost/shade/components';
+import {Box, Text} from '@tryghost/shade/primitives';
+import {Field, FieldContent, FieldDescription, FieldLabel, Input, Separator, Switch} from '@tryghost/shade/components';
 import {type Setting, type SettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 
 const TransistorSettings: React.FC<{
@@ -36,49 +36,25 @@ const TransistorSettings: React.FC<{
     const urlTemplate = transistorPortalUrlTemplate as string;
 
     return (
-        <>
+        <Box className='[&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
             <Separator />
-            <Heading level={5}>Transistor</Heading>
-            <Toggle
-                checked={enabled}
-                direction='rtl'
-                hint='Show a section on the account page for members to access private podcasts'
-                label='Enable Transistor integration'
-                onChange={e => updateSetting('transistor_portal_enabled', e.target.checked)}
-            />
+            <Text as='h5' className='md:text-lg' leading='supertight' weight='bold'>Transistor</Text>
+            <Field orientation='horizontal'>
+                <FieldContent>
+                    <FieldLabel htmlFor='transistor-portal-enabled'>Enable Transistor integration</FieldLabel>
+                    <FieldDescription>Show a section on the account page for members to access private podcasts</FieldDescription>
+                </FieldContent>
+                <Switch checked={enabled} id='transistor-portal-enabled' onCheckedChange={checked => updateSetting('transistor_portal_enabled', checked)} />
+            </Field>
             {enabled && (
                 <>
-                    <TextField
-                        hint='The heading displayed above the Transistor section'
-                        placeholder='Podcasts'
-                        title='Heading'
-                        value={heading}
-                        onChange={e => updateSetting('transistor_portal_heading', e.target.value)}
-                    />
-                    <TextField
-                        hint='A short description of what members can do'
-                        placeholder='Access your RSS feeds'
-                        title='Description'
-                        value={description}
-                        onChange={e => updateSetting('transistor_portal_description', e.target.value)}
-                    />
-                    <TextField
-                        hint='The text displayed on the button'
-                        placeholder='Manage'
-                        title='Button text'
-                        value={buttonText}
-                        onChange={e => updateSetting('transistor_portal_button_text', e.target.value)}
-                    />
-                    <TextField
-                        hint='Use {memberUuid} as a placeholder for the member ID'
-                        placeholder='https://partner.transistor.fm/ghost/{memberUuid}'
-                        title='URL template'
-                        value={urlTemplate}
-                        onChange={e => updateSetting('transistor_portal_url_template', e.target.value)}
-                    />
+                    <Field><FieldLabel htmlFor='transistor-heading'>Heading</FieldLabel><Input id='transistor-heading' placeholder='Podcasts' value={heading} onChange={e => updateSetting('transistor_portal_heading', e.target.value)} /><FieldDescription>The heading displayed above the Transistor section</FieldDescription></Field>
+                    <Field><FieldLabel htmlFor='transistor-description'>Description</FieldLabel><Input id='transistor-description' placeholder='Access your RSS feeds' value={description} onChange={e => updateSetting('transistor_portal_description', e.target.value)} /><FieldDescription>A short description of what members can do</FieldDescription></Field>
+                    <Field><FieldLabel htmlFor='transistor-button-text'>Button text</FieldLabel><Input id='transistor-button-text' placeholder='Manage' value={buttonText} onChange={e => updateSetting('transistor_portal_button_text', e.target.value)} /><FieldDescription>The text displayed on the button</FieldDescription></Field>
+                    <Field><FieldLabel htmlFor='transistor-url-template'>URL template</FieldLabel><Input id='transistor-url-template' placeholder='https://partner.transistor.fm/ghost/{memberUuid}' value={urlTemplate} onChange={e => updateSetting('transistor_portal_url_template', e.target.value)} /><FieldDescription>Use {'{memberUuid}'} as a placeholder for the member ID</FieldDescription></Field>
                 </>
             )}
-        </>
+        </Box>
     );
 };
 

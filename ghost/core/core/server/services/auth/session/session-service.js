@@ -58,7 +58,7 @@ const AUTH_CODE_CHALLENGE_BYTES = 16;
  * @param {() => string} deps.getBlogLogo
  * @param {import('../../mail').GhostMailer} deps.mailer
  * @param {import('../../i18n').t} deps.t
- * @param {import('../../../../shared/url-utils')} deps.urlUtils
+ * @param {import('../../../../shared/url-utils').default} deps.urlUtils
  * @param {() => boolean} deps.isStaffDeviceVerificationDisabled
  * @returns {SessionService}
  */

@@ -28,6 +28,7 @@ export default defineConfig({
     test: {
         name: "acceptance",
         include: ["src/**/*.acceptance.test.tsx"],
+        maxWorkers: process.env.CI ? 2 : undefined,
         setupFiles: ["./test-utils/acceptance/setup.ts"],
         expect: {
             // Full-app renders are slower than unit renders; the harness's

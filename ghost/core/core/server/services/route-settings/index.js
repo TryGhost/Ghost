@@ -6,7 +6,7 @@ const service = new DynamicRoutingService();
 
 module.exports = {
     init: async () => {
-        const adapterManager = require('../adapter-manager');
+        const adapterManager = require('../adapter-manager').default;
         const SettingsLoader = require('./settings-loader');
         const SettingsPathManager = require('./settings-path-manager');
 

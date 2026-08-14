@@ -160,6 +160,48 @@ describe('LazyUrlService', function () {
             );
         });
 
+        it('matches a filter on an eager-excluded column as eager does (absent → null)', function () {
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
+            // custom_template is dropped from eager's URL cache
+            // (services/url/config.js exclude), so eager evaluates
+            // `custom_template:null` against an absent field — NQL treats absent
+            // as null, the filter matches, and the post is served. Lazy loads the
+            // real value; to preserve eager it must strip the excluded column
+            // before matching and serve the post too.
+            service.onRouterAddedType('specials', 'custom_template:null', 'posts', '/:slug/');
+
+            const url = service.getUrlForResource({
+                type: 'posts',
+                id: 'p',
+                slug: 'hello',
+                status: 'published',
+                custom_template: 'custom-landing'
+            });
+            assert.equal(url, '/hello/');
+        });
+
+        it('does not treat a resource lacking an eager-excluded filter column as thin', function () {
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
+            // Eager never carries custom_template, so it never requires it; a
+            // resource lacking it must match null rather than throw thin.
+            service.onRouterAddedType('specials', 'custom_template:null', 'posts', '/:slug/');
+
+            assert.equal(
+                service.getUrlForResource({type: 'posts', id: 'p', slug: 'hello', status: 'published'}),
+                '/hello/'
+            );
+        });
+
+        it('does not force-load eager-excluded columns as required fields', function () {
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
+            service.onRouterAddedType('specials', 'custom_template:null', 'posts', '/:slug/');
+
+            assert.ok(
+                !service.getRequiredFields('posts').includes('custom_template'),
+                'custom_template is dropped from eager\'s cache, so lazy must not force-load it'
+            );
+        });
+
         it('expands shorthand tag/author filters via the EXPANSIONS table', function () {
             const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
             service.onRouterAddedType('podcast', 'tag:podcast', 'posts', '/podcast/:slug/');

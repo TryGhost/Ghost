@@ -1,7 +1,6 @@
-import DirtyConfirmModal from './dirty-confirm-modal';
-import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
 import {Button, Dialog, DialogContent, DialogTitle} from '@tryghost/shade/components';
+import {DirtyConfirmDialog, useDirtyConfirmation} from '@tryghost/shade/patterns';
 import {type OkProps} from '@tryghost/admin-x-framework/hooks';
 import {cn} from '@tryghost/shade/utils';
 
@@ -12,7 +11,7 @@ interface EmailDesignModalProps {
     sidebar: React.ReactNode;
     dirty?: boolean;
     isLoading?: boolean;
-    okProps?: Pick<OkProps, 'color' | 'disabled' | 'label'>;
+    okProps?: Pick<OkProps, 'disabled' | 'label' | 'variant'>;
     onSave: () => void;
     onClose: () => void;
     afterClose?: () => void;
@@ -34,6 +33,7 @@ const EmailDesignModal: React.FC<EmailDesignModalProps> = ({
 }) => {
     const onSaveRef = useRef(onSave);
     const prevOpenRef = useRef(open);
+    const {confirm, dialogProps} = useDirtyConfirmation();
 
     useEffect(() => {
         onSaveRef.current = onSave;
@@ -58,16 +58,8 @@ const EmailDesignModal: React.FC<EmailDesignModalProps> = ({
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, []);
 
-    const handleClose = async () => {
-        if (!dirty) {
-            onClose();
-            return;
-        }
-
-        const shouldLeave = await NiceModal.show(DirtyConfirmModal) as boolean;
-        if (shouldLeave) {
-            onClose();
-        }
+    const handleClose = () => {
+        confirm(dirty, onClose);
     };
 
     return (
@@ -102,11 +94,11 @@ const EmailDesignModal: React.FC<EmailDesignModalProps> = ({
                         <div className="flex items-center justify-between px-6 py-5">
                             <DialogTitle>{title}</DialogTitle>
                             <div className="flex items-center gap-2">
-                                <Button variant="outline" onClick={() => handleClose()}>Close</Button>
+                                <Button className='font-semibold' type='button' variant='ghost' onClick={() => handleClose()}>Close</Button>
                                 <Button
-                                    className={okProps?.color === 'green' ? 'bg-green text-white hover:bg-green/90' : undefined}
                                     disabled={isLoading || okProps?.disabled}
-                                    variant={okProps?.color === 'red' ? 'destructive' : 'default'}
+                                    type='button'
+                                    variant={okProps?.variant}
                                     onClick={onSave}
                                 >
                                     {okProps?.label || 'Save'}
@@ -117,6 +109,7 @@ const EmailDesignModal: React.FC<EmailDesignModalProps> = ({
                     </div>
                 </div>
             </DialogContent>
+            <DirtyConfirmDialog testId='welcome-email-dirty-confirm-modal' {...dialogProps} />
         </Dialog>
     );
 };

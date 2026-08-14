@@ -154,6 +154,7 @@ describe('automations poll', function () {
         };
 
         settingsCacheGet = sinon.stub(settingsCache, 'get');
+        settingsCacheGet.withArgs('email_track_clicks').returns(false);
         settingsCacheGet.withArgs('email_track_opens').returns(false);
         sinon.stub(Member, 'findOne').resolves(buildMember());
     });
@@ -368,6 +369,7 @@ describe('automations poll', function () {
             memberId: 'member-id',
             memberName: 'Test Member',
             memberUuid: '00000000-0000-4000-8000-000000000001',
+            trackClicks: false,
             trackOpens: false
         });
         sinon.assert.callOrder(
@@ -410,6 +412,43 @@ describe('automations poll', function () {
         }));
     });
 
+    it('does not schedule email analytics when the send has no Mailgun message ID', async function () {
+        const step = buildEmailStep();
+        automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
+        memberWelcomeEmailService.api.sendAutomationEmail.resolves({
+            messageId: '<smtp-message-id>',
+            response: '250 Message accepted'
+        });
+
+        await poll(options);
+
+        sinon.assert.notCalled(scheduleAutomationEmailAnalyticsJob);
+    });
+
+    it('snapshots enabled click tracking on the recipient', async function () {
+        const step = buildEmailStep();
+        automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
+        settingsCacheGet.withArgs('email_track_clicks').returns(true);
+
+        await poll(options);
+
+        sinon.assert.calledOnceWithExactly(automationsApi.recordEmailSent, sinon.match({
+            trackClicks: true
+        }));
+    });
+
+    it('snapshots disabled click tracking on the recipient', async function () {
+        const step = buildEmailStep();
+        automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
+        settingsCacheGet.withArgs('email_track_clicks').returns(false);
+
+        await poll(options);
+
+        sinon.assert.calledOnceWithExactly(automationsApi.recordEmailSent, sinon.match({
+            trackClicks: false
+        }));
+    });
+
     it('records the automated email recipient without a Mailgun message ID after an SMTP send', async function () {
         const step = buildEmailStep({
             automation_action_revision_id: 'revision-id'
@@ -432,6 +471,7 @@ describe('automations poll', function () {
             memberId: 'member-id',
             memberName: 'Test Member',
             memberUuid: '00000000-0000-4000-8000-000000000001',
+            trackClicks: false,
             trackOpens: false
         });
         sinon.assert.callOrder(
@@ -458,6 +498,7 @@ describe('automations poll', function () {
     it('does not retry the email send when scheduling email analytics fails', async function () {
         const step = buildEmailStep();
         automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
+        memberWelcomeEmailService.api.sendAutomationEmail.resolves({id: '<mailgun-message-id>'});
         scheduleAutomationEmailAnalyticsJob.rejects(new Error('email analytics scheduling failed'));
 
         await poll(options);

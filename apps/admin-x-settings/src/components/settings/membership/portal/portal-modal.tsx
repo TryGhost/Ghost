@@ -1,18 +1,31 @@
 import AccountPage from './account-page';
+import ConfirmationModal from '../../../confirmation-modal';
 import LookAndFeel from './look-and-feel';
 import NiceModal from '@ebay/nice-modal-react';
 import PortalPreview from './portal-preview';
 import React, {useEffect, useState} from 'react';
 import SignupOptions from './signup-options';
 import useQueryParams from '../../../../hooks/use-query-params';
-import {ConfirmationModal, PreviewModalContent, type Tab, TabView} from '@tryghost/admin-x-design-system';
 import {type Dirtyable, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {PreviewModalContent} from '../../preview-modal';
 import {type Setting, type SettingValue, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
+import {Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {type Tier, useBrowseTiers, useEditTier} from '@tryghost/admin-x-framework/api/tiers';
 import {fullEmailAddress} from '@tryghost/admin-x-framework/api/site';
 import {useGlobalData} from '../../../providers/global-data-provider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 import {verifyEmailToken} from '@tryghost/admin-x-framework/api/email-verification';
+
+type PreviewTab = 'signup' | 'account' | 'links';
+type SidebarTab = 'signupOptions' | 'lookAndFeel' | 'accountPage';
+
+const previewTabForSidebar: Record<SidebarTab, PreviewTab> = {
+    signupOptions: 'signup',
+    lookAndFeel: 'signup',
+    accountPage: 'account'
+};
+
+const portalSidebarTabClassName = 'border-b-2 border-transparent after:hidden data-[state=active]:border-foreground';
 
 const Sidebar: React.FC<{
     localSettings: Setting[]
@@ -21,37 +34,30 @@ const Sidebar: React.FC<{
     updateTier: (tier: Tier) => void
     errors: Record<string, string | undefined>
     setError: (key: string, error: string | undefined) => void
-    selectedTab: string
-    onTabChange: (id: string) => void
+    selectedTab: SidebarTab
+    onTabChange: (id: SidebarTab) => void
 }> = ({localSettings, updateSetting, localTiers, updateTier, errors, setError, selectedTab, onTabChange}) => {
-    const tabs: Tab[] = [
-        {
-            id: 'signupOptions',
-            title: 'Signup options',
-            contents: <SignupOptions
-                errors={errors}
-                localSettings={localSettings}
-                localTiers={localTiers}
-                setError={setError}
-                updateSetting={updateSetting}
-                updateTier={updateTier}
-            />
-        },
-        {
-            id: 'lookAndFeel',
-            title: 'Look & feel',
-            contents: <LookAndFeel localSettings={localSettings} updateSetting={updateSetting} />
-        },
-        {
-            id: 'accountPage',
-            title: 'Account page',
-            contents: <AccountPage errors={errors} localSettings={localSettings} setError={setError} updateSetting={updateSetting} />
-        }
-    ];
-
     return (
         <div className='pt-4'>
-            <TabView selectedTab={selectedTab} tabs={tabs} onTabChange={onTabChange} />
+            <Tabs value={selectedTab} variant='underline' onValueChange={value => onTabChange(value as SidebarTab)}>
+                <TabsList>
+                    <TabsTrigger className={portalSidebarTabClassName} value='signupOptions'>Signup options</TabsTrigger>
+                    <TabsTrigger className={portalSidebarTabClassName} value='lookAndFeel'>Look & feel</TabsTrigger>
+                    <TabsTrigger className={portalSidebarTabClassName} value='accountPage'>Account page</TabsTrigger>
+                </TabsList>
+                <TabsContent value='signupOptions'>
+                    <SignupOptions
+                        errors={errors}
+                        localSettings={localSettings}
+                        localTiers={localTiers}
+                        setError={setError}
+                        updateSetting={updateSetting}
+                        updateTier={updateTier}
+                    />
+                </TabsContent>
+                <TabsContent value='lookAndFeel'><LookAndFeel localSettings={localSettings} updateSetting={updateSetting} /></TabsContent>
+                <TabsContent value='accountPage'><AccountPage errors={errors} localSettings={localSettings} setError={setError} updateSetting={updateSetting} /></TabsContent>
+            </Tabs>
         </div>
     );
 };
@@ -59,8 +65,8 @@ const Sidebar: React.FC<{
 const PortalModal: React.FC = () => {
     const {updateRoute} = useRouting();
 
-    const [selectedPreviewTab, setSelectedPreviewTab] = useState('signup');
-    const [selectedSidebarTab, setSelectedSidebarTab] = useState('signupOptions');
+    const [selectedPreviewTab, setSelectedPreviewTab] = useState<PreviewTab>('signup');
+    const [selectedSidebarTab, setSelectedSidebarTab] = useState<SidebarTab>('signupOptions');
 
     const handleError = useHandleError();
     const {settings, siteData, config} = useGlobalData();
@@ -184,24 +190,19 @@ const PortalModal: React.FC = () => {
         }));
     };
 
-    const onSelectURL = (id: string) => {
+    const onSelectURL = (id: PreviewTab) => {
         setSelectedPreviewTab(id);
-        // Sync sidebar tab with preview tab
-        if (id === 'signup') {
-            setSelectedSidebarTab('signupOptions');
-        } else if (id === 'account') {
+
+        if (id === 'account') {
             setSelectedSidebarTab('accountPage');
+        } else if (id === 'signup' && selectedSidebarTab === 'accountPage') {
+            setSelectedSidebarTab('signupOptions');
         }
     };
 
-    const onSidebarTabChange = (id: string) => {
+    const onSidebarTabChange = (id: SidebarTab) => {
         setSelectedSidebarTab(id);
-        // Sync preview tab with sidebar tab
-        if (id === 'signupOptions') {
-            setSelectedPreviewTab('signup');
-        } else if (id === 'accountPage') {
-            setSelectedPreviewTab('account');
-        }
+        setSelectedPreviewTab(previewTabForSidebar[id]);
     };
 
     const sidebar = <Sidebar
@@ -220,11 +221,15 @@ const PortalModal: React.FC = () => {
         selectedTab={selectedPreviewTab}
     />;
 
-    const previewTabs: Tab[] = [
-        {id: 'signup', title: 'Signup'},
-        {id: 'account', title: 'Account page'},
-        {id: 'links', title: 'Links'}
-    ];
+    const previewTabs = (
+        <Tabs value={selectedPreviewTab} variant='button-sm' onValueChange={value => onSelectURL(value as PreviewTab)}>
+            <TabsList>
+                <TabsTrigger value='signup'>Signup</TabsTrigger>
+                <TabsTrigger value='account'>Account page</TabsTrigger>
+                <TabsTrigger value='links'>Links</TabsTrigger>
+            </TabsList>
+        </Tabs>
+    );
 
     return <PreviewModalContent
         afterClose={() => {
@@ -232,14 +237,12 @@ const PortalModal: React.FC = () => {
         }}
         buttonsDisabled={okProps.disabled}
         cancelLabel='Close'
-        deviceSelector={false}
         dirty={saveState === 'unsaved'}
-        okColor={okProps.color}
         okLabel={okProps.label || 'Save'}
+        okVariant={okProps.variant}
         preview={preview}
         previewBgColor={selectedPreviewTab === 'links' ? 'white' : 'greygradient'}
         previewToolbarTabs={previewTabs}
-        selectedURL={selectedPreviewTab}
         sidebar={sidebar}
         testId='portal-modal'
         title='Portal'
@@ -248,7 +251,6 @@ const PortalModal: React.FC = () => {
                 await handleSave({force: true});
             }
         }}
-        onSelectURL={onSelectURL}
     />;
 };
 

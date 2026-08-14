@@ -3,7 +3,7 @@ import {type ErrorMessages, type OkProps, type SaveHandler, type SaveState, useF
 import {type Setting, type SettingValue, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {type SiteData} from '@tryghost/admin-x-framework/api/site';
 import {useGlobalData} from '../components/providers/global-data-provider';
-import {useGlobalDirtyState} from '@tryghost/admin-x-design-system';
+import {useGlobalDirtyState} from '@tryghost/shade/utils';
 
 interface LocalSetting extends Setting {
     dirty?: boolean;

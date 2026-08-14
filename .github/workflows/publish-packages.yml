@@ -1,0 +1,111 @@
+name: Publish Packages
+
+# Single trusted publisher for the workspace's public packages (koenig/*,
+# packages/*, ...). npm trusted publishing (OIDC) validates the ENTRY-POINT
+# workflow — the one the run was triggered from, not any reusable workflow it
+# calls — so this workflow must be triggered directly on both paths and is the
+# only workflow npm needs to trust for these packages:
+#
+#   - push (tag): a Ghost release tag publishes whatever `pnpm version -r`
+#     bumped for that tag. Runs in parallel with ci.yml's publish_ghost; order
+#     doesn't matter because the versions are already committed in the tag and
+#     nothing installs these from npm during the Ghost publish.
+#   - workflow_dispatch: a packages-only publish that never touches Ghost —
+#     publishes any publishable package whose committed version is not yet on
+#     npm (optionally narrowed to one --package). This is the escape hatch; it
+#     assumes the version was already bumped (by a release consuming a changeset,
+#     or manually), since it only publishes versions missing from npm.
+#
+# scripts/publish-packages.js asks npm what already exists and publishes only
+# the gaps, so every trigger is idempotent.
+
+on:
+  push:
+    tags:
+      - 'v[0-9]*'
+  workflow_dispatch:
+    inputs:
+      package:
+        description: 'Optional package name to restrict the publish (e.g. @tryghost/kg-default-nodes). Blank publishes every pending package.'
+        type: string
+        required: false
+      dry_run:
+        description: 'Build and pack, skip the actual publish.'
+        type: boolean
+        required: false
+        default: false
+
+concurrency:
+  group: publish-packages
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: 22.23.1
+
+jobs:
+  publish:
+    name: Publish workspace packages to npm
+    runs-on: ubuntu-latest
+    # A manual dispatch always runs. On a tag, stable only (no '-' = no
+    # prerelease): package versions are bumped in the stable release commit, so
+    # an rc tag has nothing new to publish.
+    if: |
+      github.repository == 'TryGhost/Ghost'
+      && (
+        github.event_name == 'workflow_dispatch'
+        || (startsWith(github.ref, 'refs/tags/v') && !contains(github.ref_name, '-'))
+      )
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          # Publishing uses OIDC + the public registry; no git operations need
+          # the token, so don't leave it in .git/config for later steps.
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+      - name: Set up Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          package-manager-cache: false
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Configure .npmrc
+        run: |
+          echo "@tryghost:registry=https://registry.npmjs.org/" >> ~/.npmrc
+
+      - name: Publish packages
+        # Read as env by publish-packages.js — no shell interpolation of the
+        # dispatch inputs (untrusted even on a manual workflow).
+        env:
+          PUBLISH_PACKAGE: ${{ inputs.package }}
+          PUBLISH_DRY_RUN: ${{ inputs.dry_run }}
+        run: node scripts/publish-packages.js
+
+  # Alert on-call if a publish fails. This publish used to be a job inside
+  # ci.yml, covered by its notify_release_failure job; as its own workflow it
+  # needs its own alert so a failure here isn't silent.
+  notify_failure:
+    name: Notify publish failure
+    needs: [publish]
+    if: failure() && github.repository == 'TryGhost/Ghost'
+    runs-on: ubuntu-slim
+    permissions: {}  # only posts to Slack via curl; needs no GITHUB_TOKEN scopes
+    steps:
+      - name: Notify Slack
+        env:
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          RELEASE_NOTIFICATION_URL: ${{ secrets.RELEASE_NOTIFICATION_URL }}
+        run: |
+          VALUE=$(printf '<!subteam^S07ATDH3CLB|on-call-product> — check the failed run: <%s|view run>' "$RUN_URL")
+          PAYLOAD=$(jq -n --arg value "$VALUE" \
+            '{username: "Ghost CI", attachments: [{color: "danger", fields: [{title: "🚨 Ghost package publish failed", value: $value}]}]}')
+          curl -sf -X POST -H 'Content-type: application/json' \
+            --data "$PAYLOAD" \
+            "$RELEASE_NOTIFICATION_URL" || echo "Slack notification failed (non-fatal)"

@@ -53,7 +53,7 @@ const tabsListVariants = cva(
                 'segmented-sm': 'h-8 rounded-lg bg-muted px-[3px]',
                 button: 'gap-2',
                 'button-sm': 'gap-1',
-                underline: 'w-full gap-5 border-b border-border-default',
+                underline: 'no-scrollbar w-full max-w-full gap-5 overflow-x-auto border-b border-border-default',
                 navbar: 'h-[52px] items-end gap-6',
                 pill: '-ml-0.5 h-[30px] gap-px',
                 // The `kpis` variant is consumed only by `features/kpi/kpi-tabs.tsx`.
@@ -106,12 +106,19 @@ const tabsTriggerVariants = cva(
 const TabsTrigger = React.forwardRef<
     React.ElementRef<typeof TabsPrimitive.Trigger>,
     React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
->(({className, ...props}, ref) => {
+>(({className, onMouseDownCapture, ...props}, ref) => {
     const variant = React.useContext(TabsVariantContext);
     return (
         <TabsPrimitive.Trigger
             ref={ref}
             className={cn(tabsTriggerVariants({variant, className}))}
+            onMouseDownCapture={(event) => {
+                const activeElement = document.activeElement;
+                if (activeElement instanceof HTMLElement && activeElement.matches('input, textarea, select, [contenteditable="true"]')) {
+                    activeElement.blur();
+                }
+                onMouseDownCapture?.(event);
+            }}
             {...props}
         />
     );

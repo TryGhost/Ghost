@@ -26,7 +26,7 @@ describe("Staff profiles", () => {
         await modal.getByRole("button", {name: "Save"}).click();
         await expect.element(modal.getByText("Name is required")).toBeVisible();
 
-        await modal.getByLabelText("Email").fill("not-an-email");
+        await modal.getByLabelText("Email", {exact: true}).fill("not-an-email");
         await modal.getByRole("button", {name: "Save"}).click();
         await expect.element(modal.getByText("Enter a valid email address")).toBeVisible();
 
@@ -83,7 +83,7 @@ describe("Staff profiles", () => {
 
         const modal = settingsScreen.userDetailModal();
         await modal.getByLabelText("Full name").fill(saved.name);
-        await modal.getByLabelText("Email").fill(saved.email);
+        await modal.getByLabelText("Email", {exact: true}).fill(saved.email);
         await modal.getByLabelText("Location").fill(saved.location);
         await modal.getByLabelText("Bio").fill(saved.bio);
         await modal.getByRole("button", {name: "Save"}).click();
@@ -93,6 +93,46 @@ describe("Staff profiles", () => {
         await modal.getByRole("button", {name: "Close"}).click();
         await expect.element(settingsScreen.users().getByText(saved.name, {exact: true})).toBeVisible();
         await expect.element(settingsScreen.users().getByText(saved.email, {exact: true})).toBeVisible();
+    });
+
+    it("uploads profile picture and cover image and saves their URLs", async () => {
+        const owner = user("Owner");
+        const administrator = user("Administrator");
+        const {boot} = fakeStaffWorld({currentUser: owner, users: [owner, administrator]});
+        let uploadCount = 0;
+        const uploadApi = fakeAdminEndpoint("POST", "/images/upload/", () => {
+            const url = uploadCount === 0 ? "http://example.com/profile.png" : "http://example.com/cover.png";
+            uploadCount += 1;
+            return {images: [{url, ref: null}]};
+        });
+        const editApi = fakeAdminEndpoint("PUT", `/users/${administrator.id}/?include=roles`, ({body}) => body);
+        await renderAdminApp(`/settings/staff/${administrator.slug}`, {boot});
+
+        const modal = settingsScreen.userDetailModal();
+        await modal.getByTestId("profile-image-upload").upload(new File(["fake-profile-image"], "profile.png", {type: "image/png"}));
+        await expect.element(modal.getByTestId("profile-image-preview")).toHaveAttribute("src", "http://example.com/profile.png");
+
+        await modal.getByTestId("cover-image-upload").upload(new File(["fake-cover-image"], "cover.png", {type: "image/png"}));
+        await expect.element(modal.getByTestId("cover-image-preview")).toHaveAttribute("src", "http://example.com/cover.png");
+
+        await modal.getByRole("button", {name: "Save"}).click();
+        await expect.element(modal.getByRole("button", {name: "Saved"})).toBeVisible();
+        expect(uploadApi.requests).toHaveLength(2);
+        expect(editApi.lastRequest?.body).toMatchObject({users: [{
+            profile_image: "http://example.com/profile.png",
+            cover_image: "http://example.com/cover.png",
+        }]});
+    });
+
+    it("redirects my-profile to the current user's own staff profile", async () => {
+        const owner = user("Owner");
+        const {boot} = fakeStaffWorld({currentUser: owner});
+        await renderAdminApp("/my-profile", {boot});
+
+        await expect.poll(currentRoute).toBe(`/settings/staff/${owner.slug}`);
+        const modal = settingsScreen.userDetailModal();
+        await expect.element(modal.getByLabelText("Email", {exact: true})).toHaveValue(owner.email);
+        await expect.element(modal.getByLabelText("Slug")).toHaveValue(owner.slug);
     });
 
     it("saves all administrator email-notification controls, including Stripe-only options", async () => {
@@ -201,7 +241,7 @@ describe("Staff profiles", () => {
         const {boot} = fakeStaffWorld({currentUser: owner, users: [owner, administrator]});
         await renderAdminApp(`/settings/staff/${administrator.slug}`, {boot});
 
-        await expect.element(settingsScreen.userDetailModal().getByLabelText("Email")).toBeVisible();
+        await expect.element(settingsScreen.userDetailModal().getByLabelText("Email", {exact: true})).toBeVisible();
         await expect(settingsScreen.userDetailModal().getByTestId("api-keys")).toHaveCount(0);
     });
 
@@ -264,8 +304,9 @@ describe("Staff profile social links", () => {
         await input.fill(valid);
         await modal.getByTitle("Social Links").click();
         await modal.getByRole("button", {name: "Save"}).click();
-        await expect.element(modal.getByRole("button", {name: "Saved"})).toBeVisible();
-
+        // Poll the capture, not the transient "Saved" label — the label
+        // reverts after ~2s and the window gets missed under parallel load.
+        await expect.poll(() => editApi.lastRequest?.body).toBeTruthy();
         expect(editApi.lastRequest?.body).toMatchObject({users: [{[field]: stored}]});
     });
 });

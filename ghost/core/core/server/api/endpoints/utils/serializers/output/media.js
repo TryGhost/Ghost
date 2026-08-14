@@ -1,5 +1,5 @@
 const config = require('../../../../../../shared/config');
-const urlUtils = require('../../../../../../shared/url-utils');
+const urlUtils = require('../../../../../../shared/url-utils').default;
 
 function getURL(urlPath) {
     const media = new RegExp('^' + config.getSubdir() + '/' + urlUtils.STATIC_MEDIA_URL_PREFIX);

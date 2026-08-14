@@ -2,7 +2,8 @@ import NavigationEditForm from './navigation/navigation-edit-form';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import useNavigationEditor, {type NavigationItem} from '../../../hooks/site/use-navigation-editor';
 import useSettingGroup from '../../../hooks/use-setting-group';
-import {Modal, TabView} from '@tryghost/admin-x-design-system';
+import {SettingsModal} from '@tryghost/shade/patterns';
+import {Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useCallback, useMemo, useState} from 'react';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -44,7 +45,7 @@ const NavigationModal = NiceModal.create(() => {
     const [selectedTab, setSelectedTab] = useState('primary-nav');
 
     return (
-        <Modal
+        <SettingsModal
             afterClose={() => {
                 updateRoute('navigation');
             }}
@@ -66,24 +67,16 @@ const NavigationModal = NiceModal.create(() => {
             }}
         >
             <div className='mt-6 mb-1'>
-                <TabView
-                    selectedTab={selectedTab}
-                    tabs={[
-                        {
-                            id: 'primary-nav',
-                            title: 'Primary',
-                            contents: <NavigationEditForm baseUrl={siteData!.url} navigation={navigation} />
-                        },
-                        {
-                            id: 'secondary-nav',
-                            title: 'Secondary',
-                            contents: <NavigationEditForm baseUrl={siteData!.url} navigation={secondaryNavigation} />
-                        }
-                    ]}
-                    onTabChange={setSelectedTab}
-                />
+                <Tabs value={selectedTab} variant='underline' onValueChange={setSelectedTab}>
+                    <TabsList>
+                        <TabsTrigger value='primary-nav'>Primary</TabsTrigger>
+                        <TabsTrigger value='secondary-nav'>Secondary</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value='primary-nav'><NavigationEditForm baseUrl={siteData!.url} navigation={navigation} /></TabsContent>
+                    <TabsContent value='secondary-nav'><NavigationEditForm baseUrl={siteData!.url} navigation={secondaryNavigation} /></TabsContent>
+                </Tabs>
             </div>
-        </Modal>
+        </SettingsModal>
     );
 });
 

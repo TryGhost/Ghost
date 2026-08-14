@@ -2,13 +2,15 @@ import LOCALE_DATA from '@tryghost/i18n/lib/locale-data.json';
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
 import useSettingGroup from '../../../hooks/use-setting-group';
-import {SelectWithOther, SettingGroupContent} from '@tryghost/admin-x-design-system';
+import {Button, Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldDescription, FieldError, FieldLabel, Input, MultiSelectCombobox} from '@tryghost/shade/components';
+import {SettingGroupContent} from '@tryghost/shade/patterns';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {validateLocale} from '../../../utils/locale-validation';
 import {withErrorBoundary} from '../../error-boundary';
-import type {SelectOption} from '@tryghost/admin-x-design-system';
 
 const PublicationLanguage: React.FC<{ keywords: string[] }> = ({keywords}) => {
+    const languageErrorId = React.useId();
+    const [languageOpen, setLanguageOpen] = React.useState(false);
     const {
         localSettings,
         isEditing,
@@ -34,7 +36,7 @@ const PublicationLanguage: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const [publicationLanguage] = getSettingValues(localSettings, ['locale']) as string[];
 
     const localeOptions = React.useMemo(() => {
-        const options: SelectOption[] = LOCALE_DATA.map(locale => ({
+        const options = LOCALE_DATA.map(locale => ({
             value: locale.code,
             label: `${locale.label} (${locale.code})`
         }));
@@ -49,11 +51,94 @@ const PublicationLanguage: React.FC<{ keywords: string[] }> = ({keywords}) => {
         }
     };
 
+    const isCustomValue = Boolean(publicationLanguage && !localeOptions.some(option => option.value === publicationLanguage));
+    const [isOtherSelected, setIsOtherSelected] = React.useState(isCustomValue);
+    const [validationError, setValidationError] = React.useState<string | null>(null);
+    const localeOptionsWithOther = React.useMemo(() => [...localeOptions, {label: 'Other...', value: 'other'}], [localeOptions]);
+    const selectedLocale = localeOptionsWithOther.find(option => option.value === publicationLanguage);
+
+    React.useEffect(() => {
+        if (publicationLanguage && localeOptions.some(option => option.value === publicationLanguage)) {
+            setIsOtherSelected(false);
+            setValidationError(null);
+        }
+    }, [localeOptions, publicationLanguage]);
+
+    const handleCustomLanguageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const value = event.target.value;
+        setValidationError(validateLocale(value) || (!value ? 'Enter a value' : null));
+        handleLanguageChange(value);
+    };
+
     const hint = (
         <>
             Default: English (<strong>en</strong>); find out more about
-            <a className='text-green-400' href="https://ghost.org/docs/faq/translation/" rel="noopener noreferrer" target="_blank"> using Ghost in other languages</a>
+            <a className='text-primary' href="https://ghost.org/docs/faq/translation/" rel="noopener noreferrer" target="_blank"> using Ghost in other languages</a>
         </>
+    );
+
+    const languageField = isOtherSelected || isCustomValue ? (
+        <>
+            <Field data-invalid={Boolean(errors.publicationLanguage || validationError) || undefined}>
+                <FieldLabel htmlFor='custom-locale'>Site language</FieldLabel>
+                <Input
+                    aria-invalid={Boolean(errors.publicationLanguage || validationError) || undefined}
+                    className='border-transparent bg-muted'
+                    data-testid='locale-select'
+                    id='custom-locale'
+                    placeholder='e.g. pt-BR, sr-Cyrl, en'
+                    value={publicationLanguage}
+                    onChange={handleCustomLanguageChange}
+                />
+                {validationError || errors.publicationLanguage ? <FieldError>{validationError || errors.publicationLanguage}</FieldError> : <FieldDescription>Enter a custom locale code.</FieldDescription>}
+            </Field>
+            <Button
+                className='h-auto self-start px-0'
+                size='sm'
+                type='button'
+                variant='link'
+                onClick={() => {
+                    setIsOtherSelected(false);
+                    setValidationError(null);
+                    handleLanguageChange('en');
+                }}
+            >
+                Choose from list
+            </Button>
+        </>
+    ) : (
+        <Field data-invalid={Boolean(errors.publicationLanguage) || undefined}>
+            <FieldLabel>Site language</FieldLabel>
+            <Combobox open={languageOpen} onOpenChange={setLanguageOpen}>
+                <ComboboxTrigger
+                    aria-describedby={errors.publicationLanguage ? languageErrorId : undefined}
+                    aria-invalid={Boolean(errors.publicationLanguage) || undefined}
+                    aria-label='Site language'
+                    data-testid='locale-select'
+                >
+                    <ComboboxValue>{selectedLocale?.label}</ComboboxValue>
+                </ComboboxTrigger>
+                <ComboboxContent>
+                    <MultiSelectCombobox
+                        i18n={{searchPlaceholder: 'Search languages...'}}
+                        isMultiSelect={false}
+                        options={localeOptionsWithOther}
+                        values={publicationLanguage ? [publicationLanguage] : []}
+                        autoCloseOnSelect
+                        onChange={(values) => {
+                            if (values[0] === 'other') {
+                                setIsOtherSelected(true);
+                                handleLanguageChange('');
+                            } else if (values[0]) {
+                                handleLanguageChange(values[0]);
+                            }
+                        }}
+                        onClose={() => setLanguageOpen(false)}
+                    />
+                </ComboboxContent>
+            </Combobox>
+            {errors.publicationLanguage ? <FieldError id={languageErrorId}>{errors.publicationLanguage}</FieldError> : <FieldDescription>{hint}</FieldDescription>}
+        </Field>
     );
 
     return (
@@ -66,25 +151,15 @@ const PublicationLanguage: React.FC<{ keywords: string[] }> = ({keywords}) => {
             testId='publication-language'
             title="Publication Language"
             hideEditButton
-            onCancel={handleCancel}
+            onCancel={() => {
+                setValidationError(null);
+                handleCancel();
+            }}
             onEditingChange={handleEditingChange}
             onSave={handleSave}
         >
             <SettingGroupContent columns={1}>
-                <SelectWithOther
-                    defaultListValue="en"
-                    error={!!errors.publicationLanguage}
-                    hint={errors.publicationLanguage || hint}
-                    options={localeOptions}
-                    otherHint="Enter a custom locale code."
-                    otherPlaceholder="e.g. pt-BR, sr-Cyrl, en"
-                    selectedValue={publicationLanguage}
-                    testId="locale-select"
-                    title="Site language"
-                    validate={validateLocale}
-                    isSearchable
-                    onSelect={handleLanguageChange}
-                />
+                {languageField}
             </SettingGroupContent>
         </TopLevelGroup>
     );

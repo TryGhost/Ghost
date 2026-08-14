@@ -1,40 +1,32 @@
+import ConfirmationModal from '../../../confirmation-modal';
+import CustomFieldIcon from './custom-field-icon';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
-import {ConfirmationModal, Form, Icon, Menu, Modal, Select, type SelectOption, TextField, showToast} from '@tryghost/admin-x-design-system';
-import {type OptionProps, type SingleValueProps, components} from 'react-select';
+import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Field, FieldDescription, FieldError, FieldGroup, FieldLabel, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
+import {LucideIcon} from '@tryghost/shade/utils';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {ValidationError, getErrorMessage} from '@tryghost/admin-x-framework/errors';
 import {memberCustomFieldUserTypes, useCreateMemberCustomField, useDeleteMemberCustomField, useEditMemberCustomField, userTypeForField} from '@tryghost/admin-x-framework/api/member-custom-fields';
+import {toast} from 'sonner';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import type {MemberCustomField} from '@tryghost/admin-x-framework/api/member-custom-fields';
 
-const typeOptions: SelectOption[] = memberCustomFieldUserTypes.map(userType => ({value: userType.id, label: userType.label}));
+const typeOptions = memberCustomFieldUserTypes.map(userType => ({value: userType.id, label: userType.label}));
 
 const userTypeById = (id: string) => memberCustomFieldUserTypes.find(userType => userType.id === id) || memberCustomFieldUserTypes[0];
 
 // Fixed-width so option labels align in a column regardless of icon shape.
 const TypeTile: React.FC<{userTypeId: string}> = ({userTypeId}) => (
     <span className='flex w-5 shrink-0 items-center justify-center'>
-        <Icon name={userTypeById(userTypeId).icon} size='sm' />
+        <CustomFieldIcon className='size-4' type={userTypeById(userTypeId).id} />
     </span>
 );
 
-// Render the type's icon tile inside the select control and its dropdown options
-const TypeSingleValue: React.FC<SingleValueProps<SelectOption, false>> = ({children, ...optionProps}) => (
-    <components.SingleValue {...optionProps}>
-        <span className='flex items-center gap-2'>
-            <TypeTile userTypeId={optionProps.data.value} />
-            <span>{children}</span>
-        </span>
-    </components.SingleValue>
-);
-
-const TypeOption: React.FC<OptionProps<SelectOption, false>> = ({children, ...optionProps}) => (
-    <components.Option {...optionProps}>
-        <span className='flex items-center gap-2'>
-            <TypeTile userTypeId={optionProps.data.value} />
-            <span>{children}</span>
-        </span>
-    </components.Option>
+const renderTypeOption = (option: {label: string; value: string}) => (
+    <span className='flex items-center gap-2'>
+        <TypeTile userTypeId={option.value} />
+        <span>{option.label}</span>
+    </span>
 );
 
 const CustomFieldModal = NiceModal.create<{field?: MemberCustomField}>(({field}) => {
@@ -84,19 +76,14 @@ const CustomFieldModal = NiceModal.create<{field?: MemberCustomField}>(({field})
         }
     });
 
-    const selectedType = typeOptions.find(option => option.value === formState.userTypeId);
-
     const isArchived = field?.status === 'archived';
+    const selectedType = typeOptions.find(option => option.value === formState.userTypeId);
 
     // The modal's third action mirrors the field's state: an active field can
     // be archived, an archived one reactivated. Both confirm first (the
     // newsletters pattern) — they change what every collection surface shows.
-    const archiveButtonProps = {
-        label: 'Archive',
-        link: true,
-        color: 'red' as const,
-        size: 'sm' as const,
-        onClick: () => {
+    const archiveButton = (
+        <Button className='text-destructive hover:text-destructive' size='sm' type='button' variant='ghost' onClick={() => {
             modal.remove();
             NiceModal.show(ConfirmationModal, {
                 title: 'Archive custom field',
@@ -105,7 +92,7 @@ const CustomFieldModal = NiceModal.create<{field?: MemberCustomField}>(({field})
                     <div>Values already collected for this field will remain unchanged.</div>
                 </>,
                 okLabel: 'Archive',
-                okColor: 'red',
+                okVariant: 'destructive',
                 onOk: async (archiveModal) => {
                     try {
                         // Archiving is a status change over the same PUT a rename
@@ -113,22 +100,18 @@ const CustomFieldModal = NiceModal.create<{field?: MemberCustomField}>(({field})
                         // and only valid on an already-archived field.
                         await editField({key: field!.key, status: 'archived'});
                         archiveModal?.remove();
-                        showToast({type: 'success', title: 'Custom field archived'});
+                        toast.success('Custom field archived');
                     } catch (e) {
-                        showToast({type: 'error', title: 'Failed to archive the custom field'});
+                        toast.error('Failed to archive the custom field');
                         handleError(e, {withToast: false});
                     }
                 }
             });
-        }
-    };
+        }}>Archive</Button>
+    );
 
-    const reactivateButtonProps = {
-        label: 'Reactivate',
-        link: true,
-        color: 'green' as const,
-        size: 'sm' as const,
-        onClick: () => {
+    const reactivateButton = (
+        <Button className='text-green hover:text-green' size='sm' type='button' variant='ghost' onClick={() => {
             modal.remove();
             NiceModal.show(ConfirmationModal, {
                 title: 'Reactivate custom field',
@@ -141,19 +124,19 @@ const CustomFieldModal = NiceModal.create<{field?: MemberCustomField}>(({field})
                     try {
                         await editField({key: field!.key, status: 'active'});
                         reactivateModal?.remove();
-                        showToast({type: 'success', title: 'Custom field reactivated'});
+                        toast.success('Custom field reactivated');
                     } catch (e) {
-                        showToast({type: 'error', title: 'Failed to reactivate the custom field'});
+                        toast.error('Failed to reactivate the custom field');
                         handleError(e, {withToast: false});
                     }
                 }
             });
-        }
-    };
+        }}>Reactivate</Button>
+    );
 
-    let leftButtonProps;
+    let leftButton;
     if (isEdit) {
-        leftButtonProps = isArchived ? reactivateButtonProps : archiveButtonProps;
+        leftButton = isArchived ? reactivateButton : archiveButton;
     }
 
     // Permanent deletion hides behind the header menu — one deliberate click
@@ -166,14 +149,14 @@ const CustomFieldModal = NiceModal.create<{field?: MemberCustomField}>(({field})
             title: 'Delete custom field',
             prompt: <><strong>{field!.name}</strong> and every value collected from your members will be permanently deleted from the database. This can&rsquo;t be undone.</>,
             okLabel: 'Delete',
-            okColor: 'red',
+            okVariant: 'destructive',
             onOk: async (deleteModal) => {
                 try {
                     await deleteField(field!.key);
                     deleteModal?.remove();
-                    showToast({type: 'success', title: 'Custom field deleted'});
+                    toast.success('Custom field deleted');
                 } catch (e) {
-                    showToast({type: 'error', title: 'Failed to delete the custom field'});
+                    toast.error('Failed to delete the custom field');
                     handleError(e, {withToast: false});
                 }
             }
@@ -181,19 +164,28 @@ const CustomFieldModal = NiceModal.create<{field?: MemberCustomField}>(({field})
     };
 
     const archivedFieldMenu = (
-        <Menu
-            items={[{id: 'delete-field', label: 'Delete custom field', icon: 'trash', destructive: true, onClick: confirmDeleteField}]}
-            position='end'
-        />
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button aria-label='Menu' size='icon' type='button' variant='ghost'>
+                    <LucideIcon.Ellipsis />
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align='end' className='z-[9999]'>
+                <DropdownMenuItem className='text-destructive focus:text-destructive' onSelect={confirmDeleteField}>
+                    <LucideIcon.Trash2 className='size-4' />
+                    Delete custom field
+                </DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
     );
 
     return (
-        <Modal
+        <SettingsModal
             buttonsDisabled={okProps.disabled}
             cancelLabel={isEdit ? 'Close' : 'Cancel'}
-            leftButtonProps={leftButtonProps}
-            okColor={okProps.color}
+            leftButton={leftButton}
             okLabel={okProps.label || 'Save'}
+            okVariant={okProps.variant}
             size='sm'
             testId='custom-field-modal'
             title={isEdit ? 'Edit custom field' : 'Add custom field'}
@@ -209,36 +201,28 @@ const CustomFieldModal = NiceModal.create<{field?: MemberCustomField}>(({field})
                 }
             }}
         >
-            <Form marginBottom={false} marginTop>
-                <TextField
-                    autoComplete='off'
-                    error={Boolean(errors.name)}
-                    hint={errors.name}
-                    placeholder='Enter custom field name'
-                    title='Name'
-                    value={formState.name}
-                    autoFocus
-                    onChange={e => updateForm(state => ({...state, name: e.target.value}))}
-                    onKeyDown={() => clearError('name')}
-                />
-                <Select
-                    components={{SingleValue: TypeSingleValue, Option: TypeOption}}
-                    disabled={isEdit}
-                    hint={isEdit ? 'Type can’t be changed after creation' : undefined}
-                    menuPosition='fixed'
-                    options={typeOptions}
-                    prompt='Select type'
-                    selectedOption={selectedType}
-                    testId='custom-field-type'
-                    title='Type'
-                    onSelect={(option) => {
-                        // Resolve the select's string value back through the catalog
-                        // so form state holds a real field type, not a loose string.
-                        updateForm(state => ({...state, userTypeId: userTypeById(option?.value ?? '').id}));
-                    }}
-                />
-            </Form>
-        </Modal>
+            <FieldGroup className='mt-10 gap-8 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+                <Field data-invalid={Boolean(errors.name) || undefined}>
+                    <FieldLabel htmlFor='custom-field-name'>Name</FieldLabel>
+                    <Input aria-invalid={Boolean(errors.name) || undefined} autoComplete='off' id='custom-field-name' placeholder='Enter custom field name' value={formState.name} autoFocus onChange={e => updateForm(state => ({...state, name: e.target.value}))} onKeyDown={() => clearError('name')} />
+                    {errors.name && <FieldError>{errors.name}</FieldError>}
+                </Field>
+                <Field data-disabled={isEdit || undefined}>
+                    <FieldLabel>Type</FieldLabel>
+                    <Select disabled={isEdit} value={formState.userTypeId} onValueChange={(value) => {
+                        updateForm(state => ({...state, userTypeId: userTypeById(value).id}));
+                    }}>
+                        <SelectTrigger aria-label='Type' data-testid='custom-field-type'>
+                            <SelectValue placeholder='Select type'>{selectedType && renderTypeOption(selectedType)}</SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                            {typeOptions.map(option => <SelectItem key={option.value} value={option.value}>{renderTypeOption(option)}</SelectItem>)}
+                        </SelectContent>
+                    </Select>
+                    {isEdit && <FieldDescription>Type can’t be changed after creation</FieldDescription>}
+                </Field>
+            </FieldGroup>
+        </SettingsModal>
     );
 });
 

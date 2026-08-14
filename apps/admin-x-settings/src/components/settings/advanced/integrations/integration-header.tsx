@@ -1,4 +1,5 @@
 import React from 'react';
+import {Stack} from '@tryghost/shade/primitives';
 
 interface IntegrationHeaderProps {
     icon?: React.ReactNode;
@@ -14,16 +15,16 @@ const IntegrationHeader: React.FC<IntegrationHeaderProps> = ({
     extra
 }) => {
     return (
-        <div className='-mx-8 -mt-8 flex flex-col gap-4 bg-grey-50 p-8 md:flex-row dark:bg-grey-950'>
+        <Stack className='-mx-8 -mt-8 bg-background p-8 md:flex-row' gap='md'>
             <div className='size-14'>{icon}</div>
-            <div className='mt-1.5 flex min-w-0 flex-1 flex-col'>
+            <Stack className='mt-1.5 min-w-0 flex-1' gap='none'>
                 <h3>{title}</h3>
                 <div>{detail}</div>
                 {extra && (
                     <div className='mt-4'>{extra}</div>
                 )}
-            </div>
-        </div>
+            </Stack>
+        </Stack>
     );
 };
 

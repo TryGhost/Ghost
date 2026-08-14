@@ -2,20 +2,15 @@ import CodeModal from './code/code-modal';
 import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
-import {Button, SettingGroupHeader} from '@tryghost/admin-x-design-system';
+import {Button} from '@tryghost/shade/components';
 import {withErrorBoundary} from '../../error-boundary';
 
 const CodeInjection: React.FC<{ keywords: string[] }> = ({keywords}) => {
     return (
         <TopLevelGroup
-            customHeader={
-                <div className='z-10 flex items-start justify-between'>
-                    <SettingGroupHeader description='Add custom code to your publication.' title='Code injection' />
-                    <Button className='mt-[-5px]' color='clear' label='Open' size='sm' onClick={() => {
-                        NiceModal.show(CodeModal);
-                    }} />
-                </div>
-            }
+            customButtons={<Button className='mt-[-5px]' size='sm' type='button' variant='ghost' onClick={() => {
+                NiceModal.show(CodeModal);
+            }}>Open</Button>}
             description="Add custom code to your publication"
             keywords={keywords}
             navid='code-injection'

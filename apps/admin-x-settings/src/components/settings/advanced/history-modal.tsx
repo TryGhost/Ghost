@@ -1,29 +1,30 @@
+import InfiniteScrollListener from '../../infinite-scroll-listener';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import {type Action, getActionTitle, getContextResource, getLinkTarget, isBulkAction, useBrowseActions} from '@tryghost/admin-x-framework/api/actions';
-import {Avatar, LoadingIndicator, NoValueLabel, NoValueLabelIcon} from '@tryghost/shade/components';
-import {Button, Icon, InfiniteScrollListener, List, ListItem, type LoadSelectOptions, Modal, Popover, Select, type SelectOption, Toggle, ToggleGroup} from '@tryghost/admin-x-design-system';
-import {History} from 'lucide-react';
+import {ActionList, ActionListItem, ActionListItemContent, Avatar, Button, Field, FieldLabel, LoadingIndicator, MultiSelectCombobox, NoValueLabel, NoValueLabelIcon, Popover, PopoverContent, PopoverTrigger, Switch, inputSurface} from '@tryghost/shade/components';
+import {ChevronDown, History, Pen, Plus, Trash2, X} from 'lucide-react';
+import {Inline, Stack} from '@tryghost/shade/primitives';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {type User} from '@tryghost/admin-x-framework/api/users';
-import {debounce} from '../../../utils/debounce';
 import {formatNumber} from '@tryghost/shade/utils';
 import {keepPreviousData} from '@tanstack/react-query';
-import {useCallback, useState} from 'react';
+import {useCallback, useEffect, useId, useRef, useState} from 'react';
 import {useFilterableApi} from '@tryghost/admin-x-framework/hooks';
 
 const HistoryIcon: React.FC<{action: Action}> = ({action}) => {
-    let name = 'pen';
+    let Icon = Pen;
 
     switch (action.event) {
     case 'added':
-        name = 'add';
+        Icon = Plus;
         break;
     case 'deleted':
-        name = 'trash';
+        Icon = Trash2;
         break;
     }
 
-    return <Icon name={name} size='xs' />;
+    return <Icon className='size-3' />;
 };
 
 const HistoryAvatar: React.FC<{action: Action}> = ({action}) => {
@@ -47,12 +48,18 @@ const HistoryFilterToggle: React.FC<{
     excludedItems: string[];
     toggleItem: (item: string, included: boolean) => void;
 }> = ({label, item, excludedItems, toggleItem}) => {
-    return <Toggle
-        checked={!excludedItems.includes(item)}
-        direction='rtl'
-        label={label}
-        onChange={e => toggleItem(item, e.target.checked)}
-    />;
+    const id = useId();
+
+    return (
+        <Field orientation='horizontal'>
+            <FieldLabel htmlFor={id}>{label}</FieldLabel>
+            <Switch
+                checked={!excludedItems.includes(item)}
+                id={id}
+                onCheckedChange={checked => toggleItem(item, checked)}
+            />
+        </Field>
+    );
 };
 
 const HistoryFilter: React.FC<{
@@ -61,59 +68,156 @@ const HistoryFilter: React.FC<{
     excludedResources: string[];
     toggleEventType: (event: string, included: boolean) => void;
     toggleResourceType: (resource: string, included: boolean) => void;
-}> = ({excludedEvents, excludedResources, toggleEventType, toggleResourceType}) => {
+}> = ({userId, excludedEvents, excludedResources, toggleEventType, toggleResourceType}) => {
     const {updateRoute} = useRouting();
     const usersApi = useFilterableApi<User, 'users', 'name'>({path: '/users/', filterKey: 'name', responseKey: 'users'});
 
-    const loadOptions: LoadSelectOptions = async (input, callback) => {
-        const users = await usersApi.loadData(input);
-        callback(users.map(user => ({label: user.name, value: user.id})));
-    };
+    const [staffOptions, setStaffOptions] = useState<Array<{label: string; value: string}>>([]);
+    const [searchedStaff, setSearchStaff] = useState<{label: string; value: string} | null>();
+    const [staffOpen, setStaffOpen] = useState(false);
+    const [staffLoading, setStaffLoading] = useState(false);
+    const requestSequence = useRef(0);
+    const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const usersApiRef = useRef(usersApi);
+    usersApiRef.current = usersApi;
+    const loadOptions = useCallback(async (input: string, request: number) => {
+        try {
+            const users = await usersApiRef.current.loadData(input);
+            if (request === requestSequence.current) {
+                setStaffOptions(users.map(user => ({label: user.name, value: user.id})));
+            }
+        } catch {
+            if (request === requestSequence.current) {
+                setStaffOptions([]);
+            }
+        } finally {
+            if (request === requestSequence.current) {
+                setStaffLoading(false);
+            }
+        }
+    }, []);
+    const requestOptions = useCallback((input: string, deferred = false) => {
+        requestSequence.current += 1;
+        const request = requestSequence.current;
+        setStaffLoading(true);
+        if (searchTimer.current) {
+            clearTimeout(searchTimer.current);
+        }
+        if (deferred) {
+            searchTimer.current = setTimeout(() => void loadOptions(input, request), 500);
+        } else {
+            void loadOptions(input, request);
+        }
+    }, [loadOptions]);
 
-    const [searchedStaff, setSearchStaff] = useState<SelectOption | null>();
+    useEffect(() => {
+        requestOptions('');
+        return () => {
+            requestSequence.current += 1;
+            if (searchTimer.current) {
+                clearTimeout(searchTimer.current);
+            }
+        };
+    }, [requestOptions]);
+
+    useEffect(() => {
+        let cancelled = false;
+
+        if (!userId) {
+            setSearchStaff(null);
+            return;
+        }
+
+        void usersApiRef.current.loadInitialValues([userId], 'id').then(([user]) => {
+            if (!cancelled && user) {
+                const selected = {label: user.name, value: user.id};
+                setSearchStaff(selected);
+                setStaffOptions(options => options.some(option => option.value === selected.value) ? options : [selected, ...options]);
+            }
+        }).catch(() => {
+            if (!cancelled) {
+                setSearchStaff(null);
+            }
+        });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [userId]);
 
     const resetStaff = () => {
         setSearchStaff(null);
     };
 
     return (
-        <div className='flex items-center gap-4'>
-            <Popover position='end' trigger={<Button color='outline' label='Filter' />}>
-                <div className='flex w-[220px] flex-col gap-8 p-5'>
-                    <ToggleGroup>
-                        <HistoryFilterToggle excludedItems={excludedEvents} item='added' label='Added' toggleItem={toggleEventType} />
-                        <HistoryFilterToggle excludedItems={excludedEvents} item='edited' label='Edited' toggleItem={toggleEventType} />
-                        <HistoryFilterToggle excludedItems={excludedEvents} item='deleted' label='Deleted' toggleItem={toggleEventType} />
-                    </ToggleGroup>
-                    <ToggleGroup>
-                        <HistoryFilterToggle excludedItems={excludedResources} item='post' label='Posts' toggleItem={toggleResourceType} />
-                        <HistoryFilterToggle excludedItems={excludedResources} item='page' label='Pages' toggleItem={toggleResourceType} />
-                        <HistoryFilterToggle excludedItems={excludedResources} item='tag' label='Tags' toggleItem={toggleResourceType} />
-                        <HistoryFilterToggle excludedItems={excludedResources} item='offer,product' label='Tiers & offers' toggleItem={toggleResourceType} />
-                        <HistoryFilterToggle excludedItems={excludedResources} item='api_key,integration,setting,user,webhook' label='Settings & staff' toggleItem={toggleResourceType} />
-                    </ToggleGroup>
-                </div>
+        <Inline align='center' gap='md'>
+            <Popover>
+                <PopoverTrigger asChild>
+                    <Button type='button' variant='outline'>Filter</Button>
+                </PopoverTrigger>
+                <PopoverContent align='end' className='z-[9999] w-[220px]' data-testid='history-filters'>
+                    <Stack gap='2xl'>
+                        <Stack gap='md'>
+                            <HistoryFilterToggle excludedItems={excludedEvents} item='added' label='Added' toggleItem={toggleEventType} />
+                            <HistoryFilterToggle excludedItems={excludedEvents} item='edited' label='Edited' toggleItem={toggleEventType} />
+                            <HistoryFilterToggle excludedItems={excludedEvents} item='deleted' label='Deleted' toggleItem={toggleEventType} />
+                        </Stack>
+                        <Stack gap='md'>
+                            <HistoryFilterToggle excludedItems={excludedResources} item='post' label='Posts' toggleItem={toggleResourceType} />
+                            <HistoryFilterToggle excludedItems={excludedResources} item='page' label='Pages' toggleItem={toggleResourceType} />
+                            <HistoryFilterToggle excludedItems={excludedResources} item='tag' label='Tags' toggleItem={toggleResourceType} />
+                            <HistoryFilterToggle excludedItems={excludedResources} item='offer,product' label='Tiers & offers' toggleItem={toggleResourceType} />
+                            <HistoryFilterToggle excludedItems={excludedResources} item='api_key,integration,setting,user,webhook' label='Settings & staff' toggleItem={toggleResourceType} />
+                        </Stack>
+                    </Stack>
+                </PopoverContent>
             </Popover>
             <div className='w-[200px]'>
-                <Select
-                    loadOptions={debounce(loadOptions, 500)}
-                    placeholder='Search staff'
-                    value={searchedStaff}
-                    async
-                    defaultOptions
-                    isClearable
-                    onSelect={(option) => {
-                        if (option) {
-                            setSearchStaff(option);
-                            updateRoute(`history/view/${option.value}`);
-                        } else {
+                <Inline className={`${inputSurface('within')} relative h-(--control-height) overflow-hidden`} gap='none'>
+                    <Popover open={staffOpen} onOpenChange={(open) => {
+                        setStaffOpen(open);
+                        if (open) {
+                            requestOptions('');
+                        }
+                    }}>
+                        <PopoverTrigger asChild>
+                            <button aria-label='Staff' className='flex min-w-0 flex-1 items-center justify-between px-3 text-control' data-testid='history-staff-filter' role='combobox' type='button'>
+                                <span className={searchedStaff ? 'truncate pr-8' : 'truncate pr-8 text-muted-foreground'}>{searchedStaff?.label ?? 'Search staff'}</span>
+                                <ChevronDown className='ml-2 size-4 shrink-0 opacity-50' />
+                            </button>
+                        </PopoverTrigger>
+                        <PopoverContent align='start' className='z-[9999] w-72 p-0'>
+                            <MultiSelectCombobox
+                                i18n={{searchPlaceholder: 'Search staff'}}
+                                isLoading={staffLoading}
+                                isMultiSelect={false}
+                                options={searchedStaff && !staffOptions.some(option => option.value === searchedStaff.value) ? [searchedStaff, ...staffOptions] : staffOptions}
+                                shouldFilter={false}
+                                values={searchedStaff ? [searchedStaff.value] : []}
+                                autoCloseOnSelect
+                                onChange={(values) => {
+                                    const option = staffOptions.find(item => item.value === values[0]);
+                                    if (option) {
+                                        setSearchStaff(option);
+                                        updateRoute(`history/view/${option.value}`);
+                                    }
+                                }}
+                                onClose={() => setStaffOpen(false)}
+                                onSearchChange={input => requestOptions(input, true)}
+                            />
+                        </PopoverContent>
+                    </Popover>
+                    {searchedStaff && (
+                        <button aria-label='Clear selection' className='absolute top-1/2 right-10 z-10 flex size-8 -translate-y-1/2 items-center justify-center text-muted-foreground hover:text-foreground' type='button' onClick={() => {
                             resetStaff();
                             updateRoute('history/view');
-                        }
-                    }}
-                />
+                        }}>
+                            <X className='size-4' />
+                        </button>
+                    )}
+                </Inline>
             </div>
-        </div>
+        </Inline>
     );
 };
 
@@ -207,7 +311,7 @@ const HistoryModal = NiceModal.create<RoutingModalProps>(({params}) => {
     const hasActiveFilters = excludedEvents.length > 0 || excludedResources.length > 0 || params?.user;
 
     return (
-        <Modal
+        <SettingsModal
             afterClose={() => {
                 updateRoute('history');
             }}
@@ -232,28 +336,30 @@ const HistoryModal = NiceModal.create<RoutingModalProps>(({params}) => {
             }}
         >
             <div className='relative mt-6'>
-                <List hint={(data?.isEnd && data.actions.length > 0) ? 'End of history log' : undefined}>
+                <ActionList>
                     {data?.actions ? (
                         data.actions.length > 0 ? (
                             <>
                                 <InfiniteScrollListener offset={250} onTrigger={fetchNext} />
-                                {data.actions.map(action => !action.skip && <ListItem
-                                    key={action.id}
-                                    avatar={<HistoryAvatar action={action} />}
-                                    detail={[
-                                        new Date(action.created_at).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}),
-                                        new Date(action.created_at).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit', second: '2-digit'})
-                                    ].join(' | ')}
-                                    title={
-                                        <div>
+                                {data.actions.map(action => !action.skip && <ActionListItem key={action.id}>
+                                    <ActionListItemContent className='flex items-center gap-3 py-3'>
+                                        <HistoryAvatar action={action} />
+                                        <div className='min-w-0 grow'>
+                                            <div>
                                             {getActionTitle(action)}{isBulkAction(action) ? '' : ': '}
                                             {!isBulkAction(action) && <HistoryActionDescription action={action} />}
                                             {action.count ? <> {formatNumber(action.count)} times</> : null}
                                             <span> &mdash; by {action.actor?.name || action.actor?.slug}</span>
+                                            </div>
+                                            <div className='text-sm text-muted-foreground'>
+                                                {[
+                                                    new Date(action.created_at).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}),
+                                                    new Date(action.created_at).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit', second: '2-digit'})
+                                                ].join(' | ')}
+                                            </div>
                                         </div>
-                                    }
-                                    separator
-                                />)}
+                                    </ActionListItemContent>
+                                </ActionListItem>)}
                                 {isFetchingNextPage && (
                                     <div className="flex items-center justify-center p-5">
                                         <LoadingIndicator size='md' />
@@ -278,9 +384,10 @@ const HistoryModal = NiceModal.create<RoutingModalProps>(({params}) => {
                     ) : (
                         <NoValueLabel>No entries found.</NoValueLabel>
                     )}
-                </List>
+                    {data?.isEnd && data.actions.length > 0 && <div className='border-t border-border pt-2 text-sm text-muted-foreground'>End of history log</div>}
+                </ActionList>
             </div>
-        </Modal>
+        </SettingsModal>
     );
 });
 

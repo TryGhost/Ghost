@@ -1,0 +1,8 @@
+email,name,labels,subscribed_to_emails,complimentary_plan,note
+jbloggs@example.com,Joe Bloggs,"vip,premium",true,true,Early supporter
+test@example.com,Test User,basic,false,false,Regular member
+empty@example.com,,,,false,
+noteonly@example.com,Noted Member,,,,"A member with only a note, and commas"
+boolean@example.com,true,,,false,false
+undef@example.com,undefined,,,true,undefined
+multi@example.com,Multi Label,"gold,silver,bronze",true,true,Three labels

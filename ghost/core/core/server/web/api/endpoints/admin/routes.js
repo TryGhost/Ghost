@@ -33,6 +33,7 @@ module.exports = function apiRoutes() {
     router.post('/posts', mw.authAdminApi, http(api.posts.add));
     router.delete('/posts', mw.authAdminApi, http(api.posts.bulkDestroy));
     router.put('/posts/bulk', mw.authAdminApi, http(api.posts.bulkEdit));
+    router.post('/posts/upload', mw.authAdminApi, labs.enabledMiddleware('csvContentImporter'), apiMw.upload.single('postsfile'), apiMw.upload.validation({type: 'posts'}), http(api.posts.importCSV));
     router.get('/posts/:id', mw.authAdminApi, http(api.posts.read));
     router.get('/posts/slug/:slug', mw.authAdminApi, http(api.posts.read));
     router.put('/posts/:id', mw.authAdminApi, http(api.posts.edit));

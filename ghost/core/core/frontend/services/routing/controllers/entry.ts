@@ -5,7 +5,7 @@ import buildCanonicalUrl from './entry/canonical-url';
 
 const debug = require('@tryghost/debug')('services:routing:controllers:entry');
 const config = require('../../../../shared/config');
-const urlUtils = require('../../../../shared/url-utils');
+const urlUtils = require('../../../../shared/url-utils').default;
 const dataService = require('../../data');
 const renderer = require('../../rendering');
 

@@ -1,7 +1,9 @@
+import BrandIcon from '../../../icons/brand-icon';
 import IntegrationHeader from './integration-header';
 import NiceModal from '@ebay/nice-modal-react';
-import {Form, Icon, Modal, Toggle} from '@tryghost/admin-x-design-system';
+import {Field, FieldContent, FieldDescription, FieldGroup, FieldLabel, Switch} from '@tryghost/shade/components';
 import {type Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -43,37 +45,35 @@ const UnsplashModal = NiceModal.create(() => {
     const isDirty = !(enabled === unsplashEnabled);
 
     return (
-        <Modal
+        <SettingsModal
             afterClose={() => {
                 updateRoute('integrations');
             }}
             cancelLabel='Close'
             dirty={isDirty}
-            okColor={okLabel === 'Saved' ? 'green' : 'black'}
             okLabel={okLabel}
+            okVariant='default'
             testId='unsplash-modal'
             title=''
             onOk={handleToggleChange}
         >
             <IntegrationHeader
                 detail='Beautiful, free photos'
-                icon={<Icon name='unsplash' size={48} />}
+                icon={<BrandIcon name='unsplash' size={48} />}
                 title='Unsplash'
             />
             <div className='mt-7'>
-                <Form marginBottom={false} grouped>
-                    <Toggle
-                        checked={enabled}
-                        direction='rtl'
-                        hint={<>Enable <a className='text-green' href="https://unsplash.com" rel="noopener noreferrer" target="_blank">Unsplash</a> image integration for your posts</>}
-                        label='Enable Unsplash'
-                        onChange={(e) => {
-                            setEnabled(e.target.checked);
-                        }}
-                    />
-                </Form>
+                <FieldGroup className='gap-8 rounded-sm border border-border-default p-4 md:p-7'>
+                    <Field orientation='horizontal'>
+                        <FieldContent>
+                            <FieldLabel htmlFor='unsplash-enabled'>Enable Unsplash</FieldLabel>
+                            <FieldDescription>Enable <a className='text-green' href="https://unsplash.com" rel="noopener noreferrer" target="_blank">Unsplash</a> image integration for your posts</FieldDescription>
+                        </FieldContent>
+                        <Switch checked={enabled} id='unsplash-enabled' onCheckedChange={setEnabled} />
+                    </Field>
+                </FieldGroup>
             </div>
-        </Modal>
+        </SettingsModal>
     );
 });
 

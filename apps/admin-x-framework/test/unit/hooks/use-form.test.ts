@@ -427,7 +427,7 @@ describe('useForm', () => {
 
             expect(result.current!.okProps).toEqual({
                 disabled: false,
-                color: 'black',
+                variant: 'default',
                 label: undefined
             });
         });
@@ -455,7 +455,7 @@ describe('useForm', () => {
             // Check that we're in saving state
             expect(result.current!.okProps).toEqual({
                 disabled: true,
-                color: 'black',
+                variant: 'default',
                 label: 'Saving...'
             });
         });
@@ -475,7 +475,7 @@ describe('useForm', () => {
 
             expect(result.current!.okProps).toEqual({
                 disabled: false,
-                color: 'green',
+                variant: 'default',
                 label: 'Saved'
             });
         });
@@ -498,7 +498,7 @@ describe('useForm', () => {
 
             expect(result.current!.okProps).toEqual({
                 disabled: false,
-                color: 'red',
+                variant: 'destructive',
                 label: 'Retry'
             });
         });

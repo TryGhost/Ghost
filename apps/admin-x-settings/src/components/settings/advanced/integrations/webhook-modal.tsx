@@ -2,7 +2,8 @@ import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
 import validator from 'validator';
 import webhookEventOptions from './webhook-event-options';
-import {Form, Modal, Select, TextField} from '@tryghost/admin-x-design-system';
+import {Field, FieldError, FieldGroup, FieldLabel, Input, Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue} from '@tryghost/shade/components';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {type Webhook, useCreateWebhook, useEditWebhook} from '@tryghost/admin-x-framework/api/webhooks';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 
@@ -12,6 +13,7 @@ interface WebhookModalProps {
 }
 
 const WebhookModal: React.FC<WebhookModalProps> = ({webhook, integrationId}) => {
+    const eventErrorId = React.useId();
     const modal = useModal();
     const {mutateAsync: createWebhook} = useCreateWebhook();
     const {mutateAsync: editWebhook} = useEditWebhook();
@@ -50,9 +52,9 @@ const WebhookModal: React.FC<WebhookModalProps> = ({webhook, integrationId}) => 
         }
     });
 
-    return <Modal
-        okColor='black'
+    return <SettingsModal
         okLabel={webhook ? 'Update' : 'Add'}
+        okVariant='default'
         size='sm'
         testId='webhook-modal'
         title='Add webhook'
@@ -64,55 +66,47 @@ const WebhookModal: React.FC<WebhookModalProps> = ({webhook, integrationId}) => 
         }}
     >
         <div className='mt-5'>
-            <Form
-                marginBottom={false}
-                marginTop={false}
-            >
-                <TextField
-                    error={Boolean(errors.name)}
-                    hint={errors.name}
-                    maxLength={191}
-                    placeholder='Custom webhook'
-                    title='Name'
-                    value={formState.name}
-                    onChange={e => updateForm(state => ({...state, name: e.target.value}))}
-                    onKeyDown={() => clearError('name')}
-                />
-                <Select
-                    error={Boolean(errors.event)}
-                    hint={errors.event}
-                    options={webhookEventOptions}
-                    prompt='Select an event'
-                    selectedOption={webhookEventOptions.flatMap(group => group.options).find(option => option.value === formState.event)}
-                    testId='event-select'
-                    title='Event'
-                    hideTitle
-                    onSelect={(option) => {
-                        updateForm(state => ({...state, event: option?.value}));
-                        clearError('event');
-                    }}
-                />
-                <TextField
-                    error={Boolean(errors.target_url)}
-                    hint={errors.target_url}
-                    maxLength={2000}
-                    placeholder='https://example.com'
-                    title='Target URL'
-                    type='url'
-                    value={formState.target_url}
-                    onChange={e => updateForm(state => ({...state, target_url: e.target.value}))}
-                    onKeyDown={() => clearError('target_url')}
-                />
-                <TextField
-                    maxLength={191}
-                    placeholder='https://example.com'
-                    title='Secret'
-                    value={formState.secret || undefined}
-                    onChange={e => updateForm(state => ({...state, secret: e.target.value}))}
-                />
-            </Form>
+            <FieldGroup className='gap-8 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+                <Field data-invalid={Boolean(errors.name) || undefined}>
+                    <FieldLabel htmlFor='webhook-name'>Name</FieldLabel>
+                    <Input aria-invalid={Boolean(errors.name) || undefined} id='webhook-name' maxLength={191} placeholder='Custom webhook' value={formState.name ?? ''} onChange={e => updateForm(state => ({...state, name: e.target.value}))} onKeyDown={() => clearError('name')} />
+                    {errors.name && <FieldError>{errors.name}</FieldError>}
+                </Field>
+                <Field data-invalid={Boolean(errors.event) || undefined}>
+                    <FieldLabel className='sr-only'>Event</FieldLabel>
+                    <Select
+                        value={formState.event ?? ''}
+                        onValueChange={(value) => {
+                            updateForm(state => ({...state, event: value}));
+                            clearError('event');
+                        }}
+                    >
+                        <SelectTrigger aria-describedby={errors.event ? eventErrorId : undefined} aria-invalid={Boolean(errors.event) || undefined} aria-label='Event' data-testid='event-select'>
+                            <SelectValue placeholder='Select an event' />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {webhookEventOptions.map(group => (
+                                <SelectGroup key={group.label}>
+                                    <SelectLabel>{group.label}</SelectLabel>
+                                    {group.options.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                                </SelectGroup>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    {errors.event && <FieldError id={eventErrorId}>{errors.event}</FieldError>}
+                </Field>
+                <Field data-invalid={Boolean(errors.target_url) || undefined}>
+                    <FieldLabel htmlFor='webhook-target-url'>Target URL</FieldLabel>
+                    <Input aria-invalid={Boolean(errors.target_url) || undefined} id='webhook-target-url' maxLength={2000} placeholder='https://example.com' type='url' value={formState.target_url ?? ''} onChange={e => updateForm(state => ({...state, target_url: e.target.value}))} onKeyDown={() => clearError('target_url')} />
+                    {errors.target_url && <FieldError>{errors.target_url}</FieldError>}
+                </Field>
+                <Field>
+                    <FieldLabel htmlFor='webhook-secret'>Secret</FieldLabel>
+                    <Input id='webhook-secret' maxLength={191} placeholder='https://example.com' value={formState.secret || ''} onChange={e => updateForm(state => ({...state, secret: e.target.value}))} />
+                </Field>
+            </FieldGroup>
         </div>
-    </Modal>;
+    </SettingsModal>;
 };
 
 export default NiceModal.create(WebhookModal);

@@ -1,9 +1,12 @@
+import ConfirmationModal from '../../../confirmation-modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
 import RecommendationDescriptionForm, {validateDescriptionForm} from './recommendation-description-form';
-import {ConfirmationModal, Modal, dismissAllToasts, showToast} from '@tryghost/admin-x-design-system';
+import {Button} from '@tryghost/shade/components';
 import {type Recommendation, useDeleteRecommendation, useEditRecommendation} from '@tryghost/admin-x-framework/api/recommendations';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {SettingsModal} from '@tryghost/shade/patterns';
+import {toast} from 'sonner';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 interface EditRecommendationModalProps {
@@ -34,12 +37,8 @@ const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationMo
         }
     });
 
-    const leftButtonProps = {
-        label: 'Delete',
-        link: true,
-        color: 'red' as const,
-        size: 'sm' as const,
-        onClick: () => {
+    const leftButton = (
+        <Button className='text-destructive hover:text-destructive' size='sm' type='button' variant='ghost' onClick={() => {
             modal.remove();
             NiceModal.show(ConfirmationModal, {
                 title: 'Delete recommendation',
@@ -47,24 +46,21 @@ const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationMo
                     <p>Your recommendation <strong>{recommendation.title}</strong> will no longer be visible to your audience.</p>
                 </>,
                 okLabel: 'Delete',
+                okVariant: 'destructive',
                 onOk: async (deleteModal) => {
                     try {
                         await deleteRecommendation(recommendation);
                         deleteModal?.remove();
                     } catch (e) {
-                        showToast({
-                            title: 'Failed to delete the recommendation',
-                            message: 'Please try again later.',
-                            type: 'error'
-                        });
+                        toast.error('Failed to delete the recommendation', {description: 'Please try again later.'});
                         handleError(e, {withToast: false});
                     }
                 }
             });
-        }
-    };
+        }}>Delete</Button>
+    );
 
-    return <Modal
+    return <SettingsModal
         afterClose={() => {
             // Closed without saving: reset route
             updateRoute('recommendations');
@@ -73,28 +69,24 @@ const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationMo
         backDropClick={false}
         buttonsDisabled={okProps.disabled}
         cancelLabel={'Close'}
-        leftButtonProps={leftButtonProps}
-        okColor={okProps.color}
+        leftButton={leftButton}
         okLabel={okProps.label || 'Save'}
+        okVariant={okProps.variant}
         size='sm'
         testId='edit-recommendation-modal'
         title={'Edit recommendation'}
         stickyFooter
         onOk={async () => {
-            dismissAllToasts();
+            toast.dismiss();
             try {
                 await handleSave({force: true});
             } catch {
-                showToast({
-                    title: 'Something went wrong',
-                    type: 'error',
-                    message: 'Please try again later.'
-                });
+                toast.error('Something went wrong', {description: 'Please try again later.'});
             }
         }}
     >
         <RecommendationDescriptionForm clearError={clearError} errors={errors} formState={formState} setErrors={setErrors} showURL={true} updateForm={updateForm}/>
-    </Modal>;
+    </SettingsModal>;
 };
 
 export default NiceModal.create(EditRecommendationModal);

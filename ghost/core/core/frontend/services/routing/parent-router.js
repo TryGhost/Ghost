@@ -13,7 +13,7 @@ const express = require('../../../shared/express');
 const _ = require('lodash');
 const url = require('url');
 const security = require('@tryghost/security');
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 const registry = require('./registry');
 
 /**

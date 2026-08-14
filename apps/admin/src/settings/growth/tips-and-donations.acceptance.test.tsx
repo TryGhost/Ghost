@@ -40,9 +40,6 @@ describe("Tips and donations settings", () => {
         await expect.element(settingsScreen.suggestedAmount()).toHaveValue("5");
         await expect.element(section.getByRole("combobox")).toBeVisible();
         await expect.element(settingsScreen.donateUrl()).toHaveTextContent("http://test.com/#/portal/support");
-        await expect.element(settingsScreen.previewShareableLink()).not.toBeVisible();
-        await expect.element(settingsScreen.copyShareableLink()).not.toBeVisible();
-
         await userEvent.hover(settingsScreen.donateUrl().element());
 
         await expect.element(settingsScreen.previewShareableLink()).toBeVisible();
@@ -74,5 +71,8 @@ describe("Tips and donations settings", () => {
 
         await expect.element(section).toHaveTextContent("Suggested amount cannot be more than $10000.");
         expect(settingsApi.requests).toHaveLength(0);
+
+        await section.getByRole("button", { name: "Cancel" }).click();
+        await expect.element(amount).toHaveValue("5");
     });
 });

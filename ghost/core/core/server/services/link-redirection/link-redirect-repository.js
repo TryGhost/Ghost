@@ -1,4 +1,4 @@
-const LinkRedirect = require('./link-redirect');
+const {LinkRedirect} = require('./link-redirect');
 const ObjectID = require('bson-objectid').default;
 const debug = require('@tryghost/debug')('LinkRedirectRepository');
 

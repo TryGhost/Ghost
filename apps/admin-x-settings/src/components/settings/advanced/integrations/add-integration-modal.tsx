@@ -1,8 +1,10 @@
+import LimitModal from '../../../limit-modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
-import {Form, LimitModal, Modal, TextField} from '@tryghost/admin-x-design-system';
+import {Field, FieldError, FieldGroup, FieldLabel, Input} from '@tryghost/shade/components';
 import {HostLimitError, useLimiter} from '../../../../hooks/use-limiter';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {useCreateIntegration} from '@tryghost/admin-x-framework/api/integrations';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
@@ -30,12 +32,12 @@ const AddIntegrationModal: React.FC<RoutingModalProps> = () => {
         }
     }, [limiter, modal, updateRoute]);
 
-    return <Modal
+    return <SettingsModal
         afterClose={() => {
             updateRoute('integrations');
         }}
-        okColor='black'
         okLabel='Add'
+        okVariant='default'
         size='sm'
         testId='add-integration-modal'
         title='Add integration'
@@ -55,28 +57,15 @@ const AddIntegrationModal: React.FC<RoutingModalProps> = () => {
         }}
     >
         <div className='mt-5'>
-            <Form
-                marginBottom={false}
-                marginTop={false}
-            >
-                <TextField
-                    autoFocus={true}
-                    error={!!errors.name}
-                    hint={errors.name}
-                    maxLength={191}
-                    placeholder='Custom integration'
-                    title='Name'
-                    value={name}
-                    onChange={e => setName(e.target.value)}
-                    onInput={() => {
-                        if (errors.name) {
-                            setErrors({name: ''});
-                        }
-                    }}
-                />
-            </Form>
+            <FieldGroup className='gap-8 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+                <Field data-invalid={Boolean(errors.name) || undefined}>
+                    <FieldLabel htmlFor='integration-name'>Name</FieldLabel>
+                    <Input aria-invalid={Boolean(errors.name) || undefined} id='integration-name' maxLength={191} placeholder='Custom integration' value={name} autoFocus onChange={e => setName(e.target.value)} onInput={() => errors.name && setErrors({name: ''})} />
+                    {errors.name && <FieldError>{errors.name}</FieldError>}
+                </Field>
+            </FieldGroup>
         </div>
-    </Modal>;
+    </SettingsModal>;
 };
 
 export default NiceModal.create(AddIntegrationModal);

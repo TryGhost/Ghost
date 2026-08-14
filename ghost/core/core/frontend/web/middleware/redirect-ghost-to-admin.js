@@ -1,6 +1,6 @@
 const express = require('../../../shared/express');
 const config = require('../../../shared/config');
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 
 // Extract the core redirect logic for easier testing
 const handleAdminRedirect = function (req, res) {

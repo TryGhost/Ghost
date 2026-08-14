@@ -1,5 +1,5 @@
 const TTLCache = require('@isaacs/ttlcache');
-const Base = require('@tryghost/adapter-base-cache');
+const {CacheBase} = require('@tryghost/adapter-base-cache');
 
 /**
  * Cache adapter compatible wrapper around TTLCache
@@ -8,7 +8,7 @@ const Base = require('@tryghost/adapter-base-cache');
  * - it supports time-to-live (TTL)
  * - it supports a max number of items
  */
-class AdapterCacheMemoryTTL extends Base {
+class AdapterCacheMemoryTTL extends CacheBase {
     #cache;
 
     /**

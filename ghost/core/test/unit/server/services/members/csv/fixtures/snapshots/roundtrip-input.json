@@ -1,0 +1,41 @@
+[
+  {
+    "id": "id-1",
+    "email": "roundtrip1@example.com",
+    "name": "Round Trip One",
+    "note": "First member",
+    "subscribed_to_emails": true,
+    "complimentary_plan": false,
+    "stripe_customer_id": "cus_abc123",
+    "created_at": "2023-01-15T10:00:00.000Z",
+    "deleted_at": null,
+    "labels": [{"name": "vip"}, {"name": "early-adopter"}],
+    "tiers": [{"name": "Gold"}]
+  },
+  {
+    "id": "id-2",
+    "email": "roundtrip2@example.com",
+    "name": "Round Trip Two",
+    "note": null,
+    "subscribed_to_emails": false,
+    "complimentary_plan": true,
+    "stripe_customer_id": null,
+    "created_at": "2023-06-20T14:30:00.000Z",
+    "deleted_at": null,
+    "labels": [],
+    "tiers": []
+  },
+  {
+    "id": "id-3",
+    "email": "roundtrip3@example.com",
+    "name": null,
+    "note": "Has commas, in note",
+    "subscribed_to_emails": true,
+    "complimentary_plan": false,
+    "stripe_customer_id": null,
+    "created_at": "2024-01-01T00:00:00.000Z",
+    "deleted_at": "2024-06-01T00:00:00.000Z",
+    "labels": [{"name": "churned"}],
+    "tiers": [{"name": "Silver"}, {"name": "Bronze"}]
+  }
+]

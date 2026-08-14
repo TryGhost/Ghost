@@ -67,9 +67,8 @@ services:
       # ghost/core, and pnpm's verify-deps-before-run only checks ghost/core's
       # own dependency closure — which is fully installed in the root
       # /home/ghost/node_modules baked into the image and never mounted over —
-      # so the non-server packages these dirs also expose (e.g. ghost/admin,
-      # whose @tryghost/admin-x-framework dep lives under apps/ and is left
-      # dangling; koenig-lexical) fall outside that closure and don't trigger a
+      # so the non-server packages these dirs also expose (e.g. koenig-lexical)
+      # fall outside that closure and don't trigger a
       # workspace repair. Because root node_modules is never mounted,
       # linux-built native modules survive; each package's local node_modules
       # holds only relative symlinks that re-resolve into the root store.

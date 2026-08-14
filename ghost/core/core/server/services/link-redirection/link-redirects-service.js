@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 const DomainEvents = require('@tryghost/domain-events');
 const RedirectEvent = require('./redirect-event');
-const LinkRedirect = require('./link-redirect');
+const {LinkRedirect} = require('./link-redirect');
 
 /**
  * @typedef {object} ILinkRedirectRepository

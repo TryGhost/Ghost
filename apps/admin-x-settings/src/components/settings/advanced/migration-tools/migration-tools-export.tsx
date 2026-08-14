@@ -1,5 +1,6 @@
 import React from 'react';
-import {Button} from '@tryghost/admin-x-design-system';
+import {Button, LoadingIndicator} from '@tryghost/shade/components';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {blobDownloadFromEndpoint} from '@tryghost/admin-x-framework/helpers';
 import {downloadAllContent} from '@tryghost/admin-x-framework/api/db';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -26,8 +27,8 @@ const MigrationToolsExport: React.FC = () => {
 
     return (
         <div className='grid grid-cols-1 gap-4 pt-4 md:grid-cols-2 lg:grid-cols-3'>
-            <Button className='h-9! font-semibold!' color='grey' icon='export' iconColorClass='h-4! w-auto!' label='Content & settings' onClick={() => downloadAllContent()} />
-            <Button className='h-9! font-semibold!' color='grey' disabled={isExportingPosts} icon='baseline-chart' iconColorClass='h-4! w-auto!' label='Post analytics' loading={isExportingPosts} testId='post-analytics-export-button' onClick={exportPosts} />
+            <Button className='h-9 font-semibold' type='button' variant='secondary' onClick={() => downloadAllContent()}><LucideIcon.Download />Content &amp; settings</Button>
+            <Button className='h-9 font-semibold' data-testid='post-analytics-export-button' disabled={isExportingPosts} type='button' variant='secondary' onClick={exportPosts}>{isExportingPosts ? <><LoadingIndicator size='sm' /><span className='sr-only'>Loading...</span></> : <><LucideIcon.TrendingUp />Post analytics</>}</Button>
         </div>
     );
 };

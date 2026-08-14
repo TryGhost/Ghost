@@ -1,6 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {Hint} from '@tryghost/admin-x-design-system';
-import {LoadingIndicator} from '@tryghost/shade/components';
+import {FieldError, LoadingIndicator} from '@tryghost/shade/components';
 import {cn} from '@tryghost/shade/utils';
 import type {WelcomeEmailPreviewFrameState} from './use-welcome-email-preview';
 
@@ -149,7 +148,7 @@ const WelcomeEmailPreviewFrame: React.FC<WelcomeEmailPreviewFrameProps> = ({prev
             )}
             {(previewState.status === 'error' || previewState.status === 'invalid') && (
                 <div className='flex h-full items-center justify-center px-4' data-testid='welcome-email-preview-error'>
-                    <Hint color='red'>{previewState.message}</Hint>
+                    <FieldError>{previewState.message}</FieldError>
                 </div>
             )}
         </div>

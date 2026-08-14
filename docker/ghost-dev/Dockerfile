@@ -58,7 +58,7 @@ RUN corepack enable
 
 # Install ONLY ghost/core's workspace closure (its name is "ghost"; the trailing
 # "..." selects it plus every workspace dependency). Deps live in the shared
-# root store; non-selected projects (apps/*, ghost/admin, e2e, ...) have their
+# root store; non-selected projects (apps/*, e2e, ...) have their
 # manifests present but are not installed.
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store,id=pnpm-store \
     pnpm install --filter "ghost..." --frozen-lockfile --prefer-offline

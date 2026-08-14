@@ -78,6 +78,15 @@ export const previewMobile = "preview-mobile";
 export const toggleUnsplashButton = "toggle-unsplash-button";
 export const headingFontSelect = "heading-font-select";
 export const bodyFontSelect = "body-font-select";
+export const welcomeEmailModal = "welcome-email-modal";
+export const welcomeEmailCustomizeModal = "welcome-email-customize-modal";
+export const welcomeEmailDirtyConfirmModal = "welcome-email-dirty-confirm-modal";
+export const welcomeEmailModeEdit = "welcome-email-mode-edit";
+export const welcomeEmailModePreview = "welcome-email-mode-preview";
+export const welcomeEmailPreviewSubject = "welcome-email-preview-subject";
+export const welcomeEmailPreviewIframe = "welcome-email-preview-iframe";
+export const freeWelcomeEmailPreview = "free-welcome-email-preview";
+export const paidWelcomeEmailRow = "paid-welcome-email-row";
 export const theme = "theme";
 export const themeModal = "theme-modal";
 export const themeListItem = "theme-list-item";
@@ -86,7 +95,7 @@ export const themeEditorConfirmModal = "theme-editor-confirm-modal";
 export const themeEditorInputModal = "theme-editor-input-modal";
 
 // accessible names
-export const settingsSearchLabel = "Search";
+export const settingsSearchLabel = "Search settings";
 export const siteTitleLabel = "Site title";
 export const suggestedAmountLabel = "Suggested amount";
 export const siteDescriptionLabel = "Site description";

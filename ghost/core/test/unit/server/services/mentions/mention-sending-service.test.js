@@ -132,6 +132,7 @@ describe('MentionSendingService', function () {
         it('Sends on publish', async function () {
             const service = new MentionSendingService({
                 isEnabled: () => true,
+                getPostData: () => ({}),
                 getPostUrl: () => 'https://site.com/post/',
                 jobService: jobService
             });
@@ -154,6 +155,7 @@ describe('MentionSendingService', function () {
         it('Sends on unpublish', async function () {
             const service = new MentionSendingService({
                 isEnabled: () => true,
+                getPostData: () => ({}),
                 getPostUrl: () => 'https://site.com/post/',
                 jobService: jobService
             });
@@ -173,9 +175,43 @@ describe('MentionSendingService', function () {
             assert.equal(firstCall.previousHtml, 'same');
         });
 
+        it('Resolves the url from previous data when the post was destroyed', async function () {
+            // Deleting a published post fires `unpublished` with the model
+            // already destroyed: own attributes cleared, previous state kept.
+            const getPostData = sinon.stub().resolves({});
+            const getPostUrl = sinon.stub().returns('https://site.com/gone/');
+            const service = new MentionSendingService({
+                isEnabled: () => true,
+                getPostData,
+                getPostUrl,
+                jobService: jobService
+            });
+            const stub = sinon.stub(service, 'sendForHTMLResource');
+
+            const previous = {id: 'post-id', status: 'published', html: 'linky', slug: 'gone', type: 'post'};
+            const destroyedPost = {
+                attributes: {},
+                get: () => undefined,
+                previous: prop => previous[prop],
+                previousAttributes: () => previous,
+                toJSON: () => ({tags: [], authors: []})
+            };
+
+            await service.sendForPost(destroyedPost);
+
+            sinon.assert.calledOnce(stub);
+            assert.equal(stub.getCall(0).args[0].url.toString(), 'https://site.com/gone/');
+            // resolved from the destroyed model's previous data, not by loading it
+            sinon.assert.notCalled(getPostData);
+            assert.equal(getPostUrl.getCall(0).args[0], 'post-id');
+            assert.equal(getPostUrl.getCall(0).args[1].status, 'published');
+            assert.equal(getPostUrl.getCall(0).args[1].slug, 'gone');
+        });
+
         it('Sends on html change', async function () {
             const service = new MentionSendingService({
                 isEnabled: () => true,
+                getPostData: () => ({}),
                 getPostUrl: () => 'https://site.com/post/',
                 jobService: jobService
             });
@@ -198,6 +234,7 @@ describe('MentionSendingService', function () {
         it('Catches and logs errors', async function () {
             const service = new MentionSendingService({
                 isEnabled: () => true,
+                getPostData: () => ({}),
                 getPostUrl: () => 'https://site.com/post/'
             });
             sinon.stub(service, 'sendForHTMLResource').rejects(new Error('Internal error test'));
@@ -215,6 +252,7 @@ describe('MentionSendingService', function () {
         it('Sends no mentions for posts without html and previous html', async function () {
             const service = new MentionSendingService({
                 isEnabled: () => true,
+                getPostData: () => ({}),
                 getPostUrl: () => 'https://site.com/post/',
                 jobService: jobService
             });

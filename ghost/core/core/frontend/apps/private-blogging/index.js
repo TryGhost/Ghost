@@ -1,7 +1,7 @@
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 const middleware = require('./lib/middleware');
 const router = require('./lib/router');
 

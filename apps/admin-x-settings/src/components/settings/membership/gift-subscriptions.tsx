@@ -1,20 +1,13 @@
-import React, {useState} from 'react';
+import React from 'react';
 import TopLevelGroup from '../../top-level-group';
-import {Button, Heading, SettingGroupContent} from '@tryghost/admin-x-design-system';
+import {Button, CopyField, CopyFieldActions, CopyFieldContent, CopyFieldCopyButton, CopyFieldLabel, CopyFieldValue} from '@tryghost/shade/components';
+import {SettingGroupContent} from '@tryghost/shade/patterns';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {withErrorBoundary} from '../../error-boundary';
 
 const GiftSubscriptions: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {siteData} = useGlobalData();
-    const [copied, setCopied] = useState(false);
-
     const giftUrl = `${siteData?.url.replace(/\/$/, '')}/#/portal/gift`;
-
-    const copyGiftUrl = () => {
-        navigator.clipboard.writeText(giftUrl);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-    };
 
     const openPreview = () => {
         window.open(giftUrl, '_blank');
@@ -30,18 +23,16 @@ const GiftSubscriptions: React.FC<{ keywords: string[] }> = ({keywords}) => {
             hideEditButton
         >
             <SettingGroupContent columns={1}>
-                <div className='w-100'>
-                    <div className='flex items-center gap-2'>
-                        <Heading level={6}>Shareable link</Heading>
-                    </div>
-                    <div className='group relative mt-0 flex w-100 items-center justify-between overflow-hidden border-b border-transparent pt-1 pb-2 hover:border-grey-300 dark:hover:border-grey-600'>
-                        <span data-testid='gift-url'>{giftUrl}</span>
-                        <div className='invisible flex gap-1 bg-white pl-1 group-hover:visible dark:bg-black'>
-                            <Button color='clear' data-testid='preview-shareable-link' label={'Preview'} size='sm' onClick={openPreview} />
-                            <Button color='light-grey' data-testid='copy-shareable-link' label={copied ? 'Copied' : 'Copy link'} size='sm' onClick={copyGiftUrl} />
-                        </div>
-                    </div>
-                </div>
+                <CopyField value={giftUrl}>
+                    <CopyFieldLabel>Shareable link</CopyFieldLabel>
+                    <CopyFieldContent>
+                        <CopyFieldValue data-testid='gift-url' />
+                        <CopyFieldActions>
+                            <Button data-testid='preview-shareable-link' size='sm' type='button' variant='ghost' onClick={openPreview}>Preview</Button>
+                            <CopyFieldCopyButton copiedLabel='Copied' data-testid='copy-shareable-link'>Copy link</CopyFieldCopyButton>
+                        </CopyFieldActions>
+                    </CopyFieldContent>
+                </CopyField>
             </SettingGroupContent>
         </TopLevelGroup>
     );

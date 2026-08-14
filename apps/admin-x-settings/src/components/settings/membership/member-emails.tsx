@@ -1,3 +1,4 @@
+import ConfirmationModal from '../../confirmation-modal';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
 import TopLevelGroup from '../../top-level-group';
@@ -5,9 +6,12 @@ import WelcomeEmailCustomizeModal from './member-emails/welcome-email-customize-
 import WelcomeEmailModal from './member-emails/welcome-email-modal';
 import useQueryParams from '../../../hooks/use-query-params';
 import {APIError} from '@tryghost/admin-x-framework/errors';
-import {Button, ConfirmationModal, Icon, Table, TableRow, Toggle, showToast} from '@tryghost/admin-x-design-system';
+import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Switch} from '@tryghost/shade/components';
+import {Button} from '@tryghost/shade/components';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {WELCOME_EMAIL_SLUGS, type WelcomeEmailType, getDefaultWelcomeEmailRecord, getDefaultWelcomeEmailValues} from './member-emails/default-welcome-email-values';
 import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {toast} from 'sonner';
 import {useAddAutomatedEmail, useBrowseAutomatedEmails, useEditAutomatedEmail, useVerifyAutomatedEmailSender} from '@tryghost/admin-x-framework/api/automated-emails';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -17,7 +21,7 @@ import type {AutomatedEmail} from '@tryghost/admin-x-framework/api/automated-ema
 const EmailPreviewRow: React.FC<{
     automatedEmail: AutomatedEmail,
     emailType: 'free' | 'paid',
-    icon: 'user-add' | 'bills',
+    icon: React.ReactNode,
     title: string,
     enabled: boolean,
     isBusy: boolean,
@@ -36,42 +40,41 @@ const EmailPreviewRow: React.FC<{
     onToggle
 }) => {
     return (
-        <TableRow
-            action={<div className={`flex items-center gap-7 ${isBusy && !isInitialLoading ? 'pointer-events-none' : ''}`}>
-                {isInitialLoading ? (
-                    <div className="h-4 w-7 rounded-full bg-grey-300 dark:bg-grey-800" />
-                ) : (
-                    <Toggle
-                        checked={enabled}
-                        onChange={onToggle}
-                    />
-                )}
-                <button className='font-semibold text-green hover:opacity-80' type='button' onClick={onEdit}>
-                    Edit
-                </button>
-            </div>}
-            hideActions={false}
-            testId={`${emailType}-welcome-email-row`}
-        >
-            <div className='w-full'>
+        <ActionListItem data-testid={`${emailType}-welcome-email-row`}>
+            <ActionListItemContent asChild>
                 <button
-                    className='flex w-full min-w-0 items-center gap-3 py-3 text-left focus-visible:ring-2 focus-visible:ring-green focus-visible:ring-offset-2 focus-visible:outline-none dark:focus-visible:ring-offset-black'
+                    className='flex w-full min-w-0 items-center gap-3 py-3 text-left focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none'
                     data-testid={`${emailType}-welcome-email-preview`}
                     type='button'
                     onClick={onEdit}
                 >
-                    <div className='flex size-10 shrink-0 items-center justify-center rounded-full bg-grey-100 dark:bg-grey-900'>
-                        <Icon colorClass='text-grey-700 dark:text-grey-600' name={icon} size='md' />
-                    </div>
-                    <div className='min-w-0 grow'>
-                        <div className='leading-tight font-medium' data-testid={`${emailType}-welcome-email-title`}>{title}</div>
-                        <div className='mt-1 text-sm leading-[1.35] text-grey-700 dark:text-grey-600'>
+                    <span className='flex size-10 shrink-0 items-center justify-center rounded-full bg-muted'>
+                        <span className='text-muted-foreground [&>svg]:size-5'>{icon}</span>
+                    </span>
+                    <span className='min-w-0 grow'>
+                        <span className='block leading-tight font-medium' data-testid={`${emailType}-welcome-email-title`}>{title}</span>
+                        <span className='mt-1 block text-sm leading-[1.35] text-muted-foreground'>
                             {automatedEmail.subject}
-                        </div>
-                    </div>
+                        </span>
+                    </span>
                 </button>
-            </div>
-        </TableRow>
+            </ActionListItemContent>
+            <ActionListItemActions>
+                <div className={`flex items-center gap-7 ${isBusy && !isInitialLoading ? 'pointer-events-none' : ''}`}>
+                {isInitialLoading ? (
+                    <div className="h-4 w-7 rounded-full bg-muted" />
+                ) : (
+                    <Switch
+                        aria-label={`${title} welcome email`}
+                        checked={enabled}
+                        disabled={isBusy}
+                        onCheckedChange={onToggle}
+                    />
+                )}
+                <Button className='h-auto p-0 font-bold text-green hover:text-green/90 hover:no-underline' type='button' variant='link' onClick={onEdit}>Edit</Button>
+                </div>
+            </ActionListItemActions>
+        </ActionListItem>
     );
 };
 
@@ -103,12 +106,12 @@ const MemberEmailsTable: React.FC<{
     onPaidToggle
 }) => {
     return (
-        <Table borderTop>
+        <ActionList className='border-t border-border'>
             <EmailPreviewRow
                 automatedEmail={freeEmailForDisplay}
                 emailType='free'
                 enabled={freeWelcomeEmailEnabled}
-                icon='user-add'
+                icon={<LucideIcon.UserPlus />}
                 isBusy={isBusy}
                 isInitialLoading={isLoading}
                 title='Free members welcome email'
@@ -120,7 +123,7 @@ const MemberEmailsTable: React.FC<{
                     automatedEmail={paidEmailForDisplay}
                     emailType='paid'
                     enabled={paidWelcomeEmailEnabled}
-                    icon='bills'
+                    icon={<LucideIcon.Banknote />}
                     isBusy={isBusy}
                     isInitialLoading={isLoading}
                     title='Paid members welcome email'
@@ -128,7 +131,7 @@ const MemberEmailsTable: React.FC<{
                     onToggle={onPaidToggle}
                 />
             )}
-        </Table>
+        </ActionList>
     );
 };
 
@@ -234,13 +237,13 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
         try {
             if (!existing) {
                 await createAutomatedEmail(emailType, 'active');
-                showToast({type: 'success', title: `${label} welcome email enabled`});
+                toast.success(`${label} welcome email enabled`);
             } else if (existing.status === 'active') {
                 await editAutomatedEmail({...existing, status: 'inactive'});
-                showToast({type: 'success', title: `${label} welcome email disabled`});
+                toast.success(`${label} welcome email disabled`);
             } else {
                 await editAutomatedEmail({...existing, status: 'active'});
-                showToast({type: 'success', title: `${label} welcome email enabled`});
+                toast.success(`${label} welcome email enabled`);
             }
         } catch (e) {
             handleError(e);
@@ -279,11 +282,13 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
             customButtons={(
                 <Button
                     className='mt-[-5px]'
-                    color='clear'
-                    label='Customize'
                     size='sm'
+                    type='button'
+                    variant='ghost'
                     onClick={() => NiceModal.show(WelcomeEmailCustomizeModal)}
-                />
+                >
+                    Customize
+                </Button>
             )}
             description="Create and manage automated emails for your members"
             keywords={keywords}

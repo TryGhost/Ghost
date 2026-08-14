@@ -1,31 +1,36 @@
+import ColorPickerField from '../../../color-picker-field';
 import React, {useState} from 'react';
 import UnsplashSelector from '../../../selectors/unsplash-selector';
 import clsx from 'clsx';
 import usePinturaEditor from '../../../../hooks/use-pintura-editor';
 import {APIError} from '@tryghost/admin-x-framework/errors';
 import {CUSTOM_FONTS} from '@tryghost/custom-fonts';
-import {ColorPickerField, Form, Hint, ImageUpload, Select} from '@tryghost/admin-x-design-system';
-import {Icon} from '@tryghost/admin-x-design-system';
-import {type OptionProps, type SingleValueProps, components} from 'react-select';
+import {Field, FieldDescription, FieldGroup, FieldLabel, FieldLegend, FieldSet, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
+import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
+import {Images, Pencil, Trash2} from 'lucide-react';
 import {type SettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {type Theme, useBrowseThemes} from '@tryghost/admin-x-framework/api/themes';
+import {formatNumber} from '@tryghost/shade/utils';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {useFramework} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '../../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import type {BodyFontName, HeadingFontName} from '@tryghost/custom-fonts';
 
-type BodyFontOption = {
+interface FontSelectOption {
+    className?: string;
+    hint?: string;
+    label: string;
+    value: string;
+}
+
+type BodyFontOption = FontSelectOption & {
     value: BodyFontName | typeof DEFAULT_FONT,
     label: BodyFontName | typeof DEFAULT_FONT,
-    creator?: string,
-    className?: string
 };
-type HeadingFontOption = {
+type HeadingFontOption = FontSelectOption & {
     value: HeadingFontName | typeof DEFAULT_FONT,
     label: HeadingFontName | typeof DEFAULT_FONT,
-    creator?: string,
-    className?: string
 };
 
 export interface GlobalSettingValues {
@@ -43,42 +48,14 @@ export interface GlobalSettingValues {
  */
 const DEFAULT_FONT = 'Theme default';
 
-interface FontSelectOption {
-    value: string;
-    label: string;
-    hint?: string;
-    key?: string;
-    className?: string;
-    creator?: string;
-}
-
-const SingleValue: React.FC<SingleValueProps<FontSelectOption, false>> = ({children, ...optionProps}) => (
-    <components.SingleValue {...optionProps}>
-        <div className='group' data-testid="select-current-option" data-value={optionProps.data.value}>
-            <div className='flex items-center gap-3'>
-                <div className='flex size-12 items-center justify-center rounded-md bg-white text-2xl font-bold dark:bg-black'>Aa</div>
-                <div className='flex flex-col'>
-                    <span className='text-md'>{children}</span>
-                    <span className='font-sans text-sm font-normal text-grey-700 dark:text-grey-600'>{optionProps.data.creator}</span>
-                </div>
-            </div>
-        </div>
-    </components.SingleValue>
-);
-
-const Option: React.FC<OptionProps<FontSelectOption, false>> = ({children, ...optionProps}) => (
-    <components.Option {...optionProps}>
-        <div className={optionProps.isSelected ? 'relative flex w-full items-center justify-between gap-2' : 'group'} data-testid="select-option" data-value={optionProps.data.value}>
-            <div className='flex items-center gap-3'>
-                <div className='flex size-12 items-center justify-center rounded-md bg-grey-100 text-2xl font-bold group-hover:bg-grey-200 dark:bg-grey-900 dark:group-hover:bg-grey-800'>Aa</div>
-                <div className='flex flex-col'>
-                    <span className='text-md'>{children}</span>
-                    <span className='font-sans text-sm font-normal text-grey-700 dark:text-grey-600'>{optionProps.data.creator}</span>
-                </div>
-            </div>
-            {optionProps.isSelected && <span><Icon name='check' size={14} /></span>}
-        </div>
-    </components.Option>
+const FontOption: React.FC<{option: FontSelectOption, selected?: boolean}> = ({option, selected}) => (
+    <span className={`flex w-full gap-4 ${option.className ?? ''}`} data-testid={selected ? 'select-current-option' : 'select-option'} data-value={option.value}>
+        <span className='flex size-12 shrink-0 items-center justify-center rounded-md bg-surface-elevated text-2xl font-bold'>Aa</span>
+        <span className='flex min-w-0 flex-col'>
+            <span className='text-md'>{option.label}</span>
+            <span className='truncate font-sans text-sm font-normal text-muted-foreground'>{option.hint}</span>
+        </span>
+    </span>
 );
 
 const capitalizeWords = (str: string): string => str
@@ -161,15 +138,15 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
     // Populate the heading and body font options
     const customHeadingFonts: HeadingFontOption[] = CUSTOM_FONTS.heading.map((x) => {
         const className = fontClassName(x.name, true);
-        return {label: x.name, value: x.name, creator: x.creator, className};
+        return {label: x.name, value: x.name, hint: x.creator, className};
     });
-    customHeadingFonts.unshift({label: DEFAULT_FONT, value: DEFAULT_FONT, creator: themeNameVersion, className: 'font-sans font-normal'});
+    customHeadingFonts.unshift({label: DEFAULT_FONT, value: DEFAULT_FONT, hint: themeNameVersion, className: 'font-sans font-normal'});
 
     const customBodyFonts: BodyFontOption[] = CUSTOM_FONTS.body.map((x) => {
         const className = fontClassName(x.name, false);
-        return {label: x.name, value: x.name, creator: x.creator, className};
+        return {label: x.name, value: x.name, hint: x.creator, className};
     });
-    customBodyFonts.unshift({label: DEFAULT_FONT, value: DEFAULT_FONT, creator: themeNameVersion, className: 'font-sans font-normal'});
+    customBodyFonts.unshift({label: DEFAULT_FONT, value: DEFAULT_FONT, hint: themeNameVersion, className: 'font-sans font-normal'});
 
     const selectFont = (fontName: string, heading: boolean) => {
         if (fontName === DEFAULT_FONT) {
@@ -178,12 +155,12 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
         return fontClassName(fontName, heading);
     };
 
-    const selectedHeadingFont = {label: headingFont.name, value: headingFont.name, creator: headingFont.creator};
-    const selectedBodyFont = {label: bodyFont.name, value: bodyFont.name, creator: bodyFont.creator};
+    const selectedHeadingFont = customHeadingFonts.find(option => option.value === headingFont.name) || customHeadingFonts[0];
+    const selectedBodyFont = customBodyFonts.find(option => option.value === bodyFont.name) || customBodyFonts[0];
 
     return (
         <>
-            <Form className='mt-6' gap='sm' margins='lg' title=''>
+            <FieldGroup className='mt-6 mb-12 gap-6'>
                 <ColorPickerField
                     debounceMs={200}
                     direction='rtl'
@@ -196,109 +173,104 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
                 <div className='flex items-start justify-between'>
                     <div>
                         <div>Publication icon</div>
-                        <Hint className='mt-0! mr-5 max-w-[160px]'>A square, social icon, at least 60x60px</Hint>
+                        <FieldDescription className='mr-5 max-w-[160px]'>A square, social icon, at least {formatNumber(60)}×{formatNumber(60)}px</FieldDescription>
                     </div>
                     <div className='flex gap-3'>
-                        <ImageUpload
-                            deleteButtonClassName='top-1! right-1!'
-                            editButtonClassName='top-1! right-1!'
-                            height={values.icon ? '66px' : '36px'}
-                            id='logo'
-                            imageBWCheckedBg={true}
-                            imageURL={values.icon || ''}
-                            width={values.icon ? '66px' : '160px'}
-                            onDelete={() => updateSetting('icon', null)}
-                            onUpload={async (file) => {
-                                try {
-                                    updateSetting('icon', getImageUrl(await uploadImage({file})));
-                                } catch (e) {
-                                    const error = e as APIError;
-                                    if (error.response!.status === 415) {
-                                        error.message = 'Unsupported file type';
+                        <ImageUpload className={values.icon ? 'size-16.5' : 'h-9 w-40'}>
+                            {values.icon ? (
+                                <ImageUploadPreview background='checkerboard'>
+                                    <ImageUploadImage id='logo' src={values.icon} />
+                                    <ImageUploadActions className='top-1 right-1'>
+                                        <ImageUploadAction aria-label='Remove publication icon' data-testid='image-delete-button' onClick={() => updateSetting('icon', null)}><Trash2 /></ImageUploadAction>
+                                    </ImageUploadActions>
+                                </ImageUploadPreview>
+                            ) : (
+                                <ImageUploadDropzone inputId='logo' onDropAccepted={async ([file]) => {
+                                    try {
+                                        updateSetting('icon', getImageUrl(await uploadImage({file})));
+                                    } catch (e) {
+                                        const error = e as APIError;
+                                        if (error.response!.status === 415) {
+                                            error.message = 'Unsupported file type';
+                                        }
+                                        handleError(error);
                                     }
-                                    handleError(error);
-                                }
-                            }}
-                        >
-                        Upload icon
+                                }}>Upload icon</ImageUploadDropzone>
+                            )}
                         </ImageUpload>
                     </div>
                 </div>
                 <div className={`flex items-start justify-between ${values.icon && 'mt-2'}`}>
                     <div>
                         <div>Publication logo</div>
-                        <Hint className='mt-0! mr-5 max-w-[160px]'>Appears usually in the main header of your theme</Hint>
+                        <FieldDescription className='mr-5 max-w-[160px]'>Appears usually in the main header of your theme</FieldDescription>
                     </div>
                     <div>
-                        <ImageUpload
-                            deleteButtonClassName='top-1! right-1!'
-                            height='60px'
-                            id='site-logo'
-                            imageBWCheckedBg={true}
-                            imageFit='contain'
-                            imageURL={values.logo || ''}
-                            width='160px'
-                            onDelete={() => updateSetting('logo', null)}
-                            onUpload={async (file) => {
-                                try {
-                                    updateSetting('logo', getImageUrl(await uploadImage({file})));
-                                } catch (e) {
-                                    const error = e as APIError;
-                                    if (error.response!.status === 415) {
-                                        error.message = 'Unsupported file type';
+                        <ImageUpload className='h-15 w-40'>
+                            {values.logo ? (
+                                <ImageUploadPreview background='checkerboard'>
+                                    <ImageUploadImage className='object-contain' id='site-logo' src={values.logo} />
+                                    <ImageUploadActions className='top-1 right-1'>
+                                        <ImageUploadAction aria-label='Remove publication logo' data-testid='image-delete-button' onClick={() => updateSetting('logo', null)}><Trash2 /></ImageUploadAction>
+                                    </ImageUploadActions>
+                                </ImageUploadPreview>
+                            ) : (
+                                <ImageUploadDropzone inputId='site-logo' onDropAccepted={async ([file]) => {
+                                    try {
+                                        updateSetting('logo', getImageUrl(await uploadImage({file})));
+                                    } catch (e) {
+                                        const error = e as APIError;
+                                        if (error.response!.status === 415) {
+                                            error.message = 'Unsupported file type';
+                                        }
+                                        handleError(error);
                                     }
-                                    handleError(error);
-                                }
-                            }}
-                        >
-                        Upload logo
+                                }}>Upload logo</ImageUploadDropzone>
+                            )}
                         </ImageUpload>
                     </div>
                 </div>
                 <div className='mt-2 flex items-start justify-between' data-testid="publication-cover">
                     <div>
                         <div>Publication cover</div>
-                        <Hint className='mt-0! mr-5 max-w-[160px]'>Usually as a large banner image on your index pages</Hint>
+                        <FieldDescription className='mr-5 max-w-[160px]'>Usually as a large banner image on your index pages</FieldDescription>
                     </div>
-                    <ImageUpload
-                        deleteButtonClassName='top-1! right-1!'
-                        editButtonClassName='top-1! right-10!'
-                        height='95px'
-                        id='cover'
-                        imageURL={values.coverImage || ''}
-                        openUnsplash={() => setShowUnsplash(true)}
-                        pintura={
-                            {
-                                isEnabled: editor.isEnabled,
-                                openEditor: async () => editor.openEditor({
-                                    image: values.coverImage || '',
-                                    handleSave: async (file:File) => {
-                                        try {
-                                            updateSetting('cover_image', getImageUrl(await uploadImage({file})));
-                                        } catch (e) {
-                                            handleError(e);
+                    <ImageUpload className='h-23.75 w-40'>
+                        {values.coverImage ? (
+                            <ImageUploadPreview>
+                                <ImageUploadImage id='cover' src={values.coverImage} />
+                                <ImageUploadActions className='top-1 right-1'>
+                                    {editor.isEnabled && <ImageUploadAction aria-label='Edit publication cover' onClick={() => editor.openEditor({
+                                        image: values.coverImage || '',
+                                        handleSave: async (file: File) => {
+                                            try {
+                                                updateSetting('cover_image', getImageUrl(await uploadImage({file})));
+                                            } catch (e) {
+                                                handleError(e);
+                                            }
                                         }
+                                    })}><Pencil /></ImageUploadAction>}
+                                    <ImageUploadAction aria-label='Remove publication cover' data-testid='image-delete-button' onClick={() => updateSetting('cover_image', null)}><Trash2 /></ImageUploadAction>
+                                </ImageUploadActions>
+                            </ImageUploadPreview>
+                        ) : (
+                            <>
+                                <ImageUploadDropzone inputId='cover' onDropAccepted={async ([file]) => {
+                                    try {
+                                        updateSetting('cover_image', getImageUrl(await uploadImage({file})));
+                                    } catch (e) {
+                                        const error = e as APIError;
+                                        if (error.response!.status === 415) {
+                                            error.message = 'Unsupported file type';
+                                        }
+                                        handleError(error);
                                     }
-                                })
-                            }
-                        }
-                        unsplashButtonClassName='bg-transparent! h-6! top-1.5! w-6! right-1.5! z-50'
-                        unsplashEnabled={unsplashEnabled}
-                        width='160px'
-                        onDelete={() => updateSetting('cover_image', null)}
-                        onUpload={async (file: File) => {
-                            try {
-                                updateSetting('cover_image', getImageUrl(await uploadImage({file})));
-                            } catch (e) {
-                                const error = e as APIError;
-                                if (error.response!.status === 415) {
-                                    error.message = 'Unsupported file type';
-                                }
-                                handleError(error);
-                            }
-                        }}
-                    >
-                    Upload cover
+                                }}>Upload cover</ImageUploadDropzone>
+                                {unsplashEnabled && <ImageUploadActions className='top-1 right-1 opacity-100'>
+                                    <ImageUploadAction aria-label='Select publication cover from Unsplash' data-testid='toggle-unsplash-button' onClick={() => setShowUnsplash(true)}><Images /></ImageUploadAction>
+                                </ImageUploadActions>}
+                            </>
+                        )}
                     </ImageUpload>
                     {
                         showUnsplash && unsplashConfig && unsplashEnabled && (
@@ -317,51 +289,50 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
                         )
                     }
                 </div>
-            </Form>
-            <Form className='-mt-4' gap='sm' margins='lg' title='Typography'>
-                <Select
-                    className={selectFont(selectedHeadingFont.label, true)}
-                    components={{Option, SingleValue}}
-                    controlClasses={{control: 'min-h-16! pl-2!', option: 'pl-2!'}}
-                    hint={''}
-                    menuShouldScrollIntoView={true}
-                    options={customHeadingFonts}
-                    selectedOption={selectedHeadingFont}
-                    testId='heading-font-select'
-                    title={'Heading font'}
-                    onSelect={(option) => {
-                        if (option?.value === DEFAULT_FONT) {
+            </FieldGroup>
+            <FieldSet className='-mt-4 gap-0'>
+                <FieldLegend className='mb-4 text-md! leading-supertight font-bold md:text-lg!'>Typography</FieldLegend>
+                <FieldGroup className='mb-12 gap-6'>
+                <Field>
+                    <FieldLabel>Heading font</FieldLabel>
+                    <Select value={selectedHeadingFont.value} onValueChange={(value) => {
+                        if (value === DEFAULT_FONT) {
                             setHeadingFont({name: DEFAULT_FONT, creator: themeNameVersion});
                             updateSetting('heading_font', '');
                         } else {
-                            setHeadingFont({name: option?.value || '', creator: CUSTOM_FONTS.heading.find(f => f.name === option?.value)?.creator || ''});
-                            updateSetting('heading_font', option?.value || '');
+                            setHeadingFont({name: value, creator: CUSTOM_FONTS.heading.find(f => f.name === value)?.creator || ''});
+                            updateSetting('heading_font', value);
                         }
-                    }}
-                />
-                <Select
-                    className={selectFont(selectedBodyFont.label, false)}
-                    components={{Option, SingleValue}}
-                    controlClasses={{control: 'min-h-16! pl-2!', option: 'pl-2!'}}
-                    hint={''}
-                    maxMenuHeight={200}
-                    menuPosition='fixed'
-                    menuShouldScrollIntoView={true}
-                    options={customBodyFonts}
-                    selectedOption={selectedBodyFont}
-                    testId='body-font-select'
-                    title={'Body font'}
-                    onSelect={(option) => {
-                        if (option?.value === DEFAULT_FONT) {
+                    }}>
+                        <SelectTrigger aria-label='Heading font' className={`h-16 pl-2 ${selectFont(selectedHeadingFont.label, true)}`} data-testid='heading-font-select'>
+                            <SelectValue><FontOption option={selectedHeadingFont} selected /></SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                            {customHeadingFonts.map(option => <SelectItem key={option.value} value={option.value}><FontOption option={option} /></SelectItem>)}
+                        </SelectContent>
+                    </Select>
+                </Field>
+                <Field>
+                    <FieldLabel>Body font</FieldLabel>
+                    <Select value={selectedBodyFont.value} onValueChange={(value) => {
+                        if (value === DEFAULT_FONT) {
                             setBodyFont({name: DEFAULT_FONT, creator: themeNameVersion});
                             updateSetting('body_font', '');
                         } else {
-                            setBodyFont({name: option?.value || '', creator: CUSTOM_FONTS.body.find(f => f.name === option?.value)?.creator || ''});
-                            updateSetting('body_font', option?.value || '');
+                            setBodyFont({name: value, creator: CUSTOM_FONTS.body.find(f => f.name === value)?.creator || ''});
+                            updateSetting('body_font', value);
                         }
-                    }}
-                />
-            </Form>
+                    }}>
+                        <SelectTrigger aria-label='Body font' className={`h-16 pl-2 ${selectFont(selectedBodyFont.label, false)}`} data-testid='body-font-select'>
+                            <SelectValue><FontOption option={selectedBodyFont} selected /></SelectValue>
+                        </SelectTrigger>
+                        <SelectContent className='max-h-52'>
+                            {customBodyFonts.map(option => <SelectItem key={option.value} value={option.value}><FontOption option={option} /></SelectItem>)}
+                        </SelectContent>
+                    </Select>
+                </Field>
+                </FieldGroup>
+            </FieldSet>
         </>
     );
 };

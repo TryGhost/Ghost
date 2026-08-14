@@ -1,10 +1,6 @@
 import React from 'react';
-import {Tab, TabList} from '../tab-view';
-import Heading from '../heading';
 import clsx from 'clsx';
-import Button, {ButtonColor, ButtonProps} from '../button';
-import {ButtonGroupProps} from '../button-group';
-import DynamicTable, {DynamicTableProps} from '../table/dynamic-table';
+import {Text} from '@tryghost/shade/primitives';
 
 export interface View {
     id: string;
@@ -13,17 +9,7 @@ export interface View {
     contents: React.ReactNode;
 }
 
-export interface ViewTab extends Tab {
-    views?: View[];
-}
-
-export interface PrimaryActionProps {
-    title?: string;
-    icon?: string;
-    color?: ButtonColor;
-    className?: string;
-    onClick?: () => void;
-}
+export type PrimaryActionProps = React.ReactNode;
 
 interface ViewContainerProps {
     /**
@@ -65,10 +51,8 @@ interface ViewContainerProps {
     /**
      * Use this to break down the view to multiple tabs.
      */
-    tabs?: ViewTab[];
-    selectedTab?: string;
+    tabs?: React.ReactNode;
     selectedView?: string;
-    onTabChange?: (id: string) => void;
     mainContainerClassName?: string;
     toolbarWrapperClassName?: string;
     toolbarContainerClassName?: string;
@@ -84,7 +68,7 @@ interface ViewContainerProps {
     /**
      * Adds more actions by the primary action, primarily buttons and button groups.
      */
-    actions?: (React.ReactElement<ButtonProps> | React.ReactElement<ButtonGroupProps> | React.ReactNode)[];
+    actions?: React.ReactNode[];
     actionsClassName?: string;
     actionsHidden?: boolean;
     contentWrapperClassName?: string;
@@ -109,8 +93,6 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
     headerContent,
     stickyHeader = true,
     tabs,
-    selectedTab,
-    onTabChange,
     mainContainerClassName,
     toolbarWrapperClassName,
     toolbarContainerClassName,
@@ -127,48 +109,7 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
     let toolbar = <></>;
     let mainContent:React.ReactNode = <></>;
 
-    const handleTabChange = (e: React.MouseEvent<HTMLButtonElement>) => {
-        const newTab = e.currentTarget.id as string;
-        onTabChange!(newTab);
-    };
-
-    let isSingleDynamicTable;
-    let singleDynamicTableIsSticky = false;
-
-    if (tabs?.length && !children) {
-        if (!selectedTab) {
-            selectedTab = tabs[0].id;
-        }
-
-        mainContent = <>
-            {tabs.map((tab) => {
-                return (
-                    <>
-                        {tab.contents &&
-                            <div key={tab.id} className={`${selectedTab === tab.id ? 'block' : 'hidden'}`} role='tabpanel'>
-                                <div>{tab.contents}</div>
-                            </div>
-                        }
-                    </>
-                );
-            })}
-        </>;
-    } else if (React.isValidElement(children) && children.type === DynamicTable) {
-        isSingleDynamicTable = true;
-        const dynTable = (children as React.ReactElement<DynamicTableProps>);
-        if (dynTable.props.stickyHeader || dynTable.props.stickyFooter) {
-            singleDynamicTableIsSticky = true;
-            children = isSingleDynamicTable
-                ? React.cloneElement(dynTable, {
-                    ...(dynTable.props as DynamicTableProps),
-                    singlePageTable: true
-                })
-                : children;
-        }
-        mainContent = children;
-    } else {
-        mainContent = children;
-    }
+    mainContent = children;
 
     toolbarWrapperClassName = clsx(
         'z-50',
@@ -179,8 +120,8 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
 
     toolbarContainerClassName = clsx(
         'flex justify-between gap-5',
-        (type === 'page' && actions?.length) ? (tabs?.length ? 'flex-col md:flex-row md:items-start' : 'flex-col md:flex-row md:items-end') : 'items-end',
-        (firstOnPage && type === 'page' && !tabs?.length) ? 'pb-3 tablet:pb-8' : (tabs?.length ? '' : 'pb-2'),
+        (type === 'page' && actions?.length) ? (tabs ? 'flex-col md:flex-row md:items-start' : 'flex-col md:flex-row md:items-end') : 'items-end',
+        (firstOnPage && type === 'page' && !tabs) ? 'pb-3 tablet:pb-8' : (tabs ? '' : 'pb-2'),
         toolbarBorder && 'border-b border-grey-200 dark:border-grey-900',
         toolbarContainerClassName
     );
@@ -193,18 +134,12 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
     actionsClassName = clsx(
         'flex items-center justify-between gap-3 transition-all tablet:justify-start tablet:gap-5',
         actionsHidden && 'opacity-0 group-hover/view-container:opacity-100',
-        tabs?.length ? 'pb-1' : (type === 'page' ? 'pb-1' : ''),
+        tabs ? 'pb-1' : (type === 'page' ? 'pb-1' : ''),
         actionsClassName
     );
 
-    const primaryActionContents = <>
-        {(primaryAction?.title || primaryAction?.icon) && (
-            <Button className={primaryAction.className} color={primaryAction.color || 'black'} icon={primaryAction.icon} label={primaryAction.title} size={type === 'page' ? 'md' : 'sm'} onClick={primaryAction.onClick} />
-        )}
-    </>;
-
     const headingClassName = clsx(
-        tabs?.length && 'pb-3',
+        tabs && 'pb-3',
         type === 'page' && '-mt-2'
     );
 
@@ -213,21 +148,15 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
             <div className={toolbarContainerClassName}>
                 <div className={toolbarLeftClassName}>
                     {headerContent}
-                    {title && <Heading className={headingClassName} level={type === 'page' ? 1 : 4}>{title}</Heading>}
-                    {tabs?.length && (
-                        <TabList
-                            border={false}
-                            buttonBorder={true}
-                            handleTabChange={handleTabChange}
-                            selectedTab={selectedTab}
-                            tabs={tabs!}
-                            width='normal'
-                        />
+                    {title && (type === 'page' ?
+                        <Text as='h1' className={clsx('text-4xl', headingClassName)} leading='supertight' weight='bold'>{title}</Text> :
+                        <Text as='h4' className={clsx('md:text-xl', headingClassName)} leading='heading' size='lg' weight='bold'>{title}</Text>
                     )}
+                    {tabs}
                 </div>
                 <div className={actionsClassName}>
                     {actions}
-                    {primaryActionContents}
+                    {primaryAction}
                 </div>
             </div>
         </div>
@@ -238,10 +167,6 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
         mainContainerClassName
     );
 
-    if (singleDynamicTableIsSticky) {
-        contentFullBleed = true;
-    }
-
     contentWrapperClassName = clsx(
         'relative mx-auto w-full flex-auto',
         (!contentFullBleed && type === 'page') && 'max-w-7xl px-[4vw] tablet:px-12',
@@ -251,7 +176,7 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
 
     return (
         <section className={mainContainerClassName}>
-            {(title || actions || headerContent || tabs) && toolbar}
+            {(title || actions || primaryAction || headerContent || tabs) && toolbar}
             <div className={contentWrapperClassName}>
                 {mainContent}
             </div>

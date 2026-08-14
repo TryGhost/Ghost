@@ -7,7 +7,7 @@ const sinon = require('sinon');
 const localUtils = require('./utils');
 const config = require('../../../core/shared/config');
 const logging = require('@tryghost/logging');
-const storage = require('../../../core/server/adapters/storage');
+const adapterManager = require('../../../core/server/services/adapter-manager').default;
 
 describe('Media API', function () {
     // NOTE: holds paths to media that need to be cleaned up after the tests are run
@@ -136,7 +136,7 @@ describe('Media API', function () {
         });
 
         it('Passes the content type to the storage adapter when uploading an MP4', async function () {
-            const store = storage.getStorage('media');
+            const store = adapterManager.getAdapter('storage:media');
             const saveSpy = sinon.spy(store, 'save');
 
             const res = await request.post(localUtils.API.getApiQuery('media/upload'))
@@ -158,7 +158,7 @@ describe('Media API', function () {
         });
 
         it('Passes the content type to the storage adapter when uploading an MP3', async function () {
-            const store = storage.getStorage('media');
+            const store = adapterManager.getAdapter('storage:media');
             const saveSpy = sinon.spy(store, 'save');
 
             const res = await request.post(localUtils.API.getApiQuery('media/upload'))

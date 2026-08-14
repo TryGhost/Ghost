@@ -1,6 +1,6 @@
 const settingsCache = require('../../../shared/settings-cache');
 const labs = require('../../../shared/labs');
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 const ghostVersion = require('@tryghost/version');
 
 /** @type {import('@tryghost/api-framework').Controller} */

@@ -1,4 +1,5 @@
 import {type Offer} from '@tryghost/admin-x-framework/api/offers';
+import {formatNumber} from '@tryghost/shade/utils';
 
 type RetentionCadence = 'month' | 'year';
 
@@ -11,6 +12,7 @@ export type RetentionOffer = {
     redemptionOfferIds: string[];
     redemptions: number;
     status: 'active' | 'inactive';
+    createdAt: string | null;
 };
 
 const getActiveRetentionOfferByCadence = (offers: Offer[], cadence: RetentionCadence): Offer | null => {
@@ -39,6 +41,19 @@ const getRetentionOfferIdsByCadence = (offers: Offer[], cadence: RetentionCadenc
         .map(offer => offer.id);
 };
 
+const getLatestRetentionOfferDateByCadence = (offers: Offer[], cadence: RetentionCadence): string | null => {
+    const timestamps = offers
+        .filter(offer => offer.redemption_type === 'retention' && offer.cadence === cadence && offer.created_at)
+        .map(offer => new Date(offer.created_at!).getTime())
+        .filter(timestamp => !Number.isNaN(timestamp));
+
+    if (timestamps.length === 0) {
+        return null;
+    }
+
+    return new Date(Math.max(...timestamps)).toISOString();
+};
+
 const isFreeMonthsOffer = (offer: Offer): boolean => {
     return offer.type === 'percent' && offer.amount === 100 && offer.duration === 'repeating';
 };
@@ -51,11 +66,11 @@ const getRetentionTerms = (offer: Offer | null): string | null => {
     if (isFreeMonthsOffer(offer)) {
         const months = offer.duration_in_months || 0;
         const monthLabel = months === 1 ? 'month' : 'months';
-        return `${months} ${monthLabel} free`;
+        return `${formatNumber(months)} ${monthLabel} free`;
     }
 
     if (offer.type === 'percent') {
-        return `${offer.amount}% OFF`;
+        return `${formatNumber(offer.amount)}% OFF`;
     }
 
     return null;
@@ -76,7 +91,7 @@ const getRetentionTermsDetail = (offer: Offer | null): string | null => {
 
     if (offer.duration === 'repeating' && offer.duration_in_months) {
         const monthLabel = offer.duration_in_months === 1 ? 'month' : 'months';
-        return `For ${offer.duration_in_months} ${monthLabel}`;
+        return `For ${formatNumber(offer.duration_in_months)} ${monthLabel}`;
     }
 
     if (offer.duration === 'forever') {
@@ -103,7 +118,8 @@ export const getRetentionOffers = (offers: Offer[]): RetentionOffer[] => {
             termsDetail: getRetentionTermsDetail(monthlyOffer),
             redemptionOfferIds: monthlyOfferIds,
             redemptions: monthlyRedemptions,
-            status: monthlyOffer ? 'active' : 'inactive'
+            status: monthlyOffer ? 'active' : 'inactive',
+            createdAt: getLatestRetentionOfferDateByCadence(offers, 'month')
         },
         {
             id: 'yearly',
@@ -113,7 +129,8 @@ export const getRetentionOffers = (offers: Offer[]): RetentionOffer[] => {
             termsDetail: getRetentionTermsDetail(yearlyOffer),
             redemptionOfferIds: yearlyOfferIds,
             redemptions: yearlyRedemptions,
-            status: yearlyOffer ? 'active' : 'inactive'
+            status: yearlyOffer ? 'active' : 'inactive',
+            createdAt: getLatestRetentionOfferDateByCadence(offers, 'year')
         }
     ];
 };

@@ -1,11 +1,4 @@
 const _ = require('lodash');
-const limitService = require('../../services/limits');
-const WebhookTrigger = require('./webhook-trigger');
-const models = require('../../models');
-const payload = require('./payload');
-
-// The webhook system is fundamentally built on top of our model event system
-const events = require('../../lib/common/events');
 
 const WEBHOOKS = [
     'site.changed',
@@ -44,8 +37,10 @@ const WEBHOOKS = [
     'page.tag.detached'
 ];
 
-const listen = async () => {
-    const webhookTrigger = new WebhookTrigger({models, payload, limitService});
+// Registers the webhook dispatch listeners on the model event system. The
+// trigger is built by the composition root (index.js) and injected here so
+// this module owns only the event-to-trigger wiring.
+const registerListeners = ({events, trigger}) => {
     _.each(WEBHOOKS, (event) => {
         // @NOTE: The early exit makes sure the listeners are only registered once.
         //        During testing the "events" instance is kept around with all the
@@ -62,9 +57,9 @@ const listen = async () => {
                 return;
             }
 
-            webhookTrigger.trigger(event, model);
+            trigger.trigger(event, model);
         });
     });
 };
 
-module.exports = listen;
+module.exports = registerListeners;

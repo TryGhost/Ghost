@@ -1,8 +1,11 @@
+import LimitModal from '../../limit-modal';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
 import TopLevelGroup from '../../top-level-group';
-import {Button, Heading, LimitModal, SettingGroupContent} from '@tryghost/admin-x-design-system';
-import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from '@tryghost/shade/components';
+import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from '@tryghost/shade/components';
+import {LucideIcon} from '@tryghost/shade/utils';
+import {SettingGroupContent} from '@tryghost/shade/patterns';
+import {Text} from '@tryghost/shade/primitives';
 import {type Theme, useBrowseThemes} from '@tryghost/admin-x-framework/api/themes';
 import {downloadFile, getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useCheckThemeLimitError} from '../../../hooks/use-check-theme-limit-error';
@@ -74,13 +77,13 @@ const ChangeTheme: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const values = (
         <SettingGroupContent>
             <div className='flex flex-col'>
-                <Heading grey={false} level={6}>Active theme</Heading>
+                <Text as='h6' className='text-base' weight='semibold'>Active theme</Text>
                 <div className='mt-1 flex w-full items-center justify-between gap-4'>
                     <div>{activeTheme ? `${activeTheme.name} (v${activeTheme.package?.version || '1.0'})` : 'Loading...'}</div>
                     <div className='-mr-3'>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button disabled={!activeTheme} icon='ellipsis' iconColorClass='text-base' label='Menu' size='sm' hideLabel />
+                                <Button aria-label='Menu' disabled={!activeTheme} size='icon' type='button' variant='ghost'><LucideIcon.Ellipsis /></Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align='end'>
                                 <DropdownMenuItem onSelect={openThemeEditor}>Edit code</DropdownMenuItem>
@@ -96,7 +99,7 @@ const ChangeTheme: React.FC<{ keywords: string[] }> = ({keywords}) => {
     return (
         <TopLevelGroup
             customButtons={
-                <Button className='mt-[-5px]' color='clear' label='Change theme' size='sm' onClick={openPreviewModal} />
+                <Button className='mt-[-5px]' size='sm' type='button' variant='ghost' onClick={openPreviewModal}>Change theme</Button>
             }
             description="Browse and install official themes or upload one"
             keywords={keywords}

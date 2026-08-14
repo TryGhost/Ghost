@@ -142,7 +142,7 @@ Caddyfile
 /test-results
 
 # Admin
-/ghost/admin/dist
+/apps/ember-admin/dist
 
 # Admin Toolbar
 /apps/admin-toolbar/umd

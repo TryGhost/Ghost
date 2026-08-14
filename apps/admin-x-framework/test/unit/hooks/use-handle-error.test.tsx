@@ -14,22 +14,20 @@ vi.mock('@sentry/react', () => ({
     ErrorBoundary: ({children}: {children: any}) => children
 }));
 
-vi.mock('../../../src/utils/toast', () => ({
-    showToast: vi.fn()
+const {mockToastDismiss, mockToastError} = vi.hoisted(() => ({
+    mockToastDismiss: vi.fn(),
+    mockToastError: vi.fn()
 }));
 
-vi.mock('react-hot-toast', () => ({
-    default: {
-        remove: vi.fn()
+vi.mock('sonner', () => ({
+    toast: {
+        dismiss: mockToastDismiss,
+        error: mockToastError
     }
 }));
 
-const mockShowToast = vi.fn();
-const mockToastRemove = vi.fn();
-
 import * as Sentry from '@sentry/react';
-import toast from 'react-hot-toast';
-import {showToast} from '../../../src/utils/toast';
+import {toast} from 'sonner';
 
 const createWrapper = (sentryDSN?: string): React.FC<{children: ReactNode}> => {
     const TestWrapper: React.FC<{children: ReactNode}> = ({children}) => (
@@ -67,9 +65,6 @@ describe('useHandleError', () => {
             };
             callback(scope);
         });
-
-        (showToast as any).mockImplementation(mockShowToast);
-        (toast.remove as any).mockImplementation(mockToastRemove);
 
         // Reset console.error mock
         vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -151,7 +146,7 @@ describe('useHandleError', () => {
 
         result.current(error);
 
-        expect(toast.remove).toHaveBeenCalled();
+        expect(toast.dismiss).toHaveBeenCalled();
     });
 
     it('does not show toast when withToast is false', () => {
@@ -161,7 +156,7 @@ describe('useHandleError', () => {
 
         result.current(error, {withToast: false});
 
-        expect(showToast).not.toHaveBeenCalled();
+        expect(toast.error).not.toHaveBeenCalled();
     });
 
     it('does not show toast for 418 status (test indicator)', () => {
@@ -173,7 +168,7 @@ describe('useHandleError', () => {
 
         result.current(error);
 
-        expect(showToast).not.toHaveBeenCalled();
+        expect(toast.error).not.toHaveBeenCalled();
     });
 
     it('still clears lingering toasts for 418 status', () => {
@@ -185,9 +180,7 @@ describe('useHandleError', () => {
 
         result.current(error);
 
-        // A stale toast can cover UI and block clicks in tests, so the
-        // unmocked-request path must clear toasts even without showing one
-        expect(toast.remove).toHaveBeenCalled();
+        expect(toast.dismiss).toHaveBeenCalled();
     });
 
     it('does not send session expiry errors to Sentry', () => {
@@ -213,8 +206,8 @@ describe('useHandleError', () => {
 
         // The fetch layer redirects to signin on session expiry, so the
         // error handler must not flash a toast over the unloading page
-        expect(showToast).not.toHaveBeenCalled();
-        expect(toast.remove).toHaveBeenCalled();
+        expect(toast.error).not.toHaveBeenCalled();
+        expect(toast.dismiss).toHaveBeenCalled();
     });
 
     it('shows toast for unauthorized errors that do not trigger a redirect', () => {
@@ -226,10 +219,7 @@ describe('useHandleError', () => {
 
         result.current(error);
 
-        expect(showToast).toHaveBeenCalledWith({
-            message: 'You are not authorised to make this request.',
-            type: 'error'
-        });
+        expect(toast.error).toHaveBeenCalledWith('You are not authorised to make this request.');
     });
 
     it('shows validation error message from context', () => {
@@ -255,10 +245,7 @@ describe('useHandleError', () => {
 
         result.current(error);
 
-        expect(showToast).toHaveBeenCalledWith({
-            message: 'This field must be filled out',
-            type: 'error'
-        });
+        expect(toast.error).toHaveBeenCalledWith('This field must be filled out');
     });
 
     it('shows validation error message when no context available', () => {
@@ -284,10 +271,7 @@ describe('useHandleError', () => {
 
         result.current(error);
 
-        expect(showToast).toHaveBeenCalledWith({
-            message: 'Field is required',
-            type: 'error'
-        });
+        expect(toast.error).toHaveBeenCalledWith('Field is required');
     });
 
     it('shows API error message', () => {
@@ -298,10 +282,7 @@ describe('useHandleError', () => {
 
         result.current(error);
 
-        expect(showToast).toHaveBeenCalledWith({
-            message: 'API Error occurred',
-            type: 'error'
-        });
+        expect(toast.error).toHaveBeenCalledWith('API Error occurred');
     });
 
     it('shows generic error message for unknown errors', () => {
@@ -312,10 +293,7 @@ describe('useHandleError', () => {
 
         result.current(error);
 
-        expect(showToast).toHaveBeenCalledWith({
-            message: 'Something went wrong, please try again.',
-            type: 'error'
-        });
+        expect(toast.error).toHaveBeenCalledWith('Something went wrong, please try again.');
     });
 
     it('handles string errors', () => {
@@ -325,10 +303,7 @@ describe('useHandleError', () => {
         result.current('String error');
 
         expect(console.error).toHaveBeenCalledWith('String error'); // eslint-disable-line no-console
-        expect(showToast).toHaveBeenCalledWith({
-            message: 'Something went wrong, please try again.',
-            type: 'error'
-        });
+        expect(toast.error).toHaveBeenCalledWith('Something went wrong, please try again.');
     });
 
     it('handles null/undefined errors', () => {
@@ -338,9 +313,6 @@ describe('useHandleError', () => {
         result.current(null);
 
         expect(console.error).toHaveBeenCalledWith(null); // eslint-disable-line no-console
-        expect(showToast).toHaveBeenCalledWith({
-            message: 'Something went wrong, please try again.',
-            type: 'error'
-        });
+        expect(toast.error).toHaveBeenCalledWith('Something went wrong, please try again.');
     });
 });

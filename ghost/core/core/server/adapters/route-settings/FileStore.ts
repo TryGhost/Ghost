@@ -1,7 +1,6 @@
 import fs from 'fs-extra';
 import path from 'path';
 import {z} from 'zod';
-import {format} from 'date-fns';
 import * as errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 
@@ -9,6 +8,7 @@ import {RouteSettingsStoreBase, type RouteSettings} from '@tryghost/adapter-base
 
 import parseYaml from '../../services/route-settings/yaml-parser';
 import {parseRouteSettings} from '../../services/route-settings/route-settings-parser';
+import {getBackupRouteSettingsFilePath} from './utils';
 
 const YAML_FILENAME = 'routes.yaml';
 const DEFAULT_SETTINGS_FILENAME = 'default-routes.yaml';
@@ -16,11 +16,6 @@ const DEFAULT_SETTINGS_FILENAME = 'default-routes.yaml';
 const messages = {
     missingPaths: 'FileStore requires basePath and defaultSettingsBasePath.',
     ensureSettings: 'Error trying to access settings files in {path}.'
-};
-
-export const getBackupRouteSettingsFilePath = (filePath: string): string => {
-    const {dir, name, ext} = path.parse(filePath);
-    return path.join(dir, `${name}-${format(new Date(), 'yyyy-MM-dd-HH-mm-ss')}${ext}`);
 };
 
 // Validates the required paths sourced from config. Used by `FileStore.validate`.

@@ -194,6 +194,46 @@ describe("Offers", () => {
         await expect.element(offersScreen.listModal()).toHaveTextContent("Third offer");
     });
 
+    it("sorts signup and retention offers by date, name and redemptions", async () => {
+        fakeSettingsScreens();
+        const supporter = supporterTier();
+        const tierRef = { id: supporter.id, name: supporter.name };
+        fakeTiers([supporter]);
+        fakeOffers([
+            offer({ name: "Alpha signup", created_at: "2026-01-04T12:00:00.000Z", redemption_count: 5, tier: tierRef }),
+            offer({ name: "Zulu signup", created_at: "2026-01-01T12:00:00.000Z", redemption_count: 1, tier: tierRef }),
+            retentionOffer({ name: "Monthly retention offer", created_at: "2026-01-03T12:00:00.000Z", redemption_count: 7 }),
+            retentionOffer({ name: "Yearly retention offer", cadence: "year", created_at: "2026-01-02T12:00:00.000Z", redemption_count: 3 }),
+        ]);
+        await renderAdminApp("/settings/offers/edit", withStripe());
+
+        const rows = offersScreen.tableRows();
+        await expect(rows).toHaveCount(4);
+
+        const expectOrder = async (names: string[]) => {
+            for (const [index, name] of names.entries()) {
+                await expect.element(rows.nth(index)).toHaveTextContent(name);
+            }
+        };
+
+        await expectOrder(["Alpha signup", "Monthly retention", "Yearly retention", "Zulu signup"]);
+
+        await offersScreen.sortOffersBy("Name");
+        await expectOrder(["Zulu signup", "Yearly retention", "Monthly retention", "Alpha signup"]);
+
+        await offersScreen.toggleSortDirection("Descending");
+        await expectOrder(["Alpha signup", "Monthly retention", "Yearly retention", "Zulu signup"]);
+
+        await offersScreen.sortOffersBy("Redemptions");
+        await expectOrder(["Zulu signup", "Yearly retention", "Alpha signup", "Monthly retention"]);
+
+        await offersScreen.toggleSortDirection("Ascending");
+        await expectOrder(["Monthly retention", "Alpha signup", "Yearly retention", "Zulu signup"]);
+
+        await offersScreen.sortOffersBy("Date added");
+        await expectOrder(["Alpha signup", "Monthly retention", "Yearly retention", "Zulu signup"]);
+    });
+
     it("supports updating an offer", async () => {
         fakeSettingsScreens();
         const supporter = supporterTier();
@@ -275,7 +315,7 @@ describe("Offers", () => {
             const rows = offersScreen.retentionRows();
             await expect(rows).toHaveCount(2);
 
-            const monthlyRow = rows.nth(0);
+            const monthlyRow = rows.filter({ hasText: "Monthly retention" });
             await expect.element(monthlyRow).toHaveTextContent("Monthly retention");
             await expect.element(monthlyRow).toHaveTextContent("25% OFF");
             await expect.element(monthlyRow).toHaveTextContent("First payment");
@@ -285,7 +325,7 @@ describe("Offers", () => {
                 .element(offersScreen.retentionRedemptionsLink("monthly"))
                 .toHaveAttribute("href", "/ghost/#/members?filter=offer_redemptions%3A%5Bretention-month-active%2Cretention-month-archived%5D");
 
-            const yearlyRow = rows.nth(1);
+            const yearlyRow = rows.filter({ hasText: "Yearly retention" });
             await expect.element(yearlyRow).toHaveTextContent("Yearly retention");
             await expect.element(yearlyRow).toHaveTextContent("Inactive");
             await expect.element(yearlyRow).toHaveTextContent("9");
@@ -411,7 +451,7 @@ describe("Offers", () => {
             await offersScreen.durationMonthsInput().fill("1000");
             await expect.element(retentionModal.getByText("Enter a whole number of months between 1 and 99.")).toBeVisible();
 
-            await retentionModal.getByRole("button", { name: /Free month\(s\)/ }).click();
+            await retentionModal.getByRole("radio", { name: /Free month\(s\)/ }).click();
             await retentionModal.getByLabelText("Free months").fill("0");
             await saveButton.click();
             await expect.element(retentionModal.getByText("Enter a whole number of months between 1 and 99.")).toBeVisible();
@@ -474,7 +514,7 @@ describe("Offers", () => {
             const retentionModal = offersScreen.retentionModal();
             await retentionModal.getByLabelText("Display title").fill("Before you go");
             await retentionModal.getByLabelText("Display description").fill("Please stay <script>alert(1)</script>");
-            await retentionModal.getByRole("button", { name: /Free month\(s\)/ }).click();
+            await retentionModal.getByRole("radio", { name: /Free month\(s\)/ }).click();
             await retentionModal.getByLabelText("Free months").fill("2");
 
             // The preview src double-encodes display fields (params are
@@ -505,7 +545,7 @@ describe("Offers", () => {
             expect(params.get("type")).toBe("percent");
             expect(params.get("amount")).toBe("100");
 
-            await retentionModal.getByRole("button", { name: /Percentage discount/ }).click();
+            await retentionModal.getByRole("radio", { name: /Percentage discount/ }).click();
             await retentionModal.getByLabelText("Amount off").fill("35");
             await expect.poll(() => previewParams().get("amount")).toBe("35");
             expect(previewParams().get("type")).toBe("percent");
@@ -521,7 +561,7 @@ describe("Offers", () => {
             const retentionModal = offersScreen.retentionModal();
             await retentionModal.getByLabelText("Display title").fill("Before you go");
             await retentionModal.getByLabelText("Display description").fill("Stay for a little longer");
-            await retentionModal.getByRole("button", { name: /Percentage discount/ }).click();
+            await retentionModal.getByRole("radio", { name: /Percentage discount/ }).click();
             await retentionModal.getByLabelText("Amount off").fill("35");
             await retentionModal.getByRole("button", { name: "Save" }).click();
 

@@ -1,7 +1,9 @@
 import React, {type ReactNode} from 'react';
 import clsx from 'clsx';
+import useUrlInput from '../../../../hooks/use-url-input';
 import {type EditableItem, type NavigationItem, type NavigationItemErrors} from '../../../../hooks/site/use-navigation-editor';
-import {TextField, URLTextField} from '@tryghost/admin-x-design-system';
+import {Field, FieldError, FieldLabel, Input} from '@tryghost/shade/components';
+import {Inline} from '@tryghost/shade/primitives';
 import {formatUrl} from '../../../../utils/format-url';
 
 export type NavigationItemEditorProps = React.HTMLAttributes<HTMLDivElement> & {
@@ -17,19 +19,24 @@ export type NavigationItemEditorProps = React.HTMLAttributes<HTMLDivElement> & {
 }
 
 const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({baseUrl, item, updateItem, addItem, clearError, labelPlaceholder, unstyled, textFieldClasses, action, className, ...props}) => {
+    const urlInput = useUrlInput({
+        baseUrl,
+        nullable: true,
+        value: item.url,
+        onChange: value => updateItem?.({url: value || ''})
+    });
+
     return (
         <div className={clsx('flex w-full items-start gap-3', className)} data-testid='navigation-item-editor' {...props}>
             <div className="flex flex-1 pt-1">
-                <TextField
-                    className={textFieldClasses}
-                    containerClassName="grow"
-                    error={!!item.errors.label}
-                    hint={item.errors.label}
-                    placeholder={labelPlaceholder}
-                    title='Label'
-                    unstyled={unstyled}
-                    value={item.label}
-                    hideTitle
+                <Field className='grow' data-invalid={Boolean(item.errors.label) || undefined}>
+                    <FieldLabel className='sr-only' htmlFor={`navigation-label-${item.id}`}>Label</FieldLabel>
+                    <Input
+                        aria-invalid={Boolean(item.errors.label) || undefined}
+                        className={clsx(!unstyled && 'h-[var(--control-height)] rounded-lg border-transparent bg-muted py-2 focus-visible:border-green focus-visible:bg-surface-elevated focus-visible:ring-green/25', unstyled && 'border-0 bg-transparent shadow-none focus-visible:ring-0', textFieldClasses)}
+                        id={`navigation-label-${item.id}`}
+                        placeholder={labelPlaceholder}
+                        value={item.label}
                     onChange={e => updateItem?.({label: e.target.value})}
                     onKeyDown={(e) => {
                         updateItem?.({label: (e.target as HTMLInputElement).value});
@@ -39,22 +46,22 @@ const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({baseUrl, ite
                         }
                         // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                         !!item.errors.label && clearError?.('label');
-                    }}
-                />
+                    }} />
+                    {item.errors.label && <FieldError>{item.errors.label}</FieldError>}
+                </Field>
             </div>
-            <div className="flex flex-1 pt-1">
-                <URLTextField
-                    baseUrl={baseUrl}
-                    className={textFieldClasses}
-                    containerClassName="grow"
-                    error={!!item.errors.url}
-                    hint={item.errors.url}
-                    title='URL'
-                    unstyled={unstyled}
-                    value={item.url}
-                    hideTitle
-                    onChange={value => updateItem?.({url: value || ''})}
+            <Field className='flex-1 pt-1' data-invalid={Boolean(item.errors.url) || undefined}>
+                <FieldLabel className='sr-only' htmlFor={`navigation-url-${item.id}`}>URL</FieldLabel>
+                <Input
+                    aria-invalid={Boolean(item.errors.url) || undefined}
+                    className={clsx('h-[var(--control-height)] rounded-lg border-transparent bg-muted py-2 focus-visible:border-green focus-visible:bg-surface-elevated focus-visible:ring-green/25', textFieldClasses)}
+                    id={`navigation-url-${item.id}`}
+                    value={urlInput.displayValue}
+                    onBlur={urlInput.commitValue}
+                    onChange={event => urlInput.setDisplayValue(event.target.value)}
+                    onFocus={urlInput.handleFocus}
                     onKeyDown={(e) => {
+                        urlInput.handleKeyDown(e);
                         const urls = formatUrl((e.target as HTMLInputElement).value, baseUrl, true);
                         updateItem?.({url: urls.save || ''});
                     }}
@@ -69,8 +76,13 @@ const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({baseUrl, ite
                         !!item.errors.url && clearError?.('url');
                     }}
                 />
-            </div>
-            {action}
+                {item.errors.url && <FieldError>{item.errors.url}</FieldError>}
+            </Field>
+            {action && (
+                <Inline align='center' className='h-[calc(var(--control-height)+0.25rem)] shrink-0 translate-y-px pt-1'>
+                    {action}
+                </Inline>
+            )}
         </div>
     );
 };

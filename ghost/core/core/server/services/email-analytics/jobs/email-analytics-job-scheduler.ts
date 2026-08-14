@@ -19,7 +19,6 @@ type Models = {
     };
 };
 type Config = {get(key: string): unknown};
-type Labs = {isSet(flag: string): boolean};
 type JobManager = {
     addJob(options: {
         job: string;
@@ -42,23 +41,19 @@ export class EmailAnalyticsJobScheduler {
     #hasScheduledAutomationsJob = false;
     readonly #models: Models;
     readonly #config: Config;
-    readonly #labs: Labs;
     readonly #jobManager: JobManager;
 
     constructor({
         models,
         config,
-        labs,
         jobManager
     }: {
         models: Models,
         config: Config,
-        labs: Labs,
         jobManager: JobManager
     }) {
         this.#models = models;
         this.#config = config;
-        this.#labs = labs;
         this.#jobManager = jobManager;
     }
 
@@ -103,10 +98,6 @@ export class EmailAnalyticsJobScheduler {
         }
 
         if (!this.#isConfigured()) {
-            return;
-        }
-
-        if (!this.#labs.isSet('automationAnalytics')) {
             return;
         }
 

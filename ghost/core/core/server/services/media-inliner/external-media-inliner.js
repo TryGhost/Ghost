@@ -1,6 +1,6 @@
 const mime = require('mime-types');
 const request = require('../../lib/request-external');
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const string = require('@tryghost/string');
@@ -37,7 +37,7 @@ class ExternalMediaInliner {
      * @param {Object} deps.PostMetaModel - PostMeta model
      * @param {Object} deps.TagModel - Tag model
      * @param {Object} deps.UserModel - User model
-     * @param {(extension) => import('ghost-storage-base')} deps.getMediaStorage - getMediaStorage
+     * @param {(extension) => import('ghost-storage-base').StorageBase} deps.getMediaStorage - getMediaStorage
      */
     constructor(deps) {
         this.#PostModel = deps.PostModel;

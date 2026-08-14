@@ -1,8 +1,9 @@
 import MarketplaceBgImage from '../../../../assets/images/footer-marketplace-bg.png';
 import React, {useEffect, useState} from 'react';
 import clsx from 'clsx';
-import {Heading, ModalPage} from '@tryghost/admin-x-design-system';
+import {ModalPage} from '@tryghost/shade/page-templates';
 import {type OfficialTheme, type ThemeVariant, useOfficialThemes} from '../../../providers/settings-app-provider';
+import {Text} from '@tryghost/shade/primitives';
 
 const VARIANT_LOOP_INTERVAL = 3000;
 
@@ -52,7 +53,8 @@ const OfficialThemes: React.FC<{
     }, [variantLoopTheme, visibleVariantIdx]);
 
     return (
-        <ModalPage heading='Themes'>
+        <ModalPage>
+            <ModalPage.Title>Themes</ModalPage.Title>
             <div className='mt-[6vmin] grid grid-cols-1 gap-[6vmin] sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4'>
                 {officialThemes.map((theme) => {
                     const showVariants = hasVariants(theme);
@@ -89,7 +91,7 @@ const OfficialThemes: React.FC<{
                                 }
                             </div>
                             <div className='relative mt-3'>
-                                <Heading level={4}>{theme.name}</Heading>
+                                <Text as='h4' className='md:text-xl' leading='heading' size='lg' weight='bold'>{theme.name}</Text>
                                 {showVariants ?
                                     variants.map((variant, idx) => (
                                         <span key={variant.category} className={clsx('absolute left-0 translate-y-px text-grey-700 opacity-0', {

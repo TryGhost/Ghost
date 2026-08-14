@@ -1,5 +1,5 @@
 import pkg from './package.json';
-import {publicAppViteConfig} from '../_shared/vite-public-app.mjs';
+import {publicAppViteConfig} from '@internal/cfg-vite-public-app';
 
 export default publicAppViteConfig({
     packageRoot: import.meta.dirname,
@@ -25,14 +25,6 @@ export default publicAppViteConfig({
             rollupOptions: {
                 output: {}
             }
-        },
-        test: {
-            include: ['./test/unit/*'],
-            testTimeout: process.env.TIMEOUT ? parseInt(process.env.TIMEOUT) : 10000,
-            ...(process.env.CI && { // https://github.com/vitest-dev/vitest/issues/1674
-                minThreads: 1,
-                maxThreads: 2
-            })
         }
     }
 });

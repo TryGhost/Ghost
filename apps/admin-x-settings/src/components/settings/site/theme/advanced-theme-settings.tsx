@@ -1,12 +1,16 @@
+import ConfirmationModal from '../../../confirmation-modal';
 import InvalidThemeModal, {type FatalErrors} from './invalid-theme-modal';
+import LimitModal from '../../../limit-modal';
 import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import useCustomFonts from '../../../../hooks/use-custom-fonts';
-import {Button, ConfirmationModal, LimitModal, List, ListItem, ModalPage, showToast} from '@tryghost/admin-x-design-system';
-import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from '@tryghost/shade/components';
+import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from '@tryghost/shade/components';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
+import {LucideIcon} from '@tryghost/shade/utils';
+import {ModalPage} from '@tryghost/shade/page-templates';
 import {type Theme, isActiveTheme, isDefaultTheme, isDeletableTheme, isLegacyTheme, useActivateTheme, useDeleteTheme} from '@tryghost/admin-x-framework/api/themes';
 import {downloadFile, getGhostPaths} from '@tryghost/admin-x-framework/helpers';
+import {toast} from 'sonner';
 import {useCheckThemeLimitError} from '../../../../hooks/use-check-theme-limit-error';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -61,11 +65,7 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
         try {
             await activateTheme(theme.name);
             refreshActiveThemeData();
-            showToast({
-                title: 'Theme activated',
-                type: 'success',
-                message: <div><span className='capitalize'>{theme.name}</span> is now your active theme</div>
-            });
+            toast.success('Theme activated', {description: <div><span className='capitalize'>{theme.name}</span> is now your active theme</div>});
         } catch (e) {
             let fatalErrors: FatalErrors | null = null;
             if (e instanceof JSONError && e.response?.status === 422 && e.data?.errors) {
@@ -115,7 +115,7 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
             ),
             okLabel: 'Delete',
             okRunningLabel: 'Deleting',
-            okColor: 'red',
+            okVariant: 'destructive',
             onOk: async (modal) => {
                 try {
                     await deleteTheme(theme.name);
@@ -148,11 +148,11 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
             <Button
                 key='activate'
                 className='ml-2'
-                color='green'
-                label={'Activate'}
-                link={true}
+                size='sm'
+                type='button'
+                variant='ghost'
                 onClick={handleActivate}
-            />
+            >Activate</Button>
         );
     }
 
@@ -161,9 +161,9 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
             {actions}
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button icon='ellipsis' iconColorClass='text-base' label='Menu' size='sm' hideLabel />
+                    <Button aria-label='Menu' size='icon' type='button' variant='ghost'><LucideIcon.Ellipsis /></Button>
                 </DropdownMenuTrigger>
-                {/* legacy ModalPage overlay is z-[1000]; keep the portalled menu above it */}
+                {/* legacy Modal overlay is z-[1000]; keep the portalled menu above it */}
                 <DropdownMenuContent align='end' className='z-[9999]'>
                     <DropdownMenuItem onSelect={handleEditCode}>Edit code</DropdownMenuItem>
                     <DropdownMenuItem onSelect={handleDownload}>Download</DropdownMenuItem>
@@ -195,24 +195,25 @@ const ThemeList:React.FC<ThemeSettingProps> = ({
     });
 
     return (
-        <List pageTitle='Installed themes'>
-            {themes.map((theme) => {
+        <>
+            <h1 className='mb-5 text-2xl font-bold'>Installed themes</h1>
+            <ActionList className='border-t border-border'>
+                {themes.map((theme) => {
                 const label = getThemeLabel(theme);
                 const detail = getThemeVersion(theme);
 
                 return (
-                    <ListItem
-                        key={theme.name}
-                        action={<ThemeActions theme={theme} />}
-                        detail={detail}
-                        id={`theme-${theme.name}`}
-                        separator={false}
-                        testId='theme-list-item'
-                        title={label}
-                    />
+                    <ActionListItem key={theme.name} data-testid='theme-list-item'>
+                        <ActionListItemContent className='py-3 pr-6' id={`theme-${theme.name}`}>
+                            <div>{label}</div>
+                            {detail && <div className='text-sm text-muted-foreground'>{detail}</div>}
+                        </ActionListItemContent>
+                        <ActionListItemActions><ThemeActions theme={theme} /></ActionListItemActions>
+                    </ActionListItem>
                 );
-            })}
-        </List>
+                })}
+            </ActionList>
+        </>
     );
 };
 

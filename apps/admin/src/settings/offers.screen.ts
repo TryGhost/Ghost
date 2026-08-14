@@ -10,6 +10,7 @@ export const offersScreen = {
 
     listModal: () => page.getByTestId(testIds.listModal),
     listRows: () => page.getByTestId(testIds.listRow),
+    tableRows: () => page.getByTestId(testIds.tableBody).getByRole("row"),
     retentionRows: () => page.getByTestId(testIds.retentionRow),
     retentionRedemptionsLink: (cadence: "monthly" | "yearly") => page.getByTestId(testIds.retentionRedemptionsLink(cadence)),
     newOfferButton: () => page.getByTestId(testIds.listModal).getByRole("button", { name: names.newOfferButton }),
@@ -23,19 +24,29 @@ export const offersScreen = {
     retentionModal: () => page.getByTestId(testIds.retentionModal),
 
     durationMonthsInput: () => page.getByTestId(testIds.durationMonthsInput),
-    selectOptions: () => page.getByTestId(testIds.selectOption),
-    selectOption: (label: string) => page.getByTestId(testIds.selectOption).filter({ hasText: label }),
+    selectOptions: () => page.getByRole("option"),
+    selectOption: (label: string) => page.getByRole("option").filter({ hasText: label }),
     portalPreview: () => page.getByTestId(testIds.portalPreview),
-    errorToast: () => page.getByTestId(testIds.toastError),
+    errorToast: () => page.getByRole("region", { name: /Notifications/ }).getByRole("listitem"),
 
     /** Open the offers list modal from the Growth section's button. */
     async openListModal(): Promise<void> {
         await offersScreen.manageOffersButton().click();
     },
 
-    /** Open the archived-offers toggle from the list modal's filter popover. */
+    /** Open the archived-offers toggle from the list modal's filter menu. */
     async showArchivedOffers(): Promise<void> {
         await offersScreen.listModal().getByRole("button", { name: names.filterOptionsButton }).click();
-        await page.getByLabelText(names.showArchivedToggle).click();
+        await page.getByRole("menuitemcheckbox", { name: names.showArchivedToggle }).click();
+    },
+
+    async sortOffersBy(option: "Date added" | "Name" | "Redemptions"): Promise<void> {
+        await offersScreen.listModal().getByRole("button", { name: names.filterOptionsButton }).click();
+        await page.getByRole("menuitemradio", { name: option }).click();
+    },
+
+    async toggleSortDirection(direction: "Ascending" | "Descending"): Promise<void> {
+        await offersScreen.listModal().getByRole("button", { name: names.filterOptionsButton }).click();
+        await page.getByRole("menuitem").filter({ hasText: direction }).click();
     },
 };

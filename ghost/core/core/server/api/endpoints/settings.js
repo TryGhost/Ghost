@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const fs = require('fs-extra');
 const models = require('../../models');
 const routeSettings = require('../../services/route-settings');
 const {BadRequestError} = require('@tryghost/errors');
@@ -171,7 +172,8 @@ const controller = {
             method: 'edit'
         },
         async query(frame) {
-            await routeSettings.api.upload(frame.file.path);
+            const content = await fs.readFile(frame.file.path, 'utf8');
+            await routeSettings.api.upload(content);
             const getRoutesHash = () => routeSettings.api.getCurrentHash();
             await settingsService.syncRoutesHash(getRoutesHash);
         }

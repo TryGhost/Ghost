@@ -17,9 +17,9 @@ const FETCH_ONLY_FORMATS = [
 ];
 
 class ImageSize {
-    constructor({config, storage, storageUtils, validator, urlUtils, request, probe}) {
+    constructor({config, imageStore, storageUtils, validator, urlUtils, request, probe}) {
         this.config = config;
-        this.storage = storage;
+        this.imageStore = imageStore;
         this.storageUtils = storageUtils;
         this.validator = validator;
         this.urlUtils = urlUtils;
@@ -248,8 +248,7 @@ class ImageSize {
         // get the storage readable filePath
         filePath = this.storageUtils.getLocalImagesStoragePath(imagePath);
 
-        return this.storage.getStorage('images')
-            .read({path: filePath})
+        return this.imageStore.read({path: filePath})
             .then((buf) => {
                 debug('Image fetched (storage):', filePath);
                 return this._imageSizeFromBuffer(buf);
@@ -298,10 +297,9 @@ class ImageSize {
      */
     async getOriginalImagePath(imagePath) {
         const {dir, name, ext} = path.parse(imagePath);
-        const storageInstance = this.storage.getStorage('images');
 
         const preferredUnoptimizedImagePath = path.join(dir, `${name}_o${ext}`);
-        const preferredUnoptimizedImagePathExists = await storageInstance.exists(preferredUnoptimizedImagePath);
+        const preferredUnoptimizedImagePathExists = await this.imageStore.exists(preferredUnoptimizedImagePath);
         if (preferredUnoptimizedImagePathExists) {
             return preferredUnoptimizedImagePath;
         }
@@ -315,7 +313,7 @@ class ImageSize {
         }
 
         const legacyOriginalImagePath = path.join(dir, `${imageName}_o${imageNumber || ''}${ext}`);
-        const legacyOriginalImageExists = await storageInstance.exists(legacyOriginalImagePath);
+        const legacyOriginalImageExists = await this.imageStore.exists(legacyOriginalImagePath);
 
         return legacyOriginalImageExists ? legacyOriginalImagePath : imagePath;
     }

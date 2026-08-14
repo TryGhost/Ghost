@@ -11,7 +11,7 @@ const settingsCache = require('../../../../../core/shared/settings-cache');
 const customThemeSettingsCache = require('../../../../../core/shared/custom-theme-settings-cache');
 const config = require('../../../../../core/shared/config');
 const labs = require('../../../../../core/shared/labs');
-const urlUtils = require('../../../../../core/shared/url-utils');
+const urlUtils = require('../../../../../core/shared/url-utils').default;
 
 const sandbox = sinon.createSandbox();
 

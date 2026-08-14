@@ -1,10 +1,13 @@
+import ConfirmationModal from '../../confirmation-modal';
 import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
 import trackEvent from '../../../utils/analytics';
 import useStaffUsers from '../../../hooks/use-staff-users';
-import {Button, ConfirmationModal, ListItem, SettingGroupHeader, showToast} from '@tryghost/admin-x-design-system';
+import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Button} from '@tryghost/shade/components';
+import {formatNumber} from '@tryghost/shade/utils';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
+import {toast} from 'sonner';
 import {useDeleteAllContent} from '@tryghost/admin-x-framework/api/db';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -34,15 +37,12 @@ const DangerZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
         NiceModal.show(ConfirmationModal, {
             title: 'Would you really like to delete all content from your blog?',
             prompt: 'This is permanent! No backups, no restores, no magic undo button. We warned you, k?',
-            okColor: 'red',
+            okVariant: 'destructive',
             okLabel: 'Delete',
             onOk: async (modal) => {
                 try {
                     await deleteAllContent(null);
-                    showToast({
-                        title: 'All content deleted from database.',
-                        type: 'success'
-                    });
+                    toast.success('All content deleted from database.');
                     modal?.remove();
                     await client.refetchQueries();
                 } catch (e) {
@@ -67,17 +67,14 @@ const DangerZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
             ),
             okLabel: 'Reset all authentication',
             okRunningLabel: 'Resetting...',
-            okColor: 'red',
+            okVariant: 'destructive',
             onOk: async (modal) => {
                 try {
                     const response = await resetAuth(null);
                     const result = response?.security_action?.[0];
                     const keys = result?.api_keys_rotated ?? 0;
                     const users = result?.users_locked ?? 0;
-                    showToast({
-                        title: `Rotated ${keys} API ${keys === 1 ? 'key' : 'keys'} and locked ${users} ${users === 1 ? 'user' : 'users'}. You will be signed out shortly.`,
-                        type: 'success'
-                    });
+                    toast.success(`Rotated ${formatNumber(keys)} API ${keys === 1 ? 'key' : 'keys'} and locked ${formatNumber(users)} ${users === 1 ? 'user' : 'users'}. You will be signed out shortly.`);
                     modal?.remove();
                     window.location.href = getGhostPaths().adminRoot;
                 } catch (e) {
@@ -93,16 +90,13 @@ const DangerZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
             prompt: 'This immediately invalidates every active gift link across your site. Anyone holding one will lose access. New gift links can still be created afterwards.',
             okLabel: 'Reset all gift links',
             okRunningLabel: 'Resetting...',
-            okColor: 'red',
+            okVariant: 'destructive',
             onOk: async (modal) => {
                 try {
                     const response = await removeAllGiftLinks(null);
                     const count = response?.meta?.count ?? 0;
                     trackEvent('All Gift Links Reset');
-                    showToast({
-                        title: `Reset ${count} gift ${count === 1 ? 'link' : 'links'}.`,
-                        type: 'success'
-                    });
+                    toast.success(`Reset ${formatNumber(count)} gift ${count === 1 ? 'link' : 'links'}.`);
                     modal?.remove();
                 } catch (e) {
                     handleError(e);
@@ -113,38 +107,37 @@ const DangerZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     return (
         <TopLevelGroup
-            customHeader={
-                <SettingGroupHeader description='Destructive actions that affect your entire site.' title='Danger zone' />
-            }
+            description='Destructive actions that affect your entire site.'
             keywords={keywords}
             navid='dangerzone'
             testId='dangerzone'
+            title='Danger zone'
         >
-            <div className='flex flex-col'>
-                <ListItem
-                    action={<Button aria-label='Delete all content' color='red' label='Delete' onClick={handleDeleteAllContent} />}
-                    bgOnHover={false}
-                    detail='Permanently delete all posts and tags from the database.'
-                    testId='delete-all-content'
-                    title='Delete all content'
-                />
+            <ActionList>
+                <ActionListItem data-testid='delete-all-content' hover={false}>
+                    <ActionListItemContent className='py-3 pr-6'>
+                        <div>Delete all content</div>
+                        <div className='text-sm text-muted-foreground'>Permanently delete all posts and tags from the database.</div>
+                    </ActionListItemContent>
+                    <ActionListItemActions><Button aria-label='Delete all content' size='sm' type='button' variant='destructive' onClick={handleDeleteAllContent}>Delete</Button></ActionListItemActions>
+                </ActionListItem>
                 {resetAuthEnabled && (
-                    <ListItem
-                        action={<Button aria-label='Reset all authentication' color='red' label='Reset' onClick={handleResetAuth} />}
-                        bgOnHover={false}
-                        detail='Rotate every API key, sign out every staff user, and require a password reset. Use after a suspected credential compromise.'
-                        testId='reset-all-authentication'
-                        title='Reset all authentication'
-                    />
+                    <ActionListItem data-testid='reset-all-authentication' hover={false}>
+                        <ActionListItemContent className='py-3 pr-6'>
+                            <div>Reset all authentication</div>
+                            <div className='text-sm text-muted-foreground'>Rotate every API key, sign out every staff user, and require a password reset. Use after a suspected credential compromise.</div>
+                        </ActionListItemContent>
+                        <ActionListItemActions><Button aria-label='Reset all authentication' size='sm' type='button' variant='destructive' onClick={handleResetAuth}>Reset</Button></ActionListItemActions>
+                    </ActionListItem>
                 )}
-                <ListItem
-                    action={<Button aria-label='Reset all gift links' color='red' label='Reset' onClick={handleRemoveAllGiftLinks} />}
-                    bgOnHover={false}
-                    detail='Invalidate every active gift link across your site. Anyone holding one will lose access.'
-                    testId='reset-all-gift-links'
-                    title='Reset all gift links'
-                />
-            </div>
+                <ActionListItem data-testid='reset-all-gift-links' hover={false}>
+                    <ActionListItemContent className='py-3 pr-6'>
+                        <div>Reset all gift links</div>
+                        <div className='text-sm text-muted-foreground'>Invalidate every active gift link across your site. Anyone holding one will lose access.</div>
+                    </ActionListItemContent>
+                    <ActionListItemActions><Button aria-label='Reset all gift links' size='sm' type='button' variant='destructive' onClick={handleRemoveAllGiftLinks}>Reset</Button></ActionListItemActions>
+                </ActionListItem>
+            </ActionList>
         </TopLevelGroup>
     );
 };

@@ -1,6 +1,6 @@
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 const settingsCache = require('../../../shared/settings-cache');
 const verifyEmailTemplate = require('../newsletters/emails/verify-email');
 const MagicLink = require('../lib/magic-link/magic-link');

@@ -4,7 +4,12 @@ const sinon = require('sinon');
 const {Post} = require('../../../../../core/server/models/post');
 const {Member} = require('../../../../../core/server/models/member');
 
-const serialize = require('../../../../../core/server/services/webhooks/serialize');
+const createSerialize = require('../../../../../core/server/services/webhooks/serialize');
+
+// Eager routing needs no relations; getRequiredRelations returns [] there, so
+// this is the default for tests that don't exercise relation loading.
+const noRelationsUrlService = {getRequiredRelations: () => []};
+const serialize = createSerialize({urlService: noRelationsUrlService});
 
 // Mocked internals
 const tiersService = require('../../../../../core/server/services/tiers');
@@ -62,6 +67,7 @@ describe('WebhookService - Serialize', function () {
     it('can serialize a new post', async function () {
         const post = fixtureManager.get('posts', 1);
         const postModel = new Post(post);
+        sinon.stub(postModel, 'load').resolves(postModel);
 
         const result = await serialize('post.added', postModel);
 
@@ -71,9 +77,38 @@ describe('WebhookService - Serialize', function () {
         assert.equal(result.post.current.reading_time, 1, 'The reading time generated field should be present');
     });
 
+    it('loads only the URL service relations the event model is missing', async function () {
+        // The URL service declares which relations it reads when routing (e.g.
+        // tags for a tags:internal-tag collection). Only the missing ones are
+        // loaded: a relation the event already carries (authors, with its
+        // nested roles) is left untouched so the payload keeps them.
+        const urlService = {getRequiredRelations: () => ['tags', 'authors']};
+        const serializeWithRelations = createSerialize({urlService});
+
+        const post = fixtureManager.get('posts', 1);
+        const postModel = new Post(post);
+        postModel.relations = {authors: {}};
+        sinon.stub(postModel, 'load').resolves(postModel);
+
+        await serializeWithRelations('post.published', postModel);
+
+        sinon.assert.calledWith(postModel.load, ['tags']);
+    });
+
+    it('loads no relations when the URL service needs none (eager routing)', async function () {
+        const post = fixtureManager.get('posts', 1);
+        const postModel = new Post(post);
+        sinon.stub(postModel, 'load').resolves(postModel);
+
+        await serialize('post.published', postModel);
+
+        sinon.assert.neverCalledWith(postModel.load, sinon.match.array);
+    });
+
     it('can serialize an edited post', async function () {
         const post = fixtureManager.get('posts', 1);
         const postModel = new Post(post);
+        sinon.stub(postModel, 'load').resolves(postModel);
 
         // We use both _previousAttributes and _changed in the webhook serializer
         postModel._previousAttributes.title = post.title;

@@ -2,8 +2,7 @@ import EmbedSignupPreview from './embed-signup-preview';
 import EmbedSignupSidebar, {type SelectedLabelTypes} from './embed-signup-sidebar';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import useSettingGroup from '../../../../hooks/use-setting-group';
-import {Modal, type MultiSelectOption} from '@tryghost/admin-x-design-system';
-import {type MultiValue} from 'react-select';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {generateCode} from '../../../../utils/generate-embed-code';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useEffect, useState} from 'react';
@@ -84,9 +83,9 @@ const EmbedSignupFormModal = NiceModal.create(() => {
         updateRoute('embed-signup-form');
     };
 
-    const addSelectedLabel = (selected: MultiValue<MultiSelectOption>) => {
-        if (selected?.length) {
-            const chosenLabels = selected?.map(({value}) => ({label: value, value: value}));
+    const addSelectedLabel = (selected: string[]) => {
+        if (selected.length) {
+            const chosenLabels = selected.map(value => ({label: value, value}));
             setSelectedLabels(chosenLabels);
         } else {
             setSelectedLabels([]);
@@ -94,7 +93,7 @@ const EmbedSignupFormModal = NiceModal.create(() => {
     };
 
     return (
-        <Modal
+        <SettingsModal
             afterClose={() => {
                 updateRoute('embed-signup-form');
             }}
@@ -128,7 +127,7 @@ const EmbedSignupFormModal = NiceModal.create(() => {
                     setCustomColor={setCustomColor}
                 />
             </div>
-        </Modal>
+        </SettingsModal>
     );
 });
 

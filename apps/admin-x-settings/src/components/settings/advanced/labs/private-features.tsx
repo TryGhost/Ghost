@@ -1,8 +1,8 @@
 import FeatureToggle from './feature-toggle';
 import LabItem from './lab-item';
 import React, {useEffect, useState} from 'react';
+import {ActionList} from '@tryghost/shade/components';
 import {HostLimitError, useLimiter} from '../../../../hooks/use-limiter';
-import {List} from '@tryghost/admin-x-design-system';
 
 type Feature = {
     title: string;
@@ -113,7 +113,7 @@ const AlphaFeatures: React.FC = () => {
     }, [limiter]);
 
     return (
-        <List titleSeparator={false}>
+        <ActionList>
             {allowedFeatures.map(feature => (
                 <LabItem
                     key={feature.flag}
@@ -121,7 +121,7 @@ const AlphaFeatures: React.FC = () => {
                     detail={feature.description}
                     title={feature.title} />
             ))}
-        </List>
+        </ActionList>
     );
 };
 

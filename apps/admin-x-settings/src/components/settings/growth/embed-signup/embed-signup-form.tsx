@@ -1,6 +1,6 @@
 import React from 'react';
 import TopLevelGroup from '../../../top-level-group';
-import {Button} from '@tryghost/admin-x-design-system';
+import {Button} from '@tryghost/shade/components';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const EmbedSignupForm: React.FC<{ keywords: string[] }> = ({keywords}) => {
@@ -11,7 +11,7 @@ const EmbedSignupForm: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     return (
         <TopLevelGroup
-            customButtons={<Button className='mt-[-5px]' color='clear' label='Embed' size='sm' onClick={openPreviewModal}/>}
+            customButtons={<Button className='mt-[-5px]' size='sm' type='button' variant='ghost' onClick={openPreviewModal}>Embed</Button>}
             description="Grow your audience from anywhere on the web"
             keywords={keywords}
             navid='embed-signup-form'

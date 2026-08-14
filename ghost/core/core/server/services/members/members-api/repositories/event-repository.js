@@ -34,6 +34,7 @@ module.exports = class EventRepository {
         Comment,
         labsService,
         memberAttributionService,
+        urlService,
         MemberEmailChangeEvent,
         AutomatedEmailRecipient,
         Gift
@@ -47,6 +48,7 @@ module.exports = class EventRepository {
         this._EmailRecipient = EmailRecipient;
         this._Comment = Comment;
         this._labsService = labsService;
+        this._urlService = urlService;
         this._MemberCreatedEvent = MemberCreatedEvent;
         this._SubscriptionCreatedEvent = SubscriptionCreatedEvent;
         this._MemberLinkClickEvent = MemberLinkClickEvent;
@@ -57,6 +59,12 @@ module.exports = class EventRepository {
         this._AutomatedEmailRecipient = AutomatedEmailRecipient;
         this._Gift = Gift;
         this._knex = db.knex;
+    }
+
+    // the URL service needs the attributed post's relations (e.g. tags for a
+    // tag-filtered collection) to build its URL; prefix them onto the eager-load
+    #attributionPostRelations(prefix) {
+        return this._urlService.getRequiredRelations().map(relation => `${prefix}.${relation}`);
     }
 
     async getEventTimeline(options = {}) {
@@ -213,6 +221,7 @@ module.exports = class EventRepository {
             withRelated: [
                 'member',
                 'subscriptionCreatedEvent.postAttribution',
+                ...this.#attributionPostRelations('subscriptionCreatedEvent.postAttribution'),
                 'subscriptionCreatedEvent.userAttribution',
                 'subscriptionCreatedEvent.tagAttribution',
                 'subscriptionCreatedEvent.memberCreatedEvent',
@@ -343,6 +352,7 @@ module.exports = class EventRepository {
             withRelated: [
                 'member',
                 'postAttribution',
+                ...this.#attributionPostRelations('postAttribution'),
                 'userAttribution',
                 'tagAttribution',
                 'signupStatusEvent'
@@ -402,6 +412,7 @@ module.exports = class EventRepository {
             withRelated: [
                 'member',
                 'postAttribution',
+                ...this.#attributionPostRelations('postAttribution'),
                 'userAttribution',
                 'tagAttribution'
             ],
@@ -591,7 +602,7 @@ module.exports = class EventRepository {
     async getCommentEvents(options = {}, filter) {
         options = {
             ...options,
-            withRelated: ['member', 'post', 'post.tags', 'post.authors', 'parent'],
+            withRelated: ['member', 'post', ...this.#attributionPostRelations('post'), 'parent'],
             filter: 'member_id:-null+custom:true',
             useBasicCount: true,
             mongoTransformer: chainTransformers(
@@ -625,7 +636,7 @@ module.exports = class EventRepository {
     async getClickEvents(options = {}, filter) {
         options = {
             ...options,
-            withRelated: ['member', 'link', 'link.post', 'link.post.tags', 'link.post.authors'],
+            withRelated: ['member', 'link', 'link.post', ...this.#attributionPostRelations('link.post')],
             filter: 'custom:true',
             useBasicCount: true,
             mongoTransformer: chainTransformers(

@@ -7,7 +7,7 @@ import {afterEach, beforeEach, describe, it} from 'vitest';
 
 import {RouteSettingsStoreBase, type RouteSettings} from '@tryghost/adapter-base-route-settings';
 
-import FileStore, {getBackupRouteSettingsFilePath} from '../../../../../core/server/adapters/route-settings/FileStore';
+import FileStore from '../../../../../core/server/adapters/route-settings/FileStore';
 import parseYaml from '../../../../../core/server/services/route-settings/yaml-parser';
 import {parseRouteSettings} from '../../../../../core/server/services/route-settings/route-settings-parser';
 import {buildRouteSettings} from '../../services/route-settings/route-settings-fixture';
@@ -232,21 +232,6 @@ describe('UNIT: route-settings FileStore', function () {
                 assert.equal(err.errorType, 'InternalServerError');
                 return true;
             });
-        });
-    });
-
-    describe('getBackupRouteSettingsFilePath', function () {
-        // Same naming scheme as the legacy SettingsPathManager.getBackupFilePath:
-        // routes-yyyy-MM-dd-HH-mm-ss.<ext> next to the canonical file.
-        it('produces a timestamped sibling path preserving the extension', function () {
-            assert.match(
-                getBackupRouteSettingsFilePath('/content/settings/routes.json'),
-                /^\/content\/settings\/routes-\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}\.json$/
-            );
-            assert.match(
-                getBackupRouteSettingsFilePath('/content/settings/routes.yaml'),
-                /^\/content\/settings\/routes-\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}\.yaml$/
-            );
         });
     });
 });

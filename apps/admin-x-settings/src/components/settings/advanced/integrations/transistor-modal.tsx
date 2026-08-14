@@ -1,9 +1,12 @@
 import APIKeys from './api-keys';
 import BookmarkThumb from '../../../../assets/images/integrations/ghost-transistor.png';
+import BrandIcon from '../../../icons/brand-icon';
+import ConfirmationModal from '../../../confirmation-modal';
 import IntegrationHeader from './integration-header';
 import NiceModal from '@ebay/nice-modal-react';
-import {ConfirmationModal, Form, Icon, Modal, Toggle} from '@tryghost/admin-x-design-system';
+import {Field, FieldContent, FieldDescription, FieldGroup, FieldLabel, FieldLegend, FieldSet, Switch} from '@tryghost/shade/components';
 import {type Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useBrowseIntegrations} from '@tryghost/admin-x-framework/api/integrations';
 import {useEffect, useState} from 'react';
@@ -87,34 +90,34 @@ const TransistorModal = NiceModal.create(() => {
     };
 
     return (
-        <Modal
+        <SettingsModal
             afterClose={() => {
                 updateRoute('integrations');
             }}
             cancelLabel='Close'
             dirty={enabled !== transistorEnabled}
-            okColor={okLabel === 'Saved' ? 'green' : 'black'}
             okLabel={okLabel}
+            okVariant='default'
             testId='transistor-modal'
             title=''
             onOk={handleSave}
         >
             <IntegrationHeader
                 detail='Give your members access to private podcasts'
-                icon={<Icon name='transistor' size={56} />}
+                icon={<BrandIcon name='transistor' size={56} />}
                 title='Transistor.fm'
             />
             <div className='mt-7'>
-                <Form marginBottom={false} title='Transistor configuration' grouped>
-                    <Toggle
-                        checked={enabled}
-                        direction='rtl'
-                        hint={<>Connect your Ghost site with <a className='text-green' href="https://transistor.fm" rel="noopener noreferrer" target="_blank">Transistor.fm</a> to offer members private podcasts.</>}
-                        label='Enable Transistor'
-                        onChange={(e) => {
-                            setEnabled(e.target.checked);
-                        }}
-                    />
+                <FieldSet className='gap-0'>
+                    <FieldLegend className='mb-3 text-md! leading-supertight font-bold md:text-lg!'>Transistor configuration</FieldLegend>
+                    <FieldGroup className='gap-8 rounded-sm border border-border-default p-4 md:p-7'>
+                    <Field orientation='horizontal'>
+                        <FieldContent>
+                            <FieldLabel htmlFor='transistor-enabled'>Enable Transistor</FieldLabel>
+                            <FieldDescription>Connect your Ghost site with <a className='text-green' href="https://transistor.fm" rel="noopener noreferrer" target="_blank">Transistor.fm</a> to offer members private podcasts.</FieldDescription>
+                        </FieldContent>
+                        <Switch checked={enabled} id='transistor-enabled' onCheckedChange={setEnabled} />
+                    </Field>
                     {enabled && (
                         <APIKeys keys={[
                             {
@@ -127,7 +130,8 @@ const TransistorModal = NiceModal.create(() => {
                             {id: 'api-url', label: 'API URL', text: window.location.origin + getGhostPaths().subdir}
                         ]} />
                     )}
-                </Form>
+                    </FieldGroup>
+                </FieldSet>
                 {enabled &&
                     <div className='mt-5 flex flex-col items-center'>
                         <a className='flex w-100 flex-col items-stretch justify-between overflow-hidden rounded-md bg-grey-50 transition-all hover:border-grey-400 hover:bg-grey-100 md:flex-row dark:bg-grey-900 dark:hover:bg-grey-950' href="https://ghost.org/integrations/transistor/" rel="noopener noreferrer" target="_blank">
@@ -142,7 +146,7 @@ const TransistorModal = NiceModal.create(() => {
                     </div>
                 }
             </div>
-        </Modal>
+        </SettingsModal>
     );
 });
 

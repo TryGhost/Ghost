@@ -2,9 +2,12 @@ import AliAbdaal from '../../../../assets/images/ali-abdaal.png';
 import IsaacSaul from '../../../../assets/images/isaac-saul.png';
 import JoelWarner from '../../../../assets/images/joel-warner.png';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import {Avatar} from '@tryghost/shade/components';
-import {Button, Form, Modal, Select, TextArea, showToast} from '@tryghost/admin-x-design-system';
+import React from 'react';
+import {Avatar, Field, FieldError, FieldGroup, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Textarea} from '@tryghost/shade/components';
+import {Button, LoadingIndicator} from '@tryghost/shade/components';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {toast} from 'sonner';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useGlobalData} from '../../../providers/global-data-provider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -15,6 +18,7 @@ interface FormState {
 }
 
 const TestimonialsModal = NiceModal.create(() => {
+    const platformErrorId = React.useId();
     const {updateRoute} = useRouting();
     const handleError = useHandleError();
     const modal = useModal();
@@ -60,10 +64,7 @@ const TestimonialsModal = NiceModal.create(() => {
                 throw new Error('Something went wrong, please try again later.');
             }
 
-            showToast({
-                message: 'Thank you for your testimonial!',
-                type: 'success'
-            });
+            toast.success('Thank you for your testimonial!');
 
             updateRoute('explore');
             modal.remove();
@@ -95,7 +96,7 @@ const TestimonialsModal = NiceModal.create(() => {
     ];
 
     return (
-        <Modal
+        <SettingsModal
             afterClose={() => {
                 updateRoute('explore');
             }}
@@ -107,7 +108,7 @@ const TestimonialsModal = NiceModal.create(() => {
             topRightContent='close'
             width={920}
         >
-            <Form className='mb-0!'>
+            <FieldGroup className='gap-8'>
                 <div className='flex items-stretch'>
                     <div className='hidden w-full flex-col justify-between bg-gradient-to-tl from-grey-100/50 to-grey-100/80 p-8 dark:from-grey-900/40 dark:to-grey-900/60 [@media(min-width:905px)]:visible! [@media(min-width:905px)]:flex!'>
                         <div className='pr-6'>
@@ -169,16 +170,21 @@ const TestimonialsModal = NiceModal.create(() => {
                                 </div>
                             </div>
                             <div className='mt-8'>
-                                <TextArea
-                                    error={Boolean(errors.content)}
-                                    hint={errors.content}
-                                    placeholder='What changed for the better since you switched to Ghost?'
-                                    rows={7}
-                                    value={formState.content}
-                                    autoFocus
-                                    onChange={e => updateForm(state => ({...state, content: e.target.value}))}
-                                    onKeyDown={() => clearError('content')}
-                                />
+                                <Field data-invalid={Boolean(errors.content) || undefined}>
+                                    <FieldLabel className='sr-only' htmlFor='testimonial-content'>Quote</FieldLabel>
+                                    <Textarea
+                                        aria-invalid={Boolean(errors.content) || undefined}
+                                        className='border-transparent bg-muted'
+                                        id='testimonial-content'
+                                        placeholder='What changed for the better since you switched to Ghost?'
+                                        rows={7}
+                                        value={formState.content}
+                                        autoFocus
+                                        onChange={e => updateForm(state => ({...state, content: e.target.value}))}
+                                        onKeyDown={() => clearError('content')}
+                                    />
+                                    {errors.content && <FieldError>{errors.content}</FieldError>}
+                                </Field>
                             </div>
                             <div className='mt-4 ml-0.5'>
                                 <div className='flex items-center gap-2'>
@@ -193,35 +199,41 @@ const TestimonialsModal = NiceModal.create(() => {
                         <div>
                             <div className='mt-2 flex items-center gap-4'>
                                 <div className='grow'>
-                                    <Select
-                                        error={Boolean(errors.prev_platform)}
-                                        hint={errors.prev_platform}
-                                        options={migratedFromOptions}
-                                        placeholder='Previous platform'
-                                        selectedOption={migratedFromOptions.find(option => option.value === formState.prev_platform)}
-                                        testId='migrated-from'
-                                        onSelect={(option) => {
-                                            updateForm(state => ({...state, prev_platform: option?.value || ''}));
-                                            clearError('prev_platform');
-                                        }}
-                                    />
+                                    <Field data-invalid={Boolean(errors.prev_platform) || undefined}>
+                                        <FieldLabel className='sr-only'>Previous platform</FieldLabel>
+                                        <Select
+                                            value={formState.prev_platform}
+                                            onValueChange={(value) => {
+                                                updateForm(state => ({...state, prev_platform: value}));
+                                                clearError('prev_platform');
+                                            }}
+                                        >
+                                            <SelectTrigger aria-describedby={errors.prev_platform ? platformErrorId : undefined} aria-invalid={Boolean(errors.prev_platform) || undefined} aria-label='Previous platform' data-testid='migrated-from'>
+                                                <SelectValue placeholder='Previous platform' />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {migratedFromOptions.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                                            </SelectContent>
+                                        </Select>
+                                        {errors.prev_platform && <FieldError id={platformErrorId}>{errors.prev_platform}</FieldError>}
+                                    </Field>
                                 </div>
                                 <Button
-                                    className='h-[38px]! rounded-lg'
-                                    color="black"
                                     disabled={saveState === 'saving'}
-                                    label="Send testimonial"
-                                    loading={saveState === 'saving'}
+                                    type='button'
                                     onClick={async () => {
                                         await handleSave();
                                     }}
-                                />
+                                >
+                                    {saveState === 'saving' && <LoadingIndicator size='sm' />}
+                                    Send testimonial
+                                </Button>
                             </div>
                         </div>
                     </div>
                 </div>
-            </Form>
-        </Modal>
+            </FieldGroup>
+        </SettingsModal>
     );
 });
 

@@ -4,8 +4,9 @@ import {useCallback, useEffect, useRef, useState} from 'react';
 
 import MemberEmailEditor from './member-email-editor';
 import WelcomeEmailPreviewFrame from './welcome-email-preview-frame';
-import {Hint, Button as LegacyButton, Modal, TextField} from '@tryghost/admin-x-design-system';
-import {confirmIfDirty} from '@tryghost/admin-x-design-system';
+import {DirtyConfirmDialog, useDirtyConfirmation} from '@tryghost/shade/patterns';
+import {FieldError, Input} from '@tryghost/shade/components';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {getWelcomeEmailValidationErrors} from './welcome-email-validation';
 import {useBrowseAutomatedEmails, useEditAutomatedEmail, usePreviewWelcomeEmail} from '@tryghost/admin-x-framework/api/automated-emails';
@@ -18,8 +19,8 @@ import {useWelcomeEmailSenderDetails} from '../../../../hooks/use-welcome-email-
 import TestEmailDropdown from './test-email-dropdown';
 import type {AutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
 
-import {Button, Tabs, TabsList, TabsTrigger} from '@tryghost/shade/components';
-import {cn} from '@tryghost/shade/utils';
+import {Button, Popover, PopoverTrigger, Tabs, TabsList, TabsTrigger} from '@tryghost/shade/components';
+import {LucideIcon, cn} from '@tryghost/shade/utils';
 
 interface EmailPreviewModalContentProps {
     title: string;
@@ -107,7 +108,6 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
     const [showTestDropdown, setShowTestDropdown] = useState(false);
     const [mode, setMode] = useState<PreviewMode>('edit');
     const [previewSubjectOverride, setPreviewSubjectOverride] = useState<string | null>(null);
-    const dropdownRef = useRef<HTMLDivElement>(null);
     const normalizedLexical = useRef<string>(automatedEmail?.lexical || '');
     const hasEditorBeenInteractedWith = useRef(false);
     const handleError = useHandleError();
@@ -120,6 +120,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
     });
     const emailTypeLabel = emailType === 'paid' ? 'Paid' : 'Free';
     const modalTitle = `${emailTypeLabel} members welcome email`;
+    const {confirm, dialogProps} = useDirtyConfirmation();
 
     const {formState, saveState, updateForm, setFormState, setErrors, handleSave, okProps, errors, validate} = useForm({
         initialState: {
@@ -143,27 +144,10 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
     const isDirty = saveState === 'unsaved';
 
     const handleClose = useCallback(() => {
-        confirmIfDirty(isDirty, () => {
+        confirm(isDirty, () => {
             modal.remove();
         });
-    }, [modal, isDirty]);
-
-    // Close dropdown when clicking outside
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-                setShowTestDropdown(false);
-            }
-        };
-
-        if (showTestDropdown) {
-            document.addEventListener('mousedown', handleClickOutside);
-        }
-
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, [showTestDropdown]);
+    }, [confirm, modal, isDirty]);
 
     const handleSaveRef = useRef(handleSave);
     useEffect(() => {
@@ -219,7 +203,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
     }, [setFormState, updateForm]);
 
     return (
-        <Modal
+        <SettingsModal
             afterClose={() => {
                 updateRoute('memberemails');
             }}
@@ -250,9 +234,10 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                 className='dark:bg-[#151719]'
                 headerActions={
                     <>
-                        <Button variant="outline" onClick={handleClose}>Close</Button>
+                        <Button className='font-semibold' type='button' variant='ghost' onClick={handleClose}>Close</Button>
                         <Button
                             disabled={okProps.disabled}
+                            type='button'
                             onClick={async () => await handleSave({fakeWhenUnchanged: true})}
                         >
                             {saveButtonLabel}
@@ -274,18 +259,14 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                                             <span className='text-gray-500 dark:text-gray-400'>{`<${resolvedSenderEmail}>`}</span>
                                         </span>
                                     </div>
-                                    <div ref={dropdownRef} className='relative'>
-                                        <LegacyButton
-                                            className='border border-grey-200 font-semibold hover:border-grey-300 hover:bg-white! dark:border-grey-900 dark:hover:border-grey-800 dark:hover:bg-grey-950!'
-                                            color="clear"
-                                            icon='send'
-                                            label="Test"
-                                            onClick={() => setShowTestDropdown(!showTestDropdown)}
-                                        />
+                                    <Popover open={showTestDropdown} onOpenChange={setShowTestDropdown}>
+                                        <PopoverTrigger asChild>
+                                            <Button type='button' variant='outline'><LucideIcon.Send />Test</Button>
+                                        </PopoverTrigger>
                                         {showTestDropdown && (
-                                            <TestEmailDropdown automatedEmailId={automatedEmail.id} lexical={formState.lexical} subject={formState.subject} validateForm={validate} onClose={() => setShowTestDropdown(false)} />
+                                            <TestEmailDropdown automatedEmailId={automatedEmail.id} lexical={formState.lexical} subject={formState.subject} validateForm={validate} />
                                         )}
-                                    </div>
+                                    </Popover>
                                 </div>
                                 {hasDistinctReplyTo && (
                                     <div className='flex items-center'>
@@ -298,8 +279,8 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                                 <div className='flex items-center'>
                                     <div className='w-20 shrink-0 font-semibold'>Subject:</div>
                                     <div className='grow'>
-                                        <TextField
-                                            className='w-full'
+                                        <Input
+                                            className='w-full border-transparent bg-muted'
                                             data-testid='welcome-email-preview-subject'
                                             value={previewSubjectOverride ?? formState.subject}
                                             onChange={(e) => {
@@ -308,7 +289,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                                                 updateForm(state => ({...state, subject: nextSubject}));
                                             }}
                                         />
-                                        {errors.subject && <Hint className='mt-2' color='red'>{errors.subject}</Hint>}
+                                        {errors.subject && <FieldError className='mt-2'>{errors.subject}</FieldError>}
                                     </div>
                                 </div>
                             </div>
@@ -345,10 +326,11 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                             <WelcomeEmailPreviewFrame previewState={previewFrameState} />
                         )}
                     </EmailPreviewBody>
-                    {mode === 'edit' && errors.lexical && <Hint className='mt-2 max-w-[740px]' color='red'>{errors.lexical}</Hint>}
+                    {mode === 'edit' && errors.lexical && <FieldError className='mt-2 max-w-[740px]'>{errors.lexical}</FieldError>}
                 </div>
             </EmailPreviewModalContent>
-        </Modal>
+            <DirtyConfirmDialog {...dialogProps} />
+        </SettingsModal>
     );
 });
 

@@ -58,7 +58,6 @@
     "@types/node": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "eslint-plugin-ghost": "catalog:",
-    "html-minifier": "4.0.0",
     "prettier": "3.9.4",
     "@typescript/native": "catalog:",
     "typescript": "catalog:",

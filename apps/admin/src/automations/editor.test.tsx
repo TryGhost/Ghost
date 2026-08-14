@@ -1,5 +1,7 @@
 import AutomationEditor from './editor';
 import React from 'react';
+import {AppProvider} from '@tryghost/admin-x-framework';
+import type {AppSettings} from '@tryghost/admin-x-framework';
 import {MAX_AUTOMATION_ACTIONS} from '@tryghost/admin-x-framework/api/automations';
 import type {AutomationDetail, AutomationDetailResponseType, EditAutomationPayload} from '@tryghost/admin-x-framework/api/automations';
 import {RouterProvider, createMemoryRouter} from 'react-router';
@@ -13,6 +15,21 @@ const {mockToastError} = vi.hoisted(() => ({
 }));
 
 const NON_EMPTY_EMAIL_LEXICAL = '{"root":{"children":[{"type":"paragraph","children":[{"type":"text","text":"Welcome email body"}]}]}}';
+
+const createAppSettings = (analyticsOverrides: Partial<AppSettings['analytics']> = {}): AppSettings => ({
+    paidMembersEnabled: true,
+    newslettersEnabled: true,
+    analytics: {
+        emailTrackClicks: true,
+        emailTrackOpens: true,
+        membersTrackSources: true,
+        outboundLinkTagging: true,
+        webAnalytics: true,
+        ...analyticsOverrides
+    }
+});
+
+let mockAppSettings: AppSettings | undefined;
 
 vi.mock('sonner', () => ({
     toast: {
@@ -263,7 +280,11 @@ const renderEditor = (initialEntries = ['/automations/automation-id-1']) => {
 
     return {
         router,
-        ...render(<RouterProvider router={router} />)
+        ...render(
+            <AppProvider appSettings={mockAppSettings}>
+                <RouterProvider router={router} />
+            </AppProvider>
+        )
     };
 };
 
@@ -282,6 +303,29 @@ const withEmptyEmailBodies = (fixture: AutomationDetail): AutomationDetail => ({
     ))
 });
 
+const mockAutomationWithEmailStats = () => {
+    mockUseReadAutomation.mockReturnValue({
+        data: {
+            automations: [{
+                ...automationDetail,
+                actions: automationDetail.actions.map(action => (action.type === 'send_email'
+                    ? {
+                        ...action,
+                        stats: {
+                            email_sent_count: 1247,
+                            email_opened_count: 780,
+                            opened_rate: 65,
+                            clicked_rate: 24
+                        }
+                    }
+                    : action))
+            }]
+        },
+        isLoading: false,
+        isError: false
+    });
+};
+
 describe('AutomationEditor', () => {
     beforeEach(() => {
         mockUseReadAutomation.mockReset();
@@ -295,6 +339,7 @@ describe('AutomationEditor', () => {
         mockEditMutation.variables = undefined;
         mockToastError.mockReset();
         mockLabs.current = {};
+        mockAppSettings = createAppSettings();
     });
 
     it('renders the loading state while the automation is fetching', () => {
@@ -383,26 +428,7 @@ describe('AutomationEditor', () => {
     });
 
     it('renders send-email node stats only when the automationAnalytics labs flag is enabled', () => {
-        mockUseReadAutomation.mockReturnValue({
-            data: {
-                automations: [{
-                    ...automationDetail,
-                    actions: automationDetail.actions.map(action => (action.type === 'send_email'
-                        ? {
-                            ...action,
-                            stats: {
-                                email_sent_count: 1247,
-                                email_opened_count: 780,
-                                opened_rate: 65,
-                                clicked_rate: null
-                            }
-                        }
-                        : action))
-                }]
-            },
-            isLoading: false,
-            isError: false
-        });
+        mockAutomationWithEmailStats();
 
         const {unmount} = renderEditor();
         expect(screen.queryByText('Sent')).not.toBeInTheDocument();
@@ -414,8 +440,52 @@ describe('AutomationEditor', () => {
         const emailStep = screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'});
         expect(within(emailStep).getByText('Sent').nextElementSibling).toHaveTextContent('1,247');
         expect(within(emailStep).getByText('Opened').nextElementSibling).toHaveTextContent('65%');
-        // @TODO: NY-1457 — Clicked is deferred until click data is available
-        expect(within(emailStep).queryByText('Clicked')).not.toBeInTheDocument();
+        expect(within(emailStep).getByText('Clicked').nextElementSibling).toHaveTextContent('24%');
+    });
+
+    it.each([
+        {emailTrackOpens: true, emailTrackClicks: true},
+        {emailTrackOpens: true, emailTrackClicks: false},
+        {emailTrackOpens: false, emailTrackClicks: true},
+        {emailTrackOpens: false, emailTrackClicks: false}
+    ])('shows a muted Off for untracked email metrics when opens=$emailTrackOpens and clicks=$emailTrackClicks', ({emailTrackOpens, emailTrackClicks}) => {
+        mockLabs.current = {automationAnalytics: true};
+        mockAppSettings = createAppSettings({emailTrackOpens, emailTrackClicks});
+        mockAutomationWithEmailStats();
+
+        renderEditor();
+
+        const emailStep = screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'});
+        expect(within(emailStep).getByText('Sent').nextElementSibling).toHaveTextContent('1,247');
+        expect(within(emailStep).getByText('Opened').nextElementSibling).toHaveTextContent(emailTrackOpens ? '65%' : 'Off');
+        expect(within(emailStep).getByText('Clicked').nextElementSibling).toHaveTextContent(emailTrackClicks ? '24%' : 'Off');
+
+        fireEvent.click(emailStep);
+        const sidebar = screen.getByRole('complementary', {name: 'Step details'});
+        expect(within(sidebar).queryAllByText('65%').length > 0).toBe(emailTrackOpens);
+        expect(within(sidebar).queryAllByText('24%').length > 0).toBe(emailTrackClicks);
+        expect(within(sidebar).queryAllByText('Off')).toHaveLength(Number(!emailTrackOpens) + Number(!emailTrackClicks));
+        expect(within(sidebar).getByTestId('email-performance-sent-ring')).toHaveAttribute('data-tracked', 'true');
+        expect(within(sidebar).getByTestId('email-performance-opened-ring')).toHaveAttribute('data-tracked', String(emailTrackOpens));
+        expect(within(sidebar).getByTestId('email-performance-clicked-ring')).toHaveAttribute('data-tracked', String(emailTrackClicks));
+    });
+
+    it('treats unresolved app settings as untracked', () => {
+        mockLabs.current = {automationAnalytics: true};
+        mockAppSettings = undefined;
+        mockAutomationWithEmailStats();
+
+        renderEditor();
+
+        const emailStep = screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'});
+        expect(within(emailStep).getByText('Opened').nextElementSibling).toHaveTextContent('Off');
+        expect(within(emailStep).getByText('Clicked').nextElementSibling).toHaveTextContent('Off');
+
+        fireEvent.click(emailStep);
+        const sidebar = screen.getByRole('complementary', {name: 'Step details'});
+        expect(within(sidebar).queryAllByText('Off')).toHaveLength(2);
+        expect(within(sidebar).getByTestId('email-performance-opened-ring')).toHaveAttribute('data-tracked', 'false');
+        expect(within(sidebar).getByTestId('email-performance-clicked-ring')).toHaveAttribute('data-tracked', 'false');
     });
 
     it('does not render send-email node stats when the action has no stats', () => {

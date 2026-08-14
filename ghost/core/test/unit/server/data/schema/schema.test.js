@@ -46,28 +46,29 @@ const VALID_KEYS = {
 
 describe('schema validations', function () {
     it('matches the required format', function () {
-        // The top-level export should be an object of table names to definitions
-        assert(_.isPlainObject(schema));
+        assert(_.isPlainObject(schema), 'Top-level export should be an object');
 
-        // Each table should be an object, and each column should be an object
         _.each(schema, function (table, tableName) {
-            assert(_.isPlainObject(table));
+            assert(_.isPlainObject(table), 'Table should be an object');
 
             _.each(table, function (column, columnName) {
                 if (['@@INDEXES@@', '@@UNIQUE_CONSTRAINTS@@', '@@PRIMARY_KEY@@'].includes(columnName)) {
                     return;
                 }
 
-                // Ensure the column is an object
-                assert(_.isPlainObject(column));
+                assert(_.isPlainObject(column), 'Column should be an object');
 
-                // Ensure the `type` key exists on a column
                 assertExists(column.type, `${tableName}.${columnName}.type should exist`);
 
-                // Ensure the column type is one of the ones we allow
                 assert(Object.keys(VALID_KEYS).includes(column.type));
-
                 assert.deepEqual(_.difference(Object.keys(column), [...VALID_KEYS[column.type], 'type']), []);
+
+                if ('index' in column) {
+                    assert(
+                        typeof column.index === 'boolean',
+                        'Column index option, if present, should be valid'
+                    );
+                };
             });
         });
     });

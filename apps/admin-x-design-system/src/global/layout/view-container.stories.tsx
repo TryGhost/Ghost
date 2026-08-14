@@ -1,25 +1,12 @@
-import {useArgs} from 'storybook/preview-api';
 import type {Meta, StoryObj} from '@storybook/react-vite';
 
-import ViewContainer, {PrimaryActionProps, ViewTab} from './view-container';
-import Button from '../button';
-import ButtonGroup from '../button-group';
+import ViewContainer, {PrimaryActionProps} from './view-container';
 
 const meta = {
     title: 'Global / Layout / View Container',
     component: ViewContainer,
     parameters: {
         layout: 'fullscreen'
-    },
-    render: function Component(args) {
-        const [, updateArgs] = useArgs();
-
-        return <ViewContainer {...args}
-            onTabChange={(tab) => {
-                updateArgs({selectedTab: tab});
-                args.onTabChange?.(tab);
-            }}
-        />;
     },
     argTypes: {
         children: {
@@ -36,55 +23,15 @@ export default meta;
 type Story = StoryObj<typeof ViewContainer>;
 
 export const exampleActions = [
-    <Button key='filter' label='Filter' outlineOnMobile onClick={() => {
-        alert('Clicked filter');
-    }} />,
-    <Button key='sort' label='Sort' outlineOnMobile onClick={() => {
-        alert('Clicked sort');
-    }} />,
-    <Button key='search' icon='magnifying-glass' iconSize='sm' outlineOnMobile onClick={() => {
-        alert('Clicked search');
-    }} />,
-    <ButtonGroup key='view-toggle' buttons={[
-        {
-            icon: 'listview',
-            size: 'sm',
-            iconColorClass: 'text-black',
-            onClick: () => {
-                alert('Clicked list view');
-            }
-        },
-        {
-            icon: 'cardview',
-            size: 'sm',
-            iconColorClass: 'text-grey-500',
-            onClick: () => {
-                alert('Clicked card view');
-            }
-        }
-    ]} clearBg={false} link outlineOnMobile />
+    <span key='filter'>Filter action slot</span>,
+    <span key='sort'>Sort action slot</span>,
+    <span key='search'>Search action slot</span>,
+    <span key='view-toggle'>View toggle slot</span>
 ];
 
-const primaryAction: PrimaryActionProps = {
-    title: 'Add item',
-    color: 'black',
-    onClick: () => {
-        alert('Clicked primary action');
-    }
-};
+const primaryAction: PrimaryActionProps = <span>Primary action slot</span>;
 
-const tabs: ViewTab[] = [
-    {
-        id: 'steph',
-        title: 'Steph Curry',
-        contents: 'The tabs component lets you add various datasets. It uses the <code>`TabList`</code> component to stay consistent with the simple TabView.'
-    },
-    {
-        id: 'klay',
-        title: 'Klay Thompson',
-        contents: 'Splash brother #11.'
-    }
-];
+const tabs = <div className='text-sm text-grey-500'>View tabs slot</div>;
 
 export const Default: Story = {
     args: {
@@ -156,27 +103,8 @@ export const TabsWithPrimaryAction: Story = {
 };
 
 const sectionActions = [
-    <Button key='filter' label='Filter' size='sm' onClick={() => {
-        alert('Clicked filter');
-    }} />,
-    <ButtonGroup key='view-toggle' buttons={[
-        {
-            icon: 'listview',
-            size: 'sm',
-            iconColorClass: 'text-black',
-            onClick: () => {
-                alert('Clicked list view');
-            }
-        },
-        {
-            icon: 'cardview',
-            size: 'sm',
-            iconColorClass: 'text-grey-500',
-            onClick: () => {
-                alert('Clicked card view');
-            }
-        }
-    ]} clearBg={false} size='sm' link />
+    <span key='filter'>Filter action slot</span>,
+    <span key='view-toggle'>View toggle slot</span>
 ];
 
 export const TabsWithActions: Story = {

@@ -1,9 +1,6 @@
 import type {Meta, StoryObj} from '@storybook/react-vite';
 
-import Button from '../button';
-import ButtonGroup from '../button-group';
 import DesktopChromeHeader from './desktop-chrome-header';
-import Select, {SelectOption} from '../form/select';
 
 const meta = {
     title: 'Global / Chrome / Desktop Header',
@@ -42,25 +39,10 @@ export const WithTitle: Story = {
     }
 };
 
-const selectOptions: SelectOption[] = [
-    {value: 'homepage', label: 'Homepage'},
-    {value: 'post', label: 'Post'},
-    {value: 'page', label: 'Page'},
-    {value: 'tag-archive', label: 'Tag archive'},
-    {value: 'author-archive', label: 'Author archive'}
-];
-
 export const CustomToolbar: Story = {
     args: {
-        toolbarLeft: <Button icon='arrow-left' link={true} size='sm' />,
-        toolbarCenter: <Select options={selectOptions} onSelect={(value) => {
-            alert(value);
-        }} />,
-        toolbarRight: <ButtonGroup
-            buttons={[
-                {icon: 'laptop', link: true, size: 'sm'},
-                {icon: 'mobile', link: true, size: 'sm', iconColorClass: 'text-grey-500'}
-            ]}
-        />
+        toolbarLeft: <span>Back slot</span>,
+        toolbarCenter: <span>Homepage</span>,
+        toolbarRight: <span>Toolbar actions slot</span>
     }
 };

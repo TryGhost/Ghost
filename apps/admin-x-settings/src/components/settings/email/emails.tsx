@@ -1,3 +1,4 @@
+import ConfirmationModal from '../../confirmation-modal';
 import DefaultRecipients from './default-recipients';
 import EnableNewsletters from './enable-newsletters';
 import MailGun from './mailgun';
@@ -9,8 +10,8 @@ import TopLevelGroup from '../../top-level-group';
 import WelcomeEmailCustomizeModal from '../membership/member-emails/welcome-email-customize-modal';
 import useQueryParams from '../../../hooks/use-query-params';
 import {APIError} from '@tryghost/admin-x-framework/errors';
-import {Button, ConfirmationModal, Icon, Table, TableRow} from '@tryghost/admin-x-design-system';
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
+import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -30,29 +31,28 @@ const TransactionalTabContent: React.FC = () => {
     };
 
     return (
-        <Table>
-            <TableRow
-                action={<button className='font-semibold text-green hover:opacity-80' type='button' onClick={openCustomizeModal}>Edit</button>}
-                hideActions={false}
-                testId='automations-transactional-row'
-            >
+        <ActionList>
+            <ActionListItem data-testid='automations-transactional-row'>
+                <ActionListItemContent asChild>
                 <button
-                    className='flex w-full min-w-0 items-center gap-3 py-3 text-left focus-visible:ring-2 focus-visible:ring-green focus-visible:ring-offset-2 focus-visible:outline-none dark:focus-visible:ring-offset-black'
+                    className='flex w-full min-w-0 items-center gap-3 py-3 text-left focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none'
                     type='button'
                     onClick={openCustomizeModal}
                 >
-                    <div className='flex size-10 shrink-0 items-center justify-center rounded-full bg-grey-100 dark:bg-grey-900'>
-                        <Icon colorClass='text-grey-700 dark:text-grey-600' name='mailplus' size='md' />
-                    </div>
-                    <div className='min-w-0 grow'>
-                        <div className='leading-tight font-medium'>Email design</div>
-                        <div className='mt-1 text-sm leading-[1.35] text-grey-700 dark:text-grey-600'>
+                    <span className='flex size-10 shrink-0 items-center justify-center rounded-full bg-muted'>
+                        <LucideIcon.MailPlus className='size-5 text-muted-foreground' />
+                    </span>
+                    <span className='min-w-0 grow'>
+                        <span className='block leading-tight font-medium'>Email design</span>
+                        <span className='mt-1 block text-sm leading-[1.35] text-muted-foreground'>
                             Customize the appearance of automation emails
-                        </div>
-                    </div>
+                        </span>
+                    </span>
                 </button>
-            </TableRow>
-        </Table>
+                </ActionListItemContent>
+                <ActionListItemActions><Button className='h-auto p-0 font-bold text-green hover:text-green/90 hover:no-underline' type='button' variant='link' onClick={openCustomizeModal}>Edit</Button></ActionListItemActions>
+            </ActionListItem>
+        </ActionList>
     );
 };
 
@@ -136,7 +136,7 @@ const EmailsGroup: React.FC<{ keywords: string[]; newslettersEnabled: boolean }>
     };
 
     const customButtons = newslettersEnabled && selectedTab === 'newsletters' ? (
-        <Button className='mt-[-5px]' color='clear' label='Add newsletter' size='sm' onClick={openNewNewsletter} />
+        <Button className='mt-[-5px]' size='sm' type='button' variant='ghost' onClick={openNewNewsletter}>Add newsletter</Button>
     ) : undefined;
 
     return (

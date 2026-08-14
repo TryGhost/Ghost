@@ -146,6 +146,15 @@ test.describe('Button Card', async () => {
         await expect(buttonLink).toHaveAttribute('href',anyString);
     });
 
+    test('suggests the Share link', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'button'});
+
+        await page.getByTestId('button-input-url').fill('Share');
+        await page.waitForSelector('[data-testid="button-input-url-listOption"]');
+        await expect(await page.getByTestId('button-input-url-listOption-Share post')).toHaveText('Share post');
+    });
+
     test('can add snippet', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'button'});

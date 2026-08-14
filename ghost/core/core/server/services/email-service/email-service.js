@@ -6,6 +6,11 @@
  * @typedef {object} LimitService
  * @typedef {{checkVerificationRequired(): Promise<boolean>}} VerificationTrigger
  * @typedef {import ('./domain-warming-service').DomainWarmingService} DomainWarmingService
+ *
+ * @typedef {object} EmailPreflight - Validation result from a pre-save checkCanSendEmail call
+ * @property {object} newsletter
+ * @property {string} emailRecipientFilter
+ * @property {number} emailCount
  */
 
 const BatchSendingService = require('./batch-sending-service');
@@ -122,9 +127,11 @@ class EmailService {
      *
      * @param {object} newsletter - The newsletter model to send to
      * @param {string} emailRecipientFilter - The recipient filter for the email
+     * @param {object} [options]
+     * @param {number} [options.emailCount] - A previously counted audience to revalidate without recounting
      * @returns {Promise<{emailCount: number}>} The email count if checks pass, throws if email cannot be sent
      */
-    async checkCanSendEmail(newsletter, emailRecipientFilter) {
+    async checkCanSendEmail(newsletter, emailRecipientFilter, {emailCount: knownEmailCount} = {}) {
         if (!newsletter) {
             throw new errors.EmailError({
                 message: tpl(messages.missingNewsletterError)
@@ -139,7 +146,9 @@ class EmailService {
             });
         }
 
-        const emailCount = await this.#emailSegmenter.getMembersCount(newsletter, emailRecipientFilter);
+        const emailCount = knownEmailCount === undefined
+            ? await this.#emailSegmenter.getMembersCount(newsletter, emailRecipientFilter)
+            : knownEmailCount;
         await this.checkLimits(emailCount);
 
         return {emailCount};
@@ -148,13 +157,20 @@ class EmailService {
     /**
      *
      * @param {Post} post
+     * @param {object} [options]
+     * @param {EmailPreflight} [options.preflight] - The emailCount is reused if the newsletter and filter still match the saved post
      * @returns {Promise<Email>}
      */
-    async createEmail(post) {
+    async createEmail(post, {preflight} = {}) {
         const newsletter = await post.getLazyRelation('newsletter');
         const emailRecipientFilter = post.get('email_recipient_filter');
 
-        const {emailCount} = await this.checkCanSendEmail(newsletter, emailRecipientFilter);
+        const preflightMatches = preflight?.newsletter?.id
+            && preflight.newsletter.id === newsletter?.id
+            && preflight.emailRecipientFilter === emailRecipientFilter;
+        const {emailCount} = preflightMatches
+            ? await this.checkCanSendEmail(newsletter, emailRecipientFilter, {emailCount: preflight.emailCount})
+            : await this.checkCanSendEmail(newsletter, emailRecipientFilter);
 
         const csdEmailCount = this.#domainWarmingService.isEnabled()
             ? await this.#domainWarmingService.getWarmupLimit(emailCount)

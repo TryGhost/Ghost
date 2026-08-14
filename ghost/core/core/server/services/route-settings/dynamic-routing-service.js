@@ -112,7 +112,7 @@ class DynamicRoutingService {
         }
     }
 
-    async upload(filePath) {
+    async upload(yamlContent) {
         const parseYaml = require('./yaml-parser');
         const {parseRouteSettings} = require('./route-settings-parser');
         const urlService = require('../url');
@@ -120,8 +120,7 @@ class DynamicRoutingService {
 
         // Parse and validate before anything is persisted — an invalid
         // upload is rejected here and never reaches the store.
-        const content = await fs.readFile(filePath, 'utf8');
-        const next = parseRouteSettings(parseYaml(content), content);
+        const next = parseRouteSettings(parseYaml(yamlContent), yamlContent);
         let previous = null;
         try {
             previous = await this.store.get();

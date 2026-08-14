@@ -1,26 +1,29 @@
+import LimitModal from '../../limit-modal';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
+import StripeButton from '../../stripe-button';
 import TiersList from './tiers/tiers-list';
 import TopLevelGroup from '../../top-level-group';
 import clsx from 'clsx';
-import {Button, LimitModal, StripeButton, TabView} from '@tryghost/admin-x-design-system';
+import {Button, Indicator, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {HostLimitError, useLimiter} from '../../../hooks/use-limiter';
 import {type Tier, getActiveTiers, getArchivedTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {checkStripeEnabled} from '@tryghost/admin-x-framework/api/settings';
+import {formatNumber} from '@tryghost/shade/utils';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 import {withErrorBoundary} from '../../error-boundary';
 
 const StripeConnectedButton: React.FC<{className?: string; onClick: () => void;}> = ({className, onClick}) => {
     className = clsx(
-        'group flex shrink-0 items-center justify-center rounded border border-grey-300 px-3 py-1.5 font-semibold whitespace-nowrap text-grey-900 transition-all hover:border-grey-500 dark:border-grey-900 dark:text-white',
+        'h-[34px] shrink-0 gap-2 px-3 font-semibold',
         className
     );
     return (
-        <button className={className} data-testid='stripe-connected' type='button' onClick={onClick}>
-            <span className="inline-flex size-2 rounded-full bg-green transition-all group-hover:bg-[#625BF6]"></span>
-            <span className='ml-2'>Connected to Stripe</span>
-        </button>
+        <Button className={className} data-testid='stripe-connected' type='button' variant='outline' onClick={onClick}>
+            <Indicator variant='success' />
+            <span>Connected to Stripe</span>
+        </Button>
     );
 };
 
@@ -56,22 +59,18 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
         return [...t].sort((a, b) => (a.monthly_price ?? 0) - (b.monthly_price ?? 0));
     };
 
-    const tabs = [
-        {
-            id: 'active-tiers',
-            title: 'Active',
-            contents: (<TiersList tab='active-tiers' tiers={sortTiers(activeTiers)} />)
-        },
-        {
-            id: 'archived-tiers',
-            title: 'Archived',
-            contents: (<TiersList tab='archive-tiers' tiers={sortTiers(archivedTiers)} />)
-        }
-    ];
-
     let content;
     if (checkStripeEnabled(settings, config)) {
-        content = <TabView selectedTab={selectedTab} tabs={tabs} onTabChange={setSelectedTab} />;
+        content = (
+            <Tabs value={selectedTab} variant='underline' onValueChange={setSelectedTab}>
+                <TabsList>
+                    <TabsTrigger value='active-tiers'>Active</TabsTrigger>
+                    <TabsTrigger value='archived-tiers'>Archived</TabsTrigger>
+                </TabsList>
+                <TabsContent value='active-tiers'><TiersList tab='active-tiers' tiers={sortTiers(activeTiers)} /></TabsContent>
+                <TabsContent value='archived-tiers'><TiersList tab='archive-tiers' tiers={sortTiers(archivedTiers)} /></TabsContent>
+            </Tabs>
+        );
     } else {
         content = <TiersList tab='free-tier' tiers={activeTiers.filter(tier => tier.type === 'free')} />;
     }
@@ -79,7 +78,7 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     return (
         <TopLevelGroup
             customButtons={checkStripeEnabled(settings, config) ?
-                <StripeConnectedButton className='hidden tablet:!visible tablet:!block' onClick={openConnectModal} />
+                <StripeConnectedButton className='hidden tablet:!visible tablet:!inline-flex' onClick={openConnectModal} />
                 :
                 <StripeButton className='hidden tablet:!visible tablet:!block' onClick={openConnectModal}/>}
             description='Set prices and paid member sign up settings'
@@ -98,10 +97,12 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
             {content}
             {isEnd === false && <Button
-                label={`Load more (showing ${tiers?.length || 0}/${meta?.pagination.total || 0} tiers)`}
-                link
+                type='button'
+                variant='link'
                 onClick={() => fetchNextPage()}
-            />}
+            >
+                {`Load more (showing ${formatNumber(tiers?.length || 0)}/${formatNumber(meta?.pagination.total || 0)} tiers)`}
+            </Button>}
         </TopLevelGroup>
     );
 };

@@ -1,7 +1,8 @@
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
 import useSettingGroup from '../../../hooks/use-setting-group';
-import {SettingGroupContent, TextArea} from '@tryghost/admin-x-design-system';
+import {Field, FieldDescription, FieldError, FieldLabel, Textarea} from '@tryghost/shade/components';
+import {SettingGroupContent} from '@tryghost/shade/patterns';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {withErrorBoundary} from '../../error-boundary';
 
@@ -63,17 +64,19 @@ const SpamFilters: React.FC<{ keywords: string[] }> = ({keywords}) => {
             onSave={handleSave}
         >
             <SettingGroupContent columns={1}>
-                <TextArea
-                    className='h-[86px]'
-                    error={!!errors.blockedEmailDomains}
-                    hint={errors.blockedEmailDomains || hint}
-                    placeholder={`spam.xyz\njunk.com`}
-                    resize="vertical"
-                    title='Blocked email domains'
-                    value={blockedEmailDomains}
-                    onChange={updateBlockedEmailDomainsSetting}
-                    onKeyDown={() => clearError('spam-filters')}
-                />
+                <Field data-invalid={Boolean(errors.blockedEmailDomains) || undefined}>
+                    <FieldLabel htmlFor='blocked-email-domains'>Blocked email domains</FieldLabel>
+                    <Textarea
+                        aria-invalid={Boolean(errors.blockedEmailDomains) || undefined}
+                        className='h-[86px] max-w-full resize-y border-transparent bg-muted'
+                        id='blocked-email-domains'
+                        placeholder={`spam.xyz\njunk.com`}
+                        value={blockedEmailDomains}
+                        onChange={updateBlockedEmailDomainsSetting}
+                        onKeyDown={() => clearError('spam-filters')}
+                    />
+                    {errors.blockedEmailDomains ? <FieldError>{errors.blockedEmailDomains}</FieldError> : <FieldDescription>{hint}</FieldDescription>}
+                </Field>
 
             </SettingGroupContent>
         </TopLevelGroup>

@@ -4,7 +4,7 @@ import fs from 'fs';
 import sirv from 'sirv';
 
 const GHOST_ADMIN_PATH = path.resolve(__dirname, '../../ghost/core/core/built/admin');
-const GHOST_ADMIN_DIST = path.resolve(__dirname, '../../ghost/admin/dist');
+const GHOST_ADMIN_DIST = path.resolve(__dirname, '../ember-admin/dist');
 
 function isAbsoluteUrl(url: string): boolean {
     return url.startsWith('http://') ||

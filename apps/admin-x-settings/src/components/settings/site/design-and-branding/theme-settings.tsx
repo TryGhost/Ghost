@@ -2,7 +2,7 @@ import React from 'react';
 import ThemeSetting from './theme-setting';
 import useCustomFonts from '../../../../hooks/use-custom-fonts';
 import {type CustomThemeSetting} from '@tryghost/admin-x-framework/api/custom-theme-settings';
-import {Form} from '@tryghost/admin-x-design-system';
+import {FieldGroup, FieldLegend, FieldSet} from '@tryghost/shade/components';
 import {type Theme, useBrowseThemes} from '@tryghost/admin-x-framework/api/themes';
 import {isCustomThemeSettingVisible} from '../../../../utils/is-custom-theme-settings-visible';
 
@@ -56,7 +56,9 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({sections, updateSetting}) 
                 let previousType: string | undefined;
 
                 return (
-                    <Form key={section.id} className='first-of-type:mt-6' gap='xs' margins='lg' title={section.title}>
+                    <FieldSet key={section.id} className='gap-0 first-of-type:mt-6'>
+                        <FieldLegend className='mb-4 text-md! leading-supertight font-bold md:text-lg!'>{section.title}</FieldLegend>
+                        <FieldGroup className='mb-12 gap-4'>
                         {filteredSettings.map((setting) => {
                             let spaceClass = '';
                             if (setting.type === 'boolean' && previousType !== 'boolean' && previousType !== undefined) {
@@ -82,7 +84,8 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({sections, updateSetting}) 
                                 />
                             </div>;
                         })}
-                    </Form>
+                        </FieldGroup>
+                    </FieldSet>
                 );
             })}
         </>

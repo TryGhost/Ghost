@@ -78,6 +78,7 @@ describe('MembersCSVImporter', function () {
         return new MembersCSVImporter({
             storagePath: csvPath,
             getTimezone: sinon.stub().returns('UTC'),
+            getInlineThreshold: sinon.stub().returns(500),
             getMembersRepository: () => {
                 return membersRepositoryStub;
             },
@@ -435,6 +436,20 @@ describe('MembersCSVImporter', function () {
             assert.equal(membersRepositoryStub.create.args[4][0].email, 'new_member_invalid@example.com');
             assert.equal(membersRepositoryStub.create.args[4][0].subscribed, true);
             assert.equal(membersRepositoryStub.create.args[4][0].newsletters, undefined);
+        });
+    });
+
+    describe('generateErrorCSV', function () {
+        // The intermediate import file turns formula escaping off. This is the CSV a
+        // human is emailed, so it must keep escaping regardless.
+        it('escapes a value a spreadsheet would read as a formula', function () {
+            const importer = buildMockImporterInstance();
+
+            const csv = importer.generateErrorCSV({
+                errors: [{email: 'a@example.com', name: '=1+2', error: 'some error'}]
+            });
+
+            assert.ok(csv.includes(`"'=1+2"`), csv);
         });
     });
 

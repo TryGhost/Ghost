@@ -1,9 +1,10 @@
 import React, {useState} from 'react';
 import clsx from 'clsx';
-import {Button, Heading, Icon} from '@tryghost/admin-x-design-system';
+import {Button} from '@tryghost/shade/components';
+import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
+import {Text} from '@tryghost/shade/primitives';
 import {type TierFormState} from './tier-detail-modal';
 import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
-import {numberWithCommas} from '../../../../utils/helpers';
 
 interface TierDetailPreviewProps {
     tier: TierFormState;
@@ -23,7 +24,7 @@ export const TrialDaysLabel: React.FC<{size?: 'sm' | 'md'; trialDays: number;}> 
     return (
         <span className={containerClassName}>
             <span className="absolute inset-0 block rounded-full bg-ghostaccent opacity-20 dark:bg-pink"></span>
-            <span className="dark:text-pink">{trialDays} days free</span>
+            <span className="dark:text-pink">{formatNumber(trialDays)} days free</span>
         </span>
     );
 };
@@ -33,20 +34,25 @@ const TierBenefits: React.FC<{benefits: string[]}> = ({benefits}) => {
         return (
             <div className="mt-4 w-full text-md leading-snug text-grey-900 opacity-30">
                 <div className="mb-2.5 flex items-start">
-                    <Icon className="mt-[3px] mr-[10px] size-3.5! min-w-[14px] overflow-visible stroke-[3px]!" name='check' />
+                    <LucideIcon.Check className="mt-[3px] mr-[10px] size-3.5! min-w-[14px] overflow-visible stroke-[3px]!" />
                     <div>Expert analysis</div>
                 </div>
             </div>
         );
     }
+    const benefitOccurrences = new Map<string, number>();
+
     return (
         <>
             {
                 benefits.map((benefit) => {
+                    const occurrence = (benefitOccurrences.get(benefit) || 0) + 1;
+                    benefitOccurrences.set(benefit, occurrence);
+
                     return (
-                        <div key={benefit} className="mt-4 w-full text-md leading-snug text-grey-900">
+                        <div key={`${benefit}:${occurrence}`} className="mt-4 w-full text-md leading-snug text-grey-900">
                             <div className="mb-2.5 flex items-start">
-                                <Icon className="mt-[3px] mr-[10px] size-3.5! min-w-[14px] overflow-visible stroke-[3px]!" name='check' />
+                                <LucideIcon.Check className="mt-[3px] mr-[10px] size-3.5! min-w-[14px] overflow-visible stroke-[3px]!" />
                                 <div>{benefit}</div>
                             </div>
                         </div>
@@ -62,7 +68,7 @@ const DiscountLabel: React.FC<{discount: number}> = ({discount}) => {
         return null;
     }
     return (
-        <span className="mt-1 leading-none font-semibold text-pink">{discount}% discount</span>
+        <span className="mt-1 leading-none font-semibold text-ghostaccent">{formatNumber(discount)}% discount</span>
     );
 };
 
@@ -87,10 +93,10 @@ const TierDetailPreview: React.FC<TierDetailPreviewProps> = ({tier, isFreeTier})
     return (
         <div data-testid="tier-preview">
             <div className="flex items-baseline justify-between">
-                <Heading className="pb-2" level={6} grey>{isFreeTier ? 'Free membership preview' : 'Tier preview'}</Heading>
+                <Text as='h6' className="pb-2 text-base" weight='semibold'>{isFreeTier ? 'Free membership preview' : 'Tier preview'}</Text>
                 {!isFreeTier && <div className="flex gap-1">
-                    <Button className={`${showingYearly === true ? 'text-grey-500' : 'text-grey-900 dark:text-white'}`} label="Monthly" link unstyled onClick={() => setShowingYearly(false)} />
-                    <Button className={`ml-2 ${showingYearly === true ? 'text-grey-900 dark:text-white' : 'text-grey-500'}`} label="Yearly" link unstyled onClick={() => setShowingYearly(true)} />
+                    <Button className={showingYearly ? 'h-auto p-0 text-muted-foreground' : 'h-auto p-0 text-foreground'} type='button' variant='link' onClick={() => setShowingYearly(false)}>Monthly</Button>
+                    <Button className={showingYearly ? 'ml-2 h-auto p-0 text-foreground' : 'ml-2 h-auto p-0 text-muted-foreground'} type='button' variant='link' onClick={() => setShowingYearly(true)}>Yearly</Button>
                 </div>}
             </div>
             <div className='rounded-sm border border-grey-200 bg-white dark:border-transparent'>
@@ -100,7 +106,7 @@ const TierDetailPreview: React.FC<TierDetailPreviewProps> = ({tier, isFreeTier})
                         <div className="mt-4 flex w-full flex-row flex-wrap items-end justify-between gap-x-1 gap-y-[10px]">
                             <div className={`flex flex-wrap text-black ${((showingYearly && tier?.yearly_price === undefined) || (!showingYearly && tier?.monthly_price === undefined)) && !isFreeTier ? 'opacity-30' : ''}`}>
                                 <span className="self-start text-[2.7rem] leading-[1.115] font-bold uppercase">{currencySymbol}</span>
-                                <span className="text-[3.4rem] leading-none font-bold tracking-tight break-all">{showingYearly ? numberWithCommas(yearlyPrice) : numberWithCommas(monthlyPrice)}</span>
+                                <span className="text-[3.4rem] leading-none font-bold tracking-tight break-all">{formatNumber(showingYearly ? yearlyPrice : monthlyPrice, {maximumFractionDigits: 20})}</span>
                                 {!isFreeTier && <span className="ml-1 self-end text-[1.5rem] leading-snug text-grey-800">/{showingYearly ? 'year' : 'month'}</span>}
                             </div>
                             <TrialDaysLabel trialDays={trialDays} />

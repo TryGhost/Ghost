@@ -1,5 +1,8 @@
 import React from 'react';
-import {Dropzone} from '@tryghost/shade/components';
+import {Field, FieldDescription, FieldLabel} from '@tryghost/shade/components';
+import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
+import {Trash2} from 'lucide-react';
+import {formatNumber} from '@tryghost/shade/utils';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 
 interface HeaderImageFieldProps {
@@ -16,37 +19,30 @@ const HeaderImageField: React.FC<HeaderImageFieldProps> = ({value, onChange}) =>
     };
 
     return (
-        <div className="flex flex-col gap-1.5" data-testid="header-image-field">
-            <label className="font-medium" htmlFor="welcome-email-header-image">Header image</label>
-            {value ? (
-                <div className="relative overflow-hidden rounded-md border border-gray-200 dark:border-gray-800">
-                    <img
-                        alt="Header"
-                        className="h-auto w-full"
-                        src={value}
-                    />
-                    <button
-                        className="absolute top-2 right-2 rounded bg-black/50 px-2 py-1 text-sm text-white hover:bg-black/70"
-                        type="button"
-                        onClick={() => onChange('')}
-                    >
-                        Remove
-                    </button>
-                </div>
-            ) : (
-                <>
-                    <Dropzone
+        <Field data-testid="header-image-field">
+            <FieldLabel htmlFor='welcome-email-header-image'>Header image</FieldLabel>
+            <ImageUpload className='h-24 w-full'>
+                {value ? (
+                    <ImageUploadPreview>
+                        <ImageUploadImage alt="Header" src={value} />
+                        <ImageUploadActions>
+                            <ImageUploadAction aria-label='Remove header image' type='button' onClick={() => onChange('')}>
+                                <Trash2 />
+                            </ImageUploadAction>
+                        </ImageUploadActions>
+                    </ImageUploadPreview>
+                ) : (
+                    <ImageUploadDropzone
                         accept={{'image/*': ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg']}}
-                        className="flex h-24 items-center justify-center p-0"
-                        id="welcome-email-header-image"
+                        inputId="welcome-email-header-image"
                         onDropAccepted={files => files[0] && handleUpload(files[0])}
                     >
-                        <span className="text-gray-700">Upload header image</span>
-                    </Dropzone>
-                    <span className="text-sm text-muted-foreground">1200x600 recommended. Use a transparent PNG for best results on any background.</span>
-                </>
-            )}
-        </div>
+                        <span className="text-control font-medium">Upload header image</span>
+                    </ImageUploadDropzone>
+                )}
+            </ImageUpload>
+            <FieldDescription>{formatNumber(1200)}×{formatNumber(600)} recommended. Use a transparent PNG for best results on any background.</FieldDescription>
+        </Field>
     );
 };
 

@@ -74,10 +74,10 @@ const AnnouncementBarPreview: React.FC<AnnouncementBarSettings> = ({announcement
     return (
         <IframeBuffering
             addDelay={true}
-            className="absolute size-[110%] origin-top-left scale-[.90909] bg-white max-[1600px]:size-[130%] max-[1600px]:scale-[.76923]"
+            className="absolute -top-px -left-px size-[calc(110%_+_3px)] origin-top-left scale-[.90909] bg-white max-[1600px]:size-[calc(130%_+_3px)] max-[1600px]:scale-[.76923]"
             generateContent={injectContentIntoIframe}
             height='100%'
-            parentClassName="relative h-full w-full"
+            parentClassName="relative h-full w-full overflow-hidden"
             testId='announcement-bar-preview-iframe'
             width='100%'
         />

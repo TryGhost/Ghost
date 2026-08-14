@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
 const fs = require('fs-extra');
 const configUtils = require('../../../../utils/config-utils');
-const schedulingUtils = require('../../../../../core/server/adapters/scheduling/utils');
+const adapterManager = require('../../../../../core/server/services/adapter-manager').default;
 
 const schedulingPath = configUtils.config.getContentPath('adapters') + 'scheduling/';
 describe('Scheduling: utils', function () {
@@ -25,7 +25,7 @@ describe('Scheduling: utils', function () {
 
     describe('success', function () {
         it('create good adapter', function () {
-            const adapter = schedulingUtils.createAdapter();
+            const adapter = adapterManager.getAdapter('scheduling');
             assertExists(adapter);
         });
 
@@ -54,7 +54,7 @@ describe('Scheduling: utils', function () {
 
             fs.writeFileSync(scope.adapter, jsFile);
 
-            const adapter = schedulingUtils.createAdapter();
+            const adapter = adapterManager.getAdapter('scheduling');
             assertExists(adapter);
         });
     });
@@ -78,7 +78,7 @@ describe('Scheduling: utils', function () {
             });
 
             assert.throws(
-                () => schedulingUtils.createAdapter(),
+                () => adapterManager.getAdapter('scheduling'),
                 (err) => {
                     assertExists(err);
                     assert.equal(err.errorType, 'IncorrectUsageError');

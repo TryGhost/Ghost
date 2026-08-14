@@ -170,6 +170,11 @@ class AdminAPITestAgent extends TestAgent {
         const {apiKeyId ,apiKeySecret} = await findIntegrationKey('zapier');
         return this.useToken(apiKeyId, apiKeySecret);
     }
+
+    async useSelfServeMigrationAdminAPIKey() {
+        const {apiKeyId ,apiKeySecret} = await findIntegrationKey('self-serve-migration');
+        return this.useToken(apiKeyId, apiKeySecret);
+    }
 }
 
 module.exports = AdminAPITestAgent;

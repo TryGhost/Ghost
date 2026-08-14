@@ -42,6 +42,7 @@ const ToasterPortal = () => {
         ? createPortal(
             <div className={SHADE_APP_NAMESPACES} style={{width: 'unset', height: 'unset'}}>
                 <Toaster
+                    duration={5000}
                     icons={{
                         error: <Icon.ErrorFill className='text-red' />,
                         success: <Icon.SuccessFill className='text-green' />,
@@ -59,6 +60,7 @@ const ToasterPortal = () => {
                             maxWidth: '290px'
                         }
                     }}
+                    closeButton
                 />
             </div>,
             document.body
