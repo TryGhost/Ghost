@@ -76,7 +76,7 @@ function createEmptyResult() {
 
 module.exports = class EmailAnalyticsService {
     /** @type {Queries} */ queries;
-    provider;
+    providers;
     #createEventProcessor;
 
     /** @type {JobNames} */ #jobNames;
@@ -105,15 +105,15 @@ module.exports = class EmailAnalyticsService {
     /**
      * @param {object} dependencies
      * @param {Queries} dependencies.queries
-     * @param {object} dependencies.provider
+     * @param {object[]} dependencies.providers - Array of email analytics providers to fetch events from
      * @param {PrometheusClient} [dependencies.prometheusClient]
      * @param {() => BatchEventProcessor} dependencies.createEventProcessor
      * @param {JobNames} dependencies.jobNames
      * @param {CursorSeed} dependencies.cursorSeed
      */
-    constructor({queries, provider, prometheusClient, createEventProcessor, jobNames, cursorSeed}) {
+    constructor({queries, providers, prometheusClient, createEventProcessor, jobNames, cursorSeed}) {
         this.queries = queries;
-        this.provider = provider;
+        this.providers = providers;
         this.prometheusClient = prometheusClient;
         this.#createEventProcessor = createEventProcessor;
         this.#jobNames = jobNames;
@@ -476,7 +476,11 @@ module.exports = class EmailAnalyticsService {
         };
 
         try {
-            await this.provider.fetchLatest(processBatch, {begin, end, maxEvents, events: eventTypes});
+            // Fetch from every configured provider, feeding the same batch
+            // handler so all events flow through one processing pipeline.
+            for (const provider of this.providers) {
+                await provider.fetchLatest(processBatch, {begin, end, maxEvents, events: eventTypes});
+            }
         } catch (err) {
             if (err.message !== 'Fetching canceled') {
                 logging.error('[EmailAnalytics] Error while fetching');
