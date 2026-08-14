@@ -124,7 +124,7 @@ catalog:
   chai: 4.5.0
   chalk: 4.1.2
   clsx: 2.1.1
-  concurrently: 10.0.3
+  concurrently: 10.0.4
   country-flag-icons: 1.6.20
   cross-fetch: 4.1.0
   dependency-cruiser: ^18.1.1
