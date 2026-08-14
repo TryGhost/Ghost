@@ -41,7 +41,8 @@ workflow.
 ## Test
 
 - `pnpm test:unit` runs the unit tests
-- `pnpm test` runs the full gate: types, coverage thresholds and lint
+- `pnpm test` runs the unit and type tests, including coverage thresholds
+- `pnpm lint` runs the lint checks
 
 # Copyright & License
 
