@@ -62,6 +62,7 @@
     "lodash": "catalog:",
     "moment": "catalog:",
     "moment-timezone": "catalog:",
+    "path-to-regexp": "catalog:",
     "sanitize-html": "catalog:"
   },
   "nx": {

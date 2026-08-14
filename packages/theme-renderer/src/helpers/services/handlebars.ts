@@ -5,7 +5,14 @@
 // assembly step); `process.env.NODE_ENV === 'development'` → seam config
 // `env` (no `process` in a Web Worker); @tryghost/logging → seam logging.
 import errors from '@tryghost/errors';
+import * as errorsNamespace from '@tryghost/errors';
 import {logging} from '../../seam/shared.ts';
+
+// @tryghost/errors ships `utils` on the CJS default export but as a NAMED
+// export in its ES build (es/index.js) — resolve whichever is present so the
+// copied body below works under both module systems.
+const errorsUtils: {isGhostError(err: Error): boolean} =
+    (errorsNamespace as any).utils ?? (errors as any).utils;
 import {getRendererDeps} from '../../seam/deps.ts';
 import {SafeString} from '../../seam/handlebars-env.ts';
 import type {HelperRegistrar} from '../../seam/types.ts';
@@ -23,7 +30,7 @@ function asyncHelperWrapper(registrar: HelperRegistrar, name: string, fn: any) {
             const response = await fn.call(this, context, options);
             cb(response);
         } catch (error) {
-            const wrappedErr = errors.utils.isGhostError(error as Error) ? error : new errors.IncorrectUsageError({
+            const wrappedErr = errorsUtils.isGhostError(error as Error) ? error : new errors.IncorrectUsageError({
                 err: error as any,
                 context: 'registerAsyncThemeHelper: ' + name,
                 errorDetails: {

@@ -76,12 +76,20 @@ export function createContentApi(options: CreateContentApiOptions): ContentApiPo
 
         if (!response.ok) {
             const apiError = body?.errors?.[0];
-            throw new errors.InternalServerError({
-                message: apiError?.message || `Content API request failed with status ${response.status}`,
-                statusCode: response.status,
-                code: apiError?.code,
-                context: apiError?.context
-            });
+            // Preserve the error TYPE across the HTTP boundary: the ported
+            // rendering/error.ts dispatches on `errorType` ('NotFoundError' /
+            // 'ValidationError' fall through to the next route candidate, so a
+            // post-permalink miss can reach the static-pages lookup like the
+            // in-process API allows).
+            const errorType = apiError?.type ?? apiError?.errorType;
+            const message = apiError?.message || `Content API request failed with status ${response.status}`;
+            if (errorType === 'NotFoundError' || response.status === 404) {
+                throw new errors.NotFoundError({message, statusCode: response.status, code: apiError?.code, context: apiError?.context});
+            }
+            if (errorType === 'ValidationError' || response.status === 422) {
+                throw new errors.ValidationError({message, statusCode: response.status, code: apiError?.code, context: apiError?.context});
+            }
+            throw new errors.InternalServerError({message, statusCode: response.status, code: apiError?.code, context: apiError?.context});
         }
 
         return body;

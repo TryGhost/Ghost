@@ -63,7 +63,7 @@ transforms, update the revision here.
 | helpers/tpl/styles.ts | helpers/tpl/styles.js | — | — |
 | helpers/tpl/partials.ts | helpers/tpl/*.hbs (navigation, pagination, content-cta, gift-toast, cancel_link, recommendations) | .hbs sources embedded verbatim as string constants + `registerCoreHelperPartials()` (replaces express-hbs `partialsDir` fs loading) | hbs shim (compiles on register, `preventIndent: true`) |
 | helpers/services/registry.ts | services/helpers/registry.js | module singleton → `createHelperRegistry(registrar)` factory | HelperRegistrar |
-| helpers/services/handlebars.ts | services/helpers/handlebars.js | engine singleton → injected HelperRegistrar; `process.env.NODE_ENV` → seam `config.get('env')` | logging |
+| helpers/services/handlebars.ts | services/helpers/handlebars.js | engine singleton → injected HelperRegistrar; `process.env.NODE_ENV` → seam `config.get('env')`; `errors.utils` resolved from either the CJS default export or the ES build's named export (@tryghost/errors ships both shapes) | logging |
 | helpers/services/register-ghost-helpers.ts | services/helpers/register-ghost-helpers.js | requires → static imports; **trimmed to Tier-2 set**. Omitted registrations: cancel_link, collection, color_to_rgba, comment_count, comments, content_api_key, content_api_url, contrast_text_color, facebook_url, json, price, readable_url, recommendations, search, social_accounts, social_url, split, tiers, total_members, total_paid_members, twitter_url | — |
 | helpers/services/index.ts | services/helpers/index.js | re-export shape only | — |
 
@@ -91,6 +91,53 @@ unless noted.
 | utils/images.ts | frontend/utils/images.js | `@tryghost/image-transform`.canTransformToFormat → seam stub (package drags sharp) |
 | utils/member-count.ts | frontend/utils/member-count.js | STD; `api.stats.memberCountHistory` is a zero-totals stub in the default binding |
 
+## src/rendering/ (the ported render pipeline)
+
+Origin `ghost/core/core/frontend/services/rendering/<name>.js` @ 407e032dc7,
+transforms STD + Express req/res → the ports in `src/ports.ts` (fresh —
+inbound request context + outbound result union per extraction-map §(b)).
+
+| File | Transforms beyond STD/ports |
+| --- | --- |
+| context.ts | — |
+| templates.ts | `themeEngine.getActive()` → `getRendererDeps().activeTheme`; `url.parse(req.url).pathname` → `req.path`; getTemplateForError's fs fallback (config.paths.defaultViews error.hbs) → the string `'error'` |
+| format-response.ts | `hbs.get/updateLocalTemplateOptions` → the pure copies in template-options.ts |
+| renderer.ts | `res.render`+`res.send` → `{render}` result value; degraded-render Cache-Control capping + X-Ghost-Degraded-Render header dropped; ENOENT handling moved to the assembly |
+| render-entry.ts, render-entries.ts | — |
+| error.ts | `next()` closure → direct error→result mapping (`{next: true}` / `{error}`) |
+| template-options.ts | mixed: get/updateLocalTemplateOptions copied from express-hbs lib/hbs.js@2.5.0; `buildGlobalTemplateOptions`/`applyLocalTemplateOptions` are the theme-engine/middleware/update-{global,local}-template-options.js ports (middleware → pure functions; preview.handle dropped — no preview requests) |
+
+## src/data/ (ported data services)
+
+Origin `ghost/core/core/frontend/services/data/<name>.js` @ 407e032dc7, transforms STD.
+
+| File | Transforms beyond STD |
+| --- | --- |
+| fetch-data.ts | lazy `require('../proxy').api` → seam call-time api proxy |
+| entry-lookup.ts | api proxy as above; `url.parse(postUrl).path` → manual `?`/`#` strip; `giftToken` lookup option dropped (anonymous-only) |
+| match-permalink-params.ts | `path-match@1.2.4` inlined (~30 lines) over a direct `path-to-regexp@1.9.0` dependency; its http-errors 400 on bad URI encoding → ValidationError (falls through to 404 like upstream's 400 for theme traffic) |
+
+## src/routing/ (ported adapters + fresh resolver)
+
+| File | Origin | Notes |
+| --- | --- | --- |
+| config.ts | routing/config.ts @ 407e032dc7 | byte-identical |
+| permalink-adapter.ts | routing/permalink-adapter.ts @ 407e032dc7 | byte-identical |
+| api-adapter.ts | routing/api-adapter.ts @ 407e032dc7 | `@tryghost/adapter-base-route-settings` type imports → local mirror route-settings-types.ts (types only) |
+| route-settings-types.ts | fresh (mirrors adapter-base-route-settings types) | RouteData/DataEntry/DataShortForm/DataLongFormEntry shapes only |
+| controllers/collection.ts | routing/controllers/collection.js @ 407e032dc7 | `security.string.safe` → `@tryghost/string` slugify (safe()'s body); `routerManager.ownsResource` → seam urlService (router-manager delegates there); `themeEngine.getActive()` → deps.activeTheme; next(err) → handleError result |
+| controllers/entry.ts | routing/controllers/entry.ts @ 407e032dc7 | gift-links + markdown negotiation dropped; redirectToAdmin/redirect301 → `{redirect}` results (URL construction reproduced) |
+| controllers/entry/canonical-url.ts | .../entry/canonical-url.ts @ 407e032dc7 | node:url format/parse → whatwg URL + search slice |
+| resolve.ts | fresh | slice-1 default-routes resolver; routerOptions shapes copied from collection-router/static-pages-router `_prepare*Context`; replaced by the lazy-matcher port in the parity slice |
+
+## src/theme/, src/ports.ts, src/index.ts (fresh assembly)
+
+| File | Notes |
+| --- | --- |
+| ports.ts | request/response port types (extraction-map §(b)) |
+| theme/theme-source.ts | virtual-fs ThemeSource: resolver + theme config (defaults copied from theme-engine/config/defaults.json: posts_per_page 5, card_assets true; allowedKeys from config/index.js) + root template inventory + `@custom` defaults from package.json `config.custom` + locales/{locale}.json i18n ({var} interpolation) |
+| index.ts | `createRenderer()` assembly + `render(Request) → Response`; `createEngineHelperRegistrar` (engine → HelperRegistrar adapter); trailing-slash 301 (Ghost's slashes middleware); ghost-locals equivalent (version/safeVersion from the settings payload `version`, relativeUrl) |
+
 ## src/seam/ (the data seam)
 
 | File | Kind | Notes |
@@ -104,7 +151,7 @@ unless noted.
 | data.ts | copied | services/data/checks.js @ 407e032dc7, exported as `checks` |
 | shared.ts | mixed | Delegating `labs`/`logging` + no-op `debug`; **copied**: shared/max-limit-cap.js (`applyLimitCap`, config via seam), shared/machine-payments.ts (verbatim), services/llms/markdown.js `getMarkdownPath`/`getMarkdownUrl` only |
 | url-utils.ts | copied | @tryghost/url-utils@5.2.6 `lib/utils/{deduplicate-double-slashes,deduplicate-subdirectory,strip-subdirectory-from-path,url-join,absolute-to-relative,relative-to-absolute,replace-permalink}.js` + `lib/UrlUtils.js` methods (`urlJoin`, `createUrl`, `urlFor`, `isSiteUrl`, `absoluteToRelative`, `relativeToAbsolute`). The npm package is Node-bound (`require('url')`, cheerio/remark/moment for html/markdown transforms) so the render-path subset is copied: `require('url').URL` → global whatwg `URL`; class → `createUrlUtils` factory over injected `getSiteUrl`/`getAdminUrl`/`getSubdir`; html/markdown/mobiledoc/lexical/transform-ready methods dropped (unused by the render path); `redirect301`/`redirectToAdmin` dropped per extraction map (redirects become result values) |
-| content-api.ts | fresh | HTTP Content API binding (see Stubs & deltas) |
+| content-api.ts | fresh | HTTP Content API binding (see Stubs & deltas). Maps HTTP failures back to typed Ghost errors (404/`type: NotFoundError` → NotFoundError, 422/ValidationError → ValidationError, else InternalServerError) so rendering/error.ts's errorType dispatch — and the Collections→StaticPages fall-through — works across the HTTP boundary |
 | settings.ts | fresh | Async `loadSettings` → sync snapshot (`get`/`getPublic`); un-resizes the serializer-rewritten `icon` path so the copied blogIcon logic applies its own resize |
 | url-service.ts | fresh | Slice-1 `getUrlForResource` preferring serializer-attached `resource.url`; `ownsResource` → true. **The lazy permalink-matcher/router-filter port is deferred to the parity slice** |
 | config.ts | fresh | nconf-style `:`-separated lookup over a plain object; `isPrivacyDisabled` mirrors shared/config behavior (`useTinfoil` + `privacy[key] === false`) |

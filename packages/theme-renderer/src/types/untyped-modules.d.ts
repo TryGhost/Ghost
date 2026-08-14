@@ -23,6 +23,19 @@ declare module '@tryghost/social-urls' {
     export default socialUrls;
 }
 
+declare module 'path-to-regexp' {
+    interface Key {
+        name: string;
+        prefix: string;
+        delimiter: string;
+        optional: boolean;
+        repeat: boolean;
+        pattern: string;
+    }
+    function pathToRegexp(path: string, keys?: Key[], options?: any): RegExp;
+    export default pathToRegexp;
+}
+
 declare module 'downsize-cjs' {
     function downsize(text: string, options?: any): string;
     export default downsize;
