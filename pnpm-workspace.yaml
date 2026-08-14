@@ -129,7 +129,7 @@ catalog:
   cross-fetch: 4.1.0
   dependency-cruiser: ^18.1.1
   dequal: 2.0.3
-  dompurify: 3.4.11
+  dompurify: 3.4.13
   dotenv: 17.4.2
   entities: 4.5.0
   esbuild: 0.28.2
