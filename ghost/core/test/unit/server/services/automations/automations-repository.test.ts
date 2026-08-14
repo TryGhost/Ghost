@@ -8,13 +8,12 @@ import {NON_EMPTY_EMAIL_LEXICAL} from '../../../../utils/automations-fixtures';
 import ghostConfig from '../../../../../core/shared/config';
 import {createDatabaseAutomationsRepository} from '../../../../../core/server/services/automations/database-automations-repository';
 import type {AutomatedEmailEvents, AutomationAction, AutomationsRepository, AutomationStepToRun} from '../../../../../core/server/services/automations/automations-repository';
+import {DATABASE_DATE_FORMAT, fromDatabaseDate, toDatabaseDate} from '../../../../../core/server/services/automations/database-date';
 
 const HOUR_MS = 60 * 60 * 1000;
 const FAKE_WAIT_HOURS_MULTIPLIER = 2500;
-const DATABASE_DATE_FORMAT = 'YYYY-MM-DD HH:mm:ss';
 
-const toDatabaseDate = (date: Date | string): string => moment(date).format(DATABASE_DATE_FORMAT);
-const toRepositoryDateISOString = (date: Date | string): string => new Date(toDatabaseDate(date)).toISOString();
+const toRepositoryDateISOString = (date: Date | string): string => fromDatabaseDate(toDatabaseDate(date)).toISOString();
 const linkLexical = (url: string): string => JSON.stringify({
     root: {
         children: [{
@@ -30,7 +29,7 @@ const hashRedirectDestination = (url: string): Buffer => createHash('sha256').up
 
 const addHours = (dateCol: unknown, hours: number): Date => {
     assert(typeof dateCol === 'string', 'Expected date column to be a string');
-    return moment(dateCol, DATABASE_DATE_FORMAT).add(hours, 'hours').toDate();
+    return moment(fromDatabaseDate(dateCol)).add(hours, 'hours').toDate();
 };
 
 const createDatabase = async (): Promise<Knex> => {

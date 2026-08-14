@@ -3,6 +3,8 @@ const sinon = require('sinon');
 
 const {Post} = require('../../../../../core/server/models/post');
 const {Member} = require('../../../../../core/server/models/member');
+const {Product} = require('../../../../../core/server/models/product');
+const {StripeCustomerSubscription} = require('../../../../../core/server/models/stripe-customer-subscription');
 
 const createSerialize = require('../../../../../core/server/services/webhooks/serialize');
 
@@ -159,5 +161,93 @@ describe('WebhookService - Serialize', function () {
         assert.equal(result.member.previous.status, 'comped');
         assert.deepEqual(result.member.previous.updated_at, previousUpdatedAt);
         assert.deepEqual(Object.keys(result.member.previous).sort(), ['status', 'updated_at']);
+    });
+
+    it('includes the previous tiers when a member switches between paid tiers', async function () {
+        // bookshelf only populates `_previousAttributes` on fetch, not construction
+        const asFetched = (model) => {
+            model._previousAttributes = {...model.attributes};
+            return model;
+        };
+        const oldTier = asFetched(new Product({id: 'tier-old', name: 'Bronze', slug: 'bronze', type: 'paid', active: true}));
+        const newTier = asFetched(new Product({id: 'tier-new', name: 'Gold', slug: 'gold', type: 'paid', active: true}));
+
+        const memberModel = new Member({
+            id: 'member-id',
+            uuid: 'member-uuid',
+            email: 'member@example.com',
+            status: 'paid',
+            created_at: new Date('2026-01-01T00:00:00.000Z'),
+            updated_at: new Date('2026-01-01T00:00:00.000Z')
+        });
+
+        // mirrors bookshelf-relations' extendChanged + attachPreviousRelations output
+        // for a tier switch that touches no members column
+        memberModel._previousAttributes = {...memberModel.attributes};
+        memberModel._changed = {
+            products: {attached: [newTier], detached: [oldTier]}
+        };
+        memberModel._previousRelations = {products: {models: [oldTier]}};
+        memberModel.related('products').models = [newTier];
+
+        sinon.stub(memberModel, 'load').resolves(memberModel);
+
+        const result = await serialize('member.edited', memberModel);
+
+        assert.deepEqual(result.member.current.tiers.map(tier => tier.slug), ['gold']);
+        assert.deepEqual(result.member.previous.tiers.map(tier => tier.slug), ['bronze']);
+    });
+
+    it('includes the previous subscriptions when a cancellation flips cancel_at_period_end', async function () {
+        // bookshelf only populates _previousAttributes on fetch, and `previous: true`
+        // cascades into related models — so these have to look fetched, not constructed.
+        const asFetched = (model) => {
+            model._previousAttributes = {...model.attributes};
+            return model;
+        };
+        const activeSub = asFetched(new StripeCustomerSubscription({
+            id: 'sub-1',
+            subscription_id: 'sub_123',
+            status: 'active',
+            cancel_at_period_end: false,
+            plan_id: 'price_123',
+            plan_nickname: 'Monthly',
+            plan_amount: 500,
+            plan_interval: 'month',
+            plan_currency: 'usd'
+        }));
+        const cancellingSub = asFetched(new StripeCustomerSubscription({
+            id: 'sub-1',
+            subscription_id: 'sub_123',
+            status: 'active',
+            cancel_at_period_end: true,
+            plan_id: 'price_123',
+            plan_nickname: 'Monthly',
+            plan_amount: 500,
+            plan_interval: 'month',
+            plan_currency: 'usd'
+        }));
+
+        const memberModel = new Member({
+            id: 'member-id',
+            uuid: 'member-uuid',
+            email: 'member@example.com',
+            status: 'paid',
+            created_at: new Date('2026-01-01T00:00:00.000Z'),
+            updated_at: new Date('2026-01-01T00:00:00.000Z')
+        });
+
+        // Cancelling touches no members column — the subscription relation is the only change
+        memberModel._previousAttributes = {...memberModel.attributes};
+        memberModel._changed = {stripeSubscriptions: {cancel_at_period_end: true}};
+        memberModel._previousRelations = {stripeSubscriptions: {models: [activeSub]}};
+        memberModel.related('stripeSubscriptions').models = [cancellingSub];
+
+        sinon.stub(memberModel, 'load').resolves(memberModel);
+
+        const result = await serialize('member.edited', memberModel);
+
+        assert.equal(result.member.current.subscriptions[0].cancel_at_period_end, true);
+        assert.equal(result.member.previous.subscriptions[0].cancel_at_period_end, false);
     });
 });

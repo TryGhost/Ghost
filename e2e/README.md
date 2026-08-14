@@ -138,19 +138,19 @@ e2e/
 
 ### Writing Tests
 
-Tests use [Playwright Test](https://playwright.dev/docs/writing-tests) framework with page objects.
-Aim to format tests in Arrange Act Assert style - it will help you with directions when writing your tests.
+Tests use [Playwright Test](https://playwright.dev/docs/writing-tests). Use
+Arrange–Act–Assert (AAA) as a readability heuristic: set up the scenario, perform
+the behavior under test, then verify the outcome. Keep those phases clear through
+test structure and naming; comments are only useful when the boundaries would
+otherwise be unclear.
 
 ```typescript
 test.describe('Ghost Homepage', () => {
     test('loads correctly', async ({page}) => {
-        // ARRANGE - setup fixtures, create helpers, prepare things that helps will need to be executed
         const homePage = new HomePage(page);
-        
-        // ACT - do the actions you need to do, to verify certain behaviour
+
         await homePage.goto();
-        
-        // ASSERT
+
         await expect(homePage.title).toBeVisible();
     });
 });
@@ -158,15 +158,41 @@ test.describe('Ghost Homepage', () => {
 
 ### Using Page Objects
 
-Page objects encapsulate page elements, and interactions. To read more about them, check [this link out](https://www.selenium.dev/documentation/test_practices/encouraged/page_object_models/) and [this link](https://martinfowler.com/bliki/PageObject.html).
+Page Objects are the default home for reusable knowledge about a page or major UI
+component. They encapsulate locators, readiness guards, and semantic interactions
+so tests can describe behavior rather than DOM structure. Assertions stay in test
+files.
+
+Prefer an existing Page Object when a test exercises reusable UI behavior. A direct
+semantic locator in a test is acceptable for a small, one-off assertion or
+interaction when creating a Page Object would add indirection without reuse.
+Structural selectors sometimes remain necessary for iframes, editor internals,
+generated theme markup, and elements without an accessible role. Keep those inside
+Page Objects where practical and prefer, in order:
+
+1. Accessible roles, labels, and visible text
+2. Stable test IDs
+3. Stable structural selectors when no semantic locator exists
+
+Avoid selectors coupled to visual styling, DOM position, or incidental class names.
+See [Playwright's locator guidance](https://playwright.dev/docs/locators) and
+[Martin Fowler's Page Object description](https://martinfowler.com/bliki/PageObject.html)
+for background.
 
 ```typescript
 // Create a page object for admin login
+import type {Locator, Page} from '@playwright/test';
+
 export class AdminLoginPage {
-    private pageUrl:string;
+    private readonly pageUrl = '/ghost';
+    public readonly emailInput: Locator;
+    public readonly passwordInput: Locator;
+    public readonly signInButton: Locator;
     
-    constructor(private page: Page) {
-        this.pageUrl = '/ghost'
+    constructor(private readonly page: Page) {
+        this.emailInput = page.getByLabel('Email address');
+        this.passwordInput = page.getByLabel('Password');
+        this.signInButton = page.getByRole('button', {name: 'Sign in'});
     }
 
     async goto(urlToVisit = this.pageUrl) {
@@ -174,9 +200,9 @@ export class AdminLoginPage {
     }
     
     async login(email: string, password: string) {
-        await this.page.fill('[name="identification"]', email);
-        await this.page.fill('[name="password"]', password);
-        await this.page.click('button[type="submit"]');
+        await this.emailInput.fill(email);
+        await this.passwordInput.fill(password);
+        await this.signInButton.click();
     }
 }
 ```
@@ -246,9 +272,9 @@ Modes:
 
 ### Best Practices
 
-1. **Use page object patterns** to separate page elements, actions on the pages, complex logic from tests. They should help you make them more readable and UI elements reusable.
+1. **Use Page Objects for reusable UI structure and interactions.** Direct semantic locators are fine for small, one-off assertions where a Page Object would not improve reuse or readability.
 2. **Add meaningful assertions** beyond just page loads. Keep assertions in tests.
-3. **Use `data-testid` attributes** for reliable element selection, in case you **cannot** locate elements in a simple way. Example: `page.getByLabel('User Name')`. Avoid, css, xpath locators - they make tests brittle. 
+3. **Prefer semantic locators**, such as `getByRole()` and `getByLabel()`. Use stable test IDs when semantic locators are unavailable. Avoid selectors coupled to styling or DOM position.
 4. **Clean up test data** when tests modify Ghost state
 5. **Group related tests** in describe blocks
 6. **Do not use should to describe test scenarios**

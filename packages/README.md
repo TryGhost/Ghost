@@ -134,12 +134,12 @@ packed package or Ghost release component.
 
 ## Verification
 
-For package changes, run at least:
+For package changes, run at least from the package directory:
 
 ```bash
-pnpm --filter @tryghost/<name> build
-pnpm --filter @tryghost/<name> test
-pnpm --filter @tryghost/<name> lint
+pnpm build
+pnpm test
+pnpm lint
 ```
 
 Also verify:

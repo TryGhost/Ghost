@@ -1,25 +1,26 @@
-const _ = require('lodash');
-const debug = require('@tryghost/debug')('services:email-analytics');
-const db = require('../../../data/db');
-const logging = require('@tryghost/logging');
-const {default: ObjectID} = require('bson-objectid');
+import _ from 'lodash';
+import debugFactory from '@tryghost/debug';
+// @ts-expect-error This module lacks type definitions.
+import db from '../../../data/db';
+import logging from '@tryghost/logging';
+import ObjectID from 'bson-objectid';
+
+const debug = debugFactory('services:email-analytics');
 
 const MIN_EMAIL_COUNT_FOR_OPEN_RATE = 5;
 
-/** @typedef {string} EmailAnalyticsJobName */
-/** @typedef {'delivered'|'opened'|'failed'} EmailAnalyticsEvent */
-/**
- * @typedef {object} CursorSeed
- * @prop {string} tableName
- * @prop {Partial<Record<EmailAnalyticsEvent, string>>} eventColumns
- */
+type EmailAnalyticsJobName = string;
+type EmailAnalyticsEvent = 'delivered' | 'opened' | 'failed';
+type CursorSeed = {
+    tableName: string;
+    eventColumns: Partial<Record<EmailAnalyticsEvent, string>>;
+};
 
 /**
  * Creates a job in the jobs table if it does not already exist.
- * @param {EmailAnalyticsJobName} jobName - The name of the job to create.
- * @returns {Promise<void>}
+ * @param jobName - The name of the job to create.
  */
-async function createJobIfNotExists(jobName) {
+async function createJobIfNotExists(jobName: EmailAnalyticsJobName): Promise<void> {
     await db.knex('jobs').insert({
         id: new ObjectID().toHexString(),
         name: jobName,
@@ -29,18 +30,22 @@ async function createJobIfNotExists(jobName) {
     }).onConflict('name').ignore();
 }
 
-module.exports = {
+export const queries = {
     /**
      * Retrieves the timestamp of the last seen event for the specified email analytics events.
-     * @param {EmailAnalyticsJobName} jobName - The name of the job to update.
-     * @param {EmailAnalyticsEvent[]} events - The email analytics events to consider.
-     * @param {CursorSeed} cursorSeed - Recipient table and timestamp columns to read the initial cursor from. Used when the job has no stored timestamp yet.
-     * @returns {Promise<Date|null>} The timestamp of the last seen event, or null if no events are found.
+     * @param jobName - The name of the job to update.
+     * @param events - The email analytics events to consider.
+     * @param cursorSeed - Recipient table and timestamp columns to read the initial cursor from. Used when the job has no stored timestamp yet.
+     * @returns The timestamp of the last seen event, or null if no events are found.
      */
-    async getLastEventTimestamp(jobName, events, cursorSeed) {
+    async getLastEventTimestamp(
+        jobName: EmailAnalyticsJobName,
+        events: EmailAnalyticsEvent[],
+        cursorSeed: CursorSeed
+    ): Promise<Date | null> {
         const startDate = new Date();
 
-        let timestamps = [];
+        let timestamps: (Date | string | null)[] = [];
         const lastJobRunTimestamp = await this.getLastJobRunTimestamp(jobName);
 
         if (lastJobRunTimestamp) {
@@ -65,46 +70,48 @@ module.exports = {
         }
 
         // Convert string dates to Date objects for SQLite compatibility
-        timestamps = timestamps.map(date => (
-            date && !(date instanceof Date) ? new Date(date) : date
-        ));
+        const normalizedTimestamps = timestamps.map(date => {
+            if (!date) {
+                return null;
+            }
+            return date instanceof Date ? date : new Date(date);
+        });
 
-        const lastSeenEventTimestamp = _.max(timestamps);
-        debug(`getLastEventTimestamp: finished in ${Date.now() - startDate}ms`);
+        const lastSeenEventTimestamp = _.max(normalizedTimestamps) ?? null;
+        debug(`getLastEventTimestamp: finished in ${Date.now() - startDate.getTime()}ms`);
 
         return lastSeenEventTimestamp;
     },
 
     /**
      * Retrieves the job data for the specified job name.
-     * @param {EmailAnalyticsJobName} jobName - The name of the job to retrieve data for.
-     * @returns {Promise<Object|null>} The job data, or null if no job data is found.
+     * @param jobName - The name of the job to retrieve data for.
+     * @returns The job data, or null if no job data is found.
      */
-    async getJobData(jobName) {
+    async getJobData(jobName: EmailAnalyticsJobName) {
         return await db.knex('jobs').select('finished_at', 'started_at', 'metadata').where('name', jobName).first();
     },
 
     /**
      * Retrieves the timestamp of the last job run for the specified job name.
-     * @param {EmailAnalyticsJobName} jobName - The name of the job to retrieve the last run timestamp for.
-     * @returns {Promise<Date|null>} The timestamp of the last job run, or null if no job data is found.
+     * @param jobName - The name of the job to retrieve the last run timestamp for.
+     * @returns The timestamp of the last job run, or null if no job data is found.
      */
-    async getLastJobRunTimestamp(jobName) {
+    async getLastJobRunTimestamp(jobName: EmailAnalyticsJobName): Promise<Date | null> {
         const jobData = await this.getJobData(jobName);
         return jobData ? jobData.finished_at || jobData.started_at : null;
     },
 
     /**
      * Sets the timestamp of the last seen event for the specified email analytics events.
-     * @param {EmailAnalyticsJobName} jobName - The name of the job to update.
-     * @param {'finished'|'started'} field - The field to update.
-     * @param {Date} date - The timestamp of the last seen event.
-     * @returns {Promise<void>}
+     * @param jobName - The name of the job to update.
+     * @param field - The field to update.
+     * @param date - The timestamp of the last seen event.
      * @description
      * Updates the `finished_at` or `started_at` column of the specified job in the `jobs` table with the provided timestamp.
      * This is used to keep track of the last time the job was run to avoid expensive queries following reboot.
      */
-    async setJobTimestamp(jobName, field, date) {
+    async setJobTimestamp(jobName: EmailAnalyticsJobName, field: 'finished' | 'started', date: Date): Promise<void> {
         // Convert string dates to Date objects for SQLite compatibility
         try {
             debug(`Setting ${field} timestamp for job ${jobName} to ${date}`);
@@ -120,38 +127,39 @@ module.exports = {
                     status: status
                 });
             }
-        } catch (err) {
-            debug(`Error setting ${field} timestamp for job ${jobName}: ${err.message}`);
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : String(err);
+            debug(`Error setting ${field} timestamp for job ${jobName}: ${message}`);
         }
     },
 
     /**
      * Retrieves and parses the metadata JSON for the specified job.
-     * @param {EmailAnalyticsJobName} jobName - The name of the job.
-     * @returns {Promise<Object|null>} The parsed metadata object, or null.
+     * @param jobName - The name of the job.
+     * @returns The parsed metadata object, or null.
      */
-    async getJobMetadata(jobName) {
+    async getJobMetadata(jobName: EmailAnalyticsJobName): Promise<object | null> {
         try {
             const row = await db.knex('jobs').select('metadata').where('name', jobName).first();
             if (row && row.metadata) {
                 return JSON.parse(row.metadata);
             }
-        } catch (err) {
-            logging.error(`Error reading metadata for job ${jobName}: ${err.message}`);
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : String(err);
+            logging.error(`Error reading metadata for job ${jobName}: ${message}`);
         }
         return null;
     },
 
     /**
      * Writes metadata JSON for the specified job.
-     * @param {EmailAnalyticsJobName} jobName - The name of the job.
-     * @param {Object|null} metadata - The metadata to store, or null to clear.
-     * @returns {Promise<void>}
+     * @param jobName - The name of the job.
+     * @param metadata - The metadata to store, or null to clear.
      */
-    async setJobMetadata(jobName, metadata) {
+    async setJobMetadata(jobName: EmailAnalyticsJobName, metadata: object | null): Promise<void> {
         try {
             const value = metadata ? JSON.stringify(metadata) : null;
-            await db.knex.transaction(async (trx) => {
+            await db.knex.transaction(async (trx: typeof db.knex) => {
                 const result = await trx('jobs').update({metadata: value, updated_at: new Date()}).where('name', jobName);
                 if (result === 0 && metadata) {
                     await trx('jobs').insert({
@@ -163,21 +171,21 @@ module.exports = {
                     });
                 }
             });
-        } catch (err) {
-            logging.error(`Error setting metadata for job ${jobName}: ${err.message}`);
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : String(err);
+            logging.error(`Error setting metadata for job ${jobName}: ${message}`);
         }
     },
 
     /**
      * Sets the status of the specified email analytics job.
-     * @param {EmailAnalyticsJobName} jobName - The name of the job to update.
-     * @param {'started'|'finished'|'failed'} status - The new status of the job.
-     * @returns {Promise<void>}
+     * @param jobName - The name of the job to update.
+     * @param status - The new status of the job.
      * @description
      * Updates the `status` column of the specified job in the `jobs` table with the provided status.
      * This is used to keep track of the current state of the job.
      */
-    async setJobStatus(jobName, status) {
+    async setJobStatus(jobName: EmailAnalyticsJobName, status: 'started' | 'finished' | 'failed'): Promise<void> {
         debug(`Setting status for job ${jobName} to ${status}`);
         try {
             const result = await db.knex('jobs')
@@ -196,17 +204,18 @@ module.exports = {
                     updated_at: new Date()
                 });
             }
-        } catch (err) {
-            debug(`Error setting status for job ${jobName}: ${err.message}`);
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : String(err);
+            debug(`Error setting status for job ${jobName}: ${message}`);
             throw err;
         }
     },
 
-    async aggregateEmailStats(emailId, updateOpenedCount) {
+    async aggregateEmailStats(emailId: string, updateOpenedCount: boolean): Promise<void> {
         const [deliveredCount] = await db.knex('email_recipients').count('id as count').whereRaw('email_id = ? AND delivered_at IS NOT NULL', [emailId]);
         const [failedCount] = await db.knex('email_recipients').count('id as count').whereRaw('email_id = ? AND failed_at IS NOT NULL', [emailId]);
 
-        const updateData = {
+        const updateData: Record<string, string | number> = {
             delivered_count: deliveredCount.count,
             failed_count: failedCount.count
         };
@@ -219,7 +228,7 @@ module.exports = {
         await db.knex('emails').update(updateData).where('id', emailId);
     },
 
-    async aggregateMemberStats(memberId) {
+    async aggregateMemberStats(memberId: string): Promise<void> {
         const {trackedEmailCount} = await db.knex('email_recipients')
             .select(db.knex.raw('COUNT(email_recipients.id) as trackedEmailCount'))
             .leftJoin('emails', 'email_recipients.email_id', 'emails.id')
@@ -230,7 +239,7 @@ module.exports = {
         const [emailCount] = await db.knex('email_recipients').count('id as count').whereRaw('member_id = ?', [memberId]);
         const [emailOpenedCount] = await db.knex('email_recipients').count('id as count').whereRaw('member_id = ? AND opened_at IS NOT NULL', [memberId]);
 
-        const updateQuery = {
+        const updateQuery: Record<string, string | number> = {
             email_count: emailCount.count,
             email_opened_count: emailOpenedCount.count
         };
@@ -244,7 +253,7 @@ module.exports = {
             .where('id', memberId);
     },
 
-    async aggregateMemberStatsBatch(memberIds) {
+    async aggregateMemberStatsBatch(memberIds: string[]): Promise<void> {
         if (!memberIds || memberIds.length === 0) {
             return;
         }
@@ -262,7 +271,7 @@ module.exports = {
             .groupBy('email_recipients.member_id');
 
         // Build update data for each member
-        const memberStatsMap = new Map();
+        const memberStatsMap = new Map<string, {email_count: number; email_opened_count: number; email_open_rate: number | null}>();
         for (const stat of stats) {
             const emailOpenRate = stat.tracked_count >= MIN_EMAIL_COUNT_FOR_OPEN_RATE
                 ? Math.round((stat.email_opened_count / stat.tracked_count) * 100)
@@ -276,12 +285,12 @@ module.exports = {
         }
 
         // Build CASE statements for batch update
-        const emailCountCases = [];
-        const emailOpenedCountCases = [];
-        const emailOpenRateCases = [];
-        const emailCountBindings = [];
-        const emailOpenedCountBindings = [];
-        const emailOpenRateBindings = [];
+        const emailCountCases: string[] = [];
+        const emailOpenedCountCases: string[] = [];
+        const emailOpenRateCases: string[] = [];
+        const emailCountBindings: (string | number)[] = [];
+        const emailOpenedCountBindings: (string | number)[] = [];
+        const emailOpenRateBindings: (string | number)[] = [];
 
         for (const memberId of memberIds) {
             const memberStats = memberStatsMap.get(memberId) || {
@@ -328,3 +337,5 @@ module.exports = {
         `, bindings);
     }
 };
+
+export type Queries = typeof queries;

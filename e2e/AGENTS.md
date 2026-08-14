@@ -2,14 +2,17 @@
 
 E2E testing guidance for AI assistants (Claude, Codex, etc.) working with Ghost tests.
 
-**IMPORTANT**: When creating or modifying E2E tests, always refer to `./.claude/E2E_TEST_WRITING_GUIDE.md` for comprehensive testing guidelines and patterns.
+**IMPORTANT**: `README.md` is the canonical human documentation for E2E testing.
+When creating or modifying E2E tests, follow it first. Use
+`./.claude/E2E_TEST_WRITING_GUIDE.md` for additional agent-oriented examples.
 
 ## Critical Rules
-1. **Always follow ADRs** in `../adr/` folder (ADR-0001: AAA pattern, ADR-0002: Page Objects)
-2. **Always use pnpm**, never npm
-3. **Always run after changes**: `pnpm lint` and `pnpm test:types`
-4. **Never use CSS/XPath selectors** - only semantic locators or data-testid
-5. **Prefer less comments and giving things clear names**
+1. **Always use pnpm**, never npm
+2. **Always run after changes**: `pnpm lint` and `pnpm test:types`
+3. **Prefer semantic locators**, then stable test IDs
+4. **Keep reusable UI structure and interactions in Page Objects**
+5. **Avoid selectors coupled to styling or DOM position**
+6. **Prefer clear names over explanatory comments**
 
 ## Running E2E Tests
 
@@ -74,7 +77,8 @@ export class AnalyticsPage extends AdminPage {
 ```
 
 ### Rules
-- Page Objects are located in `helpers/pages/`
+- Put reusable page and major-component behavior in `helpers/pages/`
+- Direct semantic locators are acceptable for small, one-off test interactions or assertions
 - Expose locators as `public readonly` when used with assertions
 - Methods use semantic names (`login()` not `clickLoginButton()`)
 - Use `waitFor()` for guards, never `expect()` in page objects
@@ -91,7 +95,11 @@ export class AnalyticsPage extends AdminPage {
    - `getByTestId('analytics-card')`
    - Suggest adding `data-testid` to Ghost codebase when needed
 
-3. **Never use**: CSS selectors, XPath, nth-child, class names
+3. **Structural fallback**: stable attributes when semantic locators are unavailable
+
+Avoid XPath, `nth-child`, styling classes, and other selectors coupled to DOM
+position or presentation. Keep necessary structural selectors in Page Objects where
+practical.
 
 ### Playwright MCP Usage
 - Use `mcp__playwright__browser_snapshot` to find elements
@@ -145,6 +153,6 @@ After writing tests, verify:
 2. Linting passes: `pnpm lint`
 3. Types check: `pnpm test:types`
 4. Follows AAA pattern with clear sections
-5. Uses page objects appropriately
-6. Uses semantic locators or data-testid only
-7. No hard-coded waits or CSS selectors
+5. Uses Page Objects for reusable UI behavior
+6. Prefers semantic locators, then stable test IDs
+7. Has no hard-coded waits or selectors coupled to styling/DOM position

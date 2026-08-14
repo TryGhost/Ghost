@@ -49,7 +49,7 @@ class EmailAnalyticsServiceWrapper {
         const EmailAnalyticsService = require('./email-analytics-service');
         const settings = require('../../../shared/settings-cache');
         const labs = require('../../../shared/labs');
-        const queries = require('./lib/queries');
+        const {queries} = require('./lib/queries');
 
         // Build the analytics provider(s) through the unified email adapter, so
         // analytics uses the same adapter as email sending. A fresh instance is

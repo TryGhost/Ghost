@@ -139,25 +139,15 @@ standalone cleanup PR so the later conversion remains focused.
 
 ## 6. Hand off to the package golden path
 
-Compare the package against `packages/_template`, current comparable internal
-packages, and any canonical package guidance in the repository. Do not turn
-this one-time migration skill into the source of lifetime package standards.
+Read `packages/README.md` completely and compare the package against the
+template and current comparable internal packages. Do not turn this one-time
+migration skill into the source of lifetime package standards.
 
-For a legacy `lib/*.js` package, preserve file lineage with three focused
-commits:
-
-1. `Moved ... sources from lib to src` — paths and path references only.
-2. `Changed ... file extensions to TypeScript` — mechanical renames and the
-   minimum compilation scaffolding.
-3. `Converted ... to TypeScript` — types, ESM semantics and cleanup.
-
-Use `git diff --summary` after mechanical commits and confirm Git recognizes
-the files as renames. A small CommonJS forwarding shim may correctly appear as
-a deletion when a real ESM export replaces it.
-
-This modernization PR may be rebase-merged when the commits are independently
-valid and intentionally ordered. That does not alter the merge-commit
-requirement for the earlier subtree import.
+If the package needs conversion from legacy JavaScript or CommonJS, use the
+`convert-internal-package-to-typescript` skill in a separate modernization PR.
+That skill owns commit staging, file-lineage checks, TypeScript quality and
+runtime verification. This does not alter the merge-commit requirement for the
+earlier subtree history import.
 
 ## Completion criteria
 
