@@ -50,6 +50,10 @@
             "active": "FileStore",
             "FileStore": {},
             "S3RedirectsStore": {}
+        },
+        "email": {
+            "active": "Mailgun",
+            "Mailgun": {}
         }
     },
     "storage": {
