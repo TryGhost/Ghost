@@ -22,6 +22,8 @@ export interface WorkerRenderRequest {
     apiFixtures: ApiFixtures;
     /** Route path to render, e.g. '/' */
     path: string;
+    /** Stamp data-edit source markers (slice 3 editor lane) */
+    markers?: boolean;
 }
 
 export type WorkerRenderResult =
@@ -33,7 +35,7 @@ function post(result: WorkerRenderResult): void {
 }
 
 self.onmessage = async (event: MessageEvent<WorkerRenderRequest>): Promise<void> => {
-    const {siteUrl, contentApiKey, theme, config, apiFixtures, path} = event.data;
+    const {siteUrl, contentApiKey, theme, config, apiFixtures, path, markers} = event.data;
     try {
         const renderer = await createRenderer({
             siteUrl,
@@ -42,7 +44,7 @@ self.onmessage = async (event: MessageEvent<WorkerRenderRequest>): Promise<void>
             config,
             fetch: createReplayFetch(apiFixtures)
         });
-        const response = await renderer.render(new Request(new URL(path, siteUrl).toString()));
+        const response = await renderer.render(new Request(new URL(path, siteUrl).toString()), {markers});
         const html = await response.text();
         post({ok: true, status: response.status, html});
     } catch (error) {

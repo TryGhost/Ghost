@@ -34,7 +34,7 @@ const instance = JSON.parse(instanceRaw) as InstanceFixture;
 const theme = JSON.parse(themeRaw) as Record<string, string>;
 const apiFixtures = JSON.parse(apiFixturesRaw) as ApiFixtures;
 
-function renderInWorker(path: string): Promise<WorkerRenderResult> {
+function renderInWorker(path: string, markers = false): Promise<WorkerRenderResult> {
     const worker = new Worker(new URL('./render-worker.ts', import.meta.url), {type: 'module'});
     const request: WorkerRenderRequest = {
         siteUrl: instance.siteUrl,
@@ -42,7 +42,8 @@ function renderInWorker(path: string): Promise<WorkerRenderResult> {
         theme,
         config: instance.config,
         apiFixtures,
-        path
+        path,
+        markers
     };
     return new Promise<WorkerRenderResult>((resolve, reject) => {
         worker.onmessage = (event: MessageEvent<WorkerRenderResult>) => resolve(event.data);
@@ -75,5 +76,19 @@ describe('worker render parity (real Web Worker, Chromium)', function () {
         }
         expect(result.status).toBe(200);
         expectWorkerBytesEqual(result.html, expectedPost, instance.routes.post);
+    });
+
+    // Slice 3 (editor spike): the editor runs marker renders in this exact
+    // worker lane — data-edit source markers must work here too, and stripping
+    // them must recover the parity bytes exactly.
+    it('renders the home route with source markers in the worker (editor lane)', async function () {
+        const result = await renderInWorker(instance.routes.home, true);
+        if (!result.ok) {
+            expect.fail(`worker markers render failed:\n${result.error}`);
+        }
+        expect(result.status).toBe(200);
+        expect(result.html).toContain(' data-edit="');
+        expect(result.html).toContain('data-edit="partials/post-card.hbs:');
+        expectWorkerBytesEqual(result.html.replace(/ data-edit="[^"]*"/g, ''), expectedHome, instance.routes.home);
     });
 });

@@ -16,6 +16,16 @@ import {getRendererDeps} from './deps.ts';
 
 type HandlebarsEnv = typeof Handlebars;
 
+/**
+ * Compiles string partial sources. The assembly injects the engine's compile
+ * (via setHandlebarsInstance's second argument) so ALL partial compilation
+ * flows through the ONE engine compile path — onCompile hook, preventIndent,
+ * empty-comment workaround (review-backlog "second compile path" item). The
+ * fallback exists only for unit-test setups that use a bare handlebars
+ * instance without an engine, and mirrors the engine's compile options.
+ */
+let partialCompiler: ((source: string) => Handlebars.TemplateDelegate) | null = null;
+
 export const hbs: {
     handlebars: HandlebarsEnv;
     SafeString: typeof Handlebars.SafeString;
@@ -29,17 +39,19 @@ export const hbs: {
     escapeExpression: Handlebars.Utils.escapeExpression,
     registerPartial(name: string, source?: any) {
         // express-hbs registers partials pre-compiled (templates.execute calls
-        // `partial(context, data)` directly); compile string sources the same
-        // way the theme-engine does (preventIndent, see engine.js onCompile).
+        // `partial(context, data)` directly); string sources compile through
+        // the engine's compile when bound, so partial compilation behaves
+        // exactly like template compilation.
         const compiled = typeof source === 'string'
-            ? hbs.handlebars.compile(source, {preventIndent: true})
+            ? (partialCompiler ?? (src => hbs.handlebars.compile(src, {preventIndent: true})))(source)
             : source;
         hbs.handlebars.registerPartial(name, compiled);
     }
 };
 
-export function setHandlebarsInstance(instance: HandlebarsEnv): void {
+export function setHandlebarsInstance(instance: HandlebarsEnv, compilePartial?: (source: string) => Handlebars.TemplateDelegate): void {
     hbs.handlebars = instance;
+    partialCompiler = compilePartial ?? null;
 }
 
 export const SafeString = Handlebars.SafeString;

@@ -39,6 +39,15 @@ instance at `localhost:2368` or `GHOST_URL`):
 node test/integration/record-browser-fixtures.ts
 ```
 
+## Source markers (editor)
+
+`renderer.render(request, {markers: true})` stamps rendered elements with
+`data-edit="<file>:<line>:<column>"` source markers so an editor can map a
+click in a preview back to the exact theme-source location. Off by default —
+the default path stays byte-identical (parity suites are the guard). Payload
+format, transform design and the documented edge-case punts live in
+[docs/markers.md](docs/markers.md).
+
 ## Exceptions to the golden path
 
 Recorded here per the [internal package golden path](../README.md)

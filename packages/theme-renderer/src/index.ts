@@ -26,6 +26,7 @@ import tpl from '@tryghost/tpl';
 import errors from '@tryghost/errors';
 import * as errorsNamespace from '@tryghost/errors';
 import {TemplateEngine} from './engine/engine.ts';
+import {injectEditMarkers} from './engine/markers.ts';
 import {createThemeSource, type ThemeFiles, type ThemeSource} from './theme/theme-source.ts';
 import {loadDefaultDeps} from './seam/defaults.ts';
 import {configureRendererDeps} from './seam/deps.ts';
@@ -84,8 +85,19 @@ export interface CreateRendererOptions {
     logging?: LoggingPort;
 }
 
+export interface RenderRequestOptions {
+    /**
+     * Stamp rendered elements with `data-edit="<file>:<line>:<column>"`
+     * source markers (slice 3, editor spike — see docs/markers.md). Strictly
+     * opt-in: the default render path is byte-identical to a build without
+     * this feature. Marker renders use a separate lazily-built engine, so
+     * toggling per render is cheap after the first markers render.
+     */
+    markers?: boolean;
+}
+
 export interface ThemeRenderer {
-    render(request: Request): Promise<Response>;
+    render(request: Request, options?: RenderRequestOptions): Promise<Response>;
     engine: TemplateEngine;
     deps: RendererDeps;
     themeSource: ThemeSource;
@@ -138,12 +150,46 @@ export async function createRenderer(options: CreateRendererOptions): Promise<Th
         logging: options.logging
     });
 
-    const engine = new TemplateEngine(themeSource.resolver, {
-        // theme-engine/engine.js onCompile: preventIndent matches express-hbs config
-        onCompile(self, source) {
-            return self.handlebars.compile(source, {preventIndent: true});
-        }
-    });
+    /**
+     * All engines built for this renderer: the default engine plus, once a
+     * markers render happens, the marker engine. Marker emission is a
+     * compile-time source transform, and compiled templates/partials are
+     * cached per engine — so the two variants live in two engines and the
+     * default path's caches (the byte-parity guard) are never touched by a
+     * markers render.
+     */
+    const engines: TemplateEngine[] = [];
+
+    /**
+     * Points the seam's handlebars environment at an engine: templates.execute
+     * (navigation/pagination partials) must see the engine's partials, and
+     * string partial sources (core helper partials) must compile through the
+     * engine's compile so there is a single compile path.
+     */
+    function bindSeamToEngine(target: TemplateEngine): void {
+        setHandlebarsInstance(target.handlebars, source => target.compile(source));
+    }
+
+    function buildEngine(markers: boolean): TemplateEngine {
+        const built = new TemplateEngine(themeSource.resolver, {
+            // theme-engine/engine.js onCompile: preventIndent matches
+            // express-hbs config. With markers on, theme sources are stamped
+            // with data-edit markers first (slice 3, docs/markers.md); core
+            // helper partials compile with no filename and stay unmarked —
+            // they are not theme-editable files.
+            onCompile(self, source, filename) {
+                const compileSource = markers && filename ? injectEditMarkers(source, filename) : source;
+                return self.handlebars.compile(compileSource, {preventIndent: true});
+            }
+        });
+        bindSeamToEngine(built);
+        // Core helper partials first; theme partials register on first render
+        // and override same-named ones.
+        registerCoreHelperPartials(hbs);
+        registerGhostHelpers(createEngineHelperRegistrar(built));
+        engines.push(built);
+        return built;
+    }
 
     const activeTheme: ActiveThemePort = {
         name: themeSource.packageJson?.name ?? 'theme',
@@ -154,8 +200,11 @@ export async function createRenderer(options: CreateRendererOptions): Promise<Th
             return themeSource.config(key);
         },
         // active.js:updateTemplateOptions — merge over the engine's globals
+        // (every engine, so marker renders see the same template options)
         updateTemplateOptions(opts: Record<string, any>) {
-            engine.updateTemplateOptions(_.merge({}, engine.getTemplateOptions(), opts));
+            for (const target of engines) {
+                target.updateTemplateOptions(_.merge({}, target.getTemplateOptions(), opts));
+            }
         }
     };
 
@@ -171,18 +220,24 @@ export async function createRenderer(options: CreateRendererOptions): Promise<Th
     // Module-singleton seam: single renderer active at a time (spec scope guard).
     configureRendererDeps(deps);
 
-    // Share the engine's handlebars environment with the seam so
-    // templates.execute (navigation/pagination partials) finds the partials.
-    setHandlebarsInstance(engine.handlebars);
-
-    // Core helper partials first; theme partials register on first render and
-    // override same-named ones.
-    registerCoreHelperPartials(hbs);
-
-    registerGhostHelpers(createEngineHelperRegistrar(engine));
+    const engine = buildEngine(false);
 
     // Global template options — @site/@labs/@config/@custom
     engine.updateTemplateOptions(buildGlobalTemplateOptions());
+
+    // The marker engine is built on the first markers render — the default
+    // path never pays for it (nor shares caches with it).
+    let markerEngine: TemplateEngine | null = null;
+    function getMarkerEngine(): TemplateEngine {
+        if (!markerEngine) {
+            markerEngine = buildEngine(true);
+            // inherit the default engine's accumulated global template
+            // options (buildGlobalTemplateOptions seed + any activeTheme
+            // updates made since)
+            markerEngine.updateTemplateOptions(_.merge({}, engine.getTemplateOptions()));
+        }
+        return markerEngine;
+    }
 
     const safeVersion = deps.settings.get('version');
 
@@ -194,7 +249,7 @@ export async function createRenderer(options: CreateRendererOptions): Promise<Th
      * defaultViews error.hbs, and raw upstream error messages must not leak
      * into the fallback body).
      */
-    async function renderErrorResponse(err: any, req: {path: string; originalUrl: string; query: Record<string, any>; params: Record<string, any>}, locals: RenderLocals): Promise<Response> {
+    async function renderErrorResponse(err: any, req: {path: string; originalUrl: string; query: Record<string, any>; params: Record<string, any>}, locals: RenderLocals, renderEngine: TemplateEngine): Promise<Response> {
         // prepareError: non-Ghost errors become an InternalServerError whose
         // message is the generic default, never the upstream error text
         const ghostErr: any = errorsUtils.isGhostError(err) ? err : new errors.InternalServerError({err});
@@ -216,7 +271,7 @@ export async function createRenderer(options: CreateRendererOptions): Promise<Th
             templates.setTemplate({...req, err: ghostErr} as any, res);
 
             const root = {...locals, ...data, _locals: locals};
-            const html = await engine.render(`${res._template}.hbs`, root);
+            const html = await renderEngine.render(`${res._template}.hbs`, root);
             return new Response(html, {
                 status: statusCode,
                 headers: {'content-type': 'text/html; charset=utf-8'}
@@ -228,12 +283,17 @@ export async function createRenderer(options: CreateRendererOptions): Promise<Th
         }
     }
 
-    async function render(request: Request): Promise<Response> {
+    async function render(request: Request, renderOptions: RenderRequestOptions = {}): Promise<Response> {
+        // Per-render engine pick: the default engine, or the lazily-built
+        // marker engine when source markers are requested (docs/markers.md).
+        const activeEngine = renderOptions.markers ? getMarkerEngine() : engine;
+
         // Re-assert this renderer's deps AND handlebars environment on the
-        // module singletons so multiple renderer instances can be used
-        // sequentially (creating another renderer repoints both).
+        // module singletons so multiple renderer instances (and the two
+        // engines of one renderer) can be used sequentially — creating
+        // another renderer, or a markers render, repoints both.
         configureRendererDeps(deps);
-        setHandlebarsInstance(engine.handlebars);
+        bindSeamToEngine(activeEngine);
 
         const url = new URL(request.url);
         let pathname = url.pathname;
@@ -297,7 +357,7 @@ export async function createRenderer(options: CreateRendererOptions): Promise<Th
             if (resolveErr?.errorType === 'ValidationError') {
                 candidates = [];
             } else {
-                return renderErrorResponse(resolveErr, req, locals);
+                return renderErrorResponse(resolveErr, req, locals, activeEngine);
             }
         }
 
@@ -333,7 +393,7 @@ export async function createRenderer(options: CreateRendererOptions): Promise<Th
             }
 
             if ('error' in result) {
-                return renderErrorResponse(result.error.err, candidateReq, locals);
+                return renderErrorResponse(result.error.err, candidateReq, locals, activeEngine);
             }
 
             // Express res.render semantics: handlebars root =
@@ -341,7 +401,7 @@ export async function createRenderer(options: CreateRendererOptions): Promise<Th
             const root = {...locals, ...result.render.data, _locals: locals};
             let html: string;
             try {
-                html = await engine.render(`${result.render.template}.hbs`, root);
+                html = await activeEngine.render(`${result.render.template}.hbs`, root);
             } catch (renderErr: any) {
                 // rendering/renderer.js:40-48 — a missing template/layout
                 // (ENOENT upstream, NotFoundError from the virtual fs) becomes
@@ -355,7 +415,7 @@ export async function createRenderer(options: CreateRendererOptions): Promise<Th
                         err: renderErr
                     })
                     : renderErr;
-                return renderErrorResponse(mapped, candidateReq, locals);
+                return renderErrorResponse(mapped, candidateReq, locals, activeEngine);
             }
 
             return new Response(html, {
@@ -365,7 +425,7 @@ export async function createRenderer(options: CreateRendererOptions): Promise<Th
         }
 
         // mw-error-handler pageNotFound: no router matched
-        return renderErrorResponse(new errors.NotFoundError({message: tpl(messages.pageNotFound)}), req, locals);
+        return renderErrorResponse(new errors.NotFoundError({message: tpl(messages.pageNotFound)}), req, locals, activeEngine);
     }
 
     return {render, engine, deps, themeSource};
