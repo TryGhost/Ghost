@@ -1,37 +1,19 @@
-// x.com URLs with 1-15 characters, alphanumeric and underscores
-const X_URL_REGEX = /^x\.com\/([a-zA-Z0-9_]{1,15})$/;
+import {createPlatformValidator} from './platform-validator';
 
-export function validateTwitterUrl(newUrl: string) {
-    if (!newUrl) {
-        return '';
+// X handles are ASCII-only by platform rule: 1–15 letters, numbers or underscores.
+// twitter.com URLs are accepted and canonicalised to x.com.
+const twitter = createPlatformValidator({
+    domains: ['x.com', 'twitter.com'],
+    www: false,
+    pathTypes: [
+        {urlPrefix: '', storagePrefix: '@', rule: {extra: '_', min: 1, max: 15}}
+    ],
+    errors: {
+        invalidUrl: 'The URL must be in a format like https://x.com/yourUsername',
+        invalidUsername: 'Your Username is not a valid Twitter Username'
     }
-    if (newUrl.match(X_URL_REGEX) || newUrl.match(/([a-z\d.]+)/i)) {
-        let username = [];
+});
 
-        if (newUrl.match(X_URL_REGEX)) {
-            [, username] = newUrl.match(X_URL_REGEX);
-        } else {
-            [username] = newUrl.match(/([^/]+)\/?$/i);
-        }
-
-        if (username.startsWith('@')) {
-            username = username.slice(1);
-        }
-
-        if (!username.match(/^[a-z\d_]{1,15}$/i)) {
-            throw new Error('Your Username is not a valid Twitter Username');
-        }
-
-        return `https://x.com/${username}`;
-    } else {
-        const message = 'The URL must be in a format like https://x.com/yourUsername';
-        throw new Error(message);
-    }
-}
-
-export const twitterHandleToUrl = (handle: string) => `https://x.com/${handle.replace('@', '')}`;
-
-export const twitterUrlToHandle = (url: string) => {
-    const handle = url.match(/(?:https:\/\/)(?:x\.com)\/(?:#!\/)?@?([^/]*)/)?.[1];
-    return handle ? `@${handle}` : null;
-}; 
+export const validateTwitterUrl = twitter.validate;
+export const twitterHandleToUrl = twitter.handleToUrl;
+export const twitterUrlToHandle = twitter.urlToHandle;

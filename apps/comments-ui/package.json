@@ -75,7 +75,7 @@
     "concurrently": "catalog:",
     "eslint": "catalog:",
     "eslint-plugin-ghost": "catalog:",
-    "eslint-plugin-i18next": "6.1.4",
+    "eslint-plugin-i18next": "6.1.5",
     "eslint-plugin-react": "catalog:",
     "eslint-plugin-tailwindcss": "catalog:tailwind3",
     "globals": "catalog:",

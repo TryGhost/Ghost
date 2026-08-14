@@ -265,7 +265,7 @@ describe('{{ghost_head}} helper', function () {
 
         posts.push(createPost({// Post 4
             title: 'Welcome to Ghost',
-            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('This is a short post'),
+            lexical: testUtils.DataGenerator.markdownToLexical('This is a short post'),
             excerpt: 'This is a short post',
             authors: [
                 authors[3]
@@ -346,7 +346,7 @@ describe('{{ghost_head}} helper', function () {
 
         posts.push(createPost({// Post 9
             title: 'Welcome to Ghost',
-            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('This is a short post'),
+            lexical: testUtils.DataGenerator.markdownToLexical('This is a short post'),
             excerpt: 'This is a short post',
             tags: [
                 createTag({name: 'tag1'}),
@@ -365,7 +365,7 @@ describe('{{ghost_head}} helper', function () {
             title: 'Testing stats',
             uuid: 'post_uuid',
             excerpt: 'Creating stats for the site',
-            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('Creating stats for the site'),
+            lexical: testUtils.DataGenerator.markdownToLexical('Creating stats for the site'),
             authors: [
                 authors[3]
             ],

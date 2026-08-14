@@ -41,3 +41,8 @@ RUN set -eux; \
     apt-get install -y --no-install-recommends ca-certificates; \
     npx --yes "playwright@${PLAYWRIGHT_VERSION}" install --with-deps chromium; \
     rm -rf /var/lib/apt/lists/* /root/.npm
+
+# Enable corepack and install the pnpm version pinned in the repo's package.json
+# `packageManager` field.
+COPY package.json ./
+RUN corepack enable && corepack install && rm package.json

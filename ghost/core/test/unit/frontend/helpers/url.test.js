@@ -4,7 +4,7 @@ const sinon = require('sinon');
 const testUtils = require('../../../utils');
 
 const configUtils = require('../../../utils/config-utils');
-const markdownToMobiledoc = require('../../../utils/fixtures/data-generator').markdownToMobiledoc;
+const markdownToLexical = require('../../../utils/fixtures/data-generator').markdownToLexical;
 const url = require('../../../../core/frontend/helpers/url');
 const urlService = require('../../../../core/server/services/url');
 const logging = require('@tryghost/logging');
@@ -40,7 +40,7 @@ describe('{{url}} helper', function () {
         it('should return the slug with a prefix slash if the context is a post', function () {
             const post = testUtils.DataGenerator.forKnex.createPost({
                 html: 'content',
-                mobiledoc: markdownToMobiledoc('ff'),
+                lexical: markdownToLexical('ff'),
                 title: 'title',
                 slug: 'slug',
                 created_at: new Date(0),
@@ -57,7 +57,7 @@ describe('{{url}} helper', function () {
         it('should output an absolute URL if the option is present', function () {
             const post = testUtils.DataGenerator.forKnex.createPost({
                 html: 'content',
-                mobiledoc: markdownToMobiledoc('ff'),
+                lexical: markdownToLexical('ff'),
                 title: 'title',
                 slug: 'slug',
                 url: '/slug/',

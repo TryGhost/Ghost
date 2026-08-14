@@ -1,8 +1,9 @@
-import React, {ChangeEvent, useEffect, useRef, useState} from 'react';
+import React, {ChangeEvent, useRef, useState} from 'react';
 import {Account} from '@src/api/activitypub';
 import {Button, DialogClose, DialogFooter, Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage, Input, LoadingIndicator, Textarea} from '@tryghost/shade/components';
 import {FILE_SIZE_ERROR_MESSAGE, MAX_FILE_SIZE, SQUARE_IMAGE_ERROR_MESSAGE, isSquareImage} from '@utils/image';
 import {LucideIcon} from '@tryghost/shade/utils';
+import {getHandleParts} from '@utils/social-web-handle';
 import {toast} from 'sonner';
 import {uploadFile} from '@hooks/use-activity-pub-queries';
 import {useForm} from 'react-hook-form';
@@ -26,16 +27,6 @@ const FormSchema = z.object({
         .max(64, {
             message: 'Display name must be less than 64 characters.'
         }),
-    handle: z.string()
-        .min(2, {
-            message: 'Handle must be at least 2 characters.'
-        })
-        .max(100, {
-            message: 'Handle must be less than 100 characters.'
-        })
-        .regex(/^[a-zA-Z0-9_]+$/, {
-            message: 'Handle must contain only letters, numbers, and underscores.'
-        }),
     bio: z.string()
         .max(250, {
             message: 'Bio must be less than 250 characters.'
@@ -55,7 +46,6 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
     const [coverImagePreview, setCoverImagePreview] = useState<string | null>(account.bannerImageUrl || null);
     const coverImageInputRef = useRef<HTMLInputElement>(null);
     const [isCoverImageUploading, setIsCoverImageUploading] = useState(false);
-    const [handleDomain, setHandleDomain] = useState<string>('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const {mutate: updateAccount} = useUpdateAccountMutationForUser(account?.handle || '');
 
@@ -65,23 +55,11 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
             profileImage: account.avatarUrl,
             coverImage: account.bannerImageUrl || '',
             name: account.name,
-            handle: '',
             bio: account.bio ? decodeHTMLEntities(account.bio) : ''
         }
     });
 
     const hasNameError = !!form.formState.errors.name;
-    const hasHandleError = !!form.formState.errors.handle;
-
-    useEffect(() => {
-        if (account.handle) {
-            const match = account.handle.match(/@([^@]+)@(.+)/);
-            if (match) {
-                form.setValue('handle', match[1]);
-                setHandleDomain(match[2]);
-            }
-        }
-    }, [account.handle, form]);
 
     const triggerProfileImageInput = () => {
         profileImageInputRef.current?.click();
@@ -202,7 +180,6 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
         const decodedBio = account.bio ? decodeHTMLEntities(account.bio) : '';
         if (
             data.name === account.name &&
-            data.handle === account.handle.split('@')[1] &&
             data.bio === decodedBio &&
             data.profileImage === account.avatarUrl &&
             data.coverImage === account.bannerImageUrl
@@ -215,7 +192,7 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
 
         updateAccount({
             name: data.name || account.name,
-            username: data.handle || account.handle,
+            username: getHandleParts(account.handle).username || account.handle.replace(/^@/, '').split('@')[0],
             bio: data.bio ?? '',
             avatarUrl: data.profileImage || '',
             bannerImageUrl: data.coverImage || ''
@@ -326,28 +303,6 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
                             {!hasNameError && (
                                 <FormDescription>
                                     The name shown to your followers in the Inbox and Feed
-                                </FormDescription>
-                            )}
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name="handle"
-                    render={({field}) => (
-                        <FormItem>
-                            <FormLabel>Handle</FormLabel>
-                            <FormControl>
-                                <div className='relative flex items-center justify-stretch gap-1 rounded-md border border-transparent bg-gray-100 px-3 transition-colors focus-within:border-(--color-focus-ring) focus-within:bg-transparent focus-within:shadow-[(--color-focus-ring)] focus-within:outline-hidden dark:bg-gray-950'>
-                                    <LucideIcon.AtSign className='w-4 min-w-4 text-gray-700' size={16} />
-                                    <Input className='w-auto grow border-none! bg-transparent px-0 shadow-none! outline-hidden!' placeholder="index" {...field} />
-                                    <span className='max-w-[200px] truncate text-right whitespace-nowrap text-gray-700 max-sm:hidden' title={`@${handleDomain}`}>@{handleDomain}</span>
-                                </div>
-                            </FormControl>
-                            {!hasHandleError && (
-                                <FormDescription>
-                                    Your social web handle that others can follow. Works just like an email address. <a className='font-medium text-purple' href="https://ghost.org/help/social-web/" rel="noreferrer" target='_blank'>Learn more</a>
                                 </FormDescription>
                             )}
                             <FormMessage />

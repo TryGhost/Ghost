@@ -44,7 +44,7 @@ describe('PostScheduling', function () {
         it('wires event handlers and starts the adapter', async function () {
             const post = Post.forge(testUtils.DataGenerator.forKnex.createPost({
                 id: 1337,
-                mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('something')
+                lexical: testUtils.DataGenerator.markdownToLexical('something')
             }));
             nock('http://scheduler.local:1111').get(() => true).query(true).reply(200);
             nock('http://scheduler.local:1111').post(() => true).query(true).reply(200);
@@ -71,7 +71,7 @@ describe('PostScheduling', function () {
         function stubScheduledPost() {
             const post = Post.forge(testUtils.DataGenerator.forKnex.createPost({
                 id: 4004,
-                mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('something')
+                lexical: testUtils.DataGenerator.markdownToLexical('something')
             }));
             sinon.stub(Post, 'findAll').callsFake(({filter}) => {
                 return Promise.resolve(filter.includes('type:post') ? [post] : []);

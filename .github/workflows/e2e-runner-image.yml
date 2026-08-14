@@ -20,6 +20,9 @@ on:
       - '.github/workflows/e2e-runner-image.yml'
       # Playwright version pin — a bump here means a new runner tag to publish.
       - 'pnpm-workspace.yaml'
+      # pnpm's own version, pinned via `packageManager` — the Dockerfile COPYs this
+      # in and runs `corepack install` to bake it into the image.
+      - 'package.json'
 
 env:
   NODE_VERSION: 22.18.0
@@ -87,10 +90,10 @@ jobs:
           PLAYWRIGHT_VERSION: ${{ steps.version.outputs.playwright_version }}
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4
+        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4
 
       - name: Login to GHCR
-        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4
+        uses: docker/login-action@c99871dec2022cc055c062a10cc1a1310835ceb4 # v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}

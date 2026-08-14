@@ -63,20 +63,20 @@ describe('Front-end gift links', function () {
 
         await testUtils.startGhost({copyThemes: true});
 
-        const mobiledoc = testUtils.DataGenerator.markdownToMobiledoc('Before paywall\n\n<!--members-only-->\n\nAfter paywall');
+        const lexical = testUtils.DataGenerator.markdownToLexical('Before paywall\n\n<!--members-only-->\n\nAfter paywall');
         const paidPost = testUtils.DataGenerator.forKnex.createPost({
             slug,
             visibility: 'paid',
             status: 'published',
             published_at: moment().toDate(),
-            mobiledoc
+            lexical
         });
         const otherPaidPost = testUtils.DataGenerator.forKnex.createPost({
             slug: otherSlug,
             visibility: 'paid',
             status: 'published',
             published_at: moment().toDate(),
-            mobiledoc
+            lexical
         });
         // A gift link works on a page's canonical URL too, not just a post's.
         const paidPage = testUtils.DataGenerator.forKnex.createPost({
@@ -85,7 +85,7 @@ describe('Front-end gift links', function () {
             visibility: 'paid',
             status: 'published',
             published_at: moment().toDate(),
-            mobiledoc
+            lexical
         });
         // A members-only post so the toast copy can be asserted for that access level.
         const membersPost = testUtils.DataGenerator.forKnex.createPost({
@@ -93,7 +93,7 @@ describe('Front-end gift links', function () {
             visibility: 'members',
             status: 'published',
             published_at: moment().toDate(),
-            mobiledoc
+            lexical
         });
         await testUtils.fixtures.insertPosts([paidPost, otherPaidPost, paidPage, membersPost]);
 

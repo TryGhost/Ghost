@@ -71,6 +71,47 @@ describe('Account Plan Page', () => {
         expect(queryByTestId('yearly-switch')).not.toBeInTheDocument();
     });
 
+    test('shows paid plans to complimentary members on non-USD sites', () => {
+        // Regression test for https://linear.app/ghost/issue/ONC-1877
+        // Ghost core builds a synthetic subscription for comped members with a
+        // hardcoded USD currency and an empty price_id (see
+        // attachSubscriptionsToMember in member-bread-service.js). Filtering
+        // the available prices by that synthetic currency wrongly emptied the
+        // plans list on non-USD sites, showing "Sorry, no paid plans are
+        // available." instead of the upgrade options.
+        const products = [
+            getProductData({
+                name: 'Bronze',
+                monthlyPrice: getPriceData({interval: 'month', amount: 700, currency: 'eur'}),
+                yearlyPrice: getPriceData({interval: 'year', amount: 7000, currency: 'eur'}),
+                numOfBenefits: 2
+            })
+        ];
+        const siteData = getSiteData({products});
+        const memberData = getMemberData({
+            status: 'comped',
+            paid: true,
+            subscriptions: [
+                getSubscriptionData({
+                    id: '',
+                    status: 'active',
+                    currency: 'USD',
+                    interval: 'year',
+                    amount: 0,
+                    nickname: 'Complimentary',
+                    priceId: '',
+                    offer: null,
+                    tier: products[0]
+                })
+            ]
+        });
+        const {getByTestId, queryByTestId} = customSetup({site: siteData, member: memberData});
+
+        expect(queryByTestId('no-plans-available-notification-text')).not.toBeInTheDocument();
+        expect(getByTestId('monthly-switch')).toBeInTheDocument();
+        expect(getByTestId('yearly-switch')).toBeInTheDocument();
+    });
+
     test('can choose plan and continue', async () => {
         const siteData = getSiteData({
             products: getProductsData({numOfProducts: 1})

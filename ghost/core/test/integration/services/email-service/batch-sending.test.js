@@ -47,7 +47,8 @@ function sortBatches(a, b) {
 async function testEmailBatches(settings, email_recipient_filter, expectedBatches) {
     const {emailModel} = await sendEmail(agent, settings, email_recipient_filter);
 
-    assert.equal(emailModel.get('source_type'), 'mobiledoc');
+    // posts created with mobiledoc are converted to lexical on save
+    assert.equal(emailModel.get('source_type'), 'lexical');
     assert(emailModel.get('subject'));
     assert(emailModel.get('from'));
     const expectedTotal = expectedBatches.reduce((acc, batch) => acc + batch.recipients, 0);

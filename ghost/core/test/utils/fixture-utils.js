@@ -60,7 +60,30 @@ const fixtures = {
                 return Promise.all(DataGenerator.forKnex.posts_meta.map((postMeta) => {
                     return models.PostsMeta.add(postMeta, context.internal);
                 }));
+            })
+            .then(function () {
+                return fixtures.restoreLegacyMobiledocPosts();
             });
+    },
+
+    // New saves convert mobiledoc to lexical, but some fixtures need to remain
+    // stored as mobiledoc to exercise the legacy mobiledoc read/render paths.
+    // Restore the original mobiledoc directly in the DB to simulate a legacy row
+    // (the html generated during insert is kept and still contains the same URLs).
+    restoreLegacyMobiledocPosts: function restoreLegacyMobiledocPosts() {
+        const legacySlugs = ['post-with-all-media-types-mobiledoc'];
+
+        return Promise.all(legacySlugs.map((slug) => {
+            const fixture = DataGenerator.forKnex.posts.find(post => post.slug === slug);
+
+            if (!fixture) {
+                return Promise.resolve();
+            }
+
+            return models.Base.knex('posts')
+                .where('id', fixture.id)
+                .update({mobiledoc: fixture.mobiledoc, lexical: null});
+        }));
     },
 
     insertMultiAuthorPosts: function insertMultiAuthorPosts() {
@@ -156,22 +179,20 @@ const fixtures = {
             id: '618ba1ffbe2896088840a6ef',
             title: 'This has a paywall',
             slug: 'paywall',
-            lexical: '',
             status: 'draft',
             uuid: 'd52c42ae-2755-455c-80ec-70b2ec55c905',
-            mobiledoc: DataGenerator.markdownToMobiledoc('Before paywall\n\n<!--members-only-->\n\nAfter paywall'),
+            lexical: DataGenerator.markdownToLexical('Before paywall\n\n<!--members-only-->\n\nAfter paywall'),
             visibility: 'paid',
             authors: [owner.toJSON()]
         }, {
             id: '618ba1ffbe2896088840a6ff',
             title: 'This has a tiered paywall',
             slug: 'paywall-tiered',
-            lexical: '',
             status: 'draft',
             uuid: 'd52c42ae-2755-455c-80ec-70b2ec55c906',
             visibility: 'tiers',
             tiers: [tier.toJSON()],
-            mobiledoc: DataGenerator.markdownToMobiledoc('Before paywall\n\n<!--members-only-->\n\nAfter paywall'),
+            lexical: DataGenerator.markdownToLexical('Before paywall\n\n<!--members-only-->\n\nAfter paywall'),
             authors: [owner.toJSON()]
         }];
 

@@ -67,7 +67,7 @@ catalog:
   '@types/express': 4.17.25
   '@types/html-minifier': ^4.0.6
   '@types/jest': 29.5.14
-  '@types/node': 22.19.21
+  '@types/node': 22.20.0
   '@types/react': 18.3.31
   '@types/react-dom': 18.3.7
   '@types/sanitize-html': 2.16.1
@@ -93,9 +93,9 @@ catalog:
   eslint-plugin-react-hooks: 5.2.0
   eslint-plugin-react-refresh: 0.5.3
   eslint-plugin-tailwindcss: 4.0.4
-  fs-extra: 11.3.5
+  fs-extra: 11.3.6
   glob: 13.0.6
-  globals: 17.6.0
+  globals: 17.7.0
   jsdom: 29.1.1
   jsonc-parser: 3.3.1
   knex-migrator: 5.4.1

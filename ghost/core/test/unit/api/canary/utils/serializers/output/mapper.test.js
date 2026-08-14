@@ -169,7 +169,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
 
             const snippet = createJsonModel(testUtils.DataGenerator.forKnex.createBasic({
                 name: 'test snippet',
-                mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('Hello World'),
+                lexical: testUtils.DataGenerator.markdownToLexical('Hello World'),
                 foo: 'bar'
             }));
 

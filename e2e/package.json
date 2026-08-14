@@ -36,7 +36,7 @@
     "@types/dockerode": "4.0.1",
     "@types/express": "catalog:",
     "busboy": "1.6.0",
-    "dockerode": "5.0.0",
+    "dockerode": "5.0.1",
     "dotenv": "catalog:",
     "eslint": "catalog:",
     "eslint-plugin-no-relative-import-paths": "1.6.1",

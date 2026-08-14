@@ -18,6 +18,7 @@ const {getEmailDesign} = require('../email-rendering/email-design');
 const {registerHelpers} = require('./helpers/register-helpers');
 const crypto = require('crypto');
 const {getPostAccessFilter} = require('../members/content-gating');
+const {mobiledocToLexical} = require('@tryghost/kg-converters');
 /** @import {TemplateDelegate} from 'handlebars' */
 
 const DEFAULT_LOCALE = 'en-gb';
@@ -132,7 +133,10 @@ function getSegmentStatus(segment) {
  * Whether the members matched by a segment can read the post's gated content.
  * Derived from the post's visibility (not just free/paid): for paid posts the
  * access segment is the paid one; for tier-restricted posts it's the segment
- * carrying the post's positive tier filter.
+ * carrying the post's positive tier filter. A null segment is an unsegmented
+ * render — the send pipeline only produces one for posts without gated content,
+ * and API previews without a memberSegment expect the full body — so it always
+ * has access.
  * @param {Post} post
  * @param {Segment} segment
  * @returns {boolean}
@@ -142,12 +146,15 @@ function segmentHasPostAccess(post, segment) {
     if (visibility !== 'paid' && visibility !== 'tiers') {
         return true;
     }
+    if (!segment) {
+        return true;
+    }
     const accessFilter = getPostAccessFilter(getPostGatingShape(post));
     if (!accessFilter) {
         // misconfigured tiers post (no tiers) -> nobody has access
         return false;
     }
-    return !!segment && segment.includes(accessFilter);
+    return segment.includes(accessFilter);
 }
 
 /**
@@ -262,7 +269,6 @@ class EmailRenderer {
      * @param {{getNoReplyAddress(): string, getMembersSupportAddress(): string, getMembersValidationKey(): string, createUnsubscribeUrl(uuid: string, options: object): string}} dependencies.settingsHelpers
      * @param {object} dependencies.renderers
      * @param {{render(object, options): Promise<string>}} dependencies.renderers.lexical
-     * @param {{render(object, options): string}} dependencies.renderers.mobiledoc
      * @param {{getCachedImageSizeFromUrl(url: string): Promise<{url: string, width: number, height: number} | null>}} dependencies.imageSize
      * @param {{urlFor(type: string, optionsOrAbsolute, absolute): string, isSiteUrl(url, context): boolean}} dependencies.urlUtils
      * @param {{isLocalImage(url: string): boolean, isInternalImage(url: string): boolean}} dependencies.storageUtils
@@ -460,25 +466,43 @@ class EmailRenderer {
         return allowedSegments;
     }
 
+    /**
+     * Maps the fixed audience choices offered by the editor's email preview and
+     * test-email UI ('status:free' / 'status:-free') onto the segment the send
+     * pipeline renders for that audience, so previews match what members receive.
+     * For a tier-restricted post the paid audience maps to the tier access
+     * segment (the access variant getSegments produces): paid members on the
+     * post's tiers get the full content, and the free choice previews the
+     * no-access variant. Anything else passes through unchanged.
+     * @param {Post} post
+     * @param {Segment} segment
+     * @returns {Segment}
+     */
+    getPreviewSegment(post, segment) {
+        if (segment === 'status:-free' && post.get('visibility') === 'tiers') {
+            const accessFilter = getPostAccessFilter(getPostGatingShape(post));
+            if (accessFilter) {
+                return `status:-free+(${accessFilter})`;
+            }
+        }
+        return segment;
+    }
+
     async renderPostBaseHtml(post, newsletter) {
         const postUrl = this.#getPostUrl(post);
 
-        let html;
-        if (post.get('lexical')) {
-            // only lexical's renderer is async
-            html = await this.#renderers.lexical.render(
-                post.get('lexical'),
-                {
-                    target: 'email',
-                    postUrl,
-                    design: this.#getEmailDesign(newsletter)
-                }
-            );
-        } else {
-            html = this.#renderers.mobiledoc.render(
-                JSON.parse(post.get('mobiledoc')), {target: 'email', postUrl}
-            );
-        }
+        // posts are migrated to lexical on save, but legacy content may still be stored as
+        // mobiledoc - convert it to lexical so it can be rendered.
+        const lexical = post.get('lexical') || mobiledocToLexical(post.get('mobiledoc'));
+
+        const html = await this.#renderers.lexical.render(
+            lexical,
+            {
+                target: 'email',
+                postUrl,
+                design: this.#getEmailDesign(newsletter)
+            }
+        );
         return html;
     }
 

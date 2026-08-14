@@ -199,11 +199,16 @@ describe('MemberBreadService', function () {
     });
 
     describe('edit', function () {
-        function createMockMemberModel() {
+        function createMockMemberModel({previousStatus = 'free', subscriptions = []} = {}) {
             return {
                 id: 'member_123',
                 get: sinon.stub().returns(false),
-                related: sinon.stub().returns({find: () => null, toJSON: () => [], models: []}),
+                previous: sinon.stub().returns(previousStatus),
+                related: sinon.stub().returns({
+                    find: predicate => subscriptions.find(predicate) || null,
+                    toJSON: () => [],
+                    models: subscriptions
+                }),
                 toJSON: sinon.stub().returns({
                     id: 'member_123',
                     email: 'test@example.com'
@@ -211,16 +216,20 @@ describe('MemberBreadService', function () {
             };
         }
 
-        function createService() {
-            const mockMemberModel = createMockMemberModel();
+        function createService({stripeConfigured = false, previousStatus = 'free', subscriptions = []} = {}) {
+            const mockMemberModel = createMockMemberModel({previousStatus, subscriptions});
             const updateStub = sinon.stub().resolves(mockMemberModel);
             const getSuppressionDataStub = sinon.stub().resolves({suppressed: false, info: null});
+            const setComplimentarySubscription = sinon.stub().resolves();
+            const removeComplimentarySubscription = sinon.stub().resolves();
 
             const service = new MemberBreadService({
                 memberRepository: {
-                    update: updateStub
+                    update: updateStub,
+                    setComplimentarySubscription,
+                    removeComplimentarySubscription
                 },
-                stripeService: {configured: false},
+                stripeService: {configured: stripeConfigured},
                 memberAttributionService: {getAttributionFromContext: sinon.stub().resolves(null)},
                 emailService: {},
                 labsService: {isSet: sinon.stub().returns(false)},
@@ -232,7 +241,7 @@ describe('MemberBreadService', function () {
 
             sinon.stub(service, 'read').resolves({id: 'member_123'});
 
-            return {service, updateStub, getSuppressionDataStub};
+            return {service, updateStub, getSuppressionDataStub, setComplimentarySubscription, removeComplimentarySubscription};
         }
 
         it('sets email_disabled to true when the new email is on the suppression list', async function () {
@@ -266,6 +275,70 @@ describe('MemberBreadService', function () {
             }, {id: 'member_123'});
 
             assert.equal(getSuppressionDataStub.called, false);
+        });
+
+        // Comp handling on edit must only act on an actual status transition, because `comped`
+        // is derived from status and round-tripped on every edit.
+        // Ref: https://github.com/TryGhost/Ghost/issues/25735
+        const compSubData = {plan_nickname: 'Complimentary', status: 'active'};
+        const activeCompSubscription = {get: key => compSubData[key]};
+
+        // The bug: an already-comped member (no Stripe sub) round-trips comped:true.
+        it('does not create a complimentary subscription when editing an already-comped member (#25735)', async function () {
+            const {service, setComplimentarySubscription} = createService({stripeConfigured: true, previousStatus: 'comped'});
+
+            await service.edit({comped: true, labels: [{name: 'VIP'}]}, {id: 'member_123'});
+
+            assert.equal(setComplimentarySubscription.called, false);
+        });
+
+        // No regression: genuinely comping a previously-free member.
+        it('creates a complimentary subscription when comping a member that was not previously comped (#25735)', async function () {
+            const {service, setComplimentarySubscription} = createService({stripeConfigured: true, previousStatus: 'free'});
+
+            await service.edit({comped: true}, {id: 'member_123'});
+
+            assert.equal(setComplimentarySubscription.calledOnce, true);
+        });
+
+        // Idempotent: already comped via Stripe, comped:true round-tripped.
+        it('does not create a duplicate when an already-comped member has an active complimentary subscription (#25735)', async function () {
+            const {service, setComplimentarySubscription} = createService({stripeConfigured: true, previousStatus: 'comped', subscriptions: [activeCompSubscription]});
+
+            await service.edit({comped: true, labels: [{name: 'VIP'}]}, {id: 'member_123'});
+
+            assert.equal(setComplimentarySubscription.called, false);
+        });
+
+        // The remove branch keys on the model's loaded stripeSubscriptions relation, so this
+        // only covers the service-level contract when that relation is present on the model —
+        // the Admin API edit path does not load it.
+        it('removes the complimentary subscription when uncomping a member whose model has an active complimentary subscription loaded (#25735)', async function () {
+            const {service, removeComplimentarySubscription, setComplimentarySubscription} = createService({stripeConfigured: true, previousStatus: 'comped', subscriptions: [activeCompSubscription]});
+
+            await service.edit({comped: false}, {id: 'member_123'});
+
+            assert.equal(removeComplimentarySubscription.calledOnce, true);
+            assert.equal(setComplimentarySubscription.called, false);
+        });
+
+        // Ordinary edit (no comped field): no comp work at all.
+        it('does not touch subscriptions on an edit without comped (#25735)', async function () {
+            const {service, setComplimentarySubscription, removeComplimentarySubscription} = createService({stripeConfigured: true, previousStatus: 'comped'});
+
+            await service.edit({name: 'New Name'}, {id: 'member_123'});
+
+            assert.equal(setComplimentarySubscription.called, false);
+            assert.equal(removeComplimentarySubscription.called, false);
+        });
+
+        // Stripe not connected: comp branch never runs.
+        it('does not create a complimentary subscription when Stripe is not connected (#25735)', async function () {
+            const {service, setComplimentarySubscription} = createService({previousStatus: 'free'});
+
+            await service.edit({comped: true}, {id: 'member_123'});
+
+            assert.equal(setComplimentarySubscription.called, false);
         });
     });
 

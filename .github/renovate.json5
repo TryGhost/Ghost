@@ -386,7 +386,6 @@
                 "@tryghost/config-url-helpers",
                 "@tryghost/content-api",
                 "@tryghost/helpers",
-                "@tryghost/html-to-mobiledoc",
                 "@tryghost/html-to-plaintext",
                 "@tryghost/nodemailer",
                 "@tryghost/parse-email-address",

@@ -1,7 +1,7 @@
 const {agentProvider, fixtureManager, mockManager} = require('../../utils/e2e-framework');
 const nock = require('nock');
 const assert = require('node:assert/strict');
-const markdownToMobiledoc = require('../../utils/fixtures/data-generator').markdownToMobiledoc;
+const markdownToLexical = require('../../utils/fixtures/data-generator').markdownToLexical;
 const jobsService = require('../../../core/server/services/mentions-jobs');
 
 let agent;
@@ -19,12 +19,12 @@ const DomainEvents = require('@tryghost/domain-events');
 
 const mentionsPost = {
     title: 'testing sending webmentions',
-    mobiledoc: markdownToMobiledoc(mentionHtml)
+    lexical: markdownToLexical(mentionHtml)
 };
 
 const editedMentionsPost = {
     title: 'testing sending webmentions',
-    mobiledoc: markdownToMobiledoc(mentionHtml2)
+    lexical: markdownToLexical(mentionHtml2)
 };
 
 function addMentionMocks() {
@@ -94,7 +94,7 @@ describe('Mentions Service', function () {
             });
 
             it('Post without content', async function () {
-                const publishedPost = {status: 'published', mobiledoc: markdownToMobiledoc(''), title: 'empty post'};
+                const publishedPost = {status: 'published', lexical: markdownToLexical(''), title: 'empty post'};
                 await agent
                     .post('posts/')
                     .body({posts: [publishedPost]})
@@ -158,7 +158,7 @@ describe('Mentions Service', function () {
 
                 const postId = res.body.posts[0].id;
                 const editedPost = {
-                    mobiledoc: markdownToMobiledoc(mentionHtml + 'More content'),
+                    lexical: markdownToLexical(mentionHtml + 'More content'),
                     updated_at: res.body.posts[0].updated_at
                 };
 
@@ -302,7 +302,7 @@ describe('Mentions Service', function () {
 
                 const pageId = res.body.pages[0].id;
                 const editedPage = {
-                    mobiledoc: markdownToMobiledoc(mentionHtml + 'More content'),
+                    lexical: markdownToLexical(mentionHtml + 'More content'),
                     updated_at: res.body.pages[0].updated_at
                 };
 
@@ -440,7 +440,7 @@ describe('Mentions Service', function () {
 
                 const postId = res.body.posts[0].id;
                 const editedPost = {
-                    mobiledoc: markdownToMobiledoc(`mentions were removed from this post`),
+                    lexical: markdownToLexical(`mentions were removed from this post`),
                     updated_at: res.body.posts[0].updated_at
                 };
                 await agent.put(`posts/${postId}/`)
@@ -483,7 +483,7 @@ describe('Mentions Service', function () {
 
                 const pageId = res.body.pages[0].id;
                 const editedPage = {
-                    mobiledoc: markdownToMobiledoc(`mentions were removed from this post`),
+                    lexical: markdownToLexical(`mentions were removed from this post`),
                     updated_at: res.body.pages[0].updated_at
                 };
                 await agent.put(`pages/${pageId}/`)

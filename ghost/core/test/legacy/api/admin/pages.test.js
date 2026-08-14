@@ -35,7 +35,9 @@ describe('Pages API', function () {
                         .expect(200);
                 })
                 .then((res) => {
-                    assert.equal(res.body.pages[0].mobiledoc, '{"version":"0.3.1","atoms":[],"cards":[],"markups":[],"sections":[[1,"p",[[0,[],0,"HTML Ipsum presents"]]]]}');
+                    // ?source=html is converted to lexical
+                    assert.equal(res.body.pages[0].mobiledoc, null);
+                    assert.ok(res.body.pages[0].lexical.includes('HTML Ipsum presents'));
                 });
         });
     });

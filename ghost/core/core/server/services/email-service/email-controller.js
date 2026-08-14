@@ -28,7 +28,8 @@ class EmailController {
         // Bit absurd situation in email-previews endpoints that one endpoint is using options and other one is using data.
         // So we need to handle both cases.
         let post;
-        const withRelated = [...new Set(['posts_meta', 'authors', ...this.getRequiredUrlRelations()])];
+        // 'tiers' is required by the email tier-gating logic (renderer/segmenter), not for URL generation
+        const withRelated = [...new Set(['posts_meta', 'authors', 'tiers', ...this.getRequiredUrlRelations()])];
         if (frame.options.id) {
             post = await this.models.Post.findOne({...frame.options, status: 'all'}, {withRelated});
         } else {

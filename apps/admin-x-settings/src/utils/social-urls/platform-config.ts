@@ -34,7 +34,16 @@ export type SocialPlatformConfig = {
 };
 
 const formatDisplayValue = (value: string | null | undefined, formatter: (handle: string) => string) => {
-    return value ? formatter(value) : '';
+    if (!value) {
+        return '';
+    }
+    try {
+        return formatter(value);
+    } catch {
+        // a stored handle that predates current validation rules must not crash
+        // the settings UI — show it raw and let validation flag it on edit
+        return value;
+    }
 };
 
 export const SOCIAL_PLATFORM_CONFIGS: SocialPlatformConfig[] = [
