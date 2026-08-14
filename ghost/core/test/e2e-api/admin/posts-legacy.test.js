@@ -18,7 +18,7 @@ const errors = require('@tryghost/errors');
 describe('Posts API', function () {
     let request;
 
-    before(async function () {
+    beforeAll(async function () {
         await localUtils.startGhost();
         request = supertest.agent(config.get('url'));
         /**
@@ -1761,7 +1761,7 @@ describe('Posts API', function () {
     });
 
     describe('As Author', function () {
-        before(async function () {
+        beforeAll(async function () {
             const user = await testUtils.createUser({
                 user: testUtils.DataGenerator.forKnex.createUser({
                     email: 'test+author@ghost.org'

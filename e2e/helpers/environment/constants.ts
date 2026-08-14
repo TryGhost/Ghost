@@ -86,7 +86,10 @@ export const BASE_GHOST_ENV = [
     'mail__options__port=1025',
 
     // Disable IndexNow pings (tests run with real network access)
-    'privacy__useIndexNow=false'
+    'privacy__useIndexNow=false',
+
+    // Disable gravatar avatar lookups (real external call, no e2e coverage)
+    'privacy__useGravatar=false'
 ] as const;
 
 export const TEST_ENVIRONMENT = {
@@ -99,3 +102,69 @@ export const TEST_ENVIRONMENT = {
         port: 2368
     }
 } as const;
+
+/**
+ * Egress monitoring — see service-managers/egress-monitor.ts.
+ *
+ * A CoreDNS sidecar records every EXTERNAL host the Ghost container resolves, so
+ * outbound HTTP(S) calls are visible (and optionally enforced) in tests that
+ * otherwise run with unrestricted network access.
+ */
+
+// Dedicated DNS image for the sidecar — pinned by digest, pulled at runtime
+// (through the CI registry mirror). Deliberately NOT the Ghost application image.
+export const EGRESS_DNS_IMAGE = 'coredns/coredns:1.12.0@sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97';
+
+// CoreDNS config, bind-mounted into the sidecar at /Corefile.
+export const EGRESS_COREFILE_PATH = path.resolve(__dirname, 'Corefile');
+
+// Master switch for ALL egress monitoring — the DNS sidecar (server-side) and
+// the Playwright request listener (browser-side). On by default; set to '0' to
+// disable both.
+export const EGRESS_MONITOR_ENABLED = process.env.E2E_EGRESS_MONITOR !== '0';
+
+// Fail a test when it triggers egress to a host that is not on EGRESS_ALLOWLIST.
+// On by default so unexpected outbound requests (e.g. a new integration, or a
+// service that should be mocked) surface as a test failure. Set
+// E2E_EGRESS_ENFORCE=0 to record-only, e.g. while expanding the allowlist.
+export const EGRESS_ENFORCE = process.env.E2E_EGRESS_ENFORCE !== '0';
+
+/**
+ * Hosts the suite is allowed to reach. An entry matches itself and any subdomain
+ * (so `unsplash.com` covers `images.unsplash.com`); reverse-DNS (*.arpa) lookups
+ * are ignored. Each entry is a host the suite legitimately contacts — anything
+ * not listed fails enforcement (see EGRESS_ENFORCE).
+ *
+ * Deliberately NOT here:
+ * - api.stripe.com — Ghost should hit the fake Stripe server, not real Stripe.
+ *   It only leaks because a test connects Stripe without `stripeEnabled`; the fix
+ *   is the test, not an allowlist entry. (Hence the specific Stripe subdomains
+ *   below rather than a blanket `stripe.com`.)
+ * - gravatar.com — gated off in e2e instead (privacy__useGravatar above).
+ */
+export const EGRESS_ALLOWLIST: readonly string[] = [
+    // Local test infrastructure (not real external egress)
+    'host.docker.internal', // host gateway: fake Stripe/Mailgun servers + Caddy gateway
+    'localhost', // the site/admin under test
+    '127.0.0.1', // the site/admin under test
+    'mock.test', // e2e billing mock (billing.mock.test) served by the harness
+
+    // Ghost-owned
+    'ghost.org', // static.ghost.org theme/admin assets + ghost.org changelog & update-check
+
+    // Stripe — browser-side only (Stripe.js/Elements must load from Stripe's own CDN).
+    // Listed per-subdomain so api.stripe.com (server-side) is NOT covered — see above.
+    'js.stripe.com', // Stripe.js loaded by Portal/checkout
+    'm.stripe.com', // Stripe Elements
+    'm.stripe.network', // Stripe Elements
+
+    // reCAPTCHA, pulled in by Stripe checkout
+    'google.com', // reCAPTCHA challenge (www.google.com)
+    'gstatic.com', // reCAPTCHA static assets (t0–t3.gstatic.com)
+
+    // Other third-party services the product uses
+    'bunny.net', // web fonts (fonts.bunny.net)
+    'transistor.fm', // podcast embeds (partner.transistor.fm)
+    'unsplash.com', // editor image selector (api./images.unsplash.com)
+    'geojs.io' // member signup + staff sign-in geolocation (get.geojs.io)
+];

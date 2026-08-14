@@ -107,7 +107,7 @@ async function assertFromAddressNewsletter(aFrom, aReplyTo) {
 
 // Tests the from and replyTo addresses for most emails send from within Ghost.
 describe('Email addresses', function () {
-    before(async function () {
+    beforeAll(async function () {
         // Can only set site URL once because otherwise agents are messed up
         configureSite({
             siteUrl: 'http://blog.acme.com'

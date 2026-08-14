@@ -17,10 +17,6 @@ const Automation = ghostBookshelf.Model.extend({
         return this.hasOne('WelcomeEmailAutomatedEmail', 'welcome_email_automation_id');
     },
 
-    welcomeEmailAutomatedEmails() {
-        return this.hasMany('WelcomeEmailAutomatedEmail', 'welcome_email_automation_id');
-    },
-
     onSaved(model) {
         if (!model?.id) {
             return;

@@ -799,6 +799,16 @@
                     "name": "Flush gift reminders",
                     "action_type": "flushReminders",
                     "object_type": "gift"
+                },
+                {
+                    "name": "Manage gift links",
+                    "action_type": "manage",
+                    "object_type": "gift_link"
+                },
+                {
+                    "name": "Reset all gift links",
+                    "action_type": "resetAll",
+                    "object_type": "gift_link"
                 }
             ]
         },
@@ -1120,6 +1130,7 @@
                     "mention": "browse",
                     "collection": "all",
                     "recommendation": "all",
+                    "gift_link": "all",
                     "automation": ["browse", "read", "edit"],
                     "identity": "read"
                 },
@@ -1171,7 +1182,8 @@
                     "mention": "browse",
                     "collection": "all",
                     "recommendation": "all",
-                    "automation": ["browse", "read", "edit"]
+                    "automation": ["browse", "read", "edit"],
+                    "gift_link": "manage"
                 },
                 "Editor": {
                     "notification": "all",
@@ -1190,7 +1202,8 @@
                     "product": ["browse", "read"],
                     "newsletter": ["browse", "read"],
                     "collection": "all",
-                    "recommendation": ["browse", "read"]
+                    "recommendation": ["browse", "read"],
+                    "gift_link": "manage"
                 },
                 "Author": {
                     "post": ["browse", "read", "edit", "add", "destroy"],
@@ -1207,7 +1220,8 @@
                     "product": ["browse", "read"],
                     "newsletter": ["browse", "read"],
                     "collection": ["browse", "read", "add"],
-                    "recommendation": ["browse", "read"]
+                    "recommendation": ["browse", "read"],
+                    "gift_link": "manage"
                 },
                 "Super Editor": {
                     "notification": "all",
@@ -1230,7 +1244,8 @@
                     "member": ["browse", "read", "add", "edit", "destroy"],
                     "member_signin_url": "read",
                     "offer": ["browse", "read"],
-                    "comment": "all"
+                    "comment": "all",
+                    "gift_link": "manage"
                 },
                 "Contributor": {
                     "post": ["browse", "read", "edit", "add", "destroy"],

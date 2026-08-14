@@ -73,7 +73,7 @@ async function addClicksAndSubscribers({memberId}) {
 describe('Recommendations Admin API', function () {
     let agent, memberId;
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('posts', 'members');
         await agent.loginAsOwner();

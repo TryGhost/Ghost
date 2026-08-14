@@ -1,12 +1,14 @@
 import {MemberFactory, TierFactory, createMemberFactory, createTierFactory} from '@/data-factory';
 import {MembersListPage} from '@/admin-pages';
-import {SettingsService} from '@/helpers/services/settings/settings-service';
 import {expect, test} from '@/helpers/playwright';
 import {usePerTestIsolation} from '@/helpers/playwright/isolation';
 
 usePerTestIsolation();
 
 test.describe('Ghost Admin - Members Tier Filter Search', () => {
+    // Connect Stripe against the fake server so paid-tier creation doesn't hit real Stripe.
+    test.use({stripeEnabled: true});
+
     let memberFactory: MemberFactory;
     let tierFactory: TierFactory;
 
@@ -16,9 +18,6 @@ test.describe('Ghost Admin - Members Tier Filter Search', () => {
     });
 
     test('filters tier options by slug in the search dropdown', async ({page}) => {
-        const settingsService = new SettingsService(page.request);
-        await settingsService.setStripeConnected();
-
         const firstTier = await tierFactory.getFirstPaidTier();
         const secondTier = await tierFactory.create({name: 'Silver Tier'});
 

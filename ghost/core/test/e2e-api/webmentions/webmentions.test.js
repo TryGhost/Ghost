@@ -20,7 +20,7 @@ async function allSettled() {
 describe('Webmentions (receiving)', function () {
     let agent;
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getWebmentionsAPIAgent();
         await fixtureManager.init('posts');
     });

@@ -1,14 +1,13 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
 const sinon = require('sinon');
-const rewire = require('rewire');
-const templates = rewire('../../../../../core/frontend/services/rendering/templates');
+const templates = require('../../../../../core/frontend/services/rendering/templates');
 const themeEngine = require('../../../../../core/frontend/services/theme-engine');
 
 describe('templates', function () {
     let getActiveThemeStub;
     let hasTemplateStub;
-    let _private = templates.__get__('_private');
+    let templateHelpers = templates;
 
     afterEach(function () {
         sinon.restore();
@@ -16,42 +15,42 @@ describe('templates', function () {
 
     describe('[private fn] getEntriesTemplateHierarchy', function () {
         it('should return just index for empty options', function () {
-            assert.deepEqual(_private.getEntriesTemplateHierarchy({}), ['index']);
+            assert.deepEqual(templateHelpers.getEntriesTemplateHierarchy({}), ['index']);
         });
 
         it('should return just index if collection name is index', function () {
-            assert.deepEqual(_private.getEntriesTemplateHierarchy({name: 'index'}), ['index']);
+            assert.deepEqual(templateHelpers.getEntriesTemplateHierarchy({name: 'index'}), ['index']);
         });
 
         it('should return custom templates even if the collection is index', function () {
-            assert.deepEqual(_private.getEntriesTemplateHierarchy({name: 'index', templates: ['something']}), ['something', 'index']);
+            assert.deepEqual(templateHelpers.getEntriesTemplateHierarchy({name: 'index', templates: ['something']}), ['something', 'index']);
         });
 
         it('should return collection name', function () {
-            assert.deepEqual(_private.getEntriesTemplateHierarchy({name: 'podcast'}), ['podcast', 'index']);
+            assert.deepEqual(templateHelpers.getEntriesTemplateHierarchy({name: 'podcast'}), ['podcast', 'index']);
         });
 
         it('should return custom templates', function () {
-            assert.deepEqual(_private.getEntriesTemplateHierarchy({name: 'podcast', templates: ['mozart']}), ['mozart', 'podcast', 'index']);
+            assert.deepEqual(templateHelpers.getEntriesTemplateHierarchy({name: 'podcast', templates: ['mozart']}), ['mozart', 'podcast', 'index']);
         });
 
         it('should return just index if collection name is index even if slug is set', function () {
-            assert.deepEqual(_private.getEntriesTemplateHierarchy({name: 'index', slugTemplate: true}, {slugParam: 'test'}), ['index']);
+            assert.deepEqual(templateHelpers.getEntriesTemplateHierarchy({name: 'index', slugTemplate: true}, {slugParam: 'test'}), ['index']);
         });
 
         it('should return collection, index if collection has name', function () {
-            assert.deepEqual(_private.getEntriesTemplateHierarchy({name: 'tag'}), ['tag', 'index']);
+            assert.deepEqual(templateHelpers.getEntriesTemplateHierarchy({name: 'tag'}), ['tag', 'index']);
         });
 
         it('should return collection-slug, collection, index if collection has name & slug + slugTemplate set', function () {
-            assert.deepEqual(_private.getEntriesTemplateHierarchy({
+            assert.deepEqual(templateHelpers.getEntriesTemplateHierarchy({
                 name: 'tag',
                 slugTemplate: true
             }, {slugParam: 'test'}), ['tag-test', 'tag', 'index']);
         });
 
         it('should return front, collection-slug, collection, index if name, slugParam+slugTemplate & frontPageTemplate+pageParam=1 is set', function () {
-            assert.deepEqual(_private.getEntriesTemplateHierarchy({
+            assert.deepEqual(templateHelpers.getEntriesTemplateHierarchy({
                 name: 'tag',
                 slugTemplate: true,
                 frontPageTemplate: 'front-tag'
@@ -59,14 +58,14 @@ describe('templates', function () {
         });
 
         it('should return home, index for index collection if front is set and pageParam = 1', function () {
-            assert.deepEqual(_private.getEntriesTemplateHierarchy({
+            assert.deepEqual(templateHelpers.getEntriesTemplateHierarchy({
                 name: 'index',
                 frontPageTemplate: 'home'
             }, {path: '/'}), ['home', 'index']);
         });
 
         it('should not use frontPageTemplate if not / collection', function () {
-            assert.deepEqual(_private.getEntriesTemplateHierarchy({
+            assert.deepEqual(templateHelpers.getEntriesTemplateHierarchy({
                 name: 'index',
                 frontPageTemplate: 'home'
             }, {path: '/magic/'}), ['index']);
@@ -85,13 +84,13 @@ describe('templates', function () {
         it('returns fallback if there is no active_theme', function () {
             getActiveThemeStub.returns(undefined);
 
-            assert.equal(_private.pickTemplate(['tag-test', 'tag', 'index'], 'fallback'), 'fallback');
-            assert.equal(_private.pickTemplate(['page-my-post', 'page', 'post'], 'fallback'), 'fallback');
+            assert.equal(templateHelpers.pickTemplate(['tag-test', 'tag', 'index'], 'fallback'), 'fallback');
+            assert.equal(templateHelpers.pickTemplate(['page-my-post', 'page', 'post'], 'fallback'), 'fallback');
         });
 
         it('returns fallback if active_theme has no templates', function () {
-            assert.equal(_private.pickTemplate(['tag-test', 'tag', 'index'], 'fallback'), 'fallback');
-            assert.equal(_private.pickTemplate(['page-about', 'page', 'post'], 'fallback'), 'fallback');
+            assert.equal(templateHelpers.pickTemplate(['tag-test', 'tag', 'index'], 'fallback'), 'fallback');
+            assert.equal(templateHelpers.pickTemplate(['page-about', 'page', 'post'], 'fallback'), 'fallback');
         });
 
         describe('with many templates', function () {
@@ -105,14 +104,14 @@ describe('templates', function () {
             });
 
             it('returns first matching template', function () {
-                assert.equal(_private.pickTemplate(['page-about', 'page', 'post'], 'fallback'), 'page-about');
-                assert.equal(_private.pickTemplate(['page-magic', 'page', 'post'], 'fallback'), 'page');
-                assert.equal(_private.pickTemplate(['page', 'post'], 'fallback'), 'page');
+                assert.equal(templateHelpers.pickTemplate(['page-about', 'page', 'post'], 'fallback'), 'page-about');
+                assert.equal(templateHelpers.pickTemplate(['page-magic', 'page', 'post'], 'fallback'), 'page');
+                assert.equal(templateHelpers.pickTemplate(['page', 'post'], 'fallback'), 'page');
             });
 
             it('returns correctly if template list is a string', function () {
-                assert.equal(_private.pickTemplate('subscribe', 'fallback'), 'fallback');
-                assert.equal(_private.pickTemplate('post', 'fallback'), 'post');
+                assert.equal(templateHelpers.pickTemplate('subscribe', 'fallback'), 'fallback');
+                assert.equal(templateHelpers.pickTemplate('post', 'fallback'), 'post');
             });
         });
     });
@@ -129,7 +128,7 @@ describe('templates', function () {
         it('will fall back to post even if no index.hbs', function () {
             hasTemplateStub.returns(false);
 
-            const view = _private.getTemplateForEntry({title: 'hey'}, 'page');
+            const view = templateHelpers.getTemplateForEntry({title: 'hey'}, 'page');
             assertExists(view);
             assert.equal(view, 'post');
         });
@@ -145,7 +144,7 @@ describe('templates', function () {
             });
 
             it('post without custom slug template', function () {
-                const view = _private.getTemplateForEntry({
+                const view = templateHelpers.getTemplateForEntry({
                     page: 0,
                     slug: 'test-post'
                 });
@@ -155,7 +154,7 @@ describe('templates', function () {
 
             it('post with custom slug template', function () {
                 hasTemplateStub.withArgs('post-welcome-to-ghost').returns(true);
-                const view = _private.getTemplateForEntry({
+                const view = templateHelpers.getTemplateForEntry({
                     page: 0,
                     slug: 'welcome-to-ghost'
                 });
@@ -164,7 +163,7 @@ describe('templates', function () {
             });
 
             it('page without custom slug template', function () {
-                const view = _private.getTemplateForEntry({
+                const view = templateHelpers.getTemplateForEntry({
                     slug: 'contact'
                 }, 'page');
                 assertExists(view);
@@ -172,7 +171,7 @@ describe('templates', function () {
             });
 
             it('page with custom slug template', function () {
-                const view = _private.getTemplateForEntry({
+                const view = templateHelpers.getTemplateForEntry({
                     slug: 'about'
                 }, 'page');
                 assertExists(view);
@@ -182,7 +181,7 @@ describe('templates', function () {
             it('post with custom template', function () {
                 hasTemplateStub.withArgs('custom-about').returns(true);
 
-                const view = _private.getTemplateForEntry({
+                const view = templateHelpers.getTemplateForEntry({
                     page: 0,
                     custom_template: 'custom-about'
                 });
@@ -193,7 +192,7 @@ describe('templates', function () {
             it('page with custom template', function () {
                 hasTemplateStub.withArgs('custom-about').returns(true);
 
-                const view = _private.getTemplateForEntry({
+                const view = templateHelpers.getTemplateForEntry({
                     page: 1,
                     custom_template: 'custom-about'
                 });
@@ -204,7 +203,7 @@ describe('templates', function () {
             it('post with custom template configured, but the template is missing', function () {
                 hasTemplateStub.withArgs('custom-about').returns(false);
 
-                const view = _private.getTemplateForEntry({
+                const view = templateHelpers.getTemplateForEntry({
                     page: 0,
                     custom_template: 'custom-about'
                 });
@@ -215,7 +214,7 @@ describe('templates', function () {
             it('page with custom template configured, but the template is missing', function () {
                 hasTemplateStub.withArgs('custom-about').returns(false);
 
-                const view = _private.getTemplateForEntry({
+                const view = templateHelpers.getTemplateForEntry({
                     custom_template: 'custom-about'
                 }, 'page');
                 assertExists(view);
@@ -226,7 +225,7 @@ describe('templates', function () {
                 hasTemplateStub.withArgs('custom-about').returns(true);
                 hasTemplateStub.withArgs('post-about').returns(true);
 
-                const view = _private.getTemplateForEntry({
+                const view = templateHelpers.getTemplateForEntry({
                     page: 0,
                     slug: 'about',
                     custom_template: 'custom-about'
@@ -239,7 +238,7 @@ describe('templates', function () {
                 hasTemplateStub.withArgs('custom-about').returns(false);
                 hasTemplateStub.withArgs('post-about').returns(false);
 
-                const view = _private.getTemplateForEntry({
+                const view = templateHelpers.getTemplateForEntry({
                     page: 0,
                     slug: 'about',
                     custom_template: 'custom-about'
@@ -266,7 +265,7 @@ describe('templates', function () {
             });
 
             it('will return correct view for a tag', function () {
-                const view = _private.getTemplateForEntries({name: 'tag', slugTemplate: true}, {slugParam: 'development'});
+                const view = templateHelpers.getTemplateForEntries({name: 'tag', slugTemplate: true}, {slugParam: 'development'});
                 assertExists(view);
                 assert.equal(view, 'index');
             });
@@ -281,20 +280,20 @@ describe('templates', function () {
             });
 
             it('will return correct view for a tag when template exists', function () {
-                const view = _private.getTemplateForEntries({name: 'tag', slugTemplate: true}, {slugParam: 'design'});
+                const view = templateHelpers.getTemplateForEntries({name: 'tag', slugTemplate: true}, {slugParam: 'design'});
                 assertExists(view);
                 assert.equal(view, 'tag-design');
             });
 
             it('will return correct view for a tag', function () {
-                const view = _private.getTemplateForEntries({name: 'tag', slugTemplate: true}, {slugParam: 'development'});
+                const view = templateHelpers.getTemplateForEntries({name: 'tag', slugTemplate: true}, {slugParam: 'development'});
                 assertExists(view);
                 assert.equal(view, 'tag');
             });
         });
 
         it('will fall back to index even if no index.hbs', function () {
-            const view = _private.getTemplateForEntries({name: 'tag', slugTemplate: true}, {slugParam: 'development'});
+            const view = templateHelpers.getTemplateForEntries({name: 'tag', slugTemplate: true}, {slugParam: 'development'});
             assertExists(view);
             assert.equal(view, 'index');
         });
@@ -312,33 +311,33 @@ describe('templates', function () {
         it('will fall back to default if there is no active_theme', function () {
             getActiveThemeStub.returns(undefined);
 
-            assert.match(_private.getTemplateForError(500), /core\/server\/views\/error.hbs$/);
+            assert.match(templateHelpers.getTemplateForError(500), /core\/server\/views\/error.hbs$/);
         });
 
         it('will fall back to default for all statusCodes with no custom error templates', function () {
-            assert.match(_private.getTemplateForError(500), /core\/server\/views\/error.hbs$/);
-            assert.match(_private.getTemplateForError(503), /core\/server\/views\/error.hbs$/);
-            assert.match(_private.getTemplateForError(422), /core\/server\/views\/error.hbs$/);
-            assert.match(_private.getTemplateForError(404), /core\/server\/views\/error.hbs$/);
+            assert.match(templateHelpers.getTemplateForError(500), /core\/server\/views\/error.hbs$/);
+            assert.match(templateHelpers.getTemplateForError(503), /core\/server\/views\/error.hbs$/);
+            assert.match(templateHelpers.getTemplateForError(422), /core\/server\/views\/error.hbs$/);
+            assert.match(templateHelpers.getTemplateForError(404), /core\/server\/views\/error.hbs$/);
         });
 
         it('will use custom error.hbs for all statusCodes if there are no other templates', function () {
             hasTemplateStub.withArgs('error').returns(true);
 
-            assert.equal(_private.getTemplateForError(500), 'error');
-            assert.equal(_private.getTemplateForError(503), 'error');
-            assert.equal(_private.getTemplateForError(422), 'error');
-            assert.equal(_private.getTemplateForError(404), 'error');
+            assert.equal(templateHelpers.getTemplateForError(500), 'error');
+            assert.equal(templateHelpers.getTemplateForError(503), 'error');
+            assert.equal(templateHelpers.getTemplateForError(422), 'error');
+            assert.equal(templateHelpers.getTemplateForError(404), 'error');
         });
 
         it('will use more specific error-4xx.hbs for all 4xx statusCodes if available', function () {
             hasTemplateStub.withArgs('error').returns(true);
             hasTemplateStub.withArgs('error-4xx').returns(true);
 
-            assert.equal(_private.getTemplateForError(500), 'error');
-            assert.equal(_private.getTemplateForError(503), 'error');
-            assert.equal(_private.getTemplateForError(422), 'error-4xx');
-            assert.equal(_private.getTemplateForError(404), 'error-4xx');
+            assert.equal(templateHelpers.getTemplateForError(500), 'error');
+            assert.equal(templateHelpers.getTemplateForError(503), 'error');
+            assert.equal(templateHelpers.getTemplateForError(422), 'error-4xx');
+            assert.equal(templateHelpers.getTemplateForError(404), 'error-4xx');
         });
 
         it('will use explicit error-404.hbs for 404 statusCode if available', function () {
@@ -346,10 +345,10 @@ describe('templates', function () {
             hasTemplateStub.withArgs('error-4xx').returns(true);
             hasTemplateStub.withArgs('error-404').returns(true);
 
-            assert.equal(_private.getTemplateForError(500), 'error');
-            assert.equal(_private.getTemplateForError(503), 'error');
-            assert.equal(_private.getTemplateForError(422), 'error-4xx');
-            assert.equal(_private.getTemplateForError(404), 'error-404');
+            assert.equal(templateHelpers.getTemplateForError(500), 'error');
+            assert.equal(templateHelpers.getTemplateForError(503), 'error');
+            assert.equal(templateHelpers.getTemplateForError(422), 'error-4xx');
+            assert.equal(templateHelpers.getTemplateForError(404), 'error-404');
         });
 
         it('cascade works the same for 500 errors', function () {
@@ -357,10 +356,10 @@ describe('templates', function () {
             hasTemplateStub.withArgs('error-5xx').returns(true);
             hasTemplateStub.withArgs('error-503').returns(true);
 
-            assert.equal(_private.getTemplateForError(500), 'error-5xx');
-            assert.equal(_private.getTemplateForError(503), 'error-503');
-            assert.equal(_private.getTemplateForError(422), 'error');
-            assert.equal(_private.getTemplateForError(404), 'error');
+            assert.equal(templateHelpers.getTemplateForError(500), 'error-5xx');
+            assert.equal(templateHelpers.getTemplateForError(503), 'error-503');
+            assert.equal(templateHelpers.getTemplateForError(422), 'error');
+            assert.equal(templateHelpers.getTemplateForError(404), 'error');
         });
 
         it('cascade works with many specific templates', function () {
@@ -370,12 +369,12 @@ describe('templates', function () {
             hasTemplateStub.withArgs('error-4xx').returns(true);
             hasTemplateStub.withArgs('error-404').returns(true);
 
-            assert.equal(_private.getTemplateForError(500), 'error-5xx');
-            assert.equal(_private.getTemplateForError(503), 'error-503');
-            assert.equal(_private.getTemplateForError(422), 'error-4xx');
-            assert.equal(_private.getTemplateForError(404), 'error-404');
-            assert.equal(_private.getTemplateForError(401), 'error-4xx');
-            assert.equal(_private.getTemplateForError(501), 'error-5xx');
+            assert.equal(templateHelpers.getTemplateForError(500), 'error-5xx');
+            assert.equal(templateHelpers.getTemplateForError(503), 'error-503');
+            assert.equal(templateHelpers.getTemplateForError(422), 'error-4xx');
+            assert.equal(templateHelpers.getTemplateForError(404), 'error-404');
+            assert.equal(templateHelpers.getTemplateForError(401), 'error-4xx');
+            assert.equal(templateHelpers.getTemplateForError(501), 'error-5xx');
         });
     });
 
@@ -392,10 +391,10 @@ describe('templates', function () {
             };
             data = {};
 
-            stubs.pickTemplate = sinon.stub(_private, 'pickTemplate').returns('testFromPickTemplate');
-            stubs.getTemplateForEntry = sinon.stub(_private, 'getTemplateForEntry').returns('testFromEntry');
-            stubs.getTemplateForEntries = sinon.stub(_private, 'getTemplateForEntries').returns('testFromEntries');
-            stubs.getTemplateForError = sinon.stub(_private, 'getTemplateForError').returns('testFromError');
+            stubs.pickTemplate = sinon.stub(templates, 'pickTemplate').returns('testFromPickTemplate');
+            stubs.getTemplateForEntry = sinon.stub(templates, 'getTemplateForEntry').returns('testFromEntry');
+            stubs.getTemplateForEntries = sinon.stub(templates, 'getTemplateForEntries').returns('testFromEntries');
+            stubs.getTemplateForError = sinon.stub(templates, 'getTemplateForError').returns('testFromError');
         });
 
         it('does nothing if template is already set', function () {

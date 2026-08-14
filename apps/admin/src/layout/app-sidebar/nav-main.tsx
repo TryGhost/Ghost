@@ -63,7 +63,7 @@ function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                             target="_blank"
                             aria-label="View site in new tab"
                             rel="noopener noreferrer"
-                            className="absolute top-0 right-0 flex size-8 items-center justify-center rounded-full text-gray-700 opacity-0 transition-all group-hover/viewsite:opacity-100 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+                            className="absolute top-0 right-0 flex size-8 items-center justify-center rounded-full text-gray-700 opacity-0 ring-sidebar-ring outline-hidden transition-all group-hover/viewsite:opacity-100 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:opacity-100 focus-visible:ring-2">
                                 <LucideIcon.ExternalLink size={16} />
                         </a>
                     </NavMenuItem>

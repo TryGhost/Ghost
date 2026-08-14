@@ -191,6 +191,24 @@
             "dependencyDashboardApproval": true
         },
 
+        // Pin the Node.js runtime — Renovate must not bump it. Node is upgraded
+        // manually as one coordinated change: the `engines` range (root +
+        // ghost/core package.json), the `NODE_VERSION` ARG behind the `node`
+        // base image in Dockerfile.production and docker/ghost-dev/Dockerfile,
+        // and the `@types/node` cap below all have to move together and be
+        // deployed/QA'd as a unit. Left to Renovate this surfaces as recurring
+        // minor/patch PRs (e.g. #28696: 22.18.0 -> 22.22.3) that churn CI on a
+        // change we want to make deliberately. `matchPackageNames: ["node"]` is
+        // exact, so it disables both the `node-version` (engines) and `docker`
+        // (base image) updates without touching @types/node, nodemailer, etc.
+        {
+            "description": "Pin Node.js — bump the runtime manually, not via Renovate",
+            "matchPackageNames": [
+                "node"
+            ],
+            "enabled": false
+        },
+
         // Keep `@types/*` aligned with the runtime major they describe. Type defs
         // for a different major than what actually runs are silently wrong at best
         // (e.g. @types/express 5 vs Express 4) and build-breaking at worst

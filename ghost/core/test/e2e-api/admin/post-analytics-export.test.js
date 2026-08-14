@@ -35,7 +35,7 @@ const matchExportHeaders = {
 describe('Post Analytics Export', function () {
     let agent;
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         // Load fixtures: posts, newsletters, members (with stripe), emails, redirects, clicks, feedback
         await fixtureManager.init('posts', 'newsletters', 'members:newsletters', 'members:emails', 'redirects', 'clicks', 'feedback');

@@ -45,16 +45,16 @@ describe('Frontend Routing: Preview Routes', function () {
         sinon.restore();
     });
 
-    before(async function () {
+    beforeAll(async function () {
         await testUtils.startGhost();
         request = supertest.agent(config.get('url'));
     });
 
-    after(async function () {
+    afterAll(async function () {
         await testUtils.stopGhost();
     });
 
-    before(addPosts);
+    beforeAll(addPosts);
 
     it('should display draft posts accessed via uuid', async function () {
         await request.get('/p/d52c42ae-2755-455c-80ec-70b2ec55c903/')

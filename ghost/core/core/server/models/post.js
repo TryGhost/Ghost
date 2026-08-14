@@ -393,7 +393,7 @@ Post = ghostBookshelf.Model.extend({
     },
 
     onUpdated: function onUpdated(model, options) {
-        ghostBookshelf.Model.prototype.onUpdated.apply(this, arguments);
+        const result = ghostBookshelf.Model.prototype.onUpdated.apply(this, arguments);
 
         model.statusChanging = model.get('status') !== model.previous('status');
         model.isPublished = model.get('status') === 'published';
@@ -462,16 +462,20 @@ Post = ghostBookshelf.Model.extend({
         if (model.statusChanging && (model.isPublished || model.wasPublished)) {
             this.handleStatusForAttachedModels(model, options);
         }
+
+        return result;
     },
 
-    onDestroyed: async function onDestroyed(model, options) {
-        ghostBookshelf.Model.prototype.onDestroyed.apply(this, arguments);
+    onDestroyed: function onDestroyed(model, options) {
+        const result = ghostBookshelf.Model.prototype.onDestroyed.apply(this, arguments);
 
         if (model.previous('status') === 'published') {
             model.emitChange('unpublished', Object.assign({usePreviousAttribute: true}, options));
         }
 
         model.emitChange('deleted', Object.assign({usePreviousAttribute: true}, options));
+
+        return result;
     },
 
     onDestroying: function onDestroyed(model) {
@@ -1014,6 +1018,10 @@ Post = ghostBookshelf.Model.extend({
 
     posts_meta: function postsMeta() {
         return this.hasOne('PostsMeta', 'post_id');
+    },
+
+    gift_links: function giftLinks() {
+        return this.hasMany('GiftLink', 'post_id');
     },
 
     email: function email() {

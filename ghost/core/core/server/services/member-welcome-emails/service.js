@@ -9,7 +9,8 @@ const emailAddressService = require('../email-address');
 const settingsHelpers = require('../settings-helpers');
 const EmailAddressParser = require('../email-address/email-address-parser');
 const mail = require('../mail');
-const {Automation, EmailDesignSetting, WelcomeEmailAutomatedEmail, Newsletter} = require('../../models');
+const labs = require('../../../shared/labs');
+const {Automation, EmailDesignSetting, Newsletter} = require('../../models');
 const MemberWelcomeEmailRenderer = require('./member-welcome-email-renderer');
 const {MEMBER_WELCOME_EMAIL_LOG_KEY, MEMBER_WELCOME_EMAIL_TAG, MEMBER_WELCOME_EMAIL_SLUGS, MESSAGES} = require('./constants');
 
@@ -32,6 +33,15 @@ const getSenderDetailsFromDesignSettings = (designSettingsJson) => {
         senderName: designSettingsJson?.sender_name,
         senderEmail: designSettingsJson?.sender_email,
         senderReplyTo: designSettingsJson?.sender_reply_to
+    };
+};
+
+const getSenderDetails = (designSettingsJson) => {
+    const designSenderDetails = getSenderDetailsFromDesignSettings(designSettingsJson);
+    return {
+        senderName: trimValue(designSenderDetails.senderName),
+        senderEmail: trimValue(designSenderDetails.senderEmail),
+        senderReplyTo: trimValue(designSenderDetails.senderReplyTo)
     };
 };
 
@@ -192,7 +202,7 @@ class MemberWelcomeEmailService {
     async #loadWelcomeEmailsCollection() {
         return Automation.findAll({
             filter: WELCOME_EMAIL_FILTER,
-            withRelated: ['welcomeEmailAutomatedEmail']
+            withRelated: ['welcomeEmailAutomatedEmail', 'welcomeEmailAutomatedEmail.emailDesignSetting']
         });
     }
 
@@ -249,7 +259,8 @@ class MemberWelcomeEmailService {
 
     #hasSharedSenderFieldChanged(rows, field, value) {
         return rows.some((row) => {
-            const currentValue = row.related('welcomeEmailAutomatedEmail')?.get(field);
+            const email = row.related('welcomeEmailAutomatedEmail');
+            const currentValue = email?.related('emailDesignSetting')?.get(field);
             return trimValue(currentValue) !== trimValue(value);
         });
     }
@@ -305,9 +316,13 @@ class MemberWelcomeEmailService {
             return;
         }
 
-        await Promise.all(rows.map((row) => {
-            const email = row.related('welcomeEmailAutomatedEmail');
-            return WelcomeEmailAutomatedEmail.edit(attrs, {id: email.id});
+        // De-dupe so we don't write to the same design row twice.
+        const designSettingIds = new Set(
+            rows.map(row => row.related('welcomeEmailAutomatedEmail')?.get('email_design_setting_id')).filter(Boolean)
+        );
+
+        await Promise.all([...designSettingIds].map(async (id) => {
+            await EmailDesignSetting.edit(attrs, {id});
         }));
     }
 
@@ -370,12 +385,7 @@ class MemberWelcomeEmailService {
                 lexical: email.get('lexical'),
                 subject: email.get('subject'),
                 status: row.get('status'),
-                designSettings: designSettings?.id ? designSettings.toJSON() : null,
-                senderDetails: {
-                    senderName: email.get('sender_name'),
-                    senderEmail: email.get('sender_email'),
-                    senderReplyTo: email.get('sender_reply_to')
-                }
+                designSettings: designSettings?.id ? designSettings.toJSON() : null
             };
         }
     }
@@ -391,14 +401,11 @@ class MemberWelcomeEmailService {
      * @param {string} options.email.lexical
      * @param {string} options.email.subject
      * @param {null | object} options.email.designSettings
-     * @param {object} options.email.senderDetails
-     * @param {undefined | null | string} options.email.senderDetails.senderName
-     * @param {undefined | null | string} options.email.senderDetails.senderEmail
-     * @param {undefined | null | string} options.email.senderDetails.senderReplyTo
      * @param {'welcome' | 'automation'} options.emailType
+     * @param {null | {url: string, oneClickUrl: string}} [options.unsubscribe] - When set, the footer links to an unsubscribe URL and the email carries one-click List-Unsubscribe headers
      * @returns {Promise<void>}
      */
-    async #sendEmail({member, memberStatus, email, emailType}) {
+    async #sendEmail({member, memberStatus, email, emailType, unsubscribe = null}) {
         if (!member.email) {
             throw new errors.IncorrectUsageError({
                 message: MESSAGES.MISSING_RECIPIENT_EMAIL
@@ -422,10 +429,18 @@ class MemberWelcomeEmailService {
                 email: member.email,
                 uuid: member.uuid
             },
-            siteSettings: this.#getSiteSettings()
+            siteSettings: this.#getSiteSettings(),
+            unsubscribeUrl: unsubscribe?.url
         });
 
-        const senderOptions = await this.#getEffectiveSenderOptions(email.senderDetails);
+        const senderOptions = await this.#getEffectiveSenderOptions(
+            getSenderDetails(email.designSettings)
+        );
+
+        const headers = unsubscribe?.oneClickUrl ? {
+            'List-Unsubscribe': `<${unsubscribe.oneClickUrl}>`,
+            'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click'
+        } : undefined;
 
         await this.#mailer.send({
             to: member.email,
@@ -434,6 +449,7 @@ class MemberWelcomeEmailService {
             text,
             forceTextContent: true,
             tags: [MEMBER_WELCOME_EMAIL_TAG],
+            ...(headers ? {headers} : {}),
             ...senderOptions
         });
     }
@@ -482,6 +498,16 @@ class MemberWelcomeEmailService {
             null;
         const designSettingsJson = designSettings?.id ? designSettings.toJSON() : null;
 
+        // Real automation sends carry an unsubscribe link to the "Updates & Announcements"
+        // preference. The visible footer link and the one-click List-Unsubscribe header both point
+        // at the same /unsubscribe/?...&updatesAndAnnouncements=1 URL (handled by the unsubscribe
+        // controller), just like newsletters. Preview/test sends render separately and never reach
+        // this path.
+        const unsubscribeUrl = labs.isSet('automations') && member.uuid ?
+            settingsHelpers.createUnsubscribeUrl(member.uuid, {updatesAndAnnouncements: true}) :
+            null;
+        const unsubscribe = unsubscribeUrl ? {url: unsubscribeUrl, oneClickUrl: unsubscribeUrl} : null;
+
         await this.#sendEmail({
             member,
             memberStatus,
@@ -489,9 +515,9 @@ class MemberWelcomeEmailService {
             email: {
                 lexical: email.lexical,
                 subject: email.subject,
-                designSettings: designSettingsJson,
-                senderDetails: getSenderDetailsFromDesignSettings(designSettingsJson)
-            }
+                designSettings: designSettingsJson
+            },
+            unsubscribe
         });
     }
 
@@ -542,18 +568,19 @@ class MemberWelcomeEmailService {
         };
 
         const designSettings = automatedEmail.related('emailDesignSetting');
+        const designSettingsJson = designSettings?.id ? designSettings.toJSON() : null;
 
         const preview = await this.#renderer.render({
             lexical,
             subject,
-            designSettings: designSettings?.id ? designSettings.toJSON() : null,
+            designSettings: designSettingsJson,
             member: testMember,
             siteSettings: this.#getSiteSettings()
         });
 
         return {
             ...preview,
-            automatedEmail
+            designSettings
         };
     }
 
@@ -572,7 +599,12 @@ class MemberWelcomeEmailService {
     }
 
     async sendTestEmail({email, subject, lexical, automatedEmailId}) {
-        const {html, text, subject: renderedSubject, automatedEmail} = await this.#renderWelcomeEmailPreview({
+        const {
+            html,
+            text,
+            subject: renderedSubject,
+            designSettings
+        } = await this.#renderWelcomeEmailPreview({
             automatedEmailId,
             subject,
             lexical,
@@ -581,11 +613,10 @@ class MemberWelcomeEmailService {
 
         // Test sends should always reflect latest newsletter fallback values.
         this.#defaultNewsletterSenderOptions = await this.#getDefaultNewsletterSenderOptions();
-        const senderOptions = await this.#getEffectiveSenderOptions({
-            senderName: automatedEmail.get('sender_name'),
-            senderEmail: automatedEmail.get('sender_email'),
-            senderReplyTo: automatedEmail.get('sender_reply_to')
-        });
+        const designSettingsJson = designSettings?.id ? designSettings.toJSON() : null;
+        const senderOptions = await this.#getEffectiveSenderOptions(
+            getSenderDetails(designSettingsJson)
+        );
 
         await this.#mailer.send({
             to: email,

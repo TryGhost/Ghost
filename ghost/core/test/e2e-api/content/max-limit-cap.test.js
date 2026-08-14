@@ -8,7 +8,7 @@ describe('Content API - Max Limit Cap', function () {
     let originalMiddleware;
     let middlewareSpy;
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getContentAPIAgent();
         await fixtureManager.init('api_keys', 'members');
         await agent.authenticate();
@@ -21,7 +21,7 @@ describe('Content API - Max Limit Cap', function () {
         sharedMiddleware.maxLimitCap[0] = middlewareSpy;
     });
 
-    after(function () {
+    afterAll(function () {
         // Restore the original middleware
         sharedMiddleware.maxLimitCap[0] = originalMiddleware;
     });

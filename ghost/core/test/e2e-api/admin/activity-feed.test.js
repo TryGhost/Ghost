@@ -82,7 +82,7 @@ async function testPagination(skippedTypes, postId, totalExpected, limit) {
 }
 
 describe('Activity Feed API', function () {
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('posts', 'newsletters', 'members:newsletters', 'comments', 'redirects', 'clicks', 'feedback', 'members:emails');
         await agent.loginAsOwner();

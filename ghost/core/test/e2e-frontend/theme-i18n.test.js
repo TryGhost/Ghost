@@ -51,7 +51,7 @@ describe('Theme i18n', function () {
             });
     }
 
-    before(async function () {
+    beforeAll(async function () {
         const agents = await agentProvider.getAgentsWithFrontend();
         frontendAgent = agents.frontendAgent;
         adminAgent = agents.adminAgent;
@@ -71,14 +71,14 @@ describe('Theme i18n', function () {
             .expectStatus(200);
     });
 
-    after(async function () {
+    afterAll(async function () {
         await adminAgent.put('themes/source/activate/');
         await setLocale('en', {});
         await ghostServer.stop();
     });
 
     describe('Legacy translation service (themeI18n)', function () {
-        before(async function () {
+        beforeAll(async function () {
             await setLocale('en', {themeTranslation: false});
         });
 
@@ -105,11 +105,11 @@ describe('Theme i18n', function () {
     });
 
     describe('New translation service (themeI18next)', function () {
-        before(async function () {
+        beforeAll(async function () {
             await setLocale('en', {themeTranslation: true});
         });
 
-        after(async function () {
+        afterAll(async function () {
             await setLocale('en', {});
         });
 

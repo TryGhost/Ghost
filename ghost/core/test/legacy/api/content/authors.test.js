@@ -10,7 +10,7 @@ describe('Authors Content API', function () {
     const validKey = localUtils.getValidKey();
     let request;
 
-    before(async function () {
+    beforeAll(async function () {
         await localUtils.startGhost();
         request = supertest.agent(config.get('url'));
         await testUtils.initFixtures('owner:post', 'users', 'user:inactive', 'posts', 'api_keys');

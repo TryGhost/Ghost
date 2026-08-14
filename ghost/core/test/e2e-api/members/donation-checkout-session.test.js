@@ -13,7 +13,7 @@ async function getPost(id) {
 }
 
 describe('Create Stripe Checkout Session for Donations', function () {
-    before(async function () {
+    beforeAll(async function () {
         const agents = await agentProvider.getAgentsForMembers();
         membersAgent = agents.membersAgent;
         adminAgent = agents.adminAgent;

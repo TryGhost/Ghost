@@ -1,5 +1,5 @@
 type AutomationEditAction = 'save' | 'publish' | 'republish' | 'unpublish';
-type ConfirmableAutomationEditAction = 'republish' | 'unpublish';
+type ConfirmableAutomationEditAction = 'publish' | 'republish' | 'unpublish';
 
 export type AutomationEditState =
   | {phase: 'idle'; action?: undefined}

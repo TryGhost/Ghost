@@ -4,7 +4,6 @@ import mockApiKeys from './config/api-keys';
 import mockAuthentication from './config/authentication';
 import mockConfig from './config/config';
 import mockEmailPreview from './config/email-preview';
-import mockEmails from './config/emails';
 import mockIntegrations from './config/integrations';
 import mockInvites from './config/invites';
 import mockLabels from './config/labels';
@@ -37,7 +36,6 @@ export default function () {
     mockAuthentication(this);
     mockConfig(this);
     mockEmailPreview(this);
-    mockEmails(this);
     mockIntegrations(this);
     mockInvites(this);
     mockMembers(this);

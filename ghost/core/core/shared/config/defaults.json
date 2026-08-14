@@ -18,6 +18,11 @@
         "url": "https://updates.ghost.org",
         "forceUpdate": false
     },
+    "remoteFlags": {
+        "enabled": false,
+        "url": null,
+        "pollInterval": null
+    },
     "privacy": false,
     "security": {
         "allowWebhookInternalIPs": false,

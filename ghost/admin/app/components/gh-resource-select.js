@@ -11,6 +11,17 @@ import {tracked} from '@glimmer/tracking';
 
 const DEBOUNCE_MS = 200;
 
+// Escape a search term and wrap it in single quotes for safe embedding in an
+// NQL filter (e.g. `title:~<result>`). Returns the *quoted* string to match the
+// `escapeNqlString` contract used elsewhere (apps/posts, admin-x-framework).
+// Only single quotes are escaped: the NQL lexer treats just `\'`/`\"` as escapes
+// and reads a lone backslash literally. Verified against @tryghost/nql — escaping
+// every quote prevents breakout, and backslashes must NOT be doubled (doubling
+// corrupts terms containing a backslash, e.g. `a\b` would be searched as `a\\b`).
+function escapeNqlString(term) {
+    return '\'' + String(term).replace(/'/g, '\\\'') + '\'';
+}
+
 function mapResource(resource) {
     return {
         id: resource.id,
@@ -162,13 +173,13 @@ export default class GhResourceSelect extends Component {
         const options = yield [];
 
         if (this.args.type === 'email') {
-            const posts = yield this.store.query('post', {filter: '(status:published,status:sent)+newsletter_id:-null+title:~\'' + searchTerm.replace('\'', '\\\'') + '\'', limit: '10', fields: 'id,title'});
+            const posts = yield this.store.query('post', {filter: '(status:published,status:sent)+newsletter_id:-null+title:~' + escapeNqlString(searchTerm), limit: '10', fields: 'id,title'});
             options.push(...posts.map(mapResource));
             return options;
         }
 
-        const posts = yield this.store.query('post', {filter: 'status:published+title:~\'' + searchTerm.replace('\'', '\\\'') + '\'', limit: '10', fields: 'id,title'});
-        const pages = yield this.store.query('page', {filter: 'status:published+title:~\'' + searchTerm.replace('\'', '\\\'') + '\'', limit: '10', fields: 'id,title'});
+        const posts = yield this.store.query('post', {filter: 'status:published+title:~' + escapeNqlString(searchTerm), limit: '10', fields: 'id,title'});
+        const pages = yield this.store.query('page', {filter: 'status:published+title:~' + escapeNqlString(searchTerm), limit: '10', fields: 'id,title'});
 
         if (posts.length > 0) {
             options.push(...posts.map(mapResource));

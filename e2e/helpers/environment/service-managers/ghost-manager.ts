@@ -8,10 +8,12 @@ import {
     CADDYFILE_PATHS,
     DEV_ENVIRONMENT,
     DEV_SHARED_CONFIG_VOLUME,
+    EGRESS_MONITOR_ENABLED,
     REPO_ROOT,
     TEST_ENVIRONMENT,
     TINYBIRD
 } from '@/helpers/environment/constants';
+import {EgressMonitor} from '@/helpers/environment/service-managers/egress-monitor';
 import {isTinybirdAvailable} from '@/helpers/environment/service-availability';
 import {readFile} from 'fs/promises';
 import type {Container, ContainerCreateOptions} from 'dockerode';
@@ -54,6 +56,7 @@ export class GhostManager {
     private readonly config: GhostManagerConfig;
     private ghostContainer: Container | null = null;
     private gatewayContainer: Container | null = null;
+    private egressMonitor: EgressMonitor | null = null;
 
     constructor(config: GhostManagerConfig) {
         this.docker = new Docker();
@@ -62,6 +65,15 @@ export class GhostManager {
 
     get ghostContainerId(): string | null {
         return this.ghostContainer?.id ?? null;
+    }
+
+    /** Egress monitor for this worker, or null when disabled / failed to start. */
+    getEgressMonitor(): EgressMonitor | null {
+        return this.egressMonitor?.isActive ? this.egressMonitor : null;
+    }
+
+    private ghostImage(): string {
+        return this.config.mode === 'build' ? BUILD_IMAGE : TEST_ENVIRONMENT.ghost.image;
     }
 
     getGatewayPort(): number {
@@ -83,6 +95,10 @@ export class GhostManager {
 
         const ghostName = `ghost-e2e-worker-${this.config.workerIndex}`;
         const gatewayName = `ghost-e2e-gateway-${this.config.workerIndex}`;
+
+        // Start the egress monitor first so Ghost can use it as its DNS server.
+        // Fail-open: if it doesn't come up, Ghost keeps Docker's default resolver.
+        await this.startEgressMonitor();
 
         // Try to reuse existing containers (handles process restarts after test failures)
         this.gatewayContainer = await this.getOrCreateContainer(gatewayName, () => this.createGatewayContainer(gatewayName, ghostName));
@@ -173,8 +189,27 @@ export class GhostManager {
             await this.removeContainer(this.ghostContainer);
             this.ghostContainer = null;
         }
+        if (this.egressMonitor) {
+            await this.egressMonitor.stop();
+            this.egressMonitor = null;
+        }
 
         debug(`Worker ${this.config.workerIndex} containers removed`);
+    }
+
+    /**
+     * Bring up the egress-monitoring DNS sidecar for this worker (idempotent).
+     * Never throws — monitoring is best-effort and must not break the suite.
+     */
+    private async startEgressMonitor(): Promise<void> {
+        if (!EGRESS_MONITOR_ENABLED || this.egressMonitor) {
+            return;
+        }
+        const monitor = new EgressMonitor(this.docker, {
+            workerIndex: this.config.workerIndex
+        });
+        await monitor.start();
+        this.egressMonitor = monitor;
     }
 
     async restartWithDatabase(databaseName: string, extraConfig?: GhostEnvOverrides): Promise<void> {
@@ -285,10 +320,15 @@ export class GhostManager {
         // Determine image based on mode
         // - build: Build image (local or registry, controlled by GHOST_E2E_IMAGE)
         // - dev: Dev image from compose.dev.yaml
-        const image = mode === 'build' ? BUILD_IMAGE : TEST_ENVIRONMENT.ghost.image;
+        const image = this.ghostImage();
 
         // Build volume mounts based on mode
         const binds = this.getGhostBinds();
+
+        // Route Ghost's resolver through the egress monitor when it's running.
+        // It becomes the upstream of Docker's embedded DNS, so internal service
+        // names still resolve while external lookups are recorded.
+        const dnsServerIp = this.egressMonitor?.dnsServerIp ?? null;
 
         const config: ContainerCreateOptions = {
             name,
@@ -305,7 +345,8 @@ export class GhostManager {
             },
             HostConfig: {
                 Binds: binds,
-                ExtraHosts: ['host.docker.internal:host-gateway']
+                ExtraHosts: ['host.docker.internal:host-gateway'],
+                ...(dnsServerIp ? {Dns: [dnsServerIp]} : {})
             },
             NetworkingConfig: {
                 EndpointsConfig: {

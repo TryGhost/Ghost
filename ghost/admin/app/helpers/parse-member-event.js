@@ -29,6 +29,7 @@ export default class ParseMemberEventHelper extends Helper {
         const subject = event.data.member ? (memberName || event.data.member.email) : (event.data.name || event.data.email || '');
         const icon = this.getIcon(event);
         const action = this.getAction(event, hasMultipleNewsletters);
+        const actionTitle = this.getActionTitle(event, hasMultipleNewsletters);
         const info = this.getInfo(event);
         const description = this.getDescription(event);
 
@@ -53,6 +54,7 @@ export default class ParseMemberEventHelper extends Helper {
             icon,
             subject,
             action,
+            actionTitle,
             join,
             object,
             source,
@@ -214,9 +216,14 @@ export default class ParseMemberEventHelper extends Helper {
         }
 
         if (event.type === 'automated_email_sent_event') {
-            const slug = event.data.automatedEmail?.slug || '';
-            const emailType = slug.includes('paid') ? 'Paid' : 'Free';
-            return `received welcome email (${emailType})`;
+            if (event.data.automatedEmail?.source !== 'automation_action_revision') {
+                const slug = event.data.automatedEmail?.slug || '';
+                const emailType = slug.includes('paid') ? 'Paid' : 'Free';
+                return `received welcome email (${emailType})`;
+            }
+
+            const subject = this.trimString(event.data.automatedEmail.subject);
+            return `received automated email: ${subject}`;
         }
 
         if (event.type === 'email_delivered_event') {
@@ -284,6 +291,15 @@ export default class ParseMemberEventHelper extends Helper {
         if (event.type === 'gift_ended_event') {
             return 'gift subscription expired';
         }
+    }
+
+    getActionTitle(event, hasMultipleNewsletters) {
+        if (event.type === 'automated_email_sent_event' && event.data.automatedEmail?.source === 'automation_action_revision') {
+            const subject = this.trimString(event.data.automatedEmail.subject);
+            return `received automated email: ${subject}`;
+        }
+
+        return this.getAction(event, hasMultipleNewsletters);
     }
 
     /**

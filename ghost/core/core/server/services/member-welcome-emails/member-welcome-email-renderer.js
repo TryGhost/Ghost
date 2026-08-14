@@ -7,7 +7,7 @@ const errors = require('@tryghost/errors');
 const {MESSAGES} = require('./constants');
 const {wrapReplacementStrings} = require('../koenig/render-utils/replacement-strings');
 const linkReplacer = require('../lib/link-replacer');
-const {getEmailDesign} = require('../email-rendering/email-design');
+const emailDesign = require('../email-rendering/email-design');
 const {registerHelpers} = require('../email-service/helpers/register-helpers');
 
 const REPLACEMENT_REGEX = /%%\{(\w+?)(?:,? *"(.*?)")?\}%%/g;
@@ -114,12 +114,13 @@ class MemberWelcomeEmailRenderer {
      * @param {undefined | null | Object} options.designSettings - Email design settings loaded from the database
      * @param {Object} options.member - Member data (name, email)
      * @param {Object} options.siteSettings - Site settings (title, url, accentColor)
+     * @param {string} [options.unsubscribeUrl] - When set, the footer shows an "Unsubscribe from these emails" link instead of "Manage your preferences"
      * @returns {Promise<{html: string, text: string, subject: string}>}
      */
-    async render({lexical, subject, designSettings, member, siteSettings}) {
+    async render({lexical, subject, designSettings, member, siteSettings, unsubscribeUrl}) {
         designSettings = designSettings || {};
 
-        const design = getEmailDesign({
+        const design = emailDesign.getEmailDesign({
             accentColor: siteSettings.accentColor,
             backgroundColor: designSettings.background_color,
             buttonColor: designSettings.button_color,
@@ -191,6 +192,7 @@ class MemberWelcomeEmailRenderer {
             siteTitle: siteSettings.title,
             siteUrl: siteSettings.url,
             managePreferencesUrl,
+            unsubscribeUrl: unsubscribeUrl || null,
             year,
             ctaBgColors: [
                 'grey',

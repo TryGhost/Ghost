@@ -13,7 +13,7 @@ describe('Gift Reminders API', function () {
     let schedulerKey;
     let schedulerToken;
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('integrations', 'api_keys');
 

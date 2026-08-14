@@ -36,7 +36,7 @@ async function createMemberWithSubscription(interval, amount, currency, date) {
 }
 
 describe('MRR Stats Service', function () {
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init();
         await agent.loginAsOwner();

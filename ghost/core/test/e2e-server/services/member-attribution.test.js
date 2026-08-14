@@ -7,7 +7,7 @@ const memberAttributionService = require('../../../core/server/services/member-a
 const urlUtils = require('../../../core/shared/url-utils');
 
 describe('Member Attribution Service', function () {
-    before(async function () {
+    beforeAll(async function () {
         await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('posts');
     });

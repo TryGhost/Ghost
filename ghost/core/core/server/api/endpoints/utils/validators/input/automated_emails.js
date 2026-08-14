@@ -6,7 +6,7 @@ const {ValidationError} = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 
 const ALLOWED_STATUSES = ['inactive', 'active'];
-const ALLOWED_NAMES = ['Welcome Email (Free)', 'Welcome Email (Paid)'];
+const ALLOWED_NAMES = ['Free member welcome flow', 'Paid member welcome flow'];
 const ALLOWED_SLUGS = ['member-welcome-email-free', 'member-welcome-email-paid'];
 
 const messages = {

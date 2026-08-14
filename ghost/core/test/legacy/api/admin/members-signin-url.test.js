@@ -15,7 +15,7 @@ describe('Members Sigin URL API', function () {
     });
 
     describe('As Owner', function () {
-        before(async function () {
+        beforeAll(async function () {
             await localUtils.startGhost();
             request = supertest.agent(config.get('url'));
             await localUtils.doAuth(request, 'member');
@@ -40,7 +40,7 @@ describe('Members Sigin URL API', function () {
     });
 
     describe('As Admin', function () {
-        before(async function () {
+        beforeAll(async function () {
             await localUtils.startGhost();
             request = supertest.agent(config.get('url'));
             const admin = await testUtils.createUser({
@@ -71,7 +71,7 @@ describe('Members Sigin URL API', function () {
     });
 
     describe('As non-Owner and non-Admin', function () {
-        before(function () {
+        beforeAll(function () {
             return localUtils.startGhost()
                 .then(function () {
                     request = supertest.agent(config.get('url'));
@@ -102,7 +102,7 @@ describe('Members Sigin URL API', function () {
     });
     describe('With an admin API key', function () {
         let key, token;
-        before(async function () {
+        beforeAll(async function () {
             await localUtils.startGhost();
             request = supertest.agent(config.get('url'));
             await testUtils.initFixtures('members', 'api_keys');

@@ -246,7 +246,7 @@ describe('Unit: frontend/services/llms/service', function () {
         assert.match(llmsFullTxt, /### Post 499/);
         assert.doesNotMatch(llmsFullTxt, /### Post 500/);
         assert.match(llmsFullTxt, /Includes the latest 500 public posts/);
-        assert.match(llmsFullTxt, /Use `\/llms\.txt` for the complete index/);
+        assert.match(llmsFullTxt, /Use `\/sitemap\.xml` for the complete archive of public content/);
     });
 
     it('computes fresh output on every call (no cache)', async function () {
@@ -410,11 +410,12 @@ describe('Unit: frontend/services/llms/service', function () {
 
         assert.ok(pageCall, 'expected pagesPublic.browse to be called');
         assert.ok(postCall, 'expected postsPublic.browse to be called');
-        assert.equal(pageCall.options.filter, 'status:published+visibility:public');
-        assert.equal(postCall.options.filter, 'status:published+visibility:public');
-        assert.equal(postCall.options.limit, 'all');
+        assert.equal(pageCall.options.filter, 'status:published');
+        assert.equal(postCall.options.filter, 'status:published');
+        assert.equal(pageCall.options.limit, 20);
+        assert.equal(postCall.options.limit, 100);
         assert.equal(pageCall.options.order, 'id asc');
-        assert.equal(postCall.options.order, 'published_at desc');
+        assert.equal(postCall.options.order, undefined);
         assert.deepEqual(pageCall.options.context, {member: null});
         assert.deepEqual(postCall.options.context, {member: null});
         assert.equal(postCall.options.formats, 'plaintext');
@@ -440,7 +441,116 @@ describe('Unit: frontend/services/llms/service', function () {
 
         assert.ok(postCall, 'expected postsPublic.browse to be called');
         assert.equal(postCall.options.formats, 'html,plaintext');
-        assert.equal(postCall.options.fields, 'id,title,slug,featured,published_at,updated_at,created_at,url');
+        assert.equal(postCall.options.fields, 'id,title,slug,featured,published_at,updated_at,created_at,url,visibility,custom_excerpt');
         assert.equal(postCall.options.limit, 100);
+    });
+
+    it('includes the .md discoverability line and llms-full link in llms.txt', async function () {
+        const service = createService({
+            pages: [{id: 'page-a', title: 'About', slug: 'about', type: 'page'}],
+            posts: [{id: 'post-a', title: 'Hello', slug: 'hello', type: 'post'}],
+            urlMap: {
+                'page-a': 'https://example.com/about/',
+                'post-a': 'https://example.com/hello/'
+            }
+        });
+
+        const llmsTxt = await service.getLlmsTxt();
+
+        assert.match(llmsTxt, /Append `\.md` to any post or page URL/);
+        assert.match(llmsTxt, /## Optional[\s\S]*\[Full content of pages and posts\]\(http:\/\/127\.0\.0\.1:\d+\/llms-full\.txt\)/m);
+    });
+
+    it('includes the .md discoverability line in llms-full.txt', async function () {
+        const service = createService({
+            pages: [],
+            posts: [{id: 'post-a', title: 'Hello', slug: 'hello', html: '<p>Body</p>', plaintext: 'Body', type: 'post'}],
+            urlMap: {'post-a': 'https://example.com/hello/'}
+        });
+
+        const llmsFullTxt = await service.getLlmsFullTxt();
+
+        assert.match(llmsFullTxt, /Append `\.md` to any post or page URL/);
+    });
+
+    it('keeps members-only posts in the llms.txt index with their public excerpt', async function () {
+        const service = createService({
+            pages: [],
+            posts: [{
+                id: 'post-m',
+                title: 'Members Post',
+                slug: 'members-post',
+                custom_excerpt: 'Public teaser',
+                plaintext: '',
+                visibility: 'members',
+                type: 'post'
+            }],
+            urlMap: {'post-m': 'https://example.com/members-post/'}
+        });
+
+        const llmsTxt = await service.getLlmsTxt();
+
+        assert.match(llmsTxt, /\[Members Post\]\(https:\/\/example\.com\/members-post\.md\) - Public teaser/);
+    });
+
+    it('cuts members-only post bodies off in llms-full.txt with a subscriber notice', async function () {
+        const service = createService({
+            pages: [],
+            posts: [
+                {
+                    id: 'post-m',
+                    title: 'Members Post',
+                    slug: 'members-post',
+                    custom_excerpt: 'Public teaser',
+                    html: '',
+                    plaintext: '',
+                    visibility: 'members',
+                    type: 'post'
+                },
+                {
+                    id: 'post-p',
+                    title: 'Paid Post',
+                    slug: 'paid-post',
+                    html: '',
+                    plaintext: '',
+                    visibility: 'paid',
+                    type: 'post'
+                }
+            ],
+            urlMap: {
+                'post-m': 'https://example.com/members-post/',
+                'post-p': 'https://example.com/paid-post/'
+            }
+        });
+
+        const llmsFullTxt = await service.getLlmsFullTxt();
+
+        assert.match(llmsFullTxt, /### Members Post[\s\S]*Public teaser[\s\S]*This post is for subscribers only\./);
+        assert.match(llmsFullTxt, /### Paid Post[\s\S]*This post is for paying subscribers only\./);
+    });
+
+    it('bounds the llms.txt index to the size budget', async function () {
+        // ~2KB of excerpt per post; 1000 posts would be ~2MB unbounded, but the
+        // index budget (~50KB) caps it well before that.
+        const posts = Array.from({length: 1000}, (_, index) => ({
+            id: `post-${index}`,
+            title: `Post ${index}`,
+            slug: `post-${index}`,
+            custom_excerpt: 'x'.repeat(280),
+            type: 'post'
+        }));
+        const urlMap = Object.fromEntries(posts.map(post => [
+            post.id,
+            `https://example.com/${post.slug}/`
+        ]));
+
+        const service = createService({pages: [], posts, urlMap});
+
+        const llmsTxt = await service.getLlmsTxt();
+
+        assert.ok(Buffer.byteLength(llmsTxt, 'utf8') <= 50 * 1024, `expected <= 50KB, got ${Buffer.byteLength(llmsTxt, 'utf8')}`);
+        // Optional section is always retained even when posts fill the budget.
+        assert.match(llmsTxt, /## Optional/);
+        assert.match(llmsTxt, /\[Sitemap\]/);
     });
 });

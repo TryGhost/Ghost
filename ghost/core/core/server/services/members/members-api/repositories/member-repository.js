@@ -12,6 +12,7 @@ const hasActiveOffer = require('../utils/has-active-offer');
 const StartAutomationsPollEvent = require('../../../automations/events/start-automations-poll-event');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../member-welcome-emails/constants');
 const db = require('../../../../data/db');
+const labs = require('../../../../../shared/labs');
 /** @import {Knex} from 'knex' */
 /** @import * as automationsApi from '../../../automations/automations-api' */
 
@@ -23,7 +24,7 @@ const messages = {
     memberNotFound: 'Could not find Member {id}',
     subscriptionNotFound: 'Could not find Subscription {id}',
     productNotFound: 'Could not find Product {id}',
-    bulkActionRequiresFilter: 'Cannot perform {action} without a filter or all=true',
+    bulkActionRequiresFilter: 'Cannot perform {action} without a filter, search, or all=true',
     tierArchived: 'Cannot use archived Tiers',
     invalidEmail: 'Invalid Email',
     offerNotFound: 'Could not find Offer {id}',
@@ -221,6 +222,10 @@ module.exports = class MemberRepository {
      */
     async #triggerMemberSignupLegacyAutomation(memberId, memberStatus, options) {
         if (!this._Automation || !this._WelcomeEmailAutomationRun) {
+            return;
+        }
+
+        if (labs.isSet('automations')) {
             return;
         }
 
@@ -618,6 +623,7 @@ module.exports = class MemberRepository {
             'products',
             'newsletters',
             'enable_comment_notifications',
+            'enable_updates_and_announcements',
             'last_seen_at',
             'last_commented_at',
             'expertise',
@@ -955,7 +961,7 @@ module.exports = class MemberRepository {
     }
 
     async bulkEdit(data, options) {
-        const {activeStripeCustomersCount, all, filter, search} = options;
+        const {all, filter, search} = options;
 
         if (!['unsubscribe', 'addLabel', 'removeLabel'].includes(data.action)) {
             throw new errors.IncorrectUsageError({
@@ -963,7 +969,7 @@ module.exports = class MemberRepository {
             });
         }
 
-        if (!filter && !search && !activeStripeCustomersCount && (!all || all !== true)) {
+        if (!filter && !search && (!all || all !== true)) {
             throw new errors.IncorrectUsageError({
                 message: tpl(messages.bulkActionRequiresFilter, {action: 'bulk edit'})
             });
@@ -973,7 +979,7 @@ module.exports = class MemberRepository {
 
         if (all !== true) {
             // Include mongoTransformer to apply subscribed:{true|false} => newsletter relation mapping
-            Object.assign(filterOptions, _.pick(options, ['filter', 'search', 'mongoTransformer', 'activeStripeCustomersCount']));
+            Object.assign(filterOptions, _.pick(options, ['filter', 'search', 'mongoTransformer']));
         }
         const memberRows = await this._Member.getFilteredCollectionQuery(filterOptions)
             .select('members.id')

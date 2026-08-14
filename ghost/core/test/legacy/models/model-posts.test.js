@@ -21,17 +21,15 @@ const markdownToMobiledoc = testUtils.DataGenerator.markdownToMobiledoc;
  * IMPORTANT:
  * - do not spy the events unit, because when we only spy, all listeners get the event
  * - this can cause unexpected behavior as the listeners execute code
- * - using rewire is not possible, because each model self registers it's model registry in bookshelf
- * - rewire would add 1 registry, a file who requires the models, tries to register the model another time
  */
 describe('Post Model', function () {
     let eventsTriggered = {};
 
-    before(testUtils.teardownDb);
-    before(testUtils.stopGhost);
-    after(testUtils.teardownDb);
+    beforeAll(testUtils.teardownDb);
+    beforeAll(testUtils.stopGhost);
+    afterAll(testUtils.teardownDb);
 
-    before(testUtils.setup('users:roles'));
+    beforeAll(testUtils.setup('users:roles'));
 
     afterEach(function () {
         sinon.restore();
@@ -47,8 +45,8 @@ describe('Post Model', function () {
         });
 
         describe('fetchOne/fetchAll/fetchPage', function () {
-            before(testUtils.fixtures.insertPostsAndTags);
-            after(function () {
+            beforeAll(testUtils.fixtures.insertPostsAndTags);
+            afterAll(function () {
                 return testUtils.truncate('posts_tags')
                     .then(function () {
                         return testUtils.truncate('tags');
@@ -590,9 +588,9 @@ describe('Post Model', function () {
         });
 
         describe('add', function () {
-            before(testUtils.fixtures.insertPostsAndTags);
+            beforeAll(testUtils.fixtures.insertPostsAndTags);
 
-            after(function () {
+            afterAll(function () {
                 return testUtils.truncate('posts_tags')
                     .then(function () {
                         return testUtils.truncate('tags');
@@ -1052,7 +1050,7 @@ describe('Post Model', function () {
                 describe('Mobiledoc', function () {
                     let post, postsMeta, mobiledoc;
 
-                    before(async function () {
+                    beforeAll(async function () {
                         post = await models.Post.findOne({
                             slug: 'post-with-all-media-types-mobiledoc'
                         }, {withRelated: ['posts_meta']});
@@ -1121,7 +1119,7 @@ describe('Post Model', function () {
                 describe('Lexical', function () {
                     let post, postsMeta, lexicalString;
 
-                    before(async function () {
+                    beforeAll(async function () {
                         post = await models.Post.findOne({
                             slug: 'post-with-all-media-types-lexical'
                         }, {withRelated: ['posts_meta']});
@@ -1445,9 +1443,9 @@ describe('Post Model', function () {
         });
 
         describe('Collision Protection', function () {
-            before(testUtils.fixtures.insertPostsAndTags);
+            beforeAll(testUtils.fixtures.insertPostsAndTags);
 
-            after(function () {
+            afterAll(function () {
                 return testUtils.truncate('posts_tags')
                     .then(function () {
                         return testUtils.truncate('tags');
@@ -1649,14 +1647,14 @@ describe('Post Model', function () {
     });
 
     describe('Multiauthor Posts', function () {
-        before(testUtils.teardownDb);
+        beforeAll(testUtils.teardownDb);
 
-        after(async function () {
+        afterAll(async function () {
             await testUtils.teardownDb();
             await testUtils.setup('users:roles')();
         });
 
-        before(testUtils.setup('posts:mu'));
+        beforeAll(testUtils.setup('posts:mu'));
 
         it('can reassign multiple posts by author', async function () {
             // We're going to delete all posts by user 1

@@ -78,7 +78,7 @@ export const SwitchStyles = `
     }
 `;
 
-function Switch({id, label = '', onToggle, checked = false, dataTestId = 'switch-input'}) {
+function Switch({id, label = '', onToggle, checked = false, disabled = false, dataTestId = 'switch-input'}) {
     const [isChecked, setIsChecked] = useState(checked);
 
     useEffect(() => {
@@ -99,11 +99,15 @@ function Switch({id, label = '', onToggle, checked = false, dataTestId = 'switch
                     ref={inputRef}
                     type="checkbox"
                     checked={isChecked}
+                    disabled={disabled}
                     id={id}
                     onChange={() => {}}
                     aria-label={label}
                 />
                 <span className="input-toggle-component" onClick={(e) => {
+                    if (disabled) {
+                        return;
+                    }
                     setIsChecked(!isChecked);
                     onToggle(e, !isChecked);
                 }} data-testid={dataTestId}></span>

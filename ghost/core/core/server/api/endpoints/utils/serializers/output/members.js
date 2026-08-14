@@ -186,6 +186,7 @@ function serializeMember(member, options) {
         last_seen_at: json.last_seen_at,
         attribution: serializeAttribution(json.attribution),
         enable_comment_notifications: json.enable_comment_notifications,
+        enable_updates_and_announcements: json.enable_updates_and_announcements,
         unsubscribe_url: json.unsubscribe_url,
         can_comment: json.can_comment,
         commenting: json.commenting
@@ -275,6 +276,7 @@ function createSerializer(debugString, serialize) {
  * @prop {number} email_open_rate
  * @prop {null|SerializedEmailRecipient[]} email_recipients
  * @prop {boolean} enable_comment_notifications
+ * @prop {boolean|null} enable_updates_and_announcements
  * @prop {'free'|'paid'|'comped'|'gift'} status
  * @prop {boolean} can_comment
  * @prop {null|{disabled: boolean, disabled_reason: string, disabled_until: string|null}} commenting

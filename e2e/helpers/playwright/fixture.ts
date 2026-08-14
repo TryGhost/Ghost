@@ -1,10 +1,11 @@
 import baseDebug from '@tryghost/debug';
 import {AnalyticsOverviewPage} from '@/helpers/pages';
-import {Browser, BrowserContext, Page, TestInfo, test as base} from '@playwright/test';
+import {Browser, BrowserContext, Page, Request, TestInfo, test as base} from '@playwright/test';
+import {EGRESS_ENFORCE, EGRESS_MONITOR_ENABLED} from '@/helpers/environment/constants';
 import {EmailClient, MailPit} from '@/helpers/services/email/mail-pit';
 import {FakeMailgunServer, MailgunTestService} from '@/helpers/services/mailgun';
 import {FakeStripeServer, StripeTestService, WebhookClient} from '@/helpers/services/stripe';
-import {GhostInstance, getEnvironmentManager} from '@/helpers/environment';
+import {GhostInstance, getEnvironmentManager, isAllowedHost} from '@/helpers/environment';
 import {SettingsService} from '@/helpers/services/settings/settings-service';
 import {faker} from '@faker-js/faker';
 import {loginToGetAuthenticatedSession} from '@/helpers/playwright/flows/sign-in';
@@ -56,11 +57,17 @@ interface InternalFixtures {
 
 interface WorkerFixtures {
     _cleanupPerFileInstance: void;
+    _egressSummary: void;
 }
 
 let cachedPerFileInstance: PerFileInstanceCache | null = null;
 let cachedPerFileGhostAccountOwner: User | null = null;
 let cachedPerFileAuthenticatedSession: PerFileAuthenticatedSessionCache | null = null;
+
+// External hosts requested by the browser, accumulated across a worker so the
+// worker teardown can print them (the server-side equivalent comes from the DNS
+// sidecar). Worker-scoped, like the caches above.
+const workerBrowserEgressHosts = new Set<string>();
 
 export interface User {
     name: string;
@@ -200,6 +207,61 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
         cachedPerFileInstance = null;
         cachedPerFileGhostAccountOwner = null;
         cachedPerFileAuthenticatedSession = null;
+    }, {
+        scope: 'worker',
+        auto: true
+    }],
+
+    // At the end of each worker, sweep the external hosts the suite reached and —
+    // when E2E_EGRESS_ENFORCE=1 — fail the worker if any were off the allowlist.
+    //
+    // The check runs ONCE here, not per test: the server-side DNS log is read with
+    // a brief settle (EgressMonitor.collectSettled) to catch fire-and-forget
+    // lookups, so we don't pay that cost on every test, and a late or boot-time
+    // lookup can't be misattributed to — and fail — an unrelated test. The DNS
+    // sidecar sees everything Ghost resolved; the per-test browser listener (page
+    // fixture) feeds workerBrowserEgressHosts for the layer it can't see. Printed
+    // hosts are what you read out of CI logs to build up EGRESS_ALLOWLIST.
+    _egressSummary: [async ({}, use, workerInfo) => {
+        await use();
+
+        if (!EGRESS_MONITOR_ENABLED) {
+            return;
+        }
+
+        const print = (label: string, hosts: string[]) => {
+            if (hosts.length === 0) {
+                return;
+            }
+            // eslint-disable-next-line no-console
+            console.log(
+                `\n[egress] external hosts ${label} (worker ${workerInfo.workerIndex}):\n` +
+                hosts.map(host => `  - ${host}`).join('\n') + '\n'
+            );
+        };
+
+        let serverHosts: string[] = [];
+        try {
+            const monitor = (await getEnvironmentManager()).getEgressMonitor();
+            if (monitor) {
+                serverHosts = await monitor.unexpectedHosts();
+            }
+        } catch {
+            // Best-effort: never fail teardown over a monitor read error.
+        }
+        const browserHosts = [...workerBrowserEgressHosts].sort();
+
+        print('resolved by Ghost', serverHosts);
+        print('requested by the browser', browserHosts);
+
+        const unexpected = [...new Set([...serverHosts, ...browserHosts])].sort();
+        if (EGRESS_ENFORCE && unexpected.length > 0) {
+            throw new Error(
+                `Unexpected external egress in worker ${workerInfo.workerIndex}: ${unexpected.join(', ')}\n\n` +
+                `Host(s) not on the egress allowlist were contacted during this worker's tests.\n` +
+                `If this is expected, add them to EGRESS_ALLOWLIST in helpers/environment/constants.ts.`
+            );
+        }
     }, {
         scope: 'worker',
         auto: true
@@ -490,6 +552,30 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
 
         const page = pageWithAuthenticatedUser.page;
 
+        // Browser-side egress monitoring (complements the server-side DNS monitor):
+        // the Ghost container's resolver can't see requests the browser makes itself
+        // (changelog.json, embeds, avatar services, …), so we watch them here and
+        // hand off-allowlist hosts to the worker-level sweep (_egressSummary).
+        const browserEgressHosts = new Set<string>();
+        const onRequest = (request: Request) => {
+            let host: string;
+            try {
+                const url = new URL(request.url());
+                if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+                    return;
+                }
+                host = url.hostname;
+            } catch {
+                return;
+            }
+            if (!isAllowedHost(host)) {
+                browserEgressHosts.add(host);
+            }
+        };
+        if (EGRESS_MONITOR_ENABLED) {
+            page.on('request', onRequest);
+        }
+
         const labsFlagsSpecified = labs && Object.keys(labs).length > 0;
         if (labsFlagsSpecified) {
             const settingsService = new SettingsService(page.request);
@@ -504,6 +590,13 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
         }
 
         await use(page);
+
+        if (EGRESS_MONITOR_ENABLED) {
+            page.off('request', onRequest);
+            for (const host of browserEgressHosts) {
+                workerBrowserEgressHosts.add(host);
+            }
+        }
     }
 });
 

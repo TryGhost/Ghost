@@ -10,7 +10,7 @@ const db = require('../../../core/server/data/db');
 describe('Migrations - schema utils', function () {
     const tableName = 'test_nullable_integration';
 
-    before(async function () {
+    beforeAll(async function () {
         await testUtils.startGhost();
     });
 

@@ -1,17 +1,298 @@
 import assert from 'node:assert/strict';
+import errors from '@tryghost/errors';
 import ObjectId from 'bson-objectid';
-import {type Knex} from 'knex';
-import {createTemporaryFakeAutomationsDatabase} from '../../../../../core/server/services/automations/temporary-fake-database';
-import {createFakeDatabaseAutomationsRepository} from '../../../../../core/server/services/automations/fake-database-automations-repository';
+import createKnex, {type Knex} from 'knex';
+import moment from 'moment';
+import {NON_EMPTY_EMAIL_LEXICAL} from '../../../../utils/automations-fixtures';
+import {createDatabaseAutomationsRepository} from '../../../../../core/server/services/automations/database-automations-repository';
 import type {AutomationAction, AutomationsRepository, AutomationStepToRun} from '../../../../../core/server/services/automations/automations-repository';
 
 const HOUR_MS = 60 * 60 * 1000;
+const FAKE_WAIT_HOURS_MULTIPLIER = 2500;
+const DATABASE_DATE_FORMAT = 'YYYY-MM-DD HH:mm:ss';
+
+const toDatabaseDate = (date: Date | string): string => moment(date).format(DATABASE_DATE_FORMAT);
+const toRepositoryDateISOString = (date: Date | string): string => new Date(toDatabaseDate(date)).toISOString();
 
 const addHours = (dateCol: unknown, hours: number): Date => {
     assert(typeof dateCol === 'string', 'Expected date column to be a string');
-    const start = new Date(dateCol).valueOf();
-    const delta = hours * HOUR_MS;
-    return new Date(start + delta);
+    return moment(dateCol, DATABASE_DATE_FORMAT).add(hours, 'hours').toDate();
+};
+
+const createDatabase = async (): Promise<Knex> => {
+    const database = createKnex({
+        client: 'sqlite3',
+        connection: {
+            filename: ':memory:'
+        },
+        pool: {
+            min: 1,
+            max: 1
+        },
+        useNullAsDefault: true
+    });
+
+    await database.raw('PRAGMA foreign_keys = ON;');
+
+    const id = () => ObjectId().toHexString();
+    const now = () => toDatabaseDate(new Date());
+
+    const fakeEmailDesignSettingId = id();
+    const defaultEmailDesignSettingId = id();
+
+    await database.schema.createTable('automations', (table) => {
+        table.text('id').primary();
+        table.text('created_at').notNullable();
+        table.text('updated_at').notNullable();
+        table.text('slug').notNullable().unique();
+        table.text('name').notNullable();
+        table.text('status').notNullable();
+    });
+
+    await database.schema.createTable('automation_actions', (table) => {
+        table.text('id').primary();
+        table.text('created_at').notNullable();
+        table.text('updated_at').notNullable();
+        table.text('deleted_at');
+        table.text('automation_id').notNullable().references('id').inTable('automations');
+        table.text('type').notNullable();
+    });
+
+    await database.schema.createTable('email_design_settings', (table) => {
+        table.text('id').primary();
+        table.text('slug').notNullable().unique();
+        table.text('created_at').notNullable();
+        table.text('updated_at');
+    });
+
+    await database.schema.createTable('welcome_email_automated_emails', (table) => {
+        table.text('id').primary();
+        table.text('welcome_email_automation_id').notNullable().references('id').inTable('automations');
+        table.text('next_welcome_email_automated_email_id');
+        table.integer('delay_days').notNullable();
+        table.text('subject').notNullable();
+        table.text('lexical');
+        table.text('email_design_setting_id').notNullable().references('id').inTable('email_design_settings');
+        table.text('created_at').notNullable();
+        table.text('updated_at');
+    });
+
+    await database.schema.createTable('automation_action_revisions', (table) => {
+        table.text('id').primary();
+        table.text('created_at').notNullable();
+        table.text('action_id').notNullable().references('id').inTable('automation_actions');
+        table.integer('wait_hours');
+        table.text('email_subject');
+        table.text('email_lexical');
+        table.text('email_design_setting_id').references('id').inTable('email_design_settings');
+        table.unique(['created_at', 'action_id']);
+    });
+
+    await database.schema.createTable('automation_action_edges', (table) => {
+        table.text('source_action_id').notNullable().references('id').inTable('automation_actions');
+        table.text('target_action_id').notNullable().references('id').inTable('automation_actions');
+        table.primary(['source_action_id', 'target_action_id']);
+    });
+
+    await database.schema.createTable('automation_runs', (table) => {
+        table.text('id').primary();
+        table.text('created_at').notNullable();
+        table.text('updated_at').notNullable();
+        table.text('automation_id').notNullable().references('id').inTable('automations');
+        table.text('member_id'); // not a real foreign key here
+        table.text('member_email').notNullable();
+    });
+
+    await database.schema.createTable('automation_run_steps', (table) => {
+        table.text('id').primary();
+        table.text('created_at').notNullable();
+        table.text('updated_at').notNullable();
+        table.text('automation_run_id').notNullable().references('id').inTable('automation_runs');
+        table.text('automation_action_revision_id').notNullable().references('id').inTable('automation_action_revisions');
+        table.text('ready_at').notNullable();
+        table.integer('step_attempts').notNullable().defaultTo(0);
+        table.text('started_at');
+        table.text('finished_at');
+        table.text('status').notNullable().defaultTo('pending');
+        table.text('locked_by');
+        table.text('locked_at');
+    });
+
+    const freeAutomationId = id();
+    const paidAutomationId = id();
+    await database('email_design_settings').insert([{
+        id: defaultEmailDesignSettingId,
+        slug: 'default-automated-email',
+        created_at: now(),
+        updated_at: now()
+    }, {
+        id: fakeEmailDesignSettingId,
+        slug: 'test-automation-email-design',
+        created_at: now(),
+        updated_at: now()
+    }]);
+
+    await database('automations').insert([{
+        id: freeAutomationId,
+        created_at: now(),
+        updated_at: now(),
+        slug: 'member-welcome-email-free',
+        name: 'Free member welcome flow',
+        status: 'active'
+    }, {
+        id: paidAutomationId,
+        created_at: now(),
+        updated_at: now(),
+        slug: 'member-welcome-email-paid',
+        name: 'Paid member welcome flow',
+        status: 'active'
+    }]);
+
+    const freeAction1Id = id();
+    const freeAction2Id = id();
+    const freeAction3Id = id();
+    const freeAction4Id = id();
+    const paidAction1Id = id();
+    const paidAction2Id = id();
+    const paidAction3Id = id();
+    const paidAction4Id = id();
+    await database('automation_actions').insert([{
+        id: freeAction1Id,
+        created_at: now(),
+        updated_at: now(),
+        automation_id: freeAutomationId,
+        type: 'wait'
+    }, {
+        id: freeAction2Id,
+        created_at: now(),
+        updated_at: now(),
+        automation_id: freeAutomationId,
+        type: 'send_email'
+    }, {
+        id: freeAction3Id,
+        created_at: now(),
+        updated_at: now(),
+        automation_id: freeAutomationId,
+        type: 'wait'
+    }, {
+        id: freeAction4Id,
+        created_at: now(),
+        updated_at: now(),
+        automation_id: freeAutomationId,
+        type: 'send_email'
+    }, {
+        id: paidAction1Id,
+        created_at: now(),
+        updated_at: now(),
+        automation_id: paidAutomationId,
+        type: 'wait'
+    }, {
+        id: paidAction2Id,
+        created_at: now(),
+        updated_at: now(),
+        automation_id: paidAutomationId,
+        type: 'send_email'
+    }, {
+        id: paidAction3Id,
+        created_at: now(),
+        updated_at: now(),
+        automation_id: paidAutomationId,
+        type: 'wait'
+    }, {
+        id: paidAction4Id,
+        created_at: now(),
+        updated_at: now(),
+        automation_id: paidAutomationId,
+        type: 'send_email'
+    }]);
+
+    await database('automation_action_revisions').insert([{
+        id: id(),
+        created_at: now(),
+        action_id: freeAction1Id,
+        wait_hours: 48,
+        email_subject: null,
+        email_lexical: null,
+        email_design_setting_id: null
+    }, {
+        id: id(),
+        created_at: now(),
+        action_id: freeAction2Id,
+        wait_hours: null,
+        email_subject: 'Welcome!',
+        email_lexical: NON_EMPTY_EMAIL_LEXICAL,
+        email_design_setting_id: fakeEmailDesignSettingId
+    }, {
+        id: id(),
+        created_at: now(),
+        action_id: freeAction3Id,
+        wait_hours: 72,
+        email_subject: null,
+        email_lexical: null,
+        email_design_setting_id: null
+    }, {
+        id: id(),
+        created_at: now(),
+        action_id: freeAction4Id,
+        wait_hours: null,
+        email_subject: 'Follow up',
+        email_lexical: NON_EMPTY_EMAIL_LEXICAL,
+        email_design_setting_id: fakeEmailDesignSettingId
+    }, {
+        id: id(),
+        created_at: now(),
+        action_id: paidAction1Id,
+        wait_hours: 48,
+        email_subject: null,
+        email_lexical: null,
+        email_design_setting_id: null
+    }, {
+        id: id(),
+        created_at: now(),
+        action_id: paidAction2Id,
+        wait_hours: null,
+        email_subject: 'Welcome to Paid!',
+        email_lexical: NON_EMPTY_EMAIL_LEXICAL,
+        email_design_setting_id: fakeEmailDesignSettingId
+    }, {
+        id: id(),
+        created_at: now(),
+        action_id: paidAction3Id,
+        wait_hours: 72,
+        email_subject: null,
+        email_lexical: null,
+        email_design_setting_id: null
+    }, {
+        id: id(),
+        created_at: now(),
+        action_id: paidAction4Id,
+        wait_hours: null,
+        email_subject: 'Exclusive Insights',
+        email_lexical: NON_EMPTY_EMAIL_LEXICAL,
+        email_design_setting_id: fakeEmailDesignSettingId
+    }]);
+
+    await database('automation_action_edges').insert([{
+        source_action_id: freeAction1Id,
+        target_action_id: freeAction2Id
+    }, {
+        source_action_id: freeAction2Id,
+        target_action_id: freeAction3Id
+    }, {
+        source_action_id: freeAction3Id,
+        target_action_id: freeAction4Id
+    }, {
+        source_action_id: paidAction1Id,
+        target_action_id: paidAction2Id
+    }, {
+        source_action_id: paidAction2Id,
+        target_action_id: paidAction3Id
+    }, {
+        source_action_id: paidAction3Id,
+        target_action_id: paidAction4Id
+    }]);
+
+    return database;
 };
 
 type ActionRow = {
@@ -113,7 +394,8 @@ describe('automations repository', function () {
                 'automation_actions.id as action_id',
                 'automation_actions.type as action_type',
                 'automation_action_revisions.id as revision_id',
-                'automation_action_revisions.wait_hours as wait_hours'
+                'automation_action_revisions.wait_hours as wait_hours',
+                'automation_action_revisions.email_design_setting_id as email_design_setting_id'
             )
             .innerJoin('automation_action_revisions', 'automation_action_revisions.action_id', 'automation_actions.id')
             .where('automation_actions.id', actionId)
@@ -126,7 +408,7 @@ describe('automations repository', function () {
     };
 
     const insertRun = async (automationId: string) => {
-        const now = new Date().toISOString();
+        const now = toDatabaseDate(new Date());
         const run = {
             id: ObjectId().toHexString(),
             created_at: now,
@@ -141,8 +423,17 @@ describe('automations repository', function () {
         return run;
     };
 
-    const insertStep = async (runId: string, revisionId: string, attrs = {}) => {
-        const now = new Date().toISOString();
+    const normalizeDateColumns = (row: Record<string, unknown>, columns: string[]) => {
+        for (const column of columns) {
+            const value = row[column];
+            if (typeof value === 'string' || value instanceof Date) {
+                row[column] = toDatabaseDate(value);
+            }
+        }
+    };
+
+    const insertStep = async (runId: string, revisionId: string, attrs: Record<string, unknown> = {}) => {
+        const now = toDatabaseDate(new Date());
         const step = {
             id: ObjectId().toHexString(),
             created_at: now,
@@ -158,6 +449,14 @@ describe('automations repository', function () {
             locked_at: null,
             ...attrs
         };
+        normalizeDateColumns(step, [
+            'created_at',
+            'updated_at',
+            'ready_at',
+            'started_at',
+            'finished_at',
+            'locked_at'
+        ]);
 
         await knex('automation_run_steps').insert(step);
 
@@ -208,14 +507,133 @@ describe('automations repository', function () {
     };
 
     beforeEach(async function () {
-        knex = await createTemporaryFakeAutomationsDatabase();
-        repo = createFakeDatabaseAutomationsRepository({
-            getDatabase: () => Promise.resolve(knex)
+        knex = await createDatabase();
+        repo = createDatabaseAutomationsRepository({
+            knex,
+            fakeWaitHoursMultiplier: null
         });
     });
 
     afterEach(async function () {
         await knex?.destroy();
+    });
+
+    describe('browse', function () {
+        const deleteActionsForAutomationIds = async (automationIds: string[]) => {
+            const actionIds = await knex('automation_actions')
+                .whereIn('automation_id', automationIds)
+                .pluck('id');
+            await knex('automation_action_edges')
+                .whereIn('source_action_id', actionIds)
+                .orWhereIn('target_action_id', actionIds)
+                .del();
+            await knex('automation_action_revisions')
+                .whereIn('action_id', actionIds)
+                .del();
+            await knex('automation_actions')
+                .whereIn('id', actionIds)
+                .del();
+        };
+
+        const getWelcomeEmailDesignSettingId = async () => {
+            const row = await knex('email_design_settings')
+                .select('id')
+                .where('slug', 'test-automation-email-design')
+                .first();
+            assert(row);
+            return row.id;
+        };
+
+        const createWelcomeEmailsForAutomations = async (automations: Array<{id: string; slug: string}>) => {
+            const emailDesignSettingId = await getWelcomeEmailDesignSettingId();
+            await knex('welcome_email_automated_emails').insert(automations.map(automation => ({
+                id: ObjectId().toHexString(),
+                welcome_email_automation_id: automation.id,
+                next_welcome_email_automated_email_id: null,
+                delay_days: 0,
+                subject: `${automation.slug} subject`,
+                lexical: NON_EMPTY_EMAIL_LEXICAL,
+                email_design_setting_id: emailDesignSettingId,
+                created_at: toDatabaseDate(new Date()),
+                updated_at: toDatabaseDate(new Date())
+            })));
+            return emailDesignSettingId;
+        };
+
+        const assertWelcomeEmailActionsWereCreated = async (automations: Array<{id: string; slug: string}>, emailDesignSettingId: string) => {
+            for (const automation of automations) {
+                const result = await repo.getById(automation.id);
+                assert(result);
+                assert.deepEqual(result.edges, []);
+                assert.equal(result.actions.length, 1);
+                const action = result.actions[0];
+                assert.equal(action.type, 'send_email');
+                if (action.type !== 'send_email') {
+                    assert.fail('Expected a send_email action');
+                }
+                assert.equal(action.data.email_subject, `${automation.slug} subject`);
+                assert.equal(action.data.email_lexical, NON_EMPTY_EMAIL_LEXICAL);
+                assert.equal(action.data.email_design_setting_id, emailDesignSettingId);
+            }
+        };
+
+        it('creates missing default free and paid automations', async function () {
+            const automationIds = await knex('automations')
+                .whereIn('slug', ['member-welcome-email-free', 'member-welcome-email-paid'])
+                .pluck('id');
+
+            await deleteActionsForAutomationIds(automationIds);
+            await knex('automations')
+                .whereIn('id', automationIds)
+                .del();
+
+            await repo.browse();
+
+            const automations = await knex('automations')
+                .select('id', 'name', 'slug', 'status')
+                .whereIn('slug', ['member-welcome-email-free', 'member-welcome-email-paid'])
+                .orderBy('slug');
+
+            assert.deepEqual(automations.map(({name, slug, status}) => ({name, slug, status})), [{
+                name: 'Free member welcome flow',
+                slug: 'member-welcome-email-free',
+                status: 'inactive'
+            }, {
+                name: 'Paid member welcome flow',
+                slug: 'member-welcome-email-paid',
+                status: 'inactive'
+            }]);
+
+            const emailDesignSettingId = await createWelcomeEmailsForAutomations(automations);
+
+            await repo.browse();
+
+            await assertWelcomeEmailActionsWereCreated(automations, emailDesignSettingId);
+        });
+
+        it('creates copied send_email actions for default automations without actions', async function () {
+            const automations = await knex('automations')
+                .select('id', 'slug')
+                .whereIn('slug', ['member-welcome-email-free', 'member-welcome-email-paid']);
+            const automationIds = automations.map(automation => automation.id);
+
+            await deleteActionsForAutomationIds(automationIds);
+            const emailDesignSettingId = await createWelcomeEmailsForAutomations(automations);
+
+            await repo.browse();
+
+            await assertWelcomeEmailActionsWereCreated(automations, emailDesignSettingId);
+
+            await repo.browse();
+
+            const totalActions = await knex('automation_actions')
+                .whereIn('automation_id', automationIds)
+                .whereNull('deleted_at')
+                .count({count: 'id'})
+                .first();
+
+            assert.equal(Number(totalActions?.count), 2);
+        });
     });
 
     describe('trigger', function () {
@@ -240,13 +658,37 @@ describe('automations repository', function () {
             assert.equal(step.wait_hours, 48);
             assert.equal(step.created_at, run.created_at);
             assert.equal(step.updated_at, run.updated_at);
-            assert.equal(step.ready_at, addHours(run.created_at, 48).toISOString());
+            assert.equal(step.ready_at, toDatabaseDate(addHours(run.created_at, 48)));
             assert.equal(step.step_attempts, 0);
             assert.equal(step.started_at, null);
             assert.equal(step.finished_at, null);
             assert.equal(step.status, 'pending');
             assert.equal(step.locked_by, null);
             assert.equal(step.locked_at, null);
+        });
+
+        it('uses the fake wait hours multiplier for triggered wait actions when configured', async function () {
+            repo = createDatabaseAutomationsRepository({
+                knex,
+                fakeWaitHoursMultiplier: FAKE_WAIT_HOURS_MULTIPLIER
+            });
+
+            const beforeTrigger = Date.now();
+            await repo.trigger({
+                memberEmail: 'fake-wait@example.com',
+                memberId: 'member_123',
+                memberStatus: 'free'
+            });
+            const afterTrigger = Date.now();
+
+            const run = await getRunByMemberEmail('fake-wait@example.com');
+            assert(run);
+
+            const step = await getStepByRunId(run.id);
+            assert(step);
+            const readyAtMs = moment(step.ready_at, DATABASE_DATE_FORMAT).valueOf();
+            assert(readyAtMs >= beforeTrigger + (48 * FAKE_WAIT_HOURS_MULTIPLIER) - 999);
+            assert(readyAtMs <= afterTrigger + (48 * FAKE_WAIT_HOURS_MULTIPLIER));
         });
 
         it('can trigger an automation for a paid member', async function () {
@@ -350,6 +792,15 @@ describe('automations repository', function () {
     });
 
     describe('edit', function () {
+        const assertValidationError = async (fn: () => Promise<unknown>, property: string, message: RegExp) => {
+            await assert.rejects(fn, (error: unknown) => {
+                assert(error instanceof errors.ValidationError);
+                assert.equal(error.property, property);
+                assert.match(error.message, message);
+                return true;
+            });
+        };
+
         it('only inserts action revisions when action data changes', async function () {
             const initialAutomation = await getAutomationBySlug('member-welcome-email-free');
             const initialRevisionCount = await getRevisionCount();
@@ -415,6 +866,90 @@ describe('automations repository', function () {
             assert.equal(await getRevisionCount(unchangedEmailAction.id), 1);
             assert.equal(await getRevisionCount(addedActionId), 1);
         });
+
+        it('resolves default email design setting slugs to the default design setting id', async function () {
+            const initialAutomation = await getAutomationBySlug('member-welcome-email-free');
+            const addedActionId = ObjectId().toString();
+            const addedAction: AutomationAction = {
+                id: addedActionId,
+                type: 'send_email',
+                data: {
+                    email_subject: 'Welcome',
+                    email_lexical: NON_EMPTY_EMAIL_LEXICAL,
+                    email_design_setting_id: 'default-automated-email'
+                }
+            };
+
+            await repo.edit(initialAutomation.id, {
+                status: 'inactive',
+                actions: [addedAction],
+                edges: []
+            });
+
+            const defaultDesignSetting = await knex('email_design_settings')
+                .select('id')
+                .where('slug', 'default-automated-email')
+                .first();
+            const revision = await getLatestActionRevisionByActionId(addedActionId);
+
+            assert.equal(revision.email_design_setting_id, defaultDesignSetting.id);
+        });
+
+        it('rejects changing an action that is part of another automation', async function () {
+            const freeAutomation = await getAutomationBySlug('member-welcome-email-free');
+            const paidAutomation = await getAutomationBySlug('member-welcome-email-paid');
+            const paidAction = paidAutomation.actions[0];
+
+            await assertValidationError(async () => repo.edit(freeAutomation.id, {
+                status: 'inactive',
+                actions: [paidAction],
+                edges: []
+            }), 'actions.id', /already exists/);
+        });
+
+        it('rejects changing a soft-deleted action', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const now = toDatabaseDate(new Date());
+            const softDeletedActionId = ObjectId().toString();
+            await knex('automation_actions').insert({
+                id: softDeletedActionId,
+                created_at: now,
+                updated_at: now,
+                deleted_at: now,
+                automation_id: automation.id,
+                type: 'wait'
+            });
+
+            await assertValidationError(async () => repo.edit(automation.id, {
+                status: 'inactive',
+                actions: [{
+                    id: softDeletedActionId,
+                    type: 'wait',
+                    data: {
+                        wait_hours: 24
+                    }
+                }],
+                edges: []
+            }), 'actions.id', /already exists/);
+        });
+
+        it('rejects changing the type of an action', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const waitAction = automation.actions.find(action => action.type === 'wait');
+            const emailAction = automation.actions.find(action => action.type === 'send_email');
+            assert(waitAction, 'test setup expects wait action');
+            assert.equal(emailAction?.type, 'send_email', 'test setup expects email action');
+
+            await assertValidationError(async () => repo.edit(automation.id, {
+                status: 'inactive',
+                actions: [{
+                    id: waitAction.id,
+                    type: 'send_email',
+                    data: emailAction.data
+                }],
+                edges: []
+            }), 'actions.type', /different type/);
+        });
     });
 
     describe('fetchAndLockSteps', function () {
@@ -458,7 +993,7 @@ describe('automations repository', function () {
                             includesStepId(result.response, contendedStepId)
                         ) {
                             hasSimulatedLock = true;
-                            const lockedAt = new Date().toISOString();
+                            const lockedAt = toDatabaseDate(new Date());
                             await trx('automation_run_steps')
                                 .update({
                                     locked_by: 'contending-lock',
@@ -485,8 +1020,9 @@ describe('automations repository', function () {
                 }
             }) as Knex;
 
-            repo = createFakeDatabaseAutomationsRepository({
-                getDatabase: () => Promise.resolve(mockKnex)
+            repo = createDatabaseAutomationsRepository({
+                knex: mockKnex,
+                fakeWaitHoursMultiplier: null
             });
         };
 
@@ -534,7 +1070,7 @@ describe('automations repository', function () {
             const actualStepIds = new Set(result.steps.map(step => step.id));
             const expectedStepIds = new Set([readyStep.id, staleLockStep.id]);
             assert.deepEqual(actualStepIds, expectedStepIds);
-            assert.equal(result.nextStepReadyAt?.toISOString(), futureReadyAt.toISOString());
+            assert.equal(result.nextStepReadyAt?.toISOString(), toRepositoryDateISOString(futureReadyAt));
 
             const lockId = assertSingleBatchLock(result.steps);
 
@@ -576,7 +1112,7 @@ describe('automations repository', function () {
 
             assert.deepEqual(result.steps, []);
             assert(result.nextStepReadyAt);
-            assert.equal(result.nextStepReadyAt.toISOString(), sooner.toISOString());
+            assert.equal(result.nextStepReadyAt.toISOString(), toRepositoryDateISOString(sooner));
         });
 
         it('does not schedule an immediate poll when due steps are locked by another worker', async function () {
@@ -610,7 +1146,7 @@ describe('automations repository', function () {
             const result = await repo.fetchAndLockSteps(2);
 
             assert.equal(result.steps.length, 2);
-            assert.equal(result.nextStepReadyAt?.toISOString(), readyAt2);
+            assert.equal(result.nextStepReadyAt?.toISOString(), toRepositoryDateISOString(readyAt2));
 
             const lockId = assertSingleBatchLock(result.steps);
 
@@ -699,7 +1235,7 @@ describe('automations repository', function () {
 
             assert.deepEqual(result.steps, []);
             assert(result.nextStepReadyAt);
-            assert.equal(result.nextStepReadyAt.toISOString(), readyAt);
+            assert.equal(result.nextStepReadyAt.toISOString(), toRepositoryDateISOString(readyAt));
             await assertContendedStepWasLocked(contendedStep.id);
         });
     });
@@ -740,7 +1276,7 @@ describe('automations repository', function () {
             assert.equal(nextStep.automation_run_id, run.id);
             assert.equal(nextStep.automation_action_revision_id, nextAction.revision_id);
             assert.equal(nextStep.status, 'pending');
-            assert.equal(nextStep.ready_at, nextReadyAt.toISOString());
+            assert.equal(nextStep.ready_at, toDatabaseDate(nextReadyAt));
         });
 
         it('uses wait hours when the next action is a wait action', async function () {
@@ -760,6 +1296,29 @@ describe('automations repository', function () {
             assert(nextReadyAt);
             assert(nextReadyAt.getTime() >= beforeFinish + (72 * HOUR_MS));
             assert(nextReadyAt.getTime() <= afterFinish + (72 * HOUR_MS));
+        });
+
+        it('uses the fake wait hours multiplier when configured', async function () {
+            repo = createDatabaseAutomationsRepository({
+                knex,
+                fakeWaitHoursMultiplier: FAKE_WAIT_HOURS_MULTIPLIER
+            });
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const sendEmailAction = await getActionByIndex(automation.id, 1);
+            assert.equal(sendEmailAction.action_type, 'send_email');
+            const run = await insertRun(automation.id);
+            const stepRow = await insertStep(run.id, sendEmailAction.revision_id, {
+                ready_at: new Date(Date.now() - 1000).toISOString()
+            });
+            const step = await getLockedStep(stepRow.id);
+
+            const beforeFinish = Date.now();
+            const nextReadyAt = await repo.finishStepAndEnqueueNext(step);
+            const afterFinish = Date.now();
+
+            assert(nextReadyAt);
+            assert(nextReadyAt.getTime() >= beforeFinish + (72 * FAKE_WAIT_HOURS_MULTIPLIER));
+            assert(nextReadyAt.getTime() <= afterFinish + (72 * FAKE_WAIT_HOURS_MULTIPLIER));
         });
 
         it('does not enqueue a duplicate next step when called again with the same locked step', async function () {
@@ -882,7 +1441,7 @@ describe('automations repository', function () {
             const nextStep = allSteps.find(candidate => candidate.id !== stepRow.id);
             assert(nextStep);
             assert.equal(nextStep.automation_action_revision_id, updatedNextAction.revision_id);
-            assert.equal(nextStep.ready_at, nextReadyAt.toISOString());
+            assert.equal(nextStep.ready_at, toDatabaseDate(nextReadyAt));
         });
     });
 
@@ -914,8 +1473,8 @@ describe('automations repository', function () {
             assert.equal((await getStepsByRunId(run.id)).length, 1);
             const markedFinishedAt = marked.finished_at;
             assert(typeof markedFinishedAt === 'string');
-            assert(new Date(markedFinishedAt).getTime() >= beforeMark);
-            assert(new Date(markedFinishedAt).getTime() <= afterMark);
+            assert(markedFinishedAt >= toDatabaseDate(new Date(beforeMark - 1000)));
+            assert(markedFinishedAt <= toDatabaseDate(new Date(afterMark)));
         });
 
         it('does not overwrite a step that is no longer pending', async function () {
@@ -994,7 +1553,7 @@ describe('automations repository', function () {
 
             const retried = await getStepById(step.id);
             assert.equal(retried.status, 'pending');
-            assert.equal(retried.ready_at, retryAt.toISOString());
+            assert.equal(retried.ready_at, toDatabaseDate(retryAt));
             assert.equal(retried.started_at, null);
             assert.equal(retried.finished_at, null);
             assert.equal(retried.locked_by, null);
@@ -1002,8 +1561,8 @@ describe('automations repository', function () {
             assert.equal(retried.step_attempts, 1);
             const retriedUpdatedAt = retried.updated_at;
             assert(typeof retriedUpdatedAt === 'string');
-            assert(new Date(retriedUpdatedAt).getTime() >= beforeRetry);
-            assert(new Date(retriedUpdatedAt).getTime() <= afterRetry);
+            assert(retriedUpdatedAt >= toDatabaseDate(new Date(beforeRetry - 1000)));
+            assert(retriedUpdatedAt <= toDatabaseDate(new Date(afterRetry)));
         });
 
         it('does not retry a locked step that is no longer pending', async function () {

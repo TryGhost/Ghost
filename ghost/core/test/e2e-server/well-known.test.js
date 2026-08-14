@@ -4,11 +4,11 @@ const {anyString, anyEtag} = matchers;
 describe('.well-known', function () {
     let agentGhostAPI;
 
-    before(async function () {
+    beforeAll(async function () {
         agentGhostAPI = await agentProvider.getGhostAPIAgent();
     });
 
-    after(function () {
+    afterAll(function () {
         mockManager.restore();
     });
 

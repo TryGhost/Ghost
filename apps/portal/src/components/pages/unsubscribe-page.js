@@ -32,9 +32,9 @@ function AccountHeader() {
     );
 }
 
-async function updateMemberNewsletters({api, memberUuid, key, newsletters, enableCommentNotifications}) {
+async function updateMemberNewsletters({api, memberUuid, key, newsletters, enableCommentNotifications, enableUpdatesAndAnnouncements}) {
     try {
-        return await api.member.updateNewsletters({uuid: memberUuid, key, newsletters, enableCommentNotifications});
+        return await api.member.updateNewsletters({uuid: memberUuid, key, newsletters, enableCommentNotifications, enableUpdatesAndAnnouncements});
     } catch (e) {
         // ignore auto unsubscribe error
     }
@@ -55,15 +55,23 @@ export default function UnsubscribePage() {
     const [subscribedNewsletters, setSubscribedNewsletters] = useState(defaultNewsletters);
     const [showPrefs, setShowPrefs] = useState(false);
     const {comments_enabled: commentsEnabled} = site;
-    const {enable_comment_notifications: enableCommentNotifications = false} = member || {};
+    const canChangeUpdatesAndAnnouncements = !!site.labs?.automations;
+    const {
+        enable_comment_notifications: enableCommentNotifications = false,
+        enable_updates_and_announcements: enableUpdatesAndAnnouncements
+    } = member || {};
 
     const hasNewslettersEnabled = hasNewsletterSendingEnabled({site});
 
-    const updateNewsletters = async (newsletters) => {
+    const updateNewsletters = async (newsletters, enableUpdatesAndAnnouncementsValue) => {
+        const update = {newsletters};
+        if (enableUpdatesAndAnnouncementsValue !== undefined) {
+            update.enableUpdatesAndAnnouncements = enableUpdatesAndAnnouncementsValue;
+        }
         if (loggedInMember) {
-            doAction('updateNewsletterPreference', {newsletters});
+            doAction('updateNewsletterPreference', update);
         } else {
-            await updateMemberNewsletters({api, memberUuid: pageData.uuid, key: pageData.key, newsletters});
+            await updateMemberNewsletters({api, memberUuid: pageData.uuid, key: pageData.key, ...update});
         }
         setSubscribedNewsletters(newsletters);
         const notification = {
@@ -89,15 +97,31 @@ export default function UnsubscribePage() {
         });
     };
 
+    const updateUpdatesAndAnnouncements = async (enabled) => {
+        let updatedData;
+        if (loggedInMember) {
+            await doAction('updateNewsletterPreference', {enableUpdatesAndAnnouncements: enabled});
+            updatedData = {...loggedInMember, enable_updates_and_announcements: enabled};
+        } else {
+            updatedData = await updateMemberNewsletters({api, memberUuid: pageData.uuid, key: pageData.key, enableUpdatesAndAnnouncements: enabled});
+        }
+        setMember(updatedData);
+        doAction('showPopupNotification', {
+            action: 'updated:success',
+            message: t('Email preferences updated.')
+        });
+    };
+
     const unsubscribeAll = async () => {
         let updatedMember;
         if (loggedInMember) {
-            await doAction('updateNewsletterPreference', {newsletters: [], enableCommentNotifications: false});
+            await doAction('updateNewsletterPreference', {newsletters: [], enableCommentNotifications: false, enableUpdatesAndAnnouncements: false});
             updatedMember = {...loggedInMember};
             updatedMember.newsletters = [];
             updatedMember.enable_comment_notifications = false;
+            updatedMember.enable_updates_and_announcements = false;
         } else {
-            updatedMember = await api.member.updateNewsletters({uuid: pageData.uuid, key: pageData.key, newsletters: [], enableCommentNotifications: false});
+            updatedMember = await api.member.updateNewsletters({uuid: pageData.uuid, key: pageData.key, newsletters: [], enableCommentNotifications: false, enableUpdatesAndAnnouncements: false});
         }
         setSubscribedNewsletters([]);
         setMember(updatedMember);
@@ -140,9 +164,12 @@ export default function UnsubscribePage() {
             } else if (pageData.comments && commentsEnabled) {
                 // Unsubscribe link for comments
                 await updateCommentNotifications(false);
+            } else if (pageData.updatesAndAnnouncements && canChangeUpdatesAndAnnouncements) {
+                // Unsubscribe link for updates & announcements (automation emails)
+                await updateUpdatesAndAnnouncements(false);
             }
         })();
-    }, [commentsEnabled, pageData.uuid, pageData.newsletterUuid, pageData.comments, site.url, siteNewsletters?.length]);
+    }, [commentsEnabled, canChangeUpdatesAndAnnouncements, pageData.uuid, pageData.newsletterUuid, pageData.comments, pageData.updatesAndAnnouncements, site.url, siteNewsletters?.length]);
 
     if (loading) {
         // Loading member data from the API based on the uuid
@@ -228,6 +255,21 @@ export default function UnsubscribePage() {
                 </>
             );
         }
+        if (pageData.updatesAndAnnouncements && canChangeUpdatesAndAnnouncements) {
+            const hideClassName = hasInteracted ? 'gh-portal-hide' : '';
+            return (
+                <>
+                    <p className={`gh-portal-text-center gh-portal-header-message ${hideClassName}`}>
+                        <Interpolate
+                            string={t('{memberEmail} will no longer receive updates & announcements.')}
+                            mapping={{
+                                memberEmail: <strong>{member?.email}</strong>
+                            }}
+                        />
+                    </p>
+                </>
+            );
+        }
         const unsubscribedNewsletter = siteNewsletters?.find((d) => {
             return d.uuid === pageData.newsletterUuid;
         });
@@ -257,11 +299,12 @@ export default function UnsubscribePage() {
             hasNewslettersEnabled={hasNewslettersEnabled}
             notification={HeaderNotification}
             subscribedNewsletters={subscribedNewsletters}
-            updateSubscribedNewsletters={async (newsletters) => {
-                await updateNewsletters(newsletters);
+            updateSubscribedNewsletters={async (newsletters, enableUpdatesAndAnnouncementsValue) => {
+                await updateNewsletters(newsletters, enableUpdatesAndAnnouncementsValue);
                 setHasInteracted(true);
             }}
             updateCommentNotifications={updateCommentNotifications}
+            updateUpdatesAndAnnouncements={updateUpdatesAndAnnouncements}
             unsubscribeAll={async () => {
                 await unsubscribeAll();
                 setHasInteracted(true);
@@ -269,6 +312,8 @@ export default function UnsubscribePage() {
             isPaidMember={member?.status !== 'free'}
             isCommentsEnabled={commentsEnabled !== 'off'}
             enableCommentNotifications={enableCommentNotifications}
+            canChangeUpdatesAndAnnouncements={canChangeUpdatesAndAnnouncements}
+            enableUpdatesAndAnnouncements={enableUpdatesAndAnnouncements}
         />
     );
 }

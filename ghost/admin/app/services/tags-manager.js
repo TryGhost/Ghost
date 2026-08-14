@@ -23,6 +23,9 @@ export default class TagsManagerService extends Service {
     *searchTagsTask(term, {page = 1} = {}) {
         // debounce the search
         yield timeout(250);
+        // Escape every single quote so the term is safely embedded in the
+        // single-quoted NQL filter below. NQL reads a lone backslash literally
+        // (only `\'`/`\"` are escapes), so quotes alone need escaping.
         const safeTerm = term.replace(/'/g, `\\'`);
         return yield this.store.query('tag', {filter: `tags.name:~'${safeTerm}'`, limit: 100, page, order: 'name asc'});
     }

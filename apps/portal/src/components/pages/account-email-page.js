@@ -81,7 +81,11 @@ export default function AccountEmailPage() {
     const defaultSubscribedNewsletters = [...(member?.newsletters || [])];
     const [subscribedNewsletters, setSubscribedNewsletters] = useState(defaultSubscribedNewsletters);
     const {comments_enabled: commentsEnabled} = site;
-    const {enable_comment_notifications: enableCommentNotifications} = member || {};
+    const canChangeUpdatesAndAnnouncements = !!site.labs?.automations;
+    const {
+        enable_comment_notifications: enableCommentNotifications,
+        enable_updates_and_announcements: enableUpdatesAndAnnouncements
+    } = member || {};
 
     useEffect(() => {
         setSubscribedNewsletters(member?.newsletters || []);
@@ -92,9 +96,12 @@ export default function AccountEmailPage() {
             hasNewslettersEnabled={hasNewslettersEnabled}
             notification={newsletterUuid ? HeaderNotification : null}
             subscribedNewsletters={subscribedNewsletters}
-            updateSubscribedNewsletters={(updatedNewsletters) => {
+            updateSubscribedNewsletters={(updatedNewsletters, enableUpdatesAndAnnouncementsValue) => {
                 setSubscribedNewsletters(updatedNewsletters);
-                doAction('updateNewsletterPreference', {newsletters: updatedNewsletters});
+                doAction('updateNewsletterPreference', {
+                    newsletters: updatedNewsletters,
+                    enableUpdatesAndAnnouncements: enableUpdatesAndAnnouncementsValue
+                });
                 doAction('showPopupNotification', {
                     action: 'updated:success',
                     message: t('Email preferences updated.')
@@ -102,6 +109,9 @@ export default function AccountEmailPage() {
             }}
             updateCommentNotifications={async (enabled) => {
                 doAction('updateNewsletterPreference', {enableCommentNotifications: enabled});
+            }}
+            updateUpdatesAndAnnouncements={async (enabled) => {
+                doAction('updateNewsletterPreference', {enableUpdatesAndAnnouncements: enabled});
             }}
             unsubscribeAll={() => {
                 setSubscribedNewsletters([]);
@@ -113,11 +123,16 @@ export default function AccountEmailPage() {
                 if (commentsEnabled) {
                     data.enableCommentNotifications = false;
                 }
+                if (canChangeUpdatesAndAnnouncements) {
+                    data.enableUpdatesAndAnnouncements = false;
+                }
                 doAction('updateNewsletterPreference', data);
             }}
             isPaidMember={isPaidMember({member})}
             isCommentsEnabled={commentsEnabled !== 'off'}
             enableCommentNotifications={enableCommentNotifications}
+            canChangeUpdatesAndAnnouncements={canChangeUpdatesAndAnnouncements}
+            enableUpdatesAndAnnouncements={enableUpdatesAndAnnouncements}
         />
     );
 }

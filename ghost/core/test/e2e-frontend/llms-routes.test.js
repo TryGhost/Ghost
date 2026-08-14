@@ -14,7 +14,7 @@ describe('llms.txt routing', function () {
     let request;
     let siteUrl;
 
-    before(async function () {
+    beforeAll(async function () {
         await testUtils.startGhost();
         siteUrl = configUtils.config.get('url').replace(/\/$/, '');
         request = supertest.agent(configUtils.config.get('url'));
@@ -47,6 +47,10 @@ describe('llms.txt routing', function () {
         // descriptions come from plaintext, which is requested via `formats`
         // on top of the narrowed `fields`
         assert.match(res.text, /\[Start here for a quick overview of everything you need to know\]\([^)]+\) - We've crammed the most important information/);
+
+        // the .md discoverability line and the llms-full link in Optional
+        assert.match(res.text, /Append `\.md` to any post or page URL/);
+        assert.ok(res.text.includes(`[Full content of pages and posts](${siteUrl}/llms-full.txt)`), 'expected llms-full link in Optional');
     });
 
     it('serves llms-full.txt with entry bodies and absolute urls', async function () {
@@ -61,6 +65,12 @@ describe('llms.txt routing', function () {
         // entry bodies are rendered from html, which is requested via
         // `formats` on top of the narrowed `fields`
         assert.match(res.text, /An about page is a great example of one you might want to set up early on/);
+
+        // the .md discoverability line appears in both files
+        assert.match(res.text, /Append `\.md` to any post or page URL/);
+
+        // truncation footer (if present) points at the sitemap, not /llms.txt
+        assert.doesNotMatch(res.text, /Use `\/llms\.txt`/);
     });
 
     it('does not serve llms.txt when the labs flag is disabled', async function () {

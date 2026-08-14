@@ -13,16 +13,16 @@ describe('Integration - Web - vhosts', function () {
 
     const ADMIN_API_URL = '/ghost/api/admin';
 
-    before(testUtils.teardownDb);
+    beforeAll(testUtils.teardownDb);
 
-    after(async function () {
+    afterAll(async function () {
         await configUtils.restore();
         await urlUtils.restore();
         sinon.restore();
     });
 
     describe('no separate admin', function () {
-        before(async function () {
+        beforeAll(async function () {
             localUtils.defaultMocks(sinon);
             localUtils.overrideGhostConfig(configUtils);
 
@@ -35,7 +35,7 @@ describe('Integration - Web - vhosts', function () {
             urlUtils.stubUrlUtilsFromConfig();
         });
 
-        after(async function () {
+        afterAll(async function () {
             await configUtils.restore();
             await urlUtils.restore();
             sinon.restore();
@@ -127,7 +127,7 @@ describe('Integration - Web - vhosts', function () {
     });
 
     describe('separate admin host', function () {
-        before(async function () {
+        beforeAll(async function () {
             localUtils.defaultMocks(sinon);
             localUtils.overrideGhostConfig(configUtils);
 
@@ -142,7 +142,7 @@ describe('Integration - Web - vhosts', function () {
             urlUtils.stubUrlUtilsFromConfig();
         });
 
-        after(async function () {
+        afterAll(async function () {
             await configUtils.restore();
             await urlUtils.restore();
             sinon.restore();
@@ -280,7 +280,7 @@ describe('Integration - Web - vhosts', function () {
     });
 
     describe('separate admin host w/ admin redirects disabled', function () {
-        before(async function () {
+        beforeAll(async function () {
             localUtils.defaultMocks(sinon);
             localUtils.overrideGhostConfig(configUtils);
 
@@ -296,7 +296,7 @@ describe('Integration - Web - vhosts', function () {
             urlUtils.stubUrlUtilsFromConfig();
         });
 
-        after(async function () {
+        afterAll(async function () {
             await configUtils.restore();
             await urlUtils.restore();
             sinon.restore();
@@ -332,7 +332,7 @@ describe('Integration - Web - vhosts', function () {
     });
 
     describe('same host separate protocol', function () {
-        before(async function () {
+        beforeAll(async function () {
             localUtils.urlService.resetGenerators();
             localUtils.defaultMocks(sinon);
             localUtils.overrideGhostConfig(configUtils);

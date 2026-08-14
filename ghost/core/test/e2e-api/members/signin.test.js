@@ -2,7 +2,7 @@ const {assertArrayMatchesWithoutOrder} = require('../../utils/assertions');
 const {agentProvider, mockManager, fixtureManager} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 const assert = require('node:assert/strict');
-const sinon = require('sinon');
+const {mockSystemTime} = require('../../utils/clock-utils');
 const members = require('../../../core/server/services/members');
 let membersAgent, membersService;
 
@@ -18,7 +18,7 @@ async function getMemberByEmail(email, require = true) {
 }
 
 describe('Members Signin', function () {
-    before(async function () {
+    beforeAll(async function () {
         const agents = await agentProvider.getAgentsForMembers();
         membersAgent = agents.membersAgent;
 
@@ -230,8 +230,7 @@ describe('Members Signin', function () {
             // Remove ms precision (not supported by MySQL)
             startDate.setMilliseconds(0);
 
-            // TODO: shouldAdvanceTime is a fake-timer + HTTP-await workaround; see docs/dep-consolidation.md
-            clock = sinon.useFakeTimers({now: startDate, shouldAdvanceTime: true});
+            clock = mockSystemTime(startDate);
         });
 
         afterEach(function () {
@@ -272,9 +271,8 @@ describe('Members Signin', function () {
             // Not changed
             assert.equal(model.get('first_used_at').getTime(), startDate.getTime(), 'first_used_at should not be changed on second usage');
 
-            // Updated at should be changed. We compare against the expected tick target
-            // rather than new Date() because shouldAdvanceTime lets real time elapse during
-            // HTTP awaits, so a strict equality with `new Date()` is fragile.
+            // Updated at should be changed. Compare against the expected tick target
+            // (startDate + 5min) with a tolerance for MySQL's whole-second flooring.
             const expectedSecondUseTime = startDate.getTime() + 5 * 60 * 1000;
             const updatedAtDrift = Math.abs(model.get('updated_at').getTime() - expectedSecondUseTime);
             assert.ok(updatedAtDrift < 60 * 1000, `updated_at should be ~5min after start (drift: ${updatedAtDrift}ms)`);

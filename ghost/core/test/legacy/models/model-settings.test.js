@@ -8,7 +8,13 @@ const models = require('../../../core/server/models');
 const SETTINGS_LENGTH = 112;
 
 describe('Settings Model', function () {
-    afterEach(testUtils.teardownDb);
+    // Create the schema once, then empty every table before each test — these
+    // assert populateDefaults() starting from an empty settings table (setup()
+    // itself populates the 112 defaults, hence the teardown). Under the old
+    // serial model this free-rode on an earlier file's init + truncated state;
+    // per-file isolation (PLA-152) means each file does its own.
+    beforeAll(testUtils.setup());
+    beforeEach(testUtils.teardownDb);
 
     describe('defaults', function () {
         it('populates all defaults', async function () {

@@ -1,40 +1,16 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
 const errors = require('@tryghost/errors');
-const rewire = require('rewire');
 const sinon = require('sinon');
-const Queue = require('../../../../../core/server/services/url/queue');
-const Resources = require('../../../../../core/server/services/url/resources');
-const UrlGenerator = require('../../../../../core/server/services/url/url-generator');
-const Urls = require('../../../../../core/server/services/url/urls');
-const UrlService = rewire('../../../../../core/server/services/url/url-service');
+const UrlService = require('../../../../../core/server/services/url/url-service');
 
 describe('Unit: services/url/UrlService', function () {
-    let QueueStub;
-    let ResourcesStub;
-    let UrlsStub;
-    let UrlGeneratorStub;
     let urlService;
 
     beforeEach(function () {
-        QueueStub = sinon.stub();
-        QueueStub.returns(sinon.createStubInstance(Queue));
-
-        ResourcesStub = sinon.stub();
-        ResourcesStub.returns(sinon.createStubInstance(Resources));
-
-        UrlsStub = sinon.stub();
-        UrlsStub.returns(sinon.createStubInstance(Urls));
-
-        UrlGeneratorStub = sinon.stub();
-        UrlGeneratorStub.returns(sinon.createStubInstance(UrlGenerator));
-
-        UrlService.__set__('Queue', QueueStub);
-        UrlService.__set__('Resources', ResourcesStub);
-        UrlService.__set__('Urls', UrlsStub);
-        UrlService.__set__('UrlGenerator', UrlGeneratorStub);
-
         urlService = new UrlService();
+        sinon.stub(urlService.urls, 'getByResourceId');
+        sinon.stub(urlService.urls, 'getByUrl');
     });
 
     afterEach(function () {
@@ -49,10 +25,8 @@ describe('Unit: services/url/UrlService', function () {
 
         assert.deepEqual(urlService.urlGenerators, []);
         assert.equal(urlService.hasFinished(), false);
-
-        sinon.assert.calledTwice(urlService.queue.addListener);
-        assert.equal(urlService.queue.addListener.args[0][0], 'started');
-        assert.equal(urlService.queue.addListener.args[1][0], 'ended');
+        assert.equal(typeof urlService._onQueueStartedListener, 'function');
+        assert.equal(typeof urlService._onQueueEndedListener, 'function');
     });
 
     it('fn: _onQueueStarted', function () {

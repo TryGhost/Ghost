@@ -4,13 +4,13 @@ const {anyString, anyEtag} = matchers;
 describe('Members .well-known', function () {
     let membersAgent;
 
-    before(async function () {
+    beforeAll(async function () {
         const agents = await agentProvider.getAgentsForMembers();
         membersAgent = agents.membersAgent;
         mockManager.mockMail();
     });
 
-    after(function () {
+    afterAll(function () {
         mockManager.restore();
     });
 

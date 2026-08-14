@@ -15,13 +15,13 @@ import {buildMemberListSearchParams, getMemberActiveColumns} from './member-quer
 import {canBulkDeleteMembers, shouldShowMembersLoading} from './members-view-state';
 import {checkStripeEnabled, getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
-import {isMultipleActiveSubscriptionsPredicate} from './multiple-active-subscriptions';
 import {shouldDelayMembersDateFilterHydration, useMembersFilterState} from './hooks/use-members-filter-state';
 import {useActiveMemberView, useMemberViews} from './hooks/use-member-views';
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useBrowseMembersInfinite} from '@tryghost/admin-x-framework/api/members';
-import {useDebounce} from 'use-debounce';
+import {useDebouncedCallback} from 'use-debounce';
 import {useLocation, useSearchParams} from 'react-router';
+import {useMultipleActiveSubscriptionsCount} from './hooks/use-multiple-active-subscriptions-count';
 
 const SEARCH_DEBOUNCE_MS = 250;
 const MEMBERS_HELP_CARDS_LIMIT = 6;
@@ -50,13 +50,16 @@ const MembersPage: React.FC<MembersPageProps> = ({
     const [showMobileSearch, setShowMobileSearch] = useState(false);
     const [mobileSearchOpenedByUser, setMobileSearchOpenedByUser] = useState(false);
     const [searchInput, setSearchInput] = useState(search);
-    const [debouncedSearch] = useDebounce(searchInput, SEARCH_DEBOUNCE_MS);
+    const commitSearch = useDebouncedCallback((value: string) => {
+        setSearch(value);
+    }, SEARCH_DEBOUNCE_MS);
 
-    // The multiple active subscriptions predicate is applied via the banner's
-    // "View members" link and has no filter UI, so keep it out of the filter bar.
-    const visibleFilters = useMemo(() => {
-        return filters.filter(filter => !isMultipleActiveSubscriptionsPredicate(filter));
-    }, [filters]);
+    // Fetched once at page level so the banner, and both filter bar instances,
+    // share a single request per visit and always agree on the count.
+    const {
+        count: multipleActiveSubscriptionsCount,
+        hasResolvedCount: hasResolvedMultipleActiveSubscriptionsCount
+    } = useMultipleActiveSubscriptionsCount({enabled: hasStripeEnabled});
 
     const activeColumns = useMemo(() => {
         return getMemberActiveColumns(filters);
@@ -93,21 +96,25 @@ const MembersPage: React.FC<MembersPageProps> = ({
     });
 
     const totalMembers = data?.meta?.pagination?.total ?? 0;
-    const hasFilters = visibleFilters.length > 0;
+    const hasFilters = filters.length > 0;
     const shouldShowMobileSearchRow = showMobileSearch;
     const shouldShowFiltersRow = hasFilters;
     const shouldShowMemberControls = hasFilterOrSearch || totalMembers > 0;
     const shouldShowMembersHelpCards = !hasFilterOrSearch && !shouldShowLoading && !isError && totalMembers < MEMBERS_HELP_CARDS_LIMIT;
 
+    // Keep the input in sync with the committed search whenever it changes for
+    // any reason other than typing (browser back/forward, "Show all members",
+    // saved views), and drop any pending commit so the new value wins instead
+    // of being overwritten by a stale keystroke.
     useEffect(() => {
         setSearchInput(search);
-    }, [search]);
+        commitSearch.cancel();
+    }, [search, commitSearch]);
 
-    useEffect(() => {
-        if (debouncedSearch !== search) {
-            setSearch(debouncedSearch);
-        }
-    }, [debouncedSearch, search, setSearch]);
+    const handleSearchChange = (value: string) => {
+        setSearchInput(value);
+        commitSearch(value);
+    };
 
     const handleMobileSearchToggle = () => {
         if (showMobileSearch) {
@@ -121,6 +128,11 @@ const MembersPage: React.FC<MembersPageProps> = ({
     };
 
     const filtersClassName = 'flex-col gap-4 lg:flex-row lg:items-center sidebar:gap-6 lg:gap-6';
+    const handleShowAllMembers = () => {
+        commitSearch.cancel();
+        setSearchInput('');
+        clearAll({replace: false});
+    };
 
     return (
         <MainLayout>
@@ -148,7 +160,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
                                             <div className="hidden lg:flex">
                                                 <MembersHeaderSearch
                                                     search={searchInput}
-                                                    onSearchChange={setSearchInput}
+                                                    onSearchChange={handleSearchChange}
                                                 />
                                             </div>
                                             <Button
@@ -162,8 +174,9 @@ const MembersPage: React.FC<MembersPageProps> = ({
                                             {!hasFilters && (
                                                 <MembersFilters
                                                     activeView={activeView}
-                                                    filters={visibleFilters}
+                                                    filters={filters}
                                                     iconOnly={true}
+                                                    multipleActiveSubscriptionsCount={multipleActiveSubscriptionsCount}
                                                     nql={nql}
                                                     savedViews={savedViews}
                                                     onFiltersChange={setFilters}
@@ -195,14 +208,15 @@ const MembersPage: React.FC<MembersPageProps> = ({
                                             ariaLabel="Search members mobile"
                                             autoFocus={mobileSearchOpenedByUser}
                                             search={searchInput}
-                                            onSearchChange={setSearchInput}
+                                            onSearchChange={handleSearchChange}
                                         />
                                     </div>
                                 )}
                                 {shouldShowFiltersRow && (
                                     <MembersFilters
                                         activeView={activeView}
-                                        filters={visibleFilters}
+                                        filters={filters}
+                                        multipleActiveSubscriptionsCount={multipleActiveSubscriptionsCount}
                                         nql={nql}
                                         savedViews={savedViews}
                                         onFiltersChange={setFilters}
@@ -212,6 +226,8 @@ const MembersPage: React.FC<MembersPageProps> = ({
                         )}
                         {hasStripeEnabled && (
                             <MultipleActiveSubscriptionsBanner
+                                count={multipleActiveSubscriptionsCount}
+                                hasResolvedCount={hasResolvedMultipleActiveSubscriptionsCount}
                                 nql={nql}
                                 search={search}
                             />
@@ -242,7 +258,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
                                     actions={
                                         <Button
                                             variant="outline"
-                                            onClick={() => clearAll({replace: false})}
+                                            onClick={handleShowAllMembers}
                                         >
                                             Show all members
                                         </Button>

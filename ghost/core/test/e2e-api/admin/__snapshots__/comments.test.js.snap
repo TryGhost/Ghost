@@ -83,9 +83,6 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
     },
   ],
   "meta": Object {
-    "capabilities": Object {
-      "dislikes": true,
-    },
     "pagination": Object {
       "limit": 15,
       "next": null,
@@ -185,9 +182,6 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
     },
   ],
   "meta": Object {
-    "capabilities": Object {
-      "dislikes": true,
-    },
     "pagination": Object {
       "limit": 15,
       "next": null,
@@ -247,9 +241,6 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
     },
   ],
   "meta": Object {
-    "capabilities": Object {
-      "dislikes": true,
-    },
     "pagination": Object {
       "limit": 15,
       "next": null,
@@ -309,9 +300,6 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
     },
   ],
   "meta": Object {
-    "capabilities": Object {
-      "dislikes": true,
-    },
     "pagination": Object {
       "limit": 15,
       "next": null,
@@ -413,9 +401,6 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
     },
   ],
   "meta": Object {
-    "capabilities": Object {
-      "dislikes": true,
-    },
     "pagination": Object {
       "limit": 15,
       "next": null,
@@ -475,9 +460,6 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
     },
   ],
   "meta": Object {
-    "capabilities": Object {
-      "dislikes": true,
-    },
     "pagination": Object {
       "limit": 15,
       "next": null,
@@ -549,9 +531,6 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
     },
   ],
   "meta": Object {
-    "capabilities": Object {
-      "dislikes": true,
-    },
     "pagination": Object {
       "limit": 15,
       "next": null,
@@ -611,9 +590,6 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
     },
   ],
   "meta": Object {
-    "capabilities": Object {
-      "dislikes": true,
-    },
     "pagination": Object {
       "limit": 15,
       "next": null,
@@ -715,9 +691,6 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
     },
   ],
   "meta": Object {
-    "capabilities": Object {
-      "dislikes": true,
-    },
     "pagination": Object {
       "limit": 15,
       "next": null,
@@ -831,9 +804,6 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
     },
   ],
   "meta": Object {
-    "capabilities": Object {
-      "dislikes": true,
-    },
     "pagination": Object {
       "limit": 15,
       "next": null,
@@ -893,9 +863,6 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
     },
   ],
   "meta": Object {
-    "capabilities": Object {
-      "dislikes": true,
-    },
     "pagination": Object {
       "limit": 15,
       "next": null,
@@ -997,9 +964,6 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
     },
   ],
   "meta": Object {
-    "capabilities": Object {
-      "dislikes": true,
-    },
     "pagination": Object {
       "limit": 2,
       "next": 2,
@@ -1034,6 +998,7 @@ Object {
         "email_open_rate": 50,
         "email_opened_count": 0,
         "enable_comment_notifications": true,
+        "enable_updates_and_announcements": null,
         "expertise": null,
         "geolocation": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1068,6 +1033,7 @@ Object {
         "email_open_rate": 80,
         "email_opened_count": 0,
         "enable_comment_notifications": true,
+        "enable_updates_and_announcements": null,
         "expertise": null,
         "geolocation": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1119,6 +1085,7 @@ Object {
         "email_open_rate": 50,
         "email_opened_count": 0,
         "enable_comment_notifications": true,
+        "enable_updates_and_announcements": null,
         "expertise": null,
         "geolocation": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1153,6 +1120,7 @@ Object {
         "email_open_rate": 80,
         "email_opened_count": 0,
         "enable_comment_notifications": true,
+        "enable_updates_and_announcements": null,
         "expertise": null,
         "geolocation": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1238,6 +1206,7 @@ Object {
         "email_open_rate": 50,
         "email_opened_count": 0,
         "enable_comment_notifications": true,
+        "enable_updates_and_announcements": null,
         "expertise": null,
         "geolocation": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1272,6 +1241,7 @@ Object {
         "email_open_rate": 80,
         "email_opened_count": 0,
         "enable_comment_notifications": true,
+        "enable_updates_and_announcements": null,
         "expertise": null,
         "geolocation": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1701,9 +1671,6 @@ exports[`Admin Comments API browse by post does not return deleted comments 1: [
 Object {
   "comments": Array [],
   "meta": Object {
-    "capabilities": Object {
-      "dislikes": true,
-    },
     "pagination": Object {
       "limit": 15,
       "next": null,
@@ -1823,9 +1790,6 @@ Object {
     },
   ],
   "meta": Object {
-    "capabilities": Object {
-      "dislikes": true,
-    },
     "pagination": Object {
       "limit": 15,
       "next": null,
@@ -1842,9 +1806,6 @@ exports[`Admin Comments API browse by post excludes deleted comments when all re
 Object {
   "comments": Array [],
   "meta": Object {
-    "capabilities": Object {
-      "dislikes": true,
-    },
     "pagination": Object {
       "limit": 15,
       "next": null,
@@ -1964,9 +1925,6 @@ Object {
     },
   ],
   "meta": Object {
-    "capabilities": Object {
-      "dislikes": true,
-    },
     "pagination": Object {
       "limit": 15,
       "next": null,
@@ -2053,9 +2011,6 @@ Object {
     },
   ],
   "meta": Object {
-    "capabilities": Object {
-      "dislikes": true,
-    },
     "pagination": Object {
       "limit": 15,
       "next": null,

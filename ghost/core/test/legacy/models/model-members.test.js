@@ -14,7 +14,7 @@ const {StripeProduct} = require('../../../core/server/models/stripe-product');
 const {StripePrice} = require('../../../core/server/models/stripe-price');
 
 describe('Member Model', function run() {
-    before(testUtils.teardownDb);
+    beforeAll(testUtils.teardownDb);
     beforeEach(testUtils.setup('roles'));
     afterEach(testUtils.teardownDb);
 

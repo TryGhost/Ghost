@@ -13,7 +13,7 @@ const forcePageFilter = (filter) => {
 describe('Pages Bulk API', function () {
     let agent;
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
 
         // Note that we generate lots of fixtures here to test the bulk deletion correctly

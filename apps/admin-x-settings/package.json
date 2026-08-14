@@ -83,6 +83,8 @@
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@types/validator": "catalog:",
+    "@typescript-eslint/eslint-plugin": "catalog:",
+    "@typescript-eslint/parser": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "eslint": "catalog:",
     "eslint-plugin-react-hooks": "catalog:",

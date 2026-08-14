@@ -1,4 +1,4 @@
-import {getScrollParent} from './get-scroll-parent';
+import {getScrollParent} from '@tryghost/shade/utils';
 import {useEffect, useRef, useState} from 'react';
 import {useLocation} from '@tryghost/admin-x-framework';
 

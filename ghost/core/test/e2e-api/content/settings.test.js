@@ -12,7 +12,7 @@ const settingsMatcher = {
 describe('Settings Content API', function () {
     let agent;
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getContentAPIAgent();
         await fixtureManager.init('api_keys');
         await agent.authenticate();

@@ -42,7 +42,7 @@ function addMentionMocks() {
 }
 
 describe('Mentions Service', function () {
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('users');
         await agent.loginAsAdmin();

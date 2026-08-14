@@ -11,7 +11,7 @@ describe('Click Tracking', function () {
     let ghostServer;
     let webhookMockReceiver;
 
-    before(async function () {
+    beforeAll(async function () {
         ({adminAgent: agent, ghostServer} = await agentProvider.getAgentsWithFrontend());
         await fixtureManager.init('newsletters', 'members:newsletters', 'integrations');
         await agent.loginAsOwner();
@@ -28,7 +28,7 @@ describe('Click Tracking', function () {
         mockManager.restore();
     });
 
-    after(async function () {
+    afterAll(async function () {
         await ghostServer.stop();
     });
 

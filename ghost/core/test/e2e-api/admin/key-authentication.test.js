@@ -11,7 +11,7 @@ const logging = require('@tryghost/logging');
 describe('Admin API key authentication', function () {
     let request;
 
-    before(async function () {
+    beforeAll(async function () {
         await localUtils.startGhost();
         request = supertest.agent(config.get('url'));
         await testUtils.initFixtures('api_keys');

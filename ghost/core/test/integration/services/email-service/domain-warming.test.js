@@ -7,12 +7,15 @@ const configUtils = require('../../../utils/config-utils');
 const ObjectId = require('bson-objectid').default;
 const crypto = require('crypto');
 const db = require('../../../../core/server/data/db');
+const {mockSystemTime} = require('../../../utils/clock-utils');
+
+const isMySQL = (process.env.NODE_ENV || '').includes('mysql');
 
 describe('Domain Warming Integration Tests', function () {
     let agent;
     let clock;
 
-    before(async function () {
+    beforeAll(async function () {
         const agents = await agentProvider.getAgentsWithFrontend();
         agent = agents.adminAgent;
 
@@ -86,10 +89,7 @@ describe('Domain Warming Integration Tests', function () {
             clock.restore();
         }
         const time = new Date(baseDate.getTime() + (daysFromNow * MILLISECONDS_IN_DAY));
-        clock = sinon.useFakeTimers({
-            now: time.getTime(),
-            shouldAdvanceTime: true
-        });
+        clock = mockSystemTime(time.getTime());
     }
 
     // Helper: Count recipients by domain type
@@ -306,17 +306,9 @@ describe('Domain Warming Integration Tests', function () {
             assert.equal(uniqueValues[0], false, 'All batches should use primary domain when warmup disabled');
         });
 
-        it('handles maximum limit scenarios', async function () {
-            if (process.env.NODE_ENV !== 'testing-mysql') {
-                // This test fails on SQLite because of its small parameter limit
-                return this.skip();
-            }
-
-            // Creates 800 members and processes 5 days of batch sends; well over the
-            // 10s suite default. CI was never reaching this test before mocha bailed
-            // on the poll.test.js failure earlier in the run.
-            this.timeout(60000);
-
+        // mysql-only: SQLite's small bound-parameter limit can't take the 800-member
+        // bulk insert. 60s timeout: 800 members across 5 days of batch sends.
+        it.runIf(isMySQL)('handles maximum limit scenarios', {timeout: 60000}, async function () {
             await createMembers(800, 'maxlimit');
 
             let previousCsdCount = 0;

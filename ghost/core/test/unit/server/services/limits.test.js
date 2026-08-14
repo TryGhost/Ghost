@@ -1,8 +1,7 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const rewire = require('rewire');
 
-const limits = rewire('../../../../core/server/services/limits');
+const limits = require('../../../../core/server/services/limits');
 const configUtils = require('../../../utils/config-utils');
 const logging = require('@tryghost/logging');
 
@@ -16,7 +15,7 @@ describe('Limit Service Init', function () {
         loggerStub = sinon.spy(logging);
         limitServiceStub = sinon.stub();
 
-        limits.__set__('limitService.loadLimits', limitServiceStub);
+        sinon.stub(limits, 'loadLimits').callsFake(limitServiceStub);
 
         configUtils.set({
             hostSettings: {}

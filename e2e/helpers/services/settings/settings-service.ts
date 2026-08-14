@@ -71,21 +71,6 @@ export class SettingsService {
         return await this.updateSettings([{key: 'donations_currency', value}]);
     }
 
-    /**
-     * Set Stripe keys to simulate a connected Stripe account
-     * Uses direct Stripe keys (not Connect) as they're not filtered by the API
-     * Uses test keys by default, but can be overridden if needed
-     */
-    async setStripeConnected(
-        secretKey: string = 'sk_test_e2eTestKey',
-        publishableKey: string = 'pk_test_e2eTestKey'
-    ) {
-        return await this.updateSettings([
-            {key: 'stripe_secret_key', value: secretKey},
-            {key: 'stripe_publishable_key', value: publishableKey}
-        ]);
-    }
-
     async setStripeDisconnected() {
         return await this.updateSettings([
             {key: 'stripe_secret_key', value: null},

@@ -227,3 +227,91 @@ describe('Portal API member checkout', () => {
         });
     });
 });
+
+describe('Portal API plan checkout', () => {
+    let originalLocation;
+
+    const mockCheckoutFetch = () => {
+        vi.spyOn(window, 'fetch').mockImplementation((url) => {
+            if (url.includes('/members/api/session/')) {
+                return Promise.resolve(new Response('identity-token', {status: 200}));
+            }
+
+            return Promise.resolve(new Response(JSON.stringify({
+                url: 'https://checkout.stripe.com/plan-session'
+            }), {
+                status: 200,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }));
+        });
+    };
+
+    const lastCheckoutBody = () => {
+        const call = window.fetch.mock.calls.find(([url]) => url.includes('/members/api/create-stripe-checkout-session/'));
+        return JSON.parse(call[1].body);
+    };
+
+    beforeEach(() => {
+        vi.restoreAllMocks();
+        originalLocation = window.location;
+        delete window.location;
+        window.location = {
+            href: 'https://example.com/paid-article/',
+            assign: vi.fn()
+        };
+    });
+
+    afterEach(() => {
+        window.location = originalLocation;
+    });
+
+    test('derives a contextual successUrl from the current page when none is supplied', async () => {
+        const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
+        mockCheckoutFetch();
+
+        await ghostApi.member.checkoutPlan({
+            plan: 'price_123',
+            tierId: 'tier_123',
+            cadence: 'month'
+        });
+
+        const body = lastCheckoutBody();
+        expect(body.successUrl).toBe('https://example.com/paid-article/?stripe=success');
+        expect(body.cancelUrl).toBe('https://example.com/paid-article/?stripe=cancel');
+    });
+
+    test('falls back to the site root when the current page is off-site', async () => {
+        window.location.href = 'https://evil.example.org/phishing/';
+        const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
+        mockCheckoutFetch();
+
+        await ghostApi.member.checkoutPlan({
+            plan: 'price_123',
+            tierId: 'tier_123',
+            cadence: 'month'
+        });
+
+        const body = lastCheckoutBody();
+        expect(body.successUrl).toBe('https://example.com/?stripe=success');
+        expect(body.cancelUrl).toBe('https://example.com/?stripe=cancel');
+    });
+
+    test('preserves an explicitly supplied successUrl', async () => {
+        const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
+        mockCheckoutFetch();
+
+        await ghostApi.member.checkoutPlan({
+            plan: 'price_123',
+            tierId: 'tier_123',
+            cadence: 'month',
+            successUrl: 'https://example.com/custom-welcome/',
+            cancelUrl: 'https://example.com/custom-cancel/'
+        });
+
+        const body = lastCheckoutBody();
+        expect(body.successUrl).toBe('https://example.com/custom-welcome/');
+        expect(body.cancelUrl).toBe('https://example.com/custom-cancel/');
+    });
+});

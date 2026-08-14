@@ -5,8 +5,8 @@ import {Link} from '@tryghost/admin-x-framework';
 import {Skeleton, Table, TableBody, TableCell, TableRow} from '@tryghost/shade/components';
 
 const AUTOMATION_DESCRIPTIONS: Record<string, string> = {
-    'member-welcome-email-free': 'Onboard new free members with a short welcome email.',
-    'member-welcome-email-paid': 'Greet new paid members and point them at member-only content.'
+    'member-welcome-email-free': 'Welcome new free members after they sign up.',
+    'member-welcome-email-paid': 'Welcome new paid members after they start their subscription.'
 };
 
 interface AutomationsListProps {

@@ -228,7 +228,11 @@ SCENARIOS.forEach(({label, wrap}) => {
 
                 const original = cache.cache.get.bind(cache.cache);
                 cache.cache.get = k => new Promise((resolve) => {
-                    setTimeout(() => original(k).then(resolve), 50);
+                    // This delayed fetch is deliberately orphaned (cache.get
+                    // resolves null at the 1ms timeout first); swallow its
+                    // rejection so it doesn't surface as an unhandled error when
+                    // it fires after the worker is torn down (PLA-156).
+                    setTimeout(() => original(k).then(resolve).catch(() => {}), 50);
                 });
 
                 assert.equal(await cache.get('slow'), null);
@@ -241,7 +245,10 @@ SCENARIOS.forEach(({label, wrap}) => {
 
                 const original = cache.redisClient.get.bind(cache.redisClient);
                 cache.redisClient.get = k => new Promise((resolve) => {
-                    setTimeout(() => original(k).then(resolve), 50);
+                    // Orphaned delayed fetch (see the prior test) — swallow its
+                    // rejection so it doesn't become an unhandled error after the
+                    // worker is torn down under per-file isolation (PLA-156).
+                    setTimeout(() => original(k).then(resolve).catch(() => {}), 50);
                 });
 
                 assert.equal(await cache.get('foo'), null);

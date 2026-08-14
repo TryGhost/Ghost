@@ -162,6 +162,7 @@ class EmailRenderer {
     #imageSize;
     #urlUtils;
     #getPostUrl;
+    #getRequiredUrlRelations;
     #storageUtils;
 
     #linkReplacer;
@@ -189,6 +190,7 @@ class EmailRenderer {
      * @param {{urlFor(type: string, optionsOrAbsolute, absolute): string, isSiteUrl(url, context): boolean}} dependencies.urlUtils
      * @param {{isLocalImage(url: string): boolean, isInternalImage(url: string): boolean}} dependencies.storageUtils
      * @param {(post: Post) => string} dependencies.getPostUrl
+     * @param {() => string[]} [dependencies.getRequiredUrlRelations] Post relations the live routes need loaded to generate URLs (lazy routing); defaults to none
      * @param {object} dependencies.linkReplacer
      * @param {object} dependencies.linkTracking
      * @param {object} dependencies.memberAttributionService
@@ -208,6 +210,7 @@ class EmailRenderer {
         urlUtils,
         storageUtils,
         getPostUrl,
+        getRequiredUrlRelations = () => [],
         linkReplacer,
         linkTracking,
         memberAttributionService,
@@ -226,6 +229,7 @@ class EmailRenderer {
         this.#urlUtils = urlUtils;
         this.#storageUtils = storageUtils;
         this.#getPostUrl = getPostUrl;
+        this.#getRequiredUrlRelations = getRequiredUrlRelations;
         this.#linkReplacer = linkReplacer;
         this.#linkTracking = linkTracking;
         this.#memberAttributionService = memberAttributionService;
@@ -244,7 +248,10 @@ class EmailRenderer {
     }
 
     #getRawFromAddress(post, newsletter) {
-        let senderName = this.#settingsCache.get('title') ? this.#settingsCache.get('title').replace(/"/g, '\\"') : '';
+        // Pass the raw name through; EmailAddressParser.stringify() is the single
+        // point that escapes it for the RFC5322 quoted-string From header. Escaping
+        // here too would double-escape (e.g. a title containing a double quote).
+        let senderName = this.#settingsCache.get('title') || '';
         if (newsletter.get('sender_name')) {
             senderName = newsletter.get('sender_name');
         }
@@ -1055,19 +1062,10 @@ class EmailRenderer {
         const signupUrl = new URL(postUrl);
         signupUrl.hash = `/portal/signup`;
 
-        // Audience feedback
-        const positiveLink = this.#audienceFeedbackService.buildLink(
-            '--uuid--',
-            post,
-            1,
-            '--key--'
-        ).href.replace('--uuid--', '%%{uuid}%%').replace('--key--', '%%{key}%%');
-        const negativeLink = this.#audienceFeedbackService.buildLink(
-            '--uuid--',
-            post,
-            0,
-            '--key--'
-        ).href.replace('--uuid--', '%%{uuid}%%').replace('--key--', '%%{key}%%');
+        // Audience feedback — durable, id-based links resolved to the post's
+        // current URL at click time so they survive slug changes
+        const positiveLink = this.#audienceFeedbackService.buildEmailLink(post, 1);
+        const negativeLink = this.#audienceFeedbackService.buildEmailLink(post, 0);
 
         const commentUrl = new URL(postUrl);
         commentUrl.hash = '#ghost-comments-root';
@@ -1083,11 +1081,12 @@ class EmailRenderer {
         let latestPostsHasImages = false;
         if (newsletter.get('show_latest_posts')) {
             // Fetch last 3 published posts
+            const urlRelations = this.#getRequiredUrlRelations();
             const {data} = await this.#models.Post.findPage({
                 filter: `status:published+id:-'${post.id}'`,
                 order: 'published_at DESC',
                 limit: 3,
-                withRelated: ['tags', 'authors']
+                ...(urlRelations.length ? {withRelated: urlRelations} : {})
             });
 
             for (const latestPost of data) {

@@ -100,5 +100,15 @@ describe('EmailAddressParser', function () {
             });
             assert.equal(email, '"This is my awesome name" <test@example.com>');
         });
+
+        it('escapes backslashes and double quotes in the name', function () {
+            // Regression: the name is escaped once here (the single escaping point),
+            // backslash before quote, so it stays a valid RFC 5322 quoted-string.
+            const email = EmailAddressParser.stringify({
+                address: 'test@example.com',
+                name: 'a\\b"c'
+            });
+            assert.equal(email, '"a\\\\b\\"c" <test@example.com>');
+        });
     });
 });

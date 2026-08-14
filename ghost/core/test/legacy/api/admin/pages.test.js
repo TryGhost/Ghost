@@ -6,7 +6,7 @@ const localUtils = require('./utils');
 let request;
 
 describe('Pages API', function () {
-    before(async function () {
+    beforeAll(async function () {
         await localUtils.startGhost();
         request = supertest.agent(config.get('url'));
         await localUtils.doAuth(request, 'posts');

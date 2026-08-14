@@ -26,7 +26,7 @@ describe('Authentication API', function () {
     let agent;
 
     describe('Blog setup', function () {
-        before(async function () {
+        beforeAll(async function () {
             agent = await agentProvider.getAdminAPIAgent();
         });
 
@@ -284,7 +284,7 @@ describe('Authentication API', function () {
     });
 
     describe('Invitation', function () {
-        before(async function () {
+        beforeAll(async function () {
             agent = await agentProvider.getAdminAPIAgent();
             await fixtureManager.init('invites');
             await agent.loginAsOwner();
@@ -386,7 +386,7 @@ describe('Authentication API', function () {
     describe('Password reset', function () {
         const email = fixtureManager.get('users', 0).email;
 
-        before(async function () {
+        beforeAll(async function () {
             agent = await agentProvider.getAdminAPIAgent();
             await fixtureManager.init('invites');
             await agent.loginAsOwner();
@@ -539,7 +539,7 @@ describe('Authentication API', function () {
     });
 
     describe('Reset authentication', function () {
-        before(async function () {
+        beforeAll(async function () {
             agent = await agentProvider.getAdminAPIAgent();
             await fixtureManager.init('invites', 'integrations', 'api_keys');
             await agent.loginAsOwner();

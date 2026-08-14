@@ -32,6 +32,25 @@ class AudienceFeedbackService {
         url.hash = `#/feedback/${postData.id}/${score}/?uuid=${encodeURIComponent(uuid)}&key=${encodeURIComponent(key)}`;
         return url;
     }
+
+    /**
+     * Build the feedback link embedded in a newsletter. It targets the members
+     * feedback redirect endpoint keyed by post id (never the slug), so it
+     * survives slug/permalink changes — the endpoint resolves the post's current
+     * URL at click time. uuid/key are Mailgun placeholders substituted per member.
+     *
+     * @param {{id: string}} post
+     * @param {0 | 1} score
+     * @returns {string}
+     */
+    buildEmailLink(post, score) {
+        const {id} = toPlain(post);
+        const url = new URL(this.#baseURL.href);
+        url.pathname = url.pathname.replace(/\/+$/, '') + `/members/feedback/${id}/${score}/`;
+        // Append placeholders by string concatenation so the %%{...}%% tokens are
+        // not percent-encoded by the URL serializer (Mailgun substitutes them).
+        return `${url.href}?uuid=%%{uuid}%%&key=%%{key}%%`;
+    }
 }
 
 module.exports = AudienceFeedbackService;

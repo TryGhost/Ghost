@@ -356,7 +356,7 @@ async function testCannotReply(parentId, status = 403) {
 describe('Comments API', function () {
     let loggedInMember;
 
-    before(async function () {
+    beforeAll(async function () {
         membersAgent = await agentProvider.getMembersAPIAgent();
         membersAgent2 = membersAgent.duplicate();
 
@@ -418,16 +418,6 @@ describe('Comments API', function () {
                 await testGetComments(`/api/comments/post/${postId}/`, [
                     commentMatcherWithReplies({replies: 1})
                 ]);
-            });
-
-            it('advertises dislike support on comment list responses', async function () {
-                const {body} = await membersAgent
-                    .get(`/api/comments/post/${postId}/`)
-                    .expectStatus(200);
-
-                assert.deepEqual(body.meta.capabilities, {
-                    dislikes: true
-                });
             });
 
             it('excludes hidden comments', async function () {
@@ -619,7 +609,7 @@ describe('Comments API', function () {
         describe('when authenticated', function () {
             let getStub;
 
-            before(async function () {
+            beforeAll(async function () {
                 await membersAgent.loginAs('member@example.com');
                 loggedInMember = await models.Member.findOne({email: 'member@example.com'}, {require: true});
                 await membersAgent2.loginAs('member2@example.com');
@@ -2259,7 +2249,7 @@ describe('Comments API', function () {
     });
 
     describe('When authenticated as post author', function () {
-        before(async function () {
+        beforeAll(async function () {
             await membersAgent.loginAs(postAuthorEmail);
         });
 
@@ -2337,7 +2327,7 @@ describe('Comments API', function () {
         let disabledMember;
         let existingComment;
 
-        before(async function () {
+        beforeAll(async function () {
             adminAgent = await agentProvider.getAdminAPIAgent();
             await fixtureManager.init('posts', 'members');
             await adminAgent.loginAsOwner();
@@ -2374,7 +2364,7 @@ describe('Comments API', function () {
             sinon.restore();
         });
 
-        after(async function () {
+        afterAll(async function () {
             if (disabledMember) {
                 await models.Member.destroy({id: disabledMember.id});
             }
@@ -2434,7 +2424,7 @@ describe('Comments API', function () {
         });
 
         describe('Members with access', function () {
-            before(async function () {
+            beforeAll(async function () {
                 await membersAgent.loginAs('paid@example.com');
                 loggedInMember = await models.Member.findOne({email: 'paid@example.com'}, {require: true});
 
@@ -2461,7 +2451,7 @@ describe('Comments API', function () {
         });
 
         describe('Members without access', function () {
-            before(async function () {
+            beforeAll(async function () {
                 await membersAgent.loginAs('free@example.com');
             });
 
@@ -2480,7 +2470,7 @@ describe('Comments API', function () {
         let post;
         let product;
 
-        before(async function () {
+        beforeAll(async function () {
             product = await getPaidProduct();
 
             // Limit post access
@@ -2511,7 +2501,7 @@ describe('Comments API', function () {
         });
 
         describe('Members with access', function () {
-            before(async function () {
+            beforeAll(async function () {
                 await membersAgent.loginAs('member-premium@example.com');
                 loggedInMember = await models.Member.findOne({email: 'member-premium@example.com'}, {require: true});
 
@@ -2536,7 +2526,7 @@ describe('Comments API', function () {
         });
 
         describe('Members without access', function () {
-            before(async function () {
+            beforeAll(async function () {
                 await membersAgent.loginAs('member-not-premium@example.com');
             });
 

@@ -5,7 +5,7 @@ const supertest = require('supertest');
 describe('Admin API', function () {
     let agent;
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('users');
     });
@@ -102,7 +102,7 @@ describe('Admin API', function () {
     // The intention of these tests is to generally demonstrate that integration tokens work with limited access
     describe('Integration Tokens', function () {
         describe('Zapier', function () {
-            before(async function () {
+            beforeAll(async function () {
                 await agent.useZapierAdminAPIKey();
             });
 
@@ -120,7 +120,7 @@ describe('Admin API', function () {
         });
 
         describe('Backup Integration', function () {
-            before(async function () {
+            beforeAll(async function () {
                 await agent.useBackupAdminAPIKey();
             });
 

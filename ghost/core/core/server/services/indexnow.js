@@ -245,5 +245,6 @@ function listen() {
 
 module.exports = {
     listen: listen,
+    ping: ping,
     getApiKey: getApiKey
 };

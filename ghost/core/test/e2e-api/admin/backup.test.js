@@ -9,7 +9,7 @@ const assert = require('node:assert/strict');
 describe('Backup Integration', function () {
     let agent, fsStub;
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('users', 'members');
     });
@@ -24,7 +24,7 @@ describe('Backup Integration', function () {
 
     describe('Backup API', function () {
         describe('Backup Integration', function () {
-            before(async function () {
+            beforeAll(async function () {
                 await agent.useBackupAdminAPIKey();
             });
 
@@ -91,7 +91,7 @@ describe('Backup Integration', function () {
         });
 
         describe('Zapier Integration', function () {
-            before(async function () {
+            beforeAll(async function () {
                 await agent.useZapierAdminAPIKey();
             });
 
@@ -142,7 +142,7 @@ describe('Backup Integration', function () {
         });
 
         describe('Owner: User authentication', function () {
-            before(async function () {
+            beforeAll(async function () {
                 await agent.loginAsOwner();
             });
 
@@ -187,7 +187,7 @@ describe('Backup Integration', function () {
         });
 
         describe('Owner: Staff token', function () {
-            before(async function () {
+            beforeAll(async function () {
                 await agent.useStaffTokenForAdmin();
             });
 
@@ -232,7 +232,7 @@ describe('Backup Integration', function () {
         });
 
         describe('Editor: User authentication', function () {
-            before(async function () {
+            beforeAll(async function () {
                 await agent.loginAsEditor();
             });
 

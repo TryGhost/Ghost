@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/comments-ui",
-  "version": "1.5.10",
+  "version": "1.5.12",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
@@ -15,7 +15,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "dev": "concurrently --kill-others --names preview,build \"pnpm preview --host -l silent\" \"pnpm build:watch\"",
+    "dev": "pnpm build && concurrently --kill-others --names preview,build \"pnpm preview --host -l silent\" \"pnpm build:watch\"",
     "dev:test": "vite build && vite preview --port 7175",
     "build": "vite build",
     "build:watch": "vite build --watch",

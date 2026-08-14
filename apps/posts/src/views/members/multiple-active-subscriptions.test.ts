@@ -1,10 +1,8 @@
 import {
-    MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FIELD,
     MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FILTER,
     buildDismissedMultipleActiveSubscriptionsPreference,
     getMultipleActiveSubscriptionsBannerPreference,
     isMultipleActiveSubscriptionsFilter,
-    isMultipleActiveSubscriptionsPredicate,
     parseAccessibilityPreferences
 } from './multiple-active-subscriptions';
 import {describe, expect, it} from 'vitest';
@@ -14,11 +12,6 @@ describe('multiple active subscriptions helpers', () => {
         expect(isMultipleActiveSubscriptionsFilter(MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FILTER)).toBe(true);
         expect(isMultipleActiveSubscriptionsFilter(`${MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FILTER}+status:paid`)).toBe(false);
         expect(isMultipleActiveSubscriptionsFilter(undefined)).toBe(false);
-    });
-
-    it('matches predicates by field', () => {
-        expect(isMultipleActiveSubscriptionsPredicate({field: MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FIELD})).toBe(true);
-        expect(isMultipleActiveSubscriptionsPredicate({field: 'status'})).toBe(false);
     });
 
     it('parses invalid accessibility JSON as empty preferences', () => {

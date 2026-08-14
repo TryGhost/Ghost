@@ -1,5 +1,6 @@
 const {agentProvider, mockManager, fixtureManager, matchers, configUtils, resetRateLimits, dbUtils} = require('../../utils/e2e-framework');
 const sinon = require('sinon');
+const {mockSystemTime} = require('../../utils/clock-utils');
 const assert = require('node:assert/strict');
 const cheerio = require('cheerio');
 const {assertMatchSnapshot} = require('../../utils/assertions');
@@ -12,7 +13,7 @@ const spamPrevention = require('../../../core/server/web/shared/middleware/api/s
 let membersAgent, membersService;
 
 describe('sendMagicLink', function () {
-    before(async function () {
+    beforeAll(async function () {
         const agents = await agentProvider.getAgentsForMembers();
         membersAgent = agents.membersAgent;
 
@@ -514,8 +515,7 @@ describe('sendMagicLink', function () {
         beforeEach(async function () {
             await dbUtils.truncate('brute');
             await resetRateLimits();
-            // TODO: shouldAdvanceTime is a fake-timer + HTTP-await workaround; see docs/dep-consolidation.md
-            clock = sinon.useFakeTimers({now: new Date(), shouldAdvanceTime: true});
+            clock = mockSystemTime(new Date());
         });
 
         afterEach(function () {
@@ -969,7 +969,7 @@ describe('sendMagicLink', function () {
         });
 
         describe('Rate limiting', function () {
-            before(async function () {
+            beforeAll(async function () {
                 // Adjust rate limits for faster testing
                 // Note: enumeration limit must be higher than per-code limit for the "limits enforced per code" test
                 configUtils.set('spam:otc_verification:freeRetries', 2);
@@ -977,7 +977,7 @@ describe('sendMagicLink', function () {
                 await resetRateLimits();
             });
 
-            after(async function () {
+            afterAll(async function () {
                 await configUtils.restore();
                 await resetRateLimits();
             });

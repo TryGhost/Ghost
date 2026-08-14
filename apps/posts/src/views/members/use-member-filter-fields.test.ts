@@ -188,6 +188,43 @@ describe('useMemberFilterFields', () => {
         });
     });
 
+    it('includes the multiple active subscriptions filter after member status when affected members exist', () => {
+        const {result} = renderHook(() => useMemberFilterFields({
+            paidMembersEnabled: true,
+            multipleActiveSubscriptionsCount: 2,
+            siteTimezone: 'UTC'
+        }));
+
+        const subscriptionFields = result.current.find(group => group.group === 'Subscription')?.fields ?? [];
+        const fieldKeys = subscriptionFields.map(field => field.key);
+
+        expect(fieldKeys.indexOf('count.active_stripe_customers')).toBe(fieldKeys.indexOf('status') + 1);
+
+        const multipleSubscriptionsField = subscriptionFields.find(field => field.key === 'count.active_stripe_customers');
+
+        expect(multipleSubscriptionsField).toMatchObject({
+            label: 'Multiple active subscriptions',
+            type: 'select',
+            hideOperatorSelect: true,
+            options: [
+                {value: 'true', label: 'Yes'},
+                {value: 'false', label: 'No'}
+            ]
+        });
+    });
+
+    it('omits the multiple active subscriptions filter when no affected members exist', () => {
+        const {result} = renderHook(() => useMemberFilterFields({
+            paidMembersEnabled: true,
+            multipleActiveSubscriptionsCount: 0,
+            siteTimezone: 'UTC'
+        }));
+
+        const subscriptionFields = result.current.find(group => group.group === 'Subscription')?.fields ?? [];
+
+        expect(subscriptionFields.map(field => field.key)).not.toContain('count.active_stripe_customers');
+    });
+
     it('hydrates grouped retention offers on the offer field', () => {
         const {result} = renderHook(() => useMemberFilterFields({
             paidMembersEnabled: true,

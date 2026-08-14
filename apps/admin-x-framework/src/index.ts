@@ -41,6 +41,10 @@ export type {BaseSourceData, ProcessedSourceData, ExtendSourcesOptions} from './
 // Routing
 export type {RouteObject} from 'react-router';
 export type {RouterProviderProps, NavigateOptions} from './providers/router-provider';
+export type AdminRouteHandle = {
+    allowInForceUpgrade?: boolean;
+    hideAdminSidebar?: boolean;
+};
 export {RouterProvider, useNavigate, useBaseRoute, useRouteHasParams, resetScrollPosition, ScrollRestoration, Navigate} from './providers/router-provider';
 export {useNavigationStack} from './providers/navigation-stack-provider';
 export {Link, NavLink, Outlet, useLocation, useParams, useSearchParams, redirect, matchRoutes, matchPath, useMatch, useMatches} from 'react-router';

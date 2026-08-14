@@ -4,26 +4,18 @@ const sinon = require('sinon');
 const assert = require('node:assert/strict');
 
 describe('Mailgun Adapter', function () {
-    let mailgunClient;
     let emailProvider;
     let analyticsProvider;
 
     beforeEach(function () {
-        // Mock MailgunClient
-        mailgunClient = {
-            getBatchSize: sinon.stub().returns(1000),
-            getTargetDeliveryWindow: sinon.stub().returns(3600000),
-            fetchEvents: sinon.stub().resolves()
-        };
-
-        // Mock MailgunEmailProvider
+        // Test double for MailgunEmailProvider
         emailProvider = {
             send: sinon.stub().resolves({id: 'msg-123'}),
             getMaximumRecipients: sinon.stub().returns(1000),
             getTargetDeliveryWindow: sinon.stub().returns(3600000)
         };
 
-        // Mock EmailAnalyticsProviderMailgun
+        // Test double for EmailAnalyticsProviderMailgun
         analyticsProvider = {
             fetchLatest: sinon.stub().resolves()
         };
@@ -36,7 +28,7 @@ describe('Mailgun Adapter', function () {
     it('extends EmailProviderBase', function () {
         const adapter = new Mailgun({
             configService: {get: sinon.stub()},
-            settingsCache: {},
+            settingsCache: {get: sinon.stub()},
             labs: {}
         });
 
@@ -44,15 +36,7 @@ describe('Mailgun Adapter', function () {
     });
 
     it('delegates send to MailgunEmailProvider', async function () {
-        const adapter = new Mailgun({
-            configService: {get: sinon.stub()},
-            settingsCache: {},
-            labs: {},
-            errorHandler: () => {}
-        });
-
-        // Replace the internal provider with our mock
-        adapter._Mailgun__emailProvider = emailProvider;
+        const adapter = new Mailgun({emailProvider});
 
         const data = {
             subject: 'Test',
@@ -70,13 +54,7 @@ describe('Mailgun Adapter', function () {
     });
 
     it('delegates getMaximumRecipients to MailgunEmailProvider', function () {
-        const adapter = new Mailgun({
-            configService: {get: sinon.stub()},
-            settingsCache: {},
-            labs: {}
-        });
-
-        adapter._Mailgun__emailProvider = emailProvider;
+        const adapter = new Mailgun({emailProvider});
 
         const result = adapter.getMaximumRecipients();
 
@@ -85,13 +63,7 @@ describe('Mailgun Adapter', function () {
     });
 
     it('delegates getTargetDeliveryWindow to MailgunEmailProvider', function () {
-        const adapter = new Mailgun({
-            configService: {get: sinon.stub()},
-            settingsCache: {},
-            labs: {}
-        });
-
-        adapter._Mailgun__emailProvider = emailProvider;
+        const adapter = new Mailgun({emailProvider});
 
         const result = adapter.getTargetDeliveryWindow();
 
@@ -100,13 +72,7 @@ describe('Mailgun Adapter', function () {
     });
 
     it('delegates fetchLatest to EmailAnalyticsProviderMailgun', async function () {
-        const adapter = new Mailgun({
-            configService: {get: sinon.stub()},
-            settingsCache: {},
-            labs: {}
-        });
-
-        adapter._Mailgun__analyticsProvider = analyticsProvider;
+        const adapter = new Mailgun({analyticsProvider});
 
         const batchHandler = sinon.stub();
         const options = {
@@ -119,6 +85,15 @@ describe('Mailgun Adapter', function () {
 
         assert.ok(analyticsProvider.fetchLatest.calledOnce);
         assert.ok(analyticsProvider.fetchLatest.calledWith(batchHandler, options));
+    });
+
+    it('throws when send is called before initialization', async function () {
+        const adapter = new Mailgun({});
+
+        await assert.rejects(
+            async () => await adapter.send({}, {}),
+            {message: 'Mailgun adapter not initialized. Please provide configService and settingsCache.'}
+        );
     });
 
     it('creates providers with correct dependencies', function () {

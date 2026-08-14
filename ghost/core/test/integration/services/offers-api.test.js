@@ -12,7 +12,7 @@ const OfferBookshelfRepository = require('../../../core/server/services/offers/o
 const OffersAPI = require('../../../core/server/services/offers/application/offers-api');
 
 describe('OffersAPI', function () {
-    before(testUtils.teardownDb);
+    beforeAll(testUtils.teardownDb);
     beforeEach(testUtils.setup('roles'));
     afterEach(testUtils.teardownDb);
 

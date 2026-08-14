@@ -1,10 +1,12 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const rewire = require('rewire');
 const {captureLoggerOutput, findByEvent} = require('../../../../../../utils/logging-utils');
+const processEntries = require('../../../../../../../core/server/services/outbox/jobs/lib/process-entries.js');
+const memberCreatedHandler = require('../../../../../../../core/server/services/outbox/handlers/member-created');
+
+const MEMBER_CREATED_EVENT = 'MemberCreatedEvent';
 
 describe('processEntries', function () {
-    let processEntries;
     let handlerStub;
     let dbStub;
     let logCapture;
@@ -24,17 +26,10 @@ describe('processEntries', function () {
     }
 
     beforeEach(function () {
-        processEntries = rewire('../../../../../../../core/server/services/outbox/jobs/lib/process-entries.js');
-
         handlerStub = {
-            handle: sinon.stub().resolves(),
-            getLogInfo: sinon.stub().returns('test@example.com'),
-            LOG_KEY: '[OUTBOX][MEMBER-WELCOME-EMAIL]'
+            handle: sinon.stub(memberCreatedHandler, 'handle').resolves(),
+            getLogInfo: sinon.stub(memberCreatedHandler, 'getLogInfo').returns('test@example.com')
         };
-
-        processEntries.__set__('EVENT_HANDLERS', {
-            MemberCreatedEvent: handlerStub
-        });
 
         dbStub = createDbStub();
 
@@ -67,7 +62,7 @@ describe('processEntries', function () {
     it('logs structured error when payload parsing fails', async function () {
         const entries = [{
             id: 'entry-2',
-            event_type: 'MemberCreatedEvent',
+            event_type: MEMBER_CREATED_EVENT,
             payload: 'invalid-json',
             retry_count: 0
         }];
@@ -87,7 +82,7 @@ describe('processEntries', function () {
 
         const entries = [{
             id: 'entry-3',
-            event_type: 'MemberCreatedEvent',
+            event_type: MEMBER_CREATED_EVENT,
             payload: JSON.stringify({email: 'test@example.com'}),
             retry_count: 0
         }];
@@ -107,7 +102,7 @@ describe('processEntries', function () {
 
         const entries = [{
             id: 'entry-4',
-            event_type: 'MemberCreatedEvent',
+            event_type: MEMBER_CREATED_EVENT,
             payload: JSON.stringify({email: 'test@example.com'}),
             retry_count: 0
         }];

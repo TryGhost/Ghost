@@ -29,7 +29,7 @@ processingModes.forEach(({name, batchProcessing}) => {
         let models;
         let membersService;
 
-        before(async function () {
+        beforeAll(async function () {
             // Configure processing mode BEFORE Ghost boots
             configUtils.set('emailAnalytics:batchProcessing', batchProcessing);
 
@@ -54,7 +54,7 @@ processingModes.forEach(({name, batchProcessing}) => {
             });
         });
 
-        after(function () {
+        afterAll(function () {
             sinon.restore();
             configUtils.restore();
         });

@@ -72,7 +72,7 @@ module.exports = function (Bookshelf) {
         },
 
         /**
-         * Convert integers to real booleans
+         * Coerce values to real booleans
          *
          * @param {object} attrs - attributes to convert
          * @returns {object} attrs - converted attributes
@@ -80,8 +80,13 @@ module.exports = function (Bookshelf) {
         fixBools: function fixBools(attrs) {
             const tableDef = schema.tables[this.tableName];
 
+            if (!tableDef) {
+                return attrs;
+            }
+
             for (const key in attrs) {
-                if (tableDef?.[key]?.type === 'boolean') {
+                const columnDef = tableDef[key];
+                if (columnDef && columnDef.type === 'boolean' && (!columnDef.nullable || attrs[key] !== null)) {
                     attrs[key] = !!attrs[key];
                 }
             }

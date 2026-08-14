@@ -1,7 +1,7 @@
 import AppContext from '../../app-context';
 import CloseButton from './close-button';
 import BackButton from './back-button';
-import {useContext} from 'react';
+import {useContext, useState, useRef} from 'react';
 import Switch from './switch';
 import {getSiteNewsletters, hasMemberGotEmailSuppression} from '../../utils/helpers';
 import ActionButton from './action-button';
@@ -78,6 +78,40 @@ function CommentsSection({updateCommentNotifications, isCommentsEnabled, enableC
     );
 }
 
+function UpdatesAndAnnouncementsSection({updateUpdatesAndAnnouncements, canChangeUpdatesAndAnnouncements, enableUpdatesAndAnnouncements}) {
+    const {doAction, site} = useContext(AppContext);
+    const [isUpdating, setIsUpdating] = useState(false);
+
+    if (!canChangeUpdatesAndAnnouncements) {
+        return null;
+    }
+
+    const handleToggle = async (e, checked) => {
+        setIsUpdating(true);
+        try {
+            await updateUpdatesAndAnnouncements(checked);
+            doAction('showPopupNotification', {
+                action: 'updated:success',
+                message: t('Email preferences updated.')
+            });
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
+    return (
+        <section className='gh-portal-list-toggle-wrapper' data-testid="updates-and-announcements-toggle">
+            <div className='gh-portal-list-detail'>
+                <h3>{t('Updates & announcements')}</h3>
+                <p>{t('Occasional updates from {siteTitle}', {siteTitle: site?.title})}</p>
+            </div>
+            <div style={{display: 'flex', alignItems: 'center'}}>
+                <Switch id="updates-and-announcements" onToggle={handleToggle} checked={enableUpdatesAndAnnouncements} disabled={isUpdating} dataTestId="switch-input" />
+            </div>
+        </section>
+    );
+}
+
 function NewsletterPrefs({subscribedNewsletters, setSubscribedNewsletters, hasNewslettersEnabled}) {
     const {site} = useContext(AppContext);
     const newsletters = getSiteNewsletters({site});
@@ -111,13 +145,27 @@ export default function NewsletterManagement({
     subscribedNewsletters,
     updateSubscribedNewsletters,
     updateCommentNotifications,
+    updateUpdatesAndAnnouncements,
     unsubscribeAll,
     isPaidMember,
     isCommentsEnabled,
-    enableCommentNotifications
+    enableCommentNotifications,
+    canChangeUpdatesAndAnnouncements,
+    enableUpdatesAndAnnouncements
 }) {
     const {brandColor, doAction, member, site} = useContext(AppContext);
-    const isDisabled = !subscribedNewsletters?.length && ((isCommentsEnabled && !enableCommentNotifications) || !isCommentsEnabled);
+
+    // Snapshot the updates & announcements value when the modal opens. When the member has no
+    // explicit preference yet (null), derive it from whether any newsletter is subscribed at open
+    // time and keep it fixed while open, so toggling a newsletter doesn't also appear to flip
+    // updates & announcements.
+    const wasInitiallySubscribedToAnyNewsletters = useRef(!!subscribedNewsletters?.length).current;
+    const hasExplicitUpdatesPreference = enableUpdatesAndAnnouncements !== null && enableUpdatesAndAnnouncements !== undefined;
+    const effectiveEnableUpdatesAndAnnouncements = hasExplicitUpdatesPreference ? enableUpdatesAndAnnouncements : wasInitiallySubscribedToAnyNewsletters;
+
+    const hasNoCommentSubscription = (isCommentsEnabled && !enableCommentNotifications) || !isCommentsEnabled;
+    const hasNoUpdatesSubscription = (canChangeUpdatesAndAnnouncements && !effectiveEnableUpdatesAndAnnouncements) || !canChangeUpdatesAndAnnouncements;
+    const isDisabled = !subscribedNewsletters?.length && hasNoCommentSubscription && hasNoUpdatesSubscription;
     const EmptyNotification = () => {
         return null;
     };
@@ -138,13 +186,22 @@ export default function NewsletterManagement({
                                     id: d.id
                                 };
                             });
-                            updateSubscribedNewsletters(newsletters);
+                            if (canChangeUpdatesAndAnnouncements && !hasExplicitUpdatesPreference) {
+                                updateSubscribedNewsletters(newsletters, effectiveEnableUpdatesAndAnnouncements);
+                            } else {
+                                updateSubscribedNewsletters(newsletters);
+                            }
                         }}
                     />
                     <CommentsSection
                         isCommentsEnabled={isCommentsEnabled}
                         enableCommentNotifications={enableCommentNotifications}
                         updateCommentNotifications={updateCommentNotifications}
+                    />
+                    <UpdatesAndAnnouncementsSection
+                        canChangeUpdatesAndAnnouncements={canChangeUpdatesAndAnnouncements}
+                        enableUpdatesAndAnnouncements={effectiveEnableUpdatesAndAnnouncements}
+                        updateUpdatesAndAnnouncements={updateUpdatesAndAnnouncements}
                     />
                 </div>
             </div>

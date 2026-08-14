@@ -147,7 +147,6 @@ describe('admin-toolbar', function () {
         assert.equal(root.shadowRoot.querySelector('.gh-admin-toolbar-tooltip').textContent, 'Admin');
         assert.equal(root.shadowRoot.querySelector('.gh-admin-toolbar-user').hasAttribute('title'), false);
         assert.equal(root.shadowRoot.querySelector('.gh-admin-toolbar-avatar-image').src, 'https://example.com/jane.jpg');
-        assert.ok(dom.window.document.body.style.paddingBottom.includes('--gh-admin-toolbar-bottom-offset'));
         dom.window.close();
     });
 

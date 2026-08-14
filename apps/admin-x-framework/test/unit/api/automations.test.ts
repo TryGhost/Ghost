@@ -93,7 +93,7 @@ describe('automations api helpers', () => {
     });
 
     describe('insertWaitAction', () => {
-        it('creates a wait action with placeholder defaults', () => {
+        it('creates a wait action with default values', () => {
             const detail = baseDetail([], []);
 
             const next = insertWaitAction({detail, anchor: {}});
@@ -185,7 +185,7 @@ describe('automations api helpers', () => {
             expect(newAction.data.email_subject).toBe('');
             expect(() => JSON.parse(newAction.data.email_lexical)).not.toThrow();
             expect(JSON.parse(newAction.data.email_lexical).root.children).toEqual([]);
-            expect(newAction.data.email_design_setting_id).toBe('placeholder');
+            expect(newAction.data.email_design_setting_id).toBe('default-automated-email');
         });
 
         it('returns an action id that the backend schema treats as a valid ObjectId', () => {
@@ -318,7 +318,7 @@ describe('automations api helpers', () => {
                         data: {
                             email_subject: 'Hi',
                             email_lexical: '{}',
-                            email_design_setting_id: 'placeholder'
+                            email_design_setting_id: 'default-automated-email'
                         }
                     }
                 ],
@@ -371,7 +371,7 @@ describe('automations api helpers', () => {
             data: {
                 email_subject: 'Original subject',
                 email_lexical: '{"root":{"children":[]}}',
-                email_design_setting_id: 'placeholder',
+                email_design_setting_id: 'default-automated-email',
                 ...overrides
             }
         });

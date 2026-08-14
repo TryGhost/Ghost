@@ -7,16 +7,16 @@ const UrlService = require('../../core/server/services/url/url-service');
 describe('Integration: services/url/UrlService', function () {
     let urlService;
 
-    before(testUtils.teardownDb);
-    before(testUtils.setup('users:roles', 'posts'));
-    after(testUtils.teardownDb);
+    beforeAll(testUtils.teardownDb);
+    beforeAll(testUtils.setup('users:roles', 'posts'));
+    afterAll(testUtils.teardownDb);
 
-    after(function () {
+    afterAll(function () {
         sinon.restore();
     });
 
     describe('functional: default routing set', function () {
-        before(function (done) {
+        beforeAll(async function () {
             urlService = new UrlService();
 
             urlService.onRouterAddedType('unique-id-1', 'featured:false', 'posts', '/:slug/');
@@ -27,19 +27,21 @@ describe('Integration: services/url/UrlService', function () {
             // We can't use our url service utils here, because this is a local copy of the urlService, not the singletone
             urlService.init();
 
-            let timeout;
-            (function retry() {
-                clearTimeout(timeout);
+            await new Promise((resolve) => {
+                let timeout;
+                (function retry() {
+                    clearTimeout(timeout);
 
-                if (urlService.hasFinished()) {
-                    return done();
-                }
+                    if (urlService.hasFinished()) {
+                        return resolve();
+                    }
 
-                setTimeout(retry, 50);
-            })();
+                    setTimeout(retry, 50);
+                })();
+            });
         });
 
-        after(function () {
+        afterAll(function () {
             urlService.reset();
         });
 
@@ -109,14 +111,14 @@ describe('Integration: services/url/UrlService', function () {
     });
 
     describe('functional: extended/modified routing set', function () {
-        before(testUtils.teardownDb);
-        before(testUtils.setup('users:roles', 'posts'));
+        beforeAll(testUtils.teardownDb);
+        beforeAll(testUtils.setup('users:roles', 'posts'));
 
-        before(function () {
+        beforeAll(function () {
             urlService.resetGenerators();
         });
 
-        before(function (done) {
+        beforeAll(async function () {
             urlService = new UrlService();
 
             urlService.onRouterAddedType('unique-id-1', 'featured:true', 'posts', '/podcast/:slug/');
@@ -128,19 +130,21 @@ describe('Integration: services/url/UrlService', function () {
             // We can't use our url service utils here, because this is a local copy of the urlService, not the singletone
             urlService.init();
 
-            let timeout;
-            (function retry() {
-                clearTimeout(timeout);
+            await new Promise((resolve) => {
+                let timeout;
+                (function retry() {
+                    clearTimeout(timeout);
 
-                if (urlService.hasFinished()) {
-                    return done();
-                }
+                    if (urlService.hasFinished()) {
+                        return resolve();
+                    }
 
-                setTimeout(retry, 50);
-            })();
+                    setTimeout(retry, 50);
+                })();
+            });
         });
 
-        after(function () {
+        afterAll(function () {
             urlService.resetGenerators();
         });
 
@@ -207,7 +211,7 @@ describe('Integration: services/url/UrlService', function () {
     });
 
     describe('functional: subdirectory', function () {
-        beforeEach(function (done) {
+        beforeEach(async function () {
             configUtils.set('url', 'http://localhost:2388/blog/');
 
             urlService = new UrlService();
@@ -221,16 +225,18 @@ describe('Integration: services/url/UrlService', function () {
             // We can't use our url service utils here, because this is a local copy of the urlService, not the singletone
             urlService.init();
 
-            let timeout;
-            (function retry() {
-                clearTimeout(timeout);
+            await new Promise((resolve) => {
+                let timeout;
+                (function retry() {
+                    clearTimeout(timeout);
 
-                if (urlService.hasFinished()) {
-                    return done();
-                }
+                    if (urlService.hasFinished()) {
+                        return resolve();
+                    }
 
-                setTimeout(retry, 50);
-            })();
+                    setTimeout(retry, 50);
+                })();
+            });
         });
 
         afterEach(async function () {

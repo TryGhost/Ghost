@@ -10,7 +10,8 @@ export default defineConfig({
         'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production')
     },
     preview: {
-        allowedHosts: true,
+        host: '0.0.0.0',
+        allowedHosts: true, // allows domain-name proxies to the preview server
         port: 4176
     },
     build: {

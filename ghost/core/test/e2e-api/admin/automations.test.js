@@ -4,8 +4,9 @@ const domainEvents = require('@tryghost/domain-events');
 const ObjectId = require('bson-objectid').default;
 const models = require('../../../core/server/models');
 const {getSignedAdminToken} = require('../../../core/server/adapters/scheduling/utils');
-const automationsApi = require('../../../core/server/services/automations/automations-api');
+const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../core/server/services/member-welcome-emails/constants');
 const {agentProvider, fixtureManager, matchers, assertions} = require('../../utils/e2e-framework');
+const {cleanupAutomationsFixture, EMPTY_EMAIL_LEXICAL, NON_EMPTY_EMAIL_LEXICAL, setupAutomationsFixture, TEST_EMAIL_DESIGN_SETTING_ID} = require('../../utils/automations-fixtures');
 const StartAutomationsPollEvent = require('../../../core/server/services/automations/events/start-automations-poll-event');
 
 const {anyContentVersion, anyEtag, anyErrorId, anyISODateTime, anyObjectId} = matchers;
@@ -62,21 +63,13 @@ const buildLinearEdges = actions => actions.slice(1).map((action, index) => ({
     target_action_id: action.id
 }));
 
-const EMPTY_EMAIL_LEXICAL = JSON.stringify({
-    root: {children: [], direction: null, format: '', indent: 0, type: 'root', version: 1}
-});
-
-const NON_EMPTY_EMAIL_LEXICAL = JSON.stringify({
-    root: {children: [{type: 'paragraph', children: [{type: 'text', text: 'Lorem ipsum.'}]}], direction: null, format: '', indent: 0, type: 'root', version: 1}
-});
-
 const buildSendEmailAction = (dataOverrides = {}) => ({
     id: ObjectId().toHexString(),
     type: 'send_email',
     data: {
         email_subject: 'Welcome',
         email_lexical: NON_EMPTY_EMAIL_LEXICAL,
-        email_design_setting_id: '64b6f7b7c8f1a2b3c4d5e6f7',
+        email_design_setting_id: TEST_EMAIL_DESIGN_SETTING_ID,
         ...dataOverrides
     }
 });
@@ -86,7 +79,7 @@ describe('Automations API', function () {
     let schedulerKey;
     let schedulerToken;
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('users', 'integrations', 'api_keys');
         await agent.loginAsOwner();
@@ -100,13 +93,62 @@ describe('Automations API', function () {
         });
     });
 
-    afterEach(function () {
+    beforeEach(async function () {
+        await setupAutomationsFixture();
+    });
+
+    afterEach(async function () {
         sinon.restore();
-        automationsApi._resetTestDatabase();
+        await cleanupAutomationsFixture();
     });
 
     describe('browse', function () {
-        it('returns automations sourced from the temporary fake database', async function () {
+        async function deleteActionsForAutomationIds(automationIds) {
+            const actionIds = await models.Base.knex('automation_actions')
+                .whereIn('automation_id', automationIds)
+                .pluck('id');
+            await models.Base.knex('automation_action_edges')
+                .whereIn('source_action_id', actionIds)
+                .orWhereIn('target_action_id', actionIds)
+                .del();
+            await models.Base.knex('automation_action_revisions')
+                .whereIn('action_id', actionIds)
+                .del();
+            await models.Base.knex('automation_actions')
+                .whereIn('id', actionIds)
+                .del();
+        }
+
+        async function createWelcomeEmailsForAutomations(automations) {
+            await models.Base.knex('welcome_email_automated_emails').insert(automations.map(automation => ({
+                id: ObjectId().toHexString(),
+                welcome_email_automation_id: automation.id,
+                next_welcome_email_automated_email_id: null,
+                delay_days: 0,
+                subject: `${automation.slug} subject`,
+                lexical: NON_EMPTY_EMAIL_LEXICAL,
+                email_design_setting_id: TEST_EMAIL_DESIGN_SETTING_ID,
+                created_at: new Date(),
+                updated_at: new Date()
+            })));
+        }
+
+        async function assertWelcomeEmailActionsWereCreated(automations) {
+            for (const automation of automations) {
+                const {body} = await agent
+                    .get(`automations/${automation.id}`)
+                    .expectStatus(200);
+
+                assert.deepEqual(body.automations[0].edges, []);
+                assert.equal(body.automations[0].actions.length, 1);
+                assert.equal(body.automations[0].actions[0].type, 'send_email');
+                assert.equal(body.automations[0].actions[0].data.email_subject, `${automation.slug} subject`);
+                assert.equal(body.automations[0].actions[0].data.email_lexical, NON_EMPTY_EMAIL_LEXICAL);
+                assert.equal(body.automations[0].actions[0].data.email_design_setting_id, TEST_EMAIL_DESIGN_SETTING_ID);
+            }
+        }
+
+        it('returns automations sourced from the database', async function () {
             await agent
                 .get('automations')
                 .expectStatus(200)
@@ -125,10 +167,80 @@ describe('Automations API', function () {
                     etag: anyEtag
                 });
         });
+
+        it('upserts the default free and paid automations', async function () {
+            const existingAutomations = await models.Base.knex('automations')
+                .select('id')
+                .whereIn('slug', Object.values(MEMBER_WELCOME_EMAIL_SLUGS));
+            const existingAutomationIds = existingAutomations.map(automation => automation.id);
+
+            await deleteActionsForAutomationIds(existingAutomationIds);
+            await models.Base.knex('automations')
+                .whereIn('id', existingAutomationIds)
+                .del();
+
+            await agent
+                .get('automations/')
+                .expectStatus(200)
+                .expect(cacheInvalidateHeaderNotSet());
+
+            const automations = await models.Base.knex('automations')
+                .select('id', 'name', 'slug', 'status')
+                .whereIn('slug', Object.values(MEMBER_WELCOME_EMAIL_SLUGS))
+                .orderBy('slug');
+
+            assert.deepEqual(automations.map(({name, slug, status}) => ({name, slug, status})), [{
+                name: 'Free member welcome flow',
+                slug: MEMBER_WELCOME_EMAIL_SLUGS.free,
+                status: 'inactive'
+            }, {
+                name: 'Paid member welcome flow',
+                slug: MEMBER_WELCOME_EMAIL_SLUGS.paid,
+                status: 'inactive'
+            }].sort((left, right) => left.slug.localeCompare(right.slug)));
+
+            await createWelcomeEmailsForAutomations(automations);
+
+            await agent
+                .get('automations/')
+                .expectStatus(200)
+                .expect(cacheInvalidateHeaderNotSet());
+
+            await assertWelcomeEmailActionsWereCreated(automations);
+        });
+
+        it('creates copied send_email actions for default welcome email automations without actions', async function () {
+            const automations = await models.Base.knex('automations')
+                .select('id', 'slug')
+                .whereIn('slug', Object.values(MEMBER_WELCOME_EMAIL_SLUGS));
+            const automationIds = automations.map(automation => automation.id);
+
+            await deleteActionsForAutomationIds(automationIds);
+            await createWelcomeEmailsForAutomations(automations);
+
+            await agent
+                .get('automations/')
+                .expectStatus(200)
+                .expect(cacheInvalidateHeaderNotSet());
+
+            await assertWelcomeEmailActionsWereCreated(automations);
+
+            await agent
+                .get('automations/')
+                .expectStatus(200);
+
+            const totalActions = await models.Base.knex('automation_actions')
+                .whereIn('automation_id', automationIds)
+                .whereNull('deleted_at')
+                .count('id as count')
+                .first();
+
+            assert.equal(Number(totalActions.count), 2);
+        });
     });
 
     describe('read', function () {
-        it('returns the automation, ordered actions, and edges sourced from the temporary fake database', async function () {
+        it('returns the automation, ordered actions, and edges sourced from the database', async function () {
             const {body: browseBody} = await agent
                 .get('automations')
                 .expectStatus(200);
@@ -187,7 +299,7 @@ describe('Automations API', function () {
                             data: {
                                 email_subject: 'Hello from the editor',
                                 email_lexical: emailLexical,
-                                email_design_setting_id: '64b6f7b7c8f1a2b3c4d5e6f7'
+                                email_design_setting_id: TEST_EMAIL_DESIGN_SETTING_ID
                             }
                         }],
                         edges: [{
@@ -369,6 +481,33 @@ describe('Automations API', function () {
 
             assert.equal(editBody.automations[0].status, 'inactive');
             assert.equal(editBody.automations[0].actions[0].data.email_subject, '');
+        });
+
+        it('resolves default email design setting slugs when saving a send email action', async function () {
+            const {body: browseBody} = await agent
+                .get('automations')
+                .expectStatus(200);
+
+            const automationId = browseBody.automations[0].id;
+            const emailAction = buildSendEmailAction({
+                email_design_setting_id: 'default-automated-email'
+            });
+
+            const {body: editBody} = await agent
+                .put(`automations/${automationId}`)
+                .body({
+                    automations: [{
+                        status: 'inactive',
+                        actions: [emailAction],
+                        edges: []
+                    }]
+                })
+                .expectStatus(200)
+                .expect(cacheInvalidateHeaderNotSet());
+
+            const designSettingId = editBody.automations[0].actions[0].data.email_design_setting_id;
+            assert.notEqual(designSettingId, 'default-automated-email');
+            assert.equal(ObjectId.isValid(designSettingId), true);
         });
 
         it('rejects activating an automation with an empty email subject', async function () {
@@ -553,7 +692,7 @@ describe('Automations API', function () {
                 data: {
                     email_subject: 'Changed type',
                     email_lexical: JSON.stringify({root: {children: [], direction: null, format: '', indent: 0, type: 'root', version: 1}}),
-                    email_design_setting_id: '64b6f7b7c8f1a2b3c4d5e6f7'
+                    email_design_setting_id: TEST_EMAIL_DESIGN_SETTING_ID
                 }
             } : {
                 id: existingAction.id,

@@ -10,7 +10,7 @@ const {anyContentVersion, anyEtag, anyContentLength, stringMatching} = matchers;
 describe('Config API', function () {
     let agent;
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('users');
     });
@@ -27,7 +27,7 @@ describe('Config API', function () {
     });
 
     describe('As Owner', function () {
-        before(async function () {
+        beforeAll(async function () {
             await agent.loginAsOwner();
         });
 

@@ -4,7 +4,8 @@ import crypto from 'node:crypto';
 import ObjectId from 'bson-objectid';
 import {dequal} from 'dequal';
 import {type Knex} from 'knex';
-import {MEMBER_WELCOME_EMAIL_SLUGS} from '../member-welcome-emails/constants';
+import moment from 'moment';
+import {DEFAULT_EMAIL_DESIGN_SETTING_SLUG, MEMBER_WELCOME_EMAIL_SLUGS} from '../member-welcome-emails/constants';
 import type {
     Automation,
     AutomationAction,
@@ -20,12 +21,23 @@ import {LOCK_TIMEOUT_MS} from './constants';
 import type {ExclusifyUnion, ReadonlyDeep} from 'type-fest';
 
 const HOUR_MS = 60 * 60 * 1000;
+const DATABASE_DATE_FORMAT = 'YYYY-MM-DD HH:mm:ss';
+const DEFAULT_WELCOME_EMAIL_AUTOMATIONS = [{
+    name: 'Free member welcome flow',
+    slug: MEMBER_WELCOME_EMAIL_SLUGS.free
+}, {
+    name: 'Paid member welcome flow',
+    slug: MEMBER_WELCOME_EMAIL_SLUGS.paid
+}];
 
 const messages = {
     invalidAutomationActionRevision: 'Automation action "{actionId}" of type "{actionType}" is missing required revision field "{field}".',
     conflictingAutomationActionId: 'Automation action "{actionId}" already exists and cannot be inserted.',
-    conflictingAutomationActionType: 'Automation action "{actionId}" already exists with a different type.'
+    conflictingAutomationActionType: 'Automation action "{actionId}" already exists with a different type.',
+    defaultEmailDesignSettingNotFound: 'Default automated email design setting not found.'
 };
+
+const DEFAULT_EMAIL_DESIGN_SETTING_REFERENCE = DEFAULT_EMAIL_DESIGN_SETTING_SLUG;
 
 interface AutomationRow {
     id: string;
@@ -34,6 +46,10 @@ interface AutomationRow {
     status: string;
     created_at: string;
     updated_at: string;
+}
+
+function toDatabaseDate(date: Date | string): string {
+    return moment(date).format(DATABASE_DATE_FORMAT);
 }
 
 interface ActionRow {
@@ -95,16 +111,17 @@ type RevisionDataFor<ActionDataT> = {
 type WaitRevisionData = RevisionDataFor<WaitActionData>;
 type SendEmailRevisionData = RevisionDataFor<SendEmailActionData>;
 
-export function createFakeDatabaseAutomationsRepository({
-    getDatabase
+export function createDatabaseAutomationsRepository({
+    knex,
+    fakeWaitHoursMultiplier
 }: {
-    getDatabase: () => Promise<Knex>;
+    knex: Knex;
+    fakeWaitHoursMultiplier: number | null;
 }): AutomationsRepository {
     return {
         async browse(): Promise<Page<AutomationSummary>> {
-            const knex = await getDatabase();
-
             return await knex.transaction(async (trx) => {
+                await ensureDefaultAutomations(trx);
                 const rows = await loadAutomations(trx);
                 return {
                     data: rows.map(row => buildAutomationSummary(row)),
@@ -116,7 +133,6 @@ export function createFakeDatabaseAutomationsRepository({
         },
 
         async getById(id: string): Promise<Automation | null> {
-            const knex = await getDatabase();
             return await knex.transaction(async (trx) => {
                 const automation = await loadAutomation(trx, id);
 
@@ -129,7 +145,6 @@ export function createFakeDatabaseAutomationsRepository({
         },
 
         async edit(id: string, data: EditAutomationData): Promise<Automation | null> {
-            const knex = await getDatabase();
             return await knex.transaction(async (trx) => {
                 const automation = await loadAutomation(trx, id);
 
@@ -140,7 +155,7 @@ export function createFakeDatabaseAutomationsRepository({
                 const updatedAutomation = await updateAutomation(trx, {
                     ...automation,
                     status: data.status,
-                    updated_at: new Date().toISOString()
+                    updated_at: toDatabaseDate(new Date())
                 });
 
                 await replaceAutomationGraph(trx, updatedAutomation.id, data.actions, data.edges);
@@ -154,58 +169,136 @@ export function createFakeDatabaseAutomationsRepository({
             memberId: string;
             memberStatus: 'free' | 'paid';
         }): Promise<void> {
-            const knex = await getDatabase();
-
-            return await knex.transaction(trx => trigger(trx, options));
+            return await knex.transaction(trx => trigger(trx, {
+                ...options,
+                fakeWaitHoursMultiplier
+            }));
         },
 
         async fetchAndLockSteps(limit: number): Promise<{
             steps: AutomationStepToRun[],
             nextStepReadyAt: null | Date;
         }> {
-            const knex = await getDatabase();
-
             return await knex.transaction(trx => fetchAndLockSteps(trx, limit));
         },
 
         async finishStepAndEnqueueNext(step: AutomationStepToRun): Promise<Date | null> {
-            const knex = await getDatabase();
-
-            return await knex.transaction(trx => finishStepAndEnqueueNext(trx, step));
+            return await knex.transaction(trx => finishStepAndEnqueueNext(trx, {
+                step,
+                fakeWaitHoursMultiplier
+            }));
         },
 
         async markStepTerminal(step: AutomationStepToRun, status: AutomationStepTerminalStatus): Promise<boolean> {
-            const knex = await getDatabase();
-
             return await knex.transaction(trx => markStepTerminal(trx, step, status));
         },
 
         async retryStep(step: AutomationStepToRun, retryAt: Date): Promise<boolean> {
-            const knex = await getDatabase();
-
             return await knex.transaction(trx => retryStep(trx, step, retryAt));
         }
     };
 }
 
-async function trigger(trx: Knex.Transaction, {
-    memberEmail,
-    memberId,
-    memberStatus
-}: Readonly<{
+async function ensureDefaultAutomations(trx: Knex.Transaction): Promise<void> {
+    for (const defaults of DEFAULT_WELCOME_EMAIL_AUTOMATIONS) {
+        const automation = await ensureAutomation(trx, defaults);
+        await ensureWelcomeEmailAction(trx, automation.id);
+    }
+}
+
+async function ensureAutomation(
+    trx: Knex.Transaction,
+    defaults: Readonly<{name: string; slug: string}>
+): Promise<AutomationRow> {
+    const now = toDatabaseDate(new Date());
+    const id = ObjectId().toHexString();
+
+    await trx('automations')
+        .insert({
+            id,
+            status: 'inactive',
+            name: defaults.name,
+            slug: defaults.slug,
+            created_at: now,
+            updated_at: now
+        })
+        .onConflict('slug')
+        .ignore();
+
+    return requireAutomation(await loadAutomationBySlug(trx, defaults.slug), defaults.slug);
+}
+
+async function ensureWelcomeEmailAction(trx: Knex.Transaction, automationId: string): Promise<void> {
+    const hasActions = await trx('automation_actions')
+        .where('automation_id', automationId)
+        .whereNull('deleted_at')
+        .first('id');
+    if (hasActions) {
+        return;
+    }
+
+    await trx('automations')
+        .select('id')
+        .where('id', automationId)
+        .forUpdate()
+        .first();
+
+    const email = await trx('welcome_email_automated_emails')
+        .select('subject', 'lexical', 'email_design_setting_id')
+        .where('welcome_email_automation_id', automationId)
+        .orderBy([
+            'created_at',
+            'id'
+        ])
+        .first();
+
+    if (!email) {
+        return;
+    }
+
+    const now = toDatabaseDate(new Date());
+    const actionId = ObjectId().toHexString();
+
+    await insertAction(trx, {
+        id: actionId,
+        created_at: now,
+        updated_at: now,
+        automation_id: automationId,
+        type: 'send_email'
+    });
+    await insertActionRevision(trx, actionId, {
+        id: actionId,
+        type: 'send_email',
+        data: {
+            email_subject: email.subject,
+            email_lexical: email.lexical ?? '',
+            email_design_setting_id: email.email_design_setting_id
+        }
+    }, now, null);
+}
+
+async function trigger(trx: Knex.Transaction, options: Readonly<{
     memberEmail: string;
     memberId: string;
     memberStatus: 'free' | 'paid';
+    fakeWaitHoursMultiplier: number | null;
 }>): Promise<void> {
+    const {
+        memberEmail,
+        memberId,
+        memberStatus,
+        fakeWaitHoursMultiplier
+    } = options;
+
     const firstAction = await findFirstActionRevision(trx, memberStatus);
     if (!firstAction) {
         return;
     }
 
     const now = new Date();
-    const nowString = now.toISOString();
+    const nowString = toDatabaseDate(now);
 
-    const readyAt = getReadyAtForAction(firstAction, now);
+    const readyAt = getReadyAtForAction(firstAction, now, fakeWaitHoursMultiplier);
 
     const run = {
         id: ObjectId().toHexString(),
@@ -236,7 +329,7 @@ async function insertRunStep(trx: Knex.Transaction, {
     now: Date;
     readyAt: Date;
 }>): Promise<void> {
-    const nowString = now.toISOString();
+    const nowString = toDatabaseDate(now);
 
     await trx('automation_run_steps').insert({
         id: ObjectId().toHexString(),
@@ -244,7 +337,7 @@ async function insertRunStep(trx: Knex.Transaction, {
         updated_at: nowString,
         automation_run_id: automationRunId,
         automation_action_revision_id: automationActionRevisionId,
-        ready_at: readyAt.toISOString()
+        ready_at: toDatabaseDate(readyAt)
     });
 }
 
@@ -264,9 +357,9 @@ async function fetchAndLockSteps(trx: Knex.Transaction, limit: number): Promise<
     // 3. Select any rows we successfully locked.
 
     const now = new Date();
-    const nowString = now.toISOString();
+    const nowString = toDatabaseDate(now);
     const staleLockCutoff = new Date(now.getTime() - LOCK_TIMEOUT_MS);
-    const staleLockCutoffString = staleLockCutoff.toISOString();
+    const staleLockCutoffString = toDatabaseDate(staleLockCutoff);
     const lockId = crypto.randomUUID();
 
     // 1. Select up to `limit` candidate rows.
@@ -357,7 +450,7 @@ async function findNextPendingReadyAt(trx: Knex.Transaction, staleLockCutoff: Re
         .where((builder) => {
             builder
                 .whereNull('locked_by')
-                .orWhere('locked_at', '<', staleLockCutoff.toISOString());
+                .orWhere('locked_at', '<', toDatabaseDate(staleLockCutoff));
         })
         .first();
     return row?.next_ready_at ? new Date(row.next_ready_at) : null;
@@ -436,8 +529,16 @@ async function findFirstActionRevision(trx: Knex.Transaction, memberStatus: 'fre
 
 async function finishStepAndEnqueueNext(
     trx: Knex.Transaction,
-    step: Pick<AutomationStepToRun, 'id' | 'locked_by' | 'action_id' | 'automation_run_id'>
+    options: Readonly<{
+        step: Pick<AutomationStepToRun, 'id' | 'locked_by' | 'action_id' | 'automation_run_id'>;
+        fakeWaitHoursMultiplier: number | null;
+    }>
 ): Promise<Date | null> {
+    const {
+        step,
+        fakeWaitHoursMultiplier
+    } = options;
+
     const didFinish = await markStepTerminal(trx, step, 'finished');
     if (!didFinish) {
         return null;
@@ -450,7 +551,7 @@ async function finishStepAndEnqueueNext(
     }
 
     const now = new Date();
-    const nextReadyAt = getReadyAtForAction(next, now);
+    const nextReadyAt = getReadyAtForAction(next, now, fakeWaitHoursMultiplier);
 
     await insertRunStep(trx, {
         automationRunId: step.automation_run_id,
@@ -489,7 +590,7 @@ async function markStepTerminal(
     step: Pick<AutomationStepToRun, 'id' | 'locked_by'>,
     status: AutomationStepTerminalStatus
 ): Promise<boolean> {
-    const nowString = new Date().toISOString();
+    const nowString = toDatabaseDate(new Date());
     return await updateStep(trx, step, {
         status,
         finished_at: nowString,
@@ -502,19 +603,20 @@ async function retryStep(
     step: Pick<AutomationStepToRun, 'id' | 'locked_by'>,
     retryAt: Readonly<Date>
 ): Promise<boolean> {
-    const nowString = new Date().toISOString();
+    const nowString = toDatabaseDate(new Date());
     return await updateStep(trx, step, {
         status: 'pending',
         started_at: null,
         finished_at: null,
-        ready_at: retryAt.toISOString(),
+        ready_at: toDatabaseDate(retryAt),
         updated_at: nowString
     });
 }
 
 function getReadyAtForAction(
     action: ReadonlyDeep<Pick<NextActionRevisionRow, 'action_id' | 'type' | 'wait_hours'>>,
-    now: Readonly<Date>
+    now: Readonly<Date>,
+    fakeWaitHoursMultiplier: number | null
 ): Date {
     switch (action.type) {
     case 'wait': {
@@ -522,7 +624,7 @@ function getReadyAtForAction(
             ...action,
             id: action.action_id
         }, 'wait_hours');
-        const waitMs = waitHours * HOUR_MS;
+        const waitMs = waitHours * (fakeWaitHoursMultiplier || HOUR_MS);
         return new Date(now.getTime() + waitMs);
     }
     case 'send_email':
@@ -586,6 +688,14 @@ async function loadAutomation(trx: Knex.Transaction, automationId: string): Prom
     return row ?? null;
 }
 
+async function loadAutomationBySlug(trx: Knex.Transaction, slug: string): Promise<AutomationRow | null> {
+    const row = await trx('automations')
+        .select('id', 'slug', 'name', 'status', 'created_at', 'updated_at')
+        .where('slug', slug)
+        .first();
+    return row ?? null;
+}
+
 async function loadAutomations(trx: Knex.Transaction): Promise<AutomationRow[]> {
     return await trx('automations')
         .select('id', 'slug', 'name', 'status', 'created_at', 'updated_at')
@@ -606,12 +716,13 @@ async function updateAutomation(trx: Knex.Transaction, automation: AutomationRow
     return requireAutomation(await loadAutomation(trx, automation.id), automation.id);
 }
 
-async function replaceAutomationGraph(trx: Knex.Transaction, automationId: string, actions: AutomationAction[], edges: AutomationEdge[]): Promise<void> {
+async function replaceAutomationGraph(trx: Knex.Transaction, automationId: string, submittedActions: AutomationAction[], edges: AutomationEdge[]): Promise<void> {
     // TODO(NY-1340): This makes too many round-trips to the database. We should improve that.
     const existingActions = await loadAutomationActionRows(trx, automationId);
+    const actions = await resolveEmailDesignSettingIds(trx, submittedActions);
     const existingActionIds = new Set(existingActions.map(action => action.id));
     const submittedActionIds = new Set(actions.map(action => action.id));
-    const now = new Date().toISOString();
+    const now = toDatabaseDate(new Date());
 
     for (const action of actions) {
         if (existingActionIds.has(action.id)) {
@@ -658,6 +769,43 @@ async function replaceAutomationGraph(trx: Knex.Transaction, automationId: strin
     await deleteAutomationEdges(trx, automationId);
 
     await insertActionEdges(trx, edges);
+}
+
+async function resolveEmailDesignSettingIds(trx: Knex.Transaction, actions: ReadonlyArray<AutomationAction>): Promise<AutomationAction[]> {
+    if (!actions.some(action => action.type === 'send_email' && action.data.email_design_setting_id === DEFAULT_EMAIL_DESIGN_SETTING_REFERENCE)) {
+        return [...actions];
+    }
+
+    const defaultEmailDesignSettingId = await loadDefaultEmailDesignSettingId(trx);
+
+    return actions.map((action) => {
+        if (action.type !== 'send_email' || action.data.email_design_setting_id !== DEFAULT_EMAIL_DESIGN_SETTING_REFERENCE) {
+            return action;
+        }
+
+        return {
+            ...action,
+            data: {
+                ...action.data,
+                email_design_setting_id: defaultEmailDesignSettingId
+            }
+        };
+    });
+}
+
+async function loadDefaultEmailDesignSettingId(trx: Knex.Transaction): Promise<string> {
+    const row = await trx('email_design_settings')
+        .select('id')
+        .where('slug', DEFAULT_EMAIL_DESIGN_SETTING_SLUG)
+        .first();
+
+    if (!row?.id) {
+        throw new errors.InternalServerError({
+            message: tpl(messages.defaultEmailDesignSettingNotFound)
+        });
+    }
+
+    return row.id;
 }
 
 async function loadAutomationActionRows(trx: Knex.Transaction, automationId: string): Promise<Array<Pick<ActionRow, 'id' | 'type'>>> {
@@ -767,21 +915,22 @@ async function insertActionRevision(
 
 function getNextRevisionCreatedAt(latestCreatedAt: string | null, requestedCreatedAt: string) {
     if (!latestCreatedAt) {
-        return requestedCreatedAt;
+        return toDatabaseDate(requestedCreatedAt);
     }
 
     const requestedTime = new Date(requestedCreatedAt).getTime();
     const latestTime = new Date(latestCreatedAt).getTime();
 
     if (requestedTime > latestTime) {
-        return requestedCreatedAt;
+        return toDatabaseDate(requestedCreatedAt);
     }
 
-    return new Date(latestTime + 1).toISOString();
+    return toDatabaseDate(new Date(latestTime + 1000));
 }
 
 function buildActionRevision(actionId: string, action: AutomationAction, createdAt: string) {
-    if (action.type === 'wait') {
+    switch (action.type) {
+    case 'wait':
         return {
             id: ObjectId().toString(),
             created_at: createdAt,
@@ -791,17 +940,23 @@ function buildActionRevision(actionId: string, action: AutomationAction, created
             email_lexical: null,
             email_design_setting_id: null
         };
+    case 'send_email':
+        return {
+            id: ObjectId().toString(),
+            created_at: createdAt,
+            action_id: actionId,
+            wait_hours: null,
+            email_subject: action.data.email_subject,
+            email_lexical: action.data.email_lexical,
+            email_design_setting_id: action.data.email_design_setting_id
+        };
+    default: {
+        const _exhaustive: never = action;
+        throw new errors.InternalServerError({
+            message: `Unexpected action type ${_exhaustive}`
+        });
     }
-
-    return {
-        id: ObjectId().toString(),
-        created_at: createdAt,
-        action_id: actionId,
-        wait_hours: null,
-        email_subject: action.data.email_subject,
-        email_lexical: action.data.email_lexical,
-        email_design_setting_id: action.data.email_design_setting_id
-    };
+    }
 }
 
 async function deleteAutomationEdges(trx: Knex.Transaction, automationId: string): Promise<void> {

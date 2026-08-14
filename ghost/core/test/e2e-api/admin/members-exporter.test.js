@@ -68,7 +68,7 @@ async function testOutput(member, asserts, filters = []) {
 }
 
 describe('Members API — exportCSV', function () {
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('newsletters', 'tiers:archived');
         await agent.loginAsOwner();

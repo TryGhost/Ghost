@@ -1305,8 +1305,8 @@ describe('Email renderer', function () {
             };
             emailRenderer = new EmailRenderer({
                 audienceFeedbackService: {
-                    buildLink: (_uuid, _postId, score, key) => {
-                        return new URL('http://feedback-link.com/?score=' + encodeURIComponent(score) + '&uuid=' + encodeURIComponent(_uuid) + '&key=' + encodeURIComponent(key));
+                    buildEmailLink: (_post, score) => {
+                        return 'http://feedback-link.com/?score=' + score + '&uuid=%%{uuid}%%&key=%%{key}%%';
                     }
                 },
                 urlUtils: {
@@ -2473,8 +2473,8 @@ describe('Email renderer', function () {
             labsEnabled = false;
             emailRenderer = new EmailRenderer({
                 audienceFeedbackService: {
-                    buildLink: (_uuid, _postId, score) => {
-                        return new URL('http://feedback-link.com/?score=' + encodeURIComponent(score) + '&uuid=' + encodeURIComponent(_uuid));
+                    buildEmailLink: (_post, score) => {
+                        return 'http://feedback-link.com/?score=' + score + '&uuid=%%{uuid}%%';
                     }
                 },
                 urlUtils: {
@@ -3638,8 +3638,8 @@ describe('Email renderer', function () {
             });
             emailRenderer = new EmailRenderer({
                 audienceFeedbackService: {
-                    buildLink: (_uuid, _postId, score, key) => {
-                        return new URL('http://feedback-link.com/?score=' + encodeURIComponent(score) + '&uuid=' + encodeURIComponent(_uuid) + '&key=' + encodeURIComponent(key));
+                    buildEmailLink: (_post, score) => {
+                        return 'http://feedback-link.com/?score=' + score + '&uuid=%%{uuid}%%&key=%%{key}%%';
                     }
                 },
                 urlUtils: {

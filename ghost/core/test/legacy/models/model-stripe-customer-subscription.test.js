@@ -10,7 +10,7 @@ const {StripeProduct} = require('../../../core/server/models/stripe-product');
 const testUtils = require('../../utils');
 
 describe('StripeCustomerSubscription Model', function run() {
-    before(testUtils.teardownDb);
+    beforeAll(testUtils.teardownDb);
     beforeEach(testUtils.setup('roles'));
     afterEach(testUtils.teardownDb);
 

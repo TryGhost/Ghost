@@ -14,7 +14,7 @@ const matchSnippet = {
 describe('Snippets API', function () {
     let agent;
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('snippets');
         await agent.loginAsOwner();

@@ -1,16 +1,11 @@
 const models = require('../../models');
-const config = require('../../../shared/config');
+const urlService = require('../../services/url');
 const getPostServiceInstance = require('../../services/posts/posts-service-instance');
 const postsService = getPostServiceInstance();
 
 const urlRelationsWhenLazyRouting = () => {
-    if (config.get('lazyRouting')) {
-        return {
-            withRelated: ['tags', 'authors']
-        };
-    }
-
-    return {};
+    const withRelated = urlService.facade.getRequiredRelations();
+    return withRelated.length ? {withRelated} : {};
 };
 
 /** @type {import('@tryghost/api-framework').Controller} */

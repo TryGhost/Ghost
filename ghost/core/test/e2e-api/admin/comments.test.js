@@ -109,7 +109,7 @@ async function getMemberComments(url, commentsMatcher = [membersCommentMatcher])
 }
 
 describe(`Admin Comments API`, function () {
-    before(async function () {
+    beforeAll(async function () {
         const agents = await agentProvider.getAgentsForMembers();
         adminApi = agents.adminAgent;
         membersApi = agents.membersAgent;
@@ -135,7 +135,7 @@ describe(`Admin Comments API`, function () {
         mockManager.mockLabsEnabled('commentsPinning');
     });
 
-    after(function () {
+    afterAll(function () {
         mockManager.restore();
     });
 
@@ -1161,7 +1161,7 @@ describe(`Admin Comments API`, function () {
     describe('Logged in member gets own likes via admin api', function () {
         let comment;
         let post;
-        this.beforeEach(async function () {
+        beforeEach(async function () {
             post = fixtureManager.get('posts', 1);
             comment = await dbFns.addComment({
                 post_id: post.id,
@@ -2349,7 +2349,7 @@ describe(`Admin Comments API`, function () {
         let restrictedApiKeyId;
         let restrictedApiKeySecret;
 
-        before(async function () {
+        beforeAll(async function () {
             // Create a role with NO comment permissions for testing
             const roleId = ObjectId().toHexString();
             await db.knex('roles').insert({

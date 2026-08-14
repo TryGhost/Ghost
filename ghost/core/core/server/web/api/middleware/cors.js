@@ -98,3 +98,6 @@ const corsCaching = function corsCaching(req, res, next) {
 
 exports.corsMiddleware = cors(corsOptionsDelegate);
 exports.corsCaching = corsCaching;
+exports.resetAllowlist = function resetAllowlist() {
+    allowlist = [];
+};

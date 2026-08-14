@@ -55,10 +55,6 @@ export type LabsContextType = {
     [key: string]: boolean | undefined
 }
 
-export type CapabilitiesContextType = {
-    dislikes?: boolean
-}
-
 export type CommentsOptions = {
     locale: string,
     siteUrl: string,
@@ -90,7 +86,6 @@ export type EditableAppContext = {
     openCommentForms: OpenCommentForm[],
     popup: Page | null,
     labs: LabsContextType,
-    capabilities: CapabilitiesContextType,
     order: string,
     adminApi: AdminApi | null,
     commentsIsLoading?: boolean,

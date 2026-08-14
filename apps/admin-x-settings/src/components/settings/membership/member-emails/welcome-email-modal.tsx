@@ -333,7 +333,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                             <MemberEmailEditor
                                 key={automatedEmail?.id || 'new'}
                                 className='welcome-email-editor'
-                                placeholder='Write your welcome email content...'
+                                placeholder='Begin writing your email...'
                                 value={formState.lexical}
                                 onChange={handleEditorChange}
                             />

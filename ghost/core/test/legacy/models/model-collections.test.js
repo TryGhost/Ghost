@@ -3,20 +3,23 @@ const testUtils = require('../../utils');
 const models = require('../../../core/server/models');
 const db = require('../../../core/server/data/db');
 
+// These two tests inspect raw sqlite query traffic (db.knex.client as an sqlite3
+// Database), so they only apply on the sqlite leg. Decide at registration from
+// NODE_ENV (the mysql leg sets testing-mysql) — db.knex isn't connected yet when
+// the file loads, and Vitest has no Mocha-style runtime this.skip(). (PLA-152)
+const isMySQL = (process.env.NODE_ENV || '').includes('mysql');
+
 describe('Collection Model', function () {
-    before(testUtils.teardownDb);
-    before(testUtils.stopGhost);
-    after(testUtils.teardownDb);
+    beforeAll(testUtils.teardownDb);
+    beforeAll(testUtils.stopGhost);
+    afterAll(testUtils.teardownDb);
 
     // This is required for the models to be initialised ???
     // @TODO remove this once we have a better way of initialising models
-    before(testUtils.setup('users:roles', 'posts'));
+    beforeAll(testUtils.setup('users:roles', 'posts'));
 
     describe('add', function () {
-        it('does not update the sort_order of the collections_posts table if the type is "automatic"', async function () {
-            if (db?.knex?.client?.config?.client !== 'sqlite3') {
-                return this.skip();
-            }
+        it.skipIf(isMySQL)('does not update the sort_order of the collections_posts table if the type is "automatic"', async function () {
             /** @type {import('sqlite3').Database} */
             const database = db.knex.client;
 
@@ -50,10 +53,7 @@ describe('Collection Model', function () {
             assert.equal(actual, expected, 'collections_posts should not have been updated');
         });
 
-        it('does update the sort_order of the collections_posts table if the type is "manual"', async function () {
-            if (db?.knex?.client?.config?.client !== 'sqlite3') {
-                return this.skip();
-            }
+        it.skipIf(isMySQL)('does update the sort_order of the collections_posts table if the type is "manual"', async function () {
             /** @type {import('sqlite3').Database} */
             const database = db.knex.client;
 

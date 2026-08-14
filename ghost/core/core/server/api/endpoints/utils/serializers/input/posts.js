@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const config = require('../../../../../../shared/config');
+const urlService = require('../../../../../services/url');
 const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:input:posts');
 const {ValidationError} = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
@@ -75,13 +75,12 @@ function mapWithRelated(frame) {
     }
 }
 
-// Under lazyRouting, urlService.facade.getUrlForResource evaluates
-// router filters against tags/authors, so ?fields=url needs them loaded.
 function forceUrlRelationsWhenLazy(frame) {
-    if (config.get('lazyRouting')
-        && Array.isArray(frame.options.columns)
-        && frame.options.columns.includes('url')) {
-        frame.options.withRelated = _.union(frame.options.withRelated || [], ['tags', 'authors']);
+    if (Array.isArray(frame.options.columns) && frame.options.columns.includes('url')) {
+        const relations = urlService.facade.getRequiredRelations();
+        if (relations.length) {
+            frame.options.withRelated = _.union(frame.options.withRelated || [], relations);
+        }
     }
 }
 

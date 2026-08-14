@@ -1,4 +1,4 @@
-const urlService = require('../../server/services/url');
+const {urlService} = require('../services/proxy');
 const getContextObject = require('./context-object.js');
 
 function getAuthorUrl(data, absolute) {

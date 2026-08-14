@@ -30,7 +30,10 @@ class AudienceFeedbackServiceWrapper {
                 baseURL: new URL(urlUtils.urlFor('home', true))
             }
         });
-        this.controller = new AudienceFeedbackController({repository: this.repository});
+        this.controller = new AudienceFeedbackController({
+            repository: this.repository,
+            audienceFeedbackService: this.service
+        });
     }
 }
 

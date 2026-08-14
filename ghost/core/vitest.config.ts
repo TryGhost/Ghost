@@ -2,8 +2,8 @@ import path from 'node:path';
 import {defineConfig} from 'vitest/config';
 
 // ghost/core's unit tests run under vitest. The DB-backed integration,
-// e2e-api, and legacy suites still run under mocha via `pnpm test:base`
-// — see ghost/core/package.json.
+// e2e-api, and legacy suites run under vitest too, via the separate
+// vitest.config.db.ts — see ghost/core/package.json.
 //
 // The unit suite is split into two vitest projects:
 //
