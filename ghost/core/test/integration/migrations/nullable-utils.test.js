@@ -7,6 +7,26 @@ const logging = require('@tryghost/logging');
 const utils = require('../../../core/server/data/migrations/utils');
 const db = require('../../../core/server/data/db');
 
+// Run a migration step the way knex-migrator would: inside a transaction when the
+// migration declares config.transaction (MySQL), otherwise on a plain connection
+// (SQLite, where the table rebuild must toggle foreign_keys outside a transaction).
+async function runMigrationStep(migration, method) {
+    if (migration.config && migration.config.transaction) {
+        const transacting = await db.knex.transaction();
+        try {
+            await migration[method]({transacting});
+            await transacting.commit();
+        } catch (err) {
+            if (!transacting.isCompleted()) {
+                await transacting.rollback();
+            }
+            throw err;
+        }
+    } else {
+        await migration[method]({connection: db.knex});
+    }
+}
+
 describe('Migrations - schema utils', function () {
     const tableName = 'test_nullable_integration';
 
@@ -127,18 +147,14 @@ describe('Migrations - schema utils', function () {
             assert.equal(isNotNullableInitial, true, 'Column should initially be not nullable');
 
             // Run up migration
-            const transacting = await db.knex.transaction();
-            await migration.up({transacting});
-            await transacting.commit();
+            await runMigrationStep(migration, 'up');
 
             // Verify column is now nullable
             const isNullableAfter = await isColumnNullable(tableName, 'not_nullable_col');
             assert.equal(isNullableAfter, true, 'Column should be nullable after up migration');
 
             // Run down migration with foreign key checks disabled
-            const transactingDown = await db.knex.transaction();
-            await migration.down({transacting: transactingDown});
-            await transactingDown.commit();
+            await runMigrationStep(migration, 'down');
 
             // Verify column is not nullable again
             const isNotNullableAfterDown = await isColumnNotNullable(tableName, 'not_nullable_col');
@@ -154,9 +170,7 @@ describe('Migrations - schema utils', function () {
             assert.equal(isNullableInitial, true, 'Column should initially be nullable');
 
             // Run up migration
-            const transacting = await db.knex.transaction();
-            await migration.up({transacting});
-            await transacting.commit();
+            await runMigrationStep(migration, 'up');
 
             sinon.assert.calledWith(logSpy, sinon.match('skipping as column is already nullable'));
 
@@ -172,18 +186,14 @@ describe('Migrations - schema utils', function () {
             });
 
             // Run up migration first
-            const transactingUp = await db.knex.transaction();
-            await migration.up({transacting: transactingUp});
-            await transactingUp.commit();
+            await runMigrationStep(migration, 'up');
 
             // Verify column is nullable
             const isNullableAfter = await isColumnNullable(tableName, 'mixed_col');
             assert.equal(isNullableAfter, true, 'Column should be nullable after up migration');
 
             // Run down migration with foreign key checks disabled
-            const transactingDown = await db.knex.transaction();
-            await migration.down({transacting: transactingDown});
-            await transactingDown.commit();
+            await runMigrationStep(migration, 'down');
 
             // Verify column is not nullable again
             const isNotNullableAfterDown = await isColumnNotNullable(tableName, 'mixed_col');
@@ -203,18 +213,14 @@ describe('Migrations - schema utils', function () {
             assert.equal(isNullableInitial, true, 'Column should initially be nullable');
 
             // Run up migration
-            const transacting = await db.knex.transaction();
-            await migration.up({transacting});
-            await transacting.commit();
+            await runMigrationStep(migration, 'up');
 
             // Verify column is now not nullable
             const isNotNullableAfter = await isColumnNotNullable(tableName, 'nullable_col');
             assert.equal(isNotNullableAfter, true, 'Column should be not nullable after up migration');
 
             // Run down migration
-            const transactingDown = await db.knex.transaction();
-            await migration.down({transacting: transactingDown});
-            await transactingDown.commit();
+            await runMigrationStep(migration, 'down');
 
             // Verify column is nullable again
             const isNullableAfterDown = await isColumnNullable(tableName, 'nullable_col');
@@ -230,9 +236,7 @@ describe('Migrations - schema utils', function () {
             assert.equal(isNotNullableInitial, true, 'Column should initially be not nullable');
 
             // Run up migration
-            const transacting = await db.knex.transaction();
-            await migration.up({transacting});
-            await transacting.commit();
+            await runMigrationStep(migration, 'up');
 
             sinon.assert.calledWith(logSpy, sinon.match('skipping as column is already not nullable'));
 
@@ -253,9 +257,7 @@ describe('Migrations - schema utils', function () {
             assert.equal(isNullableInitial, true, 'Column should be nullable before test');
 
             // Run up migration with foreign key checks disabled
-            const transacting = await db.knex.transaction();
-            await migration.up({transacting});
-            await transacting.commit();
+            await runMigrationStep(migration, 'up');
 
             // Verify column is not nullable
             const isNotNullableAfter = await isColumnNotNullable(tableName, testColumn);
@@ -273,14 +275,10 @@ describe('Migrations - schema utils', function () {
 
             // First make it nullable
             const setNullableMigration = utils.createSetNullableMigration(tableName, 'with_default');
-            const transactingSetup = await db.knex.transaction();
-            await setNullableMigration.up({transacting: transactingSetup});
-            await transactingSetup.commit();
+            await runMigrationStep(setNullableMigration, 'up');
 
             // Run drop nullable migration
-            const transacting = await db.knex.transaction();
-            await migration.up({transacting});
-            await transacting.commit();
+            await runMigrationStep(migration, 'up');
 
             // Verify column is not nullable and still has its default
             const isNotNullable = await isColumnNotNullable(tableName, 'with_default');
@@ -298,20 +296,14 @@ describe('Migrations - schema utils', function () {
             const migration = utils.createSetNullableMigration('non_existent_table', 'some_column');
             const logWarnSpy = sinon.spy(logging, 'warn');
 
-            let transacting;
             let errorThrown = false;
             let errorMessage = '';
             try {
-                transacting = await db.knex.transaction();
-                await migration.up({transacting});
-                await transacting.commit();
+                await runMigrationStep(migration, 'up');
             } catch (error) {
                 errorThrown = true;
                 errorMessage = error.message;
                 // Expected to fail when actually trying to alter the non-existent table
-                if (transacting && !transacting.isCompleted()) {
-                    await transacting.rollback();
-                }
             }
             
             // The behavior differs between databases:

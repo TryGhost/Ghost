@@ -41,9 +41,9 @@ export const SortingForm: React.FC = () => {
         }
 
         return () => {
-            window.removeEventListener('click', listener, {passive: true} as any);
+            window.removeEventListener('click', listener);
             if (el && el !== window) {
-                el.removeEventListener('click', listener, {passive: true} as any);
+                el.removeEventListener('click', listener);
             }
         };
     }, []);

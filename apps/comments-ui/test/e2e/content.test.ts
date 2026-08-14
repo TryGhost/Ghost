@@ -132,5 +132,44 @@ test.describe('Deleted and Hidden Content', async () => {
         // parent comment is hidden but shows text
         await expect (frame.getByText('This comment has been hidden')).toBeVisible();
     });
-});
 
+    test('deleted reply with null html renders as a tombstone without actions', async ({page}) => {
+        const mockedApi = new MockedApi({});
+        const childReply = mockedApi.buildReply({
+            id: 'child-reply',
+            html: '<p>Visible child reply</p>',
+            in_reply_to_id: 'deleted-reply',
+            in_reply_to_snippet: '[removed]'
+        });
+
+        mockedApi.addComment({
+            id: 'parent-comment',
+            html: '<p>Parent comment</p>',
+            replies: [
+                mockedApi.buildReply({
+                    id: 'deleted-reply',
+                    html: null,
+                    status: 'deleted',
+                    replies: [childReply]
+                }),
+                childReply
+            ]
+        });
+
+        const {frame} = await initialize({
+            mockedApi,
+            page,
+            publication: 'Publisher Weekly',
+            labs: {
+                commentsThreads: true
+            }
+        });
+
+        const deletedReply = frame.locator('[id="deleted-reply"]');
+        await expect(deletedReply).toContainText('This comment has been removed');
+        await expect(deletedReply.getByTestId('comment-content')).toHaveCount(0);
+        await expect(deletedReply.getByTestId('reply-button')).toHaveCount(0);
+        await expect(deletedReply.getByTestId('like-button')).toHaveCount(0);
+        await expect(frame.getByText('Visible child reply')).toBeVisible();
+    });
+});

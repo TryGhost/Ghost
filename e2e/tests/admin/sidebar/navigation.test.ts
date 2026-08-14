@@ -117,21 +117,54 @@ test.describe('Ghost Admin - Sidebar Navigation', () => {
             await expect(page).toHaveURL(/\/ghost\/#\/settings\/staff\//);
         });
 
-        test('night shift toggle - changes state on click', async ({page}) => {
+        test('appearance menu - switches to dark mode', async ({page}) => {
             const sidebar = new SidebarPage(page);
 
             await sidebar.goto('/ghost');
             await sidebar.userDropdownTrigger.click();
+            await sidebar.appearanceMenuItem.click();
 
-            const initialState = await sidebar.isNightShiftEnabled();
+            await sidebar.themeDarkOption.click();
+            await sidebar.waitForDarkMode(true);
 
-            await sidebar.nightShiftToggle.click();
+            await sidebar.userDropdownTrigger.click();
+            await expect(sidebar.appearanceMenuItem).toContainText('Dark');
+        });
 
-            const expectedState = !initialState;
-            await sidebar.waitForNightShiftEnabled(expectedState);
+        test('appearance menu - switches to light mode and displays current choice', async ({page}) => {
+            const sidebar = new SidebarPage(page);
 
-            const newState = await sidebar.isNightShiftEnabled();
-            expect(newState).toBe(expectedState);
+            await sidebar.goto('/ghost');
+            await sidebar.userDropdownTrigger.click();
+            await sidebar.appearanceMenuItem.click();
+            await sidebar.themeDarkOption.click();
+            await sidebar.waitForDarkMode(true);
+
+            await sidebar.userDropdownTrigger.click();
+            await sidebar.appearanceMenuItem.click();
+            await sidebar.themeLightOption.click();
+            await sidebar.waitForDarkMode(false);
+
+            await sidebar.userDropdownTrigger.click();
+            await expect(sidebar.appearanceMenuItem).toContainText('Light');
+        });
+
+        test('appearance menu - switches to system mode from dark', async ({page}) => {
+            const sidebar = new SidebarPage(page);
+
+            await sidebar.goto('/ghost');
+            await sidebar.userDropdownTrigger.click();
+            await sidebar.appearanceMenuItem.click();
+            await sidebar.themeDarkOption.click();
+            await sidebar.waitForDarkMode(true);
+
+            await sidebar.userDropdownTrigger.click();
+            await sidebar.appearanceMenuItem.click();
+            await sidebar.themeSystemOption.click();
+            await sidebar.waitForDarkMode(false);
+
+            await sidebar.userDropdownTrigger.click();
+            await expect(sidebar.appearanceMenuItem).toContainText('System');
         });
 
         test('sign out link - is visible in dropdown', async ({page}) => {

@@ -228,9 +228,6 @@ function MembersListItem({
     ...props
 }: MembersListItemProps &
     Omit<React.HTMLAttributes<HTMLTableRowElement>, 'onClick'>) {
-    const memberCellStyle = {
-        '--members-sticky-hover-bg': 'color-mix(in oklab, var(--muted) 50%, var(--background))'
-    } as CSSProperties;
     const handleRowClick = (event: React.MouseEvent<HTMLTableRowElement>) => {
         if (isModifiedClick(event)) {
             openMemberInNewTab(item.id, backPath);
@@ -258,7 +255,7 @@ function MembersListItem({
         >
             <TableCell className={cn(
                 'min-w-0 bg-background px-4 py-3 group-hover:bg-[var(--members-sticky-hover-bg)] max-sm:!w-full max-sm:!min-w-0 lg:sticky lg:left-0 lg:z-20'
-            )} style={memberCellStyle}>
+            )}>
                 <MembersListItemName backPath={backPath} item={item} onClick={onClick} />
                 {showPinnedEdge && (
                     <>

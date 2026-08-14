@@ -6,12 +6,18 @@
   "private": true,
   "main": "index.js",
   "exports": {
-    ".": "./index.js",
+    ".": {
+      "browser": "./index.browser.js",
+      "default": "./index.js"
+    },
     "./lib/locale-data.json": "./lib/locale-data.json"
+  },
+  "browser": {
+    "./index.js": "./index.browser.js",
+    "./lib/i18n.js": "./lib/i18n.browser.js"
   },
   "types": "./build/i18n.d.ts",
   "scripts": {
-    "dev": "echo \"Implement me!\"",
     "test:base": "NODE_ENV=testing vitest run --coverage",
     "test": "pnpm test:base && pnpm translate",
     "lint:code": "eslint *.js lib/ --cache",
@@ -27,6 +33,7 @@
   },
   "files": [
     "index.js",
+    "index.browser.js",
     "lib",
     "locales"
   ],
@@ -48,11 +55,6 @@
   "nx": {
     "tags": [
       "i18n"
-    ],
-    "targets": {
-      "dev": {
-        "continuous": false
-      }
-    }
+    ]
   }
 }

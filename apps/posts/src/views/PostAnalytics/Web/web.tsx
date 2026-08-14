@@ -6,7 +6,7 @@ import PostAnalyticsHeader from '../components/post-analytics-header';
 import Sources from './components/sources';
 import StatsFilter from '../components/stats-filter';
 import {BarChartLoadingIndicator, Card, CardContent, EmptyIndicator, NavbarActions} from '@tryghost/shade/components';
-import {BaseSourceData, useNavigate, useParams, useTinybirdQuery} from '@tryghost/admin-x-framework';
+import {BaseSourceData, Navigate, useNavigate, useParams, useTinybirdQuery} from '@tryghost/admin-x-framework';
 import {KpiDataItem, getWebKpiValues} from '@src/utils/kpi-helpers';
 import {LucideIcon, getScrollParent} from '@tryghost/shade/utils';
 import {STATS_RANGES, UNKNOWN_LOCATION_VALUES} from '@src/utils/constants';
@@ -14,6 +14,7 @@ import {createFilter} from '@tryghost/shade/patterns';
 import {formatQueryDate, getRangeDates, getRangeForStartDate} from '@tryghost/shade/app';
 import {getAudienceFromFilterValues, getAudienceQueryParam} from '@src/utils/audience';
 import {getPeriodText} from '@src/utils/chart-helpers';
+import {useAppContext} from '@src/providers/posts-app-context';
 import {useCallback, useEffect, useMemo, useRef} from 'react';
 import {useFilterParams} from '@src/hooks/use-filter-params';
 import {useGlobalData} from '@src/providers/post-analytics-context';
@@ -31,6 +32,7 @@ const Web: React.FC<postAnalyticsProps> = () => {
     const navigate = useNavigate();
     const {postId} = useParams();
     const {statsConfig, isLoading: isConfigLoading, range, data: globalData, post, isPostLoading} = useGlobalData();
+    const {appSettings} = useAppContext();
     const containerRef = useRef<HTMLElement>(null);
 
     // Use URL-synced filter state for bookmarking and sharing
@@ -143,21 +145,21 @@ const Web: React.FC<postAnalyticsProps> = () => {
     // Get web kpi data
     const {data: kpiData, loading: isKpisLoading} = useTinybirdQuery({
         endpoint: 'api_kpis',
-        statsConfig: statsConfig || {id: ''},
+        statsConfig,
         params: params
     });
 
     // Get locations data
     const {data: locationsData, loading: isLocationsLoading} = useTinybirdQuery({
         endpoint: 'api_top_locations',
-        statsConfig: statsConfig || {id: ''},
+        statsConfig,
         params: params
     });
 
     // Get sources data
     const {data: sourcesData, loading: isSourcesLoading} = useTinybirdQuery({
         endpoint: 'api_top_sources',
-        statsConfig: statsConfig || {id: ''},
+        statsConfig,
         params: params
     });
 
@@ -208,6 +210,13 @@ const Web: React.FC<postAnalyticsProps> = () => {
 
     // Check if filters are applied
     const hasFilters = analyticsFilters.length > 0;
+
+    // The Web tab is hidden when analytics is off, but a direct link can still land
+    // here — redirect to Overview instead of an empty "No visitors" state. Only once
+    // settings have loaded, else enabled sites get bounced mid-load.
+    if (appSettings && !appSettings.analytics?.webAnalytics) {
+        return <Navigate to={`/posts/analytics/${postId}`} replace />;
+    }
 
     return (
         <>

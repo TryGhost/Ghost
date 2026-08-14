@@ -15,7 +15,7 @@ describe('Page Component', () => {
         
         assert.ok(page.className.includes('max-w-page'), 'Should have max width class');
         assert.ok(page.className.includes('w-full'), 'Should have full width class');
-        assert.ok(page.className.includes('flex flex-col'), 'Should have flex column layout');
+        assert.ok(/\bflex\b/.test(page.className) && page.className.includes('flex-col'), 'Should have flex column layout');
     });
 
     it('applies custom className correctly', () => {

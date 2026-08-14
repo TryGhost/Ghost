@@ -59,7 +59,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
     const shouldGoToEditor = postDestination.startsWith('/editor/');
 
     return (
-        <Card className='group/card bg-gradient-to-tr from-muted/40 to-muted/0 to-50%' data-testid='latest-post'>
+        <Card className='group/card' data-testid='latest-post'>
             <CardHeader>
                 <CardTitle className='flex items-baseline justify-between leading-snug font-medium text-muted-foreground'>
                     Latest post performance
@@ -195,7 +195,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                             metricClassName,
 
                                             // Member metric is moved to the 2nd row in the grid if the post is email only or if web analytics is turned off, otherwise leave as is
-                                            (metricsToShow.showEmailMetrics && (!metricsToShow.showWebMetrics || !webAnalytics)) && 'row-[2/3] col-[1/2]'
+                                            (metricsToShow.showEmailMetrics && (!metricsToShow.showWebMetrics || !webAnalytics)) && 'col-[1/2] row-[2/3]'
                                         )
                                     } data-testid='latest-post-members' onClick={() => {
                                         navigate(`/posts/analytics/${latestPostStats.id}/growth`, {crossApp: true});

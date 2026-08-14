@@ -1,7 +1,7 @@
 const sinon = require('sinon');
 
 const StartAutomationsPollEvent = require('../../../../../core/server/services/automations/events/start-automations-poll-event');
-const AutomationsService = require('../../../../../core/server/services/automations/service');
+const {AutomationsService} = require('../../../../../core/server/services/automations/service');
 
 describe('automations service', function () {
     let automations;
@@ -34,8 +34,11 @@ describe('automations service', function () {
     });
 
     describe('init', function () {
-        it('dispatches a StartAutomationsPollEvent', function () {
+        it('dispatches a StartAutomationsPollEvent', async function () {
             automations.init(initOptions);
+            // The initial poll is enqueued for "now", which re-dispatches on the
+            // next macrotask (see enqueuePollAt's setImmediate), so wait a tick.
+            await new Promise(resolve => { setImmediate(resolve) });
             sinon.assert.calledWith(domainEvents.dispatch, sinon.match.instanceOf(StartAutomationsPollEvent));
         });
 

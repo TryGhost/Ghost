@@ -68,6 +68,7 @@ export interface LazyUrlServiceBackend {
     ownsResource(routerId: string, resource: Resource): boolean;
     resolveUrl(path: string): Promise<Resource | null>;
     getRequiredRelations(): string[];
+    getRequiredFields(routerType: string): string[];
     hasFinished(): boolean;
     onRouterAddedType(...args: unknown[]): unknown;
     onRouterUpdated(...args: unknown[]): unknown;
@@ -159,6 +160,16 @@ export class UrlServiceFacade {
     getRequiredRelations(): string[] {
         if (this.lazyUrlService) {
             return this.lazyUrlService.getRequiredRelations();
+        }
+        return [];
+    }
+
+    // Columns a resource of this type must carry for the lazy backend to build
+    // its URL. [] with no lazy backend: eager looks URLs up by id and never
+    // reads these fields.
+    getRequiredFields(routerType: string): string[] {
+        if (this.lazyUrlService) {
+            return this.lazyUrlService.getRequiredFields(routerType);
         }
         return [];
     }

@@ -85,7 +85,7 @@ describe('Dialog Components', () => {
         const title = screen.getByTestId('dialog-title');
         assert.equal(title.tagName.toLowerCase(), 'h2', 'Should be an h2 element');
         assert.equal(title.textContent, 'Test Title', 'Should have correct text content');
-        assert.ok(title.className.includes('text-xl font-semibold'), 'Should have default styling');
+        assert.ok(title.className.includes('text-xl') && title.className.includes('font-semibold'), 'Should have default styling');
     });
 
     it('applies custom className to DialogTitle correctly', () => {
@@ -118,7 +118,7 @@ describe('Dialog Components', () => {
         
         const description = screen.getByTestId('dialog-description');
         assert.equal(description.textContent, 'Test Description', 'Should have correct text content');
-        assert.ok(description.className.includes('text-sm text-muted-foreground'), 'Should have default styling');
+        assert.ok(description.className.includes('text-muted-foreground'), 'Should have default styling');
     });
 
     it('applies custom className to DialogDescription correctly', () => {
@@ -252,7 +252,7 @@ describe('Dialog Components', () => {
         
         const dialogTitle = screen.getByTestId('dialog-title');
         assert.equal(dialogTitle.textContent, 'Test Title', 'Should render title text');
-        assert.ok(dialogTitle.className.includes('text-xl font-semibold'), 'Should have default styling');
+        assert.ok(dialogTitle.className.includes('text-xl') && dialogTitle.className.includes('font-semibold'), 'Should have default styling');
     });
     
     it('renders DialogDescription with correct HTML structure and styling', () => {
@@ -267,7 +267,7 @@ describe('Dialog Components', () => {
         
         const dialogDescription = screen.getByTestId('dialog-description');
         assert.equal(dialogDescription.textContent, 'Test Description', 'Should render description text');
-        assert.ok(dialogDescription.className.includes('text-sm text-muted-foreground'), 'Should have default styling');
+        assert.ok(dialogDescription.className.includes('text-muted-foreground'), 'Should have default styling');
     });
 
     it('applies a custom className to DialogTitle', () => {

@@ -18,7 +18,7 @@ Object {
     "current": Object {
       "authors": Array [
         Object {
-          "accessibility": null,
+          "accessibility": "{\\"nightShift\\":\\"system\\"}",
           "bio": "bio",
           "bluesky": null,
           "comment_notifications": true,
@@ -78,7 +78,7 @@ Object {
       "og_title": null,
       "post_revisions": Any<Array>,
       "primary_author": Object {
-        "accessibility": null,
+        "accessibility": "{\\"nightShift\\":\\"system\\"}",
         "bio": "bio",
         "bluesky": null,
         "comment_notifications": true,
@@ -192,7 +192,7 @@ Object {
     "previous": Object {
       "authors": Array [
         Object {
-          "accessibility": null,
+          "accessibility": "{\\"nightShift\\":\\"system\\"}",
           "bio": "bio",
           "bluesky": null,
           "comment_notifications": true,
@@ -281,7 +281,7 @@ Object {
     "current": Object {
       "authors": Array [
         Object {
-          "accessibility": null,
+          "accessibility": "{\\"nightShift\\":\\"system\\"}",
           "bio": "bio",
           "bluesky": null,
           "comment_notifications": true,
@@ -356,7 +356,7 @@ Object {
       "og_title": null,
       "post_revisions": Any<Array>,
       "primary_author": Object {
-        "accessibility": null,
+        "accessibility": "{\\"nightShift\\":\\"system\\"}",
         "bio": "bio",
         "bluesky": null,
         "comment_notifications": true,
@@ -520,7 +520,7 @@ Object {
     "current": Object {
       "authors": Array [
         Object {
-          "accessibility": null,
+          "accessibility": "{\\"nightShift\\":\\"system\\"}",
           "bio": "bio",
           "bluesky": null,
           "comment_notifications": true,
@@ -595,7 +595,7 @@ Object {
       "og_title": null,
       "post_revisions": Any<Array>,
       "primary_author": Object {
-        "accessibility": null,
+        "accessibility": "{\\"nightShift\\":\\"system\\"}",
         "bio": "bio",
         "bluesky": null,
         "comment_notifications": true,
@@ -759,7 +759,7 @@ Object {
     "current": Object {
       "authors": Array [
         Object {
-          "accessibility": null,
+          "accessibility": "{\\"nightShift\\":\\"system\\"}",
           "bio": "bio",
           "bluesky": null,
           "comment_notifications": true,
@@ -834,7 +834,7 @@ Object {
       "og_title": null,
       "post_revisions": Any<Array>,
       "primary_author": Object {
-        "accessibility": null,
+        "accessibility": "{\\"nightShift\\":\\"system\\"}",
         "bio": "bio",
         "bluesky": null,
         "comment_notifications": true,
@@ -997,7 +997,7 @@ Object {
     "current": Object {
       "authors": Array [
         Object {
-          "accessibility": null,
+          "accessibility": "{\\"nightShift\\":\\"system\\"}",
           "bio": "bio",
           "bluesky": null,
           "comment_notifications": true,
@@ -1072,7 +1072,7 @@ Object {
       "og_title": null,
       "post_revisions": Any<Array>,
       "primary_author": Object {
-        "accessibility": null,
+        "accessibility": "{\\"nightShift\\":\\"system\\"}",
         "bio": "bio",
         "bluesky": null,
         "comment_notifications": true,
@@ -1235,7 +1235,7 @@ Object {
     "current": Object {
       "authors": Array [
         Object {
-          "accessibility": null,
+          "accessibility": "{\\"nightShift\\":\\"system\\"}",
           "bio": "bio",
           "bluesky": null,
           "comment_notifications": true,
@@ -1310,7 +1310,7 @@ Object {
       "og_title": null,
       "post_revisions": Any<Array>,
       "primary_author": Object {
-        "accessibility": null,
+        "accessibility": "{\\"nightShift\\":\\"system\\"}",
         "bio": "bio",
         "bluesky": null,
         "comment_notifications": true,
@@ -1474,7 +1474,7 @@ Object {
     "current": Object {
       "authors": Array [
         Object {
-          "accessibility": null,
+          "accessibility": "{\\"nightShift\\":\\"system\\"}",
           "bio": "bio",
           "bluesky": null,
           "comment_notifications": true,
@@ -1549,7 +1549,7 @@ Object {
       "og_title": null,
       "post_revisions": Any<Array>,
       "primary_author": Object {
-        "accessibility": null,
+        "accessibility": "{\\"nightShift\\":\\"system\\"}",
         "bio": "bio",
         "bluesky": null,
         "comment_notifications": true,
@@ -1757,7 +1757,7 @@ Object {
     "current": Object {
       "authors": Array [
         Object {
-          "accessibility": null,
+          "accessibility": "{\\"nightShift\\":\\"system\\"}",
           "bio": "bio",
           "bluesky": null,
           "comment_notifications": true,
@@ -1832,7 +1832,7 @@ Object {
       "og_title": null,
       "post_revisions": Any<Array>,
       "primary_author": Object {
-        "accessibility": null,
+        "accessibility": "{\\"nightShift\\":\\"system\\"}",
         "bio": "bio",
         "bluesky": null,
         "comment_notifications": true,
@@ -1980,7 +1980,7 @@ Object {
     "current": Object {
       "authors": Array [
         Object {
-          "accessibility": null,
+          "accessibility": "{\\"nightShift\\":\\"system\\"}",
           "bio": "bio",
           "bluesky": null,
           "comment_notifications": true,
@@ -2055,7 +2055,7 @@ Object {
       "og_title": null,
       "post_revisions": Any<Array>,
       "primary_author": Object {
-        "accessibility": null,
+        "accessibility": "{\\"nightShift\\":\\"system\\"}",
         "bio": "bio",
         "bluesky": null,
         "comment_notifications": true,
@@ -2218,7 +2218,7 @@ Object {
     "current": Object {
       "authors": Array [
         Object {
-          "accessibility": null,
+          "accessibility": "{\\"nightShift\\":\\"system\\"}",
           "bio": "bio",
           "bluesky": null,
           "comment_notifications": true,
@@ -2293,7 +2293,7 @@ Object {
       "og_title": null,
       "post_revisions": Any<Array>,
       "primary_author": Object {
-        "accessibility": null,
+        "accessibility": "{\\"nightShift\\":\\"system\\"}",
         "bio": "bio",
         "bluesky": null,
         "comment_notifications": true,

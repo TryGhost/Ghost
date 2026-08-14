@@ -27,6 +27,7 @@
 // intentionally named `legacy` so PRs to remove them are scoped and visible.
 
 import path from 'node:path';
+import {createRequire} from 'node:module';
 
 // ============================================================================
 // === Atomic rule objects (composed inside factories; also exported for the
@@ -442,9 +443,15 @@ export async function reactAppConfig(options = {}) {
     const reactRefreshPlugin = reactRefresh
         ? (await import('eslint-plugin-react-refresh')).default
         : null;
-    const tailwindcssPlugin = (tailwindCssPath || legacyTailwindV3ConfigPath)
-        ? (await import('eslint-plugin-tailwindcss')).default
-        : null;
+    // The v4 lane resolves the plugin from the repo root (main catalog). The
+    // legacy v3 lane must resolve it from the app instead: importing from this
+    // file would load the root's 4.x plugin, whose rules take no per-rule
+    // options and hard-fail ESLint schema validation on the v3-style {config}
+    // options. The v3 apps pin eslint-plugin-tailwindcss via catalog:tailwind3
+    // precisely for this, and the tailwind config path lives in the app dir.
+    const tailwindcssPlugin = legacyTailwindV3ConfigPath
+        ? createRequire(legacyTailwindV3ConfigPath)('eslint-plugin-tailwindcss')
+        : (tailwindCssPath ? (await import('eslint-plugin-tailwindcss')).default : null);
     const i18nextPlugin = i18next
         ? (await import('eslint-plugin-i18next')).default
         : null;
@@ -479,7 +486,7 @@ export async function reactAppConfig(options = {}) {
 
     const baseSettings = {
         react: {version: 'detect'},
-        ...(tailwindCssPath && {tailwindcss: {config: tailwindCssPath}})
+        ...(tailwindCssPath && {tailwindcss: {cssConfigPath: tailwindCssPath}})
     };
 
     const tailwindRules = tailwindCssPath

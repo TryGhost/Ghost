@@ -110,6 +110,27 @@ describe('ContentStatsService', function () {
         });
     });
 
+    describe('getTopContent gift-link filter', function () {
+        it('forwards the gift_link filter to the top pages query', async function () {
+            mockTinybirdClient.fetch.resolves([]);
+
+            await service.getTopContent({
+                date_from: '2025-01-01',
+                date_to: '2025-01-31',
+                timezone: 'Etc/UTC',
+                gift_link: 'true'
+            });
+
+            // Reaches api_top_pages as camelCase giftLink (the client maps it to
+            // the gift_link query param).
+            sinon.assert.calledWith(
+                mockTinybirdClient.fetch,
+                'api_top_pages',
+                sinon.match({giftLink: 'true'})
+            );
+        });
+    });
+
     describe('extractPostUuids', function () {
         it('extracts UUIDs from post_uuid field', function () {
             const data = [

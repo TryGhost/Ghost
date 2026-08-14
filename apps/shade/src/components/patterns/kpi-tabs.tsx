@@ -114,7 +114,7 @@ const KpiDropdownButton = React.forwardRef<HTMLButtonElement, KpiDropdownButtonP
                 ref={ref}
                 className={
                     cn(
-                        'h-auto w-full rounded-none border-x-0 border-t-0 focus-visible:ring-0 bg-transparent py-5',
+                        'h-auto w-full rounded-none border-x-0 border-t-0 bg-transparent py-5 focus-visible:ring-0',
                         className
                     )
                 }

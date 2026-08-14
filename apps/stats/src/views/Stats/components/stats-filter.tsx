@@ -9,7 +9,8 @@ import {formatQueryDate, getRangeDates} from '@tryghost/shade/app';
 import {getAudienceFromFilterValues, getAudienceQueryParam} from '@src/utils/audience';
 import {useAppContext} from '@src/app';
 import {useGlobalData} from '@src/providers/global-data-provider';
-import {useTinybirdQuery} from '@tryghost/admin-x-framework';
+import {useLabsFlag} from '@hooks/use-labs-flag';
+import {useTinybirdQuery, useWebAnalyticsEnabled} from '@tryghost/admin-x-framework';
 import {useTopContent} from '@tryghost/admin-x-framework/api/stats';
 
 countries.registerLocale(enLocale);
@@ -21,7 +22,7 @@ interface StatsFilterProps extends Omit<React.ComponentProps<typeof Filters>, 'f
 
 // Helper to get country name from code
 const getCountryName = (code: string): string => {
-    return STATS_LABEL_MAPPINGS[code as keyof typeof STATS_LABEL_MAPPINGS] || countries.getName(code, 'en') || code;
+    return STATS_LABEL_MAPPINGS[code as keyof typeof STATS_LABEL_MAPPINGS] || countries.getName(code, 'en', {select: 'alias'}) || code;
 };
 
 // Helper component for visit count badge - used by all filter options
@@ -30,6 +31,13 @@ const VisitCountBadge = ({visits}: {visits: number}) => (
         {visits.toLocaleString()}
     </span>
 );
+
+// Gift-link usage is binary, so options are hardcoded rather than Tinybird-fetched.
+// Values match the gift_link pipe param: 'false' = no gift link, else = gift traffic.
+const GIFT_LINK_OPTIONS = [
+    {value: 'true', label: 'used'},
+    {value: 'false', label: 'not used'}
+];
 
 // Configuration for each filter field type
 interface FilterFieldDefinition {
@@ -123,7 +131,7 @@ const buildFilterParams = (
         } else if (filter.field === 'audience') {
             // Skip audience - handled separately via member_status
             return;
-        } else if (filter.field === 'source' || filter.field === 'device' || filter.field === 'location' || filter.field.startsWith('utm_')) {
+        } else if (filter.field === 'source' || filter.field === 'device' || filter.field === 'location' || filter.field === 'gift_link' || filter.field.startsWith('utm_')) {
             params[filter.field] = value;
         }
     });
@@ -211,6 +219,9 @@ interface UsePostOptionsConfig {
 // This uses a different API pattern so it can't use the generic hook
 const usePostOptions = (currentFilters: Filter[] = [], config: UsePostOptionsConfig = {}) => {
     const {enabled = true} = config;
+    // Post options come from a Ghost API (useTopContent), not useTinybirdQuery, so
+    // they don't inherit the central web-analytics gate — apply it here.
+    const webAnalyticsEnabled = useWebAnalyticsEnabled();
     const {range} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
 
@@ -238,7 +249,7 @@ const usePostOptions = (currentFilters: Filter[] = [], config: UsePostOptionsCon
     // Fetch top content data from Ghost API (which queries Tinybird and enriches with titles)
     const {data: topContentData, isLoading} = useTopContent({
         searchParams: queryParams,
-        enabled
+        enabled: enabled && webAnalyticsEnabled
     });
 
     const options = useMemo(() => {
@@ -277,6 +288,7 @@ const usePostOptions = (currentFilters: Filter[] = [], config: UsePostOptionsCon
 
 function StatsFilter({filters, onChange, ...props}: StatsFilterProps) {
     const {appSettings} = useAppContext();
+    const giftLinksEnabled = useLabsFlag('giftLinks');
 
     // Track which filter field is currently being selected (lazy loading)
     const [activeFilterField, setActiveFilterField] = useState<string | null>(null);
@@ -421,6 +433,18 @@ function StatsFilter({filters, onChange, ...props}: StatsFilterProps) {
             }
         ];
 
+        const giftLinkField: FilterFieldConfig = {
+            key: 'gift_link',
+            label: 'Gift link',
+            type: 'select',
+            icon: <LucideIcon.Gift className="size-4" />,
+            operators: supportedOperators,
+            defaultOperator: 'is',
+            hideOperatorSelect: true,
+            options: GIFT_LINK_OPTIONS,
+            searchable: false
+        };
+
         return [
             {
                 group: 'Basic',
@@ -492,7 +516,8 @@ function StatsFilter({filters, onChange, ...props}: StatsFilterProps) {
                         isLoading: locationLoading,
                         searchable: true,
                         selectedOptionsClassName: 'hidden'
-                    }
+                    },
+                    ...(giftLinksEnabled ? [giftLinkField] : [])
                 ]
             },
             {
@@ -500,7 +525,7 @@ function StatsFilter({filters, onChange, ...props}: StatsFilterProps) {
                 fields: utmFields
             }
         ];
-    }, [utmSourceOptions, utmSourceLoading, utmMediumOptions, utmMediumLoading, utmCampaignOptions, utmCampaignLoading, utmContentOptions, utmContentLoading, utmTermOptions, utmTermLoading, supportedOperators, postOptions, postLoading, audienceOptions, sourceOptions, sourceLoading, deviceOptions, deviceLoading, locationOptions, locationLoading]);
+    }, [utmSourceOptions, utmSourceLoading, utmMediumOptions, utmMediumLoading, utmCampaignOptions, utmCampaignLoading, utmContentOptions, utmContentLoading, utmTermOptions, utmTermLoading, supportedOperators, postOptions, postLoading, audienceOptions, sourceOptions, sourceLoading, deviceOptions, deviceLoading, locationOptions, locationLoading, giftLinksEnabled]);
 
     // Show clear button when there's at least one filter
     const hasFilters = filters.length > 0;

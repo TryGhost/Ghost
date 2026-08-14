@@ -1006,7 +1006,11 @@ module.exports = {
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: false},
         '@@INDEXES@@': [
-            ['post_id', 'parent_id', 'pinned_at']
+            ['post_id', 'parent_id', 'pinned_at'],
+            ['created_at'],
+            ['status'],
+            ['in_reply_to_id', 'status'],
+            ['parent_id', 'in_reply_to_id', 'status']
         ]
     },
     comment_likes: {

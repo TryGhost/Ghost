@@ -132,7 +132,7 @@ const ColorPickerField: React.FC<ColorPickerFieldProps> = ({title, value, onChan
                                         <button
                                             key={swatch.title}
                                             aria-label={swatch.title}
-                                            className={`relative flex h-5 w-5 shrink-0 cursor-pointer items-center overflow-hidden rounded-full border border-grey-300 dark:border-grey-800 ${isSelected ? 'outline-2 outline-green' : ''}`}
+                                            className={`relative flex size-5 shrink-0 cursor-pointer items-center overflow-hidden rounded-full border border-grey-300 dark:border-grey-800 ${isSelected ? 'outline-2 outline-green' : ''}`}
                                             style={{backgroundColor: swatch.hex}}
                                             title={swatch.title}
                                             type="button"

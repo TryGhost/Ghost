@@ -9,6 +9,7 @@ const SUPPORTED_FILTER_FIELDS = [
     'device',
     'source',
     'location',
+    'gift_link',
     'utm_source',
     'utm_medium',
     'utm_campaign',
@@ -16,7 +17,7 @@ const SUPPORTED_FILTER_FIELDS = [
     'utm_term'
 ] as const;
 
-type SupportedFilterField = typeof SUPPORTED_FILTER_FIELDS[number];
+const SUPPORTED_FILTER_FIELDS_SET: ReadonlySet<string> = new Set(SUPPORTED_FILTER_FIELDS);
 
 // Special marker for empty string values in URL (e.g., "Direct" traffic)
 const EMPTY_VALUE_MARKER = '__empty__';
@@ -33,7 +34,7 @@ function filtersToSearchParams(filters: Filter[]): URLSearchParams {
     const params = new URLSearchParams();
 
     filters.forEach((filter) => {
-        if (SUPPORTED_FILTER_FIELDS.includes(filter.field as SupportedFilterField)) {
+        if (SUPPORTED_FILTER_FIELDS_SET.has(filter.field)) {
             if (filter.values.length > 0) {
                 // Join multiple values with comma, encoding empty strings and escaping commas within values
                 const value = filter.values
@@ -69,11 +70,10 @@ function getStableFilterId(field: string): string {
  */
 function searchParamsToFilters(searchParams: URLSearchParams): Filter[] {
     const filters: Filter[] = [];
-    const supportedSet = new Set<string>(SUPPORTED_FILTER_FIELDS);
 
     // Iterate in URL order to preserve the sequence filters were added
     searchParams.forEach((value, field) => {
-        if (!supportedSet.has(field)) {
+        if (!SUPPORTED_FILTER_FIELDS_SET.has(field)) {
             return;
         }
 

@@ -214,7 +214,7 @@ export const ColorPickerSelection = memo(
                 {...props}
             >
                 <div
-                    className="pointer-events-none absolute size-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white"
+                    className="pointer-events-none absolute size-4 -translate-1/2 rounded-full border-2 border-white"
                     style={{
                         left: `${positionX * 100}%`,
                         top: `${positionY * 100}%`,
@@ -313,7 +313,7 @@ export const ColorPickerEyeDropper = ({
 
     return (
         <Button
-            className={cn('shrink-0 text-muted-foreground size-8', className)}
+            className={cn('size-8 shrink-0 text-muted-foreground', className)}
             size="icon"
             type="button"
             variant="outline"
@@ -397,7 +397,7 @@ export const ColorPickerFormat = ({
         return (
             <div
                 className={cn(
-                    '-space-x-px relative flex w-full items-center rounded-md',
+                    'relative flex w-full items-center -space-x-px rounded-md',
                     className
                 )}
                 {...props}
@@ -426,7 +426,7 @@ export const ColorPickerFormat = ({
         return (
             <div
                 className={cn(
-                    '-space-x-px flex flex-1 items-stretch rounded-md',
+                    'flex flex-1 items-stretch -space-x-px rounded-md',
                     className
                 )}
                 {...props}
@@ -435,7 +435,7 @@ export const ColorPickerFormat = ({
                     <Input
                         key={index}
                         className={cn(
-                            'h-8 px-2 font-mono text-xs flex-1 shadow-none focus:z-10',
+                            'h-8 flex-1 px-2 font-mono text-xs shadow-none focus:z-10',
                             index && 'rounded-l-none',
                             index < values.length - 1 && 'rounded-r-none'
                         )}

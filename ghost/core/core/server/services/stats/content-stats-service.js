@@ -44,6 +44,7 @@ class ContentStatsService {
      * @param {string} [options.device] - Device type filter (e.g. 'desktop', 'mobile-ios', 'mobile-android', 'bot')
      * @param {string} [options.location] - Location/country code filter (e.g. 'US')
      * @param {string} [options.source] - Source filter
+     * @param {string} [options.gift_link] - Gift-link filter ('true' = used, 'false' = not used)
      * @param {string} [options.utm_source] - UTM source filter
      * @param {string} [options.utm_medium] - UTM medium filter
      * @param {string} [options.utm_campaign] - UTM campaign filter
@@ -114,6 +115,11 @@ class ContentStatsService {
         // Only add source if defined (allow empty string for "Direct" traffic)
         if (options.source !== undefined) {
             tinybirdOptions.source = options.source;
+        }
+
+        // Add gift_link when defined ('false'/'0' are meaningful, so check !== undefined)
+        if (options.gift_link !== undefined) {
+            tinybirdOptions.giftLink = options.gift_link;
         }
 
         // Only add UTM parameters if they are defined (not undefined/null)

@@ -26,7 +26,7 @@ export default class GhMemberAvatarComponent extends Component {
     }
 
     get backgroundStyle() {
-        let color = stringToHslColor(this.memberName, 75, 55);
+        let color = stringToHslColor(this.memberName, 45, 55);
         return htmlSafe(`background-color: ${color}`);
     }
 

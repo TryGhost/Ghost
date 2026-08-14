@@ -128,7 +128,7 @@ const WelcomeEmailPreviewFrame: React.FC<WelcomeEmailPreviewFrameProps> = ({prev
                     aria-hidden={!isPreviewReady}
                     className={cn(
                         'w-full',
-                        !isPreviewReady && 'pointer-events-none absolute left-0 top-0 opacity-0'
+                        !isPreviewReady && 'pointer-events-none absolute top-0 left-0 opacity-0'
                     )}
                 >
                     {/* Keep the iframe hidden until it has been measured to avoid a visible resize jump. */}

@@ -106,7 +106,7 @@ describe('Posts API', function () {
 
     afterEach(async function () {
         // gives pages some HTML back to alleviate test interdependence when pages are reset on create/update/delete
-        await models.Base.knex.raw('update posts set html = "<p>Testing</p>" where type = \'page\'');
+        await models.Base.knex.raw('update posts set html = \'<p>Testing</p>\' where type = \'page\'');
 
         mockManager.restore();
     });

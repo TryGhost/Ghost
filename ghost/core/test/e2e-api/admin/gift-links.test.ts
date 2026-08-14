@@ -9,6 +9,7 @@ describe('Gift Links Admin API', function () {
         put: (_url: string) => any;
         post: (_url: string) => any;
         loginAsOwner: () => Promise<void>;
+        loginAsAuthor: () => Promise<void>;
         loginAsContributor: () => Promise<void>;
     };
     let postId: string;
@@ -64,12 +65,6 @@ describe('Gift Links Admin API', function () {
             assert.notEqual(body.gift_links[0].token, first);
         });
 
-        it('403s for a role without gift-link permission', async function () {
-            await agent.loginAsContributor();
-            await agent.get(`${name}/${id()}/gift_links/`).expectStatus(403);
-            await agent.loginAsOwner();
-        });
-
         it('supports the full lifecycle', async function () {
             // empty
             let body = (await agent.get(`${name}/${id()}/gift_links/`).expectStatus(200)).body;
@@ -92,6 +87,24 @@ describe('Gift Links Admin API', function () {
             assert.deepEqual(body, {meta: {count: 1}});
             body = (await agent.get(`${name}/${id()}/gift_links/`).expectStatus(200)).body;
             assert.deepEqual(body.gift_links, []);
+        });
+    });
+
+    // Permission is granted at the role level, independent of the post/page, so these
+    // run once rather than per-entity.
+    describe('without gift-link permission', function () {
+        afterEach(async function () {
+            await agent.loginAsOwner();
+        });
+
+        it('403s for an Author', async function () {
+            await agent.loginAsAuthor();
+            await agent.get(`posts/${postId}/gift_links/`).expectStatus(403);
+        });
+
+        it('403s for a Contributor', async function () {
+            await agent.loginAsContributor();
+            await agent.get(`posts/${postId}/gift_links/`).expectStatus(403);
         });
     });
 

@@ -18,7 +18,7 @@ describe('{{ghost_foot}} helper', function () {
     it('outputs global injected code', function () {
         settingsCacheStub.withArgs('codeinjection_foot').returns('<script>var test = \'I am a variable!\'</script>');
 
-        const rendered = ghost_foot({data: {}});
+        const rendered = ghost_foot({data: {root: {}}});
         assertExists(rendered);
         assert.match(rendered.string, /<script>var test = 'I am a variable!'<\/script>/);
     });
@@ -77,7 +77,7 @@ describe('{{ghost_foot}} helper', function () {
     it('handles global empty code injection', function () {
         settingsCacheStub.withArgs('codeinjection_foot').returns('');
 
-        const rendered = ghost_foot({data: {}});
+        const rendered = ghost_foot({data: {root: {}}});
         assertExists(rendered);
         assert.equal(rendered.string, '');
     });
@@ -85,7 +85,7 @@ describe('{{ghost_foot}} helper', function () {
     it('handles global undefined code injection', function () {
         settingsCacheStub.withArgs('codeinjection_foot').returns(undefined);
 
-        const rendered = ghost_foot({data: {}});
+        const rendered = ghost_foot({data: {root: {}}});
         assertExists(rendered);
         assert.equal(rendered.string, '');
     });

@@ -281,15 +281,17 @@ function initPrometheusClient({config}) {
 async function initDynamicRouting() {
     debug('Begin: Dynamic Routing');
     const routing = require('./frontend/services/routing');
-    const routeSettingsService = require('./server/services/route-settings');
+    const routeSettingsModule = require('./server/services/route-settings');
+    const urlService = require('./server/services/url');
     const bridge = require('./bridge');
     bridge.init();
 
-    // We pass the dynamic routes here, so that the frontend services are slightly less tightly-coupled
-    const routeSettings = await routeSettingsService.loadRouteSettings();
+    await routeSettingsModule.service.start({
+        routerManager: routing.routerManager,
+        urlService: urlService.facade
+    });
 
-    routing.routerManager.start(routeSettings);
-    const getRoutesHash = () => routeSettingsService.api.getCurrentHash();
+    const getRoutesHash = () => routeSettingsModule.service.getCurrentHash();
 
     const settings = require('./server/services/settings/settings-service');
     await settings.syncRoutesHash(getRoutesHash);

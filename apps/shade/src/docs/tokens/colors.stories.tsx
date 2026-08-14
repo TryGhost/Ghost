@@ -150,15 +150,55 @@ export const CoreChrome: Story = {
 export const Surface: Story = {
     render: () => (
         <ColorPalette
-            description="Backgrounds with intent. Page is the main canvas. Panel is the standard contained surface and aliases card today so it can diverge later. Elevated is for raised or interactive surfaces: it matches page in light mode today and separates by color in dark mode, leaving borders and shadows to carry light-mode elevation."
+            description="Backgrounds with intent, ordered by elevation. Page is the main canvas. Panel is the standard contained surface and aliases card today so it can diverge later. Elevated is for raised or interactive surfaces (sidebars, cards, headers). Elevated-2 is reserved for surfaces that sit ABOVE an elevated surface — floating menus, popovers, dropdowns. In light mode all four are near-white; in dark they form a step ladder so layered surfaces stay legible."
             swatches={[
                 {name: 'page', cssVar: '--surface-page'},
                 {name: 'panel', cssVar: '--surface-panel'},
-                {name: 'elevated', cssVar: '--surface-elevated'}
+                {name: 'elevated', cssVar: '--surface-elevated'},
+                {name: 'elevated-2', cssVar: '--surface-elevated-2'}
             ]}
             title="Surface"
         />
-    )
+    ),
+    parameters: {
+        docs: {
+            description: {
+                story: 'Pick the surface based on what sits behind it. Page for the canvas. Elevated lifts ONE step above page (sidebar, card, sticky header). Elevated-2 lifts above an elevated surface (a dropdown that opens FROM the sidebar uses elevated-2 so it reads as floating above, not blending into, the sidebar).'
+            }
+        }
+    }
+};
+
+export const InteractiveSurfaces: Story = {
+    render: () => (
+        <ColorPalette
+            description="Tinted surfaces used for hover, active, and selected states. The overlay tokens (interactive-hover, button-hover, tab-hover, tab-active) are translucent in dark mode so they composite over whatever surface sits behind them — don't use them where an opaque fill is required (e.g. sticky table cells). table-row-hover is the opaque exception: it resolves to --color-sidebar-bg in dark mode and is the right choice for sticky / scrolling-content cells where translucency would let content bleed through."
+            swatches={[
+                {name: 'interactive-hover', cssVar: '--interactive-hover'},
+                {name: 'button-hover', cssVar: '--button-hover'},
+                {name: 'tab-hover', cssVar: '--tab-hover'},
+                {name: 'tab-active', cssVar: '--tab-active'},
+                {name: 'table-row-hover', cssVar: '--table-row-hover'}
+            ]}
+            title="Interactive surfaces"
+        />
+    ),
+    parameters: {
+        docs: {
+            description: {
+                story: [
+                    'Each token corresponds to one type of consumer:',
+                    '',
+                    '- **interactive-hover** — generic hover surface for dropdown items, menu items, list rows, filter options, etc. The catch-all.',
+                    '- **button-hover** — outline / dropdown button hover. Currently the same value as interactive-hover; kept as a separate token so the button surface can diverge later.',
+                    '- **tab-hover / tab-active** — `Tabs` (button, button-sm, pill, kpis variants), `PageMenu` items, and sidebar menu items.',
+                    '- **table-row-hover** — Shade `Table` row hover (also reused for list-row patterns that visually behave like table rows: top posts list, comments list, members sticky cell). This one is opaque — it tracks --color-sidebar-bg in dark — so it works where the row sits over scrolling content.',
+                    '',
+                    'When in doubt, reach for `interactive-hover`. Use the specific tokens only when the consumer maps to one of the categories above.'
+                ].join('\n')
+            }
+        }
+    }
 };
 
 export const Text: Story = {
@@ -178,15 +218,23 @@ export const Text: Story = {
 export const Border: Story = {
     render: () => (
         <ColorPalette
-            description="Default border for component outlines, strong border for emphasized states, and the focus ring color."
+            description="Default border for component outlines, control-border for form controls (inputs, outline buttons, dropdown triggers), strong border for emphasized states, and the focus ring color."
             swatches={[
                 {name: 'default', cssVar: '--border-default'},
+                {name: 'control-border', cssVar: '--control-border'},
                 {name: 'strong', cssVar: '--border-strong'},
                 {name: 'focus-ring', cssVar: '--focus-ring'}
             ]}
             title="Border &amp; focus"
         />
-    )
+    ),
+    parameters: {
+        docs: {
+            description: {
+                story: 'Use `--control-border` (not `--border-default`) for inputs, textareas, outline buttons, and dropdown triggers — it lifts a step above the page border in dark mode so form controls keep enough contrast against the page surface.'
+            }
+        }
+    }
 };
 
 export const State: Story = {

@@ -7,7 +7,7 @@ import {vi, type Mock} from 'vitest';
 
 async function getKnexInstance() {
     const knexInstance = knex({
-        client: 'sqlite',
+        client: 'better-sqlite3',
         connection: {
             filename: ':memory:'
         },

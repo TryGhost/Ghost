@@ -50,21 +50,19 @@ export function DeleteModal({
                     <DialogTitle>Delete selected members?</DialogTitle>
                 </DialogHeader>
 
-                <div className="text-sm">
-                    {memberCount > 0 ? (
-                        <>
-                            <p>
-                                You&apos;re about to delete <strong>{memberCount.toLocaleString()} {memberCount === 1 ? 'member' : 'members'}</strong>.
-                                This is permanent! All Ghost data will be deleted, this will have no effect on subscriptions in Stripe.
-                            </p>
-                            <p className="mt-4">
-                                A backup of your selection will be automatically downloaded to your device before deletion.
-                            </p>
-                        </>
-                    ) : (
-                        <p>No members are selected.</p>
-                    )}
-                </div>
+                {memberCount > 0 ? (
+                    <>
+                        <p>
+                            You&apos;re about to delete <strong>{memberCount.toLocaleString()} {memberCount === 1 ? 'member' : 'members'}</strong>.
+                            This is permanent! All Ghost data will be deleted, this will have no effect on subscriptions in Stripe.
+                        </p>
+                        <p>
+                            A backup of your selection will be automatically downloaded to your device before deletion.
+                        </p>
+                    </>
+                ) : (
+                    <p>No members are selected.</p>
+                )}
 
                 <DialogFooter>
                     <Button variant="outline" onClick={() => handleOpenChange(false)}>

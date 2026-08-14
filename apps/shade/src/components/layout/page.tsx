@@ -13,7 +13,7 @@ const Page = React.forwardRef<HTMLDivElement, PageProps>(
         return (
             <Container
                 ref={ref}
-                className={cn('min-h-full flex flex-col', className)}
+                className={cn('flex min-h-full flex-col', className)}
                 paddingX='2xl'
                 size='page'
                 {...props}

@@ -103,7 +103,7 @@ export function renderFeedAttachment(
         return (
             <div className={`attachment-gallery mt-3 grid w-full ${gridClass} gap-2`}>
                 {attachment.map((item, index) => {
-                    const imageClassName = `size-full rounded-md outline outline-1 -outline-offset-1 outline-black/10 ${attachmentCount === 3 && index === 0 ? 'row-span-2' : ''}`;
+                    const imageClassName = `size-full rounded-md outline-1 -outline-offset-1 outline-black/10 ${attachmentCount === 3 && index === 0 ? 'row-span-2' : ''}`;
 
                     if (brokenImages && brokenImages.has(item.url)) {
                         return renderImagePlaceholder(imageClassName, attachmentCount === 1);
@@ -131,9 +131,9 @@ export function renderFeedAttachment(
     case 'image/gif':
     case 'image/webp':
         if (brokenImages && brokenImages.has(attachment.url)) {
-            return renderImagePlaceholder(`${object.type === 'Article' ? 'w-full rounded-t-md' : 'mt-3 max-h-[420px] rounded-md outline outline-1 -outline-offset-1 outline-black/10'}`, true);
+            return renderImagePlaceholder(`${object.type === 'Article' ? 'w-full rounded-t-md' : 'mt-3 max-h-[420px] rounded-md outline-1 -outline-offset-1 outline-black/10'}`, true);
         }
-        return <img alt={attachment.name || 'Image'} className={`cursor-pointer ${object.type === 'Article' ? 'w-full rounded-t-md' : 'mt-3 max-h-[420px] rounded-md outline outline-1 -outline-offset-1 outline-black/10'}`} referrerPolicy='no-referrer' src={attachment.url} onClick={onImageClick ? handleImageClick(attachment.url) : undefined} onError={() => handleImageError(attachment.url)} />;
+        return <img alt={attachment.name || 'Image'} className={`cursor-pointer ${object.type === 'Article' ? 'w-full rounded-t-md' : 'mt-3 max-h-[420px] rounded-md outline-1 -outline-offset-1 outline-black/10'}`} referrerPolicy='no-referrer' src={attachment.url} onClick={onImageClick ? handleImageClick(attachment.url) : undefined} onError={() => handleImageError(attachment.url)} />;
     case 'video/mp4':
     case 'video/webm':
         return <div className='relative mt-3 mb-4'>
@@ -148,7 +148,7 @@ export function renderFeedAttachment(
         if (object.image || attachment.type === 'Image') {
             const imageClassName = object.type === 'Article'
                 ? 'cursor-pointer aspect-[16/7.55] w-full rounded-t-md object-cover'
-                : 'cursor-pointer mt-3 max-h-[420px] rounded-md outline outline-1 -outline-offset-1 outline-black/10';
+                : 'cursor-pointer mt-3 max-h-[420px] rounded-md outline-1 -outline-offset-1 outline-black/10';
 
             let imageUrl;
             if (!object.image) {
@@ -182,7 +182,7 @@ function renderInboxAttachment(object: ObjectProperties, isLoading: boolean | un
     const attachment = getAttachment(object);
 
     const videoAttachmentStyles = 'ml-8 md:ml-9 shrink-0 rounded-md h-[91px] w-[121px] relative hidden @md/inbox-item:block';
-    const imageAttachmentStyles = clsx('object-cover outline outline-1 -outline-offset-1 outline-black/[0.05]', videoAttachmentStyles);
+    const imageAttachmentStyles = clsx('object-cover outline-1 -outline-offset-1 outline-black/[0.05]', videoAttachmentStyles);
 
     if (isLoading) {
         return <Skeleton className={`${imageAttachmentStyles} outline-0`} />;
@@ -413,7 +413,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
     };
 
     const UserMenuTrigger = (
-        <Button className={`relative z-10 size-[34px] rounded-md ${layout === 'inbox' || layout === 'modal' ? 'text-gray-900 hover:text-gray-900 dark:text-gray-600 dark:hover:text-gray-600' : 'text-gray-500 hover:text-gray-500'} dark:bg-black dark:hover:bg-gray-950 [&_svg]:size-5`} data-testid="menu-button" variant='ghost'>
+        <Button className={`relative z-10 size-[34px] rounded-md ${layout === 'inbox' || layout === 'modal' ? 'text-gray-900 hover:text-gray-900 dark:text-gray-600 dark:hover:text-gray-600' : 'text-gray-500 hover:text-gray-500'} dark:hover:bg-gray-950 [&_svg]:size-5`} data-testid="menu-button" variant='ghost'>
             <LucideIcon.Ellipsis />
         </Button>
     );

@@ -1,7 +1,7 @@
 import {Config, useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
+import {POST_ANALYTICS_INCLUDE, STATS_RANGES} from '@src/utils/constants';
 import {Post as PostBase, useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {ReactNode, createContext, useContext, useState} from 'react';
-import {STATS_RANGES} from '@src/utils/constants';
 import {Setting, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {StatsConfig, useTinybirdToken} from '@tryghost/admin-x-framework';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
@@ -74,15 +74,17 @@ const PostAnalyticsProvider = ({children}: { children: ReactNode }) => {
     const [range, setRange] = useState(STATS_RANGES.LAST_30_DAYS.value);
     const settings = useBrowseSettings();
     
-    // Only fetch Tinybird token if stats config is present
+    // Fetch the token only when stats config is present; the web analytics
+    // kill-switch is applied inside useTinybirdToken.
     const hasStatsConfig = Boolean(config.data?.config?.stats);
     const tinybirdTokenQuery = useTinybirdToken({enabled: hasStatsConfig});
 
-    // Fetch post data with all required includes
+    // Fetch post data with all required includes. The gift-link modal reuses
+    // POST_ANALYTICS_INCLUDE for the same query key, so both read one cached post.
     const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
         searchParams: {
             filter: `id:${postId}`,
-            include: 'email,authors,tags,tiers,count.clicks,count.signups,count.paid_conversions,count.positive_feedback,count.negative_feedback,newsletter'
+            include: POST_ANALYTICS_INCLUDE
         }
     });
 
@@ -91,7 +93,7 @@ const PostAnalyticsProvider = ({children}: { children: ReactNode }) => {
     const ghostError = ghostRequests.map(request => request.error).find(Boolean);
     const tinybirdError = hasStatsConfig ? tinybirdTokenQuery.error : null;
     const error = ghostError || tinybirdError;
-    
+
     // Check loading states
     const isGhostLoading = ghostRequests.some(request => request.isLoading);
     const isTinybirdLoading = hasStatsConfig ? tinybirdTokenQuery.isLoading : false;

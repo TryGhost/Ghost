@@ -15,10 +15,22 @@
   description: Test active visitors filtered by specific post
   parameters: site_uuid=mock_site_uuid&post_uuid=6b8635fb-292f-4422-9fe4-d76cfab2ba31
   expected_result: |
-    {"active_visitors":10}
+    {"active_visitors":9}
 
 - name: active_visitors_custom_site
   description: Test active visitors with custom site UUID
   parameters: site_uuid=custom_site_abc
   expected_result: |
     {"active_visitors":0}
+
+- name: active_visitors_gift_link
+  description: Active visitors restricted to gift-link traffic
+  parameters: site_uuid=mock_site_uuid&gift_link=1
+  expected_result: |
+    {"active_visitors":3}
+
+- name: active_visitors_exclude_gift_link
+  description: Active visitors with gift-link traffic excluded
+  parameters: site_uuid=mock_site_uuid&gift_link=false
+  expected_result: |
+    {"active_visitors":15}

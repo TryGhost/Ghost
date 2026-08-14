@@ -25,6 +25,11 @@ import {useTinybirdToken} from '../../../src/hooks/use-tinybird-token';
 const mockUseQuery = vi.mocked(useQuery);
 const mockGetStatEndpointUrl = vi.mocked(getStatEndpointUrl);
 const mockUseTinybirdToken = vi.mocked(useTinybirdToken);
+const statsConfig = {
+    id: 'test-site-id',
+    endpoint: 'https://api.test.com',
+    token: 'test-token'
+};
 
 describe('useActiveVisitors', () => {
     let queryClient: QueryClient;
@@ -66,7 +71,7 @@ describe('useActiveVisitors', () => {
     });
 
     it('returns initial state when enabled is true', () => {
-        const {result} = renderHook(() => useActiveVisitors({enabled: true}), {wrapper});
+        const {result} = renderHook(() => useActiveVisitors({statsConfig, enabled: true}), {wrapper});
 
         expect(result.current).toEqual({
             activeVisitors: 0,
@@ -97,7 +102,7 @@ describe('useActiveVisitors', () => {
             refresh: vi.fn()
         });
 
-        const {result} = renderHook(() => useActiveVisitors({enabled: true}), {wrapper});
+        const {result} = renderHook(() => useActiveVisitors({statsConfig, enabled: true}), {wrapper});
 
         // Should show loading on initial load when no lastKnownCount exists
         expect(result.current.isLoading).toBe(true);
@@ -117,7 +122,7 @@ describe('useActiveVisitors', () => {
             refresh: vi.fn()
         });
 
-        const {result, rerender} = renderHook(() => useActiveVisitors({enabled: true}), {wrapper});
+        const {result, rerender} = renderHook(() => useActiveVisitors({statsConfig, enabled: true}), {wrapper});
         expect(result.current.activeVisitors).toBe(25);
 
         // Second render with loading but data should not show loading
@@ -150,7 +155,7 @@ describe('useActiveVisitors', () => {
             refresh: vi.fn()
         });
 
-        const {result} = renderHook(() => useActiveVisitors({enabled: true}), {wrapper});
+        const {result} = renderHook(() => useActiveVisitors({statsConfig, enabled: true}), {wrapper});
 
         expect(result.current.activeVisitors).toBe(42);
         expect(result.current.isLoading).toBe(false);
@@ -169,37 +174,31 @@ describe('useActiveVisitors', () => {
             refresh: vi.fn()
         });
 
-        const {result} = renderHook(() => useActiveVisitors({enabled: true}), {wrapper});
+        const {result} = renderHook(() => useActiveVisitors({statsConfig, enabled: true}), {wrapper});
 
         expect(result.current.error).toBe(mockError);
     });
 
     it('calls getStatEndpointUrl with correct parameters and uses tinybirdToken', () => {
-        const statsConfig = {
-            id: 'test-site-id',
-            endpoint: 'https://api.test.com',
-            token: 'test-token'
-        };
-
         renderHook(() => useActiveVisitors({statsConfig, enabled: true}), {wrapper});
 
         expect(mockGetStatEndpointUrl).toHaveBeenCalledWith(statsConfig, 'api_active_visitors');
         expect(mockUseTinybirdToken).toHaveBeenCalled();
     });
 
-    it('calls useTinybirdQuery with undefined endpoint when no statsConfig and uses tinybirdToken', () => {
+    it('calls useTinybirdQuery with undefined endpoint and token when no statsConfig', () => {
         renderHook(() => useActiveVisitors({enabled: true}), {wrapper});
 
         expect(mockUseQuery).toHaveBeenCalledWith(
             expect.objectContaining({
                 endpoint: undefined,
-                token: 'mock-token',
+                token: undefined,
                 params: expect.objectContaining({
                     site_uuid: ''
                 })
             })
         );
-        expect(mockUseTinybirdToken).toHaveBeenCalled();
+        expect(mockUseTinybirdToken).toHaveBeenCalledWith({enabled: false});
     });
 
     it('sets up 60-second interval when enabled', () => {
@@ -273,12 +272,6 @@ describe('useActiveVisitors', () => {
     });
 
     it('uses statsConfig for site_uuid', () => {
-        const statsConfig = {
-            id: 'test-site-id',
-            endpoint: 'https://api.test.com',
-            token: 'test-token'
-        };
-
         renderHook(() => useActiveVisitors({statsConfig, enabled: true}), {wrapper});
 
         expect(mockUseQuery).toHaveBeenCalledWith(
@@ -315,7 +308,7 @@ describe('useActiveVisitors', () => {
             refresh: vi.fn()
         });
 
-        const {result, rerender} = renderHook(() => useActiveVisitors({enabled: true}), {wrapper});
+        const {result, rerender} = renderHook(() => useActiveVisitors({statsConfig, enabled: true}), {wrapper});
         expect(result.current.activeVisitors).toBe(25);
 
         // Simulate refresh with loading state but no new data
@@ -395,7 +388,7 @@ describe('useActiveVisitors', () => {
             refresh: vi.fn()
         });
 
-        const {result, rerender} = renderHook(() => useActiveVisitors({enabled: true}), {wrapper});
+        const {result, rerender} = renderHook(() => useActiveVisitors({statsConfig, enabled: true}), {wrapper});
         expect(result.current.activeVisitors).toBe(0);
 
         // Provide valid data
@@ -439,7 +432,7 @@ describe('useActiveVisitors', () => {
         };
 
         const {rerender} = renderHook(
-            ({statsConfig}) => useActiveVisitors({statsConfig, enabled: true}),
+            ({statsConfig: currentStatsConfig}) => useActiveVisitors({statsConfig: currentStatsConfig, enabled: true}),
             {initialProps: {statsConfig: initialStatsConfig}, wrapper}
         );
 
@@ -473,7 +466,7 @@ describe('useActiveVisitors', () => {
         });
 
         const {result, rerender} = renderHook(
-            ({enabled}) => useActiveVisitors({enabled}),
+            ({enabled}) => useActiveVisitors({statsConfig, enabled}),
             {initialProps: {enabled: true}, wrapper}
         );
 
@@ -539,7 +532,7 @@ describe('useActiveVisitors', () => {
         mockUseQuery.mockClear();
 
         // Render the hook
-        renderHook(() => useActiveVisitors({enabled: true}), {wrapper});
+        renderHook(() => useActiveVisitors({statsConfig, enabled: true}), {wrapper});
 
         // EXPECTED: useQuery should be called with undefined endpoint when token is loading
         // This prevents HTTP requests by disabling the SWR query entirely
@@ -564,7 +557,7 @@ describe('useActiveVisitors', () => {
         mockUseQuery.mockClear();
 
         // Render the hook
-        renderHook(() => useActiveVisitors({enabled: true}), {wrapper});
+        renderHook(() => useActiveVisitors({statsConfig, enabled: true}), {wrapper});
 
         // Should call useQuery with the valid token
         expect(mockUseQuery).toHaveBeenCalledWith(
@@ -584,7 +577,7 @@ describe('useActiveVisitors', () => {
         });
 
         // Render the hook
-        const {rerender} = renderHook(() => useActiveVisitors({enabled: true}), {wrapper});
+        const {rerender} = renderHook(() => useActiveVisitors({statsConfig, enabled: true}), {wrapper});
 
         // Verify first call with undefined token (due to tokenLoading: true)
         expect(mockUseQuery).toHaveBeenLastCalledWith(
@@ -636,7 +629,7 @@ describe('useActiveVisitors', () => {
             refresh: vi.fn()
         });
 
-        const {result} = renderHook(() => useActiveVisitors({enabled: true}), {wrapper});
+        const {result} = renderHook(() => useActiveVisitors({statsConfig, enabled: true}), {wrapper});
 
         // Should show loading because token is loading and no lastKnownCount
         expect(result.current.isLoading).toBe(true);

@@ -28,22 +28,23 @@ const postMatcherShallowIncludes = Object.assign(
 
 async function trackDb(fn, skip) {
     const db = require('../../../core/server/data/db');
-    if (db?.knex?.client?.config?.client !== 'sqlite3') {
+    if (db?.knex?.client?.config?.client !== 'better-sqlite3') {
         return skip();
     }
-    /** @type {import('sqlite3').Database} */
-    const database = db.knex.client;
+
+    /** @type {import('knex').Knex.Client} */
+    const client = db.knex.client;
 
     const queries = [];
     function handler(/** @type {{sql: string}} */ query) {
         queries.push(query);
     }
 
-    database.on('query', handler);
+    client.on('query', handler);
 
     await fn();
 
-    database.off('query', handler);
+    client.off('query', handler);
 
     return queries;
 }

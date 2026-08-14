@@ -13,8 +13,8 @@ const FeedbackBox: React.FC = () => {
     }
 
     return (
-        <div className='z-20 w-full bg-white dark:bg-black'>
-            <div className='flex w-full flex-col gap-0.5 border-t border-gray-200 bg-white px-3 pt-6 dark:border-gray-950 dark:bg-black'>
+        <div className='z-20 w-full bg-white dark:bg-background'>
+            <div className='flex w-full flex-col gap-0.5 border-t border-gray-200 bg-white px-3 pt-6 dark:border-gray-950 dark:bg-background'>
                 <div className='flex items-center gap-2'>
                     <LucideIcon.MessageSquare className='text-purple-500' size={20} strokeWidth={1.5} />
                     <H4>Beta feedback</H4>

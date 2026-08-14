@@ -24,7 +24,7 @@ describe('Posts Bulk API', function () {
 
     afterEach(async function () {
         // give pages some HTML back to alleviate test interdependence when pages are reset on create/update/delete
-        await models.Base.knex.raw('UPDATE posts SET html = "<p>Testing</p>" WHERE type = \'page\' AND html IS NULL');
+        await models.Base.knex.raw('UPDATE posts SET html = \'<p>Testing</p>\' WHERE type = \'page\' AND html IS NULL');
 
         mockManager.restore();
     });

@@ -14,7 +14,7 @@ export class PortalNewsletterManagementPage extends PortalPage {
         this.successNotification = this.portalFrame.getByTestId('popup-notification-success');
     }
 
-    newsletterToggleCheckbox(index: number): Locator {
-        return this.newsletterToggles.nth(index).getByRole('checkbox');
+    newsletterToggle(index: number): Locator {
+        return this.newsletterToggles.nth(index);
     }
 }

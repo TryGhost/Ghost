@@ -256,10 +256,10 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
                                     form.setValue('coverImage', '');
                                 }}><LucideIcon.Trash2 /></Button>
                             </> :
-                            <Button className='pointer-events-none absolute right-3 bottom-3 bg-gray-200 group-hover:bg-gray-300' variant='secondary'>Upload cover image</Button>
+                            <Button className='pointer-events-none absolute right-3 bottom-3 bg-gray-200 group-hover:bg-gray-300 dark:bg-black/40 dark:text-white dark:group-hover:bg-black/60' variant='secondary'>Upload cover image</Button>
                         }
                     </div>
-                    <div className='group absolute -bottom-10 left-4 flex size-20 cursor-pointer items-center justify-center rounded-full border-2 border-white bg-gray-100 dark:border-[#101114] dark:bg-gray-950' onClick={triggerProfileImageInput}>
+                    <div className='group absolute -bottom-10 left-4 flex size-20 cursor-pointer items-center justify-center rounded-full border-2 border-white bg-gray-100 dark:border-surface-elevated-2 dark:bg-gray-950' onClick={triggerProfileImageInput}>
                         {profileImagePreview ?
                             <>
                                 <img className={`size-full rounded-full object-cover ${isProfileImageUploading && 'opacity-10'}`} src={profileImagePreview} />

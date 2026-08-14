@@ -60,7 +60,7 @@ function AppSidebarHeader({ ...props }: React.ComponentProps<typeof SidebarHeade
                 {showSearch && (
                     <Button
                         variant="outline"
-                        className="flex h-(--control-height) items-center justify-between rounded-full border-transparent pr-2 text-base text-muted-foreground shadow-xs hover:bg-background hover:text-gray-700 hover:shadow-sm dark:bg-gray-950 [&_svg]:stroke-2"
+                        className="flex h-(--control-height) items-center justify-between rounded-full border-transparent bg-white pr-2 text-base text-muted-foreground shadow-xs hover:bg-background hover:text-gray-700 hover:shadow-sm dark:border-gray-900/50 dark:bg-gray-900/30 dark:hover:border-gray-900/80 dark:hover:text-gray-400 [&_svg]:stroke-2"
                         onClick={openSearchModal}
                     >
                         <div className="flex items-center gap-2">

@@ -1,0 +1,51 @@
+[
+    {
+        "packageName": "@tryghost/portal",
+        "path": "apps/portal",
+        "configKey": "portal",
+        "cdnPaths": [
+            "https://cdn.jsdelivr.net/ghost/portal@~CURRENT_MINOR/umd/portal.min.js"
+        ]
+    },
+    {
+        "packageName": "@tryghost/sodo-search",
+        "path": "apps/sodo-search",
+        "configKey": "sodoSearch",
+        "cdnPaths": [
+            "https://cdn.jsdelivr.net/ghost/sodo-search@~CURRENT_MINOR/umd/sodo-search.min.js",
+            "https://cdn.jsdelivr.net/ghost/sodo-search@~CURRENT_MINOR/umd/main.css"
+        ]
+    },
+    {
+        "packageName": "@tryghost/comments-ui",
+        "path": "apps/comments-ui",
+        "configKey": "comments",
+        "cdnPaths": [
+            "https://cdn.jsdelivr.net/ghost/comments-ui@~CURRENT_MINOR/umd/comments-ui.min.js"
+        ]
+    },
+    {
+        "packageName": "@tryghost/signup-form",
+        "path": "apps/signup-form",
+        "configKey": "signupForm",
+        "cdnPaths": [
+            "https://cdn.jsdelivr.net/ghost/signup-form@~CURRENT_MINOR/umd/signup-form.min.js"
+        ]
+    },
+    {
+        "packageName": "@tryghost/announcement-bar",
+        "path": "apps/announcement-bar",
+        "configKey": "announcementBar",
+        "cdnPaths": [
+            "https://cdn.jsdelivr.net/ghost/announcement-bar@~CURRENT_MINOR/umd/announcement-bar.min.js"
+        ]
+    },
+    {
+        "packageName": "@tryghost/admin-toolbar",
+        "path": "apps/admin-toolbar",
+        "configKey": "adminToolbar",
+        "cdnPaths": [
+            "https://cdn.jsdelivr.net/ghost/admin-toolbar@~CURRENT_MINOR/umd/admin-toolbar.min.js"
+        ]
+    }
+]

@@ -291,7 +291,7 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
     return (
         <div ref={containerRef} className="relative">
             <div
-                className="flex min-h-9 w-full cursor-text flex-wrap items-center gap-1.5 rounded-md border border-transparent bg-gray-100 px-3 py-1 text-sm transition-colors focus-within:border-green focus-within:bg-transparent focus-within:shadow-[0_0_0_2px_rgba(48,207,67,.25)] dark:bg-gray-950"
+                className="flex min-h-9 w-full cursor-text flex-wrap items-center gap-1.5 rounded-md border border-control-border bg-surface-elevated px-3 py-1 text-control transition-colors focus-within:border-focus-ring focus-within:ring-2 focus-within:ring-focus-ring/25 dark:bg-transparent"
                 role="combobox"
                 onClick={() => {
                     inputRef.current?.focus();
@@ -301,7 +301,7 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
                 <SelectedPills labels={selectedLabels} onToggle={onToggle} />
                 <input
                     ref={inputRef}
-                    className="min-w-[80px] flex-1 bg-transparent text-sm outline-hidden placeholder:text-muted-foreground"
+                    className="min-w-[80px] flex-1 bg-transparent text-control outline-hidden placeholder:text-muted-foreground"
                     placeholder={selectedLabels.length === 0 ? 'Search labels...' : ''}
                     value={search}
                     onChange={(e) => {

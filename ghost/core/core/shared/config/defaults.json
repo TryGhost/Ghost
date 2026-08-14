@@ -6,7 +6,8 @@
         "shutdownTimeout": 60000
     },
     "admin": {
-        "redirects": true
+        "redirects": true,
+        "sessionMaxAgeMs": 15552000000
     },
     "externalRequest": {
         "keepAlive": true,

@@ -303,11 +303,11 @@ const filterAddButtonVariants = cva(
         variants: {
             variant: {
                 solid: 'border border-input hover:bg-secondary/60',
-                outline: 'border border-border hover:bg-accent'
+                outline: 'border border-control-border hover:bg-interactive-hover dark:hover:bg-interactive-hover'
             },
             size: {
                 lg: 'h-10 gap-1.5 px-4 text-sm [&_svg:not([class*=size-])]:size-4',
-                md: 'h-(--control-height) gap-1.5 px-2.5 [&_svg:not([class*=size-])]:size-4',
+                md: 'h-(--control-height) gap-1.5 px-2.5 text-base [&_svg:not([class*=size-])]:size-4',
                 sm: 'h-8 gap-1.5 px-2.5 text-xs [&_svg:not([class*=size-])]:size-3.5'
             },
             radius: {
@@ -1395,7 +1395,7 @@ function SelectOptionsList<T = unknown>({
                     {(selectedOptions.length > 0 || unselectedOptions.length > 0) && <CommandSeparator />}
                     <div className="p-1.5">
                         <button
-                            className="flex w-full items-center justify-center rounded-xs px-2.5 py-1.5 text-muted-foreground hover:bg-accent hover:text-accent-foreground disabled:opacity-50"
+                            className="flex w-full items-center justify-center rounded-xs px-2.5 py-1.5 text-muted-foreground hover:bg-interactive-hover hover:text-accent-foreground disabled:opacity-50"
                             disabled={isLoadingMore}
                             type="button"
                             onClick={onLoadMore}
@@ -1592,7 +1592,7 @@ function ResolvedSelectOptionsPopover<T = unknown>({
                     ) : (
                         <>
                             {selectedOptions.length > 0 && selectedOptions.some(option => option.icon) && (
-                                <div className={cn('-space-x-0.5 flex shrink-0 items-center', field.selectedOptionsClassName)}>
+                                <div className={cn('flex shrink-0 items-center -space-x-0.5', field.selectedOptionsClassName)}>
                                     {selectedOptions.slice(0, 3).map(option => (
                                         <div key={String(option.value)}>{option.icon}</div>
                                     ))}
@@ -1610,7 +1610,7 @@ function ResolvedSelectOptionsPopover<T = unknown>({
             <PopoverContent
                 align="start"
                 className={cn(
-                    'p-0 data-[state=closed]:animation-none! data-[state=closed]:duration-0!',
+                    'data-[state=closed]:animation-none! p-0 data-[state=closed]:duration-0!',
                     field.className || 'w-[200px]'
                 )}
             >
@@ -2099,7 +2099,7 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
                     )}
                 </div>
             </PopoverTrigger>
-            <PopoverContent className={cn('w-36 p-0 data-[state=closed]:animation-none! data-[state=closed]:duration-0!', field.popoverContentClassName)}>
+            <PopoverContent className={cn('data-[state=closed]:animation-none! w-36 p-0 data-[state=closed]:duration-0!', field.popoverContentClassName)}>
                 <Command>
                     {field.searchable !== false && (
                         <CommandInput
@@ -2608,7 +2608,7 @@ export function Filters<T = unknown>({
                         <PopoverContent
                             align={popoverAlign}
                             className={cn(
-                                'p-0 data-[state=closed]:animation-none! data-[state=closed]:duration-0!',
+                                'data-[state=closed]:animation-none! p-0 data-[state=closed]:duration-0!',
                                 selectedFieldForOptions?.className || popoverContentClassName || 'w-[220px]'
                             )}
                         >
@@ -2764,7 +2764,7 @@ export function Filters<T = unknown>({
                                     radius: radius
                                 }),
                                 'border-0 bg-transparent hover:bg-transparent hover:text-foreground',
-                                'sm:absolute sm:right-0 sm:top-0',
+                                'sm:absolute sm:top-0 sm:right-0',
                                 clearButtonClassName
                             )}
                             type='button'

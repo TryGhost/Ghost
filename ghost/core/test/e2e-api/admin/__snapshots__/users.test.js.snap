@@ -30,7 +30,7 @@ exports[`User API Can edit user roles by name 1: [body] 1`] = `
 Object {
   "users": Array [
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"nightShift\\":\\"system\\"}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -78,7 +78,7 @@ exports[`User API Can edit user roles by name 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1091",
+  "content-length": "1116",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -91,7 +91,7 @@ exports[`User API Can edit user with empty roles data and does not change the ro
 Object {
   "users": Array [
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"nightShift\\":\\"system\\"}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -139,7 +139,7 @@ exports[`User API Can edit user with empty roles data and does not change the ro
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1154",
+  "content-length": "1179",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -162,7 +162,7 @@ Object {
   },
   "users": Array [
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"nightShift\\":\\"system\\"}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -201,7 +201,7 @@ Object {
       "youtube": null,
     },
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"nightShift\\":\\"system\\"}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -240,7 +240,7 @@ Object {
       "youtube": null,
     },
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"nightShift\\":\\"system\\"}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -279,7 +279,7 @@ Object {
       "youtube": null,
     },
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"nightShift\\":\\"system\\"}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -318,7 +318,7 @@ Object {
       "youtube": null,
     },
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"nightShift\\":\\"system\\"}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -357,7 +357,7 @@ Object {
       "youtube": null,
     },
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"nightShift\\":\\"system\\"}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -396,7 +396,7 @@ Object {
       "youtube": null,
     },
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"nightShift\\":\\"system\\"}",
       "bio": "You can delete this user to remove all the welcome posts",
       "bluesky": null,
       "comment_notifications": true,
@@ -435,7 +435,7 @@ Object {
       "youtube": null,
     },
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"nightShift\\":\\"system\\"}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -481,7 +481,7 @@ exports[`User API Can include user roles 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "8795",
+  "content-length": "8995",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -504,7 +504,7 @@ Object {
   },
   "users": Array [
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"nightShift\\":\\"system\\"}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -542,7 +542,7 @@ Object {
       "youtube": null,
     },
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"nightShift\\":\\"system\\"}",
       "bio": "You can delete this user to remove all the welcome posts",
       "bluesky": null,
       "comment_notifications": true,
@@ -580,7 +580,7 @@ Object {
       "youtube": null,
     },
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"nightShift\\":\\"system\\"}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -625,7 +625,7 @@ exports[`User API Can paginate users 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2973",
+  "content-length": "3048",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -708,7 +708,7 @@ Object {
   },
   "users": Array [
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"nightShift\\":\\"system\\"}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -746,7 +746,7 @@ Object {
       "youtube": null,
     },
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"nightShift\\":\\"system\\"}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -784,7 +784,7 @@ Object {
       "youtube": null,
     },
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"nightShift\\":\\"system\\"}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -822,7 +822,7 @@ Object {
       "youtube": null,
     },
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"nightShift\\":\\"system\\"}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -860,7 +860,7 @@ Object {
       "youtube": null,
     },
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"nightShift\\":\\"system\\"}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -898,7 +898,7 @@ Object {
       "youtube": null,
     },
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"nightShift\\":\\"system\\"}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -936,7 +936,7 @@ Object {
       "youtube": null,
     },
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"nightShift\\":\\"system\\"}",
       "bio": "You can delete this user to remove all the welcome posts",
       "bluesky": null,
       "comment_notifications": true,
@@ -974,7 +974,7 @@ Object {
       "youtube": null,
     },
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"nightShift\\":\\"system\\"}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -1019,7 +1019,7 @@ exports[`User API Can request all users ordered by id 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "7436",
+  "content-length": "7636",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1032,7 +1032,7 @@ exports[`User API Can retrieve a user by email 1: [body] 1`] = `
 Object {
   "users": Array [
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"nightShift\\":\\"system\\"}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -1077,7 +1077,7 @@ exports[`User API Can retrieve a user by email 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "920",
+  "content-length": "945",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1090,7 +1090,7 @@ exports[`User API Can retrieve a user by id 1: [body] 1`] = `
 Object {
   "users": Array [
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"nightShift\\":\\"system\\"}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -1139,7 +1139,7 @@ exports[`User API Can retrieve a user by id 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1167",
+  "content-length": "1192",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1152,7 +1152,7 @@ exports[`User API Can retrieve a user by slug 1: [body] 1`] = `
 Object {
   "users": Array [
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"nightShift\\":\\"system\\"}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -1197,7 +1197,7 @@ exports[`User API Can retrieve a user by slug 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "920",
+  "content-length": "945",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1210,7 +1210,7 @@ exports[`User API Can transfer ownership to admin user 1: [body] 1`] = `
 Object {
   "users": Array [
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"nightShift\\":\\"system\\"}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": false,
@@ -1258,7 +1258,7 @@ Object {
       "youtube": null,
     },
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"nightShift\\":\\"system\\"}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -1344,7 +1344,7 @@ exports[`User API Does not trigger cache invalidation when a private attribute o
 Object {
   "users": Array [
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"nightShift\\":\\"system\\"}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": false,
@@ -1389,7 +1389,7 @@ exports[`User API Does not trigger cache invalidation when a private attribute o
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "989",
+  "content-length": "1014",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1402,7 +1402,7 @@ exports[`User API Does not trigger cache invalidation when no attribute on a use
 Object {
   "users": Array [
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"nightShift\\":\\"system\\"}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": false,
@@ -1447,7 +1447,7 @@ exports[`User API Does not trigger cache invalidation when no attribute on a use
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1021",
+  "content-length": "1046",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1460,7 +1460,7 @@ exports[`User API Does trigger cache invalidation when a social link on a user h
 Object {
   "users": Array [
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"nightShift\\":\\"system\\"}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": false,
@@ -1505,7 +1505,7 @@ exports[`User API Does trigger cache invalidation when a social link on a user h
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1021",
+  "content-length": "1046",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1519,7 +1519,7 @@ exports[`User API can edit a user 1: [body] 1`] = `
 Object {
   "users": Array [
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"nightShift\\":\\"system\\"}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -1564,7 +1564,7 @@ exports[`User API can edit a user 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "988",
+  "content-length": "1013",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1578,7 +1578,7 @@ exports[`User API can edit a user fetched from the API 1: [body] 1`] = `
 Object {
   "users": Array [
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"nightShift\\":\\"system\\"}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -1624,7 +1624,7 @@ exports[`User API can edit a user fetched from the API 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1098",
+  "content-length": "1123",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1637,7 +1637,7 @@ exports[`User API can edit a user fetched from the API 3: [body] 1`] = `
 Object {
   "users": Array [
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"nightShift\\":\\"system\\"}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -1683,7 +1683,7 @@ exports[`User API can edit a user fetched from the API 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1091",
+  "content-length": "1116",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,

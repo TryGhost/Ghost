@@ -50,6 +50,12 @@ describe('UrlServiceFacade', function () {
         });
     });
 
+    describe('getRequiredFields', function () {
+        it('returns [] with no lazy backend (eager looks up by id, reads no fields)', function () {
+            assert.deepEqual(facade.getRequiredFields('tags'), []);
+        });
+    });
+
     describe('resolveUrl', function () {
         it('returns null when the underlying lookup misses', async function () {
             urlService.getResource.returns(null);
@@ -111,6 +117,7 @@ describe('UrlServiceFacade', function () {
                 ownsResource: sinon.stub().returns(true),
                 resolveUrl: sinon.stub().resolves({type: 'posts', id: 'p1'}),
                 getRequiredRelations: sinon.stub().returns(['tags']),
+                getRequiredFields: sinon.stub().returns(['visibility']),
                 hasFinished: sinon.stub().returns(true),
                 onRouterAddedType: sinon.stub(),
                 onRouterUpdated: sinon.stub(),
@@ -126,6 +133,11 @@ describe('UrlServiceFacade', function () {
         it('delegates getRequiredRelations to the lazy backend', function () {
             assert.deepEqual(lazyFacade.getRequiredRelations(), ['tags']);
             sinon.assert.calledOnce(lazyUrlService.getRequiredRelations);
+        });
+
+        it('delegates getRequiredFields to the lazy backend', function () {
+            assert.deepEqual(lazyFacade.getRequiredFields('tags'), ['visibility']);
+            sinon.assert.calledWith(lazyUrlService.getRequiredFields, 'tags');
         });
 
         it('routes getUrlForResource through the lazy backend', function () {

@@ -206,6 +206,11 @@ export function canManageTags(user: HasRoles) {
     return isOwnerUser(user) || isAdminUser(user) || isEditorUser(user);
 }
 
+export function canManageGiftLinks(user: HasRoles) {
+    // Owner, Admin or Editor can manage gift links
+    return isOwnerUser(user) || isAdminUser(user) || isEditorUser(user);
+}
+
 export function hasAdminAccess(user: HasRoles) {
     return isOwnerUser(user) || isAdminUser(user);
 }

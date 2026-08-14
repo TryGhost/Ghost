@@ -25,7 +25,7 @@ if (parentPort) {
 }
 
 (async () => {
-    // We send an evnet message, so that it is emitted on the main thread by the job manager
+    // We send an event message, so that it is emitted on the main thread by the job manager
     // This will start the email analytics job on the main thread (the wrapper service is listening for this event)
     parentPort.postMessage({
         event: {

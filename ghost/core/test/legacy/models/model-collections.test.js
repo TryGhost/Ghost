@@ -20,7 +20,7 @@ describe('Collection Model', function () {
 
     describe('add', function () {
         it.skipIf(isMySQL)('does not update the sort_order of the collections_posts table if the type is "automatic"', async function () {
-            /** @type {import('sqlite3').Database} */
+            /** @type {import('knex').Knex.Client} */
             const database = db.knex.client;
 
             let didUpdateCollectionPosts = false;
@@ -54,7 +54,7 @@ describe('Collection Model', function () {
         });
 
         it.skipIf(isMySQL)('does update the sort_order of the collections_posts table if the type is "manual"', async function () {
-            /** @type {import('sqlite3').Database} */
+            /** @type {import('knex').Knex.Client} */
             const database = db.knex.client;
 
             let didUpdateCollectionPosts = false;

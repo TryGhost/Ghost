@@ -114,7 +114,7 @@ function FieldLabel({
             className={cn(
                 'group/field-label peer/field-label flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:opacity-50',
                 'has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col has-[>[data-slot=field]]:rounded-md has-[>[data-slot=field]]:border [&>[data-slot=field]]:p-4',
-                'has-data-[state=checked]:bg-primary/5 has-data-[state=checked]:border-primary dark:has-data-[state=checked]:bg-primary/10',
+                'has-data-[state=checked]:border-primary has-data-[state=checked]:bg-primary/5 dark:has-data-[state=checked]:bg-primary/10',
                 className
             )}
             data-slot="field-label"
@@ -127,7 +127,7 @@ function FieldTitle({className, ...props}: React.ComponentProps<'div'>) {
     return (
         <div
             className={cn(
-                'flex w-fit items-center gap-2 text-control font-medium leading-snug group-data-[disabled=true]/field:opacity-50',
+                'flex w-fit items-center gap-2 text-control leading-snug font-medium group-data-[disabled=true]/field:opacity-50',
                 className
             )}
             data-slot="field-label"
@@ -140,9 +140,9 @@ function FieldDescription({className, ...props}: React.ComponentProps<'p'>) {
     return (
         <p
             className={cn(
-                'text-muted-foreground text-sm font-normal leading-normal group-has-[[data-orientation=horizontal]]/field:text-balance',
-                'nth-last-2:-mt-1 last:mt-0 [[data-variant=legend]+&]:-mt-1.5',
-                '[&>a:hover]:text-primary [&>a]:underline [&>a]:underline-offset-4',
+                'text-sm leading-normal font-normal text-muted-foreground group-has-[[data-orientation=horizontal]]/field:text-balance',
+                'last:mt-0 nth-last-2:-mt-1 [[data-variant=legend]+&]:-mt-1.5',
+                '[&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-primary',
                 className
             )}
             data-slot="field-description"
@@ -217,7 +217,7 @@ function FieldError({
 
     return (
         <div
-            className={cn('text-destructive text-control font-normal', className)}
+            className={cn('text-control font-normal text-destructive', className)}
             data-slot="field-error"
             role="alert"
             {...props}

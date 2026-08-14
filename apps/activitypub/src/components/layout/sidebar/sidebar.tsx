@@ -127,7 +127,7 @@ const Sidebar: React.FC<SidebarProps> = ({isMobileSidebarOpen}) => {
                         return (<></>);
                     })}
                 </div>
-                <div className='sticky bottom-0 flex items-center gap-2 bg-white pb-4 pl-4 dark:bg-black'>
+                <div className='sticky bottom-0 flex items-center gap-2 bg-white pb-4 pl-4 dark:bg-background'>
                     <FeedbackBox />
                 </div>
             </div>

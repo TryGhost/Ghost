@@ -91,7 +91,7 @@ const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
                     />
                 </div>
                 {onClick &&
-                    <Button className='absolute right-6 translate-x-10 opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100' size='sm' variant='outline' onClick={onClick}>View more</Button>
+                    <Button className='absolute right-6 translate-x-10 opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100 focus-visible:translate-x-0 focus-visible:opacity-100' size='sm' variant='outline' onClick={onClick}>View more</Button>
                 }
             </KpiCardHeader>
             <CardContent>

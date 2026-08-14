@@ -272,6 +272,7 @@ function createRemovePermissionMigration(config, roles) {
 module.exports = {
     addPermission,
     addPermissionToRole,
+    removePermissionFromRole,
     addPermissionWithRoles,
     createRemovePermissionMigration
 };

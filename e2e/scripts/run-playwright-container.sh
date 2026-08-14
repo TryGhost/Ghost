@@ -29,6 +29,11 @@ fi
 
 printf -v project_args_string '%q ' "${project_args[@]}"
 
+# Resolve $PLAYWRIGHT_IMAGE (runner image, or upstream fallback) before launching.
+# Idempotent with the prepare step: whichever image is already local wins, so both
+# steps converge on the same tag.
+ensure_playwright_image
+
 docker run --rm --network host --ipc host \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v "${WORKSPACE_PATH}:${WORKSPACE_PATH}" \

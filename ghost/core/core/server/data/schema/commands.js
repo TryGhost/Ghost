@@ -520,13 +520,45 @@ function deleteTable(table, transaction = db.knex) {
 }
 
 /**
+ * Create (or replace) a database VIEW.
+ *
+ * On MySQL the view is created with `SQL SECURITY INVOKER` so it runs with the
+ * privileges of the querying user rather than binding to the DEFINER account
+ * of whoever happened to run the migration. A DEFINER-bound view breaks when
+ * the database is restored under a different MySQL user (Ghost(Pro) restores,
+ * self-host server moves) — the view errors at query time because the original
+ * account does not exist on the target — and it leaks the internal account name
+ * into every mysqldump. INVOKER avoids both problems.
+ *
+ * SQLite has no DEFINER / SQL SECURITY concept, so the plain knex builder is
+ * used there (tests and local dev).
+ *
+ * All view creation — both `knex-migrator init` and versioned migrations —
+ * should go through this helper so every view is portable by default.
+ *
+ * @param {string} name - the view name
+ * @param {string} viewSql - the raw SELECT body (everything after `AS`)
+ * @param {import('knex').Knex} [transaction] - connection to the DB
+ */
+async function createViewOrReplace(name, viewSql, transaction = db.knex) {
+    if (DatabaseInfo.isMySQL(transaction)) {
+        await transaction.raw(`CREATE OR REPLACE SQL SECURITY INVOKER VIEW \`${name}\` AS ${viewSql}`);
+        return;
+    }
+
+    await transaction.schema.createViewOrReplace(name, function (view) {
+        view.as(transaction.raw(viewSql));
+    });
+}
+
+/**
  * @param {import('knex').Knex} [transaction] - connection to the DB
  */
 async function getTables(transaction = db.knex) {
     const client = transaction.client.config.client;
 
-    if (client === 'sqlite3') {
-        const response = await transaction.raw('select * from sqlite_master where type = "table"');
+    if (DatabaseInfo.isSQLite(transaction)) {
+        const response = await transaction.raw("select * from sqlite_master where type = 'table'");
         return _.reject(_.map(response, 'tbl_name'), name => name === 'sqlite_sequence');
     } else if (client === 'mysql2') {
         const response = await transaction.raw('show full tables where Table_type = \'BASE TABLE\'');
@@ -543,7 +575,7 @@ async function getTables(transaction = db.knex) {
 async function getIndexes(table, transaction = db.knex) {
     const client = transaction.client.config.client;
 
-    if (client === 'sqlite3') {
+    if (DatabaseInfo.isSQLite(transaction)) {
         const response = await transaction.raw(`pragma index_list("${table}")`);
         return _.flatten(_.map(response, 'name'));
     } else if (client === 'mysql2') {
@@ -559,17 +591,15 @@ async function getIndexes(table, transaction = db.knex) {
  * @param {import('knex').Knex} [transaction] - connection to the DB
  */
 async function getColumns(table, transaction = db.knex) {
-    const client = transaction.client.config.client;
-
-    if (client === 'sqlite3') {
+    if (DatabaseInfo.isSQLite(transaction)) {
         const response = await transaction.raw(`pragma table_info("${table}")`);
         return _.flatten(_.map(response, 'name'));
-    } else if (client === 'mysql2') {
+    } else if (DatabaseInfo.isMySQL(transaction)) {
         const response = await transaction.raw(`SHOW COLUMNS from ${table}`);
         return _.flatten(_.map(response[0], 'Field'));
     }
 
-    return Promise.reject(tpl(messages.noSupportForDatabase, {client: client}));
+    return Promise.reject(tpl(messages.noSupportForDatabase, {client: transaction.client.config.client}));
 }
 
 function createColumnMigration(...migrations) {
@@ -605,6 +635,7 @@ function createColumnMigration(...migrations) {
 module.exports = {
     createTable,
     deleteTable,
+    createViewOrReplace,
     getTables,
     getIndexes,
     addUnique,

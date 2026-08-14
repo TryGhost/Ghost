@@ -13,6 +13,7 @@ const urlUtils = require('../../shared/url-utils');
 const {setIsRoles} = require('./role-utils');
 const activeStates = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4'];
 const ASSIGNABLE_ROLES = ['Administrator', 'Super Editor', 'Editor', 'Author', 'Contributor'];
+const DEFAULT_ACCESSIBILITY_PREFERENCES = JSON.stringify({nightShift: 'system'});
 
 const messages = {
     valueCannotBeBlank: 'Value in [{tableName}.{columnKey}] cannot be blank.',
@@ -701,6 +702,10 @@ User = ghostBookshelf.Model.extend({
         roles = data.roles;
         delete data.roles;
 
+        if (!options.importing && typeof userData.accessibility === 'undefined') {
+            userData.accessibility = DEFAULT_ACCESSIBILITY_PREFERENCES;
+        }
+
         return ghostBookshelf.Model.add.call(self, userData, options)
             .then(function then(addedUser) {
                 // Assign the userData to our created user so we can pass it back
@@ -779,6 +784,10 @@ User = ghostBookshelf.Model.extend({
         }
 
         userData.slug = null;
+        if (typeof userData.accessibility === 'undefined') {
+            userData.accessibility = DEFAULT_ACCESSIBILITY_PREFERENCES;
+        }
+
         return self.edit(userData, options);
     },
 
