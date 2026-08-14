@@ -89,8 +89,8 @@ function EditModeButton({config, user}) {
 
     return h('span', {className: 'gh-admin-toolbar-edit-mode-wrap'}, [
         h(ToolbarButton, {
-            icon: 'edit',
-            label: 'Edit',
+            icon: 'editMode',
+            label: 'Edit site',
             onClick: activate
         }),
         status === 'loading' ? h('span', {

@@ -13,6 +13,15 @@ const icons = {
     h('path', { d: 'M12 20h9' }),
     h('path', { d: 'M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z' }),
   ],
+    // Lucide swatch-book — the same icon Ghost Admin uses for the Design &
+    // branding section, which is where theme editing lives; deliberately NOT
+    // another pencil (edit/posts already are pencils)
+    editMode: [
+        h('path', {d: 'M11 17a4 4 0 0 1-8 0V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1Z'}),
+        h('path', {d: 'M16.7 13H19a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H7'}),
+        h('path', {d: 'M7 17h.01'}),
+        h('path', {d: 'm11 8 2.3-2.3a2.4 2.4 0 0 1 3.404.004L18.6 7.6a2.4 2.4 0 0 1 .026 3.434L9.21 20.4'})
+    ],
   members: [
     h('path', { d: 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2' }),
     h('path', { d: 'M16 3.128a4 4 0 0 1 0 7.744' }),
