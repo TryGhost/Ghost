@@ -24,6 +24,16 @@
       "source": "./src/editor/text-edit.ts",
       "types": "./build/editor/text-edit.d.ts",
       "default": "./build/editor/text-edit.js"
+    },
+    "./editor/archive": {
+      "source": "./src/editor/archive.ts",
+      "types": "./build/editor/archive.d.ts",
+      "default": "./build/editor/archive.js"
+    },
+    "./editor/instance-config": {
+      "source": "./src/editor/instance-config.ts",
+      "types": "./build/editor/instance-config.d.ts",
+      "default": "./build/editor/instance-config.js"
     }
   },
   "main": "build/index.js",
@@ -69,6 +79,7 @@
     "downsize-cjs": "catalog:",
     "handlebars": "catalog:",
     "human-number": "catalog:",
+    "jszip": "catalog:",
     "lodash": "catalog:",
     "moment-timezone": "catalog:",
     "path-to-regexp": "catalog:",

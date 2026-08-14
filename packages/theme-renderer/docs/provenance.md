@@ -150,6 +150,14 @@ Origin `ghost/core/core/frontend/services/data/<name>.js` @ 407e032dc7, transfor
 | theme/theme-source.ts | virtual-fs ThemeSource: resolver + theme config (defaults copied from theme-engine/config/defaults.json: posts_per_page 5, card_assets true; allowedKeys from config/index.js) + root template inventory + `@custom` defaults from package.json `config.custom` + locales/{locale}.json i18n ({var} interpolation) |
 | index.ts | `createRenderer()` assembly + `render(Request) → Response`; `createEngineHelperRegistrar` (engine → HelperRegistrar adapter); pretty-urls trailing-slash 301 (only `.md`/`.txt` skip, Cache-Control from `caching:301:maxAge`); subdir handling with Express mount semantics (segment-boundary strip, out-of-mount → 404, redirect Locations keep the subdir); ghost-locals equivalent (version/safeVersion from the settings payload `version`, relativeUrl); themed error path porting web/middleware/error-handler.js `themeErrorRenderer` + mw-error-handler `prepareError` (error template hierarchy via `setTemplate` req.err branch; render-time engine NotFoundError → IncorrectUsageError per rendering/renderer.js:40-48; plain-text status-line fallback, never raw upstream messages); per-render re-assert of the deps + hbs singletons |
 
+## src/editor/ (editor-side tools — slices 3 + 4)
+
+| File | Origin | Notes |
+| --- | --- | --- |
+| editor/text-edit.ts | fresh (slice 3) | anchored text-edit applier, `./editor` subpath (docs/markers.md) |
+| editor/archive.ts | **apps/admin** `src/settings/app/components/settings/site/theme/theme-editor-utils.ts` (slice 4 move, not ghost/core) | browser zip round-trip: extract/pack + limits + text/binary classification, verbatim minus the Admin-app route/diff helpers (which stayed behind); apps/admin re-exports from here. `./editor/archive` subpath. Resync = there is nothing to resync — this is now the single copy |
+| editor/instance-config.ts | **test/integration/harness.ts** (slice 4 move) | `scrapeInstanceConfig` + `scrapeContentApiKey`; harness re-exports from here so parity suite, fixture recorder, and the on-site editor share one set of regexes. `./editor/instance-config` subpath |
+
 ## src/seam/ (the data seam)
 
 | File | Kind | Notes |

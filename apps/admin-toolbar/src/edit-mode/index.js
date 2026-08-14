@@ -8,46 +8,35 @@
  * - `mount({config, user})` starts edit mode and returns `{unmount()}`.
  * - `unmount()` tears everything down and restores the page.
  *
- * This is a placeholder implementation; the real editor (worker rendering,
- * inline text edits, publish) replaces the internals in the next part while
- * keeping the mount/unmount contract.
+ * The internals live in session.js (orchestration), render-client.js /
+ * render-backend.js / worker.js (worker-first rendering with main-thread
+ * fallback), swap.js (in-place document swap), draft-store.js (the draft
+ * seam), theme-api.js (Admin API), ui.js + interactions.js (Preact overlay
+ * and click-to-edit). worker.js is a separate build artifact
+ * (umd/admin-toolbar-editor-worker.min.js) — everything else bundles into
+ * this chunk.
  */
+import {createEditSession} from './session';
 
 // Unique sentinel — tests assert it is absent from the main toolbar bundle to
 // prove the chunk isn't inlined. Keep it out of any file the main bundle imports.
 export const EDIT_MODE_SENTINEL = 'ghost-admin-toolbar-edit-mode-chunk-4f1c9d';
 
-const INDICATOR_ID = 'ghost-admin-toolbar-edit-mode-indicator';
+/**
+ * @param {{config: Object, user: Object}} context
+ * @returns {{unmount(): void}}
+ */
+export function mount({config, user}) {
+    const session = createEditSession({config, user});
 
-// `context` is {config, user} — unused by the placeholder, consumed by part 2
-export function mount(context) {
-    let indicator = document.getElementById(INDICATOR_ID);
-
-    if (!indicator) {
-        indicator = document.createElement('div');
-        indicator.id = INDICATOR_ID;
-        indicator.dataset.sentinel = EDIT_MODE_SENTINEL;
-        indicator.style.cssText = [
-            'position:fixed',
-            'top:16px',
-            'left:50%',
-            'transform:translateX(-50%)',
-            'z-index:9999999',
-            'padding:6px 12px',
-            'border-radius:6px',
-            'background:#15171a',
-            'color:#fff',
-            'font:600 12px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif',
-            'box-shadow:0 2px 8px rgba(0,0,0,.25)'
-        ].join(';');
-        indicator.textContent = 'Edit mode active (placeholder)';
-        document.body.appendChild(indicator);
-    }
+    // Boot is async (theme download, renderer compile); failures surface in
+    // the session's own UI bar rather than rejecting mount — the toolbar
+    // shell treats mount as fire-and-forget once the module has loaded.
+    session.start();
 
     return {
         unmount() {
-            indicator?.remove();
-            indicator = null;
+            session.destroy();
         }
     };
 }

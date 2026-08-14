@@ -7,6 +7,13 @@
  */
 import {readFileSync, readdirSync, mkdirSync, writeFileSync, statSync} from 'node:fs';
 import {join, relative} from 'node:path';
+import {scrapeContentApiKey} from '../../src/editor/instance-config.ts';
+
+// The instance-config scraper moved into src/editor/instance-config.ts (the
+// on-site editor bootstraps from the same regexes — they must never drift from
+// what the parity suite considers "fully configured"). Re-exported here so the
+// integration suites and fixture recorder keep their single import point.
+export {scrapeInstanceConfig, type InstanceConfigScrape} from '../../src/editor/instance-config.ts';
 
 export const GHOST_URL = (process.env.GHOST_URL ?? 'http://localhost:2368').replace(/\/$/, '');
 const CASPER_PATH = join(import.meta.dirname, '../../../../ghost/core/content/themes/casper');
@@ -31,7 +38,7 @@ export async function probeLive(): Promise<LiveProbe> {
         if (response.ok) {
             liveHomeHtml = await response.text();
             if (!contentApiKey) {
-                contentApiKey = liveHomeHtml.match(/data-key="([a-f0-9]+)"/)?.[1] ?? '';
+                contentApiKey = scrapeContentApiKey(liveHomeHtml) ?? '';
             }
             if (!contentApiKey) {
                 unavailableReason = `no Content API key: set GHOST_CONTENT_API_KEY (could not extract data-key from ${GHOST_URL})`;
@@ -44,59 +51,6 @@ export async function probeLive(): Promise<LiveProbe> {
     }
 
     return {unavailableReason, liveHomeHtml, contentApiKey};
-}
-
-export interface InstanceConfigScrape {
-    /** Per-boot asset hash from any `?v=<hash>` on a built asset URL */
-    assetHash?: string;
-    /** Portal script URL (data-i18n is portal-specific — see getMembersHelper) */
-    portalUrl?: string;
-    /** Sodo-search script URL + styles (data-sodo-search is search-specific) */
-    sodoSearch?: {url: string; styles: string};
-    /** Names of scrapes that found nothing — non-empty means degraded config */
-    missing: string[];
-    /** Ready-to-pass `createRenderer({config})` shape for whatever was found */
-    config: Record<string, unknown>;
-}
-
-/**
- * Instance config the Content API cannot supply (docs/deltas.md rows 1 + 3),
- * scraped from the live home HTML. Shared by the byte-parity suite
- * (parity.test.ts) and the fixture recorder (record-browser-fixtures.ts) so
- * the two can never drift apart on what "fully configured" means.
- */
-export function scrapeInstanceConfig(liveHomeHtml: string): InstanceConfigScrape {
-    const assetHash = liveHomeHtml.match(/\?v=([a-f0-9]+)"/)?.[1];
-    const portalUrl = liveHomeHtml.match(/<script defer src="([^"]+)" data-i18n=/)?.[1];
-    const sodoSearchMatch = liveHomeHtml.match(/<script defer src="([^"]+)" data-key="[^"]*" data-styles="([^"]*)" data-sodo-search=/);
-    const sodoSearch = sodoSearchMatch ? {url: sodoSearchMatch[1]!, styles: sodoSearchMatch[2]!} : undefined;
-
-    const missing: string[] = [];
-    if (!assetHash) {
-        missing.push('assetHash (?v= on a built asset URL)');
-    }
-    if (!portalUrl) {
-        missing.push('portal script tag');
-    }
-    if (!sodoSearch) {
-        missing.push('sodo-search script tag');
-    }
-
-    return {
-        assetHash,
-        portalUrl,
-        sodoSearch,
-        missing,
-        config: {
-            // deltas.md #1 — the live per-boot hash (upstream: config assetHash
-            // wins over the boot-time md5 in getGlobalAssetHash)
-            ...(assetHash && {assetHash}),
-            // deltas.md #3 — frontend-app instance config (Ghost server
-            // config keys, extraction-map §6)
-            ...(portalUrl && {portal: {url: portalUrl}}),
-            ...(sodoSearch && {sodoSearch})
-        }
-    };
 }
 
 /** First post of the live instance (slug + absolute url), or null if none. */

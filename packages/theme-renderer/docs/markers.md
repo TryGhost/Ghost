@@ -179,3 +179,10 @@ Implemented consumers of this contract:
   cards).
 - **`demo/`** — throwaway human-runnable harness (`pnpm exec vite demo`),
   excluded from build/lint/CI; see `demo/README.md`.
+- **`apps/admin-toolbar/src/edit-mode/`** (slice 4) — the real product
+  surface: the on-site edit-mode chunk runs this exact loop against the live
+  page (worker-first rendering with main-thread fallback, in-place document
+  swap, publish via Admin API theme upload). It also consumes the editor-side
+  subpaths added for it: `./editor/archive` (theme zip extract/pack, shared
+  with apps/admin's code editor) and `./editor/instance-config` (the
+  instance-config scrapers shared with the parity harness).

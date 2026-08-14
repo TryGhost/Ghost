@@ -154,6 +154,7 @@ catalog:
   juice: 11.1.1
   knex: 2.4.2
   knex-migrator: 6.2.1
+  jszip: 3.10.1
   lodash: 4.18.1
   luxon: 3.7.2
   lucide-react: 1.23.0

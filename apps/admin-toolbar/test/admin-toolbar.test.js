@@ -10,6 +10,11 @@ const EDITOR_BUNDLE_PATH = path.join(
     '../umd/admin-toolbar-editor.min.js'
 );
 
+const WORKER_BUNDLE_PATH = path.join(
+    import.meta.dirname,
+    '../umd/admin-toolbar-editor-worker.min.js'
+);
+
 // Unique marker string exported by src/edit-mode/index.js. Its presence in the
 // main bundle would mean rollup inlined the edit-mode chunk into the IIFE.
 const EDIT_MODE_SENTINEL = 'ghost-admin-toolbar-edit-mode-chunk-4f1c9d';
@@ -691,6 +696,21 @@ describe('admin-toolbar', function () {
         assert.ok(
             ratio <= 2,
             `main bundle is ${mainBytes}B, ${ratio.toFixed(2)}x the ${PRE_EDIT_MODE_BUNDLE_BYTES}B pre-edit-mode baseline — did the editor chunk get inlined?`
+        );
+    });
+
+    it('builds the render-worker artifact beside the chunk', function () {
+        const workerSource = fs.readFileSync(WORKER_BUNDLE_PATH, 'utf8');
+
+        assert.ok(workerSource.length > 0, 'worker artifact should exist and be non-empty');
+        // a plain ES module the blob bootstrap can `import` — a leading
+        // IIFE/UMD wrapper here would mean the worker vite config regressed
+        assert.equal(/^\(function\s*\(/.test(workerSource), false, 'worker artifact must not be an IIFE');
+        assert.match(workerSource, /onmessage/, 'worker entry should install a message handler');
+        assert.equal(
+            workerSource.includes(EDIT_MODE_SENTINEL),
+            false,
+            'the chunk entry (sentinel) must not be bundled into the worker artifact'
         );
     });
 
