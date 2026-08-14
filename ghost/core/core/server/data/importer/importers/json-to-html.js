@@ -4,6 +4,25 @@ const {cards} = require('@tryghost/kg-default-cards');
 const imageCard = cards.find(c => c.name === 'image');
 const embedCard = cards.find(c => c.name === 'embed');
 
+const getValidURL = (url) => {
+    const normalizedURL = typeof url === 'string' ? url.trim() : '';
+
+    if (!normalizedURL) {
+        return '';
+    }
+
+    try {
+        const parsedURL = new URL(normalizedURL, 'https://example.com');
+        if (parsedURL.protocol === 'http:' || parsedURL.protocol === 'https:') {
+            return normalizedURL;
+        }
+    } catch {
+        // Invalid URLs are omitted from imported links
+    }
+
+    return '';
+};
+
 // Take the array of items for a specific post and return the converted HTML
 const itemsToHtml = (items) => {
     let itemHTMLChunks = [];
@@ -30,22 +49,23 @@ const itemsToHtml = (items) => {
         } else if (type === 'link') {
             // This could be a bookmark, or it could be a paragraph of text with a linked header, there's no way to tell
             // The safest option here is to output an image with text under it
+            const itemURL = getValidURL(item.url);
             let cardOpts = {
                 env: {dom: new SimpleDom.Document()},
                 payload: {
                     src: item.image,
                     caption: item.title,
-                    href: item.url
+                    href: itemURL
                 }
             };
             itemHTMLChunks.push(serializer.serialize(imageCard.render(cardOpts)));
-
-            let linkHTML = `<h4><a href="${item.url}">${item.title}</a></h4>${item.description}`;
+            const linkTitleHTML = itemURL ? `<a href="${serializer.escapeAttrValue(itemURL)}">${item.title}</a>` : item.title;
+            let linkHTML = `<h4>${linkTitleHTML}</h4>${item.description}`;
             itemHTMLChunks.push(linkHTML);
         } else if (type === 'tweet') {
             // Should this be an oEmbed call? Probably.
             itemHTMLChunks.push(`<figure class="kg-card kg-embed-card">
-                <blockquote class="twitter-tweet"><a href="${item.url}"></a></blockquote>
+                <blockquote class="twitter-tweet"><a href="${serializer.escapeAttrValue(item.url)}"></a></blockquote>
                 <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
                 </figure>`);
         } else if (type === 'video') {

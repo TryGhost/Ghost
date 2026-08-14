@@ -7,12 +7,14 @@ import {getPortalPreviewUrl} from '../../../../utils/get-portal-preview-url';
 import {useGlobalData} from '../../../providers/global-data-provider';
 
 interface PortalPreviewProps {
+    darkMode: boolean;
     selectedTab: string;
     localSettings: Setting[];
     localTiers: Tier[];
 }
 
 const PortalPreview: React.FC<PortalPreviewProps> = ({
+    darkMode,
     selectedTab = 'signup',
     localSettings,
     localTiers
@@ -26,6 +28,7 @@ const PortalPreview: React.FC<PortalPreviewProps> = ({
         settings: localSettings,
         tiers: localTiers,
         selectedTab,
+        previewTheme: darkMode ? 'dark' : 'light',
         siteData,
         config
     });

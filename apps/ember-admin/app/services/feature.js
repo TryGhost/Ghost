@@ -87,6 +87,7 @@ export default class FeatureService extends Service {
     @feature('memberDetailsReact') memberDetailsReact;
     @feature('previewByTier') previewByTier;
     @feature('automations') automations;
+    @feature('csvContentImporter') csvContentImporter;
     _user = null;
 
     @computed('settings.labs')

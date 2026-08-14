@@ -12,6 +12,7 @@ import {type Setting, type SettingValue, getSettingValues, useEditSettings} from
 import {Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {type Tier, useBrowseTiers, useEditTier} from '@tryghost/admin-x-framework/api/tiers';
 import {fullEmailAddress} from '@tryghost/admin-x-framework/api/site';
+import {useFocusContext} from '@tryghost/shade/app';
 import {useGlobalData} from '../../../providers/global-data-provider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 import {verifyEmailToken} from '@tryghost/admin-x-framework/api/email-verification';
@@ -64,6 +65,7 @@ const Sidebar: React.FC<{
 
 const PortalModal: React.FC = () => {
     const {updateRoute} = useRouting();
+    const {darkMode} = useFocusContext();
 
     const [selectedPreviewTab, setSelectedPreviewTab] = useState<PreviewTab>('signup');
     const [selectedSidebarTab, setSelectedSidebarTab] = useState<SidebarTab>('signupOptions');
@@ -216,6 +218,7 @@ const PortalModal: React.FC = () => {
         onTabChange={onSidebarTabChange}
     />;
     const preview = <PortalPreview
+        darkMode={darkMode}
         localSettings={formState.settings}
         localTiers={formState.tiers}
         selectedTab={selectedPreviewTab}

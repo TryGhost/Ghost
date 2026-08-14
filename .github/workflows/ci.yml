@@ -372,7 +372,7 @@ jobs:
       - name: Lint boundaries
         run: pnpm nx run ghost-monorepo:lint:boundaries
 
-      - uses: tryghost/actions/actions/slack-build@eee499fcb6bc0efc75ba43f651282b95a96102b0 # main
+      - uses: tryghost/actions/actions/slack-build@e7a401946f91165a6426290705f501a377ec1533 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -438,7 +438,7 @@ jobs:
           name: admin-coverage
           path: apps/*/coverage/cobertura-coverage.xml
 
-      - uses: tryghost/actions/actions/slack-build@eee499fcb6bc0efc75ba43f651282b95a96102b0 # main
+      - uses: tryghost/actions/actions/slack-build@e7a401946f91165a6426290705f501a377ec1533 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -515,7 +515,7 @@ jobs:
             exit 1
           fi
 
-      - uses: tryghost/actions/actions/slack-build@eee499fcb6bc0efc75ba43f651282b95a96102b0 # main
+      - uses: tryghost/actions/actions/slack-build@e7a401946f91165a6426290705f501a377ec1533 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -544,7 +544,7 @@ jobs:
           --health-timeout=5s
           --health-retries=60
       redis:
-        image: redis:7.0@sha256:352c1fdadc91926edda08f45aeb3f27f37194c2f14101229c0523a11195c96e3
+        image: redis:7.4@sha256:a8f08480e1f88f2647fed492d1178c06abb0d0c1fbf02c682a61e2f483fb3954
         ports:
           - 6379:6379
         options: >-
@@ -664,7 +664,7 @@ jobs:
             ghost/*/coverage-e2e/cobertura-coverage.xml
             ghost/*/coverage-integration/cobertura-coverage.xml
 
-      - uses: tryghost/actions/actions/slack-build@eee499fcb6bc0efc75ba43f651282b95a96102b0 # main
+      - uses: tryghost/actions/actions/slack-build@e7a401946f91165a6426290705f501a377ec1533 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -754,7 +754,7 @@ jobs:
             exit 1
           fi
 
-      - uses: tryghost/actions/actions/slack-build@eee499fcb6bc0efc75ba43f651282b95a96102b0 # main
+      - uses: tryghost/actions/actions/slack-build@e7a401946f91165a6426290705f501a377ec1533 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -840,7 +840,7 @@ jobs:
           path: ${{ steps.app_name.outputs.root }}/playwright-report
           retention-days: 30
 
-      - uses: tryghost/actions/actions/slack-build@eee499fcb6bc0efc75ba43f651282b95a96102b0 # main
+      - uses: tryghost/actions/actions/slack-build@e7a401946f91165a6426290705f501a377ec1533 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -889,10 +889,19 @@ jobs:
           ghost stop -d "$DIR"
 
       - name: Latest Release
+        # --force skips Ghost-CLI's version comparison between the archive and
+        # the installed release. Without it this step is coupled to how far the
+        # branch has drifted from main: a PR branched before the last release
+        # carries an older ghost/core version than what's on npm, and the CLI
+        # refuses with "Version in archive file ... is less than the current
+        # active version". Equal versions are just as bad in the other
+        # direction — the CLI logs "All up to date!", never installs the
+        # archive, and the curl below silently smoke-tests the published Ghost
+        # instead of this build. --force makes the update path run either way.
         run: |
           DIR=$(mktemp -d)
           ghost install local -d "$DIR"
-          ghost update -d "$DIR" --archive "$(pwd)/ghost.tgz"
+          ghost update -d "$DIR" --force --archive "$(pwd)/ghost.tgz"
           URL=$(ghost config get url -d "$DIR" --no-prompt --no-color | tail -n1)
           curl --retry 10 --retry-connrefused --retry-delay 3 -fsSI "$URL"
           ghost stop -d "$DIR"
@@ -902,7 +911,7 @@ jobs:
         run: |
           [ -f ~/.ghost/logs/*.log ] && cat ~/.ghost/logs/*.log
 
-      - uses: tryghost/actions/actions/slack-build@eee499fcb6bc0efc75ba43f651282b95a96102b0 # main
+      - uses: tryghost/actions/actions/slack-build@e7a401946f91165a6426290705f501a377ec1533 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -984,7 +993,7 @@ jobs:
           retention-days: 7
           if-no-files-found: error
 
-      - uses: tryghost/actions/actions/slack-build@eee499fcb6bc0efc75ba43f651282b95a96102b0 # main
+      - uses: tryghost/actions/actions/slack-build@e7a401946f91165a6426290705f501a377ec1533 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1067,7 +1076,7 @@ jobs:
           retention-days: 7
           if-no-files-found: error
 
-      - uses: tryghost/actions/actions/slack-build@eee499fcb6bc0efc75ba43f651282b95a96102b0 # main
+      - uses: tryghost/actions/actions/slack-build@e7a401946f91165a6426290705f501a377ec1533 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1155,7 +1164,7 @@ jobs:
 
       - name: Log in to GitHub Container Registry
         if: steps.strategy.outputs.should-push == 'true'
-        uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4
+        uses: docker/login-action@abd2ef45e78c5afb21d64d4ca52ee8550d9572c7 # v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -1673,7 +1682,7 @@ jobs:
           path: e2e/test-results
           retention-days: 7
 
-      - uses: tryghost/actions/actions/slack-build@eee499fcb6bc0efc75ba43f651282b95a96102b0 # main
+      - uses: tryghost/actions/actions/slack-build@e7a401946f91165a6426290705f501a377ec1533 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}

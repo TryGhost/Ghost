@@ -83,6 +83,10 @@ const features: Feature[] = [{
     title: 'Preview by tier',
     description: 'Preview posts and emails as a member of a specific tier',
     flag: 'previewByTier'
+}, {
+    title: 'Paywall improvements',
+    description: 'Enables paywall usability, discoverability and email customization improvements',
+    flag: 'paywallImprovements'
 }];
 
 const AlphaFeatures: React.FC = () => {

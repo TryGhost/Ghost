@@ -210,7 +210,7 @@ export type ColorPickerSelectionProps = HTMLAttributes<HTMLDivElement>;
 export const ColorPickerSelection = memo(
     ({className, ...props}: ColorPickerSelectionProps) => {
         const containerRef = useRef<HTMLDivElement>(null);
-        const [isDragging, setIsDragging] = useState(false);
+        const activePointerId = useRef<number | null>(null);
         const [positionX, setPositionX] = useState(0);
         const [positionY, setPositionY] = useState(0);
         const {hue, saturation, lightness, setSaturation, setLightness} =
@@ -257,30 +257,6 @@ export const ColorPickerSelection = memo(
             [setSaturation, setLightness]
         );
 
-        const handlePointerMove = useCallback(
-            (event: PointerEvent) => {
-                if (!isDragging) {
-                    return;
-                }
-                updateColorFromPointer(event);
-            },
-            [isDragging, updateColorFromPointer]
-        );
-
-        useEffect(() => {
-            const handlePointerUp = () => setIsDragging(false);
-
-            if (isDragging) {
-                window.addEventListener('pointermove', handlePointerMove);
-                window.addEventListener('pointerup', handlePointerUp);
-            }
-
-            return () => {
-                window.removeEventListener('pointermove', handlePointerMove);
-                window.removeEventListener('pointerup', handlePointerUp);
-            };
-        }, [isDragging, handlePointerMove]);
-
         return (
             <div
                 ref={containerRef}
@@ -291,10 +267,27 @@ export const ColorPickerSelection = memo(
                 style={{
                     background: backgroundGradient
                 }}
+                onPointerCancel={(e) => {
+                    if (activePointerId.current === e.pointerId) {
+                        activePointerId.current = null;
+                    }
+                }}
                 onPointerDown={(e) => {
                     e.preventDefault();
-                    setIsDragging(true);
+                    activePointerId.current = e.pointerId;
+                    e.currentTarget.setPointerCapture?.(e.pointerId);
                     updateColorFromPointer(e.nativeEvent);
+                }}
+                onPointerMove={(e) => {
+                    if (activePointerId.current === e.pointerId) {
+                        updateColorFromPointer(e.nativeEvent);
+                    }
+                }}
+                onPointerUp={(e) => {
+                    if (activePointerId.current === e.pointerId) {
+                        activePointerId.current = null;
+                        e.currentTarget.releasePointerCapture?.(e.pointerId);
+                    }
                 }}
                 {...props}
             >

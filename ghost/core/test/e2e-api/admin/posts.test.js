@@ -135,6 +135,18 @@ describe('Posts API', function () {
             });
     });
 
+    it('Can browse with restricted filter fields', async function () {
+        await agent.get('posts/?filter=authors.password:abcd&limit=2')
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                posts: new Array(2).fill(matchPostShallowIncludes)
+            });
+    });
+
     describe('Export', function () {
         it('Can export', async function () {
             const {text} = await agent.get('posts/export')
@@ -189,6 +201,23 @@ describe('Posts API', function () {
 
         it('Can export with filter', async function () {
             const {text} = await agent.get('posts/export?filter=featured:true')
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    'content-disposition': stringMatching(/^Attachment; filename="(?:[a-z0-9-]+\.)?ghost\.analytics\.\d{4}-\d{2}-\d{2}\.csv"$/)
+                });
+
+            // body snapshot doesn't work with text/csv
+            testCleanedSnapshot(text, [
+                {
+                    match: /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.000Z/g,
+                    replacement: '2050-01-01T00:00:00.000Z'
+                }
+            ]);
+        });
+
+        it('Can export with restricted filter fields', async function () {
+            const {text} = await agent.get('posts/export?filter=authors.password:abcd')
                 .expectStatus(200)
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,

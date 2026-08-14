@@ -131,6 +131,40 @@ const TKCountPlugin = ({editorResource, ...props}) => {
     return <_TKCountPlugin {...props} />;
 };
 
+const FILE_UPLOADER = {
+    useFileUpload: useKoenigFileUpload,
+    fileTypes: koenigFileUploadTypes
+};
+
+const NOOP = () => {};
+
+const KGEditorComponent = ({cardConfig, darkMode, editorArgs, editorResource, isInitInstance, onError}) => {
+    return (
+        <div data-secondary-instance={isInitInstance ? true : false} style={isInitInstance ? {display: 'none'} : {}}>
+            <KoenigComposer
+                editorResource={editorResource}
+                cardConfig={cardConfig}
+                fileUploader={FILE_UPLOADER}
+                initialEditorState={editorArgs.lexical}
+                onError={onError}
+                darkMode={darkMode}
+                isTKEnabled={true}
+            >
+                <KoenigEditor
+                    editorResource={editorResource}
+                    cursorDidExitAtTop={isInitInstance ? null : editorArgs.cursorDidExitAtTop}
+                    placeholderText={isInitInstance ? null : editorArgs.placeholderText}
+                    darkMode={isInitInstance ? null : darkMode}
+                    onChange={isInitInstance ? editorArgs.updateSecondaryInstanceModel : editorArgs.onChange}
+                    registerAPI={isInitInstance ? editorArgs.registerSecondaryAPI : editorArgs.registerAPI}
+                />
+                <WordCountPlugin editorResource={editorResource} onChange={isInitInstance ? NOOP : editorArgs.updateWordCount} />
+                <TKCountPlugin editorResource={editorResource} onChange={isInitInstance ? NOOP : editorArgs.updatePostTkCount} />
+            </KoenigComposer>
+        </div>
+    );
+};
+
 export default class KoenigLexicalEditor extends Component {
     @service ajax;
     @service feature;
@@ -450,40 +484,20 @@ export default class KoenigLexicalEditor extends Component {
             visibilitySettings: getCardVisibilitySettings(props.cardConfig)
         };
         const cardConfig = Object.assign({}, defaultCardConfig, props.cardConfig, {pinturaConfig: this.pinturaConfig, visibilitySettings: defaultCardConfig.visibilitySettings});
-
-        const KGEditorComponent = ({isInitInstance}) => {
-            return (
-                <div data-secondary-instance={isInitInstance ? true : false} style={isInitInstance ? {display: 'none'} : {}}>
-                    <KoenigComposer
-                        editorResource={this.editorResource}
-                        cardConfig={cardConfig}
-                        fileUploader={{useFileUpload: useKoenigFileUpload, fileTypes: koenigFileUploadTypes}}
-                        initialEditorState={this.args.lexical}
-                        onError={this.onError}
-                        darkMode={this.feature.nightShift}
-                        isTKEnabled={true}
-                    >
-                        <KoenigEditor
-                            editorResource={this.editorResource}
-                            cursorDidExitAtTop={isInitInstance ? null : this.args.cursorDidExitAtTop}
-                            placeholderText={isInitInstance ? null : this.args.placeholderText}
-                            darkMode={isInitInstance ? null : this.feature.nightShift}
-                            onChange={isInitInstance ? this.args.updateSecondaryInstanceModel : this.args.onChange}
-                            registerAPI={isInitInstance ? this.args.registerSecondaryAPI : this.args.registerAPI}
-                        />
-                        <WordCountPlugin editorResource={this.editorResource} onChange={isInitInstance ? () => {} : this.args.updateWordCount} />
-                        <TKCountPlugin editorResource={this.editorResource} onChange={isInitInstance ? () => {} : this.args.updatePostTkCount} />
-                    </KoenigComposer>
-                </div>
-            );
+        const kgEditorProps = {
+            cardConfig,
+            darkMode: this.feature.nightShift,
+            editorArgs: this.args,
+            editorResource: this.editorResource,
+            onError: this.onError
         };
 
         return (
             <div className={['koenig-react-editor', 'koenig-lexical', this.args.className].filter(Boolean).join(' ')}>
                 <ErrorHandler config={this.config}>
                     <Suspense fallback={<p className="koenig-react-editor-loading">Loading editor...</p>}>
-                        <KGEditorComponent />
-                        <KGEditorComponent isInitInstance={true} />
+                        <KGEditorComponent {...kgEditorProps} />
+                        <KGEditorComponent {...kgEditorProps} isInitInstance={true} />
                     </Suspense>
                 </ErrorHandler>
             </div>

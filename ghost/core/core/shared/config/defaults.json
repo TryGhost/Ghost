@@ -370,5 +370,6 @@
         "captureLinkClickBadMemberUuid": false
     },
     "disableJSBackups": false,
-    "disableMigrationBackups": false
+    "disableMigrationBackups": false,
+    "usingLoopbackReverseProxy": false
 }

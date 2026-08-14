@@ -108,6 +108,7 @@ const EmbedSignupFormModal = NiceModal.create(() => {
         >
             <div className='grid grid-cols-1 lg:grid-cols-[5.2fr_2.8fr]'>
                 <EmbedSignupPreview
+                    backgroundColor={selectedColor}
                     html={previewScript}
                     style={selectedLayout}
                 />

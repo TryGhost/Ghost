@@ -46,6 +46,62 @@ const {values} = parseArgs({
 
 const {dryRun, package: packageFilter} = camelcaseKeys(values);
 
+const PUBLISH_BRANCH = 'main';
+
+/**
+ * Assert the commit being published is on main.
+ *
+ * This replaces `pnpm publish`'s own branch check, which can't work here: a
+ * release tag is checked out in detached HEAD, so pnpm has no current branch to
+ * match against publishBranch (GIT_UNKNOWN_BRANCH) and no upstream for its
+ * remote-history check. Checking the *commit* rather than the checked-out ref is
+ * also strictly stronger — a branch named main proves nothing about ancestry,
+ * and it covers the workflow_dispatch path (dispatched from a side branch)
+ * identically to the tag path.
+ *
+ * Uses the compare API rather than `git merge-base --is-ancestor` so the
+ * workflow can keep its shallow checkout — ancestry over local history would
+ * need fetch-depth: 0 on a repo this size.
+ */
+async function assertCommitOnPublishBranch() {
+    const repository = process.env.GITHUB_REPOSITORY;
+    const sha = process.env.GITHUB_SHA;
+
+    if (!repository || !sha) {
+        console.log(`Not running in GitHub Actions — skipping the "on ${PUBLISH_BRANCH}" check`);
+        return;
+    }
+
+    const headers = {
+        Accept: 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28'
+    };
+    if (process.env.GITHUB_TOKEN) {
+        headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
+    }
+
+    // per_page=1 because only the `status` field matters — don't page in the
+    // full commit list for a tag that sits well behind the branch tip.
+    const url = `https://api.github.com/repos/${repository}/compare/${PUBLISH_BRANCH}...${sha}?per_page=1`;
+    const response = await fetch(url, {headers, signal: AbortSignal.timeout(10_000)});
+
+    if (!response.ok) {
+        throw new Error(`Could not compare ${sha} against ${PUBLISH_BRANCH}: ${response.status} ${response.statusText}`);
+    }
+
+    // Comparing main...<sha>: "identical" means the commit is the branch tip,
+    // "behind" means it's an earlier commit on the branch. "ahead"/"diverged"
+    // mean it never landed on main.
+    const {status} = await response.json();
+    if (status !== 'identical' && status !== 'behind') {
+        throw new Error(`Refusing to publish: ${sha} is not on ${PUBLISH_BRANCH} (compare status: ${status})`);
+    }
+
+    console.log(`${sha.slice(0, 8)} is on ${PUBLISH_BRANCH}`);
+}
+
+await assertCommitOnPublishBranch();
+
 const workspace = await getWorkspace();
 let packages = await getPublishablePackages(workspace);
 
@@ -80,7 +136,8 @@ if (!dryRun) {
 // Publish the exact set (no `...` — the workspace deps pulled in for the build
 // aren't necessarily publishable). pnpm skips versions already on npm, rewrites
 // `workspace:` ranges to the committed versions, and publishes in graph order.
-// No --no-git-checks: this runs from a clean tag checkout in CI.
+// --no-git-checks because pnpm's gate can't run against a detached tag checkout
+// (see assertCommitOnPublishBranch above, which enforces the part that matters).
 // --provenance is explicit, not left to pnpm's auto-detection: on a trusted
 // publish pnpm only turns provenance on if it can confirm both the repo and the
 // package are public, and any hiccup there (visibility fetch fails, an id token
@@ -89,7 +146,7 @@ if (!dryRun) {
 // the visibility lookup. Needs `id-token: write` and a CI provider sigstore
 // recognises, so a local non-dry-run publish will fail here by design.
 const publishFilters = names.flatMap(name => ['--filter', name]);
-const publishArgs = ['publish', ...publishFilters, '--access', 'public', '--provenance'];
+const publishArgs = ['publish', ...publishFilters, '--access', 'public', '--provenance', '--no-git-checks'];
 if (dryRun) {
     publishArgs.push('--dry-run');
 }

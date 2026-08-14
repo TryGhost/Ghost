@@ -41,11 +41,6 @@
                 "@tryghost/kg-unsplash-selector"
             ]
         },
-        "apps/admin-x-design-system": {
-            "ignoreDependencies": [
-                "@storybook/addon-links"
-            ]
-        },
         "apps/admin-x-framework": {
             "ignoreDependencies": [
                 "@playwright/test",

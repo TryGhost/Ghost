@@ -39,8 +39,8 @@ const waitActionSchema = z.object({
     type: z.literal('wait'),
     data: z.object({
         wait_hours: z.number().int().positive()
-    }).strict()
-}).strict();
+    })
+});
 
 const sendEmailActionSchema = z.object({
     id: objectIdSchema,
@@ -49,13 +49,13 @@ const sendEmailActionSchema = z.object({
         email_subject: z.string(),
         email_lexical: z.string(),
         email_design_setting_id: z.string().min(1)
-    }).strict()
-}).strict();
+    })
+});
 
 const edgeSchema = z.object({
     source_action_id: objectIdSchema,
     target_action_id: objectIdSchema
-}).strict();
+});
 
 const editAutomationDataSchema = z.object({
     status: z.enum(['active', 'inactive']),
@@ -64,7 +64,7 @@ const editAutomationDataSchema = z.object({
         sendEmailActionSchema
     ])).min(1).max(MAX_AUTOMATION_ACTIONS),
     edges: z.array(edgeSchema)
-}).strict();
+});
 
 const repository = createDatabaseAutomationsRepository({
     knex,

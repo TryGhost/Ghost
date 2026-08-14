@@ -26,7 +26,10 @@ class CommentsServiceEmails {
      */
     getPostUrl(post, commentId) {
         const postData = toPlain(post);
-        const baseUrl = this.urlService.facade.getUrlForResource({...postData, type: 'posts'}, {absolute: true});
+        // Comments live on pages as well as posts; the URL service routes by
+        // the passed type, so a page typed 'posts' resolves to /404/.
+        const routerType = postData.type === 'page' ? 'pages' : 'posts';
+        const baseUrl = this.urlService.facade.getUrlForResource({...postData, type: routerType}, {absolute: true});
         return `${baseUrl}#ghost-comments-${commentId}`;
     }
 

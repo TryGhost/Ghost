@@ -467,6 +467,13 @@ module.exports = class RouterController {
                 });
             }
 
+            if (offer.status && offer.status !== 'active') {
+                throw new BadRequestError({
+                    message: tpl(messages.offerArchived),
+                    context: 'Offer with id "' + offerId + '" is no longer active'
+                });
+            }
+
             if (!offer.tier) {
                 throw new BadRequestError({
                     message: 'Offer does not have a tier'

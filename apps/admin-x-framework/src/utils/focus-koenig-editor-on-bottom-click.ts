@@ -1,5 +1,4 @@
-// Structurally matches admin-x-design-system's KoenigInstance so instances typed
-// against either package interoperate.
+// Structurally matches Koenig's editor API so callers can pass their local type.
 export type KoenigInstance = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any

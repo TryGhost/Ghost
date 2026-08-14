@@ -194,7 +194,7 @@ function scanApp(appName: string): AppReport | null {
 }
 
 function scanEmber(): EmberReport | null {
-    const appDir = join(REPO_ROOT, 'ghost', 'admin', 'app');
+    const appDir = join(REPO_ROOT, 'apps', 'ember-admin', 'app');
     try {
         statSync(appDir);
     } catch {

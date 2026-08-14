@@ -88,6 +88,7 @@ const createDatabase = async (): Promise<Knex> => {
         table.integer('email_sent_count');
         table.integer('email_tracked_sent_count');
         table.integer('email_opened_count');
+        table.integer('email_clicked_count');
         table.unique(['created_at', 'action_id']);
     });
 
@@ -698,10 +699,11 @@ describe('automations repository', function () {
                 assert.fail('Expected a send_email action');
             }
             assert.deepEqual(action.stats, {
+                email_clicked_count: 0,
                 email_sent_count: 3,
                 email_opened_count: 0,
                 opened_rate: 0,
-                clicked_rate: null
+                clicked_rate: 0
             });
         });
 
@@ -713,6 +715,7 @@ describe('automations repository', function () {
                 assert.fail('Expected a send_email action');
             }
             assert.deepEqual(action.stats, {
+                email_clicked_count: 0,
                 email_sent_count: 0,
                 email_opened_count: 0,
                 opened_rate: null,
@@ -740,11 +743,40 @@ describe('automations repository', function () {
                 assert.fail('Expected a send_email action');
             }
             assert.deepEqual(action.stats, {
+                email_clicked_count: 0,
                 email_sent_count: 4,
                 email_opened_count: 3,
                 opened_rate: 75,
-                clicked_rate: null
+                clicked_rate: 0
             });
+        });
+
+        it('aggregates click counts across revisions and rounds the rate', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const emailAction = automation.actions.find(action => action.type === 'send_email');
+            assert(emailAction);
+            const firstRevision = await knex('automation_action_revisions').where('action_id', emailAction.id).first();
+            assert(firstRevision);
+            await knex('automation_action_revisions').where('id', firstRevision.id).update({
+                email_sent_count: 3,
+                email_opened_count: 1,
+                email_clicked_count: 2
+            });
+            await knex('automation_action_revisions').insert({
+                ...firstRevision,
+                id: ObjectId().toHexString(),
+                created_at: toDatabaseDate(new Date(new Date(firstRevision.created_at).getTime() + 1000)),
+                email_sent_count: 5,
+                email_opened_count: 1,
+                email_clicked_count: 1
+            });
+
+            const result = await repo.getById(automation.id);
+            assert(result);
+            const action = result.actions.find(candidate => candidate.id === emailAction.id);
+            assert(action?.type === 'send_email');
+            assert.equal(action.stats?.email_clicked_count, 3);
+            assert.equal(action.stats?.clicked_rate, 38);
         });
     });
 

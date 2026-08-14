@@ -35,6 +35,7 @@ Object {
       "memberDetailsReact": true,
       "members": true,
       "membersCustomFields": true,
+      "paywallImprovements": true,
       "pictureImageFormats": true,
       "previewByTier": true,
       "smarterCounts": true,

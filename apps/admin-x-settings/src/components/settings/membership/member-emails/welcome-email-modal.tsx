@@ -38,7 +38,7 @@ const EmailPreviewModalContent = React.forwardRef<
     <div
         ref={ref}
         className={cn(
-            'flex size-full flex-col gap-0 overflow-hidden rounded-xl p-0',
+            'flex size-full flex-col gap-0 overflow-hidden p-0',
             isEditMode ? 'bg-white' : 'bg-gray-100',
             'dark:bg-gray-950',
             className

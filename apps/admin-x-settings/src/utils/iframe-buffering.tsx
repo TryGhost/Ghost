@@ -3,6 +3,8 @@ import React, {useEffect, useRef, useState} from 'react';
 
 type IframeBufferingProps = {
   generateContent: (iframe: HTMLIFrameElement) => void;
+  // Apply lightweight changes without rebuilding or fading the iframe contents.
+  updateContent?: (iframe: HTMLIFrameElement) => void;
   className?: string;
   parentClassName?: string;
   height?: string;
@@ -24,7 +26,7 @@ function debounce(func: any, wait: number) { // eslint-disable-line
     };
 }
 
-const IframeBuffering: React.FC<IframeBufferingProps> = ({generateContent, className, height, width, parentClassName, testId, addDelay = false}) => {
+const IframeBuffering: React.FC<IframeBufferingProps> = ({generateContent, updateContent, className, height, width, parentClassName, testId, addDelay = false}) => {
     const [visibleIframeIndex, setVisibleIframeIndex] = useState(0);
     const iframes = [useRef<HTMLIFrameElement>(null), useRef<HTMLIFrameElement>(null)];  
     const [scrollPosition, setScrollPosition] = useState(0);
@@ -87,6 +89,18 @@ const IframeBuffering: React.FC<IframeBufferingProps> = ({generateContent, class
             }
         }
     }, [scrollPosition, visibleIframeIndex, iframes]);
+
+    useEffect(() => {
+        if (!updateContent) {
+            return;
+        }
+
+        iframes.forEach(({current}) => {
+            if (current) {
+                updateContent(current);
+            }
+        });
+    }, [updateContent]);
 
     return (
         <div className={parentClassName} data-testid={testId}>

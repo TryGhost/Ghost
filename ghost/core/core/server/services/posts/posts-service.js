@@ -329,8 +329,8 @@ class PostsService {
         return result;
     }
 
-    async export(frame) {
-        return await this.postsExporter.export(frame.options);
+    async export(options) {
+        return await this.postsExporter.export(options);
     }
 
     async #updatePosts(data, options) {
