@@ -231,7 +231,7 @@ function getAnnouncementBarHelper(data) {
   return helper;
 }
 
-function getAdminToolbarHelper(dataRoot, siteTitle, excludeList) {
+function getAdminToolbarHelper(dataRoot, siteTitle, excludeList, frontendKey) {
   if (!dataRoot._locals?.staffFrontendToolsEnabled || excludeList.has('admin_toolbar')) {
     return '';
   }
@@ -262,10 +262,9 @@ function getAdminToolbarHelper(dataRoot, siteTitle, excludeList) {
     'activitypub-enabled':
       isHome && settingsCache.get('social_web_enabled') === true ? 'true' : undefined,
     'members-enabled': isHome && settingsCache.get('members_enabled') === true ? 'true' : undefined,
-    'comments-enabled':
-      resourceType === 'post' && settingsCache.get('comments_enabled') === 'off'
-        ? 'false'
-        : undefined,
+        'comments-enabled': resourceType === 'post' && settingsCache.get('comments_enabled') === 'off' ? 'false' : undefined,
+        'edit-mode-enabled': labs.isSet('editModeOnSite') ? 'true' : undefined,
+        key: frontendKey
   };
   const dataAttrs = getDataAttributes(attrs);
 
@@ -468,7 +467,7 @@ module.exports = async function ghost_head(options) {
     if (!excludeList.has('announcement')) {
       head.push(getAnnouncementBarHelper(options.data));
     }
-    const adminToolbarHelper = getAdminToolbarHelper(dataRoot, meta.site.title, excludeList);
+        const adminToolbarHelper = getAdminToolbarHelper(dataRoot, meta.site.title, excludeList, frontendKey);
     if (adminToolbarHelper) {
       head.push(adminToolbarHelper);
     }

@@ -49,6 +49,9 @@ async function testGhostHead(options) {
   const adminToolbarCommentsDisabled = / data-comments-enabled="false"/g;
   rendered = rendered.replace(adminToolbarCommentsDisabled, '');
 
+    const adminToolbarEditMode = / data-edit-mode-enabled="true"/g;
+    rendered = rendered.replace(adminToolbarEditMode, '');
+
   assertExists(rendered);
   // Note: we need to convert the string to an object in order to use the snapshot feature
   assertMatchSnapshot({ rendered });
@@ -2172,6 +2175,41 @@ describe('{{ghost_head}} helper', function () {
       assert.match(rendered, /data-resource-type="page"/);
       assert.match(rendered, new RegExp(`data-resource-id="${posts[0].id}"`));
     });
+
+        it('marks the admin toolbar script for edit mode when the labs flag is enabled', async function () {
+            getStub.withArgs('labs').returns({editModeOnSite: true});
+
+            const rendered = (await ghost_head(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '0.3',
+                    staffFrontendToolsEnabled: true
+                }
+            }))).toString();
+
+            const toolbarTag = rendered.match(/<script defer src="[^"]*admin-toolbar\.min\.js"[^>]*><\/script>/)?.[0];
+            assertExists(toolbarTag);
+            assert.match(toolbarTag, /data-edit-mode-enabled="true"/);
+            assert.match(toolbarTag, /data-key="xyz"/);
+        });
+
+        it('does not mark the admin toolbar script for edit mode when the labs flag is disabled', async function () {
+            const rendered = (await ghost_head(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '0.3',
+                    staffFrontendToolsEnabled: true
+                }
+            }))).toString();
+
+            const toolbarTag = rendered.match(/<script defer src="[^"]*admin-toolbar\.min\.js"[^>]*><\/script>/)?.[0];
+            assertExists(toolbarTag);
+            assert.doesNotMatch(toolbarTag, /data-edit-mode-enabled/);
+            // The frontend key is always passed so the toolbar can use the Content API
+            assert.match(toolbarTag, /data-key="xyz"/);
+        });
 
     it('can exclude the admin toolbar script', async function () {
       const rendered = (

@@ -10,10 +10,41 @@ environment and the Admin Toolbar watcher. To work on this package by itself,
 run these commands from this directory:
 
 ```bash
-pnpm build    # one-off build
+pnpm build    # one-off build (main bundle + edit-mode chunk)
 pnpm dev      # watch and rebuild umd/admin-toolbar.min.js
-pnpm test     # build + run tests against the built bundle
+pnpm test     # build + run tests against the built bundles
 ```
+
+## Edit mode chunk
+
+The toolbar ships in two bundles:
+
+- `umd/admin-toolbar.min.js` — the main IIFE, loaded on every page view for
+  signed-in staff. Built by `vite.config.mjs`.
+- `umd/admin-toolbar-editor.min.js` — the edit-mode chunk, a plain ES module
+  built from `src/edit-mode/index.js` by `vite.editor.config.mjs`. It is only
+  fetched when a user with theme permissions clicks "Edit" on a site with the
+  `editModeOnSite` labs flag enabled.
+
+The main bundle must never statically import anything under `src/edit-mode/`
+except `loader.js` — the build inlines dynamic imports
+(`inlineDynamicImports`), so the chunk boundary is a *runtime* URL: `loader.js`
+resolves `admin-toolbar-editor.min.js` relative to the toolbar script's own
+`src` and loads it with a native `import()`. The test suite asserts a sentinel
+string from the chunk stays out of the main bundle, and guards the main
+bundle's size.
+
+`pnpm build` builds both (main first — it empties `umd/`). During development:
+
+```bash
+pnpm dev           # terminal 1: watch the main bundle
+pnpm dev:editor    # terminal 2 (only for edit-mode work): watch the chunk
+```
+
+Start `pnpm dev` before `pnpm dev:editor` — the main watcher empties `umd/`
+once on startup. The nx `dev` target runs the main watcher, matching the
+pre-existing behaviour; `pnpm build:editor` does a one-off chunk build if you
+don't need the watcher.
 
 ## How it's served
 

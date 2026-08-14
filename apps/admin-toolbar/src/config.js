@@ -20,6 +20,9 @@ export function getConfig(script) {
 
   return {
     adminUrl,
+        // Absolute URL of the toolbar bundle itself — used to resolve the
+        // lazy-loaded edit-mode chunk relative to wherever this script is served from
+        scriptUrl: script?.src || '',
     siteTitle: dataset.siteTitle || 'Ghost',
     pageContext: dataset.pageContext || '',
     resourceType: dataset.resourceType || '',
@@ -29,5 +32,7 @@ export function getConfig(script) {
     activityPubEnabled: dataset.activitypubEnabled === 'true',
     membersEnabled: dataset.membersEnabled === 'true',
     commentsEnabled: dataset.commentsEnabled !== 'false',
+        editModeEnabled: dataset.editModeEnabled === 'true',
+        key: dataset.key || ''
   };
 }

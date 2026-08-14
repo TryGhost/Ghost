@@ -78,3 +78,10 @@ export function canShowToolbar(user) {
   const allowedRoles = new Set(['owner', 'administrator', 'editor']);
   return (user?.roles || []).some((role) => allowedRoles.has((role?.name || '').toLowerCase()));
 }
+
+// Theme editing requires theme permissions, which editors don't have —
+// deliberately stricter than canShowToolbar.
+export function canManageThemes(user) {
+    const allowedRoles = new Set(['owner', 'administrator']);
+    return (user?.roles || []).some(role => allowedRoles.has((role?.name || '').toLowerCase()));
+}

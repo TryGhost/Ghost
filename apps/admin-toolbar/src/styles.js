@@ -1,5 +1,5 @@
 export function getToolbarStyle() {
-  return `
+    return `
         :host {
             all: initial;
             color-scheme: light;
@@ -316,6 +316,24 @@ export function getToolbarStyle() {
             object-fit: cover;
             position: absolute;
             width: 100%;
+        }
+
+        .gh-admin-toolbar-edit-mode-wrap {
+            align-items: center;
+            display: inline-flex;
+            gap: 6px;
+        }
+
+        .gh-admin-toolbar-status {
+            color: #6b7280;
+            font-size: 12px;
+            font-weight: 600;
+            line-height: 1;
+            white-space: nowrap;
+        }
+
+        .gh-admin-toolbar-status-error {
+            color: #dc2626;
         }
 
         .gh-admin-toolbar-sr-only {
