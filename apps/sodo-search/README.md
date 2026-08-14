@@ -1,5 +1,7 @@
 # Sodo Search
 
+Search interface injected into Ghost sites.
+
 ## Development
 
 ### Pre-requisites
@@ -14,7 +16,15 @@ Start Ghost with the public-app watchers enabled:
 pnpm dev:public
 ```
 
-This starts the standard development environment and the Sodo Search watcher. To run only the package's build watcher, use `pnpm dev` from this directory.
+This starts the standard development environment and the Sodo Search watcher.
+To work on this package by itself, run these commands from this directory:
+
+```bash
+pnpm build    # one-off build
+pnpm dev      # watch and rebuild the UMD JavaScript and CSS
+pnpm test     # run unit tests once
+pnpm lint     # lint source and tests
+```
 
 ## Release
 

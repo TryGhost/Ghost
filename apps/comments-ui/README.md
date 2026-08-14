@@ -16,7 +16,16 @@ Start Ghost with the public-app watchers enabled:
 pnpm dev:public
 ```
 
-This starts the standard development environment and the Comments UI watcher. To run only the package's build watcher, use `pnpm dev` from this directory.
+This starts the standard development environment and the Comments UI watcher.
+To work on this package by itself, run these commands from this directory:
+
+```bash
+pnpm build              # one-off build
+pnpm dev                # watch and rebuild the UMD bundle
+pnpm test               # run type checks and unit tests
+pnpm test:acceptance    # run browser acceptance tests
+pnpm lint               # lint code and check types
+```
 
 ## Release
 

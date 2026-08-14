@@ -1,9 +1,7 @@
 # Admin Toolbar
 
-Frontend staff toolbar for Ghost sites. Uses Preact (~3KB) instead of React
-(~40KB) since this is a lightweight public-facing widget that only needs basic
-rendering and hooks — the same rationale applies to any future small public
-scripts where bundle size matters more than ecosystem compatibility.
+Frontend staff toolbar for Ghost sites. It uses Preact to keep the public-facing
+bundle small while providing the rendering and hooks the toolbar needs.
 
 ## Development
 
