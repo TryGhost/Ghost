@@ -2,6 +2,7 @@
     "name": "@tryghost/signup-form",
     "type": "module",
     "version": "0.3.34",
+    "description": "Embeddable signup form for Ghost sites",
     "license": "MIT",
     "repository": "https://github.com/TryGhost/Ghost",
     "author": "Ghost Foundation",
