@@ -19,7 +19,7 @@
  * theme .txt files with matching names (which is the intended behavior
  * for system-generated verification files).
  *
- * @see ghost/core/core/server/services/indexnow.js - Main IndexNow service
+ * @see ghost/core/core/server/services/indexnow-ping - Main IndexNow service
  */
 
 const settingsCache = require('../../../shared/settings-cache');

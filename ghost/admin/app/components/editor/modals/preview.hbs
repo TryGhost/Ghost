@@ -19,7 +19,7 @@
             </div>
             {{#if this.showMemberSegmentDropdown}}
                 <div class="gh-contentfilter-divider"></div>
-                <span class="gh-select gh-web-preview-segment" data-test-select="preview-segment">
+                <span class="gh-select gh-web-preview-segment gh-preview-member-type" data-test-select="preview-segment">
                     <PowerSelect
                         @selected={{this.selectedPreviewAsOption}}
                         @options={{this.previewAsOptions}}
@@ -34,6 +34,23 @@
                         {{option.label}}
                     </PowerSelect>
                 </span>
+                {{#if this.showTierDropdown}}
+                    <span class="gh-select gh-web-preview-segment gh-preview-tier" data-test-select="preview-tier">
+                        <PowerSelect
+                            @selected={{this.selectedPreviewTier}}
+                            @options={{this.previewTierOptions}}
+                            @onChange={{this.changePreviewTier}}
+                            @triggerComponent={{component "gh-power-select/trigger"}}
+                            @triggerClass="gh-preview-segment-trigger"
+                            @dropdownClass="gh-preview-segment-dropdown gh-preview-tier-dropdown"
+                            @matchTriggerWidth={{false}}
+                            @onOpen={{this.dropdown.closeDropdowns}}
+                            as |tier|
+                        >
+                            {{tier.name}}
+                        </PowerSelect>
+                    </span>
+                {{/if}}
             {{/if}}
         </div>
         <div class="right">
@@ -109,7 +126,9 @@
             {{else}}
                 <Editor::Modals::Preview::Email
                     @post={{@data.publishOptions.post}}
-                    @memberSegment={{this.previewAsSegment}}
+                    @memberStatus={{this.emailMemberStatus}}
+                    @memberTier={{this.emailMemberTier}}
+                    @memberDescription={{this.emailMemberDescription}}
                     @newsletter={{@data.publishOptions.newsletter}}
                     @skipAnimation={{this.skipAnimation}}
                     @savePostTask={{@data.saveTask}}

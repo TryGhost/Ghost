@@ -1,27 +1,30 @@
 import assert from 'node:assert/strict';
 import {parseRouteSettings, serializeRouteSettings} from '../../../../../core/server/services/route-settings/route-settings-parser';
-import type {RouteSettings} from '../../../../../core/server/services/route-settings/route-settings-parser';
+import {buildRouteSettings} from './route-settings-fixture';
+
+// The raw objects here have no YAML text behind them, so an empty source is attached.
+const parse = (raw: unknown) => parseRouteSettings(raw, '');
 
 describe('UNIT: services/route-settings/route-settings-parser', function () {
     describe('parseRouteSettings', function () {
         it('handles null/undefined input', function () {
-            assert.deepEqual(parseRouteSettings(null), {routes: [], collections: [], taxonomies: {}});
-            assert.deepEqual(parseRouteSettings(undefined), {routes: [], collections: [], taxonomies: {}});
+            assert.deepEqual(parse(null), {routes: [], collections: [], taxonomies: {}, yamlSource: ''});
+            assert.deepEqual(parse(undefined), {routes: [], collections: [], taxonomies: {}, yamlSource: ''});
         });
 
         it('handles empty object', function () {
-            assert.deepEqual(parseRouteSettings({}), {routes: [], collections: [], taxonomies: {}});
+            assert.deepEqual(parse({}), {routes: [], collections: [], taxonomies: {}, yamlSource: ''});
         });
 
         it('handles empty sections', function () {
-            assert.deepEqual(parseRouteSettings({routes: null, collections: null, taxonomies: null}), {
-                routes: [], collections: [], taxonomies: {}
+            assert.deepEqual(parse({routes: null, collections: null, taxonomies: null}), {
+                routes: [], collections: [], taxonomies: {}, yamlSource: ''
             });
         });
 
         describe('routes', function () {
             it('parses bare string route as template route', function () {
-                const result = parseRouteSettings({
+                const result = parse({
                     routes: {'/about/': 'about'}
                 });
 
@@ -31,7 +34,7 @@ describe('UNIT: services/route-settings/route-settings-parser', function () {
             });
 
             it('parses object route with template string', function () {
-                const result = parseRouteSettings({
+                const result = parse({
                     routes: {'/me/': {template: 'me'}}
                 });
 
@@ -41,7 +44,7 @@ describe('UNIT: services/route-settings/route-settings-parser', function () {
             });
 
             it('parses object route with template array', function () {
-                const result = parseRouteSettings({
+                const result = parse({
                     routes: {'/about/': {template: ['about', 'default']}}
                 });
 
@@ -51,7 +54,7 @@ describe('UNIT: services/route-settings/route-settings-parser', function () {
             });
 
             it('parses template route with no template key as empty templates', function () {
-                const result = parseRouteSettings({
+                const result = parse({
                     routes: {'/rss/': {content_type: 'text/xml'}}
                 });
 
@@ -61,7 +64,7 @@ describe('UNIT: services/route-settings/route-settings-parser', function () {
             });
 
             it('parses route with data', function () {
-                const result = parseRouteSettings({
+                const result = parse({
                     routes: {'/food/': {template: 'food', data: 'tag.food'}}
                 });
 
@@ -71,7 +74,7 @@ describe('UNIT: services/route-settings/route-settings-parser', function () {
             });
 
             it('detects channel route via controller: channel', function () {
-                const result = parseRouteSettings({
+                const result = parse({
                     routes: {'/featured/': {controller: 'channel', filter: 'featured:true', template: 'featured'}}
                 });
 
@@ -81,7 +84,7 @@ describe('UNIT: services/route-settings/route-settings-parser', function () {
             });
 
             it('leaves rss unset on channel route when not specified', function () {
-                const result = parseRouteSettings({
+                const result = parse({
                     routes: {'/featured/': {controller: 'channel', filter: 'featured:true'}}
                 });
 
@@ -89,7 +92,7 @@ describe('UNIT: services/route-settings/route-settings-parser', function () {
             });
 
             it('respects explicit rss: true on channel route', function () {
-                const result = parseRouteSettings({
+                const result = parse({
                     routes: {'/featured/': {controller: 'channel', filter: 'featured:true', rss: true}}
                 });
 
@@ -99,7 +102,7 @@ describe('UNIT: services/route-settings/route-settings-parser', function () {
             });
 
             it('treats route with filter but no controller as template route', function () {
-                const result = parseRouteSettings({
+                const result = parse({
                     routes: {'/latest/': {template: 'latest', filter: 'featured:true'}}
                 });
 
@@ -107,7 +110,7 @@ describe('UNIT: services/route-settings/route-settings-parser', function () {
             });
 
             it('respects explicit rss: false on channel route', function () {
-                const result = parseRouteSettings({
+                const result = parse({
                     routes: {'/featured/': {controller: 'channel', filter: 'featured:true', rss: false}}
                 });
 
@@ -117,7 +120,7 @@ describe('UNIT: services/route-settings/route-settings-parser', function () {
             });
 
             it('parses channel route with all properties', function () {
-                const result = parseRouteSettings({
+                const result = parse({
                     routes: {
                         '/channel/': {
                             controller: 'channel',
@@ -144,7 +147,7 @@ describe('UNIT: services/route-settings/route-settings-parser', function () {
             });
 
             it('parses multiple routes preserving order', function () {
-                const result = parseRouteSettings({
+                const result = parse({
                     routes: {
                         '/about/': 'about',
                         '/contact/': 'contact',
@@ -161,7 +164,7 @@ describe('UNIT: services/route-settings/route-settings-parser', function () {
 
         describe('collections', function () {
             it('parses basic collection', function () {
-                const result = parseRouteSettings({
+                const result = parse({
                     collections: {'/': {permalink: '/{slug}/'}}
                 });
 
@@ -171,7 +174,7 @@ describe('UNIT: services/route-settings/route-settings-parser', function () {
             });
 
             it('parses collection with template', function () {
-                const result = parseRouteSettings({
+                const result = parse({
                     collections: {'/': {permalink: '/{slug}/', template: 'index'}}
                 });
 
@@ -181,7 +184,7 @@ describe('UNIT: services/route-settings/route-settings-parser', function () {
             });
 
             it('parses collection with all properties', function () {
-                const result = parseRouteSettings({
+                const result = parse({
                     collections: {
                         '/podcast/': {
                             permalink: '/podcast/{slug}/',
@@ -208,7 +211,7 @@ describe('UNIT: services/route-settings/route-settings-parser', function () {
             });
 
             it('parses multiple collections', function () {
-                const result = parseRouteSettings({
+                const result = parse({
                     collections: {
                         '/podcast/': {permalink: '/podcast/{slug}/'},
                         '/': {permalink: '/{slug}/'}
@@ -223,7 +226,7 @@ describe('UNIT: services/route-settings/route-settings-parser', function () {
 
         describe('taxonomies', function () {
             it('parses taxonomies', function () {
-                const result = parseRouteSettings({
+                const result = parse({
                     taxonomies: {tag: '/tag/{slug}/', author: '/author/{slug}/'}
                 });
 
@@ -234,7 +237,7 @@ describe('UNIT: services/route-settings/route-settings-parser', function () {
             });
 
             it('parses partial taxonomies', function () {
-                const result = parseRouteSettings({
+                const result = parse({
                     taxonomies: {tag: '/categories/{slug}/'}
                 });
 
@@ -244,7 +247,7 @@ describe('UNIT: services/route-settings/route-settings-parser', function () {
 
         describe('data passthrough', function () {
             it('preserves data shortform string', function () {
-                const result = parseRouteSettings({
+                const result = parse({
                     routes: {'/food/': {template: 'food', data: 'tag.food'}}
                 });
 
@@ -256,7 +259,7 @@ describe('UNIT: services/route-settings/route-settings-parser', function () {
                     featured: {resource: 'posts', type: 'browse', filter: 'featured:true'},
                     main_tag: 'tag.getting-started'
                 };
-                const result = parseRouteSettings({
+                const result = parse({
                     routes: {'/featured/': {template: 'featured', data}}
                 });
 
@@ -266,7 +269,7 @@ describe('UNIT: services/route-settings/route-settings-parser', function () {
 
         describe('keeps {slug} notation', function () {
             it('does not convert {slug} to :slug in collection permalink', function () {
-                const result = parseRouteSettings({
+                const result = parse({
                     collections: {'/': {permalink: '/{slug}/'}}
                 });
 
@@ -274,7 +277,7 @@ describe('UNIT: services/route-settings/route-settings-parser', function () {
             });
 
             it('does not convert {slug} to :slug in taxonomy', function () {
-                const result = parseRouteSettings({
+                const result = parse({
                     taxonomies: {tag: '/tag/{slug}/'}
                 });
 
@@ -284,7 +287,7 @@ describe('UNIT: services/route-settings/route-settings-parser', function () {
 
         describe('default-routes.yaml', function () {
             it('correctly parses the default routes.yaml content', function () {
-                const result = parseRouteSettings({
+                const result = parse({
                     routes: null,
                     collections: {'/': {permalink: '/{slug}/', template: 'index'}},
                     taxonomies: {tag: '/tag/{slug}/', author: '/author/{slug}/'}
@@ -300,7 +303,8 @@ describe('UNIT: services/route-settings/route-settings-parser', function () {
                     taxonomies: {
                         tag: '/tag/{slug}/',
                         author: '/author/{slug}/'
-                    }
+                    },
+                    yamlSource: ''
                 });
             });
         });
@@ -308,7 +312,7 @@ describe('UNIT: services/route-settings/route-settings-parser', function () {
 
     describe('serializeRouteSettings', function () {
         it('serializes empty settings', function () {
-            const settings: RouteSettings = {routes: [], collections: [], taxonomies: {}};
+            const settings = buildRouteSettings({routes: [], collections: [], taxonomies: {}});
             const yaml = serializeRouteSettings(settings);
 
             assert.ok(yaml.includes('routes: null'));
@@ -317,18 +321,18 @@ describe('UNIT: services/route-settings/route-settings-parser', function () {
         });
 
         it('serializes simple template route as bare string', function () {
-            const settings: RouteSettings = {
+            const settings = buildRouteSettings({
                 routes: [{type: 'template', path: '/about/', templates: ['about']}],
                 collections: [],
                 taxonomies: {}
-            };
+            });
             const yaml = serializeRouteSettings(settings);
 
             assert.ok(yaml.includes('/about/: about'));
         });
 
         it('serializes channel route as object with controller: channel', function () {
-            const settings: RouteSettings = {
+            const settings = buildRouteSettings({
                 routes: [{
                     type: 'channel',
                     path: '/featured/',
@@ -338,7 +342,7 @@ describe('UNIT: services/route-settings/route-settings-parser', function () {
                 }],
                 collections: [],
                 taxonomies: {}
-            };
+            });
             const yaml = serializeRouteSettings(settings);
 
             assert.ok(yaml.includes('/featured/:'));
@@ -348,44 +352,44 @@ describe('UNIT: services/route-settings/route-settings-parser', function () {
         });
 
         it('does not emit rss when unset (default)', function () {
-            const settings: RouteSettings = {
+            const settings = buildRouteSettings({
                 routes: [{type: 'channel', path: '/ch/', templates: [], filter: 'f'}],
                 collections: [],
                 taxonomies: {}
-            };
+            });
             const yaml = serializeRouteSettings(settings);
 
             assert.ok(!yaml.includes('rss:'));
         });
 
         it('emits rss when explicitly true', function () {
-            const settings: RouteSettings = {
+            const settings = buildRouteSettings({
                 routes: [{type: 'channel', path: '/ch/', templates: [], filter: 'f', rss: true}],
                 collections: [],
                 taxonomies: {}
-            };
+            });
             const yaml = serializeRouteSettings(settings);
 
             assert.ok(yaml.includes('rss: true'));
         });
 
         it('emits rss when false', function () {
-            const settings: RouteSettings = {
+            const settings = buildRouteSettings({
                 routes: [{type: 'channel', path: '/ch/', templates: [], filter: 'f', rss: false}],
                 collections: [],
                 taxonomies: {}
-            };
+            });
             const yaml = serializeRouteSettings(settings);
 
             assert.ok(yaml.includes('rss: false'));
         });
 
         it('serializes collection', function () {
-            const settings: RouteSettings = {
+            const settings = buildRouteSettings({
                 routes: [],
                 collections: [{path: '/', permalink: '/{slug}/', templates: ['index']}],
                 taxonomies: {}
-            };
+            });
             const yaml = serializeRouteSettings(settings);
 
             assert.ok(yaml.includes('permalink: /{slug}/'));
@@ -393,11 +397,11 @@ describe('UNIT: services/route-settings/route-settings-parser', function () {
         });
 
         it('serializes taxonomies', function () {
-            const settings: RouteSettings = {
+            const settings = buildRouteSettings({
                 routes: [],
                 collections: [],
                 taxonomies: {tag: '/tag/{slug}/', author: '/author/{slug}/'}
-            };
+            });
             const yaml = serializeRouteSettings(settings);
 
             assert.ok(yaml.includes('tag: /tag/{slug}/'));
@@ -405,7 +409,7 @@ describe('UNIT: services/route-settings/route-settings-parser', function () {
         });
 
         it('roundtrips through parse → serialize → parse', function () {
-            const original: RouteSettings = {
+            const original = buildRouteSettings({
                 routes: [
                     {type: 'template', path: '/about/', templates: ['about']},
                     {type: 'channel', path: '/featured/', templates: ['featured'], filter: 'featured:true', rss: true, data: 'tag.featured'}
@@ -415,10 +419,10 @@ describe('UNIT: services/route-settings/route-settings-parser', function () {
                     {path: '/podcast/', permalink: '/podcast/{slug}/', templates: ['podcast'], filter: 'tag:podcast'}
                 ],
                 taxonomies: {tag: '/tag/{slug}/', author: '/author/{slug}/'}
-            };
+            });
 
             const yamlStr = serializeRouteSettings(original);
-            const reparsed = parseRouteSettings(require('js-yaml').load(yamlStr));
+            const reparsed = parseRouteSettings(require('js-yaml').load(yamlStr), yamlStr);
 
             assert.deepEqual(reparsed, original);
         });
@@ -445,7 +449,7 @@ describe('UNIT: services/route-settings/route-settings-parser', function () {
                 ''
             ].join('\n');
 
-            const parsed = parseRouteSettings(require('js-yaml').load(originalYaml));
+            const parsed = parse(require('js-yaml').load(originalYaml));
             const reserialized = serializeRouteSettings(parsed);
 
             assert.equal(reserialized, originalYaml);
@@ -462,9 +466,9 @@ describe('UNIT: services/route-settings/route-settings-parser', function () {
                 taxonomies: {tag: '/tag/{slug}/', author: '/author/{slug}/'}
             };
 
-            const parsed = parseRouteSettings(raw);
+            const parsed = parse(raw);
             const yamlStr = serializeRouteSettings(parsed);
-            const reparsed = parseRouteSettings(require('js-yaml').load(yamlStr));
+            const reparsed = parse(require('js-yaml').load(yamlStr));
 
             assert.deepEqual(reparsed, parsed);
         });

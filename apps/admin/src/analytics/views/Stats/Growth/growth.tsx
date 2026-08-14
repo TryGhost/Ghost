@@ -14,7 +14,7 @@ import {CONTENT_TYPES, type ContentType, getContentTitle, getGrowthContentDescri
 import {LucideIcon, formatDisplayDate, formatNumber} from '@tryghost/shade/utils';
 import {centsToDollars} from '@tryghost/shade/app';
 import {getClickHandler} from '@/analytics/utils/url-helpers';
-import {getPeriodText} from '@/analytics/utils/chart-helpers';
+import {getPeriodText} from '@/shared/analytics/chart-helpers';
 import {useAppContext} from '@tryghost/admin-x-framework';
 import {useAnalytics} from '@/analytics/providers/analytics-context';
 import {useAnalyticsData} from '@/shared/analytics/use-analytics-data';

@@ -1,5 +1,6 @@
 const urlUtils = require('../../../../../../../shared/url-utils');
 const urlService = require('../../../../../../services/url');
+const localUtils = require('../../../index');
 
 const handleImageUrl = (imageUrl) => {
     try {
@@ -66,22 +67,45 @@ const forSetting = (attrs) => {
     return attrs;
 };
 
-// When a Content API `?fields=url` query narrows the selected columns, the
-// columns the lazy URL service needs to build a URL (the type's base-filter
-// columns and permalink fields, e.g. status/visibility/slug) get stripped
-// before the URL is generated, so the service rejects the resource as thin.
-// Force those columns back into the fetch so they are available at mapping
-// time; the output serializer still strips them from the response. No-op under
-// the eager service (getRequiredFields → []) and when `url` was not requested.
+// A `?fields=url` query strips the columns the lazy URL service needs to
+// build a URL (e.g. status/visibility/slug), so the service would reject the
+// resource as thin. Force them back into the fetch and record them on the
+// frame — the output mapper strips them from the response after the URL is
+// built. No-op under the eager service (getRequiredFields → []).
 const forceUrlColumnsWhenLazy = (frame, routerType) => {
     if (!Array.isArray(frame.options.columns) || !frame.options.columns.includes('url')) {
         return;
     }
-    for (const field of urlService.facade.getRequiredFields(routerType)) {
-        if (!frame.options.columns.includes(field)) {
-            frame.options.columns.push(field);
+    const forced = urlService.facade.getRequiredFields(routerType).filter(field => !frame.options.columns.includes(field));
+    if (forced.length) {
+        frame.forcedUrlColumns = forced;
+        frame.options.columns.push(...forced);
+    }
+};
+
+// `url` is serialized for every post/page unless `?fields` narrows it away,
+// so the relations the lazy URL service reads (e.g. tags for a tag-filtered
+// collection) must be loaded whenever the URL will be built — not only for
+// the `?fields=url` case. Forced relations are recorded on the frame for the
+// output mapper to strip. No-op under the eager service.
+const forceUrlRelationsWhenLazy = (frame, routerType) => {
+    if (!localUtils.willSerializeUrl(frame)) {
+        return;
+    }
+    const relations = urlService.facade.getRequiredRelations();
+    if (relations.length) {
+        const requested = frame.options.withRelated || [];
+        // a nested include covers its parent: `authors.roles` loads authors
+        const covers = (requestedRelation, relation) => {
+            return requestedRelation === relation || requestedRelation.startsWith(`${relation}.`);
+        };
+        const forced = relations.filter(relation => !requested.some(requestedRelation => covers(requestedRelation, relation)));
+        if (forced.length) {
+            frame.forcedUrlRelations = forced;
+            frame.options.withRelated = [...requested, ...forced];
         }
     }
+    forceUrlColumnsWhenLazy(frame, routerType);
 };
 
 module.exports.forPost = forPost;
@@ -89,3 +113,4 @@ module.exports.forUser = forUser;
 module.exports.forTag = forTag;
 module.exports.forSetting = forSetting;
 module.exports.forceUrlColumnsWhenLazy = forceUrlColumnsWhenLazy;
+module.exports.forceUrlRelationsWhenLazy = forceUrlRelationsWhenLazy;

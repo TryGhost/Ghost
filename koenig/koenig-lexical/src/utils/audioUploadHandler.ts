@@ -1,5 +1,6 @@
 import prettifyFileName from './prettifyFileName';
 import {$getNodeByKey} from 'lexical';
+import {$isKoenigCard} from '@tryghost/kg-default-nodes';
 import {getAudioMetadata} from './getAudioMetadata';
 
 export const audioUploadHandler = async (files, nodeKey, editor, upload) => {
@@ -26,10 +27,12 @@ export const audioUploadHandler = async (files, nodeKey, editor, upload) => {
 
     await editor.update(() => {
         const node = $getNodeByKey(nodeKey);
-        node.duration = duration;
-        node.src = fileSrc;
-        node.mimeType = mimeType;
-        node.title = title;
+        if ($isKoenigCard(node)) {
+            node.duration = duration;
+            node.src = fileSrc;
+            node.mimeType = mimeType;
+            node.title = title;
+        }
     });
 
     return;

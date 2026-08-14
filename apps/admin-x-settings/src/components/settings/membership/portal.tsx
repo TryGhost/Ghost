@@ -2,10 +2,11 @@ import FakeLogo from '../../../assets/images/portal-splash-default-logo.png';
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
 import UserAddIcon from '../../../assets/images/portal-splash-user-add.png';
-import {Button, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {Button} from '@tryghost/admin-x-design-system';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {withErrorBoundary} from '../../error-boundary';
 
 const SignupOptionImage: React.FC<{color:string, title: string, price: string}> = ({title, color, price}) => {
     return (

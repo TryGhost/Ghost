@@ -32,7 +32,7 @@ export function useMultipleActiveSubscriptionsBanner({
 }: UseMultipleActiveSubscriptionsBannerOptions) {
     const navigate = useNavigate();
     const {data: currentUser} = useCurrentUser();
-    const {mutateAsync: editUser, isLoading: isDismissing} = useEditUser();
+    const {mutateAsync: editUser, isPending: isDismissing} = useEditUser();
     const [optimisticDismissedCount, setOptimisticDismissedCount] = useState<number | null>(null);
 
     const isViewingFilter = isMultipleActiveSubscriptionsFilter(nql);

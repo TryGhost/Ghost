@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/react';
 import {useCallback} from 'react';
 import {useFramework} from '../../providers/framework-provider';
-import {APIError, MaintenanceError, ServerUnreachableError, TimeoutError} from '../errors';
+import {APIError, MaintenanceError, ServerUnreachableError, SessionExpiredError, TimeoutError, UnauthorizedError} from '../errors';
 import {getGhostPaths} from '../helpers';
 import handleResponse from './handle-response';
 
@@ -49,6 +49,38 @@ const xhrToFetchResponse = (xhr: Readonly<XMLHttpRequest>): Response => (
         headers: xhrHeadersToFetchHeaders(xhr)
     })
 );
+
+const GHOST_API_REQUEST = /\/ghost\/api\//;
+const SESSION_API_REQUEST = /\/ghost\/api\/admin\/session([/?#]|$)/;
+const UNAUTHENTICATED_ADMIN_ROUTE = /^#\/(?:reset|setup|signin|signup)(?:[/?]|$)/;
+
+let sessionExpiryHandled = false;
+
+const isUnauthenticatedAdminRoute = (adminRoot: string) => {
+    return window.location.pathname === adminRoot && (
+        !window.location.hash
+        || window.location.hash === '#/'
+        || UNAUTHENTICATED_ADMIN_ROUTE.test(window.location.hash)
+    );
+};
+
+// An unauthorized Ghost API response outside the session endpoint means the
+// cookie session expired
+const isSessionExpiry = (endpoint: string | URL) => {
+    const url = endpoint.toString();
+    return GHOST_API_REQUEST.test(url) && !SESSION_API_REQUEST.test(url);
+};
+
+// Replace to the admin root at most once across concurrent failures, unless
+// Ember is already booting or displaying an unauthenticated route
+const redirectOnSessionExpiry = () => {
+    const {adminRoot} = getGhostPaths();
+
+    if (!sessionExpiryHandled && !isUnauthenticatedAdminRoute(adminRoot)) {
+        sessionExpiryHandled = true;
+        window.location.replace(adminRoot);
+    }
+};
 
 const fetchWithXhr = (
     onUploadProgress: (progress: number) => void,
@@ -187,7 +219,8 @@ export const useFetchApi = () => {
             while (attempts === 0 || retry) {
                 try {
                     const response = await fetchFn(endpoint, requestInit);
-                    return handleResponse(response) as ResponseData;
+                    // Awaited so response errors reject inside the try/catch
+                    return await handleResponse(response) as ResponseData;
                 } catch (error) {
                     retryingMs = Date.now() - startTime;
 
@@ -205,6 +238,11 @@ export const useFetchApi = () => {
 
                     if (error && typeof error === 'object' && 'name' in error && error.name === 'AbortError') {
                         throw new TimeoutError();
+                    }
+
+                    if (error instanceof UnauthorizedError && isSessionExpiry(endpoint)) {
+                        redirectOnSessionExpiry();
+                        throw new SessionExpiredError(error.response!, error.data, {cause: error});
                     }
 
                     let newError = error;

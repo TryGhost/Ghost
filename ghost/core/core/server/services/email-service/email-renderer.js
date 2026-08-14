@@ -17,7 +17,7 @@ const EmailAddressParser = require('../email-address/email-address-parser');
 const {getEmailDesign} = require('../email-rendering/email-design');
 const {registerHelpers} = require('./helpers/register-helpers');
 const crypto = require('crypto');
-const {getPostAccessFilter} = require('../members/content-gating');
+const {checkSegmentPostAccess, getPostAccessFilter} = require('../members/content-gating');
 const {mobiledocToLexical} = require('@tryghost/kg-converters');
 /** @import {TemplateDelegate} from 'handlebars' */
 
@@ -131,12 +131,10 @@ function getSegmentStatus(segment) {
 
 /**
  * Whether the members matched by a segment can read the post's gated content.
- * Derived from the post's visibility (not just free/paid): for paid posts the
- * access segment is the paid one; for tier-restricted posts it's the segment
- * carrying the post's positive tier filter. A null segment is an unsegmented
- * render — the send pipeline only produces one for posts without gated content,
- * and API previews without a memberSegment expect the full body — so it always
- * has access.
+ * Delegates to the shared content-gating check so email and web gating stay in
+ * sync. A null segment is an unsegmented render — the send pipeline only
+ * produces one for posts without gated content, and API previews without a
+ * memberSegment expect the full body — so it always has access.
  * @param {Post} post
  * @param {Segment} segment
  * @returns {boolean}
@@ -149,13 +147,16 @@ function segmentHasPostAccess(post, segment) {
     if (!segment) {
         return true;
     }
-    const accessFilter = getPostAccessFilter(getPostGatingShape(post));
-    if (!accessFilter) {
-        // misconfigured tiers post (no tiers) -> nobody has access
-        return false;
-    }
-    return segment.includes(accessFilter);
+    return checkSegmentPostAccess(getPostGatingShape(post), segment);
 }
+
+/**
+ * @typedef {object} SegmentAudience
+ * @prop {string|null} status - the free/paid audience axis ('status:free' /
+ *   'status:-free', the data-gh-segment card vocabulary), null for mixed
+ * @prop {boolean} hasPostAccess - whether this audience can read the post's
+ *   gated content
+ */
 
 /**
  * @param {Readonly<Date>} date
@@ -467,25 +468,52 @@ class EmailRenderer {
     }
 
     /**
-     * Maps the fixed audience choices offered by the editor's email preview and
-     * test-email UI ('status:free' / 'status:-free') onto the segment the send
-     * pipeline renders for that audience, so previews match what members receive.
-     * For a tier-restricted post the paid audience maps to the tier access
-     * segment (the access variant getSegments produces): paid members on the
-     * post's tiers get the full content, and the free choice previews the
-     * no-access variant. Anything else passes through unchanged.
+     * Maps a preview audience (a member status, optionally narrowed to a
+     * single tier) onto the segment the send pipeline renders for that
+     * audience, so previews match what members receive. For a tier-restricted
+     * post the paid audience maps to the tier access segment (the access
+     * variant getSegments produces): paid members on the post's tiers get the
+     * full content. A null status is an unsegmented render (the full body).
      * @param {Post} post
-     * @param {Segment} segment
+     * @param {'free'|'paid'|null} memberStatus
+     * @param {string} [tierSlug] - narrow the paid audience to a single tier
      * @returns {Segment}
      */
-    getPreviewSegment(post, segment) {
-        if (segment === 'status:-free' && post.get('visibility') === 'tiers') {
+    getSegmentForAudience(post, memberStatus, tierSlug) {
+        if (memberStatus === 'free') {
+            return 'status:free';
+        }
+        if (memberStatus !== 'paid') {
+            return null;
+        }
+        if (tierSlug) {
+            const escapedSlug = tierSlug.replace(/\\/g, '\\\\').replace(/'/g, '\\\'');
+            return `status:-free+product:'${escapedSlug}'`;
+        }
+        if (post.get('visibility') === 'tiers') {
             const accessFilter = getPostAccessFilter(getPostGatingShape(post));
             if (accessFilter) {
                 return `status:-free+(${accessFilter})`;
             }
         }
-        return segment;
+        return 'status:-free';
+    }
+
+    /**
+     * Interprets a member segment into the audience facts rendering needs.
+     * Segments are persisted on email batches and arrive free-form via the
+     * preview APIs, so audience semantics must be derivable from the string —
+     * this is the only place that derives them; everything downstream reads the
+     * descriptor instead of re-parsing the segment.
+     * @param {Post} post
+     * @param {Segment} segment
+     * @returns {SegmentAudience}
+     */
+    describeSegment(post, segment) {
+        return {
+            status: getSegmentStatus(segment),
+            hasPostAccess: segmentHasPostAccess(post, segment)
+        };
     }
 
     async renderPostBaseHtml(post, newsletter) {
@@ -515,6 +543,8 @@ class EmailRenderer {
      * @returns {Promise<EmailBody>}
      */
     async renderBody(post, newsletter, segment, options) {
+        const audience = this.describeSegment(post, segment);
+
         let html = await this.renderPostBaseHtml(post, newsletter);
 
         // Paywall and members only content handling
@@ -525,9 +555,8 @@ class EmailRenderer {
 
         // Members without access to the gated content (free members, or members
         // on a tier that can't read this post) get the public preview + paywall,
-        // exactly as on the web. Access is derived from the post's visibility,
-        // not just free/paid.
-        if (isPaidPost && hasMembersOnlyContent && !segmentHasPostAccess(post, segment)) {
+        // exactly as on the web.
+        if (isPaidPost && hasMembersOnlyContent && !audience.hasPostAccess) {
             // Add paywall
             addPaywall = true;
 
@@ -542,12 +571,10 @@ class EmailRenderer {
         // using the HTML and we don't want to include content that should not be
         // visible depending on the segment
         // data-gh-segment cards are a free/paid-only axis, independent of tier
-        // access. Match them against this segment's free/paid status rather than
-        // the raw segment filter (which may carry a tier expression).
-        const segmentStatus = getSegmentStatus(segment);
+        // access, so they match against the audience's status
         $('[data-gh-segment]').get().forEach((node) => {
             // TODO: replace with NQL interpretation
-            if (node.attribs['data-gh-segment'] !== segmentStatus) {
+            if (node.attribs['data-gh-segment'] !== audience.status) {
                 $(node).remove();
             } else {
                 // Getting rid of the attribute for a cleaner html output
@@ -562,7 +589,7 @@ class EmailRenderer {
             newsletter,
             html,
             addPaywall,
-            segment
+            audience
         });
         html = await this.renderTemplate(templateData);
 
@@ -1085,21 +1112,21 @@ class EmailRenderer {
     /**
      * Get email preheader text from post model
      * @param {Post} postModel
-     * @param {Segment} segment
+     * @param {SegmentAudience} audience
      * @param {string} html
      * @returns {string}
      */
-    #getEmailPreheader(postModel, segment, html) {
+    #getEmailPreheader(postModel, audience, html) {
         let plaintext = postModel.get('plaintext');
         let customExcerpt = postModel.get('custom_excerpt');
         if (customExcerpt) {
             return customExcerpt;
         } else {
             if (plaintext) {
-                // The plaintext field on the model may contain paid only content
-                // so we use the provided HTML to generate the plaintext as this
-                // should have already had the paid content removed
-                if (segment === 'status:free') {
+                // The plaintext field on the model may contain gated content
+                // the audience can't read, so regenerate from the provided
+                // HTML (already gated) whenever this audience lacks access
+                if (audience.status === 'status:free' || !audience.hasPostAccess) {
                     plaintext = htmlToPlaintext.email(html);
                 }
                 return plaintext.substring(0, 500);
@@ -1149,9 +1176,9 @@ class EmailRenderer {
      * @param {Newsletter} options.newsletter
      * @param {string} options.html
      * @param {boolean} options.addPaywall
-     * @param {string} options.segment
+     * @param {SegmentAudience} options.audience
      */
-    async getTemplateData({post, newsletter, html, addPaywall, segment}) {
+    async getTemplateData({post, newsletter, html, addPaywall, audience}) {
         const emailDesign = this.#getEmailDesign(newsletter);
 
         const {href: headerImage, width: headerImageWidth} = await this.limitImageWidth(newsletter.get('header_image'));
@@ -1258,7 +1285,7 @@ class EmailRenderer {
                 locale,
                 direction
             },
-            preheader: this.#getEmailPreheader(post, segment, html),
+            preheader: this.#getEmailPreheader(post, audience, html),
             preheaderSpacing: `${'&#8199;&#847; '.repeat(150)}${'&shy; '.repeat(200)} &nbsp;`,
             html,
 

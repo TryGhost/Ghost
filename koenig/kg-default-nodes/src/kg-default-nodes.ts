@@ -1,4 +1,4 @@
-export {GeneratedDecoratorNodeBase} from './generate-decorator-node.js';
+export type {GeneratedDecoratorNode} from './generate-decorator-node.js';
 export * from './export-dom.js';
 import * as image from './nodes/image/ImageNode.js';
 import * as codeblock from './nodes/codeblock/CodeBlockNode.js';
@@ -64,6 +64,7 @@ export * from './nodes/ExtendedQuoteNode.js';
 export * from './nodes/TKNode.js';
 export * from './nodes/at-link/index.js';
 export * from './nodes/zwnj/ZWNJNode.js';
+export * from './utils/card-widths.js';
 
 // export utility functions that are useful in other packages or tests
 import * as visibilityUtils from './utils/visibility.js';

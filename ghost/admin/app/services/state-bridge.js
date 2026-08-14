@@ -14,6 +14,7 @@ const emberDataTypeMapping = {
     IntegrationsResponseType: {type: 'integration'},
     InvitesResponseType: {type: 'invite'},
     LabelsResponseType: null, // labels only exist in React admin
+    MemberCustomFieldsResponseType: null, // member custom fields only exist in React admin
     MembersResponseType: null, // members only exist in React admin
     OffersResponseType: {type: 'offer'},
     NewslettersResponseType: {type: 'newsletter'},

@@ -2,19 +2,29 @@ import CardContext from '../context/CardContext';
 import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
 import {$getNodeByKey, CLICK_COMMAND, COMMAND_PRIORITY_LOW} from 'lexical';
+import {$isKoenigCard} from '@tryghost/kg-default-nodes';
 import {CardWrapper} from './ui/CardWrapper';
 import {EDIT_CARD_COMMAND, SELECT_CARD_COMMAND, SHOW_CARD_VISIBILITY_SETTINGS_COMMAND} from '../plugins/KoenigBehaviourPlugin';
 import {VISIBILITY_SETTINGS} from '../utils/visibility';
 import {mergeRegister} from '@lexical/utils';
 import {useKoenigSelectedCardContext} from '../context/KoenigSelectedCardContext';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+import type {CardWidth} from '@tryghost/kg-default-nodes';
 
-const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, children}) => {
+interface KoenigCardWrapperProps {
+    nodeKey: string;
+    width?: CardWidth;
+    wrapperStyle?: string;
+    IndicatorIcon?: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+    children?: React.ReactNode;
+}
+
+const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, children}: KoenigCardWrapperProps) => {
     const {cardConfig} = React.useContext(KoenigComposerContext);
     const [editor] = useLexicalComposerContext();
     const [cardType, setCardType] = React.useState(null);
     const [captionHasFocus, setCaptionHasFocus] = React.useState(null);
-    const [cardWidth, setCardWidth] = React.useState(width || 'regular');
+    const [cardWidth, setCardWidth] = React.useState<CardWidth>(width || 'regular');
     const containerRef = React.useRef(null);
     const skipClick = React.useRef(false);
 
@@ -53,7 +63,7 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
                         const clickedToolbar = event.target.closest('[data-kg-allow-clickthrough="false"]');
                         const clickedSettingsPanel = event.target.closest('[data-kg-settings-panel]');
 
-                        if (isSelected && (cardNode?.hasEditMode?.() && !isEditing && !clickedToolbar && !clickedSettingsPanel)) {
+                        if (isSelected && ($isKoenigCard(cardNode) && cardNode.hasEditMode() && !isEditing && !clickedToolbar && !clickedSettingsPanel)) {
                             editor.dispatchCommand(EDIT_CARD_COMMAND, {cardKey: nodeKey, focusEditor: !clickedDifferentEditor});
                         } else if (!isSelected) {
                             editor.dispatchCommand(SELECT_CARD_COMMAND, {cardKey: nodeKey, focusEditor: !clickedDifferentEditor});
@@ -141,7 +151,7 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
     if (cardConfig?.visibilitySettings !== VISIBILITY_SETTINGS.NONE) {
         editor.getEditorState().read(() => {
             const cardNode = $getNodeByKey(nodeKey);
-            isVisibilityActive = cardNode?.getIsVisibilityActive?.();
+            isVisibilityActive = $isKoenigCard(cardNode) ? cardNode.getIsVisibilityActive() : false;
         });
     }
 

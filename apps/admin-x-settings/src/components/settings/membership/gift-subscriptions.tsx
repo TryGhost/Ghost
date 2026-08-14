@@ -1,7 +1,8 @@
 import React, {useState} from 'react';
 import TopLevelGroup from '../../top-level-group';
-import {Button, Heading, SettingGroupContent, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {Button, Heading, SettingGroupContent} from '@tryghost/admin-x-design-system';
 import {useGlobalData} from '../../providers/global-data-provider';
+import {withErrorBoundary} from '../../error-boundary';
 
 const GiftSubscriptions: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {siteData} = useGlobalData();

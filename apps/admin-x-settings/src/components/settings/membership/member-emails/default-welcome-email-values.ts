@@ -1,4 +1,4 @@
-// NOTE: this has been copy-pasted into apps/posts/src/views/Automations/utils/default-welcome-email-values.ts because we need to support the email design modal in both the settings app and the posts app until Automations GAs
+// NOTE: duplicated in apps/admin/src/automations/utils/default-welcome-email-values.ts — the email design modal needs it in both apps until Automations GAs; keep in sync
 import type {AutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
 
 export type WelcomeEmailType = 'free' | 'paid';

@@ -38,10 +38,10 @@ function checkNodeVersion() {
         console.error(chalk.white('issues with Node.js versions 22.10.0 through 22.17.x.'));
         console.error();
         console.error(chalk.white('Please use one of the following Node.js versions:'));
-        console.error(chalk.green('  • Node.js 22.18.0 or later'));
+        console.error(chalk.green('  • Node.js 22.23.1 or later'));
         console.error();
         console.error(chalk.white('To switch Node.js versions, you can use a version manager:'));
-        console.error(chalk.cyan('  • nvm:    nvm install 22.18.0 && nvm use 22.18.0'));
+        console.error(chalk.cyan('  • nvm:    nvm install 22.23.1 && nvm use 22.23.1'));
         console.error();
         console.error(chalk.red('='.repeat(80)));
         console.error();

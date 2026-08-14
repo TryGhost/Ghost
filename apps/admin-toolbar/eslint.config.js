@@ -2,7 +2,7 @@ import js from '@eslint/js';
 import globals from 'globals';
 import ghostPlugin from 'eslint-plugin-ghost';
 
-import {correctnessRules, strictLinterOptions} from '../../eslint.shared.mjs';
+import {correctnessRules, strictLinterOptions} from '@internal/cfg-eslint';
 
 // Standalone (not factory-based) because admin-toolbar is Preact (~3KB) + JS
 // hyperscript, served as a UMD bundle via CDN — see README. Neither factory

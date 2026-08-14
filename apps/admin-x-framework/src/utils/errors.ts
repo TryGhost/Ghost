@@ -84,6 +84,14 @@ export class MaintenanceError extends APIError {
     }
 }
 
+export class UnauthorizedError extends APIError {
+    constructor(response: Response, data: unknown, errorOptions?: ErrorOptions) {
+        super(response, data, 'You are not authorised to make this request.', errorOptions);
+    }
+}
+
+export class SessionExpiredError extends UnauthorizedError {}
+
 export class ThemeValidationError extends JSONError {
     constructor(response: Response, data: ErrorResponse, errorOptions?: ErrorOptions) {
         super(response, data, 'Theme is not compatible or contains errors.', errorOptions);

@@ -4,8 +4,8 @@ import useNavigationEditor, {type NavigationItem} from '../../../hooks/site/use-
 import useSettingGroup from '../../../hooks/use-setting-group';
 import {Modal, TabView} from '@tryghost/admin-x-design-system';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {useCallback, useMemo, useState} from 'react';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
-import {useState} from 'react';
 
 const NavigationModal = NiceModal.create(() => {
     const modal = useModal();
@@ -18,21 +18,27 @@ const NavigationModal = NiceModal.create(() => {
         siteData
     } = useSettingGroup();
 
-    const [navigationItems, secondaryNavigationItems] = getSettingValues<string>(
+    const [navigationValue, secondaryNavigationValue] = getSettingValues<string>(
         localSettings,
         ['navigation', 'secondary_navigation']
-    ).map(value => JSON.parse(value || '[]') as NavigationItem[]);
+    );
+    const navigationItems = useMemo(() => JSON.parse(navigationValue || '[]') as NavigationItem[], [navigationValue]);
+    const secondaryNavigationItems = useMemo(() => JSON.parse(secondaryNavigationValue || '[]') as NavigationItem[], [secondaryNavigationValue]);
+    const setNavigationItems = useCallback((items: NavigationItem[]) => {
+        updateSetting('navigation', JSON.stringify(items));
+    }, [updateSetting]);
+    const setSecondaryNavigationItems = useCallback((items: NavigationItem[]) => {
+        updateSetting('secondary_navigation', JSON.stringify(items));
+    }, [updateSetting]);
 
     const navigation = useNavigationEditor({
         items: navigationItems,
-        setItems: (items) => {
-            updateSetting('navigation', JSON.stringify(items));
-        }
+        setItems: setNavigationItems
     });
 
     const secondaryNavigation = useNavigationEditor({
         items: secondaryNavigationItems,
-        setItems: items => updateSetting('secondary_navigation', JSON.stringify(items))
+        setItems: setSecondaryNavigationItems
     });
 
     const [selectedTab, setSelectedTab] = useState('primary-nav');

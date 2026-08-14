@@ -4,7 +4,7 @@ import {setupServer} from 'msw/node';
 /**
  * Common Ghost API response fixtures
  */
-export const fixtures = {
+const fixtures = {
     // Global data fixtures
     config: {
         version: '5.x',
@@ -110,7 +110,7 @@ export const fixtures = {
 /**
  * Common Ghost API handlers
  */
-export const handlers = {
+const handlers = {
     // Global data handlers
     browseConfig: http.get('/ghost/api/admin/config/', () => {
         return HttpResponse.json(fixtures.config);
@@ -151,7 +151,7 @@ export const handlers = {
 /**
  * Creates an MSW server with common Ghost API handlers
  */
-export function createMswServer(additionalHandlers: Array<ReturnType<typeof http.get | typeof http.post | typeof http.put | typeof http.delete>> = []) {
+function createMswServer(additionalHandlers: Array<ReturnType<typeof http.get | typeof http.post | typeof http.put | typeof http.delete>> = []) {
     return setupServer(
         ...Object.values(handlers),
         ...additionalHandlers
@@ -172,26 +172,3 @@ export function setupMswServer(additionalHandlers: Array<ReturnType<typeof http.
 
     return server;
 }
-
-/**
- * Helper to create custom handlers that override defaults
- */
-export function createHandler(method: 'get' | 'post' | 'put' | 'delete', path: string, response: Record<string, unknown> | Array<unknown>, status = 200) {
-    const httpMethod = http[method];
-    return httpMethod(path, () => {
-        if (status >= 400) {
-            return new HttpResponse(null, {status});
-        }
-        return HttpResponse.json(response);
-    });
-}
-
-/**
- * Helper to create error handlers
- */
-export function createErrorHandler(method: 'get' | 'post' | 'put' | 'delete', path: string, status = 500) {
-    const httpMethod = http[method];
-    return httpMethod(path, () => {
-        return new HttpResponse(null, {status});
-    });
-} 

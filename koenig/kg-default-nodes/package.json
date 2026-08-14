@@ -34,9 +34,9 @@
     "build": "pnpm clean && tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json",
     "test:unit": "NODE_ENV=testing vitest run --coverage",
     "test:types": "tsc --noEmit",
-    "test": "pnpm test:types && pnpm test:unit",
+    "test": "pnpm run '/^test:/'",
     "lint:code": "eslint src/ --cache",
-    "lint": "pnpm lint:code && pnpm lint:test",
+    "lint": "pnpm run '/^lint:/'",
     "lint:test": "eslint test/ --cache"
   },
   "files": [
@@ -57,8 +57,10 @@
     "@types/luxon": "3.7.2",
     "@types/node": "catalog:",
     "@vitest/coverage-v8": "catalog:",
+    "eslint-plugin-ghost": "catalog:",
     "html-minifier": "4.0.0",
     "prettier": "3.9.4",
+    "@typescript/native": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
     "vitest": "catalog:"

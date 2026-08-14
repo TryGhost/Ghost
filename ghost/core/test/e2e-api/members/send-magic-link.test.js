@@ -10,7 +10,24 @@ const DomainEvents = require('@tryghost/domain-events');
 const {anyErrorId, anyString} = matchers;
 const spamPrevention = require('../../../core/server/web/shared/middleware/api/spam-prevention');
 
-let membersAgent, membersService;
+let integrityToken, membersAgent, membersService;
+
+const refreshIntegrityToken = async () => {
+    const response = await membersAgent.get('/api/integrity-token/').expectStatus(200);
+    integrityToken = response.text;
+};
+
+const postWithIntegrityToken = (url, options) => {
+    const request = membersAgent.post(url, options);
+    const setBody = request.body.bind(request);
+
+    request.body = body => {
+        const token = Object.hasOwn(body, 'integrityToken') ? body.integrityToken : integrityToken;
+        return setBody({...body, integrityToken: token});
+    };
+
+    return request;
+};
 
 describe('sendMagicLink', function () {
     beforeAll(async function () {
@@ -22,7 +39,9 @@ describe('sendMagicLink', function () {
         await fixtureManager.init('members');
     });
 
-    beforeEach(function () {
+    beforeEach(async function () {
+        await refreshIntegrityToken();
+
         mockManager.mockMail();
 
         // Reset spam prevention middleware
@@ -36,8 +55,28 @@ describe('sendMagicLink', function () {
         mockManager.restore();
     });
 
+    it('Errors when the integrity token is missing', async function () {
+        await postWithIntegrityToken('/api/send-magic-link')
+            .body({
+                email: 'test@example.com',
+                emailType: 'signup',
+                integrityToken: undefined
+            })
+            .expectStatus(400);
+    });
+
+    it('Errors when the integrity token is invalid', async function () {
+        await postWithIntegrityToken('/api/send-magic-link')
+            .body({
+                email: 'test@example.com',
+                emailType: 'signup',
+                integrityToken: 'invalid'
+            })
+            .expectStatus(400);
+    });
+
     it('Errors when passed multiple emails', async function () {
-        await membersAgent.post('/api/send-magic-link')
+        await postWithIntegrityToken('/api/send-magic-link')
             .body({
                 email: 'one@test.com,two@test.com',
                 emailType: 'signup'
@@ -47,7 +86,7 @@ describe('sendMagicLink', function () {
 
     it('Returns 201 when logging in with a email that does not exist', async function () {
         const email = 'this-member-does-not-exist@test.com';
-        await membersAgent.post('/api/send-magic-link')
+        await postWithIntegrityToken('/api/send-magic-link')
             .body({
                 email,
                 emailType: 'signin'
@@ -61,7 +100,7 @@ describe('sendMagicLink', function () {
         settingsCache.set('members_signup_access', {value: 'invite'});
 
         const email = 'this-member-does-not-exist@test.com';
-        await membersAgent.post('/api/send-magic-link')
+        await postWithIntegrityToken('/api/send-magic-link')
             .body({
                 email,
                 emailType: 'signin'
@@ -75,7 +114,7 @@ describe('sendMagicLink', function () {
         settingsCache.set('members_signup_access', {value: 'invite'});
 
         const email = 'this-member-does-not-exist@test.com';
-        await membersAgent.post('/api/send-magic-link')
+        await postWithIntegrityToken('/api/send-magic-link')
             .body({
                 email,
                 emailType: 'signup'
@@ -93,7 +132,7 @@ describe('sendMagicLink', function () {
         settingsCache.set('members_signup_access', {value: 'paid'});
 
         const email = 'this-member-does-not-exist@test.com';
-        await membersAgent.post('/api/send-magic-link')
+        await postWithIntegrityToken('/api/send-magic-link')
             .body({
                 email,
                 emailType: 'signup'
@@ -108,7 +147,7 @@ describe('sendMagicLink', function () {
         settingsCache.set('members_signup_access', {value: 'none'});
 
         const email = 'this-member-does-not-exist@test.com';
-        await membersAgent.post('/api/send-magic-link')
+        await postWithIntegrityToken('/api/send-magic-link')
             .body({
                 email,
                 emailType: 'signup'
@@ -121,7 +160,7 @@ describe('sendMagicLink', function () {
 
     it('Creates a valid magic link with tokenData, and without urlHistory', async function () {
         const email = 'newly-created-user-magic-link-test@test.com';
-        const res = await membersAgent.post('/api/send-magic-link')
+        const res = await postWithIntegrityToken('/api/send-magic-link')
             .body({
                 email,
                 emailType: 'signup'
@@ -152,7 +191,7 @@ describe('sendMagicLink', function () {
 
     it('Creates a valid magic link with inbox links for Gmail', async function () {
         const email = 'test@gmail.com';
-        const res = await membersAgent.post('/api/send-magic-link')
+        const res = await postWithIntegrityToken('/api/send-magic-link')
             .body({
                 email,
                 emailType: 'signup'
@@ -166,8 +205,7 @@ describe('sendMagicLink', function () {
     it('Creates a valid magic link from custom signup with redirection', async function () {
         const customSignupUrl = 'http://localhost:2368/custom-signup-form-page';
         const email = 'newly-created-user-magic-link-test@test.com';
-        const res = await membersAgent
-            .post('/api/send-magic-link')
+        const res = await postWithIntegrityToken('/api/send-magic-link')
             .header('Referer', customSignupUrl)
             .body({
                 email,
@@ -191,8 +229,7 @@ describe('sendMagicLink', function () {
     it('Creates a valid magic link from custom signup with redirection disabled', async function () {
         const customSignupUrl = 'http://localhost:2368/custom-signup-form-page';
         const email = 'newly-created-user-magic-link-test@test.com';
-        const res = await membersAgent
-            .post('/api/send-magic-link')
+        const res = await postWithIntegrityToken('/api/send-magic-link')
             .header('Referer', customSignupUrl)
             .body({
                 email,
@@ -215,7 +252,7 @@ describe('sendMagicLink', function () {
 
     it('triggers email alert for free member signup', async function () {
         const email = 'newly-created-user-magic-link-test@test.com';
-        const res = await membersAgent.post('/api/send-magic-link')
+        const res = await postWithIntegrityToken('/api/send-magic-link')
             .body({
                 email,
                 emailType: 'signup'
@@ -252,7 +289,7 @@ describe('sendMagicLink', function () {
 
     it('Converts the urlHistory to the attribution and stores it in the token', async function () {
         const email = 'newly-created-user-magic-link-test-2@test.com';
-        await membersAgent.post('/api/send-magic-link')
+        await postWithIntegrityToken('/api/send-magic-link')
             .body({
                 email,
                 emailType: 'signup',
@@ -317,7 +354,7 @@ describe('sendMagicLink', function () {
                 ...options
             };
 
-            await membersAgent.post('/api/send-magic-link')
+            await postWithIntegrityToken('/api/send-magic-link')
                 .body(body)
                 .expectStatus(201);
 
@@ -351,7 +388,7 @@ describe('sendMagicLink', function () {
         it('blocks signups from email domains blocked in config', async function () {
             const blockedEmail = 'hello@blocked-domain-config.com';
             membersAgent = membersAgent.duplicate();
-            await membersAgent.post('/api/send-magic-link')
+            await postWithIntegrityToken('/api/send-magic-link')
                 .body({
                     email: blockedEmail,
                     emailType: 'signup'
@@ -370,7 +407,7 @@ describe('sendMagicLink', function () {
 
             const blockedEmail = 'hello@blocked-domain-setting.com';
             membersAgent = membersAgent.duplicate();
-            await membersAgent.post('/api/send-magic-link')
+            await postWithIntegrityToken('/api/send-magic-link')
                 .body({
                     email: blockedEmail,
                     emailType: 'signup'
@@ -386,7 +423,7 @@ describe('sendMagicLink', function () {
 
         it('allows signups from non-blocked email domains', async function () {
             const allowedEmail = 'hello@example.com';
-            await membersAgent.post('/api/send-magic-link')
+            await postWithIntegrityToken('/api/send-magic-link')
                 .body({
                     email: allowedEmail,
                     emailType: 'signup'
@@ -400,7 +437,7 @@ describe('sendMagicLink', function () {
                 const email = 'hello-enabled@blocked-domain-config.com';
                 await membersService.api.members.create({email, name: 'Member Test'});
 
-                await membersAgent.post('/api/send-magic-link')
+                await postWithIntegrityToken('/api/send-magic-link')
                     .body({
                         email,
                         emailType: 'signin',
@@ -419,7 +456,7 @@ describe('sendMagicLink', function () {
                 const email = 'hello-enabled@blocked-domain-setting.com';
                 await membersService.api.members.create({email, name: 'Member Test'});
 
-                await membersAgent.post('/api/send-magic-link')
+                await postWithIntegrityToken('/api/send-magic-link')
                     .body({
                         email,
                         emailType: 'signin',
@@ -474,7 +511,7 @@ describe('sendMagicLink', function () {
         it('should prevent homograph attacks by normalizing unicode domains', async function () {
             const asciiEmail = 'user@example.com';
 
-            await membersAgent.post('/api/send-magic-link')
+            await postWithIntegrityToken('/api/send-magic-link')
                 .body({
                     email: asciiEmail,
                     emailType: 'signup'
@@ -483,7 +520,7 @@ describe('sendMagicLink', function () {
 
             const unicodeEmail = 'user@exаmple.com'; // Using Cyrillic 'а'
 
-            await membersAgent.post('/api/send-magic-link')
+            await postWithIntegrityToken('/api/send-magic-link')
                 .body({
                     email: unicodeEmail,
                     emailType: 'signin'
@@ -494,7 +531,7 @@ describe('sendMagicLink', function () {
         it('should normalize unicode domains for signup', async function () {
             const unicodeEmail = 'user@tëst.com';
 
-            await membersAgent.post('/api/send-magic-link')
+            await postWithIntegrityToken('/api/send-magic-link')
                 .body({
                     email: unicodeEmail,
                     emailType: 'signup'
@@ -527,7 +564,7 @@ describe('sendMagicLink', function () {
             const userLoginRateLimit = configUtils.config.get('spam').member_login.freeRetries + 1;
 
             for (let i = 0; i < userLoginRateLimit; i++) {
-                await membersAgent.post('/api/send-magic-link')
+                await postWithIntegrityToken('/api/send-magic-link')
                     .body({
                         email: 'rate-limiting-test-' + i + '@test.com',
                         emailType: 'signup'
@@ -536,7 +573,7 @@ describe('sendMagicLink', function () {
             }
 
             // Now we've been rate limited for every email
-            await membersAgent.post('/api/send-magic-link')
+            await postWithIntegrityToken('/api/send-magic-link')
                 .body({
                     email: 'other@test.com',
                     emailType: 'signup'
@@ -544,7 +581,7 @@ describe('sendMagicLink', function () {
                 .expectStatus(429);
 
             // Now we've been rate limited
-            await membersAgent.post('/api/send-magic-link')
+            await postWithIntegrityToken('/api/send-magic-link')
                 .body({
                     email: 'one@test.com',
                     emailType: 'signup'
@@ -566,7 +603,7 @@ describe('sendMagicLink', function () {
             await membersAgent.get(magicLink.pathname + magicLink.search);
 
             // We are still rate limited
-            await membersAgent.post('/api/send-magic-link')
+            await postWithIntegrityToken('/api/send-magic-link')
                 .body({
                     email: 'any@test.com',
                     emailType: 'signup'
@@ -575,9 +612,10 @@ describe('sendMagicLink', function () {
 
             // Wait 10 minutes and check if we are still rate limited
             clock.tick(10 * 60 * 1000);
+            await refreshIntegrityToken();
 
             // We should be able to send a new email
-            await membersAgent.post('/api/send-magic-link')
+            await postWithIntegrityToken('/api/send-magic-link')
                 .body({
                     email: 'any@test.com',
                     emailType: 'signup'
@@ -585,7 +623,7 @@ describe('sendMagicLink', function () {
                 .expectStatus(201);
 
             // But only once
-            await membersAgent.post('/api/send-magic-link')
+            await postWithIntegrityToken('/api/send-magic-link')
                 .body({
                     email: 'any2@test.com',
                     emailType: 'signup'
@@ -594,8 +632,9 @@ describe('sendMagicLink', function () {
 
             // Waiting 10 minutes is still enough (fibonacci)
             clock.tick(10 * 60 * 1000);
+            await refreshIntegrityToken();
 
-            await membersAgent.post('/api/send-magic-link')
+            await postWithIntegrityToken('/api/send-magic-link')
                 .body({
                     email: 'any2@test.com',
                     emailType: 'signup'
@@ -603,7 +642,7 @@ describe('sendMagicLink', function () {
                 .expectStatus(201);
 
             // Blocked again
-            await membersAgent.post('/api/send-magic-link')
+            await postWithIntegrityToken('/api/send-magic-link')
                 .body({
                     email: 'any3@test.com',
                     emailType: 'signup'
@@ -612,8 +651,9 @@ describe('sendMagicLink', function () {
 
             // Waiting 10 minutes is not enough any longer
             clock.tick(10 * 60 * 1000);
+            await refreshIntegrityToken();
 
-            await membersAgent.post('/api/send-magic-link')
+            await postWithIntegrityToken('/api/send-magic-link')
                 .body({
                     email: 'any3@test.com',
                     emailType: 'signup'
@@ -622,8 +662,9 @@ describe('sendMagicLink', function () {
 
             // Waiting 20 minutes is enough
             clock.tick(10 * 60 * 1000);
+            await refreshIntegrityToken();
 
-            await membersAgent.post('/api/send-magic-link')
+            await postWithIntegrityToken('/api/send-magic-link')
                 .body({
                     email: 'any2@test.com',
                     emailType: 'signup'
@@ -631,7 +672,7 @@ describe('sendMagicLink', function () {
                 .expectStatus(201);
 
             // Blocked again
-            await membersAgent.post('/api/send-magic-link')
+            await postWithIntegrityToken('/api/send-magic-link')
                 .body({
                     email: 'any3@test.com',
                     emailType: 'signup'
@@ -640,9 +681,10 @@ describe('sendMagicLink', function () {
 
             // Waiting 12 hours is enough to reset it completely
             clock.tick(12 * 60 * 60 * 1000 + 1000);
+            await refreshIntegrityToken();
 
             // We can try multiple times again
-            await membersAgent.post('/api/send-magic-link')
+            await postWithIntegrityToken('/api/send-magic-link')
                 .body({
                     email: 'any4@test.com',
                     emailType: 'signup'
@@ -650,7 +692,7 @@ describe('sendMagicLink', function () {
                 .expectStatus(201);
 
             // Blocked again
-            await membersAgent.post('/api/send-magic-link')
+            await postWithIntegrityToken('/api/send-magic-link')
                 .body({
                     email: 'any5@test.com',
                     emailType: 'signup'
@@ -671,14 +713,14 @@ describe('sendMagicLink', function () {
             const userLoginRateLimit = configUtils.config.get('spam').user_login.freeRetries + 1;
 
             for (let i = 0; i < userLoginRateLimit; i++) {
-                await membersAgent.post('/api/send-magic-link')
+                await postWithIntegrityToken('/api/send-magic-link')
                     .body({
                         email: 'rate-limiting-test-1@test.com',
                         emailType: 'signup'
                     })
                     .expectStatus(201);
 
-                await membersAgent.post('/api/send-magic-link')
+                await postWithIntegrityToken('/api/send-magic-link')
                     .body({
                         email: 'rate-limiting-test-2@test.com',
                         emailType: 'signup'
@@ -687,7 +729,7 @@ describe('sendMagicLink', function () {
             }
 
             // Now we've been rate limited
-            await membersAgent.post('/api/send-magic-link')
+            await postWithIntegrityToken('/api/send-magic-link')
                 .body({
                     email: 'rate-limiting-test-1@test.com',
                     emailType: 'signup'
@@ -695,7 +737,7 @@ describe('sendMagicLink', function () {
                 .expectStatus(429);
 
             // Now we've been rate limited
-            await membersAgent.post('/api/send-magic-link')
+            await postWithIntegrityToken('/api/send-magic-link')
                 .body({
                     email: 'rate-limiting-test-2@test.com',
                     emailType: 'signup'
@@ -717,7 +759,7 @@ describe('sendMagicLink', function () {
             await membersAgent.get(magicLink.pathname + magicLink.search);
 
             // The first member has been un ratelimited
-            await membersAgent.post('/api/send-magic-link')
+            await postWithIntegrityToken('/api/send-magic-link')
                 .body({
                     email: 'rate-limiting-test-1@test.com',
                     emailType: 'signup'
@@ -726,7 +768,7 @@ describe('sendMagicLink', function () {
                 .expectStatus(201);
 
             // The second is still rate limited
-            await membersAgent.post('/api/send-magic-link')
+            await postWithIntegrityToken('/api/send-magic-link')
                 .body({
                     email: 'rate-limiting-test-2@test.com',
                     emailType: 'signup'
@@ -735,9 +777,10 @@ describe('sendMagicLink', function () {
 
             // Wait 10 minutes and check if we are still rate limited
             clock.tick(10 * 60 * 1000);
+            await refreshIntegrityToken();
 
             // We should be able to send a new email
-            await membersAgent.post('/api/send-magic-link')
+            await postWithIntegrityToken('/api/send-magic-link')
                 .body({
                     email: 'rate-limiting-test-2@test.com',
                     emailType: 'signup'
@@ -753,8 +796,7 @@ describe('sendMagicLink', function () {
                 body.includeOTC = otc;
             }
 
-            return membersAgent
-                .post('/api/send-magic-link')
+            return postWithIntegrityToken('/api/send-magic-link')
                 .body(body);
         }
 
@@ -926,8 +968,7 @@ describe('sendMagicLink', function () {
             const otcRef = response.body.otc_ref;
             const otc = mail.text.match(/\d{6}/)[0];
 
-            const verifyResponse = await membersAgent
-                .post('/api/verify-otc')
+            const verifyResponse = await postWithIntegrityToken('/api/verify-otc')
                 .header('Referer', options.referer)
                 .body({
                     otcRef,
@@ -992,8 +1033,7 @@ describe('sendMagicLink', function () {
 
                 // Make multiple verification attempts with *different* otcRefs from same IP
                 for (let i = 0; i < otcVerificationEnumerationLimit; i++) {
-                    await membersAgent
-                        .post('/api/verify-otc')
+                    await postWithIntegrityToken('/api/verify-otc')
                         .body({
                             otcRef: `fake-otc-ref-${i}`,
                             otc: '000000'
@@ -1002,8 +1042,7 @@ describe('sendMagicLink', function () {
                 }
 
                 // Now we should be rate limited (enumeration)
-                await membersAgent
-                    .post('/api/verify-otc')
+                await postWithIntegrityToken('/api/verify-otc')
                     .body({
                         otcRef: 'fake-otc-ref-final',
                         otc: '000000'
@@ -1025,8 +1064,7 @@ describe('sendMagicLink', function () {
 
                 // Make multiple failed attempts with the *same* otcRef
                 for (let i = 0; i < otcVerificationLimit; i++) {
-                    await membersAgent
-                        .post('/api/verify-otc')
+                    await postWithIntegrityToken('/api/verify-otc')
                         .body({
                             otcRef,
                             otc: `00000${i + 1}`
@@ -1035,8 +1073,7 @@ describe('sendMagicLink', function () {
                 }
 
                 // Now we should be rate limited for this specific otcRef
-                await membersAgent
-                    .post('/api/verify-otc')
+                await postWithIntegrityToken('/api/verify-otc')
                     .body({
                         otcRef,
                         otc: '000000'
@@ -1061,8 +1098,7 @@ describe('sendMagicLink', function () {
 
                 // Exhaust attempts for first otcRef
                 for (let i = 0; i < otcVerificationLimit; i++) {
-                    await membersAgent
-                        .post('/api/verify-otc')
+                    await postWithIntegrityToken('/api/verify-otc')
                         .body({
                             otcRef: 'fake-otc-ref-one',
                             otc: '000000'
@@ -1071,8 +1107,7 @@ describe('sendMagicLink', function () {
                 }
 
                 // First otcRef should be rate limited
-                await membersAgent
-                    .post('/api/verify-otc')
+                await postWithIntegrityToken('/api/verify-otc')
                     .body({
                         otcRef: 'fake-otc-ref-one',
                         otc: '000000'
@@ -1080,8 +1115,7 @@ describe('sendMagicLink', function () {
                     .expectStatus(429);
 
                 // But second otcRef should still work (independent counter)
-                await membersAgent
-                    .post('/api/verify-otc')
+                await postWithIntegrityToken('/api/verify-otc')
                     .body({
                         otcRef: 'fake-otc-ref-two',
                         otc: '000000'

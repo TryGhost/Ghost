@@ -10,7 +10,7 @@ import {
     mochaRulesOff,
     nodeLibRules,
     strictLinterOptions
-} from '../../eslint.shared.mjs';
+} from '@internal/cfg-eslint';
 
 // nodeLibRules + jsUnusedVarsRule covers the bulk. Two workspace-specific:
 // turn off ghost/filenames/match-regex (we use local-filenames/match-regex in

@@ -1,13 +1,7 @@
-import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
-import App from "./app.tsx";
-import { FrameworkProvider, RouterProvider } from "@tryghost/admin-x-framework";
-import { ShadeApp } from "@tryghost/shade/app";
-
-import { routes } from "./routes.tsx";
+import { AdminAppRoot } from "./app-root.tsx";
 import { navigateTo } from "./utils/navigation";
-import { AppProvider } from "./providers/app-provider";
 
 const framework = {
     ghostVersion: "",
@@ -33,20 +27,4 @@ const framework = {
     },
 };
 
-createRoot(document.getElementById("root")!).render(
-    <StrictMode>
-        <FrameworkProvider {...framework}>
-            <RouterProvider prefix={"/"} routes={routes}>
-                <AppProvider>
-                    <ShadeApp
-                        className="shade-admin"
-                        darkMode={false}
-                        fetchKoenigLexical={null}
-                    >
-                        <App />
-                    </ShadeApp>
-                </AppProvider>
-            </RouterProvider>
-        </FrameworkProvider>
-    </StrictMode>
-);
+createRoot(document.getElementById("root")!).render(<AdminAppRoot framework={framework} />);

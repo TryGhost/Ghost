@@ -1,7 +1,8 @@
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
-import {Button, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {Button} from '@tryghost/admin-x-design-system';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {withErrorBoundary} from '../../error-boundary';
 
 const Navigation: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {updateRoute} = useRouting();

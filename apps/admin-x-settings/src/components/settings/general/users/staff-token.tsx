@@ -45,6 +45,7 @@ const StaffToken: React.FC = () => {
             <Heading className='mb-2' level={6} grey>Staff access token</Heading>
             <APIKeys hasLabel={false} keys={[
                 {
+                    id: 'staff-access-token',
                     text: token || '',
                     onRegenerate: genConfirmation
                 }]} />

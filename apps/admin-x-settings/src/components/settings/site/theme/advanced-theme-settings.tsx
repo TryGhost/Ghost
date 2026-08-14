@@ -2,7 +2,8 @@ import InvalidThemeModal, {type FatalErrors} from './invalid-theme-modal';
 import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import useCustomFonts from '../../../../hooks/use-custom-fonts';
-import {Button, type ButtonProps, ConfirmationModal, LimitModal, List, ListItem, Menu, ModalPage, showToast} from '@tryghost/admin-x-design-system';
+import {Button, ConfirmationModal, LimitModal, List, ListItem, ModalPage, showToast} from '@tryghost/admin-x-design-system';
+import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from '@tryghost/shade/components';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {type Theme, isActiveTheme, isDefaultTheme, isDeletableTheme, isLegacyTheme, useActivateTheme, useDeleteTheme} from '@tryghost/admin-x-framework/api/themes';
 import {downloadFile, getGhostPaths} from '@tryghost/admin-x-framework/helpers';
@@ -155,36 +156,22 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
         );
     }
 
-    const menuItems = [
-        {
-            id: 'edit-code',
-            label: 'Edit code',
-            onClick: handleEditCode
-        },
-        {
-            id: 'download',
-            label: 'Download',
-            onClick: handleDownload
-        }
-    ];
-
-    if (isDeletableTheme(theme)) {
-        menuItems.push({
-            id: 'delete',
-            label: 'Delete',
-            onClick: handleDelete
-        });
-    }
-
-    const buttonProps: ButtonProps = {
-        iconColorClass: 'text-base',
-        size: 'sm'
-    };
-
     return (
         <div className='-mr-3 flex items-center gap-4'>
             {actions}
-            <Menu items={menuItems} position='end' triggerButtonProps={buttonProps} />
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button icon='ellipsis' iconColorClass='text-base' label='Menu' size='sm' hideLabel />
+                </DropdownMenuTrigger>
+                {/* legacy ModalPage overlay is z-[1000]; keep the portalled menu above it */}
+                <DropdownMenuContent align='end' className='z-[9999]'>
+                    <DropdownMenuItem onSelect={handleEditCode}>Edit code</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={handleDownload}>Download</DropdownMenuItem>
+                    {isDeletableTheme(theme) && (
+                        <DropdownMenuItem onSelect={handleDelete}>Delete</DropdownMenuItem>
+                    )}
+                </DropdownMenuContent>
+            </DropdownMenu>
         </div>
     );
 };

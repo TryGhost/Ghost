@@ -5,46 +5,8 @@ import React, {useCallback, useEffect, useState} from 'react';
 import ThemeCodeEditorModal from './theme/theme-code-editor-modal';
 import {LimitModal} from '@tryghost/admin-x-design-system';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {parseEditingThemeRoute} from './theme/theme-editor-utils';
 import {useCheckThemeLimitError} from '../../../hooks/use-check-theme-limit-error';
-
-const parseEditingThemeRoute = (path: string): {themeName: string | null; isInvalid: boolean} => {
-    if (!path.startsWith('theme/edit/')) {
-        return {
-            themeName: null,
-            isInvalid: false
-        };
-    }
-
-    const encodedThemeName = path.slice('theme/edit/'.length).split('?')[0];
-
-    if (!encodedThemeName || encodedThemeName.includes('/')) {
-        return {
-            themeName: null,
-            isInvalid: true
-        };
-    }
-
-    try {
-        const themeName = decodeURIComponent(encodedThemeName);
-
-        if (!themeName || themeName.includes('/')) {
-            return {
-                themeName: null,
-                isInvalid: true
-            };
-        }
-
-        return {
-            themeName,
-            isInvalid: false
-        };
-    } catch {
-        return {
-            themeName: null,
-            isInvalid: true
-        };
-    }
-};
 
 const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
     const modal = useModal();
@@ -59,6 +21,7 @@ const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
     const [installationAllowed, setInstallationAllowed] = useState<boolean | null>(null);
     const [hasCheckedInstallation, setHasCheckedInstallation] = useState(false);
     const {themeName: editingThemeName, isInvalid: hasInvalidEditingThemeRoute} = parseEditingThemeRoute(currentPath);
+    const hasSupportedPath = currentPath === 'design/edit' || currentPath === 'design/change-theme' || currentPath === 'theme/install' || currentPath.startsWith('theme/edit/');
 
     const showThemeLimitModal = useCallback((error: string) => {
         NiceModal.show(LimitModal, {
@@ -114,6 +77,12 @@ const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
         modal.remove();
         updateRoute('theme');
     }, [hasInvalidEditingThemeRoute, modal, updateRoute]);
+
+    useEffect(() => {
+        if (!hasSupportedPath) {
+            modal.remove();
+        }
+    }, [hasSupportedPath, modal]);
 
     useEffect(() => {
         let isCancelled = false;
@@ -305,7 +274,6 @@ const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
 
         return <ThemeCodeEditorModal themeName={editingThemeName} />;
     } else {
-        modal.remove();
         return null;
     }
 };

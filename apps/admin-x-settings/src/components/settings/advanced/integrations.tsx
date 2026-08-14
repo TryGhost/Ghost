@@ -3,12 +3,15 @@ import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import TopLevelGroup from '../../top-level-group';
 import usePinturaEditor from '../../../hooks/use-pintura-editor';
-import {Button, ConfirmationModal, Icon, List, ListItem, NoValueLabel, SettingGroupHeader, TabView, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {Button, ConfirmationModal, Icon, List, ListItem, SettingGroupHeader, TabView, showToast} from '@tryghost/admin-x-design-system';
 import {type Integration, useBrowseIntegrations, useDeleteIntegration} from '@tryghost/admin-x-framework/api/integrations';
+import {NoValueLabel, NoValueLabelIcon} from '@tryghost/shade/components';
+import {Plug} from 'lucide-react';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {withErrorBoundary} from '../../error-boundary';
 
 interface IntegrationItemProps {
     icon?: React.ReactNode,
@@ -236,8 +239,9 @@ const CustomIntegrations: React.FC<{integrations: Integration[]}> = ({integratio
             </List>
         );
     } else {
-        return <NoValueLabel icon='integration'>
-        No custom integration.
+        return <NoValueLabel>
+            <NoValueLabelIcon><Plug /></NoValueLabelIcon>
+            No custom integration.
         </NoValueLabel>;
     }
 };

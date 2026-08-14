@@ -11,7 +11,7 @@ describe('Email Service', function () {
     let membersRepository;
     let emailRenderer;
     let sendingService;
-    let scheduleRecurringJobs;
+    let scheduleRecurringNewslettersJob;
     let domainWarmingService;
 
     beforeEach(function () {
@@ -22,7 +22,7 @@ describe('Email Service', function () {
         };
         verificicationRequired = false;
         scheduleEmail = sinon.stub().returns();
-        scheduleRecurringJobs = sinon.stub().resolves();
+        scheduleRecurringNewslettersJob = sinon.stub().resolves();
         settings = {};
         settingsCache = {
             get(key) {
@@ -49,8 +49,20 @@ describe('Email Service', function () {
                     replacements: []
                 };
             },
-            getPreviewSegment: (post, segment) => {
-                return segment;
+            getSegmentForAudience: (post, memberStatus) => {
+                if (memberStatus === 'free') {
+                    return 'status:free';
+                }
+                if (memberStatus === 'paid') {
+                    return 'status:-free';
+                }
+                return null;
+            },
+            describeSegment: (post, segment) => {
+                return {
+                    status: segment?.includes('status:-free') ? 'status:-free' : (segment?.includes('status:free') ? 'status:free' : null),
+                    hasPostAccess: true
+                };
             }
         };
         sendingService = {
@@ -98,7 +110,7 @@ describe('Email Service', function () {
             membersRepository,
             sendingService,
             emailAnalyticsJobs: {
-                scheduleRecurringJobs
+                scheduleRecurringNewslettersJob
             },
             domainWarmingService: domainWarmingService
         });
@@ -153,7 +165,7 @@ describe('Email Service', function () {
                 emailRenderer,
                 membersRepository,
                 sendingService,
-                emailAnalyticsJobs: {scheduleRecurringJobs},
+                emailAnalyticsJobs: {scheduleRecurringNewslettersJob},
                 domainWarmingService,
                 config: {
                     get(key) {
@@ -281,7 +293,7 @@ describe('Email Service', function () {
             assert.equal(email.get('status'), 'pending');
             assert.equal(email.get('source'), post.get('mobiledoc'));
             assert.equal(email.get('source_type'), 'mobiledoc');
-            sinon.assert.calledOnce(scheduleRecurringJobs);
+            sinon.assert.calledOnce(scheduleRecurringNewslettersJob);
         });
 
         describe('Domain warming', function () {
@@ -355,9 +367,9 @@ describe('Email Service', function () {
                 mobiledoc: 'Mobiledoc'
             });
 
-            scheduleRecurringJobs.rejects(new Error('Test error'));
+            scheduleRecurringNewslettersJob.rejects(new Error('Test error'));
             await service.createEmail(post);
-            sinon.assert.calledOnce(scheduleRecurringJobs);
+            sinon.assert.calledOnce(scheduleRecurringNewslettersJob);
         });
 
         it('Creates and schedules an email with lexical', async function () {
@@ -541,7 +553,7 @@ describe('Email Service', function () {
                 emailRenderer,
                 membersRepository,
                 sendingService,
-                emailAnalyticsJobs: {scheduleRecurringJobs},
+                emailAnalyticsJobs: {scheduleRecurringNewslettersJob},
                 domainWarmingService
             });
 
@@ -576,7 +588,7 @@ describe('Email Service', function () {
                 emailRenderer,
                 membersRepository,
                 sendingService,
-                emailAnalyticsJobs: {scheduleRecurringJobs},
+                emailAnalyticsJobs: {scheduleRecurringNewslettersJob},
                 domainWarmingService
             });
 
@@ -626,7 +638,7 @@ describe('Email Service', function () {
                 emailRenderer,
                 membersRepository,
                 sendingService,
-                emailAnalyticsJobs: {scheduleRecurringJobs},
+                emailAnalyticsJobs: {scheduleRecurringNewslettersJob},
                 domainWarmingService
             });
 
@@ -662,7 +674,7 @@ describe('Email Service', function () {
                 emailRenderer,
                 membersRepository,
                 sendingService,
-                emailAnalyticsJobs: {scheduleRecurringJobs},
+                emailAnalyticsJobs: {scheduleRecurringNewslettersJob},
                 domainWarmingService,
                 // 1 hour override
                 config: {get: key => (key === 'bulkEmail:resumeMaxAgeMs' ? 60 * 60 * 1000 : undefined)}
@@ -818,17 +830,38 @@ describe('Email Service', function () {
                     feedback_enabled: true
                 })
             });
-            sinon.stub(emailRenderer, 'getPreviewSegment').returns('status:-free+(product:\'gold\')');
+            sinon.stub(emailRenderer, 'getSegmentForAudience').returns('status:-free+(product:\'gold\')');
             const renderBody = sinon.stub(emailRenderer, 'renderBody').resolves({
                 html: 'HTML',
                 plaintext: 'Plaintext',
                 replacements: []
             });
 
-            await service.previewEmail(post, post.get('newsletter'), 'status:-free');
+            await service.previewEmail(post, post.get('newsletter'), 'paid');
 
-            sinon.assert.calledOnceWithExactly(emailRenderer.getPreviewSegment, post, 'status:-free');
+            sinon.assert.calledOnceWithExactly(emailRenderer.getSegmentForAudience, post, 'paid', undefined);
             assert.equal(renderBody.firstCall.args[2], 'status:-free+(product:\'gold\')');
+        });
+
+        it('passes the selected tier through to the preview segment', async function () {
+            const post = createModel({
+                id: '123',
+                newsletter: createModel({
+                    status: 'active',
+                    feedback_enabled: true
+                })
+            });
+            sinon.stub(emailRenderer, 'getSegmentForAudience').returns('status:-free+product:\'silver\'');
+            const renderBody = sinon.stub(emailRenderer, 'renderBody').resolves({
+                html: 'HTML',
+                plaintext: 'Plaintext',
+                replacements: []
+            });
+
+            await service.previewEmail(post, post.get('newsletter'), 'paid', 'silver');
+
+            sinon.assert.calledOnceWithExactly(emailRenderer.getSegmentForAudience, post, 'paid', 'silver');
+            assert.equal(renderBody.firstCall.args[2], 'status:-free+product:\'silver\'');
         });
     });
 
@@ -858,15 +891,32 @@ describe('Email Service', function () {
                     feedback_enabled: true
                 })
             });
-            sinon.stub(emailRenderer, 'getPreviewSegment').returns('status:-free+(product:\'gold\')');
+            sinon.stub(emailRenderer, 'getSegmentForAudience').returns('status:-free+(product:\'gold\')');
 
-            await service.sendTestEmail(post, post.get('newsletter'), 'status:-free', ['example@example.com']);
+            await service.sendTestEmail(post, post.get('newsletter'), 'paid', ['example@example.com']);
 
             sinon.assert.calledOnce(sendingService.send);
             const {segment, members} = sendingService.send.firstCall.args[0];
             assert.equal(segment, 'status:-free+(product:\'gold\')');
             // The example member is still built from the audience choice, not the mapped filter
             assert.equal(members[0].status, 'paid');
+        });
+
+        it('passes the selected tier through to the preview segment', async function () {
+            const post = createModel({
+                id: '123',
+                newsletter: createModel({
+                    status: 'active',
+                    feedback_enabled: true
+                })
+            });
+            const getSegmentForAudience = sinon.stub(emailRenderer, 'getSegmentForAudience').returns('status:-free+product:\'silver\'');
+
+            await service.sendTestEmail(post, post.get('newsletter'), 'paid', ['example@example.com'], 'silver');
+
+            sinon.assert.calledOnceWithExactly(getSegmentForAudience, post, 'paid', 'silver');
+            const {segment} = sendingService.send.firstCall.args[0];
+            assert.equal(segment, 'status:-free+product:\'silver\'');
         });
     });
 });

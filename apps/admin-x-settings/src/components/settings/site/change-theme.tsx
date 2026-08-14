@@ -1,11 +1,13 @@
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
 import TopLevelGroup from '../../top-level-group';
-import {Button, Heading, LimitModal, Menu, SettingGroupContent, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {Button, Heading, LimitModal, SettingGroupContent} from '@tryghost/admin-x-design-system';
+import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from '@tryghost/shade/components';
 import {type Theme, useBrowseThemes} from '@tryghost/admin-x-framework/api/themes';
 import {downloadFile, getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useCheckThemeLimitError} from '../../../hooks/use-check-theme-limit-error';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {withErrorBoundary} from '../../error-boundary';
 
 const ChangeTheme: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const [themeLimitError, setThemeLimitError] = useState<string|null>(null);
@@ -69,19 +71,6 @@ const ChangeTheme: React.FC<{ keywords: string[] }> = ({keywords}) => {
         downloadFile(`${apiRoot}/themes/${activeTheme.name}/download`);
     };
 
-    const themeMenuItems = [
-        {
-            id: 'edit-code',
-            label: 'Edit code',
-            onClick: openThemeEditor
-        },
-        {
-            id: 'download',
-            label: 'Download',
-            onClick: downloadTheme
-        }
-    ];
-
     const values = (
         <SettingGroupContent>
             <div className='flex flex-col'>
@@ -89,15 +78,15 @@ const ChangeTheme: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 <div className='mt-1 flex w-full items-center justify-between gap-4'>
                     <div>{activeTheme ? `${activeTheme.name} (v${activeTheme.package?.version || '1.0'})` : 'Loading...'}</div>
                     <div className='-mr-3'>
-                        <Menu
-                            items={themeMenuItems}
-                            position='end'
-                            triggerButtonProps={{
-                                disabled: !activeTheme,
-                                iconColorClass: 'text-base',
-                                size: 'sm'
-                            }}
-                        />
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button disabled={!activeTheme} icon='ellipsis' iconColorClass='text-base' label='Menu' size='sm' hideLabel />
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align='end'>
+                                <DropdownMenuItem onSelect={openThemeEditor}>Edit code</DropdownMenuItem>
+                                <DropdownMenuItem onSelect={downloadTheme}>Download</DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </div>
                 </div>
             </div>

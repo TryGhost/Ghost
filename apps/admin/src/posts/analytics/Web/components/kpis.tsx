@@ -3,7 +3,7 @@ import {Card, CardContent, DropdownMenu, DropdownMenuContent, DropdownMenuItem, 
 import {GhAreaChart, KpiDropdownButton, KpiTabTrigger, KpiTabValue} from '@tryghost/shade/patterns';
 import {KPI_METRICS} from '@/posts/analytics/Web/components/kpi-metrics';
 import {type KpiDataItem, getWebKpiValues} from '@/posts/analytics/utils/kpi-helpers';
-import {sanitizeChartData} from '@tryghost/shade/app';
+import {getEffectiveChartRange, sanitizeChartData} from '@/shared/analytics/chart-helpers';
 import {useSearchParams} from '@tryghost/admin-x-framework';
 
 interface KpisProps {
@@ -29,6 +29,8 @@ const Kpis:React.FC<KpisProps> = ({data, range}) => {
     });
 
     const kpiValues = getWebKpiValues(data);
+
+    const chartRange = getEffectiveChartRange(range, data || [], {fieldName: currentMetric.dataKey as keyof KpiDataItem});
 
     return (
         <Card>
@@ -68,7 +70,7 @@ const Kpis:React.FC<KpisProps> = ({data, range}) => {
                             color={currentMetric.color}
                             data={chartData}
                             id={currentMetric.dataKey}
-                            range={range}
+                            range={chartRange}
                             showHours={true}
                             syncId="overview-charts"
                         />

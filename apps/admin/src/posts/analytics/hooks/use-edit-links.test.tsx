@@ -9,7 +9,7 @@ import {useEditLinks} from '@/posts/analytics/hooks/use-edit-links';
 vi.mock('@tryghost/admin-x-framework/api/links', () => ({
     useBulkEditLinks: () => ({
         mutateAsync: vi.fn(),
-        isLoading: false
+        isPending: false
     })
 }));
 

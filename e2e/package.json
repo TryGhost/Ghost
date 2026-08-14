@@ -31,6 +31,7 @@
     "@eslint/js": "catalog:",
     "@faker-js/faker": "catalog:",
     "@playwright/test": "catalog:",
+    "@tryghost/test-data": "workspace:*",
     "@tryghost/debug": "catalog:",
     "@tryghost/logging": "catalog:",
     "@types/dockerode": "4.0.1",
@@ -39,12 +40,14 @@
     "dockerode": "5.0.1",
     "dotenv": "catalog:",
     "eslint": "catalog:",
+    "eslint-plugin-ghost": "catalog:",
     "eslint-plugin-no-relative-import-paths": "1.6.1",
     "eslint-plugin-playwright": "2.10.4",
     "express": "4.22.2",
     "knex": "3.1.0",
     "mysql2": "3.22.5",
     "stripe": "8.222.0",
+    "@typescript/native": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:"
   }

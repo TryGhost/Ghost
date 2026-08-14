@@ -57,7 +57,7 @@ export const useWhatsNew = (): UseQueryResult<WhatsNewData> => {
         },
         enabled: isChangelogLoaded && hasWhatsNewPreferences,
         staleTime: Infinity,
-        cacheTime: 0,
+        gcTime: 0,
     });
 };
 

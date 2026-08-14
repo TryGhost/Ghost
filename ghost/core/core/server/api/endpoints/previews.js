@@ -2,11 +2,13 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
 const membersService = require('../../services/members');
+const urlSerializerUtils = require('./utils/serializers/input/utils/url');
 const ALLOWED_INCLUDES = ['authors', 'tags', 'tiers'];
 const ALLOWED_MEMBER_STATUSES = ['anonymous', 'free', 'paid'];
 
 const messages = {
-    postNotFound: 'Post not found.'
+    postNotFound: 'Post not found.',
+    invalidMemberTier: 'member_tier must be a single tier slug.'
 };
 
 // Simulate serving content as different member states by setting the minimal
@@ -14,6 +16,14 @@ const messages = {
 const _addMemberContextToFrame = async (frame) => {
     if (!frame?.options?.member_status) {
         return;
+    }
+
+    // the framework's options validation only supports required/values checks,
+    // so guard the shape here — repeated query params arrive as arrays
+    if (frame.options.member_tier !== undefined && (typeof frame.options.member_tier !== 'string' || frame.options.member_tier === '')) {
+        throw new errors.ValidationError({
+            message: tpl(messages.invalidMemberTier)
+        });
     }
 
     // only set apiType when given a member_status to preserve backwards compatibility
@@ -31,8 +41,8 @@ const _addMemberContextToFrame = async (frame) => {
     }
 
     if (frame.options?.member_status === 'paid') {
-        // For member_status=paid, render as a member with all active paid tiers
-        frame.original.context.member = await membersService.createPaidMemberShim();
+        // For member_status=paid, render with the selected tier or all active paid tiers
+        frame.original.context.member = await membersService.createPaidMemberShim(frame.options.member_tier);
     }
 };
 
@@ -47,7 +57,8 @@ const controller = {
         permissions: true,
         options: [
             'include',
-            'member_status'
+            'member_status',
+            'member_tier'
         ],
         data: [
             'uuid'
@@ -69,6 +80,9 @@ const controller = {
         },
         async query(frame) {
             await _addMemberContextToFrame(frame);
+
+            // previews has no input serializer, so the URL force-load happens here
+            urlSerializerUtils.forceUrlRelationsWhenLazy(frame, 'posts');
 
             const model = await models.Post.findOne(Object.assign({status: 'all'}, frame.data), frame.options);
             if (!model) {

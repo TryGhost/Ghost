@@ -104,6 +104,27 @@ describe('Frontend Routing: Preview Routes', function () {
             .expect(assertNoPaywallRendered);
     });
 
+    it('should render draft using only the tier selected for the preview', async function () {
+        await request.get('/p/d52c42ae-2755-455c-80ec-70b2ec55c906/?member_status=paid&member_tier=silver')
+            .expect('Content-Type', /html/)
+            .expect(200)
+            .expect(assertCorrectFrontendHeaders)
+            .expect(assertNoPaywallRendered);
+
+        await request.get('/p/d52c42ae-2755-455c-80ec-70b2ec55c906/?member_status=paid&member_tier=missing-tier')
+            .expect('Content-Type', /html/)
+            .expect(200)
+            .expect(assertCorrectFrontendHeaders)
+            .expect(assertPaywallRendered);
+    });
+
+    it('should reject a repeated member_tier param', async function () {
+        // frontend routing turns API validation errors into a 404 rather than
+        // exposing them — the point is it must not render as an all-tier member
+        await request.get('/p/d52c42ae-2755-455c-80ec-70b2ec55c906/?member_status=paid&member_tier=silver&member_tier=gold')
+            .expect(404);
+    });
+
     it('should render draft as free member with ?member_status=free', async function () {
         await request.get('/p/d52c42ae-2755-455c-80ec-70b2ec55c905/?member_status=free')
             .expect('Content-Type', /html/)

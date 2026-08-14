@@ -376,6 +376,14 @@ describe('MemberBreadService', function () {
             }
         };
 
+        const defaultCustomFieldsService = {
+            values: {
+                getValuesForMembers: sinon.stub().resolves(new Map()),
+                planWrite: sinon.stub().resolves([]),
+                applyWrite: sinon.stub().resolves()
+            }
+        };
+
         const getService = (options = {}) => {
             return new MemberBreadService({
                 settingsHelpers: {
@@ -386,7 +394,9 @@ describe('MemberBreadService', function () {
                 emailSuppressionList: emailSuppressionListStub,
                 nextPaymentCalculator: options.nextPaymentCalculator || nextPaymentCalculator,
                 offersAPI: options.offersAPI || defaultOffersAPI,
-                giftService: options.giftService || defaultGiftService
+                labsService: options.labsService || {isSet: sinon.stub().returns(false)},
+                giftService: options.giftService || defaultGiftService,
+                customFieldsService: options.customFieldsService || defaultCustomFieldsService
             });
         };
 

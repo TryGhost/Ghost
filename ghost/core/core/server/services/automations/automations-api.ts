@@ -365,6 +365,7 @@ export async function retryStep(...args: Parameters<AutomationsRepository['retry
 
 export type RecordEmailSentOptions = Readonly<{
     automationActionRevisionId: string;
+    mailgunMessageId?: string;
     memberEmail: string;
     memberId: string;
     memberName: string | null;
@@ -380,6 +381,7 @@ export async function recordEmailSent(options: RecordEmailSentOptions): Promise<
             member_email: options.memberEmail,
             member_name: options.memberName,
             automation_action_revision_id: options.automationActionRevisionId,
+            ...(options.mailgunMessageId ? {mailgun_message_id: options.mailgunMessageId} : {}),
             track_opens: options.trackOpens
         }, {transacting});
 
@@ -389,4 +391,16 @@ export async function recordEmailSent(options: RecordEmailSentOptions): Promise<
                 email_sent_count: transacting.raw('COALESCE(??, 0) + ?', ['email_sent_count', 1])
             });
     });
+}
+
+export async function getAutomatedEmailRecipientsByMailgunIds(
+    ...args: Parameters<AutomationsRepository['getAutomatedEmailRecipientsByMailgunIds']>
+) {
+    return await repository.getAutomatedEmailRecipientsByMailgunIds(...args);
+}
+
+export async function trackEmailDeliveredAndOpened(
+    ...args: Parameters<AutomationsRepository['trackEmailDeliveredAndOpened']>
+) {
+    return await repository.trackEmailDeliveredAndOpened(...args);
 }

@@ -1,5 +1,5 @@
 import {z} from 'zod';
-import {snakeKeys} from './case-keys';
+import {snakeKeys} from '../../lib/case-keys';
 import {GiftLink} from './models';
 
 const GiftLinkResource = z.object({

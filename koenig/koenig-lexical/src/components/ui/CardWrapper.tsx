@@ -1,8 +1,8 @@
-import PropTypes from 'prop-types';
 import React from 'react';
 import VisibilityIndicator from '../../assets/icons/kg-indicator-visibility.svg?react';
+import type {CardWidth} from '@tryghost/kg-default-nodes';
 
-const CARD_WIDTH_CLASSES = {
+const CARD_WIDTH_CLASSES: Partial<Record<CardWidth, string>> = {
     wide: [
         'w-[calc(75vw-var(--kg-breakout-adjustment-with-fallback)+2px)] mx-[calc(50%-(50vw-var(--kg-breakout-adjustment-with-fallback))-.8rem)] min-w-[calc(100%+3.6rem)] translate-x-[calc(50vw-50%+.8rem-var(--kg-breakout-adjustment-with-fallback))]',
         'md:min-w-[calc(100%+10rem)]',
@@ -15,10 +15,24 @@ const DEFAULT_INDICATOR_POSITION = {
     top: '.6rem'
 };
 
-export const CardWrapper = React.forwardRef(({
+interface CardWrapperProps extends React.HTMLAttributes<HTMLDivElement> {
+    cardType?: string | null;
+    cardWidth?: CardWidth;
+    feature?: unknown;
+    IndicatorIcon?: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+    indicatorPosition?: {left?: string; top?: string};
+    isDragging?: boolean;
+    isEditing?: boolean;
+    isSelected?: boolean;
+    isVisibilityActive?: boolean;
+    onIndicatorClick?: (event: React.MouseEvent) => void;
+    wrapperStyle?: string;
+}
+
+export const CardWrapper = React.forwardRef<HTMLDivElement, CardWrapperProps>(({
     cardType,
     cardWidth = 'regular',
-    feature,
+    feature: _feature,
     IndicatorIcon,
     indicatorPosition = DEFAULT_INDICATOR_POSITION,
     isDragging,
@@ -51,7 +65,7 @@ export const CardWrapper = React.forwardRef(({
         wrapperClass()
     ].join(' ');
 
-    const position = {
+    const position: {left?: string; top?: string} = {
         ...DEFAULT_INDICATOR_POSITION,
         ...(indicatorPosition || {}),
         ...(cardType === 'call-to-action' && {top: '1.4rem'})
@@ -106,14 +120,3 @@ export const CardWrapper = React.forwardRef(({
 });
 
 CardWrapper.displayName = 'CardWrapper';
-
-CardWrapper.propTypes = {
-    isSelected: PropTypes.bool,
-    isEditing: PropTypes.bool,
-    cardWidth: PropTypes.oneOf(['regular', 'wide', 'full']),
-    icon: PropTypes.string,
-    indicatorPosition: PropTypes.shape({
-        left: PropTypes.string,
-        top: PropTypes.string
-    })
-};

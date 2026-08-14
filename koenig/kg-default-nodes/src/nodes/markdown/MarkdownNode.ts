@@ -1,13 +1,11 @@
-import {generateDecoratorNode, type DecoratorNodeData, type DecoratorNodeProperty, type DecoratorNodeValueMap} from '../../generate-decorator-node.js';
+import {generateDecoratorNode, type DecoratorNodeData, type DecoratorNodePropertyMap} from '../../generate-decorator-node.js';
 import {renderMarkdownNode} from './markdown-renderer.js';
 
-const markdownProperties = [
-    {name: 'markdown', default: '', urlType: 'markdown', wordCount: true}
-] as const satisfies readonly DecoratorNodeProperty[];
+const markdownProperties = {
+    markdown: {default: '', urlType: 'markdown', wordCount: true}
+} satisfies DecoratorNodePropertyMap;
 
 export type MarkdownData = DecoratorNodeData<typeof markdownProperties>;
-
-export interface MarkdownNode extends DecoratorNodeValueMap<typeof markdownProperties> {}
 
 export class MarkdownNode extends generateDecoratorNode({
     nodeType: 'markdown',

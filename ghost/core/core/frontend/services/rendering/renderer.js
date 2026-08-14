@@ -43,6 +43,19 @@ module.exports = function renderer(req, res, data) {
             }
             return req.next(err);
         }
+
+        // CASE: a {{#get}} or {{#collection}} helper aborted during rendering, so the
+        // page contains fallback content — cap public caching at 60s so the broken page recovers quickly.
+        if (res.locals?.degradedRender) {
+            const cacheControl = res.get('Cache-Control') || '';
+            if (cacheControl.includes('public') && !/no-store|no-cache|private/.test(cacheControl)) {
+                const maxAgeMatch = cacheControl.match(/max-age=(\d+)/);
+                const maxAge = Math.min(60, maxAgeMatch ? parseInt(maxAgeMatch[1], 10) : 60);
+                res.set('Cache-Control', `public, max-age=${maxAge}`);
+            }
+            res.set('X-Ghost-Degraded-Render', 'aborted-get-helper');
+        }
+
         res.send(html);
     });
 };

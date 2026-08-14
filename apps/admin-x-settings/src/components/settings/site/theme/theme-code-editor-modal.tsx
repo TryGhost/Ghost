@@ -843,7 +843,7 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
                 updateRoute(buildThemeEditorRoute(nextThemeName, returnRoute));
             }
 
-            await queryClient.invalidateQueries(['ThemesResponseType']);
+            await queryClient.invalidateQueries({queryKey: ['ThemesResponseType']});
 
             if (isSaveAs || uploadedTheme.errors?.length || uploadedTheme.warnings?.length) {
                 NiceModal.show(ThemeInstalledModal, {

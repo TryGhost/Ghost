@@ -41,11 +41,11 @@ vi.mock('@tryghost/admin-x-framework/api/newsletters', () => ({
 vi.mock('@tryghost/admin-x-framework/api/members', () => ({
     useBulkEditMembers: () => ({
         mutateAsync: vi.fn(),
-        isLoading: false
+        isPending: false
     }),
     useBulkDeleteMembers: () => ({
         mutate: vi.fn(),
-        isLoading: false
+        isPending: false
     })
 }));
 

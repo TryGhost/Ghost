@@ -3,8 +3,6 @@
  * Import and call these functions in your app's test setup file.
  */
 
-import {setupConsoleFiltering} from './test-utils';
-
 /**
  * Sets up common mocks required for shade components in tests.
  * Call this in your app's test setup file.
@@ -50,17 +48,3 @@ export function setupShadeMocks() {
         toJSON: () => {}
     });
 }
-
-/**
- * Sets up console filtering for common warnings that can't be fixed.
- * This is separate from setupShadeMocks so apps can choose which to use.
- */
-export function setupConsoleFilters() {
-    return setupConsoleFiltering({
-        suppressReactWarnings: true,
-        suppressChartWarnings: true,
-        suppressMessages: [
-            'Encountered two children with the same key'
-        ]
-    });
-} 

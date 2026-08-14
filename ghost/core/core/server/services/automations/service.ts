@@ -7,6 +7,8 @@ import {poll} from './poll';
 import * as automationsApi from './automations-api';
 import {setImmediate as flushEventLoop} from 'node:timers/promises';
 import {SoonestTimer} from '../../lib/soonest-timer';
+// @ts-expect-error This module currently lacks type definitions.
+import emailAnalyticsJobs from '../email-analytics/jobs';
 
 const urlUtils = require('../../../shared/url-utils');
 const logging = require('@tryghost/logging');
@@ -32,6 +34,10 @@ type AutomationsServiceOptions = {
     internalKeys: InternalKeys;
     schedulerAdapter: SchedulerAdapter;
 };
+
+const scheduleAutomationEmailAnalyticsJob = () => (
+    emailAnalyticsJobs.scheduleRecurringAutomationsJob(true)
+);
 
 export class AutomationsService {
     #enqueuePollAt: undefined | ((date: Readonly<Date>) => Promise<void>);
@@ -86,6 +92,7 @@ export class AutomationsService {
         domainEvents.subscribe(StartAutomationsPollEvent, oneAtATime(async () => poll({
             automationsApi,
             memberWelcomeEmailService,
+            scheduleAutomationEmailAnalyticsJob,
             enqueueAnotherPollAt: enqueuePollAt
         })));
 

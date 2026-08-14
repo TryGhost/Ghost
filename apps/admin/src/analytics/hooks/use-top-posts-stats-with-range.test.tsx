@@ -1,7 +1,8 @@
 import moment from 'moment';
 import {TestWrapper} from '@tryghost/admin-x-framework/test/test-utils';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
-import {getExpectedDateRange, setupDateMocking, setupStatsAppMocks} from '@test-utils/analytics/test-helpers';
+import {getExpectedDateRange, setupDateMocking} from '@test-utils/analytics/date-testing-utils';
+import {setupStatsAppMocks} from '@test-utils/analytics/test-helpers';
 import {renderHook} from '@testing-library/react';
 import {useTopPostsStatsWithRange} from '@/analytics/hooks/use-top-posts-stats-with-range';
 

@@ -1,4 +1,5 @@
 import validator from 'validator';
+import {useCallback, useMemo} from 'react';
 import {useSortableIndexedList} from '@tryghost/admin-x-design-system';
 
 export type NavigationItem = {
@@ -8,6 +9,8 @@ export type NavigationItem = {
 
 export type NavigationItemErrors = { [key in keyof NavigationItem]?: string }
 export type EditableItem = NavigationItem & { id: string; errors: NavigationItemErrors }
+
+const hasNewItem = (newItem: NavigationItem) => Boolean((newItem.label && !newItem.label.match(/^\s*$/)) || newItem.url !== '/');
 
 export type NavigationEditor = {
     items: EditableItem[]
@@ -25,11 +28,14 @@ const useNavigationEditor = ({items, setItems}: {
     items: NavigationItem[];
     setItems: (newItems: NavigationItem[]) => void;
 }): NavigationEditor => {
-    const hasNewItem = (newItem: NavigationItem) => Boolean((newItem.label && !newItem.label.match(/^\s*$/)) || newItem.url !== '/');
+    const editableItems = useMemo(() => items.map(item => ({...item, errors: {}})), [items]);
+    const setNavigationItems = useCallback((newItems: Omit<EditableItem, 'id'>[]) => {
+        setItems(newItems.map(({url, label}) => ({url, label})));
+    }, [setItems]);
 
     const list = useSortableIndexedList<Omit<EditableItem, 'id'>>({
-        items: items.map(item => ({...item, errors: {}})),
-        setItems: newItems => setItems(newItems.map(({url, label}) => ({url, label}))),
+        items: editableItems,
+        setItems: setNavigationItems,
         blank: {url: '/',label: '', errors: {}},
         canAddNewItem: hasNewItem
     });

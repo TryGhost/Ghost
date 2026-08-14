@@ -1,4 +1,4 @@
-import { useQuery, useMutation, type UseQueryResult, type UseMutationResult, type UseQueryOptions } from "@tanstack/react-query";
+import { useQuery, useMutation, keepPreviousData, type UseQueryResult, type UseMutationResult, type UseQueryOptions } from "@tanstack/react-query";
 import { z } from "zod";
 import { useQueryClient } from "@tryghost/admin-x-framework";
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
@@ -56,7 +56,7 @@ export type NavigationPreferences = z.infer<typeof NavigationPreferencesSchema>;
 const userPreferencesQueryKey = (user: User | undefined) => ["userPreferences", user?.id, user?.accessibility] as const;
 
 export function useUserPreferences<TData = Preferences>(
-    options?: Omit<UseQueryOptions<Preferences, Error, TData>, 'queryKey' | 'queryFn' | 'staleTime' | 'cacheTime'>
+    options?: Omit<UseQueryOptions<Preferences, Error, TData>, 'queryKey' | 'queryFn' | 'staleTime' | 'gcTime'>
 ): UseQueryResult<TData> {
     const { data: user } = useCurrentUser();
 
@@ -84,14 +84,14 @@ export function useUserPreferences<TData = Preferences>(
             return PreferencesSchema.parse(parsed);
         },
         enabled: !!user,
-        keepPreviousData: true,
+        placeholderData: keepPreviousData,
         staleTime: Infinity,
         // Query key includes user?.accessibility to automatically react to changes from ANY source
         // (our mutation, other code calling editUser, external updates, etc.). When accessibility
-        // changes, the query key changes, making the old cache entry inactive. cacheTime: 0 ensures
+        // changes, the query key changes, making the old cache entry inactive. gcTime: 0 ensures
         // orphaned entries are immediately garbage collected, preventing memory leaks while keeping
         // the current active entry cached indefinitely.
-        cacheTime: 0,
+        gcTime: 0,
     });
 }
 

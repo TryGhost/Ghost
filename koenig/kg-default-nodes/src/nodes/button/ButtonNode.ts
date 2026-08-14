@@ -1,16 +1,14 @@
-import {generateDecoratorNode, type DecoratorNodeData, type DecoratorNodeProperty, type DecoratorNodeValueMap} from '../../generate-decorator-node.js';
+import {generateDecoratorNode, type DecoratorNodeData, type DecoratorNodePropertyMap} from '../../generate-decorator-node.js';
 import {parseButtonNode} from './button-parser.js';
 import {renderButtonNode} from './button-renderer.js';
 
-const buttonProperties = [
-    {name: 'buttonText', default: ''},
-    {name: 'alignment', default: 'center'},
-    {name: 'buttonUrl', default: '', urlType: 'url'}
-] as const satisfies readonly DecoratorNodeProperty[];
+const buttonProperties = {
+    buttonText: {default: ''},
+    alignment: {default: 'center'},
+    buttonUrl: {default: '', urlType: 'url'}
+} satisfies DecoratorNodePropertyMap;
 
 export type ButtonData = DecoratorNodeData<typeof buttonProperties>;
-
-export interface ButtonNode extends DecoratorNodeValueMap<typeof buttonProperties> {}
 
 export class ButtonNode extends generateDecoratorNode({
     nodeType: 'button',

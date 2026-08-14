@@ -1,6 +1,6 @@
-import {reactAppConfig} from '../../eslint.shared.mjs';
+import {reactAppConfig} from '@internal/cfg-eslint-react';
 
-export default await reactAppConfig({
+export default reactAppConfig({
     // LEGACY: Portal is mid-TS-migration. `src/` has both `.js` and `.ts` files
     // with different parser requirements. Emit two separate src blocks until
     // every `.js` file is converted to `.ts`. Tracked separately — when the

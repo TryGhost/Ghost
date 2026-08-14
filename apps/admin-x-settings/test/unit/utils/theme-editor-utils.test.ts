@@ -9,6 +9,7 @@ import {
     extractThemeArchive,
     getThemeChanges,
     isEditablePath,
+    parseEditingThemeRoute,
     packThemeArchive
 } from '@src/components/settings/site/theme/theme-editor-utils';
 
@@ -23,6 +24,18 @@ const createArchiveBuffer = async (build: (zip: JSZip) => void) => {
 const uint8ArrayToArray = (value: Uint8Array | null) => Array.from(value ?? []);
 
 describe('theme-editor-utils', function () {
+    describe('parseEditingThemeRoute', function () {
+        it('decodes valid theme names and ignores unrelated routes', function () {
+            assert.deepEqual(parseEditingThemeRoute('theme/edit/my%20theme?from=theme'), {themeName: 'my theme', isInvalid: false});
+            assert.deepEqual(parseEditingThemeRoute('design/change-theme'), {themeName: null, isInvalid: false});
+        });
+
+        it('rejects malformed and encoded-slash theme names', function () {
+            assert.deepEqual(parseEditingThemeRoute('theme/edit/%E0%A4%A'), {themeName: null, isInvalid: true});
+            assert.deepEqual(parseEditingThemeRoute('theme/edit/%2Fedition'), {themeName: null, isInvalid: true});
+        });
+    });
+
     describe('isEditablePath', function () {
         it('treats extension-based theme source files as editable', function () {
             assert.equal(isEditablePath('partials/post-card.hbs'), true);

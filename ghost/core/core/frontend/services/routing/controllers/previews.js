@@ -20,7 +20,8 @@ module.exports = function previewController(req, res, next) {
         uuid: req.params.uuid,
         status: 'all',
         include: 'authors,tags,tiers',
-        member_status: req.query?.member_status
+        member_status: req.query?.member_status,
+        member_tier: req.query?.member_tier
     };
 
     return api[res.routerOptions.query.controller]

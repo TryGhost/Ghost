@@ -42,10 +42,11 @@ const ContentApiModal = NiceModal.create(() => {
                 <p className='mb-6 text-grey-700'>This key provides read-only access to your published content. For full read/write access, create a custom integration.</p>
                 <APIKeys keys={[
                     {
+                        id: 'content-api-key',
                         label: 'Content API key',
                         text: contentApiKey?.secret
                     },
-                    {label: 'API URL', text: window.location.origin + getGhostPaths().subdir}
+                    {id: 'api-url', label: 'API URL', text: window.location.origin + getGhostPaths().subdir}
                 ]} />
             </div>
         </Modal>

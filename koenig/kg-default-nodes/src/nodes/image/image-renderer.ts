@@ -4,6 +4,7 @@ import {getSrcsetAttribute, setSrcsetAttribute} from '../../utils/srcset-attribu
 import {getResizedImageDimensions} from '../../utils/get-resized-image-dimensions.js';
 import {addCreateDocumentOption} from '../../utils/add-create-document-option.js';
 import type {ExportDOMOptions} from '../../export-dom.js';
+import type {CardWidth} from '../../utils/card-widths.js';
 import {renderEmptyContainer} from '../../utils/render-empty-container.js';
 
 const MODERN_IMAGE_FORMATS = ['avif', 'webp'];
@@ -24,7 +25,7 @@ interface ImageNodeData {
     alt: string;
     title: string;
     caption: string;
-    cardWidth: string;
+    cardWidth: CardWidth;
     href: string;
 }
 

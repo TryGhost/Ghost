@@ -8,7 +8,7 @@ import { globalIgnores } from 'eslint/config'
 import noRelativeImportPaths from 'eslint-plugin-no-relative-import-paths'
 import ghostPlugin from 'eslint-plugin-ghost';
 
-import {correctnessRules, shadeLayeredImportsRule, strictLinterOptions} from '../../eslint.shared.mjs';
+import {correctnessRules, shadeLayeredImportsRule, strictLinterOptions} from '@internal/cfg-eslint';
 
 const noHardcodedGhostPaths = {
   meta: {
@@ -46,7 +46,7 @@ const localPlugin = {
 const tailwindCssConfig = `${import.meta.dirname}/src/index.css`;
 
 export default tseslint.config([
-  globalIgnores(['dist']),
+  globalIgnores(['dist', 'test-utils/acceptance/public']),
   {files: ['**/*'], ...strictLinterOptions},
   {
     files: ['**/*.{ts,tsx}'],

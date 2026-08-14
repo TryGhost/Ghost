@@ -4,6 +4,7 @@ import {type ValueSource} from '@tryghost/shade/patterns';
 import {createCombinedValueSource} from './create-combined-value-source';
 import {createGhostBrowseValueSource} from './create-ghost-browse-value-source';
 import {escapeNqlString} from '@/shared/filters/filter-normalization';
+import {keepPreviousData} from '@tanstack/react-query';
 
 function buildPublishedFilter(query: string) {
     return query ? `status:published+title:~${escapeNqlString(query)}` : 'status:published';
@@ -44,7 +45,7 @@ const usePublishedPostValueSource = createGhostBrowseValueSource<Post, PostsResp
     useQuery: ({enabled, searchParams}) => {
         return useBrowsePostsInfinite({
             enabled,
-            keepPreviousData: true,
+            placeholderData: keepPreviousData,
             searchParams
         });
     },
@@ -59,7 +60,7 @@ const usePublishedPageValueSource = createGhostBrowseValueSource<Page, PagesResp
     useQuery: ({enabled, searchParams}) => {
         return useBrowsePagesInfinite({
             enabled,
-            keepPreviousData: true,
+            placeholderData: keepPreviousData,
             searchParams
         });
     },

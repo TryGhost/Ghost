@@ -1,21 +1,20 @@
-import {generateDecoratorNode, type DecoratorNodeData, type DecoratorNodeProperty, type DecoratorNodeValueMap} from '../../generate-decorator-node.js';
+import {generateDecoratorNode, type DecoratorNodeData, type DecoratorNodePropertyMap} from '../../generate-decorator-node.js';
 import {parseImageNode} from './image-parser.js';
 import {renderImageNode} from './image-renderer.js';
+import type {CardWidth} from '../../utils/card-widths.js';
 
-const imageProperties = [
-    {name: 'src', default: '', urlType: 'url'},
-    {name: 'caption', default: '', urlType: 'html', wordCount: true},
-    {name: 'title', default: ''},
-    {name: 'alt', default: ''},
-    {name: 'cardWidth', default: 'regular'},
-    {name: 'width', default: null as number | null},
-    {name: 'height', default: null as number | null},
-    {name: 'href', default: '', urlType: 'url'}
-] as const satisfies readonly DecoratorNodeProperty[];
+const imageProperties = {
+    src: {default: '', urlType: 'url'},
+    caption: {default: '', urlType: 'html', wordCount: true},
+    title: {default: ''},
+    alt: {default: ''},
+    cardWidth: {default: 'regular' as CardWidth},
+    width: {default: null as number | null},
+    height: {default: null as number | null},
+    href: {default: '', urlType: 'url'}
+} satisfies DecoratorNodePropertyMap;
 
 export type ImageData = DecoratorNodeData<typeof imageProperties>;
-
-export interface ImageNode extends DecoratorNodeValueMap<typeof imageProperties> {}
 
 export class ImageNode extends generateDecoratorNode({
     nodeType: 'image',

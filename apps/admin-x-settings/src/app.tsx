@@ -3,7 +3,6 @@ import NiceModal from '@ebay/nice-modal-react';
 import SettingsAppProvider, {type UpgradeStatusType} from './components/providers/settings-app-provider';
 import SettingsRouter, {loadModals, modalPaths} from './components/providers/settings-router';
 import {DesignSystemApp, type DesignSystemAppProps} from '@tryghost/admin-x-design-system';
-import {FrameworkProvider, type TopLevelFrameworkProps} from '@tryghost/admin-x-framework';
 import {RoutingProvider} from '@tryghost/admin-x-framework/routing';
 
 interface AppProps {
@@ -26,13 +25,5 @@ export function App({designSystem, upgradeStatus}: AppProps) {
                 </RoutingProvider>
             </NiceModal.Provider>
         </SettingsAppProvider>
-    );
-}
-
-export function StandaloneApp({framework, designSystem, upgradeStatus}: AppProps & {framework: TopLevelFrameworkProps}) {
-    return (
-        <FrameworkProvider {...framework}>
-            <App designSystem={designSystem} upgradeStatus={upgradeStatus} />
-        </FrameworkProvider>
     );
 }

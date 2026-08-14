@@ -8,7 +8,8 @@ import usePinturaEditor from '../../../hooks/use-pintura-editor';
 import useStaffUsers from '../../../hooks/use-staff-users';
 import validator from 'validator';
 import {APIError} from '@tryghost/admin-x-framework/errors';
-import {ConfirmationModal, Heading, Icon, ImageUpload, LimitModal, Menu, type MenuItem, Modal, TabView, showToast} from '@tryghost/admin-x-design-system';
+import {ConfirmationModal, Heading, Icon, ImageUpload, LimitModal, Modal, TabView, showToast} from '@tryghost/admin-x-design-system';
+import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from '@tryghost/shade/components';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {HostLimitError, useLimiter} from '../../../hooks/use-limiter';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
@@ -299,46 +300,12 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
     };
 
     const showMenu = hasAdminAccess(currentUser) || (isEditorUser(currentUser) && isAuthorOrContributor(user));
-    const menuItems: MenuItem[] = [];
-
-    if (isOwnerUser(currentUser) && isAdminUser(formState) && formState.status !== 'inactive') {
-        menuItems.push({
-            id: 'make-owner',
-            label: 'Make owner',
-            onClick: confirmMakeOwner
-        });
-    }
-
-    menuItems.push({
-        id: 'view-user-activity',
-        label: 'View user activity',
-        onClick: () => {
-            mainModal.remove();
-            updateRoute(`history/view/${formState.id}`);
-        }
-    });
-
-    if (formState.id !== currentUser.id && (
+    const canMakeOwner = isOwnerUser(currentUser) && isAdminUser(formState) && formState.status !== 'inactive';
+    const canSuspendUser = formState.id !== currentUser.id && (
         (hasAdminAccess(currentUser) && !isOwnerUser(user)) ||
         (isEditorUser(currentUser) && isAuthorOrContributor(user))
-    )) {
-        const suspendUserLabel = formState.status === 'inactive' ? 'Un-suspend user' : 'Suspend user';
-
-        menuItems.push({
-            id: 'suspend-user',
-            label: suspendUserLabel,
-            onClick: () => {
-                confirmSuspend(formState);
-            }
-        }, {
-            id: 'delete-user',
-            label: 'Delete user',
-            destructive: true,
-            onClick: () => {
-                confirmDelete(user, {owner: ownerUser});
-            }
-        });
-    }
+    );
+    const suspendUserLabel = formState.status === 'inactive' ? 'Un-suspend user' : 'Suspend user';
 
     const noCoverButtonClasses = 'rounded flex flex-nowrap items-center justify-center px-3 h-8 transition-all cursor-pointer font-medium border border-grey-300 bg-transparent text-black dark:border-grey-800 dark:text-white';
 
@@ -389,10 +356,11 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                                         deleteButtonContent={<Icon colorClass='text-white' name='trash' size='sm' />}
                                         editButtonClassName='md:invisible absolute -left-1 -top-2 flex size-8 cursor-pointer items-center justify-center rounded-full bg-[rgba(0,0,0,0.75)] text-white group-hover:visible!'
                                         fileUploadClassName='rounded-full bg-black flex items-center justify-center opacity-80 transition hover:opacity-100 -ml-2 cursor-pointer h-[80px] w-[80px]'
-                                        fileUploadProps={{dragIndicatorClassName: 'rounded-full'}}
+                                        fileUploadProps={{dragIndicatorClassName: 'rounded-full', inputTestId: 'profile-image-upload'}}
                                         id='avatar'
                                         imageClassName='w-full h-full object-cover rounded-full shrink-0'
                                         imageContainerClassName='relative group bg-cover bg-center -ml-1 h-[80px] w-[80px] shrink-0'
+                                        imageTestId='profile-image-preview'
                                         imageURL={formState.profile_image ?? undefined}
                                         pintura={
                                             {
@@ -424,8 +392,10 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                                         deleteButtonContent='Delete cover image'
                                         editButtonClassName={coverButtonClasses}
                                         fileUploadClassName={noCoverButtonClasses}
+                                        fileUploadProps={{inputTestId: 'cover-image-upload'}}
                                         id='cover-image'
                                         imageClassName='hidden'
+                                        imageTestId='cover-image-preview'
                                         imageURL={formState.cover_image || ''}
                                         pintura={
                                             {
@@ -447,10 +417,8 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                                         }}
                                     >Upload cover image</ImageUpload>
                                     {showMenu && <div className="z-10">
-                                        <Menu
-                                            items={menuItems}
-                                            position='end'
-                                            trigger={
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
                                                 <button
                                                     className={clsx(
                                                         'flex h-8 cursor-pointer items-center justify-center rounded px-3',
@@ -467,8 +435,39 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                                                         size='md'
                                                     />
                                                 </button>
-                                            }
-                                        />
+                                            </DropdownMenuTrigger>
+                                            {/* legacy Modal overlay is z-[1000]; keep the portalled menu above it */}
+                                            <DropdownMenuContent align='end' className='z-[9999]'>
+                                                {canMakeOwner && (
+                                                    <DropdownMenuItem onSelect={confirmMakeOwner}>
+                                                        Make owner
+                                                    </DropdownMenuItem>
+                                                )}
+                                                <DropdownMenuItem onSelect={() => {
+                                                    mainModal.remove();
+                                                    updateRoute(`history/view/${formState.id}`);
+                                                }}>
+                                                    View user activity
+                                                </DropdownMenuItem>
+                                                {canSuspendUser && (
+                                                    <>
+                                                        <DropdownMenuItem onSelect={() => {
+                                                            confirmSuspend(formState);
+                                                        }}>
+                                                            {suspendUserLabel}
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem
+                                                            className='text-destructive focus:text-destructive'
+                                                            onSelect={() => {
+                                                                confirmDelete(user, {owner: ownerUser});
+                                                            }}
+                                                        >
+                                                            Delete user
+                                                        </DropdownMenuItem>
+                                                    </>
+                                                )}
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
                                     </div>}
                                 </div>
                             </div>

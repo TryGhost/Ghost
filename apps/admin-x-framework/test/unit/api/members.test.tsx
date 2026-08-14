@@ -2,8 +2,8 @@ import {act, waitFor} from '@testing-library/react';
 import {describe, expect, it, vi} from 'vitest';
 import {currentUserQueryKey} from '../../../src/api/current-user';
 import {createTestQueryClient, renderHookWithProviders} from '../../../src/test/test-utils';
-import {getMemberCountQueryKey, useAddMember, useBrowseMembersInfinite, useBulkDeleteMembers, useImportMembers, useMemberCount} from '../../../src/api/members';
-import type {MembersInfiniteResponseType, MembersResponseType} from '../../../src/api/members';
+import {getMemberCountQueryKey, getMemberSigninUrl, useAddMember, useBrowseMembersInfinite, useBulkDeleteMembers, useDeleteMember, useEditMember, useEditMemberSubscription, useImportMembers, useMemberActivityFeed, useMemberCount, useMemberLogout, useRemoveMemberEmailSuppression} from '../../../src/api/members';
+import type {MemberActivityEvent, MembersInfiniteResponseType, MembersResponseType} from '../../../src/api/members';
 import {withMockFetch} from '../../utils/mock-fetch';
 
 const memberCountKey = getMemberCountQueryKey();
@@ -23,7 +23,7 @@ function membersInfiniteResponse(total: number): MembersInfiniteResponseType {
 }
 
 function seedMemberCount(queryClient: ReturnType<typeof createTestQueryClient>, total = 10, options?: {updatedAt?: number}) {
-    queryClient.setQueryDefaults(memberCountKey, {cacheTime: Infinity});
+    queryClient.setQueryDefaults(memberCountKey, {gcTime: Infinity});
     queryClient.setQueryData(memberCountKey, membersResponse(total), options);
 }
 
@@ -31,7 +31,7 @@ function createQueryClientWithCurrentUser() {
     const queryClient = createTestQueryClient();
 
     queryClient.setQueryDefaults(currentUserQueryKey, {staleTime: Infinity});
-    queryClient.setQueryDefaults(memberCountKey, {cacheTime: Infinity});
+    queryClient.setQueryDefaults(memberCountKey, {gcTime: Infinity});
     queryClient.setQueryData(currentUserQueryKey, {
         users: [{
             id: 'user-1',
@@ -240,7 +240,7 @@ describe('members api', () => {
         const queryClient = createQueryClientWithCurrentUser();
         const memberDetailKey = ['MembersResponseType', 'http://localhost:3000/ghost/api/admin/members/member-1/'];
 
-        queryClient.setQueryDefaults(memberDetailKey, {cacheTime: Infinity});
+        queryClient.setQueryDefaults(memberDetailKey, {gcTime: Infinity});
         seedMemberCount(queryClient, 102466);
 
         queryClient.setQueryData(memberDetailKey, {
@@ -320,5 +320,215 @@ describe('members api', () => {
         await browseMembers({queryClient});
 
         expect(queryClient.getQueryData<MembersResponseType>(memberCountKey)).toBeUndefined();
+    });
+
+    describe('member detail operations', () => {
+        const apiRoot = 'http://localhost:3000/ghost/api/admin';
+
+        it('edits a member with the members envelope and includes tiers', async () => {
+            const queryClient = createTestQueryClient();
+            seedMemberCount(queryClient);
+
+            await withMockFetch({json: {members: [{id: 'member-1'}]}}, async (mock) => {
+                const {result} = renderHookWithProviders(() => useEditMember(), {queryClient});
+
+                await act(async () => {
+                    await result.current.mutateAsync({
+                        id: 'member-1',
+                        name: 'Jamie',
+                        note: 'VIP',
+                        labels: [{name: 'VIP', slug: 'vip'}],
+                        newsletters: [{id: 'newsletter-1'}]
+                    });
+                });
+
+                expect(mock.calls[0][0].toString()).toBe(`${apiRoot}/members/member-1/?include=tiers`);
+                expect(mock.calls[0][1].method).toBe('PUT');
+                expect(JSON.parse(mock.calls[0][1].body)).toEqual({
+                    members: [{
+                        id: 'member-1',
+                        name: 'Jamie',
+                        note: 'VIP',
+                        labels: [{name: 'VIP', slug: 'vip'}],
+                        newsletters: [{id: 'newsletter-1'}]
+                    }]
+                });
+
+                await waitFor(() => expectQueryInvalidation(queryClient, 'MembersResponseType', true));
+            });
+        });
+
+        it('deletes a member and cancels Stripe subscriptions when requested', async () => {
+            const queryClient = createTestQueryClient();
+            seedMemberCount(queryClient);
+
+            await withMockFetch({json: {}}, async (mock) => {
+                const {result} = renderHookWithProviders(() => useDeleteMember(), {queryClient});
+
+                await act(async () => {
+                    await result.current.mutateAsync({id: 'member-1', cancel: true});
+                });
+
+                expect(mock.calls[0][0].toString()).toBe(`${apiRoot}/members/member-1/?cancel=true`);
+                expect(mock.calls[0][1].method).toBe('DELETE');
+                await waitFor(() => expectQueryInvalidation(queryClient, 'MembersResponseType', true));
+            });
+        });
+
+        it('deletes a member without cancelling Stripe subscriptions by default', async () => {
+            const queryClient = createTestQueryClient();
+            seedMemberCount(queryClient);
+
+            await withMockFetch({json: {}}, async (mock) => {
+                const {result} = renderHookWithProviders(() => useDeleteMember(), {queryClient});
+
+                await act(async () => {
+                    await result.current.mutateAsync({id: 'member-1', cancel: false});
+                });
+
+                expect(mock.calls[0][0].toString()).toBe(`${apiRoot}/members/member-1/?cancel=false`);
+            });
+        });
+
+        it('reads a member signin url for impersonation', async () => {
+            const queryClient = createQueryClientWithCurrentUser();
+
+            // The Admin API wraps the payload in a `member_signin_urls` envelope,
+            // matching the framework serializer. The hook must unwrap it so
+            // consumers get the flat object.
+            await withMockFetch({json: {member_signin_urls: [{member_id: 'member-1', url: 'https://example.com/magic'}]}}, async (mock) => {
+                const {result} = renderHookWithProviders(() => getMemberSigninUrl('member-1'), {queryClient});
+
+                await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+                expect(mock.calls[0][0].toString()).toBe(`${apiRoot}/members/member-1/signin_urls/`);
+                expect(result.current.data).toEqual({member_id: 'member-1', url: 'https://example.com/magic'});
+            });
+        });
+
+        it('signs out all sessions for a member', async () => {
+            const queryClient = createTestQueryClient();
+            seedMemberCount(queryClient);
+
+            await withMockFetch({json: {}}, async (mock) => {
+                const {result} = renderHookWithProviders(() => useMemberLogout(), {queryClient});
+
+                await act(async () => {
+                    await result.current.mutateAsync({id: 'member-1'});
+                });
+
+                expect(mock.calls[0][0].toString()).toBe(`${apiRoot}/members/member-1/sessions/`);
+                expect(mock.calls[0][1].method).toBe('DELETE');
+                await waitFor(() => expectQueryInvalidation(queryClient, 'MembersResponseType', true));
+            });
+        });
+
+        it('cancels a subscription at period end', async () => {
+            const queryClient = createTestQueryClient();
+            seedMemberCount(queryClient);
+
+            await withMockFetch({json: {members: [{id: 'member-1'}]}}, async (mock) => {
+                const {result} = renderHookWithProviders(() => useEditMemberSubscription(), {queryClient});
+
+                await act(async () => {
+                    await result.current.mutateAsync({memberId: 'member-1', subscriptionId: 'sub_1', cancelAtPeriodEnd: true});
+                });
+
+                expect(mock.calls[0][0].toString()).toBe(`${apiRoot}/members/member-1/subscriptions/sub_1/`);
+                expect(mock.calls[0][1].method).toBe('PUT');
+                expect(JSON.parse(mock.calls[0][1].body)).toEqual({cancel_at_period_end: true});
+                await waitFor(() => expectQueryInvalidation(queryClient, 'MembersResponseType', true));
+            });
+        });
+
+        it('continues a subscription that was set to cancel', async () => {
+            const queryClient = createTestQueryClient();
+            seedMemberCount(queryClient);
+
+            await withMockFetch({json: {members: [{id: 'member-1'}]}}, async (mock) => {
+                const {result} = renderHookWithProviders(() => useEditMemberSubscription(), {queryClient});
+
+                await act(async () => {
+                    await result.current.mutateAsync({memberId: 'member-1', subscriptionId: 'sub_1', cancelAtPeriodEnd: false});
+                });
+
+                expect(JSON.parse(mock.calls[0][1].body)).toEqual({cancel_at_period_end: false});
+            });
+        });
+
+        it('immediately cancels a subscription for the complimentary flow', async () => {
+            const queryClient = createTestQueryClient();
+            seedMemberCount(queryClient);
+
+            await withMockFetch({json: {members: [{id: 'member-1'}]}}, async (mock) => {
+                const {result} = renderHookWithProviders(() => useEditMemberSubscription(), {queryClient});
+
+                await act(async () => {
+                    await result.current.mutateAsync({memberId: 'member-1', subscriptionId: 'sub_1', status: 'canceled'});
+                });
+
+                expect(JSON.parse(mock.calls[0][1].body)).toEqual({status: 'canceled'});
+            });
+        });
+
+        it('removes a member from the email suppression list', async () => {
+            const queryClient = createTestQueryClient();
+            seedMemberCount(queryClient);
+
+            await withMockFetch({json: {}}, async (mock) => {
+                const {result} = renderHookWithProviders(() => useRemoveMemberEmailSuppression(), {queryClient});
+
+                await act(async () => {
+                    await result.current.mutateAsync({id: 'member-1'});
+                });
+
+                expect(mock.calls[0][0].toString()).toBe(`${apiRoot}/members/member-1/suppression/`);
+                expect(mock.calls[0][1].method).toBe('DELETE');
+                await waitFor(() => expectQueryInvalidation(queryClient, 'MembersResponseType', true));
+            });
+        });
+
+        it('fetches a member activity feed filtered by member id', async () => {
+            const queryClient = createQueryClientWithCurrentUser();
+            const events: MemberActivityEvent[] = [
+                {type: 'signup_event', data: {created_at: '2024-01-02T10:00:00.000Z'}}
+            ];
+
+            await withMockFetch({json: {events}}, async (mock) => {
+                const {result} = renderHookWithProviders(() => useMemberActivityFeed('member-1'), {queryClient});
+
+                await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+                const url = new URL(mock.calls[0][0].toString());
+                expect(url.pathname).toBe('/ghost/api/admin/members/events/');
+                expect(url.searchParams.get('filter')).toBe("data.member_id:'member-1'");
+                expect(url.searchParams.get('limit')).toBe('20');
+                expect(result.current.data?.events).toEqual(events);
+                expect(result.current.data?.isEnd).toBe(true);
+            });
+        });
+
+        it('advances the activity feed cursor from the last event', async () => {
+            const queryClient = createQueryClientWithCurrentUser();
+            // A full page (20 events) so another page is requested; cursor comes from the last one.
+            const events: MemberActivityEvent[] = Array.from({length: 20}, (_, i) => ({
+                type: 'signup_event',
+                data: {created_at: `2024-01-02T10:00:${String(i).padStart(2, '0')}.000Z`}
+            }));
+
+            await withMockFetch({json: {events}}, async (mock) => {
+                const {result} = renderHookWithProviders(() => useMemberActivityFeed('member-1'), {queryClient});
+
+                await waitFor(() => expect(result.current.isSuccess).toBe(true));
+                expect(result.current.hasNextPage).toBe(true);
+
+                await act(async () => {
+                    await result.current.fetchNextPage();
+                });
+
+                const nextUrl = new URL(mock.calls[1][0].toString());
+                expect(nextUrl.searchParams.get('filter')).toBe("data.created_at:<'2024-01-02 10:00:19'+data.member_id:'member-1'");
+            });
+        });
     });
 });

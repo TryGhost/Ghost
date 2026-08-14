@@ -127,6 +127,7 @@ export function AtLinkResultsPopup({atLinkNode, isSearching, listOptions, query,
                         getItem={getItem}
                         groups={listOptions}
                         isLoading={isSearching}
+                        onEnterWithoutSelection={onSelect}
                         onSelect={onSelect}
                     />
                 </ul>

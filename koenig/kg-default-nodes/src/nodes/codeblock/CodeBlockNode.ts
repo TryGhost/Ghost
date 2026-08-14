@@ -1,16 +1,14 @@
-import {generateDecoratorNode, type DecoratorNodeData, type DecoratorNodeProperty, type DecoratorNodeValueMap} from '../../generate-decorator-node.js';
+import {generateDecoratorNode, type DecoratorNodeData, type DecoratorNodePropertyMap} from '../../generate-decorator-node.js';
 import {parseCodeBlockNode} from './codeblock-parser.js';
 import {renderCodeBlockNode} from './codeblock-renderer.js';
 
-const codeBlockProperties = [
-    {name: 'code', default: '', wordCount: true},
-    {name: 'language', default: ''},
-    {name: 'caption', default: '', urlType: 'html', wordCount: true}
-] as const satisfies readonly DecoratorNodeProperty[];
+const codeBlockProperties = {
+    code: {default: '', wordCount: true},
+    language: {default: ''},
+    caption: {default: '', urlType: 'html', wordCount: true}
+} satisfies DecoratorNodePropertyMap;
 
 export type CodeBlockData = DecoratorNodeData<typeof codeBlockProperties>;
-
-export interface CodeBlockNode extends DecoratorNodeValueMap<typeof codeBlockProperties> {}
 
 export class CodeBlockNode extends generateDecoratorNode({
     nodeType: 'codeblock',

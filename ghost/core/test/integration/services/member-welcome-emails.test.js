@@ -213,11 +213,11 @@ describe('Member Welcome Emails Integration', function () {
             });
         }
 
-        async function sendAutomationEmail() {
+        async function sendAutomationEmail({trackOpens} = {}) {
             memberWelcomeEmailService.api = null;
             memberWelcomeEmailService.init();
 
-            await memberWelcomeEmailService.api.sendAutomationEmail({
+            return await memberWelcomeEmailService.api.sendAutomationEmail({
                 email: {
                     designSettingId: defaultEmailDesignSettingId,
                     lexical: JSON.stringify({
@@ -240,7 +240,8 @@ describe('Member Welcome Emails Integration', function () {
                     name: 'Automation Member',
                     uuid: '99999999-9999-4999-8999-999999999999'
                 },
-                memberStatus: 'free'
+                memberStatus: 'free',
+                trackOpens
             });
         }
 
@@ -481,6 +482,23 @@ describe('Member Welcome Emails Integration', function () {
             sinon.assert.calledOnce(mailService.GhostMailer.prototype.send);
             const sendCall = mailService.GhostMailer.prototype.send.firstCall;
             assert.deepEqual(sendCall.args[0].tags, ['automation-email']);
+        });
+
+        it('passes the open tracking value through for automation emails', async function () {
+            await sendAutomationEmail({trackOpens: true});
+
+            sinon.assert.calledOnceWithExactly(mailService.GhostMailer.prototype.send, sinon.match({
+                trackOpens: true
+            }));
+        });
+
+        it('returns the mail transport response for automation emails', async function () {
+            const sendResponse = {id: '<mailgun-message-id>'};
+            mailService.GhostMailer.prototype.send.resolves(sendResponse);
+
+            const result = await sendAutomationEmail();
+
+            assert.equal(result, sendResponse);
         });
 
         it('uses email design sender details for automation emails', async function () {

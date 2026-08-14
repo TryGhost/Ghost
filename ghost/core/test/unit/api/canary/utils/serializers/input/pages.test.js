@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const serializers = require('../../../../../../../core/server/api/endpoints/utils/serializers');
+const urlService = require('../../../../../../../core/server/services/url');
 const postsSchema = require('../../../../../../../core/server/data/schema').tables.posts;
 
 const lexicalLib = require('../../../../../../../core/server/lib/lexical');
@@ -11,6 +12,38 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
     });
 
     describe('browse', function () {
+        it('lazyRouting: forces required relations on a Content API browse without fields narrowing', function () {
+            sinon.stub(urlService.facade, 'getRequiredRelations').returns(['tags']);
+
+            const frame = {
+                apiType: 'content',
+                options: {
+                    context: {api_key: {id: 1, type: 'content'}}
+                }
+            };
+
+            serializers.input.pages.browse({}, frame);
+
+            assert.ok(frame.options.withRelated.includes('tags'));
+            assert.deepEqual(frame.forcedUrlRelations, ['tags']);
+        });
+
+        it('lazyRouting: keeps the full admin default relations when forcing fires on a plain admin browse', function () {
+            sinon.stub(urlService.facade, 'getRequiredRelations').returns(['tags', 'authors']);
+
+            const frame = {
+                apiType: 'admin',
+                options: {
+                    context: {user: 1}
+                }
+            };
+
+            serializers.input.pages.browse({}, frame);
+
+            assert.deepEqual(frame.options.withRelated, ['tags', 'authors', 'authors.roles', 'tiers', 'count.signups', 'count.paid_conversions']);
+            assert.equal(frame.forcedUrlRelations, undefined);
+        });
+
         it('default', function () {
             const apiConfig = {};
             const frame = {

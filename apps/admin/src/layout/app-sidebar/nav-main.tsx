@@ -49,7 +49,7 @@ function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                                 <NavMenuItem.Label>Network</NavMenuItem.Label>
                             </NavMenuItem.Link>
                             {showNetworkBadge && (
-                                <SidebarMenuBadge>{networkNotificationCount}</SidebarMenuBadge>
+                                <SidebarMenuBadge data-testid="network-notification-badge">{networkNotificationCount}</SidebarMenuBadge>
                             )}
                         </NavMenuItem>
                     )}

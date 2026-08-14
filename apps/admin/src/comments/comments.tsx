@@ -7,6 +7,7 @@ import {FilterBar, PageHeader, createFilter} from '@tryghost/shade/patterns';
 import {ListPage} from '@tryghost/shade/page-templates';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {adminCommentIncludes, useBrowseComments} from '@tryghost/admin-x-framework/api/comments';
+import {keepPreviousData} from '@tanstack/react-query';
 import {escapeNqlString} from '@/shared/filters';
 import {getSiteTimezone} from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import {serializeCommentFilters} from './comment-filter-query';
@@ -76,7 +77,7 @@ const CommentsPage: React.FC<{timezone: string; singleCommentId?: string}> = ({
             include: adminCommentIncludes(dislikesEnabled),
             ...(effectiveFilter ? {filter: effectiveFilter} : {})
         },
-        keepPreviousData: true
+        placeholderData: keepPreviousData
     });
 
     const shouldShowLoading = isFetching && !isFetchingNextPage && !isRefetching;

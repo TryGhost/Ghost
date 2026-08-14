@@ -17,7 +17,7 @@ describe('MailgunEmailSuppressionList', function () {
         // starts at ~now and the events (being "too close to NOW") are never
         // fetched, so no suppression is created. The suite previously passed only
         // by free-riding on an earlier file's timestamp state, which breaks under
-        // per-file isolation. Mirrors email-event-storage.test.js.
+        // per-file isolation. Mirrors newsletter-email-event-storage.test.js.
         const queries = require('../../../core/server/services/email-analytics/lib/queries');
         sinon.stub(queries, 'getLastEventTimestamp').callsFake(async function () {
             return new Date(2000, 0, 1);
@@ -57,7 +57,7 @@ describe('MailgunEmailSuppressionList', function () {
             recipient
         })];
 
-        await emailAnalytics.fetchLatestOpenedEvents();
+        await emailAnalytics.newsletters.fetchLatestOpenedEvents();
         await DomainEvents.allSettled();
 
         const {body: {members: [memberAfter]}} = await agent.get(`/members/${memberId}`);
@@ -85,7 +85,7 @@ describe('MailgunEmailSuppressionList', function () {
             recipient
         })];
 
-        await emailAnalytics.fetchLatestOpenedEvents();
+        await emailAnalytics.newsletters.fetchLatestOpenedEvents();
         await DomainEvents.allSettled();
 
         const {body: {members: [memberAfter]}} = await agent.get(`/members/${memberId}`);
@@ -113,7 +113,7 @@ describe('MailgunEmailSuppressionList', function () {
             recipient
         })];
 
-        await emailAnalytics.fetchLatestOpenedEvents();
+        await emailAnalytics.newsletters.fetchLatestOpenedEvents();
         await DomainEvents.allSettled();
 
         const {body: {members: [memberAfter]}} = await agent.get(`/members/${memberId}`);
@@ -141,7 +141,7 @@ describe('MailgunEmailSuppressionList', function () {
             recipient
         })];
 
-        await emailAnalytics.fetchLatestOpenedEvents();
+        await emailAnalytics.newsletters.fetchLatestOpenedEvents();
         await DomainEvents.allSettled();
 
         const {body: {members: [memberAfter]}} = await agent.get(`/members/${memberId}`);
@@ -176,7 +176,7 @@ describe('MailgunEmailSuppressionList', function () {
             timestamp: Math.round(timestamp.getTime() / 1000)
         }];
 
-        await emailAnalytics.fetchLatestOpenedEvents();
+        await emailAnalytics.newsletters.fetchLatestOpenedEvents();
         await DomainEvents.allSettled();
 
         const {body: {members: [memberAfter]}} = await agent.get(`/members/${memberId}`);
@@ -214,7 +214,7 @@ describe('MailgunEmailSuppressionList', function () {
             recipient
         })];
 
-        await emailAnalytics.fetchLatestOpenedEvents();
+        await emailAnalytics.newsletters.fetchLatestOpenedEvents();
         await DomainEvents.allSettled();
 
         const memberAfter = await models.Member.findOne({id: memberId}, {require: true});

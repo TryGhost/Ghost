@@ -22,13 +22,14 @@ class Mailgun extends EmailProviderBase {
      * @param {Object} config.settingsCache - Ghost settings cache
      * @param {Object} config.labs - Ghost labs service
      * @param {Function} [config.errorHandler] - Custom error handler
+     * @param {string[]} [config.tags] - Mailgun tags scoping which events analytics fetches
      * @param {Object} [config.emailProvider] - Pre-built email provider (primarily for testing)
      * @param {Object} [config.analyticsProvider] - Pre-built analytics provider (primarily for testing)
      */
     constructor(config = {}) {
         super(config);
 
-        const {configService, settingsCache, labs, errorHandler, emailProvider, analyticsProvider} = config;
+        const {configService, settingsCache, labs, errorHandler, emailProvider, analyticsProvider, tags} = config;
 
         // Only initialize providers if we have the required dependencies
         if (configService && settingsCache) {
@@ -45,11 +46,13 @@ class Mailgun extends EmailProviderBase {
                 errorHandler
             });
 
-            // Initialize the existing analytics provider
+            // Initialize the existing analytics provider. `tags` scopes which
+            // Mailgun events are fetched (e.g. newsletters vs automations).
             this.#analyticsProvider = new EmailAnalyticsProviderMailgun({
                 config: configService,
                 settings: settingsCache,
-                labs
+                labs,
+                tags
             });
         }
 

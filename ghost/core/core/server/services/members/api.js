@@ -21,6 +21,7 @@ const emailSuppressionList = require('../email-suppression-list');
 const commentsService = require('../comments');
 const emailAddressService = require('../email-address');
 const giftService = require('../gifts');
+const customFieldsService = require('../members-custom-fields');
 const {t} = require('../i18n');
 const sentry = require('../../../shared/sentry');
 
@@ -257,7 +258,8 @@ function createApiInstance(config) {
         urlUtils,
         commentsService,
         emailAddressService: emailAddressService.service,
-        giftService
+        giftService,
+        customFieldsService
     });
 
     return membersApiInstance;

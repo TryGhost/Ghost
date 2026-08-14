@@ -7,8 +7,7 @@ import {type Post} from '@tryghost/admin-x-framework/api/posts';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {setupMswServer} from '@tryghost/admin-x-framework/test/msw-utils';
 
-// Re-export the server setup for convenience
-export const server = setupMswServer();
+const server = setupMswServer();
 
 /**
  * Standard test wrapper for React Query
@@ -17,8 +16,7 @@ export const createTestWrapper = () => {
     const queryClient = new QueryClient({
         defaultOptions: {
             queries: {
-                retry: false,
-                suspense: false
+                retry: false
             }
         }
     });
@@ -281,14 +279,5 @@ export const when = (
             }
         }
         return HttpResponse.json(fallback, {status: 200});
-    });
-};
-
-/**
- * Quick setup for PostAnalyticsProvider dependencies
- */
-export const setupPostAnalyticsProvider = (postId = 'test-post-id') => {
-    return mockServer.setup({
-        posts: [mockData.post({id: postId})]
     });
 };

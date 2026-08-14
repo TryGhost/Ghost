@@ -5,22 +5,12 @@ import {
     defaultMatcher,
     filterOptions
 } from 'ember-power-select/utils/group-utils';
+import {escapeNqlString} from '../utils/escape-nql-string';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 const DEBOUNCE_MS = 200;
-
-// Escape a search term and wrap it in single quotes for safe embedding in an
-// NQL filter (e.g. `title:~<result>`). Returns the *quoted* string to match the
-// `escapeNqlString` contract used elsewhere (apps/posts, admin-x-framework).
-// Only single quotes are escaped: the NQL lexer treats just `\'`/`\"` as escapes
-// and reads a lone backslash literally. Verified against @tryghost/nql — escaping
-// every quote prevents breakout, and backslashes must NOT be doubled (doubling
-// corrupts terms containing a backslash, e.g. `a\b` would be searched as `a\\b`).
-function escapeNqlString(term) {
-    return '\'' + String(term).replace(/'/g, '\\\'') + '\'';
-}
 
 function mapResource(resource) {
     return {

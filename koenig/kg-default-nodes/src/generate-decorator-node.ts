@@ -1,31 +1,27 @@
 import {KoenigDecoratorNode} from './KoenigDecoratorNode.js';
 import type {ExportDOMOptions, ExportDOMOutput} from './export-dom.js';
+import type {KoenigCard} from './KoenigDecoratorNode.js';
 import readTextContent from './utils/read-text-content.js';
 import {buildDefaultVisibility, isVisibilityRestricted, migrateOldVisibilityFormat} from './utils/visibility.js';
-import type {LexicalEditor} from 'lexical';
+import type {LexicalEditor, SerializedLexicalNode} from 'lexical';
 import type {Visibility} from './utils/visibility.js';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- render fns take their own node subtype; `unknown` would reject them (parameter contravariance)
-type RenderFn<TOutput extends ExportDOMOutput = ExportDOMOutput> = (node: any, options: ExportDOMOptions) => TOutput;
-type VersionedRenderFn<TOutput extends ExportDOMOutput = ExportDOMOutput> = Record<string | number, RenderFn<TOutput>>;
-type WidenLiteral<T> =
-    T extends string ? string :
-    T extends number ? number :
-    T extends boolean ? boolean :
-    T extends readonly (infer U)[] ? U[] :
-    T;
+type RenderFn<TNode = unknown, TOutput extends ExportDOMOutput = ExportDOMOutput> = {
+    bivarianceHack(node: TNode, options: ExportDOMOptions): TOutput;
+}['bivarianceHack'];
+type VersionedRenderFn<TNode = unknown, TOutput extends ExportDOMOutput = ExportDOMOutput> = Record<string | number, RenderFn<TNode, TOutput>>;
 /**
  * Validates the required arguments passed to `generateDecoratorNode`
 */
-function validateArguments(nodeType: string, properties: readonly DecoratorNodeProperty[]) {
+function validateArguments(nodeType: string, properties: DecoratorNodePropertyMap) {
     /* c8 ignore start */
     if (!nodeType) {
         throw new Error('[generateDecoratorNode] A unique "nodeType" should be provided');
     }
 
-    properties.forEach((prop: DecoratorNodeProperty) => {
-        if (!('name' in prop) || !('default' in prop)){
-            throw new Error('[generateDecoratorNode] Properties should have both "name" and "default" attributes.');
+    Object.values(properties).forEach((prop) => {
+        if (!('default' in prop)){
+            throw new Error('[generateDecoratorNode] Properties should have a "default" attribute.');
         }
 
         if (prop.urlType && !['url', 'html', 'markdown'].includes(prop.urlType)) {
@@ -41,123 +37,100 @@ function validateArguments(nodeType: string, properties: readonly DecoratorNodeP
 
 /**
  * @typedef {Object} DecoratorNodeProperty
- * @property {string} name - The property's name.
  * @property {*} default - The property's default value
  * @property {('url'|'html'|'markdown'|null)} urlType - If the property contains a URL, the URL's type: 'url', 'html' or 'markdown'. Use 'url' is the property contains only a URL, 'html' or 'markdown' if the property contains HTML or markdown code, that may contain URLs.
  * @property {boolean} wordCount - Whether the property should be counted in the word count
  *
  * @param {string} nodeType – The node's type (must be unique)
- * @param {DecoratorNodeProperty[]} properties - An array of properties for the generated class
+ * @param {DecoratorNodePropertyMap} properties - A map of properties for the generated class
  * @param {boolean} hasVisibility - Whether to add a visibility property to the node
  * @param {Function} defaultRenderFn - A function that returns a @tryghost/kg-lexical-html-renderer compatible object, e.g. {element: Div, type: 'inner}
  * @returns {Object} - The generated class.
  */
-export interface DecoratorNodeProperty<Name extends string = string, Default = unknown> {
-    name: Name;
+export interface DecoratorNodeProperty<Default = unknown> {
     default: Default;
     urlType?: string;
     urlPath?: string;
     wordCount?: boolean;
-    privateName?: string;
 }
 
-export type DecoratorNodeValueMap<Props extends readonly DecoratorNodeProperty[], HasVisibility extends boolean = false> = {
-    [Prop in Props[number] as Prop['name']]: WidenLiteral<Prop['default']>;
-} & (HasVisibility extends true ? {visibility: Visibility} : {});
+export type DecoratorNodePropertyMap = Record<string, DecoratorNodeProperty>;
 
-export type DecoratorNodeData<Props extends readonly DecoratorNodeProperty[], HasVisibility extends boolean = false> = Partial<DecoratorNodeValueMap<Props, HasVisibility>>;
+export type DecoratorNodeValueMap<Props extends DecoratorNodePropertyMap, HasVisibility extends boolean = false> = {
+    [Name in keyof Props]: Props[Name]['default'];
+} & (HasVisibility extends true ? {visibility: Visibility} : unknown);
 
-type GeneratedDecoratorNodeInstance<TDataset extends Record<string, unknown>, TOutput extends ExportDOMOutput = ExportDOMOutput> = GeneratedDecoratorNodeBase<TDataset> & TDataset & {
-    exportDOM(editor: LexicalEditor, options?: ExportDOMOptions): TOutput;
-};
+export type DecoratorNodeData<Props extends DecoratorNodePropertyMap, HasVisibility extends boolean = false> = Partial<DecoratorNodeValueMap<Props, HasVisibility>>;
+
+export interface GeneratedDecoratorNodeRuntime<TOutput extends ExportDOMOutput = ExportDOMOutput> extends KoenigCard<TOutput> {
+    exportJSON(): SerializedLexicalNode & Record<string, unknown>;
+}
+
+export type GeneratedDecoratorNode<TDataset extends Record<string, unknown> = Record<string, unknown>, TOutput extends ExportDOMOutput = ExportDOMOutput> = GeneratedDecoratorNodeRuntime<TOutput> & TDataset;
+
+// An intersection rather than Lexical's `Spread` utility: `Spread` isn't provably
+// assignable to `SerializedLexicalNode` when TDataset is an unresolved generic, which
+// breaks the `exportJSON` override inside `generateDecoratorNode`. The trade-off is
+// that a dataset property colliding with `type`/`version` at an incompatible type
+// produces `never` — keep such properties compatible (e.g. HeaderNode's `version: number`).
+export type SerializedGeneratedDecoratorNode<TDataset extends Record<string, unknown> = Record<string, unknown>> = SerializedLexicalNode & TDataset;
 
 export interface GeneratedDecoratorNodeClass<TDataset extends Record<string, unknown>, TOutput extends ExportDOMOutput = ExportDOMOutput> {
-    new (data?: Partial<TDataset>, key?: string): GeneratedDecoratorNodeInstance<TDataset, TOutput>;
-    prototype: GeneratedDecoratorNodeInstance<TDataset, TOutput>;
+    new (data?: Partial<TDataset>, key?: string): GeneratedDecoratorNode<TDataset, TOutput>;
+    prototype: GeneratedDecoratorNode<TDataset, TOutput>;
     getType(): string;
-    clone(node: GeneratedDecoratorNodeInstance<TDataset, TOutput>): GeneratedDecoratorNodeInstance<TDataset, TOutput>;
+    clone(node: GeneratedDecoratorNode<TDataset, TOutput>): GeneratedDecoratorNode<TDataset, TOutput>;
     transform(): null;
     getPropertyDefaults(): TDataset;
     readonly urlTransformMap: Record<string, string | Record<string, string>>;
-    importJSON(serializedNode: Record<string, unknown>): GeneratedDecoratorNodeInstance<TDataset, TOutput>;
+    importJSON(serializedNode: Record<string, unknown>): GeneratedDecoratorNode<TDataset, TOutput>;
 }
 
-// Type-only base class used as the return type of generateDecoratorNode.
-// This ensures TypeScript recognizes generated nodes as LexicalNode subclasses
-// while preserving the dynamic property index signature.
-export class GeneratedDecoratorNodeBase<TDataset extends Record<string, unknown> = Record<string, unknown>> extends KoenigDecoratorNode {
-    [key: string]: unknown;
-
-    constructor(data?: Partial<TDataset>, key?: string) {
-        super(key);
-    }
-
-    getDataset(): Record<string, unknown> {
-        return {};
-    }
-
-    exportJSON(): {type: string; version: number; [key: string]: unknown} {
-        return {type: '', version: 1};
-    }
-
-    static getPropertyDefaults(): Record<string, unknown> {
-        return {};
-    }
-
-    static get urlTransformMap(): Record<string, string | Record<string, string>> {
-        return {};
-    }
-
-    static importJSON(_serializedNode: Record<string, unknown>): GeneratedDecoratorNodeBase<Record<string, unknown>> {
-        return new GeneratedDecoratorNodeBase();
-    }
-
-    static transform() {
-        return null;
-    }
-
-    isKoenigCard(): true {
-        return true;
-    }
-
-    hasDynamicData(): boolean {
-        return false;
-    }
-
-    hasEditMode(): boolean {
-        return true;
-    }
-
-    getIsVisibilityActive(): boolean {
-        return false;
-    }
+export interface GenerateDecoratorNodeOptions<
+    Props extends DecoratorNodePropertyMap,
+    HasVisibility extends boolean,
+    TOutput extends ExportDOMOutput,
+    TRenderNode
+> {
+    nodeType: string;
+    properties?: Props;
+    defaultRenderFn?: RenderFn<TRenderNode, TOutput> | VersionedRenderFn<TRenderNode, TOutput>;
+    version?: number;
+    hasVisibility?: HasVisibility;
 }
 
 export function generateDecoratorNode<
-    Props extends readonly DecoratorNodeProperty[] = readonly [],
+    Props extends DecoratorNodePropertyMap = Record<never, never>,
     HasVisibility extends boolean = false,
-    TOutput extends ExportDOMOutput = ExportDOMOutput
->({nodeType, properties = [] as unknown as Props, defaultRenderFn, version = 1, hasVisibility = false as HasVisibility}: {
-    nodeType: string;
-    properties?: Props;
-    defaultRenderFn?: RenderFn<TOutput> | VersionedRenderFn<TOutput>;
-    version?: number;
-    hasVisibility?: HasVisibility;
-}): GeneratedDecoratorNodeClass<DecoratorNodeValueMap<Props, HasVisibility>, TOutput> {
-    validateArguments(nodeType, properties);
+    TOutput extends ExportDOMOutput = ExportDOMOutput,
+    // When not passed explicitly, TRenderNode is inferred from `defaultRenderFn`'s
+    // node parameter — the render fn's declared node type is trusted, not validated
+    // against the generated node shape. Pass explicit type arguments (see HeaderNode)
+    // to have render fns checked against a known node type.
+    TRenderNode = GeneratedDecoratorNode<DecoratorNodeValueMap<Props, HasVisibility>, TOutput>
+>(options: GenerateDecoratorNodeOptions<Props, HasVisibility, TOutput, TRenderNode>): GeneratedDecoratorNodeClass<DecoratorNodeValueMap<Props, HasVisibility>, TOutput>;
+export function generateDecoratorNode({nodeType, properties, defaultRenderFn, version = 1, hasVisibility}: GenerateDecoratorNodeOptions<DecoratorNodePropertyMap, boolean, ExportDOMOutput, unknown>): GeneratedDecoratorNodeClass<Record<string, unknown>, ExportDOMOutput> {
+    const nodeProperties = properties ?? {};
 
-    // Adds a `privateName` field to the properties for convenience (e.g. `__name`):
-    // properties: [{name: 'name', privateName: '__name', type: 'string', default: 'hello'}, {...}]
-    const internalProps = properties.map((prop) => {
+    validateArguments(nodeType, nodeProperties);
+
+    // Adds `name` and `privateName` fields to the property descriptors for runtime use.
+    const internalProps = Object.entries(nodeProperties).map(([name, prop]) => {
         return Object.defineProperties({}, {
             ...Object.getOwnPropertyDescriptors(prop),
+            name: {
+                configurable: true,
+                enumerable: true,
+                value: name,
+                writable: true
+            },
             privateName: {
                 configurable: true,
                 enumerable: true,
-                value: `__${prop.name}`,
+                value: `__${name}`,
                 writable: true
             }
-        }) as DecoratorNodeProperty & {privateName: string};
+        }) as DecoratorNodeProperty & {name: string; privateName: string};
     });
 
     // Adds `visibility` property to the properties array if `hasVisibility` is true
@@ -172,17 +145,16 @@ export function generateDecoratorNode<
         });
     }
 
-    class GeneratedDecoratorNode extends KoenigDecoratorNode {
+    class GeneratedNode extends KoenigDecoratorNode {
         [key: string]: unknown;
 
-        constructor(data: Partial<DecoratorNodeValueMap<Props, HasVisibility>> = {}, key?: string) {
+        constructor(data: Record<string, unknown> = {}, key?: string) {
             super(key);
-            const dataset = data as Record<string, unknown>;
             internalProps.forEach((prop) => {
-                if (typeof prop.default === 'boolean') {
-                    this[prop.privateName] = dataset[prop.name] ?? prop.default;
+                if (typeof prop.default === 'string') {
+                    this[prop.privateName] = data[prop.name] || prop.default;
                 } else {
-                    this[prop.privateName] = dataset[prop.name] || prop.default;
+                    this[prop.privateName] = data[prop.name] ?? prop.default;
                 }
             });
         }
@@ -206,8 +178,8 @@ export function generateDecoratorNode<
          * @extends DecoratorNode
          * @see https://lexical.dev/docs/concepts/nodes#extending-decoratornode
          */
-        static clone(node: GeneratedDecoratorNodeInstance<DecoratorNodeValueMap<Props, HasVisibility>, TOutput>) {
-            return new this(node.getDataset() as Partial<DecoratorNodeValueMap<Props, HasVisibility>>, node.__key);
+        static clone(node: GeneratedDecoratorNode) {
+            return new this(node.getDataset(), node.__key);
         }
 
         /**
@@ -218,7 +190,7 @@ export function generateDecoratorNode<
             return internalProps.reduce((obj: Record<string, unknown>, prop) => {
                 obj[prop.name] = prop.default;
                 return obj;
-            }, {}) as DecoratorNodeValueMap<Props, HasVisibility>;
+            }, {});
         }
 
         /**
@@ -273,7 +245,7 @@ export function generateDecoratorNode<
                 data[prop.name] = serializedNode[prop.name];
             });
 
-            return new this(data as Partial<DecoratorNodeValueMap<Props, HasVisibility>>);
+            return new this(data);
         }
 
         /**
@@ -281,41 +253,40 @@ export function generateDecoratorNode<
          * @extends DecoratorNode
          * @see https://lexical.dev/docs/concepts/serialization#lexicalnodeexportjson
          */
-        // @ts-expect-error -- strict mode migration
-        exportJSON() {
-            const dataset: Record<string, unknown> = {
+        exportJSON(): SerializedGeneratedDecoratorNode {
+            const dataset = {
                 type: nodeType,
                 version: version,
                 ...internalProps.reduce((obj: Record<string, unknown>, prop) => {
                     obj[prop.name] = this[prop.name];
                     return obj;
                 }, {})
-            };
+            } as SerializedGeneratedDecoratorNode;
             return dataset;
         }
 
-        exportDOM(_editor: LexicalEditor, options: ExportDOMOptions = {}): TOutput {
+        exportDOM(_editor: LexicalEditor, options: ExportDOMOptions = {}): ExportDOMOutput {
             // this.__version is used when a node has a version property which
             // means it's set from the serialized version data at runtime
-            const nodeVersion = this.__version || version;
+            const nodeVersion = typeof this.__version === 'string' || typeof this.__version === 'number' ? this.__version : version;
 
-            const nodeRenderers = options.nodeRenderers as Record<string, RenderFn<TOutput> | VersionedRenderFn<TOutput>> | undefined;
+            const nodeRenderers = options.nodeRenderers as Record<string, RenderFn | VersionedRenderFn> | undefined;
             if (nodeRenderers?.[nodeType]) {
                 const render = nodeRenderers[nodeType];
 
                 if (typeof render === 'object') {
-                    const versionRenderer = (render as VersionedRenderFn<TOutput>)[nodeVersion as number];
+                    const versionRenderer = render[nodeVersion];
                     if (!versionRenderer) {
                         throw new Error(`[generateDecoratorNode] ${nodeType}: options.nodeRenderers['${nodeType}'] for version ${nodeVersion} is required`);
                     }
                     return versionRenderer(this, options);
                 } else {
-                    return (render as RenderFn<TOutput>)(this, options);
+                    return render(this, options);
                 }
             }
 
             if (typeof defaultRenderFn === 'object') {
-                const render = (defaultRenderFn as VersionedRenderFn<TOutput>)[nodeVersion as number];
+                const render = defaultRenderFn[nodeVersion];
                 if (!render) {
                     throw new Error(`[generateDecoratorNode] ${nodeType}: "defaultRenderFn" for version ${nodeVersion} is required`);
                 }
@@ -326,9 +297,7 @@ export function generateDecoratorNode<
                 throw new Error(`[generateDecoratorNode] ${nodeType}: "defaultRenderFn" is required`);
             }
 
-            const render = defaultRenderFn as RenderFn<TOutput>;
-
-            return render(this, options);
+            return defaultRenderFn(this, options);
         }
 
         /* c8 ignore start */
@@ -381,7 +350,7 @@ export function generateDecoratorNode<
         */
         getTextContent() {
             const self = this.getLatest();
-            const propertiesWithText = properties.filter(prop => !!prop.wordCount);
+            const propertiesWithText = internalProps.filter(prop => !!prop.wordCount);
 
             const text = propertiesWithText.map(
                 prop => readTextContent(self, prop.name)
@@ -426,7 +395,7 @@ export function generateDecoratorNode<
      * They can be used as `node.content` (getter) and `node.content = 'new value'` (setter)
      */
     internalProps.forEach((prop) => {
-        Object.defineProperty(GeneratedDecoratorNode.prototype, prop.name, {
+        Object.defineProperty(GeneratedNode.prototype, prop.name, {
             get: function () {
                 const self = this.getLatest();
                 return self[prop.privateName];
@@ -438,5 +407,5 @@ export function generateDecoratorNode<
         });
     });
 
-    return GeneratedDecoratorNode as unknown as GeneratedDecoratorNodeClass<DecoratorNodeValueMap<Props, HasVisibility>, TOutput>;
+    return GeneratedNode as unknown as GeneratedDecoratorNodeClass<Record<string, unknown>, ExportDOMOutput>;
 }

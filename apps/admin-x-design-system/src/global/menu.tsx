@@ -1,10 +1,14 @@
 import React from 'react';
 import Button, {ButtonProps, ButtonSize} from './button';
+import Icon from './icon';
 import Popover, {PopoverPosition} from './popover';
 
 export type MenuItem = {
     id: string,
     label: string;
+    // Name from the design system icon set, rendered before the label. It
+    // inherits the item's text color (destructive items get a red icon).
+    icon?: string;
     destructive?: boolean;
     onClick?: (e: React.MouseEvent) => void
 }
@@ -35,11 +39,14 @@ const Menu: React.FC<MenuProps> = ({
         <Popover open={open} position={position} setOpen={setOpen} trigger={trigger} closeOnItemClick>
             <div className="flex min-w-[160px] flex-col justify-stretch py-1" role="none">
                 {items.map(item => (
-                    <button key={item.id} className={`mx-1 block cursor-pointer rounded-[2.5px] px-4 py-1.5 text-left hover:bg-grey-100 dark:hover:bg-grey-900 ${item.destructive && ' text-red-500'}`} type="button" onClick={(e) => {
+                    <button key={item.id} className={`mx-1 flex cursor-pointer items-center gap-2 rounded-[2.5px] px-4 py-1.5 text-left hover:bg-grey-100 dark:hover:bg-grey-900 ${item.destructive ? 'text-red-500' : ''}`} type="button" onClick={(e) => {
                         if (item.onClick) {
                             item.onClick(e);
                         }
-                    }}>{item.label}</button>
+                    }}>
+                        {item.icon && <span aria-hidden="true" className="flex"><Icon name={item.icon} size='sm' /></span>}
+                        {item.label}
+                    </button>
                 ))}
             </div>
         </Popover>

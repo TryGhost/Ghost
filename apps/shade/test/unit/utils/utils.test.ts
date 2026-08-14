@@ -245,6 +245,14 @@ describe('utils', function () {
             formatted = formatNumber(1234.56);
             assert.equal(formatted, '1,235'); // Should round
         });
+
+        it('preserves decimal precision when fraction-digit options are provided', function () {
+            const options = {maximumFractionDigits: 2};
+
+            assert.equal(formatNumber(5.5, options), '5.5');
+            assert.equal(formatNumber(5.99, options), '5.99');
+            assert.equal(formatNumber(1234.56, options), '1,234.56');
+        });
     });
 
     describe('formatDuration function', function () {

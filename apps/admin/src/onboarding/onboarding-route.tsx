@@ -43,7 +43,7 @@ export default function OnboardingRoute() {
     }
 
     if (!shouldShowChecklist) {
-        return <Navigate crossApp replace to={returnTo} />;
+        return <Navigate replace to={returnTo} />;
     }
 
     const navigateAfterUpdate = async (update: () => Promise<unknown>) => {
@@ -51,7 +51,7 @@ export default function OnboardingRoute() {
         setIsLeaving(true);
         try {
             await update();
-            navigate(returnTo, {crossApp: true, replace: true});
+            navigate(returnTo, {replace: true});
         } catch (error) {
             isLeavingRef.current = false;
             setIsLeaving(false);
@@ -69,9 +69,9 @@ export default function OnboardingRoute() {
 
         await markStepCompleted(step);
 
-        const stepRoute = ONBOARDING_STEPS.find(({id}) => id === step)?.route;
-        if (stepRoute) {
-            navigate(stepRoute, {crossApp: true});
+        const stepDefinition = ONBOARDING_STEPS.find(({id}) => id === step);
+        if (stepDefinition?.route) {
+            navigate(stepDefinition.route);
         }
     };
 

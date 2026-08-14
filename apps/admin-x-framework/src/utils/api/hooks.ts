@@ -1,7 +1,7 @@
-import {InvalidateOptions, InvalidateQueryFilters, UseInfiniteQueryOptions, UseQueryOptions, UseQueryResult, useInfiniteQuery, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
-import {usePagination} from '@tryghost/admin-x-design-system';
+import {InfiniteData, InvalidateOptions, InvalidateQueryFilters, QueryKey, UseInfiniteQueryOptions, UseQueryOptions, UseQueryResult, useInfiniteQuery, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import useHandleError from '../../hooks/use-handle-error';
+import {usePagination} from '../../hooks/use-pagination';
 import {usePermission} from '../../hooks/use-permissions';
 import {UserRoleType} from '../../api/roles';
 import {useFramework} from '../../providers/framework-provider';
@@ -31,7 +31,7 @@ interface QueryOptions<ResponseData> {
     useActivityPub?: boolean;
 }
 
-type QueryHookOptions<ResponseData> = UseQueryOptions<ResponseData> & {
+type QueryHookOptions<ResponseData> = Omit<UseQueryOptions<ResponseData>, 'queryKey' | 'queryFn'> & {
     searchParams?: Record<string, string>;
     defaultErrorHandler?: boolean;
 };
@@ -61,8 +61,7 @@ export const createQuery = <ResponseData>(options: QueryOptions<ResponseData>) =
 
     return {
         ...result,
-        data,
-        isLoading: result.isLoading && result.fetchStatus !== 'idle'
+        data
     };
 };
 
@@ -106,8 +105,7 @@ export const createPaginatedQuery = <ResponseData extends {meta?: Meta}>(options
     return {
         ...result,
         data,
-        pagination,
-        isLoading: result.isLoading && result.fetchStatus !== 'idle'
+        pagination
     };
 };
 
@@ -116,7 +114,9 @@ type InfiniteQueryOptions<ResponseData> = Omit<QueryOptions<ResponseData>, 'retu
     defaultNextPageParams?: (data: ResponseData, params: Record<string, string>) => Record<string, string> | undefined;
 }
 
-type InfiniteQueryHookOptions<ResponseData> = UseInfiniteQueryOptions<ResponseData> & {
+type InfiniteQueryPageParam = Record<string, string> | undefined;
+
+type InfiniteQueryHookOptions<ResponseData> = Omit<UseInfiniteQueryOptions<ResponseData, Error, InfiniteData<ResponseData, InfiniteQueryPageParam>, QueryKey, InfiniteQueryPageParam>, 'queryKey' | 'queryFn' | 'getNextPageParam' | 'initialPageParam'> & {
     searchParams?: Record<string, string>;
     defaultErrorHandler?: boolean;
     getNextPageParams?: (data: ResponseData, params: Record<string, string>) => Record<string, string> | undefined;
@@ -129,11 +129,12 @@ export const createInfiniteQuery = <ResponseData>(options: InfiniteQueryOptions<
 
     const nextPageParams = getNextPageParams || options.defaultNextPageParams || (() => ({}));
 
-    const result = useInfiniteQuery<ResponseData>({
+    const result = useInfiniteQuery<ResponseData, Error, InfiniteData<ResponseData, InfiniteQueryPageParam>, QueryKey, InfiniteQueryPageParam>({
         ...query,
         enabled: hasPermission && (query.enabled ?? true),
         queryKey: [options.dataType, apiUrl(options.path, searchParams || options.defaultSearchParams, options?.useActivityPub)],
         queryFn: ({pageParam}) => fetchApi(apiUrl(options.path, pageParam || searchParams || options.defaultSearchParams, options?.useActivityPub)),
+        initialPageParam: undefined,
         getNextPageParam: data => nextPageParams(data, searchParams || options.defaultSearchParams || {})
     });
 
@@ -147,8 +148,7 @@ export const createInfiniteQuery = <ResponseData>(options: InfiniteQueryOptions<
 
     return {
         ...result,
-        data,
-        isLoading: result.isLoading && result.fetchStatus !== 'idle'
+        data
     };
 };
 
@@ -163,7 +163,7 @@ interface MutationOptions<ResponseData, Payload> extends Omit<QueryOptions<Respo
     body?: (payload: Payload) => FormData | object;
     searchParams?: (payload: Payload) => { [key: string]: string; };
     invalidateQueries?: { dataType: string; } | {
-        filters?: InvalidateQueryFilters<unknown>,
+        filters?: InvalidateQueryFilters,
         options?: InvalidateOptions,
     };
     updateQueries?: { dataType: string; emberUpdateType: 'createOrUpdate' | 'delete' | 'skip'; update: (newData: ResponseData, currentData: unknown, payload: Payload) => unknown };
@@ -200,14 +200,14 @@ export const createMutation = <ResponseData, Payload>({path, searchParams, defau
 
     const afterMutate = useCallback((newData: ResponseData, payload: Payload) => {
         if (invalidateQueries && 'dataType' in invalidateQueries) {
-            queryClient.invalidateQueries([invalidateQueries.dataType]);
+            queryClient.invalidateQueries({queryKey: [invalidateQueries.dataType]});
             onInvalidate(invalidateQueries.dataType);
         } else if (invalidateQueries) {
             queryClient.invalidateQueries(invalidateQueries.filters, invalidateQueries.options);
         }
 
         if (updateQueries) {
-            queryClient.setQueriesData([updateQueries.dataType], (data: unknown) => updateQueries!.update(newData, data, payload));
+            queryClient.setQueriesData({queryKey: [updateQueries.dataType]}, (data: unknown) => updateQueries!.update(newData, data, payload));
             if (updateQueries.emberUpdateType === 'createOrUpdate') {
                 onUpdate(updateQueries.dataType, newData);
             } else if (updateQueries.emberUpdateType === 'delete') {

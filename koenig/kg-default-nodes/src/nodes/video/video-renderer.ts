@@ -1,5 +1,6 @@
 import {addCreateDocumentOption} from '../../utils/add-create-document-option.js';
 import type {ExportDOMOptions} from '../../export-dom.js';
+import type {CardWidth} from '../../utils/card-widths.js';
 import {renderEmptyContainer} from '../../utils/render-empty-container.js';
 
 interface VideoNodeData {
@@ -11,7 +12,7 @@ interface VideoNodeData {
     thumbnailSrc: string;
     customThumbnailSrc: string;
     formattedDuration: string;
-    cardWidth: string;
+    cardWidth: CardWidth;
 }
 
 interface BaseVideoRenderOptions extends ExportDOMOptions {}

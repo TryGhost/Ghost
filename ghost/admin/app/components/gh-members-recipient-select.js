@@ -1,5 +1,6 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
+import {groupTiersByActive} from 'ghost-admin/utils/group-tiers';
 import {isBlank} from '@ember/utils';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
@@ -153,30 +154,12 @@ export default class GhMembersRecipientSelect extends Component {
         const tierOptions = [];
 
         if (tiers.length > 1) {
-            const activeTiersGroup = {
-                groupName: 'Active tiers',
-                options: []
-            };
-
-            const archivedTiersGroup = {
-                groupName: 'Archived tiers',
-                options: []
-            };
-
-            tiers.forEach((tier) => {
-                const tierData = {
-                    name: tier.name,
-                    segment: `tier:${tier.slug}`,
-                    count: tier.count?.members,
-                    class: 'segment-tier'
-                };
-
-                if (tier.active) {
-                    activeTiersGroup.options.push(tierData);
-                } else {
-                    archivedTiersGroup.options.push(tierData);
-                }
-            });
+            const [activeTiersGroup, archivedTiersGroup] = groupTiersByActive(tiers, tier => ({
+                name: tier.name,
+                segment: `tier:${tier.slug}`,
+                count: tier.count?.members,
+                class: 'segment-tier'
+            }));
 
             tierOptions.push(activeTiersGroup);
             tierOptions.push(archivedTiersGroup);

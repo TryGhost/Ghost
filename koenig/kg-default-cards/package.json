@@ -22,7 +22,7 @@
   "scripts": {
     "dev": "echo \"Implement me!\"",
     "build": "tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json",
-    "test": "pnpm test:types && pnpm test:unit",
+    "test": "pnpm run '/^test:/'",
     "test:unit": "NODE_ENV=testing vitest run --coverage",
     "test:types": "tsc -p tsconfig.test.json",
     "lint": "eslint --cache .",
@@ -44,8 +44,10 @@
     "@types/jsdom": "catalog:",
     "@types/node": "catalog:",
     "@vitest/coverage-v8": "catalog:",
+    "eslint-plugin-ghost": "catalog:",
     "jsdom": "catalog:",
     "simple-dom": "1.4.0",
+    "@typescript/native": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
     "vitest": "catalog:"

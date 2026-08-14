@@ -83,7 +83,7 @@ export class GhostManager {
 
     /**
      * Set up Ghost and Gateway containers for this worker.
-     * 
+     *
      * @param database Optional database name to use. If not provided, uses 'ghost_testing'.
      */
     async setup(database?: string): Promise<void> {
@@ -160,12 +160,12 @@ export class GhostManager {
         try {
             const existing = this.docker.getContainer(name);
             const info = await existing.inspect();
-            
+
             if (info.State.Running) {
                 debug(`Reusing running container: ${name}`);
                 return existing;
             }
-            
+
             // Exists but stopped - start it
             debug(`Starting stopped container: ${name}`);
             await existing.start();
@@ -383,10 +383,18 @@ export class GhostManager {
         ];
 
         if (this.config.mode === 'dev') {
+            // Whole-directory mounts covering the backend source graph, rather
+            // than enumerating each server-graph workspace package. See the
+            // matching rationale in compose.dev.yaml: `pnpm dev` runs in
+            // ghost/core and only its dependency closure is verified against
+            // the image's root node_modules, so the non-server packages these
+            // dirs also expose don't trigger a workspace repair, and root
+            // node_modules (never mounted) keeps its linux-built native modules.
             binds.push(
-                `${REPO_ROOT}/ghost/core:/home/ghost/ghost/core`,
-                `${REPO_ROOT}/ghost/i18n:/home/ghost/ghost/i18n`,
-                `${REPO_ROOT}/ghost/parse-email-address:/home/ghost/ghost/parse-email-address`
+                `${REPO_ROOT}/ghost:/home/ghost/ghost`,
+                `${REPO_ROOT}/koenig:/home/ghost/koenig`,
+                `${REPO_ROOT}/configs:/home/ghost/configs`,
+                `${REPO_ROOT}/packages:/home/ghost/packages`
             );
         }
 
@@ -401,7 +409,7 @@ export class GhostManager {
         // - dev: Proxies to host dev servers for HMR
         // - build: Minimal passthrough (assets served by Ghost or default CDN)
         const caddyfilePath = mode === 'dev' ? CADDYFILE_PATHS.dev : CADDYFILE_PATHS.build;
-        
+
         const binds: string[] = [
             `${caddyfilePath}:/etc/caddy/Caddyfile:ro`
         ];

@@ -35,15 +35,28 @@ type TestResponseBody = Pick<http.IncomingMessage, 'method' | 'headers'> & {
 describe('useFetchApi', () => {
     let server: http.Server;
     let baseUrl: string;
+    let requestCounts: Map<string, number>;
 
     beforeEach(async () => {
+        requestCounts = new Map();
+
         server = http.createServer((req, res) => {
             const chunks: Buffer[] = [];
             req.on('data', (chunk: Buffer) => {
                 chunks.push(chunk);
             });
             req.on('end', async () => {
-                if (req.url?.includes('slow')) {
+                const url = req.url ?? '';
+                const requestCount = (requestCounts.get(url) ?? 0) + 1;
+                requestCounts.set(url, requestCount);
+
+                if (url.includes('maintenance') && requestCount === 1) {
+                    res.writeHead(503);
+                    res.end('Maintenance');
+                    return;
+                }
+
+                if (url.includes('slow')) {
                     await sleep(100);
                 }
                 res.writeHead(200, {
@@ -93,6 +106,15 @@ describe('useFetchApi', () => {
         expect(data.headers['app-pragma']).toBe('no-cache');
         expect(data.headers['content-type']).toBe('application/json');
         expect(data.body).toBe('test');
+    });
+
+    it('retries maintenance errors until the API recovers', async () => {
+        const {result} = renderHook(() => useFetchApi(), {wrapper});
+
+        const data = await result.current<TestResponseBody>(`${baseUrl}/ghost/api/admin/maintenance/`);
+
+        expect(data.method).toBe('GET');
+        expect(requestCounts.get('/ghost/api/admin/maintenance/')).toBe(2);
     });
 
     it('throws a timeout error when request exceeds timeout', async () => {

@@ -367,10 +367,11 @@ class MemberWelcomeEmailService {
      * @param {string} options.email.subject
      * @param {null | object} options.email.designSettings
      * @param {'welcome' | 'automation'} options.emailType
+     * @param {boolean} [options.trackOpens]
      * @param {null | {url: string, oneClickUrl: string}} [options.unsubscribe] - When set, the footer links to an unsubscribe URL and the email carries one-click List-Unsubscribe headers
-     * @returns {Promise<void>}
+     * @returns {Promise<unknown>}
      */
-    async #sendEmail({member, memberStatus, email, emailType, unsubscribe = null}) {
+    async #sendEmail({member, memberStatus, email, emailType, trackOpens, unsubscribe = null}) {
         if (!member.email) {
             throw new errors.IncorrectUsageError({
                 message: MESSAGES.MISSING_RECIPIENT_EMAIL
@@ -423,7 +424,7 @@ class MemberWelcomeEmailService {
         }
         }
 
-        await this.#mailer.send({
+        return await this.#mailer.send({
             to: member.email,
             subject,
             html,
@@ -431,6 +432,7 @@ class MemberWelcomeEmailService {
             forceTextContent: true,
             tags,
             ...(headers ? {headers} : {}),
+            ...(typeof trackOpens === 'boolean' ? {trackOpens} : {}),
             ...senderOptions
         });
     }
@@ -471,9 +473,10 @@ class MemberWelcomeEmailService {
      * @param {null | string} options.member.name
      * @param {string} options.member.uuid
      * @param {'free' | 'paid'} options.memberStatus
-     * @returns {Promise<void>}
+     * @param {boolean} options.trackOpens
+     * @returns {Promise<unknown>}
      */
-    async sendAutomationEmail({email, member, memberStatus}) {
+    async sendAutomationEmail({email, member, memberStatus, trackOpens}) {
         const designSettings = email.designSettingId ?
             await EmailDesignSetting.findOne({id: email.designSettingId}) :
             null;
@@ -489,7 +492,7 @@ class MemberWelcomeEmailService {
             null;
         const unsubscribe = unsubscribeUrl ? {url: unsubscribeUrl, oneClickUrl: unsubscribeUrl} : null;
 
-        await this.#sendEmail({
+        return await this.#sendEmail({
             member,
             memberStatus,
             emailType: 'automation',
@@ -498,6 +501,7 @@ class MemberWelcomeEmailService {
                 subject: email.subject,
                 designSettings: designSettingsJson
             },
+            trackOpens,
             unsubscribe
         });
     }

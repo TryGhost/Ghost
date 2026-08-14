@@ -1,0 +1,67 @@
+name: i18n Review Checks
+
+# Lints and tests the i18n-review bot itself. (The review it posts on
+# translation PRs is translation-review.yml — a different workflow.)
+#
+# This tool is deliberately outside the pnpm workspace, with its own
+# package-lock.json, eslint config and dev deps — see
+# .github/scripts/i18n-review/README.md for why. That means the monorepo's
+# `nx run-many -t lint/test` in ci.yml does not cover it, so it needs this
+# path-filtered lane of its own.
+#
+# Unlike translation-review.yml, this runs on plain `pull_request` and holds no
+# secrets, so it's safe to execute PR code. Deps come from this directory's own
+# lockfile only — a full `pnpm install` of the monorepo isn't needed to lint
+# five files.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/scripts/i18n-review/**'
+      - '.github/workflows/i18n-review-checks.yml'
+  pull_request:
+    paths:
+      - '.github/scripts/i18n-review/**'
+      - '.github/workflows/i18n-review-checks.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: i18n-review-checks-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Lint + test
+    runs-on: ubuntu-slim
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            .github/scripts/i18n-review
+          sparse-checkout-cone-mode: false
+
+      # Must match translation-review.yml, where this tool actually runs.
+      - name: Set up Node
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+
+      # npm, not pnpm — this directory is not a workspace member. Dev deps are
+      # included here (they're eslint); the production run in
+      # translation-review.yml installs with --omit=dev and never sees them.
+      - name: Install dependencies
+        working-directory: .github/scripts/i18n-review
+        run: npm ci --no-audit --no-fund
+
+      - name: Lint
+        working-directory: .github/scripts/i18n-review
+        run: npm run lint
+
+      - name: Test
+        working-directory: .github/scripts/i18n-review
+        run: npm test

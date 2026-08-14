@@ -12,6 +12,7 @@ import MyProfileRedirect from "./my-profile-redirect";
 import { EmberFallback, ForceUpgradeGuard } from "./ember-bridge";
 import type { RouteHandle } from "./ember-bridge";
 import { EmberListWithGiftLinks } from "./gift-link-modal-host";
+import { MemberDetailGate } from "./member-detail-gate";
 import { MembersRoute } from "./members-route";
 import { OnboardingRedirect } from "./onboarding/onboarding-redirect";
 
@@ -37,8 +38,6 @@ const EMBER_ROUTES: string[] = [
     "/tags/new",
     "/explore/*",
     "/migrate/*",
-    "/members/new",
-    "/members/:member_id",
     "/members-activity",
     "/designsandbox",
     "/mentions",
@@ -64,6 +63,18 @@ const membersRoute: RouteObject = {
         {
             path: "import",
             lazy: lazyComponent(() => import("./members/members"))
+        },
+        {
+            // Covers both edit (`:member_id`) and create (the sentinel `new`)
+            // — real member ids are 24-char hex ObjectIds, so they can't
+            // collide with the literal "new".
+            //
+            // MemberDetailGate serves Ember or React depending on the
+            // `memberDetailsReact` Labs flag; the parent route's
+            // emberFallbackHandle covers both, since ForceUpgradeGuard checks
+            // every match rather than just the leaf.
+            path: ":member_id",
+            Component: MemberDetailGate
         }
     ]
 };
@@ -103,9 +114,6 @@ export const routes: RouteObject[] = [
             },
             membersRoute,
             {
-                // Post analytics folded into the shell table. Its own data provider
-                // (PostAnalyticsProvider) wraps the view; PostsAppContext dissolved —
-                // the header reads appSettings from the framework AppContext directly.
                 path: "/posts/analytics/:postId",
                 lazy: async () => {
                     const [{ default: PostAnalyticsProvider }, { default: PostAnalytics }] = await Promise.all([

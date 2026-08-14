@@ -1,5 +1,25 @@
 import SnippetCardIcon from '../assets/icons/kg-card-type-snippet.svg?react';
 import {INSERT_SNIPPET_COMMAND} from '../plugins/KoenigSnippetPlugin';
+import type React from 'react';
+
+export interface CardMenuItem {
+    nodeType?: string;
+    type?: string;
+    label: string;
+    Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+    desc?: string;
+    shortcut?: string;
+    section?: string;
+    matches?: ((query: string, label?: string) => boolean) | string[];
+    isHidden?: (context: {config: unknown}) => boolean;
+    postType?: string;
+    insertParams?: unknown;
+    insertCommand?: unknown;
+    queryParams?: unknown;
+    priority?: number;
+    onRemove?: () => void;
+    [key: string]: unknown;
+}
 
 export function buildCardMenu(nodes, {query, config} = {}) {
     let menu = new Map();

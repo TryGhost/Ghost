@@ -1,8 +1,7 @@
 import cloneDeep from 'lodash/cloneDeep.js';
-import {generateDecoratorNode, type DecoratorNodeProperty} from '../../generate-decorator-node.js';
+import {generateDecoratorNode, type DecoratorNodeData, type DecoratorNodePropertyMap} from '../../generate-decorator-node.js';
 import {renderTransistorNode} from './transistor-renderer.js';
 import {ALL_MEMBERS_SEGMENT} from '../../utils/visibility.js';
-import type {Visibility} from '../../utils/visibility.js';
 
 // Default visibility for Transistor: members only (no public visitors)
 // since the embed requires a member UUID to function
@@ -16,22 +15,12 @@ const TRANSISTOR_DEFAULT_VISIBILITY = {
     }
 };
 
-export interface TransistorNode {
-    accentColor: string;
-    backgroundColor: string;
-    visibility: Visibility;
-}
+const transistorProperties = {
+    accentColor: {default: ''},
+    backgroundColor: {default: ''}
+} satisfies DecoratorNodePropertyMap;
 
-export interface TransistorData {
-    accentColor?: string;
-    backgroundColor?: string;
-    visibility?: Visibility;
-}
-
-const transistorProperties = [
-    {name: 'accentColor', default: ''},
-    {name: 'backgroundColor', default: ''}
-] as const satisfies readonly DecoratorNodeProperty[];
+export type TransistorData = DecoratorNodeData<typeof transistorProperties, true>;
 
 export class TransistorNode extends generateDecoratorNode({
     nodeType: 'transistor',

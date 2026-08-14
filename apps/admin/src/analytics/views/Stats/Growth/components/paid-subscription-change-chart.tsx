@@ -2,7 +2,7 @@ import React, {useEffect, useMemo, useState} from 'react';
 import moment from 'moment';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, EmptyIndicator, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
 import {LucideIcon, Recharts, formatNumber} from '@tryghost/shade/utils';
-import {determineAggregationStrategy, getPeriodText, sanitizeChartData} from '@/analytics/utils/chart-helpers';
+import {type AggregationStrategy, getEffectiveChartRange, getPeriodText, resolveEffectiveRangeDays, sanitizeChartData} from '@/shared/analytics/chart-helpers';
 import {formatDisplayDateWithRange, getRangeDates} from '@tryghost/shade/app';
 
 type PaidMembersChangeChartProps = {
@@ -18,7 +18,7 @@ type PaidMembersChangeChartProps = {
 
 // Helper function to fill missing data points with zeros
 // Moved outside component to prevent recreation on each render
-const fillMissingDataPoints = (data: {date: string; signups: number; cancellations: number}[], dateRange: number, overrideStrategy?: 'none' | 'weekly' | 'monthly' | 'monthly-exact') => {
+const fillMissingDataPoints = (data: {date: string; signups: number; cancellations: number}[], dateRange: number, strategy: AggregationStrategy) => {
     // For "Today" (dateRange = 1), show just one data point for the current date
     if (dateRange === 1) {
         const today = moment().format('YYYY-MM-DD');
@@ -32,8 +32,9 @@ const fillMissingDataPoints = (data: {date: string; signups: number; cancellatio
     }
 
     const {startDate, endDate} = getRangeDates(dateRange);
-    const dateSpan = moment(endDate).diff(moment(startDate), 'days');
-    const strategy = determineAggregationStrategy(dateRange, dateSpan, 'sum', overrideStrategy);
+    // sanitizeChartData clamps the partial first bucket's label to the range
+    // start; clamp the generated period keys the same way so they line up
+    const rangeStartKey = moment(startDate).format('YYYY-MM-DD');
 
     // Create a map of existing data by date
     const dataMap = new Map(data.map(item => [item.date, item]));
@@ -50,7 +51,8 @@ const fillMissingDataPoints = (data: {date: string; signups: number; cancellatio
         const endPeriod = moment(endDate).startOf('month');
 
         while (currentPeriod.isSameOrBefore(endPeriod)) {
-            const dateKey = currentPeriod.format('YYYY-MM-DD');
+            const periodKey = currentPeriod.format('YYYY-MM-DD');
+            const dateKey = periodKey < rangeStartKey ? rangeStartKey : periodKey;
             if (!seenKeys.has(dateKey)) {
                 seenKeys.add(dateKey);
                 const existingData = dataMap.get(dateKey);
@@ -73,7 +75,8 @@ const fillMissingDataPoints = (data: {date: string; signups: number; cancellatio
         const endPeriod = moment(endDate).startOf('week');
 
         while (currentPeriod.isSameOrBefore(endPeriod)) {
-            const dateKey = currentPeriod.format('YYYY-MM-DD');
+            const periodKey = currentPeriod.format('YYYY-MM-DD');
+            const dateKey = periodKey < rangeStartKey ? rangeStartKey : periodKey;
             if (!seenKeys.has(dateKey)) {
                 seenKeys.add(dateKey);
                 const existingData = dataMap.get(dateKey);
@@ -115,19 +118,9 @@ const fillMissingDataPoints = (data: {date: string; signups: number; cancellatio
 
 type ResolutionOption = 'daily' | 'weekly' | 'monthly';
 
-// Helper to calculate actual date span for YTD ranges
-const getActualDateSpan = (range: number): number => {
-    if (range === -1) {
-        // Year to date - calculate days from Jan 1 to today
-        const {startDate, endDate} = getRangeDates(range);
-        return moment(endDate).diff(moment(startDate), 'days');
-    }
-    return range;
-};
-
 // Helper to determine available resolutions based on range
 const getAvailableResolutions = (range: number): ResolutionOption[] => {
-    const actualSpan = getActualDateSpan(range);
+    const actualSpan = resolveEffectiveRangeDays(range);
 
     if (actualSpan < 30) {
         return ['daily']; // No dropdown for < 30 days
@@ -140,7 +133,7 @@ const getAvailableResolutions = (range: number): ResolutionOption[] => {
 
 // Helper to get default resolution for a range
 const getDefaultResolution = (range: number): ResolutionOption => {
-    const actualSpan = getActualDateSpan(range);
+    const actualSpan = resolveEffectiveRangeDays(range);
 
     if (actualSpan < 30) {
         return 'daily';
@@ -179,6 +172,12 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
             return 'monthly' as const;
         }
     }, [selectedResolution]);
+
+    // Range whose display format matches the selected resolution ("Week of ..."
+    // for weekly buckets, "MMM YYYY" for monthly ones)
+    const displayRange = useMemo(() => {
+        return getEffectiveChartRange(range, [], {overrideStrategy: aggregationStrategy});
+    }, [range, aggregationStrategy]);
 
     const paidChangeChartData = useMemo(() => {
         // Use subscription data if available (like Ember dashboard), otherwise fall back to member data
@@ -230,16 +229,8 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
             const filledData = fillMissingDataPoints(combinedData, range, aggregationStrategy);
 
             return filledData.map((item) => {
-                // Use effective range for formatting based on selected resolution
-                let effectiveRange = range;
-                if (selectedResolution === 'weekly' && range < 91) {
-                    effectiveRange = 91; // Force "Week of" formatting
-                } else if (selectedResolution === 'monthly' && range < 365) {
-                    effectiveRange = 365; // Force "MMM YYYY" formatting
-                }
-
                 return {
-                    date: formatDisplayDateWithRange(item.date, effectiveRange),
+                    date: formatDisplayDateWithRange(item.date, displayRange),
                     rawDate: item.date, // Keep raw date for dynamic tooltip formatting
                     new: item.signups || 0,
                     cancelled: -(item.cancellations || 0) // Negative for the stacked bar chart
@@ -295,23 +286,15 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
             combinedData.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
             return combinedData.map((item) => {
-                // Use effective range for formatting based on selected resolution
-                let effectiveRange = range;
-                if (selectedResolution === 'weekly' && range < 91) {
-                    effectiveRange = 91; // Force "Week of" formatting
-                } else if (selectedResolution === 'monthly' && range < 365) {
-                    effectiveRange = 365; // Force "MMM YYYY" formatting
-                }
-
                 return {
-                    date: formatDisplayDateWithRange(item.date, effectiveRange),
+                    date: formatDisplayDateWithRange(item.date, displayRange),
                     rawDate: item.date, // Keep raw date for dynamic tooltip formatting
                     new: item.paid_subscribed || 0,
                     cancelled: -(item.paid_canceled || 0) // Negative for the stacked bar chart
                 };
             });
         }
-    }, [memberData, subscriptionData, range, aggregationStrategy, selectedResolution]);
+    }, [memberData, subscriptionData, range, aggregationStrategy, displayRange]);
 
     const paidChangeChartConfig = {
         new: {
@@ -429,14 +412,7 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
                                             let tooltipDate = row?.date;
                                             const rawDate = row?.rawDate;
                                             if (rawDate) {
-                                            // Map resolution directly to date format
-                                                if (selectedResolution === 'monthly') {
-                                                    tooltipDate = formatDisplayDateWithRange(rawDate, 366); // Force "MMM YYYY"
-                                                } else if (selectedResolution === 'weekly') {
-                                                    tooltipDate = formatDisplayDateWithRange(rawDate, 91); // Force "Week of"
-                                                } else {
-                                                    tooltipDate = formatDisplayDateWithRange(rawDate, 30); // Daily format
-                                                }
+                                                tooltipDate = formatDisplayDateWithRange(rawDate, displayRange);
                                             }
 
                                             return (

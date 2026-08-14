@@ -1,14 +1,15 @@
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
 import useSettingGroup from '../../../hooks/use-setting-group';
-import {Banner, Button as ShadeButton} from '@tryghost/shade/components';
+import {Banner, Separator, Button as ShadeButton} from '@tryghost/shade/components';
 import {type GroupBase, type MultiValue} from 'react-select';
-import {Hint, MultiSelect, type MultiSelectOption, Select, Separator, SettingGroupContent, TextField, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {Hint, MultiSelect, type MultiSelectOption, Select, SettingGroupContent, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {RefreshCw} from 'lucide-react';
 import {getSettingValues, isSettingReadOnly, useRegenerateAccessCode} from '@tryghost/admin-x-framework/api/settings';
 import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useLimiter} from '../../../hooks/use-limiter';
+import {withErrorBoundary} from '../../error-boundary';
 
 const SITE_VISIBILITY_OPTIONS = [
     {
@@ -239,7 +240,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     </div>
                 </div>
             )}
-            <Separator className="border-grey-200 dark:border-grey-900" />
+            <Separator />
             <div className="flex flex-col content-center items-center gap-4 md:flex-row">
                 <div className="w-full max-w-none min-w-[160px] md:w-2/3 md:max-w-[320px]">Who should be able to subscribe to your site?</div>
                 <div className="w-full md:flex-1">
@@ -254,7 +255,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     />
                 </div>
             </div>
-            <Separator className="border-grey-200 dark:border-grey-900" />
+            <Separator />
             <div className="flex flex-col content-center items-center gap-4 md:flex-row">
                 <div className="w-full max-w-none min-w-[160px] md:w-2/3 md:max-w-[320px]">Who should have access to new posts?</div>
                 <div className="w-full md:flex-1">
@@ -286,7 +287,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     </div>
                 </div>
             )}
-            <Separator className="border-grey-200 dark:border-grey-900" />
+            <Separator />
             <div className="flex flex-col content-center items-center gap-4 md:flex-row">
                 <div className="w-full max-w-none min-w-[160px] md:w-2/3 md:max-w-[320px]">Who can comment on posts?</div>
                 <div className="w-full md:flex-1">

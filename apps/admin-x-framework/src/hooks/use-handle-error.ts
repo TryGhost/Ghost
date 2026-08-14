@@ -1,9 +1,9 @@
 import * as Sentry from '@sentry/react';
-import {showToast} from '@tryghost/admin-x-design-system';
 import {useCallback} from 'react';
 import toast from 'react-hot-toast';
 import {useFramework} from '../providers/framework-provider';
-import {APIError, getErrorMessage} from '../utils/errors';
+import {APIError, SessionExpiredError, getErrorMessage} from '../utils/errors';
+import {showToast} from '../utils/toast';
 
 function showErrorToast(message: React.ReactNode) {
     toast.remove();
@@ -32,7 +32,7 @@ const useHandleError = () => {
         // eslint-disable-next-line no-console
         console.error(error);
 
-        if (sentryDSN) {
+        if (sentryDSN && !(error instanceof SessionExpiredError)) {
             Sentry.withScope((scope) => {
                 if (error instanceof APIError && error.response) {
                     scope.setTag('api_url', error.response.url);
@@ -50,6 +50,10 @@ const useHandleError = () => {
             // We use this status in tests to indicate the API request was not mocked -
             // don't show a toast because it may block clicking things in the test,
             // but still clear lingering toasts that would block clicks the same way
+            toast.remove();
+        } else if (error instanceof SessionExpiredError) {
+            // Session-expiry 401s trigger a redirect to signin in the fetch
+            // layer - a toast would only flash while the page unloads
             toast.remove();
         } else if (error instanceof APIError) {
             showErrorToast(getErrorMessage(error, error.message));

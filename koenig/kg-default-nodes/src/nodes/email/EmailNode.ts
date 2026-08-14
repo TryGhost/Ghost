@@ -1,13 +1,11 @@
-import {generateDecoratorNode, type DecoratorNodeData, type DecoratorNodeProperty, type DecoratorNodeValueMap} from '../../generate-decorator-node.js';
+import {generateDecoratorNode, type DecoratorNodeData, type DecoratorNodePropertyMap} from '../../generate-decorator-node.js';
 import {renderEmailNode} from './email-renderer.js';
 
-const emailProperties = [
-    {name: 'html', default: '', urlType: 'html'}
-] as const satisfies readonly DecoratorNodeProperty[];
+const emailProperties = {
+    html: {default: '', urlType: 'html'}
+} satisfies DecoratorNodePropertyMap;
 
 export type EmailData = DecoratorNodeData<typeof emailProperties>;
-
-export interface EmailNode extends DecoratorNodeValueMap<typeof emailProperties> {}
 
 export class EmailNode extends generateDecoratorNode({
     nodeType: 'email',

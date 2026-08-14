@@ -4,7 +4,7 @@ const errors = require('@tryghost/errors');
  * Base class for email provider adapters
  *
  * All email providers must implement the required methods defined below.
- * This ensures consistent interface across different email providers (Postmark, SendGrid, AWS SES, etc.)
+ * This ensures consistent interface across different email providers (Mailgun, SendGrid, AWS SES, etc.)
  *
  * This base class handles both email sending and analytics fetching in a unified interface.
  */

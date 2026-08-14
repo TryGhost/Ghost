@@ -22,8 +22,11 @@ export const CONFIRM_EMAIL_MAX_POLL_LENGTH = 15 * 1000;
 // modal display, and provide an editor-specific save behaviour wrapper around
 // PublishOptions saving.
 export default class PublishManagement extends Component {
+    @service feature;
     @service modals;
     @service notifications;
+    @service settings;
+    @service store;
 
     // ensure we get a new PublishOptions instance when @post is replaced
     @use publishOptions = new PublishOptionsResource(() => [this.args.post]);
@@ -31,6 +34,8 @@ export default class PublishManagement extends Component {
     @tracked previewFormat = 'browser';
     @tracked previewSize = 'desktop';
     @tracked previewAsSegment = 'free';
+    @tracked previewTierSlug;
+    @tracked tiers = [];
 
     publishFlowModal = null;
     updateFlowModal = null;
@@ -105,6 +110,7 @@ export default class PublishManagement extends Component {
         event?.preventDefault();
 
         const isValid = await this._validatePost();
+        await this._ensureTiersLoaded();
 
         if (isValid && (!this.previewModal || this.previewModal.isClosing)) {
             // open publish flow modal underneath to offer quick switching
@@ -121,8 +127,26 @@ export default class PublishManagement extends Component {
                 changePreviewSize: this.changePreviewSize,
                 initialPreviewAsSegment: this.previewAsSegment,
                 changePreviewAsSegment: this.changePreviewAsSegment,
+                initialPreviewTierSlug: this.previewTierSlug,
+                changePreviewTier: this.changePreviewTier,
+                tiers: this.tiers,
                 skipAnimation
             });
+        }
+    }
+
+    // tiers are loaded once per editor session so the preview modal can render
+    // its tier selector synchronously; a failed fetch degrades the preview to
+    // the free/paid audience options and is retried on the next open
+    async _ensureTiersLoaded() {
+        if (!this.feature.previewByTier || !this.settings.paidMembersEnabled || this.loadTiersTask.lastSuccessful) {
+            return;
+        }
+
+        try {
+            await this.loadTiersTask.perform();
+        } catch (error) {
+            // no-op, degraded preview
         }
     }
 
@@ -158,6 +182,17 @@ export default class PublishManagement extends Component {
     @action
     changePreviewAsSegment(segment) {
         this.previewAsSegment = segment;
+    }
+
+    @action
+    changePreviewTier(tierSlug) {
+        this.previewTierSlug = tierSlug;
+    }
+
+    @task
+    *loadTiersTask() {
+        const tiers = yield this.store.query('tier', {filter: 'type:paid', limit: 'all'});
+        this.tiers = tiers.toArray();
     }
 
     @action

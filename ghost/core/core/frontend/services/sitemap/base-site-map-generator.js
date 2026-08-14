@@ -77,11 +77,15 @@ class BaseSiteMapGenerator {
     }
 
     addUrl(url, datum) {
-        const node = this.createUrlNodeFromDatum(url, datum);
+        // Computed once and threaded through: the three consumers below each
+        // used to construct their own moment() from the same datum, which
+        // dominates the cost of bulk adds.
+        const lastModified = this.getLastModifiedForDatum(datum);
+        const node = this.createUrlNodeFromDatum(url, datum, lastModified);
 
         if (node && !this.hasCanonicalUrl(datum)) {
-            this.updateLastModified(datum);
-            this.updateLookups(datum, node);
+            this.updateLastModified(datum, lastModified);
+            this.updateLookups(datum, node, lastModified);
             // force regeneration of xml
             this.siteMapContent.clear();
         }
@@ -108,9 +112,7 @@ class BaseSiteMapGenerator {
         }
     }
 
-    updateLastModified(datum) {
-        const lastModified = this.getLastModifiedForDatum(datum);
-
+    updateLastModified(datum, lastModified = this.getLastModifiedForDatum(datum)) {
         if (lastModified > this.lastModified) {
             this.lastModified = lastModified;
         }
@@ -122,14 +124,14 @@ class BaseSiteMapGenerator {
      * @param {Object} datum
      * @returns
      */
-    createUrlNodeFromDatum(url, datum) {
+    createUrlNodeFromDatum(url, datum, lastModified = this.getLastModifiedForDatum(datum)) {
         let node;
         let imgNode;
 
         node = {
             url: [
                 {loc: url},
-                {lastmod: this.getLastModifiedForDatum(datum).toISOString()}
+                {lastmod: lastModified.toISOString()}
             ]
         };
 
@@ -193,9 +195,9 @@ class BaseSiteMapGenerator {
      * It removes and adds the url. If the url service extends it's
      * feature set, we can detect if a node has changed.
      */
-    updateLookups(datum, node) {
+    updateLookups(datum, node, lastModified = this.getLastModifiedForDatum(datum)) {
         this.nodeLookup[datum.id] = node;
-        this.nodeTimeLookup[datum.id] = this.getLastModifiedForDatum(datum);
+        this.nodeTimeLookup[datum.id] = lastModified;
     }
 
     removeFromLookups(datum) {

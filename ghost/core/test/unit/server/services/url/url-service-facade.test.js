@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
+const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const UrlServiceFacade = require('../../../../../core/server/services/url/url-service-facade');
 
@@ -175,6 +176,143 @@ describe('UrlServiceFacade', function () {
         });
     });
 
+    describe('getRoutableResources', function () {
+        const flush = () => new Promise((resolve) => {
+            setImmediate(resolve);
+        });
+
+        beforeEach(function () {
+            urlService.resources = {
+                getAllByType: sinon.stub().returns([
+                    {data: {id: 'a', slug: 'one'}},
+                    {data: {id: 'b', slug: 'two'}}
+                ])
+            };
+        });
+
+        it('returns [] when the eager cache has not initialised the type yet', async function () {
+            urlService.resources.getAllByType.returns(undefined);
+
+            assert.deepEqual(await facade.getRoutableResources('posts'), []);
+        });
+
+        it('answers from the eager cache with no lazy backend', async function () {
+            const rows = await facade.getRoutableResources('posts');
+
+            sinon.assert.calledWith(urlService.resources.getAllByType, 'posts');
+            assert.deepEqual(rows, [{id: 'a', slug: 'one'}, {id: 'b', slug: 'two'}]);
+        });
+
+        it('routes to the injected fetcher in lazy mode', async function () {
+            const fetchRoutableResources = sinon.stub().resolves([{id: 'c'}]);
+            const lazyFacade = new UrlServiceFacade({
+                urlService,
+                lazyUrlService: {},
+                fetchRoutableResources
+            });
+
+            const rows = await lazyFacade.getRoutableResources('posts', {columns: ['feature_image']});
+
+            sinon.assert.calledWith(fetchRoutableResources, 'posts', {columns: ['feature_image']});
+            assert.deepEqual(rows, [{id: 'c'}]);
+        });
+
+        it('throws in lazy mode without an injected fetcher rather than answering from eager', async function () {
+            const lazyFacade = new UrlServiceFacade({urlService, lazyUrlService: {}});
+
+            await assert.rejects(lazyFacade.getRoutableResources('posts'), /fetchRoutableResources/);
+        });
+
+        describe('in compare mode', function () {
+            let fetchRoutableResources;
+            let compareFacade;
+
+            beforeEach(function () {
+                fetchRoutableResources = sinon.stub().resolves([{id: 'a'}, {id: 'b'}]);
+                compareFacade = new UrlServiceFacade({
+                    urlService,
+                    lazyUrlService: {},
+                    compare: true,
+                    fetchRoutableResources
+                });
+                sinon.stub(logging, 'error');
+            });
+
+            afterEach(function () {
+                sinon.restore();
+            });
+
+            it('returns the eager rows and stays silent when the id sets match', async function () {
+                const rows = await compareFacade.getRoutableResources('posts');
+                await flush();
+
+                assert.deepEqual(rows.map(row => row.id), ['a', 'b']);
+                sinon.assert.calledOnce(fetchRoutableResources);
+                sinon.assert.notCalled(logging.error);
+            });
+
+            it('logs a parity mismatch when the id sets diverge, without dumping the rows', async function () {
+                fetchRoutableResources.resolves([{id: 'a'}, {id: 'c'}]);
+
+                await compareFacade.getRoutableResources('posts');
+                await flush();
+
+                sinon.assert.calledOnce(logging.error);
+                const reported = logging.error.firstCall.args[0];
+                assert.equal(reported.code, 'LAZY_URL_PARITY_MISMATCH');
+                assert.deepEqual(reported.errorDetails.missingFromLazy, ['b']);
+                assert.deepEqual(reported.errorDetails.extraInLazy, ['c']);
+                assert.equal(reported.errorDetails.eagerCount, 2);
+                assert.ok(!JSON.stringify(reported.errorDetails).includes('slug'), 'row bodies must not be logged');
+            });
+
+            it('does not stack concurrent comparison walks for the same type', async function () {
+                let resolveWalk;
+                fetchRoutableResources.onFirstCall().returns(new Promise((resolve) => {
+                    resolveWalk = () => resolve([{id: 'a'}, {id: 'b'}]);
+                }));
+
+                await compareFacade.getRoutableResources('posts');
+                await compareFacade.getRoutableResources('posts');
+
+                sinon.assert.calledOnce(fetchRoutableResources);
+
+                resolveWalk();
+                await flush();
+
+                // Once the walk settles, the next call may compare again.
+                await compareFacade.getRoutableResources('posts');
+                sinon.assert.calledTwice(fetchRoutableResources);
+            });
+
+            it('logs instead of throwing when the lazy fetch fails', async function () {
+                fetchRoutableResources.rejects(new Error('connection lost'));
+
+                const rows = await compareFacade.getRoutableResources('posts');
+                await flush();
+
+                assert.equal(rows.length, 2, 'eager answer unaffected');
+                sinon.assert.calledOnce(logging.error);
+                assert.equal(logging.error.firstCall.args[0].code, 'LAZY_URL_COMPARE_ERROR');
+            });
+        });
+    });
+
+    describe('getUrlForResource with skipComparison', function () {
+        it('answers from eager without teeing the lazy backend', async function () {
+            const lazyUrlService = {getUrlForResource: sinon.stub()};
+            const compareFacade = new UrlServiceFacade({urlService, lazyUrlService, compare: true});
+
+            const url = compareFacade.getUrlForResource({id: 'abc', type: 'posts'}, {absolute: true, skipComparison: true});
+
+            assert.equal(url, '/hello-world/');
+            await new Promise((resolve) => {
+                setImmediate(resolve);
+            });
+            sinon.assert.notCalled(lazyUrlService.getUrlForResource);
+        });
+    });
+
     describe('compare mode (eager authoritative, lazy teed alongside)', function () {
         let lazyUrlService;
         let compareFacade;
@@ -252,31 +390,54 @@ describe('UrlServiceFacade', function () {
             assert.equal(logging.error.firstCall.args[0].code, 'LAZY_URL_COMPARE_ERROR');
         });
 
-        it('reports the caller stack and resource keys with a lazy throw from getUrlForResource', async function () {
+        it('keeps the caller context when the lazy throw carries its own errorDetails', async function () {
+            // @tryghost/errors copies the wrapped error's enumerable props over
+            // the new error, so the thin-resource report's errorDetails would
+            // clobber the compare context unless re-merged.
+            const thinError = new errors.InternalServerError({
+                message: 'Thin resource passed to LazyUrlService.getUrlForResource',
+                code: 'LAZY_URL_THIN_RESOURCE',
+                errorDetails: {resourceType: 'posts', missing: ['tags']}
+            });
+            lazyUrlService.getUrlForResource.throws(thinError);
+            compareFacade.getUrlForResource({type: 'posts', id: 'a', slug: 'hello'});
+            await flush();
+            const report = logging.error.firstCall.args[0];
+            assert.equal(report.errorDetails.resourceType, 'posts');
+            assert.deepEqual(report.errorDetails.missing, ['tags']);
+            assert.equal(report.errorDetails.method, 'getUrlForResource');
+            assert.match(report.stack, /url-service-facade\.test\.js/);
+            assert.deepEqual(report.errorDetails.resourceKeys, ['type', 'id', 'slug']);
+        });
+
+        it('replaces the report stack with the caller frames on a lazy throw', async function () {
             lazyUrlService.getUrlForResource.throws(new Error('boom'));
             compareFacade.getUrlForResource({type: 'posts', id: 'a', slug: 'hello'});
             await flush();
-            const details = logging.error.firstCall.args[0].errorDetails;
-            // The compare runs in setImmediate, so the throw's own stack has no
-            // caller frames; the facade captures them at call time instead.
-            assert.match(details.caller, /url-service-facade\.test\.js/);
-            assert.deepEqual(details.resourceKeys, ['type', 'id', 'slug']);
+            const report = logging.error.firstCall.args[0];
+            assert.match(report.stack, /^InternalServerError: Lazy URL service threw during comparison\n/);
+            assert.match(report.stack, /url-service-facade\.test\.js/);
+            assert.equal(report.errorDetails.caller, undefined);
+            assert.deepEqual(report.errorDetails.resourceKeys, ['type', 'id', 'slug']);
         });
 
-        it('reports the caller stack and resource keys with a forward URL mismatch', async function () {
+        it('replaces the report stack with the caller frames on a forward URL mismatch', async function () {
             compareFacade.getUrlForResource({type: 'posts', id: 'a', slug: 'hello'});
             await flush();
-            const details = logging.error.firstCall.args[0].errorDetails;
-            assert.match(details.caller, /url-service-facade\.test\.js/);
-            assert.deepEqual(details.resourceKeys, ['type', 'id', 'slug']);
+            const report = logging.error.firstCall.args[0];
+            assert.match(report.stack, /^InternalServerError: URL service parity mismatch\n/);
+            assert.match(report.stack, /url-service-facade\.test\.js/);
+            assert.equal(report.errorDetails.caller, undefined);
+            assert.deepEqual(report.errorDetails.resourceKeys, ['type', 'id', 'slug']);
         });
 
-        it('reports the caller stack and resource keys with an ownership mismatch', async function () {
+        it('replaces the report stack with the caller frames on an ownership mismatch', async function () {
             compareFacade.ownsResource('routerA', {type: 'posts', id: 'a', status: 'published'});
             await flush();
-            const details = logging.error.firstCall.args[0].errorDetails;
-            assert.match(details.caller, /url-service-facade\.test\.js/);
-            assert.deepEqual(details.resourceKeys, ['type', 'id', 'status']);
+            const report = logging.error.firstCall.args[0];
+            assert.match(report.stack, /url-service-facade\.test\.js/);
+            assert.equal(report.errorDetails.caller, undefined);
+            assert.deepEqual(report.errorDetails.resourceKeys, ['type', 'id', 'status']);
         });
 
         it('resolveUrl returns the eager answer without awaiting lazy', async function () {

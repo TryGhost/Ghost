@@ -364,7 +364,9 @@ function useSlashCardMenu(editor) {
                         insert={insert}
                         menu={cardMenu.menu}
                         scrollToSelectedItem={scrollToSelectedItem}
+                        searchTerm={query}
                         selectedItemIndex={selectedItemIndex}
+                        source="slash"
                     />
                 </SlashMenu>
             </div>

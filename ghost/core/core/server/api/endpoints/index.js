@@ -104,6 +104,10 @@ module.exports = {
         return apiFramework.pipeline(require('./members'), localUtils);
     },
 
+    get membersCustomFields() {
+        return apiFramework.pipeline(require('./member-custom-fields'), localUtils);
+    },
+
     get memberCommenting() {
         return apiFramework.pipeline(require('./member-commenting'), localUtils);
     },

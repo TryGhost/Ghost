@@ -12,7 +12,6 @@ import Hint from '../hint';
 import Heading from '../heading';
 import {tableRowHoverBgClasses} from '../table-row';
 import Breadcrumbs from '../breadcrumbs';
-import Avatar from '../avatar';
 import Button from '../button';
 import {Toggle} from '../..';
 
@@ -374,7 +373,6 @@ export const ExampleDetailScreen: Story = {
                 firstOnPage={false}
                 headerContent={
                     <div>
-                        <Avatar bgColor='#A5D5F7' label='EV' labelColor='white' size='xl' />
                         <Heading className='mt-2' level={1}>Emerson Vaccaro</Heading>
                         <div className=''>Colombus, OH</div>
                     </div>

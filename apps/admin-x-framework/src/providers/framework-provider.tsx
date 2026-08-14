@@ -33,6 +33,10 @@ export interface FrameworkProviderProps {
     onInvalidate: (dataType: string) => void;
     onDelete: (dataType: string, id: string) => void;
 
+    // Optional QueryClient override. Defaults to the shared window-level
+    // singleton; test harnesses pass a fresh client per render for isolation.
+    queryClient?: QueryClient;
+
     // Optional QueryClient configuration for apps that need different defaults
     queryClientOptions?: {
         staleTime?: number;
@@ -63,8 +67,12 @@ const FrameworkContext = createContext<FrameworkContextType>({
     onDelete: () => {}
 });
 
-export function FrameworkProvider({children, queryClientOptions, ...props}: FrameworkProviderProps) {
+export function FrameworkProvider({children, queryClient: queryClientOverride, queryClientOptions, ...props}: FrameworkProviderProps) {
     const client = useMemo(() => {
+        if (queryClientOverride) {
+            return queryClientOverride;
+        }
+
         if (!queryClientOptions) {
             return queryClient;
         }
@@ -75,14 +83,14 @@ export function FrameworkProvider({children, queryClientOptions, ...props}: Fram
                     refetchOnWindowFocus: queryClientOptions.refetchOnWindowFocus ?? false,
                     staleTime: queryClientOptions.staleTime ?? 5 * (60 * 1000), // 5 mins
                     refetchOnMount: queryClientOptions.refetchOnMount ?? false,
-                    cacheTime: 10 * (60 * 1000), // 10 mins
+                    gcTime: 10 * (60 * 1000), // 10 mins
                     // We have custom retry logic for specific errors in fetchApi()
                     retry: false,
                     networkMode: 'always'
                 }
             }
         });
-    }, [queryClientOptions]);
+    }, [queryClientOverride, queryClientOptions]);
 
     return (
         <SentryErrorBoundary>

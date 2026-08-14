@@ -239,8 +239,8 @@ const Direct: React.FC<{onClose: () => void}> = ({onClose}) => {
         <div>
             <Heading level={3}>Connect Stripe</Heading>
             <Form marginBottom={false} marginTop>
-                <TextField title='Publishable key' value={publishableKey?.toString()} onChange={e => updateSetting('stripe_publishable_key', e.target.value)} />
-                <TextField title='Secure key' value={secretKey?.toString()} onChange={e => updateSetting('stripe_secret_key', e.target.value)} />
+                <TextField title='Publishable key' value={publishableKey?.toString() ?? ''} onChange={e => updateSetting('stripe_publishable_key', e.target.value)} />
+                <TextField title='Secure key' value={secretKey?.toString() ?? ''} onChange={e => updateSetting('stripe_secret_key', e.target.value)} />
                 <Button className='mt-5' color='green' disabled={saveState === 'saving'} label='Save Stripe settings' onClick={onSubmit} />
             </Form>
         </div>

@@ -3,6 +3,7 @@ import React from 'react';
 import UnsplashModal from './file-selectors/UnsplashModal.jsx';
 import generateEditorState from '../../utils/generateEditorState';
 import {$createNodeSelection, $getNodeByKey, $setSelection} from 'lexical';
+import {$isKoenigCard} from '@tryghost/kg-default-nodes';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 const UnsplashPlugin = ({nodeKey, isModalOpen = true}) => {
@@ -22,6 +23,9 @@ const UnsplashPlugin = ({nodeKey, isModalOpen = true}) => {
     const insertImageToNode = async (image) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
+            if (!$isKoenigCard(node)) {
+                return;
+            }
             node.src = image.src;
             node.height = image.height;
             node.width = image.width;

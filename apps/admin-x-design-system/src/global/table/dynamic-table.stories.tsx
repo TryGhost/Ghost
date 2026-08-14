@@ -1,7 +1,5 @@
 import type {Meta, StoryObj} from '@storybook/react-vite';
-
 import DynamicTable, {DynamicTableColumn, DynamicTableRow} from './dynamic-table';
-import Avatar from '../avatar';
 import Hint from '../hint';
 import Pagination from '../pagination';
 import Button from '../button';
@@ -65,9 +63,6 @@ export const testRows = (noOfRows: number) => {
                 },
                 cells: [
                     (<div key='member' className='flex items-center gap-2'>
-                        {i % 3 === 0 && <Avatar bgColor='green' label='JL' labelColor='white' />}
-                        {i % 3 === 1 && <Avatar bgColor='orange' label='GS' labelColor='white' />}
-                        {i % 3 === 2 && <Avatar bgColor='black' label='ZB' labelColor='white' />}
                         <div>
                             {i % 3 === 0 && <div className='whitespace-nowrap'>Jamie Larson</div>}
                             {i % 3 === 1 && <div className='whitespace-nowrap'>Giana Septimus</div>}

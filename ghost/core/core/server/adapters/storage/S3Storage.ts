@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import type {Request, Response, NextFunction, RequestHandler} from 'express';
+import {z} from 'zod';
 import StorageBase from 'ghost-storage-base';
 import tpl from '@tryghost/tpl';
 import errors from '@tryghost/errors';
@@ -41,7 +42,10 @@ const messages = {
     multipartUploadReadFailed: 'There was an error uploading the file. The file may have been modified or removed during upload.',
     missingMultipartThreshold: 'S3Storage requires multipartUploadThresholdBytes option',
     missingMultipartChunkSize: 'S3Storage requires multipartChunkSizeBytes option',
-    multipartChunkSizeTooSmall: 'S3Storage multipartChunkSizeBytes must be at least 5 MiB (5242880 bytes)'
+    multipartChunkSizeTooSmall: 'S3Storage multipartChunkSizeBytes must be at least 5 MiB (5242880 bytes)',
+    multipartThresholdNotInteger: 'S3Storage multipartUploadThresholdBytes must be an integer',
+    multipartChunkSizeNotInteger: 'S3Storage multipartChunkSizeBytes must be an integer',
+    partialCredentials: 'S3Storage requires both accessKeyId and secretAccessKey when either is provided'
 };
 
 const stripLeadingAndTrailingSlashes = (value = '') => value.replace(/^\/+|\/+$/g, '');
@@ -54,21 +58,50 @@ interface UploadFile {
     type?: string;
 }
 
-export interface S3StorageOptions {
-    bucket: string;
-    cdnUrl: string;
-    staticFileURLPrefix: string;
-    region?: string;
-    endpoint?: string;
-    forcePathStyle?: boolean;
-    accessKeyId?: string;
-    secretAccessKey?: string;
-    sessionToken?: string;
-    tenantPrefix?: string;
-    s3Client?: S3Client;
-    multipartUploadThresholdBytes: number;
-    multipartChunkSizeBytes: number;
-}
+// Validates and normalises the S3Storage config. The slash-trimmed fields
+// (`staticFileURLPrefix`, `cdnUrl`, `tenantPrefix`) are stripped via `transform`
+// so the constructor consumes ready-to-use values, and the required-field guards
+// run against the trimmed result.
+const configSchema = z.object({
+    bucket: z.string({error: tpl(messages.missingBucket)}).min(1, {error: tpl(messages.missingBucket)}),
+    staticFileURLPrefix: z.string({error: tpl(messages.missingStaticFileURLPrefix)})
+        .transform(stripLeadingAndTrailingSlashes)
+        .refine(value => value.length > 0, {error: tpl(messages.missingStaticFileURLPrefix)}),
+    cdnUrl: z.string({error: tpl(messages.missingCdnUrl)})
+        .transform(stripTrailingSlash)
+        .refine(value => value.length > 0, {error: tpl(messages.missingCdnUrl)}),
+    multipartUploadThresholdBytes: z.number({error: tpl(messages.missingMultipartThreshold)})
+        .int({error: tpl(messages.multipartThresholdNotInteger)})
+        .positive({error: tpl(messages.missingMultipartThreshold)}),
+    multipartChunkSizeBytes: z.number({error: tpl(messages.missingMultipartChunkSize)})
+        .int({error: tpl(messages.multipartChunkSizeNotInteger)})
+        .check((ctx) => {
+            // Emit a single issue: a falsy value reads as "missing", a positive
+            // value below the floor as "too small".
+            if (!ctx.value) {
+                ctx.issues.push({code: 'custom', message: tpl(messages.missingMultipartChunkSize), input: ctx.value});
+            } else if (ctx.value < MIN_MULTIPART_CHUNK_SIZE) {
+                ctx.issues.push({code: 'custom', message: tpl(messages.multipartChunkSizeTooSmall), input: ctx.value});
+            }
+        }),
+    tenantPrefix: z.string().transform(stripLeadingAndTrailingSlashes).optional(),
+    region: z.string().optional(),
+    endpoint: z.string().optional(),
+    forcePathStyle: z.boolean().optional(),
+    accessKeyId: z.string().optional(),
+    secretAccessKey: z.string().optional(),
+    sessionToken: z.string().optional()
+}).refine((config) => {
+    // accessKeyId and secretAccessKey must be supplied together (or not at all) —
+    // a partial pair would silently fall back to ambient AWS credentials.
+    const hasAccessKey = Boolean(config.accessKeyId);
+    const hasSecretKey = Boolean(config.secretAccessKey);
+    const hasSessionToken = Boolean(config.sessionToken);
+    const hasCredentialPair = hasAccessKey && hasSecretKey;
+    return !((hasAccessKey || hasSecretKey || hasSessionToken) && !hasCredentialPair);
+}, {error: tpl(messages.partialCredentials)});
+
+export type S3StorageOptions = z.infer<typeof configSchema>;
 
 export default class S3Storage extends StorageBase {
     private readonly client: S3Client;
@@ -85,53 +118,42 @@ export default class S3Storage extends StorageBase {
 
     private readonly multipartChunkSizeBytes: number;
 
-    constructor(options: S3StorageOptions) {
+    /**
+     * Parse + normalise the config, throwing an actionable IncorrectUsageError
+     * on the first problem. Shared by `validate` (boot-time check) and the
+     * constructor (which uses the normalised result).
+     */
+    private static parseConfig(config: unknown): z.infer<typeof configSchema> {
+        const result = configSchema.safeParse(config);
+        if (!result.success) {
+            throw new errors.IncorrectUsageError({
+                message: [...new Set(result.error.issues.map(issue => issue.message))].join('; ')
+            });
+        }
+        return result.data;
+    }
+
+    /**
+     * Validate the options S3Storage would be constructed with, without
+     * instantiating it (no S3 client is created). Called by the adapter manager
+     * at boot so misconfiguration fails early. Narrows `config` to
+     * `S3StorageOptions`.
+     */
+    static validate(config: unknown): asserts config is S3StorageOptions {
+        S3Storage.parseConfig(config);
+    }
+
+    constructor(config: unknown) {
         super();
 
-        if (!options.bucket) {
-            throw new errors.IncorrectUsageError({
-                message: tpl(messages.missingBucket)
-            });
-        }
+        const options = S3Storage.parseConfig(config);
 
         this.bucket = options.bucket;
-        this.tenantPrefix = stripLeadingAndTrailingSlashes(options.tenantPrefix);
-
-        const staticFileURLPrefix = stripLeadingAndTrailingSlashes(options.staticFileURLPrefix);
-        if (!staticFileURLPrefix) {
-            throw new errors.IncorrectUsageError({
-                message: tpl(messages.missingStaticFileURLPrefix)
-            });
-        }
-
-        this.staticFileURLPrefix = staticFileURLPrefix;
-
-        this.storagePath = staticFileURLPrefix;
-
-        this.cdnUrl = stripTrailingSlash(options.cdnUrl || '');
-        if (!this.cdnUrl) {
-            throw new errors.IncorrectUsageError({
-                message: tpl(messages.missingCdnUrl)
-            });
-        }
-
-        if (!options.multipartUploadThresholdBytes) {
-            throw new errors.IncorrectUsageError({
-                message: tpl(messages.missingMultipartThreshold)
-            });
-        }
+        this.tenantPrefix = options.tenantPrefix ?? '';
+        this.staticFileURLPrefix = options.staticFileURLPrefix;
+        this.storagePath = options.staticFileURLPrefix;
+        this.cdnUrl = options.cdnUrl;
         this.multipartUploadThresholdBytes = options.multipartUploadThresholdBytes;
-
-        if (!options.multipartChunkSizeBytes) {
-            throw new errors.IncorrectUsageError({
-                message: tpl(messages.missingMultipartChunkSize)
-            });
-        }
-        if (options.multipartChunkSizeBytes < MIN_MULTIPART_CHUNK_SIZE) {
-            throw new errors.IncorrectUsageError({
-                message: tpl(messages.multipartChunkSizeTooSmall)
-            });
-        }
         this.multipartChunkSizeBytes = options.multipartChunkSizeBytes;
 
         const clientConfig: S3ClientConfig = {
@@ -148,7 +170,11 @@ export default class S3Storage extends StorageBase {
             };
         }
 
-        this.client = options.s3Client || new S3Client(clientConfig);
+        // `s3Client` is a test-only injection seam — it never comes from config
+        // (nconf holds static values), so it's read from the raw input rather
+        // than the validated schema output.
+        const injectedClient = (config as {s3Client?: S3Client} | null | undefined)?.s3Client;
+        this.client = injectedClient || new S3Client(clientConfig);
     }
 
     async save(file: UploadFile, targetDir?: string): Promise<string> {

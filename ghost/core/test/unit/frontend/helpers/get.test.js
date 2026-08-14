@@ -223,6 +223,47 @@ describe('{{#get}} helper', function () {
             });
         });
 
+        it('appends url to narrowed fields so {{url}} keeps working on the results', async function () {
+            await get.call(
+                resource,
+                'posts',
+                {hash: {fields: 'title,slug'}, data: locals, fn: fn, inverse: inverse}
+            );
+            assert.equal(browseStub.firstCall.args[0].fields, 'title,slug,url');
+        });
+
+        it('appends url to narrowed fields for tags', async function () {
+            const tagBrowseStub = sinon.stub().resolves();
+            sinon.stub(api, 'tagsPublic').get(() => {
+                return {browse: tagBrowseStub};
+            });
+
+            await get.call(
+                resource,
+                'tags',
+                {hash: {fields: 'name,slug'}, data: locals, fn: fn, inverse: inverse}
+            );
+            assert.equal(tagBrowseStub.firstCall.args[0].fields, 'name,slug,url');
+        });
+
+        it('leaves fields alone when url is already requested', async function () {
+            await get.call(
+                resource,
+                'posts',
+                {hash: {fields: 'title,url'}, data: locals, fn: fn, inverse: inverse}
+            );
+            assert.equal(browseStub.firstCall.args[0].fields, 'title,url');
+        });
+
+        it('does not add a fields option when none was given', async function () {
+            await get.call(
+                resource,
+                'posts',
+                {hash: {}, data: locals, fn: fn, inverse: inverse}
+            );
+            assert.equal(browseStub.firstCall.args[0].fields, undefined);
+        });
+
         it('should resolve post.tags alias', async function () {
             await get.call(
                 resource,
@@ -554,6 +595,7 @@ describe('{{#get}} helper', function () {
             const clock = sinon.useFakeTimers({toFake: ['setTimeout', 'clearTimeout']});
             try {
                 configUtils.set('optimization:getHelper:timeout:threshold', 1);
+                locals = {root: {_locals: {}}};
 
                 const resultPromise = get.call(
                     {},
@@ -565,12 +607,34 @@ describe('{{#get}} helper', function () {
                 const result = await resultPromise;
 
                 assert(result.toString().includes('data-aborted-get-helper'));
+                assert.equal(locals.root._locals.degradedRender, true);
                 sinon.assert.calledOnce(logging.error);
                 sinon.assert.calledOnce(fn);
                 const args = fn.firstCall.args[0];
                 assert(args && typeof args === 'object');
                 assert('posts' in args);
                 assert.deepEqual(args.posts, []);
+                assert(!('@@ABORTED_GET_HELPER@@' in args));
+            } finally {
+                clock.restore();
+            }
+        });
+
+        it('should return safely on timeout when _locals is not available', async function () {
+            const clock = sinon.useFakeTimers({toFake: ['setTimeout', 'clearTimeout']});
+            try {
+                configUtils.set('optimization:getHelper:timeout:threshold', 1);
+                locals = {root: {}};
+
+                const resultPromise = get.call(
+                    {},
+                    'posts',
+                    {hash: {}, data: locals, fn: fn, inverse: inverse}
+                );
+                await clock.tickAsync(2);
+                const result = await resultPromise;
+
+                assert(result.toString().includes('data-aborted-get-helper'));
             } finally {
                 clock.restore();
             }

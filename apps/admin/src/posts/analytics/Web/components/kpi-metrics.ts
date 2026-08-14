@@ -1,11 +1,5 @@
 import {formatDuration, formatNumber, formatPercentage} from '@tryghost/shade/utils';
-
-export type KpiMetric = {
-    dataKey: string;
-    label: string;
-    color?: string;
-    formatter: (value: number) => string;
-};
+import {type KpiMetric} from '@/shared/analytics/kpi';
 
 export const KPI_METRICS: Record<string, KpiMetric> = {
     visits: {

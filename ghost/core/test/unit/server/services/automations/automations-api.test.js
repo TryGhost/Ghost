@@ -37,11 +37,12 @@ describe('automations API', function () {
 
             await automationsApi.recordEmailSent({
                 automationActionRevisionId: 'revision-id',
+                mailgunMessageId: 'mailgun-message-id',
                 memberEmail: 'member@example.com',
                 memberId: 'member-id',
                 memberName: 'Test Member',
                 memberUuid: '00000000-0000-4000-8000-000000000001',
-                trackOpens: false
+                trackOpens: true
             });
 
             sinon.assert.calledOnce(transaction);
@@ -51,7 +52,8 @@ describe('automations API', function () {
                 member_email: 'member@example.com',
                 member_name: 'Test Member',
                 automation_action_revision_id: 'revision-id',
-                track_opens: false
+                mailgun_message_id: 'mailgun-message-id',
+                track_opens: true
             }, {transacting});
             sinon.assert.calledOnceWithExactly(whereRevision, 'id', 'revision-id');
             sinon.assert.calledOnceWithExactly(transacting.raw, 'COALESCE(??, 0) + ?', ['email_sent_count', 1]);

@@ -38,46 +38,42 @@
 
     {{#unless @currentUser.isAuthorOrContributor}}
         <div class="gh-contentfilter-menu gh-contentfilter-author {{if @selectedAuthor.slug "gh-contentfilter-selected"}}" data-test-author-select="true">
-            <PowerSelect
+            <GhPaginatedFilterSelect
                 @selected={{@selectedAuthor}}
-                @options={{@availableAuthors}}
-                @searchField="name"
+                @staticOptions={{@staticAuthorOptions}}
+                @loadPage={{@loadAuthorsPage}}
+                @searchPage={{@searchAuthorsPage}}
+                @searchDebounceMs={{250}}
                 @onChange={{@onAuthorChange}}
-                @triggerComponent={{component "gh-power-select/trigger"}}
                 @triggerClass="gh-contentfilter-menu-trigger"
                 @dropdownClass="gh-contentfilter-menu-dropdown"
                 @searchPlaceholder="Search authors"
-                @matchTriggerWidth={{false}}
-                aria-label="Author filter"
+                @ariaLabel="Author filter"
                 as |author|
             >
                 {{#if author.name}}{{author.name}}{{else}}<span class="red">Unknown author</span>{{/if}}
-            </PowerSelect>
+            </GhPaginatedFilterSelect>
         </div>
     {{/unless}}
 
     {{#unless @currentUser.isContributor}}
         <div class="gh-contentfilter-menu gh-contentfilter-tag {{if @selectedTag.slug "gh-contentfilter-selected"}}" data-test-tag-select="true">
-            <PowerSelect
+            <GhPaginatedFilterSelect
                 @selected={{@selectedTag}}
-                @options={{@availableTags}}
-                @onOpen={{@loadInitialTags}}
-                @searchEnabled={{true}}
-                @search={{perform @searchTagsTask}}
-                @searchField="name"
+                @staticOptions={{@staticTagOptions}}
+                @loadPage={{@loadTagsPage}}
+                @searchPage={{@searchTagsPage}}
+                @searchDebounceMs={{250}}
+                @sortOptions={{@sortTags}}
                 @onChange={{@onTagChange}}
-                @triggerComponent={{component "gh-power-select/trigger"}}
                 @triggerClass="gh-contentfilter-menu-trigger"
                 @dropdownClass="gh-contentfilter-menu-dropdown"
                 @searchPlaceholder="Search tags"
-                @matchTriggerWidth={{false}}
-                @optionsComponent={{component "power-select-vertical-collection-options" lastReached=this.onLastReached}}
-                @registerAPI={{this.registerTagsPowerSelect}}
-                aria-label="Tag filter"
+                @ariaLabel="Tag filter"
                 as |tag|
             >
                 {{#if tag.name}}{{tag.name}}{{else}}<span class="red">Unknown tag</span>{{/if}}
-            </PowerSelect>
+            </GhPaginatedFilterSelect>
         </div>
     {{/unless}}
 

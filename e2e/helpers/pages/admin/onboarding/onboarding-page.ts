@@ -1,5 +1,12 @@
 import {AdminPage} from '@/admin-pages';
 import {Locator, Page} from '@playwright/test';
+import {
+    onboardingChecklist,
+    onboardingComplete,
+    onboardingShareModal,
+    onboardingSkip,
+    onboardingStepPrefix
+} from '@tryghost/test-data/selectors/onboarding';
 
 export class OnboardingPage extends AdminPage {
     public readonly checklist: Locator;
@@ -12,14 +19,14 @@ export class OnboardingPage extends AdminPage {
         super(page);
 
         this.pageUrl = '/ghost/#/setup/onboarding';
-        this.checklist = page.getByTestId('onboarding-checklist');
-        this.completeButton = page.getByTestId('onboarding-complete');
+        this.checklist = page.getByTestId(onboardingChecklist);
+        this.completeButton = page.getByTestId(onboardingComplete);
         this.copyLinkButton = page.getByTestId('onboarding-copy-link');
-        this.shareModal = page.getByTestId('onboarding-share-modal');
-        this.skipButton = page.getByTestId('onboarding-skip');
+        this.shareModal = page.getByTestId(onboardingShareModal);
+        this.skipButton = page.getByTestId(onboardingSkip);
     }
 
     step(stepId: string) {
-        return this.page.getByTestId(`onboarding-step-${stepId}`);
+        return this.page.getByTestId(`${onboardingStepPrefix}${stepId}`);
     }
 }

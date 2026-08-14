@@ -2,9 +2,11 @@ import React, {useEffect, useState} from 'react';
 import TopLevelGroup from '../../top-level-group';
 import useSettingGroup from '../../../hooks/use-setting-group';
 import {HostLimitError, useLimiter} from '../../../hooks/use-limiter';
-import {Separator, SettingGroupContent, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {Separator} from '@tryghost/shade/components';
+import {SettingGroupContent, Toggle} from '@tryghost/admin-x-design-system';
 import {getSettingValues, isSettingReadOnly} from '@tryghost/admin-x-framework/api/settings';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {withErrorBoundary} from '../../error-boundary';
 
 const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
@@ -87,7 +89,7 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         </span>
                     </div>
                 ) : (
-                    <Separator className="border-grey-200 dark:border-grey-900" />
+                    <Separator />
                 )
             )}
             <Toggle
@@ -97,12 +99,12 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 direction='rtl'
                 gap='gap-0'
                 hint='Record when a member opens an email'
-                label='Newsletter opens'
+                label='Email opens'
                 onChange={(e) => {
                     handleToggleChange('email_track_opens', e);
                 }}
             />
-            <Separator className="border-grey-200 dark:border-grey-900" />
+            <Separator />
             <Toggle
                 align='center'
                 checked={trackEmailClicks}
@@ -111,12 +113,12 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 disabled={isEmailTrackClicksReadOnly}
                 gap='gap-0'
                 hint='Record when a member clicks on any link in an email'
-                label='Newsletter clicks'
+                label='Email clicks'
                 onChange={(e) => {
                     handleToggleChange('email_track_clicks', e);
                 }}
             />
-            <Separator className="border-grey-200 dark:border-grey-900" />
+            <Separator />
             <Toggle
                 align='center'
                 checked={trackMemberSources}
@@ -129,7 +131,7 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     handleToggleChange('members_track_sources', e);
                 }}
             />
-            <Separator className="border-grey-200 dark:border-grey-900" />
+            <Separator />
             <Toggle
                 align='center'
                 checked={outboundLinkTagging}

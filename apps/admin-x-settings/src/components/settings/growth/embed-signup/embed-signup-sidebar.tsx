@@ -1,7 +1,8 @@
 import React from 'react';
-import {Button, ButtonGroup, ColorPickerField, Form, Heading, type LoadMultiSelectOptions, MultiSelect, type MultiSelectOption, StickyFooter, TextArea, debounce} from '@tryghost/admin-x-design-system';
+import {Button, ButtonGroup, ColorPickerField, Form, Heading, type LoadMultiSelectOptions, MultiSelect, type MultiSelectOption, StickyFooter, TextArea} from '@tryghost/admin-x-design-system';
 import {type Label} from '@tryghost/admin-x-framework/api/labels';
 import {type MultiValue} from 'react-select';
+import {debounce} from '../../../../utils/debounce';
 import {useFilterableApi} from '@tryghost/admin-x-framework/hooks';
 
 export type SelectedLabelTypes = {

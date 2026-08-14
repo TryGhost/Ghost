@@ -33,6 +33,7 @@ function WhatsNewBanner() {
     return (
         <Banner
             data-test-toast="whats-new"
+            data-testid="whats-new-banner"
             className="mx-2"
             role="status"
             aria-label="What’s new notification"
@@ -53,10 +54,10 @@ function WhatsNewBanner() {
                     <LucideIcon.Sparkles className="size-4 text-purple-600 dark:text-purple" />
                     <span className="text-xs font-semibold tracking-wide text-gray-700 uppercase dark:text-gray-400">What’s new?</span>
                 </div>
-                <div className="mb-1 text-base font-semibold text-gray-900 dark:text-foreground" data-test-toast-title>
+                <div className="mb-1 text-base font-semibold text-gray-900 dark:text-foreground" data-test-toast-title data-testid="whats-new-banner-title">
                     {latestEntry.title}
                 </div>
-                <div className="text-sm text-gray-700" data-test-toast-excerpt>
+                <div className="text-sm text-gray-700" data-test-toast-excerpt data-testid="whats-new-banner-excerpt">
                     {latestEntry.customExcerpt}
                 </div>
             </a>

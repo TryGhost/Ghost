@@ -10,7 +10,7 @@ import StatsView from '@/analytics/views/Stats/layout/stats-view';
 import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, NavbarActions, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
 import {LucideIcon, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade/utils';
 import {Navigate, useAppContext, useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
-import {getPeriodText} from '@/analytics/utils/chart-helpers';
+import {getPeriodText} from '@/shared/analytics/chart-helpers';
 import {getRangeDates} from '@tryghost/shade/app';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useAnalytics} from '@/analytics/providers/analytics-context';

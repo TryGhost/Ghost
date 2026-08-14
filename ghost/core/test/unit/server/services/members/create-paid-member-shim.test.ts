@@ -21,6 +21,25 @@ describe('Unit - members/create-paid-member-shim', function () {
         assert.deepEqual(member, {status: 'paid', products: [{slug: 'silver'}, {slug: 'gold'}]});
     });
 
+    it('returns a paid member with only the selected tier, including archived tiers', async function () {
+        const findOne = sinon.stub(models.Product, 'findOne').resolves({
+            get: (key: string) => (key === 'slug' ? 'archive' : undefined)
+        });
+
+        const member = await createPaidMemberShim('archive');
+
+        assert.deepEqual(member, {status: 'paid', products: [{slug: 'archive'}]});
+        sinon.assert.calledOnceWithExactly(findOne, {slug: 'archive', type: 'paid'});
+    });
+
+    it('returns a paid member with no tiers when the selected tier does not exist', async function () {
+        sinon.stub(models.Product, 'findOne').resolves(null);
+
+        const member = await createPaidMemberShim('missing');
+
+        assert.deepEqual(member, {status: 'paid', products: []});
+    });
+
     it('falls back to a paid member with no tiers (never throws) when the tier lookup fails', async function () {
         const logError = sinon.stub(logging, 'error');
         sinon.stub(models.Product, 'findAll').rejects(new Error('db down'));

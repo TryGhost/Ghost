@@ -1,24 +1,14 @@
-import {generateDecoratorNode, type DecoratorNodeProperty} from '../../generate-decorator-node.js';
+import {generateDecoratorNode, type DecoratorNodeData, type DecoratorNodePropertyMap} from '../../generate-decorator-node.js';
 import {renderCalloutNode} from './callout-renderer.js';
 import {parseCalloutNode} from './callout-parser.js';
 
-export interface CalloutData {
-    calloutText?: string;
-    calloutEmoji?: string;
-    backgroundColor?: string;
-}
+const calloutProperties = {
+    calloutText: {default: '', wordCount: true},
+    calloutEmoji: {default: '💡'},
+    backgroundColor: {default: 'blue'}
+} satisfies DecoratorNodePropertyMap;
 
-export interface CalloutNode {
-    calloutText: string;
-    calloutEmoji: string;
-    backgroundColor: string;
-}
-
-const calloutProperties = [
-    {name: 'calloutText', default: '', wordCount: true},
-    {name: 'calloutEmoji', default: '💡'},
-    {name: 'backgroundColor', default: 'blue'}
-] as const satisfies readonly DecoratorNodeProperty[];
+export type CalloutData = DecoratorNodeData<typeof calloutProperties>;
 
 export class CalloutNode extends generateDecoratorNode({
     nodeType: 'callout',

@@ -1,8 +1,9 @@
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
 import useSettingGroup from '../../../hooks/use-setting-group';
-import {SettingGroupContent, TextArea, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {SettingGroupContent, TextArea} from '@tryghost/admin-x-design-system';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {withErrorBoundary} from '../../error-boundary';
 
 const SpamFilters: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {

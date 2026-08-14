@@ -1,9 +1,10 @@
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
 import useSettingGroup from '../../../hooks/use-setting-group';
-import {IconLabel, Link, Select, SettingGroupContent, TextField, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {IconLabel, Link, Select, SettingGroupContent, TextField} from '@tryghost/admin-x-design-system';
 import {getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {withErrorBoundary} from '../../error-boundary';
 
 const MAILGUN_REGIONS = [
     {label: '🇺🇸 US', value: 'https://api.mailgun.net/v3'},
@@ -69,7 +70,7 @@ const MailGun: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 />
                 <TextField
                     title='Mailgun domain'
-                    value={mailgunDomain}
+                    value={mailgunDomain ?? ''}
                     onChange={(e) => {
                         updateSetting('mailgun_domain', e.target.value);
                     }}
@@ -79,7 +80,7 @@ const MailGun: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         hint={apiKeysHint}
                         title='Mailgun private API key'
                         type='password'
-                        value={mailgunApiKey}
+                        value={mailgunApiKey ?? ''}
                         onChange={(e) => {
                             updateSetting('mailgun_api_key', e.target.value);
                         }}

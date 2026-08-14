@@ -1,5 +1,6 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
+import {groupTiersByActive} from 'ghost-admin/utils/group-tiers';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
@@ -75,30 +76,12 @@ export default class VisibilitySegmentSelect extends Component {
         this.tiers = tiers;
 
         if (tiers.length > 0) {
-            const activeTiersGroup = {
-                groupName: 'Active tiers',
-                options: []
-            };
-
-            const archivedTiersGroup = {
-                groupName: 'Archived tiers',
-                options: []
-            };
-
-            tiers.forEach((tier) => {
-                const tierData = {
-                    name: tier.name,
-                    id: tier.id,
-                    count: tier.count?.members,
-                    class: 'segment-tier'
-                };
-
-                if (tier.active) {
-                    activeTiersGroup.options.push(tierData);
-                } else {
-                    archivedTiersGroup.options.push(tierData);
-                }
-            });
+            const [activeTiersGroup, archivedTiersGroup] = groupTiersByActive(tiers, tier => ({
+                name: tier.name,
+                id: tier.id,
+                count: tier.count?.members,
+                class: 'segment-tier'
+            }));
 
             options.push(activeTiersGroup);
             options.push(archivedTiersGroup);

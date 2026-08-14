@@ -3,14 +3,17 @@ import TopLevelGroup from '../../top-level-group';
 import clsx from 'clsx';
 import useQueryParams from '../../../hooks/use-query-params';
 import useStaffUsers from '../../../hooks/use-staff-users';
-import {Avatar, Button, List, ListItem, NoValueLabel, Separator, TabView, Toggle, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {Avatar, NoValueLabel, NoValueLabelIcon, Separator} from '@tryghost/shade/components';
+import {Button, List, ListItem, TabView, Toggle, showToast} from '@tryghost/admin-x-design-system';
 import {type User, hasAdminAccess, isContributorUser, isEditorUser} from '@tryghost/admin-x-framework/api/users';
 import {type UserInvite, useAddInvite, useDeleteInvite} from '@tryghost/admin-x-framework/api/invites';
-import {generateAvatarColor, getInitials} from '../../../utils/helpers';
+import {UserRoundX} from 'lucide-react';
+import {formatNumber} from '@tryghost/shade/utils';
 import {getSettingValue, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {withErrorBoundary} from '../../error-boundary';
 
 interface OwnerProps {
     user: User;
@@ -44,7 +47,7 @@ const Owner: React.FC<OwnerProps> = ({user}) => {
 
     return (
         <div className={clsx('group flex gap-3', hasAdminAccess(currentUser) && 'cursor-pointer')} data-testid='owner-user' onClick={showDetailModal}>
-            <Avatar bgColor={generateAvatarColor((user.name ? user.name : user.email))} image={user.profile_image ?? undefined} label={getInitials(user.name)} labelColor='white' size='lg' />
+            <Avatar className='size-12' email={user.email} name={user.name} src={user.profile_image} />
             <div className='flex flex-col'>
                 <span>{user.name} &mdash; <strong>Owner</strong> {hasAdminAccess(currentUser) && <button className='ml-2 inline-block font-semibold text-green group-hover:visible md:invisible' type='button'>View profile</button>}</span>
                 <span className='text-sm text-grey-700'>{user.email}</span>
@@ -63,7 +66,8 @@ const UsersList: React.FC<UsersListProps> = ({users, groupname}) => {
 
     if (!users || !users.length) {
         return (
-            <NoValueLabel icon='single-user-block'>
+            <NoValueLabel>
+                <NoValueLabelIcon><UserRoundX /></NoValueLabelIcon>
                 No {groupname} found.
             </NoValueLabel>
         );
@@ -85,7 +89,7 @@ const UsersList: React.FC<UsersListProps> = ({users, groupname}) => {
                     <ListItem
                         key={user.id}
                         action={canEdit && <Button color='green' label='Edit' link={true} onClick={() => showDetailModal(user)}/>}
-                        avatar={(<Avatar bgColor={generateAvatarColor((user.name ? user.name : user.email))} image={user.profile_image ?? undefined} label={getInitials(user.name)} labelColor='white' />)}
+                        avatar={<Avatar className='size-10' email={user.email} name={user.name} src={user.profile_image} />}
                         bgOnHover={canEdit}
                         className='min-h-[64px]'
                         detail={user.email}
@@ -171,7 +175,8 @@ const UserInviteActions: React.FC<{invite: UserInvite}> = ({invite}) => {
 const InvitesUserList: React.FC<InviteListProps> = ({users}) => {
     if (!users || !users.length) {
         return (
-            <NoValueLabel icon='single-user-block'>
+            <NoValueLabel>
+                <NoValueLabelIcon><UserRoundX /></NoValueLabelIcon>
                 No invitations found.
             </NoValueLabel>
         );
@@ -184,7 +189,7 @@ const InvitesUserList: React.FC<InviteListProps> = ({users}) => {
                     <ListItem
                         key={user.id}
                         action={<UserInviteActions invite={user} />}
-                        avatar={(<Avatar bgColor={generateAvatarColor((user.email))} image={''} label={user.email.charAt(0).toUpperCase()} labelColor='white' />)}
+                        avatar={<Avatar className='size-10' email={user.email} />}
                         className='min-h-[64px]'
                         detail={user.role}
                         hideActions={true}
@@ -296,12 +301,12 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
             {(users.length > 1 || invites.length > 0) && <TabView selectedTab={selectedTab} tabs={tabs} testId='user-tabview' onTabChange={updateSelectedTab} />}
 
             {hasNextPage && selectedTab !== 'invited' && <Button
-                label={`Load more (showing ${users.length}/${totalUsers} users)`}
+                label={`Load more (showing ${formatNumber(users.length)}/${formatNumber(totalUsers)} users)`}
                 link
                 onClick={() => fetchNextPage()}
             />}
             {invitesHasNextPage && selectedTab === 'invited' && <Button
-                label={`Load more (showing ${invites.length}/${totalInvites} invites)`}
+                label={`Load more (showing ${formatNumber(invites.length)}/${formatNumber(totalInvites)} invites)`}
                 link
                 onClick={() => fetchNextInvitePage()}
             />}

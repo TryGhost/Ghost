@@ -132,6 +132,34 @@
     background: transparent;
 }
 
+.gh-preview-member-type {
+    flex: 0 0 auto;
+    width: auto;
+}
+
+.gh-preview-tier {
+    flex: 0 0 180px;
+    width: 180px;
+    min-width: 180px;
+    max-width: 180px;
+}
+
+.gh-preview-tier .gh-preview-segment-trigger {
+    width: 100%;
+    max-width: 100%;
+}
+
+.gh-preview-tier .ember-power-select-selected-item,
+.gh-preview-tier-dropdown .ember-power-select-option {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.gh-preview-tier .ember-power-select-selected-item {
+    display: block;
+}
+
 .gh-preview-segment-dropdown.ember-power-select-dropdown.ember-basic-dropdown-content--below {
     min-width: 200px;
     margin: 2px 0 0;
@@ -165,6 +193,10 @@
 }
 
 @media (max-width: 640px) {
+    .gh-preview-tier {
+        display: none;
+    }
+
     .gh-web-preview-segment .gh-preview-segment-trigger {
         display: none;
     }

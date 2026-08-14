@@ -4,7 +4,7 @@ import {BarChartLoadingIndicator, type ChartConfig, ChartContainer, ChartTooltip
 import {GhAreaChart, KpiDropdownButton, KpiTabTrigger, KpiTabValue} from '@tryghost/shade/patterns';
 import {LucideIcon, Recharts, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade/utils';
 import {calculateYAxisWidth} from '@tryghost/shade/app';
-import {getPeriodText, sanitizeChartData} from '@/analytics/utils/chart-helpers';
+import {getEffectiveChartRange, getPeriodText, sanitizeChartData} from '@/shared/analytics/chart-helpers';
 import {useAppContext, useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
 import {useAnalytics} from '@/analytics/providers/analytics-context';
 
@@ -115,6 +115,10 @@ const NewsletterKPIs: React.FC<{
         }));
 
         return processedData;
+    }, [allSubscribersData, range]);
+
+    const chartRange = useMemo(() => {
+        return getEffectiveChartRange(range, allSubscribersData || []);
     }, [allSubscribersData, range]);
 
     const subscribersDiff = useMemo(() => {
@@ -334,7 +338,7 @@ const NewsletterKPIs: React.FC<{
                         color={tabConfig['total-subscribers'].color}
                         data={subscribersData}
                         id="mrr"
-                        range={range}
+                        range={chartRange}
                     />
                 }
 

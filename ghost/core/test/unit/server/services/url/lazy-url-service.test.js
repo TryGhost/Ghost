@@ -739,5 +739,27 @@ describe('LazyUrlService', function () {
 
             assert.deepEqual(service.getRequiredFields('posts').sort(), ['published_at', 'slug', 'status', 'type']);
         });
+
+        // primary_tag/primary_author are computed attributes the model only
+        // attaches when `options.columns` names them, so a `?fields=url` query
+        // must have them forced like scalar columns — the tags/authors
+        // relations alone are not enough for _assertNotThin.
+        it('requires primary_tag/primary_author when a router filter references them', function () {
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
+            service.onRouterAddedType('news', 'primary_tag:news', 'posts', '/:slug/');
+            service.onRouterAddedType('byAuthor', 'primary_author:cameron', 'pages', '/:slug/');
+
+            assert.deepEqual(service.getRequiredFields('posts').sort(), ['primary_tag', 'slug', 'status', 'type']);
+            assert.deepEqual(service.getRequiredFields('pages').sort(), ['primary_author', 'slug', 'status', 'type']);
+        });
+
+        it('requires primary_tag/primary_author when a permalink substitutes them', function () {
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
+            service.onRouterAddedType('tagged', null, 'posts', '/:primary_tag/:slug/');
+            service.onRouterAddedType('authored', null, 'pages', '/:primary_author/:slug/');
+
+            assert.deepEqual(service.getRequiredFields('posts').sort(), ['primary_tag', 'slug', 'status', 'type']);
+            assert.deepEqual(service.getRequiredFields('pages').sort(), ['primary_author', 'slug', 'status', 'type']);
+        });
     });
 });

@@ -1,5 +1,6 @@
-import {PostEditorPage, SettingsPage} from '@/admin-pages';
+import {PostEditorPage} from '@/admin-pages';
 import {PostFactory, createPostFactory} from '@/data-factory';
+import {SettingsService} from '@/helpers/services/settings/settings-service';
 import {expect, test} from '@/helpers/playwright';
 
 test.describe('Ghost Admin - i18n Newsletter', () => {
@@ -14,11 +15,8 @@ test.describe('Ghost Admin - i18n Newsletter', () => {
             title: 'TITLE OF MY POST.',
             status: 'draft'
         });
-
-        const adminPublicationPage = new SettingsPage(page).publicationSection;
-        await adminPublicationPage.goto();
-        await adminPublicationPage.setLanguage('fr');
-        await expect(adminPublicationPage.localeSelect).toContainText('French (fr)');
+        const settingsService = new SettingsService(page.request);
+        await settingsService.updateSettings([{key: 'locale', value: 'fr'}]);
 
         const postEditorPage = new PostEditorPage(page);
         await postEditorPage.gotoPost(post.id);

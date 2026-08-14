@@ -109,7 +109,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
     const [previewSubjectOverride, setPreviewSubjectOverride] = useState<string | null>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const normalizedLexical = useRef<string>(automatedEmail?.lexical || '');
-    const hasEditorBeenFocused = useRef(false);
+    const hasEditorBeenInteractedWith = useRef(false);
     const handleError = useHandleError();
     const automatedEmails = automatedEmailsData?.automated_emails || [];
     const {resolvedSenderName, resolvedSenderEmail, resolvedReplyToEmail, hasDistinctReplyTo} = useWelcomeEmailSenderDetails(automatedEmails, {
@@ -198,12 +198,12 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
 
     // The editor normalizes content on mount (e.g., processing {name} templates),
     // which triggers onChange even without user edits. We track whether the editor
-    // has ever been focused - normalization happens before focus is possible, so any
-    // onChange before first focus is normalization. After focus, we compare against
-    // the normalized baseline to determine dirty state.
+    // has received user input - the modal can autofocus the editor before normalization
+    // finishes, so focus alone is not evidence of an edit. After user interaction, we
+    // compare against the normalized baseline to determine dirty state.
     const handleEditorChange = useCallback((lexical: string) => {
-        if (!hasEditorBeenFocused.current) {
-            // Editor hasn't been focused yet = must be normalization
+        if (!hasEditorBeenInteractedWith.current) {
+            // Editor hasn't received user input yet = must be normalization
             normalizedLexical.current = lexical;
             setFormState(state => ({...state, lexical}));
             return;
@@ -326,8 +326,11 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                                 mode === 'preview' && 'hidden'
                             )}
                             data-testid='welcome-email-editor'
-                            onFocus={() => {
-                                hasEditorBeenFocused.current = true;
+                            onKeyDown={() => {
+                                hasEditorBeenInteractedWith.current = true;
+                            }}
+                            onPointerDown={() => {
+                                hasEditorBeenInteractedWith.current = true;
                             }}
                         >
                             <MemberEmailEditor

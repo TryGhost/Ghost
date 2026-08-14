@@ -4,7 +4,7 @@ import {type BaseSourceData, type ProcessedSourceData, extendSourcesWithPercenta
 import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable} from '@tryghost/shade/components';
 import {HTable} from '@tryghost/shade/primitives';
 import {LucideIcon, formatNumber, formatPercentage} from '@tryghost/shade/utils';
-import {getPeriodText} from '@/posts/analytics/utils/chart-helpers';
+import {getPeriodText} from '@/shared/analytics/chart-helpers';
 import {usePostAnalytics} from '@/posts/analytics/providers/post-analytics-context';
 
 // Default source icon URL - apps can override this

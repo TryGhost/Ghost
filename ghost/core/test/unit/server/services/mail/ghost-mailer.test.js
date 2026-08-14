@@ -386,6 +386,44 @@ describe('Mail: Ghostmailer', function () {
             assert.equal(sentMessage['o:tracking-opens'], undefined);
         });
 
+        it('should enable Mailgun open tracking when explicitly requested', async function () {
+            sandbox.stub(settingsCache, 'get').withArgs('email_track_opens').returns(false);
+
+            mailer = new mail.GhostMailer();
+            mailer.state.usingMailgun = true;
+            const sendMailSpy = sandbox.stub(mailer.transport, 'sendMail').resolves({});
+
+            await mailer.send({
+                to: 'user@example.com',
+                subject: 'test',
+                html: 'content',
+                trackOpens: true
+            });
+
+            const sentMessage = sendMailSpy.firstCall.args[0];
+            assert.equal(sentMessage['o:tracking-opens'], true);
+            assert.equal(sentMessage.trackOpens, undefined);
+        });
+
+        it('should not enable Mailgun open tracking when explicitly disabled', async function () {
+            sandbox.stub(settingsCache, 'get').withArgs('email_track_opens').returns(true);
+
+            mailer = new mail.GhostMailer();
+            mailer.state.usingMailgun = true;
+            const sendMailSpy = sandbox.stub(mailer.transport, 'sendMail').resolves({});
+
+            await mailer.send({
+                to: 'user@example.com',
+                subject: 'test',
+                html: 'content',
+                trackOpens: false
+            });
+
+            const sentMessage = sendMailSpy.firstCall.args[0];
+            assert.equal(sentMessage['o:tracking-opens'], undefined);
+            assert.equal(sentMessage.trackOpens, undefined);
+        });
+
         it('should not add site ID tag when site ID is missing', async function () {
             configUtils.set({
                 hostSettings: {} // No siteId

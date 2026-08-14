@@ -5,10 +5,10 @@ import {extractAddedLines} from './diff.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PROMPT_PATH = path.join(__dirname, '..', 'prompt.md');
-// Matches per-locale translation files (`ghost/i18n/locales/<locale>/<namespace>.json`)
+// Matches per-locale translation files (`packages/i18n/locales/<locale>/<namespace>.json`)
 // but deliberately excludes English source files and `context.json`, because
 // the reviewer validates translations from English rather than source copy.
-const I18N_PATH_PATTERN = /^ghost\/i18n\/locales\/(?!en\/)[^/]+\/[^/]+\.json$/;
+const I18N_PATH_PATTERN = /^packages\/i18n\/locales\/(?!en\/)[^/]+\/[^/]+\.json$/;
 const DEFAULT_MODEL = 'claude-sonnet-4-6';
 const MAX_TOKENS = 4096;
 // Abuse / cost guards. A normal translation PR touches one locale and adds a
@@ -130,7 +130,7 @@ export async function analyzePR(prNumber, {octokit, anthropic, owner, repo, mode
     }
 
     // Both caps passed — now make the network calls we need for the review.
-    const contextJson = await fetchFile(octokit, owner, repo, 'ghost/i18n/locales/context.json', 'main');
+    const contextJson = await fetchFile(octokit, owner, repo, 'packages/i18n/locales/context.json', 'main');
     const fileChanges = [];
     for (const {file, addedLines} of eligibleFiles) {
         const currentContent = await fetchFile(octokit, owner, repo, file.filename, pr.head.sha);
@@ -219,7 +219,7 @@ function buildUserMessage(pr, contextJson, fileChanges) {
         sections.push(`PR description:\n${pr.body.trim()}`);
     }
     if (contextJson) {
-        sections.push(`Translator context (\`ghost/i18n/locales/context.json\`):\n\`\`\`json\n${contextJson}\n\`\`\``);
+        sections.push(`Translator context (\`packages/i18n/locales/context.json\`):\n\`\`\`json\n${contextJson}\n\`\`\``);
     }
     for (const fc of fileChanges) {
         const parts = [`## File: \`${fc.filename}\``];

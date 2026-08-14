@@ -1,3 +1,8 @@
+#ember-app.migration-app-open {
+    position: relative;
+    z-index: 10;
+}
+
 .gh-migrate {
     position: absolute;
     top: 0;

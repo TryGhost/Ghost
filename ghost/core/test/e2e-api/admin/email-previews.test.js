@@ -343,9 +343,11 @@ describe('Email Preview API', function () {
 
     describe('Tier-restricted posts', function () {
         let post;
+        let paidTierSlug;
 
         beforeAll(async function () {
             const paidTier = await models.Product.findOne({type: 'paid'});
+            paidTierSlug = paidTier.get('slug');
 
             const lexical = JSON.stringify({
                 root: {
@@ -384,7 +386,7 @@ describe('Email Preview API', function () {
 
         it('renders the full content for the paid member preview', async function () {
             await agent
-                .get(`email_previews/posts/${post.id}/?memberSegment=${encodeURIComponent('status:-free')}`)
+                .get(`email_previews/posts/${post.id}/?member_status=paid`)
                 .expectStatus(200)
                 .expect(({body}) => {
                     const {html} = body.email_previews[0];
@@ -395,7 +397,7 @@ describe('Email Preview API', function () {
 
         it('renders the paywall for the free member preview', async function () {
             await agent
-                .get(`email_previews/posts/${post.id}/?memberSegment=${encodeURIComponent('status:free')}`)
+                .get(`email_previews/posts/${post.id}/?member_status=free`)
                 .expectStatus(200)
                 .expect(({body}) => {
                     const {html} = body.email_previews[0];
@@ -403,6 +405,71 @@ describe('Email Preview API', function () {
                     assert.ok(!html.includes('Members only tier content'), 'free member preview should not include the gated content');
                     assert.ok(html.includes('Become a paid member'), 'free member preview should include the paywall CTA');
                 });
+        });
+
+        it('renders content access for the specifically selected tier', async function () {
+            await agent
+                .get(`email_previews/posts/${post.id}/?member_status=paid&member_tier=${paidTierSlug}`)
+                .expectStatus(200)
+                .expect(({body}) => {
+                    const {html} = body.email_previews[0];
+                    assert.ok(html.includes('Members only tier content'), 'selected tier preview should include the gated content');
+                    assert.ok(!html.includes('Become a paid member'), 'selected tier preview should not include the paywall CTA');
+                });
+        });
+
+        it('renders the paywall for a specifically selected tier without access', async function () {
+            await agent
+                .get(`email_previews/posts/${post.id}/?member_status=paid&member_tier=missing-tier`)
+                .expectStatus(200)
+                .expect(({body}) => {
+                    const {html} = body.email_previews[0];
+                    assert.ok(!html.includes('Members only tier content'), 'other tier preview should not include the gated content');
+                    assert.ok(html.includes('Become a paid member'), 'other tier preview should include the paywall CTA');
+                });
+        });
+
+        it('rejects an invalid member_status', async function () {
+            await agent
+                .get(`email_previews/posts/${post.id}/?member_status=comped`)
+                .expectStatus(422);
+        });
+
+        it('rejects a repeated member_tier param', async function () {
+            // repeated query params parse as an array
+            await agent
+                .get(`email_previews/posts/${post.id}/?member_status=paid&member_tier=${paidTierSlug}&member_tier=other`)
+                .expectStatus(422);
+        });
+
+        it('maps a legacy memberSegment onto the paid audience', async function () {
+            // deprecated param older admin clients send — rewritten to member_status
+            await agent
+                .get(`email_previews/posts/${post.id}/?memberSegment=${encodeURIComponent('status:-free')}`)
+                .expectStatus(200)
+                .expect(({body}) => {
+                    const {html} = body.email_previews[0];
+                    assert.ok(html.includes('Members only tier content'), 'legacy paid preview should include the gated content');
+                });
+        });
+
+        it('maps a legacy memberSegment onto the free audience', async function () {
+            await agent
+                .get(`email_previews/posts/${post.id}/?memberSegment=${encodeURIComponent('status:free')}`)
+                .expectStatus(200)
+                .expect(({body}) => {
+                    const {html} = body.email_previews[0];
+                    assert.ok(!html.includes('Members only tier content'), 'legacy free preview should not include the gated content');
+                    assert.ok(html.includes('Become a paid member'), 'legacy free preview should include the paywall CTA');
+                });
+        });
+
+        it('rejects an unknown legacy memberSegment', async function () {
+            const memberSegment = `status:-free+product:'${paidTierSlug}'`;
+
+            await agent
+                .get(`email_previews/posts/${post.id}/?memberSegment=${encodeURIComponent(memberSegment)}`)
+                .expectStatus(422);
         });
     });
 

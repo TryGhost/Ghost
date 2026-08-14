@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {type ErrorMessages, type OkProps, type SaveHandler, type SaveState, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {type Setting, type SettingValue, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {type SiteData} from '@tryghost/admin-x-framework/api/site';
@@ -86,7 +86,7 @@ const useSettingGroup = ({savingDelay, onValidate}: {savingDelay?: number; onVal
     };
 
     // function to update the local state
-    const updateSetting = (key: string, value: SettingValue) => {
+    const updateSetting = useCallback((key: string, value: SettingValue) => {
         updateForm((state) => {
             if (state.some(setting => setting.key === key)) {
                 return state.map(setting => (
@@ -96,7 +96,7 @@ const useSettingGroup = ({savingDelay, onValidate}: {savingDelay?: number; onVal
                 return [...state, {key, value, dirty: true}];
             }
         });
-    };
+    }, [updateForm]);
 
     return {
         localSettings,

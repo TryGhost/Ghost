@@ -2,18 +2,13 @@ const MailgunClient = require('../lib/mailgun-client');
 
 const DEFAULT_EVENT_FILTER = 'delivered OR opened OR failed OR unsubscribed OR complained';
 const PAGE_LIMIT = 300;
-const DEFAULT_TAGS = ['bulk-email'];
 
 class EmailAnalyticsProviderMailgun {
     mailgunClient;
 
-    constructor({config, settings}) {
+    constructor({config, settings, tags}) {
         this.mailgunClient = new MailgunClient({config, settings});
-        this.tags = [...DEFAULT_TAGS];
-
-        if (config.get('bulkEmail:mailgun:tag')) {
-            this.tags.push(config.get('bulkEmail:mailgun:tag'));
-        }
+        this.tags = tags;
     }
 
     /**

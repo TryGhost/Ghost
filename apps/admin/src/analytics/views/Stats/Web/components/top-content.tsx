@@ -4,7 +4,7 @@ import {LucideIcon, formatNumber, formatPercentage} from '@tryghost/shade/utils'
 import {formatQueryDate, getRangeDates} from '@tryghost/shade/app';
 import {getAudienceQueryParam} from '@/shared/analytics/audience';
 import {getClickHandler} from '@/analytics/utils/url-helpers';
-import {getPeriodText} from '@/analytics/utils/chart-helpers';
+import {getPeriodText} from '@/shared/analytics/chart-helpers';
 import {useAnalyticsData} from '@/shared/analytics/use-analytics-data';
 import {useMemo, useState} from 'react';
 import {useNavigate} from '@tryghost/admin-x-framework';

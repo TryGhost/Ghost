@@ -12,7 +12,8 @@ import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {type Post, usePostAnalytics} from '@/posts/analytics/providers/post-analytics-context';
 import {STATS_RANGES} from '@/shared/analytics/constants';
 import {centsToDollars} from '@/posts/analytics/Growth/growth-helpers';
-import {formatQueryDate, getRangeDates, getRangeForStartDate, sanitizeChartData} from '@tryghost/shade/app';
+import {formatQueryDate, getRangeDates, getRangeForStartDate} from '@tryghost/shade/app';
+import {getEffectiveChartRange, sanitizeChartData} from '@/shared/analytics/chart-helpers';
 import {hasBeenEmailed, isPublishedOnly, useNavigate, useTinybirdQuery} from '@tryghost/admin-x-framework';
 import {useActiveGiftLink} from '@tryghost/admin-x-framework/api/gift-links';
 import {useAnalyticsData} from '@/shared/analytics/use-analytics-data';
@@ -88,6 +89,7 @@ const Overview: React.FC = () => {
 
     // Process chart data for WebOverview
     const currentMetric = KPI_METRICS.visits;
+    const displayChartRange = getEffectiveChartRange(chartRange, chartData as KpiDataItem[] || [], {fieldName: currentMetric.dataKey as keyof KpiDataItem});
     const processedChartData = sanitizeChartData<KpiDataItem>(chartData as KpiDataItem[] || [], chartRange, currentMetric.dataKey as keyof KpiDataItem, 'sum')?.map((item: KpiDataItem) => {
         const value = Number(item[currentMetric.dataKey]);
         return {
@@ -139,7 +141,7 @@ const Overview: React.FC = () => {
                             chartData={processedChartData}
                             isLoading={chartIsLoading || kpiIsLoading || isSourcesLoading}
                             isNewsletterShown={showNewsletterSection}
-                            range={chartRange}
+                            range={displayChartRange}
                             sourcesData={sourcesData}
                             visitors={totalVisitors}
                         />

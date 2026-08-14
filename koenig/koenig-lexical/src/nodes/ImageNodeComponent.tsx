@@ -17,6 +17,7 @@ import {getAllowedImageCardWidths, getDefaultImageCardWidth} from '../utils/imag
 import {getImageDimensions} from '../utils/getImageDimensions.js';
 import {getImageFilenameFromSrc} from '../utils/getImageFilenameFromSrc';
 import {imageUploadHandler} from '../utils/imageUploadHandler';
+import {isCardWidth} from '@tryghost/kg-default-nodes';
 import {isGif} from '../utils/isGif';
 import {openFileSelection} from '../utils/openFileSelection';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
@@ -187,8 +188,8 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
         });
     });
 
-    const handleImageCardResize = React.useCallback((newWidth) => {
-        if (!allowedImageCardWidths.includes(newWidth)) {
+    const handleImageCardResize = React.useCallback((newWidth: unknown) => {
+        if (!isCardWidth(newWidth) || !allowedImageCardWidths.includes(newWidth)) {
             return;
         }
 
