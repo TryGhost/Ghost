@@ -624,7 +624,7 @@ describe('admin-toolbar', function () {
         const button = getEditModeButton(root);
 
         assert.notEqual(button, null);
-        assert.equal(button.getAttribute('aria-label'), 'Edit site');
+        assert.equal(button.getAttribute('aria-label'), 'Edit theme');
         // its own icon — post/tag actions use the pencil, and two pencils in
         // one bar (or two buttons both labelled "Edit") are indistinguishable
         assert.notEqual(button.querySelector('svg.gh-admin-toolbar-icon-editMode'), null);
