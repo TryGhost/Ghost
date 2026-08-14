@@ -52,7 +52,6 @@
         "@internal/cfg-eslint-react": "workspace:*",
         "@internal/cfg-vite-public-app": "workspace:*",
         "@vitest/coverage-v8": "catalog:",
-        "cross-fetch": "catalog:",
         "eslint": "catalog:",
         "jsdom": "catalog:",
         "vite": "catalog:",

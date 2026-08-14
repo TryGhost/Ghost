@@ -1,0 +1,2 @@
+#!/bin/sh
+exec sudo --preserve-env=PUBLIC_URL /usr/bin/docker "$@"

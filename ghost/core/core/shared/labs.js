@@ -51,11 +51,12 @@ const PRIVATE_FEATURES = [
     'themeTranslation',
     'pictureImageFormats',
     'getHelperDeduplication',
-    'memberDetailsReact',
     'membersCustomFields',
     'paywallImprovements',
     'giftSubCustomization',
-    'tagDetailsReact'
+    'tagDetailsReact',
+    'selfServeArchives',
+    'machinePayments'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

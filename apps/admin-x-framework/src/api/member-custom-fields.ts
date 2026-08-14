@@ -105,7 +105,10 @@ export const userTypeForField = (field: MemberCustomField): MemberCustomFieldUse
 
 // A custom field CSV column offered as an import mapping target: the column name the
 // backend reads (`value`) and a human label for the picker.
-export type MemberCustomFieldCsvColumn = {label: string; value: string};
+// The field's type rides along so a picker can show what kind of thing the column holds
+// without being handed the fields as well. Every column of a composite carries the
+// composite's own type, which is what its icon is drawn from.
+export type MemberCustomFieldCsvColumn = {label: string; value: string; type: FieldType};
 
 /**
  * The CSV import mapping targets for a set of custom fields: one per column the export
@@ -118,7 +121,8 @@ export const memberCustomFieldCsvColumns = (fields: MemberCustomField[]): Member
         const labels = partLabelsFor(field.type);
         return csvColumnsForField({key: field.key, type: field.type}).map(({column, subField}) => ({
             label: subField === null ? field.name : `${field.name} (${labels[subField]})`,
-            value: column
+            value: column,
+            type: field.type
         }));
     });
 };
@@ -173,7 +177,30 @@ export const useCreateMemberCustomField = createMutation<MemberCustomFieldsRespo
     method: 'POST',
     path: () => '/members/custom_fields/',
     body: field => ({members_custom_fields: [field]}),
-    invalidateQueries: {dataType}
+    invalidateQueries: {dataType},
+    // The created field is put into the cached lists as well as refetched, so a screen that
+    // has just made one can use it in the same breath instead of waiting for a round trip or
+    // keeping its own copy until one arrives. The refetch above remains the truth; this only
+    // decides what is on screen until it lands.
+    //
+    // Appended, because the API assigns a new field the last position. Keyed de-dup because
+    // the refetch may already have landed, and a list that does not hold the created field is
+    // left alone: a browse filtered to active fields should not be handed an archived one, and
+    // by the same token no list here is asked to take a field it did not ask for.
+    updateQueries: {
+        dataType,
+        emberUpdateType: 'skip',
+        update: (newData, currentData) => {
+            const current = currentData as MemberCustomFieldsResponseType | undefined;
+            if (!current?.members_custom_fields) {
+                return currentData;
+            }
+            const created = newData.members_custom_fields.filter(
+                field => !current.members_custom_fields.some(existing => existing.key === field.key)
+            );
+            return {...current, members_custom_fields: [...current.members_custom_fields, ...created]};
+        }
+    }
 });
 
 // Keys are immutable after creation (the API rejects changes); `name` and

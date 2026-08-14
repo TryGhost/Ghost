@@ -54,7 +54,11 @@ Ghost/
 ```
 
 pnpm links the workspaces and Nx runs their tasks in dependency order. For more
-detail, see the [monorepo structure guide](codebase/monorepo-structure.md).
+detail, see the [monorepo structure guide](codebase/monorepo-structure.md). The
+[configuration guide](codebase/configuration.md) explains how Ghost Core loads
+defaults, local overrides, environment variables, and secrets. The
+[authentication guide](codebase/authentication.md) maps staff, integration, and
+member authentication to the current codebase.
 
 ## Contributing a change
 
@@ -62,6 +66,33 @@ Before contributing, please read:
 
 1. [Contributing Guide](../.github/CONTRIBUTING.md) - Guidelines for contributions
 2. [Code of Conduct](../.github/CODE_OF_CONDUCT.md) - Community standards
+
+To contribute or add translations, see
+[Translating Ghost](contributing/translating-ghost.md). For more detail on
+adding translatable product copy, see the
+[internationalization guide](practices/internationalization.md).
+
+## Guides
+
+Codebase guides explain how the main systems fit together:
+
+- [Authentication](codebase/authentication.md)
+- [Configuration](codebase/configuration.md)
+- [Database structure](codebase/database.md)
+- [Internal caching](codebase/internal-caching.md)
+- [Jobs system](codebase/jobs.md)
+- [Post analytics](codebase/post-analytics.md)
+- [Site UUID](codebase/site-uuid.md)
+- [Stripe flows](codebase/stripe-flows.md)
+
+Practice and contributor guides explain how to make and verify changes:
+
+- [API design](practices/api-design.md)
+- [Database migrations](practices/database-migrations.md)
+- [Email testing](contributing/testing-email.md)
+- [Error handling](practices/error-handling.md)
+- [Internationalization](practices/internationalization.md)
+- [Performance testing](contributing/performance-testing.md)
 
 ### Finding Issues to Work On
 

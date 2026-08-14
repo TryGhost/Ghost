@@ -92,7 +92,7 @@ If your change is **user-facing** please prepend the first line of your commit w
 - ✨ Feature
 - 🎨 Improvement / change
 - 🐛 Bug Fix
-- 🌐 i18n (translation) submissions  [[See Translating Ghost docs for more detail](https://www.notion.so/5af2858289b44f9194f73f8a1e17af59?pvs=25#bef8c9988e294a4b9a6dd624136de36f)]
+- 🌐 i18n (translation) submissions  [[See Translating Ghost docs for more detail](translating-ghost.md)]
 - 💡 Anything else flagged to users or whoever is writing release notes
 
 Good commit message examples: [new feature](https://github.com/TryGhost/Ghost/commit/61db6defde3b10a4022c86efac29cf15ae60983f), [bug fix](https://github.com/TryGhost/Ghost/commit/6ef835bb5879421ae9133541ebf8c4e560a4a90e) and [translation](https://github.com/TryGhost/Ghost/commit/83904c1611ae7ab3257b3b7d55f03e50cead62d7).

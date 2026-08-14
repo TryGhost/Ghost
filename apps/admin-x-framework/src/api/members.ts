@@ -259,8 +259,11 @@ function buildImportMembersFormData({file, labels = [], mapping = {}}: ImportMem
         formData.append('labels', label);
     }
 
+    // An empty target is the caller naming a column to leave out of the import, and the
+    // importer only honours a column it is told about — so it has to survive to the wire.
+    // Null and undefined stay dropped: they are a column with nothing said about it.
     for (const [key, val] of Object.entries(mapping)) {
-        if (val) {
+        if (typeof val === 'string') {
             formData.append(`mapping[${key}]`, val);
         }
     }

@@ -1,4 +1,6 @@
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const os = require('node:os');
 const path = require('path');
 const _ = require('lodash');
 const configUtils = require('../../../utils/config-utils');
@@ -17,10 +19,18 @@ describe('Config Loader', function () {
         let originalArgv;
         let customConfig;
         let loader;
+        let tmpDir;
+
+        function writeSecret(contents) {
+            const filePath = path.join(tmpDir, 'secret');
+            fs.writeFileSync(filePath, contents);
+            return filePath;
+        }
 
         beforeEach(function () {
             originalEnv = _.clone(process.env);
             originalArgv = _.clone(process.argv);
+            tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ghost-loader-'));
             loader = require('../../../../core/shared/config/loader');
             // getNodeEnv() reads process.env.NODE_ENV, so drive that directly
             process.env.NODE_ENV = 'testing';
@@ -35,6 +45,7 @@ describe('Config Loader', function () {
         afterEach(function () {
             process.env = originalEnv;
             process.argv = originalArgv;
+            fs.rmSync(tmpDir, {recursive: true, force: true});
             sinon.restore();
         });
 
@@ -59,6 +70,50 @@ describe('Config Loader', function () {
             });
 
             assert.equal(customConfig.get('database:client'), 'stronger');
+        });
+
+        it('secret file is stronger than file', function () {
+            process.env.logging__level_FILE = writeSecret('warn\n');
+
+            customConfig = loader.loadNconf({
+                baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
+                customConfigPath: path.join(__dirname, '../../../utils/fixtures/config')
+            });
+
+            assert.equal(customConfig.get('logging:level'), 'warn');
+        });
+
+        it('argv is stronger than a secret file', function () {
+            process.env.logging__level_FILE = writeSecret('warn\n');
+            process.argv[2] = '--logging:level=stronger';
+
+            customConfig = loader.loadNconf({
+                baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
+                customConfigPath: path.join(__dirname, '../../../utils/fixtures/config')
+            });
+
+            assert.equal(customConfig.get('logging:level'), 'stronger');
+        });
+
+        it('does not leak the secret file path into config', function () {
+            process.env.database__connection__password_FILE = writeSecret('hunter2\n');
+
+            customConfig = loader.loadNconf({
+                baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
+                customConfigPath: path.join(__dirname, '../../../utils/fixtures/config')
+            });
+
+            assert.equal(customConfig.get('database:connection:password_FILE'), undefined);
+        });
+
+        it('throws if a value and its secret file are both set', function () {
+            process.env.logging__level = 'warn';
+            process.env.logging__level_FILE = writeSecret('error\n');
+
+            assert.throws(() => loader.loadNconf({
+                baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
+                customConfigPath: path.join(__dirname, '../../../utils/fixtures/config')
+            }), /Cannot set both logging__level and logging__level_FILE/);
         });
 
         it('argv or env is NOT stronger than overrides', function () {

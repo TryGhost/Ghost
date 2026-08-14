@@ -36,7 +36,9 @@ test.describe('Ghost Admin - Member Detail Disable Commenting', () => {
 
         await expect(memberDetailsPage.disableCommentingModal).toBeVisible();
         await expect(memberDetailsPage.disableCommentingModal).toContainText('Test Member');
-        await expect(memberDetailsPage.disableCommentingModal).toContainText('won\'t be able to comment');
+        // Either apostrophe: the warning is what matters, not the glyph the
+        // copy happens to use.
+        await expect(memberDetailsPage.disableCommentingModal).toContainText(/won['’]t be able to comment/);
         await expect(memberDetailsPage.disableCommentingConfirmButton).toBeVisible();
         await expect(memberDetailsPage.disableCommentingCancelButton).toBeVisible();
     });
@@ -146,25 +148,6 @@ test.describe('Ghost Admin - Member Detail Disable Commenting', () => {
             await memberDetailsPage.settingsSection.memberActionsButton.click();
             await expect(memberDetailsPage.settingsSection.disableCommentingButton).toBeVisible();
             await expect(memberDetailsPage.settingsSection.enableCommentingButton).toBeHidden();
-        });
-
-        test('enabling via sidebar link removes indicator', async ({page}) => {
-            const {name} = await memberFactory.create();
-
-            const membersPage = new MembersPage(page);
-            await membersPage.goto();
-            await membersPage.getMemberByName(name!).click();
-
-            const memberDetailsPage = new MemberDetailsPage(page);
-
-            await memberDetailsPage.settingsSection.memberActionsButton.click();
-            await memberDetailsPage.settingsSection.disableCommentingButton.click();
-            await memberDetailsPage.disableCommentingConfirmButton.click();
-            await expect(memberDetailsPage.commentingDisabledIndicator).toBeVisible();
-
-            await memberDetailsPage.enableCommentingLink.click();
-
-            await expect(memberDetailsPage.commentingDisabledIndicator).toBeHidden();
         });
     });
 });

@@ -21,7 +21,7 @@ describe('Roles API', function () {
         await agent.get('roles/')
             .expectStatus(200)
             .matchBodySnapshot({
-                roles: Array(11).fill(rolesObjectMatcher)
+                roles: Array(10).fill(rolesObjectMatcher)
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,

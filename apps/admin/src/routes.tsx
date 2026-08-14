@@ -13,7 +13,6 @@ import { EmberFallback, ForceUpgradeGuard } from "./ember-bridge";
 import type { RouteHandle } from "./ember-bridge";
 import HomeRedirect from "./home-redirect";
 import { EmberListWithGiftLinks } from "./gift-link-modal-host";
-import { MemberDetailGate } from "./member-detail-gate";
 import { TagDetailGate } from "./tag-detail-gate";
 import { OnboardingRedirect } from "./onboarding/onboarding-redirect";
 import { type AccessRouteHandle, RouteAccessGuard } from "./route-access-guard";
@@ -36,7 +35,6 @@ const EMBER_ROUTES: string[] = [
     "/posts/analytics/:postId/debug",
     "/restore",
     "/editor/*",
-    "/explore/*",
     "/migrate/*",
     "/members-activity",
 ];
@@ -65,13 +63,8 @@ const membersRoute: RouteObject = {
             // Covers both edit (`:member_id`) and create (the sentinel `new`)
             // — real member ids are 24-char hex ObjectIds, so they can't
             // collide with the literal "new".
-            //
-            // MemberDetailGate serves Ember or React depending on the
-            // `memberDetailsReact` Labs flag; the parent route's
-            // emberFallbackHandle covers both, since ForceUpgradeGuard checks
-            // every match rather than just the leaf.
             path: ":member_id",
-            Component: MemberDetailGate
+            lazy: lazyComponent(() => import("./members/detail/member-detail"))
         }
     ]
 };

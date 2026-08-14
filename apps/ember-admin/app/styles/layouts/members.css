@@ -92,10 +92,6 @@ label[for="member-description"] + p {
     margin: 0 0 4px;
 }
 
-.gh-member-settings .gh-main-section.columns-3 {
-    grid-column-gap: 48px;
-}
-
 .gh-member-details {
     position: sticky;
     top: 0px;
@@ -415,16 +411,6 @@ textarea.gh-member-details-textarea {
 }
 
 @media (max-width: 1160px) {
-    .gh-member-settings .gh-main-section {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .gh-member-settings .gh-main-section > div {
-        float: none;
-        width: 100%;
-    }
-
     .gh-member-details {
         position: relative;
         top: unset;
@@ -603,13 +589,6 @@ textarea.gh-member-details-textarea {
     background: var(--white);
     box-shadow: 0 1px 4px -1px rgba(0,0,0,0.1);
     border-radius: 3px;
-}
-
-.gh-member-settings .gh-member-feed-no-data {
-    margin: 0;
-    padding: 24px 0 28px;
-    background: transparent;
-    box-shadow: none;
 }
 
 .gh-member-feed-row {

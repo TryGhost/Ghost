@@ -65,7 +65,7 @@ jobs:
       pull-requests: read
     steps:
       - name: Checkout current commit
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           ref: ${{ env.HEAD_COMMIT }}
           fetch-depth: 0
@@ -78,9 +78,9 @@ jobs:
           echo "GITHUB_EVENT_NAME: ${{ github.event_name }}"
           echo "GITHUB_CONTEXT: ${{ toJson(github.event) }}"
 
-      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
       - name: Set up Node
-        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         env:
           FORCE_COLOR: 0
         with:
@@ -161,6 +161,16 @@ jobs:
               - 'package.json'
               - 'scripts/check-agent-skill-links.js'
               - 'scripts/test/check-agent-skill-links.test.js'
+            package-standards:
+              - 'packages/**'
+              - 'package.json'
+              - 'pnpm-workspace.yaml'
+              - 'scripts/check-internal-packages.js'
+              - 'scripts/create-package.js'
+              - 'scripts/lib/constants.js'
+              - 'scripts/lib/package-template.js'
+              - 'scripts/test/check-internal-packages.test.js'
+              - '.github/workflows/ci.yml'
             core:
               - *shared
               # Repository documentation and ownership metadata do not affect
@@ -279,6 +289,7 @@ jobs:
       changed_core: ${{ steps.changed.outputs.core }}
       changed_any_code: ${{ steps.changed.outputs.any-code }}
       changed_docs: ${{ steps.changed.outputs.docs }}
+      changed_package_standards: ${{ steps.changed.outputs.package-standards }}
       changed_tb_cli: ${{ steps.changed.outputs.tb-cli }}
       # Single gate for the build + browser-E2E lane. True for tags, or when a
       # changed file could affect a running Ghost instance (see the `e2e` path
@@ -308,7 +319,7 @@ jobs:
     if: github.event_name == 'pull_request'
     steps:
       - name: Checkout PR head commit
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
@@ -316,8 +327,8 @@ jobs:
       - name: Fetch main branch
         run: git fetch --no-tags origin main
 
-      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         env:
           FORCE_COLOR: 0
         with:
@@ -351,7 +362,7 @@ jobs:
     if: github.event_name == 'pull_request'
     steps:
       - name: Checkout PR head commit
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
@@ -371,11 +382,11 @@ jobs:
     if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.affected_projects_str != ''
     name: Lint
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 1000
-      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         env:
           FORCE_COLOR: 0
         with:
@@ -385,7 +396,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           path: ghost/**/.eslintcache
           key: eslint-cache
@@ -399,7 +410,7 @@ jobs:
       - name: Lint boundaries
         run: pnpm nx run ghost-monorepo:lint:boundaries
 
-      - uses: tryghost/actions/actions/slack-build@e7a401946f91165a6426290705f501a377ec1533 # main
+      - uses: tryghost/actions/actions/slack-build@12da0671df2e249a65c467340262e6c4251d9565 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -412,14 +423,34 @@ jobs:
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_docs == 'true'
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Lint agent skills
         run: node scripts/check-agent-skill-links.js
+
+  job_lint_packages:
+    name: Lint packages
+    runs-on: ubuntu-slim
+    needs: [job_setup]
+    if: needs.job_setup.outputs.changed_package_standards == 'true'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Check internal package golden path
+        run: node scripts/check-internal-packages.js
+
+      - name: Test internal package checker
+        run: node --test scripts/test/check-internal-packages.test.js
 
   job_i18n:
     runs-on: ubuntu-latest
@@ -429,9 +460,9 @@ jobs:
       needs.job_setup.outputs.is_tag == 'true'
       || needs.job_setup.outputs.changed_i18n_apps == 'true'
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
@@ -455,9 +486,9 @@ jobs:
       CI: true
       COVERAGE: ${{ needs.job_setup.outputs.coverage_enabled }}
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
@@ -480,7 +511,7 @@ jobs:
           name: admin-coverage
           path: apps/*/coverage/cobertura-coverage.xml
 
-      - uses: tryghost/actions/actions/slack-build@e7a401946f91165a6426290705f501a377ec1533 # main
+      - uses: tryghost/actions/actions/slack-build@12da0671df2e249a65c467340262e6c4251d9565 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -499,13 +530,13 @@ jobs:
     if: (needs.job_setup.outputs.changed_core == 'true' && needs.job_setup.outputs.is_development == 'true') || needs.job_setup.outputs.has_perf_tests_label == 'true'
     name: Performance tests
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           # Boot activates the default theme, which is a submodule
           submodules: true
 
-      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         env:
           FORCE_COLOR: 0
         with:
@@ -555,7 +586,7 @@ jobs:
       packages: read
     steps:
       # Only for .github/actions/load-docker-image; nothing is built from source here.
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
 
@@ -637,11 +668,11 @@ jobs:
         node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
     name: Unit tests (Node ${{ matrix.node }})
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 1000
-      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         env:
           FORCE_COLOR: 0
         with:
@@ -698,7 +729,7 @@ jobs:
             exit 1
           fi
 
-      - uses: tryghost/actions/actions/slack-build@e7a401946f91165a6426290705f501a377ec1533 # main
+      - uses: tryghost/actions/actions/slack-build@12da0671df2e249a65c467340262e6c4251d9565 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -727,7 +758,7 @@ jobs:
           --health-timeout=5s
           --health-retries=60
       redis:
-        image: redis:7.4@sha256:a8f08480e1f88f2647fed492d1178c06abb0d0c1fbf02c682a61e2f483fb3954
+        image: redis:7.4@sha256:e9b2e45ecd47fbb69b877cf8d045d5cccaaaed52524b6e098b4abe8212994f73
         ports:
           - 6379:6379
         options: >-
@@ -755,9 +786,9 @@ jobs:
       COVERAGE_ENABLED: ${{ needs.job_setup.outputs.coverage_enabled == 'true' && matrix.env.DB == 'better-sqlite3' }}
     name: Acceptance tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         env:
           FORCE_COLOR: 0
         with:
@@ -847,7 +878,7 @@ jobs:
             ghost/*/coverage-e2e/cobertura-coverage.xml
             ghost/*/coverage-integration/cobertura-coverage.xml
 
-      - uses: tryghost/actions/actions/slack-build@e7a401946f91165a6426290705f501a377ec1533 # main
+      - uses: tryghost/actions/actions/slack-build@12da0671df2e249a65c467340262e6c4251d9565 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -888,11 +919,11 @@ jobs:
       NODE_ENV: ${{ matrix.env.NODE_ENV }}
     name: Legacy tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           submodules: true
-      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         env:
           FORCE_COLOR: 0
         with:
@@ -937,7 +968,7 @@ jobs:
             exit 1
           fi
 
-      - uses: tryghost/actions/actions/slack-build@e7a401946f91165a6426290705f501a377ec1533 # main
+      - uses: tryghost/actions/actions/slack-build@12da0671df2e249a65c467340262e6c4251d9565 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -956,9 +987,9 @@ jobs:
     env:
       CI: true
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         env:
           FORCE_COLOR: 0
         with:
@@ -1023,7 +1054,7 @@ jobs:
           path: ${{ steps.app_name.outputs.root }}/playwright-report
           retention-days: 30
 
-      - uses: tryghost/actions/actions/slack-build@e7a401946f91165a6426290705f501a377ec1533 # main
+      - uses: tryghost/actions/actions/slack-build@12da0671df2e249a65c467340262e6c4251d9565 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1036,7 +1067,7 @@ jobs:
     if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_core == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         env:
           FORCE_COLOR: 0
         with:
@@ -1094,7 +1125,7 @@ jobs:
         run: |
           [ -f ~/.ghost/logs/*.log ] && cat ~/.ghost/logs/*.log
 
-      - uses: tryghost/actions/actions/slack-build@e7a401946f91165a6426290705f501a377ec1533 # main
+      - uses: tryghost/actions/actions/slack-build@12da0671df2e249a65c467340262e6c4251d9565 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1109,12 +1140,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
 
-      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         env:
           FORCE_COLOR: 0
         with:
@@ -1176,7 +1207,7 @@ jobs:
           retention-days: 7
           if-no-files-found: error
 
-      - uses: tryghost/actions/actions/slack-build@e7a401946f91165a6426290705f501a377ec1533 # main
+      - uses: tryghost/actions/actions/slack-build@12da0671df2e249a65c467340262e6c4251d9565 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1195,15 +1226,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
           # Themes (content/themes/casper|source) are submodules packed into the
           # archive — without them the tarball ships empty theme dirs.
           submodules: true
 
-      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         env:
           FORCE_COLOR: 0
         with:
@@ -1259,7 +1290,7 @@ jobs:
           retention-days: 7
           if-no-files-found: error
 
-      - uses: tryghost/actions/actions/slack-build@e7a401946f91165a6426290705f501a377ec1533 # main
+      - uses: tryghost/actions/actions/slack-build@12da0671df2e249a65c467340262e6c4251d9565 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1282,7 +1313,7 @@ jobs:
       packages: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
           # The deploy stage packs content/themes/casper|source (submodules).
@@ -1347,7 +1378,7 @@ jobs:
 
       - name: Log in to GitHub Container Registry
         if: steps.strategy.outputs.should-push == 'true'
-        uses: docker/login-action@abd2ef45e78c5afb21d64d4ca52ee8550d9572c7 # v4
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -1697,11 +1728,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
 
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         env:
           FORCE_COLOR: 0
         with:
@@ -1805,7 +1836,7 @@ jobs:
             shardTotal: 2
     steps:
       - name: Checkout
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Setup Docker Registry Mirrors
         uses: ./.github/actions/setup-docker-registry-mirrors
@@ -1841,8 +1872,8 @@ jobs:
           image-tags: ${{ needs.job_docker.outputs.image-e2e-tags }}
           artifact-name: docker-image-e2e
 
-      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
@@ -1896,7 +1927,7 @@ jobs:
           path: e2e/test-results
           retention-days: 7
 
-      - uses: tryghost/actions/actions/slack-build@e7a401946f91165a6426290705f501a377ec1533 # main
+      - uses: tryghost/actions/actions/slack-build@12da0671df2e249a65c467340262e6c4251d9565 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1916,10 +1947,10 @@ jobs:
       fail-fast: false
     steps:
       - name: Checkout
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
@@ -2002,7 +2033,7 @@ jobs:
     if: always() && needs.job_setup.outputs.coverage_enabled == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Restore Admin coverage
         if: contains(needs.job_admin-tests.result, 'success')
@@ -2017,7 +2048,7 @@ jobs:
 
       - name: Upload Admin test coverage
         if: contains(needs.job_admin-tests.result, 'success')
-        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v6
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7
         with:
           flags: admin-tests
           files: apps/ember-admin/coverage/cobertura-coverage.xml
@@ -2036,7 +2067,7 @@ jobs:
 
       - name: Upload E2E test coverage
         if: contains(needs.job_acceptance-tests.result, 'success')
-        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v6
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7
         with:
           flags: e2e-tests
           files: ghost/core/coverage-e2e/cobertura-coverage.xml,ghost/core/coverage-integration/cobertura-coverage.xml
@@ -2051,6 +2082,7 @@ jobs:
         job_migration_integrity_check,
         job_lint,
         job_lint_docs,
+        job_lint_packages,
         job_i18n,
         job_build_admin,
         job_pack,
@@ -2111,11 +2143,11 @@ jobs:
         include: ${{ fromJSON(needs.job_setup.outputs.publish_public_apps_matrix) }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
       - name: Set up Node.js
-        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
@@ -2248,7 +2280,7 @@ jobs:
           name: ghost-npm-tarball
 
       - name: Set up Node.js
-        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           package-manager-cache: false
@@ -2305,7 +2337,7 @@ jobs:
     env:
       GH_TOKEN: ${{ secrets.CANARY_DOCKER_BUILD }}
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 0
 

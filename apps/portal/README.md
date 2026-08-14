@@ -97,4 +97,4 @@ If the CI doesn't clear JsDelivr cache to get the new version out instantly, you
 
 # Copyright & License
 
-Copyright (c) 2013-2026 Ghost Foundation - Released under the [MIT license](LICENSE).
+Copyright (c) 2013-2026 Ghost Foundation - Released under the [MIT license](https://github.com/TryGhost/Ghost/blob/main/LICENSE).
