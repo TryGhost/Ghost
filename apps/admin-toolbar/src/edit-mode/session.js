@@ -44,6 +44,17 @@
  * IS the new base: the draft key is recomputed from it and the old entry
  * cleared, so post-publish edits survive exit/re-enter.
  *
+ * Chat agent (slice 5): the bar's chat drawer feeds natural-language requests
+ * into runAgentTask — a browser-side, BYOK-keyed tool-calling loop
+ * (agent/loop.js) whose tools are session-scoped closures over the SAME
+ * commit pipeline: edits accumulate on a candidate theme, preview()
+ * render-verifies without committing (a failure returns the error text to
+ * the model for self-correction), commit() lands the batch through
+ * commitCandidate as ONE logical edit. The agent can never publish — that
+ * stays the bar's explicit human flow — and its tools never touch the Admin
+ * API. The provider seam (agent/provider.js, OpenAI-first) and key store
+ * (agent/key-store.js, localStorage BYOK) are both injectable deps.
+ *
  * Exit restores the original pre-swap document and reports through onExit so
  * the toolbar shell can reset (a fatal boot failure exits the same way).
  */
@@ -52,8 +63,11 @@ import {parseEditMarker} from '@tryghost/theme-renderer/markers';
 import {applyThemeAttributeEdit, applyThemeTextEdit} from '@tryghost/theme-renderer/editor';
 import {extractThemeArchive, isDefaultThemeName, packThemeArchive} from '@tryghost/theme-renderer/editor/archive';
 import {scrapeContentApiKey, scrapeInstanceConfig} from '@tryghost/theme-renderer/editor/instance-config';
+import {buildSystemPrompt, runAgentLoop} from './agent/loop';
 import {createDocumentSwapper} from './swap';
 import {createEditModeUi, OVERLAY_HOST_ID} from './ui';
+import {createKeyStore} from './agent/key-store';
+import {createOpenAiProvider} from './agent/provider';
 import {attachEditInteractions} from './interactions';
 import {createMemoryDraftStore, computeThemeContentHash, draftKey} from './draft-store';
 import {startRenderClient, resolveWorkerUrl} from './render-client';
@@ -177,10 +191,27 @@ export function validateNewThemeName(name) {
     return null;
 }
 
+/** localStorage off a window, tolerating access throws (private modes). */
+function safeLocalStorage(win) {
+    try {
+        return win.localStorage ?? null;
+    } catch {
+        return null;
+    }
+}
+
 // Module-level so drafts survive exit/re-enter within one page view — the
 // in-memory store's documented lifetime. Server-backed persistence replaces
 // this singleton via the DraftStore seam.
 const sessionDraftStore = createMemoryDraftStore();
+
+/**
+ * Total-edit-size sanity cap per agent task: the sum of old_string +
+ * new_string lengths across accepted edit_theme_file calls. Generous for
+ * theme tweaks, small enough that a runaway model can't balloon the
+ * in-memory draft (or the eventual publish zip) unnoticed.
+ */
+export const MAX_AGENT_EDIT_CHARS = 200000;
 
 /**
  * @param {Object} options
@@ -203,7 +234,10 @@ export function createEditSession({config, onExit, deps = {}}) {
         pickFile = () => pickImageFile(doc),
         startClient = startRenderClient,
         uiFactory = createEditModeUi,
-        attachInteractions = attachEditInteractions
+        attachInteractions = attachEditInteractions,
+        keyStore = createKeyStore({storage: safeLocalStorage(win)}),
+        providerFactory = createOpenAiProvider,
+        agentLoop = runAgentLoop
     } = deps;
 
     const adminUrl = config.adminUrl;
@@ -226,6 +260,14 @@ export function createEditSession({config, onExit, deps = {}}) {
     let replacingImage = false;
     let publishArmed = false;
     let publishing = false;
+    let agentRunning = false;
+    let chat = {
+        open: false,
+        busy: false,
+        hasKey: Boolean(keyStore.getKey()),
+        messages: [],
+        resultText: null
+    };
 
     async function renderAndSwap() {
         const result = await client.render(win.location.href, {markers: true});
@@ -257,49 +299,80 @@ export function createEditSession({config, onExit, deps = {}}) {
     }
 
     /**
-     * The shared commit pipeline behind every applier (text edits and image
-     * swaps): render-verify the candidate, and only when the whole pipeline
-     * succeeds mutate session state (snapshot/editCount/draft store). Any
-     * failure re-points the renderer at the last-good theme and surfaces the
-     * error without counting the edit.
+     * The render-verify half of the pipeline, shared by commitCandidate and
+     * the agent's preview() tool: point the renderer at the candidate and
+     * re-render/swap. On failure the renderer is re-pointed at the last-good
+     * theme so the next attempt starts from a working state; the error is
+     * RETURNED (not thrown) so both callers can route it — the UI status
+     * line, or the model's tool result.
+     *
+     * @returns {Promise<{ok: true}|{ok: false, error: string}>}
      */
-    async function commitCandidate(candidateTheme, marker) {
-        closeEditor({status: 'loading', statusText: 'Rendering…', statusIsError: false});
-        disarmPublish();
-
+    async function renderCandidate(candidateTheme) {
         try {
             await client.setTheme(candidateTheme);
             await renderAndSwap();
         } catch (error) {
             if (destroyed) {
-                return;
+                return {ok: false, error: 'The edit session has ended'};
             }
-            // Revert the renderer to the last-good theme so the next edit
-            // starts from a working state; the failed candidate is dropped
-            // without counting the edit or touching the draft store.
+            // Revert the renderer to the last-good theme; the failed
+            // candidate is the caller's to drop or fix.
             try {
                 await client.setTheme(renderTheme);
             } catch {
                 // the revert is best-effort — the original error is the story
             }
-            ui.update({status: 'ready', statusText: `Edit failed: ${error.message}`, statusIsError: true});
-            return;
+            return {ok: false, error: error.message};
         }
 
         if (destroyed) {
-            return;
+            return {ok: false, error: 'The edit session has ended'};
+        }
+
+        return {ok: true};
+    }
+
+    /**
+     * The shared commit pipeline behind every applier (text edits, image
+     * swaps, and the agent's commit() tool): render-verify the candidate,
+     * and only when the whole pipeline succeeds mutate session state
+     * (snapshot/editCount/draft store). Any failure re-points the renderer
+     * at the last-good theme and surfaces the error without counting the
+     * edit. One call counts as ONE edit in the dirty count regardless of how
+     * many files changed (`changedPaths`) — an agent batch is one logical
+     * edit, exactly like one inline text edit.
+     *
+     * @returns {Promise<{ok: true}|{ok: false, error: string}>}
+     */
+    async function commitCandidate(candidateTheme, changedPaths) {
+        closeEditor({status: 'loading', statusText: 'Rendering…', statusIsError: false});
+        disarmPublish();
+
+        const rendered = await renderCandidate(candidateTheme);
+
+        if (!rendered.ok) {
+            if (!destroyed) {
+                ui.update({status: 'ready', statusText: `Edit failed: ${rendered.error}`, statusIsError: true});
+            }
+            return rendered;
         }
 
         // Success — NOW mutate session state.
         renderTheme = candidateTheme;
-        snapshot.files[marker.file].content = candidateTheme[marker.file];
+        for (const path of changedPaths) {
+            if (snapshot.files[path]) {
+                snapshot.files[path].content = candidateTheme[path];
+            }
+        }
         editCount += 1;
         await draftStore.set(storeKey, {files: renderTheme, editCount});
 
         if (destroyed) {
-            return;
+            return {ok: false, error: 'The edit session has ended'};
         }
         ui.update({status: 'ready', statusText: '', dirtyCount: editCount, statusIsError: false});
+        return {ok: true};
     }
 
     async function commitEdit(value) {
@@ -328,7 +401,7 @@ export function createEditSession({config, onExit, deps = {}}) {
             return;
         }
 
-        await commitCandidate(candidateTheme, marker);
+        await commitCandidate(candidateTheme, [marker.file]);
     }
 
     async function replaceImage() {
@@ -381,7 +454,7 @@ export function createEditSession({config, onExit, deps = {}}) {
                 return;
             }
 
-            await commitCandidate(candidateTheme, marker);
+            await commitCandidate(candidateTheme, [marker.file]);
         } finally {
             replacingImage = false;
         }
@@ -504,6 +577,242 @@ export function createEditSession({config, onExit, deps = {}}) {
         }
     }
 
+    function updateChat(patch) {
+        chat = {...chat, ...patch};
+        ui.update({chat});
+    }
+
+    function pushChatMessage(role, text) {
+        updateChat({messages: [...chat.messages, {role, text}]});
+    }
+
+    function toggleChat() {
+        updateChat({open: !chat.open, hasKey: Boolean(keyStore.getKey())});
+    }
+
+    function saveApiKey(value) {
+        try {
+            keyStore.setKey(value);
+        } catch (error) {
+            pushChatMessage('error', error.message);
+            return;
+        }
+        updateChat({hasKey: true});
+    }
+
+    function clearApiKey() {
+        keyStore.clearKey();
+        updateChat({hasKey: false});
+    }
+
+    /**
+     * Slice-5 chat agent entry point: run one natural-language task through
+     * the browser-side tool-calling loop (agent/loop.js), with tools that
+     * are closures over THIS session's state and pipeline:
+     *
+     * - list/read/edit operate on a candidate copy of the current draft
+     *   theme (edit = exact-unique-match string replace, capped by
+     *   MAX_AGENT_EDIT_CHARS per task);
+     * - preview() render-verifies the candidate via renderCandidate without
+     *   committing (a failure hands the render error back to the model);
+     * - commit() lands ALL staged edits through commitCandidate as ONE
+     *   logical edit batch (one dirty-count increment, draft store updated).
+     *
+     * Safety: the toolkit has no publish tool and never calls the Admin API;
+     * uncommitted staged edits die with the task (a lingering preview is
+     * re-pointed at the committed draft). Provider-level failures (network,
+     * bad key) end the task and surface in the chat; tool-level failures are
+     * fed back to the model for self-correction.
+     *
+     * @param {string} prompt
+     * @param {{onProgress?: (event: {type: string, text: string}) => void}} [taskOptions]
+     * @returns {Promise<{status: string, text: string|null, error?: string, commits: number, filesChanged: string[], resultText?: string}>}
+     */
+    async function runAgentTask(prompt, {onProgress} = {}) {
+        const request = (prompt ?? '').trim();
+
+        if (!request) {
+            return {status: 'error', error: 'Empty prompt', commits: 0, filesChanged: []};
+        }
+        if (agentRunning) {
+            return {status: 'error', error: 'A chat task is already running', commits: 0, filesChanged: []};
+        }
+        if (!client || !renderTheme) {
+            return {status: 'error', error: 'Edit mode is still starting', commits: 0, filesChanged: []};
+        }
+
+        const apiKey = keyStore.getKey();
+        if (!apiKey) {
+            updateChat({open: true, hasKey: false});
+            return {status: 'error', error: 'No API key set', commits: 0, filesChanged: []};
+        }
+
+        agentRunning = true;
+        disarmPublish();
+        pushChatMessage('user', request);
+        updateChat({busy: true, resultText: null});
+
+        // Candidate accumulation state for this task. Edits stage on a copy
+        // of the last-committed draft; nothing touches session state (dirty
+        // count, snapshot, draft store) until the commit tool runs the
+        // shared pipeline.
+        let candidate = {...renderTheme};
+        let changedPaths = new Set();
+        let totalEditChars = 0;
+        let commitCount = 0;
+        const committedPaths = new Set();
+        let previewIsShowingCandidate = false;
+
+        const toolkit = {
+            listThemeFiles() {
+                const lines = Object.entries(candidate)
+                    .map(([path, content]) => `${path} (${content.length} chars)`);
+                return {ok: true, output: lines.join('\n')};
+            },
+            readThemeFile({path}) {
+                const content = candidate[path];
+                if (typeof content !== 'string') {
+                    return {ok: false, output: `Error: "${path}" is not an editable text file of this theme — call list_theme_files for the editable set.`};
+                }
+                return {ok: true, output: content};
+            },
+            editThemeFile({path, old_string: oldString, new_string: newString}) {
+                const content = candidate[path];
+                if (typeof content !== 'string') {
+                    return {ok: false, output: `Error: "${path}" is not an editable text file of this theme — call list_theme_files for the editable set.`};
+                }
+                if (typeof oldString !== 'string' || typeof newString !== 'string') {
+                    return {ok: false, output: 'Error: old_string and new_string must both be strings.'};
+                }
+                if (oldString.length === 0) {
+                    return {ok: false, output: 'Error: old_string cannot be empty.'};
+                }
+                if (oldString === newString) {
+                    return {ok: false, output: 'Error: old_string and new_string are identical — nothing to change.'};
+                }
+                if (totalEditChars + oldString.length + newString.length > MAX_AGENT_EDIT_CHARS) {
+                    return {ok: false, output: `Error: this task's total edit size cap (${MAX_AGENT_EDIT_CHARS} characters) would be exceeded — make smaller, targeted edits.`};
+                }
+
+                const occurrences = content.split(oldString).length - 1;
+                if (occurrences === 0) {
+                    return {ok: false, output: `Error: old_string was not found in "${path}" — read the file again; the current draft may differ from what you expect.`};
+                }
+                if (occurrences > 1) {
+                    return {ok: false, output: `Error: old_string matches ${occurrences} places in "${path}" — include more surrounding context so it matches exactly once.`};
+                }
+
+                candidate = {...candidate, [path]: content.replace(oldString, newString)};
+                changedPaths.add(path);
+                totalEditChars += oldString.length + newString.length;
+                return {ok: true, output: `Staged an edit to ${path}. Call preview() to render-verify, then commit().`};
+            },
+            async preview() {
+                const result = await renderCandidate(candidate);
+                if (!result.ok) {
+                    previewIsShowingCandidate = false;
+                    return {ok: false, output: `Error: the staged draft failed to render: ${result.error}`};
+                }
+                previewIsShowingCandidate = changedPaths.size > 0;
+                return {ok: true, output: `Preview rendered OK (${changedPaths.size} staged file(s)). Not committed yet.`};
+            },
+            async commit({summary} = {}) {
+                if (changedPaths.size === 0) {
+                    return {ok: false, output: 'Error: nothing to commit — stage edits with edit_theme_file first.'};
+                }
+
+                const result = await commitCandidate(candidate, [...changedPaths]);
+                if (!result.ok) {
+                    return {ok: false, output: `Error: commit failed — the draft did not render: ${result.error}`};
+                }
+
+                commitCount += 1;
+                for (const path of changedPaths) {
+                    committedPaths.add(path);
+                }
+                const committedCount = changedPaths.size;
+                changedPaths = new Set();
+                previewIsShowingCandidate = false;
+                candidate = {...renderTheme};
+                return {ok: true, output: `Committed ${committedCount} file(s) as one draft edit${summary ? ` — ${summary}` : ''}. Rendered OK.`};
+            }
+        };
+
+        const progress = (event) => {
+            onProgress?.(event);
+            if (event.type === 'tool' && !destroyed) {
+                pushChatMessage('progress', event.text);
+            }
+        };
+
+        let outcome;
+        try {
+            const provider = providerFactory({
+                apiKey,
+                model: keyStore.getModel() ?? undefined,
+                fetchImpl
+            });
+            outcome = await agentLoop({
+                provider,
+                prompt: request,
+                toolkit,
+                systemPrompt: buildSystemPrompt({themeName}),
+                onProgress: progress,
+                shouldAbort: () => destroyed
+            });
+        } catch (error) {
+            outcome = {status: 'error', text: null, error: error.message};
+        }
+
+        // A preview left showing uncommitted staged edits must not outlive
+        // the task — re-point the renderer at the committed draft.
+        if (!destroyed && previewIsShowingCandidate) {
+            try {
+                await client.setTheme(renderTheme);
+                await renderAndSwap();
+            } catch {
+                // best-effort — the committed draft is unchanged either way
+            }
+        }
+
+        let resultText;
+        if (commitCount > 0) {
+            const fileCount = committedPaths.size;
+            resultText = `${fileCount} file${fileCount === 1 ? '' : 's'} changed — rendered OK (${commitCount} edit batch${commitCount === 1 ? '' : 'es'})`;
+        } else {
+            resultText = 'No changes committed';
+        }
+        if (changedPaths.size > 0) {
+            resultText += ` — ${changedPaths.size} staged edit(s) discarded`;
+        }
+        if (outcome.status === 'max_iterations') {
+            resultText += ' — stopped at the iteration cap';
+        } else if (outcome.status === 'error') {
+            resultText += ` — ${outcome.error}`;
+        }
+
+        agentRunning = false;
+
+        if (!destroyed) {
+            if (outcome.text) {
+                pushChatMessage('assistant', outcome.text);
+            }
+            if (outcome.status === 'error') {
+                pushChatMessage('error', outcome.error);
+            }
+            updateChat({busy: false, resultText});
+        }
+
+        return {
+            status: outcome.status,
+            text: outcome.text ?? null,
+            error: outcome.error,
+            commits: commitCount,
+            filesChanged: [...committedPaths],
+            resultText
+        };
+    }
+
     function handleHover(element) {
         if (activeEdit || activeImageEdit) {
             return; // keep the highlight pinned to the element being edited
@@ -589,9 +898,14 @@ export function createEditSession({config, onExit, deps = {}}) {
                 onPublish: () => publish(),
                 onCommitEdit: value => commitEdit(value),
                 onCancelEdit: () => closeEditor(),
-                onReplaceImage: () => replaceImage()
+                onReplaceImage: () => replaceImage(),
+                onToggleChat: () => toggleChat(),
+                onSendPrompt: text => runAgentTask(text),
+                onSaveApiKey: value => saveApiKey(value),
+                onClearApiKey: () => clearApiKey()
             }
         });
+        ui.update({chat});
 
         try {
             themeName = await fetchActiveThemeName(adminUrl, fetchImpl);
@@ -688,5 +1002,5 @@ export function createEditSession({config, onExit, deps = {}}) {
         }
     }
 
-    return {start, destroy};
+    return {start, destroy, runAgentTask};
 }
