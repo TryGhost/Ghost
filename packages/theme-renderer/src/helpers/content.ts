@@ -14,7 +14,7 @@
 
 import {SafeString, hbs, templates} from '../seam/handlebars-env.ts';
 import downsize from 'downsize-cjs';
-import _ from 'lodash';
+import _ from '../utils/lodash.ts';
 const createFrame = hbs.handlebars.createFrame;
 
 function restrictedCta(this: any, options: any) {

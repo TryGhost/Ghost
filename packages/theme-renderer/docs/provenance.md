@@ -23,6 +23,13 @@ transforms, update the revision here.
 5. File-level `eslint-disable` headers (`no-explicit-any`, and where the
    original code shape requires it: `no-this-alias`, `prefer-rest-params`,
    `prefer-const`) — the visible marker of "copied, loosely typed".
+6. *(slice 2, worker-readiness — import-line-only, call sites unchanged)*
+   `import _ from 'lodash'` → `import _ from '<rel>/utils/lodash.ts'` (the
+   package-local aggregator of lodash subpath imports — root lodash drags the
+   whole library into the browser bundle), and
+   `import helpers from '@tryghost/helpers'` → `import * as helpers` (the
+   package's `es/` build, which browser bundlers resolve, has no default
+   export — named/namespace access only).
 
 ## src/helpers/ (34 helpers + machinery)
 
@@ -38,7 +45,7 @@ transforms, update the revision here.
 | helpers/encode.ts | helpers/encode.js | — | — |
 | helpers/excerpt.ts | helpers/excerpt.js | — | meta/generate-excerpt |
 | helpers/foreach.ts | helpers/foreach.js | `(hbsUtils as any).appendContextPath` (not in @types/handlebars) | checks |
-| helpers/get.ts | helpers/get.js | — | api (HTTP), config (`optimization:*` keys), applyLimitCap, prepareContextResource |
+| helpers/get.ts | helpers/get.js | `utils/process-env-guard.ts` imported above the nql-lang import (browser/worker compat, see src/utils row) | api (HTTP), config (`optimization:*` keys), applyLimitCap, prepareContextResource |
 | helpers/ghost-foot.ts | helpers/ghost_foot.js | — | settings, blogIcon, templates (`gift-toast`) |
 | helpers/ghost-head.ts | helpers/ghost_head.js | fn renamed `ghost_head`→`ghostHead` (camelcase lint); `head.push.apply` → spread; `urlUtils.getSiteUrl(true)` → `getSiteUrl()` (comment-counts URL; port takes no args) | settings (many non-public keys, see Deltas), config, blogIcon, cardAssets stub, getFrontendKey, settingsHelpers, machine-payments, getMarkdownUrl |
 | helpers/has.ts | helpers/has.js | inner `checks` object → `hasChecks` (avoids confusion with seam `checks`) | — |
@@ -54,7 +61,7 @@ transforms, update the revision here.
 | helpers/pagination.ts | helpers/pagination.js | — | templates (`pagination` partial) |
 | helpers/plural.ts | helpers/plural.js | — | — |
 | helpers/post-class.ts | helpers/post_class.js | final reduce result → new `classesString` const | — |
-| helpers/prev-post.ts | helpers/prev_post.js | — | api (HTTP; `skipPagination` stripped by the binding) |
+| helpers/prev-post.ts | helpers/prev_post.js | `import moment from 'moment'` → `'moment-timezone'` (same instance; avoids double-shipping moment in the browser bundle) | api (HTTP; `skipPagination` stripped by the binding) |
 | helpers/raw.ts | helpers/raw.js | — | — |
 | helpers/reading-time.ts | helpers/reading_time.js | — | checks |
 | helpers/t.ts | helpers/t.js | — | themeI18n/themeI18next ports (init handled by seam), labs, settings |
@@ -92,6 +99,8 @@ unless noted.
 | utils/frontend-apps.ts | frontend/utils/frontend-apps.js | STD only |
 | utils/images.ts | frontend/utils/images.js | `@tryghost/image-transform`.canTransformToFormat → seam stub (package drags sharp) |
 | utils/member-count.ts | frontend/utils/member-count.js | STD; `api.stats.memberCountHistory` is a zero-totals stub in the default binding |
+| utils/lodash.ts | fresh (slice 2) | the package-local `_` surface: subpath imports of exactly the methods the copied files use, so root lodash stays out of the browser bundle (STD transform 6) |
+| utils/process-env-guard.ts | fresh (slice 2) | browser/worker guard: defines `globalThis.process = {env: {}}` when absent — `@tryghost/nql-lang` reads `process.env` unguarded at import time (via the browserify `util` polyfill) and at parse time (`yy.debug()`); imported above the nql-lang import in helpers/get.ts. Upstream-fix candidate; no-op in Node |
 
 ## src/rendering/ (the ported render pipeline)
 
@@ -115,9 +124,9 @@ Origin `ghost/core/core/frontend/services/data/<name>.js` @ 407e032dc7, transfor
 
 | File | Transforms beyond STD |
 | --- | --- |
-| fetch-data.ts | lazy `require('../proxy').api` → seam call-time api proxy |
+| fetch-data.ts | lazy `require('../proxy').api` → seam call-time api proxy; *(slice 2, perf)* the three `cloneDeep`s dropped — postQuery is built as a fresh two-level copy per call, taxonomy specs are already `_.merge({}, ...)`d, and the posts payload is owned per the ContentApiPort contract (seam/types.ts) |
 | entry-lookup.ts | api proxy as above; `url.parse(postUrl).path` → manual `?`/`#` strip; `giftToken` lookup option dropped (anonymous-only) |
-| match-permalink-params.ts | `path-match@1.2.4` inlined (~30 lines) over a direct `path-to-regexp@1.9.0` dependency; its http-errors 400 on bad URI encoding → ValidationError (falls through to 404 like upstream's 400 for theme traffic) |
+| match-permalink-params.ts | `path-match@1.2.4` inlined (~30 lines) over a direct `path-to-regexp@1.9.0` dependency; its http-errors 400 on bad URI encoding → ValidationError (falls through to 404 like upstream's 400 for theme traffic); *(slice 2, perf)* compiled match function memoized per permalink string (upstream recompiles per call) |
 
 ## src/routing/ (ported adapters + fresh resolver)
 

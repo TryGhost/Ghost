@@ -5,7 +5,7 @@
 // cannot parse bare paths); giftToken lookup option dropped (gift links are
 // out of the package's scope — anonymous rendering only); @tryghost/debug →
 // dropped.
-import _ from 'lodash';
+import _ from '../utils/lodash.ts';
 import matchPermalinkParams from './match-permalink-params.ts';
 import {api} from '../seam/proxy.ts';
 

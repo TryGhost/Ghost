@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // Copied from ghost/core/core/frontend/meta/image-dimensions.js @ 407e032dc7 — transforms: imports→seam
-import _ from 'lodash';
+import _ from '../utils/lodash.ts';
 import {getImageWithSize} from '../utils/images.ts';
 import {cachedImageSizeFromUrl as imageSizeCache, config} from '../seam/proxy.ts';
 

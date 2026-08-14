@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // Copied from ghost/core/core/frontend/services/theme-engine/handlebars/utils.js @ 407e032dc7
 // — transforms: CJS → ESM.
-import _ from 'lodash';
+import _ from '../utils/lodash.ts';
 
 export function findKey(key: string, ...objects: any[]): any {
     return _.reduceRight(objects, function (result: any, object: any) {

@@ -7,7 +7,7 @@ import {SafeString} from '../seam/handlebars-env.ts';
 import {logging} from '../seam/shared.ts';
 import tpl from '@tryghost/tpl';
 
-import _ from 'lodash';
+import _ from '../utils/lodash.ts';
 
 const messages = {
     invalidAttribute: 'Invalid or no attribute given to match helper'

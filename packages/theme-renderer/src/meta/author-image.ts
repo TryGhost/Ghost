@@ -2,7 +2,7 @@
 // Copied from ghost/core/core/frontend/meta/author-image.js @ 407e032dc7 — transforms: imports→seam
 import {urlUtils} from '../seam/proxy.ts';
 import getContextObject from './context-object.ts';
-import _ from 'lodash';
+import _ from '../utils/lodash.ts';
 
 function getAuthorImage(data: any, absolute?: boolean) {
     const context = data.context ? data.context : null;

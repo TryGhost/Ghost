@@ -1,6 +1,6 @@
 import Handlebars from 'handlebars';
 import errors from '@tryghost/errors';
-import {done as resolverDone, hasResolvers, resolve as resolverResolve, type ResolverCache} from './async-resolver.ts';
+import {done as resolverDone, hasResolvers, resolve as resolverResolve, TOKEN_PATTERN, unescapeToken, type ResolverCache} from './async-resolver.ts';
 import {dirname, extname, resolvePath} from './paths.ts';
 import {mergeDeep} from './merge.ts';
 import {getLocalTemplateOptions, updateLocalTemplateOptions} from './local-template-options.ts';
@@ -405,29 +405,44 @@ export class TemplateEngine {
     }
 
     // from express-hbs lib/hbs.js:___express replaceValue — replaces both the
-    // raw placeholder id and its escaped form, with matching value escaping
-    private replaceValue(values: Record<string, unknown>, text: unknown): unknown {
+    // raw placeholder id and its escaped form, with matching value escaping.
+    // PERF rewrite (worker-readiness): upstream scanned the text once per
+    // cache entry (O(entries × length) per generation); this is a single
+    // anchored-RegExp pass over the fixed token grammar, looking each match up
+    // in the values map. Unknown tokens are left in place — exactly what
+    // upstream's per-id replace would do — and the generation loop's
+    // no-progress check handles them. Replacement semantics preserved:
+    // raw-form matches coerce the value like String.replace's replacer
+    // ToString does (SafeStrings insert raw); escaped-form matches insert
+    // `escapeExpression(value)` (SafeStrings unwrap via toHTML).
+    private substituteTokens(values: Record<string, unknown>, text: unknown): unknown {
         if (typeof text === 'string') {
-            let result = text;
-            for (const id of Object.keys(values)) {
-                result = result.replace(id, () => values[id] as string);
-                result = result.replace(this.escapeExpression(id), () => this.escapeExpression(values[id] as string));
-            }
-            return result;
+            return text.replace(TOKEN_PATTERN, (token) => {
+                if (Object.prototype.hasOwnProperty.call(values, token)) {
+                    return String(values[token]);
+                }
+                const rawId = unescapeToken(token);
+                if (rawId !== token && Object.prototype.hasOwnProperty.call(values, rawId)) {
+                    return this.escapeExpression(values[rawId] as string);
+                }
+                return token;
+            });
         }
         return text;
     }
 
     // from express-hbs lib/hbs.js:___express handleAsync — loops until no
-    // placeholder tokens remain (values may themselves contain placeholders)
+    // placeholder tokens remain (values may themselves contain placeholders,
+    // and helpers can register NEW cache entries during another helper's async
+    // work — resolverDone re-snapshots the cache each generation)
     private async handleAsync(resolverCache: ResolverCache, html: string): Promise<string> {
         let res = html;
         for (;;) {
             const values = await resolverDone(resolverCache);
             for (const key of Object.keys(values)) {
-                values[key] = this.replaceValue(values, values[key]);
+                values[key] = this.substituteTokens(values, values[key]);
             }
-            const replaced = this.replaceValue(values, res) as string;
+            const replaced = this.substituteTokens(values, res) as string;
             if (!hasResolvers(replaced)) {
                 return replaced;
             }

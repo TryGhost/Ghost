@@ -3,7 +3,7 @@
 // transforms: CJS → ESM; `hbs` (theme-engine/engine) local-template-options
 // calls → the pure functions in ./template-options.ts (identical behavior:
 // they only read/write `locals._templateOptions`).
-import _ from 'lodash';
+import _ from '../utils/lodash.ts';
 import {getLocalTemplateOptions, updateLocalTemplateOptions} from './template-options.ts';
 import {prepareContextResource} from '../seam/proxy.ts';
 import {checks} from '../seam/data.ts';

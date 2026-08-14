@@ -11,7 +11,10 @@ import {checks} from '../seam/data.ts';
 import {logging} from '../seam/shared.ts';
 import tpl from '@tryghost/tpl';
 import get from 'lodash/get.js';
-import moment from 'moment';
+// moment-timezone (not plain moment, which upstream imports here): it exports
+// the same moment instance, and importing plain moment alongside would ship
+// the library twice in the browser bundle.
+import moment from 'moment-timezone';
 
 const messages = {
     mustBeCalledAsBlock: 'The {\\{{helperName}}} helper must be called as a block. E.g. {{#{helperName}}}...{{/{helperName}}}'

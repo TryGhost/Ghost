@@ -16,7 +16,7 @@ import {
     detectUnsplashImage
 } from '../utils/images.ts';
 
-import _ from 'lodash';
+import _ from '../utils/lodash.ts';
 import {logging} from '../seam/shared.ts';
 import tpl from '@tryghost/tpl';
 

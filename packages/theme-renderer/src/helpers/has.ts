@@ -8,7 +8,7 @@
 
 import {logging} from '../seam/shared.ts';
 import tpl from '@tryghost/tpl';
-import _ from 'lodash';
+import _ from '../utils/lodash.ts';
 const validAttrs = ['tag', 'author', 'slug', 'visibility', 'id', 'number', 'index', 'any', 'all'];
 
 const messages = {

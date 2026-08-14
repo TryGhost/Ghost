@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // Copied from ghost/core/core/frontend/meta/author-fb-url.js @ 407e032dc7 — transforms: imports→seam
 import getContextObject from './context-object.ts';
-import _ from 'lodash';
+import _ from '../utils/lodash.ts';
 
 function getAuthorFacebookUrl(data: any) {
     const context = data.context ? data.context : null;

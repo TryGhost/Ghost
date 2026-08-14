@@ -15,7 +15,7 @@
  *   preview handling dropped (no preview requests in the package), member
  *   masking kept.
  */
-import _ from 'lodash';
+import _ from '../utils/lodash.ts';
 import {settingsCache, customThemeSettingsCache, urlUtils} from '../seam/proxy.ts';
 import {labs} from '../seam/shared.ts';
 import {getRendererDeps} from '../seam/deps.ts';

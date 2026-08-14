@@ -15,7 +15,7 @@
  * 5. register the Ghost helpers through the HelperRegistrar adapter,
  * 6. seed global template options (the `@site/@labs/@config/@custom` frame).
  */
-import _ from 'lodash';
+import _ from './utils/lodash.ts';
 import tpl from '@tryghost/tpl';
 import errors from '@tryghost/errors';
 import * as errorsNamespace from '@tryghost/errors';

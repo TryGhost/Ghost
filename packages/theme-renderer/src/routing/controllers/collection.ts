@@ -7,7 +7,7 @@
 // → the seam urlService (router-manager.js delegates there verbatim);
 // `themeEngine.getActive()` → `getRendererDeps().activeTheme`;
 // @tryghost/debug → dropped.
-import _ from 'lodash';
+import _ from '../../utils/lodash.ts';
 import tpl from '@tryghost/tpl';
 import errors from '@tryghost/errors';
 import {slugify} from '@tryghost/string';

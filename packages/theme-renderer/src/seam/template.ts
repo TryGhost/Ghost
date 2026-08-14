@@ -3,7 +3,7 @@
 // — transforms: CJS → ESM, `require('../engine')` → seam handlebars-env `hbs` shim.
 // ## Template utils
 const templates: any = {};
-import _ from 'lodash';
+import _ from '../utils/lodash.ts';
 import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 import {hbs} from './handlebars-env.ts';

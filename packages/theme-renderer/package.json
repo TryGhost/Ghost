@@ -26,8 +26,9 @@
   "scripts": {
     "build": "tsc",
     "test:unit": "NODE_ENV=testing vitest run --coverage",
+    "test:browser": "vitest run --config vitest.browser.config.ts",
     "test": "pnpm run '/^test:/'",
-    "test:types": "tsc --noEmit -p test/tsconfig.json",
+    "test:types": "tsc --noEmit -p test/tsconfig.json && tsc --noEmit -p test/browser/tsconfig.json",
     "lint:code": "eslint src/ --cache",
     "lint:test": "eslint test/ --cache",
     "lint": "pnpm run '/^lint:/'"
@@ -44,6 +45,7 @@
     "@types/node": "catalog:",
     "@types/sanitize-html": "catalog:",
     "@typescript/native": "catalog:",
+    "@vitest/browser-playwright": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "eslint": "catalog:",
     "typescript": "catalog:",
@@ -62,7 +64,6 @@
     "handlebars": "catalog:",
     "human-number": "catalog:",
     "lodash": "catalog:",
-    "moment": "catalog:",
     "moment-timezone": "catalog:",
     "path-to-regexp": "catalog:",
     "sanitize-html": "catalog:"

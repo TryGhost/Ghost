@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // Copied from ghost/core/core/frontend/meta/keywords.js @ 407e032dc7 — transforms: imports→seam
-import helpers from '@tryghost/helpers';
+import * as helpers from '@tryghost/helpers';
 
 const ghostHelperUtils = helpers.utils;
 

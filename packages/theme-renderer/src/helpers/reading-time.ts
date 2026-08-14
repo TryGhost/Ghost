@@ -15,7 +15,7 @@
 import {checks} from '../seam/data.ts';
 import {SafeString} from '../seam/handlebars-env.ts';
 
-import helpers from '@tryghost/helpers';
+import * as helpers from '@tryghost/helpers';
 const {readingTime: calculateAndFormatReadingTime} = helpers;
 
 export default function reading_time(this: any, options: any) {// eslint-disable-line camelcase

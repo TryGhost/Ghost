@@ -1,0 +1,18 @@
+{
+    "siteUrl": "http://localhost:2368/",
+    "contentApiKey": "18be441d547c1dc086934b44d3",
+    "config": {
+        "assetHash": "65de3acaf3",
+        "portal": {
+            "url": "/ghost/assets/portal/portal.min.js"
+        },
+        "sodoSearch": {
+            "url": "/ghost/assets/sodo-search/sodo-search.min.js",
+            "styles": "/ghost/assets/sodo-search/main.css"
+        }
+    },
+    "routes": {
+        "home": "/",
+        "post": "/test/"
+    }
+}

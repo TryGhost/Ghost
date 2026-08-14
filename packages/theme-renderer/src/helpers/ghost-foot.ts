@@ -6,7 +6,7 @@
 // Outputs scripts and other assets at the bottom of a Ghost theme
 import {blogIcon, settingsCache, urlUtils} from '../seam/proxy.ts';
 import {SafeString, hbs, templates} from '../seam/handlebars-env.ts';
-import _ from 'lodash';
+import _ from '../utils/lodash.ts';
 
 const createFrame = hbs.handlebars.createFrame;
 

@@ -7,12 +7,12 @@
 import {checks} from '../seam/data.ts';
 import {hbs} from '../seam/handlebars-env.ts';
 
-import _ from 'lodash';
+import _ from '../utils/lodash.ts';
 import {logging} from '../seam/shared.ts';
 import tpl from '@tryghost/tpl';
 
 const {Utils: hbsUtils, handlebars: {createFrame}} = hbs;
-import helpers from '@tryghost/helpers';
+import * as helpers from '@tryghost/helpers';
 const ghostHelperUtils = helpers.utils;
 
 const messages = {

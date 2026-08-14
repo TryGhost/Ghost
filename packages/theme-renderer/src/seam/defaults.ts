@@ -7,7 +7,7 @@
  * `loadDefaultDeps` performs the async settings fetch first (the only async
  * step — everything downstream of the seam is sync or placeholder-based).
  */
-import _ from 'lodash';
+import _ from '../utils/lodash.ts';
 import {createContentApi} from './content-api.ts';
 import {createConfig} from './config.ts';
 import {createSettingsCache, loadSettings, type SettingsSnapshot} from './settings.ts';

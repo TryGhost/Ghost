@@ -10,7 +10,10 @@ import {applyLimitCap, logging} from '../seam/shared.ts';
 import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 
-import _ from 'lodash';
+import _ from '../utils/lodash.ts';
+// The guard must evaluate before nql-lang (which reads process.env unguarded
+// at import and parse time — crashes browsers/workers without it)
+import '../utils/process-env-guard.ts';
 import nqlLang from '@tryghost/nql-lang';
 
 const messages = {

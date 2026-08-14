@@ -7,7 +7,7 @@ import {hbs, templates} from '../seam/handlebars-env.ts';
 
 import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
-import _ from 'lodash';
+import _ from '../utils/lodash.ts';
 
 const messages = {
     invalidData: 'The {{pagination}} helper was used outside of a paginated context. See https://ghost.org/docs/themes/helpers/pagination/.',

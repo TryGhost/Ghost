@@ -75,7 +75,16 @@ function constrainHyphenatedPermalinkParams(permalinks: string): string {
     }).join('/');
 }
 
+// PERF (worker-readiness): path-to-regexp compilation was redone 3–4× per
+// request for the same permalink strings; the permalink set comes from route
+// config (a handful of strings per site), so memoize per permalink string.
+const matchFuncCache = new Map<string, ReturnType<typeof routeMatch>>();
+
 export default function matchPermalinkParams(permalinks: string, targetPath: string): Record<string, any> | false {
-    const matchFunc = routeMatch(constrainHyphenatedPermalinkParams(permalinks));
+    let matchFunc = matchFuncCache.get(permalinks);
+    if (!matchFunc) {
+        matchFunc = routeMatch(constrainHyphenatedPermalinkParams(permalinks));
+        matchFuncCache.set(permalinks, matchFunc);
+    }
     return matchFunc(targetPath);
 }

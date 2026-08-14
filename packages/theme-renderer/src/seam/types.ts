@@ -87,6 +87,13 @@ export interface ApiController {
  * In-process Content API shape (`server/api/endpoints` pipeline 'content').
  * The default binding speaks HTTP Content API over fetch — see ./content-api.ts.
  */
+/**
+ * OWNERSHIP CONTRACT: every controller call must return freshly-owned JSON —
+ * the render pipeline mutates responses in place (fetch-data attaches `.data`,
+ * prepareContextResource rewrites resources) without defensive copies. The
+ * HTTP binding satisfies this by parsing a new body per request; injected
+ * fakes must not hand out shared fixture objects.
+ */
 export interface ContentApiPort {
     postsPublic: ApiController;
     pagesPublic: ApiController;

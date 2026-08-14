@@ -1,7 +1,7 @@
 // Copied from ghost/core/core/frontend/services/routing/api-adapter.ts @ 407e032dc7 —
 // transforms: `@tryghost/adapter-base-route-settings` type imports → the local
 // minimal mirror in ./route-settings-types.ts (types only, same shapes).
-import _ from 'lodash';
+import _ from '../utils/lodash.ts';
 import errors from '@tryghost/errors';
 import {QUERY} from './config.ts';
 import type {RouteData, DataEntry, DataShortForm, DataShortFormResource, DataLongFormEntry} from './route-settings-types.ts';

@@ -9,7 +9,7 @@
 
 import {SafeString} from '../seam/handlebars-env.ts';
 import * as metaData from '../meta/index.ts';
-import _ from 'lodash';
+import _ from '../utils/lodash.ts';
 const getMetaDataExcerpt = metaData.getMetaDataExcerpt;
 
 export default function excerpt(this: any, options: any) {

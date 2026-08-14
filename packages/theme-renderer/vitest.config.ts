@@ -7,6 +7,10 @@ import {createVitestConfig} from '@internal/cfg-vitest';
 // extraction (parity slicing is, see template-renderer-spec).
 export default createVitestConfig({
     test: {
+        // The browser-mode worker-parity suite runs in Chromium via
+        // vitest.browser.config.ts (pnpm test:browser) — its tests use Worker
+        // and would fail under the Node runtime.
+        exclude: ['test/browser/**'],
         coverage: {
             thresholds: {
                 lines: 70,

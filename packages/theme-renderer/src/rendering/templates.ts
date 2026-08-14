@@ -11,7 +11,7 @@
 //
 // Figure out which template should be used to render a request
 // based on the templates which are allowed, and what is available in the theme
-import _ from 'lodash';
+import _ from '../utils/lodash.ts';
 import {getRendererDeps} from '../seam/deps.ts';
 import type {PortRequest, PortResponse, RouterOptions} from '../ports.ts';
 

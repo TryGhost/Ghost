@@ -4,7 +4,7 @@
 import {config} from '../seam/proxy.ts';
 import {SafeString, localUtils} from '../seam/handlebars-env.ts';
 
-import _ from 'lodash';
+import _ from '../utils/lodash.ts';
 import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 

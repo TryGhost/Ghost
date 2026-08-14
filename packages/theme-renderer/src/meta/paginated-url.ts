@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // Copied from ghost/core/core/frontend/meta/paginated-url.js @ 407e032dc7 — transforms: imports→seam
-import _ from 'lodash';
+import _ from '../utils/lodash.ts';
 import {urlUtils} from '../seam/proxy.ts';
 
 function getPaginatedUrl(page: any, data: any, absolute?: boolean) {

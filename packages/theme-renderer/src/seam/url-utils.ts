@@ -6,7 +6,7 @@
 // `URL`, class → factory taking injected config callbacks, html/markdown/
 // mobiledoc/lexical transform methods dropped (not used by the render path).
 // See docs/provenance.md.
-import _ from 'lodash';
+import _ from '../utils/lodash.ts';
 import moment from 'moment-timezone';
 import type {UrlUtilsPort} from './types.ts';
 

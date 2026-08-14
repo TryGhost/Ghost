@@ -2,9 +2,14 @@
 // Ambient declarations for untyped npm dependencies used by the copied
 // helper/meta files. All are plain-JS packages without published types.
 
+// Named exports only (no default): the package's `module` entry (es/helpers.js,
+// what vite/rollup resolve for the browser bundle) exports {readingTime, tags,
+// utils} by name — a default import fails at bundle time, so the copied files
+// use `import * as helpers` instead.
 declare module '@tryghost/helpers' {
-    const helpers: any;
-    export default helpers;
+    export const readingTime: any;
+    export const tags: any;
+    export const utils: any;
 }
 
 declare module '@tryghost/nql-lang' {

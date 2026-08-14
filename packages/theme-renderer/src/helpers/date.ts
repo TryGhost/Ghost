@@ -7,7 +7,7 @@
 
 import {SafeString} from '../seam/handlebars-env.ts';
 import moment from 'moment-timezone';
-import _ from 'lodash';
+import _ from '../utils/lodash.ts';
 
 export default function date(this: any, ...attrs: any[]) {
     // Options is the last argument

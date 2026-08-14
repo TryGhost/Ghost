@@ -2,7 +2,7 @@
 // Copied from ghost/core/core/frontend/meta/schema.js @ 407e032dc7 — transforms: imports→seam
 import {config} from '../seam/proxy.ts';
 import socialUrls from '@tryghost/social-urls';
-import _ from 'lodash';
+import _ from '../utils/lodash.ts';
 
 // NOTE: values here are intentionally NOT HTML-escaped. This object is serialized
 // with JSON.stringify into an inline <script type="application/ld+json"> block by

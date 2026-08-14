@@ -43,6 +43,20 @@ comparison. The rendered/live pairs land in `test/integration/__output__/`
 Slice-1 rows 7/8 (`<script>`/`<meta>` count summaries) are retired — the byte
 comparison subsumes them.
 
+## Worker parity (slice 2 capstone)
+
+The home + post routes also render **byte-identical inside a real Web Worker**
+(Chromium via Vitest browser mode, `pnpm test:browser` →
+`test/browser/worker-render.test.ts`): the worker's output is compared against
+committed Node-rendered HTML for the same recorded Content API fixtures, and
+`test/integration/fixture-parity.test.ts` keeps the Node side of that claim
+honest hermetically. Fixtures re-record via
+`node test/integration/record-browser-fixtures.ts` (Ghost dev instance
+required). Browser-compat findings live in
+docs/review-backlog.md §Worker-readiness (nql-lang `process.env`,
+@tryghost/helpers default export) and docs/provenance.md (STD transform 6,
+src/utils rows).
+
 ## Route coverage
 
 - `/` (collection index) — byte parity ✔

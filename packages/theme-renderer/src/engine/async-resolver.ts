@@ -21,6 +21,31 @@ const ID_SUFFIX = '__';
 
 export type ResolverCache = Record<string, Promise<unknown>>;
 
+// escapeExpression(ID_ESCAPED_STRING): only '<' is in Handlebars' escape set,
+// so the escaped token form differs from the raw one by exactly '&lt;' vs '<'.
+const ID_ESCAPED_STRING_ESCAPED = '&lt;_';
+
+// Character class matching generate-id's alphabet (A-Z, a-z and '_').
+const ID_CHAR_CLASS = '[A-Za-z_]';
+
+/**
+ * One anchored pattern over the fixed token grammar, matching both the raw
+ * form `__aSyNcId__<_XXXXXXXX__` and its Handlebars-escaped form
+ * `__aSyNcId__&lt;_XXXXXXXX__` (the id length is fixed, so the trailing
+ * `__` is unambiguous even when the id itself ends in underscores).
+ * Used by the engine's substitution pass (engine.ts handleAsync) to replace
+ * every placeholder in a single scan instead of one scan per cache entry.
+ */
+export const TOKEN_PATTERN = new RegExp(
+    `${ID_PREFIX}(?:${ID_ESCAPED_STRING}|${ID_ESCAPED_STRING_ESCAPED})${ID_CHAR_CLASS}{${ID_LENGTH}}${ID_SUFFIX}`,
+    'g'
+);
+
+/** Recovers the raw placeholder id from an escaped-form token match. */
+export function unescapeToken(token: string): string {
+    return token.replace(ID_ESCAPED_STRING_ESCAPED, ID_ESCAPED_STRING);
+}
+
 // from express-hbs lib/resolver.js:resolve
 // DEVIATION: express-hbs ignores fn's return value (its wrappers are
 // callback-only and never reject). Our wrappers can be async functions — if
@@ -66,8 +91,10 @@ export async function done(cache: ResolverCache): Promise<Record<string, unknown
 // position 0 would be left unresolved. Preserved verbatim for parity.
 // NOTE: We specifically search the text for the ID_PREFIX **NOT** including the
 // escapable character, because that character can be escaped in the text.
+// (`search(string)` upstream compiles the prefix into a RegExp on every call;
+// the prefix has no regex metacharacters, so `indexOf` is semantics-identical.)
 export function hasResolvers(text: string): boolean {
-    if (text.search(ID_PREFIX) > 0) {
+    if (text.indexOf(ID_PREFIX) > 0) {
         return true;
     }
     return false;

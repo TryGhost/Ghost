@@ -8,7 +8,7 @@ import {SafeString, hbs, templates} from '../seam/handlebars-env.ts';
 import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 import {slugify} from '@tryghost/string';
-import _ from 'lodash';
+import _ from '../utils/lodash.ts';
 
 const messages = {
     invalidData: 'navigation data is not an object or is a function',

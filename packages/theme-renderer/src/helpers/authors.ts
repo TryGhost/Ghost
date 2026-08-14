@@ -10,7 +10,7 @@
 import {urlService} from '../seam/proxy.ts';
 import {SafeString, escapeExpression, templates} from '../seam/handlebars-env.ts';
 import isString from 'lodash/isString.js';
-import helpers from '@tryghost/helpers';
+import * as helpers from '@tryghost/helpers';
 
 const {utils} = helpers;
 

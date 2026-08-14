@@ -6,7 +6,7 @@
  * # Fetch Data
  * Dynamically build and execute queries on the API
  */
-import _ from 'lodash';
+import _ from '../utils/lodash.ts';
 import {resolveApiCall, resolveRouteData} from '../routing/api-adapter.ts';
 import {api} from '../seam/proxy.ts';
 
@@ -44,7 +44,10 @@ const defaultPostQuery = {
  * @returns {Promise}
  */
 function processQuery(query: any, slugParam: string | undefined, locals: any) {
-    query = _.cloneDeep(query);
+    // PERF (worker-readiness): upstream cloneDeep'd the query here; both call
+    // sites now pass a freshly-owned object (fetchData builds postQuery per
+    // call, and the taxonomy specs are `_.merge({}, ...)`d), so the in-place
+    // option mutations below cannot leak into module-level defaults.
 
     // Replace any slugs, see TaxonomyRouter. We replace any '%s' by the slug
     _.each(query.options, function (option: any, name: string) {
@@ -67,7 +70,10 @@ async function fetchData(pathOptions: any, routerOptions: any, locals: any): Pro
     pathOptions = pathOptions || {};
     routerOptions = routerOptions || {};
 
-    const postQuery: any = _.cloneDeep(defaultPostQuery);
+    // Two-level copy instead of upstream's cloneDeep: the spec fields and
+    // option values are all primitives, only `options` is mutated below/in
+    // processQuery, and defaultPostQuery must stay pristine across requests.
+    const postQuery: any = {...defaultPostQuery, options: {...defaultPostQuery.options}};
     const promises: Promise<any>[] = [];
 
     if (routerOptions.filter) {
@@ -101,7 +107,11 @@ async function fetchData(pathOptions: any, routerOptions: any, locals: any): Pro
     });
 
     const results = await Promise.all(promises);
-    const response = _.cloneDeep(results[0]);
+    // PERF (worker-readiness): upstream cloneDeep'd the (1–3MB) posts payload
+    // to take ownership before mutating it. The ContentApiPort contract is
+    // that every call returns freshly-owned JSON (the HTTP binding parses a
+    // new body per request), so the copy was pure waste.
+    const response = results[0];
 
     if (routerOptions.data) {
         response.data = {};

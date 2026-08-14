@@ -12,7 +12,7 @@ import * as metaData from '../meta/index.ts';
 import {SafeString, escapeExpression} from '../seam/handlebars-env.ts';
 import {generateCustomFontCss, isValidCustomFont, isValidCustomHeadingFont} from '@tryghost/custom-fonts';
 
-import _ from 'lodash';
+import _ from '../utils/lodash.ts';
 import {debug as debugFactory, getMarkdownUrl, isMachinePaymentsEnabled, isPurchasableEntry, labs, logging} from '../seam/shared.ts';
 import templateStyles from './tpl/styles.ts';
 import {getFrontendAppConfig, getDataAttributes} from '../utils/frontend-apps.ts';

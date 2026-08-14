@@ -10,7 +10,7 @@
  * element), they are not overwritten — `@site.navigation` is the
  * render-visible case (locked by test/engine/merge.test.ts).
  */
-import _ from 'lodash';
+import _ from '../utils/lodash.ts';
 
 export function mergeDeep(
     target: Record<string, unknown>,

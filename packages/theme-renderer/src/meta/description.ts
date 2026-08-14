@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // Copied from ghost/core/core/frontend/meta/description.js @ 407e032dc7 — transforms: imports→seam
-import _ from 'lodash';
+import _ from '../utils/lodash.ts';
 import {settingsCache} from '../seam/proxy.ts';
 import generateExcerpt from './generate-excerpt.ts';
 
