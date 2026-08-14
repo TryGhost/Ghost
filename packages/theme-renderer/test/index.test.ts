@@ -163,17 +163,43 @@ describe('createRenderer', function () {
     it('uses index.hbs (not home.hbs) for paged collection requests and 404s past the last page', async function () {
         const {renderer} = await createTestRenderer();
 
-        const paged = await renderer.render(new Request(`${SITE_URL}page/1/`));
-        assert.equal(paged.status, 200);
-        // NOTE: frontPageTemplate applies only to path '/' — page/1 uses index
-        const pagedHtml = await paged.text();
-        assert.match(pagedHtml, /<main>/);
-        assert.doesNotMatch(pagedHtml, /<main class="home">/);
-        // theme pagination partial overrides the core helper partial
-        assert.match(pagedHtml, /<nav class="theme-pagination">1\/1<\/nav>/);
+        // a third post so page 2 exists (posts_per_page is 2)
+        POSTS.push({...POSTS[1]!, id: 'p3', uuid: 'aaaaaaaa-0000-0000-0000-000000000003', slug: 'third', title: 'Third', url: `${SITE_URL}third/`});
+        try {
+            const paged = await renderer.render(new Request(`${SITE_URL}page/2/`));
+            assert.equal(paged.status, 200);
+            // NOTE: frontPageTemplate applies only to path '/' — paged requests use index
+            const pagedHtml = await paged.text();
+            assert.match(pagedHtml, /<main>/);
+            assert.doesNotMatch(pagedHtml, /<main class="home">/);
+            // theme pagination partial overrides the core helper partial
+            assert.match(pagedHtml, /<nav class="theme-pagination">2\/2<\/nav>/);
+        } finally {
+            POSTS.pop();
+        }
 
         const outOfRange = await renderer.render(new Request(`${SITE_URL}page/99/`));
         assert.equal(outOfRange.status, 404);
+    });
+
+    // finding 7 — origin page-param middleware semantics
+    // (frontend/services/routing/middleware/page-param.js)
+    describe('page param', function () {
+        it('301s /page/1/ to the unpaged url', async function () {
+            const {renderer} = await createTestRenderer();
+            const response = await renderer.render(new Request(`${SITE_URL}page/1/?q=x`));
+            assert.equal(response.status, 301);
+            assert.equal(response.headers.get('location'), '/?q=x');
+            assert.equal(response.headers.get('cache-control'), 'public, max-age=31536000');
+        });
+
+        it('404s /page/0/ locally without calling the posts API', async function () {
+            const {renderer, requests} = await createTestRenderer();
+            const response = await renderer.render(new Request(`${SITE_URL}page/0/`));
+            assert.equal(response.status, 404);
+            const postRequests = requests.filter(u => u.pathname.startsWith('/ghost/api/content/posts'));
+            assert.equal(postRequests.length, 0);
+        });
     });
 
     it('renders a post route with the post template and @page defaults', async function () {
@@ -188,6 +214,33 @@ describe('createRenderer', function () {
         assert.match(html, /<p>hello<\/p>/);
         assert.match(html, new RegExp(`<link rel="canonical" href="${SITE_URL}welcome/">`));
         assert.match(html, /<meta property="og:type" content="article">/);
+    });
+
+    it('renders the tier-gated CTA (tiers helper) without throwing', async function () {
+        // finding 2 — tier-gated posts carry a tiers array; the content-cta
+        // partial calls the `tiers` helper (unregistered → TypeError)
+        const gated = {
+            ...POSTS[0]!,
+            id: 'p9',
+            uuid: 'aaaaaaaa-0000-0000-0000-000000000009',
+            slug: 'gated',
+            url: `${SITE_URL}gated/`,
+            html: '',
+            access: false,
+            visibility: 'tiers',
+            tiers: [{name: 'Gold'}, {name: 'Silver'}]
+        };
+        POSTS.push(gated as any);
+        try {
+            const {renderer} = await createTestRenderer();
+            const response = await renderer.render(new Request(`${SITE_URL}gated/`));
+            assert.equal(response.status, 200);
+            const html = await response.text();
+            assert.match(html, /gh-post-upgrade-cta/);
+            assert.match(html, /Gold and Silver/);
+        } finally {
+            POSTS.pop();
+        }
     });
 
     it('falls through to the static page lookup when the post read 404s', async function () {
@@ -208,11 +261,184 @@ describe('createRenderer', function () {
         assert.equal(response.status, 404);
     });
 
+    // finding 4 — subdirectory installs: segment-boundary stripping and
+    // subdir-prefixed redirect targets (Express mount semantics)
+    describe('subdirectory handling', function () {
+        const SUBDIR_SITE_URL = 'http://localhost:2368/blog/';
+
+        async function createSubdirRenderer() {
+            const mock = createMockApi();
+            // the Content API binding builds /blog/ghost/api/... URLs — strip
+            // the subdir before delegating to the plain mock
+            const fetchImpl: typeof globalThis.fetch = (input: any, init?: any) => {
+                const url = new URL(typeof input === 'string' ? input : input.url);
+                url.pathname = url.pathname.replace(/^\/blog/, '');
+                return mock.fetchImpl(url.toString(), init);
+            };
+            const renderer = await createRenderer({
+                siteUrl: SUBDIR_SITE_URL,
+                contentApiKey: 'testkey',
+                theme: THEME,
+                fetch: fetchImpl,
+                settingsPayload: {...DEFAULT_SETTINGS_PAYLOAD, url: SUBDIR_SITE_URL}
+            });
+            return {renderer, requests: mock.requests};
+        }
+
+        it('renders routes under the subdirectory', async function () {
+            const {renderer} = await createSubdirRenderer();
+            const response = await renderer.render(new Request(`${SUBDIR_SITE_URL}`));
+            assert.equal(response.status, 200);
+            assert.match(await response.text(), /<main class="home">/);
+        });
+
+        it('301s a missing trailing slash to the subdir-prefixed location', async function () {
+            const {renderer} = await createSubdirRenderer();
+            const response = await renderer.render(new Request('http://localhost:2368/blog/welcome'));
+            assert.equal(response.status, 301);
+            assert.equal(response.headers.get('location'), '/blog/welcome/');
+        });
+
+        it('404s paths that only share the subdir prefix (no mangled strip)', async function () {
+            const {renderer} = await createSubdirRenderer();
+            const response = await renderer.render(new Request('http://localhost:2368/blogging/'));
+            assert.equal(response.status, 404);
+        });
+
+        it('never mangles a prefix-sharing path into a broken redirect', async function () {
+            const {renderer} = await createSubdirRenderer();
+            const response = await renderer.render(new Request('http://localhost:2368/blogging'));
+            // outside the mount: 404 (Express mount semantics) — and above
+            // all NEVER a Location like "ging/"
+            assert.equal(response.status, 404);
+            assert.equal(response.headers.get('location'), null);
+        });
+
+        it('301s /page/1/ to the subdir-prefixed unpaged url', async function () {
+            // finding 7 × finding 4 — the page-1 redirect must re-include the subdir
+            const {renderer} = await createSubdirRenderer();
+            const response = await renderer.render(new Request('http://localhost:2368/blog/page/1/'));
+            assert.equal(response.status, 301);
+            assert.equal(response.headers.get('location'), '/blog/');
+        });
+
+        it('handles a request to the bare subdir path as the site root', async function () {
+            const {renderer} = await createSubdirRenderer();
+            const response = await renderer.render(new Request('http://localhost:2368/blog'));
+            // Express mount semantics: GET /blog reaches the mounted app with
+            // req.url === '/' — served as the front page, no redirect
+            assert.equal(response.status, 200);
+            assert.match(await response.text(), /<main class="home">/);
+        });
+    });
+
+    // finding 1 — engine.render throws and resolver ValidationErrors must
+    // become error Responses, never rejected render() promises
+    describe('render-time failures', function () {
+        it('maps a render-time template failure to a 500 Response without leaking the error message', async function () {
+            const {renderer} = await createTestRenderer({
+                ...THEME,
+                // references a partial that does not exist → generic Error at render time
+                'post.hbs': '{{!< default}}{{> not-a-real-partial}}'
+            });
+            const response = await renderer.render(new Request(`${SITE_URL}welcome/`));
+
+            assert.equal(response.status, 500);
+            const body = await response.text();
+            assert.equal(body, '500 Internal Server Error');
+            assert.doesNotMatch(body, /not-a-real-partial/);
+        });
+
+        it('maps a missing layout to the origin IncorrectUsageError (400) via the themed error path', async function () {
+            // origin oracle rendering/renderer.js:40-48 — ENOENT → IncorrectUsageError
+            const {renderer} = await createTestRenderer({
+                ...THEME,
+                'post.hbs': '{{!< no-such-layout}}<article></article>',
+                'error.hbs': '<section class="error-tpl">{{statusCode}}</section>'
+            });
+            const response = await renderer.render(new Request(`${SITE_URL}welcome/`));
+
+            assert.equal(response.status, 400);
+            assert.match(await response.text(), /<section class="error-tpl">400<\/section>/);
+        });
+
+        it('turns malformed percent-encoding into a 404 Response instead of rejecting', async function () {
+            const {renderer} = await createTestRenderer();
+            const response = await renderer.render(new Request(`${SITE_URL}%E0%A4%A/`));
+
+            // resolver ValidationError → router fall-through → 404 (like
+            // upstream's 400 for theme traffic — provenance.md match-permalink row)
+            assert.equal(response.status, 404);
+        });
+    });
+
+    // finding 6 — theme error templates must render (error-404 → error →
+    // plain-text fallback), mirroring the origin themeErrorRenderer
+    describe('theme error templates', function () {
+        it('renders the theme error-404 template for unknown urls', async function () {
+            const {renderer} = await createTestRenderer({
+                ...THEME,
+                'error-404.hbs': '{{!< default}}<section class="error-404-tpl"><h1 class="error-code">{{statusCode}}</h1><p class="error-description">{{message}}</p></section>'
+            });
+            const response = await renderer.render(new Request(`${SITE_URL}missing/`));
+
+            assert.equal(response.status, 404);
+            assert.match(response.headers.get('content-type')!, /text\/html/);
+            const html = await response.text();
+            assert.match(html, /error-404-tpl/);
+            assert.match(html, /<h1 class="error-code">404<\/h1>/);
+            assert.match(html, /<p class="error-description">Page not found<\/p>/);
+        });
+
+        it('falls back through the hierarchy to error.hbs when no error-404 exists', async function () {
+            const {renderer} = await createTestRenderer({
+                ...THEME,
+                'error.hbs': '{{!< default}}<section class="error-tpl">{{statusCode}}</section>'
+            });
+            const response = await renderer.render(new Request(`${SITE_URL}missing/`));
+
+            assert.equal(response.status, 404);
+            assert.match(await response.text(), /<section class="error-tpl">404<\/section>/);
+        });
+
+        it('falls back to a plain-text 404 when the theme has no error templates', async function () {
+            const {renderer} = await createTestRenderer();
+            const response = await renderer.render(new Request(`${SITE_URL}missing/`));
+
+            assert.equal(response.status, 404);
+            assert.match(response.headers.get('content-type')!, /text\/plain/);
+            assert.equal(await response.text(), '404 Not Found');
+        });
+    });
+
     it('301s missing trailing slashes preserving the query string', async function () {
         const {renderer} = await createTestRenderer();
         const response = await renderer.render(new Request(`${SITE_URL}welcome?ref=x`));
         assert.equal(response.status, 301);
         assert.equal(response.headers.get('location'), '/welcome/?ref=x');
+        // finding 8 — permanent redirects carry the origin's caching header
+        assert.equal(response.headers.get('cache-control'), 'public, max-age=31536000');
+    });
+
+    // finding 8 — pretty-urls oracle (server/web/shared/middleware/pretty-urls.js):
+    // ONLY .md/.txt extensions skip the trailing-slash redirect
+    describe('pretty urls', function () {
+        it('301s dotted-but-not-md/txt last segments to the slash form', async function () {
+            const {renderer} = await createTestRenderer();
+            const response = await renderer.render(new Request(`${SITE_URL}2.0-release-notes`));
+            assert.equal(response.status, 301);
+            assert.equal(response.headers.get('location'), '/2.0-release-notes/');
+            assert.equal(response.headers.get('cache-control'), 'public, max-age=31536000');
+        });
+
+        it('404s .md and .txt paths (llms route dropped — documented delta)', async function () {
+            const {renderer} = await createTestRenderer();
+            for (const path of ['file.txt', 'welcome.md']) {
+                const response = await renderer.render(new Request(`${SITE_URL}${path}`));
+                assert.equal(response.status, 404, path);
+                assert.equal(response.headers.get('location'), null, path);
+            }
+        });
     });
 
     it('302s /:slug/edit/ to the admin editor', async function () {
@@ -220,6 +446,52 @@ describe('createRenderer', function () {
         const response = await renderer.render(new Request(`${SITE_URL}welcome/edit/`));
         assert.equal(response.status, 302);
         assert.equal(response.headers.get('location'), `${SITE_URL}ghost/#/editor/post/p1/`);
+    });
+
+    it('normalizes an unslashed siteUrl so ghost_head emits a correct comments-counts URL', async function () {
+        // finding 10 — the @tryghost/config-url-helpers contract: getSiteUrl()
+        // always ends with '/', so `${getSiteUrl()}members/api/comments/counts/`
+        // cannot collapse into 'example.commembers/...'
+        const mock = createMockApi();
+        const renderer = await createRenderer({
+            siteUrl: 'http://localhost:2368', // deliberately no trailing slash
+            contentApiKey: 'testkey',
+            theme: THEME,
+            fetch: mock.fetchImpl,
+            settingsPayload: {...DEFAULT_SETTINGS_PAYLOAD, comments_enabled: 'all'}
+        });
+
+        assert.equal(renderer.deps.urlUtils.getSiteUrl(), 'http://localhost:2368/');
+
+        const response = await renderer.render(new Request(`${SITE_URL}welcome/`));
+        assert.equal(response.status, 200);
+        const html = await response.text();
+        assert.match(html, /data-ghost-comments-counts-api="http:\/\/localhost:2368\/members\/api\/comments\/counts\/"/);
+    });
+
+    it('keeps sequential renderer instances coherent (hbs singleton re-asserted per render)', async function () {
+        // finding 5 — creating renderer B repoints the module-level hbs
+        // environment; rendering A afterwards must re-assert A's engine so
+        // helper-executed partials (navigation) resolve A's own overrides
+        const themeA = {
+            'index.hbs': '<main>{{navigation}}</main>',
+            'partials/navigation.hbs': '<nav class="nav-a">A</nav>'
+        };
+        const themeB = {
+            'index.hbs': '<main>{{navigation}}</main>',
+            'partials/navigation.hbs': '<nav class="nav-b">B</nav>'
+        };
+
+        const {renderer: rendererA} = await createTestRenderer(themeA);
+        const {renderer: rendererB} = await createTestRenderer(themeB);
+
+        const responseB = await rendererB.render(new Request(SITE_URL));
+        assert.match(await responseB.text(), /nav-b/);
+
+        const responseA = await rendererA.render(new Request(SITE_URL));
+        const htmlA = await responseA.text();
+        assert.match(htmlA, /nav-a/);
+        assert.doesNotMatch(htmlA, /nav-b/);
     });
 
     it('301s stale permalinks to the canonical url', async function () {
@@ -232,6 +504,8 @@ describe('createRenderer', function () {
             const response = await renderer.render(new Request(`${SITE_URL}second/?q=1`));
             assert.equal(response.status, 301);
             assert.equal(response.headers.get('location'), '/renamed-second/?q=1');
+            // finding 8 — urlUtils.redirect301 sets the caching header upstream
+            assert.equal(response.headers.get('cache-control'), 'public, max-age=31536000');
         } finally {
             POSTS[1]!.url = `${SITE_URL}second/`;
         }

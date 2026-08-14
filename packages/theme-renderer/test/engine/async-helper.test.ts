@@ -73,6 +73,19 @@ describe('TemplateEngine async helpers', function () {
         await assert.rejects(engine.render('index.hbs', {}), /helper exploded/);
     });
 
+    // finding 3 — an async helper fn returning a promise that rejects without
+    // ever calling cb used to leave its placeholder promise pending forever;
+    // the render must settle (reject) promptly instead of hanging
+    it('settles (rejects) the render when an async helper returns a rejecting promise', {timeout: 2000}, async function () {
+        const engine = new TemplateEngine(createResolver({
+            'index.hbs': 'A[{{{head}}}]'
+        }));
+        engine.registerAsyncHelper('head', async function () {
+            throw new errors.InternalServerError({message: 'async explosion'});
+        });
+        await assert.rejects(engine.render('index.hbs', {}), /async explosion/);
+    });
+
     // from express-hbs lib/hbs.js:registerAsyncHelper — the wrapper needs the
     // per-render resolverCache from the context/options root
     it('errors when used outside a render (no resolver cache)', function () {

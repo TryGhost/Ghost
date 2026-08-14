@@ -24,11 +24,21 @@ import {toExpressNotation} from './permalink-adapter.ts';
 import {QUERY} from './config.ts';
 import type {RouterOptions} from '../ports.ts';
 
-export interface RouteCandidate {
-    controller: 'collection' | 'entry';
-    params: Record<string, any>;
-    routerOptions: RouterOptions;
-}
+export type RouteCandidate =
+    | {
+        controller: 'collection' | 'entry';
+        params: Record<string, any>;
+        routerOptions: RouterOptions;
+    }
+    | {
+        /**
+         * Resolver-level permanent redirect (the page-param middleware's
+         * page-1 alias). `url` is site-relative and subdir-stripped — the
+         * assembly re-prefixes the subdir and appends the query string.
+         */
+        controller: 'redirect';
+        redirect: {status: 301; url: string};
+    };
 
 export interface ResolveRoutesOptions {
     /** Collection permalink in domain notation, default '/{slug}/' */
@@ -79,9 +89,29 @@ export function resolveRoutes(path: string, options: ResolveRoutesOptions = {}):
     // Mount: collection pagination '/page/:page(\d+)/'
     const pageMatch = path.match(PAGE_PATTERN);
     if (pageMatch) {
+        // page-param middleware (routing/middleware/page-param.js):
+        // routeKeywords.page: 'page'
+        const pageRegex = new RegExp('/page/(.*)?/');
+        const page = parseInt(pageMatch[1]!, 10);
+
+        if (page === 1) {
+            // CASE: page 1 is an alias for the collection index, do a permanent 301 redirect
+            candidates.push({
+                controller: 'redirect',
+                redirect: {status: 301, url: path.replace(pageRegex, '/')}
+            });
+            return candidates;
+        }
+
+        if (page < 1 || isNaN(page)) {
+            // CASE: page-param next(NotFoundError) — no candidates → 404
+            // (page 0 is the only reachable case behind \d+)
+            return candidates;
+        }
+
         candidates.push({
             controller: 'collection',
-            params: {page: pageMatch[1]},
+            params: {page},
             routerOptions: collectionRouterOptions(permalinks)
         });
         // NOTE: '/page/2/' cannot also match the entry permalink

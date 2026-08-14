@@ -161,6 +161,23 @@ describe('{{content}}', function () {
         assert.match(output, /background-color: #abcdef/);
         assert.match(output, /Subscribe now/);
     });
+
+    // finding 2 — the content-cta partial invokes the `tiers` helper for
+    // tier-gated posts; without it registered the render TypeErrors (the
+    // post's `tiers` array gets .call()ed)
+    it('renders the tier names through the tiers helper for tier-gated posts', function () {
+        const output = render('{{content}}', {
+            html: '',
+            access: false,
+            visibility: 'tiers',
+            tiers: [{name: 'Gold'}, {name: 'Silver'}]
+        }, {
+            site: {accent_color: '#abcdef'},
+            root: {_locals: {}}
+        });
+        assert.match(output, /gh-post-upgrade-cta/);
+        assert.match(output, /Gold and Silver/);
+    });
 });
 
 describe('{{raw}}', function () {

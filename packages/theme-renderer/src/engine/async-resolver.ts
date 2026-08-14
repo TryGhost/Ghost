@@ -22,17 +22,26 @@ const ID_SUFFIX = '__';
 export type ResolverCache = Record<string, Promise<unknown>>;
 
 // from express-hbs lib/resolver.js:resolve
+// DEVIATION: express-hbs ignores fn's return value (its wrappers are
+// callback-only and never reject). Our wrappers can be async functions — if
+// the returned promise rejects without cb ever firing, the cache entry would
+// stay pending forever and hang the render. Chain the thenable so the entry
+// settles (rejecting the render cleanly) — belt-and-braces on top of the
+// wrapper's own never-reject hardening (helpers/services/handlebars.ts).
 export function resolve(
     cache: ResolverCache,
-    fn: (context: unknown, cb: (result: unknown) => void) => void,
+    fn: (context: unknown, cb: (result: unknown) => void) => unknown,
     context: unknown
 ): string {
     const id = ID_PREFIX + ID_ESCAPED_STRING + generateId(ID_LENGTH) + ID_SUFFIX;
     cache[id] = new Promise((passed, failed) => {
         try {
-            fn(context, (res) => {
+            const returned = fn(context, (res) => {
                 passed(res);
             });
+            if (returned && typeof (returned as PromiseLike<unknown>).then === 'function') {
+                Promise.resolve(returned).catch(failed);
+            }
         } catch (error) {
             failed(error);
         }

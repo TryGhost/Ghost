@@ -36,6 +36,7 @@ import raw from '../raw.ts';
 import readingTime from '../reading-time.ts';
 import t from '../t.ts';
 import tags from '../tags.ts';
+import tiers from '../tiers.ts';
 import title from '../title.ts';
 import url from '../url.ts';
 
@@ -71,6 +72,7 @@ export const registerGhostHelpers = (registrar: HelperRegistrar): void => {
     registry.registerHelper('reading_time', readingTime);
     registry.registerHelper('t', t);
     registry.registerHelper('tags', tags);
+    registry.registerHelper('tiers', tiers);
     registry.registerHelper('title', title);
     registry.registerHelper('url', url);
 };

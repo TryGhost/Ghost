@@ -25,6 +25,7 @@ Byte parity (whitespace and beyond) is deliberately not chased here — slice 2.
 | 9 | all | `@custom` values come from the theme's package.json defaults | Custom theme settings are Admin-API-only; live values unreachable with a Content API key. Dev instance uses defaults, so no visible diff today | 4/5 — Admin API session in the editor slices |
 | 10 | all | Analytics/tinybird script absent on both sides today; would diverge if enabled on the instance | `isWebAnalyticsEnabled()` stub → false (non-public settings + config) | 2 — injectable |
 | 11 | / (subresource) | `/rss/`, sitemap, robots, static assets are not served — only HTML routes render | Out of package scope (extraction-map §(a) exclusions) | 5 — stays in core |
+| 12 | any `.md`/`.txt` path | 404s instead of serving the markdown (llms) representation. Matching origin pretty-urls, these extensions are the ONLY ones skipping the trailing-slash 301 — every other dotted path redirects to its slash form | The llms markdown route is out of scope (extraction-map §(a) exclusions); the skip-extension behavior itself matches server/web/shared/middleware/pretty-urls.js | 5 — stays in core |
 
 Cross-check notes:
 

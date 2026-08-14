@@ -7,10 +7,11 @@
  * `loadDefaultDeps` performs the async settings fetch first (the only async
  * step — everything downstream of the seam is sync or placeholder-based).
  */
+import _ from 'lodash';
 import {createContentApi} from './content-api.ts';
 import {createConfig} from './config.ts';
 import {createSettingsCache, loadSettings, type SettingsSnapshot} from './settings.ts';
-import {createUrlUtils} from './url-utils.ts';
+import {createUrlUtils, deduplicateSubdirectory} from './url-utils.ts';
 import {createUrlService} from './url-service.ts';
 import {
     canTransformToFormat,
@@ -49,22 +50,65 @@ const noopLogging: LoggingPort = {
     error() {/* no-op */}
 };
 
+// Mirrors @tryghost/config-url-helpers getSiteUrl — the injected url is
+// normalized once at the seam entry, always carrying a trailing slash.
+function normalizeSiteUrl(siteUrl: string): string {
+    if (!siteUrl.match(/\/$/)) {
+        siteUrl += '/';
+    }
+    return siteUrl;
+}
+
+// Mirrors @tryghost/config-url-helpers getAdminUrl: trailing slash, site
+// subdirectory appended, duplicate subdirectory removed. (The npm helper's
+// deduplicateSubdirectory also collapses extraneous slashes first — done
+// inline here because the url-utils copy of deduplicateSubdirectory,
+// taken from @tryghost/url-utils, lacks that cleanup line.)
+function normalizeAdminUrl(adminUrl: string | undefined, siteUrl: string): string | undefined {
+    if (!adminUrl) {
+        return undefined;
+    }
+
+    const subdirPathname = new URL(siteUrl).pathname;
+    const subdir = subdirPathname === '/' ? '' : subdirPathname.replace(/\/$/, '');
+
+    if (!adminUrl.match(/\/$/)) {
+        adminUrl += '/';
+    }
+
+    adminUrl = `${adminUrl}${subdir}`;
+
+    if (!adminUrl.match(/\/$/)) {
+        adminUrl += '/';
+    }
+
+    adminUrl = adminUrl.replace(/(^|[^:])\/\/+/g, '$1/');
+    adminUrl = deduplicateSubdirectory(adminUrl, siteUrl);
+    return adminUrl;
+}
+
 export function createDefaultDeps(options: DefaultDepsOptions, snapshot?: SettingsSnapshot): RendererDeps {
     const resolvedSnapshot = snapshot ?? createSettingsCache(options.settingsPayload ?? {});
     const {settings, labs} = resolvedSnapshot;
 
+    // Normalize the injected absolute URLs once, at the seam entry.
+    const siteUrl = normalizeSiteUrl(options.siteUrl);
+    const adminUrl = normalizeAdminUrl(options.adminUrl, siteUrl);
+
     const urlUtils = createUrlUtils({
-        getSiteUrl: () => options.siteUrl,
-        getAdminUrl: () => options.adminUrl
+        getSiteUrl: () => siteUrl,
+        getAdminUrl: () => adminUrl
     });
 
-    const config = createConfig({
-        url: options.siteUrl,
-        ...options.config
-    });
+    const config = createConfig(_.merge({
+        url: siteUrl,
+        // shared/config defaults.json caching:301:maxAge — permanent-redirect
+        // Cache-Control (urlUtils.redirect301 / pretty-urls read it)
+        caching: {301: {maxAge: 31536000}}
+    }, options.config));
 
     const api = createContentApi({
-        siteUrl: options.siteUrl,
+        siteUrl,
         key: options.key,
         fetch: options.fetch
     });
@@ -111,6 +155,6 @@ export function createDefaultDeps(options: DefaultDepsOptions, snapshot?: Settin
 export async function loadDefaultDeps(options: DefaultDepsOptions): Promise<RendererDeps> {
     const snapshot = options.settingsPayload
         ? createSettingsCache(options.settingsPayload)
-        : await loadSettings({siteUrl: options.siteUrl, key: options.key, fetch: options.fetch});
+        : await loadSettings({siteUrl: normalizeSiteUrl(options.siteUrl), key: options.key, fetch: options.fetch});
     return createDefaultDeps(options, snapshot);
 }

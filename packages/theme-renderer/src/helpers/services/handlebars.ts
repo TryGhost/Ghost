@@ -30,17 +30,26 @@ function asyncHelperWrapper(registrar: HelperRegistrar, name: string, fn: any) {
             const response = await fn.call(this, context, options);
             cb(response);
         } catch (error) {
-            const wrappedErr = errorsUtils.isGhostError(error as Error) ? error : new errors.IncorrectUsageError({
-                err: error as any,
-                context: 'registerAsyncThemeHelper: ' + name,
-                errorDetails: {
-                    originalError: error
-                }
-            });
+            // Transform: the error path itself must never prevent the callback
+            // — if the seam is unconfigured (getRendererDeps throws) or logging
+            // throws, an uncalled cb leaves the async placeholder pending and
+            // hangs the render. Fall back to empty output instead.
+            let response: any = '';
+            try {
+                const wrappedErr = errorsUtils.isGhostError(error as Error) ? error : new errors.IncorrectUsageError({
+                    err: error as any,
+                    context: 'registerAsyncThemeHelper: ' + name,
+                    errorDetails: {
+                        originalError: error
+                    }
+                });
 
-            const response = getRendererDeps().config.get('env') === 'development' ? wrappedErr : '';
+                response = getRendererDeps().config.get('env') === 'development' ? wrappedErr : '';
 
-            logging.error(wrappedErr);
+                logging.error(wrappedErr);
+            } catch {
+                response = '';
+            }
 
             cb(new SafeString(response as any));
         }

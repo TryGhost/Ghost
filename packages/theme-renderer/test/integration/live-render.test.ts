@@ -179,12 +179,20 @@ describe.skipIf(Boolean(unavailableReason))(`live render (${unavailableReason ||
         assert.match(html, /<meta property="og:type" content="article">/);
     });
 
-    it('404s an unknown route like the live instance', async function () {
+    it('404s an unknown route with Casper\'s themed error-404 template like the live instance', async function () {
         const renderer = await getRenderer();
         const response = await renderer.render(new Request(`${GHOST_URL}/definitely-not-a-real-slug-xyz/`));
         assert.equal(response.status, 404);
 
+        // finding 6 — the theme's error-404.hbs must render (not a plain-text body)
+        const html = await response.text();
+        assert.match(response.headers.get('content-type')!, /text\/html/);
+        assert.match(html, /error-content/, 'Casper error-404 markup present');
+        assert.match(html, /<h1 class="error-code">404<\/h1>/);
+
         const liveResponse = await fetch(`${GHOST_URL}/definitely-not-a-real-slug-xyz/`);
         assert.equal(liveResponse.status, 404);
+        const liveHtml = await liveResponse.text();
+        assert.match(liveHtml, /error-content/, 'live instance serves the same themed 404');
     });
 });

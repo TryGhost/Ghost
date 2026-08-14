@@ -79,6 +79,23 @@ describe('createEngineHelperRegistrar', function () {
         assert.equal(await engine.render('index.hbs'), 'ab');
     });
 
+    // finding 3 — the wrapper's own error path (getRendererDeps/logging) can
+    // throw when the seam is unconfigured; the callback must still fire so the
+    // render completes instead of hanging on an unsettled placeholder promise
+    it('completes the render when a helper throws while the seam deps are unconfigured', {timeout: 2000}, async function () {
+        // deliberately NO configureTestDeps() — getRendererDeps() throws
+        const engine = new TemplateEngine(createResolver({'index.hbs': 'a{{boom}}b'}));
+        const registry = createHelperRegistry(createEngineHelperRegistrar(engine));
+
+        const boom: any = async function () {
+            throw new errors.InternalServerError({message: 'helper exploded with no deps'});
+        };
+        boom.async = true;
+        registry.registerHelper('boom', boom);
+
+        assert.equal(await engine.render('index.hbs'), 'ab');
+    });
+
     it('resolves the real {{ghost_head}} through a full engine render', async function () {
         configureTestDeps();
         const engine = new TemplateEngine(createResolver({

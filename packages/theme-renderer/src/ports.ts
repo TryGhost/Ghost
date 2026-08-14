@@ -66,6 +66,6 @@ export interface PortResponse {
  */
 export type RenderResult =
     | {render: {template: string; data: Record<string, any>; contentType?: string}}
-    | {redirect: {status: 301 | 302; url: string}}
+    | {redirect: {status: 301 | 302; url: string; headers?: Record<string, string>}}
     | {next: true}
     | {error: {err: unknown}};

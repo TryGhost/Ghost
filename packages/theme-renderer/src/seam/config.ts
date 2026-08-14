@@ -21,12 +21,18 @@ export function createConfig(values: Record<string, any> = {}): ConfigPort {
 
     return {
         get,
+        // mirrors shared/config/helpers.ts isPrivacyDisabled
         isPrivacyDisabled(key: string) {
             const privacy = get('privacy');
             if (!privacy) {
                 return false;
             }
+            // CASE: disable all privacy features
             if (privacy.useTinfoil === true) {
+                // CASE: you can still enable single features
+                if (privacy[key] === true) {
+                    return false;
+                }
                 return true;
             }
             return privacy[key] === false;

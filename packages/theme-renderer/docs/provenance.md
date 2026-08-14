@@ -24,7 +24,7 @@ transforms, update the revision here.
    original code shape requires it: `no-this-alias`, `prefer-rest-params`,
    `prefer-const`) — the visible marker of "copied, loosely typed".
 
-## src/helpers/ (32 helpers + machinery)
+## src/helpers/ (33 helpers + machinery)
 
 | File | Origin (ghost/core/core/frontend/) | Transforms beyond STD | Seam/stubs touched |
 | --- | --- | --- | --- |
@@ -58,13 +58,14 @@ transforms, update the revision here.
 | helpers/reading-time.ts | helpers/reading_time.js | — | checks |
 | helpers/t.ts | helpers/t.js | — | themeI18n/themeI18next ports (init handled by seam), labs, settings |
 | helpers/tags.ts | helpers/tags.js | — | urlService, templates |
+| helpers/tiers.ts | helpers/tiers.js | `lodash/isString` require → subpath import; `let accessProductsList` → `const` | hbs (SafeString/escapeExpression) |
 | helpers/title.ts | helpers/title.js | — | — |
 | helpers/url.ts | helpers/url.js | — | meta/url |
 | helpers/tpl/styles.ts | helpers/tpl/styles.js | — | — |
 | helpers/tpl/partials.ts | helpers/tpl/*.hbs (navigation, pagination, content-cta, gift-toast, cancel_link, recommendations) | .hbs sources embedded verbatim as string constants + `registerCoreHelperPartials()` (replaces express-hbs `partialsDir` fs loading) | hbs shim (compiles on register, `preventIndent: true`) |
 | helpers/services/registry.ts | services/helpers/registry.js | module singleton → `createHelperRegistry(registrar)` factory | HelperRegistrar |
-| helpers/services/handlebars.ts | services/helpers/handlebars.js | engine singleton → injected HelperRegistrar; `process.env.NODE_ENV` → seam `config.get('env')`; `errors.utils` resolved from either the CJS default export or the ES build's named export (@tryghost/errors ships both shapes) | logging |
-| helpers/services/register-ghost-helpers.ts | services/helpers/register-ghost-helpers.js | requires → static imports; **trimmed to Tier-2 set**. Omitted registrations: cancel_link, collection, color_to_rgba, comment_count, comments, content_api_key, content_api_url, contrast_text_color, facebook_url, json, price, readable_url, recommendations, search, social_accounts, social_url, split, tiers, total_members, total_paid_members, twitter_url | — |
+| helpers/services/handlebars.ts | services/helpers/handlebars.js | engine singleton → injected HelperRegistrar; `process.env.NODE_ENV` → seam `config.get('env')`; `errors.utils` resolved from either the CJS default export or the ES build's named export (@tryghost/errors ships both shapes); the async wrapper's catch is hardened — a throwing error path (unconfigured seam deps, throwing logging) still calls `cb('')` so the placeholder promise settles and the render cannot hang | logging |
+| helpers/services/register-ghost-helpers.ts | services/helpers/register-ghost-helpers.js | requires → static imports; **trimmed to Tier-2 set**. Omitted registrations: cancel_link, collection, color_to_rgba, comment_count, comments, content_api_key, content_api_url, contrast_text_color, facebook_url, json, price, readable_url, recommendations, search, social_accounts, social_url, split, total_members, total_paid_members, twitter_url (`tiers` IS registered — the content-cta partial calls it for tier-gated posts) | — |
 | helpers/services/index.ts | services/helpers/index.js | re-export shape only | — |
 
 ## src/meta/ (24 modules)
@@ -128,7 +129,7 @@ Origin `ghost/core/core/frontend/services/data/<name>.js` @ 407e032dc7, transfor
 | controllers/collection.ts | routing/controllers/collection.js @ 407e032dc7 | `security.string.safe` → `@tryghost/string` slugify (safe()'s body); `routerManager.ownsResource` → seam urlService (router-manager delegates there); `themeEngine.getActive()` → deps.activeTheme; next(err) → handleError result |
 | controllers/entry.ts | routing/controllers/entry.ts @ 407e032dc7 | gift-links + markdown negotiation dropped; redirectToAdmin/redirect301 → `{redirect}` results (URL construction reproduced) |
 | controllers/entry/canonical-url.ts | .../entry/canonical-url.ts @ 407e032dc7 | node:url format/parse → whatwg URL + search slice |
-| resolve.ts | fresh | slice-1 default-routes resolver; routerOptions shapes copied from collection-router/static-pages-router `_prepare*Context`; replaced by the lazy-matcher port in the parity slice |
+| resolve.ts | fresh | slice-1 default-routes resolver; routerOptions shapes copied from collection-router/static-pages-router `_prepare*Context`; page-param semantics ported from routing/middleware/page-param.js (`/page/1/` → 301 redirect candidate, page < 1 → no candidates → 404, otherwise `parseInt`ed before pathOptions); replaced by the lazy-matcher port in the parity slice |
 
 ## src/theme/, src/ports.ts, src/index.ts (fresh assembly)
 
@@ -136,7 +137,7 @@ Origin `ghost/core/core/frontend/services/data/<name>.js` @ 407e032dc7, transfor
 | --- | --- |
 | ports.ts | request/response port types (extraction-map §(b)) |
 | theme/theme-source.ts | virtual-fs ThemeSource: resolver + theme config (defaults copied from theme-engine/config/defaults.json: posts_per_page 5, card_assets true; allowedKeys from config/index.js) + root template inventory + `@custom` defaults from package.json `config.custom` + locales/{locale}.json i18n ({var} interpolation) |
-| index.ts | `createRenderer()` assembly + `render(Request) → Response`; `createEngineHelperRegistrar` (engine → HelperRegistrar adapter); trailing-slash 301 (Ghost's slashes middleware); ghost-locals equivalent (version/safeVersion from the settings payload `version`, relativeUrl) |
+| index.ts | `createRenderer()` assembly + `render(Request) → Response`; `createEngineHelperRegistrar` (engine → HelperRegistrar adapter); pretty-urls trailing-slash 301 (only `.md`/`.txt` skip, Cache-Control from `caching:301:maxAge`); subdir handling with Express mount semantics (segment-boundary strip, out-of-mount → 404, redirect Locations keep the subdir); ghost-locals equivalent (version/safeVersion from the settings payload `version`, relativeUrl); themed error path porting web/middleware/error-handler.js `themeErrorRenderer` + mw-error-handler `prepareError` (error template hierarchy via `setTemplate` req.err branch; render-time engine NotFoundError → IncorrectUsageError per rendering/renderer.js:40-48; plain-text status-line fallback, never raw upstream messages); per-render re-assert of the deps + hbs singletons |
 
 ## src/seam/ (the data seam)
 
@@ -154,9 +155,9 @@ Origin `ghost/core/core/frontend/services/data/<name>.js` @ 407e032dc7, transfor
 | content-api.ts | fresh | HTTP Content API binding (see Stubs & deltas). Maps HTTP failures back to typed Ghost errors (404/`type: NotFoundError` → NotFoundError, 422/ValidationError → ValidationError, else InternalServerError) so rendering/error.ts's errorType dispatch — and the Collections→StaticPages fall-through — works across the HTTP boundary |
 | settings.ts | fresh | Async `loadSettings` → sync snapshot (`get`/`getPublic`); un-resizes the serializer-rewritten `icon` path so the copied blogIcon logic applies its own resize |
 | url-service.ts | fresh | Slice-1 `getUrlForResource` preferring serializer-attached `resource.url`; `ownsResource` → true. **The lazy permalink-matcher/router-filter port is deferred to the parity slice** |
-| config.ts | fresh | nconf-style `:`-separated lookup over a plain object; `isPrivacyDisabled` mirrors shared/config behavior (`useTinfoil` + `privacy[key] === false`) |
+| config.ts | fresh | nconf-style `:`-separated lookup over a plain object; `isPrivacyDisabled` mirrors shared/config/helpers.ts exactly (`useTinfoil` blanket with the per-feature `privacy[flag] === true` opt-in, then `privacy[key] === false`) |
 | stubs.ts | mixed | See Stubs & rationale. `createBlogIcon` is a **copy** of server/lib/image/blog-icon.js URL methods (getIconUrl/getIconType/getIconExt/getSourceIconExt; class → factory, `path.extname` → local helper, fs-bound methods dropped) |
-| defaults.ts | fresh | Assembles the default RendererDeps binding |
+| defaults.ts | fresh | Assembles the default RendererDeps binding. Enforces the @tryghost/config-url-helpers contract on the injected URLs once at entry: `getSiteUrl()` always ends with `/`; `getAdminUrl()` gets a trailing slash, the site subdirectory appended and duplicate subdirectories removed (getAdminUrl's slash-cleanup line replicated inline — the copied url-utils `deduplicateSubdirectory` predates it). Seeds `caching:301:maxAge` (31536000, shared/config defaults.json) for permanent-redirect Cache-Control |
 
 ## Stubs & rationale
 

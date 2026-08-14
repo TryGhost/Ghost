@@ -23,13 +23,31 @@ describe('resolveRoutes', function () {
         assert.equal(collection!.routerOptions.query, QUERY.post);
     });
 
-    it('resolves /page/2/ to the paged collection controller', function () {
+    it('resolves /page/2/ to the paged collection controller with a numeric page param', function () {
         const candidates = resolveRoutes('/page/2/');
 
         assert.equal(candidates.length, 1);
-        assert.equal(candidates[0]!.controller, 'collection');
-        assert.deepEqual(candidates[0]!.params, {page: '2'});
-        assert.equal(candidates[0]!.routerOptions.type, 'collection');
+        const [paged] = candidates;
+        assert.equal(paged!.controller, 'collection');
+        // finding 7 — page-param middleware parseInts the param before it
+        // reaches pathOptions (was the string '2')
+        assert.deepEqual(paged!.params, {page: 2});
+        assert.equal(paged!.routerOptions.type, 'collection');
+    });
+
+    // finding 7 — origin page-param middleware semantics
+    it('turns /page/1/ into a permanent redirect to the unpaged url', function () {
+        const candidates = resolveRoutes('/page/1/');
+
+        assert.equal(candidates.length, 1);
+        assert.deepEqual(candidates[0], {
+            controller: 'redirect',
+            redirect: {status: 301, url: '/'}
+        });
+    });
+
+    it('returns no candidates for /page/0/ (page < 1 → 404)', function () {
+        assert.deepEqual(resolveRoutes('/page/0/'), []);
     });
 
     it('does not treat /page/x/ (non-numeric) as pagination', function () {
@@ -70,8 +88,10 @@ describe('resolveRoutes', function () {
         const candidates = resolveRoutes('/welcome/edit/');
 
         assert.equal(candidates.length, 2);
-        assert.equal(candidates[0]!.params.slug, 'welcome');
-        assert.equal(candidates[0]!.params.options, 'edit');
+        const [postEdit] = candidates;
+        assert.equal(postEdit!.controller, 'entry');
+        assert.equal(postEdit!.params.slug, 'welcome');
+        assert.equal(postEdit!.params.options, 'edit');
     });
 
     it('does not match multi-segment paths', function () {
@@ -80,6 +100,8 @@ describe('resolveRoutes', function () {
 
     it('respects a custom collection permalink', function () {
         const candidates = resolveRoutes('/welcome-post/', {permalink: '/{slug}/'});
-        assert.equal(candidates[0]!.params.slug, 'welcome-post');
+        const [custom] = candidates;
+        assert.equal(custom!.controller, 'entry');
+        assert.equal(custom!.params.slug, 'welcome-post');
     });
 });

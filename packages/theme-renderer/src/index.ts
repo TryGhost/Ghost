@@ -16,6 +16,9 @@
  * 6. seed global template options (the `@site/@labs/@config/@custom` frame).
  */
 import _ from 'lodash';
+import tpl from '@tryghost/tpl';
+import errors from '@tryghost/errors';
+import * as errorsNamespace from '@tryghost/errors';
 import {TemplateEngine} from './engine/engine.ts';
 import {createThemeSource, type ThemeFiles, type ThemeSource} from './theme/theme-source.ts';
 import {loadDefaultDeps} from './seam/defaults.ts';
@@ -27,6 +30,7 @@ import {applyLocalTemplateOptions, buildGlobalTemplateOptions} from './rendering
 import {resolveRoutes} from './routing/resolve.ts';
 import collectionController from './routing/controllers/collection.ts';
 import {entryController} from './routing/controllers/entry.ts';
+import templates from './rendering/templates.ts';
 import type {ActiveThemePort, HelperRegistrar, LoggingPort, RendererDeps} from './seam/types.ts';
 import type {RenderLocals, RenderResult} from './ports.ts';
 
@@ -80,8 +84,35 @@ export interface ThemeRenderer {
     themeSource: ThemeSource;
 }
 
-function redirectResponse(status: 301 | 302, location: string): Response {
-    return new Response(null, {status, headers: {location}});
+function redirectResponse(status: 301 | 302, location: string, headers?: Record<string, string>): Response {
+    return new Response(null, {status, headers: {...headers, location}});
+}
+
+// @tryghost/errors ships `utils` on the CJS default export but as a NAMED
+// export in its ES build — resolve whichever is present (same shim as
+// helpers/services/handlebars.ts).
+const errorsUtils: {isGhostError(err: Error): boolean} =
+    (errorsNamespace as any).utils ?? (errors as any).utils;
+
+const messages = {
+    pageNotFound: 'Page not found',
+    couldNotReadFile: 'Could not read file {file}'
+};
+
+const STATUS_TEXT: Record<number, string> = {
+    400: 'Bad Request',
+    401: 'Unauthorized',
+    403: 'Forbidden',
+    404: 'Not Found',
+    422: 'Unprocessable Entity',
+    500: 'Internal Server Error'
+};
+
+function plainTextResponse(status: number): Response {
+    return new Response(`${status} ${STATUS_TEXT[status] ?? 'Error'}`, {
+        status,
+        headers: {'content-type': 'text/plain; charset=utf-8'}
+    });
 }
 
 export async function createRenderer(options: CreateRendererOptions): Promise<ThemeRenderer> {
@@ -148,27 +179,85 @@ export async function createRenderer(options: CreateRendererOptions): Promise<Th
 
     const safeVersion = deps.settings.get('version');
 
+    /**
+     * Ported error path — mirrors frontend/web/middleware/error-handler.js
+     * themeErrorRenderer + @tryghost/mw-error-handler prepareError: try the
+     * theme's error template hierarchy (error-<code> → error-<c>xx → error),
+     * fall back to a plain-text status line (the package ships no
+     * defaultViews error.hbs, and raw upstream error messages must not leak
+     * into the fallback body).
+     */
+    async function renderErrorResponse(err: any, req: {path: string; originalUrl: string; query: Record<string, any>; params: Record<string, any>}, locals: RenderLocals): Promise<Response> {
+        // prepareError: non-Ghost errors become an InternalServerError whose
+        // message is the generic default, never the upstream error text
+        const ghostErr: any = errorsUtils.isGhostError(err) ? err : new errors.InternalServerError({err});
+        const statusCode = typeof ghostErr.statusCode === 'number' ? ghostErr.statusCode : 500;
+
+        deps.logging.error(ghostErr);
+
+        // themeErrorRenderer's template data
+        const data = {
+            message: ghostErr.message,
+            statusCode,
+            errorDetails: ghostErr.errorDetails || []
+        };
+
+        try {
+            // setTemplate's req.err branch picks from the error hierarchy via
+            // the statusCode carried on the response context
+            const res: any = {routerOptions: undefined, locals, statusCode};
+            templates.setTemplate({...req, err: ghostErr} as any, res);
+
+            const root = {...locals, ...data, _locals: locals};
+            const html = await engine.render(`${res._template}.hbs`, root);
+            return new Response(html, {
+                status: statusCode,
+                headers: {'content-type': 'text/html; charset=utf-8'}
+            });
+        } catch {
+            // no usable error template in the theme (or the error template
+            // itself failed) — plain text, status text only
+            return plainTextResponse(statusCode);
+        }
+    }
+
     async function render(request: Request): Promise<Response> {
-        // Re-assert this renderer's deps on the module singleton so multiple
-        // renderer instances can be used sequentially.
+        // Re-assert this renderer's deps AND handlebars environment on the
+        // module singletons so multiple renderer instances can be used
+        // sequentially (creating another renderer repoints both).
         configureRendererDeps(deps);
+        setHandlebarsInstance(engine.handlebars);
 
         const url = new URL(request.url);
         let pathname = url.pathname;
 
         const subdir = deps.urlUtils.getSubdir();
-        if (subdir && pathname.startsWith(subdir)) {
-            pathname = pathname.slice(subdir.length) || '/';
+        if (subdir) {
+            // Express mount semantics: strip only on a segment boundary;
+            // requests outside the mount never reach the site app → 404
+            if (pathname === subdir || pathname.startsWith(subdir + '/')) {
+                pathname = pathname.slice(subdir.length) || '/';
+            } else {
+                return plainTextResponse(404);
+            }
         }
 
-        // Ghost's slashes middleware: 301 append the trailing slash (skip
-        // file-like paths — assets are out of the package's scope).
+        // pretty-urls middleware (server/web/shared/middleware/pretty-urls.js):
+        // 301 append the trailing slash; ONLY .md/.txt extensions skip the
+        // redirect (the llms markdown route itself is dropped — documented
+        // delta, so those paths 404 here). The Location keeps the original
+        // (subdir-prefixed) pathname, and permanent redirects carry the
+        // origin's caching:301:maxAge Cache-Control header.
         if (!pathname.endsWith('/')) {
             const lastSegment = pathname.slice(pathname.lastIndexOf('/') + 1);
-            if (lastSegment.includes('.')) {
-                return new Response('404 Not Found', {status: 404, headers: {'content-type': 'text/plain; charset=utf-8'}});
+            const dotIndex = lastSegment.lastIndexOf('.');
+            const ext = dotIndex > 0 ? lastSegment.slice(dotIndex) : '';
+            if (ext === '.md' || ext === '.txt') {
+                return plainTextResponse(404);
             }
-            return redirectResponse(301, pathname + '/' + url.search);
+            return redirectResponse(301, url.pathname + '/' + url.search, {
+                'cache-control': `public, max-age=${deps.config.get('caching:301:maxAge')}`
+            });
         }
 
         // ghost-locals middleware
@@ -190,7 +279,30 @@ export async function createRenderer(options: CreateRendererOptions): Promise<Th
             member: null
         };
 
-        for (const candidate of resolveRoutes(pathname)) {
+        // Guard the resolver: malformed percent-encoding throws a
+        // ValidationError from matchPermalinkParams (upstream's http-errors
+        // 400) — treated as a router fall-through ending in the 404 path,
+        // matching the ported rendering/error.ts semantics for theme traffic.
+        let candidates: ReturnType<typeof resolveRoutes>;
+        try {
+            candidates = resolveRoutes(pathname);
+        } catch (resolveErr: any) {
+            if (resolveErr?.errorType === 'ValidationError') {
+                candidates = [];
+            } else {
+                return renderErrorResponse(resolveErr, req, locals);
+            }
+        }
+
+        for (const candidate of candidates) {
+            if (candidate.controller === 'redirect') {
+                // page-param page-1 alias — urlUtils.redirect301 semantics:
+                // re-prefix the subdir, keep the query string, cache the 301
+                return redirectResponse(candidate.redirect.status, subdir + candidate.redirect.url + url.search, {
+                    'cache-control': `public, max-age=${deps.config.get('caching:301:maxAge')}`
+                });
+            }
+
             const candidateReq = {...req, params: candidate.params};
             const res = {routerOptions: candidate.routerOptions, locals};
 
@@ -203,21 +315,34 @@ export async function createRenderer(options: CreateRendererOptions): Promise<Th
             }
 
             if ('redirect' in result) {
-                return redirectResponse(result.redirect.status, result.redirect.url);
+                return redirectResponse(result.redirect.status, result.redirect.url, result.redirect.headers);
             }
 
             if ('error' in result) {
-                const err: any = result.error.err;
-                const status = typeof err?.statusCode === 'number' ? err.statusCode : 500;
-                const message = err?.message ?? 'Internal server error';
-                deps.logging.error(err);
-                return new Response(message, {status, headers: {'content-type': 'text/plain; charset=utf-8'}});
+                return renderErrorResponse(result.error.err, candidateReq, locals);
             }
 
             // Express res.render semantics: handlebars root =
             // {...res.locals, ...data, _locals: res.locals}
             const root = {...locals, ...result.render.data, _locals: locals};
-            const html = await engine.render(`${result.render.template}.hbs`, root);
+            let html: string;
+            try {
+                html = await engine.render(`${result.render.template}.hbs`, root);
+            } catch (renderErr: any) {
+                // rendering/renderer.js:40-48 — a missing template/layout
+                // (ENOENT upstream, NotFoundError from the virtual fs) becomes
+                // an IncorrectUsageError; everything else flows to the error
+                // handler as-is
+                const mapped = renderErr?.errorType === 'NotFoundError'
+                    ? new errors.IncorrectUsageError({
+                        message: tpl(messages.couldNotReadFile, {
+                            file: /'([^']+)'/.exec(renderErr.message ?? '')?.[1] ?? `${result.render.template}.hbs`
+                        }),
+                        err: renderErr
+                    })
+                    : renderErr;
+                return renderErrorResponse(mapped, candidateReq, locals);
+            }
 
             return new Response(html, {
                 status: 200,
@@ -225,7 +350,8 @@ export async function createRenderer(options: CreateRendererOptions): Promise<Th
             });
         }
 
-        return new Response('404 Not Found', {status: 404, headers: {'content-type': 'text/plain; charset=utf-8'}});
+        // mw-error-handler pageNotFound: no router matched
+        return renderErrorResponse(new errors.NotFoundError({message: tpl(messages.pageNotFound)}), req, locals);
     }
 
     return {render, engine, deps, themeSource};

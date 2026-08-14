@@ -64,8 +64,15 @@ export async function entryController(req: PortRequest, res: PortResponse): Prom
         }
 
         if (isPermalinkStale(req, entry)) {
-            // urlUtils.redirect301 → 301 redirect result value
-            return {redirect: {status: 301, url: buildCanonicalUrl(req, entry)}};
+            // urlUtils.redirect301 → 301 redirect result value carrying the
+            // Cache-Control header redirect301 sets upstream
+            return {
+                redirect: {
+                    status: 301,
+                    url: buildCanonicalUrl(req, entry),
+                    headers: {'Cache-Control': `public, max-age=${config.get('caching:301:maxAge')}`}
+                }
+            };
         }
 
         return renderEntry(req, res)(entry);
