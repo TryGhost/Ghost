@@ -46,9 +46,9 @@ describe('buildImportResponse', () => {
                 stats: {
                     imported: 1,
                     invalid: [
-                        {email: 'a@test.com', error: 'Value in [members.email] cannot be blank.'},
-                        {email: 'b@test.com', error: 'Value in [members.email] cannot be blank.'},
-                        {email: 'c@test.com', error: 'Validation (isEmail) failed for email'}
+                        {email: 'a@test.com', errors: ['Value in [members.email] cannot be blank.'], error: 'Value in [members.email] cannot be blank.'},
+                        {email: 'b@test.com', errors: ['Value in [members.email] cannot be blank.'], error: 'Value in [members.email] cannot be blank.'},
+                        {email: 'c@test.com', errors: ['Validation (isEmail) failed for email'], error: 'Validation (isEmail) failed for email'}
                     ]
                 },
                 import_label: {name: 'Test Import', slug: 'test-import'}
@@ -69,11 +69,11 @@ describe('buildImportResponse', () => {
                 stats: {
                     imported: 0,
                     invalid: [
-                        {email: '', error: 'Value in [members.email] cannot be blank.'},
-                        {email: 'x', error: 'Value in [members.note] exceeds maximum length of 2000 characters.'},
-                        {email: 'y', error: 'Value in [members.subscribed] must be one of true, false, 0 or 1.'},
-                        {email: 'z', error: 'Validation (isEmail) failed for email'},
-                        {email: 'w', error: 'No such customer:cus_abc123'}
+                        {email: '', errors: ['Value in [members.email] cannot be blank.'], error: 'Value in [members.email] cannot be blank.'},
+                        {email: 'x', errors: ['Value in [members.note] exceeds maximum length of 2000 characters.'], error: 'Value in [members.note] exceeds maximum length of 2000 characters.'},
+                        {email: 'y', errors: ['Value in [members.subscribed] must be one of true, false, 0 or 1.'], error: 'Value in [members.subscribed] must be one of true, false, 0 or 1.'},
+                        {email: 'z', errors: ['Validation (isEmail) failed for email'], error: 'Validation (isEmail) failed for email'},
+                        {email: 'w', errors: ['No such customer:cus_abc123'], error: 'No such customer:cus_abc123'}
                     ]
                 },
                 import_label: {name: 'Errors', slug: 'errors'}
@@ -88,13 +88,17 @@ describe('buildImportResponse', () => {
         expect(messages).toContain('Could not find Stripe customer');
     });
 
-    it('splits comma-separated errors into separate entries', () => {
+    it('gives a row that failed twice one entry per failure', () => {
         const result = buildImportResponse({
             meta: {
                 stats: {
                     imported: 0,
                     invalid: [
-                        {email: 'a@test.com', error: 'Value in [members.email] cannot be blank.,Validation (isEmail) failed for email'}
+                        {
+                            email: 'a@test.com',
+                            errors: ['Value in [members.email] cannot be blank.', 'Validation (isEmail) failed for email'],
+                            error: 'Value in [members.email] cannot be blank.\nValidation (isEmail) failed for email'
+                        }
                     ]
                 },
                 import_label: {name: 'Test', slug: 'test'}
@@ -105,6 +109,45 @@ describe('buildImportResponse', () => {
             {message: 'Missing email address', count: 1},
             {message: 'Invalid email address', count: 1}
         ]);
+    });
+
+    it('keeps a reason whole however it is punctuated', () => {
+        // A reason may quote a cell the publisher wrote, and a CSV cell legally holds
+        // both a comma and a newline.
+        const punctuated = 'custom_fields.home-address.country: Enter a 2-letter country code, like US.';
+        const multiline = '"Gold\nPlan" is not a valid tier.';
+        const result = buildImportResponse({
+            meta: {
+                stats: {
+                    imported: 0,
+                    invalid: [
+                        {email: 'a@test.com', errors: [punctuated], error: punctuated},
+                        {email: 'b@test.com', errors: [punctuated], error: punctuated},
+                        {email: 'c@test.com', errors: [multiline], error: multiline}
+                    ]
+                },
+                import_label: {name: 'Test', slug: 'test'}
+            }
+        });
+
+        expect(result.errorList).toEqual([
+            {message: punctuated, count: 2},
+            {message: multiline, count: 1}
+        ]);
+    });
+
+    it('drops a reason that humanises to nothing rather than listing a blank bullet', () => {
+        const result = buildImportResponse({
+            meta: {
+                stats: {
+                    imported: 0,
+                    invalid: [{email: 'a@test.com', errors: ['  ', 'Validation (isEmail) failed for email'], error: '  \nValidation (isEmail) failed for email'}]
+                },
+                import_label: {name: 'Test', slug: 'test'}
+            }
+        });
+
+        expect(result.errorList).toEqual([{message: 'Invalid email address', count: 1}]);
     });
 
     it('uses a default name when import_label is missing', () => {
@@ -135,7 +178,7 @@ describe('buildImportResponse', () => {
             meta: {
                 stats: {
                     imported: 0,
-                    invalid: [{email: 'bad', error: 'Validation (isEmail) failed for email'}]
+                    invalid: [{email: 'bad', errors: ['Validation (isEmail) failed for email'], error: 'Validation (isEmail) failed for email'}]
                 },
                 import_label: {name: 'Test', slug: 'test'}
             }
@@ -144,5 +187,30 @@ describe('buildImportResponse', () => {
         expect(mockCreateObjectURL).toHaveBeenCalledTimes(1);
         const blob = mockCreateObjectURL.mock.calls[0][0] as Blob;
         expect(blob.type).toBe('text/csv');
+    });
+
+    it('writes the error file with the submitted columns and no others', async () => {
+        // The file echoes the row back, so every key on it becomes a column.
+        buildImportResponse({
+            meta: {
+                stats: {
+                    imported: 0,
+                    invalid: [{
+                        email: 'a@test.com',
+                        'custom_fields.home-address.country': 'IRL',
+                        errors: ['Missing email address', 'custom_fields.home-address.country: Enter a 2-letter country code, like US.'],
+                        error: 'Missing email address\ncustom_fields.home-address.country: Enter a 2-letter country code, like US.'
+                    }]
+                },
+                import_label: {name: 'Test', slug: 'test'}
+            }
+        });
+
+        const csv = await (mockCreateObjectURL.mock.calls[0][0] as Blob).text();
+        // CRLF between rows; a reason may itself contain a bare newline.
+        const [header] = csv.split('\r\n');
+
+        expect(header).toBe('"email","custom_fields.home-address.country","error"');
+        expect(csv).toContain('"Missing email address\ncustom_fields.home-address.country: Enter a 2-letter country code, like US."');
     });
 });

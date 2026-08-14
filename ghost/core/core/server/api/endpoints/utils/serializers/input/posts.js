@@ -82,7 +82,7 @@ function defaultRelations(frame) {
         frame.options.withRelated = ['tags', 'authors', 'authors.roles', 'email', 'tiers', 'newsletter', 'count.clicks'];
     }
 
-    url.forceUrlRelationsWhenLazy(frame, 'posts');
+    url.forceUrlRelations(frame, 'posts');
 }
 
 function setDefaultOrder(frame) {
@@ -161,7 +161,7 @@ module.exports = {
             setDefaultOrder(frame);
             forceVisibilityColumn(frame);
             mapWithRelated(frame);
-            url.forceUrlRelationsWhenLazy(frame, 'posts');
+            url.forceUrlRelations(frame, 'posts');
         }
 
         if (!localUtils.isContentAPI(frame)) {
@@ -188,7 +188,7 @@ module.exports = {
 
             setDefaultOrder(frame);
             forceVisibilityColumn(frame);
-            url.forceUrlRelationsWhenLazy(frame, 'posts');
+            url.forceUrlRelations(frame, 'posts');
         }
 
         if (!localUtils.isContentAPI(frame)) {

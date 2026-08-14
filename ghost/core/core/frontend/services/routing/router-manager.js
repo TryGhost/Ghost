@@ -8,7 +8,7 @@ const ParentRouter = require('./parent-router');
 const EmailRouter = require('./email-router');
 const UnsubscribeRouter = require('./unsubscribe-router');
 
-// Frontend-internal routing events (router.created / routers.reset)
+// Frontend-internal routing domain events (RouteRegistered / RoutesReset)
 const routingEvents = require('./events');
 
 class RouterManager {
@@ -16,7 +16,7 @@ class RouterManager {
         this.registry = registry;
         this.siteRouter = null;
         /**
-         * @type {URLServiceFacade}
+         * @type {UrlService}
          */
         this.urlService = null;
     }
@@ -30,11 +30,17 @@ class RouterManager {
     }
 
     routerCreated(router) {
-        routingEvents.emit('router.created', router);
+        routingEvents.emit('RouteRegistered', {
+            // Not every router owns a route: the static pages router has none,
+            // and taxonomies have no index route (`/tag/` does not exist).
+            path: router.route ? router.route.value : null,
+            type: router.name,
+            id: router.identifier
+        });
 
         // CASE: there are router types which do not generate resource urls
-        //       e.g. static route router, in this case we don't want ot notify the URL service
-        if (!router || !router.getPermalinks()) {
+        //       e.g. static route router, in this case we don't want to notify the URL service
+        if (!router.getPermalinks()) {
             return;
         }
 
@@ -65,7 +71,7 @@ class RouterManager {
         this.registry.resetAllRouters();
         this.registry.resetAllRoutes();
 
-        routingEvents.emit('routers.reset');
+        routingEvents.emit('RoutesReset');
 
         this.siteRouter = new ParentRouter('SiteRouter');
         this.registry.setRouter('siteRouter', this.siteRouter);
@@ -171,7 +177,7 @@ class RouterManager {
         if (collectionRouter && collectionRouter.getPermalinks().getValue().match(/:year|:month|:day/)) {
             debug('handleTimezoneEdit: trigger regeneration');
 
-            this.urlService.onRouterUpdated(collectionRouter.identifier);
+            this.urlService.onRouterUpdated();
         }
     }
 }
@@ -181,7 +187,7 @@ module.exports = RouterManager;
 /**
  * @typedef {Object} RouterConfig
  * @property {RouteSettings} [routeSettings] - parsed route settings domain model
- * @property {URLServiceFacade} urlService - resource-based URL service facade
+ * @property {UrlService} urlService - resource-based URL service
  */
 
 /**
@@ -189,7 +195,7 @@ module.exports = RouterManager;
  */
 
 /**
- * @typedef {Object} URLServiceFacade
+ * @typedef {Object} UrlService
  * @property {Function} getUrlForResource
  * @property {Function} ownsResource
  * @property {Function} resolveUrl

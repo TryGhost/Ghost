@@ -4,7 +4,7 @@ const config = require('../../../shared/config');
 const domainEvents = require('@tryghost/domain-events');
 /** @import {PrometheusClient} from '@tryghost/prometheus-metrics' */
 /** @import {BatchEventProcessor} from './batch-event-processor' */
-/** @import {JobNames, CursorSeed} from './email-analytics-service' */
+/** @import {JobNames, CursorSeed, EmailAnalyticsFetchResult} from './email-analytics-service' */
 
 class EmailAnalyticsServiceWrapper {
     /** @type {string} */ #logName;
@@ -113,7 +113,7 @@ class EmailAnalyticsServiceWrapper {
     /**
      * Log comprehensive job completion with timing metrics
      * @param {string} jobType - Type of job (e.g., 'latest-opened', 'latest', 'missing', 'scheduled')
-     * @param {object} fetchResult - The fetch result from EmailAnalyticsService
+     * @param {EmailAnalyticsFetchResult} fetchResult - The fetch result from EmailAnalyticsService
      * @param {number} totalDurationMs - Total duration in milliseconds
      */
     _logJobCompletion(jobType, fetchResult, totalDurationMs) {
@@ -197,6 +197,11 @@ class EmailAnalyticsServiceWrapper {
         return fetchResult.eventCount;
     }
 
+    /**
+     * @param {object} options
+     * @param {number} options.maxEvents
+     * @returns {Promise<number>} The number of scheduled events fetched
+     */
     async fetchScheduled({maxEvents}) {
         if (maxEvents < 300) {
             return 0;
@@ -266,6 +271,10 @@ class EmailAnalyticsServiceWrapper {
         this.#fetching = false;
     }
 
+    /**
+     * @param {string} reason
+     * @returns {void}
+     */
     _restartFetch(reason) {
         this.#fetching = false;
         logging.info(`${this.#logPrefix} Restarting fetch due to ${reason}`);

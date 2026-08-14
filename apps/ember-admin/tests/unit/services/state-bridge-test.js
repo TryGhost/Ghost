@@ -1,4 +1,5 @@
 import EmberObject from '@ember/object';
+import Service from '@ember/service';
 import sinon from 'sinon';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
@@ -22,14 +23,22 @@ const buildMockModelCollection = (models) => {
 describe('Unit: Service: state-bridge', function () {
     setupTest();
 
-    let service, store, config, settings, membersUtils, themeManagement, ui;
+    let service, store, config, feature, settings, membersUtils, search, themeManagement, ui;
 
     beforeEach(function () {
+        this.owner.register('service:search', Service.extend({
+            isContentStale: false,
+            expireContent() {
+                this.set('isContentStale', true);
+            }
+        }));
         service = this.owner.lookup('service:state-bridge');
         store = this.owner.lookup('service:store');
         config = this.owner.lookup('config:main');
+        feature = this.owner.lookup('service:feature');
         settings = this.owner.lookup('service:settings');
         membersUtils = this.owner.lookup('service:members-utils');
+        search = this.owner.lookup('service:search');
         themeManagement = this.owner.lookup('service:theme-management');
         ui = this.owner.lookup('service:ui');
 
@@ -39,10 +48,29 @@ describe('Unit: Service: state-bridge', function () {
         sinon.spy(store, 'unloadAll');
         sinon.spy(settings, 'reload');
         sinon.spy(membersUtils, 'reload');
+        search.isContentStale = false;
     });
 
     afterEach(function () {
         sinon.restore();
+    });
+
+    describe('#isFeatureEnabled', function () {
+        it('does not claim route ownership before Labs settings load', function () {
+            settings.settingsModel = null;
+
+            expect(service.isFeatureEnabled('tagDetailsReact')).to.be.undefined;
+        });
+
+        it('exposes the same strict Labs state used by Ember routes', function () {
+            settings.settingsModel = {};
+            sinon.stub(feature, 'tagDetailsReact').get(() => true);
+            sinon.stub(feature, 'memberDetailsReact').get(() => 'true');
+
+            expect(service.isFeatureEnabled('tagDetailsReact')).to.be.true;
+            expect(service.isFeatureEnabled('memberDetailsReact')).to.be.false;
+            expect(service.isFeatureEnabled('missingFlag')).to.be.false;
+        });
     });
 
     describe('#onUpdate', function () {
@@ -289,6 +317,16 @@ describe('Unit: Service: state-bridge', function () {
 
             expect(store.unloadAll.calledOnce).to.be.true;
             expect(store.unloadAll.calledWith('integration')).to.be.true;
+        });
+
+        it('unloads all tags when tag queries are invalidated', function () {
+            run(() => {
+                service.onInvalidate('TagsResponseType');
+            });
+
+            expect(store.unloadAll.calledOnce).to.be.true;
+            expect(store.unloadAll.calledWith('tag')).to.be.true;
+            expect(search.isContentStale).to.be.true;
         });
 
         it('reloads membersUtils when tiers are invalidated', function () {

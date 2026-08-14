@@ -6,7 +6,7 @@ const stripe = require('stripe');
 const {Product} = require('../../../core/server/models/product');
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
-const urlService = require('../../../core/server/services/url');
+const urlServiceUtils = require('../../utils/url-service-utils');
 const urlUtils = require('../../../core/shared/url-utils').default;
 const DomainEvents = require('@tryghost/domain-events');
 const {anyContentVersion, anyContentLength, anyEtag, anyObjectId, anyUuid, anyISODateTime, anyString, anyArray, anyObject, nullable} = matchers;
@@ -2788,7 +2788,7 @@ describe('Members API', function () {
                 type: 'post'
             };
 
-            const absoluteUrl = urlService.getUrlByResourceId(post.id, {absolute: true});
+            const absoluteUrl = urlServiceUtils.urlFor(post, 'posts', {absolute: true});
 
             await testWithAttribution(attribution, {
                 id: post.id,
@@ -2831,7 +2831,7 @@ describe('Members API', function () {
                 type: 'page'
             };
 
-            const absoluteUrl = urlService.getUrlByResourceId(post.id, {absolute: true});
+            const absoluteUrl = urlServiceUtils.urlFor(post, 'pages', {absolute: true});
 
             await testWithAttribution(attribution, {
                 id: post.id,
@@ -2854,7 +2854,7 @@ describe('Members API', function () {
                 type: 'tag'
             };
 
-            const absoluteUrl = urlService.getUrlByResourceId(tag.id, {absolute: true});
+            const absoluteUrl = urlServiceUtils.urlFor(tag, 'tags', {absolute: true});
 
             await testWithAttribution(attribution, {
                 id: tag.id,
@@ -2877,7 +2877,7 @@ describe('Members API', function () {
                 type: 'author'
             };
 
-            const absoluteUrl = urlService.getUrlByResourceId(author.id, {absolute: true});
+            const absoluteUrl = urlServiceUtils.urlFor(author, 'authors', {absolute: true});
 
             await testWithAttribution(attribution, {
                 id: author.id,

@@ -236,10 +236,10 @@ function ContributorUserMenu() {
                 </UserMenuHeader>
                 <DropdownMenuSeparator />
                 <UserMenuItem>
-                    <Link to="/posts">
+                    <a href="#/posts">
                         <LucideIcon.FileText />
                         <UserMenuItem.Label>Posts</UserMenuItem.Label>
-                    </Link>
+                    </a>
                 </UserMenuItem>
                 <UserMenuItem>
                     <a href={siteUrl} rel="noopener noreferrer" target="_blank">

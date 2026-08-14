@@ -17,7 +17,7 @@ describe('AudienceFeedbackController', function () {
         it('loads the full post and redirects to the feedback flow', async function () {
             // The URL service needs a full post record (status for the base
             // filter, tags/authors for filtered routes) — an id-only resource
-            // is rejected as thin by the lazy backend.
+            // is reported as thin by the URL service.
             const post = {id: postId, status: 'published'};
             const getPostById = sinon.stub().resolves(post);
             const buildLink = sinon.stub().returns(

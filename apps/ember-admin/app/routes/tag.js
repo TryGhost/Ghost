@@ -5,6 +5,7 @@ import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
 export default class TagRoute extends AuthenticatedRoute {
+    @service feature;
     @service modals;
     @service router;
     @service session;
@@ -15,11 +16,17 @@ export default class TagRoute extends AuthenticatedRoute {
     _requiresBackgroundRefresh = true;
     _unregisterUnsavedChanges = null;
 
-    beforeModel() {
+    beforeModel(transition) {
         super.beforeModel(...arguments);
 
         if (this.session.user.isAuthorOrContributor) {
             return this.transitionTo('index');
+        }
+
+        // React owns this URL when the flag is on. Keep the Ember route from
+        // loading and rendering a second tag editor behind the React screen.
+        if (this.feature.tagDetailsReact === true) {
+            transition.abort();
         }
     }
 

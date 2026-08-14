@@ -42,9 +42,12 @@ export default class SessionService extends ESASessionService {
     }
 
     async postAuthPreparation() {
+        const featureFetch = this.feature.fetch()
+            .finally(() => this.stateBridge.triggerFeatureFlagsChange());
+
         await RSVP.all([
             this.configManager.fetchAuthenticated(),
-            this.feature.fetch(),
+            featureFetch,
             this.settings.fetch(),
             this.membersUtils.fetch()
         ]);

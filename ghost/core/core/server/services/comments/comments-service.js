@@ -473,7 +473,7 @@ class CommentsService {
      * @param {AdminBrowseAllOptions} options
      */
     async getAdminAllComments({includeNested, filter, mongoTransformer, reportCount, order, page, limit}) {
-        const postUrlRelations = this.urlService.facade.getRequiredRelations().map(relation => `post.${relation}`);
+        const postUrlRelations = this.urlService.getRequiredRelations().map(relation => `post.${relation}`);
         const withRelated = ['member', 'post', ...postUrlRelations, 'count.replies', 'count.direct_replies', 'count.likes', 'count.dislikes', 'count.net_score', 'count.reports', 'in_reply_to', 'parent'];
 
         return await this.models.Comment.findPage({

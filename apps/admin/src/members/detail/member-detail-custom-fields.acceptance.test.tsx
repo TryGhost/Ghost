@@ -206,7 +206,7 @@ describe('Member detail custom fields', () => {
             errors: [{
                 property: 'custom_fields.job_title',
                 context: 'Rejected by the server for reasons the client could not know.',
-                message: 'Invalid value for custom field \'Job title\'.'
+                message: 'Validation error, cannot edit member.'
             }]
         }, {status: 422});
         await renderAdminApp(`/members/${m.id}`, FLAGS);

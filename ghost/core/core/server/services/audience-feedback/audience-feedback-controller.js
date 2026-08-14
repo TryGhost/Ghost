@@ -50,7 +50,7 @@ class AudienceFeedbackController {
             // Load the full post (with tags/authors) rather than passing an
             // id-only resource: the URL service needs status to apply the
             // published base filter and tags/authors to evaluate filtered
-            // routes — the lazy backend rejects a bare {id} as thin.
+            // routes — the URL service reports a bare {id} as thin.
             const post = await this.#repository.getPostById(postId, {withRelated: ['tags', 'authors']});
             const target = post
                 ? this.#audienceFeedbackService.buildLink(uuid, post, score, key)

@@ -68,9 +68,6 @@ describe('AttributionBuilder', function () {
             getUrlTitle(url) {
                 return url;
             },
-            getUrlByResourceId() {
-                return 'https://absolute/dir/path';
-            },
             getResourceUrl() {
                 return 'https://absolute/dir/path';
             },

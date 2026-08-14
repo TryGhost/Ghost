@@ -17,7 +17,7 @@ exist for external consumers only (see [Shipping](#shipping)).
 | --- | --- | --- |
 | [koenig-lexical](./koenig-lexical) | The Lexical-based rich text editor (React). Ships as a UMD bundle with styles and SVGs inlined | `ghost/admin` (bundled into admin assets at build time), `apps/admin`, `apps/admin-x-framework` |
 | [kg-simplemde](./kg-simplemde) | Customised fork of SimpleMDE, used by koenig-lexical's markdown card | `koenig-lexical` |
-| [kg-unsplash-selector](./kg-unsplash-selector) | React Unsplash image picker | `koenig-lexical`, `apps/admin`, `apps/admin-x-settings` |
+| [kg-unsplash-selector](./kg-unsplash-selector) | React Unsplash image picker | `koenig-lexical`, `apps/admin` |
 
 ### Lexical node definitions & rendering
 

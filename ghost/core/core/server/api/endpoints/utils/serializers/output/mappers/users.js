@@ -6,6 +6,14 @@ module.exports = (model, frame) => {
 
     url.forUser(model.id, jsonModel, frame.options);
 
+    // Force-loaded for the URL computation, not requested by the caller (the
+    // author permalink substitutes :slug, so `?fields=url` pulls it in).
+    if (frame.forcedUrlColumns && frame.forcedUrlColumns.routerType === 'authors') {
+        frame.forcedUrlColumns.columns.forEach((column) => {
+            delete jsonModel[column];
+        });
+    }
+
     clean.author(jsonModel, frame);
 
     return jsonModel;

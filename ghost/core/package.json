@@ -1,6 +1,6 @@
 {
     "name": "ghost",
-    "version": "6.56.0",
+    "version": "6.57.0",
     "description": "The professional publishing platform",
     "author": "Ghost Foundation",
     "homepage": "https://ghost.org",
@@ -159,7 +159,6 @@
         "countries-and-timezones": "3.9.0",
         "csso": "5.0.5",
         "csv-writer": "1.6.0",
-        "date-fns": "2.30.0",
         "dequal": "catalog:",
         "dompurify": "catalog:",
         "downsize-cjs": "1.1.2",

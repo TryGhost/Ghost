@@ -15,15 +15,10 @@ const messages = {
 const managedAttributes = ['href', 'class', 'activeClass', 'parentActiveClass'];
 
 function _formatAttrs(attributes) {
-    let attributeString = '';
-    Object.keys(attributes).forEach((key) => {
-        let value = attributes[key];
-
+    return Object.keys(attributes)
         // @TODO handle non-string attributes?
-        attributeString += `${key}="${value}"`;
-    });
-
-    return attributeString;
+        .map(key => `${key}="${attributes[key]}"`)
+        .join(' ');
 }
 
 module.exports = function link(options) {

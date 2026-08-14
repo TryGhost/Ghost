@@ -220,7 +220,14 @@ export type ImportMembersCompleteResponseType = {
         originalImportSize?: number;
         stats: {
             imported: number;
-            invalid?: Array<Record<string, string> & {error: string}>;
+            // The submitted row echoed back, so the remaining keys are whatever columns the
+            // CSV had. `errors` is why the row failed; `error` is those reasons written out
+            // for the error report's single cell.
+            invalid?: Array<{
+                [column: string]: unknown;
+                error: string;
+                errors: string[];
+            }>;
         };
         import_label?: ImportMembersImportLabel | null;
     };
@@ -618,7 +625,7 @@ const MEMBER_ACTIVITY_LIMIT = '20';
 // KNOWN LIMITATION: the cursor is `created_at`-only, without the id tie-breaker
 // Ember's version added (`+id:<'<lastId>'`). Two events emitted in the same
 // second on a page boundary can be skipped from the paginated list. The current
-// consumer (`MemberActivityFeed` in `apps/posts`) only fetches 5 events and
+// consumer (`MemberActivityFeed` in `apps/admin`) only fetches 5 events and
 // never calls `fetchNextPage`, so this is not exploitable today; add an id
 // secondary cursor before another screen starts paginating.
 function memberEventsCursor(events: MemberActivityEvent[]): string | undefined {
