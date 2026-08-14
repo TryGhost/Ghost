@@ -58,6 +58,7 @@ Before creating the worktree, inspect collisions rather than discovering them
 halfway through the import:
 
 ```bash
+git fetch --prune origin
 git worktree list --porcelain
 git branch --list 'codex/import-<package>*'
 git branch --remotes --list 'origin/codex/import-<package>*'
@@ -105,15 +106,24 @@ source_split_tip="<recorded-source-split-tip>"
 subtree_commit=$(git rev-parse HEAD)
 ghost_parent=$(git rev-parse HEAD^1)
 imported_parent=$(git rev-parse HEAD^2)
+source_path="path/to/representative-file"
+destination_path="packages/<ghost-directory>/$source_path"
 
 test "$ghost_parent" = "$(git rev-parse origin/main)"
 test "$imported_parent" = "$source_split_tip"
 git merge-base --is-ancestor "$source_split_tip" HEAD
 
+source_history=$(git log --full-history --format=%H "$source_split_tip" -- "$source_path")
+destination_history=$(git log --full-history --format=%H -- "$destination_path")
+test -n "$source_history"
+test -n "$destination_history"
+test "$(git rev-parse "$source_split_tip:$source_path")" = \
+  "$(git rev-parse "$subtree_commit:$destination_path")"
+
 git show --no-patch --format='%H%nparents: %P%n%B' "$subtree_commit"
 git log --graph --oneline --decorate --all --max-count=40
-git log --full-history --oneline -- packages/<ghost-directory>/path/to/representative-file
-git log --oneline "$source_split_tip" -- path/to/representative-file
+git log --full-history --oneline -- "$destination_path"
+git log --full-history --oneline "$source_split_tip" -- "$source_path"
 ```
 
 The subtree commit must have two parents: its first parent must equal the
@@ -121,7 +131,9 @@ recorded Ghost base and its second parent must equal the recorded split tip.
 Checking the prefixed destination path with `--full-history` and the unprefixed
 split path separately is more reliable around merge boundaries than relying on
 ordinary path history or `--follow`, either of which may show only the subtree
-merge.
+merge. Requiring non-empty histories and equal blob IDs makes a missing or
+mismatched representative file stop the import before integration edits obscure
+the source state.
 
 The Admin API schema migration from TryGhost/SDK is a known-good example:
 
