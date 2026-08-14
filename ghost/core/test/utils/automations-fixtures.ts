@@ -1,7 +1,6 @@
 import ObjectId from 'bson-objectid';
 import moment from 'moment';
 import {MEMBER_WELCOME_EMAIL_SLUGS} from '../../core/server/services/member-welcome-emails/constants';
-// @ts-expect-error Database has not been converted to TypeScript yet.
 import * as db from '../../core/server/data/db';
 
 export const TEST_EMAIL_DESIGN_SETTING_ID = '64b6f7b7c8f1a2b3c4d5e6f7';

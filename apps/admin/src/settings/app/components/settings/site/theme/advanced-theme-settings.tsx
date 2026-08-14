@@ -1,6 +1,4 @@
-import ConfirmationModal from '@/settings/app/components/confirmation-modal';
 import InvalidThemeModal, {type FatalErrors} from './invalid-theme-modal';
-import LimitModal from '@/settings/app/components/limit-modal';
 import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import useCustomFonts from '@/settings/app/hooks/use-custom-fonts';
@@ -12,6 +10,7 @@ import {type Theme, isActiveTheme, isDefaultTheme, isDeletableTheme, isLegacyThe
 import {downloadFile, getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {toast} from 'sonner';
 import {useCheckThemeLimitError} from '@/settings/app/hooks/use-check-theme-limit-error';
+import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 
@@ -60,6 +59,7 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
     const handleError = useHandleError();
     const {route, updateRoute} = useSettingsNavigation();
     const {checkThemeLimitError} = useCheckThemeLimitError();
+    const {confirm, showLimit} = useConfirmation();
 
     const handleActivate = async () => {
         try {
@@ -96,7 +96,7 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
     };
 
     const handleDelete = async () => {
-        NiceModal.show(ConfirmationModal, {
+        confirm({
             title: 'Are you sure you want to delete this?',
             prompt: (
                 <>
@@ -131,7 +131,7 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
         const limitError = await checkThemeLimitError('.');
 
         if (limitError) {
-            NiceModal.show(LimitModal, {
+            showLimit({
                 prompt: limitError,
                 onOk: () => updateRoute({route: '/pro', isExternal: true})
             });

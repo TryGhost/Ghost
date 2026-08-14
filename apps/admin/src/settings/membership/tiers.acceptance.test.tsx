@@ -21,14 +21,24 @@ const supporterTier = tier({
     benefits: ["Simple benefit"],
 });
 
-function stripeSettings() {
-    return settingsResponse({settings: {
-        stripe_connect_display_name: "Dummy",
-        stripe_connect_livemode: false,
-        stripe_connect_account_id: "acct_123",
-        stripe_connect_publishable_key: "pk_test_123",
-        stripe_connect_secret_key: "sk_test_123",
-    }});
+function stripeSettings(overrides: Parameters<typeof settingsResponse>[0] = {}) {
+    return settingsResponse({
+        ...overrides,
+        settings: {
+            stripe_connect_display_name: "Dummy",
+            stripe_connect_livemode: false,
+            stripe_connect_account_id: "acct_123",
+            stripe_connect_publishable_key: "pk_test_123",
+            stripe_connect_secret_key: "sk_test_123",
+            ...overrides.settings,
+        },
+    });
+}
+
+function withoutSettings(keys: string[]) {
+    const response = stripeSettings({labs: {machinePayments: true}});
+    response.settings = response.settings.filter(({key}) => !keys.includes(key));
+    return response;
 }
 
 function stripeLimitConfig() {
@@ -256,6 +266,30 @@ describe("Tier settings", () => {
         await settingsScreen.tiers().getByRole("button", {name: "Connected to Stripe"}).first().click();
         await expect(settingsScreen.limitModal()).toHaveCount(0);
         await expect.element(settingsScreen.stripeModal()).toBeVisible();
+    });
+
+    it("shows agent payment controls when the lab is on and the backend has deployed them", async () => {
+        fakeSettingsScreens();
+        fakeTiers([freeTier, supporterTier]);
+        await renderAdminApp("/settings", {
+            labs: {machinePayments: true},
+            boot: {browseSettings: {response: stripeSettings({labs: {machinePayments: true}})}},
+        });
+
+        await expect.element(settingsScreen.tiers().getByText("Accept payments from AI agents")).toBeVisible();
+        await expect.element(settingsScreen.tiers().getByTestId("machine-payments-toggle")).toBeVisible();
+    });
+
+    it("hides agent payment controls when the backend has not deployed them", async () => {
+        fakeSettingsScreens();
+        fakeTiers([freeTier, supporterTier]);
+        await renderAdminApp("/settings", {
+            labs: {machinePayments: true},
+            boot: {browseSettings: {response: withoutSettings(["machine_payments_enabled"])}},
+        });
+
+        await expect(settingsScreen.tiers().getByText("Accept payments from AI agents")).toHaveCount(0);
+        await expect(settingsScreen.tiers().getByTestId("machine-payments-toggle")).toHaveCount(0);
     });
 
     it("blocks direct access to Stripe connection when the plan limit applies", async () => {

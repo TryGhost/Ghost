@@ -67,8 +67,7 @@ class SiteMapManager {
             };
             this._routerEntries.push(entry);
             this.pages.addUrl(entry.url, entry.datum);
-            // A router registering after a build (routes reload re-registers
-            // them one macrotask after RoutesReset) must not leave a
+            // A router registering after a build must not leave a
             // zero-router index marked built — the CDN would pin it.
             this._invalidateIndex();
         });

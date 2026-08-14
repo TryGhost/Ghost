@@ -55,7 +55,10 @@ export function MappingStep({
 
     return (
         <>
-            <div className="mt-5 space-y-5">
+            {/* A flex column inside the height-bounded dialog: the table box below grows into
+                whatever room is left, so a short file keeps a small modal and a long one
+                fills the viewport rather than scrolling inside a fixed height. */}
+            <div className="mt-5 flex min-h-0 flex-1 flex-col space-y-5">
                 {fileData === null ? (
                     <div className="flex items-center justify-center rounded-md border bg-muted p-10">
                         <LoadingIndicator size="md" />
@@ -63,10 +66,10 @@ export function MappingStep({
                 ) : (
                     <>
                         <div className={cn(
-                            'overflow-hidden rounded-md border',
+                            'flex min-h-0 flex-1 flex-col overflow-hidden rounded-md border',
                             showMappingErrors && mappingError && 'border-red-500'
                         )}>
-                            <div className="max-h-[400px] overflow-auto">
+                            <div className="min-h-0 flex-1 overflow-auto">
                                 <Table className="table-fixed">
                                     <TableHeader>
                                         <TableRow>

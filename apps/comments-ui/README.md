@@ -6,14 +6,17 @@ Comments widget that is embedded at the bottom of posts in Ghost.
 
 ### Pre-requisites
 
-- Run `pnpm` in Ghost monorepo root
+- Run `pnpm setup` in the Ghost monorepo root
 
-### Running via Ghost `pnpm dev` in root folder
+### Running via Ghost from the monorepo root
 
-Comments UI runs automatically when using Ghost's development command from the monorepo root:
+Start Ghost with the public-app watchers enabled:
+
 ```bash
-pnpm dev
+pnpm dev:public
 ```
+
+This starts the standard development environment and the Comments UI watcher. To run only the package's build watcher, use `pnpm dev` from this directory.
 
 ## Release
 
@@ -36,4 +39,4 @@ If the CI doesn't clear JsDelivr cache to get the new version out instantly, you
 
 # Copyright & License
 
-Copyright (c) 2013-2026 Ghost Foundation - Released under the [MIT license](LICENSE).
+Copyright (c) 2013-2026 Ghost Foundation - Released under the [MIT license](https://github.com/TryGhost/Ghost/blob/main/LICENSE).

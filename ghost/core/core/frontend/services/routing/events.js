@@ -1,7 +1,8 @@
 const EventEmitter = require('events').EventEmitter;
 
 /**
- * Raised for each router mounted during activation.
+ * Raised by the four routers given a routerCreated callback: static routes,
+ * collections, static pages and taxonomies.
  *
  * @typedef {Object} RouteRegistered
  * @property {string|null} path - route in domain notation, e.g. `/about/`.

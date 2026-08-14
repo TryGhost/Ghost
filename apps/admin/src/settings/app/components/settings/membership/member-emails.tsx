@@ -1,4 +1,3 @@
-import ConfirmationModal from '@/settings/app/components/confirmation-modal';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
 import TopLevelGroup from '@/settings/app/components/top-level-group';
@@ -13,6 +12,7 @@ import {WELCOME_EMAIL_SLUGS, type WelcomeEmailType, getDefaultWelcomeEmailRecord
 import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'sonner';
 import {useAddAutomatedEmail, useBrowseAutomatedEmails, useEditAutomatedEmail, useVerifyAutomatedEmailSender} from '@tryghost/admin-x-framework/api/automated-emails';
+import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {withErrorBoundary} from '@/settings/app/components/error-boundary';
@@ -145,6 +145,7 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {mutateAsync: editAutomatedEmail, isPending: isEditingAutomatedEmail} = useEditAutomatedEmail();
     const {mutateAsync: verifySenderUpdate} = useVerifyAutomatedEmailSender();
     const handleError = useHandleError();
+    const {confirm} = useConfirmation();
 
     const automatedEmails = automatedEmailsData?.automated_emails || [];
     const isMutating = isAddingAutomatedEmail || isEditingAutomatedEmail;
@@ -196,7 +197,7 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     prompt = <>Welcome email reply-to address has been verified and updated.</>;
                 }
 
-                NiceModal.show(ConfirmationModal, {
+                confirm({
                     title,
                     prompt,
                     okLabel: 'Close',
@@ -212,7 +213,7 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
                 clearVerifyEmailFromRoute();
 
-                NiceModal.show(ConfirmationModal, {
+                confirm({
                     title: 'Error verifying email address',
                     prompt,
                     okLabel: 'Close',
@@ -224,7 +225,7 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
         };
 
         verify();
-    }, [handleError, verifyEmailToken, verifySenderUpdate]);
+    }, [confirm, handleError, verifyEmailToken, verifySenderUpdate]);
 
     const handleToggle = async (emailType: 'free' | 'paid') => {
         const existing = automatedEmails.find(email => email.slug === WELCOME_EMAIL_SLUGS[emailType]);

@@ -1,0 +1,24 @@
+services:
+  docker:
+    command: sudo dockerd --group root
+
+  ghost:
+    command: |
+      export PATH="$PWD/.agents/bin:$HOME/.local/node-v$(cat .node-version)-linux-x64/bin:$PATH"
+      attempts=0
+      until docker info >/dev/null 2>&1; do
+        attempts=$((attempts + 1))
+        if [ "$attempts" -ge 60 ]; then
+          echo "Docker did not become ready after 60 seconds" >&2
+          exit 1
+        fi
+        sleep 1
+      done
+      export DEV_COMPOSE_FILES="-f compose.dev.orb.yaml"
+      export GHOST_URL="$PUBLIC_URL"
+      unset PORT
+      exec pnpm dev
+    port: 2370
+    portal:
+      title: Ghost development
+      description: Full source environment with Admin HMR, backend reloads, MySQL, Redis, and Mailpit.

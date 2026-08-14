@@ -107,6 +107,9 @@ export interface GhostInstanceFixture {
     ghostAccountOwner: User;
     ghostAccountAuthor: StaffAccount;
     ghostAccountContributor: StaffAccount;
+    ghostAccountEditor: StaffAccount;
+    ghostAccountSuperEditor: StaffAccount;
+    ghostAccountAdministrator: StaffAccount;
     pageWithAuthenticatedUser: {
         page: Page;
         context: BrowserContext;
@@ -568,6 +571,18 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
 
     ghostAccountContributor: async ({pageWithAuthenticatedUser, emailClient}, use) => {
         await use(await createStaffAccount(pageWithAuthenticatedUser.page, emailClient, 'Contributor'));
+    },
+
+    ghostAccountEditor: async ({pageWithAuthenticatedUser, emailClient}, use) => {
+        await use(await createStaffAccount(pageWithAuthenticatedUser.page, emailClient, 'Editor'));
+    },
+
+    ghostAccountSuperEditor: async ({pageWithAuthenticatedUser, emailClient}, use) => {
+        await use(await createStaffAccount(pageWithAuthenticatedUser.page, emailClient, 'Super Editor'));
+    },
+
+    ghostAccountAdministrator: async ({pageWithAuthenticatedUser, emailClient}, use) => {
+        await use(await createStaffAccount(pageWithAuthenticatedUser.page, emailClient, 'Administrator'));
     },
 
     // Intermediate fixture that sets up the page and returns all setup data

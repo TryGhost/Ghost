@@ -1,6 +1,7 @@
 {
   "name": "@tryghost/kg-clean-basic-html",
   "version": "4.3.3",
+  "description": "Sanitises and normalises the basic HTML snippets used in Ghost's editor cards",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/TryGhost/Ghost.git",

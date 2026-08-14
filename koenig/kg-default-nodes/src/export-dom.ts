@@ -10,8 +10,6 @@ export type ExportDOMOutput<
 };
 
 export interface ExportDOMFeatureOptions {
-    emailCustomization?: boolean;
-    emailCustomizationAlpha?: boolean;
     [key: string]: unknown;
 }
 

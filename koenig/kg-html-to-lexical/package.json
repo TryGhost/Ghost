@@ -1,6 +1,7 @@
 {
   "name": "@tryghost/kg-html-to-lexical",
   "version": "1.3.3",
+  "description": "Converts HTML strings into Lexical editor state for Ghost",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/TryGhost/Ghost.git",

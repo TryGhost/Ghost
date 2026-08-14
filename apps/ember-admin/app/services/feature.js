@@ -77,12 +77,9 @@ export default class FeatureService extends Service {
 
     // labs flags
     @feature('stripeAutomaticTax') stripeAutomaticTax;
-    @feature('emailCustomization') emailCustomization;
     @feature('importMemberTier') importMemberTier;
     @feature('adminUIRefresh') adminUIRefresh;
-    @feature('lexicalIndicators') lexicalIndicators;
     @feature('editorExcerpt') editorExcerpt;
-    @feature('memberDetailsReact') memberDetailsReact;
     @feature('tagDetailsReact') tagDetailsReact;
     @feature('paywallImprovements') paywallImprovements;
     @feature('automations') automations;

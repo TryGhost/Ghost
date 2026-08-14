@@ -4,17 +4,17 @@
 
 ### Pre-requisites
 
-- Run `pnpm` in Ghost monorepo root
-- Run `pnpm` in this directory
+- Run `pnpm setup` in the Ghost monorepo root
 
-### Running via Ghost `pnpm dev` in root folder
+### Running via Ghost from the monorepo root
 
-Announcement Bar runs automatically when using Ghost's development command from the monorepo root:
+Start Ghost with the public-app watchers enabled:
+
 ```bash
-pnpm dev
+pnpm dev:public
 ```
 
-This starts all frontend apps (including Announcement Bar.)
+This starts the standard development environment and the Announcement Bar watcher. To run only the package's build watcher, use `pnpm dev` from this directory.
 
 ## Release
 
@@ -32,8 +32,8 @@ In either case, you need sufficient permissions to release `@tryghost` packages 
 2. Merge the release commit to `main`
 3. Wait until a new version of Ghost is released
 
-To use the new version of signup form in Ghost, update the version in Ghost core's default configuration (currently at `core/shared/config/default.json`)
+To use the new version of Announcement Bar in Ghost, update the version in Ghost core's default configuration (currently at `core/shared/config/default.json`)
 
 # Copyright & License 
 
-Copyright (c) 2013-2026 Ghost Foundation - Released under the [MIT license](LICENSE).
+Copyright (c) 2013-2026 Ghost Foundation - Released under the [MIT license](https://github.com/TryGhost/Ghost/blob/main/LICENSE).

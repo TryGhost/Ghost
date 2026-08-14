@@ -16,7 +16,7 @@ import { useIsActiveLink } from "./use-is-active-link";
 import { useEmberRouting } from "@/ember-bridge";
 import { useFeatureFlag } from "@tryghost/admin-x-framework/hooks";
 
-const LEGACY_MEMBERS_ACTIVE_ROUTES = ['member', 'member.new', 'members-activity'];
+const LEGACY_MEMBERS_ACTIVE_ROUTES = ['members-activity'];
 
 function PostsNavItemContent({isActive, to}: {isActive: boolean; to: string}) {
     return (

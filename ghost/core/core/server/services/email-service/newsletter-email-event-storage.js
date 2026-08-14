@@ -1,9 +1,9 @@
 const moment = require('moment-timezone');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
-const config = require('../../../shared/config');
 
 class NewsletterEmailEventStorage {
+    #config;
     #db;
     #membersRepository;
     #models;
@@ -11,7 +11,8 @@ class NewsletterEmailEventStorage {
     #prometheusClient;
     #pendingUpdates;
 
-    constructor({db, models, membersRepository, emailSuppressionList, prometheusClient}) {
+    constructor({config, db, models, membersRepository, emailSuppressionList, prometheusClient}) {
+        this.#config = config;
         this.#db = db;
         this.#models = models;
         this.#membersRepository = membersRepository;
@@ -35,7 +36,7 @@ class NewsletterEmailEventStorage {
     }
 
     async handleDelivered(event) {
-        const useBatchProcessing = config.get('emailAnalytics:batchProcessing');
+        const useBatchProcessing = this.#config.get('emailAnalytics:batchProcessing');
 
         if (useBatchProcessing) {
             // Accumulate update for batch processing
@@ -61,7 +62,7 @@ class NewsletterEmailEventStorage {
     }
 
     async handleOpened(event) {
-        const useBatchProcessing = config.get('emailAnalytics:batchProcessing');
+        const useBatchProcessing = this.#config.get('emailAnalytics:batchProcessing');
 
         if (useBatchProcessing) {
             // Accumulate update for batch processing
@@ -87,7 +88,7 @@ class NewsletterEmailEventStorage {
     }
 
     async handlePermanentFailed(event) {
-        const useBatchProcessing = config.get('emailAnalytics:batchProcessing');
+        const useBatchProcessing = this.#config.get('emailAnalytics:batchProcessing');
 
         if (useBatchProcessing) {
             // Accumulate update for batch processing
