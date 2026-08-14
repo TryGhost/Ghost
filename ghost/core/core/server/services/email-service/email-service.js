@@ -48,6 +48,7 @@ class EmailService {
     #emailAnalyticsJobs;
     #domainWarmingService;
     #config;
+    #serviceStartedAt;
 
     /**
      *
@@ -56,7 +57,8 @@ class EmailService {
      * @param {SendingService} dependencies.sendingService
      * @param {object} dependencies.models
      * @param {object} dependencies.models.Email
-     * @param {object} [dependencies.models.EmailBatch] - Required for resumeInterruptedSends breadcrumbs
+     * @param {object} [dependencies.models.EmailBatch] - Required for resumeInterruptedSends breadcrumbs and pending recovery
+     * @param {object} [dependencies.models.EmailRecipient] - Required for fail-closed pending recovery
      * @param {object} dependencies.settingsCache
      * @param {EmailRenderer} dependencies.emailRenderer
      * @param {EmailSegmenter} dependencies.emailSegmenter
@@ -93,6 +95,7 @@ class EmailService {
         this.#emailAnalyticsJobs = emailAnalyticsJobs;
         this.#domainWarmingService = domainWarmingService;
         this.#config = config;
+        this.#serviceStartedAt = new Date().toISOString();
     }
 
     /**
@@ -180,6 +183,7 @@ class EmailService {
             post_id: post.id,
             newsletter_id: newsletter.id,
             status: 'pending',
+            error: null,
             submitted_at: new Date(),
             track_opens: !!this.#settingsCache.get('email_track_opens'),
             track_clicks: !!this.#settingsCache.get('email_track_clicks'),
@@ -215,9 +219,13 @@ class EmailService {
 
     /**
      * Boot-time scanner: resumes newsletter emails left in `submitting` after a
-     * previous container's interrupted send. Iterates sequentially; one failure
-     * does not skip others. Rows older than the configured max-age are flipped
-     * to `failed` (not resumed) so stale content does not get sent to current members.
+     * previous container's interrupted send. It also performs a boot-only pass
+     * for `pending` rows that were persisted before this service started, so a
+     * crash between persistence and job scheduling can be safely returned to the
+     * normal CAS-protected scheduling path.
+     * Iterates sequentially; one failure does not skip others. Rows older than
+     * the configured max-age are flipped to `failed` (not resumed) so stale
+     * content does not get sent to current members.
      */
     async resumeInterruptedSends() {
         const maxAgeMs = this.#config?.get?.('bulkEmail:resumeMaxAgeMs') ?? DEFAULT_RESUME_MAX_AGE_MS;
@@ -250,9 +258,6 @@ class EmailService {
             filter: `status:submitting+created_at:>'${cutoffIso}'`
         });
         const list = emails.models || emails;
-        if (staleList.length === 0 && list.length === 0) {
-            return;
-        }
         if (list.length > 0) {
             logging.info(`Email resume: found ${list.length} email(s) in submitting status within max age (${maxAgeMs}ms)`);
         }
@@ -262,6 +267,33 @@ class EmailService {
                 await this.#resumeOneEmail(email);
             } catch (e) {
                 logging.error(e);
+            }
+        }
+
+        // A fresh submitting row may have just been atomically moved to pending
+        // and scheduled above. Do not let the pending pass enqueue it again
+        // before its normal job has materialized batches/recipients. Skipping a
+        // raced status change is deliberately conservative; the normal CAS is
+        // still the final deduplication authority.
+        const submittingEmailIds = new Set(list.map(email => email.id));
+
+        const pendingEmails = await this.#models.Email.findAll({
+            filter: `status:pending+created_at:>'${cutoffIso}'+created_at:<'${this.#serviceStartedAt}'`
+        });
+        const pendingList = pendingEmails.models || pendingEmails;
+        if (pendingList.length > 0) {
+            logging.info('Email resume: found pending email(s) eligible for boot recovery');
+        }
+
+        for (const email of pendingList) {
+            if (submittingEmailIds.has(email.id)) {
+                logging.info(`Email resume: ${email.id} skipped because submitting recovery ran this boot`);
+                continue;
+            }
+            try {
+                await this.#resumePendingEmail(email, cutoffIso);
+            } catch {
+                logging.warn(`Email resume: ${email.id} skipped because pending recovery failed`);
             }
         }
 
@@ -306,6 +338,86 @@ class EmailService {
         logging.warn(`Email resume: scheduling ${email.id} for re-send ${JSON.stringify(breadcrumb)}`);
 
         // Skip checkLimits — this email already passed limits when first sent.
+        this.#batchSendingService.scheduleEmail(email);
+    }
+
+    async #resumePendingEmail(email, cutoffIso) {
+        if (email.get('status') !== 'pending') {
+            logging.info(`Email resume: ${email.id} skipped because status is not pending`);
+            return;
+        }
+
+        const createdAt = new Date(email.get('created_at')).getTime();
+        const serviceStartedAt = new Date(this.#serviceStartedAt).getTime();
+        const resumeCutoffAt = new Date(cutoffIso).getTime();
+        if (!Number.isFinite(createdAt) || createdAt <= resumeCutoffAt || createdAt >= serviceStartedAt) {
+            logging.info(`Email resume: ${email.id} skipped because created_at is outside the recovery window`);
+            return;
+        }
+
+        const emailCount = Number(email.get('email_count'));
+        const deliveredCount = email.get('delivered_count');
+        const failedCount = email.get('failed_count');
+        const error = email.get('error');
+
+        if (!Number.isFinite(emailCount) || emailCount <= 0) {
+            logging.info(`Email resume: ${email.id} skipped because email_count is not positive`);
+            return;
+        }
+        if (!Number.isFinite(deliveredCount) || deliveredCount !== 0 || !Number.isFinite(failedCount) || failedCount !== 0) {
+            logging.info(`Email resume: ${email.id} skipped because delivery counters are non-zero`);
+            return;
+        }
+        if (error !== null && error !== '') {
+            logging.info(`Email resume: ${email.id} skipped because error is set`);
+            return;
+        }
+
+        const post = await email.getLazyRelation('post');
+        const postStatus = post ? post.get('status') : null;
+        if (postStatus !== 'published' && postStatus !== 'sent') {
+            logging.info(`Email resume: ${email.id} skipped because parent post is not sendable`);
+            return;
+        }
+
+        const newsletter = await email.getLazyRelation('newsletter');
+        const newsletterStatus = newsletter ? newsletter.get('status') : null;
+        if (newsletterStatus !== 'active') {
+            logging.info(`Email resume: ${email.id} skipped because newsletter is not active`);
+            return;
+        }
+
+        const models = /** @type {any} */ (this.#models);
+        const emailBatchModel = models.EmailBatch;
+        const emailRecipientModel = models.EmailRecipient;
+        if (!emailBatchModel || !emailRecipientModel) {
+            logging.warn(`Email resume: ${email.id} skipped because required recovery models are unavailable`);
+            return;
+        }
+
+        try {
+            const existingBatch = await emailBatchModel.findOne({email_id: email.id}, {require: false});
+            if (existingBatch) {
+                logging.info(`Email resume: ${email.id} skipped because a batch already exists`);
+                return;
+            }
+        } catch {
+            logging.warn(`Email resume: ${email.id} skipped because batch lookup failed`);
+            return;
+        }
+
+        try {
+            const existingRecipient = await emailRecipientModel.findOne({email_id: email.id}, {require: false});
+            if (existingRecipient) {
+                logging.info(`Email resume: ${email.id} skipped because a recipient already exists`);
+                return;
+            }
+        } catch {
+            logging.warn(`Email resume: ${email.id} skipped because recipient lookup failed`);
+            return;
+        }
+
+        logging.warn(`Email resume: scheduling pending email ${email.id} for boot recovery`);
         this.#batchSendingService.scheduleEmail(email);
     }
 
@@ -362,7 +474,9 @@ class EmailService {
 
         // Change email status back to 'pending' before scheduling
         // so we have a immediate response when retrying an email (schedule can take a while to kick off sometimes)
-        await email.save({status: 'pending'}, {patch: true});
+        // Clear the old failure before re-queuing so a crash before the job runs
+        // leaves a pending row eligible for the same fail-closed boot recovery as a new email.
+        await email.save({status: 'pending', error: null}, {patch: true});
 
         this.#batchSendingService.scheduleEmail(email);
         return email;

@@ -86,6 +86,79 @@ describe('Resume interrupted sends', function () {
         sinon.assert.calledOnce(mailgunStub);
     });
 
+    it('resumes a pending email after boot recovery when batch and recipient rows were lost', async function () {
+        configUtils.set('bulkEmail:batchSize', 100);
+        configUtils.set('bulkEmail:resumeMaxAgeMs', 48 * 60 * 60 * 1000);
+
+        const {emailModel} = await sendEmail(agent);
+        assert.equal(emailModel.get('error'), null, 'freshly persisted email must have a concrete empty error state');
+        const originalBatches = (await models.EmailBatch.findAll({filter: `email_id:'${emailModel.id}'`})).models;
+        const originalRecipients = (await models.EmailRecipient.findAll({filter: `email_id:'${emailModel.id}'`})).models;
+        assert.ok(originalBatches.length > 0, 'expected original email batches to exist');
+        assert.ok(originalRecipients.length > 0, 'expected original email recipients to exist');
+
+        for (const recipient of originalRecipients) {
+            await recipient.destroy();
+        }
+        for (const batch of originalBatches) {
+            await batch.destroy();
+        }
+
+        await emailModel.save({
+            status: 'pending',
+            delivered_count: 0,
+            failed_count: 0,
+            error: null,
+            created_at: new Date(Date.now() - 60 * 60 * 1000)
+        }, {patch: true, autoRefresh: false});
+
+        const mailgunStub = mockManager.getMailgunCreateMessageStub();
+        mailgunStub.resetHistory();
+
+        const completedPromise = jobManager.awaitCompletion('batch-sending-service-job');
+        await emailService.service.resumeInterruptedSends();
+        await completedPromise;
+
+        await emailModel.refresh();
+        assert.equal(emailModel.get('status'), 'submitted', 'email should be re-submitted after boot recovery');
+        sinon.assert.calledOnce(mailgunStub);
+
+        const recreatedBatches = (await models.EmailBatch.findAll({filter: `email_id:'${emailModel.id}'`})).models;
+        const recreatedRecipients = (await models.EmailRecipient.findAll({filter: `email_id:'${emailModel.id}'`})).models;
+        assert.ok(recreatedBatches.length > 0, 'expected batches to be recreated during recovery');
+        assert.ok(recreatedRecipients.length > 0, 'expected recipients to be recreated during recovery');
+        assert.ok(recreatedBatches.some((/** @type {any} */ batch) => !originalBatches.some((/** @type {any} */ original) => original.id === batch.id)), 'expected freshly recreated batch rows');
+        assert.ok(recreatedRecipients.some((/** @type {any} */ recipient) => !originalRecipients.some((/** @type {any} */ original) => original.id === recipient.id)), 'expected freshly recreated recipient rows');
+    });
+
+    it('rejects a pending row when batches or recipients already exist', async function () {
+        configUtils.set('bulkEmail:batchSize', 100);
+        configUtils.set('bulkEmail:resumeMaxAgeMs', 48 * 60 * 60 * 1000);
+
+        const {emailModel} = await sendEmail(agent);
+        const mailgunStub = mockManager.getMailgunCreateMessageStub();
+        mailgunStub.resetHistory();
+
+        await emailModel.save({
+            status: 'pending',
+            delivered_count: 0,
+            failed_count: 0,
+            error: null,
+            created_at: new Date(Date.now() - 60 * 60 * 1000)
+        }, {patch: true, autoRefresh: false});
+
+        const recipients = (await models.EmailRecipient.findAll({filter: `email_id:'${emailModel.id}'`})).models;
+        const batches = (await models.EmailBatch.findAll({filter: `email_id:'${emailModel.id}'`})).models;
+        assert.ok(recipients.length > 0, 'expected at least one recipient in the seeded email');
+        assert.ok(batches.length > 0, 'expected at least one batch in the seeded email');
+
+        await emailService.service.resumeInterruptedSends();
+
+        await emailModel.refresh();
+        assert.equal(emailModel.get('status'), 'pending', 'email should remain pending when recovery is blocked');
+        sinon.assert.notCalled(mailgunStub);
+    });
+
     it('marks email as failed when an orphan submitting batch is encountered', async function () {
         // Same setup, but this time one of the batches is left as `submitting` — the orphan
         // state a crashed worker leaves behind. The (b) short-circuit fix should refuse to

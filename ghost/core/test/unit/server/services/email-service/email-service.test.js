@@ -14,6 +14,8 @@ describe('Email Service', function () {
     let scheduleRecurringNewslettersJob;
     let domainWarmingService;
     let getMembersCount;
+    /** @type {{restore: () => void} | undefined} */
+    let testClock;
 
     beforeEach(function () {
         memberCount = 123;
@@ -117,6 +119,10 @@ describe('Email Service', function () {
     });
 
     afterEach(function () {
+        if (testClock) {
+            testClock.restore();
+            testClock = undefined;
+        }
         sinon.restore();
     });
 
@@ -305,6 +311,7 @@ describe('Email Service', function () {
             assert.equal(email.get('newsletter_id'), post.get('newsletter').id);
             assert.equal(email.get('post_id'), post.id);
             assert.equal(email.get('status'), 'pending');
+            assert.equal(email.get('error'), null);
             assert.equal(email.get('source'), post.get('mobiledoc'));
             assert.equal(email.get('source_type'), 'mobiledoc');
             sinon.assert.calledOnce(scheduleRecurringNewslettersJob);
@@ -541,6 +548,8 @@ describe('Email Service', function () {
 
             await service.retryEmail(email);
             sinon.assert.calledOnce(scheduleEmail);
+            assert.equal(email.get('status'), 'pending');
+            assert.equal(email.get('error'), null);
         });
 
         it('Does not schedule email again if draft', async function () {
@@ -584,16 +593,320 @@ describe('Email Service', function () {
     });
 
     describe('resumeInterruptedSends', function () {
-        // Mock factory that mimics the scanner's filter semantics: the scanner runs two
-        // findAll queries, one for stale rows (`created_at:<...`) and one for fresh rows
-        // (`created_at:>...`). For tests that don't care about the stale path, this
-        // returns the given emails for the fresh query and an empty list for stale.
+        // Mock factory that mimics the scanner's filter semantics: it queries stale and
+        // fresh `submitting` rows plus bounded `pending` rows. For legacy submitting tests,
+        // return the given emails for non-stale filters and an empty list for stale.
         const filterAwareFindAll = emails => async ({filter}) => {
             if (filter.includes('created_at:<')) {
                 return {models: []};
             }
             return {models: emails};
         };
+
+        const buildPendingRecoveryService = (/** @type {any} */ {
+            pendingEmails = [],
+            submittingEmails = [],
+            emailBatchFindOne,
+            emailRecipientFindOne,
+            omitEmailBatchModel = false,
+            omitEmailRecipientModel = false,
+            updateStatusLock,
+            config = {}
+        } = {}) => {
+            const capturedFilters = [];
+            const localScheduleEmail = sinon.stub().returns();
+            const localUpdateStatusLock = updateStatusLock ?? sinon.stub().resolves(createModel({}));
+            const models = /** @type {any} */ ({
+                Email: {
+                    findAll: async (/** @type {{filter: string}} */ query) => {
+                        const {filter} = query;
+                        capturedFilters.push(filter);
+                        if (filter.includes('status:submitting')) {
+                            if (filter.includes('created_at:<')) {
+                                return {models: []};
+                            }
+                            return {models: submittingEmails};
+                        }
+                        if (filter.includes('status:pending')) {
+                            return {models: pendingEmails};
+                        }
+                        return {models: []};
+                    }
+                }
+            });
+
+            if (!omitEmailBatchModel) {
+                models.EmailBatch = typeof emailBatchFindOne === 'function'
+                    ? {findOne: emailBatchFindOne}
+                    : createModelClass({findOne: emailBatchFindOne ?? null});
+            }
+            if (!omitEmailRecipientModel) {
+                models.EmailRecipient = typeof emailRecipientFindOne === 'function'
+                    ? {findOne: emailRecipientFindOne}
+                    : createModelClass({findOne: emailRecipientFindOne ?? null});
+            }
+
+            const localService = new EmailService({
+                emailSegmenter: {getMembersCount: () => Promise.resolve(0)},
+                limitService: {isLimited: () => false, errorIfIsOverLimit: () => {}, errorIfWouldGoOverLimit: () => {}},
+                verificationTrigger: {checkVerificationRequired: () => Promise.resolve(false)},
+                models,
+                batchSendingService: {
+                    scheduleEmail: localScheduleEmail,
+                    updateStatusLock: localUpdateStatusLock
+                },
+                settingsCache,
+                emailRenderer,
+                membersRepository,
+                sendingService,
+                emailAnalyticsJobs: {scheduleRecurringNewslettersJob},
+                domainWarmingService,
+                config
+            });
+
+            return {capturedFilters, localScheduleEmail, localService};
+        };
+
+        const createPendingEmail = ({
+            id,
+            created_at,
+            status = 'pending',
+            email_count = 1,
+            delivered_count = 0,
+            failed_count = 0,
+            error = '',
+            postStatus = 'published',
+            newsletterStatus = 'active'
+        }) => createModel({
+            id,
+            status,
+            created_at,
+            email_count,
+            delivered_count,
+            failed_count,
+            error,
+            post: createModel({status: postStatus}),
+            newsletter: createModel({status: newsletterStatus})
+        });
+
+        it('Resumes a valid pending email created before service start and ignores current-process rows', async function () {
+            testClock = sinon.useFakeTimers({now: new Date('2025-01-01T12:00:00Z')});
+
+            const priorProcessEmail = createPendingEmail({
+                id: 'prior-process',
+                created_at: new Date('2025-01-01T11:55:00Z')
+            });
+            const currentProcessEmail = createPendingEmail({
+                id: 'current-process',
+                created_at: new Date('2025-01-01T12:00:01Z')
+            });
+
+            const {capturedFilters, localScheduleEmail, localService} = buildPendingRecoveryService({
+                pendingEmails: [priorProcessEmail, currentProcessEmail]
+            });
+
+            await localService.resumeInterruptedSends();
+
+            sinon.assert.calledOnce(localScheduleEmail);
+            sinon.assert.calledWithExactly(localScheduleEmail, priorProcessEmail);
+            assert.ok(capturedFilters.some(filter => filter.includes('status:pending') && filter.includes("created_at:>'2024-12-31T12:00:00.000Z'") && filter.includes("created_at:<'2025-01-01T12:00:00.000Z'")), `expected pending recovery filter to include both cutoff and boot timestamp, got: ${capturedFilters.join(' | ')}`);
+        });
+
+        it('Does not reschedule a submitting email through the pending pass in the same boot', async function () {
+            testClock = sinon.useFakeTimers({now: new Date('2025-01-01T12:00:00Z')});
+
+            const email = createPendingEmail({
+                id: 'same-boot-submitting-email',
+                status: 'submitting',
+                created_at: new Date('2025-01-01T11:55:00Z')
+            });
+            const updateStatusLock = sinon.stub().callsFake(async (_Model, _emailId, status) => {
+                await email.save({status});
+                return email;
+            });
+            const {localScheduleEmail, localService} = buildPendingRecoveryService({
+                submittingEmails: [email],
+                pendingEmails: [email],
+                updateStatusLock
+            });
+
+            await localService.resumeInterruptedSends();
+
+            sinon.assert.calledOnce(localScheduleEmail);
+            sinon.assert.calledWithExactly(localScheduleEmail, email);
+            sinon.assert.calledOnce(updateStatusLock);
+        });
+
+        it('Fails closed for invalid pending candidates', async function () {
+            testClock = sinon.useFakeTimers({now: new Date('2025-01-01T12:00:00Z')});
+
+            const cases = [
+                {
+                    name: 'current-process timestamp',
+                    email: createPendingEmail({
+                        id: 'current-process',
+                        created_at: new Date('2025-01-01T12:00:01Z')
+                    })
+                },
+                {
+                    name: 'out-of-window',
+                    email: createPendingEmail({
+                        id: 'out-of-window',
+                        created_at: new Date('2024-12-30T12:00:00Z')
+                    })
+                },
+                {
+                    name: 'zero/nonpositive audience',
+                    email: createPendingEmail({
+                        id: 'zero-audience',
+                        created_at: new Date('2025-01-01T11:00:00Z'),
+                        email_count: 0
+                    })
+                },
+                {
+                    name: 'error',
+                    email: createPendingEmail({
+                        id: 'with-error',
+                        created_at: new Date('2025-01-01T11:00:00Z'),
+                        error: 'boom'
+                    })
+                },
+                {
+                    name: 'nonzero delivered count',
+                    email: createPendingEmail({
+                        id: 'delivered-count',
+                        created_at: new Date('2025-01-01T11:00:00Z'),
+                        delivered_count: 1
+                    })
+                },
+                {
+                    name: 'nonzero failed count',
+                    email: createPendingEmail({
+                        id: 'failed-count',
+                        created_at: new Date('2025-01-01T11:00:00Z'),
+                        failed_count: 1
+                    })
+                },
+                {
+                    name: 'non-finite delivered count',
+                    email: createPendingEmail({
+                        id: 'non-finite-delivered-count',
+                        created_at: new Date('2025-01-01T11:00:00Z'),
+                        delivered_count: Number.NaN
+                    })
+                },
+                {
+                    name: 'invalid error state',
+                    email: createPendingEmail({
+                        id: 'invalid-error-state',
+                        created_at: new Date('2025-01-01T11:00:00Z'),
+                        error: /** @type {any} */ (false)
+                    })
+                },
+                {
+                    name: 'missing error state',
+                    email: createModel({
+                        id: 'missing-error-state',
+                        status: 'pending',
+                        created_at: new Date('2025-01-01T11:00:00Z'),
+                        email_count: 1,
+                        delivered_count: 0,
+                        failed_count: 0,
+                        post: createModel({status: 'published'}),
+                        newsletter: createModel({status: 'active'})
+                    })
+                },
+                {
+                    name: 'non-pending status',
+                    email: createPendingEmail({
+                        id: 'wrong-status',
+                        created_at: new Date('2025-01-01T11:00:00Z'),
+                        status: 'submitting'
+                    })
+                },
+                {
+                    name: 'existing batch',
+                    email: createPendingEmail({
+                        id: 'existing-batch',
+                        created_at: new Date('2025-01-01T11:00:00Z')
+                    }),
+                    emailBatchFindOne: {id: 'batch-1'}
+                },
+                {
+                    name: 'existing recipient',
+                    email: createPendingEmail({
+                        id: 'existing-recipient',
+                        created_at: new Date('2025-01-01T11:00:00Z')
+                    }),
+                    emailRecipientFindOne: {id: 'recipient-1'}
+                },
+                {
+                    name: 'batch lookup failure',
+                    email: createPendingEmail({
+                        id: 'batch-lookup-failure',
+                        created_at: new Date('2025-01-01T11:00:00Z')
+                    }),
+                    emailBatchFindOne: async () => {
+                        throw new Error('batch lookup unavailable');
+                    }
+                },
+                {
+                    name: 'recipient lookup failure',
+                    email: createPendingEmail({
+                        id: 'recipient-lookup-failure',
+                        created_at: new Date('2025-01-01T11:00:00Z')
+                    }),
+                    emailRecipientFindOne: async () => {
+                        throw new Error('recipient lookup unavailable');
+                    }
+                },
+                {
+                    name: 'missing batch model',
+                    email: createPendingEmail({
+                        id: 'missing-batch-model',
+                        created_at: new Date('2025-01-01T11:00:00Z')
+                    }),
+                    omitEmailBatchModel: true
+                },
+                {
+                    name: 'missing recipient model',
+                    email: createPendingEmail({
+                        id: 'missing-recipient-model',
+                        created_at: new Date('2025-01-01T11:00:00Z')
+                    }),
+                    omitEmailRecipientModel: true
+                },
+                {
+                    name: 'unsendable post',
+                    email: createPendingEmail({
+                        id: 'draft-post',
+                        created_at: new Date('2025-01-01T11:00:00Z'),
+                        postStatus: 'draft'
+                    })
+                },
+                {
+                    name: 'inactive newsletter',
+                    email: createPendingEmail({
+                        id: 'inactive-newsletter',
+                        created_at: new Date('2025-01-01T11:00:00Z'),
+                        newsletterStatus: 'archived'
+                    })
+                }
+            ];
+
+            for (const testCase of cases) {
+                const {localScheduleEmail, localService} = buildPendingRecoveryService({
+                    pendingEmails: [testCase.email],
+                    emailBatchFindOne: testCase.emailBatchFindOne,
+                    emailRecipientFindOne: testCase.emailRecipientFindOne,
+                    omitEmailBatchModel: testCase.omitEmailBatchModel ?? false,
+                    omitEmailRecipientModel: testCase.omitEmailRecipientModel ?? false
+                });
+
+                await localService.resumeInterruptedSends();
+                assert.equal(localScheduleEmail.callCount, 0, testCase.name);
+            }
+        });
 
         it('Per-email try/catch: one bad email does not skip the others', async function () {
             const errorLog = sinon.stub(logging, 'error');
@@ -770,7 +1083,7 @@ describe('Email Service', function () {
             await localService.resumeInterruptedSends();
             const after = Date.now();
 
-            assert.equal(capturedFilters.length, 2);
+            assert.equal(capturedFilters.length, 3);
             // Both filters carry the same cutoff timestamp — extract it from one.
             const match = capturedFilters[0].match(/created_at:[<>]'([^']+)'/);
             assert.ok(match, `expected ISO cutoff in filter, got: ${capturedFilters[0]}`);

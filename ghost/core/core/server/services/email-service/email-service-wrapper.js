@@ -146,7 +146,8 @@ class EmailServiceWrapper {
             sendingService,
             models: {
                 Email,
-                EmailBatch
+                EmailBatch,
+                EmailRecipient
             },
             settingsCache,
             emailRenderer,
