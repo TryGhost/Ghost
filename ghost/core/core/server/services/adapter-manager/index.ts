@@ -7,6 +7,8 @@ import {RouteSettingsStoreBase} from '@tryghost/adapter-base-route-settings';
 
 import {AdapterManager} from './adapter-manager';
 import config from '../../../shared/config';
+// @ts-expect-error This module lacks type definitions.
+import EmailProviderBase from '../../adapters/email/EmailProviderBase';
 
 const adapterPaths = new Set<string>([
     '', // A blank path will cause us to check node_modules for the adapter
@@ -36,7 +38,8 @@ const adapterManager = new AdapterManager({
         sso: SSOBase,
         cache: CacheBase,
         redirects: RedirectsStoreBase,
-        'route-settings': RouteSettingsStoreBase
+        'route-settings': RouteSettingsStoreBase,
+        email: EmailProviderBase
     }
 });
 
