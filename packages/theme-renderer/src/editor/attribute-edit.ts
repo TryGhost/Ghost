@@ -6,7 +6,14 @@
  * marker position (docs/markers.md — the 1-based position of an element's `<`
  * in the ORIGINAL theme source) and sets, replaces, or deletes the named
  * attribute on that open tag ONLY — the edit never reaches past the tag's
- * `>`. `applyThemeAttributeEdit` is the ThemeFiles-level wrapper (new files
+ * `>`. `applyAttributeEdits` is the batch form: several edits against the SAME
+ * tag with one position/anchor resolution and one attribute scan, applied
+ * right-to-left so every splice is computed against the original offsets; an
+ * edit flagged `optional: true` that hits the handlebars-block refusal is
+ * SKIPPED (and reported) instead of failing the batch — callers use this for
+ * best-effort cleanup edits (clearing `srcset`/`sizes`) that must not discard
+ * a successful required edit. `applyThemeAttributeEdit`/
+ * `applyThemeAttributeEdits` are the ThemeFiles-level wrappers (new files
  * object for a new renderer, input never mutated), mirroring
  * `applyThemeTextEdit`.
  *
@@ -45,22 +52,38 @@
  * - attributes that live inside a handlebars block on the tag itself
  *   (`<img {{#if x}}srcset="…"{{/if}}>`) are REFUSED, for replace and delete
  *   alike: editing one branch of a conditional silently keeps the other.
- *   Attributes outside the block on the same tag remain editable.
+ *   Attributes outside the block on the same tag remain editable. In a batch,
+ *   `optional: true` downgrades this refusal to a reported skip.
  */
 import errors from '@tryghost/errors';
-import {mustacheEnd} from '../engine/source-scanner.ts';
+import {scanAttributes, type ScannedAttribute} from '../engine/source-scanner.ts';
 import {editThemeFile, resolveMarkedOpenTag, type EditAnchor, type SourcePosition} from './edit-common.ts';
 import type {EditMarker} from '../engine/markers.ts';
 import type {ThemeFiles} from '../theme/theme-source.ts';
-
-export type {SourcePosition} from './edit-common.ts';
-export type {EditAnchor} from './edit-common.ts';
 
 export interface AttributeEdit {
     /** Attribute name (plain HTML name; `data-edit` is reserved) */
     name: string;
     /** New value, or null to DELETE the attribute (no-op when absent) */
     value: string | null;
+    /**
+     * Batch-only: when true, the handlebars-block refusal SKIPS this edit
+     * (reported via `skipped`) instead of throwing — for best-effort cleanup
+     * edits that must not discard the rest of the batch. Contract violations
+     * (bad name, non-plain-text value) always throw regardless.
+     */
+    optional?: boolean;
+}
+
+/** An optional edit the batch skipped, and the refusal it would have hit. */
+export interface SkippedAttributeEdit {
+    name: string;
+    reason: string;
+}
+
+export interface AttributeEditsResult {
+    source: string;
+    skipped: SkippedAttributeEdit[];
 }
 
 /** Plain HTML attribute names only — no quotes/equals/slash/braces/space. */
@@ -98,154 +121,123 @@ function escapeValue(value: string): string {
     return value.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
 }
 
-interface ScannedAttribute {
-    /** Lowercased attribute name */
-    name: string;
-    /** Offset of the name's first character */
-    start: number;
-    /** Offset just past the token (name, or the value when present) */
-    end: number;
-    /** Mustache-block depth at the attribute ({{#…}}/{{^…}}…{{/…}} nesting) */
-    blockDepth: number;
-}
-
-const BLOCK_OPEN = /^\{\{~?\s*(#|\^\s*[^\s}])/;
-const BLOCK_CLOSE = /^\{\{~?\s*\//;
-
-/**
- * Scans the attribute region of an open tag — `[from, to)`, between the tag
- * name and the closing `>` — yielding each static attribute token with the
- * handlebars-block depth it sits at. Mustaches are opaque (a value that IS a
- * mustache is part of its attribute's token; a free-standing mustache is
- * skipped), quoted values are quote-aware and may contain mustaches with
- * quoted arguments (`srcset="{{img_url a size="s"}} 300w"` — Casper).
- */
-function* scanAttributes(source: string, from: number, to: number): Generator<ScannedAttribute, void, undefined> {
-    let i = from;
-    let blockDepth = 0;
-
-    const skipValue = (at: number): number => {
-        let j = at;
-        const quote = source[j];
-        if (quote === '"' || quote === '\'') {
-            j += 1;
-            while (j < to && source[j] !== quote) {
-                j = source.startsWith('{{', j) ? mustacheEnd(source, j) : j + 1;
-            }
-            return Math.min(j + 1, to);
-        }
-        // unquoted value: up to whitespace (or the region end), mustache-aware
-        while (j < to && !/\s/.test(source[j]!)) {
-            j = source.startsWith('{{', j) ? mustacheEnd(source, j) : j + 1;
-        }
-        return j;
-    };
-
-    while (i < to) {
-        const c = source[i]!;
-        if (/\s/.test(c) || c === '/') {
-            i += 1;
-            continue;
-        }
-        if (source.startsWith('{{', i)) {
-            const rest = source.slice(i, i + 24);
-            if (BLOCK_OPEN.test(rest)) {
-                blockDepth += 1;
-            } else if (BLOCK_CLOSE.test(rest)) {
-                blockDepth = Math.max(0, blockDepth - 1);
-            }
-            i = Math.min(mustacheEnd(source, i), to);
-            continue;
-        }
-
-        const nameMatch = /^[^\s"'=/>{]+/.exec(source.slice(i, to));
-        if (!nameMatch) {
-            i += 1; // stray quote/equals — not an attribute start
-            continue;
-        }
-        const start = i;
-        const name = nameMatch[0];
-        let j = i + name.length;
-
-        if (source.startsWith('{{', j)) {
-            // dynamic attribute name (`data-{{x}}=…`) — never a static match;
-            // skip past the mustache and its value without yielding
-            i = Math.min(mustacheEnd(source, j), to);
-            continue;
-        }
-
-        // optional `= value`, whitespace-tolerant around the equals
-        let k = j;
-        while (k < to && /\s/.test(source[k]!)) {
-            k += 1;
-        }
-        if (source[k] === '=') {
-            k += 1;
-            while (k < to && /\s/.test(source[k]!)) {
-                k += 1;
-            }
-            j = skipValue(k);
-        }
-
-        yield {name: name.toLowerCase(), start, end: j, blockDepth};
-        i = j;
-    }
-}
-
 /** Newline-preserving replacement for a removed span (no-line-drift). */
 function preserveNewlines(removed: string): string {
     const count = removed.split('\n').length - 1;
     return '\n'.repeat(count);
 }
 
+interface Splice {
+    start: number;
+    end: number;
+    text: string;
+    index: number;
+}
+
 /**
- * Sets, replaces, or (value: null) deletes `edit.name` on the open tag whose
- * `<` is at `position` — see the module doc block for the exact semantics and
- * contract. Throws IncorrectUsageError for stale/unusable positions, invalid
- * names, and values that violate the plain-text contract.
+ * Applies a BATCH of attribute edits to the open tag whose `<` is at
+ * `position`: one position/anchor resolution and one attribute scan serve
+ * every edit, and the resulting splices are applied right-to-left so each is
+ * computed against the ORIGINAL source offsets. See the module doc block for
+ * the per-edit semantics, the `optional` skip rule, and the contract. Throws
+ * IncorrectUsageError for stale/unusable positions, invalid names, values
+ * that violate the plain-text contract, duplicate names in one batch, and
+ * (non-optional) block-refusals.
  */
-export function applyAttributeEdit(source: string, position: SourcePosition, edit: AttributeEdit, anchor?: EditAnchor): string {
-    const name = validateName(edit.name);
-    const want = name.toLowerCase();
-    const escaped = edit.value === null ? null : escapeValue(edit.value);
+export function applyAttributeEdits(source: string, position: SourcePosition, edits: AttributeEdit[], anchor?: EditAnchor): AttributeEditsResult {
+    // Validate the whole batch up front — a contract violation anywhere
+    // rejects the batch before anything is resolved or spliced.
+    const prepared = edits.map(edit => ({
+        edit,
+        name: validateName(edit.name),
+        want: edit.name.toLowerCase(),
+        escaped: edit.value === null ? null : escapeValue(edit.value)
+    }));
 
-    const {nameEnd, tagEnd} = resolveMarkedOpenTag(source, position, anchor);
-
-    let found: ScannedAttribute | null = null;
-    for (const attribute of scanAttributes(source, nameEnd, tagEnd.end)) {
-        if (attribute.name !== want) {
-            continue;
-        }
-        if (attribute.blockDepth > 0) {
+    const wanted = new Set<string>();
+    for (const {want} of prepared) {
+        if (wanted.has(want)) {
             throw new errors.IncorrectUsageError({
-                message: `the ${name} attribute at ${position.line}:${position.column} sits inside a handlebars block on the tag — editing one branch of a conditional is refused`
+                message: `the ${want} attribute appears twice in one edit batch — each attribute can be edited once per batch`
             });
         }
-        if (!found) {
-            found = attribute; // first occurrence wins, matching the HTML parser
+        wanted.add(want);
+    }
+
+    const {nameEnd, tagEnd} = resolveMarkedOpenTag(source, position, anchor);
+    const attributes = [...scanAttributes(source, nameEnd, tagEnd.end)];
+
+    const splices: Splice[] = [];
+    const skipped: SkippedAttributeEdit[] = [];
+
+    for (const [index, {edit, name, want, escaped}] of prepared.entries()) {
+        let found: ScannedAttribute | null = null;
+        let blocked = false;
+        for (const attribute of attributes) {
+            if (attribute.name !== want) {
+                continue;
+            }
+            if (attribute.blockDepth > 0) {
+                blocked = true;
+            } else if (!found) {
+                found = attribute; // first occurrence wins, matching the HTML parser
+            }
+        }
+
+        if (blocked) {
+            const reason = `the ${name} attribute at ${position.line}:${position.column} sits inside a handlebars block on the tag — editing one branch of a conditional is refused`;
+            if (edit.optional) {
+                skipped.push({name, reason});
+                continue;
+            }
+            throw new errors.IncorrectUsageError({message: reason});
+        }
+
+        if (escaped === null) {
+            if (!found) {
+                continue; // deleting an absent attribute is a no-op
+            }
+            // remove the token plus its preceding whitespace run, keeping any
+            // newlines the removed span contained (no-line-drift)
+            let start = found.start;
+            while (start > nameEnd && /\s/.test(source[start - 1]!)) {
+                start -= 1;
+            }
+            splices.push({start, end: found.end, text: preserveNewlines(source.slice(start, found.end)), index});
+            continue;
+        }
+
+        const token = `${name}="${escaped}"`;
+        if (found) {
+            splices.push({start: found.start, end: found.end, text: token + preserveNewlines(source.slice(found.start, found.end)), index});
+        } else {
+            // missing attribute: insert immediately after the tag name — the
+            // same always-static position the marker transform uses
+            splices.push({start: nameEnd, end: nameEnd, text: ` ${token}`, index});
         }
     }
 
-    if (escaped === null) {
-        if (!found) {
-            return source; // deleting an absent attribute is a no-op
-        }
-        // remove the token plus its preceding whitespace run, keeping any
-        // newlines the removed span contained (no-line-drift)
-        let start = found.start;
-        while (start > nameEnd && /\s/.test(source[start - 1]!)) {
-            start -= 1;
-        }
-        return source.slice(0, start) + preserveNewlines(source.slice(start, found.end)) + source.slice(found.end);
-    }
+    // Right-to-left: later splices first, so earlier offsets stay valid. Ties
+    // (a point-insert at nameEnd next to a deletion starting there, or two
+    // inserts) apply the later-listed edit first so the final attribute order
+    // follows the batch order.
+    splices.sort((a, b) => (b.start - a.start) || (b.end - a.end) || (b.index - a.index));
 
-    const token = `${name}="${escaped}"`;
-    if (found) {
-        return source.slice(0, found.start) + token + preserveNewlines(source.slice(found.start, found.end)) + source.slice(found.end);
+    let result = source;
+    for (const splice of splices) {
+        result = result.slice(0, splice.start) + splice.text + result.slice(splice.end);
     }
-    // missing attribute: insert immediately after the tag name — the same
-    // always-static position the marker transform uses for data-edit
-    return `${source.slice(0, nameEnd)} ${token}${source.slice(nameEnd)}`;
+    return {source: result, skipped};
+}
+
+/**
+ * Sets, replaces, or (value: null) deletes `edit.name` on the open tag whose
+ * `<` is at `position` — the single-edit form of {@link applyAttributeEdits}
+ * (the `optional` flag has no effect here: with nothing else in the batch, a
+ * block-refusal always throws).
+ */
+export function applyAttributeEdit(source: string, position: SourcePosition, edit: AttributeEdit, anchor?: EditAnchor): string {
+    return applyAttributeEdits(source, position, [{...edit, optional: false}], anchor).source;
 }
 
 /**
@@ -256,4 +248,20 @@ export function applyAttributeEdit(source: string, position: SourcePosition, edi
  */
 export function applyThemeAttributeEdit<T extends ThemeFiles>(theme: T, marker: EditMarker, edit: AttributeEdit, anchor?: EditAnchor): T {
     return editThemeFile(theme, marker, source => applyAttributeEdit(source, marker, edit, anchor));
+}
+
+/**
+ * ThemeFiles-level BATCH attribute edit: applies `applyAttributeEdits` to
+ * `marker.file` and returns the new files object plus the optional edits the
+ * batch skipped (handlebars-block refusals on `optional: true` edits — the
+ * caller decides whether to warn).
+ */
+export function applyThemeAttributeEdits<T extends ThemeFiles>(theme: T, marker: EditMarker, edits: AttributeEdit[], anchor?: EditAnchor): {theme: T; skipped: SkippedAttributeEdit[]} {
+    let skipped: SkippedAttributeEdit[] = [];
+    const next = editThemeFile(theme, marker, (source) => {
+        const result = applyAttributeEdits(source, marker, edits, anchor);
+        ({skipped} = result);
+        return result.source;
+    });
+    return {theme: next, skipped};
 }

@@ -19,8 +19,11 @@
  * - the chat drawer (`chat` state, toggled from the bar): message list
  *   (user/assistant/tool-progress/error lines), prompt input, busy state,
  *   per-task result line, and — when no key is stored — the BYOK key setup
- *   with an explicit note that the key stays in this browser's localStorage
- *   and is sent only to the provider. All agent logic lives in the session;
+ *   (key + optional model rows) with an explicit note naming where the key
+ *   lives (this tab's sessionStorage, on the site's origin — readable by any
+ *   script on the site, cleared when the tab closes) and that it is sent only
+ *   to the provider. A prompt the session REFUSES (`refused` on the result)
+ *   keeps the typed text in the input. All agent logic lives in the session;
  *   the drawer only renders `chat` and fires the chat handlers.
  */
 import {h, render} from 'preact';
@@ -176,37 +179,60 @@ function ImageEditor({imageEditor, busy, onReplace, onCancel}) {
     ]);
 }
 
-function ChatKeySetup({onSaveApiKey}) {
-    const save = (input) => {
-        if (input.value.trim()) {
-            onSaveApiKey(input.value);
-            input.value = '';
+/**
+ * One input+button row — the shared shape of the key, model, and prompt rows.
+ * Uncontrolled input; `onSubmit(value, input)` owns clearing (or restoring)
+ * the input's text.
+ */
+function ChatRow({inputProps, buttonLabel, disabled, onSubmit}) {
+    const submit = (input) => {
+        const value = input.value.trim();
+        if (value && !disabled) {
+            onSubmit(value, input);
         }
     };
 
+    return h('div', {className: 'chat-row'}, [
+        h('input', {
+            ...inputProps,
+            disabled,
+            onKeyDown: (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    submit(event.currentTarget);
+                }
+            }
+        }),
+        h('button', {
+            type: 'button',
+            disabled,
+            onClick: (event) => {
+                submit(event.currentTarget.parentElement.querySelector('input'));
+            }
+        }, buttonLabel)
+    ]);
+}
+
+function ChatKeySetup({onSaveApiKey, onSaveModel}) {
     return h('div', null, [
         h('p', {className: 'chat-note'},
             'Bring your own OpenAI API key to use the theme assistant. ' +
-            'The key is stored only in this browser (localStorage) and sent only to the provider API — never to Ghost.'),
-        h('div', {className: 'chat-row'}, [
-            h('input', {
-                type: 'password',
-                placeholder: 'OpenAI API key (sk-…)',
-                'aria-label': 'OpenAI API key',
-                onKeyDown: (event) => {
-                    if (event.key === 'Enter') {
-                        event.preventDefault();
-                        save(event.currentTarget);
-                    }
-                }
-            }),
-            h('button', {
-                type: 'button',
-                onClick: (event) => {
-                    save(event.currentTarget.parentElement.querySelector('input'));
-                }
-            }, 'Save key')
-        ])
+            'The key is stored in this browser tab’s sessionStorage on your site’s origin — ' +
+            'any script running on your site could read it; it is cleared when the tab closes. ' +
+            'It is sent only to the provider API — never to Ghost.'),
+        h(ChatRow, {
+            inputProps: {type: 'password', placeholder: 'OpenAI API key (sk-…)', 'aria-label': 'OpenAI API key'},
+            buttonLabel: 'Save key',
+            onSubmit: (value, input) => {
+                onSaveApiKey(value);
+                input.value = '';
+            }
+        }),
+        h(ChatRow, {
+            inputProps: {type: 'text', placeholder: 'Model (optional, e.g. gpt-5-mini)', 'aria-label': 'Model'},
+            buttonLabel: 'Save model',
+            onSubmit: value => onSaveModel(value)
+        })
     ]);
 }
 
@@ -214,14 +240,6 @@ function ChatDrawer({chat, handlers}) {
     if (!chat?.open) {
         return null;
     }
-
-    const send = (input) => {
-        const value = input.value.trim();
-        if (value && !chat.busy) {
-            input.value = '';
-            handlers.onSendPrompt(value);
-        }
-    };
 
     return h('div', {className: 'chat', role: 'dialog', 'aria-label': 'Theme assistant'}, [
         h('div', {
@@ -238,27 +256,19 @@ function ChatDrawer({chat, handlers}) {
         }, message.text))),
         chat.busy ? h('div', {className: 'chat-busy', role: 'status'}, 'Working…') : null,
         chat.resultText ? h('div', {className: 'chat-result', role: 'status'}, chat.resultText) : null,
-        !chat.hasKey ? h(ChatKeySetup, {onSaveApiKey: handlers.onSaveApiKey}) : h('div', {className: 'chat-row'}, [
-            h('input', {
-                type: 'text',
-                placeholder: 'Ask for a theme change…',
-                'aria-label': 'Ask for a theme change',
-                disabled: chat.busy,
-                onKeyDown: (event) => {
-                    if (event.key === 'Enter') {
-                        event.preventDefault();
-                        send(event.currentTarget);
-                    }
+        !chat.hasKey ? h(ChatKeySetup, {onSaveApiKey: handlers.onSaveApiKey, onSaveModel: handlers.onSaveModel}) : h(ChatRow, {
+            inputProps: {type: 'text', placeholder: 'Ask for a theme change…', 'aria-label': 'Ask for a theme change'},
+            buttonLabel: chat.busy ? 'Working…' : 'Send',
+            disabled: chat.busy,
+            onSubmit: async (value, input) => {
+                input.value = '';
+                const result = await handlers.onSendPrompt(value);
+                if (result?.refused) {
+                    // the prompt never ran — put the typed text back
+                    input.value = value;
                 }
-            }),
-            h('button', {
-                type: 'button',
-                disabled: chat.busy,
-                onClick: (event) => {
-                    send(event.currentTarget.parentElement.querySelector('input'));
-                }
-            }, chat.busy ? 'Working…' : 'Send')
-        ]),
+            }
+        }),
         chat.hasKey ? h('div', {className: 'chat-footer'}, [
             h('button', {type: 'button', onClick: handlers.onClearApiKey}, 'Clear API key')
         ]) : null
@@ -320,7 +330,7 @@ function App({state, handlers}) {
 /**
  * @param {Object} options
  * @param {Document} [options.doc]
- * @param {{onExit(): void, onPublish(): void, onCommitEdit(value: string): void, onCancelEdit(): void, onReplaceImage(): void, onToggleChat(): void, onSendPrompt(text: string): void, onSaveApiKey(value: string): void, onClearApiKey(): void}} options.handlers
+ * @param {{onExit(): void, onPublish(): void, onCommitEdit(value: string): void, onCancelEdit(): void, onReplaceImage(): void, onToggleChat(): void, onSendPrompt(text: string): Promise<{refused?: boolean}|void>, onSaveApiKey(value: string): void, onSaveModel(value: string): void, onClearApiKey(): void}} options.handlers
  * @returns {{host: HTMLElement, update(patch: Object): void, getState(): Object, destroy(): void}}
  */
 export function createEditModeUi({doc = document, handlers}) {

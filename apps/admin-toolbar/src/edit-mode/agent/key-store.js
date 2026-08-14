@@ -6,17 +6,27 @@
  * BYOK key handling for the edit-mode agent (slice 5).
  *
  * The user's LLM API key is entered in the chat panel and kept in
- * localStorage under a clearly-named, provider-namespaced key — it lives ONLY
- * in this browser and is sent ONLY to the provider endpoint (the chat panel
- * states this explicitly next to the input). It is NEVER logged, never sent
- * to Ghost, and never embedded in URLs or error messages.
+ * sessionStorage under a clearly-named, provider-namespaced key. It is sent
+ * ONLY to the provider endpoint — NEVER logged, never sent to Ghost, never
+ * embedded in URLs or error messages.
+ *
+ * RESIDUAL RISK (deliberate, disclosed in the chat panel): sessionStorage
+ * lives on the SITE'S origin, so any script running on the site — theme code,
+ * an injected third-party tag, code-injection settings — can read the key
+ * while it is stored. sessionStorage is chosen over localStorage to bound
+ * that exposure in time: the key does not persist — it is scoped to the tab
+ * and cleared when the tab closes — but it is NOT origin-isolated from the
+ * site's own scripts. Users are told exactly this next to the input.
  *
  * Keys are namespaced per provider so a later Anthropic/other provider gets
  * its own slot — one provider's key must never be sent to another's endpoint.
  *
  * The storage seam accepts any Storage-shaped object ({getItem, setItem,
- * removeItem}); when none is usable (Safari private mode throws on access)
- * the store degrades to in-memory for the page's lifetime.
+ * removeItem}); when none is usable the store degrades to in-memory for the
+ * page's lifetime. Safari's private mode has thrown on ACCESS in the past and
+ * throws on WRITE today (the storage object exists with a zero quota), so
+ * both paths degrade: an unusable storage at construction AND a throwing
+ * setItem at write time fall back to the in-memory store.
  */
 
 export const AGENT_KEY_STORAGE_PREFIX = 'ghost-edit-mode-agent-api-key';
@@ -56,7 +66,7 @@ function memoryStorage() {
 /**
  * @param {Object} [options]
  * @param {Storage|Object|null} [options.storage] — Storage-shaped seam;
- *   defaults to globalThis.localStorage, falling back to in-memory
+ *   defaults to globalThis.sessionStorage, falling back to in-memory
  * @param {string} [options.provider] — namespace ('openai' by default)
  * @returns {{getKey(): string|null, setKey(value: string): void, clearKey(): void, getModel(): string|null, setModel(value: string|null): void}}
  */
@@ -65,7 +75,7 @@ export function createKeyStore({storage, provider = 'openai'} = {}) {
 
     if (!backing) {
         try {
-            backing = globalThis.localStorage;
+            backing = globalThis.sessionStorage;
         } catch {
             backing = null;
         }
@@ -85,6 +95,27 @@ export function createKeyStore({storage, provider = 'openai'} = {}) {
         }
     };
 
+    // Safari private mode throws on WRITE while the storage object exists —
+    // degrade the whole store to in-memory so the value stays usable for the
+    // page's lifetime (values written before the switch are gone, which
+    // matches what a throwing storage would have kept anyway).
+    const write = (name, value) => {
+        try {
+            backing.setItem(name, value);
+        } catch {
+            backing = memoryStorage();
+            backing.setItem(name, value);
+        }
+    };
+
+    const remove = (name) => {
+        try {
+            backing.removeItem(name);
+        } catch {
+            // clearing a broken storage is best-effort
+        }
+    };
+
     return {
         getKey() {
             return read(keyName);
@@ -94,14 +125,10 @@ export function createKeyStore({storage, provider = 'openai'} = {}) {
             if (rejection) {
                 throw new Error(rejection);
             }
-            backing.setItem(keyName, value.trim());
+            write(keyName, value.trim());
         },
         clearKey() {
-            try {
-                backing.removeItem(keyName);
-            } catch {
-                // clearing a broken storage is best-effort
-            }
+            remove(keyName);
         },
         getModel() {
             return read(modelName);
@@ -109,14 +136,10 @@ export function createKeyStore({storage, provider = 'openai'} = {}) {
         setModel(value) {
             const trimmed = (value ?? '').trim();
             if (!trimmed) {
-                try {
-                    backing.removeItem(modelName);
-                } catch {
-                    // best-effort
-                }
+                remove(modelName);
                 return;
             }
-            backing.setItem(modelName, trimmed);
+            write(modelName, trimmed);
         }
     };
 }

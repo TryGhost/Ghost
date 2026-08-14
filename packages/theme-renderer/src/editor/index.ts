@@ -5,6 +5,7 @@
  * tools, not part of the render contract on the package root.
  */
 export {applyTextEdit, applyThemeTextEdit} from './text-edit.ts';
-export type {EditMarker, SourcePosition, TextEditAnchor} from './text-edit.ts';
-export {applyAttributeEdit, applyThemeAttributeEdit} from './attribute-edit.ts';
-export type {AttributeEdit, EditAnchor} from './attribute-edit.ts';
+export {applyAttributeEdit, applyAttributeEdits, applyThemeAttributeEdit, applyThemeAttributeEdits} from './attribute-edit.ts';
+export type {AttributeEdit, AttributeEditsResult, SkippedAttributeEdit} from './attribute-edit.ts';
+export type {EditAnchor, SourcePosition} from './edit-common.ts';
+export type {EditMarker} from '../engine/markers.ts';

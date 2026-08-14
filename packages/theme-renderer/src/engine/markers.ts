@@ -36,7 +36,7 @@
  * (tag-end walk runs away to EOF) get no marker and cost nothing else — the
  * scanner recovers at the next `<` and the rest of the file is still marked.
  */
-import {scanSourceTags} from './source-scanner.ts';
+import {scanAttributes, scanSourceTags} from './source-scanner.ts';
 
 /** The attribute name stamped onto marked elements. */
 export const EDIT_MARKER_ATTRIBUTE = 'data-edit';
@@ -59,8 +59,20 @@ export function parseEditMarker(value: string): EditMarker | null {
     return {file: match[1]!, line: Number(match[2]), column: Number(match[3])};
 }
 
-/** data-edit already present in the tag (theme-authored) — never double-mark. */
-const EXISTING_MARKER = /\bdata-edit\s*=/;
+/**
+ * data-edit already present ON the tag (theme-authored) — never double-mark.
+ * Checked against scanner-yielded attribute NAMES, not a regex over the raw
+ * tag region: a value merely CONTAINING the text `data-edit=` (e.g.
+ * `<div title="see data-edit=docs">`) must not suppress the marker.
+ */
+function hasExistingMarker(source: string, nameEnd: number, end: number): boolean {
+    for (const attribute of scanAttributes(source, nameEnd, end)) {
+        if (attribute.name === EDIT_MARKER_ATTRIBUTE) {
+            return true;
+        }
+    }
+    return false;
+}
 
 function escapeAttributeValue(value: string): string {
     return value.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
@@ -82,7 +94,7 @@ export function injectEditMarkers(source: string, filename: string): string {
         if (!tag.markable || !tag.closed) {
             continue;
         }
-        if (EXISTING_MARKER.test(source.slice(tag.nameEnd, tag.end))) {
+        if (hasExistingMarker(source, tag.nameEnd, tag.end)) {
             continue;
         }
         insertions.push({

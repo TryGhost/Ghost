@@ -123,6 +123,24 @@ describe('injectEditMarkers', function () {
         assert.equal(injectEditMarkers(source, FILE), source);
     });
 
+    it('a bare (valueless) theme-authored data-edit attribute also suppresses the marker', function () {
+        const source = '<div data-edit>a</div>';
+        assert.equal(injectEditMarkers(source, FILE), source);
+    });
+
+    it('a value merely CONTAINING "data-edit=" does not suppress the marker', function () {
+        // the existing-marker check is over scanner-yielded attribute NAMES,
+        // not a regex across the raw tag region
+        assert.equal(
+            injectEditMarkers('<div title="see data-edit=docs for details">a</div>', FILE),
+            '<div data-edit="t.hbs:1:1" title="see data-edit=docs for details">a</div>'
+        );
+        assert.equal(
+            injectEditMarkers('<a href="/?q=data-edit=1">x</a>', FILE),
+            '<a data-edit="t.hbs:1:1" href="/?q=data-edit=1">x</a>'
+        );
+    });
+
     it('punts on dynamic tag names', function () {
         const source = '<h{{level}}>x</h{{level}}>';
         assert.equal(injectEditMarkers(source, FILE), source);

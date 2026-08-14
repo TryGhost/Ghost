@@ -47,10 +47,39 @@ stays out of the main bundle, and guards the main bundle's size.
 Edit-mode internals live in `src/edit-mode/`: `session.js` (orchestration),
 `render-client.js`/`render-backend.js`/`worker.js` (worker-first rendering),
 `swap.js` (in-place document swap), `draft-store.js` (the DraftStore seam,
-in-memory only for now), `theme-api.js` (Admin API download/upload), and
-`ui.js`/`interactions.js` (Preact overlay + click-to-edit). Building the chunk
-requires `@tryghost/theme-renderer`'s `build/` output (nx orders this via the
-workspace dependency).
+in-memory only for now), `theme-api.js` (Admin API download/upload),
+`ui.js`/`interactions.js` (Preact overlay + click-to-edit), and `agent/`
+(the chat agent: BYOK key store, provider seam, tool-calling loop). Building
+the chunk requires `@tryghost/theme-renderer`'s `build/` output (nx orders
+this via the workspace dependency).
+
+### Chat agent (BYOK)
+
+The edit-mode bar has a chat drawer that runs natural-language theme tasks
+through a browser-side tool-calling loop (`src/edit-mode/agent/`). Everything
+happens in the user's browser: the agent's tools operate on the in-memory
+draft theme through the same render-verify/commit pipeline as manual edits,
+it can never publish, and its tools never touch the Admin API. While a task
+runs, the human edit surfaces (click-to-edit, image replace, publish) are
+refused with a visible status — one writer at a time.
+
+**Key storage disclosure.** The agent is bring-your-own-key. The key is kept
+in the browser tab's `sessionStorage` **on the site's origin** — any script
+running on the site (theme code, third-party tags, code injection) could read
+it while stored; it does not persist and is cleared when the tab closes. This
+residual risk is deliberate (sessionStorage bounds the exposure in time where
+localStorage would not) and is disclosed verbatim next to the key input in
+the drawer. The key is sent only to the provider API, never to Ghost, and
+never appears in URLs, logs, or error messages. When storage is unusable
+(private modes that throw on access or on write), the store degrades to
+in-memory for the page's lifetime.
+
+**Publish visibility.** The publish button's arm step lists every file the
+session has changed (human and agent commits alike):
+`Publishing overwrites "<theme>" for all visitors — changed files: a.hbs,
+b.hbs (+2 more) — …`. Follow-up (recorded, not in this slice): a per-file
+diff view at publish time, so the user can inspect *what* changed in each
+listed file rather than just which files.
 
 `pnpm build` builds all three (main first — the one-off build empties `umd/`;
 the watchers never do). During development a single command watches all three

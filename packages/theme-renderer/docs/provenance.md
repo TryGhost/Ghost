@@ -150,11 +150,14 @@ Origin `ghost/core/core/frontend/services/data/<name>.js` @ 407e032dc7, transfor
 | theme/theme-source.ts | virtual-fs ThemeSource: resolver + theme config (defaults copied from theme-engine/config/defaults.json: posts_per_page 5, card_assets true; allowedKeys from config/index.js) + root template inventory + `@custom` defaults from package.json `config.custom` + locales/{locale}.json i18n ({var} interpolation) |
 | index.ts | `createRenderer()` assembly + `render(Request) → Response`; `createEngineHelperRegistrar` (engine → HelperRegistrar adapter); pretty-urls trailing-slash 301 (only `.md`/`.txt` skip, Cache-Control from `caching:301:maxAge`); subdir handling with Express mount semantics (segment-boundary strip, out-of-mount → 404, redirect Locations keep the subdir); ghost-locals equivalent (version/safeVersion from the settings payload `version`, relativeUrl); themed error path porting web/middleware/error-handler.js `themeErrorRenderer` + mw-error-handler `prepareError` (error template hierarchy via `setTemplate` req.err branch; render-time engine NotFoundError → IncorrectUsageError per rendering/renderer.js:40-48; plain-text status-line fallback, never raw upstream messages); per-render re-assert of the deps + hbs singletons |
 
-## src/editor/ (editor-side tools — slices 3 + 4)
+## src/editor/ (editor-side tools — slices 3–5)
 
 | File | Origin | Notes |
 | --- | --- | --- |
 | editor/text-edit.ts | fresh (slice 3) | anchored text-edit applier, `./editor` subpath (docs/markers.md) |
+| editor/edit-common.ts | fresh (slice 5, extracted from text-edit.ts) | the shared resolution path of both appliers: line-offset math, anchor verification with the bounded stale-marker re-locate, `resolveMarkedOpenTag`, and the ThemeFiles-level `editThemeFile` wrapper. Internal — not exported from the package |
+| editor/attribute-edit.ts | fresh (slice 5) | anchored attribute applier (image swaps: set/replace/delete on the marked open tag) + `applyAttributeEdits` batch form (single tag resolution, right-to-left splices, `optional` block-refusal skips). Attribute scanning lives in src/engine/source-scanner.ts (`scanAttributes`), shared with the marker transform's existing-`data-edit` check |
+| editor/index.ts | fresh (slice 5) | the `./editor` subpath barrel: both appliers + their types (`SourcePosition`/`EditAnchor` from edit-common, `EditMarker` from engine/markers) |
 | editor/archive.ts | **apps/admin** `src/settings/app/components/settings/site/theme/theme-editor-utils.ts` (slice 4 move, not ghost/core) | browser zip round-trip: extract/pack + limits + text/binary classification, verbatim minus the Admin-app route/diff helpers (which stayed behind); apps/admin re-exports from here. `./editor/archive` subpath. Resync = there is nothing to resync — this is now the single copy |
 | editor/instance-config.ts | **test/integration/harness.ts** (slice 4 move) | `scrapeInstanceConfig` + `scrapeContentApiKey`; harness re-exports from here so parity suite, fixture recorder, and the on-site editor share one set of regexes. `./editor/instance-config` subpath |
 

@@ -9,8 +9,20 @@ import assert from 'node:assert/strict';
 import {AGENT_TOOLS, MAX_AGENT_ITERATIONS, buildSystemPrompt, runAgentLoop} from '../src/edit-mode/agent/loop.js';
 import {createKeyStore, validateApiKeyShape} from '../src/edit-mode/agent/key-store.js';
 import {DEFAULT_OPENAI_MODEL, createOpenAiProvider} from '../src/edit-mode/agent/provider.js';
-import {MAX_AGENT_EDIT_CHARS} from '../src/edit-mode/session.js';
-import {bootSession, createFakeClientFactory} from './helpers/edit-mode-harness.js';
+import {createEditSession, MAX_AGENT_EDIT_CHARS} from '../src/edit-mode/session.js';
+import {createMemoryDraftStore} from '../src/edit-mode/draft-store.js';
+import {
+    ADMIN_URL,
+    SCRIPT_URL,
+    bootSession,
+    createFakeAdminApi,
+    createFakeClientFactory,
+    createFakeInteractions,
+    createFakeUi,
+    createPageDom,
+    editableElement,
+    waitFor
+} from './helpers/edit-mode-harness.js';
 
 const TEST_KEY = 'sk-test-abcdefghijklmnop';
 
@@ -121,10 +133,28 @@ describe('edit-mode agent', function () {
             assert.equal(openai.getModel(), null, 'an empty model clears back to the provider default');
         });
 
-        it('degrades to in-memory storage when localStorage is unusable', function () {
-            const store = createKeyStore({storage: null}); // node: no globalThis.localStorage
+        it('degrades to in-memory storage when sessionStorage is unusable', function () {
+            const store = createKeyStore({storage: null}); // node: no globalThis.sessionStorage
             store.setKey(TEST_KEY);
             assert.equal(store.getKey(), TEST_KEY);
+        });
+
+        it('falls back to memory when the storage throws on WRITE (Safari private mode)', function () {
+            // the storage object EXISTS and reads fine — only writes throw
+            const writeThrowingStorage = {
+                getItem: () => null,
+                setItem: () => {
+                    throw new Error('QuotaExceededError');
+                },
+                removeItem: () => {}
+            };
+            const store = createKeyStore({storage: writeThrowingStorage});
+
+            store.setKey(TEST_KEY); // must not throw
+            assert.equal(store.getKey(), TEST_KEY, 'the key is readable from the in-memory fallback');
+
+            store.setModel('gpt-5-mini');
+            assert.equal(store.getModel(), 'gpt-5-mini');
         });
     });
 
@@ -204,6 +234,25 @@ describe('edit-mode agent', function () {
             assert.equal(result.text, null);
             assert.deepEqual(result.toolCalls[0], {id: 'a', name: 'preview', arguments: {}});
             assert.equal(result.toolCalls[1].arguments, null, 'malformed JSON becomes null for the loop to bounce back');
+        });
+
+        it('surfaces unknown tool-call types as an error instead of a silent "done"', async function () {
+            const {fetchImpl} = capturingFetch({
+                choices: [{message: {
+                    content: null,
+                    tool_calls: [
+                        // no `type` at all — e.g. a future API shape this
+                        // integration does not understand yet
+                        {id: 'a', function: {name: 'preview', arguments: '{}'}}
+                    ]
+                }}]
+            });
+            const provider = createOpenAiProvider({apiKey: TEST_KEY, fetchImpl});
+
+            await assert.rejects(
+                () => provider.complete({messages: [], tools: []}),
+                /unsupported tool call \(a missing type\)/
+            );
         });
 
         it('throws readable errors (never echoing the key) on API failures', async function () {
@@ -336,9 +385,10 @@ describe('edit-mode agent', function () {
             assert.match(lastToolMessage(booted.scripted.calls[2]).content, /Original title/);
 
             // edits accumulated on the candidate: nothing hit the renderer
-            // until preview, and preview render-verified BEFORE commit
+            // until preview — and commit SKIPS the re-render because the
+            // exact previewed candidate object is what gets committed
             const client = booted.clientFactory.created[0];
-            assert.equal(client.setThemeCalls.length, 2, 'preview + commit re-verify — staging edits never touches the renderer');
+            assert.equal(client.setThemeCalls.length, 1, 'preview renders once; commit reuses the verified render — staging edits never touches the renderer');
             assert.match(client.setThemeCalls[0]['index.hbs'], /Agent title/);
             assert.match(lastToolMessage(booted.scripted.calls[4]).content, /Preview rendered OK \(1 staged file\(s\)\)/);
             assert.match(lastToolMessage(booted.scripted.calls[5]).content, /Committed 1 file\(s\) as one draft edit — Retitled the homepage/);
@@ -444,7 +494,7 @@ describe('edit-mode agent', function () {
             const toolMessages = booted.scripted.calls[1].messages.filter(message => message.role === 'tool');
             assert.match(toolMessages[0].content, /total edit size cap/);
             assert.match(toolMessages[1].content, /was not found in "index\.hbs"/);
-            assert.match(toolMessages[2].content, /matches \d+ places in "index\.hbs"/);
+            assert.match(toolMessages[2].content, /matches more than one place in "index\.hbs"/);
             assert.equal(result.commits, 0);
             assert.equal(booted.ui.state.dirtyCount, 0);
         });
@@ -491,6 +541,238 @@ describe('edit-mode agent', function () {
             assert.equal(errorMessages.length, 1);
             assert.match(errorMessages[0].text, /rejected the API key/);
             assert.equal(booted.ui.state.chat.busy, false);
+        });
+
+        it('lands new_string byte-verbatim, including $-replacement patterns', async function () {
+            // String.replace would expand these; the splice must not
+            const literal = 'A $& B $` C $\' D $1 E';
+            const script = [
+                {toolCalls: [{id: 'c1', name: 'edit_theme_file', arguments: {path: 'index.hbs', old_string: 'Original title', new_string: literal}}]},
+                {toolCalls: [{id: 'c2', name: 'commit', arguments: {}}]},
+                {text: 'done', toolCalls: []}
+            ];
+            const booted = await bootAgentSession({script});
+
+            const result = await booted.session.runAgentTask('insert dollar soup');
+
+            assert.equal(result.commits, 1);
+            const committed = booted.clientFactory.created[0].setThemeCalls[0]['index.hbs'];
+            assert.ok(committed.includes(`<h1>${literal}</h1>`), 'the $-patterns land verbatim');
+        });
+
+        it('rejects a .json edit that breaks JSON.parse before anything is staged', async function () {
+            const script = [
+                {toolCalls: [{id: 'c1', name: 'edit_theme_file', arguments: {
+                    path: 'package.json',
+                    old_string: '{"name":"fixture-theme"}',
+                    new_string: '{"name":"fixture-theme" "version":"1.0.0"}' // dropped comma
+                }}]},
+                {toolCalls: [{id: 'c2', name: 'commit', arguments: {}}]},
+                {text: 'gave up', toolCalls: []}
+            ];
+            const booted = await bootAgentSession({script});
+
+            const result = await booted.session.runAgentTask('bump the version');
+
+            const toolMessages = booted.scripted.calls[1].messages.filter(message => message.role === 'tool');
+            assert.match(toolMessages[0].content, /Error: "package\.json" is not valid JSON after this edit/);
+            // nothing was staged: the follow-up commit finds nothing
+            assert.match(lastToolMessage(booted.scripted.calls[2]).content, /nothing to commit/);
+            assert.equal(result.commits, 0);
+            assert.equal(booted.ui.state.dirtyCount, 0);
+            assert.equal(booted.clientFactory.created[0].setThemeCalls.length, 0);
+        });
+
+        it('refuses human edit surfaces while a task runs (visible status, no state change)', async function () {
+            const duringTask = {};
+            const booted = await bootAgentSession({
+                script: [
+                    async () => {
+                        // we are now mid-task: try every human write surface
+                        booted.interactions.options.onSelect(editableElement(booted.dom, 'index.hbs:1:1'));
+                        duringTask.editor = booted.ui.state.editor;
+                        duringTask.selectStatus = booted.ui.state.statusText;
+
+                        await booted.ui.handlers.onPublish();
+                        duringTask.publishArmed = booted.ui.state.publishArmed;
+
+                        booted.interactions.options.onSelect(editableElement(booted.dom, 'index.hbs:1:42'));
+                        duringTask.imageEditor = booted.ui.state.imageEditor;
+
+                        return {text: 'done', toolCalls: []};
+                    }
+                ]
+            });
+
+            await booted.session.runAgentTask('long task');
+
+            assert.equal(duringTask.editor, null, 'no inline editor opens mid-task');
+            assert.equal(duringTask.imageEditor, null, 'no image panel opens mid-task');
+            assert.match(duringTask.selectStatus, /agent task is running/i, 'the refusal is visible');
+            assert.equal(duringTask.publishArmed, false, 'publish does not even arm mid-task');
+            assert.equal(booted.api.uploads.length, 0);
+            assert.equal(booted.ui.state.dirtyCount, 0, 'nothing was committed by the refused surfaces');
+        });
+
+        it('preserves a human edit committed BEFORE the task under the agent\'s commit', async function () {
+            const script = [
+                {toolCalls: [{id: 'c1', name: 'edit_theme_file', arguments: {path: 'index.hbs', old_string: 'Second para', new_string: 'Agent para'}}]},
+                {toolCalls: [{id: 'c2', name: 'commit', arguments: {}}]},
+                {text: 'done', toolCalls: []}
+            ];
+            const booted = await bootAgentSession({script});
+
+            booted.interactions.options.onSelect(editableElement(booted.dom, 'index.hbs:1:1'));
+            await booted.ui.handlers.onCommitEdit('Human title');
+            assert.equal(booted.ui.state.dirtyCount, 1);
+
+            await booted.session.runAgentTask('change the para');
+
+            assert.equal(booted.ui.state.dirtyCount, 2);
+            const finalTheme = booted.clientFactory.created[0].theme['index.hbs'];
+            assert.ok(finalTheme.includes('Human title'), 'the earlier human edit survives the agent commit');
+            assert.ok(finalTheme.includes('Agent para'), 'the agent edit landed too');
+        });
+
+        it('commits a pending inline edit at task start (never silently discarded)', async function () {
+            const script = [
+                {toolCalls: [{id: 'c1', name: 'edit_theme_file', arguments: {path: 'index.hbs', old_string: 'Second para', new_string: 'Agent para'}}]},
+                {toolCalls: [{id: 'c2', name: 'commit', arguments: {}}]},
+                {text: 'done', toolCalls: []}
+            ];
+            const booted = await bootAgentSession({script});
+
+            booted.interactions.options.onSelect(editableElement(booted.dom, 'index.hbs:1:1'));
+            booted.ui.state.editor.value = 'Typed before the task';
+
+            await booted.session.runAgentTask('change the para');
+
+            assert.equal(booted.ui.state.editor, null, 'the editor is closed before the task runs');
+            assert.equal(booted.ui.state.dirtyCount, 2, 'human commit + agent batch');
+            const finalTheme = booted.clientFactory.created[0].theme['index.hbs'];
+            assert.ok(finalTheme.includes('Typed before the task'), 'the pending edit was committed, not discarded');
+            assert.ok(finalTheme.includes('Agent para'));
+        });
+
+        it('refuses to start while a publish is in flight', async function () {
+            const api = createFakeAdminApi();
+            const inner = api.fetchImpl;
+            let releaseDownload;
+            let gated = false;
+            api.fetchImpl = async (url, options) => {
+                if (gated && String(url).includes('/download/')) {
+                    await new Promise((resolve) => {
+                        releaseDownload = resolve;
+                    });
+                }
+                return inner(url, options);
+            };
+
+            const scriptedBooted = await (async () => {
+                const storage = memoryStorage();
+                const store = createKeyStore({storage});
+                store.setKey(TEST_KEY);
+                const scripted = createScriptedProvider([{text: 'never reached', toolCalls: []}]);
+                const booted = await bootSession({api, deps: {keyStore: store, providerFactory: scripted.factory}});
+                return {...booted, scripted};
+            })();
+
+            // make an edit so publish is possible, then start publishing
+            scriptedBooted.interactions.options.onSelect(editableElement(scriptedBooted.dom, 'index.hbs:1:1'));
+            await scriptedBooted.ui.handlers.onCommitEdit('Edited title');
+            await scriptedBooted.ui.handlers.onPublish(); // arm
+            gated = true;
+            const publishPromise = scriptedBooted.ui.handlers.onPublish(); // confirm — blocks on the download
+
+            const result = await scriptedBooted.session.runAgentTask('while publishing');
+
+            assert.equal(result.status, 'error');
+            assert.equal(result.refused, true);
+            assert.match(result.error, /Publishing is in progress/);
+            assert.match(scriptedBooted.ui.state.chat.messages.at(-1).text, /Publishing is in progress/);
+            assert.equal(scriptedBooted.scripted.calls.length, 0, 'the provider is never called');
+
+            releaseDownload();
+            await publishPromise;
+            assert.equal(scriptedBooted.api.uploads.length, 1, 'the publish itself completes normally');
+        });
+
+        it('a prompt during boot surfaces a visible chat error and reports the refusal', async function () {
+            // boot is stalled on the renderer client — the session exists,
+            // the UI exists, but client/renderTheme are not ready yet
+            const dom = createPageDom();
+            const api = createFakeAdminApi();
+            const ui = createFakeUi();
+            const interactions = createFakeInteractions();
+
+            let clientRequested = false;
+            let resolveClient;
+            const pendingClient = new Promise((resolve) => {
+                resolveClient = resolve;
+            });
+
+            const session = createEditSession({
+                config: {adminUrl: ADMIN_URL, key: '', scriptUrl: SCRIPT_URL},
+                deps: {
+                    doc: dom.window.document,
+                    win: dom.window,
+                    fetchImpl: api.fetchImpl,
+                    draftStore: createMemoryDraftStore(),
+                    startClient: () => {
+                        clientRequested = true;
+                        return pendingClient;
+                    },
+                    uiFactory: ui.factory,
+                    attachInteractions: interactions.attach
+                }
+            });
+
+            const startPromise = session.start();
+            await waitFor(() => clientRequested);
+
+            const result = await session.runAgentTask('too early');
+
+            assert.equal(result.status, 'error');
+            assert.equal(result.refused, true, 'the UI keeps the typed prompt on a refusal');
+            assert.match(result.error, /still starting/);
+            const errorMessages = ui.state.chat.messages.filter(message => message.role === 'error');
+            assert.equal(errorMessages.length, 1, 'the refusal is VISIBLE in the chat transcript');
+            assert.match(errorMessages[0].text, /still starting/);
+
+            session.destroy();
+            resolveClient({
+                mode: 'main',
+                async render() {
+                    return {status: 200, html: '<html></html>', url: 'x'};
+                },
+                async setTheme() {},
+                destroy() {}
+            });
+            await startPromise;
+        });
+
+        it('the publish arm step lists the changed files across human and agent commits', async function () {
+            const script = [
+                {toolCalls: [{id: 'c1', name: 'edit_theme_file', arguments: {
+                    path: 'package.json',
+                    old_string: '"fixture-theme"',
+                    new_string: '"fixture-theme-tweaked"'
+                }}]},
+                {toolCalls: [{id: 'c2', name: 'commit', arguments: {}}]},
+                {text: 'done', toolCalls: []}
+            ];
+            const booted = await bootAgentSession({script});
+
+            booted.interactions.options.onSelect(editableElement(booted.dom, 'index.hbs:1:1'));
+            await booted.ui.handlers.onCommitEdit('Human title');
+            await booted.session.runAgentTask('tweak package.json');
+            assert.equal(booted.ui.state.dirtyCount, 2);
+
+            await booted.ui.handlers.onPublish(); // arm
+
+            assert.equal(booted.ui.state.publishArmed, true);
+            assert.match(booted.ui.state.statusText, /changed files: index\.hbs, package\.json/);
+            assert.match(booted.ui.state.statusText, /Confirm publish/);
         });
 
         it('agent commits share the draft store and survive re-entry like manual edits', async function () {
@@ -553,6 +835,24 @@ describe('edit-mode agent', function () {
             booted.ui.handlers.onClearApiKey();
             assert.equal(booted.ui.state.chat.hasKey, false);
             assert.equal(store.getKey(), null);
+        });
+
+        it('saving a key over a write-throwing storage still lands (fallback, no chat error)', async function () {
+            const writeThrowingStorage = {
+                getItem: () => null,
+                setItem: () => {
+                    throw new Error('QuotaExceededError');
+                },
+                removeItem: () => {}
+            };
+            const store = createKeyStore({storage: writeThrowingStorage});
+            const booted = await bootAgentSession({script: [], keyStore: store});
+
+            booted.ui.handlers.onSaveApiKey(TEST_KEY);
+
+            assert.equal(booted.ui.state.chat.hasKey, true, 'the key is usable despite the throwing storage');
+            assert.equal(store.getKey(), TEST_KEY);
+            assert.equal(booted.ui.state.chat.messages.length, 0, 'no error line reaches the transcript');
         });
 
         it('onSendPrompt runs a task with busy shown while the provider works, and refuses concurrent tasks', async function () {

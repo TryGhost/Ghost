@@ -52,15 +52,18 @@
  * the model for self-correction), commit() lands the batch through
  * commitCandidate as ONE logical edit. The agent can never publish — that
  * stays the bar's explicit human flow — and its tools never touch the Admin
- * API. The provider seam (agent/provider.js, OpenAI-first) and key store
- * (agent/key-store.js, localStorage BYOK) are both injectable deps.
+ * API. While a task runs, HUMAN edit surfaces (click-to-edit, commit,
+ * image swap, publish) are refused with a visible status: one writer at a
+ * time, so neither side clobbers the other's uncommitted work. The provider
+ * seam (agent/provider.js, OpenAI-first) and key store (agent/key-store.js,
+ * sessionStorage BYOK) are both injectable deps.
  *
  * Exit restores the original pre-swap document and reports through onExit so
  * the toolbar shell can reset (a fatal boot failure exits the same way).
  */
 import {ROOT_ID} from '../constants';
 import {parseEditMarker} from '@tryghost/theme-renderer/markers';
-import {applyThemeAttributeEdit, applyThemeTextEdit} from '@tryghost/theme-renderer/editor';
+import {applyThemeAttributeEdits, applyThemeTextEdit} from '@tryghost/theme-renderer/editor';
 import {extractThemeArchive, isDefaultThemeName, packThemeArchive} from '@tryghost/theme-renderer/editor/archive';
 import {scrapeContentApiKey, scrapeInstanceConfig} from '@tryghost/theme-renderer/editor/instance-config';
 import {buildSystemPrompt, runAgentLoop} from './agent/loop';
@@ -191,13 +194,78 @@ export function validateNewThemeName(name) {
     return null;
 }
 
-/** localStorage off a window, tolerating access throws (private modes). */
-function safeLocalStorage(win) {
+/**
+ * sessionStorage off a window, tolerating access throws (private modes).
+ * sessionStorage (not localStorage) is the BYOK key's home on purpose: it is
+ * still readable by any script on the site's origin, but it does not PERSIST
+ * — the key is gone when the tab closes (see agent/key-store.js).
+ */
+function safeSessionStorage(win) {
     try {
-        return win.localStorage ?? null;
+        return win.sessionStorage ?? null;
     } catch {
         return null;
     }
+}
+
+/**
+ * True when the marked element at `position` sits inside a `<picture>`
+ * element in the ORIGINAL theme source. Swapping such an img's src is honest
+ * but incomplete — sibling `<source srcset>` tags keep serving the old image
+ * on matching screens — so the session warns while still committing.
+ * Heuristic scan (not the full source scanner): the nearest `<picture` before
+ * the position whose `</picture` has not closed yet.
+ */
+export function isInsidePicture(source, {line, column}) {
+    const lines = source.split('\n');
+    if (line < 1 || line > lines.length || column < 1) {
+        return false;
+    }
+    let offset = 0;
+    for (let i = 0; i < line - 1; i += 1) {
+        offset += lines[i].length + 1;
+    }
+    offset += column - 1;
+
+    const lower = source.toLowerCase();
+    const open = lower.lastIndexOf('<picture', offset);
+    if (open === -1) {
+        return false;
+    }
+    const close = lower.indexOf('</picture', open);
+    return close === -1 || close > offset;
+}
+
+/**
+ * Parse-validates .json theme files (package.json, locales) before they are
+ * staged/committed — the renderer only re-reads some of them lazily, so a
+ * broken JSON file could otherwise pass render-verify and only explode at
+ * publish (or on the live site).
+ *
+ * @returns {string|null} a readable rejection, or null when fine (non-.json
+ *   paths are always fine)
+ */
+export function validateJsonFile(path, content) {
+    if (!/\.json$/.test(path)) {
+        return null;
+    }
+    try {
+        JSON.parse(content);
+        return null;
+    } catch (error) {
+        return `"${path}" is not valid JSON after this edit: ${error.message}`;
+    }
+}
+
+/**
+ * The changed-files fragment of the publish arm message: every path this
+ * session has committed (human + agent), alphabetical, capped for the bar.
+ */
+export function formatChangedFiles(paths, {max = 5} = {}) {
+    const sorted = [...paths].sort();
+    const shown = sorted.slice(0, max);
+    const more = sorted.length - shown.length;
+    return shown.join(', ') + (more > 0 ? ` (+${more} more)` : '');
 }
 
 // Module-level so drafts survive exit/re-enter within one page view — the
@@ -235,7 +303,7 @@ export function createEditSession({config, onExit, deps = {}}) {
         startClient = startRenderClient,
         uiFactory = createEditModeUi,
         attachInteractions = attachEditInteractions,
-        keyStore = createKeyStore({storage: safeLocalStorage(win)}),
+        keyStore = createKeyStore({storage: safeSessionStorage(win)}),
         providerFactory = createOpenAiProvider,
         agentLoop = runAgentLoop
     } = deps;
@@ -252,9 +320,11 @@ export function createEditSession({config, onExit, deps = {}}) {
     let themeName = null;
     let snapshot = null;
     let renderTheme = null;
+    let lastRenderedTheme = null; // exact theme object the renderer last rendered OK
     let baseHash = null; // content hash of the base the session booted from (or last published)
     let storeKey = null;
     let editCount = 0;
+    let changedFiles = new Set(); // cumulative committed paths since the base (human + agent)
     let activeEdit = null; // {element, marker, initialValue}
     let activeImageEdit = null; // {element, marker}
     let replacingImage = false;
@@ -313,6 +383,7 @@ export function createEditSession({config, onExit, deps = {}}) {
             await client.setTheme(candidateTheme);
             await renderAndSwap();
         } catch (error) {
+            lastRenderedTheme = null;
             if (destroyed) {
                 return {ok: false, error: 'The edit session has ended'};
             }
@@ -330,6 +401,7 @@ export function createEditSession({config, onExit, deps = {}}) {
             return {ok: false, error: 'The edit session has ended'};
         }
 
+        lastRenderedTheme = candidateTheme;
         return {ok: true};
     }
 
@@ -346,10 +418,25 @@ export function createEditSession({config, onExit, deps = {}}) {
      * @returns {Promise<{ok: true}|{ok: false, error: string}>}
      */
     async function commitCandidate(candidateTheme, changedPaths) {
+        // .json files bypass most of render-verify (the renderer reads some
+        // of them lazily) — parse-validate them before anything is staged.
+        for (const path of changedPaths) {
+            const jsonError = validateJsonFile(path, candidateTheme[path]);
+            if (jsonError) {
+                closeEditor({status: 'ready', statusText: `Edit failed: ${jsonError}`, statusIsError: true});
+                return {ok: false, error: jsonError};
+            }
+        }
+
         closeEditor({status: 'loading', statusText: 'Rendering…', statusIsError: false});
         disarmPublish();
 
-        const rendered = await renderCandidate(candidateTheme);
+        // The agent's commit() usually follows a successful preview() of the
+        // EXACT same candidate object — that render already verified it and
+        // is showing it; re-rendering would be a wasted double render.
+        const rendered = candidateTheme === lastRenderedTheme
+            ? {ok: true}
+            : await renderCandidate(candidateTheme);
 
         if (!rendered.ok) {
             if (!destroyed) {
@@ -364,6 +451,7 @@ export function createEditSession({config, onExit, deps = {}}) {
             if (snapshot.files[path]) {
                 snapshot.files[path].content = candidateTheme[path];
             }
+            changedFiles.add(path);
         }
         editCount += 1;
         await draftStore.set(storeKey, {files: renderTheme, editCount});
@@ -375,8 +463,27 @@ export function createEditSession({config, onExit, deps = {}}) {
         return {ok: true};
     }
 
+    /**
+     * Human edit surfaces are refused while an agent task runs: the task's
+     * candidate accumulates against a renderTheme it read at start, so a
+     * concurrent human commit would be silently clobbered by the task's next
+     * commit (and vice versa). One writer at a time; the refusal is visible.
+     *
+     * @returns {boolean} true when the caller must bail out
+     */
+    function refusedWhileAgentRunning() {
+        if (!agentRunning) {
+            return false;
+        }
+        ui.update({statusText: 'A chat agent task is running — wait for it to finish before editing or publishing.', statusIsError: true});
+        return true;
+    }
+
     async function commitEdit(value) {
         if (!activeEdit) {
+            return;
+        }
+        if (refusedWhileAgentRunning()) {
             return;
         }
 
@@ -406,6 +513,9 @@ export function createEditSession({config, onExit, deps = {}}) {
 
     async function replaceImage() {
         if (!activeImageEdit || replacingImage) {
+            return;
+        }
+        if (refusedWhileAgentRunning()) {
             return;
         }
         replacingImage = true;
@@ -438,23 +548,39 @@ export function createEditSession({config, onExit, deps = {}}) {
                 return;
             }
 
-            // The swap: src → uploaded URL; srcset/sizes DELETED (a no-op
-            // when absent, so both are cleared unconditionally — a stale
-            // srcset would keep serving the old responsive candidates). All
-            // three edits target the same anchored tag, so a stale marker
-            // fails on the first one before anything is committed.
+            // The swap, as ONE batch on the anchored tag: src → uploaded URL
+            // (required); srcset/sizes DELETED (a no-op when absent, so both
+            // are cleared unconditionally — a stale srcset would keep serving
+            // the old responsive candidates). The deletes are `optional`: if
+            // one sits inside a handlebars block on the tag (editing one
+            // branch of a conditional is refused), the successful src swap is
+            // KEPT and a warning shows instead of discarding the upload.
             let candidateTheme;
+            let skippedEdits;
             try {
-                const anchor = {tagName: element.tagName};
-                candidateTheme = applyThemeAttributeEdit(renderTheme, marker, {name: 'src', value: imageUrl}, anchor);
-                candidateTheme = applyThemeAttributeEdit(candidateTheme, marker, {name: 'srcset', value: null}, anchor);
-                candidateTheme = applyThemeAttributeEdit(candidateTheme, marker, {name: 'sizes', value: null}, anchor);
+                ({theme: candidateTheme, skipped: skippedEdits} = applyThemeAttributeEdits(renderTheme, marker, [
+                    {name: 'src', value: imageUrl},
+                    {name: 'srcset', value: null, optional: true},
+                    {name: 'sizes', value: null, optional: true}
+                ], {tagName: element.tagName}));
             } catch (error) {
                 closeEditor({status: 'ready', statusText: `Could not apply the image swap: ${error.message}`, statusIsError: true});
                 return;
             }
 
-            await commitCandidate(candidateTheme, [marker.file]);
+            const warnings = [];
+            if (isInsidePicture(renderTheme[marker.file] ?? '', marker)) {
+                warnings.push('this image is inside a <picture> element — the theme may still show the old image on some screens');
+            }
+            if (skippedEdits.length > 0) {
+                const names = skippedEdits.map(skippedEdit => skippedEdit.name).join('/');
+                warnings.push(`${names} could not be cleared (inside a handlebars block on the tag) — the theme may still show the old image on some screens`);
+            }
+
+            const committed = await commitCandidate(candidateTheme, [marker.file]);
+            if (committed.ok && warnings.length > 0 && !destroyed) {
+                ui.update({statusText: `Image replaced, but: ${warnings.join('; ')}`, statusIsError: false});
+            }
         } finally {
             replacingImage = false;
         }
@@ -464,13 +590,20 @@ export function createEditSession({config, onExit, deps = {}}) {
         if (editCount === 0 || publishing) {
             return;
         }
+        if (refusedWhileAgentRunning()) {
+            return;
+        }
 
         // Two-step confirm inside the bar: first click arms, second commits.
+        // The arm step lists WHICH files the publish will overwrite —
+        // cumulative committed paths, human and agent alike. (No per-file
+        // diff in this slice; that follow-up is recorded in the README.)
         if (!publishArmed) {
             publishArmed = true;
+            const fileList = changedFiles.size > 0 ? ` — changed files: ${formatChangedFiles(changedFiles)}` : '';
             ui.update({
                 publishArmed: true,
-                statusText: `Publishing overwrites "${themeName}" for all visitors — click "Confirm publish" to continue.`,
+                statusText: `Publishing overwrites "${themeName}" for all visitors${fileList} — click "Confirm publish" to continue.`,
                 statusIsError: false
             });
             return;
@@ -551,6 +684,7 @@ export function createEditSession({config, onExit, deps = {}}) {
             baseHash = computeThemeContentHash(buildRenderTheme(snapshot));
             storeKey = draftKey({siteUrl, themeName, baseHash});
             editCount = 0;
+            changedFiles = new Set(); // the published snapshot IS the new base
             await draftStore.clear(previousKey);
 
             if (destroyed) {
@@ -605,6 +739,12 @@ export function createEditSession({config, onExit, deps = {}}) {
         updateChat({hasKey: false});
     }
 
+    function saveModel(value) {
+        // Empty clears back to the provider default; runAgentTask reads the
+        // stored model on every task, so this takes effect immediately.
+        keyStore.setModel(value);
+    }
+
     /**
      * Slice-5 chat agent entry point: run one natural-language task through
      * the browser-side tool-calling loop (agent/loop.js), with tools that
@@ -631,20 +771,44 @@ export function createEditSession({config, onExit, deps = {}}) {
     async function runAgentTask(prompt, {onProgress} = {}) {
         const request = (prompt ?? '').trim();
 
+        // Every refusal is VISIBLE: an error line lands in the chat
+        // transcript, and `refused: true` tells the UI the prompt never ran
+        // (so the drawer keeps/restores the typed input).
+        const refuse = (error) => {
+            if (ui && !destroyed) {
+                pushChatMessage('error', error);
+            }
+            return {status: 'error', error, refused: true, commits: 0, filesChanged: []};
+        };
+
         if (!request) {
-            return {status: 'error', error: 'Empty prompt', commits: 0, filesChanged: []};
+            return refuse('Empty prompt');
         }
         if (agentRunning) {
-            return {status: 'error', error: 'A chat task is already running', commits: 0, filesChanged: []};
+            return refuse('A chat task is already running');
+        }
+        if (publishing) {
+            return refuse('Publishing is in progress — wait for it to finish');
         }
         if (!client || !renderTheme) {
-            return {status: 'error', error: 'Edit mode is still starting', commits: 0, filesChanged: []};
+            return refuse('Edit mode is still starting — try again in a moment');
         }
 
         const apiKey = keyStore.getKey();
         if (!apiKey) {
             updateChat({open: true, hasKey: false});
-            return {status: 'error', error: 'No API key set', commits: 0, filesChanged: []};
+            return refuse('No API key set');
+        }
+
+        // Boundary: a pending inline edit must not survive into the task —
+        // the gate (refusedWhileAgentRunning) blocks new human edits while
+        // the task runs, and the pending one is COMMITTED first (never
+        // silently discarded), exactly like clicking another element.
+        if (activeEdit) {
+            await commitEdit(ui.getState().editor?.value ?? '');
+        }
+        if (activeEdit || activeImageEdit) {
+            closeEditor();
         }
 
         agentRunning = true;
@@ -694,15 +858,25 @@ export function createEditSession({config, onExit, deps = {}}) {
                     return {ok: false, output: `Error: this task's total edit size cap (${MAX_AGENT_EDIT_CHARS} characters) would be exceeded — make smaller, targeted edits.`};
                 }
 
-                const occurrences = content.split(oldString).length - 1;
-                if (occurrences === 0) {
+                const first = content.indexOf(oldString);
+                if (first === -1) {
                     return {ok: false, output: `Error: old_string was not found in "${path}" — read the file again; the current draft may differ from what you expect.`};
                 }
-                if (occurrences > 1) {
-                    return {ok: false, output: `Error: old_string matches ${occurrences} places in "${path}" — include more surrounding context so it matches exactly once.`};
+                if (content.indexOf(oldString, first + oldString.length) !== -1) {
+                    return {ok: false, output: `Error: old_string matches more than one place in "${path}" — include more surrounding context so it matches exactly once.`};
                 }
 
-                candidate = {...candidate, [path]: content.replace(oldString, newString)};
+                // Splice at the found offset — String.replace would interpret
+                // `$&`/`` $` ``/`$'` patterns in new_string instead of
+                // inserting it verbatim.
+                const edited = content.slice(0, first) + newString + content.slice(first + oldString.length);
+
+                const jsonError = validateJsonFile(path, edited);
+                if (jsonError) {
+                    return {ok: false, output: `Error: ${jsonError}`};
+                }
+
+                candidate = {...candidate, [path]: edited};
                 changedPaths.add(path);
                 totalEditChars += oldString.length + newString.length;
                 return {ok: true, output: `Staged an edit to ${path}. Call preview() to render-verify, then commit().`};
@@ -770,6 +944,7 @@ export function createEditSession({config, onExit, deps = {}}) {
             try {
                 await client.setTheme(renderTheme);
                 await renderAndSwap();
+                lastRenderedTheme = renderTheme;
             } catch {
                 // best-effort — the committed draft is unchanged either way
             }
@@ -821,6 +996,12 @@ export function createEditSession({config, onExit, deps = {}}) {
     }
 
     function handleSelect(element) {
+        // One writer at a time: while an agent task runs, click-to-edit is
+        // refused with a visible status instead of racing the task's commits.
+        if (refusedWhileAgentRunning()) {
+            return;
+        }
+
         // A pending inline edit is COMMITTED when another element is clicked
         // — never silently discarded. The commit re-renders and re-swaps the
         // document, so the clicked element is stale by then; the user clicks
@@ -902,6 +1083,7 @@ export function createEditSession({config, onExit, deps = {}}) {
                 onToggleChat: () => toggleChat(),
                 onSendPrompt: text => runAgentTask(text),
                 onSaveApiKey: value => saveApiKey(value),
+                onSaveModel: value => saveModel(value),
                 onClearApiKey: () => clearApiKey()
             }
         });
@@ -937,6 +1119,11 @@ export function createEditSession({config, onExit, deps = {}}) {
                 for (const [path, content] of Object.entries(draft.files)) {
                     if (snapshot.files[path]) {
                         snapshot.files[path].content = content;
+                    }
+                    // seed the changed-files list (publish arm step) with the
+                    // paths this draft already differs from the base in
+                    if (content !== baseTheme[path]) {
+                        changedFiles.add(path);
                     }
                 }
             }

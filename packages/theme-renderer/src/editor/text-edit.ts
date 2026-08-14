@@ -61,15 +61,6 @@ import {editThemeFile, resolveMarkedOpenTag, type EditAnchor, type SourcePositio
 import type {EditMarker} from '../engine/markers.ts';
 import type {ThemeFiles} from '../theme/theme-source.ts';
 
-export type {EditMarker} from '../engine/markers.ts';
-export type {SourcePosition} from './edit-common.ts';
-
-/**
- * Expected tag name of the element at the marker position
- * (case-insensitive — pass the clicked DOM element's `tagName` directly).
- */
-export type TextEditAnchor = EditAnchor;
-
 /** HTML void elements — no text child to edit. */
 const VOID_TAGS = new Set([
     'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input',
@@ -108,7 +99,7 @@ function escapeNewText(newText: string): string {
  * positions the editor must treat as not editable, for stale anchored
  * markers, and for newText that violates the contract.
  */
-export function applyTextEdit(source: string, position: SourcePosition, newText: string, anchor?: TextEditAnchor): string {
+export function applyTextEdit(source: string, position: SourcePosition, newText: string, anchor?: EditAnchor): string {
     const replacement = escapeNewText(newText);
     const at = `${position.line}:${position.column}`;
 
@@ -157,6 +148,6 @@ export function applyTextEdit(source: string, position: SourcePosition, newText:
  * a NEW files object of the same shape (the input is never mutated) — feed it
  * to a fresh `createRenderer` and re-render (docs/markers.md §editor loop).
  */
-export function applyThemeTextEdit<T extends ThemeFiles>(theme: T, marker: EditMarker, newText: string, anchor?: TextEditAnchor): T {
+export function applyThemeTextEdit<T extends ThemeFiles>(theme: T, marker: EditMarker, newText: string, anchor?: EditAnchor): T {
     return editThemeFile(theme, marker, source => applyTextEdit(source, marker, newText, anchor));
 }

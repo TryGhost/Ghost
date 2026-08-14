@@ -144,13 +144,21 @@ export function createOpenAiProvider({apiKey, model = DEFAULT_OPENAI_MODEL, endp
                 throw new Error('OpenAI returned no completion choice');
             }
 
-            const toolCalls = (choice.tool_calls ?? [])
-                .filter(call => call?.type === 'function' && call.function?.name)
-                .map(call => ({
-                    id: call.id,
-                    name: call.function.name,
-                    arguments: safeJsonParse(call.function.arguments ?? '')
-                }));
+            // A tool call of an unknown/missing type must SURFACE, not be
+            // silently dropped — dropping every call would end the loop as a
+            // false 'done' while the model believes its calls are pending.
+            const rawToolCalls = choice.tool_calls ?? [];
+            const unsupported = rawToolCalls.find(call => call?.type !== 'function' || !call.function?.name);
+            if (unsupported) {
+                const label = typeof unsupported?.type === 'string' && unsupported.type ? `"${unsupported.type}"` : 'a missing type';
+                throw new Error(`OpenAI returned an unsupported tool call (${label}) — this provider integration only handles function calls`);
+            }
+
+            const toolCalls = rawToolCalls.map(call => ({
+                id: call.id,
+                name: call.function.name,
+                arguments: safeJsonParse(call.function.arguments ?? '')
+            }));
 
             return {
                 text: choice.content ?? null,

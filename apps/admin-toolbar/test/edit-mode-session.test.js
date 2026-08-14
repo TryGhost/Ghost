@@ -474,6 +474,58 @@ describe('edit-mode session', function () {
             assert.ok(client.setThemeCalls[1]['index.hbs'].includes('src="/old.jpg"'), 'reverted to the last-good theme');
         });
 
+        it('warns (but still commits) when the swapped img sits inside a <picture> element', async function () {
+            const pictureTheme = {
+                'index.hbs': '<picture><source srcset="/old-s.jpg 300w"><img class="hero" src="/old.jpg"></picture>',
+                'package.json': '{"name":"fixture-theme"}'
+            };
+            const api = createFakeAdminApi({activeName: 'fixture-theme', themes: {'fixture-theme': pictureTheme}});
+            const clientFactory = createFakeClientFactory({
+                renderHtml: theme => `<!DOCTYPE html><html><head><title>Preview</title></head><body>${
+                    (theme['index.hbs'] ?? '').replace('<img ', '<img data-edit="index.hbs:1:43" ')
+                }</body></html>`
+            });
+            const booted = await bootSession({api, clientFactory, pickFile: async () => heroFile()});
+
+            booted.interactions.options.onSelect(editableElement(booted.dom, 'index.hbs:1:43'));
+            await booted.ui.handlers.onReplaceImage();
+
+            // the swap COMMITS — refusing would block every picture-wrapped image
+            assert.equal(booted.ui.state.dirtyCount, 1);
+            const edited = clientFactory.created[0].setThemeCalls[0]['index.hbs'];
+            assert.ok(edited.includes(`<img class="hero" src="${IMAGE_URL}">`), 'the img src is swapped');
+            assert.ok(edited.includes('<source srcset="/old-s.jpg 300w">'), 'the sibling <source> is untouched');
+            // …but the honest limitation is SURFACED
+            assert.match(booted.ui.state.statusText, /inside a <picture> element/);
+            assert.match(booted.ui.state.statusText, /may still show the old image/);
+            assert.equal(booted.ui.state.statusIsError, false, 'a warning, not an error — the swap landed');
+        });
+
+        it('keeps the src swap (with a warning) when a conditional srcset cannot be cleared', async function () {
+            const conditionalTheme = {
+                'index.hbs': '<img {{#if lazy}}srcset="/old-s.jpg 300w"{{/if}} src="/old.jpg">',
+                'package.json': '{"name":"fixture-theme"}'
+            };
+            const api = createFakeAdminApi({activeName: 'fixture-theme', themes: {'fixture-theme': conditionalTheme}});
+            const clientFactory = createFakeClientFactory({
+                renderHtml: () => '<!DOCTYPE html><html><head><title>Preview</title></head><body><img data-edit="index.hbs:1:1" src="/old.jpg"></body></html>'
+            });
+            const booted = await bootSession({api, clientFactory, pickFile: async () => heroFile()});
+
+            booted.interactions.options.onSelect(editableElement(booted.dom, 'index.hbs:1:1'));
+            await booted.ui.handlers.onReplaceImage();
+
+            // the uploaded image is NOT discarded: the src swap commits…
+            assert.equal(booted.ui.state.dirtyCount, 1);
+            const edited = clientFactory.created[0].setThemeCalls[0]['index.hbs'];
+            assert.ok(edited.includes(`src="${IMAGE_URL}"`), 'src points at the uploaded URL');
+            assert.ok(edited.includes('{{#if lazy}}srcset="/old-s.jpg 300w"{{/if}}'), 'the conditional srcset stays as-is');
+            // …and the skipped cleanup is SURFACED as a warning
+            assert.match(booted.ui.state.statusText, /srcset could not be cleared/);
+            assert.match(booted.ui.state.statusText, /may still show the old image/);
+            assert.equal(booted.ui.state.statusIsError, false);
+        });
+
         it('commits a pending text edit when the image is clicked (never silently discards)', async function () {
             const booted = await bootSession();
 

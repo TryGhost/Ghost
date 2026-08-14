@@ -169,6 +169,115 @@ function rawtextCloseIndex(source: string, tagNameLower: string, from: number): 
     return -1;
 }
 
+export interface ScannedAttribute {
+    /** Lowercased attribute name */
+    name: string;
+    /** Offset of the name's first character */
+    start: number;
+    /** Offset just past the token (name, or the value when present) */
+    end: number;
+    /** Mustache-block depth at the attribute ({{#…}}/{{^…}}…{{/…}} nesting) */
+    blockDepth: number;
+}
+
+const BLOCK_OPEN = /^\{\{~?\s*(#|\^\s*[^\s}])/;
+const BLOCK_CLOSE = /^\{\{~?\s*\//;
+
+/**
+ * Scans the attribute region of an open tag — `[from, to)`, between the tag
+ * name and the closing `>` — yielding each static attribute token with the
+ * handlebars-block depth it sits at. Mustaches are opaque (a value that IS a
+ * mustache is part of its attribute's token; a free-standing mustache is
+ * skipped — along with its `=value` when it names a dynamic attribute), quoted
+ * values are quote-aware and may contain mustaches with quoted arguments
+ * (`srcset="{{img_url a size="s"}} 300w"` — Casper).
+ *
+ * Shared by the attribute-edit applier (src/editor/attribute-edit.ts) and the
+ * marker transform's existing-`data-edit` check (src/engine/markers.ts), so
+ * both agree on what counts as a static attribute NAME on a tag.
+ */
+export function* scanAttributes(source: string, from: number, to: number): Generator<ScannedAttribute, void, undefined> {
+    let i = from;
+    let blockDepth = 0;
+
+    const skipValue = (at: number): number => {
+        let j = at;
+        const quote = source[j];
+        if (quote === '"' || quote === '\'') {
+            j += 1;
+            while (j < to && source[j] !== quote) {
+                j = source.startsWith('{{', j) ? mustacheEnd(source, j) : j + 1;
+            }
+            return Math.min(j + 1, to);
+        }
+        // unquoted value: up to whitespace (or the region end), mustache-aware
+        while (j < to && !/\s/.test(source[j]!)) {
+            j = source.startsWith('{{', j) ? mustacheEnd(source, j) : j + 1;
+        }
+        return j;
+    };
+
+    // The `= value` (whitespace-tolerant) following a name at `at`, or `at`
+    // itself when the name has no value.
+    const skipEqualsValue = (at: number): number => {
+        let k = at;
+        while (k < to && /\s/.test(source[k]!)) {
+            k += 1;
+        }
+        if (source[k] !== '=') {
+            return at;
+        }
+        k += 1;
+        while (k < to && /\s/.test(source[k]!)) {
+            k += 1;
+        }
+        return skipValue(k);
+    };
+
+    while (i < to) {
+        const c = source[i]!;
+        if (/\s/.test(c) || c === '/') {
+            i += 1;
+            continue;
+        }
+        if (source.startsWith('{{', i)) {
+            const rest = source.slice(i, i + 24);
+            if (BLOCK_OPEN.test(rest)) {
+                blockDepth += 1;
+            } else if (BLOCK_CLOSE.test(rest)) {
+                blockDepth = Math.max(0, blockDepth - 1);
+            }
+            // a mustache directly followed by `=value` is a fully-dynamic
+            // attribute name — its value must be skipped, never yielded
+            i = skipEqualsValue(Math.min(mustacheEnd(source, i), to));
+            continue;
+        }
+
+        const nameMatch = /^[^\s"'=/>{]+/.exec(source.slice(i, to));
+        if (!nameMatch) {
+            i += 1; // stray quote/equals — not an attribute start
+            continue;
+        }
+        const start = i;
+        const name = nameMatch[0];
+        let j = i + name.length;
+
+        if (source.startsWith('{{', j)) {
+            // dynamic attribute name (`data-{{x}}=…`) — never a static match;
+            // skip past the mustache AND its `=value` without yielding, so the
+            // value's content can never be mistaken for attribute names
+            i = skipEqualsValue(Math.min(mustacheEnd(source, j), to));
+            continue;
+        }
+
+        // optional `= value`, whitespace-tolerant around the equals
+        j = skipEqualsValue(j);
+
+        yield {name: name.toLowerCase(), start, end: j, blockDepth};
+        i = j;
+    }
+}
+
 export interface ScannedTag {
     /** Offset of the tag's `<` */
     start: number;
