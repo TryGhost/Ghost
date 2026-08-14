@@ -24,7 +24,17 @@ const forPost = (id, attrs, frame, type = 'posts') => {
         return attrs;
     }
 
-    attrs.url = urlService.facade.getUrlForResource({...attrs, id, type}, {absolute: true});
+    // Diagnostic only: hand the compare-mode URL service the producing api
+    // endpoint. The parity/thin-resource logs capture a caller stack, but it
+    // truncates at the async api-framework boundary and never names the
+    // endpoint; the api-framework Frame carries it, so pass it through. Omitted
+    // for non-api callers (mentions, email) whose frame has no endpoint fields.
+    const options = {absolute: true};
+    if (frame && (frame.docName || frame.method)) {
+        options.serializerContext = {apiType: frame.apiType, docName: frame.docName, method: frame.method};
+    }
+
+    attrs.url = urlService.facade.getUrlForResource({...attrs, id, type}, options);
 
     /**
      * CASE: admin api should serve preview urls

@@ -1,5 +1,4 @@
 const debug = require('@tryghost/debug')('frontend:routing');
-const _ = require('lodash');
 const StaticRoutesRouter = require('./static-routes-router');
 const StaticPagesRouter = require('./static-pages-router');
 const CollectionRouter = require('./collection-router');
@@ -111,30 +110,30 @@ class RouterManager {
         this.siteRouter.mountRouter(previewRouter.router());
         this.registry.setRouter('previewRouter', previewRouter);
 
-        _.each(routerSettings.routes, (value, key) => {
-            const staticRoutesRouter = new StaticRoutesRouter(key, value, this.routerCreated.bind(this));
+        for (const route of routerSettings.routes) {
+            const staticRoutesRouter = new StaticRoutesRouter(route.path, route, this.routerCreated.bind(this));
             this.siteRouter.mountRouter(staticRoutesRouter.router());
 
             this.registry.setRouter(staticRoutesRouter.identifier, staticRoutesRouter);
-        });
+        }
 
-        _.each(routerSettings.collections, (value, key) => {
-            const collectionRouter = new CollectionRouter(key, value, RESOURCE_CONFIG, this.routerCreated.bind(this));
+        for (const collection of routerSettings.collections) {
+            const collectionRouter = new CollectionRouter(collection.path, collection, RESOURCE_CONFIG, this.routerCreated.bind(this));
             this.siteRouter.mountRouter(collectionRouter.router());
             this.registry.setRouter(collectionRouter.identifier, collectionRouter);
-        });
+        }
 
         const staticPagesRouter = new StaticPagesRouter(RESOURCE_CONFIG, this.routerCreated.bind(this));
         this.siteRouter.mountRouter(staticPagesRouter.router());
 
         this.registry.setRouter('staticPagesRouter', staticPagesRouter);
 
-        _.each(routerSettings.taxonomies, (value, key) => {
-            const taxonomyRouter = new TaxonomyRouter(key, value, RESOURCE_CONFIG, this.routerCreated.bind(this));
+        for (const taxonomy of routerSettings.taxonomies) {
+            const taxonomyRouter = new TaxonomyRouter(taxonomy.key, taxonomy.permalink, RESOURCE_CONFIG, this.routerCreated.bind(this));
             this.siteRouter.mountRouter(taxonomyRouter.router());
 
             this.registry.setRouter(taxonomyRouter.identifier, taxonomyRouter);
-        });
+        }
 
         const appRouter = new ParentRouter('AppsRouter');
         this.siteRouter.mountRouter(appRouter.router());
@@ -186,10 +185,11 @@ module.exports = RouterManager;
  */
 
 /**
- * @typedef {Object} RouteSettings
- * @property {Object} routes
- * @property {Object} collections
- * @property {Object} taxonomies
+ * The shape RouterManager consumes — produced by the activation bridge. This is
+ * a temporary reference into server code; when the bridge is removed (HKG-1898)
+ * it becomes the domain `RouteSettings` from @tryghost/adapter-base-route-settings.
+ *
+ * @typedef {import('../../../server/services/route-settings/activation-bridge').RouterSettings} RouteSettings
  */
 
 /**

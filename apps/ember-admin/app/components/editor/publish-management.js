@@ -1,6 +1,7 @@
 import Component from '@glimmer/component';
 import EmailFailedError from 'ghost-admin/errors/email-failed-error';
 import PreviewModal from './modals/preview';
+import PublicPreviewWarningModal from './modals/public-preview-warning';
 import PublishFlowModal from './modals/publish-flow';
 import PublishOptionsResource from 'ghost-admin/helpers/publish-options';
 import TkReminderModal from './modals/tk-reminder';
@@ -59,6 +60,14 @@ export default class PublishManagement extends Component {
             });
 
             if (ignoreTks !== true) {
+                return;
+            }
+        } else if (isValid && this.feature.paywallImprovements && this.publishOptions.publicPreviewWarning) {
+            const ignorePublicPreviewWarning = await this.modals.open(PublicPreviewWarningModal, {
+                warning: this.publishOptions.publicPreviewWarning
+            });
+
+            if (ignorePublicPreviewWarning !== true) {
                 return;
             }
         }

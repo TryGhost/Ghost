@@ -958,21 +958,6 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     }
 }
 
-section.gh-ds ul {
-    margin-bottom: 5vw;
-}
-
-section.gh-ds ul li {
-    margin-bottom: 12px;
-}
-
-section.gh-ds h2 {
-    margin-bottom: 20px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid var(--whitegrey);
-}
-
-
 /* Finishing touches */
 /* ---------------------------------------------------- */
 

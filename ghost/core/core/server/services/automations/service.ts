@@ -8,6 +8,7 @@ import {poll} from './poll';
 import * as automationsApi from './automations-api';
 import {setImmediate as flushEventLoop} from 'node:timers/promises';
 import {SoonestTimer} from '../../lib/soonest-timer';
+import {getSchedulerPollTime} from './scheduler-poll-time';
 // @ts-expect-error This module currently lacks type definitions.
 import emailAnalyticsJobs from '../email-analytics/jobs';
 
@@ -23,6 +24,7 @@ type AutomationsServiceOptions = {
     domainEvents: Pick<DomainEvents, 'dispatch' | 'subscribe'>;
     internalKeys: InternalKeys;
     schedulerAdapter: Pick<SchedulerAdapter, 'schedule' | 'register'>;
+    siteUuid: unknown;
 };
 
 const scheduleAutomationEmailAnalyticsJob = () => (
@@ -32,12 +34,14 @@ const scheduleAutomationEmailAnalyticsJob = () => (
 export class AutomationsService {
     #enqueuePollAt: undefined | ((date: Readonly<Date>) => Promise<void>);
 
-    init({domainEvents, apiUrl, schedulerAdapter, internalKeys}: AutomationsServiceOptions): void {
+    init({domainEvents, apiUrl, schedulerAdapter, internalKeys, siteUuid}: AutomationsServiceOptions): void {
         const isInitialized = Boolean(this.#enqueuePollAt);
         if (isInitialized) {
             return;
         }
 
+        // If we don't get a valid site UUID for some reason, compute jitter with the API URL.
+        const siteIdentifier = typeof siteUuid === 'string' && siteUuid.length ? siteUuid : apiUrl;
         const enqueuePollNow = () => domainEvents.dispatch(StartAutomationsPollEvent.create());
 
         const soonestTimer = new SoonestTimer(enqueuePollNow);
@@ -69,11 +73,20 @@ export class AutomationsService {
             soonestTimer.scheduleAt(date);
 
             try {
+                const schedulerPollTime = getSchedulerPollTime(date, siteIdentifier);
                 const key = await internalKeys.get('ghost-scheduler');
-                const signedAdminToken = getSignedAdminToken({publishedAt: date.toISOString(), apiUrl, key});
+                const signedAdminToken = getSignedAdminToken({
+                    publishedAt: schedulerPollTime.toISOString(),
+                    apiUrl,
+                    key
+                });
                 const url = new URL(urlUtils.urlJoin(apiUrl, 'automations', 'poll'));
                 url.searchParams.set('token', signedAdminToken);
-                schedulerAdapter.schedule({time: date.getTime(), url: url.toString(), extra: {httpMethod: 'PUT'}});
+                schedulerAdapter.schedule({
+                    time: schedulerPollTime.getTime(),
+                    url: url.toString(),
+                    extra: {httpMethod: 'PUT'}
+                });
             } catch (err) {
                 logging.error({event: {name: 'automations.enqueue-poll.error'}, err, at: date.toISOString()}, 'Failed to enqueue automations poll');
             }

@@ -80,6 +80,16 @@ export type Config = {
         billing?: {
             enabled?: boolean
             url?: string
+            // Copy and branding for the sidebar trial banner.
+            // Managed hosting providers can override these; each falls back to Ghost's default.
+            upgradeBanner?: {
+                title?: string // Banner heading
+                message?: string // Banner message, {{days}} is replaced with the remaining trial days
+                upgradeUrl?: string // Destination for the banner's upgrade button
+                logo?: string // Logo shown above the heading
+                logoDark?: string // Logo shown in dark mode, falls back to logo
+                logoAlt?: string // Alt text for the logo
+            }
         },
         pintura?: {
             js?: string

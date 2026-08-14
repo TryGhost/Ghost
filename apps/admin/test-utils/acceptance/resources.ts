@@ -12,6 +12,7 @@ import {
     type Member,
     type Newsletter,
     type Offer,
+    type Post,
     type SettingsResponse,
     type StaffInvite,
     type StaffRole,
@@ -208,6 +209,15 @@ const membersResource = defineResource<Member>({
 // Members-page chrome: the filter bar mounts with the page and probes these lookups.
 const labelsResource = defineResource<Label>({ resource: "labels", semantics: { kind: "passthrough" } });
 const newslettersResource = defineResource<Newsletter>({ resource: "newsletters", semantics: { kind: "passthrough" } });
+
+/**
+ * Posts list fake (passthrough): the analytics screens browse this endpoint
+ * with NQL filters (`status:[published,sent]` for the latest post, `id:<id>`
+ * for post analytics) — declare the response and assert the outgoing filter.
+ * The single-post read (`GET /posts/<id>/`) is not a browse path; declare it
+ * with `fakeAdminEndpoint`.
+ */
+export const fakePosts = defineResource<Post>({ resource: "posts", semantics: { kind: "passthrough" } });
 
 /** Tiers list fake (passthrough): serves the declared tiers and captures every browse request. */
 export const fakeTiers = defineResource<Tier>({ resource: "tiers", semantics: { kind: "passthrough" } });

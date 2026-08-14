@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {describe, it} from 'vitest';
-import {csvCellsForFields} from '../src/csv.ts';
+import {csvCellsForFields, csvColumnsForField, fieldValuesFromCsvRow, isCustomFieldColumn} from '../src/csv.ts';
 
 // The behavioural outcomes — an export carrying the right columns, an exported
 // file re-importing without remapping — are proven end-to-end through the member
@@ -74,5 +74,98 @@ describe('custom field CSV cells', function () {
 
     it('treats an explicit null as no value', function () {
         assert.deepEqual(csvCellsForFields([nickname], {nickname: null}), {'custom_fields.nickname': ''});
+    });
+});
+
+// The column names are the vocabulary the admin offers as import mapping targets and
+// the error report echoes, so they are derived from the same primitives the cells are.
+describe('custom field CSV columns', function () {
+    it('gives a scalar field one namespaced column', function () {
+        assert.deepEqual(csvColumnsForField({key: 'nickname', type: 'short_text'}), ['custom_fields.nickname']);
+    });
+
+    it('gives a composite field one column per sub-field', function () {
+        assert.deepEqual(csvColumnsForField({key: 'shipping_address', type: 'address'}), [
+            'custom_fields.shipping_address.line1',
+            'custom_fields.shipping_address.line2',
+            'custom_fields.shipping_address.city',
+            'custom_fields.shipping_address.state',
+            'custom_fields.shipping_address.postal_code',
+            'custom_fields.shipping_address.country'
+        ]);
+    });
+
+    it('recognises a custom field column by its namespace', function () {
+        assert.equal(isCustomFieldColumn('custom_fields.nickname'), true);
+        assert.equal(isCustomFieldColumn('custom_fields.shipping_address.city'), true);
+        assert.equal(isCustomFieldColumn('email'), false);
+        // A core column that merely starts with the word is not namespaced by it.
+        assert.equal(isCustomFieldColumn('custom_fields_note'), false);
+    });
+});
+
+// End-to-end round-tripping is proven in the member import HTTP API tests; the row-level
+// reading rules are pinned here.
+describe('reading custom field values from a CSV row', function () {
+    const nickname = {key: 'nickname', type: 'short_text'} as const;
+    const address = {key: 'shipping_address', type: 'address'} as const;
+
+    it('reads a scalar column into its value', function () {
+        assert.deepEqual(fieldValuesFromCsvRow([nickname], {'custom_fields.nickname': 'Bex'}), {nickname: 'Bex'});
+    });
+
+    it('leaves a field untouched when its column is absent from the row', function () {
+        assert.deepEqual(fieldValuesFromCsvRow([nickname], {email: 'a@b.com'}), {});
+    });
+
+    // Blank means untouched, not cleared, so re-importing a partly-edited export can't wipe values.
+    it('leaves a field untouched when its scalar column is present but blank', function () {
+        assert.deepEqual(fieldValuesFromCsvRow([nickname], {'custom_fields.nickname': ''}), {});
+    });
+
+    it('reads only active fields, dropping a column that names no passed field', function () {
+        assert.deepEqual(fieldValuesFromCsvRow([nickname], {
+            'custom_fields.nickname': 'Bex',
+            'custom_fields.unknown': 'ignored'
+        }), {nickname: 'Bex'});
+    });
+
+    // The export writes "no address" and an all-blank address identically, so all-blank is read as absent.
+    it('omits a composite whose every sub-cell is blank', function () {
+        assert.deepEqual(fieldValuesFromCsvRow([address], {
+            'custom_fields.shipping_address.line1': '',
+            'custom_fields.shipping_address.line2': '',
+            'custom_fields.shipping_address.city': '',
+            'custom_fields.shipping_address.state': '',
+            'custom_fields.shipping_address.postal_code': '',
+            'custom_fields.shipping_address.country': ''
+        }), {});
+    });
+
+    it('reads a composite from its non-blank sub-cells, omitting the blank ones', function () {
+        assert.deepEqual(fieldValuesFromCsvRow([address], {
+            'custom_fields.shipping_address.line1': '1 High Street',
+            'custom_fields.shipping_address.line2': '',
+            'custom_fields.shipping_address.city': 'London',
+            'custom_fields.shipping_address.state': '',
+            'custom_fields.shipping_address.postal_code': 'E1 6AN',
+            'custom_fields.shipping_address.country': 'GB'
+        }), {shipping_address: {line1: '1 High Street', city: 'London', postal_code: 'E1 6AN', country: 'GB'}});
+    });
+
+    // A partial composite is read as a value (validation, run by the caller, is what
+    // rejects it) rather than silently dropped like an all-blank one.
+    it('reads a partial composite so its validation can fail the row', function () {
+        assert.deepEqual(fieldValuesFromCsvRow([address], {
+            'custom_fields.shipping_address.city': 'London'
+        }), {shipping_address: {city: 'London'}});
+    });
+
+    // The caller decodes each cell (the members importer strips the export's formula
+    // guard); the vocabulary itself holds no escaping knowledge. Blank-after-decode still
+    // reads as untouched, so a decoder can't accidentally write an emptied field.
+    it('decodes each cell through the caller-supplied decoder', function () {
+        assert.deepEqual(fieldValuesFromCsvRow([nickname], {'custom_fields.nickname': ' Bex '}, cell => cell.trim()), {nickname: 'Bex'});
+        assert.deepEqual(fieldValuesFromCsvRow([nickname], {'custom_fields.nickname': '   '}, cell => cell.trim()), {});
     });
 });

@@ -17,6 +17,10 @@
   intents:
     - major-areas-fail
     - plain-singers-cheat
+"@tryghost/koenig-lexical@1.9.0":
+  dir: koenig/koenig-lexical
+  intents:
+    - bright-walls-preview
 ghost-storage-base@3.0.0:
   dir: packages/adapters/storage-base
   intents:

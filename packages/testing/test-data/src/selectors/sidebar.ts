@@ -4,6 +4,7 @@
  */
 
 // testids
+export const adminSidebar = "admin-sidebar";
 export const networkNotificationBadge = "network-notification-badge";
 
 // accessible names

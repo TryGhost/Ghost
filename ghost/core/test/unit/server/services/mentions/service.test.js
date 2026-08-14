@@ -40,6 +40,25 @@ describe('Mentions service post url helpers', function () {
         assert.equal(forPost.getCall(0).args[1].status, 'published');
     });
 
+    it('routes a page as a page, not a post', function () {
+        // The URL service routes by resource type. A page mis-typed as a post
+        // matches no post collection and 404s under the lazy service, so the
+        // page's own type must reach forPost.
+        const forPost = sinon.stub(outputSerializerUrlUtil, 'forPost');
+
+        getPostUrl('page-id', {slug: 'about', status: 'published', type: 'page'});
+
+        assert.equal(forPost.getCall(0).args[3], 'pages');
+    });
+
+    it('routes a post as a post', function () {
+        const forPost = sinon.stub(outputSerializerUrlUtil, 'forPost');
+
+        getPostUrl('post-id', {slug: 'hello', status: 'published', type: 'post'});
+
+        assert.equal(forPost.getCall(0).args[3], 'posts');
+    });
+
     it('does not reload relations that are already loaded', async function () {
         sinon.stub(urlService.facade, 'getRequiredRelations').returns(['tags', 'authors']);
         const post = fakePost({tags: {}, authors: {}});

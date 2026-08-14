@@ -1,4 +1,5 @@
 import type {ReadonlyDeep} from 'type-fest';
+import type {Knex} from 'knex';
 
 export interface Pagination {
     page: number;
@@ -30,6 +31,11 @@ export interface AutomationEmailStats {
     email_opened_count: number;
     opened_rate: number | null;
     clicked_rate: number | null;
+}
+
+export interface AutomationActionLink {
+    url: string;
+    clicked_count: number;
 }
 
 export interface SendEmailAction {
@@ -131,6 +137,7 @@ export type AutomationStepTerminalStatus =
 export interface AutomationsRepository {
     browse(): Promise<Page<AutomationSummary>>;
     getById(id: string): Promise<Automation | null>;
+    getAutomationActionLinks(automationId: string, actionId: string): Promise<AutomationActionLink[] | null>;
     edit(id: string, data: EditAutomationData): Promise<Automation | null>;
     trigger(options: {
         memberEmail: string;
@@ -195,4 +202,15 @@ export interface AutomationsRepository {
     trackEmailDeliveredAndOpened(
         eventsByAutomatedEmailRecipientId: ReadonlyDeep<Map<string, AutomatedEmailEvents>>
     ): Promise<void>;
+    /**
+     * Track the first click for an automated email recipient.
+     *
+     */
+    trackEmailClicked(options: {
+        automationActionRevisionId: string;
+        memberId: string;
+        clickedAt: Readonly<Date>;
+    }, transactionOptions?: {
+        transacting?: Knex.Transaction;
+    }): Promise<void>;
 }

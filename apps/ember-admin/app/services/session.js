@@ -121,7 +121,7 @@ export default class SessionService extends ESASessionService {
                 return;
             }
 
-            super.handleAuthentication('home');
+            super.handleAuthentication('index');
         });
     }
 

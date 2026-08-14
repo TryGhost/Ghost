@@ -378,11 +378,16 @@ class CommentsService {
     async sendNewCommentNotifications(comment) {
         await this.emails.notifyPostAuthors(comment);
 
-        if (comment.get('parent_id')) {
-            await this.emails.notifyParentCommentAuthor(comment, {type: 'parent'});
-        }
+        const notifiedMemberId = comment.get('parent_id')
+            ? await this.emails.notifyParentCommentAuthor(comment, {type: 'parent'})
+            : null;
+
         if (comment.get('in_reply_to_id')) {
-            await this.emails.notifyParentCommentAuthor(comment, {type: 'in_reply_to'});
+            const inReplyTo = await this.models.Comment.findOne({id: comment.get('in_reply_to_id')});
+
+            if (inReplyTo && (!notifiedMemberId || inReplyTo.get('member_id') !== notifiedMemberId)) {
+                await this.emails.notifyParentCommentAuthor(comment, {type: 'in_reply_to', parent: inReplyTo});
+            }
         }
     }
 

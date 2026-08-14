@@ -312,6 +312,13 @@ const UserDetailModalContent: React.FC<{user: User; onDeletingUserChange: (isDel
 
     const suspendedText = formState.status === 'inactive' ? ' (Suspended)' : '';
 
+    // Roles without settings access open their own profile as a full-bleed page
+    // rather than a modal inside the settings surface.
+    const isStandalonePage = !canAccessSettings(currentUser);
+    const standaloneContentClasses = 'mx-auto w-full max-w-[536px]';
+    // The footer carries the modal's own p-10 gutters, so its cap has to grow by them to line up with the content column.
+    const standaloneFooterClasses = 'mx-auto w-full max-w-[calc(536px+5rem)]';
+
     const initialTab = getTabFromPath(route);
     const [selectedTab, setSelectedTab] = useState<string>(initialTab);
 
@@ -325,29 +332,30 @@ const UserDetailModalContent: React.FC<{user: User; onDeletingUserChange: (isDel
     return (
         <SettingsModal
             afterClose={navigateOnClose}
-            animate={canAccessSettings(currentUser)}
-            backDrop={canAccessSettings(currentUser)}
+            animate={!isStandalonePage}
+            backDrop={!isStandalonePage}
             buttonsDisabled={okProps.disabled}
             cancelLabel='Close'
             dirty={saveState === 'unsaved'}
+            footerClassName={isStandalonePage ? standaloneFooterClasses : undefined}
             hideXOnMobile={true}
             okLabel={okProps.label || 'Save'}
             okVariant={okProps.variant}
-            size={canAccessSettings(currentUser) ? 'md' : 'bleed'}
+            size={isStandalonePage ? 'bleed' : 'md'}
             stickyFooter={true}
             testId='user-detail-modal'
-            width={canAccessSettings(currentUser) ? 600 : 'full'}
+            width={isStandalonePage ? 'full' : 600}
             onOk={async () => {
                 await (handleSave({fakeWhenUnchanged: true}));
             }}
         >
             <div>
-                <div className={`relative ${canAccessSettings(currentUser) ? '-mx-8 -mt-8 rounded-t' : '-mx-10 -mt-10'}`}>
-                    <div className={`flex flex-wrap items-end justify-between gap-8 p-8 ${formState.cover_image ? 'bg-cover bg-center' : ''} ${!canAccessSettings(currentUser) && 'min-h-[30vmin]'}`}
+                <div className={`relative ${isStandalonePage ? '-mx-10 -mt-10' : '-mx-8 -mt-8 rounded-t'}`}>
+                    <div className={clsx('flex flex-wrap items-end justify-between gap-8 p-8', formState.cover_image && 'bg-cover bg-center', isStandalonePage && formState.cover_image && 'min-h-[30vmin]')}
                         style={{
                             backgroundImage: formState.cover_image ? `url(${formState.cover_image})` : 'none'
                         }}>
-                        <div className='flex w-full flex-col gap-2'>
+                        <div className={clsx('flex w-full flex-col gap-2', isStandalonePage && standaloneContentClasses)}>
                             <div className='flex flex-nowrap items-start justify-between gap-3'>
                                 <div>
                                     <ImageUpload className='-ml-1 size-20 overflow-visible rounded-full'>
@@ -436,7 +444,7 @@ const UserDetailModalContent: React.FC<{user: User; onDeletingUserChange: (isDel
                         </div>
                     </div>
                 </div>
-                <div className={`${!canAccessSettings(currentUser) && 'mx-auto max-w-[536px]'} mt-6 flex flex-col`}>
+                <div className={clsx('mt-6 flex flex-col', isStandalonePage && standaloneContentClasses)}>
                     <Tabs value={selectedTab} variant='underline' onValueChange={handleTabChange}>
                         <TabsList>
                             <TabsTrigger title='Profile' value='profile'>Profile</TabsTrigger>

@@ -367,6 +367,35 @@ describe('UrlServiceFacade', function () {
             assert.equal(logging.error.firstCall.args[0].code, 'LAZY_URL_PARITY_MISMATCH');
         });
 
+        it('includes the serializer context (api endpoint) in a forward parity mismatch', async function () {
+            // Diagnostic: the compare-log caller stack truncates at the async
+            // api-framework boundary, so the producing endpoint is threaded in
+            // explicitly to pin thin-resource / mismatch producers in production.
+            compareFacade.getUrlForResource(
+                {type: 'posts', id: 'a'},
+                {serializerContext: {apiType: 'admin', docName: 'posts', method: 'read'}}
+            );
+            await flush();
+
+            sinon.assert.calledOnce(logging.error);
+            const reported = logging.error.firstCall.args[0];
+            assert.equal(reported.code, 'LAZY_URL_PARITY_MISMATCH');
+            assert.deepEqual(reported.errorDetails.serializer, {apiType: 'admin', docName: 'posts', method: 'read'});
+        });
+
+        it('includes the serializer context when the lazy backend throws (thin resource)', async function () {
+            lazyUrlService.getUrlForResource.throws(new Error('thin resource'));
+            compareFacade.getUrlForResource(
+                {type: 'posts', id: 'a'},
+                {serializerContext: {apiType: 'admin', docName: 'posts', method: 'read'}}
+            );
+            await flush();
+
+            const reported = logging.error.firstCall.args[0];
+            assert.equal(reported.code, 'LAZY_URL_COMPARE_ERROR');
+            assert.equal(reported.errorDetails.serializer.method, 'read');
+        });
+
         it('does not report when the lazy forward URL matches', async function () {
             lazyUrlService.getUrlForResource.returns('/hello-world/');
             compareFacade.getUrlForResource({type: 'posts', id: 'a'});

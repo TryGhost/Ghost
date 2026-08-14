@@ -27,4 +27,11 @@ export class MembersImportModal {
     getMappingValue(fieldName: string): Locator {
         return this.getMappingRow(fieldName).getByRole('combobox');
     }
+
+    // Point a CSV column at a target field: open its "Import as" select and pick an option
+    // (a core field or a defined custom field, by its label).
+    async setMappingTarget(csvColumn: string, targetLabel: string): Promise<void> {
+        await this.getMappingValue(csvColumn).click();
+        await this.page.getByRole('option', {name: targetLabel, exact: true}).click();
+    }
 }

@@ -120,6 +120,17 @@ export async function cleanupAutomationsFixture(): Promise<void> {
             await db.knex('automated_email_recipients')
                 .whereIn('automation_action_revision_id', revisionIds)
                 .del();
+            const redirectIds: string[] = await db.knex('redirects')
+                .whereIn('automation_action_revision_id', revisionIds)
+                .pluck('id');
+            if (redirectIds.length > 0) {
+                await db.knex('members_click_events')
+                    .whereIn('redirect_id', redirectIds)
+                    .del();
+                await db.knex('redirects')
+                    .whereIn('id', redirectIds)
+                    .del();
+            }
         }
 
         await db.knex('automation_action_edges')

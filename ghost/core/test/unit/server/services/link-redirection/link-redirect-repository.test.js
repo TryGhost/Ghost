@@ -15,6 +15,7 @@ const {LinkRedirect} = require('../../../../../core/server/services/link-redirec
  * @param {Date} [values.created_at] - The created_at date of the model
  * @param {string} [values.from] - The from URL path of the model (path only)
  * @param {string} [values.to] - The to URL of the model (full URL including protocol, but not a URL object)
+ * @param {string|null} [values.automation_action_revision_id] - The owning automation action revision
  * @returns {object} - A stubbed LinkRedirect Bookshelf model
  *
  */
@@ -24,6 +25,7 @@ function createRedirectModel(values = {}) {
     get.withArgs('created_at').returns(values.created_at || new Date('2022-10-20T00:00:00.000Z'));
     get.withArgs('from').returns(values.from || '/r/1234abcd');
     get.withArgs('to').returns(values.to || 'https://google.com');
+    get.withArgs('automation_action_revision_id').returns(values.automation_action_revision_id);
     return {
         id: values.id || '662194931d0ba6fb37c080ee',
         get
@@ -118,6 +120,19 @@ describe('UNIT: LinkRedirectRepository class', function () {
             assert.equal(linkRedirect.edited, true);
             assert.equal(ObjectID.isValid(linkRedirect.link_id), true);
         });
+
+        it('should omit null automation revision ownership from serialized redirects', function () {
+            const model = createRedirectModel({
+                automation_action_revision_id: null
+            });
+            linkRedirectRepository = createLinkRedirectRepository();
+
+            const linkRedirect = linkRedirectRepository.fromModel(model);
+            const serialized = JSON.parse(JSON.stringify(linkRedirect));
+
+            assert.equal(linkRedirect.automationActionRevisionId, undefined);
+            assert.equal('automationActionRevisionId' in serialized, false);
+        });
     });
 
     describe('getAll', function () {
@@ -190,6 +205,69 @@ describe('UNIT: LinkRedirectRepository class', function () {
             assert.equal(result.edited, true);
             assert.equal(ObjectID.isValid(result.link_id), true);
             sinon.assert.calledOnce(cacheAdapterStub.set);
+        });
+    });
+
+    describe('automation redirects', function () {
+        it('looks up redirects by revision and destination hash', async function () {
+            const findOne = sinon.stub().returns(createRedirectModel());
+            linkRedirectRepository = createLinkRedirectRepository({
+                LinkRedirect: {
+                    findOne,
+                    findAll: sinon.stub(),
+                    getFilteredCollectionQuery: sinon.stub(),
+                    add: sinon.stub()
+                }
+            });
+
+            const result = await linkRedirectRepository.getByAutomationActionRevisionAndURL('revision-id', new URL('https://google.com/'));
+
+            assert.equal(result.to.href, 'https://google.com/');
+            sinon.assert.calledOnceWithExactly(findOne, {
+                automation_action_revision_id: 'revision-id',
+                to_hash: Buffer.from('9d116b1b0c1200ca75016e4c010bc94836366881b021a658ea7f8548b6543c1e', 'hex')
+            }, {});
+        });
+
+        it('returns undefined when no matching redirect exists', async function () {
+            linkRedirectRepository = createLinkRedirectRepository({
+                LinkRedirect: {
+                    findOne: sinon.stub().returns(null),
+                    findAll: sinon.stub(),
+                    getFilteredCollectionQuery: sinon.stub(),
+                    add: sinon.stub()
+                }
+            });
+
+            const result = await linkRedirectRepository.getByAutomationActionRevisionAndURL('revision-id', new URL('https://google.com/'));
+
+            assert.equal(result, undefined);
+        });
+
+        it('saves revision ownership and the destination hash', async function () {
+            const add = sinon.stub().callsFake(data => createRedirectModel(data));
+            linkRedirectRepository = createLinkRedirectRepository({
+                LinkRedirect: {
+                    findOne: sinon.stub(),
+                    findAll: sinon.stub(),
+                    getFilteredCollectionQuery: sinon.stub(),
+                    add
+                }
+            });
+            const linkRedirect = new LinkRedirect({
+                from: new URL('https://example.com/r/1234abcd'),
+                to: new URL('https://google.com'),
+                automationActionRevisionId: 'revision-id'
+            });
+
+            await linkRedirectRepository.save(linkRedirect);
+
+            sinon.assert.calledOnceWithExactly(add, {
+                from: '/r/1234abcd',
+                to: 'https://google.com/',
+                automation_action_revision_id: 'revision-id',
+                to_hash: Buffer.from('9d116b1b0c1200ca75016e4c010bc94836366881b021a658ea7f8548b6543c1e', 'hex')
+            }, {});
         });
     });
 

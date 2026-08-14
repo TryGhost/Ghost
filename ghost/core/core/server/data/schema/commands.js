@@ -25,6 +25,11 @@ function addTableColumn(tableName, tableBuilder, columnName, columnSpec = schema
     // creation distinguishes between text with fieldtype, string with maxlength and all others
     if (columnSpec.type === 'text' && Object.prototype.hasOwnProperty.call(columnSpec, 'fieldtype')) {
         column = tableBuilder[columnSpec.type](columnName, columnSpec.fieldtype);
+    } else if (columnSpec.type === 'binary' && Object.prototype.hasOwnProperty.call(columnSpec, 'maxlength')) {
+        // knex emits an unbounded `blob` for a length-less binary column, which
+        // MySQL can only index with a prefix. Passing the length gives us
+        // `varbinary(N)`, which is indexable in full.
+        column = tableBuilder[columnSpec.type](columnName, columnSpec.maxlength);
     } else if (columnSpec.type === 'string') {
         if (Object.prototype.hasOwnProperty.call(columnSpec, 'maxlength')) {
             column = tableBuilder[columnSpec.type](columnName, columnSpec.maxlength);

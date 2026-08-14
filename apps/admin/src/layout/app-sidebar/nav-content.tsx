@@ -14,7 +14,7 @@ import { useMemberSidebarViews } from "./member-sidebar-views";
 import { useCustomSidebarViews } from "./use-custom-sidebar-views";
 import { useIsActiveLink } from "./use-is-active-link";
 import { useEmberRouting } from "@/ember-bridge";
-import { useFeatureFlag } from "@/hooks/use-feature-flag";
+import { useFeatureFlag } from "@tryghost/admin-x-framework/hooks";
 
 const LEGACY_MEMBERS_ACTIVE_ROUTES = ['member', 'member.new', 'members-activity'];
 
@@ -22,19 +22,19 @@ function PostsNavItemContent({isActive, to}: {isActive: boolean; to: string}) {
     return (
         <>
             <NavMenuItem.Link
-                to={to}
                 isActive={isActive}
+                to={to}
             >
                 <LucideIcon.PenLine className="pointer-events-none opacity-0 transition-all sidebar:opacity-100 sidebar:group-hover/menu-item:opacity-0 sidebar:group-has-[button:focus-visible]/menu-item:opacity-0" />
                 <NavMenuItem.Label>Posts</NavMenuItem.Label>
             </NavMenuItem.Link>
-            <a href="#/editor/post"
-                aria-label="Create new post"
+            <a aria-label="Create new post"
                 className="absolute top-0 right-0 flex size-8 items-center justify-center rounded-full p-0 text-gray-700 ring-sidebar-ring outline-hidden transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 dark:text-gray-800 dark:hover:text-white"
+                href="#/editor/post"
             >
                 <LucideIcon.Plus
-                    size={20}
                     className="mt-px stroke-[1.5px]!"
+                    size={20}
                 />
             </a>
         </>
@@ -55,8 +55,8 @@ function MembersNavItemContent({
     return (
         <>
             <NavMenuItem.Link
-                to={to}
                 isActive={isActive}
+                to={to}
             >
                 <LucideIcon.Users className={collapsible ? "pointer-events-none opacity-0 transition-all sidebar:opacity-100 sidebar:group-hover/menu-item:opacity-0 sidebar:group-has-[button:focus-visible]/menu-item:opacity-0" : ""} />
                 <NavMenuItem.Label>Members</NavMenuItem.Label>
@@ -117,22 +117,22 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
 
                         <NavMenuItem.CollapsibleMenu>
                             <NavMenuItem.SubmenuItem
-                                to="posts?type=draft"
                                 isActive={isDraftPostsRouteActive}
+                                to="posts?type=draft"
                             >
                                 <NavMenuItem.Label>Drafts</NavMenuItem.Label>
                             </NavMenuItem.SubmenuItem>
 
                             <NavMenuItem.SubmenuItem
-                                to="posts?type=scheduled"
                                 isActive={isScheduledPostsRouteActive}
+                                to="posts?type=scheduled"
                             >
                                 <NavMenuItem.Label>Scheduled</NavMenuItem.Label>
                             </NavMenuItem.SubmenuItem>
 
                             <NavMenuItem.SubmenuItem
-                                to="posts?type=published"
                                 isActive={isPublishedPostsRouteActive}
+                                to="posts?type=published"
                             >
                                 <NavMenuItem.Label>Published</NavMenuItem.Label>
                             </NavMenuItem.SubmenuItem>
@@ -143,8 +143,8 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
 
                     <NavMenuItem>
                         <NavMenuItem.Link
-                            to={routing.getRouteUrl('pages')}
                             isActive={routing.isRouteActive('pages')}
+                            to={routing.getRouteUrl('pages')}
                         >
                             <LucideIcon.File />
                             <NavMenuItem.Label>Pages</NavMenuItem.Label>

@@ -1,4 +1,4 @@
-// NOTE: duplicated in apps/admin/src/automations/utils/newsletter-emails.ts — the email design modal needs it in both apps until Automations GAs; keep in sync
+// NOTE: duplicated in apps/admin/src/automations/components/email-modal/newsletter-emails.ts — the email design modal needs it in both apps until Automations GAs; keep in sync
 import {type Config, hasSendingDomain, isManagedEmail} from '@tryghost/admin-x-framework/api/config';
 import {type Newsletter} from '@tryghost/admin-x-framework/api/newsletters';
 

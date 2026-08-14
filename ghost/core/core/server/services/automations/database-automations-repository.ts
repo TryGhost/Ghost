@@ -4,7 +4,9 @@ import crypto from 'node:crypto';
 import ObjectId from 'bson-objectid';
 import {dequal} from 'dequal';
 import {type Knex} from 'knex';
-import moment from 'moment';
+// @ts-expect-error This module currently lacks type definitions.
+import lexicalLib from '../../lib/lexical';
+import urlUtils from '../../../shared/url-utils';
 import {DEFAULT_EMAIL_DESIGN_SETTING_SLUG, MEMBER_WELCOME_EMAIL_SLUGS} from '../member-welcome-emails/constants';
 import type {
     AutomatedEmailEvents,
@@ -19,11 +21,11 @@ import type {
     EditAutomationData,
     Page
 } from './automations-repository';
+import {toDatabaseDate} from './database-date';
 import {getStaleLockCutoff} from './stale-lock-cutoff';
 import type {ExclusifyUnion, ReadonlyDeep} from 'type-fest';
 
 const HOUR_MS = 60 * 60 * 1000;
-const DATABASE_DATE_FORMAT = 'YYYY-MM-DD HH:mm:ss';
 const DEFAULT_WELCOME_EMAIL_AUTOMATIONS = [{
     name: 'Free member welcome flow',
     slug: MEMBER_WELCOME_EMAIL_SLUGS.free
@@ -50,9 +52,6 @@ interface AutomationRow {
     updated_at: string;
 }
 
-function toDatabaseDate(date: Date | string): string {
-    return moment(date).format(DATABASE_DATE_FORMAT);
-}
 
 interface ActionRow {
     id: string;
@@ -68,6 +67,11 @@ type ActionStatsRow = {
     email_clicked_count: number | null;
     email_sent_count: number | null;
     email_opened_count: number | null;
+};
+
+type ActionLinkRow = {
+    url: string;
+    clicked_count: string | number;
 };
 
 type ActionRevisionRow = {
@@ -164,6 +168,37 @@ export function createDatabaseAutomationsRepository({
 
                 return await buildAutomation(trx, automation);
             });
+        },
+
+        async getAutomationActionLinks(automationId, actionId) {
+            const action = await knex('automation_actions')
+                .select('id')
+                .where({
+                    id: actionId,
+                    automation_id: automationId
+                })
+                .whereNull('deleted_at')
+                .first();
+
+            if (!action) {
+                return null;
+            }
+
+            const rows = await knex('redirects as redirects')
+                .countDistinct({clicked_count: 'members_click_events.member_id'})
+                .select<ActionLinkRow[]>(knex.raw('MIN(??) as ??', ['redirects.to', 'url']))
+                .innerJoin('automation_action_revisions as revisions', 'revisions.id', 'redirects.automation_action_revision_id')
+                .leftJoin('members_click_events', 'members_click_events.redirect_id', 'redirects.id')
+                .where('revisions.action_id', actionId)
+                .whereNotNull('redirects.to_hash')
+                .groupBy('redirects.to_hash')
+                .orderBy('clicked_count', 'desc')
+                .orderBy('url', 'asc');
+
+            return rows.map(row => ({
+                url: urlUtils.transformReadyToAbsolute(row.url),
+                clicked_count: Number(row.clicked_count)
+            }));
         },
 
         async edit(id: string, data: EditAutomationData): Promise<Automation | null> {
@@ -304,6 +339,57 @@ export function createDatabaseAutomationsRepository({
                         });
                 }
             });
+        },
+
+        async trackEmailClicked({automationActionRevisionId, memberId, clickedAt}, {transacting} = {}) {
+            const trackClick = async (trx: Knex.Transaction) => {
+                // Match recordEmailSent's lock order to avoid deadlocks.
+                await trx('automation_action_revisions')
+                    .select('id')
+                    .where({id: automationActionRevisionId})
+                    .forUpdate()
+                    .first();
+
+                const recipient = await trx('automated_email_recipients')
+                    .select('id', 'clicked_at')
+                    .where({
+                        automation_action_revision_id: automationActionRevisionId,
+                        member_id: memberId,
+                        track_clicks: true
+                    })
+                    .where('created_at', '<=', toDatabaseDate(clickedAt))
+                    .orderBy('created_at', 'desc')
+                    .orderBy('id', 'desc')
+                    .forUpdate()
+                    .first();
+
+                if (!recipient || recipient.clicked_at !== null) {
+                    return;
+                }
+
+                const updated = await trx('automated_email_recipients')
+                    .where({id: recipient.id})
+                    .whereNull('clicked_at')
+                    .update({clicked_at: clickedAt});
+
+                if (updated === 0) {
+                    return;
+                }
+
+                await trx('automation_action_revisions')
+                    .where({id: automationActionRevisionId})
+                    .update({
+                        email_clicked_count: trx.raw('COALESCE(email_clicked_count, 0) + 1')
+                    });
+
+            };
+
+            if (transacting) {
+                await trackClick(transacting);
+                return;
+            }
+
+            await knex.transaction(trackClick);
         }
     };
 }
@@ -921,7 +1007,7 @@ async function updateAutomation(trx: Knex.Transaction, automation: AutomationRow
 async function replaceAutomationGraph(trx: Knex.Transaction, automationId: string, submittedActions: AutomationAction[], edges: AutomationEdge[]): Promise<void> {
     const existingActions = await loadAutomationActionRows(trx, automationId);
     const existingActionById = new Map(existingActions.map(action => [action.id, action]));
-    const actions = await resolveEmailDesignSettingIds(trx, submittedActions);
+    const actions = (await resolveEmailDesignSettingIds(trx, submittedActions)).map(formatActionOnWrite);
     const submittedActionIds = new Set(actions.map(action => action.id));
     const actionIdsWithOwners = await loadActionIdsWithOwners(trx, [...submittedActionIds]);
     const latestRevisionByActionId = new Map((await loadLatestActionRevisions(trx, [...submittedActionIds])).map(revision => [revision.action_id, revision]));
@@ -980,6 +1066,23 @@ async function replaceAutomationGraph(trx: Knex.Transaction, automationId: strin
     await deleteAutomationEdges(trx, automationId);
 
     await insertActionEdges(trx, edges);
+}
+
+function formatActionOnWrite(action: AutomationAction): AutomationAction {
+    if (action.type !== 'send_email') {
+        return action;
+    }
+
+    return {
+        ...action,
+        data: {
+            ...action.data,
+            email_lexical: urlUtils.lexicalToTransformReady(action.data.email_lexical, {
+                nodes: lexicalLib.nodes,
+                transformMap: lexicalLib.urlTransformMap
+            })
+        }
+    };
 }
 
 async function resolveEmailDesignSettingIds(trx: Knex.Transaction, actions: ReadonlyArray<AutomationAction>): Promise<AutomationAction[]> {
@@ -1312,7 +1415,7 @@ function buildActionPayload(row: ActionRow, stats: AutomationEmailStats | null):
             type: 'send_email',
             data: {
                 email_subject: requireValue(row, 'email_subject'),
-                email_lexical: requireValue(row, 'email_lexical'),
+                email_lexical: urlUtils.transformReadyToAbsolute(requireValue(row, 'email_lexical')),
                 email_design_setting_id: requireValue(row, 'email_design_setting_id')
             },
             stats: stats ?? EMPTY_EMAIL_STATS

@@ -43,6 +43,12 @@ export interface UrlOptions {
     // rows per rebuild would only capture stacks and recompute for nothing.
     // Dies with compare mode.
     skipComparison?: boolean;
+    // Diagnostic only: the producing api endpoint (docName/method/apiType),
+    // threaded from the output serializer so a compare mismatch or thin-resource
+    // throw names its producer in the logs. The compare-log caller stack
+    // truncates at the async api-framework boundary, so the stack alone can't.
+    // Ignored by both backends; only read into the compare context.
+    serializerContext?: {apiType?: string; docName?: string; method?: string};
 }
 
 /**
@@ -138,7 +144,8 @@ export class UrlServiceFacade {
         }
         const url = this.urlService.getUrlByResourceId(resource.id, options);
         if (this.isComparing() && !options?.skipComparison) {
-            const context = this._compareContext(resource);
+            const context = this._compareContext(resource,
+                options?.serializerContext ? {serializer: options.serializerContext} : {});
             // Snapshot: callers mutate the resource's nested objects in place
             // after this returns, but the comparison runs later via setImmediate.
             const snapshot = _.cloneDeep(resource);

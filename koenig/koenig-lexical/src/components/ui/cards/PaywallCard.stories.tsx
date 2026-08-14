@@ -1,3 +1,4 @@
+import KoenigComposerContext, {defaultKoenigComposerContext} from '../../../context/KoenigComposerContext';
 import {CardWrapper} from './../CardWrapper';
 import {PaywallCard} from './PaywallCard';
 
@@ -5,6 +6,8 @@ const displayOptions = {
     Default: {isSelected: false, isEditing: false},
     Selected: {isSelected: true, isEditing: false}
 };
+
+const accessOptions = ['public', 'members', 'paid', 'tiers'];
 
 const story = {
     title: 'Primary cards/Public preview card',
@@ -22,6 +25,10 @@ const story = {
                 },
                 defaultValue: displayOptions.Default
             }
+        },
+        access: {
+            options: accessOptions,
+            control: {type: 'radio'}
         }
     },
     parameters: {
@@ -32,23 +39,36 @@ const story = {
 };
 export default story;
 
-const Template = ({display, ...args}) => (
-    <div className="kg-prose">
-        <div className="mx-auto my-8 min-w-[initial] max-w-[740px] px-3 py-9">
-            <CardWrapper {...display} {...args}>
-                <PaywallCard {...display} />
-            </CardWrapper>
-        </div>
-        <div className="dark mx-auto my-8 min-w-[initial] max-w-[740px] bg-black px-3 py-9">
-            <CardWrapper {...display} {...args}>
-                <PaywallCard {...display} />
-            </CardWrapper>
-        </div>
-    </div>
-);
+const Template = ({access, display, ...args}) => {
+    const cardConfig = {
+        feature: {
+            paywallImprovements: true
+        },
+        post: {
+            visibility: access
+        }
+    };
+
+    return (
+        <KoenigComposerContext.Provider value={{...defaultKoenigComposerContext, cardConfig}}>
+            <div className="kg-prose">
+                <div className="mx-auto my-8 min-w-[initial] max-w-[740px] px-3 py-9">
+                    <CardWrapper {...display} {...args}>
+                        <PaywallCard />
+                    </CardWrapper>
+                </div>
+                <div className="dark mx-auto my-8 min-w-[initial] max-w-[740px] bg-black px-3 py-9">
+                    <CardWrapper {...display} {...args}>
+                        <PaywallCard />
+                    </CardWrapper>
+                </div>
+            </div>
+        </KoenigComposerContext.Provider>
+    );
+};
 
 export const Default = Template.bind({});
 Default.args = {
+    access: 'members',
     display: 'Selected'
 };
-

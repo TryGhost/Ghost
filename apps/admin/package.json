@@ -42,8 +42,7 @@
         "zod": "catalog:"
     },
     "devDependencies": {
-        "@eslint/js": "catalog:",
-        "@internal/cfg-eslint": "workspace:*",
+        "@internal/cfg-eslint-react": "workspace:*",
         "@tailwindcss/vite": "catalog:",
         "@tanstack/react-query": "catalog:",
         "@testing-library/jest-dom": "catalog:",
@@ -58,13 +57,8 @@
         "@vitejs/plugin-react": "catalog:",
         "@vitest/browser-playwright": "catalog:",
         "eslint": "catalog:",
-        "eslint-plugin-ghost": "catalog:",
         "eslint-plugin-no-relative-import-paths": "1.6.1",
-        "eslint-plugin-react-hooks": "catalog:",
-        "eslint-plugin-react-refresh": "catalog:",
-        "eslint-plugin-tailwindcss": "catalog:",
         "ghost-admin": "workspace:*",
-        "globals": "catalog:",
         "jest-extended": "7.0.0",
         "jsdom": "catalog:",
         "msw": "catalog:",

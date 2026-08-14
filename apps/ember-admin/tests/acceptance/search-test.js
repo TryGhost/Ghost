@@ -1,6 +1,5 @@
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import {authenticateSession} from 'ember-simple-auth/test-support';
-import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../helpers/mock-analytics-apps';
 import {click, currentURL, find, findAll, settled, triggerKeyEvent, visit} from '@ember/test-helpers';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
@@ -181,12 +180,7 @@ describe('Acceptance: Search', function () {
             testData = createTestData(this.server);
 
             // Default locale is 'en' - uses flex search
-            mockAnalyticsApps();
             await authenticateSession();
-        });
-
-        afterEach(function () {
-            cleanupMockAnalyticsApps();
         });
 
         it('uses FlexSearch provider for English locale', async function () {
@@ -379,12 +373,7 @@ describe('Acceptance: Search', function () {
 
             // German locale uses basic search
             this.server.db.settings.update({key: 'locale'}, {value: 'de'});
-            mockAnalyticsApps();
             await authenticateSession();
-        });
-
-        afterEach(function () {
-            cleanupMockAnalyticsApps();
         });
 
         it('uses BasicSearch provider for non-English locale', async function () {

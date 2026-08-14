@@ -174,8 +174,6 @@ const controller = {
         async query(frame) {
             const content = await fs.readFile(frame.file.path, 'utf8');
             await routeSettings.api.upload(content);
-            const getRoutesHash = () => routeSettings.api.getCurrentHash();
-            await settingsService.syncRoutesHash(getRoutesHash);
         }
     },
 
