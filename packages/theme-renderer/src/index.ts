@@ -43,6 +43,7 @@ import type {ActiveThemePort, HelperRegistrar, LoggingPort, RendererDeps} from '
 import type {RenderLocals, RenderResult} from './ports.ts';
 
 export * from './engine/index.ts';
+export * from './editor/text-edit.ts';
 export * from './ports.ts';
 export {createThemeSource, type ThemeFiles, type ThemeSource} from './theme/theme-source.ts';
 export {resolveRoutes, type RouteCandidate, type ResolveRoutesOptions} from './routing/resolve.ts';

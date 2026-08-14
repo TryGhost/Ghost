@@ -12,10 +12,9 @@
  * Fixtures are recorded (and re-recordable) via:
  *     node test/integration/record-browser-fixtures.ts
  */
-import errors from '@tryghost/errors';
 import {describe, expect, it} from 'vitest';
 import {expectBytesEqual} from './expect-bytes-equal.ts';
-import type {WorkerRenderRequest, WorkerRenderResult} from './render-worker.ts';
+import {renderInWorker as renderRequestInWorker, type TimedWorkerRenderResult} from './worker-client.ts';
 import type {ApiFixtures} from './replay-fetch.ts';
 import instanceRaw from './fixtures/instance.json?raw';
 import themeRaw from './fixtures/casper-theme.json?raw';
@@ -34,9 +33,8 @@ const instance = JSON.parse(instanceRaw) as InstanceFixture;
 const theme = JSON.parse(themeRaw) as Record<string, string>;
 const apiFixtures = JSON.parse(apiFixturesRaw) as ApiFixtures;
 
-function renderInWorker(path: string, markers = false): Promise<WorkerRenderResult> {
-    const worker = new Worker(new URL('./render-worker.ts', import.meta.url), {type: 'module'});
-    const request: WorkerRenderRequest = {
+function renderInWorker(path: string, markers = false): Promise<TimedWorkerRenderResult> {
+    return renderRequestInWorker({
         siteUrl: instance.siteUrl,
         contentApiKey: instance.contentApiKey,
         theme,
@@ -44,14 +42,7 @@ function renderInWorker(path: string, markers = false): Promise<WorkerRenderResu
         apiFixtures,
         path,
         markers
-    };
-    return new Promise<WorkerRenderResult>((resolve, reject) => {
-        worker.onmessage = (event: MessageEvent<WorkerRenderResult>) => resolve(event.data);
-        // A bundling/import failure (e.g. a smuggled Node built-in) surfaces
-        // here as a worker-level error rather than a posted message.
-        worker.onerror = event => reject(new errors.InternalServerError({message: `worker failed to start or crashed: ${event.message}`}));
-        worker.postMessage(request);
-    }).finally(() => worker.terminate());
+    });
 }
 
 /** Byte-equality with first-divergence context (shared runtime-neutral helper). */

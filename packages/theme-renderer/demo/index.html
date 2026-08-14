@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>theme-renderer editor-loop demo (throwaway)</title>
+    <style>
+        :root { color-scheme: light; }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background: #15171a;
+            color: #e6e9eb;
+        }
+        header { padding: 10px 16px; display: flex; gap: 16px; align-items: baseline; flex-wrap: wrap; }
+        header h1 { font-size: 15px; margin: 0; }
+        header .hint { color: #9aa2a9; }
+        #status {
+            padding: 6px 16px;
+            font-family: ui-monospace, Menlo, monospace;
+            font-size: 12px;
+            background: #24282d;
+            color: #8de8c1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        iframe { flex: 1; border: 0; background: #fff; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>theme-renderer editor loop — slice 3 throwaway demo</h1>
+        <span class="hint">hover = outline marked elements · click = edit that element's text · renders run in a Web Worker over recorded fixtures</span>
+    </header>
+    <div id="status">booting…</div>
+    <iframe id="preview" title="rendered theme preview" sandbox="allow-same-origin"></iframe>
+    <script type="module" src="./main.ts"></script>
+</body>
+</html>

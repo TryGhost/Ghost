@@ -133,3 +133,21 @@ Reference numbers (recorded Casper home fixture): 282 markers —
    later optimization.)
 5. Elements without a `data-edit` ancestor are helper-emitted (or punted) —
    the editor should treat them as not directly editable in this slice.
+
+Implemented consumers of this contract:
+
+- **`applyTextEdit` / `applyThemeTextEdit`** (`src/editor/text-edit.ts`,
+  exported from the package root) — the loop's edit half: replaces an
+  element's immediate text child at a marker position, **anchor-verified**
+  (pass the clicked element's tag name; a mismatched position is a stale
+  marker — bounded ±3-line re-locate on a unique candidate, loud failure
+  otherwise). Exact semantics and the deliberate limits (stops at nested
+  tags and `{{#block}}` boundaries; void/self-closing/rawtext refused) are
+  documented in the module's doc block.
+- **`test/browser/editor-loop.test.ts`** — the automated proof of the full
+  loop in the editor's real runtime (Web Worker, Chromium): marked render →
+  simulated click → edit → fresh renderer → re-render, untouched regions
+  byte-identical; includes the repeated post-card case (one edit changes all
+  cards).
+- **`demo/`** — throwaway human-runnable harness (`pnpm exec vite demo`),
+  excluded from build/lint/CI; see `demo/README.md`.

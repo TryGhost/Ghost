@@ -3,7 +3,7 @@
     "compilerOptions": {
         "rootDir": "../..",
         "noEmit": true,
-        "lib": ["ES2022", "WebWorker"],
+        "lib": ["ES2022", "DOM", "DOM.Iterable", "WebWorker"],
         "types": []
     },
     "include": [

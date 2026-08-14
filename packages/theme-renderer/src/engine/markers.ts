@@ -72,8 +72,12 @@ interface Insertion {
  * contain `}}`), `{{{{raw}}}}…{{{{/raw}}}}` blocks (skipped whole — their
  * content is emitted verbatim but marking it is punted), triple-staches and
  * ordinary mustaches/`{{!}}` comments.
+ *
+ * Exported for the editor's text-edit scanner (src/editor/text-edit.ts),
+ * which needs the identical mustache-skipping semantics when it re-walks a
+ * marked tag in the original source.
  */
-function mustacheEnd(source: string, from: number): number {
+export function mustacheEnd(source: string, from: number): number {
     if (source.startsWith('{{!--', from)) {
         const close = source.indexOf('--}}', from + 5);
         return close === -1 ? source.length : close + 4;
