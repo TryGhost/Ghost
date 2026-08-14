@@ -137,7 +137,7 @@ catalog:
   eslint-plugin-ghost: 3.5.0
   eslint-plugin-react: 7.37.5
   eslint-plugin-react-hooks: 5.2.0
-  eslint-plugin-react-refresh: 0.5.3
+  eslint-plugin-react-refresh: 0.5.4
   eslint-plugin-tailwindcss: 4.0.4
   fs-extra: 11.3.6
   glob: 13.0.6
