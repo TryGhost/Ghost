@@ -19,7 +19,7 @@ describe('Comments Service: CommentsService', function () {
         };
     }
 
-    function createClassInstance({labs = {}, commentsEnabled = 'all', commentStatus = 'published'} = {}) {
+    function createClassInstance({commentsEnabled = 'all', commentStatus = 'published'} = {}) {
         let lastCommentColumns;
         const commentFetchModels = [];
         const memberModel = {
@@ -152,10 +152,6 @@ describe('Comments Service: CommentsService', function () {
             }
         };
 
-        const labsStub = {
-            isSet: sinon.stub().callsFake(flag => labs[flag] || false)
-        };
-
         const instance = new CommentsService({
             config: {},
             logging: {},
@@ -170,12 +166,11 @@ describe('Comments Service: CommentsService', function () {
             contentGating: {
                 BLOCK_ACCESS: 'block',
                 checkPostAccess: sinon.stub().returns('allow')
-            },
-            labs: labsStub
+            }
         });
         instance.emails.notifyReport = sinon.stub().resolves();
 
-        return {instance, models, memberModel, commentModel, commentFetchModels, commentLikeQuery, commentLikeCollection, labs: labsStub};
+        return {instance, models, memberModel, commentModel, commentFetchModels, commentLikeQuery, commentLikeCollection};
     }
 
     describe('likeComment', function () {
@@ -263,7 +258,7 @@ describe('Comments Service: CommentsService', function () {
             });
         });
 
-        it('does not depend on a labs flag', async function () {
+        it('adds a dislike score', async function () {
             const {instance, models} = createClassInstance();
 
             await instance.dislikeComment('comment-id', {id: 'member-id'});
@@ -664,7 +659,7 @@ describe('Comments Service: CommentsService', function () {
     });
 
     describe('getComments', function () {
-        it('preserves net score ordering without a labs flag', async function () {
+        it('preserves net score ordering', async function () {
             const {instance, models} = createClassInstance();
 
             await instance.getComments({order: 'count__net_score desc, created_at desc'});

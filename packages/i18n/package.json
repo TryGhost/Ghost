@@ -4,6 +4,10 @@
   "repository": "https://github.com/TryGhost/Ghost/tree/main/packages/i18n",
   "author": "Ghost Foundation",
   "private": true,
+  "ghostPackage": {
+    "goldenPath": "exempt",
+    "reason": "Ships locale assets and dedicated CommonJS and ESM loaders for browser and server consumers."
+  },
   "main": "index.js",
   "exports": {
     ".": {

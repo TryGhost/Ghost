@@ -675,6 +675,13 @@ module.exports = {
             }
         },
         status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'active', validations: {isIn: [['active', 'archived']]}},
+        // The publisher's order for the list, rewritten across every row whenever the
+        // list is reordered. Only the relative order carries meaning: creates append past
+        // the highest rank and deletes leave gaps, so the values are not a dense
+        // sequence. The default leaves a site that has never reordered with one value
+        // repeated, so reads tie-break on created_at and fall back to the order the
+        // fields were created in.
+        sort_order: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true}
     },
@@ -840,6 +847,20 @@ module.exports = {
         newsletter_id: {type: 'string', maxlength: 24, nullable: true, references: 'newsletters.id', cascadeDelete: false},
         '@@INDEXES@@': [
             ['newsletter_id', 'created_at']
+        ]
+    },
+    machine_payment_events: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        post_id: {type: 'string', maxlength: 24, nullable: false, references: 'posts.id', cascadeDelete: true},
+        amount: {type: 'integer', nullable: false},
+        currency: {type: 'string', maxlength: 50, nullable: false},
+        protocol: {type: 'string', maxlength: 50, nullable: false},
+        method: {type: 'string', maxlength: 50, nullable: false},
+        stripe_payment_intent_id: {type: 'string', maxlength: 255, nullable: true, unique: true},
+        reference: {type: 'string', maxlength: 255, nullable: false},
+        created_at: {type: 'dateTime', nullable: false},
+        '@@UNIQUE_CONSTRAINTS@@': [
+            ['protocol', 'reference']
         ]
     },
     donation_payment_events: {

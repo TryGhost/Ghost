@@ -12,17 +12,21 @@ When creating or modifying E2E tests, follow it first. Use
 3. **Prefer semantic locators**, then stable test IDs
 4. **Keep reusable UI structure and interactions in Page Objects**
 5. **Avoid selectors coupled to styling or DOM position**
-6. **Prefer clear names over explanatory comments**
+6. **Prefer clear names and structure over explanatory comments**; add a
+   comment when an AAA boundary would otherwise be unclear
 
 ## Running E2E Tests
 
-**`pnpm dev` must be running before you run E2E tests.** The E2E test runner auto-detects
-whether the admin dev server is reachable at `http://127.0.0.1:5174`. If it is, tests run
-in **dev mode** (fast, no pre-built Docker image required). If not, tests fall back to
-**build mode** which requires a `ghost-e2e:local` Docker image that is only built in CI.
+For normal development, start `pnpm dev` before running E2E tests. The runner
+auto-detects whether the Admin dev server is reachable at
+`http://127.0.0.1:5174`: when it is, tests use **dev mode**, which is the fastest
+feedback loop and does not require a prebuilt Ghost E2E image.
 
-**If you see the error `Build image not found: ghost-e2e:local`, it means `pnpm dev` is
-not running.** Start it first, wait for the admin dev server to be ready, then re-run tests.
+The suite also supports **build mode** for local CI-like testing without dev
+servers. Build mode requires a prepared `ghost-e2e:local` image; follow the
+commands in the canonical README's [Build Mode](./README.md#build-mode-prebuilt-image)
+section. If `Build image not found: ghost-e2e:local` appears unexpectedly, either
+start `pnpm dev` to use dev mode or prepare the build-mode image.
 
 ```bash
 # Terminal 1 (or background): Start dev environment from the repo root
@@ -110,11 +114,14 @@ practical.
 
 ### Factory Pattern (Required)
 ```typescript
-import {PostFactory, UserFactory} from '../data-factory';
+import {createPostFactory} from '@/data-factory';
 
 const postFactory = createPostFactory(page.request);
-const post = await postFactory.create({userId: user.id});
+const post = await postFactory.create({title: 'Test Post'});
 ```
+
+Import through the `@/` path aliases in `tsconfig.json` (`@/data-factory`,
+`@/helpers/playwright`, `@/admin-pages`), never relative paths.
 
 ## Best Practices
 

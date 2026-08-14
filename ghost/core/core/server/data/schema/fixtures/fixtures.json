@@ -100,10 +100,6 @@
                     "description": "External Apps"
                 },
                 {
-                    "name": "Ghost Explore Integration",
-                    "description": "Internal Integration for the Ghost Explore directory"
-                },
-                {
                     "name": "Self-Serve Migration Integration",
                     "description": "Internal Integration for the Self-Serve migration tool"
                 },
@@ -124,11 +120,6 @@
         {
             "name": "Permission",
             "entries": [
-                {
-                    "name": "Read explore data",
-                    "action_type": "read",
-                    "object_type": "explore"
-                },
                 {
                     "name": "Export database",
                     "action_type": "exportContent",
@@ -901,13 +892,6 @@
                     "api_keys": [{"type": "admin"}]
                 },
                 {
-                    "slug": "ghost-explore",
-                    "name": "Ghost Explore",
-                    "description": "Built-in Ghost Explore integration",
-                    "type": "core",
-                    "api_keys": [{"type": "admin", "role": "Ghost Explore Integration"}]
-                },
-                {
                     "slug": "self-serve-migration",
                     "name": "Self-Serve Migration Integration",
                     "description": "Core Self-Serve Migration integration",
@@ -1002,7 +986,6 @@
                     "authentication": "reset",
                     "members_stripe_connect": "auth",
                     "newsletter": "all",
-                    "explore": "read",
                     "comment": "all",
                     "link": "all",
                     "mention": "browse",
@@ -1020,9 +1003,6 @@
                     "post": "publish",
                     "automation": "poll",
                     "gift": "flushReminders"
-                },
-                "Ghost Explore Integration": {
-                    "explore": "read"
                 },
                 "Self-Serve Migration Integration": {
                     "db": "importContent",
@@ -1055,7 +1035,6 @@
                     "product": ["browse", "read", "add", "edit"],
                     "offer": ["browse", "read", "add", "edit"],
                     "newsletter": ["browse", "read", "add", "edit"],
-                    "explore": "read",
                     "comment": "all",
                     "link": "all",
                     "mention": "browse",

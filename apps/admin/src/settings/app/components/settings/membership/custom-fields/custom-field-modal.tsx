@@ -1,6 +1,5 @@
-import CustomFieldIcon from './custom-field-icon';
+import {CustomFieldTypeOption} from '@/shared/member-custom-fields/custom-field-type-option';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import React from 'react';
 import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Field, FieldDescription, FieldError, FieldGroup, FieldLabel, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {SettingsModal} from '@tryghost/shade/patterns';
@@ -11,23 +10,7 @@ import {useConfirmation} from '@/settings/app/components/providers/confirmation-
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import type {MemberCustomField} from '@tryghost/admin-x-framework/api/member-custom-fields';
 
-const typeOptions = memberCustomFieldUserTypes.map(userType => ({value: userType.id, label: userType.label}));
-
 const userTypeById = (id: string) => memberCustomFieldUserTypes.find(userType => userType.id === id) || memberCustomFieldUserTypes[0];
-
-// Fixed-width so option labels align in a column regardless of icon shape.
-const TypeTile: React.FC<{userTypeId: string}> = ({userTypeId}) => (
-    <span className='flex w-5 shrink-0 items-center justify-center'>
-        <CustomFieldIcon className='size-4' type={userTypeById(userTypeId).id} />
-    </span>
-);
-
-const renderTypeOption = (option: {label: string; value: string}) => (
-    <span className='flex items-center gap-2'>
-        <TypeTile userTypeId={option.value} />
-        <span>{option.label}</span>
-    </span>
-);
 
 const CustomFieldModal = NiceModal.create<{field?: MemberCustomField}>(({field}) => {
     const modal = useModal();
@@ -78,7 +61,7 @@ const CustomFieldModal = NiceModal.create<{field?: MemberCustomField}>(({field})
     });
 
     const isArchived = field?.status === 'archived';
-    const selectedType = typeOptions.find(option => option.value === formState.userTypeId);
+    const selectedType = userTypeById(formState.userTypeId);
 
     // The modal's third action mirrors the field's state: an active field can
     // be archived, an archived one reactivated. Both confirm first (the
@@ -214,10 +197,10 @@ const CustomFieldModal = NiceModal.create<{field?: MemberCustomField}>(({field})
                         updateForm(state => ({...state, userTypeId: userTypeById(value).id}));
                     }}>
                         <SelectTrigger aria-label='Type' data-testid='custom-field-type'>
-                            <SelectValue placeholder='Select type'>{selectedType && renderTypeOption(selectedType)}</SelectValue>
+                            <SelectValue placeholder='Select type'><CustomFieldTypeOption type={selectedType.id} /></SelectValue>
                         </SelectTrigger>
                         <SelectContent>
-                            {typeOptions.map(option => <SelectItem key={option.value} value={option.value}>{renderTypeOption(option)}</SelectItem>)}
+                            {memberCustomFieldUserTypes.map(userType => <SelectItem key={userType.id} value={userType.id}><CustomFieldTypeOption type={userType.id} /></SelectItem>)}
                         </SelectContent>
                     </Select>
                     {isEdit && <FieldDescription>Type can’t be changed after creation</FieldDescription>}

@@ -1,5 +1,5 @@
 import {describe, expect, it} from "vitest";
-import {page} from "vitest/browser";
+import {page, userEvent} from "vitest/browser";
 
 import {configResponse, fakeAdminEndpoint, fakeSettingsScreens, renderAdminApp, settingsResponse} from "@test-utils/acceptance";
 import {settingsScreen} from "@/settings/settings.screen";
@@ -14,7 +14,7 @@ const companyField = {
 };
 
 const archivedField = {
-    key: "old-hobby",
+    key: "old_hobby",
     name: "Old hobby",
     type: "short_text",
     status: "archived",
@@ -85,7 +85,7 @@ describe("Custom fields", () => {
         fakeSettingsScreens();
         fakeCustomFields();
         const createApi = fakeAdminEndpoint("POST", "/members/custom_fields/", {
-            members_custom_fields: [{...companyField, key: "job-title", name: "Job Title"}],
+            members_custom_fields: [{...companyField, key: "job_title", name: "Job Title"}],
         });
         await renderAdminApp("/settings", {boot: customFieldsBoot()});
 
@@ -201,7 +201,7 @@ describe("Custom fields", () => {
         fakeSettingsScreens();
         const manyFields = Array.from({length: 7}, (_, index) => ({
             ...companyField,
-            key: `field-${index}`,
+            key: `field_${index}`,
             name: `Field ${index}`,
         }));
         fakeCustomFields(manyFields);
@@ -225,7 +225,7 @@ describe("Custom fields", () => {
         fakeSettingsScreens();
         const initialFields = Array.from({length: 6}, (_, index) => ({
             ...companyField,
-            key: `field-${index}`,
+            key: `field_${index}`,
             name: `Field ${index}`,
         }));
         fakeCustomFieldsWithCreate(initialFields, {...companyField, key: "newest", name: "Newest"});
@@ -251,10 +251,200 @@ describe("Custom fields", () => {
         await expect(modal).toHaveCount(0);
     });
 
+    it("reorders a field by dragging it, sending the whole list in its new order", async () => {
+        fakeSettingsScreens();
+        const shirtField = {...companyField, key: "shirt_size", name: "Shirt size"};
+        const nicknameField = {...companyField, key: "nickname", name: "Nickname"};
+        let currentFields = [companyField, shirtField, nicknameField];
+        const browseApi = fakeAdminEndpoint("GET", new RegExp("^/members/custom_fields/\\?"), () => ({members_custom_fields: currentFields}));
+        const reorderApi = fakeAdminEndpoint("PUT", "/members/custom_fields/", (request) => {
+            const order = (request.body as {members_custom_fields: {key: string}[]}).members_custom_fields;
+            currentFields = order.map(({key}) => currentFields.find(field => field.key === key)!);
+            return {members_custom_fields: currentFields};
+        });
+        await renderAdminApp("/settings", {boot: customFieldsBoot()});
+
+        const rows = settingsScreen.customFields().getByTestId("custom-field-list-item");
+        await expect(rows).toHaveCount(3);
+        const browsesBeforeDrag = browseApi.requests.length;
+
+        // A real pointer drag of the handle onto the first row, which is what dnd-kit
+        // listens for. Note this cannot be driven from the keyboard: the sortable list
+        // does not wire dnd-kit's sortable coordinate getter, so arrow keys move a
+        // lifted item by a flat 25px and it never reaches the next row.
+        const handle = settingsScreen.customFields().getByLabelText("Reorder Nickname");
+        await expect.element(handle).toBeVisible();
+        await userEvent.dragAndDrop(handle, rows.first());
+
+        // The whole list goes up, in the order the drag left it, keys only — order is a
+        // property of the list, so a field never carries a rank. Nickname was dropped on
+        // the first row, so it takes that place and the rest shuffle down.
+        await expect.poll(() => reorderApi.lastRequest?.body).toEqual({
+            members_custom_fields: [{key: "nickname"}, {key: "company"}, {key: "shirt_size"}],
+        });
+
+        // The row stays where it was dropped rather than snapping back and jumping when
+        // the response lands.
+        await expect.element(rows.first()).toHaveTextContent("Nickname");
+
+        // And the response settles it, so the list is never re-read. A reorder only
+        // succeeds when it named exactly the fields the site has, so its response says
+        // everything a fetch would and the round-trip is not repeated.
+        expect(browseApi.requests.length).toBe(browsesBeforeDrag);
+    });
+
+    it("leaves the dragged field where it was dropped while the request is in flight", async () => {
+        fakeSettingsScreens();
+        const nicknameField = {...companyField, key: "nickname", name: "Nickname"};
+        let currentFields = [companyField, nicknameField];
+        fakeAdminEndpoint("GET", new RegExp("^/members/custom_fields/\\?"), () => ({members_custom_fields: currentFields}));
+
+        // The PUT is held open so the assertion below lands while the request is still
+        // outstanding. Without the local move, the list would revert to the server's
+        // order the moment the drag ends and the row would snap back under the cursor.
+        let releasePut: () => void = () => {};
+        const putHeld = new Promise<void>((resolve) => {
+            releasePut = resolve;
+        });
+        fakeAdminEndpoint("PUT", "/members/custom_fields/", async (request) => {
+            await putHeld;
+            const order = (request.body as {members_custom_fields: {key: string}[]}).members_custom_fields;
+            currentFields = order.map(({key}) => currentFields.find(field => field.key === key)!);
+            return {members_custom_fields: currentFields};
+        });
+        await renderAdminApp("/settings", {boot: customFieldsBoot()});
+
+        const rows = settingsScreen.customFields().getByTestId("custom-field-list-item");
+        await expect(rows).toHaveCount(2);
+
+        await userEvent.dragAndDrop(
+            settingsScreen.customFields().getByLabelText("Reorder Nickname"),
+            rows.first()
+        );
+
+        await expect.element(rows.first()).toHaveTextContent("Nickname");
+
+        // Let the request finish so it isn't left hanging. Whether the row survives the
+        // settled response is the drag test's job — repeating the assertion here would
+        // resolve against this same pre-release state and prove nothing.
+        releasePut();
+    });
+
+    it("puts the list back and says why when the order is refused", async () => {
+        fakeSettingsScreens();
+        const nicknameField = {...companyField, key: "nickname", name: "Nickname"};
+        // What the server has, and what this screen does not know about yet: a third
+        // field a colleague added since the page loaded.
+        const serverFields = [companyField, nicknameField, {...companyField, key: "added_elsewhere", name: "Added elsewhere"}];
+        let browses = 0;
+        fakeAdminEndpoint("GET", new RegExp("^/members/custom_fields/\\?"), () => {
+            browses += 1;
+            // The first load predates the colleague's field; a refetch sees it.
+            return {members_custom_fields: browses === 1 ? [companyField, nicknameField] : serverFields};
+        });
+        fakeAdminEndpoint("PUT", "/members/custom_fields/", {
+            errors: [{
+                type: "ValidationError",
+                message: "The order must name every custom field.",
+                context: "\"added_elsewhere\" is missing from the order. Reload and try again.",
+            }],
+        }, {status: 422});
+        await renderAdminApp("/settings", {boot: customFieldsBoot()});
+
+        const rows = settingsScreen.customFields().getByTestId("custom-field-list-item");
+        await expect(rows).toHaveCount(2);
+
+        await userEvent.dragAndDrop(
+            settingsScreen.customFields().getByLabelText("Reorder Nickname"),
+            rows.first()
+        );
+
+        // The server's own words reach the publisher, not a generic failure: they name
+        // the field and say what to do about it. And the list goes back to the order the
+        // server holds rather than keeping an arrangement that was refused.
+        await expect.element(page.getByText(/is missing from the order/)).toBeVisible();
+        await expect.element(rows.first()).toHaveTextContent("Company");
+    });
+
+    it("sends the archived fields too, keeping their places in the order", async () => {
+        fakeSettingsScreens();
+        const shirtField = {...companyField, key: "shirt_size", name: "Shirt size"};
+        // Archived between the two active fields, which is the arrangement that catches a
+        // move applied to the visible tab instead of the whole list.
+        let currentFields = [companyField, archivedField, shirtField];
+        fakeAdminEndpoint("GET", new RegExp("^/members/custom_fields/\\?"), () => ({members_custom_fields: currentFields}));
+        const reorderApi = fakeAdminEndpoint("PUT", "/members/custom_fields/", (request) => {
+            const order = (request.body as {members_custom_fields: {key: string}[]}).members_custom_fields;
+            currentFields = order.map(({key}) => currentFields.find(field => field.key === key)!);
+            return {members_custom_fields: currentFields};
+        });
+        await renderAdminApp("/settings", {boot: customFieldsBoot()});
+
+        const rows = settingsScreen.customFields().getByTestId("custom-field-list-item");
+        await expect(rows).toHaveCount(2);
+
+        await userEvent.dragAndDrop(
+            settingsScreen.customFields().getByLabelText("Reorder Shirt size"),
+            rows.first()
+        );
+
+        // The archived field is named even though it was never on screen: an order states
+        // the whole list, and the API refuses one that leaves a field out.
+        await expect.poll(() => reorderApi.lastRequest?.body).toEqual({
+            members_custom_fields: [{key: "shirt_size"}, {key: "company"}, {key: "old_hobby"}],
+        });
+    });
+
+
+    it("reorders from a collapsed list without disturbing the fields behind Show all", async () => {
+        fakeSettingsScreens();
+        let currentFields = Array.from({length: 7}, (_, index) => ({
+            ...companyField,
+            key: `field_${index}`,
+            name: `Field ${index}`,
+        }));
+        fakeAdminEndpoint("GET", new RegExp("^/members/custom_fields/\\?"), () => ({members_custom_fields: currentFields}));
+        const reorderApi = fakeAdminEndpoint("PUT", "/members/custom_fields/", (request) => {
+            const order = (request.body as {members_custom_fields: {key: string}[]}).members_custom_fields;
+            currentFields = order.map(({key}) => currentFields.find(field => field.key === key)!);
+            return {members_custom_fields: currentFields};
+        });
+        await renderAdminApp("/settings", {boot: customFieldsBoot()});
+
+        const rows = settingsScreen.customFields().getByTestId("custom-field-list-item");
+        await expect(rows).toHaveCount(5);
+
+        await userEvent.dragAndDrop(
+            settingsScreen.customFields().getByLabelText("Reorder Field 2"),
+            rows.first()
+        );
+
+        // The two fields the publisher cannot see are still named, and still last.
+        await expect.poll(() => reorderApi.lastRequest?.body).toEqual({
+            members_custom_fields: [
+                {key: "field_2"}, {key: "field_0"}, {key: "field_1"}, {key: "field_3"},
+                {key: "field_4"}, {key: "field_5"}, {key: "field_6"},
+            ],
+        });
+    });
+
+    it("does not offer dragging on the archived tab", async () => {
+        fakeSettingsScreens();
+        fakeCustomFields([companyField, archivedField]);
+        await renderAdminApp("/settings", {boot: customFieldsBoot()});
+
+        // An archived field holds its place in the order, but there is nowhere to see
+        // it, so there is nothing to drag it through.
+        await settingsScreen.customFields().getByRole("tab", {name: "Archived"}).click();
+
+        await expect(settingsScreen.customFields().getByTestId("custom-field-list-item")).toHaveCount(1);
+        await expect(settingsScreen.customFields().getByLabelText(/^Reorder /)).toHaveCount(0);
+    });
+
     it("permanently deletes an archived field from the header menu, after a heavy warning", async () => {
         fakeSettingsScreens();
         const customFieldsApi = fakeCustomFields([companyField, archivedField]);
-        const deleteApi = fakeAdminEndpoint("DELETE", "/members/custom_fields/old-hobby/", {});
+        const deleteApi = fakeAdminEndpoint("DELETE", "/members/custom_fields/old_hobby/", {});
         await renderAdminApp("/settings", {boot: customFieldsBoot()});
 
         await settingsScreen.customFields().getByRole("tab", {name: "Archived"}).click();
@@ -302,7 +492,7 @@ describe("Custom fields", () => {
     it("reactivates an archived field after confirmation, as a status edit", async () => {
         fakeSettingsScreens();
         const customFieldsApi = fakeCustomFields([companyField, archivedField]);
-        const editApi = fakeAdminEndpoint("PUT", "/members/custom_fields/old-hobby/", {
+        const editApi = fakeAdminEndpoint("PUT", "/members/custom_fields/old_hobby/", {
             members_custom_fields: [{...archivedField, status: "active"}],
         });
         await renderAdminApp("/settings", {boot: customFieldsBoot()});

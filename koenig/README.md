@@ -90,12 +90,15 @@ edit/run/test loop against ghost/core.
 
 - kg-* Node libraries share a Vitest base config —
   [vitest.shared.ts](./vitest.shared.ts) (`createKoenigVitestConfig`). Run
-  `pnpm test:unit` in the package, or `pnpm test` for the full gate (types +
-  coverage thresholds + lint).
-- `koenig-lexical` has Vitest unit tests and a large Playwright acceptance
-  suite: `pnpm test:unit`, `pnpm test:acceptance` (headless by default;
+  `pnpm test:unit` in the package for unit tests, `pnpm test:types` for type
+  checks, and `pnpm lint` for lint. `pnpm test` runs the package's configured
+  test suites and enforces coverage thresholds; packages with a `posttest`
+  hook also run lint automatically.
+- `koenig-lexical` has Vitest unit tests and a large Playwright browser
+  acceptance suite: `pnpm test:unit`, `pnpm test:acceptance` (headless by default;
   `:headed`, `:report`, and `test:slowmo` variants for debugging). See
-  [koenig-lexical/CLAUDE.md](./koenig-lexical/CLAUDE.md).
+  [koenig-lexical/AGENTS.md](./koenig-lexical/AGENTS.md). Ghost's end-to-end
+  suite is the separate top-level [`e2e/`](../e2e/) workspace.
 - `kg-unsplash-selector` also has a Playwright suite (`pnpm test:acceptance`).
 
 ## Shipping
@@ -114,20 +117,21 @@ Ghost itself never installs these packages from npm:
 
 ### npm publishing (external consumers)
 
-The `publish_koenig_packages` job in
-[.github/workflows/ci.yml](../.github/workflows/ci.yml) runs on stable release
-tags only (no `-rc` prereleases), after `publish_ghost` succeeds — so every
-published version corresponds to content that shipped inside a released Ghost.
-It runs [scripts/publish-koenig-packages.cjs](../scripts/publish-koenig-packages.cjs),
-which for each non-private package:
+The [Publish Packages workflow](../.github/workflows/publish-packages.yml) runs
+on stable Ghost release tags (no `-rc` prereleases), in parallel with Ghost's
+own publishing workflow. Release commits consume pending changesets and commit
+the resulting package versions before the tag is created.
 
-1. Skips it if its directory is unchanged since the previous release tag.
-2. Computes the next version: `package.json` pins the **major.minor** line,
-   npm is the source of truth for the **patch**. To cut a new minor/major,
-   bump it in `package.json`; never bump the patch by hand.
-3. Builds via Nx and publishes, in dependency order, so `workspace:~` specs
-   are rewritten to the versions published in the same run.
+The workflow runs
+[`scripts/publish-packages.js`](../scripts/publish-packages.js), which:
 
-For urgent out-of-band publishes there's a `workflow_dispatch` escape hatch
-(`publish-koenig-package.yml`) that publishes a single named package from the
-current checkout, skipping change detection.
+1. Selects every publishable workspace package, including the public Koenig
+   packages.
+2. Builds the selected packages and their workspace dependencies.
+3. Publishes each committed version that is not already on npm, in dependency
+   order, rewriting `workspace:` ranges to published versions.
+
+For an out-of-band publish, the same workflow has a `workflow_dispatch` escape
+hatch that can be narrowed to one package. The package version must already
+have been bumped, normally by consuming a changeset; the workflow does not
+calculate a new version itself.

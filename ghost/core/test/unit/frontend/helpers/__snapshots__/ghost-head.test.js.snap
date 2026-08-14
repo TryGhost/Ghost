@@ -4,6 +4,7 @@ exports[`{{ghost_head}} helper accent_color attaches style tag to existing scrip
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"all about our site\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/post/\\">
+    <link rel=\\"alternate\\" type=\\"text/markdown\\" href=\\"http://127.0.0.1:2369/post.md\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -141,6 +142,7 @@ exports[`{{ghost_head}} helper accent_color does not include style tag when not 
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"all about our site\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/post/\\">
+    <link rel=\\"alternate\\" type=\\"text/markdown\\" href=\\"http://127.0.0.1:2369/post.md\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -289,6 +291,7 @@ exports[`{{ghost_head}} helper accent_color includes style tag when set 1 1`] = 
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"all about our site\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/post/\\">
+    <link rel=\\"alternate\\" type=\\"text/markdown\\" href=\\"http://127.0.0.1:2369/post.md\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -591,6 +594,7 @@ exports[`{{ghost_head}} helper custom fonts can handle preview being set and cus
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"all about our site\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/post/\\">
+    <link rel=\\"alternate\\" type=\\"text/markdown\\" href=\\"http://127.0.0.1:2369/post.md\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -664,6 +668,7 @@ exports[`{{ghost_head}} helper custom fonts does not include custom font when in
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"all about our site\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/post/\\">
+    <link rel=\\"alternate\\" type=\\"text/markdown\\" href=\\"http://127.0.0.1:2369/post.md\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -737,6 +742,7 @@ exports[`{{ghost_head}} helper custom fonts does not include custom font when no
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"all about our site\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/post/\\">
+    <link rel=\\"alternate\\" type=\\"text/markdown\\" href=\\"http://127.0.0.1:2369/post.md\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -810,6 +816,7 @@ exports[`{{ghost_head}} helper custom fonts does not inject custom fonts when pr
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"all about our site\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/post/\\">
+    <link rel=\\"alternate\\" type=\\"text/markdown\\" href=\\"http://127.0.0.1:2369/post.md\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -883,6 +890,7 @@ exports[`{{ghost_head}} helper custom fonts includes custom font when set in opt
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"all about our site\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/post/\\">
+    <link rel=\\"alternate\\" type=\\"text/markdown\\" href=\\"http://127.0.0.1:2369/post.md\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -957,6 +965,7 @@ exports[`{{ghost_head}} helper custom fonts includes custom font when set in set
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"all about our site\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/post/\\">
+    <link rel=\\"alternate\\" type=\\"text/markdown\\" href=\\"http://127.0.0.1:2369/post.md\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -1030,6 +1039,7 @@ Object {
 exports[`{{ghost_head}} helper includes tinybird tracker script when config is set Sets tb_post_uuid on post page 1 1`] = `
 Object {
   "rendered": "<link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/post/\\">
+    <link rel=\\"alternate\\" type=\\"text/markdown\\" href=\\"http://127.0.0.1:2369/post.md\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -1539,6 +1549,7 @@ Object {
 exports[`{{ghost_head}} helper includes tinybird tracker script when config is set sets both tb_member_x variables and tb_post_uuid on logged in post page 1 1`] = `
 Object {
   "rendered": "<link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/post/\\">
+    <link rel=\\"alternate\\" type=\\"text/markdown\\" href=\\"http://127.0.0.1:2369/post.md\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -3638,6 +3649,7 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"icon\\" href=\\"/content/images/size/w256h256/favicon.png\\" type=\\"image/png\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/post/\\">
+    <link rel=\\"alternate\\" type=\\"text/markdown\\" href=\\"http://localhost:65530/post.md\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
@@ -4177,6 +4189,7 @@ exports[`{{ghost_head}} helper without Code Injection returns structured data if
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"site &quot;test&quot; description\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/post/\\">
+    <link rel=\\"alternate\\" type=\\"text/markdown\\" href=\\"http://localhost:65530/post.md\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -4308,6 +4321,7 @@ exports[`{{ghost_head}} helper without Code Injection returns structured data on
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/post/\\">
+    <link rel=\\"alternate\\" type=\\"text/markdown\\" href=\\"http://localhost:65530/post.md\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -4388,6 +4402,7 @@ exports[`{{ghost_head}} helper without Code Injection returns structured data on
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/post/\\">
+    <link rel=\\"alternate\\" type=\\"text/markdown\\" href=\\"http://localhost:65530/post.md\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -4467,6 +4482,7 @@ Object {
 exports[`{{ghost_head}} helper without Code Injection returns structured data on post page with fall back excerpt if no meta description provided 1 1`] = `
 Object {
   "rendered": "<link rel=\\"canonical\\" href=\\"http://localhost:65530/post/\\">
+    <link rel=\\"alternate\\" type=\\"text/markdown\\" href=\\"http://localhost:65530/post.md\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -4536,6 +4552,7 @@ exports[`{{ghost_head}} helper without Code Injection returns structured data on
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/post/\\">
+    <link rel=\\"alternate\\" type=\\"text/markdown\\" href=\\"http://localhost:65530/post.md\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -4754,6 +4771,7 @@ exports[`{{ghost_head}} helper without Code Injection returns structured data wi
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/post/\\">
+    <link rel=\\"alternate\\" type=\\"text/markdown\\" href=\\"http://localhost:65530/post.md\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -4826,6 +4844,7 @@ Object {
 exports[`{{ghost_head}} helper without Code Injection returns twitter and facebook descriptions even if no meta description available 1 1`] = `
 Object {
   "rendered": "<link rel=\\"canonical\\" href=\\"http://localhost:65530/post/\\">
+    <link rel=\\"alternate\\" type=\\"text/markdown\\" href=\\"http://localhost:65530/post.md\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -4892,6 +4911,7 @@ exports[`{{ghost_head}} helper without Code Injection single-escapes special cha
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/post/\\">
+    <link rel=\\"alternate\\" type=\\"text/markdown\\" href=\\"http://localhost:65530/post.md\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">

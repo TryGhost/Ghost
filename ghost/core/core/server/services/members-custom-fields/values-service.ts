@@ -11,8 +11,11 @@ import {leavesToWrite, valuesFromLeaves, type StoredLeaf} from './storage';
 const FIELDS_TABLE = 'members_custom_fields';
 const VALUES_TABLE = 'members_custom_field_values';
 
-/** Matches the `members_custom_fields.key` column, so no key a site could hold is refused. */
-const MAX_KEY_LENGTH = 191;
+/**
+ * From the canonical schema, the same source definitions-service reads, so no key a site
+ * could hold is refused and this cannot drift from the `members_custom_fields.key` column.
+ */
+const MAX_KEY_LENGTH: number = require('../../data/schema').tables[FIELDS_TABLE].key.maxlength;
 
 /**
  * Rows per insert statement, bounded by knex rather than by either database. SQLite takes
@@ -82,12 +85,13 @@ export class CustomFieldValuesService {
             return new Map();
         }
 
+        // Not ordered by field: these rows become an object keyed by field, and an object
+        // cannot carry an order. `path` is ordered so composite parts assemble the same
+        // way every time.
         const rows = await this.knex(VALUES_TABLE)
             .join(FIELDS_TABLE, `${VALUES_TABLE}.custom_field_key`, `${FIELDS_TABLE}.key`)
             .whereIn(`${VALUES_TABLE}.member_id`, memberIds)
             .where(`${FIELDS_TABLE}.status`, FIELD_STATUS.active)
-            .orderBy(`${FIELDS_TABLE}.created_at`, 'asc')
-            .orderBy(`${FIELDS_TABLE}.id`, 'asc')
             .orderBy(`${VALUES_TABLE}.path`, 'asc')
             .select(`${VALUES_TABLE}.member_id`, `${FIELDS_TABLE}.key`, `${FIELDS_TABLE}.type`, `${VALUES_TABLE}.path`, `${VALUES_TABLE}.value_text`);
 

@@ -1,12 +1,10 @@
-import {isCustomFieldColumn} from '@tryghost/admin-x-framework/api/member-custom-fields';
-
-type CustomFieldColumn = {label: string; value: string};
+import {isCustomFieldColumn, type MemberCustomFieldCsvColumn} from '@tryghost/admin-x-framework/api/member-custom-fields';
 
 type FieldMappingOptions = {
     importMemberTier?: boolean;
     // Custom field CSV columns offered as mapping targets (see memberCustomFieldCsvColumns);
     // empty when the feature is off.
-    customFieldColumns?: CustomFieldColumn[];
+    customFieldColumns?: MemberCustomFieldCsvColumn[];
 };
 
 export const FIELD_MAPPINGS = [
@@ -21,7 +19,7 @@ export const FIELD_MAPPINGS = [
     {label: 'Gift ID', value: 'gift_id'}
 ];
 
-const IMPORT_TIER_FIELD_MAPPING = {label: 'Tier', value: 'import_tier'};
+export const IMPORT_TIER_FIELD_MAPPING = {label: 'Tier', value: 'import_tier'};
 
 const SUPPORTED_TYPES = [
     'email',
@@ -105,13 +103,37 @@ export class MembersFieldMapping {
  * Locate 10 non-empty cells from the start/middle(ish)/end of each column (30 non-empty values in total).
  * If the data contains 30 rows or fewer, all rows should be validated.
  */
+/**
+ * Every column the file has.
+ *
+ * Papaparse omits keys for a row carrying fewer cells than the header rather than padding it
+ * out, so the first row is only the full set for a rectangular file. A hand-edited or partly
+ * exported CSV whose first row is short would otherwise have its remaining columns go
+ * undetected — and a column nothing names is carried through by the importer, so it would be
+ * imported without ever appearing to the publisher.
+ *
+ * `__parsed_extra` is where papaparse collects the overflow of a row with more cells than
+ * headers. It is not a column and no mapping can name it.
+ */
+export function columnsOf(data: Record<string, string>[]): string[] {
+    const keys = new Set<string>();
+    for (const row of data) {
+        for (const key of Object.keys(row)) {
+            if (key !== '__parsed_extra') {
+                keys.add(key);
+            }
+        }
+    }
+    return [...keys];
+}
+
 export function sampleData(data: Record<string, string>[], validationSampleSize = 30): Record<string, string>[] {
     if (!data || data.length <= validationSampleSize) {
         return data;
     }
 
     const validatedSet: Record<string, string>[] = [];
-    const sampleKeys = Object.keys(data[0]);
+    const sampleKeys = columnsOf(data);
 
     sampleKeys.forEach((key) => {
         const nonEmptyKeyEntries = data.filter(entry => entry[key] && entry[key].trim() !== '');
@@ -159,7 +181,7 @@ export function detectFieldTypes(data: Record<string, string>[], options: FieldM
     // we only checked sampled entries. A custom field column auto-maps to itself here;
     // isCustomFieldColumn holds it apart from the fuzzy core-field heuristics below.
     if (data.length > 0) {
-        for (const key of Object.keys(data[0])) {
+        for (const key of columnsOf(data)) {
             if (!mapping.name && /name/i.test(key) && !isCustomFieldColumn(key)) {
                 mapping.name = key;
                 continue;

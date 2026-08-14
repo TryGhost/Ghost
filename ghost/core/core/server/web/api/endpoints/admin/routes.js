@@ -23,9 +23,6 @@ module.exports = function apiRoutes() {
     router.get('/config', mw.authAdminApi, http(api.config.read));
     router.get('/config/featurebase', mw.authAdminApi, http(api.config.featurebase));
 
-    // ## Ghost Explore
-    router.get('/explore', mw.authAdminApi, http(api.explore.read));
-
     // ## Posts
     router.get('/posts', mw.authAdminApi, http(api.posts.browse));
     router.get('/posts/export', mw.authAdminApi, http(api.posts.exportCSV));
@@ -161,6 +158,8 @@ module.exports = function apiRoutes() {
     // Registered before /members/:id so the literal path isn't captured by :id.
     router.get('/members/custom_fields', mw.authAdminApi, labs.enabledMiddleware('membersCustomFields'), http(api.membersCustomFields.browse));
     router.post('/members/custom_fields', mw.authAdminApi, labs.enabledMiddleware('membersCustomFields'), http(api.membersCustomFields.add));
+    // A PUT on the collection sets the publisher's order for the whole list.
+    router.put('/members/custom_fields', mw.authAdminApi, labs.enabledMiddleware('membersCustomFields'), http(api.membersCustomFields.reorder));
     router.get('/members/custom_fields/:key', mw.authAdminApi, labs.enabledMiddleware('membersCustomFields'), http(api.membersCustomFields.read));
     router.put('/members/custom_fields/:key', mw.authAdminApi, labs.enabledMiddleware('membersCustomFields'), http(api.membersCustomFields.edit));
     router.delete('/members/custom_fields/:key', mw.authAdminApi, labs.enabledMiddleware('membersCustomFields'), http(api.membersCustomFields.destroy));

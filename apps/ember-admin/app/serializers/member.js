@@ -18,9 +18,7 @@ export default class MemberSerializer extends ApplicationSerializer.extend(Embed
         delete json.status;
         delete json.last_seen_at;
         delete json.comped;
-        // Tiers are managed via direct API calls in gh-member-settings-form.js
-        // (removeComplimentaryTask) and modal-member-tier.js (addTier task),
-        // not through the normal member save flow
+        // Tiers are managed via direct API calls, not the member save flow
         delete json.tiers;
 
         // Normalize properties
