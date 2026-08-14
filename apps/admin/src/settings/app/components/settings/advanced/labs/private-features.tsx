@@ -56,10 +56,6 @@ const features: Feature[] = [{
     description: 'Deduplicate identical {{#get}} helper queries within a single request to avoid redundant database calls',
     flag: 'getHelperDeduplication'
 }, {
-    title: 'React member details',
-    description: 'Renders the member detail screen (/members/:id) from the React app instead of the Ember screen. Gates the migration behind a runtime toggle so we can compare both implementations.',
-    flag: 'memberDetailsReact'
-}, {
     title: 'React tag details',
     description: 'Renders the tag detail screen (/tags/:slug) from the React app instead of the Ember screen. Gates the migration behind a runtime toggle so we can compare both implementations.',
     flag: 'tagDetailsReact'

@@ -88,7 +88,7 @@ class SendingService {
     }
 
     /**
-     * Returns the configured target delivery window in seconds
+     * Returns the configured target delivery window in milliseconds
      *
      * @returns {number}
      */

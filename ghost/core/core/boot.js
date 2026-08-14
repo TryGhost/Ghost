@@ -317,7 +317,7 @@ async function initAppService() {
  * These services should all be part of core, frontend services should be loaded with the frontend
  * We are working towards this being a service loader, with the ability to make certain services optional
  */
-async function initServices({ghostServer} = {}) {
+async function initServices({ghostServer, config, prometheusClient}) {
     debug('Begin: initServices');
 
     debug('Begin: Services');
@@ -353,9 +353,13 @@ async function initServices({ghostServer} = {}) {
     const explorePingService = require('./server/services/explore-ping');
     const domainEvents = require('@tryghost/domain-events');
     const automations = require('./server/services/automations');
+    const automationsApi = require('./server/services/automations/automations-api');
     const adapterManager = require('./server/services/adapter-manager').default;
     const {withErrorCapture} = require('./server/adapters/scheduling/error-capture');
 
+    const metrics = require('@tryghost/metrics');
+    const db = require('./server/data/db');
+    const models = require('./server/models');
     const urlUtils = require('./shared/url-utils').default;
     const settingsCache = require('./shared/settings-cache');
     const internalKeys = require('./server/services/internal-keys').default;
@@ -382,7 +386,18 @@ async function initServices({ghostServer} = {}) {
         slack.init(),
         audienceFeedback.init(),
         emailService.init({ghostServer}),
-        emailAnalytics.init(),
+        emailAnalytics.init({
+            automationsApi,
+            config,
+            db,
+            domainEvents,
+            emailSuppressionList,
+            membersRepository: members.api.members,
+            models,
+            metrics,
+            prometheusClient,
+            settingsCache
+        }),
         webhooks.listen(),
         comments.init(),
         linkTracking.init(),
@@ -594,7 +609,7 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
             await initAppService();
         }
 
-        await initServices({ghostServer});
+        await initServices({ghostServer, config, prometheusClient});
         debug('End: Load Ghost Services & Apps');
 
         // Step 5 - Mount the full Ghost app onto the minimal root app & disable maintenance mode

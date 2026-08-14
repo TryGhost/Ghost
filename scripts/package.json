@@ -14,10 +14,10 @@
     "@octokit/core": "catalog:",
     "@octokit/plugin-retry": "catalog:",
     "@octokit/plugin-throttling": "catalog:",
-    "@pnpm/releasing.versioning": "1100.1.0",
-    "@pnpm/workspace.workspace-manifest-reader": "1100.1.0",
+    "@pnpm/releasing.versioning": "catalog:",
+    "@pnpm/workspace.workspace-manifest-reader": "catalog:",
     "camelcase-keys": "10.0.2",
-    "execa": "9.6.1",
+    "execa": "catalog:",
     "js-yaml": "catalog:",
     "picomatch": "4.0.5",
     "semver": "catalog:"

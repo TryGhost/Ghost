@@ -41,8 +41,6 @@ Router.map(function () {
         this.route('migrate', {path: '/*platform'});
     });
 
-    this.route('member.new', {path: '/members/new'});
-    this.route('member', {path: '/members/:member_id'});
     this.route('members-activity');
 
     this.route('react-fallback', {path: '/*path'});

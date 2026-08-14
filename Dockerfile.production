@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1-labs@sha256:7d49dad25a050e14338ba7028b0460243f9d911dedc160a8fe20c34738fef3af
+# syntax=docker/dockerfile:1-labs@sha256:63e440b412b6acba117974e793b7e7f702e58ee65e044bdff1b8d388ee0d853b
 
 # Production Dockerfile for Ghost
 # Targets:
@@ -73,6 +73,12 @@ RUN pnpm --filter-prod "ghost^..." -r run build && \
 # COPYed into the runtime image away from the workspace, so links would dangle.
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store,id=pnpm-store \
     pnpm --filter=ghost --config.inject-workspace-packages=true deploy --prod /home/ghost
+
+# Strip type-time, doc and native-build-input files the runtime never loads — see
+# ghost/core/scripts/prune.mts for the rules and the exclusions they carry. The COPY
+# layer below is extracted single-threaded, once per CI E2E shard, and that cost
+# scales with file count: this removes roughly half of them.
+RUN node ghost/core/scripts/prune.mts /home/ghost --profile=image
 
 # Fail the build now if the native module didn't install correctly (missing/broken
 # prebuilt binary) rather than at container runtime.

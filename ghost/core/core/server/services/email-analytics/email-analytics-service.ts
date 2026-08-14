@@ -1,7 +1,6 @@
 import {EventProcessingResult} from './event-processing-result';
 import logging from '@tryghost/logging';
 import errors from '@tryghost/errors';
-import type {PrometheusClient} from '@tryghost/prometheus-metrics';
 import type {BatchEventProcessor} from './batch-event-processor';
 import type {Queries} from './lib/queries';
 
@@ -74,7 +73,6 @@ type FetchEvents = (options: {
 
 const TRUST_THRESHOLD_MS = 30 * 60 * 1000; // 30 minutes
 const FETCH_LATEST_END_MARGIN_MS = 1 * 60 * 1000; // Do not fetch events newer than 1 minute (yet). Reduces the chance of having missed events in fetchLatest.
-const AGGREGATE_MEMBER_STATS_METRIC_NAME = 'email_analytics_aggregate_member_stats_count';
 
 /**
  * Helper function to create an empty fetch result
@@ -95,7 +93,6 @@ function createEmptyResult(): EmailAnalyticsFetchResult {
 export class EmailAnalyticsService {
     queries: Queries;
     #fetchEvents: FetchEvents;
-    prometheusClient?: PrometheusClient;
     #createEventProcessor: () => BatchEventProcessor;
 
     #jobNames: JobNames;
@@ -106,17 +103,15 @@ export class EmailAnalyticsService {
     #fetchLatestOpenedData: FetchData;
     #fetchScheduledData: FetchDataScheduled;
 
-    constructor({queries, fetchEvents, prometheusClient, createEventProcessor, jobNames, cursorSeed}: {
+    constructor({queries, fetchEvents, createEventProcessor, jobNames, cursorSeed}: {
         queries: Queries;
         fetchEvents: FetchEvents;
-        prometheusClient?: PrometheusClient;
         createEventProcessor: () => BatchEventProcessor;
         jobNames: JobNames;
         cursorSeed: CursorSeed;
     }) {
         this.queries = queries;
         this.#fetchEvents = fetchEvents;
-        this.prometheusClient = prometheusClient;
         this.#createEventProcessor = createEventProcessor;
         this.#jobNames = jobNames;
         this.#cursorSeed = cursorSeed;
@@ -137,10 +132,6 @@ export class EmailAnalyticsService {
             running: false,
             jobName: jobNames.scheduled
         };
-
-        if (prometheusClient) {
-            prometheusClient.registerCounter({name: AGGREGATE_MEMBER_STATS_METRIC_NAME, help: 'Count of member stats aggregations'});
-        }
     }
 
     #clearScheduledData() {

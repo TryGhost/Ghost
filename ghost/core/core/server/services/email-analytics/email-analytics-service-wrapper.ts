@@ -1,67 +1,71 @@
-const logging = require('@tryghost/logging');
-const metrics = require('@tryghost/metrics');
-const config = require('../../../shared/config');
-const domainEvents = require('@tryghost/domain-events');
-/** @import {PrometheusClient} from '@tryghost/prometheus-metrics' */
-/** @import {BatchEventProcessor} from './batch-event-processor' */
-/** @import {JobNames, CursorSeed, EmailAnalyticsFetchResult} from './email-analytics-service' */
+import errors from '@tryghost/errors';
+import logging from '@tryghost/logging';
+import type {ConfigInstance} from '../../../shared/config/loader';
+// @ts-expect-error This module lacks type definitions.
+import type DomainEvents from '@tryghost/domain-events';
+// @ts-expect-error This module lacks type definitions.
+import type Metrics from '@tryghost/metrics';
+import {EmailAnalyticsService, type CursorSeed, type EmailAnalyticsFetchResult, type JobNames} from './email-analytics-service';
+import type {BatchEventProcessor} from './batch-event-processor';
+import type {Queries} from './lib/queries';
+import {fetchMailgunEvents} from './fetch-mailgun-events';
 
-class EmailAnalyticsServiceWrapper {
-    /** @type {string} */ #logName;
+export class EmailAnalyticsServiceWrapper {
+    #logName: string;
+    #config?: Pick<ConfigInstance, 'get'>;
+    #metrics?: Pick<Metrics, 'metric'>;
+    #service?: EmailAnalyticsService;
     #fetching = false;
     #restoredSchedule = false;
 
-    get #logPrefix() {
+    get #logPrefix(): string {
         return `[EmailAnalytics:${this.#logName}]`;
     }
 
-    /**
-     * @param {object} options
-     * @param {string} options.logName
-     */
-    constructor({
-        logName,
-    }) {
+    constructor({logName}: {logName: string}) {
         this.#logName = logName;
     }
 
-    /**
-     * @param {object} options
-     * @param {Parameters<typeof domainEvents.subscribe>[0]} options.event
-     * @param {string[]} options.mailgunTags
-     * @param {JobNames} options.jobNames
-     * @param {CursorSeed} options.cursorSeed
-     * @param {() => BatchEventProcessor} options.createEventProcessor
-     * @param {PrometheusClient} [options.prometheusClient]
-     */
     init({
+        config,
+        domainEvents,
         event,
+        queries,
         mailgunTags,
         jobNames,
         cursorSeed,
         createEventProcessor,
-        prometheusClient
-    }) {
-        if (this.service) {
+        metrics,
+        settingsCache
+    }: Readonly<{
+        config: Pick<ConfigInstance, 'get'>;
+        domainEvents: Pick<DomainEvents, 'subscribe'>;
+        event: Parameters<DomainEvents['subscribe']>[0];
+        queries: Queries;
+        mailgunTags: string[];
+        jobNames: JobNames;
+        cursorSeed: CursorSeed;
+        createEventProcessor: () => BatchEventProcessor;
+        metrics: Pick<Metrics, 'metric'>;
+        settingsCache: {get: (key: string) => unknown};
+    }>): void {
+        if (this.#service) {
             return;
         }
 
-        const {EmailAnalyticsService} = require('./email-analytics-service');
-        const {fetchMailgunEvents} = require('./fetch-mailgun-events');
-        const settings = require('../../../shared/settings-cache');
-        const {queries} = require('./lib/queries');
+        this.#config = config;
+        this.#metrics = metrics;
 
-        this.service = new EmailAnalyticsService({
-            fetchEvents: (options) => fetchMailgunEvents({...options, config, settings, tags: mailgunTags}),
+        this.#service = new EmailAnalyticsService({
+            fetchEvents: (options) => fetchMailgunEvents({...options, config, settings: settingsCache, tags: mailgunTags}),
             queries,
-            prometheusClient,
             jobNames,
             cursorSeed,
             createEventProcessor
         });
 
         // Log the processing mode on initialization
-        const batchProcessingEnabled = config.get('emailAnalytics:batchProcessing');
+        const batchProcessingEnabled = this.#config.get('emailAnalytics:batchProcessing');
         logging.info(`${this.#logPrefix} Initialized with ${batchProcessingEnabled ? 'BATCHED' : 'SEQUENTIAL'} processing mode`);
 
         // We currently cannot trigger a non-offloaded job from the job manager
@@ -71,13 +75,25 @@ class EmailAnalyticsServiceWrapper {
         });
     }
 
-    /**
-     * Log comprehensive job completion with timing metrics
-     * @param {string} jobType - Type of job (e.g., 'latest-opened', 'latest', 'missing', 'scheduled')
-     * @param {EmailAnalyticsFetchResult} fetchResult - The fetch result from EmailAnalyticsService
-     * @param {number} totalDurationMs - Total duration in milliseconds
-     */
-    _logJobCompletion(jobType, fetchResult, totalDurationMs) {
+    get service(): EmailAnalyticsService {
+        const result = this.#service;
+        if (!result) {
+            throw new errors.InternalServerError({message: "EmailAnalyticsServiceWrapper is not initialized with service"});
+        }
+        return result;
+    }
+
+    #getConfig(): Pick<ConfigInstance, 'get'> {
+        const result = this.#config;
+        if (!result) {
+            throw new errors.InternalServerError({message: "EmailAnalyticsServiceWrapper is not initialized with config"});
+        }
+        return result;
+    }
+
+    _logJobCompletion(jobType: string, fetchResult: EmailAnalyticsFetchResult, totalDurationMs: number): void {
+        const config = this.#getConfig();
+
         const {eventCount, apiPollingTimeMs, processingTimeMs, aggregationTimeMs, emailAggregationTimeMs, memberAggregationTimeMs, result} = fetchResult;
 
         if (eventCount === 0) {
@@ -108,6 +124,13 @@ class EmailAnalyticsServiceWrapper {
                 const metricName = this.#logName === 'newsletters'
                     ? 'email-analytics-open-throughput'
                     : `email-${this.#logName}-analytics-open-throughput`;
+
+                const metrics = this.#metrics;
+                if (!metrics) {
+                    throw new errors.InternalServerError({
+                        message: 'EmailAnalyticsServiceWrapper is not initialized with metrics'
+                    });
+                }
                 metrics.metric(metricName, {
                     value: throughput,
                     events: eventCount,
@@ -117,7 +140,9 @@ class EmailAnalyticsServiceWrapper {
         }
     }
 
-    async fetchLatestOpenedEvents({maxEvents} = {maxEvents: Infinity}) {
+    async fetchLatestOpenedEvents({maxEvents = Infinity}: {maxEvents?: number} = {}): Promise<number> {
+        const config = this.#getConfig();
+
         const beginTimestamp = await this.service.getLastOpenedEventTimestamp();
         const lagMinutes = (Date.now() - beginTimestamp.getTime()) / 60000;
         const lagThreshold = config.get('emailAnalytics:openedJobLagWarningMinutes');
@@ -138,7 +163,7 @@ class EmailAnalyticsServiceWrapper {
         return fetchResult.eventCount;
     }
 
-    async fetchLatestNonOpenedEvents({maxEvents} = {maxEvents: Infinity}) {
+    async fetchLatestNonOpenedEvents({maxEvents = Infinity}: {maxEvents?: number} = {}): Promise<number> {
         const fetchStartedAt = Date.now();
         const fetchResult = await this.service.fetchLatestNonOpenedEvents({maxEvents});
         const totalDuration = Date.now() - fetchStartedAt;
@@ -148,7 +173,7 @@ class EmailAnalyticsServiceWrapper {
         return fetchResult.eventCount;
     }
 
-    async fetchMissing({maxEvents} = {maxEvents: Infinity}) {
+    async fetchMissing({maxEvents = Infinity}: {maxEvents?: number} = {}): Promise<number> {
         const fetchStartedAt = Date.now();
         const fetchResult = await this.service.fetchMissing({maxEvents});
         const totalDuration = Date.now() - fetchStartedAt;
@@ -158,12 +183,7 @@ class EmailAnalyticsServiceWrapper {
         return fetchResult.eventCount;
     }
 
-    /**
-     * @param {object} options
-     * @param {number} options.maxEvents
-     * @returns {Promise<number>} The number of scheduled events fetched
-     */
-    async fetchScheduled({maxEvents}) {
+    async fetchScheduled({maxEvents}: {maxEvents: number}): Promise<number> {
         if (maxEvents < 300) {
             return 0;
         }
@@ -177,7 +197,7 @@ class EmailAnalyticsServiceWrapper {
         return fetchResult.eventCount;
     }
 
-    async startFetch() {
+    async startFetch(): Promise<void> {
         if (!this.#restoredSchedule) {
             this.#restoredSchedule = true;
             await this.service.restoreScheduled();
@@ -232,15 +252,9 @@ class EmailAnalyticsServiceWrapper {
         this.#fetching = false;
     }
 
-    /**
-     * @param {string} reason
-     * @returns {void}
-     */
-    _restartFetch(reason) {
+    _restartFetch(reason: string): void {
         this.#fetching = false;
         logging.info(`${this.#logPrefix} Restarting fetch due to ${reason}`);
         this.startFetch();
     }
 }
-
-module.exports = EmailAnalyticsServiceWrapper;

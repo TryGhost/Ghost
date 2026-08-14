@@ -75,7 +75,7 @@
         "@types/react": "catalog:react17",
         "@types/react-dom": "catalog:react17",
         "@vitest/coverage-v8": "catalog:",
-        "autoprefixer": "10.5.2",
+        "autoprefixer": "10.5.4",
         "bson-objectid": "catalog:",
         "eslint": "catalog:",
         "eslint-plugin-tailwindcss": "catalog:tailwind3",

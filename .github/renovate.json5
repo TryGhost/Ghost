@@ -4,7 +4,10 @@
         // Track `# renovate:`-annotated `ARG/ENV *_VERSION` pins in Dockerfiles,
         // for tool versions that no native manager sees (e.g. the Tinybird CLI
         // installed via `uv tool install` in docker/tb-cli/Dockerfile).
-        "customManagers:dockerfileVersions"
+        "customManagers:dockerfileVersions",
+        // Same, for `# renovate:`-annotated `env:` version pins in workflows
+        // (the Tinybird CLI in .github/workflows/tinybird.yml).
+        "customManagers:githubActionsVersions"
     ],
     // Keep Renovate's own concurrency guardrails in place. The shared preset
     // extends :disableRateLimiting (prConcurrentLimit: 0, prHourlyLimit: 0),
@@ -42,13 +45,17 @@
     // We have to disable platform based automerge (forcing renovate to do it manually)
     // as otherwise renovate wont follow our schedule
     "platformAutomerge": false,
-    // Keep every open Renovate branch current, including updates that require
-    // human review. The shared preset uses `rebaseWhen: automerging`, which
-    // Renovate resolves to `never` whenever a package rule disables automerge.
-    // Those PRs then conflict with main indefinitely and occupy the open-PR cap
-    // until somebody manually requests a rebase. Runner scheduling below still
-    // limits when the resulting branch updates and CI runs can happen.
-    "rebaseWhen": "behind-base-branch",
+    // Branch protection does not require up-to-date branches (the required
+    // status checks ruleset has strict: false), so a green-but-behind branch
+    // is still mergeable. Rebasing on every `main` commit therefore buys
+    // nothing and costs a force-push plus a full CI re-run per branch, which
+    // is what stopped branches from ever being green *and* current inside an
+    // automerge window. "conflicted" rebases only when a branch genuinely
+    // conflicts — in practice whenever another Renovate PR lands a
+    // pnpm-lock.yaml change, which is exactly when it's needed. It also keeps
+    // needs:review PRs current, unlike the preset's "automerging", which
+    // Renovate resolves to "never" wherever a package rule disables automerge.
+    "rebaseWhen": "conflicted",
     // Soak every dependency update for 72 hours before opening a PR. This guards
     // against compromised publishes (malicious version yanked within a few hours)
     // and against unstable releases that get hotfixed shortly after publish.
@@ -82,8 +89,6 @@
     // self-hosted workflow that means a CI-storm of force-pushes across all
     // open Renovate PRs during the workday. Setting `updateNotScheduled:
     // false` keeps existing branch maintenance inside the same windows.
-    // Existing branches can still be maintained outside the normal creation
-    // schedule when the workflow switches Renovate into cap-reached mode.
     "updateNotScheduled": false,
     "schedule": [
         // Run all weekend
@@ -91,15 +96,17 @@
         // Run on weekday evenings
         "* 23 * * 1-5",
         // Run on early weekday mornings (previous day 23:00 is already
-        // covered by the evening/weekend blocks above)
-        "* 0-4 * * 1-6"
+        // covered by the evening/weekend blocks above). Extends to 05:59 to
+        // absorb GitHub Actions scheduler drift — delayed ticks were landing
+        // outside the window and doing nothing.
+        "* 0-5 * * 1-6"
     ],
     "automergeSchedule": [
         // Allow automerge all weekend
         "* * * * 0,6",
-        // Allow automerge overnight on weekday evenings (11pm-4:59am UTC)
+        // Allow automerge overnight on weekday evenings (11pm-5:59am UTC)
         "* 23 * * 1-5",
-        "* 0-4 * * 1-6"
+        "* 0-5 * * 1-6"
     ],
     // Vulnerability alerts normally bypass Renovate's PR concurrency, hourly
     // PR, and schedule limits. Let them keep doing that so security fixes can
@@ -108,7 +115,10 @@
     "vulnerabilityAlerts": {
         "schedule": ["at any time"],
         "minimumReleaseAge": "3 days",
-        "rebaseWhen": "behind-base-branch",
+        // Same reasoning as the global `rebaseWhen` above: branches don't have
+        // to be current to merge, so rebasing a security PR on every `main`
+        // commit only delays the fix behind another CI cycle.
+        "rebaseWhen": "conflicted",
         "dependencyDashboardApproval": false,
         "labels": ["dependencies", "security"]
     },
@@ -301,6 +311,20 @@
                 "python"
             ],
             "allowedVersions": "<3.14"
+        },
+
+        // Stay on the MySQL 8 line — that's what Ghost supports and what CI and
+        // local dev run against. Capping (rather than disabling) keeps 8.x
+        // patches and digest re-pins flowing.
+        {
+            "description": "Cap MySQL at the 8.x line",
+            "matchDatasources": [
+                "docker"
+            ],
+            "matchPackageNames": [
+                "mysql"
+            ],
+            "allowedVersions": "<9"
         },
 
         // Keep `@types/*` aligned with the runtime major they describe. Type defs
