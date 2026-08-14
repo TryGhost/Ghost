@@ -173,9 +173,9 @@ jobs:
               - '.github/workflows/ci.yml'
             core:
               - *shared
-              # Repository documentation and ownership metadata do not affect
-              # Ghost runtime behaviour, even though they live in .github.
-              - '!.github/**/*.md'
+              # Documentation and ownership metadata do not affect Ghost
+              # runtime behaviour, even when they live inside a project root.
+              - '!**/*.md'
               - '!.github/CODEOWNERS'
               - 'ghost/**'
               - '!ghost/core/core/server/data/tinybird/**'
@@ -234,6 +234,18 @@ jobs:
       - name: Determine Affected Projects
         id: affected
         run: |
+          # Nx treats README files as project inputs. Avoid populating code-test
+          # matrices when every changed file is documentation.
+          if [[ "${{ env.IS_TAG }}" != 'true' && "${{ steps.changed.outputs.any-code }}" != 'true' ]]; then
+            echo 'affected_projects=[]' >> "$GITHUB_OUTPUT"
+            echo 'affected_projects_str=' >> "$GITHUB_OUTPUT"
+            echo 'unit_test_projects_str=' >> "$GITHUB_OUTPUT"
+            echo 'affected_i18n_projects=' >> "$GITHUB_OUTPUT"
+            echo 'affected_playwright_projects=[]' >> "$GITHUB_OUTPUT"
+            echo 'publish_public_apps_matrix=[]' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           # if the ci files have changed or we're in a tag, ensure we don't just look at affected
           # projects and we run the necessary jobs on all projects
           AFFECTED_ARG="--affected"
