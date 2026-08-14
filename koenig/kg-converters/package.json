@@ -1,6 +1,7 @@
 {
   "name": "@tryghost/kg-converters",
   "version": "1.2.4",
+  "description": "Converts between serialized Mobiledoc and Lexical formats for Ghost's editor",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/TryGhost/Ghost.git",
