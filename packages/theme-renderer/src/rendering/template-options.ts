@@ -2,10 +2,11 @@
 /**
  * Template-options plumbing for the render pipeline.
  *
- * - `getLocalTemplateOptions`/`updateLocalTemplateOptions`: copied from
- *   express-hbs lib/hbs.js @ 2.5.0 (they only read/write
- *   `locals._templateOptions`) so format-response and the middleware ports can
- *   operate on locals without holding the engine instance.
+ * - `getLocalTemplateOptions`/`updateLocalTemplateOptions`: re-exported from
+ *   src/engine/local-template-options.ts — the single module owning the
+ *   `locals._templateOptions` contract for both the engine and this pipeline —
+ *   so format-response and the middleware ports can operate on locals without
+ *   holding the engine instance.
  * - `buildGlobalTemplateOptions`: port of
  *   theme-engine/middleware/update-global-template-options.js @ 407e032dc7 —
  *   Express middleware → pure function returning the options object.
@@ -20,15 +21,9 @@ import {labs} from '../seam/shared.ts';
 import {getRendererDeps} from '../seam/deps.ts';
 import type {RenderLocals} from '../ports.ts';
 
-// from express-hbs lib/hbs.js:getLocalTemplateOptions
-export function getLocalTemplateOptions(locals: RenderLocals): Record<string, any> {
-    return locals._templateOptions || {};
-}
+import {getLocalTemplateOptions, updateLocalTemplateOptions} from '../engine/local-template-options.ts';
 
-// from express-hbs lib/hbs.js:updateLocalTemplateOptions
-export function updateLocalTemplateOptions(locals: RenderLocals, templateOptions: Record<string, any>): void {
-    locals._templateOptions = templateOptions;
-}
+export {getLocalTemplateOptions, updateLocalTemplateOptions};
 
 // from update-global-template-options.js:getSiteData
 function getSiteData() {

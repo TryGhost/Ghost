@@ -3,6 +3,7 @@ import errors from '@tryghost/errors';
 import {done as resolverDone, hasResolvers, resolve as resolverResolve, type ResolverCache} from './async-resolver.ts';
 import {dirname, extname, resolvePath} from './paths.ts';
 import {mergeDeep} from './merge.ts';
+import {getLocalTemplateOptions, updateLocalTemplateOptions} from './local-template-options.ts';
 
 /**
  * Regex pattern for layout directive. {{!< layout }}
@@ -391,14 +392,16 @@ export class TemplateEngine {
         this.templateOptions = templateOptions;
     }
 
-    // from express-hbs lib/hbs.js:getLocalTemplateOptions
+    // from express-hbs lib/hbs.js:getLocalTemplateOptions — delegates to the
+    // shared local-template-options module (the single owner of the
+    // `locals._templateOptions` key)
     getLocalTemplateOptions(locals: RenderContext): TemplateOptions {
-        return (locals._templateOptions as TemplateOptions | undefined) || {};
+        return getLocalTemplateOptions(locals);
     }
 
     // from express-hbs lib/hbs.js:updateLocalTemplateOptions
     updateLocalTemplateOptions(locals: RenderContext, localTemplateOptions: TemplateOptions | undefined): void {
-        locals._templateOptions = localTemplateOptions;
+        updateLocalTemplateOptions(locals, localTemplateOptions);
     }
 
     // from express-hbs lib/hbs.js:___express replaceValue — replaces both the

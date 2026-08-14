@@ -4,40 +4,47 @@
  *
  * Implements default routes.yaml semantics only, mirroring the mount order the
  * RouterManager produces for the default config (extraction-map §8:
- * Collections → StaticPages):
+ * Collections → StaticPages → Taxonomies):
  *
- *   /                → collection index controller
- *   /page/:page/     → collection index controller (paged)
- *   /:slug/[edit/]   → entry controller for posts (collection permalink), then
- *                      fall through to static pages (`resourceType: 'pages'`)
- *                      when the post lookup finds nothing — Express mount-order
- *                      fall-through becomes an ordered candidate list.
+ *   /                     → collection index controller
+ *   /page/:page/          → collection index controller (paged)
+ *   /:slug/[edit/]        → entry controller for posts (collection permalink),
+ *                           then fall through to static pages
+ *                           (`resourceType: 'pages'`) when the post lookup
+ *                           finds nothing — Express mount-order fall-through
+ *                           becomes an ordered candidate list.
+ *   /tag/:slug/[page/:page/ | edit/]    → channel controller (tag taxonomy)
+ *   /author/:slug/[page/:page/ | edit/] → channel controller (author taxonomy)
  *
  * The routerOptions shapes are copied from collection-router.js
- * `_prepareEntriesContext`/`_prepareEntryContext` and static-pages-router.js
- * `_prepareContext` @ 407e032dc7. The parity slice replaces this module with
- * the full lazy-matcher integration (routes.yaml parsing, taxonomies, custom
- * collections).
+ * `_prepareEntriesContext`/`_prepareEntryContext`, static-pages-router.js
+ * `_prepareContext` and taxonomy-router.js `_prepareContext` @ 407e032dc7.
+ * Later work replaces this module with the full lazy-matcher integration
+ * (routes.yaml parsing, custom collections/taxonomies).
  */
 import matchPermalinkParams from '../data/match-permalink-params.ts';
 import {toExpressNotation} from './permalink-adapter.ts';
-import {QUERY} from './config.ts';
+import {QUERY, TAXONOMIES} from './config.ts';
+import {config, urlUtils} from '../seam/proxy.ts';
 import type {RouterOptions} from '../ports.ts';
 
 export type RouteCandidate =
     | {
-        controller: 'collection' | 'entry';
+        controller: 'collection' | 'channel' | 'entry';
         params: Record<string, any>;
         routerOptions: RouterOptions;
     }
     | {
         /**
-         * Resolver-level permanent redirect (the page-param middleware's
-         * page-1 alias). `url` is site-relative and subdir-stripped — the
-         * assembly re-prefixes the subdir and appends the query string.
+         * Resolver-level redirect. 301: the page-param middleware's page-1
+         * alias — `url` is site-relative and subdir-stripped (the assembly
+         * re-prefixes the subdir, appends the query string, and adds the
+         * permanent-redirect Cache-Control). 302: the taxonomy /edit admin
+         * redirect — `url` is absolute (urlUtils.redirectToAdmin semantics:
+         * no subdir prefixing, no query, no cache header).
          */
         controller: 'redirect';
-        redirect: {status: 301; url: string};
+        redirect: {status: 301; url: string} | {status: 302; url: string; absolute: true};
     };
 
 export interface ResolveRoutesOptions {
@@ -46,6 +53,12 @@ export interface ResolveRoutesOptions {
 }
 
 const PAGE_PATTERN = /^\/page\/(\d+)\/$/;
+
+// default-routes.yaml taxonomies (domain notation)
+const TAXONOMY_PERMALINKS: Record<keyof typeof TAXONOMIES, string> = {
+    tag: '/tag/{slug}/',
+    author: '/author/{slug}/'
+};
 
 // collection-router.js: permalinks.getValue({withUrlOptions: true}) —
 // urlJoin(permalink, '/:options(edit)?/')
@@ -152,6 +165,84 @@ export function resolveRoutes(path: string, options: ResolveRoutesOptions = {}):
                 context: ['page']
             }
         });
+    }
+
+    // Mount: taxonomies (after static pages; default-routes.yaml tag+author).
+    // taxonomy-router.js mounts, in order: RSS (out of package scope —
+    // extraction-map §(a)), the channel route, pagination, and the /edit
+    // admin redirect.
+    for (const key of Object.keys(TAXONOMY_PERMALINKS) as Array<keyof typeof TAXONOMY_PERMALINKS>) {
+        const taxonomyPermalinks = toExpressNotation(TAXONOMY_PERMALINKS[key]);
+
+        // taxonomy-router.js:_prepareContext
+        const taxonomyRouterOptions = (): RouterOptions => ({
+            type: 'channel',
+            name: key,
+            permalinks: taxonomyPermalinks,
+            // Route data in domain form — the API adapter resolves it to a
+            // controller call, and fetch-data fills `%s` in from the request.
+            data: {[key]: {type: 'read', resource: TAXONOMIES[key].resource, slug: '%s'}},
+            filter: TAXONOMIES[key].filter,
+            resourceType: TAXONOMIES[key].resource,
+            context: [key],
+            slugTemplate: true,
+            identifier: `taxonomy-${key}`
+        });
+
+        // e.g. /tag/:slug/
+        const channelParams = matchPermalinkParams(taxonomyPermalinks, path);
+        if (channelParams !== false) {
+            candidates.push({
+                controller: 'channel',
+                params: channelParams,
+                routerOptions: taxonomyRouterOptions()
+            });
+        }
+
+        // pagination: e.g. /tag/:slug/page/:page(\d+)/ (page-param middleware
+        // applies — page 1 is a permanent-redirect alias for the channel index)
+        const taxonomyPageParams = matchPermalinkParams(
+            taxonomyPermalinks.replace(/\/$/, '') + '/page/:page(\\d+)/',
+            path
+        );
+        if (taxonomyPageParams !== false) {
+            const page = parseInt(taxonomyPageParams.page, 10);
+            if (page === 1) {
+                candidates.push({
+                    controller: 'redirect',
+                    redirect: {status: 301, url: path.replace(new RegExp('/page/(.*)?/'), '/')}
+                });
+            } else {
+                candidates.push({
+                    controller: 'channel',
+                    params: {...taxonomyPageParams, page},
+                    routerOptions: taxonomyRouterOptions()
+                });
+            }
+        }
+
+        // edit redirect: e.g. /tag/:slug/edit/ → admin, when admin:redirects
+        // is enabled (taxonomy-router.js:_redirectEditOption —
+        // urlUtils.redirectToAdmin(302, res, editRedirect) builds
+        // urlJoin(urlFor('admin', true), path, '/') and 302-redirects)
+        const editParams = matchPermalinkParams(
+            taxonomyPermalinks.replace(/\/$/, '') + '/edit/',
+            path
+        );
+        if (editParams !== false && config.get('admin:redirects')) {
+            candidates.push({
+                controller: 'redirect',
+                redirect: {
+                    status: 302,
+                    url: urlUtils.urlJoin(
+                        urlUtils.urlFor('admin' as any, true),
+                        TAXONOMIES[key].editRedirect.replace(':slug', editParams.slug),
+                        '/'
+                    ),
+                    absolute: true
+                }
+            });
+        }
     }
 
     return candidates;

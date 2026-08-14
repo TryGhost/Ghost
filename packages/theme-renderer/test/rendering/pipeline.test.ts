@@ -164,7 +164,10 @@ describe('rendering/renderer', function () {
         assert.deepEqual(result.render.data.posts, []);
     });
 
-    it('honors routes.yaml contentType for allowed templates', function () {
+    // Express res.type() semantics: charset appended for text/* and
+    // application/json (mime v1 charsets.lookup), extension shorthands
+    // resolved through the mime table
+    it('honors routes.yaml contentType for allowed templates, appending the charset like Express res.type()', function () {
         configureTestDeps({depsOverrides: {activeTheme: fakeTheme(['custom-amp'])}});
         const res = makeRes(
             {type: 'custom', templates: ['custom-amp'], defaultTemplate: 'index', contentType: 'text/plain'},
@@ -173,7 +176,30 @@ describe('rendering/renderer', function () {
         const result = renderer(makeReq({path: '/custom/'}), res, {});
         assert.ok('render' in result);
         assert.equal(result.render.template, 'custom-amp');
-        assert.equal(result.render.contentType, 'text/plain');
+        assert.equal(result.render.contentType, 'text/plain; charset=utf-8');
+    });
+
+    it('resolves extension-style contentType values like Express res.type()', function () {
+        configureTestDeps({depsOverrides: {activeTheme: fakeTheme(['custom-feed'])}});
+        const res = makeRes(
+            {type: 'custom', templates: ['custom-feed'], defaultTemplate: 'index', contentType: 'json'},
+            {relativeUrl: '/feed/'}
+        );
+        const result = renderer(makeReq({path: '/feed/'}), res, {});
+        assert.ok('render' in result);
+        assert.equal(result.render.contentType, 'application/json; charset=utf-8');
+    });
+
+    it('does not throw when routerOptions carries contentType but no templates (upstream default is [])', function () {
+        configureTestDeps({depsOverrides: {activeTheme: fakeTheme(['index'])}});
+        const res = makeRes(
+            {type: 'custom', defaultTemplate: 'index', contentType: 'text/plain'},
+            {relativeUrl: '/custom/'}
+        );
+        const result = renderer(makeReq({path: '/custom/'}), res, {});
+        assert.ok('render' in result);
+        // template not in the (empty) allow-list → contentType not applied
+        assert.equal(result.render.contentType, undefined);
     });
 });
 

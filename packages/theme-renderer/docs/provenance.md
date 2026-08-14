@@ -24,13 +24,14 @@ transforms, update the revision here.
    original code shape requires it: `no-this-alias`, `prefer-rest-params`,
    `prefer-const`) — the visible marker of "copied, loosely typed".
 
-## src/helpers/ (33 helpers + machinery)
+## src/helpers/ (34 helpers + machinery)
 
 | File | Origin (ghost/core/core/frontend/) | Transforms beyond STD | Seam/stubs touched |
 | --- | --- | --- | --- |
 | helpers/asset.ts | helpers/asset.js | — | urlUtils, meta/asset-url |
 | helpers/authors.ts | helpers/authors.js | — | urlService, templates |
 | helpers/body-class.ts | helpers/body_class.js | final `classes = classes.join(...)` → new `classesString` const (type change) | settings (`heading_font`/`body_font` **undefined** → custom font classes omitted) |
+| helpers/comment-count.ts | helpers/comment_count.js | lazy `require('common-tags')` (boot-speed optimization) → static import | — |
 | helpers/concat.ts | helpers/concat.js | — | — |
 | helpers/content.ts | helpers/content.js | — | templates (`content-cta` partial) |
 | helpers/date.ts | helpers/date.js | local var `date` → `dateValue` (collides with fn name in ESM scope) | — |
@@ -65,7 +66,7 @@ transforms, update the revision here.
 | helpers/tpl/partials.ts | helpers/tpl/*.hbs (navigation, pagination, content-cta, gift-toast, cancel_link, recommendations) | .hbs sources embedded verbatim as string constants + `registerCoreHelperPartials()` (replaces express-hbs `partialsDir` fs loading) | hbs shim (compiles on register, `preventIndent: true`) |
 | helpers/services/registry.ts | services/helpers/registry.js | module singleton → `createHelperRegistry(registrar)` factory | HelperRegistrar |
 | helpers/services/handlebars.ts | services/helpers/handlebars.js | engine singleton → injected HelperRegistrar; `process.env.NODE_ENV` → seam `config.get('env')`; `errors.utils` resolved from either the CJS default export or the ES build's named export (@tryghost/errors ships both shapes); the async wrapper's catch is hardened — a throwing error path (unconfigured seam deps, throwing logging) still calls `cb('')` so the placeholder promise settles and the render cannot hang | logging |
-| helpers/services/register-ghost-helpers.ts | services/helpers/register-ghost-helpers.js | requires → static imports; **trimmed to Tier-2 set**. Omitted registrations: cancel_link, collection, color_to_rgba, comment_count, comments, content_api_key, content_api_url, contrast_text_color, facebook_url, json, price, readable_url, recommendations, search, social_accounts, social_url, split, total_members, total_paid_members, twitter_url (`tiers` IS registered — the content-cta partial calls it for tier-gated posts) | — |
+| helpers/services/register-ghost-helpers.ts | services/helpers/register-ghost-helpers.js | requires → static imports; **trimmed to Tier-2 set**. Omitted registrations: cancel_link, collection, color_to_rgba, comments, content_api_key, content_api_url, contrast_text_color, facebook_url, json, price, readable_url, recommendations, search, social_accounts, social_url, split, total_members, total_paid_members, twitter_url (`tiers` IS registered — the content-cta partial calls it for tier-gated posts) | — |
 | helpers/services/index.ts | services/helpers/index.js | re-export shape only | — |
 
 ## src/meta/ (24 modules)
@@ -103,10 +104,10 @@ inbound request context + outbound result union per extraction-map §(b)).
 | context.ts | — |
 | templates.ts | `themeEngine.getActive()` → `getRendererDeps().activeTheme`; `url.parse(req.url).pathname` → `req.path`; getTemplateForError's fs fallback (config.paths.defaultViews error.hbs) → the string `'error'` |
 | format-response.ts | `hbs.get/updateLocalTemplateOptions` → the pure copies in template-options.ts |
-| renderer.ts | `res.render`+`res.send` → `{render}` result value; degraded-render Cache-Control capping + X-Ghost-Degraded-Render header dropped; ENOENT handling moved to the assembly |
+| renderer.ts | `res.render`+`res.send` → `{render}` result value; degraded-render Cache-Control capping + X-Ghost-Degraded-Render header dropped; ENOENT handling moved to the assembly; `res.type(contentType)` → `toContentTypeHeader` (mime extension shorthands + `; charset=utf-8` for text/* + application/json, matching Express/mime v1); `routerOptions.templates` defaults to `[]` (upstream routers always set an array) |
 | render-entry.ts, render-entries.ts | — |
 | error.ts | `next()` closure → direct error→result mapping (`{next: true}` / `{error}`) |
-| template-options.ts | mixed: get/updateLocalTemplateOptions copied from express-hbs lib/hbs.js@2.5.0; `buildGlobalTemplateOptions`/`applyLocalTemplateOptions` are the theme-engine/middleware/update-{global,local}-template-options.js ports (middleware → pure functions; preview.handle dropped — no preview requests) |
+| template-options.ts | mixed: get/updateLocalTemplateOptions re-exported from src/engine/local-template-options.ts (the single owner of the `locals._templateOptions` contract; bodies copied from express-hbs lib/hbs.js@2.5.0); `buildGlobalTemplateOptions`/`applyLocalTemplateOptions` are the theme-engine/middleware/update-{global,local}-template-options.js ports (middleware → pure functions; preview.handle dropped — no preview requests) |
 
 ## src/data/ (ported data services)
 
@@ -127,9 +128,10 @@ Origin `ghost/core/core/frontend/services/data/<name>.js` @ 407e032dc7, transfor
 | api-adapter.ts | routing/api-adapter.ts @ 407e032dc7 | `@tryghost/adapter-base-route-settings` type imports → local mirror route-settings-types.ts (types only) |
 | route-settings-types.ts | fresh (mirrors adapter-base-route-settings types) | RouteData/DataEntry/DataShortForm/DataLongFormEntry shapes only |
 | controllers/collection.ts | routing/controllers/collection.js @ 407e032dc7 | `security.string.safe` → `@tryghost/string` slugify (safe()'s body); `routerManager.ownsResource` → seam urlService (router-manager delegates there); `themeEngine.getActive()` → deps.activeTheme; next(err) → handleError result |
+| controllers/channel.ts | routing/controllers/channel.js @ 407e032dc7 | same transform set as collection.ts (slugify substitution, deps.activeTheme, next(err) → handleError result); no ownership filter upstream either |
 | controllers/entry.ts | routing/controllers/entry.ts @ 407e032dc7 | gift-links + markdown negotiation dropped; redirectToAdmin/redirect301 → `{redirect}` results (URL construction reproduced) |
 | controllers/entry/canonical-url.ts | .../entry/canonical-url.ts @ 407e032dc7 | node:url format/parse → whatwg URL + search slice |
-| resolve.ts | fresh | slice-1 default-routes resolver; routerOptions shapes copied from collection-router/static-pages-router `_prepare*Context`; page-param semantics ported from routing/middleware/page-param.js (`/page/1/` → 301 redirect candidate, page < 1 → no candidates → 404, otherwise `parseInt`ed before pathOptions); replaced by the lazy-matcher port in the parity slice |
+| resolve.ts | fresh | default-routes resolver; routerOptions shapes copied from collection-router/static-pages-router/taxonomy-router `_prepare*Context`; page-param semantics ported from routing/middleware/page-param.js (`/page/1/` → 301 redirect candidate, page < 1 → no candidates → 404, otherwise `parseInt`ed before pathOptions); taxonomy `/edit` → 302 admin redirect candidate (taxonomy-router `_redirectEditOption` — redirectToAdmin URL construction reproduced); taxonomy RSS routes out of scope; to be replaced by the full lazy-matcher port (routes.yaml parsing, custom collections/taxonomies) |
 
 ## src/theme/, src/ports.ts, src/index.ts (fresh assembly)
 
@@ -205,8 +207,11 @@ Origin `ghost/core/core/frontend/services/data/<name>.js` @ 407e032dc7, transfor
    `meta_title`/`meta_description` for the *site* are public and present.
 2. **Image dimensions omitted** — `og:image:width/height` and schema logo
    dimensions never emitted (image probing stubbed).
-3. **Asset hash is a constant** (`?v=themerender`), not per-boot md5 or
-   content-based SHA256.
+3. **Asset hash defaults to a constant** (`?v=themerender`) instead of the
+   per-boot md5; inject the instance's real hash via `createRenderer({config:
+   {assetHash}})` — upstream-faithful, since ghost/core's `getGlobalAssetHash`
+   also lets a configured `assetHash` win. Content-based SHA256 per-file
+   hashing (`caching:assets:contentBasedHash`) remains stubbed (needs fs).
 4. **Frontend key = Content API key** in portal/sodo-search script attributes.
 5. **`{{total_members}}`-family and other non-Tier-2 helpers not registered**
    (list under register-ghost-helpers.ts above). Themes calling them get

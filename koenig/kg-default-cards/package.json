@@ -42,7 +42,7 @@
     "@tryghost/kg-utils": "workspace:~",
     "@tryghost/string": "catalog:",
     "@tryghost/url-utils": "catalog:",
-    "handlebars": "4.7.9",
+    "handlebars": "catalog:",
     "juice": "catalog:",
     "luxon": "3.7.2"
   },

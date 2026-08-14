@@ -29,6 +29,7 @@ import {registerGhostHelpers} from './helpers/services/register-ghost-helpers.ts
 import {applyLocalTemplateOptions, buildGlobalTemplateOptions} from './rendering/template-options.ts';
 import {resolveRoutes} from './routing/resolve.ts';
 import collectionController from './routing/controllers/collection.ts';
+import channelController from './routing/controllers/channel.ts';
 import {entryController} from './routing/controllers/entry.ts';
 import templates from './rendering/templates.ts';
 import type {ActiveThemePort, HelperRegistrar, LoggingPort, RendererDeps} from './seam/types.ts';
@@ -296,6 +297,11 @@ export async function createRenderer(options: CreateRendererOptions): Promise<Th
 
         for (const candidate of candidates) {
             if (candidate.controller === 'redirect') {
+                if ('absolute' in candidate.redirect) {
+                    // taxonomy /edit — urlUtils.redirectToAdmin semantics:
+                    // absolute admin URL, no subdir/query/cache handling
+                    return redirectResponse(candidate.redirect.status, candidate.redirect.url);
+                }
                 // page-param page-1 alias — urlUtils.redirect301 semantics:
                 // re-prefix the subdir, keep the query string, cache the 301
                 return redirectResponse(candidate.redirect.status, subdir + candidate.redirect.url + url.search, {
@@ -308,7 +314,9 @@ export async function createRenderer(options: CreateRendererOptions): Promise<Th
 
             const result: RenderResult = candidate.controller === 'collection'
                 ? await collectionController(candidateReq, res)
-                : await entryController(candidateReq, res);
+                : candidate.controller === 'channel'
+                    ? await channelController(candidateReq, res)
+                    : await entryController(candidateReq, res);
 
             if ('next' in result) {
                 continue;

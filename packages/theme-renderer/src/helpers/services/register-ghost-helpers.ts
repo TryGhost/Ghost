@@ -9,6 +9,7 @@ import type {HelperRegistrar} from '../../seam/types.ts';
 import asset from '../asset.ts';
 import authors from '../authors.ts';
 import bodyClass from '../body-class.ts';
+import commentCount from '../comment-count.ts';
 import concat from '../concat.ts';
 import content from '../content.ts';
 import date from '../date.ts';
@@ -45,6 +46,7 @@ export const registerGhostHelpers = (registrar: HelperRegistrar): void => {
     registry.registerHelper('asset', asset);
     registry.registerHelper('authors', authors);
     registry.registerHelper('body_class', bodyClass);
+    registry.registerHelper('comment_count', commentCount);
     registry.registerHelper('concat', concat);
     registry.registerHelper('content', content);
     registry.registerHelper('date', date);
