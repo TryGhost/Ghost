@@ -1,13 +1,10 @@
-import should from 'should';
-import {createDocument, dom, html} from '../test-utils/index.js';
+import {assertPrettifiesTo, createDocument, dom, html} from '../test-utils/index.js';
 import {$getRoot, LexicalEditor} from 'lexical';
 import {createHeadlessEditor} from '@lexical/headless';
 import {$generateNodesFromDOM} from '@lexical/html';
 import {ImageNode, $createImageNode, $isImageNode} from '../../src/index.js';
 
 const editorNodes = [ImageNode];
-
-void should;
 
 describe('ImageNode', function () {
     let editor: LexicalEditor;
@@ -17,16 +14,16 @@ describe('ImageNode', function () {
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
+    const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
         editor.update(() => {
             try {
                 testFn();
-                done();
+                resolve();
             } catch (e) {
-                done(e);
+                reject(e);
             }
         });
-    };
+    });
 
     beforeEach(function () {
         editor = createHeadlessEditor({nodes: editorNodes});
@@ -57,27 +54,27 @@ describe('ImageNode', function () {
 
     it('matches node with $isImageNode', editorTest(function () {
         const imageNode = $createImageNode(dataset);
-        $isImageNode(imageNode).should.be.true();
+        expect($isImageNode(imageNode)).toBe(true);
     }));
 
     describe('data access', function () {
         it('has getters for all properties', editorTest(function () {
             const imageNode = $createImageNode(dataset);
 
-            imageNode.src.should.equal('/content/images/2022/11/koenig-lexical.jpg');
-            imageNode.width!.should.equal(3840);
-            imageNode.height!.should.equal(2160);
-            imageNode.title.should.equal('This is a title');
-            imageNode.alt.should.equal('This is some alt text');
-            imageNode.caption.should.equal('This is a <b>caption</b>');
-            imageNode.cardWidth.should.equal('regular');
-            imageNode.href.should.equal('');
+            expect(imageNode.src).toBe('/content/images/2022/11/koenig-lexical.jpg');
+            expect(imageNode.width!).toBe(3840);
+            expect(imageNode.height!).toBe(2160);
+            expect(imageNode.title).toBe('This is a title');
+            expect(imageNode.alt).toBe('This is some alt text');
+            expect(imageNode.caption).toBe('This is a <b>caption</b>');
+            expect(imageNode.cardWidth).toBe('regular');
+            expect(imageNode.href).toBe('');
         }));
 
         it('can be created without a dataset', editorTest(function () {
             const imageNode = $createImageNode();
 
-            imageNode.getDataset().should.deepEqual({
+            expect(imageNode.getDataset()).toEqual({
                 src: '',
                 caption: '',
                 title: '',
@@ -92,44 +89,44 @@ describe('ImageNode', function () {
         it('has setters for all properties', editorTest(function () {
             const imageNode = $createImageNode({} as Record<string, unknown>);
 
-            imageNode.src.should.equal('');
+            expect(imageNode.src).toBe('');
             imageNode.src = '/content/images/2022/11/koenig-lexical.jpg';
-            imageNode.src.should.equal('/content/images/2022/11/koenig-lexical.jpg');
+            expect(imageNode.src).toBe('/content/images/2022/11/koenig-lexical.jpg');
 
-            (should as unknown as (obj: unknown) => should.Assertion)(imageNode.width).equal(null);
+            expect(imageNode.width).toBe(null);
             imageNode.width = 3840;
-            imageNode.width.should.equal(3840);
+            expect(imageNode.width).toBe(3840);
 
-            (should as unknown as (obj: unknown) => should.Assertion)(imageNode.height).equal(null);
+            expect(imageNode.height).toBe(null);
             imageNode.height = 2160;
-            imageNode.height.should.equal(2160);
+            expect(imageNode.height).toBe(2160);
 
-            imageNode.title.should.equal('');
+            expect(imageNode.title).toBe('');
             imageNode.title = 'I am a title';
-            imageNode.title.should.equal('I am a title');
+            expect(imageNode.title).toBe('I am a title');
 
-            imageNode.alt.should.equal('');
+            expect(imageNode.alt).toBe('');
             imageNode.alt = 'I am alt text';
-            imageNode.alt.should.equal('I am alt text');
+            expect(imageNode.alt).toBe('I am alt text');
 
-            imageNode.caption.should.equal('');
+            expect(imageNode.caption).toBe('');
             imageNode.caption = 'I am a <b>Caption</b>';
-            imageNode.caption.should.equal('I am a <b>Caption</b>');
+            expect(imageNode.caption).toBe('I am a <b>Caption</b>');
 
-            imageNode.cardWidth.should.equal('regular');
+            expect(imageNode.cardWidth).toBe('regular');
             imageNode.cardWidth = 'wide';
-            imageNode.cardWidth.should.equal('wide');
+            expect(imageNode.cardWidth).toBe('wide');
 
-            imageNode.href.should.equal('');
+            expect(imageNode.href).toBe('');
             imageNode.href = 'https://example.com';
-            imageNode.href.should.equal('https://example.com');
+            expect(imageNode.href).toBe('https://example.com');
         }));
 
         it('has getDataset() convenience method', editorTest(function () {
             const imageNode = $createImageNode(dataset);
             const imageNodeDataset = imageNode.getDataset();
 
-            imageNodeDataset.should.deepEqual({
+            expect(imageNodeDataset).toEqual({
                 ...dataset,
                 cardWidth: 'regular'
             });
@@ -141,7 +138,7 @@ describe('ImageNode', function () {
             const imageNode = $createImageNode(dataset);
             const {element} = imageNode.exportDOM(editor, exportOptions);
 
-            (element as HTMLElement).outerHTML.should.prettifyTo(html`
+            assertPrettifiesTo((element as HTMLElement).outerHTML, html`
                 <figure class="kg-card kg-image-card kg-card-hascaption">
                     <img
                         src="/content/images/2022/11/koenig-lexical.jpg"
@@ -165,7 +162,7 @@ describe('ImageNode', function () {
             const {element} = imageNode.exportDOM(editor, exportOptions);
             const output = (element as HTMLElement).outerHTML;
 
-            output.should.not.containEql('srcset');
+            expect(output).not.toContain('srcset');
         }));
     });
 
@@ -182,12 +179,12 @@ describe('ImageNode', function () {
             `);
             const nodes = $generateNodesFromDOM(editor, document) as ImageNode[];
 
-            nodes.length.should.equal(1);
-            nodes[0].src.should.equal('/image.png');
-            nodes[0].alt.should.equal('Alt text');
-            nodes[0].title.should.equal('Title text');
-            nodes[0].width!.should.equal(3000);
-            nodes[0].height!.should.equal(2000);
+            expect(nodes.length).toBe(1);
+            expect(nodes[0].src).toBe('/image.png');
+            expect(nodes[0].alt).toBe('Alt text');
+            expect(nodes[0].title).toBe('Title text');
+            expect(nodes[0].width!).toBe(3000);
+            expect(nodes[0].height!).toBe(2000);
         }));
 
         it('parses IMG inside FIGURE to image card without caption', editorTest(function () {
@@ -198,10 +195,10 @@ describe('ImageNode', function () {
             `);
             const nodes = $generateNodesFromDOM(editor, document) as ImageNode[];
 
-            nodes.length.should.equal(1);
-            nodes[0].src.should.equal('http://example.com/test.png');
-            nodes[0].alt.should.equal('Alt test');
-            nodes[0].title.should.equal('Title test');
+            expect(nodes.length).toBe(1);
+            expect(nodes[0].src).toBe('http://example.com/test.png');
+            expect(nodes[0].alt).toBe('Alt test');
+            expect(nodes[0].title).toBe('Title test');
         }));
 
         it('parses IMG inside FIGURE to image card with caption', editorTest(function () {
@@ -213,9 +210,9 @@ describe('ImageNode', function () {
             `);
             const nodes = $generateNodesFromDOM(editor, document) as ImageNode[];
 
-            nodes.length.should.equal(1);
-            nodes[0].src.should.equal('http://example.com/test.png');
-            nodes[0].caption.should.equal('<strong>Caption test</strong>');
+            expect(nodes.length).toBe(1);
+            expect(nodes[0].src).toBe('http://example.com/test.png');
+            expect(nodes[0].caption).toBe('<strong>Caption test</strong>');
         }));
 
         it('extracts Koenig card widths', editorTest(function () {
@@ -225,8 +222,8 @@ describe('ImageNode', function () {
                 </figure>
             `);
             const nodes = $generateNodesFromDOM(editor, document) as ImageNode[];
-            nodes.length.should.equal(1);
-            nodes[0].cardWidth.should.equal('wide');
+            expect(nodes.length).toBe(1);
+            expect(nodes[0].cardWidth).toBe('wide');
         }));
 
         it('extracts Medium card widths', editorTest(function () {
@@ -237,8 +234,8 @@ describe('ImageNode', function () {
             `);
             const nodes = $generateNodesFromDOM(editor, document) as ImageNode[];
 
-            nodes.length.should.equal(1);
-            nodes[0].cardWidth.should.equal('full');
+            expect(nodes.length).toBe(1);
+            expect(nodes[0].cardWidth).toBe('full');
         }));
 
         it('extracts IMG dimensions from width/height attrs', editorTest(function () {
@@ -249,10 +246,10 @@ describe('ImageNode', function () {
             `);
             const nodes = $generateNodesFromDOM(editor, document) as ImageNode[];
 
-            nodes.length.should.equal(1);
-            nodes[0].src.should.equal('http://example.com/test.png');
-            nodes[0].width!.should.equal(640);
-            nodes[0].height!.should.equal(480);
+            expect(nodes.length).toBe(1);
+            expect(nodes[0].src).toBe('http://example.com/test.png');
+            expect(nodes[0].width!).toBe(640);
+            expect(nodes[0].height!).toBe(480);
         }));
 
         it('extracts IMG dimensions from dataset', editorTest(function () {
@@ -263,10 +260,10 @@ describe('ImageNode', function () {
             `);
             const nodes = $generateNodesFromDOM(editor, document) as ImageNode[];
 
-            nodes.length.should.equal(1);
-            nodes[0].src.should.equal('http://example.com/test.png');
-            nodes[0].width!.should.equal(640);
-            nodes[0].height!.should.equal(480);
+            expect(nodes.length).toBe(1);
+            expect(nodes[0].src).toBe('http://example.com/test.png');
+            expect(nodes[0].width!).toBe(640);
+            expect(nodes[0].height!).toBe(480);
         }));
 
         it('extracts IMG dimensions from data-image-dimensions', editorTest(function () {
@@ -277,10 +274,10 @@ describe('ImageNode', function () {
             `);
             const nodes = $generateNodesFromDOM(editor, document) as ImageNode[];
 
-            nodes.length.should.equal(1);
-            nodes[0].src.should.equal('http://example.com/test.png');
-            nodes[0].width!.should.equal(640);
-            nodes[0].height!.should.equal(480);
+            expect(nodes.length).toBe(1);
+            expect(nodes[0].src).toBe('http://example.com/test.png');
+            expect(nodes[0].width!).toBe(640);
+            expect(nodes[0].height!).toBe(480);
         }));
 
         it('extracts href when img wrapped in anchor tag', editorTest(function () {
@@ -293,9 +290,9 @@ describe('ImageNode', function () {
             `);
             const nodes = $generateNodesFromDOM(editor, document) as ImageNode[];
 
-            nodes.length.should.equal(1);
-            nodes[0].src.should.equal('http://example.com/test.png');
-            nodes[0].href.should.equal('https://example.com/link');
+            expect(nodes.length).toBe(1);
+            expect(nodes[0].src).toBe('http://example.com/test.png');
+            expect(nodes[0].href).toBe('https://example.com/link');
         }));
 
         it('extracts href when img wrapped in anchor tag not within figure', editorTest(function () {
@@ -306,9 +303,9 @@ describe('ImageNode', function () {
             `);
             const nodes = $generateNodesFromDOM(editor, document) as ImageNode[];
 
-            nodes.length.should.equal(1);
-            nodes[0].src.should.equal('http://example.com/test.png');
-            nodes[0].href.should.equal('https://example.com/link');
+            expect(nodes.length).toBe(1);
+            expect(nodes[0].src).toBe('http://example.com/test.png');
+            expect(nodes[0].href).toBe('https://example.com/link');
         }));
     });
 
@@ -319,7 +316,7 @@ describe('ImageNode', function () {
             const imageNode = $createImageNode(dataset);
             const json = imageNode.exportJSON();
 
-            json.should.deepEqual({
+            expect(json).toEqual({
                 type: 'image',
                 version: 1,
                 src: '/content/images/2022/11/koenig-lexical.jpg',
@@ -335,41 +332,43 @@ describe('ImageNode', function () {
     });
 
     describe('importJSON', function () {
-        it('imports all data', function (done) {
-            const serializedState = JSON.stringify({
-                root: {
-                    children: [{
-                        type: 'image',
-                        ...dataset,
-                        cardWidth: 'wide'
-                    }],
-                    direction: null,
-                    format: '',
-                    indent: 0,
-                    type: 'root',
-                    version: 1
-                }
-            });
+        it('imports all data', function () {
+            return new Promise<void>((resolve, reject) => {
+                const serializedState = JSON.stringify({
+                    root: {
+                        children: [{
+                            type: 'image',
+                            ...dataset,
+                            cardWidth: 'wide'
+                        }],
+                        direction: null,
+                        format: '',
+                        indent: 0,
+                        type: 'root',
+                        version: 1
+                    }
+                });
 
-            const editorState = editor.parseEditorState(serializedState);
-            editor.setEditorState(editorState);
+                const editorState = editor.parseEditorState(serializedState);
+                editor.setEditorState(editorState);
 
-            editor.getEditorState().read(() => {
-                try {
-                    const [imageNode] = $getRoot().getChildren() as ImageNode[];
+                editor.getEditorState().read(() => {
+                    try {
+                        const [imageNode] = $getRoot().getChildren() as ImageNode[];
 
-                    imageNode.src.should.equal('/content/images/2022/11/koenig-lexical.jpg');
-                    imageNode.width!.should.equal(3840);
-                    imageNode.height!.should.equal(2160);
-                    imageNode.title.should.equal('This is a title');
-                    imageNode.alt.should.equal('This is some alt text');
-                    imageNode.caption.should.equal('This is a <b>caption</b>');
-                    imageNode.cardWidth.should.equal('wide');
+                        expect(imageNode.src).toBe('/content/images/2022/11/koenig-lexical.jpg');
+                        expect(imageNode.width!).toBe(3840);
+                        expect(imageNode.height!).toBe(2160);
+                        expect(imageNode.title).toBe('This is a title');
+                        expect(imageNode.alt).toBe('This is some alt text');
+                        expect(imageNode.caption).toBe('This is a <b>caption</b>');
+                        expect(imageNode.cardWidth).toBe('wide');
 
-                    done();
-                } catch (e) {
-                    done(e);
-                }
+                        resolve();
+                    } catch (e) {
+                        reject(e);
+                    }
+                });
             });
         });
     });
@@ -377,10 +376,10 @@ describe('ImageNode', function () {
     describe('getTextContent', function () {
         it('returns contents', editorTest(function () {
             const node = $createImageNode({} as Record<string, unknown>);
-            node.getTextContent().should.equal('');
+            expect(node.getTextContent()).toBe('');
 
             node.caption = 'Test caption';
-            node.getTextContent().should.equal('Test caption\n\n');
+            expect(node.getTextContent()).toBe('Test caption\n\n');
         }));
     });
 });

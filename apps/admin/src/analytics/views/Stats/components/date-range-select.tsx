@@ -1,50 +1,18 @@
-import React, {useEffect} from 'react';
-import {LucideIcon} from '@tryghost/shade/utils';
-import {STATS_RANGES, STATS_RANGE_OPTIONS} from '@/analytics/utils/constants';
-import {Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue} from '@tryghost/shade/components';
+import DateRangeSelect from '@/shared/analytics/date-range-select';
+import React from 'react';
+import {type STATS_RANGES} from '@/shared/analytics/constants';
 import {useAnalytics} from '@/analytics/providers/analytics-context';
 
-interface DateRangeSelectProps {
+interface StatsDateRangeSelectProps {
     excludeRanges?: (keyof typeof STATS_RANGES)[];
 }
 
-const DateRangeSelect: React.FC<DateRangeSelectProps> = ({excludeRanges = []}) => {
+// Thin binding of the shared DateRangeSelect to the site-wide analytics
+// view-state, so the many call sites don't each have to read the context.
+const StatsDateRangeSelect: React.FC<StatsDateRangeSelectProps> = ({excludeRanges}) => {
     const {range, setRange} = useAnalytics();
 
-    const excludeValues = excludeRanges.map(key => STATS_RANGES[key].value);
-    const filteredOptions = STATS_RANGE_OPTIONS.filter(option => !excludeValues.includes(option.value)
-    );
-
-    // If the current range is excluded, switch to a sensible fallback
-    useEffect(() => {
-        if (excludeValues.includes(range) && filteredOptions.length > 0) {
-            // Prefer "Last 7 days" if available, otherwise use the first available option
-            const preferredFallback = filteredOptions.find(option => option.value === STATS_RANGES.last7Days.value);
-            const fallbackRange = preferredFallback ? preferredFallback.value : filteredOptions[0].value;
-            setRange(fallbackRange);
-        }
-    }, [range, excludeValues, filteredOptions, setRange]);
-
-    return (
-        <Select value={`${range}`} onValueChange={(value) => {
-            setRange(Number(value));
-        }}>
-            <SelectTrigger className='w-auto'>
-                <LucideIcon.Calendar className='mr-2' size={16} strokeWidth={1.5} />
-                <SelectValue placeholder="Select a period" />
-            </SelectTrigger>
-            <SelectContent align='end'>
-                <SelectGroup>
-                    <SelectLabel>Period</SelectLabel>
-                    {filteredOptions.map(option => (
-                        <SelectItem key={option.value} value={`${option.value}`}>
-                            {option.name}
-                        </SelectItem>
-                    ))}
-                </SelectGroup>
-            </SelectContent>
-        </Select>
-    );
+    return <DateRangeSelect excludeRanges={excludeRanges} range={range} onRangeChange={setRange} />;
 };
 
-export default DateRangeSelect;
+export default StatsDateRangeSelect;

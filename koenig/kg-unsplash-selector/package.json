@@ -4,7 +4,8 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/TryGhost/Koenig/tree/master/packages/kg-unsplash-selector"
+    "url": "git+https://github.com/TryGhost/Ghost.git",
+    "directory": "koenig/kg-unsplash-selector"
   },
   "author": "Ghost Foundation",
   "files": [
@@ -40,8 +41,9 @@
     "@vitejs/plugin-react": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "autoprefixer": "10.5.2",
-    "concurrently": "catalog:",
     "eslint": "catalog:",
+    "eslint-plugin-ghost": "catalog:",
+    "eslint-plugin-react": "catalog:",
     "eslint-plugin-react-hooks": "catalog:",
     "eslint-plugin-react-refresh": "catalog:",
     "eslint-plugin-tailwindcss": "catalog:tailwind3",
@@ -52,7 +54,6 @@
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
     "vite": "catalog:",
-    "vite-plugin-css-injected-by-js": "5.0.1",
     "vite-plugin-dts": "5.0.3",
     "vite-plugin-svgr": "5.2.0",
     "vitest": "catalog:"

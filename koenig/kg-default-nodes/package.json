@@ -1,7 +1,11 @@
 {
   "name": "@tryghost/kg-default-nodes",
   "version": "2.1.3",
-  "repository": "https://github.com/TryGhost/Koenig/tree/main/packages/kg-default-nodes",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TryGhost/Ghost.git",
+    "directory": "koenig/kg-default-nodes"
+  },
   "author": "Ghost Foundation",
   "license": "MIT",
   "engines": {
@@ -12,11 +16,13 @@
   "types": "build/esm/index.d.ts",
   "exports": {
     ".": {
+      "source": "./src/index.ts",
       "types": "./build/esm/index.d.ts",
       "import": "./build/esm/index.js",
       "require": "./build/cjs/index.js"
     },
     "./visibility": {
+      "source": "./src/visibility.ts",
       "types": "./build/esm/visibility.d.ts",
       "import": "./build/esm/visibility.js",
       "require": "./build/cjs/visibility.js"
@@ -26,9 +32,9 @@
     "dev": "tsc --watch --preserveWatchOutput",
     "clean": "rm -rf build",
     "build": "pnpm clean && tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json",
-    "pretest": "pnpm clean && tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json && tsc -p tsconfig.test.json",
-    "test:unit": "NODE_ENV=testing c8 --src src --all --check-coverage --reporter text --reporter cobertura mocha --exit --require tsx './test/**/*.test.ts'",
-    "test": "pnpm test:unit",
+    "test:unit": "NODE_ENV=testing vitest run --coverage",
+    "test:types": "tsc --noEmit",
+    "test": "pnpm test:types && pnpm test:unit",
     "lint:code": "eslint src/ --cache",
     "lint": "pnpm lint:code && pnpm lint:test",
     "lint:test": "eslint test/ --cache"
@@ -46,23 +52,16 @@
     "@lexical/headless": "0.13.1",
     "@lexical/html": "0.13.1",
     "@prettier/sync": "0.6.1",
-    "@types/jsdom": "28.0.3",
+    "@types/jsdom": "catalog:",
     "@types/lodash": "4.17.24",
     "@types/luxon": "3.7.2",
-    "@types/mocha": "10.0.10",
     "@types/node": "catalog:",
-    "@types/should": "13.0.0",
-    "@types/sinon": "21.0.1",
-    "c8": "catalog:",
-    "chai": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
     "html-minifier": "4.0.0",
-    "mocha": "11.7.6",
     "prettier": "3.9.4",
-    "should": "13.2.3",
-    "sinon": "catalog:",
-    "tsx": "catalog:",
     "typescript": "catalog:",
-    "typescript-eslint": "catalog:"
+    "typescript-eslint": "catalog:",
+    "vitest": "catalog:"
   },
   "dependencies": {
     "@lexical/clipboard": "0.13.1",

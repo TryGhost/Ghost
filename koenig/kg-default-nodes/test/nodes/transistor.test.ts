@@ -11,16 +11,16 @@ describe('TransistorNode', function () {
     let dataset: TransistorData;
     let exportOptions: ExportDOMOptions;
 
-    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
+    const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
         editor.update(() => {
             try {
                 testFn();
-                done();
+                resolve();
             } catch (e) {
-                done(e);
+                reject(e);
             }
         });
-    };
+    });
 
     beforeEach(function () {
         editor = createHeadlessEditor({nodes: editorNodes});
@@ -237,49 +237,51 @@ describe('TransistorNode', function () {
     });
 
     describe('importJSON', function () {
-        it('imports all data', function (done: (err?: unknown) => void) {
-            const serializedData = JSON.stringify({
-                root: {
-                    children: [{
-                        type: 'transistor',
-                        version: 1,
-                        accentColor: '#FF5500',
-                        backgroundColor: '#000000',
-                        visibility: {
-                            web: {
-                                nonMember: false,
-                                memberSegment: 'status:-free'
-                            },
-                            email: {
-                                memberSegment: 'status:-free'
+        it('imports all data', function () {
+            return new Promise<void>((resolve, reject) => {
+                const serializedData = JSON.stringify({
+                    root: {
+                        children: [{
+                            type: 'transistor',
+                            version: 1,
+                            accentColor: '#FF5500',
+                            backgroundColor: '#000000',
+                            visibility: {
+                                web: {
+                                    nonMember: false,
+                                    memberSegment: 'status:-free'
+                                },
+                                email: {
+                                    memberSegment: 'status:-free'
+                                }
                             }
-                        }
-                    }],
-                    direction: null,
-                    format: '',
-                    indent: 0,
-                    type: 'root',
-                    version: 1
-                }
-            });
+                        }],
+                        direction: null,
+                        format: '',
+                        indent: 0,
+                        type: 'root',
+                        version: 1
+                    }
+                });
 
-            const editorState = editor.parseEditorState(serializedData);
-            editor.setEditorState(editorState);
+                const editorState = editor.parseEditorState(serializedData);
+                editor.setEditorState(editorState);
 
-            editor.getEditorState().read(() => {
-                try {
-                    const [transistorNode] = $getRoot().getChildren() as TransistorNode[];
-                    assert.equal($isTransistorNode(transistorNode), true);
-                    assert.equal(transistorNode.accentColor, '#FF5500');
-                    assert.equal(transistorNode.backgroundColor, '#000000');
-                    const visibility = transistorNode.visibility as Record<string, Record<string, unknown>>;
-                    assert.equal(visibility.web.nonMember, false);
-                    assert.equal(visibility.web.memberSegment, 'status:-free');
+                editor.getEditorState().read(() => {
+                    try {
+                        const [transistorNode] = $getRoot().getChildren() as TransistorNode[];
+                        assert.equal($isTransistorNode(transistorNode), true);
+                        assert.equal(transistorNode.accentColor, '#FF5500');
+                        assert.equal(transistorNode.backgroundColor, '#000000');
+                        const visibility = transistorNode.visibility as Record<string, Record<string, unknown>>;
+                        assert.equal(visibility.web.nonMember, false);
+                        assert.equal(visibility.web.memberSegment, 'status:-free');
 
-                    done();
-                } catch (e) {
-                    done(e);
-                }
+                        resolve();
+                    } catch (e) {
+                        reject(e);
+                    }
+                });
             });
         });
     });

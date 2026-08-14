@@ -1,6 +1,6 @@
-import {ALL_AUDIENCES} from '@/analytics/utils/constants';
+import {ALL_AUDIENCES} from '@/shared/analytics/constants';
 import {formatQueryDate, getRangeDates} from '@tryghost/shade/app';
-import {getAudienceQueryParam} from '@/analytics/utils/audience';
+import {getAudienceQueryParam} from '@/shared/analytics/audience';
 import {useTopSourcesGrowth as useTopSourcesGrowthAPI} from '@tryghost/admin-x-framework/api/referrers';
 
 export const useTopSourcesGrowth = (range: number, orderBy: string = 'signups desc', limit: number = 50) => {

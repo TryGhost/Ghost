@@ -17,6 +17,8 @@ module.exports = async (event, model) => {
     let current = {};
     let previous = {};
 
+    const changed = model._changed ? Object.keys(model._changed) : [];
+
     if (Object.keys(model.attributes).length) {
         let frame = {options: {previous: false, context: {user: true}}};
 
@@ -45,7 +47,7 @@ module.exports = async (event, model) => {
         current = frame.response[docName][0];
     }
 
-    if (Object.keys(model._previousAttributes).length) {
+    if (changed.length && Object.keys(model._previousAttributes).length) {
         const frame = {options: {previous: true, context: {user: true}}};
 
         switch (docName) {
@@ -62,15 +64,14 @@ module.exports = async (event, model) => {
             .serializers
             .handle
             .output(model, {docName: docName, method: 'read'}, api.serializers.output, frame);
-        previous = frame.response[docName][0];
+        previous = _.pick(frame.response[docName][0], changed);
     }
 
-    const changed = model._changed ? Object.keys(model._changed) : [];
 
     const payload = {
         [docName.replace(/s$/, '')]: {
-            current: current,
-            previous: _.pick(previous, changed)
+            current,
+            previous
         }
     };
 

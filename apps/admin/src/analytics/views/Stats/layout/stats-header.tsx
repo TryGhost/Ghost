@@ -3,7 +3,7 @@ import {H1} from '@tryghost/shade/primitives';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {Navbar, NavbarNavigation, PageMenu, PageMenuItem} from '@tryghost/shade/components';
 import {useActiveVisitors, useAppContext, useLocation, useNavigate} from '@tryghost/admin-x-framework';
-import {useAnalyticsData} from '@/analytics/hooks/use-analytics-data';
+import {useAnalyticsData} from '@/shared/analytics/use-analytics-data';
 
 interface StatsHeaderProps {
     children?: React.ReactNode;

@@ -1,5 +1,4 @@
-import 'should';
-import {createDocument, dom, html} from '../test-utils/index.js';
+import {assertPrettifiesTo, createDocument, dom, html} from '../test-utils/index.js';
 import {createHeadlessEditor} from '@lexical/headless';
 import {$getRoot, type LexicalEditor} from 'lexical';
 import {HtmlNode, $createHtmlNode, $isHtmlNode, type ExportDOMOptions, utils} from '../../src/index.js';
@@ -16,16 +15,16 @@ describe('HtmlNode', function () {
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
+    const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
         editor.update(() => {
             try {
                 testFn();
-                done();
+                resolve();
             } catch (e) {
-                done(e);
+                reject(e);
             }
         });
-    };
+    });
 
     beforeEach(function () {
         editor = createHeadlessEditor({nodes: editorNodes, onError: (e: Error) => {
@@ -43,29 +42,29 @@ describe('HtmlNode', function () {
 
     it('matches node with $isImageNode', editorTest(function () {
         const htmlNode = $createHtmlNode(dataset);
-        $isHtmlNode(htmlNode).should.be.true();
+        expect($isHtmlNode(htmlNode)).toBe(true);
     }));
 
     describe('data access', function () {
         it('has getters for all properties', editorTest(function () {
             const htmlNode = $createHtmlNode(dataset);
 
-            htmlNode.html.should.equal('<p>Paragraph with:</p><ul><li>list</li><li>items</li></ul>');
+            expect(htmlNode.html).toBe('<p>Paragraph with:</p><ul><li>list</li><li>items</li></ul>');
         }));
 
         it('has setters for all properties', editorTest(function () {
             const htmlNode = $createHtmlNode(dataset);
 
-            htmlNode.html.should.equal('<p>Paragraph with:</p><ul><li>list</li><li>items</li></ul>');
+            expect(htmlNode.html).toBe('<p>Paragraph with:</p><ul><li>list</li><li>items</li></ul>');
             htmlNode.html = '<p>Paragraph 1</p><p>Paragraph 2</p>';
-            htmlNode.html.should.equal('<p>Paragraph 1</p><p>Paragraph 2</p>');
+            expect(htmlNode.html).toBe('<p>Paragraph 1</p><p>Paragraph 2</p>');
         }));
 
         it('has getDataset() convenience method', editorTest(function () {
             const htmlNode = $createHtmlNode(dataset);
             const htmlNodeDataset = htmlNode.getDataset();
 
-            htmlNodeDataset.should.deepEqual({
+            expect(htmlNodeDataset).toEqual({
                 ...dataset,
                 visibility: {
                     web: {
@@ -82,9 +81,9 @@ describe('HtmlNode', function () {
         it('has isEmpty() convenience method', editorTest(function () {
             const htmlNode = $createHtmlNode(dataset);
 
-            htmlNode.isEmpty().should.be.false();
+            expect(htmlNode.isEmpty()).toBe(false);
             htmlNode.html = '';
-            htmlNode.isEmpty().should.be.true();
+            expect(htmlNode.isEmpty()).toBe(true);
         }));
     });
 
@@ -92,15 +91,15 @@ describe('HtmlNode', function () {
         it('returns true if markdown is empty', editorTest(function () {
             const htmlNode = $createHtmlNode(dataset);
 
-            htmlNode.isEmpty().should.be.false();
+            expect(htmlNode.isEmpty()).toBe(false);
             htmlNode.html = '';
-            htmlNode.isEmpty().should.be.true();
+            expect(htmlNode.isEmpty()).toBe(true);
         }));
     });
 
     describe('getType', function () {
         it('returns the correct node type', editorTest(function () {
-            HtmlNode.getType().should.equal('html');
+            expect(HtmlNode.getType()).toBe('html');
         }));
     });
 
@@ -108,7 +107,7 @@ describe('HtmlNode', function () {
         it('returns the correct default values', editorTest(function () {
             const defaults = HtmlNode.getPropertyDefaults();
 
-            defaults.should.deepEqual({
+            expect(defaults).toEqual({
                 html: '',
                 visibility: {
                     web: {
@@ -130,13 +129,13 @@ describe('HtmlNode', function () {
             const clone = HtmlNode.clone(htmlNode) as HtmlNode;
             const cloneDataset = clone.getDataset();
 
-            cloneDataset.should.deepEqual({...htmlNodeDataset});
+            expect(cloneDataset).toEqual({...htmlNodeDataset});
         }));
     });
 
     describe('urlTransformMap', function () {
         it('contains the expected URL mapping', editorTest(function () {
-            HtmlNode.urlTransformMap.should.deepEqual({
+            expect(HtmlNode.urlTransformMap).toEqual({
                 html: 'html'
             });
         }));
@@ -145,7 +144,7 @@ describe('HtmlNode', function () {
     describe('hasEditMode', function () {
         it('returns true', editorTest(function () {
             const htmlNode = $createHtmlNode(dataset);
-            htmlNode.hasEditMode().should.be.true();
+            expect(htmlNode.hasEditMode()).toBe(true);
         }));
     });
 
@@ -153,9 +152,9 @@ describe('HtmlNode', function () {
         it('creates a html card', editorTest(function () {
             const htmlNode = $createHtmlNode(dataset);
             const result = htmlNode.exportDOM(editor, exportOptions);
-            result.type.should.equal('value');
+            expect(result.type).toBe('value');
             const element = result.element as HTMLTextAreaElement;
-            element.value.should.prettifyTo(html`
+            assertPrettifiesTo(element.value, html`
                 <!--kg-card-begin: html-->
                 <p>Paragraph with:</p>
                 <ul>
@@ -169,9 +168,9 @@ describe('HtmlNode', function () {
         it('creates a html card for email', editorTest(function () {
             const htmlNode = $createHtmlNode(dataset);
             const result = htmlNode.exportDOM(editor, {...exportOptions, target: 'email'});
-            result.type.should.equal('value');
+            expect(result.type).toBe('value');
             const element = result.element as HTMLTextAreaElement;
-            element.value.should.prettifyTo(html`
+            assertPrettifiesTo(element.value, html`
                 <!--kg-card-begin: html-->
                 <p>Paragraph with:</p>
                 <ul>
@@ -189,8 +188,8 @@ describe('HtmlNode', function () {
                 <span><!--kg-card-begin: html--><p>here's html</p><!--kg-card-end: html--></span>
             `);
             const nodes = $generateNodesFromDOM(editor, document);
-            nodes.length.should.equal(1);
-            nodes[0].should.be.instanceof(HtmlNode);
+            expect(nodes.length).toBe(1);
+            expect(nodes[0]).toBeInstanceOf(HtmlNode);
         }));
 
         it('removes the html end comment from the DOM after parsing', editorTest(function () {
@@ -204,7 +203,7 @@ describe('HtmlNode', function () {
                 return node.nodeType === 8 && node.nodeValue?.trim() === 'kg-card-end: html';
             });
 
-            hasEndComment.should.be.false();
+            expect(hasEndComment).toBe(false);
         }));
 
         it('does not consume sibling nodes when the html end comment is missing', editorTest(function () {
@@ -215,10 +214,10 @@ describe('HtmlNode', function () {
             const nodes = $generateNodesFromDOM(editor, document) as HtmlNode[];
             const htmlNodes = nodes.filter(node => node instanceof HtmlNode);
 
-            htmlNodes.length.should.equal(1);
-            htmlNodes[0].html.should.equal('');
-            document.querySelector('p')?.outerHTML.should.equal('<p>here\'s html</p>');
-            document.querySelector('div')?.outerHTML.should.equal('<div>keep me</div>');
+            expect(htmlNodes.length).toBe(1);
+            expect(htmlNodes[0].html).toBe('');
+            expect(document.querySelector('p')?.outerHTML).toBe('<p>here\'s html</p>');
+            expect(document.querySelector('div')?.outerHTML).toBe('<div>keep me</div>');
         }));
 
         it('parses html table', editorTest(function () {
@@ -226,8 +225,8 @@ describe('HtmlNode', function () {
                 <table style="float:right"><tr><th>Month</th><th>Savings</th></tr><tr><td>January</td><td>$100</td></tr><tr><td>February</td><td>$80</td></tr></table>
             `);
             const nodes = $generateNodesFromDOM(editor, document);
-            nodes.length.should.equal(1);
-            nodes[0].should.be.instanceof(HtmlNode);
+            expect(nodes.length).toBe(1);
+            expect(nodes[0]).toBeInstanceOf(HtmlNode);
         }));
 
         it('parses table nested in another table', editorTest(function () {
@@ -235,8 +234,8 @@ describe('HtmlNode', function () {
                 <table id="table1"><tr><th>title1</th><th>title2</th><th>title3</th></tr><tr><td id="nested"><table id="table2"><tr><td>cell1</td><td>cell2</td><td>cell3</td></tr></table></td><td>cell2</td><td>cell3</td></tr><tr><td>cell4</td><td>cell5</td><td>cell6</td></tr></table>
             `);
             const nodes = $generateNodesFromDOM(editor, document);
-            nodes.length.should.equal(1);
-            nodes[0].should.be.instanceof(HtmlNode);
+            expect(nodes.length).toBe(1);
+            expect(nodes[0]).toBeInstanceOf(HtmlNode);
         }));
     });
 
@@ -245,7 +244,7 @@ describe('HtmlNode', function () {
             const htmlNode = $createHtmlNode(dataset);
             const json = htmlNode.exportJSON();
 
-            json.should.deepEqual({
+            expect(json).toEqual({
                 type: 'html',
                 version: 1,
                 html: '<p>Paragraph with:</p><ul><li>list</li><li>items</li></ul>',
@@ -263,79 +262,83 @@ describe('HtmlNode', function () {
     });
 
     describe('importJSON', function () {
-        it('imports all data', function (done: (err?: unknown) => void) {
-            const serializedState = JSON.stringify({
-                root: {
-                    children: [{
-                        type: 'html',
-                        ...dataset
-                    }],
-                    direction: null,
-                    format: '',
-                    indent: 0,
-                    type: 'root',
-                    version: 1
-                }
-            });
+        it('imports all data', function () {
+            return new Promise<void>((resolve, reject) => {
+                const serializedState = JSON.stringify({
+                    root: {
+                        children: [{
+                            type: 'html',
+                            ...dataset
+                        }],
+                        direction: null,
+                        format: '',
+                        indent: 0,
+                        type: 'root',
+                        version: 1
+                    }
+                });
 
-            const editorState = editor.parseEditorState(serializedState);
-            editor.setEditorState(editorState);
+                const editorState = editor.parseEditorState(serializedState);
+                editor.setEditorState(editorState);
 
-            editor.getEditorState().read(() => {
-                try {
-                    const [htmlNode] = $getRoot().getChildren() as HtmlNode[];
+                editor.getEditorState().read(() => {
+                    try {
+                        const [htmlNode] = $getRoot().getChildren() as HtmlNode[];
 
-                    htmlNode.html.should.equal('<p>Paragraph with:</p><ul><li>list</li><li>items</li></ul>');
+                        expect(htmlNode.html).toBe('<p>Paragraph with:</p><ul><li>list</li><li>items</li></ul>');
 
-                    done();
-                } catch (e) {
-                    done(e);
-                }
+                        resolve();
+                    } catch (e) {
+                        reject(e);
+                    }
+                });
             });
         });
 
-        it('updates old visibility format to new format', function (done: (err?: unknown) => void) {
-            const serializedState = JSON.stringify({
-                root: {
-                    children: [{
-                        type: 'html',
-                        html: '<p>Paragraph with:</p><ul><li>list</li><li>items</li></ul>',
-                        visibility: {
+        it('updates old visibility format to new format', function () {
+            return new Promise<void>((resolve, reject) => {
+                const serializedState = JSON.stringify({
+                    root: {
+                        children: [{
+                            type: 'html',
+                            html: '<p>Paragraph with:</p><ul><li>list</li><li>items</li></ul>',
+                            visibility: {
+                                showOnEmail: true,
+                                showOnWeb: true
+                            }
+                        }],
+                        direction: null,
+                        format: '',
+                        indent: 0,
+                        type: 'root',
+                        version: 1
+                    }
+                });
+
+                const editorState = editor.parseEditorState(serializedState);
+                editor.setEditorState(editorState);
+
+                editor.getEditorState().read(() => {
+                    try {
+                        const [htmlNode] = $getRoot().getChildren() as HtmlNode[];
+
+                        expect(htmlNode.visibility as Record<string, unknown>).toEqual({
+                            showOnWeb: true,
                             showOnEmail: true,
-                            showOnWeb: true
-                        }
-                    }],
-                    direction: null,
-                    format: '',
-                    indent: 0,
-                    type: 'root',
-                    version: 1
-                }
-            });
+                            web: {
+                                nonMember: true,
+                                memberSegment: 'status:free,status:-free'
+                            },
+                            email: {
+                                memberSegment: 'status:free,status:-free'
+                            }
+                        });
 
-            const editorState = editor.parseEditorState(serializedState);
-            editor.setEditorState(editorState);
-
-            editor.getEditorState().read(() => {
-                try {
-                    const [htmlNode] = $getRoot().getChildren() as HtmlNode[];
-
-                    (htmlNode.visibility as Record<string, unknown>).should.deepEqual({
-                        showOnWeb: true,
-                        showOnEmail: true,
-                        web: {
-                            nonMember: true,
-                            memberSegment: 'status:free,status:-free'
-                        },
-                        email: {
-                            memberSegment: 'status:free,status:-free'
-                        }
-                    });
-
-                    done();
-                } catch (e) {
-                    done(e);
-                }
+                        resolve();
+                    } catch (e) {
+                        reject(e);
+                    }
+                });
             });
         });
     });
@@ -343,11 +346,11 @@ describe('HtmlNode', function () {
     describe('getTextContent', function () {
         it('returns contents', editorTest(function () {
             const node = $createHtmlNode();
-            node.getTextContent().should.equal('');
+            expect(node.getTextContent()).toBe('');
 
             node.html = '<script>const test = true;</script>';
 
-            node.getTextContent().should.equal('<script>const test = true;</script>\n\n');
+            expect(node.getTextContent()).toBe('<script>const test = true;</script>\n\n');
         }));
     });
 
@@ -355,7 +358,7 @@ describe('HtmlNode', function () {
         function testIsVisibilityActive(expected: boolean, visibility: Record<string, unknown>) {
             const node = $createHtmlNode();
             node.visibility = visibility;
-            node.getIsVisibilityActive().should.equal(expected);
+            expect(node.getIsVisibilityActive()).toBe(expected);
         }
 
         describe('with old visibility format', function () {

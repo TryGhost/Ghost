@@ -1,7 +1,11 @@
 {
   "name": "@tryghost/kg-lexical-html-renderer",
   "version": "1.4.3",
-  "repository": "https://github.com/TryGhost/Koenig/tree/main/packages/kg-lexical-html-renderer",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TryGhost/Ghost.git",
+    "directory": "koenig/kg-lexical-html-renderer"
+  },
   "author": "Ghost Foundation",
   "license": "MIT",
   "main": "build/cjs/index.js",
@@ -9,6 +13,7 @@
   "types": "build/esm/index.d.ts",
   "exports": {
     ".": {
+      "source": "./src/index.ts",
       "types": "./build/esm/index.d.ts",
       "import": "./build/esm/index.js",
       "require": "./build/cjs/index.js"
@@ -18,9 +23,8 @@
     "dev": "tsc --watch --preserveWatchOutput --sourceMap",
     "clean": "rm -rf build tsconfig.tsbuildinfo",
     "build": "pnpm clean && tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json",
-    "pretest": "pnpm clean && tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json && tsc -p tsconfig.test.json",
-    "test": "pnpm test:unit && pnpm test:types",
-    "test:unit": "NODE_ENV=testing c8 --src src --all --check-coverage --reporter text --reporter cobertura mocha --require tsx './test/**/*.test.ts'",
+    "test": "pnpm test:types && pnpm test:unit",
+    "test:unit": "NODE_ENV=testing vitest run --coverage",
     "test:types": "tsc --noEmit",
     "lint": "eslint",
     "posttest": "pnpm lint"
@@ -35,19 +39,13 @@
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
-    "@types/jsdom": "28.0.3",
-    "@types/mocha": "10.0.10",
-    "@types/should": "13.0.0",
-    "@types/sinon": "21.0.1",
-    "c8": "catalog:",
+    "@types/jsdom": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
     "jsdom": "catalog:",
-    "mocha": "11.7.6",
     "prettier": "3.9.4",
-    "should": "13.2.3",
-    "sinon": "catalog:",
-    "tsx": "catalog:",
     "typescript": "catalog:",
-    "typescript-eslint": "catalog:"
+    "typescript-eslint": "catalog:",
+    "vitest": "catalog:"
   },
   "dependencies": {
     "@lexical/clipboard": "0.13.1",

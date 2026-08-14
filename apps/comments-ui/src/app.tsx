@@ -17,6 +17,12 @@ type AppProps = {
     initialCommentId: string | null;
 };
 
+type AdminUser = {
+    roles: {
+        name: string;
+    }[];
+};
+
 const ALLOWED_MODERATORS = ['Owner', 'Administrator', 'Super Editor'];
 const NET_SCORE_ORDER = 'count__net_score desc, created_at desc';
 
@@ -129,7 +135,7 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId}) => {
                 adminUrl: options.adminUrl
             });
 
-            let admin = null;
+            let admin: AdminUser | null = null;
             try {
                 admin = await adminApi.getUser();
 

@@ -1,6 +1,5 @@
-import 'should';
 import {createHeadlessEditor} from '@lexical/headless';
-import {createDocument, dom, html} from '../test-utils/index.js';
+import {assertPrettifiesTo, createDocument, dom, html} from '../test-utils/index.js';
 import {$getRoot} from 'lexical';
 import type {LexicalEditor} from 'lexical';
 import {SignupNode, $createSignupNode, $isSignupNode, $createPaywallNode, type SignupData} from '../../src/index.js';
@@ -13,16 +12,16 @@ describe('SignupNode', function () {
     let dataset: SignupData;
     let exportOptions: Record<string, unknown>;
 
-    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
+    const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
         editor.update(() => {
             try {
                 testFn();
-                done();
+                resolve();
             } catch (e) {
-                done(e);
+                reject(e);
             }
         });
-    };
+    });
 
     beforeEach(function () {
         editor = createHeadlessEditor({nodes: editorNodes});
@@ -52,7 +51,7 @@ describe('SignupNode', function () {
 
     it('matches node with $isSignupNode', editorTest(function () {
         const signupNode = $createSignupNode(dataset);
-        $isSignupNode(signupNode).should.be.true();
+        expect($isSignupNode(signupNode)).toBe(true);
     }));
 
     describe('clone', function () {
@@ -61,14 +60,14 @@ describe('SignupNode', function () {
             const signupNode = $createSignupNode(dataset);
             const clonedSignupNode = SignupNode.clone(signupNode) as SignupNode;
             const cloneDataset = clonedSignupNode.getDataset();
-            cloneDataset.should.deepEqual(dataset);
+            expect(cloneDataset).toEqual(dataset);
         }));
     });
 
     describe('hasEditMode', function () {
         it('returns true', editorTest(function () {
             const signupNode = $createSignupNode(dataset);
-            signupNode.hasEditMode().should.be.true();
+            expect(signupNode.hasEditMode()).toBe(true);
         }));
     });
 
@@ -76,21 +75,21 @@ describe('SignupNode', function () {
         it('has getters for all properties', editorTest(function () {
             dataset.backgroundColor = '#000000';
             const signupNode = $createSignupNode(dataset);
-            signupNode.alignment.should.equal(dataset.alignment);
-            signupNode.backgroundColor.should.equal(dataset.backgroundColor);
-            signupNode.backgroundImageSrc.should.equal(dataset.backgroundImageSrc);
-            signupNode.backgroundSize.should.equal(dataset.backgroundSize);
-            signupNode.textColor.should.equal(dataset.textColor);
-            signupNode.buttonColor.should.equal(dataset.buttonColor);
-            signupNode.buttonText.should.equal(dataset.buttonText);
-            signupNode.buttonTextColor.should.equal(dataset.buttonTextColor);
-            signupNode.disclaimer.should.equal(dataset.disclaimer);
-            signupNode.header.should.equal(dataset.header);
-            signupNode.labels.should.deepEqual(dataset.labels);
-            signupNode.layout.should.equal(dataset.layout);
-            signupNode.subheader.should.equal(dataset.subheader);
-            signupNode.successMessage.should.equal(dataset.successMessage);
-            signupNode.swapped.should.equal(dataset.swapped);
+            expect(signupNode.alignment).toBe(dataset.alignment);
+            expect(signupNode.backgroundColor).toBe(dataset.backgroundColor);
+            expect(signupNode.backgroundImageSrc).toBe(dataset.backgroundImageSrc);
+            expect(signupNode.backgroundSize).toBe(dataset.backgroundSize);
+            expect(signupNode.textColor).toBe(dataset.textColor);
+            expect(signupNode.buttonColor).toBe(dataset.buttonColor);
+            expect(signupNode.buttonText).toBe(dataset.buttonText);
+            expect(signupNode.buttonTextColor).toBe(dataset.buttonTextColor);
+            expect(signupNode.disclaimer).toBe(dataset.disclaimer);
+            expect(signupNode.header).toBe(dataset.header);
+            expect(signupNode.labels).toEqual(dataset.labels);
+            expect(signupNode.layout).toBe(dataset.layout);
+            expect(signupNode.subheader).toBe(dataset.subheader);
+            expect(signupNode.successMessage).toBe(dataset.successMessage);
+            expect(signupNode.swapped).toBe(dataset.swapped);
         }));
 
         it('has setters for all properties', editorTest(function () {
@@ -117,7 +116,7 @@ describe('SignupNode', function () {
             it('can set multiple labels at once', editorTest(function () {
                 const node = $createSignupNode(dataset);
                 node.setLabels(['new label 1', 'new label 2']);
-                node.labels.should.deepEqual(['new label 1', 'new label 2']);
+                expect(node.labels).toEqual(['new label 1', 'new label 2']);
             }));
 
             it('clones labels passed to the constructor', editorTest(function () {
@@ -125,7 +124,7 @@ describe('SignupNode', function () {
                 const node = $createSignupNode({...dataset, labels});
 
                 labels.push('label 3');
-                node.labels.should.deepEqual(['label 1', 'label 2']);
+                expect(node.labels).toEqual(['label 1', 'label 2']);
             }));
 
             it('clones labels passed to setLabels', editorTest(function () {
@@ -135,7 +134,7 @@ describe('SignupNode', function () {
                 node.setLabels(labels);
                 labels.push('new label 3');
 
-                node.labels.should.deepEqual(['new label 1', 'new label 2']);
+                expect(node.labels).toEqual(['new label 1', 'new label 2']);
             }));
 
             it('clones labels returned from the getter', editorTest(function () {
@@ -144,35 +143,35 @@ describe('SignupNode', function () {
 
                 labels.push('new label 3');
 
-                node.labels.should.deepEqual(['label 1', 'label 2']);
+                expect(node.labels).toEqual(['label 1', 'label 2']);
             }));
 
             it('only accepts an array of strings for setLabels', editorTest(function () {
                 const node = $createSignupNode(dataset);
-                (() => node.setLabels('label' as unknown as string[])).should.throwError();
-                (() => node.setLabels(['label 1', 2 as unknown as string])).should.throwError();
+                expect(() => node.setLabels('label' as unknown as string[])).toThrow();
+                expect(() => node.setLabels(['label 1', 2 as unknown as string])).toThrow();
             }));
 
             it('can add one label to the existing array', editorTest(function () {
                 const node = $createSignupNode(dataset);
                 node.addLabel('new label 3');
-                node.labels.should.deepEqual(['label 1', 'label 2', 'new label 3']);
+                expect(node.labels).toEqual(['label 1', 'label 2', 'new label 3']);
             }));
 
             it('only accepts strings for addLabel', editorTest(function () {
                 const node = $createSignupNode(dataset);
-                (() => node.addLabel(2 as unknown as string)).should.throwError();
+                expect(() => node.addLabel(2 as unknown as string)).toThrow();
             }));
 
             it('can remove one label from the existing array', editorTest(function () {
                 const node = $createSignupNode(dataset);
                 node.removeLabel('label 2');
-                node.labels.should.deepEqual(['label 1']);
+                expect(node.labels).toEqual(['label 1']);
             }));
 
             it('only accepts strings for removeLabel', editorTest(function () {
                 const node = $createSignupNode(dataset);
-                (() => node.removeLabel(2 as unknown as string)).should.throwError();
+                expect(() => node.removeLabel(2 as unknown as string)).toThrow();
             }));
         });
 
@@ -180,7 +179,7 @@ describe('SignupNode', function () {
             dataset.backgroundColor = '#000000';
             const signupNode = $createSignupNode(dataset);
             const nodeData = signupNode.getDataset();
-            nodeData.should.deepEqual(dataset);
+            expect(nodeData).toEqual(dataset);
         }));
     });
 
@@ -207,7 +206,7 @@ describe('SignupNode', function () {
             const signupNode = $createSignupNode(dataset);
             const result = signupNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
-            element.outerHTML.should.prettifyTo(html`
+            assertPrettifiesTo(element.outerHTML, html`
                 <div class="kg-card kg-signup-card kg-width-regular" data-lexical-signup-form=""  style="display: none;">
                     <picture><img class="kg-signup-card-image" src="https://example.com/image.jpg" alt=""/></picture>
                     <div class="kg-signup-card-content">
@@ -241,7 +240,7 @@ describe('SignupNode', function () {
             const signupNode = $createSignupNode(dataset);
             const result = signupNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
-            element.outerHTML.should.prettifyTo(html`
+            assertPrettifiesTo(element.outerHTML, html`
                 <div class="kg-card kg-signup-card kg-width-regular" data-lexical-signup-form="" style="background-color: transparent; display:none">
                 <div class="kg-signup-card-content">
                     <div class="kg-signup-card-text kg-align-center">
@@ -272,7 +271,7 @@ describe('SignupNode', function () {
             const signupNode = $createSignupNode(dataset);
             const result = signupNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
-            element.outerHTML.should.equal('<div></div>');
+            expect(element.outerHTML).toBe('<div></div>');
         }));
     });
     describe('importDOM', function () {
@@ -285,7 +284,7 @@ describe('SignupNode', function () {
 
             const document = createDocument(element.outerHTML);
             const nodes = $generateNodesFromDOM(editor, document);
-            nodes.length.should.equal(1);
+            expect(nodes.length).toBe(1);
         }));
 
         it('parses split layout correctly', editorTest(function () {
@@ -297,7 +296,7 @@ describe('SignupNode', function () {
 
             const document = createDocument(element.outerHTML);
             const nodes = $generateNodesFromDOM(editor, document);
-            nodes.length.should.equal(1);
+            expect(nodes.length).toBe(1);
         }));
 
         it('parses split and swapped correctly', editorTest(function () {
@@ -308,7 +307,7 @@ describe('SignupNode', function () {
             const element = result.element as HTMLElement;
             const document = createDocument(element.outerHTML);
             const nodes = $generateNodesFromDOM(editor, document);
-            nodes.length.should.equal(1);
+            expect(nodes.length).toBe(1);
         }));
 
         it('parses background size contain correctly', editorTest(function () {
@@ -319,7 +318,7 @@ describe('SignupNode', function () {
             const element = result.element as HTMLElement;
             const document = createDocument(element.outerHTML);
             const nodes = $generateNodesFromDOM(editor, document);
-            nodes.length.should.equal(1);
+            expect(nodes.length).toBe(1);
         }));
 
         it('parses background size cover correctly', editorTest(function () {
@@ -330,7 +329,7 @@ describe('SignupNode', function () {
             const element = result.element as HTMLElement;
             const document = createDocument(element.outerHTML);
             const nodes = $generateNodesFromDOM(editor, document);
-            nodes.length.should.equal(1);
+            expect(nodes.length).toBe(1);
         }));
 
         it('parses with empty elements removed', editorTest(function () {
@@ -345,7 +344,7 @@ describe('SignupNode', function () {
 
             const document = createDocument(element.outerHTML);
             const nodes = $generateNodesFromDOM(editor, document);
-            nodes.length.should.equal(1);
+            expect(nodes.length).toBe(1);
         }));
 
         it('parses without image', editorTest(function () {
@@ -359,7 +358,7 @@ describe('SignupNode', function () {
 
             const document = createDocument(element.outerHTML);
             const nodes = $generateNodesFromDOM(editor, document);
-            nodes.length.should.equal(1);
+            expect(nodes.length).toBe(1);
         }));
 
         it('parses with accent button and background', editorTest(function () {
@@ -373,7 +372,7 @@ describe('SignupNode', function () {
 
             const document = createDocument(element.outerHTML);
             const nodes = $generateNodesFromDOM(editor, document);
-            nodes.length.should.equal(1);
+            expect(nodes.length).toBe(1);
         }));
 
         it('parses when data-lexical-signup-form has a non-empty value', editorTest(function () {
@@ -403,8 +402,8 @@ describe('SignupNode', function () {
             `);
 
             const nodes = $generateNodesFromDOM(editor, document);
-            nodes.length.should.equal(1);
-            $isSignupNode(nodes[0]).should.be.true();
+            expect(nodes.length).toBe(1);
+            expect($isSignupNode(nodes[0])).toBe(true);
         }));
     });
 
@@ -413,7 +412,7 @@ describe('SignupNode', function () {
             const signupNode = $createSignupNode(dataset);
             const json = signupNode.exportJSON();
 
-            json.should.deepEqual({
+            expect(json).toEqual({
                 type: 'signup',
                 version: 1,
                 alignment: dataset.alignment,
@@ -436,33 +435,35 @@ describe('SignupNode', function () {
     });
 
     describe('importJSON', function () {
-        it('imports all data', function (done) {
-            const serializedState = JSON.stringify({
-                root: {
-                    children: [{
-                        type: 'signup',
-                        ...dataset
-                    }],
-                    direction: null,
-                    format: '',
-                    indent: 0,
-                    type: 'root',
-                    version: 1
-                }
-            });
+        it('imports all data', function () {
+            return new Promise<void>((resolve, reject) => {
+                const serializedState = JSON.stringify({
+                    root: {
+                        children: [{
+                            type: 'signup',
+                            ...dataset
+                        }],
+                        direction: null,
+                        format: '',
+                        indent: 0,
+                        type: 'root',
+                        version: 1
+                    }
+                });
 
-            const editorState = editor.parseEditorState(serializedState);
-            editor.setEditorState(editorState);
+                const editorState = editor.parseEditorState(serializedState);
+                editor.setEditorState(editorState);
 
-            editor.getEditorState().read(() => {
-                try {
-                    const [signupNode] = $getRoot().getChildren();
+                editor.getEditorState().read(() => {
+                    try {
+                        const [signupNode] = $getRoot().getChildren();
 
-                    $isSignupNode(signupNode).should.be.true();
-                    done();
-                } catch (e) {
-                    done(e);
-                }
+                        expect($isSignupNode(signupNode)).toBe(true);
+                        resolve();
+                    } catch (e) {
+                        reject(e);
+                    }
+                });
             });
         });
     });
@@ -472,7 +473,7 @@ describe('SignupNode', function () {
             const node = $createPaywallNode();
 
             // signup nodes don't have text content
-            node.getTextContent().should.equal('');
+            expect(node.getTextContent()).toBe('');
         }));
     });
 });

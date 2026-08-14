@@ -746,7 +746,6 @@ test.describe('Member emails settings', async () => {
             await expect(modal).toBeVisible();
 
             const editor = modal.locator('[data-kg="editor"] div[contenteditable="true"]').first();
-            await editor.click({timeout: 5000});
             await editor.fill('');
             await expect(editor).toBeEmpty();
             await openSlashMenu(page, 'bookmark');
@@ -756,7 +755,10 @@ test.describe('Member emails settings', async () => {
             await expect(bookmarkUrlInput).toBeVisible({timeout: 10000});
             await bookmarkUrlInput.fill('https://ghost.org/');
             await expect(bookmarkUrlInput).toHaveValue('https://ghost.org/');
-            await bookmarkUrlInput.press('Enter');
+
+            const urlSuggestion = modal.getByTestId('bookmark-url-listOption').filter({hasText: 'https://ghost.org/'});
+            await expect(urlSuggestion).toBeVisible();
+            await urlSuggestion.click();
 
             await expect.poll(() => lastApiRequests.fetchOembed?.url || '').toContain('type=bookmark');
             await expect(modal.getByTestId('bookmark-title')).toContainText('Ghost: The Creator Economy Platform');

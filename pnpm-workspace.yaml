@@ -32,6 +32,7 @@ allowBuilds:
 
 catalog:
   '@ebay/nice-modal-react': 1.2.13
+  '@eslint/compat': 2.1.0
   '@eslint/js': 9.39.4
   '@faker-js/faker': 10.5.0
   '@playwright/test': 1.61.1
@@ -51,6 +52,7 @@ catalog:
   '@tailwindcss/postcss': 4.2.2
   '@tailwindcss/vite': 4.2.2
   '@tanstack/react-query': 4.44.0
+  '@tanstack/react-virtual': 3.14.5
   '@testing-library/jest-dom': 6.9.1
   '@testing-library/react': 14.3.1
   '@tryghost/api-framework': 3.2.4
@@ -69,6 +71,7 @@ catalog:
   '@types/express': 4.17.25
   '@types/html-minifier': ^4.0.6
   '@types/jest': 29.5.14
+  '@types/jsdom': 28.0.3
   '@types/node': 22.20.0
   '@types/react': 18.3.31
   '@types/react-dom': 18.3.7
@@ -87,6 +90,7 @@ catalog:
   concurrently: 10.0.3
   country-flag-icons: 1.6.20
   cross-fetch: 4.1.0
+  dependency-cruiser: ^18.0.0
   dequal: 2.0.3
   dompurify: 3.4.11
   dotenv: 17.4.2
@@ -119,6 +123,7 @@ catalog:
   storybook: 10.4.6
   supertest: 7.2.2
   tailwindcss: 4.2.2
+  temporal-polyfill: 0.3.2
   tldts: ^7.4.4
   tsx: 4.23.0
   tw-animate-css: 1.4.0

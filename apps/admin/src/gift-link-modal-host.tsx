@@ -5,7 +5,7 @@ import type { OpenGiftLinkModalEvent } from "./ember-bridge";
 // The gift-link modal is React-owned but triggered from the Ember posts/pages
 // list. It's only needed once someone opens it, so lazy-load it rather than
 // pulling the posts bundle into every list view.
-const GiftLinkModal = lazy(() => import("@tryghost/posts/gift-link-modal"));
+const GiftLinkModal = lazy(() => import("./posts/analytics/modals/gift-link-modal"));
 
 /**
  * Bridges the Ember posts/pages context menu to the React gift-link modal.

@@ -1,10 +1,8 @@
-import {type RouteObject, Outlet, lazyComponent, redirect} from "@tryghost/admin-x-framework";
+import {type AdminRouteHandle, type RouteObject, Outlet, lazyComponent, redirect} from "@tryghost/admin-x-framework";
 
 // ActivityPub
 import { FeatureFlagsProvider, routes as activityPubRoutes } from "@tryghost/activitypub/api";
 
-// Posts (aka tags and post analytics)
-import { PostsAppContextProvider, routes as postRoutes } from "@tryghost/posts/api";
 
 // Stats (aka analytics)
 import { AnalyticsProvider, analyticsRouteChildren } from "./analytics/api";
@@ -61,11 +59,11 @@ const membersRoute: RouteObject = {
     children: [
         {
             index: true,
-            lazy: lazyComponent(() => import("@tryghost/posts/members"))
+            lazy: lazyComponent(() => import("./members/members"))
         },
         {
             path: "import",
-            lazy: lazyComponent(() => import("@tryghost/posts/members"))
+            lazy: lazyComponent(() => import("./members/members"))
         }
     ]
 };
@@ -77,24 +75,57 @@ export const routes: RouteObject[] = [
         element: <ForceUpgradeGuard />,
         children: [
             {
-                // Override the tag detail route from the posts app to ensure we
-                // correctly delegate to Ember since we can't remove the blank screen in
-                // the posts app. The blank screen needs to be there to prevent the
-                // router error fallback from triggering when navigating from the tag
-                // list to a tag detail page.
+                path: "/tags",
+                lazy: lazyComponent(() => import("./tags/tags")),
+            },
+            {
+                path: "/comments",
+                lazy: lazyComponent(() => import("./comments/comments")),
+            },
+            {
+                path: "/automations",
+                lazy: lazyComponent(() => import("./automations/automations")),
+            },
+            {
+                // The automation editor hides the admin sidebar for a focused,
+                // full-screen editing surface.
+                path: "/automations/:id",
+                handle: {hideAdminSidebar: true} satisfies AdminRouteHandle,
+                lazy: lazyComponent(() => import("./automations/editor")),
+            },
+            {
+                // The tag detail route delegates to Ember. It must be declared
+                // so navigating from the tag list to a detail page doesn't trip
+                // the router error fallback before Ember takes over.
                 path: "/tags/:tagSlug",
                 Component: EmberFallback,
                 handle: emberFallbackHandle,
             },
             membersRoute,
             {
-                element: (
-                    <PostsAppContextProvider value={{ fromAnalytics: true }}>
-                        <Outlet />
-                    </PostsAppContextProvider>
-                ),
-                // Filter out catch-all routes
-                children: postRoutes[0].children!.filter((route) => route.path !== "*"),
+                // Post analytics folded into the shell table. Its own data provider
+                // (PostAnalyticsProvider) wraps the view; PostsAppContext dissolved —
+                // the header reads appSettings from the framework AppContext directly.
+                path: "/posts/analytics/:postId",
+                lazy: async () => {
+                    const [{ default: PostAnalyticsProvider }, { default: PostAnalytics }] = await Promise.all([
+                        import("./posts/analytics/providers/post-analytics-provider"),
+                        import("./posts/analytics/post-analytics"),
+                    ]);
+                    return {
+                        element: (
+                            <PostAnalyticsProvider>
+                                <PostAnalytics />
+                            </PostAnalyticsProvider>
+                        ),
+                    };
+                },
+                children: [
+                    { path: "", lazy: lazyComponent(() => import("./posts/analytics/Overview/overview")) },
+                    { path: "web", lazy: lazyComponent(() => import("./posts/analytics/Web/web")) },
+                    { path: "growth", lazy: lazyComponent(() => import("./posts/analytics/Growth/growth")) },
+                    { path: "newsletter", lazy: lazyComponent(() => import("./posts/analytics/Newsletter/newsletter")) },
+                ],
             },
             {
                 // Analytics routes folded directly into the shell table. The

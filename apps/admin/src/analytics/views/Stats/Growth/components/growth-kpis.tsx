@@ -2,7 +2,7 @@ import React, {useEffect, useMemo, useState} from 'react';
 import {BarChartLoadingIndicator, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Separator, Tabs, TabsList} from '@tryghost/shade/components';
 import {type DiffDirection} from '@/analytics/hooks/use-growth-stats';
 import {GhAreaChart, type GhAreaChartDataItem, KpiDropdownButton, KpiTabTrigger, KpiTabValue} from '@tryghost/shade/patterns';
-import {STATS_RANGES} from '@/analytics/utils/constants';
+import {STATS_RANGES} from '@/shared/analytics/constants';
 import {centsToDollars, formatDisplayDateWithRange} from '@tryghost/shade/app';
 import {formatNumber} from '@tryghost/shade/utils';
 import {sanitizeChartData} from '@/analytics/utils/chart-helpers';

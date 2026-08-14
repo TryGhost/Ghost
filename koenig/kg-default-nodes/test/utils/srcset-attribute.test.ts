@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-import should from 'should';
 import {getSrcsetAttribute} from '../../src/utils/srcset-attribute.js';
 
 describe('srcsetAttribute', function () {
@@ -33,7 +32,7 @@ describe('srcsetAttribute', function () {
             }
         });
 
-        should(result).be.undefined();
+        expect(result).toBeUndefined();
     });
 
     describe('local images', function () {

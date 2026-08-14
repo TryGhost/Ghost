@@ -1,6 +1,3 @@
-import should from 'should';
-import '../utils/index.js';
-
 import card from '../../src/cards/embed.js';
 import {JSDOM} from 'jsdom';
 import {Document as SimpleDomDocument, HTMLSerializer, voidMap} from 'simple-dom';
@@ -17,7 +14,7 @@ describe('Embed card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.match('<figure class="kg-card kg-embed-card"><h1>HEADING</h1><p>PARAGRAPH</p></figure>');
+        expect(serializer.serialize(card.render(opts))).toEqual('<figure class="kg-card kg-embed-card"><h1>HEADING</h1><p>PARAGRAPH</p></figure>');
     });
 
     it('renders videos for email target', function () {
@@ -41,10 +38,10 @@ describe('Embed card', function () {
         };
 
         const output = serializer.serialize(card.render(opts));
-        output.should.not.match(/<h1>HEADING<\/h1>/);
-        output.should.match(/<figure class="kg-card kg-embed-card"/);
-        output.should.match(/<a class="kg-video-preview" href="https:\/\/example\.com\/my-video"/);
-        output.should.match(/background="https:\/\/example\.com\/thumbnail\.png"/);
+        expect(output).not.toMatch(/<h1>HEADING<\/h1>/);
+        expect(output).toMatch(/<figure class="kg-card kg-embed-card"/);
+        expect(output).toMatch(/<a class="kg-video-preview" href="https:\/\/example\.com\/my-video"/);
+        expect(output).toMatch(/background="https:\/\/example\.com\/thumbnail\.png"/);
     });
 
     it('Plain content renders', function () {
@@ -57,7 +54,7 @@ describe('Embed card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.match('<figure class="kg-card kg-embed-card">CONTENT</figure>');
+        expect(serializer.serialize(card.render(opts))).toEqual('<figure class="kg-card kg-embed-card">CONTENT</figure>');
     });
 
     it('Invalid HTML returns', function () {
@@ -70,7 +67,7 @@ describe('Embed card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.match('<figure class="kg-card kg-embed-card"><h1>HEADING<</figure>');
+        expect(serializer.serialize(card.render(opts))).toEqual('<figure class="kg-card kg-embed-card"><h1>HEADING<</figure>');
     });
 
     it('Renders nothing when payload is undefined', function () {
@@ -83,7 +80,7 @@ describe('Embed card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.match('');
+        expect(serializer.serialize(card.render(opts))).toEqual('');
     });
 
     it('Renders caption when provided', function () {
@@ -97,7 +94,7 @@ describe('Embed card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.match('<figure class="kg-card kg-embed-card kg-card-hascaption">Testing<figcaption><strong>Caption</strong></figcaption></figure>');
+        expect(serializer.serialize(card.render(opts))).toEqual('<figure class="kg-card kg-embed-card kg-card-hascaption">Testing<figcaption><strong>Caption</strong></figcaption></figure>');
     });
 
     it('transforms urls absolute to relative', function () {
@@ -107,8 +104,8 @@ describe('Embed card', function () {
 
         const transformed = card.absoluteToRelative!(payload, {siteUrl: 'http://127.0.0.1:2369/'});
 
-        (transformed.caption as string)
-            .should.equal('A link to <a href="/post">an internal post</a>');
+        expect((transformed.caption as string))
+            .toBe('A link to <a href="/post">an internal post</a>');
     });
 
     it('transforms urls relative to absolute', function () {
@@ -118,8 +115,8 @@ describe('Embed card', function () {
 
         const transformed = card.relativeToAbsolute!(payload, {siteUrl: 'http://127.0.0.1:2369/', itemUrl: 'http://127.0.0.1:2369/post'});
 
-        (transformed.caption as string)
-            .should.equal('A link to <a href="http://127.0.0.1:2369/post">an internal post</a>');
+        expect((transformed.caption as string))
+            .toBe('A link to <a href="http://127.0.0.1:2369/post">an internal post</a>');
     });
 
     it('renders nfts and escapes the JSON', function () {
@@ -148,10 +145,10 @@ describe('Embed card', function () {
 
         const parsedPayload = JSON.parse(decodeURIComponent((dom.window.document.body.querySelector('.kg-nft-card > a') as HTMLAnchorElement).dataset.payload!));
 
-        parsedPayload.type.should.equal(payload.type);
-        parsedPayload.url.should.equal(payload.url);
-        parsedPayload.metadata.title.should.equal(payload.metadata.title);
-        parsedPayload.metadata.nested.should.equal(payload.metadata.nested);
+        expect(parsedPayload.type).toBe(payload.type);
+        expect(parsedPayload.url).toBe(payload.url);
+        expect(parsedPayload.metadata.title).toBe(payload.metadata.title);
+        expect(parsedPayload.metadata.nested).toBe(payload.metadata.nested);
     });
 
     it('renders nfts in a table for email', function () {
@@ -181,6 +178,7 @@ describe('Embed card', function () {
 
         const dom = new JSDOM(output);
 
-        should.exist(dom.window.document.body.querySelector('table'));
+        expect(dom.window.document.body.querySelector('table')).not.toBeNull();
+        expect(dom.window.document.body.querySelector('table')).not.toBeUndefined();
     });
 });

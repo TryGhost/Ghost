@@ -1,5 +1,3 @@
-import '../utils/index.js';
-
 import card from '../../src/cards/button.js';
 import {Document as SimpleDomDocument, HTMLSerializer, voidMap} from 'simple-dom';
 const serializer = new HTMLSerializer(voidMap);
@@ -15,7 +13,7 @@ describe('Button card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.equal('<div class="kg-card kg-button-card kg-align-left"><a href="https://ghost.org/" class="kg-btn kg-btn-accent">Click me!</a></div>');
+            expect(serializer.serialize(card.render(opts))).toBe('<div class="kg-card kg-button-card kg-align-left"><a href="https://ghost.org/" class="kg-btn kg-btn-accent">Click me!</a></div>');
         });
 
         it('adds center classes when center aligned', function () {
@@ -28,7 +26,7 @@ describe('Button card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.equal('<div class="kg-card kg-button-card kg-align-center"><a href="https://ghost.org/" class="kg-btn kg-btn-accent">Click me!</a></div>');
+            expect(serializer.serialize(card.render(opts))).toBe('<div class="kg-card kg-button-card kg-align-center"><a href="https://ghost.org/" class="kg-btn kg-btn-accent">Click me!</a></div>');
         });
     });
 
@@ -45,7 +43,7 @@ describe('Button card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.equal('<p><div class="btn btn-accent"><table border="0" cellspacing="0" cellpadding="0" align="left"><tr><td align="center"><a href="https://ghost.org/">Click me!</a></td></tr></table></div></p>');
+            expect(serializer.serialize(card.render(opts))).toBe('<p><div class="btn btn-accent"><table border="0" cellspacing="0" cellpadding="0" align="left"><tr><td align="center"><a href="https://ghost.org/">Click me!</a></td></tr></table></div></p>');
         });
 
         it('handles center alignment', function () {
@@ -61,7 +59,7 @@ describe('Button card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.equal('<p><div class="btn btn-accent"><table border="0" cellspacing="0" cellpadding="0" align="center"><tr><td align="center"><a href="https://ghost.org/">Click me!</a></td></tr></table></div></p>');
+            expect(serializer.serialize(card.render(opts))).toBe('<p><div class="btn btn-accent"><table border="0" cellspacing="0" cellpadding="0" align="center"><tr><td align="center"><a href="https://ghost.org/">Click me!</a></td></tr></table></div></p>');
         });
     });
 
@@ -74,7 +72,7 @@ describe('Button card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.equal('');
+        expect(serializer.serialize(card.render(opts))).toBe('');
     });
 
     it('renders nothing if buttonText is missing', function () {
@@ -86,7 +84,7 @@ describe('Button card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.equal('');
+        expect(serializer.serialize(card.render(opts))).toBe('');
     });
 
     it('transforms button url absolute to relative', function () {
@@ -97,7 +95,7 @@ describe('Button card', function () {
 
         const transformed = card.absoluteToRelative!(payload, {siteUrl: 'https://ghost.org'});
 
-        (transformed.buttonUrl as string).should.equal('/');
+        expect((transformed.buttonUrl as string)).toBe('/');
     });
 
     it('transforms button url relative to absolute', function () {
@@ -108,7 +106,7 @@ describe('Button card', function () {
 
         const transformed = card.relativeToAbsolute!(payload, {siteUrl: 'https://ghost.org'});
 
-        (transformed.buttonUrl as string).should.equal('https://ghost.org/#/portal/signup');
+        expect((transformed.buttonUrl as string)).toBe('https://ghost.org/#/portal/signup');
     });
 
     it('transforms button url to transform ready', function () {
@@ -119,6 +117,6 @@ describe('Button card', function () {
 
         const transformed = card.toTransformReady!(payload, {siteUrl: 'https://ghost.org'});
 
-        (transformed.buttonUrl as string).should.equal('__GHOST_URL__/#/portal/signup');
+        expect((transformed.buttonUrl as string)).toBe('__GHOST_URL__/#/portal/signup');
     });
 });

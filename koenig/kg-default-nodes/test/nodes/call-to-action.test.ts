@@ -1,4 +1,3 @@
-import should from 'should';
 import {createHeadlessEditor} from '@lexical/headless';
 import {$generateNodesFromDOM} from '@lexical/html';
 import {$getRoot} from 'lexical';
@@ -15,16 +14,16 @@ describe('CallToActionNode', function () {
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
+    const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
         editor.update(() => {
             try {
                 testFn();
-                done();
+                resolve();
             } catch (e) {
-                done(e);
+                reject(e);
             }
         });
-    };
+    });
 
     beforeEach(function () {
         editor = createHeadlessEditor({nodes: editorNodes});
@@ -55,35 +54,35 @@ describe('CallToActionNode', function () {
 
     it('matches node with $isCallToActionNode', editorTest(function () {
         const callToActionNode = new CallToActionNode(dataset);
-        $isCallToActionNode(callToActionNode).should.be.true();
+        expect($isCallToActionNode(callToActionNode)).toBe(true);
     }));
 
     describe('data access', function () {
         it('has getters for all properties', editorTest(function () {
             const callToActionNode = new CallToActionNode(dataset);
 
-            callToActionNode.layout.should.equal(dataset.layout);
-            callToActionNode.textValue.should.equal(dataset.textValue);
-            callToActionNode.showButton.should.equal(dataset.showButton);
-            callToActionNode.showDividers.should.equal(dataset.showDividers);
-            callToActionNode.buttonText.should.equal(dataset.buttonText);
-            callToActionNode.buttonUrl.should.equal(dataset.buttonUrl);
-            callToActionNode.buttonColor.should.equal(dataset.buttonColor);
-            callToActionNode.buttonTextColor.should.equal(dataset.buttonTextColor);
-            callToActionNode.hasSponsorLabel.should.equal(dataset.hasSponsorLabel);
-            callToActionNode.sponsorLabel.should.equal(dataset.sponsorLabel);
-            callToActionNode.backgroundColor.should.equal(dataset.backgroundColor);
-            callToActionNode.imageUrl!.should.equal(dataset.imageUrl);
-            (callToActionNode.visibility as Record<string, unknown>).should.deepEqual(utils.visibility.buildDefaultVisibility());
-            callToActionNode.imageHeight!.should.equal(dataset.imageHeight);
-            callToActionNode.imageWidth!.should.equal(dataset.imageWidth);
-            callToActionNode.linkColor.should.equal(dataset.linkColor);
+            expect(callToActionNode.layout).toBe(dataset.layout);
+            expect(callToActionNode.textValue).toBe(dataset.textValue);
+            expect(callToActionNode.showButton).toBe(dataset.showButton);
+            expect(callToActionNode.showDividers).toBe(dataset.showDividers);
+            expect(callToActionNode.buttonText).toBe(dataset.buttonText);
+            expect(callToActionNode.buttonUrl).toBe(dataset.buttonUrl);
+            expect(callToActionNode.buttonColor).toBe(dataset.buttonColor);
+            expect(callToActionNode.buttonTextColor).toBe(dataset.buttonTextColor);
+            expect(callToActionNode.hasSponsorLabel).toBe(dataset.hasSponsorLabel);
+            expect(callToActionNode.sponsorLabel).toBe(dataset.sponsorLabel);
+            expect(callToActionNode.backgroundColor).toBe(dataset.backgroundColor);
+            expect(callToActionNode.imageUrl!).toBe(dataset.imageUrl);
+            expect(callToActionNode.visibility as Record<string, unknown>).toEqual(utils.visibility.buildDefaultVisibility());
+            expect(callToActionNode.imageHeight!).toBe(dataset.imageHeight);
+            expect(callToActionNode.imageWidth!).toBe(dataset.imageWidth);
+            expect(callToActionNode.linkColor).toBe(dataset.linkColor);
         }));
 
         it('can be created without a dataset', editorTest(function () {
             const callToActionNode = $createCallToActionNode();
 
-            callToActionNode.getDataset().should.deepEqual({
+            expect(callToActionNode.getDataset()).toEqual({
                 layout: 'minimal',
                 alignment: 'left',
                 textValue: '',
@@ -106,63 +105,63 @@ describe('CallToActionNode', function () {
 
         it('has setters for all properties', editorTest(function () {
             const callToActionNode = new CallToActionNode();
-            callToActionNode.layout.should.equal('minimal');
+            expect(callToActionNode.layout).toBe('minimal');
             callToActionNode.layout = 'compact';
-            callToActionNode.layout.should.equal('compact');
+            expect(callToActionNode.layout).toBe('compact');
 
-            callToActionNode.textValue.should.equal('');
+            expect(callToActionNode.textValue).toBe('');
             callToActionNode.textValue = 'This is a cool advertisement';
-            callToActionNode.textValue.should.equal('This is a cool advertisement');
+            expect(callToActionNode.textValue).toBe('This is a cool advertisement');
 
-            callToActionNode.showButton.should.equal(true);
+            expect(callToActionNode.showButton).toBe(true);
             callToActionNode.showButton = false;
-            callToActionNode.showButton.should.equal(false);
+            expect(callToActionNode.showButton).toBe(false);
 
-            callToActionNode.showDividers.should.equal(true);
+            expect(callToActionNode.showDividers).toBe(true);
             callToActionNode.showDividers = false;
-            callToActionNode.showDividers.should.equal(false);
+            expect(callToActionNode.showDividers).toBe(false);
 
-            callToActionNode.buttonText.should.equal('Learn more');
+            expect(callToActionNode.buttonText).toBe('Learn more');
             callToActionNode.buttonText = 'click me';
-            callToActionNode.buttonText.should.equal('click me');
+            expect(callToActionNode.buttonText).toBe('click me');
 
-            callToActionNode.buttonUrl.should.equal('');
+            expect(callToActionNode.buttonUrl).toBe('');
             callToActionNode.buttonUrl = 'http://blog.com/post1';
-            callToActionNode.buttonUrl.should.equal('http://blog.com/post1');
+            expect(callToActionNode.buttonUrl).toBe('http://blog.com/post1');
 
-            callToActionNode.sponsorLabel.should.equal('<p><span style="white-space: pre-wrap;">SPONSORED</span></p>');
+            expect(callToActionNode.sponsorLabel).toBe('<p><span style="white-space: pre-wrap;">SPONSORED</span></p>');
             callToActionNode.sponsorLabel = 'This post is brought to you by our sponsors';
-            callToActionNode.sponsorLabel.should.equal('This post is brought to you by our sponsors');
+            expect(callToActionNode.sponsorLabel).toBe('This post is brought to you by our sponsors');
 
-            callToActionNode.buttonColor.should.equal('#000000');
+            expect(callToActionNode.buttonColor).toBe('#000000');
             callToActionNode.buttonColor = '#ffffff';
-            callToActionNode.buttonColor.should.equal('#ffffff');
+            expect(callToActionNode.buttonColor).toBe('#ffffff');
 
-            callToActionNode.buttonTextColor.should.equal('#ffffff');
+            expect(callToActionNode.buttonTextColor).toBe('#ffffff');
             callToActionNode.buttonTextColor = 'black';
-            callToActionNode.buttonTextColor.should.equal('black');
+            expect(callToActionNode.buttonTextColor).toBe('black');
 
-            callToActionNode.hasSponsorLabel.should.equal(true);
+            expect(callToActionNode.hasSponsorLabel).toBe(true);
             callToActionNode.hasSponsorLabel = false;
-            callToActionNode.hasSponsorLabel.should.equal(false);
+            expect(callToActionNode.hasSponsorLabel).toBe(false);
 
-            callToActionNode.backgroundColor.should.equal('grey');
+            expect(callToActionNode.backgroundColor).toBe('grey');
             callToActionNode.backgroundColor = 'red';
-            callToActionNode.backgroundColor.should.equal('red');
+            expect(callToActionNode.backgroundColor).toBe('red');
 
-            callToActionNode.imageUrl!.should.equal('');
+            expect(callToActionNode.imageUrl!).toBe('');
             callToActionNode.imageUrl = 'http://blog.com/image1.jpg';
-            callToActionNode.imageUrl!.should.equal('http://blog.com/image1.jpg');
+            expect(callToActionNode.imageUrl!).toBe('http://blog.com/image1.jpg');
 
-            should(callToActionNode.imageHeight).be.null();
+            expect(callToActionNode.imageHeight).toBeNull();
             callToActionNode.imageHeight = 100;
-            callToActionNode.imageHeight!.should.equal(100);
+            expect(callToActionNode.imageHeight!).toBe(100);
 
-            should(callToActionNode.imageWidth).be.null();
+            expect(callToActionNode.imageWidth).toBeNull();
             callToActionNode.imageWidth = 200;
-            callToActionNode.imageWidth!.should.equal(200);
+            expect(callToActionNode.imageWidth!).toBe(200);
 
-            (callToActionNode.visibility as Record<string, unknown>).should.deepEqual(utils.visibility.buildDefaultVisibility());
+            expect(callToActionNode.visibility as Record<string, unknown>).toEqual(utils.visibility.buildDefaultVisibility());
             callToActionNode.visibility = {
                 web: {
                     nonMember: false,
@@ -172,7 +171,7 @@ describe('CallToActionNode', function () {
                     memberSegment: ''
                 }
             };
-            (callToActionNode.visibility as Record<string, unknown>).should.deepEqual({
+            expect(callToActionNode.visibility as Record<string, unknown>).toEqual({
                 web: {
                     nonMember: false,
                     memberSegment: ''
@@ -182,16 +181,16 @@ describe('CallToActionNode', function () {
                 }
             });
 
-            callToActionNode.linkColor.should.equal('text');
+            expect(callToActionNode.linkColor).toBe('text');
             callToActionNode.linkColor = 'accent';
-            callToActionNode.linkColor.should.equal('accent');
+            expect(callToActionNode.linkColor).toBe('accent');
         }));
 
         it('has getDataset() convenience method', editorTest(function () {
             const callToActionNode = new CallToActionNode(dataset);
             const callToActionNodeDataset = callToActionNode.getDataset();
 
-            callToActionNodeDataset.should.deepEqual({
+            expect(callToActionNodeDataset).toEqual({
                 ...dataset,
                 alignment: 'left',
                 ...{visibility: utils.visibility.buildDefaultVisibility()}
@@ -201,7 +200,7 @@ describe('CallToActionNode', function () {
 
     describe('getType', function () {
         it('returns the correct node type', editorTest(function () {
-            CallToActionNode.getType().should.equal('call-to-action');
+            expect(CallToActionNode.getType()).toBe('call-to-action');
         }));
     });
 
@@ -212,18 +211,16 @@ describe('CallToActionNode', function () {
             const clone = CallToActionNode.clone(callToActionNode) as CallToActionNode;
             const cloneDataset = clone.getDataset();
 
-            cloneDataset.should.deepEqual({...callToActionNodeDataset});
+            expect(cloneDataset).toEqual({...callToActionNodeDataset});
         }));
     });
 
-    describe('urlTransformMap', function () {
-        // not yet implemented
-    });
+    describe.todo('urlTransformMap');
 
     describe('hasEditMode', function () {
         it('returns true', editorTest(function () {
             const callToActionNode = new CallToActionNode(dataset);
-            callToActionNode.hasEditMode().should.be.true();
+            expect(callToActionNode.hasEditMode()).toBe(true);
         }));
     });
 
@@ -255,15 +252,15 @@ describe('CallToActionNode', function () {
             };
 
             testRender(({html}) => {
-                html.should.containEql('data-layout="minimal"');
-                html.should.containEql('kg-cta-bg-green');
-                html.should.containEql('background-color: #F0F0F0');
-                html.should.containEql('Get access now');
-                html.should.containEql('http://someblog.com/somepost');
-                html.should.containEql('/content/images/2022/11/koenig-lexical.jpg');
-                html.should.containEql('This is a new CTA Card.');
-                html.should.containEql('Sponsored by'); // because hasSponsorLabel is true
-                html.should.containEql('cta-card');
+                expect(html).toContain('data-layout="minimal"');
+                expect(html).toContain('kg-cta-bg-green');
+                expect(html).toContain('background-color: #F0F0F0');
+                expect(html).toContain('Get access now');
+                expect(html).toContain('http://someblog.com/somepost');
+                expect(html).toContain('/content/images/2022/11/koenig-lexical.jpg');
+                expect(html).toContain('This is a new CTA Card.');
+                expect(html).toContain('Sponsored by'); // because hasSponsorLabel is true
+                expect(html).toContain('cta-card');
             });
         }));
 
@@ -286,13 +283,13 @@ describe('CallToActionNode', function () {
             };
 
             testRender(({html}) => {
-                html.should.containEql('kg-cta-bg-green');
-                html.should.containEql('background-color: #F0F0F0');
-                html.should.containEql('Get access now');
-                html.should.containEql('http://someblog.com/somepost');
-                html.should.containEql('<p><span style="white-space: pre-wrap;">SPONSORED</span></p>'); // because hasSponsorLabel is true
-                html.should.containEql('/content/images/2022/11/koenig-lexical.jpg');
-                html.should.containEql('This is a new CTA Card via email.');
+                expect(html).toContain('kg-cta-bg-green');
+                expect(html).toContain('background-color: #F0F0F0');
+                expect(html).toContain('Get access now');
+                expect(html).toContain('http://someblog.com/somepost');
+                expect(html).toContain('<p><span style="white-space: pre-wrap;">SPONSORED</span></p>'); // because hasSponsorLabel is true
+                expect(html).toContain('/content/images/2022/11/koenig-lexical.jpg');
+                expect(html).toContain('This is a new CTA Card via email.');
             });
         }));
 
@@ -302,8 +299,8 @@ describe('CallToActionNode', function () {
             dataset.buttonText = '';
 
             testRender(({html}) => {
-                html.should.containEql('<a href="http://blog.com/post1"');
-                html.should.containEql('Learn more');
+                expect(html).toContain('<a href="http://blog.com/post1"');
+                expect(html).toContain('Learn more');
             });
         }));
     });
@@ -329,7 +326,7 @@ describe('CallToActionNode', function () {
             const callToActionNode = new CallToActionNode(dataset);
             const json = callToActionNode.exportJSON();
 
-            json.should.deepEqual({
+            expect(json).toEqual({
                 type: 'call-to-action',
                 version: 1,
                 backgroundColor: 'green',
@@ -362,51 +359,53 @@ describe('CallToActionNode', function () {
     });
 
     describe('importJSON', function () {
-        it('imports all data', function (done) {
-            const serializedData = JSON.stringify({
-                root: {
-                    children: [{
-                        type: 'call-to-action',
-                        backgroundColor: 'green',
-                        buttonColor: '#F0F0F0',
-                        buttonText: 'Get access now',
-                        buttonTextColor: '#000000',
-                        buttonUrl: 'http://someblog.com/somepost',
-                        hasSponsorLabel: true,
-                        sponsorLabel: '<p>This post is brought to you by our sponsors</p>',
-                        imageUrl: '/content/images/2022/11/koenig-lexical.jpg',
-                        layout: 'minimal',
-                        showButton: true,
-                        showDividers: true,
-                        textValue: '<p><span style="white-space: pre-wrap;">This is a new CTA Card.</span></p>'
-                    }],
-                    direction: null,
-                    format: '',
-                    indent: 0,
-                    type: 'root',
-                    version: 1
-                }
-            });
+        it('imports all data', function () {
+            return new Promise<void>((resolve, reject) => {
+                const serializedData = JSON.stringify({
+                    root: {
+                        children: [{
+                            type: 'call-to-action',
+                            backgroundColor: 'green',
+                            buttonColor: '#F0F0F0',
+                            buttonText: 'Get access now',
+                            buttonTextColor: '#000000',
+                            buttonUrl: 'http://someblog.com/somepost',
+                            hasSponsorLabel: true,
+                            sponsorLabel: '<p>This post is brought to you by our sponsors</p>',
+                            imageUrl: '/content/images/2022/11/koenig-lexical.jpg',
+                            layout: 'minimal',
+                            showButton: true,
+                            showDividers: true,
+                            textValue: '<p><span style="white-space: pre-wrap;">This is a new CTA Card.</span></p>'
+                        }],
+                        direction: null,
+                        format: '',
+                        indent: 0,
+                        type: 'root',
+                        version: 1
+                    }
+                });
 
-            const editorState = editor.parseEditorState(serializedData);
-            editor.setEditorState(editorState);
+                const editorState = editor.parseEditorState(serializedData);
+                editor.setEditorState(editorState);
 
-            editor.getEditorState().read(() => {
-                try {
-                    const [callToActionNode] = $getRoot().getChildren();
-                    $isCallToActionNode(callToActionNode).should.be.true();
+                editor.getEditorState().read(() => {
+                    try {
+                        const [callToActionNode] = $getRoot().getChildren();
+                        expect($isCallToActionNode(callToActionNode)).toBe(true);
 
-                    done();
-                } catch (e) {
-                    done(e);
-                }
+                        resolve();
+                    } catch (e) {
+                        reject(e);
+                    }
+                });
             });
         });
     });
 
     describe('static properties', function () {
         it('getType', editorTest(function () {
-            CallToActionNode.getType().should.equal('call-to-action');
+            expect(CallToActionNode.getType()).toBe('call-to-action');
         }));
 
         it('urlTransformMap', editorTest(function () {
@@ -427,99 +426,99 @@ describe('CallToActionNode', function () {
         it('parses the cta card layout', editorTest(function () {
             dataset.layout = 'immersive';
             const nodes = generateCallToActionNodes(dataset);
-            nodes.length.should.equal(1);
-            nodes[0].layout.should.equal('immersive');
+            expect(nodes.length).toBe(1);
+            expect(nodes[0].layout).toBe('immersive');
         }));
 
         it('parses text value', editorTest(function () {
             const nodes = generateCallToActionNodes(dataset);
-            nodes.length.should.equal(1);
-            nodes[0].textValue.should.equal('This is a cool advertisement');
+            expect(nodes.length).toBe(1);
+            expect(nodes[0].textValue).toBe('This is a cool advertisement');
         }));
 
         it('checks if button is visible', editorTest(function (){
             const nodes = generateCallToActionNodes(dataset);
-            nodes.length.should.equal(1);
-            nodes[0].showButton.should.equal(true);
+            expect(nodes.length).toBe(1);
+            expect(nodes[0].showButton).toBe(true);
         }));
 
         it('checks if button is not visible', editorTest(function (){
             dataset.showButton = false;
             const nodes = generateCallToActionNodes(dataset);
-            nodes.length.should.equal(1);
-            nodes[0].showButton.should.equal(false);
+            expect(nodes.length).toBe(1);
+            expect(nodes[0].showButton).toBe(false);
         }));
 
         it('can get button text', editorTest(function () {
             const nodes = generateCallToActionNodes(dataset);
-            nodes.length.should.equal(1);
-            nodes[0].buttonText.should.equal('click me');
+            expect(nodes.length).toBe(1);
+            expect(nodes[0].buttonText).toBe('click me');
         }));
 
         it('can get button URL', editorTest(function (){
             const nodes = generateCallToActionNodes(dataset);
-            nodes.length.should.equal(1);
-            nodes[0].buttonUrl.should.equal('http://blog.com/post1');
+            expect(nodes.length).toBe(1);
+            expect(nodes[0].buttonUrl).toBe('http://blog.com/post1');
         }));
 
         it('can get button colours', editorTest(function () {
             dataset.buttonColor = '#123456';
             dataset.buttonTextColor = '#654321';
             const nodes = generateCallToActionNodes(dataset);
-            nodes.length.should.equal(1);
-            nodes[0].buttonColor.should.equal('#123456');
-            nodes[0].buttonTextColor.should.equal('#654321');
+            expect(nodes.length).toBe(1);
+            expect(nodes[0].buttonColor).toBe('#123456');
+            expect(nodes[0].buttonTextColor).toBe('#654321');
         }));
 
         it('can check if it has a sponsorLabel', editorTest(function () {
             const nodes = generateCallToActionNodes(dataset);
-            nodes.length.should.equal(1);
-            nodes[0].hasSponsorLabel.should.equal(true);
+            expect(nodes.length).toBe(1);
+            expect(nodes[0].hasSponsorLabel).toBe(true);
         }));
 
         it('returns false if it does not have a sponsorLabel', editorTest(function () {
             dataset.hasSponsorLabel = false;
             const nodes = generateCallToActionNodes(dataset);
-            nodes.length.should.equal(1);
-            nodes[0].hasSponsorLabel.should.equal(false);
+            expect(nodes.length).toBe(1);
+            expect(nodes[0].hasSponsorLabel).toBe(false);
         }));
 
         it('can get sponsorLabel', editorTest(function () {
             dataset.sponsorLabel = '<p><span style="white-space: pre-wrap">SPONSORED BY GHOST</span></p>';
             const nodes = generateCallToActionNodes(dataset);
-            nodes.length.should.equal(1);
-            nodes[0].sponsorLabel.should.equal('<p><span style="white-space: pre-wrap">SPONSORED BY GHOST</span></p>');
+            expect(nodes.length).toBe(1);
+            expect(nodes[0].sponsorLabel).toBe('<p><span style="white-space: pre-wrap">SPONSORED BY GHOST</span></p>');
         }));
 
         it('can get background color', editorTest(function () {
             dataset.backgroundColor = 'red';
             const nodes = generateCallToActionNodes(dataset);
-            nodes.length.should.equal(1);
-            nodes[0].backgroundColor.should.equal('red');
+            expect(nodes.length).toBe(1);
+            expect(nodes[0].backgroundColor).toBe('red');
         }));
 
         it('can get image data', editorTest(function () {
             const nodes = generateCallToActionNodes(dataset);
-            nodes.length.should.equal(1);
-            nodes[0].imageUrl!.should.equal('http://blog.com/image1.jpg');
-            nodes[0].imageWidth!.should.equal(200);
-            nodes[0].imageHeight!.should.equal(100);
+            expect(nodes.length).toBe(1);
+            expect(nodes[0].imageUrl!).toBe('http://blog.com/image1.jpg');
+            expect(nodes[0].imageWidth!).toBe(200);
+            expect(nodes[0].imageHeight!).toBe(100);
         }));
 
         it('image width and height falls back to null if not provided', editorTest(function () {
             dataset.imageWidth = null;
             dataset.imageHeight = null;
             const nodes = generateCallToActionNodes(dataset);
-            nodes.length.should.equal(1);
-            should(nodes[0].imageWidth).be.null();
-            should(nodes[0].imageHeight).be.null();
+            expect(nodes.length).toBe(1);
+            expect(nodes[0].imageWidth).toBeNull();
+            expect(nodes[0].imageHeight).toBeNull();
         }));
     });
 
     describe('getTextContent', function () {
         it('returns textValue', editorTest(function () {
             const callToActionNode = new CallToActionNode(dataset);
-            callToActionNode.getTextContent().should.equal('This is a cool advertisement\n\n');
+            expect(callToActionNode.getTextContent()).toBe('This is a cool advertisement\n\n');
         }));
     });
 });

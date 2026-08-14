@@ -2,7 +2,7 @@ import DateRangeSelect from '@/analytics/views/Stats/components/date-range-selec
 import LocationsCard from '@/analytics/views/Stats/Locations/components/locations-card';
 import React, {useCallback, useMemo, useRef} from 'react';
 import SourcesCard from './components/sources-card';
-import StatsFilter from '@/analytics/views/Stats/components/stats-filter';
+import StatsFilter from '@/shared/analytics/stats-filter';
 import StatsHeader from '@/analytics/views/Stats/layout/stats-header';
 import StatsLayout from '@/analytics/views/Stats/layout/stats-layout';
 import StatsView from '@/analytics/views/Stats/layout/stats-view';
@@ -10,14 +10,14 @@ import TopContent from './components/top-content';
 import WebKPIs, {type KpiDataItem} from './components/web-kpis';
 import {Card, CardContent, NavbarActions} from '@tryghost/shade/components';
 import {Navigate, useAppContext, useTinybirdQuery} from '@tryghost/admin-x-framework';
-import {STATS_DEFAULT_SOURCE_ICON_URL} from '@/analytics/utils/constants';
+import {STATS_DEFAULT_SOURCE_ICON_URL} from '@/shared/analytics/constants';
 import {createFilter} from '@tryghost/shade/patterns';
 import {getScrollParent} from '@tryghost/shade/utils';
 import {formatQueryDate, getRangeDates} from '@tryghost/shade/app';
-import {getAudienceFromFilterValues, getAudienceQueryParam} from '@/analytics/utils/audience';
-import {useFilterParams} from '@/analytics/hooks/use-filter-params';
+import {getAudienceFromFilterValues, getAudienceQueryParam} from '@/shared/analytics/audience';
+import {ANALYTICS_FILTER_FIELDS, useFilterParams} from '@/shared/analytics/use-filter-params';
 import {useAnalytics} from '@/analytics/providers/analytics-context';
-import {useAnalyticsData} from '@/analytics/hooks/use-analytics-data';
+import {useAnalyticsData} from '@/shared/analytics/use-analytics-data';
 
 const Web: React.FC = () => {
     const {range} = useAnalytics();
@@ -29,7 +29,10 @@ const Web: React.FC = () => {
     const containerRef = useRef<HTMLDivElement>(null);
 
     // Use URL-synced filter state for bookmarking and sharing
-    const {filters: analyticsFilters, setFilters: setAnalyticsFilters} = useFilterParams();
+    const {filters: analyticsFilters, setFilters: setAnalyticsFilters} = useFilterParams({
+        supportedFields: ANALYTICS_FILTER_FIELDS,
+        trackingSource: 'stats'
+    });
 
     // Derive audience from filters - URL is the single source of truth
     const audience = useMemo(() => {
@@ -166,6 +169,8 @@ const Web: React.FC = () => {
                 <NavbarActions className={`${hasFilters ? 'mt-0! [grid-area:subactions] lg:mt-[25px]!' : '[grid-area:actions]'}`}>
                     <StatsFilter
                         filters={analyticsFilters}
+                        range={range}
+                        showPostField
                         onChange={setAnalyticsFilters}
                     />
                     {!hasFilters && <DateRangeSelect />}

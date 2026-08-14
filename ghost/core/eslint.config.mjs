@@ -1,4 +1,3 @@
-import path from 'node:path';
 import js from '@eslint/js';
 import globals from 'globals';
 import ghostPlugin from 'eslint-plugin-ghost';
@@ -12,8 +11,6 @@ import {
     nodeLibRules,
     strictLinterOptions
 } from '../../eslint.shared.mjs';
-
-const __dirname = import.meta.dirname;
 
 // nodeLibRules + jsUnusedVarsRule covers the bulk. Two workspace-specific:
 // turn off ghost/filenames/match-regex (we use local-filenames/match-regex in
@@ -188,19 +185,6 @@ export default tseslint.config(
         }
     },
     // ============================================================
-    // shared/ must not require server/* or frontend/*
-    // ============================================================
-    {
-        files: ['core/shared/**'],
-        plugins: {ghost: ghostPlugin},
-        rules: {
-            'ghost/node/no-restricted-require': ['error', [
-                {name: path.resolve(__dirname, 'core/server/**'), message: 'Invalid require of core/server from core/shared.'},
-                {name: path.resolve(__dirname, 'core/frontend/**'), message: 'Invalid require of core/frontend from core/shared.'}
-            ]]
-        }
-    },
-    // ============================================================
     // schema.js: no created_by/updated_by columns
     // ============================================================
     {
@@ -268,67 +252,6 @@ export default tseslint.config(
                 ...globals.browser,
                 ...globals.node
             }
-        }
-    },
-    // ============================================================
-    // Frontend must not require server/models directly
-    // ============================================================
-    {
-        files: ['core/frontend/**'],
-        plugins: {ghost: ghostPlugin},
-        rules: {
-            'ghost/node/no-restricted-require': ['error', [
-                {
-                    name: [path.resolve(__dirname, 'core/server/models/**')],
-                    message: 'Invalid require of core/server/models from core/frontend. Fetch content through the public Content API (api.postsPublic / api.pagesPublic), injected via core/frontend/services/proxy — not the model layer directly. See #28420.'
-                }
-            ]]
-        }
-    },
-    // ============================================================
-    // Frontend must cross to server only via proxy (with allowlist)
-    // ============================================================
-    {
-        files: ['core/frontend/**'],
-        ignores: [
-            'core/frontend/services/proxy.js',
-            'core/frontend/web/site.js',
-            'core/frontend/web/middleware/frontend-caching.js',
-            'core/frontend/web/middleware/handle-image-sizes.js',
-            'core/frontend/web/routers/link-redirects.js',
-            'core/frontend/web/routers/serve-favicon.js',
-            'core/frontend/apps/private-blogging/lib/router.js',
-            'core/frontend/services/routing/controllers/unsubscribe.js',
-            'core/frontend/services/routing/router-manager.js',
-            'core/frontend/services/sitemap/site-map-manager.js'
-        ],
-        plugins: {ghost: ghostPlugin},
-        rules: {
-            'ghost/node/no-restricted-require': ['error', [
-                {
-                    name: [path.resolve(__dirname, 'core/server/**')],
-                    message: 'Invalid require of core/server from core/frontend. Cross only via the proxy seam (core/frontend/services/proxy.js).'
-                }
-            ]]
-        }
-    },
-    // ============================================================
-    // Server must not require frontend (with allowlist)
-    // ============================================================
-    {
-        files: ['core/server/**'],
-        ignores: [
-            'core/server/web/parent/frontend.js',
-            'core/server/services/route-settings/validate.js'
-        ],
-        plugins: {ghost: ghostPlugin},
-        rules: {
-            'ghost/node/no-restricted-require': ['error', [
-                {
-                    name: [path.resolve(__dirname, 'core/frontend/**')],
-                    message: 'Invalid require of core/frontend from core/server. The server must not depend on the frontend rendering layer.'
-                }
-            ]]
         }
     },
     // ============================================================

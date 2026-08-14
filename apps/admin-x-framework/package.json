@@ -46,6 +46,11 @@
             "import": "./dist/utils/nql.js",
             "require": "./dist/utils/nql.cjs"
         },
+        "./utils/get-site-timezone": {
+            "types": "./types/utils/get-site-timezone.d.ts",
+            "import": "./dist/utils/get-site-timezone.js",
+            "require": "./dist/utils/get-site-timezone.cjs"
+        },
         "./vite": {
             "types": "./types/vite.d.ts",
             "import": "./dist/vite.js",
@@ -133,7 +138,7 @@
                     "command": "vite build --watch"
                 },
                 "dependsOn": [
-                    "^build"
+                    "build"
                 ]
             },
             "build": {

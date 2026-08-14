@@ -1,4 +1,3 @@
-import './utils/index.js';
 import {CardFactory} from '../src/CardFactory.js';
 import type {DomProvider} from '../src/CardFactory.js';
 import {Document as SimpleDomDocument, HTMLSerializer, voidMap} from 'simple-dom';
@@ -23,8 +22,8 @@ describe('CardFactory', function () {
 
             const opts = {env: {dom: new SimpleDomDocument() as unknown as DomProvider}, payload: {}, options: {}};
 
-            serializer.serialize(card.render(opts) as unknown as Parameters<typeof serializer.serialize>[0])
-                .should.eql('<!--kg-card-begin: test--><div>Test!</div><!--kg-card-end: test-->');
+            expect(serializer.serialize(card.render(opts) as unknown as Parameters<typeof serializer.serialize>[0]))
+                .toEqual('<!--kg-card-begin: test--><div>Test!</div><!--kg-card-end: test-->');
         });
 
         it('skips comment wrapper if card output is blank', function () {
@@ -41,7 +40,7 @@ describe('CardFactory', function () {
 
             const opts = {env: {dom: new SimpleDomDocument() as unknown as DomProvider}, payload: {}, options: {}};
 
-            serializer.serialize(card.render(opts) as unknown as Parameters<typeof serializer.serialize>[0]).should.eql('');
+            expect(serializer.serialize(card.render(opts) as unknown as Parameters<typeof serializer.serialize>[0])).toEqual('');
         });
     });
 
@@ -59,7 +58,7 @@ describe('CardFactory', function () {
                 }
             });
 
-            card.absoluteToRelative({}).should.have.property('receivedSiteUrl', 'http://127.0.0.1:2368/');
+            expect(card.absoluteToRelative({})).toHaveProperty('receivedSiteUrl', 'http://127.0.0.1:2368/');
         });
     });
 
@@ -77,7 +76,7 @@ describe('CardFactory', function () {
                 }
             });
 
-            card.relativeToAbsolute({}).should.have.property('receivedSiteUrl', 'http://127.0.0.1:2368/');
+            expect(card.relativeToAbsolute({})).toHaveProperty('receivedSiteUrl', 'http://127.0.0.1:2368/');
         });
     });
 });

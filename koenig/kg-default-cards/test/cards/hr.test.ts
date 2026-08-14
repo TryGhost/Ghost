@@ -1,5 +1,3 @@
-import '../utils/index.js';
-
 import card from '../../src/cards/hr.js';
 import {Document as SimpleDomDocument, HTMLSerializer, voidMap} from 'simple-dom';
 const serializer = new HTMLSerializer(voidMap);
@@ -13,6 +11,6 @@ describe('HR card', function () {
             payload: {}
         };
 
-        serializer.serialize(card.render(opts)).should.match('<hr>');
+        expect(serializer.serialize(card.render(opts))).toEqual('<hr>');
     });
 });

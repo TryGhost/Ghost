@@ -1,5 +1,3 @@
-import '../utils/index.js';
-
 import card from '../../src/cards/code.js';
 import {Document as SimpleDomDocument, HTMLSerializer, voidMap} from 'simple-dom';
 const serializer = new HTMLSerializer(voidMap);
@@ -15,7 +13,7 @@ describe('Code card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.match('<pre><code>&lt;p&gt;Test&lt;/p&gt;</code></pre>');
+        expect(serializer.serialize(card.render(opts))).toEqual('<pre><code>&lt;p&gt;Test&lt;/p&gt;</code></pre>');
     });
 
     it('Renders language class if provided', function () {
@@ -29,7 +27,7 @@ describe('Code card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.match('<pre><code class="language-html">&lt;p&gt;Test&lt;/p&gt;</code></pre>');
+        expect(serializer.serialize(card.render(opts))).toEqual('<pre><code class="language-html">&lt;p&gt;Test&lt;/p&gt;</code></pre>');
     });
 
     it('Renders nothing when payload is undefined', function () {
@@ -42,7 +40,7 @@ describe('Code card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.match('');
+        expect(serializer.serialize(card.render(opts))).toEqual('');
     });
 
     it('Renders a figure if a caption is provided', function () {
@@ -57,7 +55,7 @@ describe('Code card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.match('<figure class="kg-card kg-code-card"><pre><code class="language-html">&lt;p&gt;Test&lt;/p&gt;</code></pre><figcaption>Some <strong>HTML</strong></figcaption></figure>');
+        expect(serializer.serialize(card.render(opts))).toEqual('<figure class="kg-card kg-code-card"><pre><code class="language-html">&lt;p&gt;Test&lt;/p&gt;</code></pre><figcaption>Some <strong>HTML</strong></figcaption></figure>');
     });
 
     it('transforms urls absolute to relative', function () {
@@ -67,8 +65,8 @@ describe('Code card', function () {
 
         const transformed = card.absoluteToRelative!(payload, {siteUrl: 'http://127.0.0.1:2369/'});
 
-        (transformed.caption as string)
-            .should.equal('A link to <a href="/post">an internal post</a>');
+        expect((transformed.caption as string))
+            .toBe('A link to <a href="/post">an internal post</a>');
     });
 
     it('transforms urls relative to absolute', function () {
@@ -78,7 +76,7 @@ describe('Code card', function () {
 
         const transformed = card.relativeToAbsolute!(payload, {siteUrl: 'http://127.0.0.1:2369/', itemUrl: 'http://127.0.0.1:2369/post'});
 
-        (transformed.caption as string)
-            .should.equal('A link to <a href="http://127.0.0.1:2369/post">an internal post</a>');
+        expect((transformed.caption as string))
+            .toBe('A link to <a href="http://127.0.0.1:2369/post">an internal post</a>');
     });
 });

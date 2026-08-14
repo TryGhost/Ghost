@@ -130,6 +130,45 @@ function getAutomationEmailSends() {
         .filter(emailToSend => emailToSend.tags?.includes('automation-email'));
 }
 
+async function getEmailSentCounts(actions) {
+    const actionIds = actions.map(action => action.id);
+    const rows = await db.knex('automation_action_revisions')
+        .select('action_id', 'email_sent_count')
+        .whereIn('action_id', actionIds);
+
+    const countsByActionId = new Map(rows.map(row => [row.action_id, row.email_sent_count]));
+
+    return actionIds.map(actionId => countsByActionId.get(actionId));
+}
+
+async function runAutomationForFreeMember(automation, email) {
+    const member = await membersService.api.members.create({
+        email,
+        name: 'Automation Test Member',
+        status: 'free',
+        email_disabled: false
+    });
+    assert.equal(member.get('status'), 'free');
+
+    await DomainEvents.allSettled();
+
+    const clock = mockSystemTime(new Date());
+
+    try {
+        for (const action of automation.actions) {
+            if (action.type === 'wait') {
+                clock.setSystemTime(new Date(Date.now() + action.data.wait_hours * HOUR_MS));
+            }
+
+            await runSchedulerPoll();
+        }
+
+        await runSchedulerPoll();
+    } finally {
+        clock.restore();
+    }
+}
+
 describe('Members Automations', function () {
     beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
@@ -161,6 +200,7 @@ describe('Members Automations', function () {
 
         const sendEmailActions = automation.actions.filter(action => action.type === 'send_email');
         assert.equal(sendEmailActions.length, 2);
+        assert.deepEqual(await getEmailSentCounts(sendEmailActions), [null, null]);
 
         const emailDesignSettingId = sendEmailActions[0].data.email_design_setting_id;
         assert(emailDesignSettingId, 'Expected send email action to have an email design setting');
@@ -178,31 +218,7 @@ describe('Members Automations', function () {
         );
 
         const email = `automation-free-member-${Date.now()}@test.example`;
-        const member = await membersService.api.members.create({
-            email,
-            name: 'Automation Test Member',
-            status: 'free',
-            email_disabled: false
-        });
-        assert.equal(member.get('status'), 'free');
-
-        await DomainEvents.allSettled();
-
-        const clock = mockSystemTime(new Date());
-
-        try {
-            for (const action of automation.actions) {
-                if (action.type === 'wait') {
-                    clock.setSystemTime(new Date(Date.now() + action.data.wait_hours * HOUR_MS));
-                }
-
-                await runSchedulerPoll();
-            }
-
-            await runSchedulerPoll();
-        } finally {
-            clock.restore();
-        }
+        await runAutomationForFreeMember(automation, email);
 
         const sentEmails = getAutomationEmailSends();
         assert.equal(sentEmails.length, 2);
@@ -224,6 +240,12 @@ describe('Members Automations', function () {
             to: email,
             subject: 'Follow up'
         });
+        assert.deepEqual(await getEmailSentCounts(sendEmailActions), [1, 1]);
+
+        const secondEmail = `automation-second-free-member-${Date.now()}@test.example`;
+        await runAutomationForFreeMember(automation, secondEmail);
+
+        assert.deepEqual(await getEmailSentCounts(sendEmailActions), [2, 2]);
     });
 
     it('does nothing when the automation is inactive', async function () {

@@ -6,7 +6,7 @@ import {PostShareModal} from '@tryghost/shade/posts-stats';
 import {type Post, getPostMetricsToDisplay} from '@tryghost/admin-x-framework';
 import {getPostDestination} from '@/analytics/utils/url-helpers';
 import {trackEvent, useAppContext, useNavigate} from '@tryghost/admin-x-framework';
-import {useAnalyticsData} from '@/analytics/hooks/use-analytics-data';
+import {useAnalyticsData} from '@/shared/analytics/use-analytics-data';
 
 // Import the interface from the hook
 import {type LatestPostWithStats} from '@/analytics/hooks/use-latest-post-stats';

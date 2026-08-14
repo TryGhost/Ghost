@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   action:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     if: github.repository_owner == 'TryGhost'
     steps:
       - uses: tryghost/actions/actions/label-actions@6fbe82c6461eee866b1995631d1fb30d6ce9515d # main

@@ -1,7 +1,11 @@
 {
   "name": "@tryghost/kg-html-to-lexical",
   "version": "1.3.3",
-  "repository": "https://github.com/TryGhost/Koenig/tree/main/packages/kg-html-to-lexical",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TryGhost/Ghost.git",
+    "directory": "koenig/kg-html-to-lexical"
+  },
   "author": "Ghost Foundation",
   "license": "MIT",
   "main": "build/cjs/index.js",
@@ -9,6 +13,7 @@
   "types": "build/esm/index.d.ts",
   "exports": {
     ".": {
+      "source": "./src/index.ts",
       "types": "./build/esm/index.d.ts",
       "import": "./build/esm/index.js",
       "require": "./build/cjs/index.js"
@@ -17,10 +22,9 @@
   "scripts": {
     "dev": "tsc --watch --preserveWatchOutput --sourceMap",
     "build": "tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json",
-    "pretest": "tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json && tsc -p tsconfig.test.json",
-    "test:unit": "NODE_ENV=testing c8 --src src --all --check-coverage --100 --reporter text --reporter cobertura mocha --require tsx './test/**/*.test.ts'",
-    "test": "pnpm test:types && pnpm test:unit",
+    "test:unit": "NODE_ENV=testing vitest run --coverage",
     "test:types": "tsc --noEmit",
+    "test": "pnpm test:types && pnpm test:unit",
     "lint": "eslint"
   },
   "files": [
@@ -33,14 +37,11 @@
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
-    "@types/jsdom": "28.0.3",
-    "@types/mocha": "10.0.10",
-    "c8": "catalog:",
-    "mocha": "11.7.6",
-    "sinon": "catalog:",
-    "tsx": "catalog:",
+    "@types/jsdom": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
     "typescript": "catalog:",
-    "typescript-eslint": "catalog:"
+    "typescript-eslint": "catalog:",
+    "vitest": "catalog:"
   },
   "dependencies": {
     "@lexical/clipboard": "0.13.1",

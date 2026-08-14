@@ -54,7 +54,7 @@ concurrency:
 jobs:
   review:
     name: Review translations
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     timeout-minutes: 5
     if: |
       github.repository_owner == 'TryGhost' && (

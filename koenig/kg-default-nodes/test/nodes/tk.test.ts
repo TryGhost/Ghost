@@ -11,16 +11,16 @@ describe('TKNode', function () {
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
+    const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
         editor.update(() => {
             try {
                 testFn();
-                done();
+                resolve();
             } catch (e) {
-                done(e);
+                reject(e);
             }
         });
-    };
+    });
 
     beforeEach(function () {
         editor = createHeadlessEditor({nodes: editorNodes});
@@ -28,17 +28,17 @@ describe('TKNode', function () {
 
     it('matches node with $isTKNode', editorTest(function () {
         const tkNode = $createTKNode('TK');
-        $isTKNode(tkNode).should.be.true();
+        expect($isTKNode(tkNode)).toBe(true);
     }));
 
     it('is a text entity', editorTest(function () {
         const tkNode = $createTKNode('TK');
-        (tkNode as TKNode).isTextEntity().should.be.true();
+        expect((tkNode as TKNode).isTextEntity()).toBe(true);
     }));
 
     it('can not insert text before', editorTest(function () {
         const tkNode = $createTKNode('TK');
-        (tkNode as TKNode).canInsertTextBefore().should.be.false();
+        expect((tkNode as TKNode).canInsertTextBefore()).toBe(false);
     }));
 
     describe('exportJSON', function () {
@@ -46,7 +46,7 @@ describe('TKNode', function () {
             const tkNode = $createTKNode('TK');
             const json = tkNode.exportJSON();
 
-            json.should.deepEqual({
+            expect(json).toEqual({
                 detail: 0,
                 format: 0,
                 mode: 'normal',
@@ -59,49 +59,51 @@ describe('TKNode', function () {
     });
 
     describe('importJSON', function () {
-        it('imports all data', function (done) {
-            const serializedState = JSON.stringify({
-                root: {
-                    children: [
-                        {
-                            children: [
-                                {
-                                    detail: 0,
-                                    format: 0,
-                                    mode: 'normal',
-                                    style: '',
-                                    text: 'TK',
-                                    type: 'tk',
-                                    version: 1
-                                }
-                            ],
-                            direction: 'ltr',
-                            format: '',
-                            indent: 0,
-                            type: 'paragraph',
-                            version: 1
-                        }
-                    ],
-                    direction: 'ltr',
-                    format: '',
-                    indent: 0,
-                    type: 'root',
-                    version: 1
-                }
-            });
+        it('imports all data', function () {
+            return new Promise<void>((resolve, reject) => {
+                const serializedState = JSON.stringify({
+                    root: {
+                        children: [
+                            {
+                                children: [
+                                    {
+                                        detail: 0,
+                                        format: 0,
+                                        mode: 'normal',
+                                        style: '',
+                                        text: 'TK',
+                                        type: 'tk',
+                                        version: 1
+                                    }
+                                ],
+                                direction: 'ltr',
+                                format: '',
+                                indent: 0,
+                                type: 'paragraph',
+                                version: 1
+                            }
+                        ],
+                        direction: 'ltr',
+                        format: '',
+                        indent: 0,
+                        type: 'root',
+                        version: 1
+                    }
+                });
 
-            const editorState = editor.parseEditorState(serializedState);
-            editor.setEditorState(editorState);
+                const editorState = editor.parseEditorState(serializedState);
+                editor.setEditorState(editorState);
 
-            editor.getEditorState().read(() => {
-                try {
-                    const [tkNode] = $getRoot().getChildren();
-                    (tkNode as ElementNode).getChildren()[0].should.be.instanceof(TKNode);
+                editor.getEditorState().read(() => {
+                    try {
+                        const [tkNode] = $getRoot().getChildren();
+                        expect((tkNode as ElementNode).getChildren()[0]).toBeInstanceOf(TKNode);
 
-                    done();
-                } catch (e) {
-                    done(e);
-                }
+                        resolve();
+                    } catch (e) {
+                        reject(e);
+                    }
+                });
             });
         });
     });
@@ -110,7 +112,7 @@ describe('TKNode', function () {
         const tkNode = $createTKNode('TK');
         const clonedNode = TKNode.clone(tkNode as TKNode);
 
-        clonedNode.should.not.equal(tkNode);
-        clonedNode.getTextContent().should.equal(tkNode.getTextContent());
+        expect(clonedNode).not.toBe(tkNode);
+        expect(clonedNode.getTextContent()).toBe(tkNode.getTextContent());
     }));
 });
