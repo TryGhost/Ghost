@@ -1,13 +1,9 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import {action} from '@ember/object';
-import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 
 export default class ProRoute extends AuthenticatedRoute {
     @service billing;
-    @service session;
-
-    @inject config;
 
     queryParams = {
         action: {refreshModel: true}
@@ -16,8 +12,9 @@ export default class ProRoute extends AuthenticatedRoute {
     beforeModel(transition) {
         super.beforeModel(...arguments);
 
-        // allow non-owner users to access the BMA when we're in a force upgrade state
-        if (!this.session.user.isOwnerOnly && !this.config.hostSettings?.forceUpgrade) {
+        // canAccessBilling also admits non-owner users when the site is in a
+        // force upgrade state
+        if (!this.billing.canAccessBilling) {
             return this.transitionTo('index');
         }
 

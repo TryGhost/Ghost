@@ -1,20 +1,25 @@
 import IframeBuffering from '../../../../utils/iframe-buffering';
 import React, {useCallback, useRef} from 'react';
+import {type EmbedSignupLayout, getEmbedPreviewLayoutMarker} from '../../../../utils/generate-embed-code';
 
 type EmbedSignupPreviewProps = {
     backgroundColor: string;
     html: string;
-    style: string;
+    style: EmbedSignupLayout;
 };
 
 const EmbedSignupPreview: React.FC<EmbedSignupPreviewProps> = ({backgroundColor, html, style}) => {
     const backgroundColorRef = useRef(backgroundColor);
     const htmlRef = useRef(html);
-    const hasContent = Boolean(html);
+    const hasMatchingLayout = html.includes(getEmbedPreviewLayoutMarker(style));
     backgroundColorRef.current = backgroundColor;
     htmlRef.current = html;
 
     const generateContentForEmbed = useCallback((iframe: HTMLIFrameElement) => {
+        if (!hasMatchingLayout) {
+            return;
+        }
+
         const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
         if (!iframeDoc) {
             return;
@@ -35,10 +40,10 @@ const EmbedSignupPreview: React.FC<EmbedSignupPreviewProps> = ({backgroundColor,
         iframeDoc.open();
         iframeDoc.write(docString);
         iframeDoc.close();
-    // The preview code arrives after the modal first renders. Treat that first
-    // document as structural content so it is generated through the buffer;
-    // subsequent option changes can safely update the mounted form in place.
-    }, [hasContent, style]);
+    // Layout state updates before its generated markup. Wait until they match
+    // so the buffer never builds a Minimal form inside the Branded container.
+    // Subsequent option changes can safely update the mounted form in place.
+    }, [hasMatchingLayout, style]);
 
     const updateContentForEmbed = useCallback((iframe: HTMLIFrameElement) => {
         // Structural layout changes are handled by the buffered generator. Do

@@ -359,6 +359,61 @@ describe('Acceptance: Search', function () {
 
             expect(currentURL()).to.equal(`/settings/staff/${testData.user.slug}`);
         });
+
+        describe('billing results', function () {
+            const enableBilling = (server) => {
+                server.db.configs.update(1, {
+                    hostSettings: {
+                        billing: {
+                            enabled: true,
+                            url: 'http://localhost:4200/billing-app',
+                            search: {
+                                groupName: 'Ghost(Pro)',
+                                items: [
+                                    {id: 'request-backup', title: 'Request backup', path: '/backups', keywords: 'backup restore data'},
+                                    {id: 'contact-support', title: 'Contact support', path: '/support', keywords: 'support help contact'}
+                                ]
+                            }
+                        }
+                    }
+                });
+            };
+
+            it('shows billing results before content results', async function () {
+                enableBilling(this.server);
+                this.server.create('post', {title: 'Backup post', slug: 'backup-post'});
+
+                await visit('/analytics');
+                await openSearch(this.owner);
+                await searchFor('backup');
+
+                assertSearchGroups(['Ghost(Pro)', 'Posts']);
+
+                const searchOptions = getSearchOptions();
+                const titles = searchOptions.map(option => getTitleText(option));
+                expect(titles).to.include('Request backup');
+            });
+
+            it('navigates to the billing page when selecting a billing result', async function () {
+                enableBilling(this.server);
+
+                await visit('/analytics');
+                await openSearch(this.owner);
+                await searchFor('contact support');
+
+                await selectWithEnter();
+
+                expect(currentURL()).to.equal('/pro/support');
+            });
+
+            it('does not show billing results when billing is not enabled', async function () {
+                await visit('/analytics');
+                await openSearch(this.owner);
+                await searchFor('backup');
+
+                assertNoResults();
+            });
+        });
     });
 
     describe('BasicSearch Provider', function () {

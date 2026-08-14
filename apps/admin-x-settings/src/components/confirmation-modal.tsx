@@ -9,6 +9,7 @@ import {
     AlertDialogTitle,
     Button,
     type ButtonProps,
+    LoadingIndicator,
     StickyFooter
 } from '@tryghost/shade/components';
 import {cn} from '@tryghost/shade/utils';
@@ -35,7 +36,7 @@ export const ConfirmationModalContent: React.FC<ConfirmationModalProps> = ({
     prompt,
     cancelLabel = 'Cancel',
     okLabel = 'OK',
-    okRunningLabel = '...',
+    okRunningLabel,
     okVariant = 'default',
     onCancel,
     onOk,
@@ -47,6 +48,7 @@ export const ConfirmationModalContent: React.FC<ConfirmationModalProps> = ({
     const modal = useModal();
     const [taskState, setTaskState] = useState<'running' | ''>('');
     const isRunning = taskState === 'running';
+    const runningLabel = okRunningLabel || okLabel;
 
     const handleCancel = () => {
         if (isRunning) {
@@ -76,13 +78,14 @@ export const ConfirmationModalContent: React.FC<ConfirmationModalProps> = ({
     const defaultFooter = (
         <AlertDialogFooter>
             {cancelLabel && (
-                <Button className='font-semibold' data-testid='cancel-modal' disabled={isRunning} type='button' variant='ghost' onClick={handleCancel}>
+                <Button data-testid='cancel-modal' disabled={isRunning} type='button' variant='outline' onClick={handleCancel}>
                     {cancelLabel}
                 </Button>
             )}
             {okLabel && (
-                <Button className='min-w-20' data-testid='ok-modal' disabled={isRunning} type='button' variant={okVariant} onClick={handleConfirm}>
-                    {isRunning ? okRunningLabel : okLabel}
+                <Button aria-busy={isRunning} data-testid='ok-modal' disabled={isRunning} type='button' variant={okVariant} onClick={handleConfirm}>
+                    {isRunning && <LoadingIndicator color='current' size='sm' />}
+                    {isRunning ? runningLabel : okLabel}
                 </Button>
             )}
         </AlertDialogFooter>
@@ -94,8 +97,7 @@ export const ConfirmationModalContent: React.FC<ConfirmationModalProps> = ({
         <AlertDialog open={modal.visible} onOpenChange={open => !open && handleCancel()}>
             <AlertDialogContent
                 className={cn(
-                    'z-[1100] max-h-[calc(100dvh-4rem)] w-[calc(100%-2rem)] max-w-[540px] gap-0 overflow-y-auto bg-background p-8',
-                    formSheet ? 'shadow-md' : 'shadow-xl'
+                    'z-[1100] max-h-[calc(100dvh-4rem)] w-[calc(100%-2rem)] overflow-y-auto bg-background'
                 )}
                 data-testid={testId}
                 overlayClassName={cn(
@@ -104,14 +106,14 @@ export const ConfirmationModalContent: React.FC<ConfirmationModalProps> = ({
                 )}
                 onEscapeKeyDown={event => event.stopPropagation()}
             >
-                <AlertDialogHeader className='gap-0'>
-                    <AlertDialogTitle className='text-xl leading-heading font-bold md:text-2xl'>{title}</AlertDialogTitle>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>{title}</AlertDialogTitle>
                     <AlertDialogDescription asChild>
-                        <div className='py-4 text-left text-base text-foreground'>{prompt}</div>
+                        <div className='text-left text-foreground'>{prompt}</div>
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 {footer && (stickyFooter ? (
-                    <StickyFooter className='-mx-8 -mb-8 w-[calc(100%+4rem)]' contentClassName='px-8' height={84}>
+                    <StickyFooter className='-mx-6 -mb-6 w-[calc(100%+3rem)]' contentClassName='px-6' height={84}>
                         {footer}
                     </StickyFooter>
                 ) : footer)}

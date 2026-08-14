@@ -54,10 +54,8 @@ class DynamicRoutingService {
     }
 
     async loadRouteSettings() {
-        const {buildRouterSettings} = require('./activation-bridge');
-
         try {
-            return buildRouterSettings(await this.store.get());
+            return await this.store.get();
         } catch (err) {
             // A stored-content error means the site's routes.yaml is invalid —
             // either it fails validation or it isn't parseable YAML. Log a

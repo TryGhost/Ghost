@@ -108,7 +108,7 @@ const RetentionOfferRow: React.FC<{
     return (
         <TableRow data-testid='retention-offer-item'>
             <TableCell className='sticky left-0 z-10 bg-background p-0'>
-                <button className='block w-full cursor-pointer p-5 pl-0 text-left' type='button' onClick={onClick}>
+                <button className='block w-full cursor-pointer p-5 text-left' type='button' onClick={onClick}>
                     <Stack gap='none'>
                         <span className='font-semibold'>{offer.name}</span>
                         <span className='text-muted-foreground'>{offer.description}</span>
@@ -176,7 +176,7 @@ const SignupOfferRow: React.FC<{
     return (
         <TableRow className={archived ? 'opacity-60' : undefined} data-testid='offer-item'>
             <TableCell className='sticky left-0 z-10 bg-background p-0'>
-                <button className='block w-full cursor-pointer p-5 pl-0 text-left' type='button' onClick={onClick}>
+                <button className='block w-full cursor-pointer p-5 text-left' type='button' onClick={onClick}>
                     <Stack gap='none'>
                         <span className='font-semibold'>{offer.name}</span>
                         <span className='text-muted-foreground'>{tier.name} {getOfferCadence(offer.cadence)}</span>
@@ -329,7 +329,7 @@ export const OffersIndexModal: React.FC = () => {
 
     const actions = (
         <Inline gap='md'>
-            <Button className='font-semibold' type='button' variant='ghost' onClick={() => {
+            <Button type='button' variant='outline' onClick={() => {
                 modal.remove();
                 updateRoute('offers');
             }}>Close</Button>
@@ -356,11 +356,11 @@ export const OffersIndexModal: React.FC = () => {
             </colgroup>
             <TableHeader>
                 <TableRow>
-                    <TableHead className='sticky left-0 z-10 h-auto bg-background p-0 pb-2.5 uppercase'>Name</TableHead>
+                    <TableHead className='sticky left-0 z-10 h-auto bg-background p-0 pb-2.5 pl-5 uppercase'>Name</TableHead>
                     <TableHead className='h-auto p-0 pb-2.5 pl-5 uppercase'>Terms</TableHead>
                     <TableHead className='h-auto p-0 pb-2.5 pl-5 uppercase'>Price</TableHead>
                     <TableHead className='h-auto p-0 pb-2.5 pl-5 uppercase'>Redemptions</TableHead>
-                    <TableHead className='h-auto p-0 pb-2.5 pl-5 uppercase'>
+                    <TableHead className='h-auto p-0 px-5 pb-2.5 uppercase'>
                         <Inline align='center' justify='between'>
                             Status
                             <OffersFilterMenu

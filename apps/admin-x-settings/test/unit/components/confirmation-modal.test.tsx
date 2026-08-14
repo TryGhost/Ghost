@@ -28,6 +28,11 @@ describe('ConfirmationModal', () => {
 
         expect(await screen.findByRole('heading', {name: 'Delete newsletter?'})).toBeInTheDocument();
         expect(screen.getByText('This cannot be undone.')).toBeInTheDocument();
+        expect(screen.getByTestId('confirmation-modal')).toHaveClass('gap-6', 'p-6');
+        expect(screen.getByRole('heading', {name: 'Delete newsletter?'})).toHaveClass('font-semibold');
+        expect(screen.getByRole('heading', {name: 'Delete newsletter?'})).not.toHaveClass('font-bold');
+        expect(screen.getByRole('button', {name: 'Keep it'})).toHaveClass('border-control-border', 'bg-transparent');
+        expect(screen.getByRole('button', {name: 'Delete'}).parentElement).not.toHaveClass('[&>button]:min-w-20');
 
         fireEvent.click(screen.getByRole('button', {name: 'Delete'}));
 
@@ -50,7 +55,11 @@ describe('ConfirmationModal', () => {
         const confirmButton = await screen.findByRole('button', {name: 'Activate'});
         fireEvent.click(confirmButton);
 
-        expect(screen.getByRole('button', {name: 'Activating...'})).toBeDisabled();
+        const runningButton = screen.getByRole('button', {name: 'Activating...'});
+
+        expect(runningButton).toBeDisabled();
+        expect(runningButton).toHaveAttribute('aria-busy', 'true');
+        expect(runningButton.firstElementChild).toHaveClass('animate-spin', 'border-current/20', 'before:bg-current');
         expect(screen.getByRole('button', {name: 'Cancel'})).toBeDisabled();
 
         resolveTask();

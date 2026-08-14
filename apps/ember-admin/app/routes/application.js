@@ -216,8 +216,8 @@ export default Route.extend(ShortcutsRoute, {
         }
 
         if (this.config.hostSettings?.forceUpgrade) {
-            // enforce opening the BMA in a force upgrade state
-            this.billing.openBillingWindow(this.router.currentURL, '/pro');
+            // enforce opening the billing app in a force upgrade state
+            this.billing.openBillingWindow(this.router.currentURL, this.billing.getBillingRouteFromHash());
         }
 
         // Notify React of the initial subscription state

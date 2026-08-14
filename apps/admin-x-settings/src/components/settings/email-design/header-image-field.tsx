@@ -6,22 +6,33 @@ import {formatNumber} from '@tryghost/shade/utils';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 
 interface HeaderImageFieldProps {
+    inputId?: string;
+    onUploadError?: (error: unknown) => void;
     value: string;
     onChange: (url: string) => void;
 }
 
-const HeaderImageField: React.FC<HeaderImageFieldProps> = ({value, onChange}) => {
+const HeaderImageField: React.FC<HeaderImageFieldProps> = ({inputId = 'welcome-email-header-image', onUploadError, value, onChange}) => {
     const {mutateAsync: uploadImage} = useUploadImage();
 
     const handleUpload = async (file: File) => {
-        const imageUrl = getImageUrl(await uploadImage({file}));
-        onChange(imageUrl);
+        try {
+            const imageUrl = getImageUrl(await uploadImage({file}));
+            onChange(imageUrl);
+        } catch (error) {
+            if (onUploadError) {
+                onUploadError(error);
+                return;
+            }
+
+            throw error;
+        }
     };
 
     return (
         <Field data-testid="header-image-field">
-            <FieldLabel htmlFor='welcome-email-header-image'>Header image</FieldLabel>
-            <ImageUpload className='h-24 w-full'>
+            <FieldLabel htmlFor={inputId}>Header image</FieldLabel>
+            <ImageUpload className='aspect-[2/1] w-full'>
                 {value ? (
                     <ImageUploadPreview>
                         <ImageUploadImage alt="Header" src={value} />
@@ -34,7 +45,7 @@ const HeaderImageField: React.FC<HeaderImageFieldProps> = ({value, onChange}) =>
                 ) : (
                     <ImageUploadDropzone
                         accept={{'image/*': ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg']}}
-                        inputId="welcome-email-header-image"
+                        inputId={inputId}
                         onDropAccepted={files => files[0] && handleUpload(files[0])}
                     >
                         <span className="text-control font-medium">Upload header image</span>

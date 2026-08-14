@@ -153,23 +153,42 @@ describe('Member detail custom fields', () => {
         expect(editApi.requests).toHaveLength(0);
     });
 
-    it('blocks saving an incomplete address with inline sub-field errors, then saves once fixed', async () => {
+    it('saves an address that leaves sub-fields the country does not use empty', async () => {
+        const m = member({name: 'Ada Lovelace'});
+        const editApi = fakeMemberDetailWorld(m, {});
+        await renderAdminApp(`/members/${m.id}`, FLAGS);
+
+        // Hong Kong has no postal code, so leaving it empty is a complete address
+        // rather than an incomplete one.
+        await page.getByRole('button', {name: 'Edit Home address'}).click();
+        await modal().getByLabelText('Address line 1').fill('Flat 3, 8 Wan Chai Road');
+        await modal().getByLabelText('City').fill('Hong Kong');
+        await modal().getByLabelText('Country').fill('HK');
+        await modal().getByRole('button', {name: 'Save', exact: true}).click();
+
+        await expect.element(page.getByText('Flat 3, 8 Wan Chai Road, Hong Kong, HK')).toBeVisible();
+        const saved = editApi.lastRequest?.body as {members: Array<Record<string, unknown>>};
+        expect(saved.members[0].custom_fields).toEqual({
+            home_address: {line1: 'Flat 3, 8 Wan Chai Road', city: 'Hong Kong', country: 'HK'}
+        });
+    });
+
+    it('blocks saving a malformed country code with an inline error, then saves once fixed', async () => {
         const m = member({name: 'Ada Lovelace'});
         const editApi = fakeMemberDetailWorld(m, {});
         await renderAdminApp(`/members/${m.id}`, FLAGS);
 
         await page.getByRole('button', {name: 'Edit Home address'}).click();
         await modal().getByLabelText('Address line 1').fill('1 Main St');
+        await modal().getByLabelText('City').fill('Berlin');
+        await modal().getByLabelText('Postal code').fill('10115');
+        await modal().getByLabelText('Country').fill('DEU');
         await modal().getByRole('button', {name: 'Save', exact: true}).click();
 
-        // No request went out; the errors say what to do, in plain words.
-        await expect.element(modal().getByText('Enter a city.')).toBeVisible();
-        await expect.element(modal().getByText('Enter a postal code.')).toBeVisible();
+        // No request went out; the error says what to do, in plain words.
         await expect.element(modal().getByText('Enter a 2-letter country code, like US.')).toBeVisible();
         expect(editApi.requests).toHaveLength(0);
 
-        await modal().getByLabelText('City').fill('Berlin');
-        await modal().getByLabelText('Postal code').fill('10115');
         await modal().getByLabelText('Country').fill('DE');
         await modal().getByRole('button', {name: 'Save', exact: true}).click();
 

@@ -5,7 +5,8 @@ import React, {useEffect, useState} from 'react';
 import WebhooksTable from './webhooks-table';
 import {APIError} from '@tryghost/admin-x-framework/errors';
 import {type APIKey, useRefreshAPIKey} from '@tryghost/admin-x-framework/api/api-keys';
-import {Field, FieldError, FieldGroup, FieldLabel, Input} from '@tryghost/shade/components';
+import {Box, Stack} from '@tryghost/shade/primitives';
+import {Field, FieldError, FieldLabel, Input} from '@tryghost/shade/components';
 import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
 import {type Integration, useBrowseIntegrations, useEditIntegration} from '@tryghost/admin-x-framework/api/integrations';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
@@ -97,7 +98,7 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
             await handleSave({fakeWhenUnchanged: true});
         }}
     >
-        <div className='mt-7 flex w-full flex-col gap-7 md:flex-row'>
+        <Stack className='w-full pt-6 md:flex-row' gap='xl'>
             <div className='shrink-0'>
                 <ImageUpload className='size-25'>
                     {formState.icon_image ? (
@@ -127,8 +128,8 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
                     )}
                 </ImageUpload>
             </div>
-            <div className='flex min-w-0 grow flex-col'>
-                <FieldGroup className='mb-10 gap-8 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+            <Stack className='min-w-0 grow' gap='2xl'>
+                <Stack gap='md'>
                     <Field data-invalid={Boolean(errors.name) || undefined}>
                         <FieldLabel htmlFor='integration-title'>Title</FieldLabel>
                         <Input aria-invalid={Boolean(errors.name) || undefined} id='integration-title' maxLength={191} value={formState.name} onChange={e => updateForm(state => ({...state, name: e.target.value}))} onKeyDown={() => clearError('name')} />
@@ -138,34 +139,34 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
                         <FieldLabel htmlFor='integration-description'>Description</FieldLabel>
                         <Input id='integration-description' maxLength={2000} value={formState.description || ''} onChange={e => updateForm(state => ({...state, description: e.target.value}))} />
                     </Field>
-                    <APIKeys keys={[
-                        {
-                            id: 'content-api-key',
-                            label: 'Content API key',
-                            text: contentApiKey?.secret,
-                            hint: contentKeyRegenerated ? <div className='text-green'>Content API Key was successfully regenerated</div> : undefined,
-                            onRegenerate: () => contentApiKey && handleRegenerate(contentApiKey, setContentKeyRegenerated)
-                        },
-                        {
-                            id: 'admin-api-key',
-                            label: 'Admin API key',
-                            text: adminApiKey?.secret,
-                            hint: adminKeyRegenerated ? <div className='text-green'>Admin API Key was successfully regenerated</div> : undefined,
-                            onRegenerate: () => adminApiKey && handleRegenerate(adminApiKey, setAdminKeyRegenerated)
-                        },
-                        {
-                            id: 'api-url',
-                            label: 'API URL',
-                            text: window.location.origin + getGhostPaths().subdir
-                        }
-                    ]} />
-                </FieldGroup>
-            </div>
-        </div>
+                </Stack>
+                <APIKeys keys={[
+                    {
+                        id: 'content-api-key',
+                        label: 'Content API key',
+                        text: contentApiKey?.secret,
+                        hint: contentKeyRegenerated ? <div className='text-green'>Content API Key was successfully regenerated</div> : undefined,
+                        onRegenerate: () => contentApiKey && handleRegenerate(contentApiKey, setContentKeyRegenerated)
+                    },
+                    {
+                        id: 'admin-api-key',
+                        label: 'Admin API key',
+                        text: adminApiKey?.secret,
+                        hint: adminKeyRegenerated ? <div className='text-green'>Admin API Key was successfully regenerated</div> : undefined,
+                        onRegenerate: () => adminApiKey && handleRegenerate(adminApiKey, setAdminKeyRegenerated)
+                    },
+                    {
+                        id: 'api-url',
+                        label: 'API URL',
+                        text: window.location.origin + getGhostPaths().subdir
+                    }
+                ]} />
+            </Stack>
+        </Stack>
 
-        <div>
+        <Box className='mt-8'>
             <WebhooksTable integration={integration} />
-        </div>
+        </Box>
     </SettingsModal>;
 };
 

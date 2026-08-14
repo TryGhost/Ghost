@@ -146,7 +146,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
 
     return (
         <div className='pt-7' data-testid={testId}>
-            <FieldGroup className='mb-10 gap-8 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+            <FieldGroup className='mb-10 gap-8'>
                 <section>
                     <h2 className='mb-4 text-lg'>General</h2>
                     <div className='flex flex-col gap-6'>
@@ -168,7 +168,6 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                         <Field>
                             <FieldLabel htmlFor='offer-display-description'>Display description</FieldLabel>
                             <Textarea
-                                className='border-transparent bg-muted'
                                 id='offer-display-description'
                                 maxLength={MAX_DISPLAY_TEXT_LENGTH}
                                 placeholder='Take advantage of this limited-time offer.'
@@ -193,7 +192,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                                 const id = `offer-type-${option.value}`;
                                 return (
                                     <Field key={option.value} orientation='horizontal'>
-                                        <RadioGroupItem id={id} indicator='check' value={option.value} />
+                                        <RadioGroupItem id={id} value={option.value} />
                                         <FieldContent>
                                             <FieldLabel className='cursor-pointer' htmlFor={id}>{option.title}</FieldLabel>
                                             <FieldDescription>{option.description}</FieldDescription>
@@ -220,7 +219,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                             overrides.type !== 'trial' && <>
                                 <Field data-invalid={Boolean(errors.amount) || undefined}>
                                     <FieldLabel htmlFor='offer-amount'>Amount off</FieldLabel>
-                                    <InputGroup className='h-[var(--control-height)] border-transparent bg-muted' data-invalid={Boolean(errors.amount) || undefined}>
+                                    <InputGroup data-invalid={Boolean(errors.amount) || undefined}>
                                         <InputGroupInput
                                             id='offer-amount'
                                             type='number'
@@ -265,7 +264,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                                 {
                                     overrides.duration === 'repeating' && !isYearlyTier && <div className='-mt-4'>
                                         <Field data-invalid={Boolean(errors.durationInMonths) || undefined}>
-                                            <InputGroup className='h-[var(--control-height)] border-transparent bg-muted' data-invalid={Boolean(errors.durationInMonths) || undefined}>
+                                            <InputGroup data-invalid={Boolean(errors.durationInMonths) || undefined}>
                                                 <InputGroupInput aria-invalid={Boolean(errors.durationInMonths) || undefined} data-testid='duration-months-input' type='number' value={overrides.durationInMonths === 0 ? '' : String(overrides.durationInMonths)} onChange={(e) => {
                                                 handleDurationInMonthsInput(e);
                                                 }} onKeyDown={() => clearError('durationInMonths')} />

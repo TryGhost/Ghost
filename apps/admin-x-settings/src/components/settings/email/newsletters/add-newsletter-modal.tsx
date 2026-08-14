@@ -107,7 +107,7 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
             }
         }}
     >
-        <FieldGroup className='mt-10 gap-8 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+        <FieldGroup className='mt-10 gap-8'>
             <Field data-invalid={Boolean(errors.name) || undefined}>
                 <FieldLabel htmlFor='newsletter-name'>Name</FieldLabel>
                 <Input aria-invalid={Boolean(errors.name) || undefined} id='newsletter-name' maxLength={191} placeholder='Weekly roundup' value={formState.name} autoFocus onChange={e => updateForm(state => ({...state, name: e.target.value}))} onKeyDown={() => clearError('name')} />
@@ -115,7 +115,7 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
             </Field>
             <Field>
                 <FieldLabel htmlFor='newsletter-description'>Description</FieldLabel>
-                <Textarea className='border-transparent bg-muted' id='newsletter-description' maxLength={2000} value={formState.description} onChange={e => updateForm(state => ({...state, description: e.target.value}))} />
+                <Textarea id='newsletter-description' maxLength={2000} value={formState.description} onChange={e => updateForm(state => ({...state, description: e.target.value}))} />
             </Field>
             <Field orientation='horizontal'>
                 <FieldContent>

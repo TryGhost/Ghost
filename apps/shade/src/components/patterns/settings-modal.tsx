@@ -65,11 +65,11 @@ const settingsModalVariants = cva(
     {
         variants: {
             size: {
-                sm: 'max-w-[480px] rounded',
-                md: 'max-w-[720px] rounded',
-                lg: 'max-w-[1020px] rounded',
-                xl: 'max-w-[1240px] rounded',
-                full: 'h-full rounded',
+                sm: 'max-w-[480px] rounded-lg',
+                md: 'max-w-[720px] rounded-lg',
+                lg: 'max-w-[1020px] rounded-lg',
+                xl: 'max-w-[1240px] rounded-lg',
+                full: 'h-full rounded-lg',
                 bleed: 'h-full'
             },
             align: {
@@ -185,19 +185,24 @@ const SettingsModal = forwardRef<HTMLElement, SettingsModalProps>(({
                 return;
             }
 
-            if (activeElement instanceof HTMLElement) {
-                activeElement.blur();
-            }
-
             setTimeout(() => {
+                // Radix layers may handle Escape from a document listener that
+                // was registered after this modal. Wait until propagation is
+                // complete before deciding whether the modal should close.
+                if (event.defaultPrevented) {
+                    return;
+                }
+
+                if (activeElement instanceof HTMLElement && document.activeElement === activeElement) {
+                    activeElement.blur();
+                }
+
                 if (onCancel) {
                     onCancel();
                 } else {
                     removeModal();
                 }
             });
-
-            event.stopPropagation();
         };
 
         document.addEventListener('keydown', handleEscapeKey);
@@ -281,12 +286,12 @@ const SettingsModal = forwardRef<HTMLElement, SettingsModalProps>(({
                 <Box>{leftButton}</Box>
                 <Inline gap='md'>
                     {cancelLabel && (
-                        <Button className='font-semibold' data-testid='cancel-modal' disabled={buttonsDisabled} type='button' variant='ghost' onClick={onCancel || removeModal}>
+                        <Button data-testid='cancel-modal' disabled={buttonsDisabled} type='button' variant='outline' onClick={onCancel || removeModal}>
                             {cancelLabel}
                         </Button>
                     )}
                     {okLabel && (
-                        <Button className='min-w-20' data-testid='ok-modal' disabled={buttonsDisabled || okDisabled || okLoading} type='button' variant={okVariant} onClick={onOk}>
+                        <Button data-testid='ok-modal' disabled={buttonsDisabled || okDisabled || okLoading} type='button' variant={okVariant} onClick={onOk}>
                             {okLoading && <LoadingIndicator size='sm' />}
                             {okLabel}
                         </Button>

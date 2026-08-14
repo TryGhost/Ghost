@@ -11,7 +11,6 @@ const defaultSettings = require('../../../../../core/server/data/schema/default-
 // Routes are yaml so we can require the file directly
 const routeSettings = require('../../../../../core/server/services/route-settings');
 routeSettings.init();
-const {buildRouterSettings} = require('../../../../../core/server/services/route-settings/activation-bridge');
 const {parseRouteSettings} = require('../../../../../core/server/services/route-settings/route-settings-parser');
 const parseYaml = require('../../../../../core/server/services/route-settings/yaml-parser');
 
@@ -36,17 +35,20 @@ const parseYaml = require('../../../../../core/server/services/route-settings/ya
  */
 describe('DB version integrity', function () {
     // Only these variables should need updating
-    const currentSchemaHash = 'c0fe7246714201a82b75f80308d5e300';
-    const currentFixturesHash = '065b413e1d1f4f95fa7cb7734c5e7934';
+    const currentSchemaHash = '47fc91e205277e2c751ff58592785240';
+    const currentFixturesHash = '4e0c7b4fe3c1593e9d1fae1a891389ca';
     const currentSettingsHash = '8650db85b9a61afe4797ad6333066c62';
-    const currentRoutesHash = '96a7d0955083bae3f79522b23a1d698d';
+    const currentRoutesHash = 'd8c25fa01bf6d22a2bcb05ba0de70dc1';
 
     // If this test is failing, then it is likely a change has been made that requires a DB version bump,
     // and the values above will need updating as confirmation
     it('should not change without fixing this test', function () {
         const routesPath = path.join(config.get('paths').defaultRouteSettings, 'default-routes.yaml');
         const defaultRoutesSource = fs.readFileSync(routesPath, 'utf-8');
-        const defaultRoutes = buildRouterSettings(parseRouteSettings(parseYaml(defaultRoutesSource), defaultRoutesSource));
+        // `yamlSource` is the verbatim file text, so hashing it would trip this
+        // canary on comment and whitespace edits that change no route at all.
+        // The bridge output this used to hash carried no such field either.
+        const defaultRoutes = _.omit(parseRouteSettings(parseYaml(defaultRoutesSource), defaultRoutesSource), 'yamlSource');
 
         const tablesNoValidation = _.cloneDeep(schema);
         let schemaHash;

@@ -37,7 +37,7 @@ interface ThemeModalContentProps {
 const UploadModalContent: React.FC<{onUpload: (file: File) => void}> = ({onUpload}) => {
     const modal = useModal();
 
-    return <div className="-mb-6">
+    return (
         <Dropzone
             accept={{'application/zip': ['.zip']}}
             inputId="theme-upload"
@@ -48,7 +48,7 @@ const UploadModalContent: React.FC<{onUpload: (file: File) => void}> = ({onUploa
         >
             Click to select or drag & drop zip file
         </Dropzone>
-    </div>;
+    );
 };
 
 const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
@@ -216,7 +216,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
 
     const left =
     <div className='hidden md:!visible md:!block'>
-        <Tabs value={currentTab} variant='button-sm' onValueChange={setCurrentTab}>
+        <Tabs value={currentTab} variant='button' onValueChange={setCurrentTab}>
             <TabsList>
                 <TabsTrigger value='official'>Official themes</TabsTrigger>
                 <TabsTrigger value='installed'>Installed</TabsTrigger>
@@ -249,7 +249,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
     const right =
         <div className='flex items-center gap-14'>
             <div className='flex items-center gap-3'>
-                <Button className='font-semibold' type='button' variant='ghost' onClick={() => {
+                <Button type='button' variant='outline' onClick={() => {
                     modal.remove();
                     onClose();
                 }}>Close</Button>
@@ -267,7 +267,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
             </PageHeader.Actions>
         </PageHeader>
         <div className='px-[8vmin] md:hidden'>
-            <Tabs value={currentTab} variant='button-sm' onValueChange={setCurrentTab}>
+            <Tabs value={currentTab} variant='button' onValueChange={setCurrentTab}>
                 <TabsList>
                     <TabsTrigger value='official'>Official themes</TabsTrigger>
                     <TabsTrigger value='installed'>Installed</TabsTrigger>

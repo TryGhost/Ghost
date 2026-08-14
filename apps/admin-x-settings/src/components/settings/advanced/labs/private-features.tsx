@@ -80,13 +80,13 @@ const features: Feature[] = [{
     description: 'Let admins create and manage custom field definitions for members',
     flag: 'membersCustomFields'
 }, {
-    title: 'Preview by tier',
-    description: 'Preview posts and emails as a member of a specific tier',
-    flag: 'previewByTier'
-}, {
     title: 'Paywall improvements',
     description: 'Enables paywall usability, discoverability and email customization improvements',
     flag: 'paywallImprovements'
+}, {
+    title: 'Gift subscription customization',
+    description: 'Enables fixed-duration gift subscription purchases before publisher configuration is available',
+    flag: 'giftSubCustomization'
 }];
 
 const AlphaFeatures: React.FC = () => {

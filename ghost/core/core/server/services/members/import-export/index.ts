@@ -18,7 +18,9 @@ interface ImporterServices {
     getMembersRepository(): Promise<Omit<MembersRepository, 'getImportLabel'>>;
     getDefaultTier(): Promise<Tier>;
     getTierByName(name: string): Promise<Tier | null>;
-    getGiftService(): GiftService;
+    getGiftService(): {
+        reassignRedeemer(input: {giftId: string; memberId: string; transacting?: Knex.Transaction}): Promise<void>;
+    };
     sendEmail: EmailNotifications['send'];
     urlFor: EmailNotifications['urlFor'];
     addJob(job: {job: () => Promise<void>; offloaded: boolean; name: string}): void;
@@ -31,7 +33,7 @@ interface ImporterServices {
         definitions: {browse(): Promise<CsvField[]>};
         values: {
             planWrite(values: Record<string, unknown>): Promise<unknown[]>;
-            applyWrite(memberId: string, plan: unknown[], executor: Knex): Promise<void>;
+            applyWrite(memberId: string, plan: unknown[], executor: Knex, options?: {mergeComposites?: boolean}): Promise<void>;
         };
     };
 }
@@ -72,7 +74,11 @@ export function makeImporter(deps: ImporterServices) {
     // Gifts is initialised at boot and always present at request time; the getter
     // resolves it lazily so the ready service is picked up whenever a row uses it.
     const gifts: GiftService = {
-        reassignRedeemer: (giftId, memberId, options) => deps.getGiftService().reassignRedeemer(giftId, memberId, options)
+        reassignRedeemer: (giftId, memberId, options) => deps.getGiftService().reassignRedeemer({
+            giftId,
+            memberId,
+            transacting: options.transacting
+        })
     };
 
     // Gated by the same labs flag as the export, so the two halves round-trip or stay
@@ -81,7 +87,11 @@ export function makeImporter(deps: ImporterServices) {
     const customFields: CustomFieldsImport = {
         activeFields: async () => (labs.isSet('membersCustomFields') ? deps.customFields.definitions.browse() : []),
         planWrite: values => deps.customFields.values.planWrite(values),
-        applyWrite: (memberId, plan, executor) => deps.customFields.values.applyWrite(memberId, plan, executor)
+        // mergeComposites: a sub-field is a field, so a row writes the sub-fields it fills
+        // and leaves the rest alone, the same rule a blank `name` column follows. Without
+        // it a file naming one address column would replace the whole address, clearing
+        // five sub-fields it never mentioned.
+        applyWrite: (memberId, plan, executor) => deps.customFields.values.applyWrite(memberId, plan, executor, {mergeComposites: true})
     };
 
     return new MembersCSVImporter({

@@ -58,7 +58,7 @@ const MailGun: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 <Field>
                     <FieldLabel>Mailgun region</FieldLabel>
                     <Select value={mailgunRegion ?? ''} onValueChange={value => updateSetting('mailgun_base_url', value)}>
-                        <SelectTrigger aria-label='Mailgun region' className='border-transparent bg-muted hover:bg-muted'><SelectValue /></SelectTrigger>
+                        <SelectTrigger aria-label='Mailgun region'><SelectValue /></SelectTrigger>
                         <SelectContent>
                             {MAILGUN_REGIONS.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
                         </SelectContent>
@@ -67,7 +67,6 @@ const MailGun: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 <Field>
                     <FieldLabel htmlFor='mailgun-domain'>Mailgun domain</FieldLabel>
                     <Input
-                        className='border-transparent bg-muted'
                         id='mailgun-domain'
                         value={mailgunDomain ?? ''}
                         onChange={(e) => {
@@ -79,7 +78,6 @@ const MailGun: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     <Field>
                         <FieldLabel htmlFor='mailgun-api-key'>Mailgun private API key</FieldLabel>
                         <Input
-                            className='border-transparent bg-muted'
                             id='mailgun-api-key'
                             type='password'
                             value={mailgunApiKey ?? ''}

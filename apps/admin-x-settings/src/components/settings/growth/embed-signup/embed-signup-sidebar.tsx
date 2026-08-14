@@ -1,9 +1,10 @@
 import ColorPickerField from '../../../color-picker-field';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {Button, Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldDescription, FieldGroup, FieldLabel, MultiSelectCombobox, StickyFooter, Textarea, ToggleGroup, ToggleGroupItem} from '@tryghost/shade/components';
+import {Button, Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldDescription, FieldGroup, FieldLabel, MultiSelectCombobox, Textarea, ToggleGroup, ToggleGroupItem} from '@tryghost/shade/components';
+import {type EmbedSignupLayout} from '../../../../utils/generate-embed-code';
+import {Inline, Stack, Text} from '@tryghost/shade/primitives';
 import {type Label} from '@tryghost/admin-x-framework/api/labels';
 import {Plus} from 'lucide-react';
-import {Text} from '@tryghost/shade/primitives';
 import {useFilterableApi} from '@tryghost/admin-x-framework/hooks';
 
 export type SelectedLabelTypes = {
@@ -18,8 +19,8 @@ type SidebarProps = {
     handleLabelClick: (selected: string[]) => void;
     selectedLabels?: SelectedLabelTypes[];
     embedScript: string;
-    handleLayoutSelect: React.Dispatch<React.SetStateAction<string>>;
-    selectedLayout : string;
+    handleLayoutSelect: React.Dispatch<React.SetStateAction<EmbedSignupLayout>>;
+    selectedLayout: EmbedSignupLayout;
     handleCopyClick: () => void;
     isCopied: boolean;
     setCustomColor?: React.Dispatch<React.SetStateAction<{active: boolean}>>;
@@ -95,13 +96,17 @@ const EmbedSignupSidebar: React.FC<SidebarProps> = ({selectedLayout,
     }, []);
 
     return (
-        <div className='flex h-[calc(100vh-16vmin)] max-h-[645px] flex-col justify-between overflow-y-scroll border-grey-200 p-6 pb-0 max-lg:border-t lg:border-l dark:border-grey-900'>
+        <Stack className='h-auto border-border p-6 max-lg:border-t lg:h-[calc(100vh-16vmin)] lg:max-h-[645px] lg:overflow-y-scroll lg:border-l' gap='none'>
             <div>
                 <Text as='h4' className='mb-8 md:text-xl' leading='heading' size='lg' weight='bold'>Embed signup form</Text>
-                <FieldGroup className='mb-10 gap-6'>
+                <FieldGroup className='gap-6'>
                     <div className='flex w-full items-center justify-between'>
                         <div>Layout</div>
-                        <ToggleGroup type='single' value={selectedLayout} onValueChange={value => value && handleLayoutSelect(value)}>
+                        <ToggleGroup type='single' value={selectedLayout} onValueChange={(value) => {
+                            if (value === 'all-in-one' || value === 'minimal') {
+                                handleLayoutSelect(value);
+                            }
+                        }}>
                             <ToggleGroupItem value='all-in-one'>Branded</ToggleGroupItem>
                             <ToggleGroupItem value='minimal'>Minimal</ToggleGroupItem>
                         </ToggleGroup>
@@ -185,18 +190,16 @@ const EmbedSignupSidebar: React.FC<SidebarProps> = ({selectedLayout,
                     </Field>
                     <Field>
                         <FieldLabel htmlFor='embed-signup-code'>Embed code</FieldLabel>
-                        <Textarea className='resize-none border-transparent bg-muted font-mono' id='embed-signup-code' value={`${embedScript}`} readOnly />
+                        <Textarea className='resize-none font-mono' id='embed-signup-code' value={`${embedScript}`} readOnly />
                         <FieldDescription>Paste this code onto any website where you&apos;d like your signup to appear.</FieldDescription>
+                        <Inline className='mt-2 lg:justify-start' gap='md' justify='end'>
+                            <Button className='font-semibold lg:hidden' type='button' variant='outline' onClick={handleClose}>Close</Button>
+                            <Button type='button' onClick={handleCopyClick}>{isCopied ? 'Copied!' : 'Copy code'}</Button>
+                        </Inline>
                     </Field>
                 </FieldGroup>
             </div>
-            <StickyFooter height={74}>
-                <div className='flex w-full justify-end gap-3'>
-                    <Button className='font-semibold lg:hidden' type='button' variant='ghost' onClick={handleClose}>Close</Button>
-                    <Button type='button' onClick={handleCopyClick}>{isCopied ? 'Copied!' : 'Copy code'}</Button>
-                </div>
-            </StickyFooter>
-        </div>
+        </Stack>
     );
 };
 

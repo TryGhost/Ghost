@@ -39,7 +39,8 @@ const FULL_ADDRESS = {
     country: 'GB'
 };
 
-// Only the sub-fields the type requires; line2 and state are optional.
+// An address filling only some of its sub-fields; the export writes a column for every
+// sub-field regardless, so the ones left out come back as empty cells.
 const MINIMAL_ADDRESS = {
     line1: '9 Long Lane',
     city: 'Bristol',

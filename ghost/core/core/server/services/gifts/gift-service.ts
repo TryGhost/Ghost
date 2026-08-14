@@ -1,11 +1,20 @@
 import crypto from 'node:crypto';
 import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
+import type {Knex} from 'knex';
+import {z} from 'zod';
 import {Gift} from './gift';
-import type {GiftRepository} from './gift-repository';
+import type {GiftEventBrowseOptions, GiftEventPage, GiftRepository} from './gift-bookshelf-repository';
 import type {GiftReminderScheduler} from './gift-reminder-scheduler';
+import {GiftCadenceSchema, type GiftCadence} from './gift-schema';
 import tpl from '@tryghost/tpl';
 import {GIFT_REMINDER_FLOOR_DAYS, GIFT_REMINDER_LEAD_DAYS} from './constants';
+import {
+    resolveGiftDuration,
+    validateGiftCheckoutOffer,
+    type GiftCheckoutTier,
+    type ResolvedGiftDuration
+} from './gift-checkout-offer';
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const GIFT_REMINDER_LEAD_MS = GIFT_REMINDER_LEAD_DAYS * MS_PER_DAY;
@@ -45,12 +54,14 @@ interface MemberRepository {
     ): Promise<unknown>;
 }
 
-type Tier = {
+type Tier = Omit<GiftCheckoutTier, 'currency'> & {
+    id: string | {
+        toHexString(): string;
+    };
     name: string;
-    currency: string | null;
-    monthlyPrice: number | null;
-    yearlyPrice: number | null;
-    toJSON?: () => {
+    currency: string;
+    getPrice(cadence: GiftCadence): number;
+    toJSON(): {
         id: string;
         name: string;
         description: string | null;
@@ -69,7 +80,7 @@ interface GiftEmailService {
         buyerEmail: string;
         token: string;
         tierName: string;
-        cadence: 'month' | 'year';
+        cadence: GiftCadence;
         duration: number;
         expiresAt: Date;
     }): Promise<void>;
@@ -89,7 +100,7 @@ interface StaffServiceEmails {
         amount: number;
         currency: string;
         tierName: string;
-        cadence: 'month' | 'year';
+        cadence: GiftCadence;
         duration: number;
     }): Promise<void>;
     notifyGiftSubscriptionStarted(data: {
@@ -97,24 +108,26 @@ interface StaffServiceEmails {
         memberEmail: string;
         memberName: string | null;
         tierName: string;
-        cadence: 'month' | 'year';
+        cadence: GiftCadence;
         duration: number;
         buyerEmail: string;
     }): Promise<void>;
 }
 
-export interface GiftPurchaseData {
-    token: string;
-    buyerEmail: string;
-    stripeCustomerId: string | null;
-    tierId: string;
-    cadence: 'month' | 'year';
-    duration: string;
-    currency: string;
-    amount: number;
-    stripeCheckoutSessionId: string;
-    stripePaymentIntentId: string;
-}
+const GiftPurchaseDataSchema = z.object({
+    token: z.string().min(1),
+    buyerEmail: z.string().min(1),
+    stripeCustomerId: z.string().min(1).nullable(),
+    tierId: z.string().min(1),
+    cadence: GiftCadenceSchema,
+    duration: z.number().int().positive(),
+    currency: z.string().min(1),
+    amount: z.number().int().nonnegative(),
+    stripeCheckoutSessionId: z.string().min(1),
+    stripePaymentIntentId: z.string().min(1)
+});
+
+export type GiftPurchaseData = z.infer<typeof GiftPurchaseDataSchema>;
 
 interface GiftServiceDeps {
     giftRepository: GiftRepository;
@@ -123,12 +136,90 @@ interface GiftServiceDeps {
     giftEmailService: GiftEmailService;
     staffServiceEmails: StaffServiceEmails;
     giftReminderScheduler: Pick<GiftReminderScheduler, 'scheduleFor'>;
+    checkoutAdapter: {
+        getCustomerId(buyer: GiftCheckoutBuyer): Promise<string | null>;
+        createSession(data: GiftCheckoutSession): Promise<string>;
+    };
+    labsService: {
+        isSet(flag: string): boolean;
+    };
+    settingsCache: {
+        get(key: string): unknown;
+    };
 }
 
 interface ReminderSend {
     memberEmail: string;
     memberName: string | null;
     consumesAt: Date;
+}
+
+export interface GiftCheckoutBuyer {
+    memberId: string | null;
+    email: string | null;
+    name: string | null;
+    isAuthenticated: boolean;
+}
+
+export interface StartGiftCheckoutInput {
+    tierId?: string;
+    offerId?: string;
+    cadence?: string;
+    duration?: number;
+    metadata: Record<string, unknown>;
+    successUrl: string;
+    cancelUrl?: string;
+    buyer: GiftCheckoutBuyer;
+}
+
+interface GiftCheckoutSession {
+    amount: number;
+    currency: string;
+    tierName: string;
+    cadence: GiftCadence;
+    duration: number;
+    metadata: Record<string, unknown>;
+    successUrl: string;
+    cancelUrl?: string;
+    customerId: string | null;
+    customerEmail: string | null;
+}
+
+export interface GiftRedemption {
+    token: string;
+    cadence: GiftCadence;
+    duration: number;
+    currency: string;
+    amount: number;
+    expires_at: Date;
+    consumes_at: Date | null;
+    tier: {
+        id: string;
+        name: string;
+        description: string | null;
+        benefits: string[];
+    };
+}
+
+export interface GiftContinuation {
+    tierId: string;
+    cadence: GiftCadence;
+    trialDays: number | null;
+}
+
+export interface GiftMemberPresentation {
+    cadence: GiftCadence;
+    currency: string;
+    amount: number;
+}
+
+export interface GiftPreview {
+    cadence: GiftCadence;
+    duration: number;
+    tier: {
+        id: string;
+        name: string;
+    };
 }
 
 export class GiftService {
@@ -138,7 +229,118 @@ export class GiftService {
         this.deps = deps;
     }
 
-    generateToken(): string {
+    async startCheckout(input: StartGiftCheckoutInput): Promise<{url: string}> {
+        if (input.offerId) {
+            throw new errors.BadRequestError({
+                message: 'Bad Request.',
+                context: 'Offers cannot be applied to gift subscriptions'
+            });
+        }
+
+        if (!input.tierId) {
+            throw new errors.BadRequestError({
+                message: 'Bad Request.',
+                context: 'Expected offerId or tierId, received none'
+            });
+        }
+
+        let resolvedDuration: ResolvedGiftDuration | null = null;
+        let cadence: GiftCadence;
+
+        if (this.deps.labsService.isSet('giftSubCustomization')) {
+            resolvedDuration = resolveGiftDuration(input);
+            cadence = resolvedDuration.cadence;
+        } else {
+            if (input.cadence !== 'month' && input.cadence !== 'year') {
+                const receivedCadence = input.cadence ? `"${input.cadence}"` : input.cadence;
+
+                throw new errors.BadRequestError({
+                    message: 'Bad Request.',
+                    context: `Expected cadence to be "month" or "year", received ${receivedCadence}`
+                });
+            }
+
+            cadence = input.cadence;
+        }
+
+        let tier: Tier | null;
+        try {
+            tier = await this.deps.tiersService.api.read(input.tierId);
+        } catch (err) {
+            logging.error(err);
+            tier = null;
+        }
+
+        if (!tier) {
+            throw new errors.BadRequestError({
+                message: 'This tier does not exist.',
+                context: `Tier with id "${input.tierId}" not found`
+            });
+        }
+
+        if (tier.status === 'archived') {
+            throw new errors.NoPermissionError({
+                message: 'This tier is archived.'
+            });
+        }
+
+        let duration = 1;
+        let totalMonths: number | undefined;
+        let amount = tier.getPrice(cadence);
+
+        if (resolvedDuration) {
+            const plan = validateGiftCheckoutOffer({
+                tier,
+                portalPlans: this.deps.settingsCache.get('portal_plans'),
+                offer: resolvedDuration
+            });
+
+            cadence = plan.cadence;
+            duration = plan.duration;
+            totalMonths = plan.totalMonths;
+            amount = plan.amount;
+        }
+
+        const tierId = typeof tier.id === 'string' ? tier.id : tier.id.toHexString();
+        const token = this.generateToken();
+        const successUrl = new URL(input.successUrl);
+
+        successUrl.searchParams.set('stripe', 'gift-purchase-success');
+        successUrl.searchParams.set('gift_token', token);
+        successUrl.searchParams.set('gift_tier', tierId);
+        successUrl.searchParams.set('gift_cadence', cadence);
+        if (totalMonths !== undefined) {
+            successUrl.searchParams.set('gift_duration', String(totalMonths));
+        }
+
+        const customerId = input.buyer.isAuthenticated
+            ? await this.deps.checkoutAdapter.getCustomerId(input.buyer)
+            : null;
+
+        const url = await this.deps.checkoutAdapter.createSession({
+            amount,
+            currency: tier.currency.toLowerCase(),
+            tierName: tier.name,
+            cadence,
+            duration,
+            metadata: {
+                ...input.metadata,
+                ghost_gift: 'true',
+                gift_token: token,
+                tier_id: tierId,
+                cadence,
+                duration: String(duration)
+            },
+            successUrl: successUrl.toString(),
+            cancelUrl: input.cancelUrl,
+            customerId,
+            customerEmail: customerId ? null : input.buyer.email
+        });
+
+        return {url};
+    }
+
+    private generateToken(): string {
         /**
          * Combinations: 62^12 ≈ 3.23 × 10^21 (~3.23 sextillion)
          * Entropy:      12 × log2(62) ≈ 71.45 bits
@@ -153,12 +355,17 @@ export class GiftService {
         return token;
     }
 
-    async recordPurchase(data: GiftPurchaseData): Promise<boolean> {
-        const duration = Number.parseInt(data.duration);
-
-        if (Number.isNaN(duration)) {
-            throw new errors.ValidationError({message: `Invalid gift duration: ${data.duration}`});
+    async completePurchase(input: GiftPurchaseData): Promise<boolean> {
+        const parsed = GiftPurchaseDataSchema.safeParse(input);
+        if (!parsed.success) {
+            const issue = parsed.error.issues[0];
+            throw new errors.ValidationError({
+                message: 'Invalid gift purchase data.',
+                property: issue.path.join('.'),
+                context: issue.message
+            });
         }
+        const data = parsed.data;
 
         if (await this.deps.giftRepository.existsByCheckoutSessionId(data.stripeCheckoutSessionId)) {
             return false;
@@ -174,7 +381,7 @@ export class GiftService {
             buyerMemberId: member?.id ?? null,
             tierId: data.tierId,
             cadence: data.cadence,
-            duration,
+            duration: data.duration,
             currency: data.currency,
             amount: data.amount,
             stripeCheckoutSessionId: data.stripeCheckoutSessionId,
@@ -198,7 +405,7 @@ export class GiftService {
                 currency: data.currency,
                 tierName: tier.name,
                 cadence: data.cadence,
-                duration
+                duration: data.duration
             });
         } catch (err) {
             logging.error('Failed to notify staff of gift purchase', err);
@@ -210,7 +417,7 @@ export class GiftService {
                 token: data.token,
                 tierName: tier.name,
                 cadence: data.cadence,
-                duration,
+                duration: data.duration,
                 expiresAt: gift.expiresAt
             });
         } catch (err) {
@@ -220,11 +427,7 @@ export class GiftService {
         return true;
     }
 
-    async getByToken(token: string): Promise<Gift | null> {
-        return this.deps.giftRepository.getByToken(token);
-    }
-
-    async assertRedeemable(gift: Gift, memberStatus: string | null): Promise<Gift> {
+    private assertRedeemable(gift: Gift, memberStatus: string | null): Gift {
         const redeemableCheck = gift.checkRedeemable(memberStatus);
 
         if (!redeemableCheck.redeemable) {
@@ -267,61 +470,36 @@ export class GiftService {
         return gift;
     }
 
-    async getRedeemable(token: string, memberStatus: string | null): Promise<Gift> {
-        const gift = await this.deps.giftRepository.getByToken(token);
+    async getRedeemable(input: {token: string; memberStatus: string | null}): Promise<GiftRedemption> {
+        const gift = await this.deps.giftRepository.getByToken(input.token);
 
         if (!gift) {
             throw new errors.NotFoundError({message: tpl(errorMessages.giftNotFound)});
         }
 
-        await this.assertRedeemable(gift, memberStatus);
+        this.assertRedeemable(gift, input.memberStatus);
 
-        return gift;
+        return this.serializeRedemption(gift);
     }
 
-    async redeem(token: string, memberId: string, options: {transacting?: {executionPromise: Promise<unknown>}; newMember?: boolean} = {}): Promise<Gift> {
-        const run = async (transacting: unknown) => {
-            const member = await this.deps.memberRepository.get({id: memberId}, {transacting, forUpdate: true});
-            if (!member) {
-                throw new errors.NotFoundError({message: `Member not found: ${memberId}`});
-            }
+    async redeem(input: {
+        token: string;
+        memberId: string;
+        transacting?: Knex.Transaction;
+        newMember?: boolean;
+    }): Promise<GiftRedemption> {
+        const run = async (transacting: Knex.Transaction) => {
+            const {redeemed, member} = await this.redeemGift(input.token, input.memberId, {
+                transacting,
+                newMember: input.newMember
+            });
+            const redemption = await this.serializeRedemption(redeemed);
 
-            const gift = await this.deps.giftRepository.getByToken(token, {transacting, forUpdate: true});
-            if (!gift) {
-                throw new errors.NotFoundError({message: tpl(errorMessages.giftNotFound)});
-            }
-
-            if (options.newMember) {
-                await this.assertRedeemable(gift, null);
-            } else {
-                await this.assertRedeemable(gift, member.get('status'));
-            }
-
-            const redeemed = gift.redeem({memberId});
-
-            await this.deps.memberRepository.update({
-                products: [{
-                    id: redeemed.tierId,
-                    expiry_at: redeemed.consumesAt
-                }],
-                status: 'gift'
-            }, {id: memberId, transacting});
-
-            await this.deps.giftRepository.update(redeemed, {transacting});
-
-            // Gift members receive the paid welcome email, as they receive access to paid content
-            await this.deps.memberRepository.triggerMemberSignupAutomation(
-                memberId,
-                member.get('email'),
-                'paid',
-                {transacting}
-            );
-
-            return {redeemed, member};
+            return {redeemed, member, redemption};
         };
 
-        const {redeemed, member} = options.transacting
-            ? await run(options.transacting)
+        const {redeemed, member, redemption} = input.transacting
+            ? await run(input.transacting)
             : await this.deps.giftRepository.transaction(run);
 
         const notify = async () => {
@@ -348,31 +526,72 @@ export class GiftService {
             await this.deps.giftReminderScheduler.scheduleFor(redeemed);
         };
 
-        if (options.transacting) {
+        if (input.transacting) {
             // Only notify once the transaction has finished
-            options.transacting.executionPromise.then(notify, () => {});
+            input.transacting.executionPromise.then(notify, () => {});
         } else {
             await notify();
         }
 
-        return redeemed;
+        return redemption;
     }
 
-    async getActiveByMember(memberId: string, options: {transacting?: unknown} = {}): Promise<Gift | null> {
+    private async redeemGift(token: string, memberId: string, options: {transacting: Knex.Transaction; newMember?: boolean}): Promise<{redeemed: Gift; member: MemberModel}> {
+        const {transacting} = options;
+        const member = await this.deps.memberRepository.get({id: memberId}, {transacting, forUpdate: true});
+        if (!member) {
+            throw new errors.NotFoundError({message: `Member not found: ${memberId}`});
+        }
+
+        const gift = await this.deps.giftRepository.getByToken(token, {transacting, forUpdate: true});
+        if (!gift) {
+            throw new errors.NotFoundError({message: tpl(errorMessages.giftNotFound)});
+        }
+
+        if (options.newMember) {
+            this.assertRedeemable(gift, null);
+        } else {
+            this.assertRedeemable(gift, member.get('status'));
+        }
+
+        const redeemed = gift.redeem({memberId});
+
+        await this.deps.memberRepository.update({
+            products: [{
+                id: redeemed.tierId,
+                expiry_at: redeemed.consumesAt
+            }],
+            status: 'gift'
+        }, {id: memberId, transacting});
+
+        await this.deps.giftRepository.update(redeemed, {transacting});
+
+        // Gift members receive the paid welcome email, as they receive access to paid content
+        await this.deps.memberRepository.triggerMemberSignupAutomation(
+            memberId,
+            member.get('email'),
+            'paid',
+            {transacting}
+        );
+
+        return {redeemed, member};
+    }
+
+    private async getActiveByMember(memberId: string, options: {transacting?: Knex.Transaction} = {}): Promise<Gift | null> {
         if (!memberId) {
             return null;
         }
         return this.deps.giftRepository.getActiveByMember(memberId, options);
     }
 
-    async getActiveByMembers(memberIds: string[], options: {transacting?: unknown} = {}): Promise<Map<string, Gift>> {
+    private async getActiveByMembers(memberIds: string[], options: {transacting?: Knex.Transaction} = {}): Promise<Map<string, Gift>> {
         if (!memberIds || memberIds.length === 0) {
             return new Map();
         }
         return this.deps.giftRepository.getActiveByMembers(memberIds, options);
     }
 
-    getRemainingActiveDays(gift: Gift, now: Date = new Date()): number {
+    private getRemainingActiveDays(gift: Gift, now: Date = new Date()): number {
         if (!gift.isRedeemed() || !gift.consumesAt || gift.isConsumed()) {
             return 0;
         }
@@ -382,12 +601,89 @@ export class GiftService {
         return Math.max(0, diffDays);
     }
 
-    async reassignRedeemer(
-        giftId: string,
-        memberId: string,
-        options: {transacting?: unknown} = {}
-    ): Promise<Gift> {
-        const run = async (transacting: unknown): Promise<Gift> => {
+    async preparePaidContinuation({
+        memberId,
+        memberStatus
+    }: {
+        memberId: string;
+        memberStatus: string;
+    }): Promise<GiftContinuation> {
+        if (memberStatus !== 'gift') {
+            throw new errors.BadRequestError({
+                message: 'Bad Request.',
+                context: 'Member does not have an active gift subscription'
+            });
+        }
+
+        const gift = await this.getActiveByMember(memberId);
+
+        if (!gift) {
+            throw new errors.BadRequestError({
+                message: 'Bad Request.',
+                context: 'No active gift subscription found for member'
+            });
+        }
+
+        const remainingDays = this.getRemainingActiveDays(gift);
+
+        return {
+            tierId: gift.tierId,
+            cadence: gift.cadence,
+            trialDays: remainingDays > 0 ? Math.min(remainingDays, 730) : null
+        };
+    }
+
+    async getMemberPresentations(memberIds: string[]): Promise<Map<string, GiftMemberPresentation>> {
+        const gifts = await this.getActiveByMembers(memberIds);
+        const presentations = new Map<string, GiftMemberPresentation>();
+
+        for (const [memberId, gift] of gifts) {
+            presentations.set(memberId, {
+                cadence: gift.cadence,
+                currency: gift.currency,
+                amount: gift.amount
+            });
+        }
+
+        return presentations;
+    }
+
+    async getPreview(token: string): Promise<GiftPreview | null> {
+        const gift = await this.deps.giftRepository.getByToken(token);
+
+        if (!gift) {
+            return null;
+        }
+
+        const tier = await this.deps.tiersService.api.read(gift.tierId);
+
+        if (!tier) {
+            throw new errors.NotFoundError({message: `Tier not found for gift: ${gift.token}`});
+        }
+
+        const tierJSON = tier.toJSON();
+
+        return {
+            cadence: gift.cadence,
+            duration: gift.duration,
+            tier: {
+                id: tierJSON.id,
+                name: tierJSON.name
+            }
+        };
+    }
+
+    browsePurchaseEvents(options?: GiftEventBrowseOptions, filter?: unknown): Promise<GiftEventPage> {
+        return this.deps.giftRepository.browsePurchaseEvents(options, filter);
+    }
+
+    browseRedemptionEvents(options?: GiftEventBrowseOptions, filter?: unknown): Promise<GiftEventPage> {
+        return this.deps.giftRepository.browseRedemptionEvents(options, filter);
+    }
+
+    async reassignRedeemer(input: {giftId: string; memberId: string; transacting?: Knex.Transaction}): Promise<void> {
+        const {giftId, memberId} = input;
+        const run = async (transacting: Knex.Transaction): Promise<Gift> => {
             const gift = await this.deps.giftRepository.getById(giftId, {transacting, forUpdate: true});
 
             if (!gift) {
@@ -455,12 +751,12 @@ export class GiftService {
             return reassignedGift;
         };
 
-        return options.transacting
-            ? run(options.transacting)
-            : this.deps.giftRepository.transaction(run);
+        await (input.transacting
+            ? run(input.transacting)
+            : this.deps.giftRepository.transaction(run));
     }
 
-    async refund(paymentIntentId: string): Promise<boolean> {
+    async handlePaymentRefund({paymentIntentId}: {paymentIntentId: string}): Promise<boolean> {
         const gift = await this.deps.giftRepository.getByPaymentIntentId(paymentIntentId);
 
         if (!gift) {
@@ -491,8 +787,18 @@ export class GiftService {
         return true;
     }
 
-    async consume(token: string, options: {transacting?: unknown} = {}): Promise<Gift | null> {
-        const run = async (transacting: unknown) => {
+    async handlePaidSubscriptionActivation(memberId: string): Promise<boolean> {
+        const gift = await this.getActiveByMember(memberId);
+
+        if (!gift) {
+            return false;
+        }
+
+        return Boolean(await this.consume(gift.token));
+    }
+
+    private async consume(token: string, options: {transacting?: Knex.Transaction} = {}): Promise<Gift | null> {
+        const run = async (transacting: Knex.Transaction) => {
             // Fetch with a row lock to prevent race conditions under concurrency
             const gift = await this.deps.giftRepository.getByToken(token, {transacting, forUpdate: true});
 
@@ -696,5 +1002,33 @@ export class GiftService {
         });
 
         return true;
+    }
+
+    private async serializeRedemption(gift: Gift): Promise<GiftRedemption> {
+        const tier = await this.deps.tiersService.api.read(gift.tierId);
+
+        if (!tier) {
+            throw new errors.InternalServerError({
+                message: `Tier ${gift.tierId} not found for gift: ${gift.token}`
+            });
+        }
+
+        const tierJSON = tier.toJSON();
+
+        return {
+            token: gift.token,
+            cadence: gift.cadence,
+            duration: gift.duration,
+            currency: gift.currency,
+            amount: gift.amount,
+            expires_at: gift.expiresAt,
+            consumes_at: gift.consumesAt,
+            tier: {
+                id: tierJSON.id,
+                name: tierJSON.name,
+                description: tierJSON.description,
+                benefits: tierJSON.benefits
+            }
+        };
     }
 }

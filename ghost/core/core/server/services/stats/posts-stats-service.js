@@ -399,29 +399,33 @@ class PostsStatsService {
 
     async getGrowthStatsForPost(postId) {
         try {
-            const freeMembers = await this.knex('members_created_events as mce')
-                .countDistinct('mce.member_id as free_members')
-                .leftJoin('members_subscription_created_events as msce', function () {
-                    this.on('mce.member_id', '=', 'msce.member_id')
-                        .andOn('mce.attribution_id', '=', 'msce.attribution_id');
-                })
-                .where('mce.attribution_id', postId)
-                .whereIn('mce.attribution_type', ['post', 'page'])
-                .where('msce.id', null);
+            // The three aggregates only depend on postId, so run them together:
+            // the wait becomes the slowest query instead of the sum of all three.
+            const [freeMembers, paidMembers, mrr] = await Promise.all([
+                this.knex('members_created_events as mce')
+                    .countDistinct('mce.member_id as free_members')
+                    .leftJoin('members_subscription_created_events as msce', function () {
+                        this.on('mce.member_id', '=', 'msce.member_id')
+                            .andOn('mce.attribution_id', '=', 'msce.attribution_id');
+                    })
+                    .where('mce.attribution_id', postId)
+                    .whereIn('mce.attribution_type', ['post', 'page'])
+                    .where('msce.id', null),
 
-            const paidMembers = await this.knex('members_subscription_created_events as msce')
-                .countDistinct('msce.member_id as paid_members')
-                .where('msce.attribution_id', postId)
-                .whereIn('msce.attribution_type', ['post', 'page']);
+                this.knex('members_subscription_created_events as msce')
+                    .countDistinct('msce.member_id as paid_members')
+                    .where('msce.attribution_id', postId)
+                    .whereIn('msce.attribution_type', ['post', 'page']),
 
-            const mrr = await this.knex('members_subscription_created_events as msce')
-                .sum('mpse.mrr_delta as mrr')
-                .join('members_paid_subscription_events as mpse', function () {
-                    this.on('mpse.subscription_id', '=', 'msce.subscription_id');
-                    this.andOn('mpse.member_id', '=', 'msce.member_id');
-                })
-                .where('msce.attribution_id', postId)
-                .whereIn('msce.attribution_type', ['post', 'page']);
+                this.knex('members_subscription_created_events as msce')
+                    .sum('mpse.mrr_delta as mrr')
+                    .join('members_paid_subscription_events as mpse', function () {
+                        this.on('mpse.subscription_id', '=', 'msce.subscription_id');
+                        this.andOn('mpse.member_id', '=', 'msce.member_id');
+                    })
+                    .where('msce.attribution_id', postId)
+                    .whereIn('msce.attribution_type', ['post', 'page'])
+            ]);
 
             return {
                 data: [

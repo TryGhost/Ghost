@@ -66,24 +66,64 @@ const byteLength = (value: string): number => new TextEncoder().encode(value).le
 
 /**
  * The address value — a composite type, modelled on Stripe's Address object.
- * line2 and state are optional. Because it is one zod object, invalid sub-fields
- * surface per path (the caller can point at `postal_code` specifically) with no
- * bespoke composite handling.
+ * Because it is one zod object, invalid sub-fields surface per path (the caller
+ * can point at `postal_code` specifically) with no bespoke composite handling.
+ *
+ * Every sub-field is optional, because none of them exists everywhere: there is
+ * no postal code in Ireland or Hong Kong, and no city in an Irish townland
+ * address. Which sub-fields a particular address needs is a per-country question,
+ * and only the collection form knows the country — so requiring any of them here
+ * would leave a correctly-shaped form unable to produce a valid value.
+ *
+ * What holds instead is that an address must say something. An object with
+ * nothing filled in is not an empty address, it is no address, and a value is
+ * cleared by omitting it rather than by emptying it.
  *
  * Every sub-field is bounded. An address is a delivery address, so the bounds are
  * set by what a courier will accept, not by what the column could hold — and a
  * composite with unbounded members is a composite with no bound at all.
  */
 export const AddressValue = z.object({
-    line1: z.string().min(1).max(255),
-    line2: z.string().max(255).optional(),
-    city: z.string().min(1).max(255),
-    state: z.string().max(255).optional(),
-    postal_code: z.string().min(1).max(32),
-    // Two characters only — the shape of an ISO 3166-1 alpha-2 code, not validated
-    // against the actual country list.
-    country: z.string().length(2)
-});
+    line1: z.string().trim().max(255).optional(),
+    line2: z.string().trim().max(255).optional(),
+    city: z.string().trim().max(255).optional(),
+    state: z.string().trim().max(255).optional(),
+    postal_code: z.string().trim().max(32).optional(),
+    /**
+     * The shape of an ISO 3166-1 alpha-2 code, deliberately not checked against the
+     * actual list of them. A closed list would put Ghost in the position of deciding
+     * whose country is real, which is not a judgement a publishing platform should be
+     * making of its members, and there is no defensible answer for Kosovo, Taiwan,
+     * Palestine or Western Sahara. Anything well-formed is stored, and the collection
+     * form offers a list to pick from without being the arbiter of it.
+     *
+     * Case is normalised, because that is a question about the same country rather than
+     * about which countries exist. Left alone, `gb` and `GB` are two values for one
+     * place: a filter for one silently misses the other, and nothing can tell them apart
+     * afterwards to repair it. Normalising on the way in is the only point at which that
+     * is cheap.
+     *
+     * Shape is two ASCII letters rather than any two characters, which is what alpha-2
+     * means. Counting characters instead would be wrong in both directions once case is
+     * normalised, because uppercasing does not preserve length: `ß` becomes `SS` and
+     * would pass a length-of-two rule from one character, while `aß` becomes `ASS` and
+     * would fail it from two. Checking the shape of the input settles both, and turns
+     * away the `12` and `!!` that a bare length check always allowed through.
+     */
+    country: z.string().trim().regex(/^[A-Za-z]{2}$/).toUpperCase().optional()
+}).refine(
+    // Every sub-field is trimmed above, so whitespace has already become the empty
+    // string by the time this runs. Trimming is what stops `{line1: '   '}` being
+    // stored: admin trims a sub-field away before rendering it, so an address of
+    // spaces would be one no screen could show, and none could clear either.
+    //
+    // The type check is load-bearing, not defensive. A sub-field that is optional
+    // and explicitly undefined survives parsing as a key holding undefined, and
+    // `undefined !== ''` on its own would let `{line1: undefined}` satisfy a rule
+    // whose whole purpose is to reject an address with nothing in it.
+    address => Object.values(address).some(value => typeof value === 'string' && value !== ''),
+    {message: 'An address must have at least one part filled in.'}
+);
 export type Address = z.infer<typeof AddressValue>;
 
 export const FIELD_TYPES = {
@@ -98,3 +138,18 @@ export const FIELD_TYPES = {
     },
     address: {storageType: 'json', value: AddressValue}
 } as const satisfies Record<FieldType, FieldTypeDefinition>;
+
+/**
+ * The sub-fields of a composite type in declaration order, or null for a scalar.
+ *
+ * Derived from the value schema rather than declared alongside it, so the two cannot
+ * drift: adding a sub-field is one edit and every consumer sees it. It is also the
+ * only honest test of what "composite" means here — a value is composite when it has
+ * parts, which is a fact about its shape and not about the column it happens to be
+ * stored in. Two field types can share a storage type and disagree about this, so
+ * anything asking "does this value have parts?" has to ask the shape.
+ */
+export function subFieldsOf(type: FieldType): string[] | null {
+    const {value} = FIELD_TYPES[type];
+    return value instanceof z.ZodObject ? Object.keys(value.shape) : null;
+}

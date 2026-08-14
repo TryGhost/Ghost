@@ -251,5 +251,17 @@ describe('UNIT: LinkClickRepository class', function () {
                 uuid: linkClicks[0].member_uuid
             }, {transacting});
         });
+
+        it('should retry a memoized member lookup after it fails', async function () {
+            configUtils.set('linkClickTrackingCacheMemberUuid', true);
+            const error = new Error('member lookup failed');
+            memberStub.findOne.onFirstCall().rejects(error);
+
+            await assert.rejects(linkClickRepository.save(linkClicks[0]), error);
+            await linkClickRepository.save(linkClicks[1]);
+
+            sinon.assert.calledTwice(memberStub.findOne);
+            sinon.assert.calledOnce(memberLinkClickEventModelStub.add);
+        });
     });
 });

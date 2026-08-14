@@ -225,7 +225,7 @@ const PortalModal: React.FC = () => {
     />;
 
     const previewTabs = (
-        <Tabs value={selectedPreviewTab} variant='button-sm' onValueChange={value => onSelectURL(value as PreviewTab)}>
+        <Tabs value={selectedPreviewTab} variant='button' onValueChange={value => onSelectURL(value as PreviewTab)}>
             <TabsList>
                 <TabsTrigger value='signup'>Signup</TabsTrigger>
                 <TabsTrigger value='account'>Account page</TabsTrigger>

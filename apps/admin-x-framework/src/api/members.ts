@@ -501,10 +501,10 @@ export interface EditMemberData {
     tiers?: Array<{id: string; expiry_at?: string | null}>;
     // Merge semantics: only the keys present are written; `null` clears a
     // value. Values are strings for text-backed fields and composite objects
-    // for address (Partial because a draft mid-edit may hold an incomplete
-    // address — the server validates completeness, not this type). Requires
-    // the `membersCustomFields` flag server-side.
-    custom_fields?: Record<string, string | Partial<Address> | null>;
+    // for address — every sub-field of which is optional, the server asking
+    // only that one of them is filled in. Requires the `membersCustomFields`
+    // flag server-side.
+    custom_fields?: Record<string, string | Address | null>;
 }
 
 export const useEditMember = createMutation<MembersResponseType, EditMemberData>({

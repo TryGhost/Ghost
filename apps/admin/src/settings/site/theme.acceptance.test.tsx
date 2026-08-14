@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { page } from "vitest/browser";
+import { page, userEvent } from "vitest/browser";
 
 import {
     configResponse,
@@ -113,6 +113,22 @@ describe("Theme settings", () => {
         await settingsScreen.confirmationModal().getByRole("button", { name: "Delete" }).click();
         await expect(modal.getByTestId(sel.themeListItem)).toHaveCount(1);
         expect(deleteApi.requests).toHaveLength(1);
+    });
+
+    it("closes an installed-theme menu with Escape without closing the theme modal", async () => {
+        fakeThemeWorld();
+        await renderAdminApp("/settings/design/change-theme");
+
+        const modal = settingsScreen.themeModal();
+        await modal.getByRole("tab", { name: "Installed" }).click();
+        await installedTheme("casper").getByRole("button", { name: "Menu" }).click();
+        await expect.element(settingsScreen.menuItem("Download")).toBeVisible();
+
+        await userEvent.keyboard("{Escape}");
+
+        await expect(settingsScreen.menuItem("Download")).toHaveCount(0);
+        await expect.element(modal).toBeVisible();
+        await expect.poll(currentRoute).toBe("/settings/design/change-theme");
     });
 
     it("uploads a theme archive", async () => {

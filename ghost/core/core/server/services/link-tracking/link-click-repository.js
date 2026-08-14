@@ -32,7 +32,12 @@ module.exports = class LinkClickRepository {
 
         // Memoize the findOne function
         this.memoizedFindOne = _.memoize(async (uuid, options) => {
-            return await this.#Member.findOne({uuid}, options);
+            try {
+                return await this.#Member.findOne({uuid}, options);
+            } catch (error) {
+                this.memoizedFindOne.cache.delete(uuid);
+                throw error;
+            }
         });
     }
 

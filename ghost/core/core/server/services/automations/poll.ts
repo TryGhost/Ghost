@@ -28,6 +28,7 @@ type MemberWelcomeEmailService = {
             trackOpens: boolean;
             trackClicks: boolean;
             automationActionRevisionId: string;
+            automationRunStepId: string;
         }) => Promise<unknown>;
     };
 };
@@ -202,7 +203,8 @@ const processStep = async ({
                 memberStatus,
                 trackOpens,
                 trackClicks,
-                automationActionRevisionId: step.automation_action_revision_id
+                automationActionRevisionId: step.automation_action_revision_id,
+                automationRunStepId: step.id
             });
             const mailgunMessageId = getMailgunMessageId(sendResult);
             // Only Mailgun sends can produce open events for automation emails
@@ -210,6 +212,7 @@ const processStep = async ({
             try {
                 await automationsApi.recordEmailSent({
                     automationActionRevisionId: step.automation_action_revision_id,
+                    automationRunStepId: step.id,
                     ...(mailgunMessageId ? {mailgunMessageId} : {}),
                     memberEmail: member.get('email'),
                     memberId: step.member_id,

@@ -41,11 +41,6 @@
             "import": "./dist/utils/post-utils.js",
             "require": "./dist/utils/post-utils.cjs"
         },
-        "./utils/nql": {
-            "types": "./types/utils/nql.d.ts",
-            "import": "./dist/utils/nql.js",
-            "require": "./dist/utils/nql.cjs"
-        },
         "./utils/get-site-timezone": {
             "types": "./types/utils/get-site-timezone.d.ts",
             "import": "./dist/utils/get-site-timezone.js",
@@ -110,6 +105,7 @@
         "@tanstack/react-query": "catalog:",
         "@tinybirdco/charts": "0.3.0",
         "@tryghost/custom-field-types": "workspace:*",
+        "@tryghost/nql-string": "workspace:*",
         "@tryghost/shade": "workspace:*",
         "bson-objectid": "catalog:",
         "react": "catalog:",

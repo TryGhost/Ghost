@@ -1,5 +1,8 @@
 import {escapeHtml} from './escape-html';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
+
+export type EmbedSignupLayout = 'all-in-one' | 'minimal';
+
 export type GenerateCodeOptions = {
     preview: boolean;
     config: {
@@ -18,7 +21,7 @@ export type GenerateCodeOptions = {
     };
     labels: Array<{ name: string }>;
     backgroundColor: string;
-    layout: string;
+    layout: EmbedSignupLayout;
 };
 
 type OptionsType = {
@@ -28,6 +31,8 @@ type OptionsType = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any; // This allows for computed properties like 'label-1', 'label-2', etc.
 };
+
+export const getEmbedPreviewLayoutMarker = (layout: EmbedSignupLayout) => `data-preview-layout="${escapeHtml(layout)}"`;
 
 export const generateCode = ({
     preview,
@@ -67,7 +72,7 @@ export const generateCode = ({
 
     if (preview) {
         if (layout === 'minimal') {
-            style = 'min-height: 58px; max-width: 440px;width: 100%;position: absolute; left: 50%; top:50%; transform: translate(-50%, -50%);';
+            style = 'min-height:58px;width:calc(100% - 48px);position:absolute;left:50%;top:50%;transform:translate(-50%, -50%)';
         } else {
             style = 'height: 100vh';
         }
@@ -93,7 +98,8 @@ export const generateCode = ({
         dataOptionsString += ` data-${key}="${escapeHtml(value)}"`;
     }
 
-    const code = `<div style="${escapeHtml(style)}"><script src="${encodeURI(scriptUrl)}"${dataOptionsString} async></script></div>`;
+    const previewLayoutAttribute = preview ? ` ${getEmbedPreviewLayoutMarker(layout)}` : '';
+    const code = `<div${previewLayoutAttribute} style="${escapeHtml(style)}"><script src="${encodeURI(scriptUrl)}"${dataOptionsString} async></script></div>`;
 
     if (preview && layout === 'minimal') {
         return `<div style="position: absolute; z-index: -1; top: 0; left: 0; width: 100%; height: 100%; background-image: linear-gradient(45deg, #eee 25%, transparent 25%, transparent 75%, #eee 75%), linear-gradient(45deg, #eee 25%, transparent 25%, transparent 75%, #eee 75%);background-size: 16px 16px;background-position: 0 0, 8px 8px;;"></div>${code}`;

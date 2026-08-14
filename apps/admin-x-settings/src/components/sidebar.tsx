@@ -47,8 +47,8 @@ const NavItem: React.FC<NavItemProps> = ({icon, keywords, navid, onClick, title}
             <a
                 aria-current={isCurrent ? 'page' : undefined}
                 className={clsx(
-                    'mt-px flex h-8 w-full cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-left text-control font-medium text-text-secondary transition-all hover:bg-tab-hover focus-visible:bg-tab-hover focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden [&>svg]:size-4 [&>svg]:shrink-0',
-                    isCurrent && 'bg-tab-active text-foreground',
+                    'mt-px flex h-8 w-full cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-left text-control font-medium text-sidebar-foreground transition-all hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground focus-visible:bg-sidebar-accent/70 focus-visible:text-sidebar-accent-foreground focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden [&>svg]:size-4 [&>svg]:shrink-0',
+                    isCurrent && 'bg-sidebar-accent text-sidebar-accent-foreground',
                     !checkVisible(keywords) && 'hidden'
                 )}
                 id={Array.isArray(navid) ? navid[0] : navid}

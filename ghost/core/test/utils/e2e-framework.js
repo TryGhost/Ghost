@@ -240,6 +240,7 @@ const getContentAPIAgent = async () => {
  *
  * @param {Object} [options={}]
  * @param {boolean} [options.members] Include members in the boot process
+ * @param {string} [options.staffTokenRole] Authenticate with the fixture staff token for this role
  * @returns {Promise<InstanceType<AdminAPITestAgent>>} agent
  */
 const getAdminAPIAgent = async (options = {}) => {
@@ -253,10 +254,16 @@ const getAdminAPIAgent = async (options = {}) => {
         const app = await startGhost(bootOptions);
         const originURL = configUtils.config.get('url');
 
-        return new AdminAPITestAgent(app, {
+        const agent = new AdminAPITestAgent(app, {
             apiURL: '/ghost/api/admin/',
             originURL
         });
+
+        if (options.staffTokenRole) {
+            await agent.useStaffTokenFor(options.staffTokenRole);
+        }
+
+        return agent;
     } catch (error) {
         error.message = `Unable to create test agent. ${error.message}`;
         throw error;

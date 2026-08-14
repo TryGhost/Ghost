@@ -1,7 +1,8 @@
 import ConfirmationModal from '../../../confirmation-modal';
 import NiceModal from '@ebay/nice-modal-react';
 import WebhookModal from './webhook-modal';
-import {Button, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
+import {Button, EmptyIndicator, Separator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
+import {Inline, Stack} from '@tryghost/shade/primitives';
 import {type Integration} from '@tryghost/admin-x-framework/api/integrations';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {getWebhookEventLabel} from './webhook-event-options';
@@ -12,6 +13,13 @@ import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 const WebhooksTable: React.FC<{integration: Integration}> = ({integration}) => {
     const {mutateAsync: deleteWebhook} = useDeleteWebhook();
     const handleError = useHandleError();
+    const webhooks = integration.webhooks || [];
+
+    const showAddWebhookModal = () => {
+        NiceModal.show(WebhookModal, {
+            integrationId: integration.id
+        });
+    };
 
     const handleDelete = (id: string) => {
         NiceModal.show(ConfirmationModal, {
@@ -31,7 +39,28 @@ const WebhooksTable: React.FC<{integration: Integration}> = ({integration}) => {
         });
     };
 
-    return (<div>
+    if (webhooks.length === 0) {
+        return (
+            <Stack gap='none'>
+                <Separator />
+                <EmptyIndicator
+                    actions={(
+                        <Button type='button' variant='outline' onClick={showAddWebhookModal}>
+                            <LucideIcon.Plus /> Add webhook
+                        </Button>
+                    )}
+                    className='py-8'
+                    description='Add a webhook to send Ghost events to another service.'
+                    title='No webhooks'
+                >
+                    <LucideIcon.Webhook />
+                </EmptyIndicator>
+                <Separator />
+            </Stack>
+        );
+    }
+
+    return (<Stack gap='none'>
         <Table>
             <TableHeader>
                 <TableRow>
@@ -41,7 +70,7 @@ const WebhooksTable: React.FC<{integration: Integration}> = ({integration}) => {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {integration.webhooks?.map(webhook => (
+                {webhooks.map(webhook => (
                     <TableRow key={webhook.id} className='cursor-pointer' onClick={() => {
                         NiceModal.show(WebhookModal, {
                             webhook,
@@ -80,19 +109,18 @@ const WebhooksTable: React.FC<{integration: Integration}> = ({integration}) => {
                 ))}
             </TableBody>
         </Table>
-        <div className='mt-5'>
+        <Inline className='py-4' justify='center'>
             <Button
-                className='h-auto p-0 text-green hover:text-green'
                 size='sm'
                 type='button'
-                variant='link'
-                onClick={() => {
-                    NiceModal.show(WebhookModal, {
-                        integrationId: integration.id
-                    });
-                }}><LucideIcon.Plus />Add webhook</Button>
-        </div>
-    </div>);
+                variant='outline'
+                onClick={showAddWebhookModal}
+            >
+                <LucideIcon.Plus /> Add webhook
+            </Button>
+        </Inline>
+        <Separator />
+    </Stack>);
 };
 
 export default WebhooksTable;

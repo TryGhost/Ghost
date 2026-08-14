@@ -4,7 +4,7 @@ import BrandIcon from '../../../icons/brand-icon';
 import ConfirmationModal from '../../../confirmation-modal';
 import IntegrationHeader from './integration-header';
 import NiceModal from '@ebay/nice-modal-react';
-import {Field, FieldContent, FieldDescription, FieldGroup, FieldLabel, FieldLegend, FieldSet, Switch} from '@tryghost/shade/components';
+import {Field, FieldContent, FieldDescription, FieldGroup, FieldLabel, FieldSet, Switch} from '@tryghost/shade/components';
 import {type Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
@@ -107,29 +107,28 @@ const TransistorModal = NiceModal.create(() => {
                 icon={<BrandIcon name='transistor' size={56} />}
                 title='Transistor.fm'
             />
-            <div className='mt-7'>
+            <>
                 <FieldSet className='gap-0'>
-                    <FieldLegend className='mb-3 text-md! leading-supertight font-bold md:text-lg!'>Transistor configuration</FieldLegend>
                     <FieldGroup className='gap-8 rounded-sm border border-border-default p-4 md:p-7'>
-                    <Field orientation='horizontal'>
-                        <FieldContent>
-                            <FieldLabel htmlFor='transistor-enabled'>Enable Transistor</FieldLabel>
-                            <FieldDescription>Connect your Ghost site with <a className='text-green' href="https://transistor.fm" rel="noopener noreferrer" target="_blank">Transistor.fm</a> to offer members private podcasts.</FieldDescription>
-                        </FieldContent>
-                        <Switch checked={enabled} id='transistor-enabled' onCheckedChange={setEnabled} />
-                    </Field>
-                    {enabled && (
-                        <APIKeys keys={[
-                            {
-                                id: 'admin-api-key',
-                                label: 'Admin API key',
-                                text: adminApiKey?.secret,
-                                hint: regenerated ? <div className='text-green'>Admin API Key was successfully regenerated</div> : undefined,
-                                onRegenerate: handleRegenerate
-                            },
-                            {id: 'api-url', label: 'API URL', text: window.location.origin + getGhostPaths().subdir}
-                        ]} />
-                    )}
+                        <Field orientation='horizontal'>
+                            <FieldContent>
+                                <FieldLabel htmlFor='transistor-enabled'>Enable Transistor</FieldLabel>
+                                <FieldDescription>Connect your Ghost site with <a className='text-green' href="https://transistor.fm" rel="noopener noreferrer" target="_blank">Transistor.fm</a> to offer members private podcasts.</FieldDescription>
+                            </FieldContent>
+                            <Switch checked={enabled} id='transistor-enabled' onCheckedChange={setEnabled} />
+                        </Field>
+                        {enabled && (
+                            <APIKeys keys={[
+                                {
+                                    id: 'admin-api-key',
+                                    label: 'Admin API key',
+                                    text: adminApiKey?.secret,
+                                    hint: regenerated ? <div className='text-green'>Admin API Key was successfully regenerated</div> : undefined,
+                                    onRegenerate: handleRegenerate
+                                },
+                                {id: 'api-url', label: 'API URL', text: window.location.origin + getGhostPaths().subdir}
+                            ]} />
+                        )}
                     </FieldGroup>
                 </FieldSet>
                 {enabled &&
@@ -145,7 +144,7 @@ const TransistorModal = NiceModal.create(() => {
                         </a>
                     </div>
                 }
-            </div>
+            </>
         </SettingsModal>
     );
 });

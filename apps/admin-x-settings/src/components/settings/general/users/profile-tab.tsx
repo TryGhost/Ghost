@@ -14,7 +14,7 @@ const BasicInputs: React.FC<UserDetailProps> = ({errors, clearError, user, setUs
     const homepageUrl = getHomepageUrl(siteData!);
 
     return (
-        <SettingGroupContent className='[&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+        <SettingGroupContent>
             <Field data-invalid={Boolean(errors?.email) || undefined}>
                 <FieldLabel htmlFor='staff-email'>Email</FieldLabel>
                 <Input aria-invalid={Boolean(errors?.email) || undefined} id='staff-email' maxLength={191} value={user.email} onChange={e => setUserData({...user, email: e.target.value})} onKeyDown={() => clearError('email')} />
@@ -41,7 +41,6 @@ const BasicInputs: React.FC<UserDetailProps> = ({errors, clearError, user, setUs
                 <FieldLabel htmlFor='staff-bio'>Bio</FieldLabel>
                 <Textarea
                     aria-invalid={Boolean(errors?.bio) || undefined}
-                    className='border-transparent bg-muted'
                     id='staff-bio'
                     maxLength={65535}
                     value={user.bio || ''}

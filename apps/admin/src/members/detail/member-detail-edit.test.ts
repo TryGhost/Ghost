@@ -1,4 +1,5 @@
 import {NOTE_MAX_LENGTH, buildCustomFieldSavePayload, buildMemberFieldEditPayload, getCustomFieldValidationErrors, getDefaultNewsletterIdsForNewMember, getEditableCustomFieldValues, getEmailErrorMessage, getMemberEditableSlice, getMemberNewslettersUiEnabled, getMemberSuppressionInfo, getNoteCharactersLeft, isDraftInSyncWithServer, isValidMemberEmail, parseCustomFieldServerErrors, resolveSlugsToLabels, toggleMemberNewsletter} from './member-detail-edit';
+import {MEMBER_CUSTOM_FIELD_TYPES} from '@tryghost/admin-x-framework/api/member-custom-fields';
 import {describe, expect, it} from 'vitest';
 import type {MemberCustomField} from '@tryghost/admin-x-framework/api/member-custom-fields';
 
@@ -329,13 +330,12 @@ describe('getCustomFieldValidationErrors', () => {
         expect(getCustomFieldValidationErrors({job_title: '', home_address: {}}, fields)).toEqual({});
     });
 
-    it('reports missing required address sub-fields in plain words, keyed by dotted path', () => {
-        const errors = getCustomFieldValidationErrors({home_address: {line1: '1 Main St'}}, fields);
-        expect(errors).toEqual({
-            'home_address.city': 'Enter a city.',
-            'home_address.postal_code': 'Enter a postal code.',
-            'home_address.country': 'Enter a 2-letter country code, like US.'
-        });
+    it('accepts a partial address — no sub-field is required', () => {
+        // The stored shape is fixed, but which parts of it exist is a per-country
+        // question, so an address without a city or postal code is valid rather
+        // than incomplete.
+        expect(getCustomFieldValidationErrors({home_address: {line1: '1 Main St'}}, fields)).toEqual({});
+        expect(getCustomFieldValidationErrors({home_address: {country: 'HK'}}, fields)).toEqual({});
     });
 
     it('explains a malformed country code rather than echoing the schema message', () => {
@@ -348,14 +348,22 @@ describe('getCustomFieldValidationErrors', () => {
         expect(errors).toEqual({job_title: 'Use 255 characters or fewer.'});
     });
 
-    it('reports an over-long required address sub-field as a length problem, not a missing one', () => {
+    it('reports an over-long address sub-field with the limit a person can act on', () => {
         const errors = getCustomFieldValidationErrors({home_address: {...validAddress, line1: 'x'.repeat(256)}}, fields);
         expect(errors).toEqual({'home_address.line1': 'Use 255 characters or fewer.'});
     });
 
-    it('validates the normalized value, so whitespace does not dodge a limit', () => {
-        const errors = getCustomFieldValidationErrors({home_address: {line1: '1 Main St', city: '  ', postal_code: '10115', country: 'DE'}}, fields);
-        expect(Object.keys(errors)).toEqual(['home_address.city']);
+    it('validates the normalized value, so an address of nothing but whitespace reads as cleared', () => {
+        const whitespaceOnly = {line1: '  ', city: '  '};
+
+        // The schema rejects this outright, so no errors can only mean normalization
+        // ran first — without that check the assertion below passes either way.
+        expect(MEMBER_CUSTOM_FIELD_TYPES.address.value.safeParse(whitespaceOnly).success).toBe(false);
+        expect(getCustomFieldValidationErrors({home_address: whitespaceOnly}, fields)).toEqual({});
+
+        // "Cleared" is the other half of the claim: the save sends null, not an object.
+        expect(buildCustomFieldSavePayload('m1', 'home_address', whitespaceOnly).custom_fields)
+            .toEqual({home_address: null});
     });
 });
 

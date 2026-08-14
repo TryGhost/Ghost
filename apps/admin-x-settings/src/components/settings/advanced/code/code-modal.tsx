@@ -75,7 +75,7 @@ const CodeModal: React.FC<CodeModalProps> = ({afterClose}) => {
             <div className='mb-4 flex items-center justify-between'>
                 <Text as='h2' className='md:text-3xl' leading='heading' size='2xl' weight='bold'>Code injection</Text>
                 <Inline gap='md'>
-                    <Button className='font-semibold' type='button' variant='ghost' onClick={() => {
+                    <Button type='button' variant='outline' onClick={() => {
                         modal.remove();
                         afterClose?.();
                     }}>Close</Button>

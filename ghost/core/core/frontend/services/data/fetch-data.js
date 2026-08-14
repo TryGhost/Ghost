@@ -3,6 +3,7 @@
  * Dynamically build and execute queries on the API
  */
 const _ = require('lodash');
+const {resolveRouteData} = require('../routing/api-adapter');
 
 // The default settings for a default post query
 const queryDefaults = {
@@ -93,9 +94,13 @@ async function fetchData(pathOptions, routerOptions, locals) {
     // The filter can in theory contain a "%s" e.g. filter="primary_tag:%s"
     promises.push(processQuery(postQuery, pathOptions.slug, locals));
 
+    const apiCalls = resolveRouteData(routerOptions.data);
+
     // CASE: fetch more data defined by the router e.g. tags, authors - see TaxonomyRouter
-    _.each(routerOptions.data, function (query, name) {
-        const dataQueryOptions = _.merge(query, defaultDataQueryOptions[name]);
+    _.each(apiCalls, function (apiCall, name) {
+        // Merge into a fresh object: the resolved spec is read again below to
+        // shape the response, so it must stay as the adapter resolved it.
+        const dataQueryOptions = _.merge({}, apiCall, defaultDataQueryOptions[name]);
         promises.push(processQuery(dataQueryOptions, pathOptions.slug, locals));
     });
 
@@ -107,11 +112,11 @@ async function fetchData(pathOptions, routerOptions, locals) {
 
         let resultIndex = 1;
 
-        _.each(routerOptions.data, function (config, name) {
+        _.each(apiCalls, function (apiCall, name) {
             if (results[resultIndex]) {
-                response.data[name] = results[resultIndex][config.resource];
+                response.data[name] = results[resultIndex][apiCall.resource];
 
-                if (config.type === 'browse') {
+                if (apiCall.type === 'browse') {
                     response.data[name].meta = results[resultIndex].meta;
                 }
 

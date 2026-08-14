@@ -13,7 +13,7 @@ interface SettingsBreadcrumbsProps {
 const SettingsBreadcrumbs: React.FC<SettingsBreadcrumbsProps> = ({current, label, onBack, className}) => {
     return (
         <Inline className={className} gap='sm'>
-            <Button aria-label='Back' size='icon' type='button' variant='ghost' onClick={onBack}>
+            <Button aria-label='Back' className='md:hidden' size='icon' type='button' variant='ghost' onClick={onBack}>
                 <LucideIcon.ArrowLeft />
             </Button>
             <Breadcrumb className='max-md:hidden'>

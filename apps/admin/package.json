@@ -23,6 +23,7 @@
         "@tryghost/kg-unsplash-selector": "workspace:*",
         "@tryghost/koenig-lexical": "workspace:*",
         "@tryghost/nql-lang": "catalog:",
+        "@tryghost/nql-string": "workspace:*",
         "@tryghost/shade": "workspace:*",
         "@xyflow/react": "12.11.1",
         "dequal": "catalog:",

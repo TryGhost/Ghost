@@ -85,7 +85,6 @@ const TestEmailDropdown: React.FC<TestEmailDropdownProps> = ({
             <div className='mb-3'>
                 <label className='mb-2 block font-semibold' htmlFor='test-email-input'>Send test email</label>
                 <Input
-                    className='h-[36px]! border-transparent bg-muted'
                     id='test-email-input'
                     placeholder='you@yoursite.com'
                     value={testEmail}

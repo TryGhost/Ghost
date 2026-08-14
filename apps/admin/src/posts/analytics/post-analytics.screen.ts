@@ -22,6 +22,7 @@ export const postAnalyticsScreen = {
     locationRow: (countryCode: string) => page.getByTestId(`${sel.locationRowPrefix}${countryCode.toLowerCase()}`),
     topSourcesCard: () => page.getByTestId(sel.topSourcesCard),
     sourceRow: (source: string) => page.getByTestId(`${sel.sourceRowPrefix}${source.toLowerCase().replace(/[^a-z0-9]/g, "-")}`),
+    filterContainer: () => page.getByTestId(sel.statsFilterContainer),
 
     // Growth
     membersCard: () => page.getByTestId(sel.membersCard),

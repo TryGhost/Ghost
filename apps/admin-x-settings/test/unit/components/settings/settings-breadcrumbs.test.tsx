@@ -23,6 +23,7 @@ describe('SettingsBreadcrumbs', () => {
         const ancestor = screen.getByRole('button', {name: 'Offers'});
 
         assert.equal(back.getAttribute('type'), 'button');
+        assert.ok(back.classList.contains('md:hidden'));
         assert.equal(ancestor.getAttribute('type'), 'button');
         assert.equal(screen.getByText('Black Friday').getAttribute('aria-current'), 'page');
         assert.ok(container.querySelector('.custom-class'));
