@@ -23,8 +23,9 @@ The `data-ghost` attribute expects the URL for your Ghost site, which is the onl
 By default, the script adds a default floating trigger button on the bottom right of your page which is used to trigger the popup on screen.
 
 You can add a custom trigger by adding the `data-portal` attribute to any HTML
-element. Set its value to choose a specific [Portal page](src/pages.js), for
-example `data-portal="signup"`.
+element. Set its value to choose a specific
+[Portal page](https://github.com/TryGhost/Ghost/blob/main/apps/portal/src/pages.js),
+for example `data-portal="signup"`.
 
 Share modal can be opened with `data-portal="share"` (or `#/share`).
 
