@@ -76,26 +76,55 @@ not affect a publishable package do not need one.
 
 ## Commit Messages
 
-We have a handful of simple standards for commit messages which help us to generate readable changelogs. Please follow this wherever possible and mention the associated issue number.
+These conventions keep the main branch readable and generate useful release
+notes. They matter most for the pull request title and the squash commit that
+lands on `main`. Use them for intermediate commits where practical; the local
+commit hook provides best-effort feedback while work is in progress.
 
-- **1st line:** Max 80 character summary
-   - Written in past tense e.g. “Fixed the thing” not “Fixes the thing”
-   - Start with one of: Fixed, Changed, Updated, Improved, Added, Removed, Reverted, Moved, Released, Bumped, Cleaned
-- **2nd line:** [Always blank]
-- **3rd line:** `ref <issue link>`, `fixes <issue link>`, `closes <issue link>` or blank
-- **4th line:** Why this change was made - the code includes the what, the commit message should describe the context of why - why this, why now, why not something else?
+Write the final commit message in this form:
 
-If your change is **user-facing** please prepend the first line of your commit with **an emoji key**. If the commit is for an alpha feature, no emoji is needed. We are following [gitmoji](https://gitmoji.carloscuesta.me/).
+```text
+<optional release-note emoji> <past-tense summary, at most 80 characters>
 
-**Main emojis we are using:**
+<optional issue relationship, or "no ref">
+
+<why this change was made>
+```
+
+- Start the summary with `Fixed`, `Changed`, `Updated`, `Improved`, `Added`,
+  `Removed`, `Reverted`, `Moved`, `Released`, `Bumped`, or `Cleaned`.
+- Keep the second line blank.
+- When an issue exists, use a supported relationship followed by its URL, such
+  as `ref <issue URL>`, `fixes <issue URL>`, or `closes <issue URL>`. Use
+  `no ref` when it is useful to state explicitly that there is no issue, or
+  leave this line blank.
+- Explain the context in the body: why this change, why now, and why this
+  approach. The diff already describes what changed.
+
+The local hook warns about most deviations without blocking the commit. It
+does require the common invalid forms `refs ...` and `ref: ...` to be corrected
+to a supported relationship such as `ref ...`.
+
+### Release-note emojis
+
+A leading release-note emoji opts the squash commit into generated release
+notes. Add one only for a significant change that is relevant to users, and
+write the summary from their perspective. Alpha or experimental work does not
+need an emoji until it becomes user-facing.
 
 - ✨ Feature
-- 🎨 Improvement / change
-- 🐛 Bug Fix
-- 🌐 i18n (translation) submissions  [[See Translating Ghost docs for more detail](translating-ghost.md)]
-- 💡 Anything else flagged to users or whoever is writing release notes
+- 🎨 Improvement or change
+- 💄 UI or styling improvement
+- 🐛 Bug fix
+- 🔒 Security improvement
+- 💡 Other noteworthy user-facing change
 
-Good commit message examples: [new feature](https://github.com/TryGhost/Ghost/commit/61db6defde3b10a4022c86efac29cf15ae60983f), [bug fix](https://github.com/TryGhost/Ghost/commit/6ef835bb5879421ae9133541ebf8c4e560a4a90e) and [translation](https://github.com/TryGhost/Ghost/commit/83904c1611ae7ab3257b3b7d55f03e50cead62d7).
+Use 🌐 for [translation submissions](translating-ghost.md). Translation commits
+are not selected for generated release notes by that emoji alone.
+
+Good final commit examples include a [new feature](https://github.com/TryGhost/Ghost/commit/61db6defde3b10a4022c86efac29cf15ae60983f),
+a [bug fix](https://github.com/TryGhost/Ghost/commit/6ef835bb5879421ae9133541ebf8c4e560a4a90e),
+and a [translation](https://github.com/TryGhost/Ghost/commit/83904c1611ae7ab3257b3b7d55f03e50cead62d7).
 
 **Bumping @tryghost dependencies**
 
