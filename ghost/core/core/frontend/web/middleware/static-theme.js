@@ -1,6 +1,7 @@
 const path = require('path');
 const config = require('../../../shared/config');
 const themeEngine = require('../../services/theme-engine');
+const routingRegistry = require('../../services/routing/registry');
 const express = require('../../../shared/express');
 const AASA_PATH = '/.well-known/apple-app-site-association';
 
@@ -123,6 +124,13 @@ function staticTheme() {
         }
 
         if (isDeniedFile(normalizedPath)) {
+            return next();
+        }
+
+        // An extension used by a registered dynamic route (e.g. `.html` from a
+        // `/{slug}.html/` collection permalink) is not a static file request,
+        // so fall through and let the dynamic router serve it.
+        if (routingRegistry.getRouteExtensions().has(path.extname(normalizedPath))) {
             return next();
         }
 

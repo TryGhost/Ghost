@@ -185,4 +185,46 @@ describe('UNIT: services/routing/registry', function () {
             assert.equal(registry.getRouter('a'), undefined);
         });
     });
+
+    describe('fn: getRouteExtensions', function () {
+        it('returns an empty set when no routes are registered', function () {
+            assert.equal(registry.getRouteExtensions().size, 0);
+        });
+
+        it('returns the extension of a collection permalink route', function () {
+            registry.setRoute('CollectionRouter', '/:primary_tag/:slug.html/:options(edit)?/');
+
+            assert.equal(registry.getRouteExtensions().has('.html'), true);
+        });
+
+        it('returns the extension of a literal route', function () {
+            registry.setRoute('StaticRoutesRouter', '/custom.xml/');
+
+            assert.equal(registry.getRouteExtensions().has('.xml'), true);
+        });
+
+        it('ignores routes without extensions', function () {
+            registry.setRoute('CollectionRouter', '/:slug/');
+            registry.setRoute('TaxonomyRouter', '/category/:slug/');
+
+            assert.equal(registry.getRouteExtensions().size, 0);
+        });
+
+        it('is cleared by resetAllRoutes', function () {
+            registry.setRoute('CollectionRouter', '/:slug.html/');
+            assert.equal(registry.getRouteExtensions().has('.html'), true);
+
+            registry.resetAllRoutes();
+
+            assert.equal(registry.getRouteExtensions().size, 0);
+        });
+
+        it('picks up routes registered after a previous read', function () {
+            assert.equal(registry.getRouteExtensions().size, 0);
+
+            registry.setRoute('CollectionRouter', '/:slug.html/');
+
+            assert.equal(registry.getRouteExtensions().has('.html'), true);
+        });
+    });
 });

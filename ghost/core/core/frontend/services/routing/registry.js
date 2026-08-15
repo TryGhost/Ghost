@@ -28,6 +28,8 @@ class Registry {
         this.routes = [];
         /** @type {Object<string, ParentRouter>} */
         this.routers = {};
+        /** @type {Set<string>|null} */
+        this.routeExtensions = null;
     }
 
     /**
@@ -37,6 +39,7 @@ class Registry {
      */
     setRoute(routerName, route) {
         this.routes.push({route: route, from: routerName});
+        this.routeExtensions = null;
     }
 
     /**
@@ -135,10 +138,32 @@ class Registry {
     }
 
     /**
+     * File extensions (with leading dot, lowercase) that appear in registered
+     * route definitions, e.g. `.html` from a `/{slug}.html/` collection
+     * permalink. Used to keep extension-bearing dynamic routes reachable when
+     * request paths with extensions are otherwise treated as static files.
+     *
+     * @returns {Set<string>}
+     */
+    getRouteExtensions() {
+        if (this.routeExtensions === null) {
+            this.routeExtensions = new Set();
+            for (const {route} of this.routes) {
+                for (const [, extension] of route.matchAll(/\.([a-z0-9]+)(?=\/|$)/gi)) {
+                    this.routeExtensions.add(`.${extension.toLowerCase()}`);
+                }
+            }
+        }
+
+        return this.routeExtensions;
+    }
+
+    /**
      * @description Reset all routes.
      */
     resetAllRoutes() {
         this.routes = [];
+        this.routeExtensions = null;
     }
 
     /**

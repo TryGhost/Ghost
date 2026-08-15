@@ -5,6 +5,7 @@ const _ = require('lodash');
 
 const express = require('../../../../../core/shared/express');
 const themeEngine = require('../../../../../core/frontend/services/theme-engine');
+const routingRegistry = require('../../../../../core/frontend/services/routing/registry');
 const staticTheme = require('../../../../../core/frontend/web/middleware/static-theme');
 
 describe('staticTheme', function () {
@@ -536,6 +537,65 @@ describe('staticTheme', function () {
             const options = expressStaticStub.firstCall.args[1];
             assert(_.isPlainObject(options));
             assert('maxAge' in options);
+            assert.equal(options.fallthrough, false);
+        });
+    });
+
+    describe('dynamic routes with file extensions', function () {
+        afterEach(function () {
+            routingRegistry.resetAllRoutes();
+        });
+
+        it('should skip when the extension is used by a registered dynamic route', async function () {
+            routingRegistry.setRoute('CollectionRouter', '/:primary_tag/:slug.html/:options(edit)?/');
+            req.path = '/finance/my-post.html/';
+
+            await callStaticTheme();
+            sinon.assert.notCalled(expressStaticStub);
+        });
+
+        it('should skip when the extension is used by a registered dynamic route, without trailing slash', async function () {
+            routingRegistry.setRoute('CollectionRouter', '/:primary_tag/:slug.html/:options(edit)?/');
+            req.path = '/finance/my-post.html';
+
+            await callStaticTheme();
+            sinon.assert.notCalled(expressStaticStub);
+        });
+
+        it('should skip for a custom route with a literal extension', async function () {
+            routingRegistry.setRoute('StaticRoutesRouter', '/custom.xml/');
+            req.path = '/custom.xml';
+
+            await callStaticTheme();
+            sinon.assert.notCalled(expressStaticStub);
+        });
+
+        it('should NOT skip in /assets/ even when the extension is used by a dynamic route', async function () {
+            routingRegistry.setRoute('CollectionRouter', '/:primary_tag/:slug.html/:options(edit)?/');
+            req.path = '/assets/snippet.html';
+
+            await callStaticTheme();
+            sinon.assert.called(expressStaticStub);
+        });
+
+        it('should NOT skip when no dynamic route uses the extension', async function () {
+            routingRegistry.setRoute('CollectionRouter', '/:primary_tag/:slug.html/:options(edit)?/');
+            req.path = '/style.css';
+
+            await callStaticTheme();
+            sinon.assert.called(expressStaticStub);
+
+            const options = expressStaticStub.firstCall.args[1];
+            assert.equal(options.fallthrough, false);
+        });
+
+        it('should NOT skip when no dynamic routes are registered', async function () {
+            req.path = '/finance/my-post.html/';
+
+            await callStaticTheme();
+            sinon.assert.called(expressStaticStub);
+
+            const options = expressStaticStub.firstCall.args[1];
             assert.equal(options.fallthrough, false);
         });
     });
