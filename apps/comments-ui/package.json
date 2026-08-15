@@ -2,6 +2,7 @@
     "name": "@tryghost/comments-ui",
     "type": "module",
     "version": "1.6.0",
+    "description": "Comments interface for Ghost posts",
     "license": "MIT",
     "repository": "https://github.com/TryGhost/Ghost",
     "author": "Ghost Foundation",
