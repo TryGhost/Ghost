@@ -546,36 +546,64 @@ describe('staticTheme', function () {
             routingRegistry.resetAllRoutes();
         });
 
-        it('should skip when the extension is used by a registered dynamic route', async function () {
+        it('should set fallthrough to true when the extension is used by a registered dynamic route', async function () {
             routingRegistry.setRoute('CollectionRouter', '/:primary_tag/:slug.html/:options(edit)?/');
             req.path = '/finance/my-post.html/';
 
             await callStaticTheme();
-            sinon.assert.notCalled(expressStaticStub);
+            // express.static is still consulted, so an existing theme file
+            // sharing the extension (e.g. legal.html) is served; a miss falls
+            // through to the dynamic router instead of erroring
+            sinon.assert.called(expressStaticStub);
+
+            const options = expressStaticStub.firstCall.args[1];
+            assert.equal(options.fallthrough, true);
         });
 
-        it('should skip when the extension is used by a registered dynamic route, without trailing slash', async function () {
+        it('should set fallthrough to true when the extension is used by a registered dynamic route, without trailing slash', async function () {
             routingRegistry.setRoute('CollectionRouter', '/:primary_tag/:slug.html/:options(edit)?/');
             req.path = '/finance/my-post.html';
 
             await callStaticTheme();
-            sinon.assert.notCalled(expressStaticStub);
+            sinon.assert.called(expressStaticStub);
+
+            const options = expressStaticStub.firstCall.args[1];
+            assert.equal(options.fallthrough, true);
         });
 
-        it('should skip for a custom route with a literal extension', async function () {
+        it('should set fallthrough to true for a custom route with a literal extension', async function () {
             routingRegistry.setRoute('StaticRoutesRouter', '/custom.xml/');
             req.path = '/custom.xml';
 
             await callStaticTheme();
-            sinon.assert.notCalled(expressStaticStub);
+            sinon.assert.called(expressStaticStub);
+
+            const options = expressStaticStub.firstCall.args[1];
+            assert.equal(options.fallthrough, true);
         });
 
-        it('should NOT skip in /assets/ even when the extension is used by a dynamic route', async function () {
+        it('should set fallthrough to true for a static file that shares an extension but matches no route', async function () {
+            routingRegistry.setRoute('CollectionRouter', '/:primary_tag/:slug.html/:options(edit)?/');
+            req.path = '/legal.html';
+
+            await callStaticTheme();
+            // express.static serves the file when it exists; only a miss
+            // falls through to dynamic routing
+            sinon.assert.called(expressStaticStub);
+
+            const options = expressStaticStub.firstCall.args[1];
+            assert.equal(options.fallthrough, true);
+        });
+
+        it('should keep fallthrough false in /assets/ even when the extension is used by a dynamic route', async function () {
             routingRegistry.setRoute('CollectionRouter', '/:primary_tag/:slug.html/:options(edit)?/');
             req.path = '/assets/snippet.html';
 
             await callStaticTheme();
             sinon.assert.called(expressStaticStub);
+
+            const options = expressStaticStub.firstCall.args[1];
+            assert.equal(options.fallthrough, false);
         });
 
         it('should NOT skip when no dynamic route uses the extension', async function () {

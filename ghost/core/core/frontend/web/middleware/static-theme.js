@@ -128,10 +128,12 @@ function staticTheme() {
         }
 
         // An extension used by a registered dynamic route (e.g. `.html` from a
-        // `/{slug}.html/` collection permalink) is not a static file request,
-        // so fall through and let the dynamic router serve it.
+        // `/{slug}.html/` collection permalink) may be a dynamic URL rather
+        // than a static file. Serve a matching theme file when one exists,
+        // but let a miss fall through to the dynamic router instead of
+        // terminating it as a static 404.
         if (routingRegistry.getRouteExtensions().has(path.extname(normalizedPath))) {
-            return next();
+            return forwardToExpressStatic(req, res, next, {fallthrough: true});
         }
 
         return forwardToExpressStatic(req, res, next);
