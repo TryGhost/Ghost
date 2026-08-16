@@ -76,63 +76,7 @@ not affect a publishable package do not need one.
 
 ## Commit Messages
 
-These conventions keep the main branch readable and generate useful release
-notes. They matter most for the pull request title and the squash commit that
-lands on `main`. Use them for intermediate commits where practical; the local
-commit hook provides best-effort feedback while work is in progress.
-
-Write the final commit message in this form:
-
-```text
-<optional release-note emoji> <past-tense summary, at most 80 characters>
-
-<optional issue relationship, or "no ref">
-
-<why this change was made>
-```
-
-- Start the summary with `Fixed`, `Changed`, `Updated`, `Improved`, `Added`,
-  `Removed`, `Reverted`, `Moved`, `Released`, `Bumped`, or `Cleaned`.
-- Keep the second line blank.
-- When an issue exists, use a supported relationship followed by its URL, such
-  as `ref <issue URL>`, `fixes <issue URL>`, or `closes <issue URL>`. Use
-  `no ref` when it is useful to state explicitly that there is no issue, or
-  leave this line blank.
-- Explain the context in the body: why this change, why now, and why this
-  approach. The diff already describes what changed.
-
-The local hook warns about most deviations without blocking the commit. It
-does require the common invalid forms `refs ...` and `ref: ...` to be corrected
-to a supported relationship such as `ref ...`.
-
-### Release-note emojis
-
-A leading release-note emoji opts the squash commit into generated release
-notes. Add one only for a significant change that is relevant to users, and
-write the summary from their perspective. Alpha or experimental work does not
-need an emoji until it becomes user-facing.
-
-- ✨ Feature
-- 🎨 Improvement or change
-- 💄 UI or styling improvement
-- 🐛 Bug fix
-- 🔒 Security improvement
-- 💡 Other noteworthy user-facing change
-
-Use 🌐 for [translation submissions](translating-ghost.md). Translation commits
-are not selected for generated release notes by that emoji alone.
-
-Good final commit examples include a [new feature](https://github.com/TryGhost/Ghost/commit/61db6defde3b10a4022c86efac29cf15ae60983f),
-a [bug fix](https://github.com/TryGhost/Ghost/commit/6ef835bb5879421ae9133541ebf8c4e560a4a90e),
-and a [translation](https://github.com/TryGhost/Ghost/commit/83904c1611ae7ab3257b3b7d55f03e50cead62d7).
-
-**Bumping @tryghost dependencies**
-
-When bumping `@tryghost/*` dependencies, the first line should follow the above format and say what has changed, not say what has been bumped.
-
-There is no need to include what modules have changed in the commit message, as this is _very_ clear from the contents of the commit. The commit should focus on surfacing the underlying changes from the dependencies - what actually changed as a result of this dependency bump?
-
-[Good example](https://github.com/TryGhost/Ghost/commit/95751a0e5fb719bb5bca74cb97fb5f29b225094f)
+Follow the canonical [commit message guidelines](../../.github/CONTRIBUTING.md#commit-messages).
 
 
 ## Publish the branch
