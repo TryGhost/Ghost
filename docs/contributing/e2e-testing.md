@@ -1,16 +1,19 @@
-# E2E Test Writing Guide
+# Writing Browser E2E Tests
 
-Worked examples for writing E2E tests in `/e2e/` with TypeScript and Playwright.
+Ghost's browser end-to-end tests live in `/e2e/` and use TypeScript and
+Playwright to verify complete journeys across Ghost Admin and the public site.
+This guide explains how to write and structure them.
 
-This guide covers *how to build the pieces* — page objects, common interaction
-patterns, and selector discovery. It deliberately does not repeat what is
-already documented elsewhere:
+For related guidance:
 
 | For | Read |
 | --- | --- |
-| Running tests, dev/build modes, debugging, folder layout, test isolation, fixtures | [README.md](../README.md) |
-| Rules, locator priority, AAA structure, DO/DON'T, validation checklist | [AGENTS.md](../AGENTS.md) |
-| Available factories and how to add one | [data-factory/README.md](../data-factory/README.md) |
+| Choosing between unit, integration, acceptance, and E2E tests | [Testing Ghost](testing.md) |
+| Running E2E tests, infrastructure modes, debugging, isolation, and fixtures | [E2E workspace README](../../e2e/README.md) |
+| Available factories and how to add one | [Data factory README](../../e2e/data-factory/README.md) |
+
+Workspace command examples start from the repository root and change into
+`e2e/`.
 
 ## Conventions
 
@@ -22,8 +25,8 @@ already documented elsewhere:
 - Page objects: `<feature>-page.ts` — `login-page.ts`, `admin-page.ts`
 - Class names stay PascalCase: `login-page.ts` exports `class LoginPage`
 
-**Import through the `@/` path aliases**, never relative paths. The aliases are
-defined in `tsconfig.json`:
+In tests, import shared helpers and page objects through the `@/` path aliases
+defined in `e2e/tsconfig.json`:
 
 ```typescript
 import {expect, test} from '@/helpers/playwright';
@@ -31,6 +34,20 @@ import {LoginPage, PostsPage} from '@/admin-pages';
 import {createPostFactory} from '@/data-factory';
 import {usePerTestIsolation} from '@/helpers/playwright/isolation';
 ```
+
+Page-object modules use relative imports for nearby base classes and sibling
+modules where appropriate.
+
+Use Arrange–Act–Assert as a readability heuristic: set up the scenario,
+perform the behaviour under test, then verify the outcome. Make the phases
+clear through structure and naming; add comments only when the boundary would
+otherwise be unclear. Keep each test focused on one scenario and write its name
+and flow so that someone without detailed knowledge of the implementation can
+understand the behaviour being checked.
+
+Use factories for test data. Keep their defaults for data that does not affect
+the scenario, and only override the values needed for the behaviour and
+assertions in that test.
 
 ## Page Object Pattern
 
@@ -67,7 +84,7 @@ export class FeaturePage extends AdminPage {
         // 2. Labels for form elements
         this.nameInput = page.getByLabel('Name');
 
-        // 3. Text content (for unique text)
+        // 3. Text content when the text is unique
         this.statusMessage = page.getByText('Saved');
 
         // 4. Stable test IDs when semantic locators are unavailable
@@ -189,14 +206,8 @@ await page.keyboard.type('Hello World');
 
 ## Ghost-Specific Patterns
 
-### Common Selectors
-- Navigation: `data-test-nav="[section]"`
-- Buttons: `data-test-button="[action]"`
-- Modals: `[role="dialog"]`
-- Loading states: `.gh-loading-spinner`
-
-Ember Admin uses `data-test-*` attributes; the React Admin apps use
-`data-testid`. Prefer a role or label over either where one exists.
+Ember Admin commonly uses `data-test-*` attributes and the React Admin apps use
+`data-testid`. Prefer a role, label, or unique visible text where one exists.
 
 ### Admin URLs
 - Editor: `/ghost/#/editor/post/[id]`
@@ -204,38 +215,31 @@ Ember Admin uses `data-test-*` attributes; the React Admin apps use
 - Settings: `/ghost/#/settings`
 - Members: `/ghost/#/members`
 
-## Using Playwright MCP for Page Object Discovery
+## Discovering Locators
 
-When creating new Page Objects or discovering selectors for unfamiliar UI:
+When creating a Page Object for unfamiliar UI, preserve the test environment
+after a run and inspect the rendered page with Playwright Inspector or browser
+developer tools.
 
-### 1. Start Ghost with Preserved Environment
+### Preserve the test environment
+
 ```bash
+cd e2e
+
 # Start Ghost and keep it running
 PRESERVE_ENV=true pnpm test
 
 # The test will output the Ghost instance URL (usually http://localhost:2369)
 ```
 
-### 2. Use Playwright MCP to Explore
-```javascript
-// Navigate to the Ghost instance
-mcp__playwright__browser_navigate({url: "http://localhost:2369/ghost"})
+The test output provides the preserved Ghost instance URL, usually
+`http://localhost:2369`. Open that URL, exercise the interaction, and inspect
+the accessibility tree and relevant attributes.
 
-// Capture the current DOM structure
-mcp__playwright__browser_snapshot()
-
-// Interact with elements to discover selectors
-mcp__playwright__browser_click({element: "Button description", ref: "selector-from-snapshot"})
-
-// Take screenshots for reference
-mcp__playwright__browser_take_screenshot({filename: "feature-state.png"})
-```
-
-### 3. Extract Selectors for Page Objects
-Based on your exploration, create the Page Object with discovered selectors:
-- Note the element references from snapshots
-- Identify the best selector strategy (role, label, text, testId)
-- Test interactions before finalizing the Page Object
+Choose the locator using the priority above and verify the interaction before
+adding it to the Page Object. If the UI has no reliable semantic locator, add a
+stable test ID to the product code rather than coupling the test to styling or
+DOM position.
 
 ## Test Template
 
@@ -257,4 +261,15 @@ test.describe('Ghost Admin - Feature', () => {
         await expect(featurePage.statusMessage).toBeVisible();
     });
 });
+```
+
+After changing E2E tests, run the focused test as well as the workspace lint
+and type checks:
+
+```bash
+cd e2e
+
+pnpm test tests/admin/signin.test.ts
+pnpm lint
+pnpm test:types
 ```
