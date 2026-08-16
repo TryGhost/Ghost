@@ -11,6 +11,7 @@ Start with:
 
 - [Development setup](docs/contributing/development-setup.md)
 - [Contribution workflow](docs/contributing/workflow.md)
+- [Writing codebase documentation](docs/contributing/documentation.md)
 - [Testing](docs/contributing/testing.md)
 - [Shipping](docs/contributing/shipping.md)
 - [Monorepo structure](docs/codebase/monorepo-structure.md)
