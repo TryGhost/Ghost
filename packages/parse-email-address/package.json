@@ -46,7 +46,7 @@
     "vitest": "catalog:"
   },
   "dependencies": {
-    "parse-email-address": "0.0.2"
+    "parse-email-address": "0.0.4"
   },
   "nx": {
     "targets": {
