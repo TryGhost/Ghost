@@ -63,6 +63,10 @@ Choose patch, minor, or major according to the package's public compatibility
 impact. The summary becomes the changelog entry, so describe the result for the
 package's consumers.
 
+A package `README.md` is included when the package is published, so changing it
+requires a release. Repository-only Markdown such as `AGENTS.md`, `CLAUDE.md`,
+changelogs, and files under a package's `docs/` directory does not.
+
 If a changed publishable package genuinely requires no release—for example, a
 test-only or internal tooling change—record that explicitly:
 

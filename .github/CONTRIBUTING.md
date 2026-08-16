@@ -90,6 +90,10 @@ This records which packages changed and the bump type (patch / minor / major); t
 pnpm change --bump none
 ```
 
+A package `README.md` is published with the package and requires a release.
+Repository-only Markdown such as `AGENTS.md`, `CLAUDE.md`, changelogs, and
+package-local `docs/` does not.
+
 CI enforces this — the **Check app version bump** job fails a pull request that affects a publishable package without a covering changeset. The pre-commit hook prints a non-blocking reminder locally, and `pnpm change status` shows what's currently pending.
 
 For more detail, see the [contribution workflow](../docs/contributing/workflow.md).
