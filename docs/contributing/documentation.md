@@ -79,6 +79,8 @@ its documentation.
 - Link repository skills to the canonical guide instead of repeating it.
 - Update human documentation and any agent entry points that need to discover
   it in the same pull request.
+- Keep each tracked `AGENTS.md` at or below 150 lines. The documentation lint
+  enforces this limit.
 
 ## Check Your Change
 

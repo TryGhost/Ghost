@@ -162,6 +162,8 @@ jobs:
               - 'package.json'
               - 'scripts/check-agent-skill-links.js'
               - 'scripts/test/check-agent-skill-links.test.js'
+              - 'scripts/check-agent-guidance.js'
+              - 'scripts/test/check-agent-guidance.test.js'
             package-standards:
               - 'packages/**'
               - 'package.json'
@@ -446,8 +448,11 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Lint agent skills
-        run: node scripts/check-agent-skill-links.js
+      - name: Lint documentation guidance
+        run: |
+          node --test scripts/test/check-agent-guidance.test.js
+          node scripts/check-agent-skill-links.js
+          node scripts/check-agent-guidance.js
 
   job_lint_packages:
     name: Lint packages
