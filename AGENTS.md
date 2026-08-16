@@ -145,7 +145,11 @@ skill without duplicating it. Run `pnpm lint:agent-skills` to verify every
 repository skill is linked correctly; CI runs the same check.
 
 ### Commit Messages
-When the user asks you to create a commit or draft a commit message, load and follow the `commit` skill from `.agents/skills/commit`.
+When the user asks you to create a commit or draft a commit message, load and
+follow the `commit` skill from `.agents/skills/commit`. Read the canonical
+[commit message guidelines](.github/CONTRIBUTING.md#commit-messages), and apply
+the subject convention carefully to PR titles and proposed squash commits.
+Local hook notices on intermediate commits are best-effort guidance.
 
 ### ESLint Config
 Source of truth: two internal config packages — [`@internal/cfg-eslint`](configs/eslint/index.mjs) (shared rule atoms + the `nodeLibConfig` factory for Node libs) and [`@internal/cfg-eslint-react`](configs/eslint-react/index.mjs) (the `reactAppConfig` factory for every `apps/*` workspace). Both factories are synchronous and have full JSDoc with `@example`s; hover the call site in your editor. Consume them by name — declare the package as a `workspace:*` devDependency.
