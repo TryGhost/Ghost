@@ -10,7 +10,7 @@
     padding: 1.2em;
 }
 
-.kg-toggle-card[data-kg-toggle-state="close"] .kg-toggle-content{
+.kg-toggle-card[data-kg-toggle-state="close"] .kg-toggle-content {
     height: 0;
     overflow: hidden;
     transition: opacity .5s ease, top .35s ease;
@@ -74,6 +74,11 @@
     background: none;
     border: 0;
     cursor: pointer;
+}
+
+.kg-toggle-card-icon:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
 }
 
 .kg-toggle-heading svg {
