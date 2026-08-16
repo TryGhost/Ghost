@@ -27,8 +27,16 @@ Ghost worktree from the freshly fetched `origin/main`.
 
 Run history-changing commands individually or in a fail-fast shell. A failed
 `git worktree add` must not be followed by `git subtree add` in whichever
-checkout happens to be current. Stop if the destination branch or path already
-exists and inspect that state rather than reusing it implicitly.
+checkout happens to be current. Before choosing a branch or path, list existing
+worktrees and matching local and remote branches. Use a migration-specific slug,
+for example `codex/import-<package>-from-<source>`, rather than a generic name.
+
+If the destination branch or path already exists, stop and inspect its
+cleanliness, base, divergence, source split and attached worktree. Do not mutate,
+delete or silently reuse it. Present the evidence and ask the user whether to
+resume, preserve and supersede, or remove it when more than one choice is
+reasonable. A previous attempt can contain valid unmerged history even when its
+remote branch is gone.
 
 Before importing, record and compare the destination `HEAD` and `origin/main`;
 they must match. Recheck the first parent immediately after the subtree commit.
@@ -60,6 +68,11 @@ as evidence of continued installation needs; even then, they do not establish
 an independently supported API. Record the evidence and confidence behind the
 ownership decision; stop and ask if current support expectations remain
 unclear.
+
+Run registry-only `npm view` commands from a neutral temporary directory. A
+repository's `devEngines` policy can reject the host Node version before npm
+contacts the registry, which is unrelated to the package metadata audit. Record
+that failure separately if using a neutral directory does not resolve it.
 
 ## Produce these work products in order
 
@@ -121,6 +134,14 @@ tip, the consumer resolves the workspace package through its production import
 path, package lint and tests pass through Nx, relevant consumer tests pass, the
 full build passes, and the Ghost archive contains the internal package. Record
 the exact commit IDs and commands in the handoff.
+
+For a pilot or first use, include a structured gap report in the handoff:
+
+- `Observed`: the exact failure or ambiguity and the command/state that exposed it;
+- `Worked around`: the safe action taken, without hiding the original gap;
+- `Skill change`: the concrete instruction, preflight or script improvement;
+- `Tooling change`: anything that cannot be solved within this repository;
+- `Confidence`: high, medium or low, with unresolved evidence called out.
 
 ## 2. Merge the import without rewriting history
 
