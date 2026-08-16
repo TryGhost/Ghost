@@ -218,6 +218,8 @@
     --color-interactive-hover: var(--interactive-hover);
     --color-table-row-hover: var(--table-row-hover);
     --color-control-surface: var(--control-surface);
+    --color-control-readonly-surface: var(--control-readonly-surface);
+    --color-control-disabled-surface: var(--control-disabled-surface);
     --color-control-border: var(--control-border);
 
     /* Typography */

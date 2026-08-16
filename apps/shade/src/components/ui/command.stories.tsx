@@ -30,6 +30,11 @@ const meta = {
     component: Command,
     tags: ['autodocs'],
     parameters: {
+        docs: {
+            description: {
+                component: 'A searchable command list with consistent control typography for queries and results.'
+            }
+        },
         layout: 'centered'
     }
 } satisfies Meta<typeof Command>;
@@ -78,6 +83,28 @@ export const Default: Story = {
             </CommandList>
         </Command>
     )
+};
+
+export const MatchingSearchTypography: Story = {
+    render: () => (
+        <Command className="w-[450px] rounded-lg border shadow-md">
+            <CommandInput placeholder="Search timezones..." />
+            <CommandList>
+                <CommandGroup>
+                    <CommandItem>(GMT) UTC</CommandItem>
+                    <CommandItem>(GMT -11:00) Midway Island, Samoa</CommandItem>
+                    <CommandItem>(GMT -10:00) Hawaii</CommandItem>
+                </CommandGroup>
+            </CommandList>
+        </Command>
+    ),
+    parameters: {
+        docs: {
+            description: {
+                story: 'Search text and placeholders use the same control typography as the result options.'
+            }
+        }
+    }
 };
 
 export const WithGroups: Story = {

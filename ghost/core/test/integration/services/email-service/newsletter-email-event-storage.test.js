@@ -35,8 +35,8 @@ processingModes.forEach(({name, batchProcessing}) => {
             configUtils.set('emailAnalytics:batchProcessing', batchProcessing);
 
             // Stub queries before boot
-            const queries = require('../../../../core/server/services/email-analytics/lib/queries');
-            sinon.stub(queries, 'getLastEventTimestamp').callsFake(async function () {
+            const {Queries} = require('../../../../core/server/services/email-analytics/lib/queries');
+            sinon.stub(Queries.prototype, 'getLastEventTimestamp').callsFake(async function () {
                 // This is required because otherwise the last event timestamp will be now, and that is too close to NOW to start fetching new events
                 return new Date(2000, 0, 1);
             });
@@ -1104,6 +1104,57 @@ processingModes.forEach(({name, batchProcessing}) => {
             assert(!member.related('newsletters').models.some(newsletter => newsletter.id === newsletterToRemove));
 
             // But the member is still subscribed to newsletter 1
+            assert(member.related('newsletters').models.some(newsletter => newsletter.id === newsletterToKeep));
+        });
+
+        it('Keeps other newsletters when the member changed their email after the send', async function () {
+            const newsletterToRemove = fixtureManager.get('newsletters', 0).id;
+            const newsletterToKeep = fixtureManager.get('newsletters', 1).id;
+
+            const email = fixtureManager.get('emails', 0);
+            await models.Email.edit({newsletter_id: newsletterToRemove}, {id: email.id});
+
+            const emailBatch = fixtureManager.get('email_batches', 0);
+            const emailRecipient = fixtureManager.get('email_recipients', 0);
+            const memberId = emailRecipient.member_id;
+            const providerId = emailBatch.provider_id;
+            const timestamp = new Date(2000, 0, 1);
+
+            // Member subscribed to 2 newsletters
+            await membersService.api.members.update({newsletters: [
+                {id: newsletterToRemove},
+                {id: newsletterToKeep}
+            ]}, {id: memberId});
+
+            const memberInitial = await membersService.api.members.get({id: memberId}, {withRelated: ['newsletters']});
+            assert.equal(memberInitial.related('newsletters').length, 2, 'precondition: subscribed to 2 newsletters');
+
+            await membersService.api.members.update({email: 'changed-address@example.com'}, {id: memberId});
+
+            events = [{
+                event: 'unsubscribed',
+                recipient: emailRecipient.member_email, // the old, send-time address
+                'user-variables': {
+                    'email-id': email.id
+                },
+                message: {
+                    headers: {
+                        'message-id': providerId
+                    }
+                },
+                timestamp: Math.round(timestamp.getTime() / 1000)
+            }];
+
+            const result = await emailAnalytics.newsletters.fetchLatestOpenedEvents();
+            assert.equal(result, 1);
+            await DomainEvents.allSettled();
+
+            const member = await membersService.api.members.get({id: memberId}, {withRelated: ['newsletters']});
+
+            assert.equal(
+                member.related('newsletters').length, 1,
+                `member should still have 1 newsletter but has ${member.related('newsletters').length}`
+            );
             assert(member.related('newsletters').models.some(newsletter => newsletter.id === newsletterToKeep));
         });
 

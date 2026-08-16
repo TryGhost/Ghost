@@ -4,7 +4,7 @@ import {type ValueSource, type ValueSourceParams, type ValueSourceState} from '@
 import {buildQuotedListFilter, filterOptionsByQuery, mergeFilterOptions} from './utils';
 import {createGhostBrowseValueSource} from './create-ghost-browse-value-source';
 import {createHybridValueSource} from './create-hybrid-value-source';
-import {escapeNqlString} from '@/shared/filters/filter-normalization';
+import {escapeNqlString} from '@tryghost/nql-string';
 import {keepPreviousData} from '@tanstack/react-query';
 
 const LABEL_PAGE_LIMIT = '100';

@@ -337,6 +337,34 @@ describe('errors utils', () => {
             expect(getErrorMessage(error, 'Fallback message')).toBe('Validation error, cannot edit label.');
         });
 
+        // Not just validation: the serializer treats every error the same way, so a caller
+        // should not have to know which class came back to find the sentence it carries.
+        const makeHostLimitError = (context: string | null) => {
+            const data: ErrorResponse = {
+                errors: [{
+                    code: 'CUSTOM_FIELDS_LIMIT_REACHED',
+                    context,
+                    details: null,
+                    ghostErrorCode: null,
+                    help: 'Help text',
+                    id: 'error-id',
+                    message: 'Cannot create custom field.',
+                    property: null,
+                    type: 'HostLimitError'
+                }]
+            };
+            return new HostLimitError({} as Response, data);
+        };
+
+        it('returns the context of any error carrying an API body, not only a validation one', () => {
+            const error = makeHostLimitError('Custom fields are limited to 20 per site.');
+            expect(getErrorMessage(error, 'Fallback message')).toBe('Custom fields are limited to 20 per site.');
+        });
+
+        it('falls back to the API message for a non-validation error with no context', () => {
+            expect(getErrorMessage(makeHostLimitError(null), 'Fallback message')).toBe('Cannot create custom field.');
+        });
+
         it('returns the fallback for other errors', () => {
             expect(getErrorMessage(new Error('boom'), 'Fallback message')).toBe('Fallback message');
             expect(getErrorMessage(undefined, 'Fallback message')).toBe('Fallback message');

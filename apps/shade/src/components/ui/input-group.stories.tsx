@@ -123,6 +123,26 @@ export const Text: Story = {
     }
 };
 
+export const FocusSurface: Story = {
+    render: () => (
+        <div className="w-full max-w-sm">
+            <InputGroup>
+                <InputGroupInput aria-label="Monthly price" defaultValue="50" />
+                <InputGroupAddon align="inline-end">
+                    <InputGroupText>USD/month</InputGroupText>
+                </InputGroupAddon>
+            </InputGroup>
+        </div>
+    ),
+    parameters: {
+        docs: {
+            description: {
+                story: 'Focusing the control applies one focus ring around the complete grouped field.'
+            }
+        }
+    }
+};
+
 export const Button: Story = {
     render: () => (
         <div className="grid w-full max-w-sm gap-6">
@@ -298,7 +318,7 @@ export const Disabled: Story = {
     parameters: {
         docs: {
             description: {
-                story: 'Disabled state reduces opacity across all group elements. Add data-disabled="true" to the InputGroup for consistent styling.'
+                story: 'Disabled groups use the shared disabled field surface while keeping their value readable. Add data-disabled="true" to the InputGroup for consistent wrapper styling.'
             }
         }
     }

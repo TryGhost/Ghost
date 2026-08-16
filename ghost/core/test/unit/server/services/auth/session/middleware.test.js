@@ -12,12 +12,21 @@ describe('Session Service', function () {
     });
 
     const fakeReq = function fakeReq() {
-        return {
-            session: {},
+        const req = {
             user: null,
             body: {},
             get() {}
         };
+
+        // Mimics express-session, where regenerate swaps in a new session object
+        const regenerate = function (cb) {
+            req.session = {regenerate};
+            cb();
+        };
+
+        req.session = {regenerate};
+
+        return req;
     };
 
     const fakeRes = function fakeRes() {

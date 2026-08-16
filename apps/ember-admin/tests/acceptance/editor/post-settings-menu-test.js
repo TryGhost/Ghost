@@ -1,5 +1,4 @@
 import {authenticateSession} from 'ember-simple-auth/test-support';
-import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../../helpers/mock-analytics-apps';
 import {click, find} from '@ember/test-helpers';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
@@ -14,17 +13,12 @@ describe('Acceptance: Editor / Post Settings Menu', function () {
     let author;
 
     beforeEach(async function () {
-        mockAnalyticsApps();
         this.server.loadFixtures();
 
         let role = this.server.create('role', {name: 'Administrator'});
         author = this.server.create('user', {roles: [role]});
 
         await authenticateSession();
-    });
-
-    afterEach(function () {
-        cleanupMockAnalyticsApps();
     });
 
     it('displays publish time converted to site timezone', async function () {

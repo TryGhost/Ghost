@@ -1,11 +1,17 @@
 # yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
 reviews:
+  profile: quiet
+  review_details: true
   high_level_summary: false
   collapse_walkthrough: false
   changed_files_summary: false
   sequence_diagrams: false
   estimate_code_review_effort: false
   poem: false
+  auto_review:
+    ignore_usernames:
+      - tryghost-renovate[bot]
+      - dependabot[bot]
   pre_merge_checks:
     docstrings:
       mode: "off"

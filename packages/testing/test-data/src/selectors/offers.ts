@@ -1,6 +1,6 @@
 /**
  * Offers screen selector strings, consumed by the admin screen helpers.
- * Source of truth: apps/admin-x-settings/src/components/settings/growth/offers.
+ * Source of truth: apps/admin/src/settings/app/components/settings/growth/offers.
  */
 export const offersSelectors = {
     testIds: {

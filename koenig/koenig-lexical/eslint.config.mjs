@@ -37,7 +37,8 @@ export default [
                 ...globals.node
             },
             parserOptions: {
-                ecmaFeatures: {jsx: true}
+                ecmaFeatures: {jsx: true},
+                tsconfigRootDir: import.meta.dirname
             }
         },
         rules: {

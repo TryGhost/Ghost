@@ -14,7 +14,7 @@
  *     from the registry.
  *  2. Pack `ghost` itself; the beforePacking hook rewrites its workspace deps to
  *     `file:components/*.tgz`, strips devDependencies/nx/scripts. Extract it into
- *     package/.
+ *     package/ and add the repo-root LICENSE.
  *  3. Write a trimmed pnpm-workspace.yaml (catalogs + overrides, component
  *     tarball overrides, release-age check off).
  *  4. Seed the root lockfile, then regenerate it against the packed manifest so
@@ -28,6 +28,7 @@ import os from 'node:os';
 import {execFile} from 'node:child_process';
 import {promisify} from 'node:util';
 import yaml from 'js-yaml';
+import {prune, reportPrune} from './prune.mts';
 
 const execFileAsync = promisify(execFile);
 
@@ -35,6 +36,9 @@ const CORE_DIR = path.resolve(import.meta.dirname, '..');
 const ROOT_DIR = path.resolve(CORE_DIR, '../..');
 const BUILD_DIR = path.join(CORE_DIR, 'package');
 const COMPONENTS_DIR = path.join(BUILD_DIR, 'components');
+
+// Matches pnpm's own root-license glob (LICEN{S,C}E{,.*}).
+const isLicenseFile = name => /^licen[sc]e(\..+)?$/i.test(name);
 
 const readJson = async file => JSON.parse(await fs.readFile(file, 'utf8'));
 const writeJson = (file, data) => fs.writeFile(file, JSON.stringify(data, null, 2) + '\n');
@@ -148,12 +152,30 @@ pkg.packageManager = rootPkg.packageManager;
 await writeJson(pkgPath, pkg);
 console.log(`  Set packageManager: ${rootPkg.packageManager.split('+')[0]}`);
 
+// pnpm pack copies the repo-root license into a package that ships none, but it
+// tests the whole packed file list — the bundled Casper/Source themes ship their
+// own LICENSE, so ghost looks covered and the root one is skipped. Copy it here.
+const buildFiles = await fs.readdir(BUILD_DIR);
+if (!buildFiles.some(isLicenseFile)) {
+    const rootLicenses = (await fs.readdir(ROOT_DIR)).filter(isLicenseFile);
+    await Promise.all(rootLicenses.map(async (name) => {
+        await fs.copyFile(path.join(ROOT_DIR, name), path.join(BUILD_DIR, name));
+        console.log(`  Copied ${name} from the repo root`);
+    }));
+}
+
 // 3. Write a trimmed pnpm-workspace.yaml. We keep:
 //   - catalog + catalogs (lockfile records & validates these)
 //   - allowBuilds + strictDepBuilds (end-user installs need this to permit
 //     native module post-install scripts like better-sqlite3, sharp, re2)
 //   - overrides + packageExtensions (root dependency policy must apply to the
 //     standalone install too)
+//   - ignoredOptionalDependencies: the archive gets no .pnpmfile.mjs, so the
+//     readPackage hook that strips knex's optional sqlite3 peer never runs here.
+//     This is what keeps sqlite3 out — dropping the provider (knex-migrator's
+//     optionalDependencies) leaves knex's optional peer with nothing to bind to.
+//     Without it the end-user install pulls sqlite3 back in and fails on
+//     ERR_PNPM_IGNORED_BUILDS, since allowBuilds no longer permits its build.
 // We drop:
 //   - packages: relative paths that don't exist in the standalone dir
 //   - minimumReleaseAge, blockExoticSubdeps, catalogMode: source-repo
@@ -161,7 +183,7 @@ console.log(`  Set packageManager: ${rootPkg.packageManager.split('+')[0]}`);
 //     @tryghost/* component tarballs aren't on npm, so an age check would 404)
 console.log('\nWriting pnpm-workspace.yaml...');
 const buildWorkspace = {};
-for (const key of ['catalog', 'catalogs', 'allowBuilds', 'strictDepBuilds', 'overrides', 'packageExtensions']) {
+for (const key of ['catalog', 'catalogs', 'allowBuilds', 'strictDepBuilds', 'overrides', 'packageExtensions', 'ignoredOptionalDependencies']) {
     if (rootWorkspace[key] !== undefined) {
         buildWorkspace[key] = rootWorkspace[key];
     }
@@ -190,18 +212,29 @@ await pnpm(
     {cwd: BUILD_DIR}
 );
 
-// 5. Validate before tarring — guard against a valid-looking but broken archive.
+// 5. Prune, then validate — the checks below have to see the tree that actually
+// ships, so a prune that ate the entry point, the install metadata or a component
+// tarball fails here rather than at a consumer's install.
+await fs.rm(path.join(BUILD_DIR, 'node_modules'), {recursive: true, force: true});
+
+console.log('\nPruning build output...');
+reportPrune(await prune(BUILD_DIR, {profile: 'archive'}));
+
 console.log('\nValidating build output...');
-const requiredFiles = ['pnpm-workspace.yaml', 'pnpm-lock.yaml', 'package.json'];
-const [packagedPkg, packagedWorkspace, missingFiles, componentTgzCount] = await Promise.all([
+const requiredFiles = ['pnpm-workspace.yaml', 'pnpm-lock.yaml', 'package.json', 'index.js'];
+const [packagedPkg, packagedWorkspace, missingFiles, componentTgzCount, packagedFiles] = await Promise.all([
     readJson(pkgPath),
     readYaml(path.join(BUILD_DIR, 'pnpm-workspace.yaml')),
     Promise.all(requiredFiles.map(async rel => (await exists(path.join(BUILD_DIR, rel)) ? null : rel))),
-    fs.readdir(COMPONENTS_DIR).then(files => files.filter(f => f.endsWith('.tgz')).length)
+    fs.readdir(COMPONENTS_DIR).then(files => files.filter(f => f.endsWith('.tgz')).length),
+    fs.readdir(BUILD_DIR)
 ]);
 const missing = missingFiles.filter(Boolean);
 if (missing.length > 0) {
     throw new Error(`Required file(s) missing from build output: ${missing.join(', ')}`);
+}
+if (!packagedFiles.some(isLicenseFile)) {
+    throw new Error('Build output is missing a top-level license file');
 }
 if (componentTgzCount !== components.size) {
     throw new Error('components/ tarball count does not match packed component set');
@@ -230,7 +263,6 @@ if (!packagedWorkspace?.overrides || Object.keys(packagedWorkspace.overrides).le
 // 6. Create the tarball (npm layout: top-level package/ dir, no node_modules).
 const version = pkg.version;
 const tgzPath = path.join(CORE_DIR, `ghost-${version}.tgz`);
-await fs.rm(path.join(BUILD_DIR, 'node_modules'), {recursive: true, force: true});
 
 console.log(`\nCreating tarball: ghost-${version}.tgz`);
 await execFileAsync('tar', ['czf', tgzPath, 'package'], {cwd: CORE_DIR});

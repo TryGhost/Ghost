@@ -3,6 +3,11 @@ const errors = require('@tryghost/errors');
 const debug = require('@tryghost/debug')('email-service:mailgun-provider-service');
 
 /**
+ * @typedef {object} Config
+ * @prop {(key: string) => unknown} get
+ */
+
+/**
  * @typedef {object} Recipient
  * @prop {string} email
  * @prop {Replacement[]} replacements
@@ -29,18 +34,22 @@ const debug = require('@tryghost/debug')('email-service:mailgun-provider-service
 
 class MailgunEmailProvider {
     #mailgunClient;
+    #config;
     #errorHandler;
 
     /**
      * @param {object} dependencies
      * @param {import('../lib/mailgun-client')} dependencies.mailgunClient - mailgun client to send emails
+     * @param {Config} dependencies.config
      * @param {Function} [dependencies.errorHandler] - custom error handler for logging exceptions
      */
     constructor({
         mailgunClient,
+        config,
         errorHandler
     }) {
         this.#mailgunClient = mailgunClient;
+        this.#config = config;
         this.#errorHandler = errorHandler;
     }
 
@@ -108,11 +117,17 @@ class MailgunEmailProvider {
                 plaintext,
                 from,
                 replyTo,
+                tags: ['bulk-email'],
                 domainOverride,
                 id: emailId,
                 track_opens: !!options.openTrackingEnabled,
                 track_clicks: !!options.clickTrackingEnabled
             };
+
+            const mailgunTagFromConfig = this.#config.get('bulkEmail:mailgun:tag');
+            if (typeof mailgunTagFromConfig === 'string' && mailgunTagFromConfig.length > 0) {
+                messageData.tags.push(mailgunTagFromConfig);
+            }
 
             if (options.deliveryTime && options.deliveryTime instanceof Date) {
                 messageData.deliveryTime = options.deliveryTime;

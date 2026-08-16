@@ -1093,18 +1093,6 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     }
 }
 
-.gh-lexical-indicator {
-    margin: 1px 0 0 8px;
-    padding: 1px 8px;
-    background: var(--whitegrey-d1);
-    color: var(--black);
-    font-family: var(--font-family-mono);
-    font-size: 1.25rem;
-    border-radius: var(--border-radius);
-}
-
-
-
 .gh-editor-preview-trigger {
     height: 34px;
     background: var(--white);

@@ -22,7 +22,7 @@ RadioGroup.displayName = RadioGroupPrimitive.Root.displayName;
 const radioGroupItemVariants = cva(
     [
         inputSurface('self'),
-        'peer grid size-4 shrink-0 place-content-center rounded-full p-0 text-primary enabled:hover:bg-interactive-hover'
+        'peer grid size-4 shrink-0 place-content-center rounded-full border-border-strong p-0 text-primary enabled:hover:bg-interactive-hover data-[state=checked]:border-primary'
     ],
     {
         variants: {

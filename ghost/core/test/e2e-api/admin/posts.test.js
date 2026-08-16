@@ -135,6 +135,18 @@ describe('Posts API', function () {
             });
     });
 
+    it('Can browse with restricted filter fields', async function () {
+        await agent.get('posts/?filter=authors.password:abcd&limit=2')
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                posts: new Array(2).fill(matchPostShallowIncludes)
+            });
+    });
+
     describe('Export', function () {
         it('Can export', async function () {
             const {text} = await agent.get('posts/export')
@@ -189,6 +201,23 @@ describe('Posts API', function () {
 
         it('Can export with filter', async function () {
             const {text} = await agent.get('posts/export?filter=featured:true')
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    'content-disposition': stringMatching(/^Attachment; filename="(?:[a-z0-9-]+\.)?ghost\.analytics\.\d{4}-\d{2}-\d{2}\.csv"$/)
+                });
+
+            // body snapshot doesn't work with text/csv
+            testCleanedSnapshot(text, [
+                {
+                    match: /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.000Z/g,
+                    replacement: '2050-01-01T00:00:00.000Z'
+                }
+            ]);
+        });
+
+        it('Can export with restricted filter fields', async function () {
+            const {text} = await agent.get('posts/export?filter=authors.password:abcd')
                 .expectStatus(200)
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
@@ -729,6 +758,58 @@ describe('Posts API', function () {
                     'content-version': anyContentVersion,
                     etag: anyEtag
                 });
+        });
+
+        it('Can destroy a post with a threaded comment replying to another reply', async function () {
+            const post = fixtureManager.get('posts', 1);
+
+            const root = await models.Comment.add({
+                post_id: post.id,
+                html: '<p>Root comment</p>',
+                status: 'published'
+            });
+            const reply = await models.Comment.add({
+                post_id: post.id,
+                parent_id: root.id,
+                html: '<p>Reply</p>',
+                status: 'published'
+            });
+            await models.Comment.add({
+                post_id: post.id,
+                parent_id: root.id,
+                in_reply_to_id: reply.id,
+                html: '<p>Reply to the reply</p>',
+                status: 'published'
+            });
+
+            // A long back-and-forth conversation, where each reply replies to the
+            // previous one, chains more levels than MySQL can cascade: InnoDB
+            // hard-limits nested foreign key cascades to 15 levels and fails the
+            // delete with error 3008 beyond that, so `in_reply_to_id` cannot use
+            // ON DELETE CASCADE and must be cleared in the delete transaction
+            // https://dev.mysql.com/doc/mysql-reslimits-excerpt/8.0/en/ansi-diff-foreign-keys.html
+            let previous = reply;
+            for (let i = 0; i < 20; i++) {
+                previous = await models.Comment.add({
+                    post_id: post.id,
+                    parent_id: root.id,
+                    in_reply_to_id: previous.id,
+                    html: `<p>Reply ${i} in a long conversation</p>`,
+                    status: 'published'
+                });
+            }
+
+            await agent
+                .delete(`posts/${post.id}/`)
+                .expectStatus(204)
+                .expectEmptyBody()
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+
+            const comments = await models.Base.knex('comments').where('post_id', post.id);
+            assert.equal(comments.length, 0, 'Expected all comments on the post to be deleted with the post');
         });
 
         it('Cannot delete a non-existent posts', async function () {

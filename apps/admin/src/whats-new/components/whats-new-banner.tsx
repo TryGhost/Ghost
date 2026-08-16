@@ -32,32 +32,32 @@ function WhatsNewBanner() {
 
     return (
         <Banner
-            data-test-toast="whats-new"
-            data-testid="whats-new-banner"
-            className="mx-2"
-            role="status"
             aria-label="What’s new notification"
             aria-live="polite"
+            className="mx-2"
+            data-test-toast="whats-new"
+            data-testid="whats-new-banner"
+            role="status"
             variant="gradient"
             dismissible
             onDismiss={handleDismiss}
         >
             <a
-                href={latestEntry.url}
-                target="_blank"
-                rel="noopener noreferrer"
                 className="block pr-8"
-                onClick={handleLinkClick}
+                href={latestEntry.url}
+                rel="noopener noreferrer"
+                target="_blank"
                 data-test-toast-link
+                onClick={handleLinkClick}
             >
                 <div className="mb-2 flex items-center gap-2">
                     <LucideIcon.Sparkles className="size-4 text-purple-600 dark:text-purple" />
                     <span className="text-xs font-semibold tracking-wide text-gray-700 uppercase dark:text-gray-400">What’s new?</span>
                 </div>
-                <div className="mb-1 text-base font-semibold text-gray-900 dark:text-foreground" data-test-toast-title data-testid="whats-new-banner-title">
+                <div className="mb-1 text-base font-semibold text-gray-900 dark:text-foreground" data-testid="whats-new-banner-title" data-test-toast-title>
                     {latestEntry.title}
                 </div>
-                <div className="text-sm text-gray-700" data-test-toast-excerpt data-testid="whats-new-banner-excerpt">
+                <div className="text-sm text-gray-700" data-testid="whats-new-banner-excerpt" data-test-toast-excerpt>
                     {latestEntry.customExcerpt}
                 </div>
             </a>

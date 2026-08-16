@@ -6,6 +6,7 @@ const {agentProvider, fixtureManager, mockManager} = require('../../utils/e2e-fr
 const models = require('../../../core/server/models');
 const db = require('../../../core/server/data/db');
 const adapterManager = require('../../../core/server/services/adapter-manager').default;
+const MailgunClient = require('../../../core/server/services/lib/mailgun-client');
 const mailService = require('../../../core/server/services/mail');
 const membersService = require('../../../core/server/services/members');
 const {getSignedAdminToken} = require('../../../core/server/adapters/scheduling/utils');
@@ -142,9 +143,8 @@ async function updateAutomation(automation, overrides = {}) {
 }
 
 function getAutomationEmailSends() {
-    return mailService.GhostMailer.prototype.send.getCalls()
-        .map(call => call.args[0])
-        .filter(emailToSend => emailToSend.tags?.includes('automation-email'));
+    return MailgunClient.prototype.send.getCalls()
+        .filter(call => call.args[0].tags?.includes('automation-email'));
 }
 
 async function getEmailSentCounts(actions) {
@@ -200,6 +200,7 @@ describe('Members Automations', function () {
         const schedulerAdapter = adapterManager.getAdapter('scheduling');
         sinon.stub(schedulerAdapter, 'schedule');
         sinon.stub(schedulerAdapter, '_pingUrl');
+        sinon.stub(MailgunClient.prototype, 'send').resolves({id: '<bulk-mailgun-message-id>'});
         sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail sent');
         await setupAutomationsFixture();
     });
@@ -237,25 +238,29 @@ describe('Members Automations', function () {
         const email = `automation-free-member-${Date.now()}@test.example`;
         await runAutomationForFreeMember(automation, email);
 
-        const sentEmails = getAutomationEmailSends();
-        assert.equal(sentEmails.length, 2);
-        assert.deepEqual(sentEmails.map(({to}) => to), [email, email]);
+        const sendCalls = getAutomationEmailSends();
+        const sentEmails = sendCalls.map(call => call.args[0]);
+        assert.equal(sendCalls.length, 2);
+        assert.deepEqual(sendCalls.map(call => Object.keys(call.args[1])), [[email], [email]]);
         assert.deepEqual(sentEmails.map(({subject}) => subject), ['Welcome!', 'Follow up']);
         assert.match(sentEmails[0].html, /Welcome!/);
         assert.match(sentEmails[1].html, /Follow up/);
-        assert.deepEqual(sentEmails.map(({forceTextContent}) => forceTextContent), [true, true]);
+        assert.match(sentEmails[0].plaintext, /Lorem ipsum\./);
+        assert.match(sentEmails[1].plaintext, /Lorem ipsum\./);
         assert.deepEqual(sentEmails.map(({replyTo}) => replyTo), [AUTOMATION_EMAIL_REPLY_TO, AUTOMATION_EMAIL_REPLY_TO]);
         assert.deepEqual(sentEmails.map(({tags}) => tags), [
             ['automation-email'],
             ['automation-email']
         ]);
-        sinon.assert.calledWithMatch(mailService.GhostMailer.prototype.send, {
-            to: email,
+        sinon.assert.calledWithMatch(MailgunClient.prototype.send, {
             subject: 'Welcome!'
+        }, {
+            [email]: sinon.match.object
         });
-        sinon.assert.calledWithMatch(mailService.GhostMailer.prototype.send, {
-            to: email,
+        sinon.assert.calledWithMatch(MailgunClient.prototype.send, {
             subject: 'Follow up'
+        }, {
+            [email]: sinon.match.object
         });
         assert.deepEqual(await getEmailSentCounts(sendEmailActions), [1, 1]);
 

@@ -17,8 +17,7 @@ const messages = {
     cannotEditComment: 'You do not have permission to edit comments',
     cannotPinReply: 'Replies cannot be pinned',
     cannotPinDeletedComment: 'Deleted comments cannot be pinned',
-    invalidPinnedValue: 'Pinned must be a boolean value',
-    commentsPinningNotEnabled: 'Comment pinning is not enabled for this site.'
+    invalidPinnedValue: 'Pinned must be a boolean value'
 };
 
 const COMMENT_LIKE_SCORE = 1;
@@ -94,12 +93,9 @@ function getSafeWriteOptions(options = {}) {
 }
 
 class CommentsService {
-    constructor({config, logging, models, mailer, settingsCache, settingsHelpers, urlService, urlUtils, contentGating, labs}) {
+    constructor({config, logging, models, mailer, settingsCache, settingsHelpers, urlService, urlUtils, contentGating}) {
         /** @private */
         this.models = models;
-
-        /** @private */
-        this.labs = labs;
 
         /** @private */
         this.settingsCache = settingsCache;
@@ -378,11 +374,16 @@ class CommentsService {
     async sendNewCommentNotifications(comment) {
         await this.emails.notifyPostAuthors(comment);
 
-        if (comment.get('parent_id')) {
-            await this.emails.notifyParentCommentAuthor(comment, {type: 'parent'});
-        }
+        const notifiedMemberId = comment.get('parent_id')
+            ? await this.emails.notifyParentCommentAuthor(comment, {type: 'parent'})
+            : null;
+
         if (comment.get('in_reply_to_id')) {
-            await this.emails.notifyParentCommentAuthor(comment, {type: 'in_reply_to'});
+            const inReplyTo = await this.models.Comment.findOne({id: comment.get('in_reply_to_id')});
+
+            if (inReplyTo && (!notifiedMemberId || inReplyTo.get('member_id') !== notifiedMemberId)) {
+                await this.emails.notifyParentCommentAuthor(comment, {type: 'in_reply_to', parent: inReplyTo});
+            }
         }
     }
 
@@ -440,8 +441,7 @@ class CommentsService {
      */
     async getComments(options) {
         this.checkEnabled();
-        const pinnedFirst = this.labs?.isSet('commentsPinning');
-        const page = await this.models.Comment.findPage(withPinnedSelect({...options, parentId: null, pinnedFirst}));
+        const page = await this.models.Comment.findPage(withPinnedSelect({...options, parentId: null, pinnedFirst: true}));
 
         return page;
     }
@@ -468,7 +468,7 @@ class CommentsService {
      * @param {AdminBrowseAllOptions} options
      */
     async getAdminAllComments({includeNested, filter, mongoTransformer, reportCount, order, page, limit}) {
-        const postUrlRelations = this.urlService.facade.getRequiredRelations().map(relation => `post.${relation}`);
+        const postUrlRelations = this.urlService.getRequiredRelations().map(relation => `post.${relation}`);
         const withRelated = ['member', 'post', ...postUrlRelations, 'count.replies', 'count.direct_replies', 'count.likes', 'count.dislikes', 'count.net_score', 'count.reports', 'in_reply_to', 'parent'];
 
         return await this.models.Comment.findPage({
@@ -487,12 +487,11 @@ class CommentsService {
 
     async getAdminComments(options) {
         this.checkEnabled();
-        const pinnedFirst = this.labs?.isSet('commentsPinning');
         const page = await this.models.Comment.findPage(withPinnedSelect({
             ...options,
             parentId: null,
             isAdmin: true,
-            pinnedFirst
+            pinnedFirst: true
         }, {includeHidden: true}));
 
         return page;
@@ -510,12 +509,6 @@ class CommentsService {
         }
 
         if (Object.prototype.hasOwnProperty.call(data, 'pinned')) {
-            if (!this.labs?.isSet('commentsPinning')) {
-                throw new errors.MethodNotAllowedError({
-                    message: tpl(messages.commentsPinningNotEnabled)
-                });
-            }
-
             if (typeof data.pinned !== 'boolean') {
                 throw new errors.BadRequestError({
                     message: tpl(messages.invalidPinnedValue)

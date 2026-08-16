@@ -8,7 +8,7 @@ const meta = {
     parameters: {
         docs: {
             description: {
-                component: 'Lightweight spinner for inline and page-level loading. Supports `sm`/`md`/`lg` sizes and `dark`/`light` color for contrast on different backgrounds.'
+                component: 'Lightweight spinner for inline and page-level loading. Supports `sm`/`md`/`lg` sizes and `current`/`dark`/`light` color for contrast on different backgrounds.'
             }
         }
     }
@@ -58,6 +58,22 @@ export const LightOnDark: Story = {
         docs: {
             description: {
                 story: 'Use the `light` variant on dark backgrounds to ensure sufficient contrast.'
+            }
+        }
+    }
+};
+
+export const CurrentColor: Story = {
+    render: () => (
+        <div className="inline-flex items-center gap-2 rounded-md bg-destructive px-3 py-2 text-destructive-foreground">
+            <LoadingIndicator color="current" size="sm" />
+            <span className="text-sm">Deleting...</span>
+        </div>
+    ),
+    parameters: {
+        docs: {
+            description: {
+                story: 'Use the `current` variant when a spinner should inherit the foreground color of its parent surface.'
             }
         }
     }

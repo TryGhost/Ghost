@@ -1,7 +1,9 @@
 import {describe, expect, it} from "vitest";
+import {userEvent} from "vitest/browser";
 
 import {
     configResponse,
+    currentRoute,
     fakeAdminEndpoint,
     fakeEditSettings,
     fakeSettingsScreens,
@@ -31,6 +33,21 @@ async function choose(selectTestId: string, option: string) {
 }
 
 describe("Access settings", () => {
+    it("closes an access dropdown with Escape without closing Settings", async () => {
+        fakeSettingsScreens();
+        await renderAdminApp("/settings");
+
+        const select = settingsScreen.access().getByTestId("site-visibility-select");
+        await select.click();
+        await expect.element(settingsScreen.selectOptionExact("Private")).toBeVisible();
+
+        await userEvent.keyboard("{Escape}");
+
+        await expect(settingsScreen.selectOptionExact("Private")).toHaveCount(0);
+        await expect.element(select).toBeVisible();
+        await expect.poll(currentRoute).toBe("/settings");
+    });
+
     it("edits subscription, post, and commenting access", async () => {
         fakeSettingsScreens();
         const settingsApi = fakeEditSettings();

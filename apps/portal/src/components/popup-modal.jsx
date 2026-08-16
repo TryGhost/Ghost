@@ -320,6 +320,9 @@ export default class PopupModal extends React.Component {
 
         if (hasMode(['preview'], {customSiteUrl}) && !site.disableBackground) {
             className += ' preview';
+            if (site.preview_theme === 'dark') {
+                className += ' preview-dark';
+            }
         }
 
         if (hasMode(['dev'])) {

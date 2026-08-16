@@ -2,7 +2,7 @@ const {agentProvider, mockManager, fixtureManager} = require('../../utils/e2e-fr
 const {stripeMocker} = require('../../utils/e2e-framework-mock-manager');
 const models = require('../../../core/server/models');
 const assert = require('node:assert/strict');
-const urlService = require('../../../core/server/services/url');
+const urlServiceUtils = require('../../utils/url-service-utils');
 const DomainEvents = require('@tryghost/domain-events');
 
 let membersAgent, adminAgent;
@@ -34,7 +34,7 @@ describe('Create Stripe Checkout Session for Donations', function () {
     it('Can create an anonymous checkout session for a donation', async function () {
         // Fake a visit to a post
         const post = await getPost(fixtureManager.get('posts', 0).id);
-        const url = urlService.getUrlByResourceId(post.id, {absolute: false});
+        const url = urlServiceUtils.urlFor(post, 'posts', {absolute: false});
 
         await membersAgent.post('/api/create-stripe-checkout-session/')
             .body({
@@ -116,7 +116,7 @@ describe('Create Stripe Checkout Session for Donations', function () {
 
     it('Strips reserved gift metadata from donation checkout sessions', async function () {
         const post = await getPost(fixtureManager.get('posts', 0).id);
-        const url = urlService.getUrlByResourceId(post.id, {absolute: false});
+        const url = urlServiceUtils.urlFor(post, 'posts', {absolute: false});
         const paidTier = await models.Product.findOne({type: 'paid'}, {require: true});
         const attackerToken = 'poc-reserved-donation-metadata';
         const email = 'reserved-metadata-donation@example.com';
@@ -197,7 +197,7 @@ describe('Create Stripe Checkout Session for Donations', function () {
     it('Can create a member checkout session for a donation', async function () {
         // Fake a visit to a post
         const post = await getPost(fixtureManager.get('posts', 0).id);
-        const url = urlService.getUrlByResourceId(post.id, {absolute: false});
+        const url = urlServiceUtils.urlFor(post, 'posts', {absolute: false});
 
         const email = 'test-member-create-donation-session@email.com';
 
@@ -294,7 +294,7 @@ describe('Create Stripe Checkout Session for Donations', function () {
 
     it('check if donation message is in email', async function () {
         const post = await getPost(fixtureManager.get('posts', 0).id);
-        const url = urlService.getUrlByResourceId(post.id, {absolute: false});
+        const url = urlServiceUtils.urlFor(post, 'posts', {absolute: false});
 
         await membersAgent.post('/api/create-stripe-checkout-session/')
             .body({
@@ -378,7 +378,7 @@ describe('Create Stripe Checkout Session for Donations', function () {
 
         // Fake a visit to a post
         const post = await getPost(fixtureManager.get('posts', 0).id);
-        const url = urlService.getUrlByResourceId(post.id, {absolute: false});
+        const url = urlServiceUtils.urlFor(post, 'posts', {absolute: false});
 
         await membersAgent.post('/api/create-stripe-checkout-session/')
             .body({
@@ -411,7 +411,7 @@ describe('Create Stripe Checkout Session for Donations', function () {
     });
     it('Can create a checkout session with a personal note included', async function () {
         const post = await getPost(fixtureManager.get('posts', 0).id);
-        const url = urlService.getUrlByResourceId(post.id, {absolute: false});
+        const url = urlServiceUtils.urlFor(post, 'posts', {absolute: false});
 
         await membersAgent.post('/api/create-stripe-checkout-session/')
             .body({
@@ -439,7 +439,7 @@ describe('Create Stripe Checkout Session for Donations', function () {
 
     it('Can create a donation checkout session with UTM parameters', async function () {
         const post = await getPost(fixtureManager.get('posts', 0).id);
-        const url = urlService.getUrlByResourceId(post.id, {absolute: false});
+        const url = urlServiceUtils.urlFor(post, 'posts', {absolute: false});
 
         await membersAgent.post('/api/create-stripe-checkout-session/')
             .body({
