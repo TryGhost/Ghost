@@ -30,6 +30,7 @@ export default class BillingService extends Service {
     @service feature;
     @service ghostPaths;
     @service router;
+    @service session;
     @service store;
 
     @inject config;
@@ -62,12 +63,50 @@ export default class BillingService extends Service {
     billingAppLoadAttemptSequence = 0;
     billingAppIframeSrcSetAt = null;
     billingAppIframeLoadFired = false;
+    billingAppIframeSrcSubRoute = null;
+
+    pendingSubRoute = null;
 
     _loadListenerAttachedTo = null;
 
     willDestroy() {
         super.willDestroy(...arguments);
         this.clearBillingAppLoadMonitor();
+    }
+
+    // Whether the current user may open the billing app:
+    // - a force-upgrade state always has access — the billing app is the only
+    //   way out of it, for any signed-in user
+    // - otherwise billing must be enabled for the site and the user must be
+    //   the owner
+    get canAccessBilling() {
+        if (this.config.hostSettings?.forceUpgrade) {
+            return true;
+        }
+
+        return Boolean(this.config.hostSettings?.billing?.enabled) && Boolean(this.session.user?.isOwnerOnly);
+    }
+
+    // The Admin route that shows the billing app at the given sub-route
+    // (eg. '/domain' -> '/pro/domain'). Admin's mounting point for the billing
+    // app is owned here — callers work with billing app sub-routes only
+    getAdminRouteForSubRoute(subRoute) {
+        return this.billingRouteRoot.replace(/^#/, '') + (subRoute === '/' ? '' : subRoute);
+    }
+
+    // The billing route in the current URL hash ('/pro', or a child route like
+    // '/pro/domain'), or null when the hash points elsewhere. Anchored so
+    // hashes that merely start with the same characters (eg. '#/products')
+    // don't match
+    getBillingRouteFromHash() {
+        const hash = window.location.hash;
+        const root = this.billingRouteRoot;
+
+        if (hash === root || hash.startsWith(`${root}/`) || hash.startsWith(`${root}?`)) {
+            return hash.replace(/^#/, '');
+        }
+
+        return null;
     }
 
     handleRouteChangeInIframe(destinationRoute) {
@@ -108,10 +147,6 @@ export default class BillingService extends Service {
         }
 
         return ADMIN_DESTINATION_ROUTES[destination] ?? null;
-    }
-
-    _isBillingIframeLoaded() {
-        return this.getBillingIframe() !== null && this.getBillingIframe().contentWindow;
     }
 
     startBillingAppLoadMonitor(options = {}) {
@@ -179,6 +214,8 @@ export default class BillingService extends Service {
         this.billingAppIframeSrcSetAt = Date.now();
         this.resetBillingAppLoadDiagnostics();
         iframe.src = this.getIframeURL();
+        this.billingAppIframeSrcSubRoute = this.getIframeDestinationRoute();
+        this.pendingSubRoute = null;
     }
 
     reloadBillingIframe(options = {}) {
@@ -198,6 +235,12 @@ export default class BillingService extends Service {
         this.billingAppReadyReceivedAt = Date.now();
         this.billingAppReadyPayload = payload;
         this.clearBillingAppLoadMonitor();
+
+        if (this.pendingSubRoute) {
+            const route = this.pendingSubRoute;
+            this.pendingSubRoute = null;
+            this.navigateToSubRoute(route);
+        }
     }
 
     resetBillingAppLoadDiagnostics() {
@@ -312,10 +355,24 @@ export default class BillingService extends Service {
         this.clearBillingAppLoadMonitor();
         this.billingAppLoadAttempts = 0;
 
-        if (hadPreloadFailure || hadVisibleFailure) {
+        // '/' and no destination both load the billing app root
+        const normalizeSubRoute = subRoute => (subRoute === '/' ? null : subRoute);
+
+        const pendingSubRouteNeedsReload = Boolean(this.pendingSubRoute)
+            && normalizeSubRoute(this.pendingSubRoute) !== normalizeSubRoute(this.billingAppIframeSrcSubRoute);
+
+        if (hadPreloadFailure || hadVisibleFailure || pendingSubRouteNeedsReload) {
+            let reloadReason = 'visible_open_with_destination_route';
+
+            if (hadPreloadFailure) {
+                reloadReason = 'visible_open_after_preload_failure';
+            } else if (hadVisibleFailure) {
+                reloadReason = 'visible_open_after_load_failure';
+            }
+
             this.reloadBillingIframe({
                 source: BILLING_APP_ATTEMPT_SOURCE_USER_OPEN,
-                reloadReason: hadPreloadFailure ? 'visible_open_after_preload_failure' : 'visible_open_after_load_failure'
+                reloadReason
             });
         } else {
             this.billingAppLoadAttemptSource = BILLING_APP_ATTEMPT_SOURCE_USER_OPEN;
@@ -441,6 +498,22 @@ export default class BillingService extends Service {
         });
     }
 
+    getIframeDestinationRoute() {
+        let destinationRoute = this.pendingSubRoute;
+
+        if (!destinationRoute) {
+            const hashRoute = this.getBillingRouteFromHash();
+
+            if (hashRoute) {
+                // keep only the child segment ('/pro/domain' -> '/domain');
+                // billingRouteRoot minus its '#' prefix is the '/pro' root
+                destinationRoute = hashRoute.slice(this.billingRouteRoot.length - 1);
+            }
+        }
+
+        return destinationRoute || null;
+    }
+
     getIframeURL(options = {}) {
         const {fetchOwner = true} = options;
 
@@ -450,13 +523,10 @@ export default class BillingService extends Service {
         }
 
         let url = this.config.hostSettings?.billing?.url;
+        const destinationRoute = this.getIframeDestinationRoute();
 
-        if (window.location.hash && window.location.hash.includes(this.billingRouteRoot)) {
-            let destinationRoute = window.location.hash.replace(this.billingRouteRoot, '');
-
-            if (destinationRoute) {
-                url += destinationRoute;
-            }
+        if (url && destinationRoute) {
+            url = url.replace(/\/$/, '') + destinationRoute;
         }
 
         return this.addBillingAppAttemptIdToURL(url);
@@ -491,17 +561,44 @@ export default class BillingService extends Service {
         return this.ownerUser;
     }
 
-    // Sends a route update to a child route in the BMA, because we can't control
-    // navigating to it otherwise
+    postMessageToBillingApp(message) {
+        const billingIframeWindow = this.getBillingIframe()?.contentWindow;
+        const billingAppOrigin = this.getBillingAppOrigin();
+
+        if (!billingIframeWindow || !billingAppOrigin) {
+            return false;
+        }
+
+        billingIframeWindow.postMessage(message, billingAppOrigin);
+        return true;
+    }
+
+    navigateToSubRoute(destinationRoute) {
+        if (!destinationRoute) {
+            return;
+        }
+
+        if (this.billingAppLoaded && this.postMessageToBillingApp({query: 'routeUpdate', response: destinationRoute})) {
+            return;
+        }
+
+        this.pendingSubRoute = destinationRoute;
+
+        // when the window is already visible while the app is still
+        // loading, bake the destination into the iframe URL now — a
+        // post-load route update message can lose a race with the app's
+        // own initial redirects
+        if (this.billingWindowOpen && !this.billingAppLoaded) {
+            this.ensureBillingAppReadyForVisibleUse();
+        }
+    }
+
     sendRouteUpdate() {
         const action = this.action;
 
         if (action) {
-            if (action === 'checkout' && this._isBillingIframeLoaded()) {
-                this.getBillingIframe().contentWindow.postMessage({
-                    query: 'routeUpdate',
-                    response: this.checkoutRoute
-                }, '*');
+            if (action === 'checkout') {
+                this.navigateToSubRoute(this.checkoutRoute);
             }
 
             this.action = null;
@@ -509,14 +606,8 @@ export default class BillingService extends Service {
     }
 
     sendUpdateLimits() {
-        if (!this._isBillingIframeLoaded()) {
-            return;
-        }
-
         // Send Billing app message to fetch fresh limit usage
-        this.getBillingIframe().contentWindow.postMessage({
-            query: 'limitUpdate'
-        }, '*');
+        this.postMessageToBillingApp({query: 'limitUpdate'});
     }
 
     // Controls billing window modal visibility and sync of the URL visible in browser
@@ -538,6 +629,10 @@ export default class BillingService extends Service {
 
         if (value) {
             this.ensureBillingAppReadyForVisibleUse();
+        } else {
+            // closing abandons any queued deep link — a stale route must not
+            // hijack a later plain /pro open
+            this.pendingSubRoute = null;
         }
 
         if (isOpeningTransition) {

@@ -177,27 +177,21 @@ describe('Utils: generateDecoratorNode', function () {
             expect(() => node.exportDOM(editor)).toThrow('[generateDecoratorNode] versioned-render-test: "defaultRenderFn" for version 2 is required');
         }));
 
-        ['emailCustomizationAlpha', 'emailCustomization'].forEach((feature) => {
-            it(`uses custom renderer if passed in (${feature})`, editorTest(function () {
-                const node = $createNodeWithRender();
-                const customRenderer = () => createRenderResult('span', 'custom render');
+        it('uses custom renderer if passed in', editorTest(function () {
+            const node = $createNodeWithRender();
+            const customRenderer = () => createRenderResult('span', 'custom render');
 
-                const featureOption: Record<string, boolean> = {};
-                featureOption[feature] = true;
+            const result = node.exportDOM(editor, {
+                nodeRenderers: {
+                    'render-test': customRenderer
+                }
+            });
 
-                const result = node.exportDOM(editor, {
-                    feature: featureOption,
-                    nodeRenderers: {
-                        'render-test': customRenderer
-                    }
-                });
+            expect(result.type).toBe('inner');
+            expect(expectHtmlElement(result).outerHTML).toBe('<span>custom render</span>');
+        }));
 
-                expect(result.type).toBe('inner');
-                expect(expectHtmlElement(result).outerHTML).toBe('<span>custom render</span>');
-            }));
-        });
-
-        it('throws error when custom versioned renderer is missing for node version (emailCustomizationAlpha)', editorTest(function () {
+        it('throws error when custom versioned renderer is missing for node version', editorTest(function () {
             const VersionedNode = utils.generateDecoratorNode({
                 nodeType: 'versioned-render-test',
                 properties: {version: {default: 1}},
@@ -211,9 +205,6 @@ describe('Utils: generateDecoratorNode', function () {
             const node = new VersionedNode({version: 2});
 
             expect(() => node.exportDOM(editor, {
-                feature: {
-                    emailCustomizationAlpha: true
-                },
                 nodeRenderers: {
                     'versioned-render-test': {
                         1: () => createRenderResult('div', 'version 1')

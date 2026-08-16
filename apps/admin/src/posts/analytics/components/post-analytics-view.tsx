@@ -1,4 +1,4 @@
-import EmptyStatView from './empty-stat-view';
+import EmptyStatView from '@/shared/analytics/empty-stat-view';
 import PostAnalyticsContent from './post-analytics-content';
 import React from 'react';
 

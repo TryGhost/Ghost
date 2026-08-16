@@ -1,8 +1,9 @@
 const moment = require('moment-timezone');
+const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
-const config = require('../../../shared/config');
 
 class NewsletterEmailEventStorage {
+    #config;
     #db;
     #membersRepository;
     #models;
@@ -10,7 +11,8 @@ class NewsletterEmailEventStorage {
     #prometheusClient;
     #pendingUpdates;
 
-    constructor({db, models, membersRepository, emailSuppressionList, prometheusClient}) {
+    constructor({config, db, models, membersRepository, emailSuppressionList, prometheusClient}) {
+        this.#config = config;
         this.#db = db;
         this.#models = models;
         this.#membersRepository = membersRepository;
@@ -34,7 +36,7 @@ class NewsletterEmailEventStorage {
     }
 
     async handleDelivered(event) {
-        const useBatchProcessing = config.get('emailAnalytics:batchProcessing');
+        const useBatchProcessing = this.#config.get('emailAnalytics:batchProcessing');
 
         if (useBatchProcessing) {
             // Accumulate update for batch processing
@@ -60,7 +62,7 @@ class NewsletterEmailEventStorage {
     }
 
     async handleOpened(event) {
-        const useBatchProcessing = config.get('emailAnalytics:batchProcessing');
+        const useBatchProcessing = this.#config.get('emailAnalytics:batchProcessing');
 
         if (useBatchProcessing) {
             // Accumulate update for batch processing
@@ -86,7 +88,7 @@ class NewsletterEmailEventStorage {
     }
 
     async handlePermanentFailed(event) {
-        const useBatchProcessing = config.get('emailAnalytics:batchProcessing');
+        const useBatchProcessing = this.#config.get('emailAnalytics:batchProcessing');
 
         if (useBatchProcessing) {
             // Accumulate update for batch processing
@@ -177,11 +179,20 @@ class NewsletterEmailEventStorage {
 
     async handleUnsubscribed(event) {
         try {
-            // Unsubscribe member from the specific newsletter
-            const newsletters = await this.findNewslettersToKeep(event);
-            await this.#membersRepository.update({newsletters}, {id: event.memberId});
+            const result = await this.findNewslettersToKeep(event);
 
-            // Remove member from Mailgun's suppression list
+            if (result.status === 'failed') {
+                // Leave Mailgun's suppression in place: these events are fetched
+                // once and never retried, so it is the only remaining protection.
+                return;
+            }
+
+            if (result.status === 'ok') {
+                await this.#membersRepository.update({newsletters: result.newsletters}, {id: event.memberId});
+            }
+
+            // Remove member from Mailgun's suppression list, only once the local
+            // record reflects the unsubscribe or there is no member left to protect
             await this.#emailSuppressionList.removeUnsubscribe(event.email);
         } catch (err) {
             logging.error(err);
@@ -205,22 +216,43 @@ class NewsletterEmailEventStorage {
         }
     }
 
+    /**
+     * @typedef {{status: 'ok', newsletters: {id: string}[]}
+     *     | {status: 'no-member'}
+     *     | {status: 'failed'}} FindNewslettersToKeepResult
+     */
+
+    /**
+     * @param {import('./events/email-unsubscribed-event')} event
+     * @returns {Promise<FindNewslettersToKeepResult>}
+     */
     async findNewslettersToKeep(event) {
         try {
-            const member = await this.#membersRepository.get({email: event.email}, {
+            const member = await this.#membersRepository.get({id: event.memberId}, {
                 withRelated: ['newsletters']
             });
+
+            if (!member) {
+                return {status: 'no-member'};
+            }
+
             const existingNewsletters = member.related('newsletters');
 
             const email = await this.#models.Email.findOne({id: event.emailId});
             const newsletterToRemove = email.get('newsletter_id');
 
-            return existingNewsletters.models.filter(newsletter => newsletter.id !== newsletterToRemove).map((n) => {
-                return {id: n.id};
-            });
+            return {
+                status: 'ok',
+                newsletters: existingNewsletters.models.filter(newsletter => newsletter.id !== newsletterToRemove).map((n) => {
+                    return {id: n.id};
+                })
+            };
         } catch (err) {
-            logging.error(err);
-            return [];
+            logging.error(new errors.InternalServerError({
+                message: `Could not resolve newsletters to keep for unsubscribe event (member ${event.memberId}, email ${event.emailId})`,
+                err
+            }));
+            return {status: 'failed'};
         }
     }
 

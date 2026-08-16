@@ -1256,6 +1256,11 @@ module.exports = class MemberRepository {
         };
         let eventData = {};
 
+        // A cancellation (or reactivation) changes no `members` column, so the member
+        // model event would be suppressed by `wasChanged()`. Remember the pre-update
+        // subscription so the event can be marked and carry its prior state.
+        let subscriptionBeforeCancelFlagChange = null;
+
         const stripeCustomerSubscriptionModelShouldBeDeleted = stripeSubscriptionData.metadata && !!stripeSubscriptionData.metadata.ghost_migrated_to && stripeSubscriptionData.status === 'canceled';
         if (stripeCustomerSubscriptionModelShouldBeDeleted) {
             logging.warn(`Subscription ${subscriptionData.subscription_id} is marked for deletion, skipping linking.`);
@@ -1298,6 +1303,10 @@ module.exports = class MemberRepository {
                     subscriptionId: updatedStripeCustomerSubscriptionModel.id
                 }, redemptionTimestamp);
                 this.dispatchEvent(offerRedemptionEvent, options);
+            }
+
+            if (stripeCustomerSubscriptionModel.get('cancel_at_period_end') !== updatedStripeCustomerSubscriptionModel.get('cancel_at_period_end')) {
+                subscriptionBeforeCancelFlagChange = stripeCustomerSubscriptionModel;
             }
 
             if (stripeCustomerSubscriptionModel.get('mrr') !== updatedStripeCustomerSubscriptionModel.get('mrr') || stripeCustomerSubscriptionModel.get('plan_id') !== updatedStripeCustomerSubscriptionModel.get('plan_id') || stripeCustomerSubscriptionModel.get('status') !== updatedStripeCustomerSubscriptionModel.get('status') || stripeCustomerSubscriptionModel.get('cancel_at_period_end') !== updatedStripeCustomerSubscriptionModel.get('cancel_at_period_end')) {
@@ -1548,6 +1557,48 @@ module.exports = class MemberRepository {
             logging.error(`Failed to update member - ${data.id} - with related products`);
             logging.error(e);
             updatedMember = await this._Member.edit({status: status}, {...options, id: data.id});
+        }
+
+        // Cancelling (or reactivating) touches no `members` column, so mark the
+        // subscription relation as the change and carry its prior state. This lets the
+        // webhook payload express before/after — see `services/webhooks/serialize.js`.
+        //
+        // No explicit `emitChange` is needed, and adding one would emit twice: inside a
+        // transaction `emitChange` queues onto the `committed` handler and defers its
+        // `wasChanged()` check to commit time (see `models/base/plugins/events.js`), so
+        // the event already queued by `_Member.edit` above is still pending and setting
+        // `_changed` here is what lets it through. The e2e test asserting exactly one
+        // `member.edited` per cancellation guards this.
+        if (subscriptionBeforeCancelFlagChange && updatedMember) {
+            // Price/tier relations are needed for the serialized subscription shape
+            // to match the Admin API member resource (price, tier, plan)
+            await updatedMember.load([
+                'stripeSubscriptions',
+                'stripeSubscriptions.stripePrice',
+                'stripeSubscriptions.stripePrice.stripeProduct',
+                'stripeSubscriptions.stripePrice.stripeProduct.product'
+            ], options);
+            await subscriptionBeforeCancelFlagChange.load([
+                'stripePrice',
+                'stripePrice.stripeProduct',
+                'stripePrice.stripeProduct.product'
+            ], options);
+            updatedMember._changed = {
+                ...updatedMember._changed,
+                stripeSubscriptions: {
+                    cancel_at_period_end: subscriptionBeforeCancelFlagChange.get('cancel_at_period_end')
+                }
+            };
+            // `previous` must be the full collection — a member can have multiple
+            // subscriptions — with only the changed one swapped for its prior state
+            updatedMember._previousRelations = {
+                ...updatedMember._previousRelations,
+                stripeSubscriptions: {
+                    models: updatedMember.related('stripeSubscriptions').models.map((subscription) => {
+                        return subscription.id === subscriptionBeforeCancelFlagChange.id ? subscriptionBeforeCancelFlagChange : subscription;
+                    })
+                }
+            };
         }
 
         const newMemberProductIds = memberProducts.map(product => product.id);

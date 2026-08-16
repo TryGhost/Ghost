@@ -66,6 +66,12 @@ describe('StripeAPI', function () {
             assertExists(mockStripe.checkout.sessions.create.firstCall.firstArg.cancel_url);
         });
 
+        it('explicitly disables Managed Payments', async function () {
+            await api.createCheckoutSession('priceId', null, {});
+
+            assert.deepEqual(mockStripe.checkout.sessions.create.firstCall.firstArg.managed_payments, {enabled: false});
+        });
+
         it('sets valid trialDays', async function () {
             await api.createCheckoutSession('priceId', null, {
                 trialDays: 12
@@ -227,6 +233,12 @@ describe('StripeAPI', function () {
 
             assertExists(mockStripe.checkout.sessions.create.firstCall.firstArg.success_url);
             assertExists(mockStripe.checkout.sessions.create.firstCall.firstArg.cancel_url);
+        });
+
+        it('createCheckoutSetupSession explicitly disables Managed Payments', async function () {
+            await api.createCheckoutSetupSession({id: mockCustomerId, email: mockCustomerEmail}, {});
+
+            assert.deepEqual(mockStripe.checkout.sessions.create.firstCall.firstArg.managed_payments, {enabled: false});
         });
 
         it('createCheckoutSetupSession does not send currency if additionalPaymentMethods flag is off', async function () {
@@ -557,6 +569,12 @@ describe('StripeAPI', function () {
             assertExists(mockStripe.checkout.sessions.create.firstCall.firstArg.cancel_url);
         });
 
+        it('createDonationCheckoutSession explicitly disables Managed Payments', async function () {
+            await api.createDonationCheckoutSession({priceId: 'priceId', successUrl: '/success', cancelUrl: '/cancel', metadata: {}});
+
+            assert.deepEqual(mockStripe.checkout.sessions.create.firstCall.firstArg.managed_payments, {enabled: false});
+        });
+
         it('createDonationCheckoutSession does not send currency if additionalPaymentMethods flag is off', async function () {
             mockLabsIsSet.withArgs('additionalPaymentMethods').returns(false);
             await api.createDonationCheckoutSession('priceId', {currency: 'usd'});
@@ -807,6 +825,21 @@ describe('StripeAPI', function () {
             assert.equal(args.line_items[0].price_data.unit_amount, 5000);
             assert.equal(args.line_items[0].price_data.currency, 'usd');
             assert.equal(args.line_items[0].price_data.product_data.name, 'Gift subscription — Pro (1 year)');
+        });
+
+        it('explicitly disables Managed Payments', async function () {
+            await api.createGiftCheckoutSession({
+                amount: 5000,
+                currency: 'usd',
+                tierName: 'Pro',
+                cadence: 'year',
+                duration: 1,
+                successUrl: '/gift-success',
+                cancelUrl: '/gift-cancel',
+                metadata: {}
+            });
+
+            assert.deepEqual(mockStripe.checkout.sessions.create.firstCall.firstArg.managed_payments, {enabled: false});
         });
 
         it('uses 1 month label for monthly cadence', async function () {

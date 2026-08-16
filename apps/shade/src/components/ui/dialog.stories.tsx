@@ -1,6 +1,9 @@
 import type {Meta, StoryObj} from '@storybook/react-vite';
 import {Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription, DialogClose} from './dialog';
 import {Button} from './button';
+import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from './dropdown-menu';
+import {Popover, PopoverContent, PopoverTrigger} from './popover';
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from './select';
 
 const meta = {
     title: 'Components / Dialog',
@@ -86,5 +89,58 @@ export const PlacementExample: Story = {
                 </DialogContent>
             </>
         )
+    }
+};
+
+export const NestedOverlayEscape: Story = {
+    render: () => (
+        <Dialog>
+            <DialogTrigger asChild>
+                <Button>Open dialog</Button>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Nested overlay Escape behavior</DialogTitle>
+                    <DialogDescription>
+                        Open an overlay. The first Escape closes it; the second closes this dialog.
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="flex flex-wrap gap-3">
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline">Dropdown menu</Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                            <DropdownMenuItem>First action</DropdownMenuItem>
+                            <DropdownMenuItem>Second action</DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                    <Select>
+                        <SelectTrigger className="w-40">
+                            <SelectValue placeholder="Select option" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="first">First option</SelectItem>
+                            <SelectItem value="second">Second option</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Button variant="outline">Popover</Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-64">
+                            Supplementary content
+                        </PopoverContent>
+                    </Popover>
+                </div>
+            </DialogContent>
+        </Dialog>
+    ),
+    parameters: {
+        docs: {
+            description: {
+                story: 'DropdownMenu, Select, and Popover consume their first Escape before the parent dialog.'
+            }
+        }
     }
 };

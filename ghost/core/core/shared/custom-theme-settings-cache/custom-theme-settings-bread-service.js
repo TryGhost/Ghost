@@ -26,4 +26,8 @@ module.exports = class CustomThemeSettingsBREADService {
     async destroy(data, options = {}) {
         return this.Model.destroy(data, options);
     }
+
+    async transaction(fn) {
+        return this.Model.transaction(fn);
+    }
 };

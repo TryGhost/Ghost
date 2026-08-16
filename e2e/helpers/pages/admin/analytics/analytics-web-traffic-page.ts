@@ -1,3 +1,4 @@
+import * as analyticsSel from '@tryghost/test-data/selectors/analytics';
 import {AdminPage} from '@/admin-pages';
 import {Locator, Page} from '@playwright/test';
 
@@ -28,22 +29,22 @@ export class AnalyticsWebTrafficPage extends AdminPage {
         this.totalViewsTab = page.getByRole('tab', {name: 'Total views'});
         this.totalUniqueVisitorsTab = page.getByRole('tab', {name: 'Unique visitors'});
 
-        this.webGraph = page.getByTestId('web-graph');
+        this.webGraph = page.getByTestId(analyticsSel.webGraph);
 
-        this.topContentCard = page.getByTestId('top-content-card');
+        this.topContentCard = page.getByTestId(analyticsSel.topContentCard);
         this.postsAndPagesButton = this.topContentCard.getByRole('tab', {name: 'Posts & pages'});
         this.postsButton = this.topContentCard.getByRole('tab', {name: 'Posts', exact: true});
         this.pagesButton = this.topContentCard.getByRole('tab', {name: 'Pages', exact: true});
 
-        this.topSourcesCard = page.getByTestId('top-sources-card');
+        this.topSourcesCard = page.getByTestId(analyticsSel.topSourcesCard);
         this.sourcesTab = this.topSourcesCard.getByRole('tab', {name: 'Sources'});
         this.campaignsDropdown = this.topSourcesCard.getByRole('tab', {name: /Campaigns|UTM/});
 
         // Filter elements
-        this.filterContainer = page.getByTestId('stats-filter-container');
+        this.filterContainer = page.getByTestId(analyticsSel.statsFilterContainer);
         this.filterButton = this.filterContainer.getByRole('button', {name: /Filter|Add filter/});
-        this.clearFiltersButton = page.getByTestId('stats-filter-clear-button');
-        this.locationsCard = page.getByTestId('visitors-card');
+        this.clearFiltersButton = page.getByTestId(analyticsSel.statsFilterClearButton);
+        this.locationsCard = page.getByTestId(analyticsSel.visitorsCard);
     }
 
     async openFilterPopover() {
@@ -92,12 +93,12 @@ export class AnalyticsWebTrafficPage extends AdminPage {
     }
 
     async clickSourceToFilter(sourceIdentifier: string) {
-        const row = this.page.getByTestId(`source-row-${sourceIdentifier}`);
+        const row = this.page.getByTestId(`${analyticsSel.sourceRowPrefix}${sourceIdentifier}`);
         await row.click();
     }
 
     async clickLocationToFilter(locationCode: string) {
-        const row = this.page.getByTestId(`location-row-${locationCode}`);
+        const row = this.page.getByTestId(`${analyticsSel.locationRowPrefix}${locationCode}`);
         await row.click();
     }
 

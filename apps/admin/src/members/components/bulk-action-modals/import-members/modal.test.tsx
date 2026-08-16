@@ -34,6 +34,19 @@ vi.mock('@tryghost/admin-x-framework/api/members', async () => {
     };
 });
 
+// The modal offers defined custom fields as mapping targets. Stub the browse hook
+// (which needs a QueryClient this test does not mount) while keeping the real
+// column-deriving helper, so a mapping built from fields still exercises production logic.
+vi.mock('@tryghost/admin-x-framework/api/member-custom-fields', async () => {
+    const actual = await vi.importActual<typeof import('@tryghost/admin-x-framework/api/member-custom-fields')>(
+        '@tryghost/admin-x-framework/api/member-custom-fields'
+    );
+    return {
+        ...actual,
+        useBrowseMemberCustomFields: () => ({data: undefined})
+    };
+});
+
 vi.mock('@/members/hooks/use-label-picker', () => ({
     useLabelPicker: () => ({
         labels: [],

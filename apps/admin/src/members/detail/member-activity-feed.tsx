@@ -185,8 +185,8 @@ const MemberActivityFeed: React.FC<MemberActivityFeedProps> = ({memberId, hasMul
     // `EmptyIndicator` so the parity assertion for that string holds.
     if (!memberId) {
         return (
-            <section className='flex flex-col gap-3' data-testid='member-activity-feed'>
-                <h3 className='text-base font-semibold'>Activity</h3>
+            <section aria-labelledby='member-activity-heading' className='flex flex-col gap-3'>
+                <h3 className='text-base font-semibold' id='member-activity-heading'>Activity</h3>
                 <Card>
                     {/* Same wrapper padding as the Subscriptions empty state
                         (`member-subscriptions-section.tsx`) so both cards line
@@ -204,8 +204,8 @@ const MemberActivityFeed: React.FC<MemberActivityFeedProps> = ({memberId, hasMul
     }
 
     return (
-        <section className='flex flex-col gap-3' data-testid='member-activity-feed'>
-            <h3 className='text-base font-semibold'>Activity</h3>
+        <section aria-labelledby='member-activity-heading' className='flex flex-col gap-3'>
+            <h3 className='text-base font-semibold' id='member-activity-heading'>Activity</h3>
             <Card>
                 <CardContent className='pt-3'>
                     {isLoading ? (

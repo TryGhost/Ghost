@@ -1,5 +1,5 @@
 import sinon from 'sinon';
-import {decoratePostSearchResult, getCardVisibilitySettings, offerUrls} from 'ghost-admin/components/koenig-lexical-editor';
+import {buildCardConfigPost, decoratePostSearchResult, getCardVisibilitySettings, offerUrls} from 'ghost-admin/components/koenig-lexical-editor';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 
@@ -149,6 +149,36 @@ describe('Unit: Component: koenig-lexical-editor', function () {
             });
 
             expect(settings).to.equal('web only');
+        });
+    });
+
+    describe('buildCardConfigPost()', function () {
+        it('returns undefined when there is no post', function () {
+            expect(buildCardConfigPost(undefined, 'public')).to.be.undefined;
+        });
+
+        it('narrows the post to the properties cards read', function () {
+            const post = buildCardConfigPost({
+                displayName: 'page',
+                isPage: true,
+                showTitleAndFeatureImage: false,
+                visibility: 'paid',
+                title: 'Should not be exposed',
+                save: () => {}
+            }, 'public');
+
+            expect(post).to.deep.equal({
+                displayName: 'page',
+                isPage: true,
+                showTitleAndFeatureImage: false,
+                visibility: 'paid'
+            });
+        });
+
+        it('falls back to the site default when the post has no visibility', function () {
+            const post = buildCardConfigPost({displayName: 'post'}, 'paid');
+
+            expect(post.visibility).to.equal('paid');
         });
     });
 });

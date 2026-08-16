@@ -5,7 +5,6 @@ const testUtils = require('../../utils');
 const configUtils = require('../../utils/config-utils');
 const urlUtilsHelper = require('../../utils/url-utils');
 const models = require('../../../core/server/models');
-const urlService = require('../../../core/server/services/url');
 
 describe('Snippet Model', function () {
     const siteUrl = configUtils.config.get('url');
@@ -17,7 +16,6 @@ describe('Snippet Model', function () {
     beforeAll(testUtils.setup('users:roles', 'snippets'));
 
     beforeEach(function () {
-        sinon.stub(urlService, 'getUrlByResourceId').returns('/test-url/');
     });
 
     afterEach(async function () {

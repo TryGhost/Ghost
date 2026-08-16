@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const ResourceService = require('../../../../../core/server/services/mentions/resource-service');
 const UrlUtils = require('@tryghost/url-utils');
 
-function buildUrlServiceWithStubbedFacade() {
+function buildUrlServiceWithStubbedResolve() {
     const resolveUrl = sinon.stub();
 
     resolveUrl.withArgs('/post-resource').resolves({
@@ -19,7 +19,7 @@ function buildUrlServiceWithStubbedFacade() {
     resolveUrl.withArgs('/no-resource').resolves(null);
 
     return {
-        urlService: {facade: {resolveUrl}},
+        urlService: {resolveUrl},
         resolveUrl
     };
 }
@@ -39,7 +39,7 @@ describe('ResourceService', function () {
                 }
             });
 
-            const {urlService, resolveUrl} = buildUrlServiceWithStubbedFacade();
+            const {urlService, resolveUrl} = buildUrlServiceWithStubbedResolve();
             const resourceService = new ResourceService({
                 urlUtils,
                 urlService
@@ -68,7 +68,7 @@ describe('ResourceService', function () {
                 }
             });
 
-            const {urlService, resolveUrl} = buildUrlServiceWithStubbedFacade();
+            const {urlService, resolveUrl} = buildUrlServiceWithStubbedResolve();
             const resourceService = new ResourceService({
                 urlUtils,
                 urlService
@@ -97,7 +97,7 @@ describe('ResourceService', function () {
                 }
             });
 
-            const {urlService, resolveUrl} = buildUrlServiceWithStubbedFacade();
+            const {urlService, resolveUrl} = buildUrlServiceWithStubbedResolve();
             const resourceService = new ResourceService({
                 urlUtils,
                 urlService

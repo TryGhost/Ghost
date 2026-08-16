@@ -8,18 +8,18 @@ import {type RouteObject, lazyComponent} from '@tryghost/admin-x-framework';
 export const analyticsRouteChildren: RouteObject[] = [
     {
         index: true,
-        lazy: lazyComponent(() => import('./views/Stats/Overview'))
+        lazy: lazyComponent(() => import('./views/stats/overview'))
     },
     {
         path: 'web',
-        lazy: lazyComponent(() => import('./views/Stats/Web'))
+        lazy: lazyComponent(() => import('./views/stats/web'))
     },
     {
         path: 'growth',
-        lazy: lazyComponent(() => import('./views/Stats/Growth'))
+        lazy: lazyComponent(() => import('./views/stats/growth'))
     },
     {
         path: 'newsletters',
-        lazy: lazyComponent(() => import('./views/Stats/Newsletters'))
+        lazy: lazyComponent(() => import('./views/stats/newsletters'))
     }
 ];

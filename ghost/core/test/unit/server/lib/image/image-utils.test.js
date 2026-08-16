@@ -7,6 +7,7 @@ const ImageUtils = require('../../../../../core/server/lib/image/image-utils');
 describe('image-utils probe wrapper', function () {
     let stream;
     let externalRequestStub;
+    let externalRequestStubGet;
     let probeImageSizeStub;
     let probe;
 
@@ -14,6 +15,7 @@ describe('image-utils probe wrapper', function () {
         stream = new PassThrough();
         sinon.spy(stream, 'destroy');
         externalRequestStub = sinon.stub(externalRequest, 'stream').returns(stream);
+        externalRequestStubGet = sinon.stub(externalRequest, 'get').returns(stream);
         probeImageSizeStub = sinon.stub().resolves({width: 10, height: 20});
         probe = (url, options) => ImageUtils.probe(url, options, {probeImageSize: probeImageSizeStub});
     });
@@ -28,6 +30,14 @@ describe('image-utils probe wrapper', function () {
         sinon.assert.calledOnce(externalRequestStub);
         const [calledUrl] = externalRequestStub.firstCall.args;
         assert.equal(calledUrl, 'https://example.com/cat.jpg');
+    });
+
+    it('routes the request through externalRequest.get (SSRF-protected got instance)', async function () {
+        await ImageUtils.fetchExternal('https://example.com/cat.cur', {});
+
+        sinon.assert.calledOnce(externalRequestStubGet);
+        const [calledUrl] = externalRequestStubGet.firstCall.args;
+        assert.equal(calledUrl, 'https://example.com/cat.cur');
     });
 
     it('forwards headers and maps response_timeout → timeout.request', async function () {

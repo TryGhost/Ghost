@@ -2,7 +2,7 @@
 name: Shade imports
 description: Import Shade from layer-specific subpaths (primitives, components, patterns, page-templates, utils), never the root barrel. Trigger when editing TSX/TS in Shade-consuming apps.
 autoTrigger:
-  - fileEdit: "apps/{shade,admin,admin-x-settings,admin-x-framework,posts,stats,activitypub}/**/*.{ts,tsx}"
+  - fileEdit: "apps/{shade,admin,admin-x-framework,activitypub}/**/*.{ts,tsx}"
 ---
 
 # Shade imports
@@ -16,7 +16,6 @@ import {Stack, Inline, Box, Grid, Container, Text} from '@tryghost/shade/primiti
 import {Button, Input, Dialog} from '@tryghost/shade/components';
 import {PageHeader, KpiCard, Filters} from '@tryghost/shade/patterns';
 import {ListPage} from '@tryghost/shade/page-templates';
-import {PostShareModal} from '@tryghost/shade/posts-stats';
 import {cn, formatNumber} from '@tryghost/shade/utils';
 import {ShadeApp} from '@tryghost/shade/app';
 ```

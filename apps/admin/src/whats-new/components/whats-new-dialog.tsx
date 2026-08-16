@@ -23,14 +23,14 @@ function WhatsNewDialog({ open, onOpenChange }: WhatsNewDialogProps) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent
+                aria-labelledby="whats-new-modal-title"
+                aria-modal="true"
                 className="flex max-h-[85vh] max-w-2xl flex-col"
                 data-test-modal="whats-new"
                 role="dialog"
-                aria-modal="true"
-                aria-labelledby="whats-new-modal-title"
             >
                 <DialogHeader>
-                    <DialogTitle id="whats-new-modal-title" data-test-modal-title className="text-2xl tracking-tighter">
+                    <DialogTitle className="text-2xl tracking-tighter" id="whats-new-modal-title" data-test-modal-title>
                         What’s new?
                     </DialogTitle>
                 </DialogHeader>
@@ -48,7 +48,7 @@ function WhatsNewDialog({ open, onOpenChange }: WhatsNewDialogProps) {
                         </section>
 
                         <DialogFooter className="flex-row justify-between gap-3 sm:justify-between">
-                            <Button asChild variant="outline">
+                            <Button variant="outline" asChild>
                                 <a href={`${changelog.changelogUrl}#/portal/signup`} rel="noopener noreferrer" target="_blank">
                                     Turn on notifications
                                 </a>

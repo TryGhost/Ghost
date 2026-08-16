@@ -56,14 +56,23 @@ class DynamicRedirectManager {
 
         this.router.get(fromRegex, (req, res) => {
             const maxAge = permanent ? this.permanentMaxAge : 0;
-            const toURL = parseURL(to);
-            const toURLParams = parseQuerystring(toURL.query);
             const currentURL = parseURL(req.url);
             const currentURLParams = parseQuerystring(currentURL.query);
+
+            const toURL = parseURL(to);
+            toURL.pathname = currentURL.pathname.replace(fromRegex, toURL.pathname);
+
+            // Captures are percent-encoded path segments (Express rejects any it can't decode),
+            // so decode then re-encode for the query — reserved chars stay literal, no double-encoding
+            const captures = currentURL.pathname.match(fromRegex) || [];
+            const substitutedQuery = (toURL.query || '').replace(/\$(\d+)/g, (match, n) => (
+                captures[n] !== undefined ? encodeURIComponent(decodeURIComponent(captures[n])) : match
+            ));
+            const toURLParams = parseQuerystring(substitutedQuery);
+
             const params = Object.assign({}, currentURLParams, toURLParams);
             const search = formatQuerystring(params);
 
-            toURL.pathname = currentURL.pathname.replace(fromRegex, toURL.pathname);
             toURL.search = search !== '' ? `?${search}` : null;
 
             /**

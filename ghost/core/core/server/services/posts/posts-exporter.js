@@ -83,7 +83,7 @@ class PostsExporter {
      * @param {string|number} [options.limit]
      * @returns {Promise<Readable>}
      */
-    async export({filter, order, limit}) {
+    async export({filter, order, limit, mongoTransformer}) {
         const exportContext = await this.#getExportContext();
         const requestedLimit = parseExportLimit(limit);
         const pageLimit = Math.min(EXPORT_BATCH_SIZE, requestedLimit);
@@ -93,7 +93,8 @@ class PostsExporter {
             order: withStableExportOrder(order),
             requestedLimit,
             pageLimit,
-            exportContext
+            exportContext,
+            mongoTransformer
         }), {objectMode: true});
     }
 
@@ -119,7 +120,7 @@ class PostsExporter {
      * @param {ExportContext} options.exportContext
      * @returns {AsyncGenerator<object>}
      */
-    async *#streamPosts({filter, order, requestedLimit, pageLimit, exportContext}) {
+    async *#streamPosts({filter, order, requestedLimit, pageLimit, exportContext, mongoTransformer}) {
         let emitted = 0;
 
         for (let page = 1; emitted < requestedLimit; page++) {
@@ -129,7 +130,8 @@ class PostsExporter {
                 limit: pageLimit,
                 page,
                 skipPagination: true,
-                withRelated: EXPORT_WITH_RELATED
+                withRelated: EXPORT_WITH_RELATED,
+                mongoTransformer
             });
 
             if (posts.data.length === 0) {

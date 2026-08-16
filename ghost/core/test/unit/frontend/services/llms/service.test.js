@@ -89,14 +89,6 @@ describe('Unit: frontend/services/llms/service', function () {
         };
     }
 
-    function createFakeLabs(flags = {llmsTxt: true}) {
-        return {
-            isSet(flag) {
-                return !!flags[flag];
-            }
-        };
-    }
-
     function createService(opts = {}) {
         const pages = opts.pages || [];
         const posts = opts.posts || [];
@@ -104,11 +96,11 @@ describe('Unit: frontend/services/llms/service', function () {
 
         return createLlmsService({
             settingsCache: opts.settingsCache || createFakeSettingsCache(opts.settingsOverrides),
-            labs: opts.labs || createFakeLabs(opts.labsFlags),
             config: opts.config || createFakeConfig(),
             urlUtils: opts.urlUtils || createFakeUrlUtils(),
             routing: opts.routing || createFakeRouting(),
             api: opts.api || createFakeApi(pages, posts, urlMap),
+            machinePaymentsService: opts.machinePaymentsService,
             fullTxtBudget: opts.fullTxtBudget
         });
     }
@@ -141,18 +133,6 @@ describe('Unit: frontend/services/llms/service', function () {
         assert.match(llmsTxt, /\[Recent Post\]\(https:\/\/example\.com\/2026\/04\/recent-post\.md\) - A{299}…/);
         assert.match(llmsTxt, /## Optional[\s\S]*\[RSS Feed\]\(https:\/\/example\.com\/rss\/\)/m);
         assert.match(llmsTxt, /\[Sitemap\]\(http:\/\/127\.0\.0\.1:\d+\/sitemap\.xml\)/);
-    });
-
-    it('returns null when labs flag is off', async function () {
-        const service = createService({
-            labsFlags: {llmsTxt: false},
-            pages: [],
-            posts: [],
-            urlMap: {}
-        });
-
-        const result = await service.getLlmsTxt();
-        assert.equal(result, null);
     });
 
     it('returns null when site is private', async function () {
@@ -268,7 +248,7 @@ describe('Unit: frontend/services/llms/service', function () {
         assert.ok(callCount >= 4, `Expected at least 4 browse calls (2 per getLlmsTxt), got ${callCount}`);
     });
 
-    it('does not request relations for llms.txt index entries', async function () {
+    it('requests tiers relations for llms.txt index entries', async function () {
         const calls = [];
         const recordingBrowse = async (options) => {
             calls.push(options);
@@ -284,11 +264,11 @@ describe('Unit: frontend/services/llms/service', function () {
         await service.getLlmsTxt();
 
         assert.equal(calls.length, 2);
-        assert.equal(calls[0].include, undefined);
-        assert.equal(calls[1].include, undefined);
+        assert.equal(calls[0].include, 'tiers');
+        assert.equal(calls[1].include, 'tiers');
     });
 
-    it('does not request relations for llms-full.txt entries', async function () {
+    it('requests tiers relations for llms-full.txt entries', async function () {
         const calls = [];
         const recordingBrowse = async (options) => {
             calls.push(options);
@@ -304,8 +284,8 @@ describe('Unit: frontend/services/llms/service', function () {
         await service.getLlmsFullTxt();
 
         assert.equal(calls.length, 2);
-        assert.equal(calls[0].include, undefined);
-        assert.equal(calls[1].include, undefined);
+        assert.equal(calls[0].include, 'tiers');
+        assert.equal(calls[1].include, 'tiers');
     });
 
     describe('fetchPublicEntry', function () {
@@ -333,7 +313,7 @@ describe('Unit: frontend/services/llms/service', function () {
             assert.equal(calls[0].controller, 'pages');
             assert.equal(calls[0].opts.id, 'p1');
             assert.equal(calls[0].opts.formats, 'html');
-            assert.equal(calls[0].opts.include, 'authors,tags');
+            assert.equal(calls[0].opts.include, 'authors,tags,tiers');
 
             const post = await service.fetchPublicEntry('posts', 'p2');
             assert.equal(post.title, 'Post');
@@ -415,11 +395,12 @@ describe('Unit: frontend/services/llms/service', function () {
         assert.equal(pageCall.options.limit, 20);
         assert.equal(postCall.options.limit, 100);
         assert.equal(pageCall.options.order, 'id asc');
-        assert.equal(postCall.options.order, undefined);
+        assert.equal(postCall.options.order, 'published_at desc');
         assert.deepEqual(pageCall.options.context, {member: null});
         assert.deepEqual(postCall.options.context, {member: null});
         assert.equal(postCall.options.formats, 'plaintext');
-        assert.equal(postCall.options.fields, 'id,title,slug,custom_excerpt,featured,published_at,url');
+        assert.equal(postCall.options.fields, 'id,title,slug,custom_excerpt,featured,published_at,url,visibility');
+        assert.equal(postCall.options.include, 'tiers');
     });
 
     it('requests narrow fields and html for llms-full.txt entries', async function () {
@@ -473,7 +454,7 @@ describe('Unit: frontend/services/llms/service', function () {
         assert.match(llmsFullTxt, /Append `\.md` to any post or page URL/);
     });
 
-    it('keeps members-only posts in the llms.txt index with their public excerpt', async function () {
+    it('excludes free-members-only posts from the llms.txt index', async function () {
         const service = createService({
             pages: [],
             posts: [{
@@ -490,10 +471,34 @@ describe('Unit: frontend/services/llms/service', function () {
 
         const llmsTxt = await service.getLlmsTxt();
 
-        assert.match(llmsTxt, /\[Members Post\]\(https:\/\/example\.com\/members-post\.md\) - Public teaser/);
+        assert.doesNotMatch(llmsTxt, /Members Post/);
+        assert.match(llmsTxt, /## Posts\n_No public content available\./);
     });
 
-    it('cuts members-only post bodies off in llms-full.txt with a subscriber notice', async function () {
+    it('lists paid posts in llms.txt only when machine payments are enabled', async function () {
+        const posts = [{
+            id: 'post-p',
+            title: 'Paid Post',
+            slug: 'paid-post',
+            custom_excerpt: 'Paywalled teaser',
+            visibility: 'paid',
+            type: 'post'
+        }];
+        const urlMap = {'post-p': 'https://example.com/paid-post/'};
+
+        const disabled = createService({pages: [], posts, urlMap});
+        assert.doesNotMatch(await disabled.getLlmsTxt(), /Paid Post/);
+
+        const enabled = createService({
+            pages: [],
+            posts,
+            urlMap,
+            machinePaymentsService: {isEnabled: () => true}
+        });
+        assert.match(await enabled.getLlmsTxt(), /\[Paid Post\]\(https:\/\/example\.com\/paid-post\.md\) - Paywalled teaser/);
+    });
+
+    it('keeps gated bodies behind notices in llms-full.txt for purchasable paid posts', async function () {
         const service = createService({
             pages: [],
             posts: [
@@ -511,6 +516,7 @@ describe('Unit: frontend/services/llms/service', function () {
                     id: 'post-p',
                     title: 'Paid Post',
                     slug: 'paid-post',
+                    custom_excerpt: 'Paywalled teaser',
                     html: '',
                     plaintext: '',
                     visibility: 'paid',
@@ -520,13 +526,14 @@ describe('Unit: frontend/services/llms/service', function () {
             urlMap: {
                 'post-m': 'https://example.com/members-post/',
                 'post-p': 'https://example.com/paid-post/'
-            }
+            },
+            machinePaymentsService: {isEnabled: () => true}
         });
 
         const llmsFullTxt = await service.getLlmsFullTxt();
 
-        assert.match(llmsFullTxt, /### Members Post[\s\S]*Public teaser[\s\S]*This post is for subscribers only\./);
-        assert.match(llmsFullTxt, /### Paid Post[\s\S]*This post is for paying subscribers only\./);
+        assert.doesNotMatch(llmsFullTxt, /### Members Post/);
+        assert.match(llmsFullTxt, /### Paid Post[\s\S]*Paywalled teaser[\s\S]*This post is for paying subscribers only\./);
     });
 
     it('bounds the llms.txt index to the size budget', async function () {

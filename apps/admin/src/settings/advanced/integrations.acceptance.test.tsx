@@ -122,7 +122,8 @@ describe("Advanced integrations", () => {
         await modal.getByRole("button", {name: "Save"}).click();
         await expect.element(section).toHaveTextContent(/Test description/);
         expect(editApi.requests).toHaveLength(1);
-        await modal.getByRole("button", {name: "Close"}).click();
+        // The modal closes itself once the saved state resets — clicking Close races that.
+        await expect.element(modal).not.toBeInTheDocument();
 
         await section.getByText("My integration").hover();
         await section.getByRole("button", {name: "Delete"}).click();

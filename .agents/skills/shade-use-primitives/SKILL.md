@@ -2,7 +2,7 @@
 name: Shade use primitives
 description: Replace bare divs that only carry flex/grid/gap utilities with Shade primitives (Stack, Inline, Box, Grid, Container, Text). Use semantic gap="md" instead of gap-4. Trigger when editing TSX in Shade-consuming apps.
 autoTrigger:
-  - fileEdit: "apps/{shade,admin,admin-x-settings,admin-x-framework,posts,stats,activitypub}/**/*.tsx"
+  - fileEdit: "apps/{shade,admin,admin-x-framework,activitypub}/**/*.tsx"
 ---
 
 # Shade — use primitives, not flex divs

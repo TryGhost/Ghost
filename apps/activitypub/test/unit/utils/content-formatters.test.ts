@@ -1,6 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
+import {describe, expect, it} from 'vitest';
 
 import {enforceVideoCardInlinePlayback, sanitizeArticleContent, sanitizeHtml, stripHtml} from '../../../src/utils/content-formatters';
 

@@ -291,7 +291,7 @@ describe('Mentions Service', function () {
                 // Capture the resource the real webmention job hands the URL
                 // service, so we can prove it isn't the attribute-less husk.
                 const slug = res.body.posts[0].slug;
-                const getUrlForResource = sinon.stub(urlService.facade, 'getUrlForResource')
+                const getUrlForResource = sinon.stub(urlService, 'getUrlForResource')
                     .callsFake(() => `http://127.0.0.1:2369/${slug}/`);
 
                 const postId = res.body.posts[0].id;

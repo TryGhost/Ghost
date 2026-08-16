@@ -14,7 +14,7 @@ const cardVariants = cva(
     {
         variants: {
             variant: {
-                outline: 'rounded-xl border transition-all hover:shadow-xs',
+                outline: 'rounded-xl border border-border-default transition-all hover:shadow-xs',
                 plain: ''
             }
         },
@@ -44,7 +44,7 @@ const cardHeaderVariants = cva(
         variants: {
             variant: {
                 outline: 'p-6',
-                plain: 'border-b py-5'
+                plain: 'border-b border-border-default py-5'
             }
         },
         defaultVariants: {
@@ -98,7 +98,7 @@ const cardContentVariants = cva(
         variants: {
             variant: {
                 outline: 'p-6 pt-0',
-                plain: 'border-b'
+                plain: 'border-b border-border-default'
             }
         },
         defaultVariants: {
@@ -159,7 +159,7 @@ const EmptyCard = React.forwardRef<
 >(({className, ...props}, ref) => (
     <div
         ref={ref}
-        className={cn('flex flex-col rounded-xl border bg-card p-6 text-card-foreground transition-all hover:shadow-xs', className)}
+        className={cn('flex flex-col rounded-xl border border-border-default bg-card p-6 text-card-foreground transition-all hover:shadow-xs', className)}
         {...props}
     />
 ));

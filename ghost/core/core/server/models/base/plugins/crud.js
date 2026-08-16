@@ -2,7 +2,6 @@ const _ = require('lodash');
 const errors = require('@tryghost/errors');
 
 const tpl = require('@tryghost/tpl');
-const labs = require('../../../../shared/labs');
 
 const messages = {
     couldNotUnderstandRequest: 'Could not understand request.'
@@ -178,10 +177,6 @@ module.exports = function (Bookshelf) {
             //option param to skip distinct from count query, distinct adds a lot of latency and in this case the result set will always be unique.
             if (unfilteredOptions.useBasicCount) {
                 options.useBasicCount = unfilteredOptions.useBasicCount;
-            }
-
-            if (labs.isSet('smarterCounts')) {
-                options.useSmartCount = true;
             }
 
             if (skipPagination) {

@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const {LinkRedirect} = require('./link-redirect');
 const ObjectID = require('bson-objectid').default;
 const debug = require('@tryghost/debug')('LinkRedirectRepository');
@@ -49,7 +50,11 @@ module.exports = class LinkRedirectRepository {
         const model = await this.#LinkRedirect.add({
             // Only store the pathname (no support for variable query strings)
             from: this.stripSubdirectoryFromPath(linkRedirect.from.pathname),
-            to: linkRedirect.to.href
+            to: linkRedirect.to.href,
+            ...(linkRedirect.automationActionRevisionId ? {
+                automation_action_revision_id: linkRedirect.automationActionRevisionId,
+                to_hash: this.#getToHash(linkRedirect.to)
+            } : {})
         }, {});
 
         linkRedirect.link_id = ObjectID.createFromHexString(model.id);
@@ -82,7 +87,8 @@ module.exports = class LinkRedirectRepository {
             id: model.id,
             from: new URL(this.#trimLeadingSlash(model.get('from')), this.#urlUtils.urlFor('home', true)),
             to: new URL(model.get('to')),
-            edited
+            edited,
+            automationActionRevisionId: model.get('automation_action_revision_id')
         });
     }
 
@@ -93,6 +99,7 @@ module.exports = class LinkRedirectRepository {
      * @param {string} serialized.from - path of the URL
      * @param {string} serialized.to - URL to redirect to
      * @param {boolean} serialized.edited - whether the link has been edited
+     * @param {string} [serialized.automationActionRevisionId] - owning automation action revision
      * @returns {InstanceType<LinkRedirect>} LinkRedirect
      */
     #fromSerialized(serialized) {
@@ -100,7 +107,8 @@ module.exports = class LinkRedirectRepository {
             id: serialized.link_id,
             from: new URL(this.#trimLeadingSlash(serialized.from), this.#urlUtils.urlFor('home', true)),
             to: new URL(serialized.to),
-            edited: serialized.edited
+            edited: serialized.edited,
+            automationActionRevisionId: serialized.automationActionRevisionId
         });
     }
 
@@ -114,7 +122,10 @@ module.exports = class LinkRedirectRepository {
             link_id: linkRedirect.link_id.toHexString(),
             from: linkRedirect.from.pathname,
             to: linkRedirect.to.href,
-            edited: linkRedirect.edited
+            edited: linkRedirect.edited,
+            ...(linkRedirect.automationActionRevisionId ? {
+                automationActionRevisionId: linkRedirect.automationActionRevisionId
+            } : {})
         };
     }
 
@@ -178,6 +189,32 @@ module.exports = class LinkRedirectRepository {
             }
             return linkRedirect;
         }
+    }
+
+    /**
+     * Get an automation LinkRedirect by action revision and destination URL
+     * @param {string} automationActionRevisionId
+     * @param {Readonly<URL>} url
+     * @returns {Promise<InstanceType<LinkRedirect>|undefined>} LinkRedirect
+     */
+    async getByAutomationActionRevisionAndURL(automationActionRevisionId, url) {
+        const linkRedirectModel = await this.#LinkRedirect.findOne({
+            automation_action_revision_id: automationActionRevisionId,
+            to_hash: this.#getToHash(url)
+        }, {});
+
+        if (linkRedirectModel) {
+            return this.fromModel(linkRedirectModel);
+        }
+    }
+
+    /**
+     * The destination column is too long to index, so unique lookups use its SHA-256 digest
+     * @param {Readonly<URL>} url
+     * @returns {Buffer}
+     */
+    #getToHash(url) {
+        return crypto.createHash('sha256').update(url.href).digest();
     }
 
     /**

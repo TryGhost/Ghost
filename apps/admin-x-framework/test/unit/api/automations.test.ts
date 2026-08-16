@@ -1,4 +1,8 @@
 import ObjectId from 'bson-objectid';
+import {waitFor} from '@testing-library/react';
+import {currentUserQueryKey} from '../../../src/api/current-user';
+import {createTestQueryClient, renderHookWithProviders} from '../../../src/test/test-utils';
+import {withMockFetch} from '../../utils/mock-fetch';
 import {
     AutomationAction,
     AutomationDetail,
@@ -8,7 +12,8 @@ import {
     insertWaitAction,
     removeAction,
     updateSendEmailAction,
-    updateWaitAction
+    updateWaitAction,
+    useBrowseAutomationActionLinks
 } from '../../../src/api/automations';
 
 const baseDetail = (actions: AutomationDetail['actions'], edges: AutomationDetail['edges']): AutomationDetail => ({
@@ -34,6 +39,33 @@ const insertionCases: Array<{
     {name: 'insertWaitAction', insert: insertWaitAction, expectedType: 'wait'},
     {name: 'insertSendEmailAction', insert: insertSendEmailAction, expectedType: 'send_email'}
 ];
+
+describe('automations api queries', () => {
+    it('builds the action links endpoint from the automation and action IDs', async () => {
+        const queryClient = createTestQueryClient();
+        queryClient.setQueryDefaults(currentUserQueryKey, {staleTime: Infinity});
+        queryClient.setQueryData(currentUserQueryKey, {
+            users: [{
+                id: 'user-id',
+                name: 'Test User',
+                email: 'test@example.com',
+                roles: []
+            }]
+        });
+
+        await withMockFetch({
+            json: {
+                automation_action_links: []
+            }
+        }, async (mock) => {
+            const {result} = renderHookWithProviders(() => useBrowseAutomationActionLinks('automation-id', 'action-id'), {queryClient});
+
+            await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+            expect(mock.calls[0][0]).toBe('http://localhost:3000/ghost/api/admin/automations/automation-id/actions/action-id/links/');
+        });
+    });
+});
 
 describe('automations api helpers', () => {
     describe('shared insertion behavior', () => {

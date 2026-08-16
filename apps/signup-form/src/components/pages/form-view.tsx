@@ -23,7 +23,7 @@ export const FormView: React.FC<FormProps & {
 
     return (
         <div
-            className='flex h-[100vh] flex-col items-center justify-center px-4 sm:px-6 md:px-10'
+            className='flex h-[100vh] flex-col items-center justify-center px-4 transition-colors duration-200 sm:px-6 md:px-10'
             data-testid="wrapper"
             style={{backgroundColor, color: textColor}}
         >

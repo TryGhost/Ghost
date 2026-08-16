@@ -1,4 +1,5 @@
 import {GiftEmailRenderer, Translate} from './gift-email-renderer';
+import type {GiftCadence} from './gift-schema';
 
 const DEFAULT_DATE_LOCALE = 'en-gb';
 
@@ -29,7 +30,7 @@ interface PurchaseConfirmationData {
     buyerEmail: string;
     token: string;
     tierName: string;
-    cadence: 'month' | 'year';
+    cadence: GiftCadence;
     duration: number;
     expiresAt: Date;
 }
@@ -69,7 +70,7 @@ export class GiftEmailService {
         }
     }
 
-    private getCadenceLabel(cadence: 'month' | 'year', duration: number): string {
+    private getCadenceLabel(cadence: GiftCadence, duration: number): string {
         if (duration === 1) {
             return cadence === 'year' ? this.t('one-year') : this.t('one-month');
         }

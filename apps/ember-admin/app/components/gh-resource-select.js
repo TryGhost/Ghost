@@ -5,7 +5,7 @@ import {
     defaultMatcher,
     filterOptions
 } from 'ember-power-select/utils/group-utils';
-import {escapeNqlString} from '../utils/escape-nql-string';
+import {escapeNqlString} from '@tryghost/nql-string';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';

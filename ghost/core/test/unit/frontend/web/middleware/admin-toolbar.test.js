@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 
 const settingsCache = require('../../../../../core/shared/settings-cache');
+const urlUtils = require('../../../../../core/shared/url-utils').default;
 const adminToolbar = require('../../../../../core/frontend/web/middleware/admin-toolbar');
 
 describe('admin toolbar middleware', function () {
@@ -146,6 +147,54 @@ describe('admin toolbar middleware', function () {
         };
 
         assert.equal(adminToolbar._private.getCleanRedirectUrl(req), '/welcome/?ref=test');
+    });
+
+    describe('subdirectory sites', function () {
+        beforeEach(function () {
+            sandbox.stub(urlUtils, 'getSiteUrl').returns('https://example.com/changelog/');
+            sandbox.stub(urlUtils, 'getSubdir').returns('/changelog');
+        });
+
+        it('restores the subdirectory when a proxy strips it from the request path', function () {
+            assert.equal(adminToolbar._private.getCleanRedirectUrl({
+                originalUrl: '/?admin=1',
+                url: '/?admin=1'
+            }), '/changelog/');
+
+            assert.equal(adminToolbar._private.getCleanRedirectUrl({
+                originalUrl: '/welcome/?admin=1&ref=test',
+                url: '/welcome/?admin=1&ref=test'
+            }), '/changelog/welcome/?ref=test');
+        });
+
+        it('keeps the redirect unchanged when the request path already has the subdirectory', function () {
+            assert.equal(adminToolbar._private.getCleanRedirectUrl({
+                originalUrl: '/changelog/?admin=1',
+                url: '/changelog/?admin=1'
+            }), '/changelog/');
+
+            assert.equal(adminToolbar._private.getCleanRedirectUrl({
+                originalUrl: '/changelog/welcome/?admin=0&admin_toolbar=0',
+                url: '/changelog/welcome/?admin=0&admin_toolbar=0'
+            }), '/changelog/welcome/');
+        });
+
+        it('redirects to the subdirectory when the toolbar is activated', function () {
+            const req = {
+                headers: {},
+                originalUrl: '/?admin=1',
+                query: {
+                    admin: '1'
+                },
+                url: '/?admin=1'
+            };
+            const res = createResponse();
+
+            adminToolbar(req, res, sinon.spy());
+
+            assert.equal(res.redirectStatus, 302);
+            assert.equal(res.redirectUrl, '/changelog/');
+        });
     });
 
     it('marks the request when the frontend marker cookie is valid', function () {

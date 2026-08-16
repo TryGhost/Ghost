@@ -1,5 +1,4 @@
-import {POST_ANALYTICS_INCLUDE} from '@/posts/analytics/utils/constants';
-import {STATS_RANGES} from '@/shared/analytics/constants';
+import {POST_ANALYTICS_INCLUDE, STATS_RANGES} from '@/shared/analytics/constants';
 import {PostAnalyticsContext} from '@/posts/analytics/providers/post-analytics-context';
 import {type ReactNode, useState} from 'react';
 import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';

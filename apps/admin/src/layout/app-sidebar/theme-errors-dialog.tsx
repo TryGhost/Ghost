@@ -30,8 +30,8 @@ function ThemeErrorItem({error}: {error: ThemeProblem}) {
                         <div className="mt-2">
                             <h6 className="text-xs font-semibold text-muted-foreground uppercase">Affected files:</h6>
                             <ul className="mt-1 list-disc pl-4">
-                                {error.failures.map((failure, i) => (
-                                    <li key={i}>
+                                {error.failures.map(failure => (
+                                    <li key={`${failure.ref}-${failure.message || ''}`}>
                                         <code className="text-xs">{failure.ref}</code>
                                         {failure.message && <>: {failure.message}</>}
                                     </li>
@@ -63,8 +63,8 @@ function ThemeErrorsDialog({open, onOpenChange, errors, warnings}: ThemeErrorsDi
                                 Highly recommended to fix, functionality could be restricted
                             </p>
                             <ul className="border-t border-border">
-                                {errors.map((error, i) => (
-                                    <ThemeErrorItem key={i} error={error} />
+                                {errors.map(error => (
+                                    <ThemeErrorItem key={error.code} error={error} />
                                 ))}
                             </ul>
                         </div>
@@ -74,8 +74,8 @@ function ThemeErrorsDialog({open, onOpenChange, errors, warnings}: ThemeErrorsDi
                         <div className={errors.length > 0 ? 'mt-4' : ''}>
                             <h2 className="mb-1 text-sm font-semibold">Warnings</h2>
                             <ul className="border-t border-border">
-                                {warnings.map((warning, i) => (
-                                    <ThemeErrorItem key={i} error={warning} />
+                                {warnings.map(warning => (
+                                    <ThemeErrorItem key={warning.code} error={warning} />
                                 ))}
                             </ul>
                         </div>

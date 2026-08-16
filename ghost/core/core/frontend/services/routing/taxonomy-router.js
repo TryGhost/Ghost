@@ -5,6 +5,7 @@ const RSSRouter = require('./rss-router');
 const urlUtils = require('../../../shared/url-utils').default;
 const controllers = require('./controllers');
 const middleware = require('./middleware');
+const {toExpressNotation} = require('./permalink-adapter');
 
 /**
  * @description Taxonomies are groupings of posts based on a common relation.
@@ -17,8 +18,9 @@ class TaxonomyRouter extends ParentRouter {
         this.taxonomyKey = key;
         this.RESOURCE_CONFIG = RESOURCE_CONFIG;
 
+        // convert domain `{slug}` -> Express/URL-service `:slug` at this boundary
         this.permalinks = {
-            value: permalinks
+            value: toExpressNotation(permalinks)
         };
 
         this.permalinks.getValue = () => {
@@ -74,7 +76,9 @@ class TaxonomyRouter extends ParentRouter {
             type: 'channel',
             name: this.taxonomyKey,
             permalinks: this.permalinks.getValue(),
-            data: {[this.taxonomyKey]: this.RESOURCE_CONFIG.QUERY[this.taxonomyKey]},
+            // Route data in domain form — the API adapter resolves it to a
+            // controller call, and fetch-data fills `%s` in from the request.
+            data: {[this.taxonomyKey]: {type: 'read', resource: this.getResourceType(), slug: '%s'}},
             filter: this.RESOURCE_CONFIG.TAXONOMIES[this.taxonomyKey].filter,
             resourceType: this.getResourceType(),
             context: [this.taxonomyKey],

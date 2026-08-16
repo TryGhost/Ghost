@@ -138,15 +138,13 @@
 }
 
 .gh-preview-tier {
-    flex: 0 0 180px;
-    width: 180px;
-    min-width: 180px;
+    flex: 0 1 auto;
+    width: auto;
     max-width: 180px;
 }
 
-.gh-preview-tier .gh-preview-segment-trigger {
-    width: 100%;
-    max-width: 100%;
+.gh-preview-tier-dropdown.ember-power-select-dropdown {
+    max-width: 280px;
 }
 
 .gh-preview-tier .ember-power-select-selected-item,

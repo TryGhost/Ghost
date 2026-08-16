@@ -34,8 +34,8 @@ test.describe('Autoclose forms', async () => {
     //       at the top of the comments list
 
     test('autocloses open reply forms when opening another', async ({}) => {
-        const comment1 = await frame.getByTestId('comment-component').nth(0);
-        await comment1.getByTestId('reply-button').nth(1).click();
+        const reply1 = await frame.getByTestId('comment-component').nth(1);
+        await reply1.getByTestId('reply-button').click();
 
         await expect(frame.getByTestId('form')).toHaveCount(2);
 
@@ -46,8 +46,8 @@ test.describe('Autoclose forms', async () => {
     });
 
     test('does not autoclose open reply form with unsaved changes', async ({}) => {
-        const comment1 = await frame.getByTestId('comment-component').nth(0);
-        await comment1.getByTestId('reply-button').nth(1).click();
+        const reply1 = await frame.getByTestId('comment-component').nth(1);
+        await reply1.getByTestId('reply-button').click();
 
         await expect(frame.getByTestId('form')).toHaveCount(2);
 

@@ -1,6 +1,6 @@
 import {describe, expect, it} from "vitest";
 
-import {browseResponse, fakeAdminEndpoint, fakeSettingsScreens, renderAdminApp} from "@test-utils/acceptance";
+import {browseResponse, currentRoute, fakeAdminEndpoint, fakeSettingsScreens, renderAdminApp} from "@test-utils/acceptance";
 import {settingsScreen} from "@/settings/settings.screen";
 
 const firstRecommendation = {
@@ -33,7 +33,7 @@ const incomingRecommendations = [
         excerpt: "Incoming recommendation 1 excerpt",
         featured_image: "https://incoming1.com/image.jpg",
         favicon: "https://incoming1.com/favicon.ico",
-        url: "https://incoming1.com/",
+        url: "https://incoming1.com/?ref=ghost",
         recommending_back: false,
     },
     {
@@ -170,6 +170,7 @@ describe("Recommendations settings", () => {
         fakeSettingsScreens();
         fakeRecommendations();
         fakeAdminEndpoint("GET", /^\/incoming_recommendations\/\?/, browseResponse("recommendations", incomingRecommendations, {limit: 5}));
+        fakeAdminEndpoint("POST", "/recommendations/check/", {recommendations: []});
         await renderAdminApp("/settings/recommendations");
 
         const section = settingsScreen.section("recommendations");
@@ -180,5 +181,8 @@ describe("Recommendations settings", () => {
         await expect.element(rows.first()).toHaveTextContent("Recommend back");
         await expect.element(rows.last()).toHaveTextContent("Incoming recommendation 2 title");
         await expect.element(rows.last()).toHaveTextContent("Recommending");
+
+        await rows.first().getByRole("button", {name: "Recommend back"}).click();
+        await expect.poll(currentRoute).toBe("/settings/recommendations/add?url=https://incoming1.com/?ref=ghost");
     });
 });

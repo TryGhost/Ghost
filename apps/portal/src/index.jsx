@@ -36,11 +36,21 @@ function handleTokenUrl() {
     }
 }
 
+function setPreviewTheme() {
+    const [, queryString] = window.location.hash.substring(1).split('?');
+    const previewTheme = new URLSearchParams(queryString).get('previewTheme');
+
+    if (previewTheme === 'dark') {
+        document.documentElement.dataset.portalPreviewTheme = 'dark';
+    }
+}
+
 function init() {
     // const customSiteUrl = getSiteUrl();
     const {siteUrl: customSiteUrl, apiKey, apiUrl, siteI18nEnabled, locale} = getSiteData();
     const siteUrl = customSiteUrl || window.location.origin;
 
+    setPreviewTheme();
     addRootDiv();
     handleTokenUrl();
 

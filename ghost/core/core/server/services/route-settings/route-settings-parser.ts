@@ -12,8 +12,11 @@ import type {
 } from '@tryghost/adapter-base-route-settings';
 import {z} from 'zod';
 import tpl from '@tryghost/tpl';
-import type {PathSegment} from './validation-errors';
-import {describeValue, formatLocation, humanList, toValidationError, validationError} from './validation-errors';
+import type {PathSegment, RouteSettingsErrorCode} from './validation-errors';
+import {describeValue, formatLocation, humanList, ROUTE_SETTINGS_ERROR_CODES, toValidationError, validationError} from './validation-errors';
+
+// Omit over a union collapses to the shared keys; map over the members instead.
+type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
 
 const messages = {
     badDataError: '"{key}" is a reserved key. Please wrap the data definition into a custom name.',
@@ -49,7 +52,7 @@ function validateDataShortForm(value: string, path: PathSegment[]): void {
         throw validationError(
             formatLocation(path),
             `"${value}" is not a valid data shorthand. Please use resource.slug, e.g. tag.recipes.`,
-            SHORTFORM_HELP
+            {help: SHORTFORM_HELP, code: ROUTE_SETTINGS_ERROR_CODES.INVALID_DATA}
         );
     }
 
@@ -58,7 +61,7 @@ function validateDataShortForm(value: string, path: PathSegment[]): void {
         throw validationError(
             formatLocation(path),
             `resource "${resource}" is not supported. Please use ${humanList(VALID_SHORTFORM_RESOURCES)}.`,
-            SHORTFORM_HELP
+            {help: SHORTFORM_HELP, code: ROUTE_SETTINGS_ERROR_CODES.INVALID_RESOURCE}
         );
     }
 }
@@ -108,20 +111,20 @@ function parseDataEntry(value: unknown, path: PathSegment[]): DataEntry {
             // is free to change.
             if (issue.code === 'invalid_union' && issue.path[0] === 'type') {
                 if (record.type === undefined) {
-                    throw validationError(at, 'type is required. Please use read or browse.', DATA_ENTRY_HELP);
+                    throw validationError(at, 'type is required. Please use read or browse.', {help: DATA_ENTRY_HELP, code: ROUTE_SETTINGS_ERROR_CODES.INVALID_DATA});
                 }
-                throw validationError(at, `type "${record.type}" is not supported. Please use read or browse.`, DATA_ENTRY_HELP);
+                throw validationError(at, `type "${record.type}" is not supported. Please use read or browse.`, {help: DATA_ENTRY_HELP, code: ROUTE_SETTINGS_ERROR_CODES.INVALID_DATA});
             }
             if (issue.path.includes('resource')) {
                 if (record.resource === undefined) {
-                    throw validationError(at, `resource is required. Please use ${humanList(VALID_LONGFORM_RESOURCES)}.`, DATA_ENTRY_HELP);
+                    throw validationError(at, `resource is required. Please use ${humanList(VALID_LONGFORM_RESOURCES)}.`, {help: DATA_ENTRY_HELP, code: ROUTE_SETTINGS_ERROR_CODES.INVALID_RESOURCE});
                 }
-                throw validationError(at, `resource "${record.resource}" is not supported. Please use ${humanList(VALID_LONGFORM_RESOURCES)}.`, DATA_ENTRY_HELP);
+                throw validationError(at, `resource "${record.resource}" is not supported. Please use ${humanList(VALID_LONGFORM_RESOURCES)}.`, {help: DATA_ENTRY_HELP, code: ROUTE_SETTINGS_ERROR_CODES.INVALID_RESOURCE});
             }
             if (issue.path.includes('slug') && !record.slug) {
-                throw validationError(at, 'slug is required for read data entries.', DATA_ENTRY_HELP);
+                throw validationError(at, 'slug is required for read data entries.', {help: DATA_ENTRY_HELP, code: ROUTE_SETTINGS_ERROR_CODES.INVALID_DATA});
             }
-            throw toValidationError(result.error, path, value);
+            throw toValidationError(result.error, path, value, ROUTE_SETTINGS_ERROR_CODES.INVALID_DATA);
         }
         // Fields set to an explicitly empty value parse to undefined — drop the
         // keys so "unset" means absent in the domain model and serialized output.
@@ -137,7 +140,7 @@ function parseDataEntry(value: unknown, path: PathSegment[]): DataEntry {
     throw validationError(
         formatLocation(path),
         `a data entry must be a shorthand like tag.recipes, or a map with type and resource, but ${describeValue(value)} was provided.`,
-        DATA_ENTRY_HELP
+        {help: DATA_ENTRY_HELP, code: ROUTE_SETTINGS_ERROR_CODES.INVALID_DATA}
     );
 }
 
@@ -151,7 +154,7 @@ function parseRouteData(data: unknown, path: PathSegment[]): RouteData {
         throw validationError(
             formatLocation(path),
             `data must be a shorthand like tag.recipes, or a map of named data entries, but ${describeValue(data)} was provided.`,
-            DATA_ENTRY_HELP
+            {help: DATA_ENTRY_HELP, code: ROUTE_SETTINGS_ERROR_CODES.INVALID_DATA}
         );
     }
 
@@ -159,10 +162,10 @@ function parseRouteData(data: unknown, path: PathSegment[]): RouteData {
 
     for (const key of Object.keys(record)) {
         if (RESERVED_DATA_KEYS.includes(key)) {
-            throw validationError(formatLocation([...path, key]), tpl(messages.badDataError, {key}), messages.badDataHelp);
+            throw validationError(formatLocation([...path, key]), tpl(messages.badDataError, {key}), {help: messages.badDataHelp, code: ROUTE_SETTINGS_ERROR_CODES.INVALID_DATA});
         }
         if (key === 'author') {
-            throw validationError(formatLocation([...path, key]), messages.authorDeprecatedError);
+            throw validationError(formatLocation([...path, key]), messages.authorDeprecatedError, {code: ROUTE_SETTINGS_ERROR_CODES.INVALID_DATA});
         }
     }
 
@@ -192,7 +195,7 @@ const routeObjectSchema = (path: PathSegment[]) => z.object({
     order: OptionalStringField,
     limit: LimitField,
     rss: OptionalBooleanField
-}).transform((val): Omit<Route, 'path'> => {
+}).transform((val): DistributiveOmit<Route, 'path'> => {
     const templates = val.template;
     const data = val.data !== undefined ? parseRouteData(val.data, [...path, 'data']) : undefined;
 
@@ -202,8 +205,8 @@ const routeObjectSchema = (path: PathSegment[]) => z.object({
             templates
         };
         // Preserve rss only when the author set it explicitly — the domain model
-        // mirrors user intent (unset vs true vs false), so the activation bridge
-        // reproduces validate.js output byte-for-byte.
+        // mirrors user intent (unset vs true vs false), so serializing never
+        // writes back an `rss` key the author never wrote.
         if (val.rss !== undefined) {
             route.rss = val.rss;
         }
@@ -284,19 +287,19 @@ const RouteSettingsSchema = z.object({
  * rejecting :param there would break the former, and the suggested rewrite would
  * silently produce the latter.
  */
-function validatePath(value: string, path: PathSegment[], example: string, {allowParamNotation = false}: {allowParamNotation?: boolean} = {}): void {
+function validatePath(value: string, path: PathSegment[], example: string, {allowParamNotation = false, code = ROUTE_SETTINGS_ERROR_CODES.INVALID_PATH}: {allowParamNotation?: boolean, code?: RouteSettingsErrorCode} = {}): void {
     const at = formatLocation(path);
 
     if (!value.startsWith('/')) {
-        throw validationError(at, `"${value}" is missing a leading slash. Please use e.g. ${example}.`);
+        throw validationError(at, `"${value}" is missing a leading slash. Please use e.g. ${example}.`, {code});
     }
     if (!value.endsWith('/')) {
-        throw validationError(at, `"${value}" is missing a trailing slash. Please use e.g. ${example}.`);
+        throw validationError(at, `"${value}" is missing a trailing slash. Please use e.g. ${example}.`, {code});
     }
     if (!allowParamNotation && /\/:\w+/.test(value)) {
         // Suggest the same path in the notation Ghost expects, rather than a
         // generic example the author then has to translate.
-        throw validationError(at, `"${value}" uses the :param notation. Please use "${value.replace(/\/:(\w+)/g, '/{$1}')}".`);
+        throw validationError(at, `"${value}" uses the :param notation. Please use "${value.replace(/\/:(\w+)/g, '/{$1}')}".`, {code});
     }
 }
 
@@ -317,7 +320,7 @@ export function parseRouteSettings(raw: unknown, yamlSource: string): RouteSetti
             validatePath(path, routeLocation, '/about/', {allowParamNotation: true});
 
             if (value === null || value === undefined) {
-                throw validationError(formatLocation(routeLocation), 'Please define a template, e.g. /about/: about.');
+                throw validationError(formatLocation(routeLocation), 'Please define a template, e.g. /about/: about.', {code: ROUTE_SETTINGS_ERROR_CODES.INVALID_TEMPLATE});
             }
 
             if (typeof value === 'string') {
@@ -331,11 +334,11 @@ export function parseRouteSettings(raw: unknown, yamlSource: string): RouteSetti
             }
 
             const route = routeResult.data;
-            if (route.type === 'template' && (!route.templates || route.templates.length === 0) && !route.data && !(route as Omit<TemplateRoute, 'path'>).contentType) {
-                throw validationError(formatLocation(routeLocation), 'Please define a template, e.g. /about/: about.');
+            if (route.type === 'template' && (!route.templates || route.templates.length === 0) && !route.data && !route.contentType) {
+                throw validationError(formatLocation(routeLocation), 'Please define a template, e.g. /about/: about.', {code: ROUTE_SETTINGS_ERROR_CODES.INVALID_TEMPLATE});
             }
 
-            routes.push({...route, path} as Route);
+            routes.push({...route, path});
         }
     }
 
@@ -352,9 +355,9 @@ export function parseRouteSettings(raw: unknown, yamlSource: string): RouteSetti
 
             const collection = collectionResult.data;
             if (!collection.permalink) {
-                throw validationError(formatLocation(collectionLocation), 'Please define a permalink route, e.g. permalink: /{slug}/.');
+                throw validationError(formatLocation(collectionLocation), 'Please define a permalink route, e.g. permalink: /{slug}/.', {code: ROUTE_SETTINGS_ERROR_CODES.INVALID_PERMALINK});
             }
-            validatePath(collection.permalink, [...collectionLocation, 'permalink'], '/{slug}/');
+            validatePath(collection.permalink, [...collectionLocation, 'permalink'], '/{slug}/', {code: ROUTE_SETTINGS_ERROR_CODES.INVALID_PERMALINK});
 
             collections.push({...collection, path});
         }
@@ -365,12 +368,12 @@ export function parseRouteSettings(raw: unknown, yamlSource: string): RouteSetti
         for (const [key, value] of Object.entries(rawTaxonomies)) {
             const taxonomyLocation: PathSegment[] = ['taxonomies', key];
             if (!['tag', 'author'].includes(key)) {
-                throw validationError(formatLocation(taxonomyLocation), 'Unknown taxonomy. Please use tag or author.');
+                throw validationError(formatLocation(taxonomyLocation), 'Unknown taxonomy. Please use tag or author.', {code: ROUTE_SETTINGS_ERROR_CODES.INVALID_TAXONOMY});
             }
             if (!value) {
-                throw validationError(formatLocation(taxonomyLocation), `Please define a taxonomy permalink route, e.g. ${key}: /${key}/{slug}/.`);
+                throw validationError(formatLocation(taxonomyLocation), `Please define a taxonomy permalink route, e.g. ${key}: /${key}/{slug}/.`, {code: ROUTE_SETTINGS_ERROR_CODES.INVALID_PERMALINK});
             }
-            validatePath(value, taxonomyLocation, `/${key}/{slug}/`);
+            validatePath(value, taxonomyLocation, `/${key}/{slug}/`, {code: ROUTE_SETTINGS_ERROR_CODES.INVALID_PERMALINK});
             if (key === 'tag') {
                 taxonomies.tag = value;
             }
@@ -388,7 +391,7 @@ export function serializeRouteSettings(settings: Omit<RouteSettings, 'yamlSource
 
     const routes: Record<string, unknown> = {};
     for (const route of settings.routes) {
-        if (route.type === 'template' && route.templates?.length === 1 && !route.data && !(route as TemplateRoute).contentType) {
+        if (route.type === 'template' && route.templates?.length === 1 && !route.data && !route.contentType) {
             routes[route.path] = route.templates[0];
         } else {
             const entry: Record<string, unknown> = {};
@@ -399,7 +402,7 @@ export function serializeRouteSettings(settings: Omit<RouteSettings, 'yamlSource
                 entry.data = route.data;
             }
             if (route.type === 'channel') {
-                const channel = route as ChannelRoute;
+                const channel = route;
                 entry.controller = 'channel';
                 if (channel.filter !== undefined) {
                     entry.filter = channel.filter;
@@ -414,7 +417,7 @@ export function serializeRouteSettings(settings: Omit<RouteSettings, 'yamlSource
                     entry.rss = channel.rss;
                 }
             } else {
-                const tmpl = route as TemplateRoute;
+                const tmpl = route;
                 if (tmpl.contentType !== undefined) {
                     entry.content_type = tmpl.contentType;
                 }

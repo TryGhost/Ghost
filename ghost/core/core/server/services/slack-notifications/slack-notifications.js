@@ -1,6 +1,6 @@
-const got = require('got').default;
 const validator = require('@tryghost/validator');
 const errors = require('@tryghost/errors');
+const externalRequest = require('../../lib/request-external');
 const ghostVersion = require('@tryghost/version');
 const moment = require('moment');
 
@@ -178,7 +178,7 @@ class SlackNotifications {
             };
         }
 
-        return await got.post(url, requestOptions);
+        return await externalRequest.post(url, requestOptions);
     }
 
     /**

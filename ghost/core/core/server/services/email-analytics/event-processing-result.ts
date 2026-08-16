@@ -1,4 +1,4 @@
-type EventProcessingResultInput = Partial<Omit<EventProcessingResult, 'totalEvents' | 'merge'>>;
+type EventProcessingResultInput = Partial<Omit<EventProcessingResult, 'merge'>>;
 
 export class EventProcessingResult {
     // counts
@@ -34,17 +34,6 @@ export class EventProcessingResult {
         this.processingFailures = 0;
         this.emailIds = [];
         this.memberIds = [];
-    }
-
-    get totalEvents(): number {
-        return this.delivered
-            + this.opened
-            + this.temporaryFailed
-            + this.permanentFailed
-            + this.unsubscribed
-            + this.complained
-            + this.unhandled
-            + this.unprocessable;
     }
 
     merge(other: EventProcessingResultInput = {}): void {

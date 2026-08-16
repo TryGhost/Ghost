@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useLayoutEffect, useRef, useState} from 'react';
 import {
     Badge,
     type ComboboxOptionSource,
@@ -12,6 +12,16 @@ import {EditRow} from './edit-row';
 import {type Label} from '@tryghost/admin-x-framework/api/labels';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {canCreateLabel} from './can-create-label';
+
+// What the list used to be capped at (max-h-64), and the least worth showing rather than
+// collapsing to a sliver. Between them it takes whatever room is below the field.
+const PREFERRED_HEIGHT = 256;
+const MIN_HEIGHT = 120;
+// Between the field and the scrollable list: the dropdown's mt-1 offset and its border. The
+// space is measured from the field, so this is spent before the list gets any of it.
+const DROPDOWN_CHROME = 6;
+// Kept clear of the viewport edge so the list never sits flush against it.
+const GUTTER = 16;
 
 export interface LabelPickerProps {
     labels: Label[];
@@ -264,6 +274,19 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
     const [search, setSearch] = useState('');
     const inputRef = useRef<HTMLInputElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
+    const [maxHeight, setMaxHeight] = useState(PREFERRED_HEIGHT);
+
+    // No portal here (see the click-outside note below), so nothing anchors this for us: at a
+    // fixed height the list runs off-screen when the field sits low in a tall dialog. Opens
+    // downward as it always has and takes whatever room is below, scrolling inside it.
+    // Selecting labels wraps the field to another row and moves it, so that counts too.
+    useLayoutEffect(() => {
+        if (!open || !containerRef.current) {
+            return;
+        }
+        const spaceBelow = window.innerHeight - containerRef.current.getBoundingClientRect().bottom - DROPDOWN_CHROME - GUTTER;
+        setMaxHeight(Math.max(MIN_HEIGHT, Math.min(PREFERRED_HEIGHT, spaceBelow)));
+    }, [open, selectedSlugs.length]);
 
     const handleSearchChange = useCallback((value: string) => {
         setSearch(value);
@@ -330,7 +353,7 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
                         </div>
                     ) : (
                         <Command shouldFilter={false}>
-                            <CommandList className="max-h-64 overflow-y-auto">
+                            <CommandList className="overflow-y-auto" style={{maxHeight}}>
                                 <LabelListItems
                                     isCreating={isCreating}
                                     labels={labels}

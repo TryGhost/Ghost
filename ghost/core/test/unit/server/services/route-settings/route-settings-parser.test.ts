@@ -579,4 +579,45 @@ describe('UNIT: services/route-settings/route-settings-parser', function () {
             assert.deepEqual(reparsed, parsed);
         });
     });
+
+    describe('determinism', function () {
+        // The parsed model feeds the schema integrity canary, which md5s it, so
+        // the same config must always serialize identically — regardless of the
+        // order the operator wrote the properties in.
+        const complexConfig = {
+            routes: {
+                '/about/': 'about',
+                '/api/': {template: 'api', content_type: 'application/json'},
+                '/featured/': {controller: 'channel', filter: 'featured:true', template: 'featured', rss: true, data: 'tag.featured'},
+                '/reader/': {template: 'reader', data: {entry: {type: 'read', resource: 'posts', slug: 'welcome', redirect: false}}}
+            },
+            collections: {
+                '/': {permalink: '/{primary_author}/{slug}/', template: 'index'},
+                '/podcast/': {permalink: '/podcast/{slug}/', template: 'podcast', filter: 'tag:podcast', rss: false}
+            },
+            taxonomies: {tag: '/tag/{slug}/', author: '/author/{slug}/'}
+        };
+
+        it('serializes identically across repeated parses of the same config', function () {
+            const first = parse(structuredClone(complexConfig));
+            const second = parse(structuredClone(complexConfig));
+
+            assert.equal(JSON.stringify(first), JSON.stringify(second));
+        });
+
+        it('serializes identically when the operator orders route properties differently', function () {
+            const orderedOneWay = {
+                routes: {'/featured/': {controller: 'channel', filter: 'featured:true', template: 'featured', rss: true, data: 'tag.featured'}},
+                collections: {'/': {permalink: '/{slug}/', template: 'index'}},
+                taxonomies: {}
+            };
+            const orderedAnotherWay = {
+                routes: {'/featured/': {data: 'tag.featured', rss: true, template: 'featured', filter: 'featured:true', controller: 'channel'}},
+                collections: {'/': {template: 'index', permalink: '/{slug}/'}},
+                taxonomies: {}
+            };
+
+            assert.equal(JSON.stringify(parse(orderedOneWay)), JSON.stringify(parse(orderedAnotherWay)));
+        });
+    });
 });

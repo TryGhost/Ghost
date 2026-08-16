@@ -530,4 +530,49 @@ describe('UNIT: services/route-settings/validation (via parseRouteSettings)', fu
             assert.match(helpFor({routes: {'/x/': {template: 'x', data: {e: {resource: 'posts'}}}}}) ?? '', /^e\.g\.\n data:/);
         });
     });
+
+    describe('domain error codes', function () {
+        function codeFor(raw: unknown): string | undefined {
+            try {
+                parse(raw);
+            } catch (err) {
+                assert.ok(err instanceof errors.ValidationError, `expected a ValidationError, got ${err}`);
+                return (err as {code?: string}).code;
+            }
+            return assert.fail('expected parsing to throw');
+        }
+
+        // Each invalid file should carry a stable, machine-readable code so
+        // callers can react to the failure class without matching on message
+        // text (which is authored for humans and free to change).
+        const cases: Array<[string, unknown, string]> = [
+            ['route path missing a slash', {routes: {'about/': 'about'}}, 'INVALID_PATH'],
+            ['collection path missing a slash', {collections: {'blog/': {permalink: '/{slug}/'}}}, 'INVALID_PATH'],
+            ['collection permalink using :param', {collections: {'/blog/': {permalink: '/:slug/'}}}, 'INVALID_PERMALINK'],
+            ['collection missing a permalink', {collections: {'/blog/': {template: 'index'}}}, 'INVALID_PERMALINK'],
+            ['route with no template, data or content_type', {routes: {'/about/': {}}}, 'INVALID_TEMPLATE'],
+            ['unknown taxonomy key', {taxonomies: {category: '/category/{slug}/'}}, 'INVALID_TAXONOMY'],
+            ['missing taxonomy permalink', {taxonomies: {tag: ''}}, 'INVALID_PERMALINK'],
+            ['taxonomy permalink using :param', {taxonomies: {tag: '/tag/:slug/'}}, 'INVALID_PERMALINK'],
+            // The schema rejects these one step before the hand-written checks
+            // above, so they only carry the permalink code if the code is also
+            // inferred from the failing key. `permalink:`/`tag:` left empty in
+            // YAML parses to null, which is the common way to write it.
+            ['collection permalink left empty', {collections: {'/blog/': {permalink: null}}}, 'INVALID_PERMALINK'],
+            ['collection permalink of the wrong type', {collections: {'/blog/': {permalink: 42}}}, 'INVALID_PERMALINK'],
+            ['taxonomy permalink left empty', {taxonomies: {tag: null}}, 'INVALID_PERMALINK'],
+            ['taxonomy permalink of the wrong type', {taxonomies: {tag: 42}}, 'INVALID_PERMALINK'],
+            ['unsupported longform data resource', {routes: {'/x/': {template: 'x', data: {thing: {type: 'read', resource: 'widgets', slug: 'a'}}}}}, 'INVALID_RESOURCE'],
+            ['unsupported shorthand data resource', {routes: {'/x/': {template: 'x', data: 'widget.foo'}}}, 'INVALID_RESOURCE'],
+            ['reserved data key', {routes: {'/x/': {template: 'x', data: {slug: 'tag.recipes'}}}}, 'INVALID_DATA'],
+            ['data provided as a list', {routes: {'/x/': {template: 'x', data: ['a', 'b']}}}, 'INVALID_DATA'],
+            ['top-level section not a map', {routes: 'hello'}, 'INVALID_ROUTE_SETTINGS']
+        ];
+
+        cases.forEach(([name, raw, expected]) => {
+            it(`${name} → ${expected}`, function () {
+                assert.equal(codeFor(raw), expected);
+            });
+        });
+    });
 });

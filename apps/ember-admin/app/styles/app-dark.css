@@ -60,7 +60,6 @@
 @import "layouts/post-history.css";
 @import "layouts/post-preview.css";
 @import "layouts/tiers.css";
-@import "layouts/explore.css";
 
 :root {
     /* Primary colours */
@@ -937,10 +936,6 @@ input,
     stroke: #fff;
 }
 
-.gh-member-settings .gh-member-feed {
-    background: transparent;
-}
-
 .gh-member-feed-row {
     border-bottom: 1px solid var(--grey-900);
 }
@@ -1056,24 +1051,6 @@ kbd {
 .gh-tags-placeholder,
 .no-posts .gh-members-placeholder {
     fill: var(--midgrey-d2);
-}
-
-/* Explore */
-
-.fullscreen-explore-container {
-    background: var(--main-bg-color);
-}
-
-.explore-api {
-    color: var(--middarkgrey);
-}
-
-.explore-permissions p {
-    color: #fff;
-}
-
-.explore-permissions {
-    background: var(--whitegrey-l1);
 }
 
 /* Settings Links */

@@ -30,7 +30,7 @@ describe('Unit: endpoints/utils/serializers/input/comments', function () {
         });
 
         it('loads the post routing relations the live routes reference when post is included', function () {
-            sinon.stub(urlService.facade, 'getRequiredRelations').returns(['tags', 'authors']);
+            sinon.stub(urlService, 'getRequiredRelations').returns(['tags', 'authors']);
 
             const apiConfig = {};
             const frame = {
@@ -46,7 +46,7 @@ describe('Unit: endpoints/utils/serializers/input/comments', function () {
         });
 
         it('loads no post relations when no route references tags or authors', function () {
-            sinon.stub(urlService.facade, 'getRequiredRelations').returns([]);
+            sinon.stub(urlService, 'getRequiredRelations').returns([]);
 
             const apiConfig = {};
             const frame = {

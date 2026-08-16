@@ -2,7 +2,7 @@ import React from 'react';
 import {Skeleton} from './skeleton';
 
 type LoadingIndicatorSize = 'sm' | 'md' | 'lg';
-type LoadingIndicatorColor = 'dark' | 'light';
+type LoadingIndicatorColor = 'current' | 'dark' | 'light';
 
 interface LoadingIndicatorProps {
     size: LoadingIndicatorSize;
@@ -27,6 +27,9 @@ const LoadingIndicator: React.FC<LoadingIndicatorProps> = ({size = 'md', color =
     }
 
     switch (color) {
+    case 'current':
+        styles += ' border-current/20 before:bg-current';
+        break;
     case 'light':
         styles += ' border-white/20 before:bg-white dark:border-black/10 dark:before:bg-black';
         break;

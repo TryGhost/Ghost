@@ -107,6 +107,23 @@ html.theme-switching *::after {
     scrollbar-width: none; /* Firefox */
 }
 
+/* CodeEditor autocomplete is portalled to a viewport-sized body child so it
+   can escape form-control and accordion overflow boundaries. CodeMirror adds
+   an intermediate container carrying the editor theme classes; collapse and
+   clear that container so those classes cannot paint a full-screen surface. */
+.cm-tooltip-parent > * {
+    height: 0 !important;
+    background: none !important;
+}
+
+.cm-tooltip-parent .cm-tooltip {
+    pointer-events: auto;
+}
+
+.cm-tooltip-parent .cm-tooltip-autocomplete.cm-tooltip ul li:not([aria-selected]) {
+    background: var(--background);
+}
+
 /* Prose classes are for formatting arbitrary HTML that comes from the API */
 .gh-prose-links a {
     color: #30cf43;

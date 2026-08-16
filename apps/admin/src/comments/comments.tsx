@@ -8,7 +8,7 @@ import {ListPage} from '@tryghost/shade/page-templates';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {adminCommentIncludes, useBrowseComments} from '@tryghost/admin-x-framework/api/comments';
 import {keepPreviousData} from '@tanstack/react-query';
-import {escapeNqlString} from '@/shared/filters';
+import {escapeNqlString} from '@tryghost/nql-string';
 import {getSiteTimezone} from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import {serializeCommentFilters} from './comment-filter-query';
 import {shouldDelayCommentDateFilterHydration, useFilterState} from './hooks/use-filter-state';

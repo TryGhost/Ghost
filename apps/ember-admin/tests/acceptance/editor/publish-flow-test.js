@@ -1,28 +1,43 @@
 import loginAsRole from '../../helpers/login-as-role';
 import moment from 'moment-timezone';
-import {blur, click, fillIn, find, findAll, waitFor} from '@ember/test-helpers';
-import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../../helpers/mock-analytics-apps';
+import {blur, click, fillIn, find, findAll, triggerEvent, waitFor} from '@ember/test-helpers';
 import {clickTrigger, removeMultipleOption, selectChoose} from 'ember-power-select/test-support/helpers';
 import {disableMailgun, enableMailgun} from '../../helpers/mailgun';
 import {disableMembers, enableMembers} from '../../helpers/members';
 import {disableNewsletters, enableNewsletters} from '../../helpers/newsletters';
+import {enableLabsFlag} from '../../helpers/labs-flag';
 import {enableStripe} from '../../helpers/stripe';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../../helpers/visit';
 
+function lexicalParagraph(text) {
+    return {
+        children: text ? [{text, type: 'extended-text'}] : [],
+        type: 'paragraph'
+    };
+}
+
+function lexicalWithPublicPreview({before = 'Public preview content', after = 'Full post content'} = {}) {
+    return JSON.stringify({
+        root: {
+            children: [
+                lexicalParagraph(before),
+                {type: 'paywall'},
+                lexicalParagraph(after)
+            ],
+            type: 'root'
+        }
+    });
+}
+
 describe('Acceptance: Publish flow', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
 
     beforeEach(function () {
-        mockAnalyticsApps();
         this.server.loadFixtures();
-    });
-
-    afterEach(function () {
-        cleanupMockAnalyticsApps();
     });
 
     it('has minimal features for contributors', async function () {
@@ -67,6 +82,99 @@ describe('Acceptance: Publish flow', function () {
         await visit(`/editor/post/${post.id}`);
 
         expect(search.isContentStale).to.be.false;
+    });
+
+    describe('public preview warnings', function () {
+        beforeEach(async function () {
+            enableLabsFlag(this.server, 'paywallImprovements');
+            await loginAsRole('Administrator', this.server);
+        });
+
+        it('warns when a public post contains a public preview', async function () {
+            const post = this.server.create('post', {
+                lexical: lexicalWithPublicPreview(),
+                status: 'draft',
+                visibility: 'public'
+            });
+
+            await visit(`/editor/post/${post.id}`);
+            await click('[data-test-button="publish-flow"]');
+
+            expect(find('[data-testid="public-preview-warning-public-access"]')).to.exist;
+        });
+
+        it('warns when there is no content above the public preview', async function () {
+            const post = this.server.create('post', {
+                lexical: lexicalWithPublicPreview({before: ''}),
+                status: 'draft',
+                visibility: 'paid'
+            });
+
+            await visit(`/editor/post/${post.id}`);
+            await click('[data-test-button="publish-flow"]');
+
+            expect(find('[data-testid="public-preview-warning-no-content-before"]')).to.exist;
+
+            await click('[data-test-button="continue-with-public-preview-warning"]');
+
+            expect(find('[data-test-modal="public-preview-warning"]')).to.not.exist;
+            expect(find('[data-test-publish-flow="options"]')).to.exist;
+        });
+
+        it('warns when there is no content below the public preview', async function () {
+            const post = this.server.create('post', {
+                lexical: lexicalWithPublicPreview({after: ''}),
+                status: 'draft',
+                visibility: 'members'
+            });
+
+            await visit(`/editor/post/${post.id}`);
+            await click('[data-test-button="publish-flow"]');
+
+            expect(find('[data-testid="public-preview-warning-no-content-after"]')).to.exist;
+
+            await click('[data-test-button="back-to-editor"]');
+
+            expect(find('[data-test-modal="public-preview-warning"]')).to.not.exist;
+            expect(find('[data-test-modal="publish-flow"]')).to.not.exist;
+        });
+
+        it('shows only the TK warning from the mobile publish flow when both warning types apply', async function () {
+            const post = this.server.create('post', {
+                lexical: lexicalWithPublicPreview(),
+                status: 'draft',
+                visibility: 'public'
+            });
+
+            await visit(`/editor/post/${post.id}`);
+            await fillIn('[data-test-editor-title-input]', 'Draft with TK placeholder');
+            await triggerEvent('.gh-editor-mobile-menu [data-test-button="publish-flow"]', 'click');
+
+            expect(find('[data-test-modal="tk-reminder"]')).to.exist;
+            expect(find('[data-test-modal="public-preview-warning"]')).to.not.exist;
+
+            await click('[data-test-modal="tk-reminder"] .modal-footer .gh-btn:not(.gh-btn-black)');
+
+            expect(find('[data-test-modal="tk-reminder"]')).to.not.exist;
+            expect(find('[data-test-modal="public-preview-warning"]')).to.not.exist;
+            expect(find('[data-test-publish-flow="options"]')).to.exist;
+        });
+    });
+
+    it('does not warn about public previews when paywall improvements are disabled', async function () {
+        await loginAsRole('Administrator', this.server);
+
+        const post = this.server.create('post', {
+            lexical: lexicalWithPublicPreview(),
+            status: 'draft',
+            visibility: 'public'
+        });
+
+        await visit(`/editor/post/${post.id}`);
+        await click('[data-test-button="publish-flow"]');
+
+        expect(find('[data-test-modal="public-preview-warning"]')).to.not.exist;
+        expect(find('[data-test-publish-flow="options"]')).to.exist;
     });
 
     it('handles timezones correctly when scheduling');

@@ -3,7 +3,7 @@ import {AdminPage} from '@/admin-pages';
 import {Locator, Page} from '@playwright/test';
 import {whatsNewMenuItem} from '@tryghost/test-data/selectors/whats-new';
 
-export type UserRole = 'Administrator' | 'Editor' | 'Author' | 'Contributor';
+export type UserRole = 'Administrator' | 'Editor' | 'Super Editor' | 'Author' | 'Contributor';
 
 export interface NavItem {
     name: string;
@@ -15,15 +15,20 @@ export interface NavItem {
 /**
  * Navigation items in the sidebar with their expected paths and role visibility.
  * Used for navigation tests and force upgrade redirect validation.
+ *
+ * `roles` = roles whose sidebar shows the item (Owner sees everything
+ * Administrator does; Contributors have no sidebar at all — they get a
+ * floating user menu instead). Gating source:
+ * apps/admin/src/layout/app-sidebar/{nav-main,nav-content}.tsx.
  */
 export const NAV_ITEMS: NavItem[] = [
     {name: 'Analytics', path: /\/ghost\/#\/analytics\/?$/, directUrl: '/ghost/#/analytics', roles: ['Administrator']},
     {name: 'Network', path: /\/ghost\/#\/(network|activitypub)\/?/, directUrl: '/ghost/#/activitypub', roles: ['Administrator']},
-    {name: 'View site', path: /\/ghost\/#\/site\/?$/, directUrl: '/ghost/#/site', roles: ['Administrator', 'Editor']},
-    {name: 'Posts', path: /\/ghost\/#\/posts\/?$/, directUrl: '/ghost/#/posts', roles: ['Administrator', 'Editor', 'Author', 'Contributor']},
-    {name: 'Pages', path: /\/ghost\/#\/pages\/?$/, directUrl: '/ghost/#/pages', roles: ['Administrator', 'Editor']},
-    {name: 'Tags', path: /\/ghost\/#\/tags\/?$/, directUrl: '/ghost/#/tags', roles: ['Administrator', 'Editor']},
-    {name: 'Members', path: /\/ghost\/#\/members\/?$/, directUrl: '/ghost/#/members', roles: ['Administrator', 'Editor']}
+    {name: 'View site', path: /\/ghost\/#\/site\/?$/, directUrl: '/ghost/#/site', roles: ['Administrator']},
+    {name: 'Posts', path: /\/ghost\/#\/posts\/?$/, directUrl: '/ghost/#/posts', roles: ['Administrator', 'Editor', 'Super Editor', 'Author']},
+    {name: 'Pages', path: /\/ghost\/#\/pages\/?$/, directUrl: '/ghost/#/pages', roles: ['Administrator', 'Editor', 'Super Editor', 'Author']},
+    {name: 'Tags', path: /\/ghost\/#\/tags\/?$/, directUrl: '/ghost/#/tags', roles: ['Administrator', 'Editor', 'Super Editor']},
+    {name: 'Members', path: /\/ghost\/#\/members\/?$/, directUrl: '/ghost/#/members', roles: ['Administrator', 'Super Editor']}
 ];
 
 /**
@@ -36,6 +41,7 @@ export const NAV_ITEMS: NavItem[] = [
  */
 export class SidebarPage extends AdminPage {
     public readonly sidebar: Locator;
+    public readonly adminSidebar: Locator;
     public readonly postsToggle: Locator;
     public readonly userDropdownTrigger: Locator;
     public readonly appearanceMenuItem: Locator;
@@ -57,6 +63,9 @@ export class SidebarPage extends AdminPage {
         // carry a breadcrumb <nav aria-label="breadcrumb"> too), so anchor on
         // the site search control, which only the sidebar contains.
         this.sidebar = page.getByRole('navigation').filter({has: page.getByRole('button', {name: /Search site/})});
+        // Container testid — for asserting the sidebar's absence (contributors
+        // get a floating avatar menu instead of the sidebar).
+        this.adminSidebar = page.getByTestId(sidebarSel.adminSidebar);
         this.postsToggle = this.sidebar.getByRole('button', {name: sidebarSel.postsToggle});
         this.userDropdownTrigger = page.getByRole('button', {name: sidebarSel.userMenuTrigger});
         this.appearanceMenuItem = page.getByRole('menuitem', {name: sidebarSel.appearanceMenuItem});

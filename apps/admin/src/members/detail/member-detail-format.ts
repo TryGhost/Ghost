@@ -1,3 +1,5 @@
+import type {MemberCustomFieldAddress} from '@tryghost/admin-x-framework/api/member-custom-fields';
+
 export interface MemberGeolocation {
     country_code?: string;
     country?: string;
@@ -54,8 +56,12 @@ export function formatMemberLocation(rawGeolocation: string | null | undefined):
  * "1 Main St, 12 apt B, New York, NY 00001, US". State and postal code pair
  * up the way people write them; whatever sub-fields are missing simply drop
  * out, so a partial address still reads naturally.
+ *
+ * The parts are named one by one rather than walked, because where each sits in the
+ * sentence is a fact about how an address reads, not one the value schema can supply. A
+ * part added upstream will not appear here until someone decides where it belongs.
  */
-export function formatAddressValue(address: Partial<Record<'line1' | 'line2' | 'city' | 'state' | 'postal_code' | 'country', string>>): string {
+export function formatAddressValue(address: Partial<MemberCustomFieldAddress>): string {
     const statePostal = [address.state, address.postal_code].filter(Boolean).join(' ');
     return [address.line1, address.line2, address.city, statePostal, address.country]
         .filter(Boolean)

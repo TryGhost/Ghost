@@ -13,7 +13,12 @@ const USER_FACING_EMOJIS = new Set(EMOJI_ORDER);
 function getCommitLog(fromTag, toTag) {
     const range = `${fromTag}..${toTag}`;
     const format = '* %s - %an';
-    const cmd = `git log --no-merges --pretty=tformat:'${format}' ${range}`;
+    // --first-parent keeps us on the mainline: PRs are squash-merged, so every
+    // real change is a single commit there. Subtree imports (`git subtree add`,
+    // history merges from other repos) arrive as merge commits whose second
+    // parent is the foreign history — sometimes years of it — and following
+    // that side floods the changelog with unrelated commits.
+    const cmd = `git log --first-parent --no-merges --pretty=tformat:'${format}' ${range}`;
 
     let log;
     try {

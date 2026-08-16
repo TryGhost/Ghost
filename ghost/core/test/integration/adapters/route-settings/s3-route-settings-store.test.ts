@@ -292,7 +292,7 @@ describe('Integration: S3RouteSettingsStore without a live bucket', function () 
         });
     });
 
-    it('propagates a non-NotFound error raised while reading', async function () {
+    it('reports a non-NotFound error raised while reading', async function () {
         const store = faultyStore(async (command) => {
             if (command instanceof GetObjectCommand) {
                 throw new Error('connection reset');
@@ -300,10 +300,10 @@ describe('Integration: S3RouteSettingsStore without a live bucket', function () 
             return {};
         });
 
-        await assert.rejects(store.get(), /connection reset/);
+        await assert.rejects(store.get(), /Something went wrong, please try again\./);
     });
 
-    it('propagates a non-NotFound error raised by the existence check on replace', async function () {
+    it('reports a non-NotFound error raised by the existence check on replace', async function () {
         const store = faultyStore(async (command) => {
             if (command instanceof HeadObjectCommand) {
                 throw new Error('access denied');
@@ -311,6 +311,6 @@ describe('Integration: S3RouteSettingsStore without a live bucket', function () 
             return {};
         });
 
-        await assert.rejects(store.replace(fromYaml(SAMPLE_YAML)), /access denied/);
+        await assert.rejects(store.replace(fromYaml(SAMPLE_YAML)), /Something went wrong, please try again\./);
     });
 });

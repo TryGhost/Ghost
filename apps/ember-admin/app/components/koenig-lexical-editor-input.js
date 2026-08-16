@@ -2,7 +2,7 @@ import * as Sentry from '@sentry/ember';
 import Component from '@glimmer/component';
 import React, {Suspense} from 'react';
 import {action} from '@ember/object';
-import {decoratePostSearchResult} from 'ghost-admin/components/koenig-lexical-editor';
+import {decoratePostSearchResult, filterLinkSearchResults} from 'ghost-admin/components/koenig-lexical-editor';
 import {didCancel} from 'ember-concurrency';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
@@ -138,35 +138,7 @@ export default class KoenigLexicalEditorInput extends Component {
                 return [];
             }
 
-            // only published posts/pages and staff with posts have URLs
-            const filteredResults = [];
-            results.forEach((group) => {
-                let items = group.options;
-
-                if (group.groupName === 'Posts' || group.groupName === 'Pages') {
-                    items = items.filter(i => i.status === 'published');
-                }
-
-                if (group.groupName === 'Staff') {
-                    items = items.filter(i => !/\/404\//.test(i.url));
-                }
-
-                if (items.length === 0) {
-                    return;
-                }
-
-                // update the group items with metadata
-                if (group.groupName === 'Posts' || group.groupName === 'Pages') {
-                    items.forEach(item => decoratePostSearchResult(item, this.settings));
-                }
-
-                filteredResults.push({
-                    label: group.groupName,
-                    items
-                });
-            });
-
-            return filteredResults;
+            return filterLinkSearchResults(results, this.settings);
         };
 
         const cardConfig = {

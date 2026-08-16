@@ -8,6 +8,7 @@ import {MAX_ATTEMPTS, MAX_STEPS_PER_BATCH, RETRY_DELAY_MS} from './constants';
 import {Member} from '../../models';
 
 const settingsCache = require('../../../shared/settings-cache');
+const labs = require('../../../shared/labs');
 
 type MemberWelcomeEmailService = {
     init: () => unknown;
@@ -25,6 +26,9 @@ type MemberWelcomeEmailService = {
             };
             memberStatus: 'free' | 'paid';
             trackOpens: boolean;
+            trackClicks: boolean;
+            automationActionRevisionId: string;
+            automationRunStepId: string;
         }) => Promise<unknown>;
     };
 };
@@ -183,7 +187,7 @@ const processStep = async ({
                 break;
             }
             memberWelcomeEmailService.init();
-            const trackClicks = Boolean(settingsCache.get('email_track_clicks'));
+            const trackClicks = labs.isSet('automationAnalytics') && Boolean(settingsCache.get('email_track_clicks'));
             const trackOpens = Boolean(settingsCache.get('email_track_opens'));
             const sendResult = await memberWelcomeEmailService.api.sendAutomationEmail({
                 email: {
@@ -197,7 +201,10 @@ const processStep = async ({
                     uuid: member.get('uuid')
                 },
                 memberStatus,
-                trackOpens
+                trackOpens,
+                trackClicks,
+                automationActionRevisionId: step.automation_action_revision_id,
+                automationRunStepId: step.id
             });
             const mailgunMessageId = getMailgunMessageId(sendResult);
             // Only Mailgun sends can produce open events for automation emails
@@ -205,6 +212,7 @@ const processStep = async ({
             try {
                 await automationsApi.recordEmailSent({
                     automationActionRevisionId: step.automation_action_revision_id,
+                    automationRunStepId: step.id,
                     ...(mailgunMessageId ? {mailgunMessageId} : {}),
                     memberEmail: member.get('email'),
                     memberId: step.member_id,

@@ -46,10 +46,6 @@ class I18n {
         return 'en';
     }
 
-    supportedLocales() {
-        return [this.defaultLocale()];
-    }
-
     /**
      * Exporting the current locale (e.g. "en") to make it available for other files as well,
      * such as core/frontend/helpers/date.js and core/frontend/helpers/lang.js
@@ -92,8 +88,6 @@ class I18n {
      */
     init() {
         this._strings = this._loadStrings();
-
-        this._initializeIntl();
     }
 
     /**
@@ -226,33 +220,6 @@ class I18n {
         }
 
         return msg;
-    }
-
-    /**
-     * [Private] Setup i18n support:
-     *  - Polyfill node.js if it does not have Intl support or support for a particular locale
-     */
-    _initializeIntl() {
-        let hasBuiltInLocaleData;
-        let IntlPolyfill;
-
-        if (global.Intl) {
-            // Determine if the built-in `Intl` has the locale data we need.
-            hasBuiltInLocaleData = this.supportedLocales().every(function (locale) {
-                return Intl.NumberFormat.supportedLocalesOf(locale)[0] === locale &&
-                    Intl.DateTimeFormat.supportedLocalesOf(locale)[0] === locale;
-            });
-            if (!hasBuiltInLocaleData) {
-                // `Intl` exists, but it doesn't have the data we need, so load the
-                // polyfill and replace the constructors with need with the polyfill's.
-                IntlPolyfill = require('intl');
-                Intl.NumberFormat = IntlPolyfill.NumberFormat;
-                Intl.DateTimeFormat = IntlPolyfill.DateTimeFormat;
-            }
-        } else {
-            // No `Intl`, so use and load the polyfill.
-            global.Intl = require('intl');
-        }
     }
 
     _handleUninitialisedError(key) {

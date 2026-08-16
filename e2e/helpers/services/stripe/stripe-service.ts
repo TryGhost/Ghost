@@ -6,6 +6,7 @@ import {
     buildCustomer,
     buildDiscount,
     buildDonationCheckoutCompletedEvent,
+    buildGiftCheckoutCompletedEvent,
     buildInvoicePaymentSucceededEvent,
     buildPaymentMethod,
     buildPrice,
@@ -100,6 +101,46 @@ export class StripeTestService {
             sessionId: session.response.id,
             ...opts
         });
+    }
+
+    async completeLatestGiftCheckout(opts: {
+        email?: string;
+        name?: string;
+    } = {}): Promise<void> {
+        const session = this.getCheckoutSessions()
+            .filter(item => item.response.mode === 'payment' && item.response.metadata.ghost_gift === 'true')
+            .at(-1);
+
+        if (!session) {
+            throw new Error('No recorded gift checkout session found');
+        }
+
+        const inlinePrice = session.request.line_items?.[0]?.price_data;
+        const customer = session.response.customer
+            ? this.getCustomers().find(item => item.id === session.response.customer) ?? null
+            : null;
+        const email = opts.email ?? session.response.customer_email ?? customer?.email;
+
+        if (!inlinePrice || !email) {
+            throw new Error(`Gift checkout session ${session.response.id} is missing price or customer data`);
+        }
+
+        const event = buildGiftCheckoutCompletedEvent({
+            amount: inlinePrice.unit_amount,
+            currency: inlinePrice.currency,
+            customerEmail: email,
+            customerId: session.response.customer,
+            metadata: session.response.metadata,
+            name: opts.name ?? customer?.name ?? 'Test Gift Buyer',
+            paymentIntent: `pi_gift_${session.response.id}`,
+            sessionId: session.response.id
+        });
+        const response = await this.webhookClient.sendWebhook(event);
+
+        if (!response.ok) {
+            const body = await response.text();
+            throw new Error(`checkout.session.completed gift webhook failed (${response.status}): ${body}`);
+        }
     }
 
     async createPaidMemberViaWebhooks(opts: {email: string; name: string}): Promise<CreatedPaidMember> {

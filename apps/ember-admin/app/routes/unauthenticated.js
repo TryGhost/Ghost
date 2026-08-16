@@ -16,7 +16,7 @@ export default class UnauthenticatedRoute extends Route {
             if (setup.status !== true) {
                 this.transitionTo('setup');
             } else {
-                return this.session.prohibitAuthentication('home');
+                return this.session.prohibitAuthentication('index');
             }
         });
     }

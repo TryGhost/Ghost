@@ -21,5 +21,6 @@ module.exports = {
     // Create is a batch, so it returns every definition it made. The response is
     // already an array, so a one-item create looks exactly as it did before.
     add: serializeMany,
+    reorder: serializeMany,
     edit: serializeOne
 };

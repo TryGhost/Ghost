@@ -96,10 +96,8 @@ describe('Unit - frontend/data/fetch-data', function () {
                 featured: {
                     type: 'browse',
                     resource: 'posts',
-                    options: {
-                        filter: 'featured:true',
-                        limit: 3
-                    }
+                    filter: 'featured:true',
+                    limit: 3
                 }
             }
         };
@@ -129,11 +127,7 @@ describe('Unit - frontend/data/fetch-data', function () {
 
         const routerOptions = {
             data: {
-                featured: {
-                    type: 'browse',
-                    resource: 'posts',
-                    options: {filter: 'featured:true', limit: 3}
-                }
+                featured: {type: 'browse', resource: 'posts', filter: 'featured:true', limit: 3}
             }
         };
 
@@ -162,15 +156,12 @@ describe('Unit - frontend/data/fetch-data', function () {
             slug: 'testing'
         };
 
+        // The taxonomy router hands over a read entry with a `%s` placeholder
+        // for the slug, which fetch-data fills in from the request path.
         const routerOptions = {
             filter: 'tags:%s',
             data: {
-                tag: {
-                    controller: 'tagsPublic',
-                    type: 'read',
-                    resource: 'tags',
-                    options: {slug: '%s'}
-                }
+                tag: {type: 'read', resource: 'tags', slug: '%s'}
             }
         };
 
@@ -191,5 +182,44 @@ describe('Unit - frontend/data/fetch-data', function () {
         assert.equal(browsePostsStub.firstCall.args[0].filter, 'tags:testing');
         assert(!('slug' in browsePostsStub.firstCall.args[0]));
         assert.equal(readTagsStub.firstCall.args[0].slug, 'testing');
+        // The read defaults for tags are resolved alongside the slug
+        assert.equal(readTagsStub.firstCall.args[0].visibility, 'public');
+    });
+
+    it('should handle shorthand data entries', async function () {
+        const routerOptions = {
+            data: {'my-tag': 'tag.bacon'}
+        };
+
+        const result = await data.fetchData({}, routerOptions, locals);
+
+        assert('my-tag' in result.data);
+        assert.equal(result.data['my-tag'].length, tags.length);
+        assert.equal(readTagsStub.firstCall.args[0].slug, 'bacon');
+    });
+
+    it('should not mutate the route data it was given', async function () {
+        const routeData = {post: {type: 'browse', resource: 'posts'}};
+
+        await data.fetchData({}, {data: routeData}, locals);
+
+        assert.deepEqual(routeData, {post: {type: 'browse', resource: 'posts'}});
+    });
+
+    it('should apply the per-name query defaults without losing the resolved resource', async function () {
+        // `post` is one of the names that carries default options, so the
+        // defaults are merged in on top of what the adapter resolved.
+        const routerOptions = {
+            data: {post: {type: 'browse', resource: 'posts'}}
+        };
+
+        const result = await data.fetchData({}, routerOptions, locals);
+
+        sinon.assert.calledTwice(browsePostsStub);
+        assert.equal(browsePostsStub.secondCall.args[0].include, 'authors,tags,tiers');
+
+        // The response is still keyed off the resolved `posts` resource
+        assert.equal(result.data.post.length, posts.length);
+        assert.deepEqual(result.data.post.meta, {pagination: {pages: 2}});
     });
 });

@@ -12,7 +12,7 @@ export default defineConfig([
             tseslint.configs.recommended
         ],
         languageOptions: {
-            parserOptions: {ecmaVersion: 2022, sourceType: 'module'}
+            parserOptions: {ecmaVersion: 2022, sourceType: 'module', tsconfigRootDir: import.meta.dirname}
         },
         plugins: {ghost: ghostPlugin},
         rules: {

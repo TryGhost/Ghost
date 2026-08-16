@@ -63,6 +63,6 @@ test.describe('Reply submission', () => {
         await replyForm.getByTestId('submit-form-button').click();
 
         await expect(frame.getByText('My new reply')).toBeVisible();
-        await expect(parentComment.getByTestId('comment-component')).toHaveCount(3);
+        await expect(frame.getByTestId('comment-component')).toHaveCount(4);
     });
 });

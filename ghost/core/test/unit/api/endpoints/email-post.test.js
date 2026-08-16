@@ -14,8 +14,8 @@ describe('Email post controller', function () {
     });
 
     describe('#read', function () {
-        it('lazyRouting: force-loads the URL service required relations', async function () {
-            sinon.stub(urlService.facade, 'getRequiredRelations').returns(['tags', 'authors']);
+        it('force-loads the URL service required relations', async function () {
+            sinon.stub(urlService, 'getRequiredRelations').returns(['tags', 'authors']);
 
             const frame = {data: {uuid: 'abc'}, options: {}};
             await emailPostController.read.query(frame);
@@ -27,8 +27,8 @@ describe('Email post controller', function () {
             assert.deepEqual(frame.forcedUrlRelations, ['tags', 'authors']);
         });
 
-        it('lazyRouting: only forces the relations the caller did not include', async function () {
-            sinon.stub(urlService.facade, 'getRequiredRelations').returns(['tags', 'authors']);
+        it('only forces the relations the caller did not include', async function () {
+            sinon.stub(urlService, 'getRequiredRelations').returns(['tags', 'authors']);
 
             const frame = {data: {uuid: 'abc'}, options: {withRelated: ['tags']}};
             await emailPostController.read.query(frame);
@@ -39,7 +39,7 @@ describe('Email post controller', function () {
         });
 
         it('fetches sent posts by uuid', async function () {
-            sinon.stub(urlService.facade, 'getRequiredRelations').returns([]);
+            sinon.stub(urlService, 'getRequiredRelations').returns([]);
 
             const frame = {data: {uuid: 'abc'}, options: {}};
             await emailPostController.read.query(frame);

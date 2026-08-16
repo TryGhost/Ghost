@@ -1,6 +1,6 @@
 import PostAnalyticsLayout from './components/layout/post-analytics-layout';
+import PostShareModal from '@/shared/analytics/post-share-modal';
 import {Outlet, trackEvent} from '@tryghost/admin-x-framework';
-import {PostShareModal} from '@tryghost/shade/posts-stats';
 import {useEffect} from 'react';
 import {usePostSuccessModal} from '@/posts/analytics/hooks/use-post-success-modal';
 

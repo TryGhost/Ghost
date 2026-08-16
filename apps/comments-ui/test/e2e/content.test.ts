@@ -159,10 +159,7 @@ test.describe('Deleted and Hidden Content', async () => {
         const {frame} = await initialize({
             mockedApi,
             page,
-            publication: 'Publisher Weekly',
-            labs: {
-                commentsThreads: true
-            }
+            publication: 'Publisher Weekly'
         });
 
         const deletedReply = frame.locator('[id="deleted-reply"]');

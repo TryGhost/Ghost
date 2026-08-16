@@ -8,7 +8,7 @@ export default class AdminRoute extends AuthenticatedRoute {
         super.beforeModel(...arguments);
 
         if (!this.session.user.isAdmin) {
-            return this.transitionTo('home');
+            return this.transitionTo('index');
         }
     }
 }

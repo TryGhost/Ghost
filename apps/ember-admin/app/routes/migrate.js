@@ -10,7 +10,7 @@ export default class MigrateRoute extends AuthenticatedRoute {
 
         // Only allow Owner & Administrator to access this route
         if (!this.session.user.isAdmin) {
-            return this.transitionTo('home');
+            return this.transitionTo('index');
         }
     }
 }

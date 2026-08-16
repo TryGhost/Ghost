@@ -13,7 +13,7 @@ Adds a new private feature flag to Ghost. Private flags appear in Labs settings 
 1. **Add the flag to `ghost/core/core/shared/labs.js`**
    - Add the flag name (camelCase string) to the `PRIVATE_FEATURES` array.
 
-2. **Add a UI toggle in `apps/admin-x-settings/src/components/settings/advanced/labs/private-features.tsx`**
+2. **Add a UI toggle in `apps/admin/src/settings/app/components/settings/advanced/labs/private-features.tsx`**
    - Add a new entry to the `features` array with `title`, `description`, and `flag` (must match the string in `labs.js`).
 
 3. **Run tests and update the config API snapshot**
@@ -25,4 +25,4 @@ Adds a new private feature flag to Ghost. Private flags appear in Labs settings 
 - No database migration is needed. Labs flags are stored in a single JSON `labs` setting.
 - The flag name must be identical in `labs.js`, `private-features.tsx`, and the snapshot.
 - Flags are camelCase strings (e.g. `welcomeEmailDesignCustomization`).
-- For public beta flags (visible to all users), add to `PUBLIC_BETA_FEATURES` in `labs.js` instead and add the toggle to `apps/admin-x-settings/src/components/settings/advanced/labs/beta-features.tsx`.
+- For public beta flags (visible to all users), add to `PUBLIC_BETA_FEATURES` in `labs.js` instead and add the toggle to `apps/admin/src/settings/app/components/settings/advanced/labs/beta-features.tsx`.

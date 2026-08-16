@@ -24,10 +24,23 @@ function probe(url, options = {}, {probeImageSize: probeImageSizeFn = probeImage
     return promise;
 }
 
+// For image formats that require a full fetch. This function ensures that
+// SSRF protections are in place by using the externalRequest `got` client.
+function fetchExternal(url, options = {}) {
+    return externalRequest.get(url, {
+        headers: options.headers,
+        timeout: {
+            request: options.response_timeout || 10000
+        },
+        responseType: 'buffer',
+        retry: {limit: 0}
+    });
+}
+
 class ImageUtils {
     constructor({config, urlUtils, settingsCache, storageUtils, imageStore, validator, request, cacheStore}) {
         this.blogIcon = new BlogIcon({config, urlUtils, settingsCache, storageUtils});
-        this.imageSize = new ImageSize({config, imageStore, storageUtils, validator, urlUtils, request, probe});
+        this.imageSize = new ImageSize({config, imageStore, storageUtils, validator, urlUtils, fetchExternal, probe});
         this.cachedImageSizeFromUrl = new CachedImageSizeFromUrl({
             getImageSizeFromUrl: this.imageSize.getImageSizeFromUrl.bind(this.imageSize),
             cache: cacheStore
@@ -38,3 +51,4 @@ class ImageUtils {
 
 module.exports = ImageUtils;
 module.exports.probe = probe;
+module.exports.fetchExternal = fetchExternal;

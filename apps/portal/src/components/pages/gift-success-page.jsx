@@ -6,6 +6,7 @@ import GiftDetailsToggle from '../common/gift-details-toggle';
 import copyTextToClipboard from '../../utils/copy-to-clipboard';
 import {getAvailableProducts} from '../../utils/helpers';
 import {getGiftDurationLabel} from '../../utils/gift-redemption-notification';
+import {getGiftPrice} from '../../utils/gift-subscriptions';
 import {t} from '../../utils/i18n';
 import useCardTilt from '../../utils/use-card-tilt';
 import {formatGiftValue} from './gift-page';
@@ -90,6 +91,7 @@ const GiftSuccessPage = () => {
     const token = pageData?.token;
     const tierId = pageData?.tierId;
     const cadence = pageData?.cadence;
+    const duration = pageData?.duration;
     const siteUrl = site?.url || '';
     const siteIcon = site?.icon;
     const siteTitle = site?.title || '';
@@ -121,7 +123,7 @@ const GiftSuccessPage = () => {
 
                             <div className='gh-portal-gift-checkout-section'>
                                 <div className='gh-portal-gift-success-link'>
-                                    <span className='gh-portal-gift-success-link-url'>{redeemUrl}</span>
+                                    <span className='gh-portal-gift-success-link-url' data-testid='gift-redeem-link'>{redeemUrl}</span>
                                     <button className='gh-portal-gift-success-copy' onClick={handleCopy} type='button'>
                                         {copied ? <CheckIcon /> : <CopyIcon />}
                                         {copied ? t('Copied') : t('Copy')}
@@ -140,9 +142,16 @@ const GiftSuccessPage = () => {
                             <div className='gh-portal-gift-checkout-card-stack' data-revealing={showDetails}>
                                 <GiftCard
                                     cardRef={cardRef}
-                                    duration={tier && cadence ? getGiftDurationLabel({cadence, duration: 1}) : null}
+                                    duration={tier && cadence ? getGiftDurationLabel({
+                                        cadence: duration ? 'month' : cadence,
+                                        duration: duration || 1
+                                    }) : null}
                                     tierName={tier && cadence ? tier.name : null}
-                                    giftValue={tier && cadence ? formatGiftValue(cadence === 'month' ? tier.monthlyPrice : tier.yearlyPrice) : null}
+                                    giftValue={tier && cadence ? formatGiftValue(
+                                        duration
+                                            ? getGiftPrice(tier, duration)
+                                            : cadence === 'month' ? tier.monthlyPrice : tier.yearlyPrice
+                                    ) : null}
                                     siteIcon={siteIcon}
                                     siteTitle={siteTitle}
                                 />

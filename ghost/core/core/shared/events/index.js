@@ -12,6 +12,5 @@ module.exports = {
     OfferRedemptionEvent: require('./offer-redemption-event'),
     SubscriptionActivatedEvent: require('./subscription-activated-event'),
     SubscriptionCancelledEvent: require('./subscription-cancelled-event'),
-    SubscriptionCreatedEvent: require('./subscription-created-event'),
-    URLResourceUpdatedEvent: require('./url-resource-updated-event')
+    SubscriptionCreatedEvent: require('./subscription-created-event')
 };

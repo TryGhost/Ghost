@@ -414,6 +414,10 @@ export class GhostManager {
             `${caddyfilePath}:/etc/caddy/Caddyfile:ro`
         ];
 
+        if (mode === 'dev') {
+            binds.push(`${REPO_ROOT}/apps:/srv/apps:ro`);
+        }
+
         // Environment variables for Caddy
         const env = [
             `GHOST_BACKEND=${ghostBackend}:${TEST_ENVIRONMENT.ghost.port}`,

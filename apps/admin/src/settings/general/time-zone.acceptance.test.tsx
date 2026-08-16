@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { userEvent } from "vitest/browser";
 
-import { fakeEditSettings, fakeSettingsScreens, renderAdminApp } from "@test-utils/acceptance";
+import { currentRoute, fakeEditSettings, fakeSettingsScreens, renderAdminApp } from "@test-utils/acceptance";
 import { settingsScreen } from "@/settings/settings.screen";
 
 describe("Time zone settings", () => {
@@ -17,5 +18,20 @@ describe("Time zone settings", () => {
 
         await expect.element(select).toHaveTextContent("Alaska");
         await expect(settingsApi).toHaveEditedSettings([{ key: "timezone", value: "America/Anchorage" }]);
+    });
+
+    it("closes the time zone options with Escape without closing Settings", async () => {
+        fakeSettingsScreens();
+        await renderAdminApp("/settings");
+
+        const select = settingsScreen.timezoneSelect();
+        await select.click();
+        await expect.element(settingsScreen.selectOption("Alaska")).toBeVisible();
+
+        await userEvent.keyboard("{Escape}");
+
+        await expect(settingsScreen.selectOption("Alaska")).toHaveCount(0);
+        await expect.element(select).toBeVisible();
+        await expect.poll(currentRoute).toBe("/settings");
     });
 });

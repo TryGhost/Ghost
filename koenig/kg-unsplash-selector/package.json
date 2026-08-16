@@ -1,6 +1,7 @@
 {
   "name": "@tryghost/kg-unsplash-selector",
   "version": "0.4.3",
+  "description": "React Unsplash image picker for Ghost's Koenig editor",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -40,7 +41,7 @@
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "@vitest/coverage-v8": "catalog:",
-    "autoprefixer": "10.5.2",
+    "autoprefixer": "10.5.4",
     "eslint": "catalog:",
     "eslint-plugin-ghost": "catalog:",
     "eslint-plugin-react": "catalog:",

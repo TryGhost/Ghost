@@ -18,7 +18,7 @@ export class PortalSection extends BasePage {
         this.customizeButton = this.section.getByRole('button', {name: 'Customize'});
         this.portalModal = page.getByTestId('portal-modal');
         this.linksTab = this.portalModal.getByRole('tab', {name: 'Links'});
-        this.linksTierSelectControl = this.portalModal.locator('span:has-text("Tier:") + div').first();
+        this.linksTierSelectControl = this.portalModal.getByRole('combobox', {name: 'Tier'});
         this.freeTierToggleLabel = this.portalModal.locator('label').filter({hasText: 'Free'}).first();
     }
 
@@ -55,31 +55,15 @@ export class PortalSection extends BasePage {
         await this.selectLinksTier(name);
 
         const label = cadence === 'monthly' ? 'Signup / Monthly' : 'Signup / Yearly';
-        const linkInput = this.portalModal.getByLabel(label);
-        await linkInput.waitFor({state: 'visible'});
-        const inputId = await linkInput.getAttribute('id');
-
-        if (!inputId) {
-            throw new Error(`Portal ${cadence} signup link input was not found`);
-        }
-
-        await this.page.waitForFunction(({expectedTierId, targetInputId}: {expectedTierId: string; targetInputId: string}) => {
-            const element = document.getElementById(targetInputId);
-            return element instanceof HTMLInputElement && element.value.includes(expectedTierId);
-        }, {
-            expectedTierId: tierId,
-            targetInputId: inputId
-        }, {
-            timeout: 5000
-        });
-
-        return await linkInput.inputValue();
+        const linkValue = this.portalModal.getByRole('textbox', {name: label}).filter({hasText: tierId});
+        await linkValue.waitFor({state: 'visible'});
+        return await linkValue.textContent() || '';
     }
 
     async getLinkValue(label: string): Promise<string> {
         await this.openLinksTab();
-        const linkInput = this.portalModal.getByLabel(label);
-        await linkInput.waitFor({state: 'visible'});
-        return await linkInput.inputValue();
+        const linkValue = this.portalModal.getByRole('textbox', {name: label});
+        await linkValue.waitFor({state: 'visible'});
+        return await linkValue.textContent() || '';
     }
 }

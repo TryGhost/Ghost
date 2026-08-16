@@ -2,6 +2,7 @@ import {AutomatedEmailFactory} from './factories/automated-email-factory';
 import {CommentFactory} from './factories/comment-factory';
 import {GhostAdminApiAdapter} from './persistence/adapters/ghost-api';
 import {HttpClient} from './persistence/adapters/http-client';
+import {InvitationTokenProvider, StaffAccountFactory} from './factories/staff-account-factory';
 import {MemberFactory} from './factories/member-factory';
 import {OfferFactory} from './factories/offer-factory';
 import {PostFactory} from './factories/post-factory';
@@ -71,6 +72,10 @@ export function createCommentFactory(httpClient: HttpClient): CommentFactory {
         'comments'
     );
     return new CommentFactory(adapter);
+}
+
+export function createStaffAccountFactory(httpClient: HttpClient, getInvitationToken: InvitationTokenProvider): StaffAccountFactory {
+    return new StaffAccountFactory(httpClient, getInvitationToken);
 }
 
 export interface Factories {

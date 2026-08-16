@@ -44,4 +44,3 @@ export class TagDetailsPage extends AdminPage {
         await this.backLink.click();
     }
 }
-

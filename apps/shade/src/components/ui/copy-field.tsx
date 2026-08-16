@@ -2,12 +2,14 @@ import * as React from 'react';
 
 import {Inline, Stack, Text} from '@/components/primitives';
 import {Button, type ButtonProps} from '@/components/ui/button';
+import {inputSurface} from '@/components/ui/input-surface';
 import {cn} from '@/lib/utils';
 
 type CopyFieldContextValue = {
     copied: boolean;
     copy: () => Promise<void>;
     disabled: boolean;
+    labelId: string;
     value: string;
 };
 
@@ -30,6 +32,7 @@ interface CopyFieldProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const CopyField = React.forwardRef<HTMLDivElement, CopyFieldProps>(({children, className, disabled = false, value, ...props}, ref) => {
     const [copied, setCopied] = React.useState(false);
+    const labelId = React.useId();
     const resetTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
     React.useEffect(() => {
@@ -68,7 +71,7 @@ const CopyField = React.forwardRef<HTMLDivElement, CopyFieldProps>(({children, c
         }
     }, [disabled, value]);
 
-    const contextValue = React.useMemo(() => ({copied, copy, disabled, value}), [copied, copy, disabled, value]);
+    const contextValue = React.useMemo(() => ({copied, copy, disabled, labelId, value}), [copied, copy, disabled, labelId, value]);
 
     return (
         <CopyFieldContext.Provider value={contextValue}>
@@ -87,25 +90,29 @@ const CopyField = React.forwardRef<HTMLDivElement, CopyFieldProps>(({children, c
 });
 CopyField.displayName = 'CopyField';
 
-const CopyFieldLabel = React.forwardRef<HTMLElement, React.ComponentProps<typeof Text>>(({className, ...props}, ref) => (
-    <Text
-        ref={ref}
-        as="div"
-        className={cn('group-data-[disabled=true]/copy-field:opacity-50', className)}
-        data-slot="copy-field-label"
-        leading="snug"
-        size="sm"
-        weight="semibold"
-        {...props}
-    />
-));
+const CopyFieldLabel = React.forwardRef<HTMLElement, React.ComponentProps<typeof Text>>(({className, id, ...props}, ref) => {
+    const {labelId} = useCopyField();
+
+    return (
+        <Text
+            ref={ref}
+            as="div"
+            className={cn('text-control! font-medium group-data-[disabled=true]/copy-field:opacity-50', className)}
+            data-slot="copy-field-label"
+            id={id || labelId}
+            leading="snug"
+            {...props}
+        />
+    );
+});
 CopyFieldLabel.displayName = 'CopyFieldLabel';
 
 const CopyFieldContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(({className, ...props}, ref) => (
     <div
         ref={ref}
         className={cn(
-            'group/copy-field-content relative flex min-h-9 w-full items-center overflow-hidden border-b border-transparent py-1 transition-colors group-data-[disabled=true]/copy-field:opacity-50 focus-within:border-border-default hover:border-border-default',
+            inputSurface('within'),
+            'group/copy-field-content relative flex h-(--control-height) w-full items-center overflow-hidden bg-control-readonly-surface px-3 py-1 group-data-[disabled=true]/copy-field:cursor-not-allowed group-data-[disabled=true]/copy-field:opacity-50',
             className
         )}
         data-slot="copy-field-content"
@@ -115,15 +122,20 @@ const CopyFieldContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<H
 CopyFieldContent.displayName = 'CopyFieldContent';
 
 const CopyFieldValue = React.forwardRef<HTMLElement, React.ComponentProps<typeof Text>>(({children, className, ...props}, ref) => {
-    const {value} = useCopyField();
+    const {disabled, labelId, value} = useCopyField();
 
     return (
         <Text
             ref={ref}
+            aria-disabled={disabled || undefined}
+            aria-labelledby={props['aria-label'] || props['aria-labelledby'] ? props['aria-labelledby'] : labelId}
+            aria-readonly="true"
             as="div"
-            className={cn('min-w-0 truncate pr-2', className)}
+            className={cn('min-w-0 truncate pr-2 text-muted-foreground', className)}
             data-slot="copy-field-value"
             leading="snug"
+            role="textbox"
+            tabIndex={disabled ? undefined : 0}
             {...props}
         >
             {children ?? value}
@@ -136,11 +148,11 @@ const CopyFieldActions = React.forwardRef<HTMLElement, React.ComponentProps<type
     <Inline
         ref={ref}
         className={cn(
-            'absolute top-1/2 right-0 -translate-y-1/2 bg-background pl-1 transition-opacity md:pointer-events-none md:opacity-0 md:group-focus-within/copy-field-content:pointer-events-auto md:group-focus-within/copy-field-content:opacity-100 md:group-hover/copy-field-content:pointer-events-auto md:group-hover/copy-field-content:opacity-100',
+            'absolute top-1/2 right-[1px] -translate-y-1/2 gap-px bg-control-readonly-surface pl-1 transition-opacity md:pointer-events-none md:opacity-0 md:group-focus-within/copy-field-content:pointer-events-auto md:group-focus-within/copy-field-content:opacity-100 md:group-hover/copy-field-content:pointer-events-auto md:group-hover/copy-field-content:opacity-100 [&_button]:h-7 [&_button]:rounded-sm [&_button:not([data-slot=copy-field-copy-button])]:bg-control-readonly-surface [&_button:not([data-slot=copy-field-copy-button])]:hover:bg-secondary',
             className
         )}
         data-slot="copy-field-actions"
-        gap="xs"
+        gap="none"
         {...props}
     />
 ));
@@ -151,12 +163,13 @@ interface CopyFieldCopyButtonProps extends Omit<ButtonProps, 'children'> {
     copiedLabel?: React.ReactNode;
 }
 
-const CopyFieldCopyButton = React.forwardRef<HTMLButtonElement, CopyFieldCopyButtonProps>(({children = 'Copy', copiedLabel = 'Copied', disabled, onClick, ...props}, ref) => {
+const CopyFieldCopyButton = React.forwardRef<HTMLButtonElement, CopyFieldCopyButtonProps>(({children = 'Copy', className, copiedLabel = 'Copied', disabled, onClick, ...props}, ref) => {
     const {copied, copy, disabled: fieldDisabled} = useCopyField();
 
     return (
         <Button
             ref={ref}
+            className={cn('bg-surface-elevated hover:border-border-strong/40 hover:bg-surface-elevated', className)}
             disabled={fieldDisabled || disabled}
             size="sm"
             type="button"
@@ -166,6 +179,7 @@ const CopyFieldCopyButton = React.forwardRef<HTMLButtonElement, CopyFieldCopyBut
                 onClick?.(event);
             }}
             {...props}
+            data-slot="copy-field-copy-button"
         >
             {copied ? copiedLabel : children}
         </Button>

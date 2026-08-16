@@ -5,7 +5,6 @@ const errors = require('@tryghost/errors');
 const sinon = require('sinon');
 const testUtils = require('../../../utils');
 const knex = require('../../../../core/server/data/db').knex;
-const urlService = require('../../../../core/server/services/url');
 const {Post} = require('../../../../core/server/models/post');
 const security = require('@tryghost/security');
 
@@ -42,7 +41,7 @@ describe('Unit: models/post', function () {
                 withRelated: ['tags']
             }).then(() => {
                 assert.equal(queries.length, 2);
-                assert.equal(queries[0].sql, 'select count(distinct posts.id) as aggregate from `posts` where ((`posts`.`id` != ? and `posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` where `tags`.`slug` in (?, ?))) and (`posts`.`type` = ? and `posts`.`status` = ?))');
+                assert.equal(queries[0].sql, 'select count(*) as aggregate from `posts` where ((`posts`.`id` != ? and `posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` where `tags`.`slug` in (?, ?))) and (`posts`.`type` = ? and `posts`.`status` = ?))');
                 assert.deepEqual(queries[0].bindings, [
                     testUtils.filterData.data.posts[3].id,
                     'photo',
@@ -77,7 +76,7 @@ describe('Unit: models/post', function () {
                 withRelated: ['authors', 'tags']
             }).then(() => {
                 assert.equal(queries.length, 2);
-                assert.equal(queries[0].sql, 'select count(distinct posts.id) as aggregate from `posts` where (((`posts`.`feature_image` is not null or `posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` where `tags`.`slug` = ?)) and `posts`.`id` in (select `posts_authors`.`post_id` from `posts_authors` inner join `users` as `authors` on `authors`.`id` = `posts_authors`.`author_id` where `authors`.`slug` in (?, ?))) and (`posts`.`type` = ? and `posts`.`status` = ?))');
+                assert.equal(queries[0].sql, 'select count(*) as aggregate from `posts` where (((`posts`.`feature_image` is not null or `posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` where `tags`.`slug` = ?)) and `posts`.`id` in (select `posts_authors`.`post_id` from `posts_authors` inner join `users` as `authors` on `authors`.`id` = `posts_authors`.`author_id` where `authors`.`slug` in (?, ?))) and (`posts`.`type` = ? and `posts`.`status` = ?))');
                 assert.deepEqual(queries[0].bindings, [
                     'hash-audio',
                     'leslie',
@@ -113,7 +112,7 @@ describe('Unit: models/post', function () {
                 withRelated: ['tags']
             }).then(() => {
                 assert.equal(queries.length, 2);
-                assert.equal(queries[0].sql, 'select count(distinct posts.id) as aggregate from `posts` where (`posts`.`published_at` > ? and (`posts`.`type` = ? and `posts`.`status` = ?))');
+                assert.equal(queries[0].sql, 'select count(*) as aggregate from `posts` where (`posts`.`published_at` > ? and (`posts`.`type` = ? and `posts`.`status` = ?))');
                 assert.deepEqual(queries[0].bindings, [
                     '2015-07-20',
                     'post',
@@ -200,7 +199,7 @@ describe('Unit: models/post', function () {
                     withRelated: ['tags']
                 }).then(() => {
                     assert.equal(queries.length, 2);
-                    assert.equal(queries[0].sql, 'select count(distinct posts.id) as aggregate from `posts` where ((`posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` and `posts_tags`.`sort_order` = 0 where `tags`.`slug` = ? and `tags`.`visibility` = ?)) and (`posts`.`type` = ? and `posts`.`status` = ?))');
+                    assert.equal(queries[0].sql, 'select count(*) as aggregate from `posts` where ((`posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` and `posts_tags`.`sort_order` = 0 where `tags`.`slug` = ? and `tags`.`visibility` = ?)) and (`posts`.`type` = ? and `posts`.`status` = ?))');
                     assert.deepEqual(queries[0].bindings, [
                         'photo',
                         'public',
@@ -233,7 +232,7 @@ describe('Unit: models/post', function () {
                     withRelated: ['authors']
                 }).then(() => {
                     assert.equal(queries.length, 2);
-                    assert.equal(queries[0].sql, 'select count(distinct posts.id) as aggregate from `posts` where ((`posts`.`id` in (select `posts_authors`.`post_id` from `posts_authors` inner join `users` as `authors` on `authors`.`id` = `posts_authors`.`author_id` and `posts_authors`.`sort_order` = 0 where `authors`.`slug` = ? and `authors`.`visibility` = ?)) and (`posts`.`type` = ? and `posts`.`status` = ?))');
+                    assert.equal(queries[0].sql, 'select count(*) as aggregate from `posts` where ((`posts`.`id` in (select `posts_authors`.`post_id` from `posts_authors` inner join `users` as `authors` on `authors`.`id` = `posts_authors`.`author_id` and `posts_authors`.`sort_order` = 0 where `authors`.`slug` = ? and `authors`.`visibility` = ?)) and (`posts`.`type` = ? and `posts`.`status` = ?))');
                     assert.deepEqual(queries[0].bindings, [
                         'leslie',
                         'public',
@@ -412,7 +411,6 @@ describe('Unit: models/post', function () {
 describe('Unit: models/post: uses database (@TODO: fix me)', function () {
     beforeEach(function () {
         sinon.stub(security.password, 'hash').resolves('$2a$10$we16f8rpbrFZ34xWj0/ZC.LTPUux8ler7bcdTs5qIleN6srRHhilG');
-        sinon.stub(urlService, 'getUrlByResourceId');
     });
 
     afterEach(function () {

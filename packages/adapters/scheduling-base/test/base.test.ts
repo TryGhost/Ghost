@@ -90,13 +90,14 @@ describe('SchedulingBase', function () {
                 await base.rescheduleAll({});
 
                 assert.equal(errorStub.callCount, 2, 'only the failing reschedulers are logged');
-                const [meta, message] = errorStub.firstCall.args;
+                type FailureLogArgs = [{event: {name: string}; err: Error; rescheduler: string}, string];
+                const [meta, message] = errorStub.firstCall.args as FailureLogArgs;
                 assert.equal(meta.event.name, 'scheduler.reschedule_all.failed');
                 assert.equal(meta.rescheduler, 'PostScheduling');
                 assert.equal(meta.err.message, 'post failed');
                 assert.equal(message, 'Rescheduler failed');
 
-                const [meta2, message2] = errorStub.secondCall.args;
+                const [meta2, message2] = errorStub.secondCall.args as FailureLogArgs;
                 assert.equal(meta2.event.name, 'scheduler.reschedule_all.failed');
                 assert.equal(meta2.rescheduler, 'unknown');
                 assert.equal(meta2.err.message, 'anonymous failed');

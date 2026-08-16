@@ -31,6 +31,10 @@ const fixtures = {
         navigation: [],
         secondary_navigation: [],
         llms_enabled: true,
+        machine_payments_enabled: false,
+        machine_payments_currency: null,
+        machine_payments_amount: 100,
+        machine_payments_stripe_profile_id: null,
         meta_title: null,
         meta_description: null
     },

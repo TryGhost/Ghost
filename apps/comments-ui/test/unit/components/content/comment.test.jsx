@@ -1,6 +1,6 @@
 import React from 'react';
 import {AppContext} from '../../../../src/app-context';
-import {CommentComponent, RepliedToSnippet} from '../../../../src/components/content/comment';
+import {CommentComponent} from '../../../../src/components/content/comment';
 import {buildComment} from '../../../utils/fixtures';
 import {fireEvent, render, screen} from '@testing-library/react';
 import {vi} from 'vitest';
@@ -27,25 +27,6 @@ const contextualRender = (ui, {appContext, ...renderOptions}) => {
 };
 
 describe('<CommentComponent>', function () {
-    it('renders reply-to-reply content', function () {
-        const reply1 = buildComment({
-            html: '<p>First reply</p>'
-        });
-        const reply2 = buildComment({
-            in_reply_to_id: reply1.id,
-            in_reply_to_snippet: 'First reply',
-            html: '<p>Second reply</p>'
-        });
-        const parent = buildComment({
-            replies: [reply1, reply2]
-        });
-        const appContext = {comments: [parent]};
-
-        contextualRender(<CommentComponent comment={reply2} parent={parent} />, {appContext});
-
-        expect(screen.getByText('First reply')).toBeInTheDocument();
-    });
-
     it('outputs member uuid data attribute for published comments', function () {
         const comment = buildComment({
             status: 'published',
@@ -84,7 +65,7 @@ describe('<CommentComponent>', function () {
         expect(screen.getByTestId('dislike-button')).not.toHaveTextContent(/\d/);
     });
 
-    it('renders nested reply threads when commentsThreads is enabled', function () {
+    it('renders nested reply threads', function () {
         const reply1 = buildComment({
             html: '<p>First reply</p>'
         });
@@ -100,13 +81,10 @@ describe('<CommentComponent>', function () {
         });
         const appContext = {
             comments: [comment],
-            dispatchAction: () => {},
-            labs: {
-                commentsThreads: true
-            }
+            dispatchAction: () => {}
         };
 
-        const {container} = contextualRender(<CommentComponent comment={comment} useThreading={true} />, {appContext});
+        const {container} = contextualRender(<CommentComponent comment={comment} />, {appContext});
 
         expect(screen.getByText('First reply')).toBeInTheDocument();
         expect(screen.getByText('Second reply')).toBeInTheDocument();
@@ -114,7 +92,7 @@ describe('<CommentComponent>', function () {
         expect(screen.queryByTestId('replies-pagination')).not.toBeInTheDocument();
     });
 
-    it('hides reply-to-reply context when commentsThreads is enabled', function () {
+    it('does not render reply-to-reply context', function () {
         const reply1 = buildComment({
             html: '<p>First reply</p>'
         });
@@ -127,13 +105,10 @@ describe('<CommentComponent>', function () {
             replies: [reply1, reply2]
         });
         const appContext = {
-            comments: [parent],
-            labs: {
-                commentsThreads: true
-            }
+            comments: [parent]
         };
 
-        contextualRender(<CommentComponent comment={reply2} parent={parent} useThreading={true} />, {appContext});
+        contextualRender(<CommentComponent comment={reply2} parent={parent} />, {appContext});
 
         expect(screen.queryByText('Replied to')).not.toBeInTheDocument();
         expect(screen.queryByText('First reply')).not.toBeInTheDocument();
@@ -164,7 +139,7 @@ describe('<CommentComponent>', function () {
             }]
         };
 
-        contextualRender(<CommentComponent comment={parent} useThreading={true} />, {appContext});
+        contextualRender(<CommentComponent comment={parent} />, {appContext});
 
         const replyForm = screen.getByTestId('reply-form');
         const firstReply = document.getElementById(reply1.id);
@@ -199,7 +174,7 @@ describe('<CommentComponent>', function () {
             }]
         };
 
-        contextualRender(<CommentComponent comment={parent} useThreading={true} />, {appContext});
+        contextualRender(<CommentComponent comment={parent} />, {appContext});
 
         expect(screen.getByTestId('reply-form-elbow')).toBeInTheDocument();
         expect(screen.getByTestId('reply-form-continuation-line')).toBeInTheDocument();
@@ -222,49 +197,17 @@ describe('<CommentComponent>', function () {
             }]
         };
 
-        contextualRender(<CommentComponent comment={comment} useThreading={true} />, {appContext});
+        contextualRender(<CommentComponent comment={comment} />, {appContext});
 
         expect(screen.getByTestId('reply-form-elbow')).toBeInTheDocument();
         expect(screen.queryByTestId('reply-form-continuation-line')).not.toBeInTheDocument();
-    });
-
-    it('keeps non-threaded reply-to-reply forms at the end of the parent reply list', function () {
-        const reply1 = buildComment({
-            html: '<p>First reply</p>'
-        });
-        const reply2 = buildComment({
-            html: '<p>Second reply</p>'
-        });
-        const parent = buildComment({
-            replies: [reply1, reply2],
-            count: {
-                replies: 2
-            }
-        });
-        const appContext = {
-            comments: [parent],
-            dispatchAction: () => {},
-            openCommentForms: [{
-                id: reply1.id,
-                parent_id: parent.id,
-                type: 'reply',
-                hasUnsavedChanges: false
-            }]
-        };
-
-        contextualRender(<CommentComponent comment={parent} />, {appContext});
-
-        const replyForm = screen.getByTestId('reply-form');
-        const secondReply = document.getElementById(reply2.id);
-
-        expect(secondReply.compareDocumentPosition(replyForm) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     });
 
     it('renders pinned badge inline after the timestamp', function () {
         const comment = buildComment({
             pinned: true
         });
-        const appContext = {comments: [comment], labs: {commentsPinning: true}};
+        const appContext = {comments: [comment]};
 
         contextualRender(<CommentComponent comment={comment} />, {appContext});
 
@@ -278,7 +221,7 @@ describe('<CommentComponent>', function () {
             pinned: true
         });
         const dispatchAction = vi.fn();
-        const appContext = {comments: [comment], dispatchAction, isAdmin: true, labs: {commentsPinning: true}};
+        const appContext = {comments: [comment], dispatchAction, isAdmin: true};
 
         contextualRender(<CommentComponent comment={comment} />, {appContext});
 
@@ -292,80 +235,4 @@ describe('<CommentComponent>', function () {
         expect(dispatchAction).toHaveBeenCalledWith('unpinComment', comment);
     });
 
-    it('keeps a bottom gap after pinned comments with replies', function () {
-        const reply = buildComment({
-            html: '<p>Reply</p>'
-        });
-        const comment = buildComment({
-            pinned: true,
-            replies: [reply]
-        });
-        const appContext = {comments: [comment]};
-
-        const {container} = contextualRender(<CommentComponent comment={comment} />, {appContext});
-
-        const pinnedComment = container.querySelector('[data-pinned="true"]');
-        expect(pinnedComment).toHaveClass('mb-4');
-        expect(pinnedComment).toHaveClass('py-3');
-    });
-});
-
-describe('<RepliedToSnippet>', function () {
-    it('renders a link when replied-to comment is published', function () {
-        const reply1 = buildComment({
-            html: '<p>First reply</p>'
-        });
-        const reply2 = buildComment({
-            in_reply_to_id: reply1.id,
-            in_reply_to_snippet: 'First reply',
-            html: '<p>Second reply</p>'
-        });
-        const parent = buildComment({
-            replies: [reply1, reply2]
-        });
-        const appContext = {comments: [parent]};
-
-        contextualRender(<RepliedToSnippet comment={reply2} />, {appContext});
-
-        const element = screen.getByTestId('comment-in-reply-to');
-        expect(element).toBeInstanceOf(HTMLAnchorElement);
-    });
-
-    it('does not render a link when replied-to comment is deleted', function () {
-        const reply1 = buildComment({
-            html: '<p>First reply</p>',
-            status: 'deleted'
-        });
-        const reply2 = buildComment({
-            in_reply_to_id: reply1.id,
-            in_reply_to_snippet: 'First reply',
-            html: '<p>Second reply</p>'
-        });
-        const parent = buildComment({
-            replies: [reply1, reply2]
-        });
-        const appContext = {comments: [parent]};
-
-        contextualRender(<RepliedToSnippet comment={reply2} />, {appContext});
-
-        const element = screen.getByTestId('comment-in-reply-to');
-        expect(element).toBeInstanceOf(HTMLSpanElement);
-    });
-
-    it('does not render a link when replied-to comment is missing (i.e. removed)', function () {
-        const reply2 = buildComment({
-            in_reply_to_id: 'missing',
-            in_reply_to_snippet: 'First reply',
-            html: '<p>Second reply</p>'
-        });
-        const parent = buildComment({
-            replies: [reply2]
-        });
-        const appContext = {comments: [parent]};
-
-        contextualRender(<RepliedToSnippet comment={reply2} />, {appContext});
-
-        const element = screen.getByTestId('comment-in-reply-to');
-        expect(element).toBeInstanceOf(HTMLSpanElement);
-    });
 });

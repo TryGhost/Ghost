@@ -16,7 +16,7 @@ export function OnboardingRedirect({children}: OnboardingRedirectProps) {
 
     if (onboarding.shouldShowChecklist) {
         const returnTo = `${location.pathname}${location.search}`;
-        return <Navigate replace to={`/setup/onboarding?returnTo=${encodeURIComponent(returnTo)}`} />;
+        return <Navigate to={`/setup/onboarding?returnTo=${encodeURIComponent(returnTo)}`} replace />;
     }
 
     return children;

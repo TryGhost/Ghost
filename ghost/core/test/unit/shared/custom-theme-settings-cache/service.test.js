@@ -64,6 +64,18 @@ class ModelStub {
         this.knownSettings = this.knownSettings.filter(setting => setting !== destroyedSetting);
         return destroyedSetting;
     }
+
+    async transaction(fn) {
+        const snapshot = this.knownSettings.slice();
+        this.lastTransacting = {};
+
+        try {
+            return await fn(this.lastTransacting);
+        } catch (error) {
+            this.knownSettings = snapshot;
+            throw error;
+        }
+    }
 }
 
 describe('Service', function () {
@@ -482,6 +494,84 @@ describe('Service', function () {
     describe('listSettings()', function () {
         it('returns empty array when internal cache is empty', function () {
             assert.deepEqual(service.listSettings(), []);
+        });
+    });
+
+    describe('copySettingsBetweenThemes()', function () {
+        const settingsForTheme = async (themeName) => {
+            const collection = await model.findAll({filter: `theme:'${themeName}'`});
+            return collection.toJSON().map(({theme, key, type, value}) => ({theme, key, type, value}));
+        };
+
+        it('copies settings rows to the new theme name', async function () {
+            await service.copySettingsBetweenThemes('test', 'test-edited');
+
+            // the destination check is locked inside the transaction so
+            // concurrent copies can't both see an empty destination
+            const destinationCheck = model.findAll.getCalls().find(call => call.firstArg.filter === `theme:'test-edited'`);
+            assert.equal(destinationCheck.firstArg.transacting, model.lastTransacting);
+            assert.equal(destinationCheck.firstArg.forUpdate, true);
+
+            // every insert runs in the same transaction
+            model.add.getCalls().forEach((call) => {
+                assert.equal(call.args[1].transacting, model.lastTransacting);
+            });
+
+            assert.deepEqual(await settingsForTheme('test-edited'), [{
+                theme: 'test-edited',
+                key: 'one',
+                type: 'select',
+                value: '1'
+            }, {
+                theme: 'test-edited',
+                key: 'two',
+                type: 'select',
+                value: '2'
+            }]);
+
+            // source theme rows are untouched
+            assert.equal((await settingsForTheme('test')).length, 2);
+        });
+
+        it('does not overwrite existing settings for the destination theme', async function () {
+            await model.add({theme: 'test-edited', key: 'one', type: 'select', value: 'existing'});
+
+            await service.copySettingsBetweenThemes('test', 'test-edited');
+
+            assert.deepEqual(await settingsForTheme('test-edited'), [{
+                theme: 'test-edited',
+                key: 'one',
+                type: 'select',
+                value: 'existing'
+            }]);
+        });
+
+        it('is a no-op when the source theme has no settings', async function () {
+            await service.copySettingsBetweenThemes('unknown', 'test-edited');
+
+            assert.equal((await settingsForTheme('test-edited')).length, 0);
+            sinon.assert.notCalled(model.add);
+        });
+
+        it('leaves no partial copy behind when the copy fails part-way', async function () {
+            const originalAdd = model.add;
+            let addCalls = 0;
+            model.add = async function (data, options) {
+                addCalls += 1;
+                if (addCalls === 2) {
+                    throw new Error('second add failed');
+                }
+                return originalAdd.call(model, data, options);
+            };
+            // atomicity must not depend on individual deletes succeeding
+            model.destroy = async () => {
+                throw new Error('destroy failed');
+            };
+
+            await assert.rejects(service.copySettingsBetweenThemes('test', 'test-edited'), /second add failed/);
+
+            model.add = originalAdd;
+            assert.equal((await settingsForTheme('test-edited')).length, 0);
         });
     });
 

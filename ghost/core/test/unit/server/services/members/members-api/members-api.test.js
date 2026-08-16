@@ -159,7 +159,10 @@ describe('MembersAPI', function () {
         sinon.assert.calledTwice(MemberBREADService.prototype.read);
         sinon.assert.calledWithExactly(MemberBREADService.prototype.read.firstCall, {email: 'jamie@example.com'});
         sinon.assert.calledOnceWithExactly(memberLoginEvent.add, {member_id: 'member_1'});
-        sinon.assert.calledOnceWithExactly(giftRedeem, 'gift-token-123', 'member_1');
+        sinon.assert.calledOnceWithExactly(giftRedeem, {
+            token: 'gift-token-123',
+            memberId: 'member_1'
+        });
         sinon.assert.callOrder(giftRedeem, memberLoginEvent.add);
         assert.equal(result, existingMember);
     });
@@ -184,7 +187,12 @@ describe('MembersAPI', function () {
         assert.equal(MemberRepository.prototype.create.firstCall.args[0].name, 'Jamie Larson');
         assert.equal(MemberRepository.prototype.create.firstCall.args[0].status, 'gift');
         assert.deepEqual(MemberRepository.prototype.create.firstCall.args[1], {transacting: 'trx'});
-        sinon.assert.calledOnceWithExactly(giftRedeem, 'gift-token-123', 'member_2', {transacting: 'trx', newMember: true});
+        sinon.assert.calledOnceWithExactly(giftRedeem, {
+            token: 'gift-token-123',
+            memberId: 'member_2',
+            transacting: 'trx',
+            newMember: true
+        });
         sinon.assert.calledOnceWithExactly(memberLoginEvent.add, {member_id: 'member_2'});
         sinon.assert.callOrder(giftRedeem, memberLoginEvent.add);
         assert.equal(result, createdMember);
@@ -206,6 +214,9 @@ describe('MembersAPI', function () {
         );
 
         sinon.assert.notCalled(memberLoginEvent.add);
-        sinon.assert.calledOnceWithExactly(giftRedeem, 'gift-token-123', 'member_1');
+        sinon.assert.calledOnceWithExactly(giftRedeem, {
+            token: 'gift-token-123',
+            memberId: 'member_1'
+        });
     });
 });

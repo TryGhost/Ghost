@@ -1,6 +1,7 @@
 import Component from '@glimmer/component';
 import EmailFailedError from 'ghost-admin/errors/email-failed-error';
 import PreviewModal from './modals/preview';
+import PublicPreviewWarningModal from './modals/public-preview-warning';
 import PublishFlowModal from './modals/publish-flow';
 import PublishOptionsResource from 'ghost-admin/helpers/publish-options';
 import TkReminderModal from './modals/tk-reminder';
@@ -59,6 +60,14 @@ export default class PublishManagement extends Component {
             });
 
             if (ignoreTks !== true) {
+                return;
+            }
+        } else if (isValid && this.feature.paywallImprovements && this.publishOptions.publicPreviewWarning) {
+            const ignorePublicPreviewWarning = await this.modals.open(PublicPreviewWarningModal, {
+                warning: this.publishOptions.publicPreviewWarning
+            });
+
+            if (ignorePublicPreviewWarning !== true) {
                 return;
             }
         }
@@ -139,7 +148,7 @@ export default class PublishManagement extends Component {
     // its tier selector synchronously; a failed fetch degrades the preview to
     // the free/paid audience options and is retried on the next open
     async _ensureTiersLoaded() {
-        if (!this.feature.previewByTier || !this.settings.paidMembersEnabled || this.loadTiersTask.lastSuccessful) {
+        if (!this.settings.paidMembersEnabled || this.loadTiersTask.lastSuccessful) {
             return;
         }
 

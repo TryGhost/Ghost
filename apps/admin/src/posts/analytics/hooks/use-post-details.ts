@@ -1,5 +1,5 @@
 import {type GiftLinkResource} from '@tryghost/admin-x-framework/api/gift-links';
-import {POST_ANALYTICS_INCLUDE} from '@/posts/analytics/utils/constants';
+import {POST_ANALYTICS_INCLUDE} from '@/shared/analytics/constants';
 import {useBrowsePages} from '@tryghost/admin-x-framework/api/pages';
 import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 

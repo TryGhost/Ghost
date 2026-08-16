@@ -1,10 +1,12 @@
 //@ts-check
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:output:members');
-const {unparse} = require('../../../../../services/members/csv');
+const {serialize: serializeCSV} = require('../../../../../services/members/import-export/csv');
+// The export CSV row shape and its encode live in the domain (typed against the export
+// row) rather than here, so a change to the export row is caught by the compiler.
+const {toExportCsvRow} = require('../../../../../services/members/import-export/export/exporter');
 const mappers = require('./mappers');
 const {Transform} = require('stream');
-const papaparse = require('papaparse');
 const {createCSVStreamResponse} = require('./stream-csv-response');
 module.exports = {
     browse: createSerializer('browse', paginatedMembers),
@@ -24,56 +26,6 @@ module.exports = {
     mrrStats: createSerializer('mrrStats', passthrough),
     activityFeed: createSerializer('activityFeed', activityFeed)
 };
-
-/**
- * Formats a single member for CSV export
- * @param {Object} member - Member object
- * @returns {Object} Formatted member
- */
-function formatMemberForCSV(member) {
-    let labels = '';
-    if (Array.isArray(member.labels)) {
-        labels = member.labels.map((l) => {
-            return typeof l === 'string' ? l : l.name;
-        }).join(',');
-    }
-
-    let tiers = '';
-    if (Array.isArray(member.tiers)) {
-        tiers = member.tiers.map((tier) => {
-            return tier.name;
-        }).join(',');
-    }
-
-    // Convert boolean 'false' to empty string for tests to pass
-    // Only comped = true should result in 'true', otherwise empty string
-    const complimentaryPlan = member.comped === true ? 'true' : '';
-
-    // Gift members carry the gift id so an exported CSV can be re-imported and reassigned
-    // back to a (possibly new) member record via the gifts table
-    const giftId = member.gift_id || '';
-
-    // Convert subscribed boolean to string representation
-    const subscribedToEmails = member.subscribed === true ? 'true' : 'false';
-
-    return {
-        id: member.id,
-        email: member.email,
-        name: member.name,
-        note: member.note,
-        subscribed_to_emails: subscribedToEmails,
-        complimentary_plan: complimentaryPlan,
-        stripe_customer_id: member.stripe_customer_id,
-        created_at: member.created_at,
-        deleted_at: member.deleted_at || null,
-        labels: labels,
-        tiers: tiers,
-        gift_id: giftId,
-        // The exporter flattens custom field values into their CSV columns, since
-        // which columns exist is a per-site question only the database can answer.
-        ...member.custom_field_cells
-    };
-}
 
 /**
  * @template PageMeta
@@ -426,30 +378,16 @@ function createCSVTransform() {
         transform(member, encoding, callback) {
             try {
                 // Format the member data for CSV
-                const formattedMember = formatMemberForCSV(member);
+                const formattedMember = toExportCsvRow(member);
 
                 // For first chunk, include the headers
                 if (fields === null) {
                     fields = Object.keys(formattedMember);
-                    const csv = papaparse.unparse({
-                        fields,
-                        data: [formattedMember]
-                    }, {
-                        header: true,
-                        escapeFormulae: true,
-                        newline: '\r\n' // Explicitly set Windows-style line endings for compatibility
-                    });
+                    const csv = serializeCSV([formattedMember], {columns: fields, header: true});
                     callback(null, csv);
                 } else {
                     // For subsequent chunks, don't include headers, just the data
-                    const csv = papaparse.unparse({
-                        fields,
-                        data: [formattedMember]
-                    }, {
-                        header: false,
-                        escapeFormulae: true,
-                        newline: '\r\n' // Explicitly set Windows-style line endings for compatibility
-                    });
+                    const csv = serializeCSV([formattedMember], {columns: fields, header: false});
 
                     // Make sure each row starts with a newline to ensure separation between rows
                     // Ensure consistent line endings by using explicit CR+LF sequence
@@ -465,28 +403,21 @@ function createCSVTransform() {
 /**
  * @template PageMeta
  *
- * @param {{data: any[]|Object, filename?: string}} data
+ * @param {{data: NodeJS.ReadableStream, filename?: string}} data
  *
- * @returns {string|Function} - A CSV string or response handler function
+ * @returns {Function} - A response handler that streams the CSV
  */
 function exportCSV(data) {
     debug('exportCSV');
 
-    // Check if data.data is a stream (has the pipe method)
-    if (data.data && typeof data.data.pipe === 'function') {
-        debug('CSV stream response');
+    // The export endpoint always yields a stream (response.stream: true), so there is
+    // only ever a stream to pipe.
+    const datetime = (new Date()).toJSON().substring(0, 10);
+    const filename = data.filename || `members.${datetime}.csv`;
 
-        // Fall back to the legacy filename if the endpoint didn't provide one
-        const datetime = (new Date()).toJSON().substring(0, 10);
-        const filename = data.filename || `members.${datetime}.csv`;
-
-        return createCSVStreamResponse({
-            source: data.data,
-            transform: createCSVTransform(),
-            filename
-        });
-    }
-
-    // Otherwise use the unparse function for array data
-    return unparse(data.data);
+    return createCSVStreamResponse({
+        source: data.data,
+        transform: createCSVTransform(),
+        filename
+    });
 }

@@ -20,6 +20,7 @@ const emberDataTypeMapping = {
     NewslettersResponseType: {type: 'newsletter'},
     RecommendationResponseType: {type: 'recommendation'},
     SettingsResponseType: {type: 'setting', singleton: true},
+    TagsResponseType: {type: 'tag'},
     ThemesResponseType: {type: 'theme'},
     TiersResponseType: {type: 'tier'},
     UsersResponseType: {type: 'user'},
@@ -31,6 +32,7 @@ export default class StateBridgeService extends Service.extend(Evented) {
     @service feature;
     @service membersUtils;
     @service router;
+    @service search;
     @service session;
     @service settings;
     @service store;
@@ -38,6 +40,25 @@ export default class StateBridgeService extends Service.extend(Evented) {
     @service ui;
 
     @inject config;
+
+    /**
+     * Gives React the same synchronous Labs route-ownership decision Ember
+     * uses. Both routers must share one authority or they can each defer to
+     * the other while state is loading.
+     */
+    @action
+    isFeatureEnabled(name) {
+        if (!this.settings.settingsModel) {
+            return undefined;
+        }
+
+        return this.feature[name] === true;
+    }
+
+    @action
+    triggerFeatureFlagsChange() {
+        this.trigger('featureFlagsChange');
+    }
 
     constructor() {
         super(...arguments);
@@ -117,9 +138,10 @@ export default class StateBridgeService extends Service.extend(Evented) {
 
             // TODO: Reloading settings does not trigger a re-fetch of the
             // feature flags. We should maybe find a better way to do this.
-            this.settings.reload().then(() => {
-                this.feature.fetch();
-            });
+            this.triggerFeatureFlagsChange();
+            this.settings.reload()
+                .then(() => this.feature.fetch())
+                .finally(() => this.triggerFeatureFlagsChange());
         }
 
         if (dataType === 'TiersResponseType') {
@@ -165,6 +187,11 @@ export default class StateBridgeService extends Service.extend(Evented) {
         if (dataType === 'TiersResponseType') {
             // membersUtils has local state which needs to be updated
             this.membersUtils.reload();
+        }
+
+        if (dataType === 'TagsResponseType') {
+            // Ember's tag model expires global search after create/update/delete.
+            this.search.expireContent();
         }
     }
 

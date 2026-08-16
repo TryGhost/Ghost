@@ -1,6 +1,5 @@
 import loginAsRole from '../../helpers/login-as-role';
 import {click, find, findAll} from '@ember/test-helpers';
-import {disableLabsFlag, enableLabsFlag} from '../../helpers/labs-flag';
 import {enableMailgun} from '../../helpers/mailgun';
 import {enableMembers, enablePaidMembers} from '../../helpers/members';
 import {expect} from 'chai';
@@ -18,7 +17,6 @@ describe('Acceptance: Post preview', function () {
         enableMailgun(this.server);
         enableMembers(this.server);
         enablePaidMembers(this.server);
-        enableLabsFlag(this.server, 'previewByTier');
         await loginAsRole('Administrator', this.server);
     });
 
@@ -64,16 +62,6 @@ describe('Acceptance: Post preview', function () {
         url = new URL(find('[data-test-link="open-draft"]').href);
         expect(url.searchParams.get('member_status')).to.equal('paid');
         expect(url.searchParams.get('member_tier')).to.equal('archive');
-    });
-
-    it('hides the tier option without the previewByTier flag', async function () {
-        disableLabsFlag(this.server, 'previewByTier');
-        this.server.create('tier', {name: 'Archived tier', slug: 'archive', type: 'paid', active: false});
-        await openPreviewModal.call(this);
-
-        await click('[data-test-select="preview-segment"] .ember-power-select-trigger');
-        const options = findAll('.ember-power-select-option').map(element => element.textContent.trim());
-        expect(options).to.deep.equal(['Public visitor', 'Free member', 'Paid member']);
     });
 
     it('remembers the selected tier when the preview is reopened', async function () {

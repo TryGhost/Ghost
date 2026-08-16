@@ -6,11 +6,9 @@ import {CustomField} from './models';
 import {FieldTypeSchema} from '@tryghost/custom-field-types';
 import {customFieldCodec} from './codec';
 import {FIELD_STATUS, FieldStatusSchema} from './schema';
-import {activeFields} from './queries';
+import {activeFields, inFieldOrder} from './queries';
+import {mintableKey} from './key';
 import {type RecordCustomFieldAction, type RequestContext} from './actions';
-
-// @tryghost/string ships no types; slugify is the same helper tags/labels use.
-const {slugify} = require('@tryghost/string') as {slugify(input: string): string};
 
 // The same NQL -> knex bridge Bookshelf's filter plugin uses, applied directly to
 // our raw-knex query: nql parses the `filter` string to a Mongo query, mongo-knex
@@ -28,22 +26,20 @@ const TABLE = 'members_custom_fields';
 const columns = require('../../data/schema').tables[TABLE];
 const MAX_NAME_LENGTH: number = columns.name.maxlength;
 const MAX_KEY_LENGTH: number = columns.key.maxlength;
-const MAX_SLUG_ITERATIONS = 1000;
-// Reserve room for a `-<n>` suffix (n up to MAX_SLUG_ITERATIONS).
-const MAX_KEY_BASE_LENGTH = MAX_KEY_LENGTH - (String(MAX_SLUG_ITERATIONS).length + 1);
+const MAX_KEY_ITERATIONS = 1000;
+// Reserve room for a `_<n>` suffix (n up to MAX_KEY_ITERATIONS).
+const MAX_KEY_BASE_LENGTH = MAX_KEY_LENGTH - (String(MAX_KEY_ITERATIONS).length + 1);
 
 // A key becomes a property name on the plain objects that carry a member's values —
 // on both sides of the wire, since `custom_fields` is JSON and a client gets a plain
 // object from JSON.parse. A key naming a member of Object.prototype reads back as
-// inherited rather than absent wherever one of those objects is indexed, and
-// `__proto__` holds no value at all: the values schema drops it during parse, and
-// assigning it sets a prototype rather than a property.
+// inherited rather than absent wherever one of those objects is indexed.
 //
 // Derived rather than listed, because the set is a consequence of how keys are
-// minted: slugifying lowercases, so only an already-lowercase prototype name can
-// survive to become a key. Currently `constructor` and `__proto__`.
+// minted: minting lowercases and trims leading underscores, so a prototype name
+// survives only if it has neither. `constructor` is the only one.
 const RESERVED_KEYS = Object.getOwnPropertyNames(Object.prototype)
-    .filter(name => slugify(name) === name);
+    .filter(name => mintableKey(name) === name);
 
 const FieldName = z.string().trim().min(1, {message: 'Custom field name is required.'}).max(MAX_NAME_LENGTH, {message: 'Custom field name is too long.'});
 
@@ -65,6 +61,12 @@ const MAX_FIELDS_PER_REQUEST = 100;
 const AddFieldsInput = z.array(AddFieldInput)
     .min(1)
     .max(MAX_FIELDS_PER_REQUEST, {message: `Custom fields can only be created ${MAX_FIELDS_PER_REQUEST} at a time.`});
+
+// Only the key is read; the client sends whole field objects because that is the shape
+// the API speaks in.
+const ReorderInput = z.array(z.object({
+    key: z.string().min(1, {message: 'Every custom field in the order needs a key.'})
+})).min(1, {message: 'The order must name every custom field.'});
 
 // Name and status are mutable. `key` and `type` are accepted so the immutability
 // rules can reject a change loudly; they are never persisted.
@@ -97,15 +99,22 @@ export class CustomFieldDefinitionsService {
         // supplied `filter` can widen that — Settings pulls active and archived
         // together in one request (`filter=status:[active,archived]`).
         //
-        // Insertion order for now — when the UI needs a persistent user-defined
-        // order, add a `sort_order` column and order by it.
+        // Whichever set comes back, it comes back in the publisher's order: filtering
+        // narrows the list, it never reorders it.
         const query = options.filter
             ? applyFilter(this.knex(TABLE), options.filter)
             : activeFields(this.knex);
-        const rows = await query
-            .orderBy('created_at', 'asc')
-            .orderBy('id', 'asc')
-            .select('*');
+        return this.list(query);
+    }
+
+    /**
+     * Decode a definition query into the domain, in the publisher's order.
+     *
+     * Typed off `activeFields` so the builder keeps the table's row type: every caller
+     * hands over a query against the definitions table, whatever it has narrowed.
+     */
+    private async list(query: ReturnType<typeof activeFields>): Promise<CustomField[]> {
+        const rows = await inFieldOrder(query).select('*');
         return rows.map(row => z.decode(customFieldCodec, row));
     }
 
@@ -124,8 +133,8 @@ export class CustomFieldDefinitionsService {
      *
      * Running inside the transaction also makes a batch self-consistent for free —
      * `assertNameAvailable` and `mintKey` see the rows inserted earlier in the same
-     * batch, so two items sharing a name are caught and two items sharing a slug
-     * get distinct keys, exactly as if they had arrived as separate requests.
+     * batch, so two items sharing a name are caught and two items deriving the same
+     * key get distinct ones, exactly as if they had arrived as separate requests.
      */
     async add(context: RequestContext, input: unknown): Promise<CustomField[]> {
         const requestedCount = Array.isArray(input) ? input.length : 0;
@@ -141,10 +150,10 @@ export class CustomFieldDefinitionsService {
         }
         const fields = parsed.data;
 
-        // Slugify before opening the transaction: it needs no database access, and
+        // Mint before opening the transaction: it needs no database access, and
         // an unusable name is a payload problem worth reporting on its own terms.
         const bases = fields.map((field, index) => {
-            const base = slugify(field.name);
+            const base = mintableKey(field.name);
             if (!base) {
                 throw new errors.ValidationError({
                     message: 'Custom field name must contain at least one usable character.',
@@ -160,11 +169,23 @@ export class CustomFieldDefinitionsService {
             created = await this.knex.transaction(async (trx) => {
                 await this.assertWithinLimit(trx, fields.length);
 
+                // Read once, before the loop: a batch appends as consecutive ranks, so
+                // the five fields of one request land in the order the request gave
+                // them rather than all sharing the end of the list.
+                const firstSortOrder = await this.nextSortOrder(trx);
+
                 const keys: string[] = [];
                 for (const [index, field] of fields.entries()) {
                     await this.assertNameAvailable(trx, field.name);
                     const key = await this.mintKey(trx, bases[index]);
-                    await trx(TABLE).insert({id: new ObjectID().toHexString(), key, name: field.name, type: field.type, created_at: new Date()});
+                    await trx(TABLE).insert({
+                        id: new ObjectID().toHexString(),
+                        key,
+                        name: field.name,
+                        type: field.type,
+                        sort_order: firstSortOrder + index,
+                        created_at: new Date()
+                    });
                     keys.push(key);
                 }
                 return this.readMany(trx, keys);
@@ -232,6 +253,75 @@ export class CustomFieldDefinitionsService {
         });
     }
 
+    /**
+     * Set the order of the whole list, stated rather than adjusted: every row gets a
+     * fresh rank, so a move is well-defined even where every rank is still the default.
+     * Returns every definition, archived included, matching what the request named.
+     */
+    async reorder(context: RequestContext, input: unknown): Promise<CustomField[]> {
+        const parsed = ReorderInput.safeParse(input);
+        if (!parsed.success) {
+            const issue = parsed.error.issues[0];
+            throw new errors.ValidationError({message: issue.message, property: propertyOf(issue.path)});
+        }
+        const keys = parsed.data.map(item => item.key);
+
+        const ordered = await this.knex.transaction(async (trx) => {
+            await this.assertNamesEveryField(trx, keys);
+
+            // Ranks come from the request's order; the statements go out in key order, so
+            // two concurrent reorders take their row locks in the same sequence and
+            // cannot deadlock. `updated_at` is left alone — the definitions did not
+            // change, the list around them did.
+            const ranks = new Map(keys.map((key, rank) => [key, rank]));
+            for (const key of [...keys].sort()) {
+                await trx(TABLE).where('key', key).update({sort_order: ranks.get(key)!});
+            }
+
+            return this.list(trx(TABLE));
+        });
+
+        await this.recordAction({
+            context,
+            verb: 'reorder',
+            subject: null,
+            details: {action_name: 'reordered', count: ordered.length}
+        });
+        return ordered;
+    }
+
+    /**
+     * A partial order is ambiguous, so a reorder that does not name every field exactly
+     * once is refused rather than half-applied. A client that loaded before a colleague
+     * added a field cannot name it, and is told to reload.
+     */
+    private async assertNamesEveryField(db: Knex, keys: string[]): Promise<void> {
+        const named = new Set(keys);
+        const existing = new Set(await db(TABLE).pluck<string[]>('key'));
+
+        const matches = named.size === keys.length
+            && named.size === existing.size
+            && keys.every(key => existing.has(key));
+
+        if (!matches) {
+            throw new errors.ValidationError({
+                message: 'The order must name every custom field exactly once. Reload and try again.',
+                property: 'key'
+            });
+        }
+    }
+
+    /** A new field is appended. Archived fields hold ranks too, so it lands past them. */
+    private async nextSortOrder(db: Knex): Promise<number> {
+        const row = await db(TABLE).max({highest: 'sort_order'}).first();
+        const highest = row?.highest;
+        // No fields yet, so this one starts the order.
+        if (highest === null || highest === undefined) {
+            return 0;
+        }
+        return Number(highest) + 1;
+    }
+
     /** Read back a batch in the order its keys were created, not the table's order. */
     private async readMany(db: Knex, keys: string[]): Promise<CustomField[]> {
         const rows = await db(TABLE).whereIn('key', keys).select('*');
@@ -240,12 +330,15 @@ export class CustomFieldDefinitionsService {
     }
 
     /**
-     * Pick a free key from the name's slug: `base`, then `base-2`, `base-3`, ...
+     * Pick a free key from the name's base: `base`, then `base_2`, `base_3`, ...
      * Reads the keys already taken by that base — including archived fields, so a
-     * slug is never reused once minted. Mirrors how tags/labels generate slugs.
+     * key is never reused once minted.
      */
     private async mintKey(db: Knex, base: string): Promise<string> {
-        const safeBase = base.slice(0, MAX_KEY_BASE_LENGTH);
+        // Trimmed again after cutting, because the cut can land mid-separator and
+        // a key that ends in one is not a shape minting is allowed to produce. The
+        // base starts with an alphanumeric, so something always survives.
+        const safeBase = base.slice(0, MAX_KEY_BASE_LENGTH).replace(/_+$/, '');
         const taken = new Set([
             ...RESERVED_KEYS,
             ...await db(TABLE).where('key', 'like', `${safeBase}%`).pluck('key')
@@ -253,8 +346,8 @@ export class CustomFieldDefinitionsService {
         if (!taken.has(safeBase)) {
             return safeBase;
         }
-        for (let suffix = 2; suffix <= MAX_SLUG_ITERATIONS; suffix += 1) {
-            const candidate = `${safeBase}-${suffix}`;
+        for (let suffix = 2; suffix <= MAX_KEY_ITERATIONS; suffix += 1) {
+            const candidate = `${safeBase}_${suffix}`;
             if (!taken.has(candidate)) {
                 return candidate;
             }

@@ -3,9 +3,7 @@ import {cva, type VariantProps} from 'class-variance-authority';
 
 import {cn} from '@/lib/utils';
 import {Button} from '@/components/ui/button';
-import {Input} from '@/components/ui/input';
 import {inputSurfaceClasses} from '@/components/ui/input-surface';
-import {Textarea} from '@/components/ui/textarea';
 
 function InputGroup({className, ...props}: React.ComponentProps<'div'>) {
     return (
@@ -16,8 +14,8 @@ function InputGroup({className, ...props}: React.ComponentProps<'div'>) {
                 inputSurfaceClasses.invalidWithin,
 
                 // Wrapper layout + group context (input-group specific).
-                'group/input-group relative flex w-full items-center outline-hidden',
-                'h-9 has-[>textarea]:h-auto',
+                'group/input-group relative flex w-full items-center outline-hidden data-[disabled=true]:bg-control-disabled-surface [&>[data-slot=input-group-control]]:bg-transparent',
+                'h-(--control-height) has-[>textarea]:h-auto',
 
                 // Variants based on alignment.
                 'has-[>[data-align=inline-start]]:[&>input]:pl-2',
@@ -40,7 +38,7 @@ function InputGroup({className, ...props}: React.ComponentProps<'div'>) {
 }
 
 const inputGroupAddonVariants = cva(
-    `flex h-auto cursor-text items-center justify-center gap-2 py-1.5 text-control font-medium text-muted-foreground select-none group-data-[disabled=true]/input-group:opacity-50 [&>kbd]:rounded-[calc(var(--input-group-radius)-5px)] [&>svg:not([class*='size-'])]:size-4`,
+    `flex h-auto cursor-text items-center justify-center gap-2 py-1.5 text-control font-medium text-muted-foreground select-none group-data-[disabled=true]/input-group:cursor-not-allowed [&>kbd]:rounded-[calc(var(--input-group-radius)-5px)] [&>svg:not([class*='size-'])]:size-4`,
     {
         variants: {
             align: {
@@ -126,10 +124,10 @@ function InputGroupText({className, ...props}: React.ComponentProps<'span'>) {
 }
 
 const InputGroupInput = React.forwardRef<HTMLInputElement, React.ComponentProps<'input'>>(({className, ...props}, ref) => (
-    <Input
+    <input
         ref={ref}
         className={cn(
-            'flex-1 rounded-none border-0 bg-transparent shadow-none focus-visible:shadow-none focus-visible:ring-0 focus-visible:outline-hidden',
+            'flex h-(--control-height) w-full flex-1 border-0 bg-transparent px-3 py-1 text-control outline-hidden file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:text-muted-foreground',
             className
         )}
         data-slot="input-group-control"
@@ -139,10 +137,10 @@ const InputGroupInput = React.forwardRef<HTMLInputElement, React.ComponentProps<
 InputGroupInput.displayName = 'InputGroupInput';
 
 const InputGroupTextarea = React.forwardRef<HTMLTextAreaElement, React.ComponentProps<'textarea'>>(({className, ...props}, ref) => (
-    <Textarea
+    <textarea
         ref={ref}
         className={cn(
-            'flex-1 resize-none rounded-none border-0 bg-transparent py-3 shadow-none focus-visible:shadow-none focus-visible:ring-0 focus-visible:outline-hidden',
+            'min-h-[80px] w-full flex-1 resize-none border-0 bg-transparent p-3 text-base outline-hidden placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:text-muted-foreground',
             className
         )}
         data-slot="input-group-control"

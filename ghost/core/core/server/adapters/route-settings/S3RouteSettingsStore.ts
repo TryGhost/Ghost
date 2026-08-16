@@ -30,7 +30,8 @@ const messages = {
     missingDefaultSettingsBasePath: 'S3RouteSettingsStore requires a defaultSettingsBasePath',
     partialCredentials: 'S3RouteSettingsStore requires both accessKeyId and secretAccessKey when either is provided',
     missingResponseBody: 'S3 GetObject returned no body',
-    ensureDefaults: 'Error trying to access the default settings file in {path}.'
+    ensureDefaults: 'Error trying to access the default settings file in {path}.',
+    requestFailed: 'Something went wrong, please try again.'
 };
 
 const stripLeadingAndTrailingSlashes = (value = '') => value.replace(/^\/+|\/+$/g, '');
@@ -135,7 +136,7 @@ export default class S3RouteSettingsStore extends RouteSettingsStoreBase {
                 const defaultContent = await this.readDefaultSettings();
                 return parseRouteSettings(parseYaml(defaultContent), defaultContent);
             }
-            throw err;
+            throw this._requestError(err);
         }
 
         return parseRouteSettings(parseYaml(body), body);
@@ -144,20 +145,24 @@ export default class S3RouteSettingsStore extends RouteSettingsStoreBase {
     async replace(settings: RouteSettings): Promise<void> {
         const key = this.buildKey();
 
-        if (await this._canonicalExists()) {
-            await this.client.send(new CopyObjectCommand({
-                Bucket: this.bucket,
-                Key: getBackupRouteSettingsFilePath(key),
-                CopySource: `${this.bucket}/${key}`
-            }));
-        }
+        try {
+            if (await this._canonicalExists()) {
+                await this.client.send(new CopyObjectCommand({
+                    Bucket: this.bucket,
+                    Key: getBackupRouteSettingsFilePath(key),
+                    CopySource: `${this.bucket}/${key}`
+                }));
+            }
 
-        await this.client.send(new PutObjectCommand({
-            Bucket: this.bucket,
-            Key: key,
-            Body: settings.yamlSource,
-            ContentType: CONTENT_TYPE
-        }));
+            await this.client.send(new PutObjectCommand({
+                Bucket: this.bucket,
+                Key: key,
+                Body: settings.yamlSource,
+                ContentType: CONTENT_TYPE
+            }));
+        } catch (err) {
+            throw this._requestError(err);
+        }
     }
 
     private buildKey(): string {
@@ -176,8 +181,26 @@ export default class S3RouteSettingsStore extends RouteSettingsStoreBase {
             if (this._isNotFound(err)) {
                 return false;
             }
-            throw err;
+            throw this._requestError(err);
         }
+    }
+
+    private _requestError(err: unknown): Error {
+        // The only Ghost errors reaching here are this store's own, which are
+        // already safe to render — re-wrapping them would hide the reason.
+        if (err instanceof errors.InternalServerError) {
+            return err;
+        }
+
+        const requestError = new errors.InternalServerError({
+            message: tpl(messages.requestFailed)
+        });
+
+        if (typeof (err as {stack?: string})?.stack === 'string') {
+            requestError.stack = `${requestError.stack}\n\nCaused by: ${(err as {stack: string}).stack}`;
+        }
+
+        return requestError;
     }
 
     private async readDefaultSettings(): Promise<string> {

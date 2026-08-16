@@ -28,7 +28,6 @@ html::-webkit-scrollbar-thumb:hover {
 // TODO: remove duplication with <ModalPostEmailPreview>
 export default class ModalPostPreviewEmailComponent extends Component {
     @service ajax;
-    @service feature;
     @service ghostPaths;
     @service session;
     @service settings;
@@ -53,14 +52,8 @@ export default class ModalPostPreviewEmailComponent extends Component {
             !!(this.settings.mailgunApiKey && this.settings.mailgunDomain && this.settings.mailgunBaseUrl);
     }
 
-    // older backends only understand the deprecated memberSegment param;
-    // remove the legacy branch when the previewByTier flag is GA
     get _audienceParams() {
         const {memberStatus, memberTier} = this.args;
-
-        if (!this.feature.previewByTier) {
-            return {memberSegment: memberStatus === 'paid' ? 'status:-free' : 'status:free'};
-        }
 
         const params = {member_status: memberStatus};
         if (memberTier) {

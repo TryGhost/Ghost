@@ -18,7 +18,6 @@ describe('Settings', function () {
     const coreSettingKeys = [
         'last_mentions_report_email_timestamp',
         'db_hash',
-        'routes_hash',
         'next_update_check',
         'notifications',
         'version_notifications',
@@ -32,6 +31,8 @@ describe('Settings', function () {
         'members_stripe_webhook_id',
         'members_stripe_webhook_secret',
         'members_otc_secret',
+        'machine_payments_secret',
+        'machine_payments_deposit_address',
         'site_uuid'
     ];
     // If this test is failing, then it is likely a new setting has been added without group migration

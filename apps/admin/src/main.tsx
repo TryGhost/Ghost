@@ -5,8 +5,8 @@ import { navigateTo } from "./utils/navigation";
 
 const framework = {
     ghostVersion: "",
-    externalNavigate: (link: { route: string; isExternal: boolean }) => {
-        navigateTo(link.route);
+    externalNavigate: (link: { route: string; isExternal: boolean; replace?: boolean }) => {
+        navigateTo(link.route, {replace: link.replace});
     },
     unsplashConfig: {
         Authorization: "Client-ID 8672af113b0a8573edae3aa3713886265d9bb741d707f6c01a486cde8c278980",

@@ -5,7 +5,6 @@ import {
     describe,
     it
 } from 'mocha';
-import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../helpers/mock-analytics-apps';
 import {click, currentURL, fillIn, find, findAll} from '@ember/test-helpers';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
@@ -15,14 +14,6 @@ import {visit} from '../helpers/visit';
 describe('Acceptance: Signin', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
-
-    beforeEach(function () {
-        mockAnalyticsApps();
-    });
-
-    afterEach(function () {
-        cleanupMockAnalyticsApps();
-    });
 
     async function setupSigninFlow(server, {role = 'Administrator', fillForm = true} = {}) {
         if (!server.schema.configs.all().length) {
@@ -71,8 +62,9 @@ describe('Acceptance: Signin', function () {
         await authenticateSession();
         await visit('/signin');
 
-        // With analytics mocks, authors get redirected to home first, then to site
-        expect(currentURL(), 'current url').to.equal('/site');
+        // The root route is React-owned; Ember only lands on `/` and the
+        // React shell picks the per-role view from there
+        expect(currentURL(), 'current url').to.equal('/');
     });
 
     describe('when attempting to signin', function () {
@@ -134,8 +126,6 @@ describe('Acceptance: Signin', function () {
         });
 
         it('submits successfully', async function () {
-            mockAnalyticsApps();
-            
             invalidateSession();
 
             await visit('/signin');
@@ -144,32 +134,32 @@ describe('Acceptance: Signin', function () {
             await fillIn('[name="identification"]', 'test@example.com');
             await fillIn('[name="password"]', 'thisissupersafe');
             await click('[data-test-button="sign-in"]');
-            expect(currentURL(), 'currentURL').to.equal('/analytics');
-            
-            cleanupMockAnalyticsApps();
+            expect(currentURL(), 'currentURL').to.equal('/');
         });
     });
 
     describe('success routing', function () {
-        it('redirects admin user to analytics', async function () {
+        // The per-role landing view is picked by the React-owned root route;
+        // Ember's job ends at `/`
+        it('redirects admin user to the root route', async function () {
             await setupSigninFlow(this.server, {role: 'Administrator'});
             await click('[data-test-button="sign-in"]');
 
-            expect(currentURL()).to.equal('/analytics');
+            expect(currentURL()).to.equal('/');
         });
 
-        it('redirects contributor user to posts', async function () {
+        it('redirects contributor user to the root route', async function () {
             await setupSigninFlow(this.server, {role: 'Contributor'});
             await click('[data-test-button="sign-in"]');
 
-            expect(currentURL()).to.equal('/posts');
+            expect(currentURL()).to.equal('/');
         });
 
-        it('redirects author user to site', async function () {
+        it('redirects author user to the root route', async function () {
             await setupSigninFlow(this.server, {role: 'Author'});
             await click('[data-test-button="sign-in"]');
 
-            expect(currentURL()).to.equal('/site');
+            expect(currentURL()).to.equal('/');
         });
     });
 });

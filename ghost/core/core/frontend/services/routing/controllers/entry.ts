@@ -89,7 +89,7 @@ export async function entryController(req: Request, res: EntryResponse, next: Ne
         // equal the entry's canonical (html) path, so the redirect would always
         // fire and 301 the request to html, losing the markdown intent.
         if (markdown.isMdRequest(res)) {
-            return markdown.serveMdRequest(req, res, entry);
+            return await markdown.serveMdRequest(req, res, entry);
         }
 
         if (isPermalinkStale(req, entry)) {

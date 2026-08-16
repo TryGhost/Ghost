@@ -42,8 +42,8 @@ const FocusedThread: React.FC<FocusedThreadProps> = ({focusedThread}) => {
                 </a>
             </div>
 
-            <CommentComponent comment={focusedComment} parent={topLevelComment} useThreading={true}>
-                <ReplyTree replies={focusedComment.nestedReplies} threadParentComment={topLevelComment} useThreading={true} />
+            <CommentComponent comment={focusedComment} parent={topLevelComment}>
+                <ReplyTree replies={focusedComment.nestedReplies} threadParentComment={topLevelComment} />
             </CommentComponent>
         </div>
     );

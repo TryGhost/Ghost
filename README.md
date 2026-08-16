@@ -13,7 +13,7 @@
     <a href="https://ghost.org/">Ghost.org</a> •
     <a href="https://forum.ghost.org">Forum</a> •
     <a href="https://docs.ghost.org">Docs</a> •
-    <a href="https://github.com/TryGhost/Ghost/blob/main/.github/CONTRIBUTING.md">Contributing</a> •
+    <a href="https://github.com/TryGhost/Ghost/blob/main/docs/README.md">Contributing</a> •
     <a href="https://twitter.com/ghost">Twitter</a>
     <br /><br />
     <a href="https://ghost.org/">
@@ -79,7 +79,9 @@ Check out our [official documentation](https://ghost.org/docs/) for more informa
 
 ### Contributors & advanced developers
 
-For anyone wishing to contribute to Ghost or to hack/customize core files we recommend following our full development setup guides: [Contributor guide](https://ghost.org/docs/contributing/) • [Developer setup](https://ghost.org/docs/install/source/)
+To contribute to Ghost, start with the
+[contributing guide](.github/CONTRIBUTING.md). To work on the monorepo, see the
+[codebase documentation](docs/README.md).
 
 &nbsp;
 

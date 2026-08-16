@@ -30,7 +30,7 @@ jobs:
     outputs:
       tinybird: ${{ steps.changed.outputs.tinybird }}
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 0
 
@@ -58,13 +58,13 @@ jobs:
         working-directory: ghost/core/core/server/data/tinybird
     services:
       tinybird:
-        image: tinybirdco/tinybird-local:latest@sha256:942cb8a703806bedc39a5ca77bc9cd36dd813ddad1556d46022ce9492f5acdb8
+        image: tinybirdco/tinybird-local:latest@sha256:0865fb2f8aef0b8f0cd3ffe53a7a9832787b2d995fd0d34ddaa6563f1638feed
         ports:
           - 7181:7181
     outputs:
       datafiles_changed: ${{ steps.datafiles.outputs.tinybird }}
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 0
 
@@ -78,8 +78,21 @@ jobs:
               - 'ghost/core/core/server/data/tinybird/**'
               - '!ghost/core/core/server/data/tinybird/**/*.md'
 
+      # tinybird.co/install.sh always installs the latest CLI, so this job
+      # silently tracked upstream. 4.6.14 ingests a nested JSON object into a
+      # String column as ClickHouse Tuple syntax instead of raw JSON, so every
+      # JSONExtractString(payload, ...) in pipes/mv_hits.pipe returns '' and all
+      # 29 endpoint tests read back empty. Pin until that's fixed upstream; keep
+      # in lockstep with docker/tb-cli/Dockerfile.
       - name: Install Tinybird CLI
-        run: curl -fsSL https://tinybird.co/install.sh | sh
+        env:
+          # renovate: datasource=pypi depName=tinybird versioning=pep440
+          TINYBIRD_VERSION: 4.6.13
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          export PATH="$HOME/.local/bin:$PATH"
+          uv tool install "tinybird@${TINYBIRD_VERSION}" --python 3.11 --force
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - name: Build project
         run: tb build
@@ -120,7 +133,7 @@ jobs:
     needs: [tests]
     if: github.repository == 'TryGhost/Ghost' && github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.tests.outputs.datafiles_changed == 'true'
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Trigger and watch traffic analytics infra Tinybird workflow
         env:

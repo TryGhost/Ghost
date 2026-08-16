@@ -8,7 +8,7 @@ import AppSidebarContent from "./app-sidebar-content";
 
 function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     return (
-        <Sidebar {...props}>
+        <Sidebar data-testid="admin-sidebar" {...props}>
             <AppSidebarHeader className="px-5 pt-5 pb-0" />
             <AppSidebarContent />
             <AppSidebarFooter className="gap-0 p-3" />

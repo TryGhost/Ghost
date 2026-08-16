@@ -17,7 +17,12 @@ class EmailServiceWrapper {
 
     getPostUrl(post) {
         const jsonModel = post.toJSON();
-        url.forPost(post.id, jsonModel, {options: {}});
+        // The URL service routes by resource type. Pages and posts share the
+        // Post model, so the page's own type must reach forPost — otherwise it
+        // defaults to 'posts', matches no post collection, and 404s under the
+        // lazy service.
+        const type = jsonModel.type === 'page' ? 'pages' : 'posts';
+        url.forPost(post.id, jsonModel, {options: {}}, type);
         return jsonModel.url;
     }
 
@@ -38,7 +43,7 @@ class EmailServiceWrapper {
 
         const {Post, Newsletter, Email, EmailBatch, EmailRecipient, Member} = require('../../models');
         const urlService = require('../url');
-        const getRequiredUrlRelations = () => urlService.facade.getRequiredRelations();
+        const getRequiredUrlRelations = () => urlService.getRequiredRelations();
         const MailgunClient = require('../lib/mailgun-client');
         const configService = require('../../../shared/config');
         const settingsCache = require('../../../shared/settings-cache');

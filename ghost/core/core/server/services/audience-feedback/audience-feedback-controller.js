@@ -1,5 +1,6 @@
 const Feedback = require('./feedback');
 const errors = require('@tryghost/errors');
+const permissions = require('../../services/permissions');
 const tpl = require('@tryghost/tpl');
 
 const messages = {
@@ -50,7 +51,7 @@ class AudienceFeedbackController {
             // Load the full post (with tags/authors) rather than passing an
             // id-only resource: the URL service needs status to apply the
             // published base filter and tags/authors to evaluate filtered
-            // routes — the lazy backend rejects a bare {id} as thin.
+            // routes — the URL service reports a bare {id} as thin.
             const post = await this.#repository.getPostById(postId, {withRelated: ['tags', 'authors']});
             const target = post
                 ? this.#audienceFeedbackService.buildLink(uuid, post, score, key)
@@ -118,12 +119,20 @@ class AudienceFeedbackController {
         const postId = frame.data.id;
         const options = {
             limit: frame.options.limit || 10,
-            page: frame.options.page || 1
+            page: frame.options.page || 1,
+            withMember: false
         };
 
         // Add score filter if specified
         if (frame.options.score !== undefined) {
             options.score = parseInt(frame.options.score);
+        }
+
+        try {
+            await permissions.canThis(frame.options.context).browse.member();
+            options.withMember = true;
+        } catch {
+            // permissions throws; we want to return data but without member info
         }
 
         const result = await this.#repository.getForPost(postId, options);

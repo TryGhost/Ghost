@@ -58,6 +58,7 @@ function parseDefaultSettings() {
         members_private_key: () => getMembersKey('private'),
         members_email_auth_secret: () => crypto.randomBytes(64).toString('hex'),
         members_otc_secret: () => crypto.randomBytes(64).toString('hex'),
+        machine_payments_secret: () => crypto.randomBytes(64).toString('hex'),
         ghost_public_key: () => getGhostKey('public'),
         ghost_private_key: () => getGhostKey('private'),
         site_uuid: () => getOrGenerateSiteUuid(),
@@ -389,6 +390,25 @@ Settings = ghostBookshelf.Model.extend({
         },
         // @TODO: Maybe move some of the logic into the members service, exporting an isValidStripeKey
         // method which can be called here, cleaning up the duplication, but not removing control
+        async machine_payments_amount(model) {
+            const value = model.get('value');
+            const amount = typeof value === 'string' ? Number(value) : value;
+
+            if (!Number.isSafeInteger(amount) || amount < 1) {
+                throw new errors.ValidationError({
+                    message: 'Machine payments amount must be an integer greater than 0'
+                });
+            }
+        },
+        async machine_payments_currency(model) {
+            const value = model.get('value');
+
+            if (value !== null && (typeof value !== 'string' || !/^[A-Z]{3}$/i.test(value))) {
+                throw new errors.ValidationError({
+                    message: 'Machine payments currency must be a 3 letter ISO currency code'
+                });
+            }
+        },
         stripe_secret_key(model) {
             const value = model.get('value');
             if (value === null) {

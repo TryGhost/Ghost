@@ -3,6 +3,9 @@
   "version": "0.0.0",
   "description": "Shared catalog of member custom field types: storage routing and value validation, consumed by Ghost core and admin",
   "private": true,
+  "ghostPackage": {
+    "goldenPath": "compliant"
+  },
   "type": "module",
   "repository": {
     "type": "git",

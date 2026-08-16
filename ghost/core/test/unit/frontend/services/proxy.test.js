@@ -15,7 +15,7 @@ describe('Proxy: serverEvents', function () {
         sinon.restore();
     });
 
-    ['site.changed', 'url.added', 'url.removed'].forEach(function (eventName) {
+    ['site.changed'].forEach(function (eventName) {
         it(`subscribes a listener to the permitted "${eventName}" event`, function () {
             const listener = () => {};
 
@@ -31,5 +31,17 @@ describe('Proxy: serverEvents', function () {
         }, {errorType: 'IncorrectUsageError'});
 
         sinon.assert.notCalled(busOnStub);
+    });
+});
+
+describe('Proxy: prepareContextResource', function () {
+    it('removes data and aria attributes from feature image captions', function () {
+        const resource = {
+            feature_image_caption: '<span data-foo="bar" aria-label="caption" style="color: red"><a href="https://example.com">Caption</a></span>'
+        };
+
+        proxy.prepareContextResource(resource);
+
+        assert.equal(resource.feature_image_caption.toString(), '<span style="color:red"><a href="https://example.com">Caption</a></span>');
     });
 });

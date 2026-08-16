@@ -2,24 +2,31 @@
 
 E2E testing guidance for AI assistants (Claude, Codex, etc.) working with Ghost tests.
 
-**IMPORTANT**: When creating or modifying E2E tests, always refer to `./.claude/E2E_TEST_WRITING_GUIDE.md` for comprehensive testing guidelines and patterns.
+**IMPORTANT**: `README.md` is the canonical human documentation for E2E testing.
+When creating or modifying E2E tests, follow it first. Use
+`./.claude/E2E_TEST_WRITING_GUIDE.md` for additional agent-oriented examples.
 
 ## Critical Rules
-1. **Always follow ADRs** in `../adr/` folder (ADR-0001: AAA pattern, ADR-0002: Page Objects)
-2. **Always use pnpm**, never npm
-3. **Always run after changes**: `pnpm lint` and `pnpm test:types`
-4. **Never use CSS/XPath selectors** - only semantic locators or data-testid
-5. **Prefer less comments and giving things clear names**
+1. **Always use pnpm**, never npm
+2. **Always run after changes**: `pnpm lint` and `pnpm test:types`
+3. **Prefer semantic locators**, then stable test IDs
+4. **Keep reusable UI structure and interactions in Page Objects**
+5. **Avoid selectors coupled to styling or DOM position**
+6. **Prefer clear names and structure over explanatory comments**; add a
+   comment when an AAA boundary would otherwise be unclear
 
 ## Running E2E Tests
 
-**`pnpm dev` must be running before you run E2E tests.** The E2E test runner auto-detects
-whether the admin dev server is reachable at `http://127.0.0.1:5174`. If it is, tests run
-in **dev mode** (fast, no pre-built Docker image required). If not, tests fall back to
-**build mode** which requires a `ghost-e2e:local` Docker image that is only built in CI.
+For normal development, start `pnpm dev` before running E2E tests. The runner
+auto-detects whether the Admin dev server is reachable at
+`http://127.0.0.1:5174`: when it is, tests use **dev mode**, which is the fastest
+feedback loop and does not require a prebuilt Ghost E2E image.
 
-**If you see the error `Build image not found: ghost-e2e:local`, it means `pnpm dev` is
-not running.** Start it first, wait for the admin dev server to be ready, then re-run tests.
+The suite also supports **build mode** for local CI-like testing without dev
+servers. Build mode requires a prepared `ghost-e2e:local` image; follow the
+commands in the canonical README's [Build Mode](./README.md#build-mode-prebuilt-image)
+section. If `Build image not found: ghost-e2e:local` appears unexpectedly, either
+start `pnpm dev` to use dev mode or prepare the build-mode image.
 
 ```bash
 # Terminal 1 (or background): Start dev environment from the repo root
@@ -74,7 +81,8 @@ export class AnalyticsPage extends AdminPage {
 ```
 
 ### Rules
-- Page Objects are located in `helpers/pages/`
+- Put reusable page and major-component behavior in `helpers/pages/`
+- Direct semantic locators are acceptable for small, one-off test interactions or assertions
 - Expose locators as `public readonly` when used with assertions
 - Methods use semantic names (`login()` not `clickLoginButton()`)
 - Use `waitFor()` for guards, never `expect()` in page objects
@@ -91,7 +99,11 @@ export class AnalyticsPage extends AdminPage {
    - `getByTestId('analytics-card')`
    - Suggest adding `data-testid` to Ghost codebase when needed
 
-3. **Never use**: CSS selectors, XPath, nth-child, class names
+3. **Structural fallback**: stable attributes when semantic locators are unavailable
+
+Avoid XPath, `nth-child`, styling classes, and other selectors coupled to DOM
+position or presentation. Keep necessary structural selectors in Page Objects where
+practical.
 
 ### Playwright MCP Usage
 - Use `mcp__playwright__browser_snapshot` to find elements
@@ -102,11 +114,14 @@ export class AnalyticsPage extends AdminPage {
 
 ### Factory Pattern (Required)
 ```typescript
-import {PostFactory, UserFactory} from '../data-factory';
+import {createPostFactory} from '@/data-factory';
 
 const postFactory = createPostFactory(page.request);
-const post = await postFactory.create({userId: user.id});
+const post = await postFactory.create({title: 'Test Post'});
 ```
+
+Import through the `@/` path aliases in `tsconfig.json` (`@/data-factory`,
+`@/helpers/playwright`, `@/admin-pages`), never relative paths.
 
 ## Best Practices
 
@@ -145,6 +160,6 @@ After writing tests, verify:
 2. Linting passes: `pnpm lint`
 3. Types check: `pnpm test:types`
 4. Follows AAA pattern with clear sections
-5. Uses page objects appropriately
-6. Uses semantic locators or data-testid only
-7. No hard-coded waits or CSS selectors
+5. Uses Page Objects for reusable UI behavior
+6. Prefers semantic locators, then stable test IDs
+7. Has no hard-coded waits or selectors coupled to styling/DOM position

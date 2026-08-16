@@ -1,4 +1,5 @@
 import Component from '@glimmer/component';
+import DOMPurify from 'dompurify';
 import RestoreRevisionModal from '../components/modals/restore-revision';
 import {action, set} from '@ember/object';
 import {inject as service} from '@ember/service';
@@ -36,7 +37,14 @@ export default class ModalPostHistory extends Component {
     }
 
     get selectedRevision() {
-        return this.revisionList[this.selectedRevisionIndex];
+        const revision = this.revisionList[this.selectedRevisionIndex];
+        revision.feature_image_caption = DOMPurify.sanitize(revision.feature_image_caption, {
+            ALLOWED_TAGS: ['a', 'b', 'i', 'span'],
+            ALLOWED_ATTR: ['href', 'style'],
+            ALLOW_DATA_ATTR: false,
+            ALLOW_ARIA_ATTR: false
+        });
+        return revision;
     }
 
     get currentTitle() {

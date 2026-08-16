@@ -326,6 +326,10 @@ html[dir="rtl"] .gh-portal-btn-site-title-back span {
     pointer-events: none;
 }
 
+.gh-portal-popup-background.preview.preview-dark {
+    background: linear-gradient(45deg, var(--grey0) 0%, var(--black) 100%);
+}
+
 @keyframes fadein {
     0% { opacity: 0; }
     100%{ opacity: 1.0; }

@@ -5,6 +5,7 @@ import {tracked} from '@glimmer/tracking';
 export default class MigrateService extends Service {
     @service ajax;
     @service billing;
+    @service feature;
     @service router;
     @service ghostPaths;
     @service settings;
@@ -48,6 +49,7 @@ export default class MigrateService extends Service {
             apiUrl: this.apiUrl,
             apiKey: theKey,
             stripe: this.isStripeConnected,
+            csvContentImporter: this.isCsvContentImporterEnabled,
             ghostVersion: this.ghostVersion,
             ownerEmail: theOwner.email
         };
@@ -57,6 +59,10 @@ export default class MigrateService extends Service {
 
     get isStripeConnected() {
         return (this.settings.stripeConnectAccountId && this.settings.stripeConnectPublishableKey && this.settings.stripeConnectLivemode) ? true : false;
+    }
+
+    get isCsvContentImporterEnabled() {
+        return this.feature.csvContentImporter ? true : false;
     }
 
     get ghostVersion() {

@@ -24,8 +24,6 @@ async function snapshotApiKeys(page: SettingsPage['page'], baseURL: string): Pro
 }
 
 test.describe('Ghost Admin - Danger Zone security actions', () => {
-    test.use({labs: {dangerZoneResetAuth: true}});
-
     test('reset all authentication - rotates every visible key, locks owner, kills session', async ({page, ghostAccountOwner, baseURL}) => {
         const url = baseURL ?? '';
         const settingsPage = new SettingsPage(page);

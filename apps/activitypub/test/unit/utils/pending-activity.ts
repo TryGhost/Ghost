@@ -1,3 +1,4 @@
+import {describe, expect, it} from 'vitest';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {
     PENDING_ACTIVITY_PREFIX,

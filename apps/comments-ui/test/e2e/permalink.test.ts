@@ -11,13 +11,12 @@ async function setupPermalinkTest(
     page: Page,
     mockedApi: MockedApi,
     hash: string,
-    bodyHtml = '<html><head><meta charset="UTF-8" /></head><body></body></html>',
-    labs = {}
+    bodyHtml = '<html><head><meta charset="UTF-8" /></head><body></body></html>'
 ): Promise<FrameLocator> {
     const sitePath = MOCKED_SITE_URL;
     mockedApi.setSettings({
         settings: {
-            labs
+            labs: {}
         }
     });
 
@@ -312,7 +311,7 @@ test.describe('Comment Permalinks', async () => {
         await expect(targetElement).toBeVisible();
     });
 
-    test('highlights nested reply instead of top-level parent with commentsThreads enabled', async ({page}) => {
+    test('highlights nested reply instead of top-level parent', async ({page}) => {
         const mockedApi = new MockedApi({});
         mockedApi.setMember({});
 
@@ -340,13 +339,7 @@ test.describe('Comment Permalinks', async () => {
             }
         });
 
-        const commentsFrame = await setupPermalinkTest(
-            page,
-            mockedApi,
-            `#ghost-comments-${targetReplyId}`,
-            undefined,
-            {commentsThreads: true}
-        );
+        const commentsFrame = await setupPermalinkTest(page, mockedApi, `#ghost-comments-${targetReplyId}`);
 
         await expect(commentsFrame.getByText('Target nested reply')).toBeVisible();
 
@@ -360,7 +353,7 @@ test.describe('Comment Permalinks', async () => {
         await expect(replyContent.locator('mark')).toHaveCount(0, {timeout: 7000});
     });
 
-    test('highlights target reply instead of focused ancestor in commentsThreads focused view', async ({page}) => {
+    test('highlights target reply instead of focused ancestor in the focused view', async ({page}) => {
         const mockedApi = new MockedApi({});
         mockedApi.setMember({});
 
@@ -389,13 +382,7 @@ test.describe('Comment Permalinks', async () => {
         });
 
         const targetReplyId = replyIds[4];
-        const commentsFrame = await setupPermalinkTest(
-            page,
-            mockedApi,
-            `#ghost-comments-${targetReplyId}`,
-            undefined,
-            {commentsThreads: true}
-        );
+        const commentsFrame = await setupPermalinkTest(page, mockedApi, `#ghost-comments-${targetReplyId}`);
 
         await expect(commentsFrame.getByTestId('back-to-parent')).toBeVisible();
         await expect(commentsFrame.getByText('Nested reply 4')).toBeVisible();
@@ -412,7 +399,7 @@ test.describe('Comment Permalinks', async () => {
         await expect(commentsFrame.getByTestId('back-to-parent')).not.toBeVisible();
     });
 
-    test('opens commentsThreads focused view when target reply is not in the initial comments response', async ({page}) => {
+    test('opens the focused view when target reply is not in the initial comments response', async ({page}) => {
         const mockedApi = new MockedApi({});
         mockedApi.setMember({});
 
@@ -453,13 +440,7 @@ test.describe('Comment Permalinks', async () => {
         };
 
         const targetReplyId = replyIds[4];
-        const commentsFrame = await setupPermalinkTest(
-            page,
-            mockedApi,
-            `#ghost-comments-${targetReplyId}`,
-            undefined,
-            {commentsThreads: true}
-        );
+        const commentsFrame = await setupPermalinkTest(page, mockedApi, `#ghost-comments-${targetReplyId}`);
 
         await expect(commentsFrame.getByTestId('back-to-parent')).toBeVisible();
         await expect(commentsFrame.getByText('Lazy nested reply 4')).toBeVisible();

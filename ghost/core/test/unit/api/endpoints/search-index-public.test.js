@@ -19,11 +19,11 @@ describe('Search index public controller', function () {
         sinon.restore();
     });
 
-    it('lazyRouting: forces the URL service required columns into the posts fetch', async function () {
+    it('forces the URL service required columns into the posts fetch', async function () {
         // the public posts fetch does not select `status`, which the lazy URL
         // service's base filter reads
-        sinon.stub(urlService.facade, 'getRequiredFields').withArgs('posts').returns(['status', 'type', 'slug']);
-        sinon.stub(urlService.facade, 'getRequiredRelations').returns([]);
+        sinon.stub(urlService, 'getRequiredFields').withArgs('posts').returns(['status', 'type', 'slug']);
+        sinon.stub(urlService, 'getRequiredRelations').returns([]);
 
         await searchIndexController.fetchPosts.query();
 
@@ -32,9 +32,9 @@ describe('Search index public controller', function () {
         assert.ok(options.columns.includes('type'));
     });
 
-    it('lazyRouting: forces the URL service required columns into the tags fetch', async function () {
-        sinon.stub(urlService.facade, 'getRequiredFields').withArgs('tags').returns(['visibility', 'slug']);
-        sinon.stub(urlService.facade, 'getRequiredRelations').returns([]);
+    it('forces the URL service required columns into the tags fetch', async function () {
+        sinon.stub(urlService, 'getRequiredFields').withArgs('tags').returns(['visibility', 'slug']);
+        sinon.stub(urlService, 'getRequiredRelations').returns([]);
 
         await searchIndexController.fetchTags.query();
 
@@ -42,9 +42,9 @@ describe('Search index public controller', function () {
         assert.deepEqual(options.columns, ['id', 'slug', 'name', 'url', 'visibility']);
     });
 
-    it('lazyRouting: leaves columns untouched under the eager service', async function () {
-        sinon.stub(urlService.facade, 'getRequiredFields').returns([]);
-        sinon.stub(urlService.facade, 'getRequiredRelations').returns([]);
+    it('leaves columns untouched when the routing config needs none', async function () {
+        sinon.stub(urlService, 'getRequiredFields').returns([]);
+        sinon.stub(urlService, 'getRequiredRelations').returns([]);
 
         await searchIndexController.fetchPosts.query();
 

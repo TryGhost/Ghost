@@ -6,10 +6,6 @@ type Config = {
     get(key: string): unknown;
 };
 
-type Labs = {
-    isSet(flag: string): boolean;
-};
-
 type Logging = {
     info(...args: unknown[]): void;
     warn(...args: unknown[]): void;
@@ -65,7 +61,6 @@ type ExplorePayload = {
 export type ExplorePingServiceDeps = {
     settingsCache: SettingsCache;
     config: Config;
-    labs: Labs;
     logging: Logging;
     ghostVersion: GhostVersion;
     request: RequestFn;
@@ -77,7 +72,6 @@ export type ExplorePingServiceDeps = {
 export class ExplorePingService {
     settingsCache: SettingsCache;
     config: Config;
-    labs: Labs;
     logging: Logging;
     ghostVersion: GhostVersion;
     request: RequestFn;
@@ -85,10 +79,9 @@ export class ExplorePingService {
     members: MembersService;
     statsService: StatsService;
 
-    constructor({settingsCache, config, labs, logging, ghostVersion, request, posts, members, statsService}: ExplorePingServiceDeps) {
+    constructor({settingsCache, config, logging, ghostVersion, request, posts, members, statsService}: ExplorePingServiceDeps) {
         this.settingsCache = settingsCache;
         this.config = config;
-        this.labs = labs;
         this.logging = logging;
         this.ghostVersion = ghostVersion;
         this.request = request;
@@ -177,10 +170,6 @@ export class ExplorePingService {
     }
 
     async ping(): Promise<void> {
-        if (!this.labs.isSet('explore')) {
-            return;
-        }
-
         const exploreUrl = this.config.get('explore:update_url') as string | undefined;
         if (!exploreUrl) {
             this.logging.warn('Explore URL not set');

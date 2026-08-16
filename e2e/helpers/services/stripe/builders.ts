@@ -86,7 +86,14 @@ export type StripeCheckoutSessionResponse = Omit<Pick<Stripe.Checkout.Session, '
 
 export interface StripeCheckoutSessionRequest {
     discounts?: Array<{coupon: string}>;
-    line_items?: Array<{price: string; quantity: number}>;
+    line_items?: Array<{
+        price?: string;
+        price_data?: {
+            currency: string;
+            unit_amount: number;
+        };
+        quantity: number;
+    }>;
     subscription_data?: {
         items: Array<{plan: string}>;
         metadata?: Record<string, unknown>;
@@ -314,6 +321,39 @@ export function buildDonationCheckoutCompletedEvent(opts: {
                         value: opts.donationMessage
                     }
                 }] : []
+            }
+        }
+    };
+}
+
+export function buildGiftCheckoutCompletedEvent(opts: {
+    amount: number;
+    currency: string;
+    customerEmail: string;
+    customerId?: string | null;
+    metadata: Record<string, string>;
+    name: string;
+    paymentIntent: string;
+    sessionId: string;
+}): StripeEvent {
+    return {
+        id: generateId('evt'),
+        object: 'event',
+        type: 'checkout.session.completed',
+        data: {
+            object: {
+                id: opts.sessionId,
+                object: 'checkout.session',
+                mode: 'payment',
+                amount_total: opts.amount,
+                currency: opts.currency,
+                customer: opts.customerId ?? null,
+                customer_details: {
+                    email: opts.customerEmail,
+                    name: opts.name
+                },
+                metadata: opts.metadata,
+                payment_intent: opts.paymentIntent
             }
         }
     };

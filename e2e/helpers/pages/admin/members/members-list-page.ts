@@ -58,6 +58,13 @@ export class MembersListPage extends AdminPage {
         await this.actionsButton.click();
     }
 
+    // Open the import modal from the Actions menu. The empty-state importCsvLink only
+    // exists before the list has any members; once it does, import lives here.
+    async openImport(): Promise<void> {
+        await this.openActionsMenu();
+        await this.getMenuItem(/Import members/).click();
+    }
+
     async applyLabelFilter(labelName: string): Promise<void> {
         await this.addSearchableFilter('Label', labelName, labelName);
     }

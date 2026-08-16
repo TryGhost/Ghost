@@ -273,6 +273,15 @@
     "adminFrameProtection": true,
     "sendWelcomeEmail": true,
     "stripeDirect": false,
+    "machinePayments": {
+        "mpp": {
+            "secretKey": null,
+            "stripeNetwork": "tempo",
+            "tempoCurrency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "testnet": false,
+            "networkId": null
+        }
+    },
     "enableStripePromoCodes": false,
     "enableTipsAndDonations": true,
     "emailAnalytics": {
@@ -306,7 +315,7 @@
     },
     "comments": {
         "url": "https://cdn.jsdelivr.net/ghost/comments-ui@~{version}/umd/comments-ui.min.js",
-        "version": "1.5"
+        "version": "1.6"
     },
     "adminToolbar": {
         "url": "https://cdn.jsdelivr.net/ghost/admin-toolbar@~{version}/umd/admin-toolbar.min.js",
@@ -366,5 +375,6 @@
         "captureLinkClickBadMemberUuid": false
     },
     "disableJSBackups": false,
-    "disableMigrationBackups": false
+    "disableMigrationBackups": false,
+    "usingLoopbackReverseProxy": false
 }

@@ -7,9 +7,10 @@ import {buildImportResponse} from './import-members/upload';
 import {cn} from '@tryghost/shade/utils';
 import {createInitialImportState, importReducer} from './import-members/reducer';
 import {isImportMembersCompleteResponse, useImportMembers} from '@tryghost/admin-x-framework/api/members';
+import {memberCustomFieldCsvColumns, useBrowseMemberCustomFields} from '@tryghost/admin-x-framework/api/member-custom-fields';
 import {parseCSV} from './import-members/csv';
-import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useCallback, useEffect, useMemo, useReducer, useRef} from 'react';
+import {useFeatureFlag} from '@tryghost/admin-x-framework/hooks';
 import {useLabelPicker} from '@/members/hooks/use-label-picker';
 
 interface ImportMembersModalProps {
@@ -27,10 +28,31 @@ export function ImportMembersModal({
 }: ImportMembersModalProps) {
     const [state, dispatch] = useReducer(importReducer, undefined, createInitialImportState);
     const errorCsvUrlRef = useRef<string | null>(null);
-    const {data: configData} = useBrowseConfig();
     const {mutateAsync: importMembers} = useImportMembers();
-    const importMemberTier = configData?.config?.labs?.importMemberTier === true;
-    const fieldMappings = useMemo(() => getFieldMappings({importMemberTier}), [importMemberTier]);
+    const importMemberTier = useFeatureFlag('importMemberTier');
+
+    // Defined custom fields become mapping targets. Fetched only when the feature is on;
+    // browse returns active fields only, which are the ones the importer writes to.
+    const customFieldsEnabled = useFeatureFlag('membersCustomFields');
+    const {data: customFieldsData} = useBrowseMemberCustomFields({enabled: customFieldsEnabled});
+    const customFieldColumns = useMemo(
+        () => memberCustomFieldCsvColumns(customFieldsData?.members_custom_fields ?? []),
+        [customFieldsData]
+    );
+    // The file-reader effect waits for this before its first parse: with the feature on,
+    // the custom field definitions must be loaded or auto-detection would miss
+    // custom_fields.* columns on a fast upload. It flips false -> true once and stays true
+    // (a refetch keeps data defined), so readiness never re-triggers the read.
+    const customFieldsReady = !customFieldsEnabled || customFieldsData !== undefined;
+    // Detection options are read inside the effect through this ref rather than as deps, so
+    // a later refetch of the options can't re-run the read and overwrite a mapping the user
+    // has begun editing.
+    const detectOptionsRef = useRef({importMemberTier, customFieldColumns});
+    detectOptionsRef.current = {importMemberTier, customFieldColumns};
+    const fieldMappings = useMemo(
+        () => getFieldMappings({importMemberTier, customFieldColumns}),
+        [importMemberTier, customFieldColumns]
+    );
 
     const labelPicker = useLabelPicker({
         selectedSlugs: state.selectedLabelSlugs,
@@ -70,7 +92,7 @@ export function ImportMembersModal({
     }, [onClose, onOpenChange, reset, state.importResponse, state.status]);
 
     useEffect(() => {
-        if (!state.file) {
+        if (!state.file || !customFieldsReady) {
             return;
         }
 
@@ -85,7 +107,7 @@ export function ImportMembersModal({
                 const data = parseCSV(text);
 
                 if (data.length > 0) {
-                    const detectedMapping = detectFieldTypes(data, {importMemberTier});
+                    const detectedMapping = detectFieldTypes(data, detectOptionsRef.current);
                     const fieldMapping = new MembersFieldMapping(detectedMapping);
 
                     dispatch({
@@ -137,7 +159,7 @@ export function ImportMembersModal({
                 reader.abort();
             }
         };
-    }, [importMemberTier, state.file]);
+    }, [state.file, customFieldsReady]);
 
     const validateFile = useCallback((file: File): boolean => {
         const match = /(?:\.([^.]+))?$/.exec(file.name);
@@ -285,7 +307,14 @@ export function ImportMembersModal({
 
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
-            <DialogContent className={cn('gap-0', isWide && 'max-w-2xl')}>
+            {/* While mapping, the dialog is bounded to the viewport and laid out as a column, so
+                the table takes the leftover height and the footer stays reachable on a short
+                screen. 8vmin matches the dialog's own top offset. */}
+            <DialogContent className={cn(
+                'gap-0',
+                isWide && 'max-w-2xl',
+                isWide && 'flex max-h-[calc(100vh-16vmin)] flex-col'
+            )}>
                 <DialogHeader>
                     <DialogTitle>{title}</DialogTitle>
                     <DialogDescription className="sr-only">

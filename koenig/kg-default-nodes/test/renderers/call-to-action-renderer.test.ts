@@ -310,45 +310,36 @@ describe('renderers/call-to-action-renderer', function () {
         it('skips link to image when button is not shown (email, minimal)', testSkippedImageLink('email', 'minimal'));
         it('skips link to image when button is not shown (email, immersive)', testSkippedImageLink('email', 'immersive'));
 
-        ['emailCustomization', 'emailCustomizationAlpha'].forEach((flag) => {
-            it(`can render email with ${flag}`, function () {
-                const result = renderForEmail(getTestData(), {feature: {[flag]: true}});
-
-                assert.equal(result.element.tagName, 'TABLE');
-                assert.ok(result.element.querySelector('table.btn'), 'table.btn element should exist');
+        it('can render outline accent buttons', function () {
+            const result = renderForEmail(getTestData({buttonColor: 'accent'}), {
+                feature: {},
+                design: {buttonStyle: 'outline'}
             });
 
-            it(`can render outline accent buttons (${flag})`, function () {
-                const result = renderForEmail(getTestData({buttonColor: 'accent'}), {
-                    feature: {[flag]: true},
-                    design: {buttonStyle: 'outline'}
-                });
+            // accent buttons are fully styled by the main email template CSS
+            assert.equal(result.element.querySelector('table.btn td').getAttribute('style'), null);
+            assert.equal(result.element.querySelector('table.btn a').getAttribute('style'), null);
+        });
 
-                // accent buttons are fully styled by the main email template CSS
-                assert.equal(result.element.querySelector('table.btn td').getAttribute('style'), null);
-                assert.equal(result.element.querySelector('table.btn a').getAttribute('style'), null);
+        it('can render outline custom buttons', function () {
+            const result = renderForEmail(getTestData({buttonColor: '#F0F0F0'}), {
+                feature: {},
+                design: {buttonStyle: 'outline'}
             });
 
-            it(`can render outline custom buttons (${flag})`, function () {
-                const result = renderForEmail(getTestData({buttonColor: '#F0F0F0'}), {
-                    feature: {[flag]: true},
-                    design: {buttonStyle: 'outline'}
-                });
-
-                assertPrettifiedIncludes(result.html, html`
-                    <table class="btn" border="0" cellspacing="0" cellpadding="0">
-                        <tbody>
-                            <tr>
-                                <td align="center" style="color: #F0F0F0 !important; border: 1px solid #F0F0F0; border-color: currentColor; background-color: transparent;">
-                                    <a href="http://blog.com/post1" style="color: #F0F0F0 !important;">
-                                        click me
-                                    </a>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                `);
-            });
+            assertPrettifiedIncludes(result.html, html`
+                <table class="btn" border="0" cellspacing="0" cellpadding="0">
+                    <tbody>
+                        <tr>
+                            <td align="center" style="color: #F0F0F0 !important; border: 1px solid #F0F0F0; border-color: currentColor; background-color: transparent;">
+                                <a href="http://blog.com/post1" style="color: #F0F0F0 !important;">
+                                    click me
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            `);
         });
 
         it('handles accent button color', function () {

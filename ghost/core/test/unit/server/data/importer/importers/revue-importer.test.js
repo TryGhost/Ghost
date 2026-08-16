@@ -206,6 +206,20 @@ describe('Revue Importer', function () {
                 '<h4><a href="https://google.com/">Google</a></h4><p>A <b>search</b> engine.</p>');
             });
 
+            it('normalizes and reuses valid link item URLs', function () {
+                const result = JSONToHTML.itemsToHtml([{title: 'Example', item_type: 'link', url: '  /relative-path  ', description: '', image: 'https://example.com/image.png'}]);
+
+                assert.equal(result.split('href="/relative-path"').length - 1, 2);
+            });
+
+            ['javascript:alert(1)', ' \tJaVaScRiPt:alert(1)', 'data:text/html,test', 'mailto:test@example.com', 'ftp://example.com'].forEach((url) => {
+                it(`rejects ${url.trim().split(':')[0]} link item URLs`, function () {
+                    const result = JSONToHTML.itemsToHtml([{title: 'Example', item_type: 'link', url, description: '', image: 'https://example.com/image.png'}]);
+
+                    assert.doesNotMatch(result, /<a\b/);
+                });
+            });
+
             it('can handle image item', function () {
                 const result = JSONToHTML.itemsToHtml([{title: '', issue_id: 123456, item_type: 'image', url: '', description: 'Hello', order: 0, image: 'https://s3.amazonaws.com/revue/items/images/012/345/678/web/google.png?1234556', original_image_url: 'https://s3.amazonaws.com/revue/items/images/012/345/678/original/google.png?1234556'}]);
 

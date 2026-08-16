@@ -1,6 +1,6 @@
 import Service, {inject as service} from '@ember/service';
 import {TrackedArray} from 'tracked-built-ins';
-import {escapeNqlString} from '../utils/escape-nql-string';
+import {escapeNqlString} from '@tryghost/nql-string';
 import {task, timeout} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 

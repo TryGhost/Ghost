@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const fetch = require('node-fetch').default;
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../utils/e2e-framework');
 const urlUtils = require('../../core/shared/url-utils').default;
 const jobService = require('../../core/server/services/jobs/job-service');
@@ -72,7 +71,7 @@ describe('Click Tracking', function () {
             `/links/?filter=${encodeURIComponent(`post_id:'${post.id}'`)}`
         );
 
-        /** @type {(url: string) => Promise<import('node-fetch').Response>} */
+        /** @type {(url: string) => Promise<Response>} */
         const fetchWithoutFollowingRedirect = url => fetch(url, {redirect: 'manual'});
 
         let internalRedirectHappened = false;

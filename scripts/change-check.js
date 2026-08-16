@@ -2,6 +2,7 @@ import {parseArgs} from 'node:util'
 import camelcaseKeys from 'camelcase-keys';
 
 import {findPackagesNeedingChangeset} from './lib/pnpm.js';
+import {INTERNAL_DOCS_PATTERN} from './lib/constants.js';
 
 const {values, positionals} = parseArgs({
     options: {
@@ -26,7 +27,8 @@ const [
     baseCommit = process.env.PR_BASE_SHA || 'main',
     headCommit = process.env.PR_COMPARE_SHA || process.env.GITHUB_SHA || 'HEAD'
 ] = positionals;
-const ignorePatterns = [...testPattern, ...changedFilesIgnorePattern];
+// Always applied — the release policy, not a default callers can replace.
+const ignorePatterns = [INTERNAL_DOCS_PATTERN, ...testPattern, ...changedFilesIgnorePattern];
 
 const missing = await findPackagesNeedingChangeset(baseCommit, headCommit, ignorePatterns);
 

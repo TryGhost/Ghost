@@ -12,12 +12,13 @@ const api = require('../../../../core/server/api').endpoints;
 
 describe('{{url}} helper', function () {
     let rendered;
-    let urlServiceGetUrlByResourceIdStub;
+    let getUrlForResourceStub;
 
     beforeEach(function () {
         rendered = null;
 
-        urlServiceGetUrlByResourceIdStub = sinon.stub(urlService, 'getUrlByResourceId');
+        // The helpers read through the URL service, so that is the seam to stub.
+        getUrlForResourceStub = sinon.stub(urlService, 'getUrlForResource');
 
         sinon.stub(api.settings, 'read').callsFake(function () {
             return Promise.resolve({settings: [{value: '/:slug/'}]});
@@ -47,7 +48,7 @@ describe('{{url}} helper', function () {
                 url: '/slug/'
             });
 
-            urlServiceGetUrlByResourceIdStub.withArgs(post.id, {absolute: undefined, withSubdirectory: true}).returns('/slug/');
+            getUrlForResourceStub.withArgs(sinon.match({id: post.id, type: 'posts'}), {absolute: undefined, withSubdirectory: true}).returns('/slug/');
 
             rendered = url.call(post);
             assertExists(rendered);
@@ -64,7 +65,7 @@ describe('{{url}} helper', function () {
                 created_at: new Date(0)
             });
 
-            urlServiceGetUrlByResourceIdStub.withArgs(post.id, {absolute: true, withSubdirectory: true}).returns('http://localhost:65535/slug/');
+            getUrlForResourceStub.withArgs(sinon.match({id: post.id, type: 'posts'}), {absolute: true, withSubdirectory: true}).returns('http://localhost:65535/slug/');
 
             rendered = url.call(post, {hash: {absolute: 'true'}});
             assertExists(rendered);
@@ -79,7 +80,7 @@ describe('{{url}} helper', function () {
                 parent: null
             });
 
-            urlServiceGetUrlByResourceIdStub.withArgs(tag.id, {absolute: undefined, withSubdirectory: true}).returns('/tag/the-tag/');
+            getUrlForResourceStub.withArgs(sinon.match({id: tag.id, type: 'tags'}), {absolute: undefined, withSubdirectory: true}).returns('/tag/the-tag/');
 
             rendered = url.call(tag);
             assertExists(rendered);
@@ -95,7 +96,7 @@ describe('{{url}} helper', function () {
                 slug: 'some-author'
             });
 
-            urlServiceGetUrlByResourceIdStub.withArgs(user.id, {absolute: undefined, withSubdirectory: true}).returns('/author/some-author/');
+            getUrlForResourceStub.withArgs(sinon.match({id: user.id, type: 'authors'}), {absolute: undefined, withSubdirectory: true}).returns('/author/some-author/');
 
             rendered = url.call(user);
             assertExists(rendered);

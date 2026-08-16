@@ -71,17 +71,23 @@ All imported files are processed/optimised via SVGO (see `svgo.config.js` for op
 
 ## Testing
 
-We use [Vitest](https://vitest.dev) for unit tests and [Playwright](https://playwright.dev) for e2e testing.
+We use [Vitest](https://vitest.dev) for unit tests and
+[Playwright](https://playwright.dev) for browser acceptance testing. Ghost's
+end-to-end test suite lives in the repository's top-level
+[`e2e/`](../../e2e/) directory.
 
 - `pnpm test` runs all tests and exits
 - `pnpm test:unit` runs unit tests
 - `pnpm test:unit:watch` runs unit tests and starts a test watcher that re-runs tests on file changes
 - `pnpm test:unit:watch --ui` runs unit tests and opens a browser UI for exploring and re-running tests
-- `pnpm test:e2e` runs e2e tests
-- `pnpm test:e2e --headed` runs tests in browser so you can watch the tests execute
-- `pnpm test:slowmo` same as `pnpm test:e2e --headed` but adds 100ms delay between instructions to make it easier to see what's happening (note that some tests may fail or timeout due to the added delays)
-- `pnpm test:e2e --ui` opens a [browser UI](https://playwright.dev/docs/test-ui-mode) in watch mode for exploring and re-running tests
-- `pnpm test:e2e --ui --headed` same as `pnpm test:e2e --ui` but also runs tests in browser so you can watch the tests execute
+- `pnpm test:acceptance` runs browser acceptance tests headlessly
+- `pnpm test:acceptance:headed` runs acceptance tests with the browser visible
+- `pnpm test:acceptance:report` generates an HTML report
+- `pnpm test:acceptance:quiet` uses minimal output, showing failures only
+- `pnpm test:acceptance --ui` opens Playwright's [UI mode](https://playwright.dev/docs/test-ui-mode)
+  in watch mode for exploring and re-running acceptance tests
+- `pnpm test:slowmo` runs headed acceptance tests with a 100ms delay between
+  instructions (some tests may fail or time out due to the added delays)
 
 Before tests are started we build a version of the demo app that is used for the unit tests.
 
@@ -89,13 +95,13 @@ When developing it can be useful to limit unit tests to specific keywords (taken
 
 - `pnpm test:unit:watch -t "buildCardMenu"`
 
-### How to debug e2e tests on CI
+### How to debug acceptance tests on CI
 
 You can download the report in case of tests were failed. It can be found in the actions `Summary` in the `Artifacts` section.
 To check traces, run command `npx playwright show-trace trace.zip`.
 More information about traces can be found here https://playwright.dev/docs/trace-viewer
 
-### ESM in e2e tests
+### ESM in acceptance tests
 
 Node enables ECMAScript modules if `type: 'module'` in package.json file. It leads to some restrictions:
 - [No require, exports, module.exports, __filename, __dirname](https://github.com/GrosSacASac/node/blob/master/doc/api/esm.md#no-require-exports-moduleexports-__filename-__dirname)
@@ -111,7 +117,7 @@ The same issue was raised in the babel repo, but the loader won't be added while
 in [experimental mode](https://github.com/babel/babel/issues/11934).
 
 We can add our loader implementation to solve the issue. Still, in reality, we shouldn't need real
-JSX components in e2e tests. It can be a situation when some constants locate in the `jsx` file. In this case,
+JSX components in acceptance tests. It can be a situation when some constants locate in the `jsx` file. In this case,
 we can move them to js file. If it is a problem in the future, we can add our implementation of the loader or
 add an extension to all imports in the project.
 
@@ -120,6 +126,7 @@ add an extension to all imports in the project.
 There's a [vitest vscode extension](https://marketplace.visualstudio.com/items?itemName=ZixuanChen.vitest-explorer) that
 lets you run and debug individual unit tests/groups directly inside vscode.
 
-## Deployment
+## Shipping
 
-Koenig packages are shipped via Lerna at the monorepo level. Please refer to the monorepo's [README](../../README.md) for deployment instructions.
+Koenig packages are versioned and published as part of the Ghost monorepo's
+workspace package release process. See the Koenig [shipping guide](../README.md#shipping).

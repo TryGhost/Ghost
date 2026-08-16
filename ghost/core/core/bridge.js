@@ -110,26 +110,24 @@ class Bridge {
         debug('reload frontend');
         const siteApp = require('./frontend/web/site');
 
-        // Clear lazy router configs before re-registration so they don't pile up
-        // across reloads. No-op without a lazy backend; eager resets separately.
-        urlService.facade.reset();
-
         const routerConfig = {
             routeSettings: await routeSettings.loadRouteSettings(),
-            urlService: urlService.facade
+            urlService
         };
+
+        // Clear lazy router configs before re-registration so they don't pile
+        // up across reloads — but only once the settings read has resolved.
+        // reset() also clears `routersReady`, which gates the maintenance
+        // middleware, so doing this before the await 503s the site and the
+        // Admin API for the length of a read that is a network round trip on
+        // Pro, and leaves them 503ing with no recovery but a restart if it
+        // rejects. Nothing re-registers after a failed reload.
+        urlService.reset();
 
         siteApp.reload(routerConfig);
 
         // re-initialize apps (register app routers, because we have re-initialized the site routers)
         appService.init();
-
-        // connect routers and resources again
-        urlService.queue.start({
-            event: 'init',
-            tolerance: 100,
-            requiredSubscriberCount: 1
-        });
     }
 }
 

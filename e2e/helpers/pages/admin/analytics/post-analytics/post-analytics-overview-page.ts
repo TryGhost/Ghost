@@ -1,3 +1,4 @@
+import * as postAnalyticsSel from '@tryghost/test-data/selectors/post-analytics';
 import {AdminPage} from '@/admin-pages';
 import {Locator, Page} from '@playwright/test';
 
@@ -12,10 +13,10 @@ export class PostAnalyticsOverviewPage extends AdminPage {
         super(page);
         this.pageUrl = '/ghost/#/posts/analytics';
 
-        this.giftLinkCard = page.getByTestId('gift-link-card');
+        this.giftLinkCard = page.getByTestId(postAnalyticsSel.giftLinkCard);
         this.shareGiftLinkButton = this.giftLinkCard.getByRole('button', {name: 'Share'});
-        this.giftLinkVisitorsBadge = page.getByTestId('gift-link-views');
-        this.giftLinkCardVisitors = page.getByTestId('gift-link-card-visitors');
+        this.giftLinkVisitorsBadge = page.getByTestId(postAnalyticsSel.giftLinkViews);
+        this.giftLinkCardVisitors = page.getByTestId(postAnalyticsSel.giftLinkCardVisitors);
         this.giftLinkUrlText = page.getByRole('dialog').getByText(/\?gift=/);
     }
 

@@ -8,6 +8,11 @@ export const tagsPage = "tags-page";
 export const tagsList = "tags-list";
 export const tagListRow = "tag-list-row";
 export const tagsHeaderTabs = "tags-header-tabs";
+export const tagDetail = "tag-detail";
+export const tagDetailTitle = "tag-detail-title";
+export const deleteTagModal = "delete-tag-modal";
+export const deleteTagPostsCount = "delete-tag-posts-count";
+export const confirmDeleteTag = "confirm-delete-tag";
 
 // accessible names
 export const publicTab = "Public tags";

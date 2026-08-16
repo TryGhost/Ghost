@@ -1,7 +1,8 @@
 import RSVP from 'rsvp';
 import Service from '@ember/service';
 import {default as Flexsearch} from 'flexsearch';
-import {SEARCHABLES, createSearchResult, sortSearchResultsByStatus} from '../utils/search';
+import {createSearchResult, getSearchables, sortSearchResultsByStatus} from '../utils/search';
+import {inject} from 'ghost-admin/decorators/inject';
 import {isEmpty} from '@ember/utils';
 import {pluralize} from 'ember-inflector';
 import {inject as service} from '@ember/service';
@@ -14,25 +15,32 @@ export default class SearchProviderFlexService extends Service {
     @service notifications;
     @service ghostPaths;
 
-    indexes = SEARCHABLES.reduce((indexes, searchable) => {
-        indexes[searchable.model] = new Document({
-            tokenize: 'forward',
-            document: {
-                id: 'id',
-                index: searchable.index,
-                store: true
-            }
-        });
+    @inject config;
 
-        return indexes;
-    }, {});
+    constructor() {
+        super(...arguments);
+
+        this.searchables = getSearchables(this.config.hostSettings);
+        this.indexes = this.searchables.reduce((indexes, searchable) => {
+            indexes[searchable.model] = new Document({
+                tokenize: 'forward',
+                document: {
+                    id: 'id',
+                    index: searchable.index,
+                    store: true
+                }
+            });
+
+            return indexes;
+        }, {});
+    }
 
     /* eslint-disable require-yield */
     @task
     *searchTask(term) {
         const results = [];
 
-        SEARCHABLES.forEach((searchable) => {
+        this.searchables.forEach((searchable) => {
             const searchResults = this.indexes[searchable.model].search(term, {enrich: true});
             const usedIds = new Set();
             let groupResults = [];
@@ -56,6 +64,7 @@ export default class SearchProviderFlexService extends Service {
             if (!isEmpty(groupResults)) {
                 results.push({
                     groupName: searchable.name,
+                    groupKey: searchable.key,
                     options: groupResults
                 });
             }
@@ -68,7 +77,7 @@ export default class SearchProviderFlexService extends Service {
     @task
     *refreshContentTask() {
         try {
-            const promises = SEARCHABLES.map(searchable => this.#loadSearchable(searchable));
+            const promises = this.searchables.map(searchable => this.#loadSearchable(searchable));
             yield RSVP.all(promises);
         } catch (error) {
             // eslint-disable-next-line
@@ -77,6 +86,13 @@ export default class SearchProviderFlexService extends Service {
     }
 
     async #loadSearchable(searchable) {
+        if (searchable.staticItems) {
+            searchable.staticItems.forEach((item) => {
+                this.indexes[searchable.model].add(item);
+            });
+            return;
+        }
+
         const url = this.ghostPaths.url.api(`search-index/${pluralize(searchable.model)}`);
         const query = {};
 

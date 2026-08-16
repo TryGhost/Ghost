@@ -1,10 +1,100 @@
 import errors from '@tryghost/errors';
-import {Gift, type GiftCadence, type GiftStatus} from './gift';
-import type {FindPendingReminderOptions, GiftRepository, RepositoryTransactionOptions} from './gift-repository';
+import {chainTransformers, mapKeys, replaceFilters} from '@tryghost/mongo-utils';
+import type {Knex} from 'knex';
+import {Gift} from './gift';
+import {decodeGiftRow, encodeGift} from './gift-codec';
+import type {GiftCadence, GiftRow} from './gift-schema';
+
+type ParsedNqlFilter = unknown;
+
+export interface GiftEventBrowseOptions {
+    filter?: string;
+    limit?: number | 'all';
+    order?: string;
+    page?: number;
+}
+
+export interface Pagination {
+    page: number;
+    pages: number;
+    limit: number | 'all';
+    total: number;
+    prev: number | null;
+    next: number | null;
+}
+
+export interface GiftEventData {
+    id: string;
+    member: Record<string, unknown> | null;
+    member_id: string | null;
+    tier_name?: string;
+    cadence: GiftCadence;
+    duration: number;
+    amount: number;
+    currency: string;
+    created_at: Date | string | null;
+}
+
+export interface GiftEventPage {
+    data: Array<{
+        type: 'gift_purchase_event' | 'gift_redemption_event';
+        data: GiftEventData;
+    }>;
+    meta: {
+        pagination?: Pagination;
+    };
+}
+
+export interface RepositoryTransactionOptions {
+    transacting?: Knex.Transaction;
+    forUpdate?: boolean;
+}
+
+export interface FindPendingReminderOptions {
+    now: Date;
+    reminderLeadMs: number;
+    reminderFloorMs: number;
+    transacting?: Knex.Transaction;
+}
+
+export interface GiftRepository {
+    existsByCheckoutSessionId(checkoutSessionId: string): Promise<boolean>;
+    getById(id: string, options?: RepositoryTransactionOptions): Promise<Gift | null>;
+    getByToken(token: string, options?: RepositoryTransactionOptions): Promise<Gift | null>;
+    getByPaymentIntentId(paymentIntentId: string): Promise<Gift | null>;
+    findPendingConsumption(): Promise<Gift[]>;
+    findPendingExpiration(): Promise<Gift[]>;
+    findPendingReminder(options: FindPendingReminderOptions): Promise<Gift[]>;
+    findUnsentReminders(): Promise<Gift[]>;
+    getActiveByMember(memberId: string, options?: RepositoryTransactionOptions): Promise<Gift | null>;
+    getActiveByMembers(memberIds: string[], options?: RepositoryTransactionOptions): Promise<Map<string, Gift>>;
+    browsePurchaseEvents(options?: GiftEventBrowseOptions, filter?: ParsedNqlFilter): Promise<GiftEventPage>;
+    browseRedemptionEvents(options?: GiftEventBrowseOptions, filter?: ParsedNqlFilter): Promise<GiftEventPage>;
+    create(gift: Gift, options?: RepositoryTransactionOptions): Promise<void>;
+    update(gift: Gift, options?: RepositoryTransactionOptions): Promise<void>;
+    transaction<T>(callback: (transacting: Knex.Transaction) => Promise<T>): Promise<T>;
+}
+
+type BookshelfSaveOptions = RepositoryTransactionOptions & {
+    autoRefresh?: boolean;
+    method?: 'update';
+    patch?: boolean;
+};
+
+type GiftEventQueryOptions = GiftEventBrowseOptions & {
+    withRelated: Array<'buyer' | 'redeemer' | 'tier'>;
+    filter: string;
+    useBasicCount: boolean;
+    mongoTransformer: (filter: ParsedNqlFilter) => ParsedNqlFilter;
+};
+
+type BookshelfFindOptions = RepositoryTransactionOptions & {
+    filter?: string;
+    require?: boolean;
+};
 
 type BookshelfDocument<T> = {
-    save(data: Partial<T>, options?: unknown): Promise<unknown>;
-    set(data: Partial<T>): void;
+    save(data: Partial<T>, options?: BookshelfSaveOptions): Promise<BookshelfDocument<T>>;
     toJSON(): T;
 };
 
@@ -12,35 +102,31 @@ type BookshelfCollection<T> = {
     models: BookshelfDocument<T>[];
 };
 
-type BookshelfModel<T> = {
-    add(data: Partial<T>, unfilteredOptions?: unknown): Promise<T>;
-    transaction<R>(callback: (transacting: unknown) => Promise<R>): Promise<R>;
-    findOne(data: Record<string, unknown>, unfilteredOptions?: unknown): Promise<BookshelfDocument<T> | null>;
-    findAll(unfilteredOptions?: unknown): Promise<BookshelfCollection<T>>;
-};
-
-type GiftRow = {
+type GiftEventBookshelfRow = {
     id: string;
-    token: string;
-    buyer_email: string;
     buyer_member_id: string | null;
     redeemer_member_id: string | null;
-    tier_id: string;
+    buyer?: Record<string, unknown> | null;
+    redeemer?: Record<string, unknown> | null;
+    tier?: {name?: string} | null;
     cadence: GiftCadence;
     duration: number;
-    currency: string;
     amount: number;
-    stripe_checkout_session_id: string;
-    stripe_payment_intent_id: string;
-    consumes_at: Date | null;
-    expires_at: Date;
-    status: GiftStatus;
-    purchased_at: Date;
-    redeemed_at: Date | null;
-    consumed_at: Date | null;
-    expired_at: Date | null;
-    refunded_at: Date | null;
-    consumes_soon_reminder_sent_at: Date | null;
+    currency: string;
+    purchased_at: Date | string;
+    redeemed_at: Date | string | null;
+};
+
+type GiftEventBookshelfDocument = {
+    toJSON(options?: GiftEventQueryOptions): GiftEventBookshelfRow;
+};
+
+type BookshelfModel<T> = {
+    add(data: Partial<T>, options?: RepositoryTransactionOptions): Promise<BookshelfDocument<T>>;
+    transaction<R>(callback: (transacting: Knex.Transaction) => Promise<R>): Promise<R>;
+    findOne(data: Partial<T> & {id?: string}, options?: BookshelfFindOptions): Promise<BookshelfDocument<T> | null>;
+    findAll(options?: BookshelfFindOptions): Promise<BookshelfCollection<T>>;
+    findPage(options: GiftEventQueryOptions): Promise<{data: GiftEventBookshelfDocument[]; meta: GiftEventPage['meta']}>;
 };
 
 type GiftBookshelfModel = BookshelfModel<GiftRow>;
@@ -116,6 +202,28 @@ export class GiftBookshelfRepository implements GiftRepository {
         return map;
     }
 
+    browsePurchaseEvents(options: GiftEventBrowseOptions = {}, filter?: ParsedNqlFilter): Promise<GiftEventPage> {
+        return this.browseEvents({
+            options,
+            filter,
+            type: 'gift_purchase_event',
+            relation: 'buyer',
+            memberIdColumn: 'buyer_member_id',
+            dateColumn: 'purchased_at'
+        });
+    }
+
+    browseRedemptionEvents(options: GiftEventBrowseOptions = {}, filter?: ParsedNqlFilter): Promise<GiftEventPage> {
+        return this.browseEvents({
+            options,
+            filter,
+            type: 'gift_redemption_event',
+            relation: 'redeemer',
+            memberIdColumn: 'redeemer_member_id',
+            dateColumn: 'redeemed_at'
+        });
+    }
+
     async findPendingConsumption(): Promise<Gift[]> {
         const now = new Date();
 
@@ -179,59 +287,80 @@ export class GiftBookshelfRepository implements GiftRepository {
         });
     }
 
-    async transaction<T>(callback: (transacting: unknown) => Promise<T>): Promise<T> {
+    async transaction<T>(callback: (transacting: Knex.Transaction) => Promise<T>): Promise<T> {
         return await this.model.transaction(callback);
     }
 
-    private toRow(gift: Gift): Omit<GiftRow, 'id'> {
-        return {
-            token: gift.token,
-            buyer_email: gift.buyerEmail,
-            buyer_member_id: gift.buyerMemberId,
-            redeemer_member_id: gift.redeemerMemberId,
-            tier_id: gift.tierId,
-            cadence: gift.cadence,
-            duration: gift.duration,
-            currency: gift.currency,
-            amount: gift.amount,
-            stripe_checkout_session_id: gift.stripeCheckoutSessionId,
-            stripe_payment_intent_id: gift.stripePaymentIntentId,
-            consumes_at: gift.consumesAt,
-            expires_at: gift.expiresAt,
-            status: gift.status,
-            purchased_at: gift.purchasedAt,
-            redeemed_at: gift.redeemedAt,
-            consumed_at: gift.consumedAt,
-            expired_at: gift.expiredAt,
-            refunded_at: gift.refundedAt,
-            consumes_soon_reminder_sent_at: gift.consumesSoonReminderSentAt
-        };
+    private toRow(gift: Gift): GiftRow {
+        return encodeGift(gift);
     }
 
     private toGift(model: BookshelfDocument<GiftRow>): Gift {
-        const json = model.toJSON();
+        return decodeGiftRow(model.toJSON());
+    }
 
-        return new Gift({
-            token: json.token,
-            buyerEmail: json.buyer_email,
-            buyerMemberId: json.buyer_member_id,
-            redeemerMemberId: json.redeemer_member_id,
-            tierId: json.tier_id,
-            cadence: json.cadence,
-            duration: json.duration,
-            currency: json.currency,
-            amount: json.amount,
-            stripeCheckoutSessionId: json.stripe_checkout_session_id,
-            stripePaymentIntentId: json.stripe_payment_intent_id,
-            consumesAt: json.consumes_at,
-            expiresAt: json.expires_at,
-            status: json.status,
-            purchasedAt: json.purchased_at,
-            redeemedAt: json.redeemed_at,
-            consumedAt: json.consumed_at,
-            expiredAt: json.expired_at,
-            refundedAt: json.refunded_at,
-            consumesSoonReminderSentAt: json.consumes_soon_reminder_sent_at ?? null
+    private async browseEvents({
+        options,
+        filter,
+        type,
+        relation,
+        memberIdColumn,
+        dateColumn
+    }: {
+        options: GiftEventBrowseOptions;
+        filter?: ParsedNqlFilter;
+        type: 'gift_purchase_event' | 'gift_redemption_event';
+        relation: 'buyer' | 'redeemer';
+        memberIdColumn: 'buyer_member_id' | 'redeemer_member_id';
+        dateColumn: 'purchased_at' | 'redeemed_at';
+    }): Promise<GiftEventPage> {
+        const replaceCustomFilter = (existingFilter: ParsedNqlFilter): ParsedNqlFilter => replaceFilters(existingFilter, {
+            custom: filter
         });
+        const queryOptions: GiftEventQueryOptions = {
+            ...options,
+            withRelated: [relation, 'tier'],
+            filter: `${memberIdColumn}:-null+custom:true`,
+            useBasicCount: true,
+            mongoTransformer: chainTransformers(
+                replaceCustomFilter,
+                ...mapKeys({
+                    'data.created_at': dateColumn,
+                    'data.member_id': memberIdColumn
+                })
+            )
+        };
+
+        if (typeof queryOptions.order === 'string') {
+            queryOptions.order = queryOptions.order.replace(/created_at/g, dateColumn);
+        }
+
+        if (!this.model.findPage) {
+            throw new errors.InternalServerError({message: 'Gift model does not support paginated event queries.'});
+        }
+
+        const {data: models, meta} = await this.model.findPage(queryOptions);
+
+        return {
+            data: models.map((model) => {
+                const json = model.toJSON(queryOptions);
+
+                return {
+                    type,
+                    data: {
+                        id: json.id,
+                        member: json[relation] || null,
+                        member_id: json[memberIdColumn],
+                        tier_name: json.tier?.name,
+                        cadence: json.cadence,
+                        duration: json.duration,
+                        amount: json.amount,
+                        currency: json.currency,
+                        created_at: json[dateColumn]
+                    }
+                };
+            }),
+            meta
+        };
     }
 }

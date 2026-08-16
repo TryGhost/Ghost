@@ -12,6 +12,7 @@ import {
     type S3Client
 } from '@aws-sdk/client-s3';
 
+import {utils as errorUtils} from '@tryghost/errors';
 import {RouteSettingsStoreBase} from '@tryghost/adapter-base-route-settings';
 
 import S3RouteSettingsStore from '../../../../../core/server/adapters/route-settings/S3RouteSettingsStore';
@@ -222,7 +223,7 @@ describe('UNIT: S3RouteSettingsStore', function () {
                 assert.equal(copyCommands(fake.sent).length, 0);
             });
 
-            it('propagates a non-NotFound existence-check error and does not overwrite', async function () {
+            it('reports a non-NotFound existence-check error and does not overwrite', async function () {
                 const sent: S3Command[] = [];
                 const client = stubbedClient(async (command) => {
                     sent.push(command);
@@ -232,7 +233,7 @@ describe('UNIT: S3RouteSettingsStore', function () {
                     return {};
                 });
 
-                await assert.rejects(createStore(client).replace(fromYaml(SAMPLE_YAML)), /access denied/);
+                await assert.rejects(createStore(client).replace(fromYaml(SAMPLE_YAML)), /Something went wrong, please try again\./);
                 assert.equal(putCommands(sent).length, 0);
             });
         });
@@ -283,12 +284,32 @@ describe('UNIT: S3RouteSettingsStore', function () {
                 });
             });
 
-            it('propagates non-NotFound S3 errors instead of falling back to defaults', async function () {
+            it('reports non-NotFound S3 errors instead of falling back to defaults', async function () {
                 const client = stubbedClient(async () => {
                     throw new Error('AccessDenied');
                 });
 
-                await assert.rejects(createStore(client).get(), /AccessDenied/);
+                await assert.rejects(createStore(client).get(), /Something went wrong, please try again\./);
+            });
+
+            it('reports an error the API error handler can clone', async function () {
+                const sdkException = Object.assign(new Error('Access Denied'), {name: 'AccessDenied'}) as Error & {$response?: unknown};
+                sdkException.$response = {error: sdkException};
+                const client = stubbedClient(async () => {
+                    throw sdkException;
+                });
+
+                // Guards the guard: if this stops throwing, the hazard is gone
+                // upstream and this whole approach can be revisited.
+                assert.throws(() => errorUtils.prepareStackForUser(sdkException), RangeError);
+
+                await assert.rejects(createStore(client).get(), (err: {message?: string; stack?: string}) => {
+                    assert.equal(err.message, 'Something went wrong, please try again.');
+                    assert.doesNotThrow(() => errorUtils.prepareStackForUser(err as Error));
+                    // The S3 failure is still diagnosable from the logs.
+                    assert.match(String(err.stack), /Caused by: AccessDenied: Access Denied/);
+                    return true;
+                });
             });
         });
     });

@@ -49,19 +49,17 @@ describe('UrlTranslator', function () {
                     }
                 },
                 urlService: {
-                    facade: {
-                        getUrlForResource: (resource) => {
-                            return '/path/' + resource.id;
-                        },
-                        resolveUrl: async (path) => {
-                            switch (path) {
-                            case '/path/post': return {type: 'posts', id: 'post'};
-                            case '/path/tag': return {type: 'tags', id: 'tag'};
-                            case '/path/page': return {type: 'pages', id: 'page'};
-                            case '/path/author': return {type: 'authors', id: 'author'};
-                            }
-                            return null;
+                    getUrlForResource: (resource) => {
+                        return '/path/' + resource.id;
+                    },
+                    resolveUrl: async (path) => {
+                        switch (path) {
+                        case '/path/post': return {type: 'posts', id: 'post'};
+                        case '/path/tag': return {type: 'tags', id: 'tag'};
+                        case '/path/page': return {type: 'pages', id: 'page'};
+                        case '/path/author': return {type: 'authors', id: 'author'};
                         }
+                        return null;
                     }
                 },
                 models
@@ -141,16 +139,14 @@ describe('UrlTranslator', function () {
         beforeAll(function () {
             translator = new UrlTranslator({
                 urlService: {
-                    facade: {
-                        resolveUrl: async (path) => {
-                            switch (path) {
-                            case '/post': return {type: 'posts', id: 'post'};
-                            case '/tag': return {type: 'tags', id: 'tag'};
-                            case '/page': return {type: 'pages', id: 'page'};
-                            case '/author': return {type: 'authors', id: 'author'};
-                            }
-                            return null;
+                    resolveUrl: async (path) => {
+                        switch (path) {
+                        case '/post': return {type: 'posts', id: 'post'};
+                        case '/tag': return {type: 'tags', id: 'tag'};
+                        case '/page': return {type: 'pages', id: 'page'};
+                        case '/author': return {type: 'authors', id: 'author'};
                         }
+                        return null;
                     }
                 }
             });
@@ -194,9 +190,7 @@ describe('UrlTranslator', function () {
         beforeAll(function () {
             translator = new UrlTranslator({
                 urlService: {
-                    facade: {
-                        getUrlForResource: () => '/path'
-                    }
+                    getUrlForResource: () => '/path'
                 },
                 models
             });
@@ -245,20 +239,18 @@ describe('UrlTranslator', function () {
 
     describe('getResourceUrl', function () {
         // Lazy URL service evaluates permalink templates against resource fields
-        // (slug, published_at, primary_tag, ...). The facade contract requires
-        // the full resource shape, not just `{id, type}`.
-        it('passes the model\'s plain data (slug, etc.) to the facade', function () {
+        // (slug, published_at, primary_tag, ...), so it needs the full resource
+        // shape, not just `{id, type}`.
+        it('passes the model\'s plain data (slug, etc.) to the URL service', function () {
             let captured;
             const translator = new UrlTranslator({
                 urlUtils: {
                     relativeToAbsolute: t => 'https://abs' + t
                 },
                 urlService: {
-                    facade: {
-                        getUrlForResource: (resource) => {
-                            captured = resource;
-                            return '/' + resource.slug + '/';
-                        }
+                    getUrlForResource: (resource) => {
+                        captured = resource;
+                        return '/' + resource.slug + '/';
                     }
                 },
                 models: {}
@@ -283,10 +275,8 @@ describe('UrlTranslator', function () {
                     relativeToAbsolute: t => 'https://abs' + t
                 },
                 urlService: {
-                    facade: {
-                        getUrlForResource: () => {
-                            throw new Error('facade should not be consulted for email-only posts');
-                        }
+                    getUrlForResource: () => {
+                        throw new Error('the URL service should not be consulted for email-only posts');
                     }
                 },
                 models: {}

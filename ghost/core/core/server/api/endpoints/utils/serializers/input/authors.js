@@ -17,7 +17,7 @@ module.exports = {
     browse(apiConfig, frame) {
         debug('browse');
 
-        url.forceUrlColumnsWhenLazy(frame, 'authors');
+        url.forceUrlColumns(frame, 'authors');
 
         if (utils.isContentAPI(frame)) {
             setDefaultOrder(frame);
@@ -27,7 +27,7 @@ module.exports = {
     read(apiConfig, frame) {
         debug('read');
 
-        url.forceUrlColumnsWhenLazy(frame, 'authors');
+        url.forceUrlColumns(frame, 'authors');
 
         if (utils.isContentAPI(frame)) {
             setDefaultOrder(frame);

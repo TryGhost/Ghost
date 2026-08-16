@@ -6,13 +6,13 @@ const MyProfileRedirect = () => {
 
     if (!currentUser) {
         if (isError || !isLoading) {
-            return <Navigate replace to="/" />;
+            return <Navigate to="/" replace />;
         }
 
         return null;
     }
 
-    return <Navigate replace to={`/settings/staff/${currentUser.slug}`} />;
+    return <Navigate to={`/settings/staff/${currentUser.slug}`} replace />;
 };
 
 export default MyProfileRedirect;

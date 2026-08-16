@@ -9,6 +9,7 @@ const charset = require('charset');
 const iconv = require('iconv-lite');
 const path = require('path');
 const crypto = require('crypto');
+const imageTransform = require('@tryghost/image-transform');
 
 // Some sites block non-standard user agents so we need to mimic a typical browser
 // Note: the Ghost/5.0 string _may_ be in use by 3rd parties so use caution when updating across majors
@@ -39,7 +40,26 @@ const messages = {
     insufficientMetadata: 'URL contains insufficient metadata.',
     unknownProvider: 'No provider found for supplied URL.',
     unableToFetchOembed: 'Unable to fetch requested embed.',
-    unauthorized: 'URL contains a private resource.'
+    unauthorized: 'URL contains a private resource.',
+    unconvertibleSvg: 'SVG image is too large or compressed to convert.'
+};
+
+const SVG_RASTER_SIZE = 256;
+const SVG_RASTER_TIMEOUT_SECONDS = 10;
+const MAX_SVG_BYTES = 32 * 1024;
+const GZIP_MAGIC = [0x1f, 0x8b];
+
+const SVG_EXTENSIONS = new Set(['.svg', '.svgz']);
+const SVG_SNIFF_BYTES = 1024;
+
+const shouldRasterize = (buffer, ext) => {
+    if (SVG_EXTENSIONS.has(ext.toLowerCase())) {
+        return true;
+    }
+
+    const head = buffer.subarray(0, SVG_SNIFF_BYTES).toString('utf8').trimStart();
+
+    return head.startsWith('<') && /<svg[\s:>]/i.test(head);
 };
 
 /**
@@ -175,13 +195,34 @@ class OEmbedService {
         }
 
         // Fetch image buffer from the URL
-        const imageBuffer = await this.fetchImageBuffer(imageUrl);
+        let imageBuffer = await this.fetchImageBuffer(imageUrl);
 
         // Extract file name from URL
         const fileName = path.basename(new URL(imageUrl).pathname);
-        const ext = path.extname(fileName);
+        let ext = path.extname(fileName);
         const baseName = ext ? path.basename(fileName, ext) : fileName;
         const name = this.imageStore.getSanitizedFileName(baseName);
+
+        if (shouldRasterize(imageBuffer, ext)) {
+            if (imageBuffer.length > MAX_SVG_BYTES || GZIP_MAGIC.every((byte, index) => imageBuffer[index] === byte)) {
+                throw new errors.ValidationError({
+                    message: tpl(messages.unconvertibleSvg),
+                    context: imageUrl
+                });
+            }
+
+            imageBuffer = await imageTransform.resizeFromBuffer(imageBuffer, {
+                // without `format` this returns the original bytes whenever they
+                // are smaller, storing the SVG under a .png name
+                format: 'png',
+                width: SVG_RASTER_SIZE,
+                height: SVG_RASTER_SIZE,
+                withoutEnlargement: false,
+                timeout: SVG_RASTER_TIMEOUT_SECONDS
+            });
+
+            ext = '.png';
+        }
 
         const uniqueFileName = `${name}-${crypto.randomUUID()}${ext}`;
         const targetPath = path.join(imageType, uniqueFileName);

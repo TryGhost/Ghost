@@ -104,8 +104,28 @@ describe('{{link}} helper', function () {
         });
 
         it('supports multiple attributes', function () {
-            assert.equal(compile('{{#link href="#myheading" class="my-class" target="_blank"}}text{{/link}}')
-                .with({}), '<a class="my-class" href="#myheading" target="_blank">text</a>');
+            assert.equal(compile('{{#link href="#myheading" class="my-class" target="_blank" rel="noopener"}}text{{/link}}')
+                .with({}), '<a class="my-class" href="#myheading" rel="noopener" target="_blank">text</a>');
+        });
+
+        it('supports a single attribute', function () {
+            assert.equal(compile('{{#link href="#myheading" target="_blank"}}text{{/link}}')
+                .with({}), '<a href="#myheading" target="_blank">text</a>');
+        });
+
+        it('collapses repeated whitespace inside attribute values', function () {
+            assert.equal(compile('{{#link href="#myheading" title="Hello   world"}}text{{/link}}')
+                .with({}), '<a href="#myheading" title="Hello world">text</a>');
+        });
+
+        it('keeps a trailing space inside an attribute value', function () {
+            assert.equal(compile('{{#link href="#myheading" title="Hello "}}text{{/link}}')
+                .with({}), '<a href="#myheading" title="Hello ">text</a>');
+        });
+
+        it('preserves existing cleanup when an attribute value contains a space before >', function () {
+            assert.equal(compile('{{#link href="#myheading" title="Hello > world"}}text{{/link}}')
+                .with({}), '<a href="#myheading" title="Hello> world">text</a>');
         });
     });
 

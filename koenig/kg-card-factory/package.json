@@ -1,6 +1,7 @@
 {
   "name": "@tryghost/kg-card-factory",
   "version": "5.2.3",
+  "description": "Card definition factory for Ghost's Mobiledoc renderer",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/TryGhost/Ghost.git",

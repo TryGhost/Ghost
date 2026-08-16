@@ -42,7 +42,9 @@ export const inputSurfaceClasses = {
         'aria-[invalid=true]:border-destructive aria-[invalid=true]:ring-destructive/20 dark:aria-[invalid=true]:ring-destructive/40',
     invalidWithin:
         'has-[[aria-invalid=true]]:border-destructive has-[[aria-invalid=true]]:ring-destructive/20 dark:has-[[aria-invalid=true]]:ring-destructive/40',
-    disabledSelf: 'disabled:cursor-not-allowed disabled:opacity-50'
+    disabledSelf: 'disabled:cursor-not-allowed disabled:opacity-50',
+    disabledFieldSelf:
+        'disabled:bg-control-disabled-surface disabled:text-muted-foreground disabled:opacity-100 disabled:hover:bg-control-disabled-surface'
 } as const;
 
 export function inputSurface(mode: 'self' | 'within' = 'self') {

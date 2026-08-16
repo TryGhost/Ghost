@@ -36,7 +36,13 @@ describe('Data Generator', function () {
 
                     if (rowName === '@@UNIQUE_CONSTRAINTS@@') {
                         for (const constraints of row) {
-                            table.unique(constraints);
+                            // A constraint is normally its columns; the object form names
+                            // it, for when the derived name would overrun MySQL's limit.
+                            if (constraints && typeof constraints === 'object' && !Array.isArray(constraints)) {
+                                table.unique(constraints.columns, {indexName: constraints.indexName});
+                            } else {
+                                table.unique(constraints);
+                            }
                         }
                         break;
                     } else if (rowName === '@@INDEXES@@') {

@@ -106,6 +106,9 @@ const controller = {
         headers: {
             cacheInvalidate: false
         },
+        options: [
+            'copy_settings_from'
+        ],
         permissions: {
             method: 'add'
         },
@@ -123,7 +126,9 @@ const controller = {
                 name: frame.file.originalname
             };
 
-            const {theme, themeOverridden} = await themeService.api.setFromZip(zip);
+            const {theme, themeOverridden} = await themeService.api.setFromZip(zip, {
+                copySettingsFrom: frame.options.copy_settings_from
+            });
             if (themeOverridden) {
                 frame.setHeader('X-Cache-Invalidate', '/*');
             }

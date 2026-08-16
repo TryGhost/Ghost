@@ -4,7 +4,23 @@ import { ShadeApp } from "@tryghost/shade/app";
 
 import App from "./app.tsx";
 import { routes } from "./routes.tsx";
+import { useTheme } from "./hooks/use-theme";
 import { AppProvider } from "./providers/app-provider";
+import { fetchKoenigLexical } from "./utils/fetch-koenig-lexical";
+
+function ThemedAdminApp() {
+    const { resolvedTheme } = useTheme();
+
+    return (
+        <ShadeApp
+            className="shade-admin"
+            darkMode={resolvedTheme === "dark"}
+            fetchKoenigLexical={fetchKoenigLexical}
+        >
+            <App />
+        </ShadeApp>
+    );
+}
 
 /**
  * The full admin provider pyramid, shared verbatim by the production entry
@@ -19,13 +35,7 @@ export function AdminAppRoot({ framework }: { framework: TopLevelFrameworkProps 
             <FrameworkProvider {...framework}>
                 <RouterProvider prefix={"/"} routes={routes}>
                     <AppProvider>
-                        <ShadeApp
-                            className="shade-admin"
-                            darkMode={false}
-                            fetchKoenigLexical={null}
-                        >
-                            <App />
-                        </ShadeApp>
+                        <ThemedAdminApp />
                     </AppProvider>
                 </RouterProvider>
             </FrameworkProvider>

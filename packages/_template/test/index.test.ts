@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {describe, it} from 'vitest';
-import {greeting} from '../src/index';
+import {greeting} from '../src/index.ts';
 
 describe('{{NAME}}', function () {
     it('returns a greeting', function () {

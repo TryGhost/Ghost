@@ -1,6 +1,5 @@
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import {authenticateSession} from 'ember-simple-auth/test-support';
-import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../helpers/mock-analytics-apps';
 import {click, currentURL, find, findAll, settled, triggerKeyEvent, visit} from '@ember/test-helpers';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
@@ -181,12 +180,7 @@ describe('Acceptance: Search', function () {
             testData = createTestData(this.server);
 
             // Default locale is 'en' - uses flex search
-            mockAnalyticsApps();
             await authenticateSession();
-        });
-
-        afterEach(function () {
-            cleanupMockAnalyticsApps();
         });
 
         it('uses FlexSearch provider for English locale', async function () {
@@ -365,6 +359,61 @@ describe('Acceptance: Search', function () {
 
             expect(currentURL()).to.equal(`/settings/staff/${testData.user.slug}`);
         });
+
+        describe('billing results', function () {
+            const enableBilling = (server) => {
+                server.db.configs.update(1, {
+                    hostSettings: {
+                        billing: {
+                            enabled: true,
+                            url: 'http://localhost:4200/billing-app',
+                            search: {
+                                groupName: 'Ghost(Pro)',
+                                items: [
+                                    {id: 'request-backup', title: 'Request backup', path: '/backups', keywords: 'backup restore data'},
+                                    {id: 'contact-support', title: 'Contact support', path: '/support', keywords: 'support help contact'}
+                                ]
+                            }
+                        }
+                    }
+                });
+            };
+
+            it('shows billing results before content results', async function () {
+                enableBilling(this.server);
+                this.server.create('post', {title: 'Backup post', slug: 'backup-post'});
+
+                await visit('/analytics');
+                await openSearch(this.owner);
+                await searchFor('backup');
+
+                assertSearchGroups(['Ghost(Pro)', 'Posts']);
+
+                const searchOptions = getSearchOptions();
+                const titles = searchOptions.map(option => getTitleText(option));
+                expect(titles).to.include('Request backup');
+            });
+
+            it('navigates to the billing page when selecting a billing result', async function () {
+                enableBilling(this.server);
+
+                await visit('/analytics');
+                await openSearch(this.owner);
+                await searchFor('contact support');
+
+                await selectWithEnter();
+
+                expect(currentURL()).to.equal('/pro/support');
+            });
+
+            it('does not show billing results when billing is not enabled', async function () {
+                await visit('/analytics');
+                await openSearch(this.owner);
+                await searchFor('backup');
+
+                assertNoResults();
+            });
+        });
     });
 
     describe('BasicSearch Provider', function () {
@@ -379,12 +428,7 @@ describe('Acceptance: Search', function () {
 
             // German locale uses basic search
             this.server.db.settings.update({key: 'locale'}, {value: 'de'});
-            mockAnalyticsApps();
             await authenticateSession();
-        });
-
-        afterEach(function () {
-            cleanupMockAnalyticsApps();
         });
 
         it('uses BasicSearch provider for non-English locale', async function () {

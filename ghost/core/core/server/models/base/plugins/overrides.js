@@ -96,11 +96,13 @@ module.exports = function (Bookshelf) {
                     (value, key) => key.startsWith(PIVOT_PREFIX)
                 );
 
-                if (this.relationships) {
-                    this.relationships.forEach((relation) => {
-                        if (this._previousRelations && Object.prototype.hasOwnProperty.call(this._previousRelations, relation)) {
-                            clonedModel.related(relation).models = this._previousRelations[relation].models;
-                        }
+                // Iterate `_previousRelations` rather than `relationships` — a relation
+                // can carry previous state without being managed by bookshelf-relations
+                // (e.g. a member's stripeSubscriptions). Behaviour is unchanged for
+                // relations that are in both.
+                if (this._previousRelations) {
+                    Object.keys(this._previousRelations).forEach((relation) => {
+                        clonedModel.related(relation).models = this._previousRelations[relation].models;
                     });
                 }
 

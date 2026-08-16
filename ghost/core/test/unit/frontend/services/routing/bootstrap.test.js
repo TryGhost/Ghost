@@ -3,7 +3,7 @@ const CollectionRouter = require('../../../../../core/frontend/services/routing/
 const RouterManager = require('../../../../../core/frontend/services/routing/router-manager');
 const registry = require('../../../../../core/frontend/services/routing/registry');
 
-const RESOURCE_CONFIG = {QUERY: {post: {controller: 'posts', resource: 'posts'}}};
+const RESOURCE_CONFIG = {QUERY: {post: {controller: 'postsPublic', resource: 'posts'}}};
 
 describe('UNIT: services/routing/router-manager', function () {
     let routerUpdatedSpy;

@@ -75,7 +75,7 @@ module.exports = function getConfigProperties() {
         configProperties.stats = getTinybirdStatsPayload(statsConfig, siteUuid);
     }
 
-    if (labs.isSet('featurebaseFeedback') && config.get('featurebase')) {
+    if (config.get('featurebase')) {
         // Expose only the public featurebase config properties
         configProperties.featurebase = {
             enabled: config.get('featurebase:enabled'),

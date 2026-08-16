@@ -41,9 +41,7 @@ describe('Front-end gift links', function () {
         const originalSettingsCacheGetFn = settingsCache.get;
         sinon.stub(settingsCache, 'get').callsFake(function (key: any, options: any) {
             if (key === 'labs') {
-                // llmsTxt enables the markdown variants (`.md` URLs and Accept
-                // negotiation) so the suite can pin their gift-link behaviour.
-                return {members: true, llmsTxt: true};
+                return {members: true};
             }
             if (key === 'active_theme') {
                 return 'members-test-theme';

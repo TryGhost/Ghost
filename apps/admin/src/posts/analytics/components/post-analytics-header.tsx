@@ -1,11 +1,11 @@
 import GiftLinkModal from '@/posts/analytics/modals/gift-link-modal';
+import PostShareModal from '@/shared/analytics/post-share-modal';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, Navbar, PageMenu, PageMenuItem} from '@tryghost/shade/components';
 import {H1} from '@tryghost/shade/primitives';
 import {LucideIcon, formatDisplayDate, formatDisplayTime, formatNumber} from '@tryghost/shade/utils';
 import {useAnalyticsData} from '@/shared/analytics/use-analytics-data';
 import {usePostAnalytics} from '@/posts/analytics/providers/post-analytics-context';
-import {PostShareModal} from '@tryghost/shade/posts-stats';
 import {getSiteTimezone} from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import {giftAccessLabel} from '@/posts/analytics/utils/gift-link';
 import {hasBeenEmailed, isEmailOnly, isPublishedAndEmailed, isPublishedOnly, trackEvent, useActiveVisitors, useNavigate} from '@tryghost/admin-x-framework';

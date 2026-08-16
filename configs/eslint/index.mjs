@@ -132,7 +132,7 @@ export const tsReactAppRules = {
     'no-unexpected-multiline': 'off',
     '@typescript-eslint/no-inferrable-types': 'off',
     // Catches real type-safety regressions. Workspaces with legacy violations
-    // override to 'off' explicitly (admin-x-settings: 2, comments-ui: 41).
+    // override to 'off' explicitly (comments-ui: 41).
     '@typescript-eslint/no-explicit-any': 'error',
     // TODO: 97 violations across 8 workspaces. Cleanup PR will flip to 'error'.
     '@typescript-eslint/no-non-null-assertion': 'off',

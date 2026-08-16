@@ -1,3 +1,4 @@
+import {describe, expect, it} from 'vitest';
 import getHandle from '../../../src/utils/get-handle';
 
 describe('getHandle', function () {

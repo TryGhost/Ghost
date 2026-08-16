@@ -23,8 +23,11 @@ on:
     # duration, giving each merge a fresh rebase + green CI window.
     #
     # Times are UTC; matches renovate.json5's `schedule` block.
-    # Weekday early-morning window (Mon-Sat 00:00-04:59 UTC)
-    - cron: '17 0-4 * * 1-6'
+    # Weekday early-morning window (Mon-Sat 00:00-05:59 UTC). Last tick is
+    # 03:47 rather than the end of the window: Actions has been delivering
+    # these up to ~70min late, so a later cron lands outside the window and
+    # wastes the freshest-CI opportunity of the night.
+    - cron: '47 0-3 * * 1-6'
     # Weekday evening window (Mon-Fri 23:00-23:59 UTC)
     - cron: '17 23 * * 1-5'
     # Weekend - every 2h is plenty; no automerge urgency, just batch creation
@@ -38,6 +41,12 @@ on:
         required: false
         default: false
         type: boolean
+      logLevel:
+        description: 'Renovate log level for this manual run'
+        required: false
+        default: 'info'
+        type: choice
+        options: [info, debug, trace]
 
 concurrency:
   group: renovate
@@ -67,7 +76,7 @@ jobs:
           repositories: Ghost
 
       - name: Checkout
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       # Enforce a live cap on open Renovate PRs while still letting Renovate
       # maintain and automerge the PRs that already exist.
@@ -81,9 +90,13 @@ jobs:
       #
       # Below the cap, restrict PR creation to the number of slots left. At or
       # above the cap, or when RENOVATE_MAINTENANCE_ONLY=true, force dashboard
-      # approval for new branches/PRs while allowing existing PR branches to
-      # keep updating outside the creation schedule. That gives us "rebase and
-      # merge the 10, but create no more."
+      # approval for new branches/PRs. Existing PRs keep updating and merging
+      # on the normal schedule. That gives us "rebase and merge the 10, but
+      # create no more."
+      #
+      # Deliberately does NOT force `updateNotScheduled: true` — that overrides
+      # renovate.json5's `false` and puts a full-fleet force-push in the middle
+      # of the workday, which is exactly what #28207 removed.
       - name: Configure Renovate PR cap
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
@@ -98,19 +111,24 @@ jobs:
             PR_CAP=10
           fi
 
+          # Exclude `needs:review` PRs: Renovate cannot merge them itself, so
+          # counting them lets a handful of parked updates hold the cap shut
+          # forever — the cap is only released by Renovate merging something.
           open_count=$(gh pr list \
             --repo "${{ github.repository }}" \
             --author "app/tryghost-renovate" \
             --state open \
-            --json number --jq 'length')
+            --limit 100 \
+            --json number,labels \
+            --jq '[.[] | select(any(.labels[].name; . == "needs:review") | not)] | length')
 
-          echo "Renovate has $open_count open PRs (cap: $PR_CAP)"
+          echo "Renovate has $open_count open PRs it can merge itself (cap: $PR_CAP)"
 
           if [ "$MAINTENANCE_ONLY" = "true" ]; then
-            force='{"dependencyDashboardApproval":true,"prCreation":"approval","updateNotScheduled":true,"vulnerabilityAlerts":{"dependencyDashboardApproval":false}}'
+            force='{"dependencyDashboardApproval":true,"prCreation":"approval","vulnerabilityAlerts":{"dependencyDashboardApproval":false}}'
             echo "::notice::RENOVATE_MAINTENANCE_ONLY=true. Running in maintenance-only mode: existing PRs may update/automerge, new PRs require dashboard approval."
           elif [ "$open_count" -ge "$PR_CAP" ]; then
-            force='{"dependencyDashboardApproval":true,"prCreation":"approval","updateNotScheduled":true,"vulnerabilityAlerts":{"dependencyDashboardApproval":false}}'
+            force='{"dependencyDashboardApproval":true,"prCreation":"approval","vulnerabilityAlerts":{"dependencyDashboardApproval":false}}'
             echo "::notice::Renovate is at or above the open PR cap. Running in maintenance-only mode: existing PRs may update/automerge, new PRs require dashboard approval."
           else
             remaining=$((PR_CAP - open_count))
@@ -126,11 +144,11 @@ jobs:
           echo "RENOVATE_FORCE=$force" >> "$GITHUB_ENV"
 
       - name: Self-hosted Renovate
-        uses: renovatebot/github-action@dd5302ec17783b2fc721b19ae7209b57b1587765 # v46.1.17
+        uses: renovatebot/github-action@e09d604f8f803bb527bd8321ed5be06c460b8682 # v46.2.2
         with:
           token: ${{ steps.app-token.outputs.token }}
         env:
-          LOG_LEVEL: debug
+          LOG_LEVEL: ${{ inputs.logLevel || 'info' }}
           RENOVATE_REPOSITORY_CACHE: enabled
           RENOVATE_REPOSITORIES: TryGhost/Ghost
           # Ghost is already onboarded via Mend; don't open an onboarding PR.

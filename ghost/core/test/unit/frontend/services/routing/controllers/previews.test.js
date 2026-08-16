@@ -6,7 +6,6 @@ const api = require('../../../../../../core/frontend/services/proxy').api;
 const controllers = require('../../../../../../core/frontend/services/routing/controllers');
 const {routerManager} = require('../../../../../../core/frontend/services/routing');
 const renderer = require('../../../../../../core/frontend/services/rendering');
-const urlService = require('../../../../../../core/server/services/url');
 const urlUtils = require('../../../../../../core/shared/url-utils').default;
 
 describe('Unit - services/routing/controllers/previews', function () {
@@ -50,7 +49,6 @@ describe('Unit - services/routing/controllers/previews', function () {
 
         sinon.stub(urlUtils, 'redirectToAdmin');
         sinon.stub(urlUtils, 'redirect301');
-        sinon.stub(urlService, 'getUrlByResourceId');
 
         renderStub = sinon.stub();
         sinon.stub(renderer, 'renderEntry').get(function () {

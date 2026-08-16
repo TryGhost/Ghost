@@ -28,10 +28,6 @@ module.exports = {
         return require('./db');
     },
 
-    get explore() {
-        return require('./explore');
-    },
-
     get pages() {
         return require('./pages');
     },

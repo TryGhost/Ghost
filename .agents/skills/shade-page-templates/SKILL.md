@@ -1,8 +1,8 @@
 ---
 name: Shade page templates
-description: Pick the right Shade page template (ListPage, PageHeader) for a new admin page instead of inventing chrome. Trigger when creating new admin pages or routes in apps/admin, apps/admin-x-settings, apps/activitypub.
+description: Pick the right Shade page template (ListPage, PageHeader) for a new admin page instead of inventing chrome. Trigger when creating new admin pages or routes in apps/admin or apps/activitypub.
 autoTrigger:
-  - fileEdit: "apps/{admin,admin-x-settings,activitypub}/src/**/*.tsx"
+  - fileEdit: "apps/{admin,activitypub}/src/**/*.tsx"
 ---
 
 # Shade — page templates

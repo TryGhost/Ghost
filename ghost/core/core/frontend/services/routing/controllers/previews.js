@@ -38,9 +38,6 @@ module.exports = function previewController(req, res, next) {
                     return next();
                 }
 
-                // @TODO: we don't know which resource type it is, because it's a generic preview handler and the
-                //        preview API returns {previews: []}
-                // @TODO: figure out how to solve better
                 const resourceType = post.type;
 
                 // CASE: last param of the url is /edit, redirect to admin

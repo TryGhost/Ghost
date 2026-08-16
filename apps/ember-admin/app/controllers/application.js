@@ -6,7 +6,6 @@ import {inject as service} from '@ember/service';
 
 export default class ApplicationController extends Controller {
     @service billing;
-    @service explore;
     @service router;
     @service session;
     @service settings;

@@ -101,8 +101,6 @@ const preview: Preview = {
 					['Page Types', '*'],
 					'Recipes',
 					['Recipes Guide', '*'],
-					'Posts–Stats',
-					['Posts–Stats Overview', '*'],
 					'Deprecated',
 					'*'
 				],

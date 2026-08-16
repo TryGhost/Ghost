@@ -49,13 +49,12 @@ describe('User API', function () {
                 assert.ok(userEmails.includes('ghost-author@example.com'));
                 assert.ok(userEmails.includes(fixtureManager.get('users', 1).email));
 
-                // Verify URL structure for users with/without published posts
+                // Every author is routable, including those with no published
+                // posts. Eager left those out of the URL map behind a
+                // shouldHavePosts gate and served /404/ for all but ghost and
+                // joe-bloggs; lazy returns the real URL, accepted in HKG-1920.
                 body.users.forEach((user) => {
-                    if (user.slug === 'ghost' || user.slug === 'joe-bloggs') {
-                        assert.equal(user.url, `${config.get('url')}/author/${user.slug}/`);
-                    } else {
-                        assert.equal(user.url, `${config.get('url')}/404/`);
-                    }
+                    assert.equal(user.url, `${config.get('url')}/author/${user.slug}/`);
                 });
             });
     });

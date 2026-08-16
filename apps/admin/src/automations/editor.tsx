@@ -1,8 +1,9 @@
 import AutomationCanvas, {EMAIL_STEP_QUERY_PARAM} from './components/canvas/automation-canvas';
 import AutomationHeader from './components/automation-header';
+import {useAutomationForEditing} from './hooks/use-automation-for-editing';
 import React from 'react';
 import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Button, type ButtonProps, LoadingIndicator} from '@tryghost/shade/components';
-import {useEditAutomation, useReadAutomation} from '@tryghost/admin-x-framework/api/automations';
+import {useEditAutomation} from '@tryghost/admin-x-framework/api/automations';
 import type {AutomationDetail, AutomationStatus} from '@tryghost/admin-x-framework/api/automations';
 import {dequal} from 'dequal';
 import {isEmptyEmailLexical} from './utils';
@@ -48,13 +49,8 @@ const getActionErrors = (automation: AutomationDetail): Record<string, string> =
     return errors;
 };
 
-const AutomationEditor: React.FC = () => {
-    const {id = ''} = useParams<{id: string}>();
-
-    const {data, isLoading: isLoadingAutomation, isError} = useReadAutomation(id, {
-        defaultErrorHandler: false
-    });
-    const automation = data?.automations[0];
+const AutomationEditorContent: React.FC<{automationId: string}> = ({automationId}) => {
+    const {automation, isError: isReadError} = useAutomationForEditing(automationId);
 
     const editMutation = useEditAutomation();
     const [editState, setEditState] = React.useState<AutomationEditState>({phase: 'idle'});
@@ -64,25 +60,26 @@ const AutomationEditor: React.FC = () => {
     const navigationBlockerReasonRef = React.useRef<'automation' | 'email' | null>(null);
     const isBlockedEmailNavigationLeavingEditorRef = React.useRef(false);
 
-    // Draft is the user-facing, locally mutable copy. The React Query cache stays as server truth;
-    // staged edits (adding steps, etc.) live here until the user publishes. Seeded once when the
-    // automation first loads, and reset to the response after every successful edit.
+    // Keep the saved snapshot separate from the live query result. Later query updates or errors
+    // must not redefine the dirty state or overwrite edits made during this editing session.
+    const [savedAutomation, setSavedAutomation] = React.useState<AutomationDetail | undefined>(undefined);
     const [draft, setDraft] = React.useState<AutomationDetail | undefined>(undefined);
     React.useEffect(() => {
-        if (automation) {
-            setDraft((oldDraft) => {
-                return oldDraft?.id === automation.id ? oldDraft : automation;
-            });
+        if (!automation) {
+            return;
         }
+
+        setSavedAutomation(currentAutomation => currentAutomation ?? automation);
+        setDraft(currentDraft => currentDraft ?? automation);
     }, [automation]);
-    const isInitializingDraft = !!automation && !draft;
-    const isEditorLoading = isLoadingAutomation || isInitializingDraft;
+    const isEditorLoading = !draft && !isReadError;
+    const isEditorError = !draft && isReadError;
 
     // Only compare the fields the user can edit; server-stamped fields like `updated_at` would
     // otherwise flip the dirty flag immediately after every successful publish.
     const hasUnsavedChanges = !!draft
-        && !!automation
-        && !dequal(editableSlice(draft), editableSlice(automation));
+        && !!savedAutomation
+        && !dequal(editableSlice(draft), editableSlice(savedAutomation));
 
     const onDraftChange = (next: AutomationDetail) => {
         setDraft(next);
@@ -164,7 +161,9 @@ const AutomationEditor: React.FC = () => {
             },
             {
                 onSuccess: (response) => {
-                    setDraft(response.automations[0]);
+                    const savedDraft = response.automations[0];
+                    setSavedAutomation(savedDraft);
+                    setDraft(savedDraft);
                     setActionErrors({});
                     setEditState({phase: 'idle'});
                 },
@@ -423,7 +422,7 @@ const AutomationEditor: React.FC = () => {
                 actionErrors={actionErrors}
                 automation={draft}
                 isEmailNavigationBlocked={isEmailNavigationBlocked}
-                isError={isError}
+                isError={isEditorError}
                 isLoading={isEditorLoading}
                 onChange={onDraftChange}
                 onDiscardBlockedEmailNavigation={(closeEmailModal) => {
@@ -541,6 +540,12 @@ const AutomationEditor: React.FC = () => {
             </AlertDialog>
         </div>
     );
+};
+
+const AutomationEditor: React.FC = () => {
+    const {id: automationId = ''} = useParams<{id: string}>();
+
+    return <AutomationEditorContent key={automationId} automationId={automationId} />;
 };
 
 export default AutomationEditor;

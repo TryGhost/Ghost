@@ -29,7 +29,7 @@ describe('Acceptance: Post revisions', function () {
             customExcerpt: 'New excerpt',
             featureImage: 'https://example.com/new-image.jpg',
             featureImageAlt: 'New feature alt text',
-            featureImageCaption: 'New feature caption',
+            featureImageCaption: '<span data-foo="bar" aria-label="caption">New feature caption</span>',
             postStatus: 'draft',
             author: post.authors.models[0],
             createdAt: moment(post.updatedAt).subtract(1, 'hour'),
@@ -69,6 +69,8 @@ describe('Acceptance: Post revisions', function () {
         expect(find('[data-test-post-history-preview-feature-image]')).to.have.attribute('src', 'https://example.com/new-image.jpg');
         expect(find('[data-test-post-history-preview-feature-image]')).to.have.attribute('alt', 'New feature alt text');
         expect(find('[data-test-post-history-preview-feature-image-caption]')).to.have.trimmed.text('New feature caption');
+        expect(find('[data-test-post-history-preview-feature-image-caption] span')).to.not.have.attribute('data-foo');
+        expect(find('[data-test-post-history-preview-feature-image-caption] span')).to.not.have.attribute('aria-label');
 
         // excerpt is not visible (needs feature flag)
         expect(find('[data-test-post-history-preview-excerpt]')).to.not.exist;

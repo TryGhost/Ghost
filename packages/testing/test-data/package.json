@@ -2,6 +2,10 @@
     "name": "@tryghost/test-data",
     "version": "0.0.0",
     "private": true,
+    "ghostPackage": {
+        "goldenPath": "exempt",
+        "reason": "Test-only source package consumed directly as TypeScript without a production build artifact."
+    },
     "type": "module",
     "repository": "https://github.com/TryGhost/Ghost/tree/main/testing/test-data",
     "author": "Ghost Foundation",

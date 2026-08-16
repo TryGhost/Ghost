@@ -145,5 +145,130 @@ suites.forEach((suite) => {
 
             expect(provider.refreshContentTask.perform, 'provider refresh starts after cached search').to.have.been.calledOnce;
         });
+
+        describe('billing results', function () {
+            const billingSearch = {
+                groupName: 'Acme Hosting',
+                items: [
+                    {id: 'change-plan', title: 'Change plan', path: '/plans', keywords: 'billing subscription plan price'},
+                    {id: 'setup-custom-domain', title: 'Set up a custom domain', path: '/domain', keywords: 'billing domain dns cname'},
+                    {id: 'request-backup', title: 'Request backup', path: '/backups', keywords: 'billing backup restore data'}
+                ]
+            };
+
+            beforeEach(function () {
+                const config = this.owner.lookup('config:main');
+                config.hostSettings = {billing: {enabled: true, search: billingSearch}};
+
+                const session = this.owner.lookup('service:session');
+                session.user = {isOwnerOnly: true};
+            });
+
+            it('includes billing results before content results', async function () {
+                this.server.create('post', {title: 'Backup post', slug: 'backup-post'});
+
+                const results = await search.searchTask.perform('backup');
+
+                expect(results.map(group => group.groupName)).to.deep.equal(['Acme Hosting', 'Posts']);
+
+                const titles = results[0].options.map(option => option.title);
+                expect(titles).to.include('Request backup');
+                expect(results[0].options[0].path).to.equal('/backups');
+            });
+
+            it('lists billing results in the configured order', async function () {
+                const results = await search.searchTask.perform('billing');
+
+                expect(results[0].groupName).to.equal('Acme Hosting');
+                expect(results[0].options.map(option => option.title)).to.deep.equal([
+                    'Change plan',
+                    'Set up a custom domain',
+                    'Request backup'
+                ]);
+            });
+
+            it('matches billing results on keywords', async function () {
+                const results = await search.searchTask.perform('dns');
+
+                expect(results).to.have.length(1);
+                expect(results[0].groupName).to.equal('Acme Hosting');
+                expect(results[0].options.map(option => option.title)).to.include('Set up a custom domain');
+
+                const priceResults = await search.searchTask.perform('price');
+                expect(priceResults[0].options.map(option => option.title)).to.include('Change plan');
+            });
+
+            it('drops configured items whose path is not a billing app route', async function () {
+                this.owner.lookup('config:main').hostSettings = {
+                    billing: {
+                        enabled: true,
+                        search: {
+                            groupName: 'Acme Hosting',
+                            items: [
+                                {id: 'manage-subscription', title: 'Manage subscription', path: '/subscription', keywords: 'billing'},
+                                {id: 'external-link', title: 'Externally hosted', path: 'https://example.com', keywords: 'billing'},
+                                {id: 'query-string', title: 'Upgrade plan', path: '/plans?intent=upgrade', keywords: 'billing'},
+                                {id: 'trailing-slash', title: 'Support', path: '/support/', keywords: 'billing'}
+                            ]
+                        }
+                    }
+                };
+
+                const results = await search.searchTask.perform('billing');
+
+                expect(results).to.have.length(1);
+                expect(results[0].options.map(option => option.title)).to.deep.equal(['Manage subscription']);
+                expect(results[0].options[0].path).to.equal('/subscription');
+            });
+
+            it('does not request billing results from the API', async function () {
+                await search.searchTask.perform('backup');
+
+                expect(searchIndexRequests(this.server), 'search index requests').to.have.length(4);
+            });
+
+            it('excludes billing results when billing is not enabled', async function () {
+                this.owner.lookup('config:main').hostSettings = {billing: {search: billingSearch}};
+
+                const results = await search.searchTask.perform('backup');
+
+                expect(results.map(group => group.groupName)).to.not.include('Acme Hosting');
+            });
+
+            it('excludes billing results for non-owner users', async function () {
+                this.owner.lookup('service:session').user = {isOwnerOnly: false};
+
+                const results = await search.searchTask.perform('backup');
+
+                expect(results.map(group => group.groupName)).to.not.include('Acme Hosting');
+            });
+
+            it('includes billing results for non-owner users in a force upgrade state', async function () {
+                this.owner.lookup('config:main').hostSettings = {billing: {enabled: true, search: billingSearch}, forceUpgrade: true};
+                this.owner.lookup('service:session').user = {isOwnerOnly: false};
+
+                const results = await search.searchTask.perform('backup');
+
+                expect(results.map(group => group.groupName)).to.include('Acme Hosting');
+            });
+
+            it('excludes billing results when hostSettings does not configure search', async function () {
+                this.owner.lookup('config:main').hostSettings = {billing: {enabled: true}};
+
+                const results = await search.searchTask.perform('backup');
+
+                expect(results).to.have.length(0);
+            });
+
+            it('excludes billing results when no valid items are configured', async function () {
+                this.owner.lookup('config:main').hostSettings = {
+                    billing: {enabled: true, search: {groupName: 'Acme Hosting', items: []}}
+                };
+
+                const results = await search.searchTask.perform('backup');
+
+                expect(results).to.have.length(0);
+            });
+        });
     });
 });

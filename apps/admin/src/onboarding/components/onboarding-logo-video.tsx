@@ -6,31 +6,31 @@ export function OnboardingLogoVideo() {
         <div className="relative mb-6 size-20">
             <video
                 aria-hidden="true"
-                autoPlay
                 className="size-20 dark:hidden"
                 height={80}
-                loop
-                muted
-                playsInline
                 preload="metadata"
                 role="presentation"
                 tabIndex={-1}
                 width={80}
+                autoPlay
+                loop
+                muted
+                playsInline
             >
                 <source src={logoLoaderUrl} type="video/mp4" />
             </video>
             <video
                 aria-hidden="true"
-                autoPlay
                 className="hidden size-20 dark:block"
                 height={80}
-                loop
-                muted
-                playsInline
                 preload="metadata"
                 role="presentation"
                 tabIndex={-1}
                 width={80}
+                autoPlay
+                loop
+                muted
+                playsInline
             >
                 <source src={logoLoaderDarkUrl} type="video/mp4" />
             </video>

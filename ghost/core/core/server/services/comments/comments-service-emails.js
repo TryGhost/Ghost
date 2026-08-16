@@ -26,7 +26,10 @@ class CommentsServiceEmails {
      */
     getPostUrl(post, commentId) {
         const postData = toPlain(post);
-        const baseUrl = this.urlService.facade.getUrlForResource({...postData, type: 'posts'}, {absolute: true});
+        // Comments live on pages as well as posts; the URL service routes by
+        // the passed type, so a page typed 'posts' resolves to /404/.
+        const routerType = postData.type === 'page' ? 'pages' : 'posts';
+        const baseUrl = this.urlService.getUrlForResource({...postData, type: routerType}, {absolute: true});
         return `${baseUrl}#ghost-comments-${commentId}`;
     }
 
@@ -84,12 +87,13 @@ class CommentsServiceEmails {
         }
     }
 
-    async notifyParentCommentAuthor(reply, {type = 'parent'} = {}) {
-        let parent;
-        if (type === 'in_reply_to') {
-            parent = await this.models.Comment.findOne({id: reply.get('in_reply_to_id')});
-        } else {
-            parent = await this.models.Comment.findOne({id: reply.get('parent_id')});
+    /**
+     * @returns {Promise<string|undefined>} The id of the member that was notified, or undefined if no email was sent
+     */
+    async notifyParentCommentAuthor(reply, {type = 'parent', parent = null} = {}) {
+        if (!parent) {
+            const parentId = type === 'in_reply_to' ? reply.get('in_reply_to_id') : reply.get('parent_id');
+            parent = await this.models.Comment.findOne({id: parentId});
         }
         const parentMember = parent.related('member');
 
@@ -137,12 +141,14 @@ class CommentsServiceEmails {
             text
         } = await this.commentsServiceEmailRenderer.renderEmailTemplate('new-comment-reply', templateData);
 
-        return this.sendMail({
+        await this.sendMail({
             to: parentMemberEmail,
             subject,
             html,
             text
         });
+
+        return parentMember.id;
     }
 
     /**

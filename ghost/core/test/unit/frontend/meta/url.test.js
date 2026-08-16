@@ -12,7 +12,7 @@ describe('getUrl', function () {
     let urlUtilsAbsoluteToRelativeStub;
 
     beforeEach(function () {
-        urlServiceGetUrlForResourceStub = sinon.stub(urlService.facade, 'getUrlForResource');
+        urlServiceGetUrlForResourceStub = sinon.stub(urlService, 'getUrlForResource');
         urlUtilsUrlForStub = sinon.stub(urlUtils, 'urlFor');
         urlUtilsAbsoluteToRelativeStub = sinon.stub(urlUtils, 'absoluteToRelative');
     });

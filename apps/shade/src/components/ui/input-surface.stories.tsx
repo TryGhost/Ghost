@@ -64,7 +64,7 @@ export const States: Story = {
     parameters: {
         docs: {
             description: {
-                story: 'Default, invalid (`aria-invalid="true"`), and disabled states for `\'self\'` mode.'
+                story: 'Default, invalid (`aria-invalid="true"`), and disabled field states for `\'self\'` mode. Text-entry controls compose `disabledFieldSelf` to keep values readable.'
             }
         }
     },
@@ -80,7 +80,7 @@ export const States: Story = {
                 aria-invalid
             />
             <input
-                className={cn(inputSurface('self'), inputBase)}
+                className={cn(inputSurface('self'), inputSurfaceClasses.disabledFieldSelf, inputBase)}
                 placeholder='Disabled'
                 disabled
             />

@@ -16,9 +16,7 @@ describe('audienceFeedbackService', function () {
         it('Can build link to post', async function () {
             const instance = new AudienceFeedbackService({
                 urlService: {
-                    facade: {
-                        getUrlForResource: () => `https://localhost:2368/${mockData.postTitle}/`
-                    }
+                    getUrlForResource: () => `https://localhost:2368/${mockData.postTitle}/`
                 },
                 config: {
                     baseURL: new URL('https://localhost:2368')
@@ -32,9 +30,7 @@ describe('audienceFeedbackService', function () {
         it('Can build link to home page if post wasn\'t published', async function () {
             const instance = new AudienceFeedbackService({
                 urlService: {
-                    facade: {
-                        getUrlForResource: () => `https://localhost:2368/${mockData.postTitle}/404/`
-                    }
+                    getUrlForResource: () => `https://localhost:2368/${mockData.postTitle}/404/`
                 },
                 config: {
                     baseURL: new URL('https://localhost:2368')
@@ -45,15 +41,13 @@ describe('audienceFeedbackService', function () {
             assert.equal(link.href, expectedLink);
         });
 
-        it('Passes a posts resource (with id) to the facade', async function () {
+        it('Passes a posts resource (with id) to the URL service', async function () {
             let receivedResource;
             const instance = new AudienceFeedbackService({
                 urlService: {
-                    facade: {
-                        getUrlForResource: (resource) => {
-                            receivedResource = resource;
-                            return `https://localhost:2368/${mockData.postTitle}/`;
-                        }
+                    getUrlForResource: (resource) => {
+                        receivedResource = resource;
+                        return `https://localhost:2368/${mockData.postTitle}/`;
                     }
                 },
                 config: {
@@ -72,7 +66,7 @@ describe('audienceFeedbackService', function () {
             //
             // toJSON also returns the DB-level `type: 'post'` (singular). The
             // service must override that to the routing-level `'posts'`
-            // (plural) before handing the resource to the facade — the
+            // (plural) before handing the resource to the URL service — the
             // assertion below captures that override explicitly.
             let receivedResource;
             const fakeBookshelfModel = {
@@ -81,11 +75,9 @@ describe('audienceFeedbackService', function () {
             };
             const instance = new AudienceFeedbackService({
                 urlService: {
-                    facade: {
-                        getUrlForResource: (resource) => {
-                            receivedResource = resource;
-                            return `https://localhost:2368/${mockData.postTitle}/`;
-                        }
+                    getUrlForResource: (resource) => {
+                        receivedResource = resource;
+                        return `https://localhost:2368/${mockData.postTitle}/`;
                     }
                 },
                 config: {
@@ -105,12 +97,12 @@ describe('audienceFeedbackService', function () {
     describe('build fallback link', function () {
         it('builds the home-page feedback link without touching the url service', async function () {
             // Used when the post no longer exists: an id-only resource can't
-            // be routed by the URL service (the lazy backend rejects it as
+            // be routed by the URL service (which reports it as
             // thin), so the fallback goes straight to the base URL — the same
             // destination buildLink picks when the service returns /404/.
             const getUrlForResource = sinon.stub();
             const instance = new AudienceFeedbackService({
-                urlService: {facade: {getUrlForResource}},
+                urlService: {getUrlForResource},
                 config: {baseURL: new URL('https://localhost:2368')}
             });
 
@@ -125,7 +117,7 @@ describe('audienceFeedbackService', function () {
     describe('build email link', function () {
         function createInstance(baseURL) {
             return new AudienceFeedbackService({
-                urlService: {facade: {}},
+                urlService: {},
                 config: {baseURL: new URL(baseURL)}
             });
         }

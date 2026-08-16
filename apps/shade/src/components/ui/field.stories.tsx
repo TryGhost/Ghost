@@ -15,6 +15,7 @@ import {Input} from './input';
 import {Textarea} from './textarea';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from './select';
 import {Button} from './button';
+import {Switch} from './switch';
 
 const meta = {
     title: 'Components / Field',
@@ -420,6 +421,29 @@ export const WithFieldContent: Story = {
         docs: {
             description: {
                 story: 'Using FieldContent to group FieldTitle and FieldDescription for richer field layouts.'
+            }
+        }
+    }
+};
+
+export const TitleDescriptionSpacing: Story = {
+    render: () => (
+        <div className="w-full max-w-xl">
+            <Field orientation="horizontal">
+                <FieldContent>
+                    <FieldLabel htmlFor="share-growth-data">Share growth data to rank higher?</FieldLabel>
+                    <FieldDescription>
+                        Enabling this will use your revenue and member growth data to rank your site more highly.
+                    </FieldDescription>
+                </FieldContent>
+                <Switch id="share-growth-data" />
+            </Field>
+        </div>
+    ),
+    parameters: {
+        docs: {
+            description: {
+                story: 'FieldContent keeps titles and supporting descriptions in the standard compact vertical rhythm.'
             }
         }
     }

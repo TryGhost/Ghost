@@ -1,4 +1,5 @@
-import {describe, expect, it} from "vitest";
+import {describe, expect, it, vi} from "vitest";
+import {userEvent} from "vitest/browser";
 
 import {
     configResponse,
@@ -20,14 +21,24 @@ const supporterTier = tier({
     benefits: ["Simple benefit"],
 });
 
-function stripeSettings() {
-    return settingsResponse({settings: {
-        stripe_connect_display_name: "Dummy",
-        stripe_connect_livemode: false,
-        stripe_connect_account_id: "acct_123",
-        stripe_connect_publishable_key: "pk_test_123",
-        stripe_connect_secret_key: "sk_test_123",
-    }});
+function stripeSettings(overrides: Parameters<typeof settingsResponse>[0] = {}) {
+    return settingsResponse({
+        ...overrides,
+        settings: {
+            stripe_connect_display_name: "Dummy",
+            stripe_connect_livemode: false,
+            stripe_connect_account_id: "acct_123",
+            stripe_connect_publishable_key: "pk_test_123",
+            stripe_connect_secret_key: "sk_test_123",
+            ...overrides.settings,
+        },
+    });
+}
+
+function withoutSettings(keys: string[]) {
+    const response = stripeSettings({labs: {machinePayments: true}});
+    response.settings = response.settings.filter(({key}) => !keys.includes(key));
+    return response;
 }
 
 function stripeLimitConfig() {
@@ -131,6 +142,48 @@ describe("Tier settings", () => {
         expect(editApi.lastRequest?.body).toMatchObject({tiers: [{id: freeTier.id, description: updated.description, welcome_page_url: updated.welcome_page_url, benefits: updated.benefits}]});
     });
 
+    it("keeps the benefit editor focused and visible when adding with the button or Enter", async () => {
+        const scrollingTier = {...supporterTier, benefits: Array.from({length: 12}, (_, index) => `Benefit ${index + 1}`)};
+        fakeSettingsScreens();
+        fakeTiers([freeTier, scrollingTier]);
+        await renderAdminApp("/settings", {boot: {browseSettings: {response: stripeSettings()}}});
+
+        await settingsScreen.tiers().getByText(scrollingTier.name, {exact: true}).click();
+        const modal = settingsScreen.tierDetailModal();
+        await expect.element(modal).toBeVisible();
+        const modalElement = modal.element() as HTMLElement;
+        const newBenefit = modal.getByLabelText("New benefit");
+        const addBenefit = modal.getByRole("button", {name: "Add benefit"});
+        const pageScrollTop = document.scrollingElement?.scrollTop ?? 0;
+        const scrollBy = vi.spyOn(modalElement, "scrollBy");
+
+        // Empty benefits are ignored without moving either scroll container.
+        await addBenefit.click();
+        expect(scrollBy).not.toHaveBeenCalled();
+
+        const reducedMotion = vi.spyOn(window, "matchMedia").mockReturnValue({matches: true} as MediaQueryList);
+        await newBenefit.fill("Added with button");
+        await addBenefit.click();
+        await expect.element(newBenefit).toHaveFocus();
+        await expect.poll(() => scrollBy.mock.calls.length).toBe(1);
+        expect(scrollBy).toHaveBeenLastCalledWith(expect.objectContaining({behavior: "auto"}));
+
+        reducedMotion.mockRestore();
+        await newBenefit.fill("Added with Enter");
+        await userEvent.keyboard("{Enter}");
+        await expect.element(newBenefit).toHaveFocus();
+        await expect.poll(() => scrollBy.mock.calls.length).toBe(2);
+        expect(scrollBy).toHaveBeenLastCalledWith(expect.objectContaining({behavior: "smooth"}));
+
+        await expect.poll(() => {
+            const inputRect = newBenefit.element().getBoundingClientRect();
+            const modalRect = modalElement.getBoundingClientRect();
+            return inputRect.top >= modalRect.top && inputRect.bottom <= modalRect.bottom;
+        }).toBe(true);
+        expect(document.scrollingElement?.scrollTop ?? 0).toBe(pageScrollTop);
+        expect(Array.from(modalElement.querySelectorAll<HTMLInputElement>('input[aria-label="Benefit"]')).map(input => input.value)).toEqual(expect.arrayContaining(["Added with button", "Added with Enter"]));
+    });
+
     it("moves a tier between the Active and Archived tabs when archived and reactivated", async () => {
         let currentSupporter = supporterTier;
         fakeSettingsScreens();
@@ -213,6 +266,30 @@ describe("Tier settings", () => {
         await settingsScreen.tiers().getByRole("button", {name: "Connected to Stripe"}).first().click();
         await expect(settingsScreen.limitModal()).toHaveCount(0);
         await expect.element(settingsScreen.stripeModal()).toBeVisible();
+    });
+
+    it("shows agent payment controls when the lab is on and the backend has deployed them", async () => {
+        fakeSettingsScreens();
+        fakeTiers([freeTier, supporterTier]);
+        await renderAdminApp("/settings", {
+            labs: {machinePayments: true},
+            boot: {browseSettings: {response: stripeSettings({labs: {machinePayments: true}})}},
+        });
+
+        await expect.element(settingsScreen.tiers().getByText("Accept payments from AI agents")).toBeVisible();
+        await expect.element(settingsScreen.tiers().getByTestId("machine-payments-toggle")).toBeVisible();
+    });
+
+    it("hides agent payment controls when the backend has not deployed them", async () => {
+        fakeSettingsScreens();
+        fakeTiers([freeTier, supporterTier]);
+        await renderAdminApp("/settings", {
+            labs: {machinePayments: true},
+            boot: {browseSettings: {response: withoutSettings(["machine_payments_enabled"])}},
+        });
+
+        await expect(settingsScreen.tiers().getByText("Accept payments from AI agents")).toHaveCount(0);
+        await expect(settingsScreen.tiers().getByTestId("machine-payments-toggle")).toHaveCount(0);
     });
 
     it("blocks direct access to Stripe connection when the plan limit applies", async () => {

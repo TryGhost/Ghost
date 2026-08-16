@@ -1,3 +1,4 @@
+import {beforeEach, describe, expect, test} from 'vitest';
 import {Post, PostType} from '../../../src/api/activitypub';
 import {mapPostToActivity} from '../../../src/utils/posts';
 

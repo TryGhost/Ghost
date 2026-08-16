@@ -36,10 +36,10 @@ const controller = {
     browse: {
         headers: noCacheInvalidation,
         // `filter` narrows by status (the definition list is otherwise small and
-        // global, returned whole in a fixed order). Archived fields are hidden by
-        // default; Settings passes `filter=status:[active,archived]` to see both.
-        // No pagination/order options — a future sort_order column would change the
-        // order server-side, not add a client option.
+        // global, returned whole). Archived fields are hidden by default; Settings
+        // passes `filter=status:[active,archived]` to see both. No pagination or order
+        // options: the list comes back in the publisher's own order, which is changed
+        // by reordering it rather than by asking for it differently.
         options: ['filter'],
         permissions(frame: Frame) {
             return canThis(frame).browse.member_custom_field();
@@ -72,6 +72,18 @@ const controller = {
         // is just the one-item case and sees no change.
         query(frame: Frame) {
             return definitions!.add(requestContextFromFrame(frame), frame.data.members_custom_fields);
+        }
+    },
+
+    // Order belongs to the list, so it is set by PUTting the list. No `/order` sub-route:
+    // `order` is a key a publisher could mint, and the route would shadow it.
+    reorder: {
+        headers: noCacheInvalidation,
+        permissions(frame: Frame) {
+            return canThis(frame).edit.member_custom_field();
+        },
+        query(frame: Frame) {
+            return definitions!.reorder(requestContextFromFrame(frame), frame.data.members_custom_fields);
         }
     },
 

@@ -30,7 +30,7 @@ if (parentPort) {
 (async () => {
     if (parentPort) {
         // Bounce to the main thread via the JobManager's event bridge - the
-        // GiftServiceWrapper subscribes to this event and runs the work in the
+        // gifts service subscribes to this event and runs the work in the
         // already-initialised main process
         parentPort.postMessage({
             event: {
