@@ -95,6 +95,11 @@ Practice and contributor guides explain how to make and verify changes:
 - [Internationalization](practices/internationalization.md)
 - [Performance testing](contributing/performance-testing.md)
 
+Reference guides provide tables and other information to look up while working
+on Ghost:
+
+- [Node.js compatibility](reference/node-compatibility.md)
+
 ### Finding Issues to Work On
 
 - [Good First Issues](https://github.com/TryGhost/Ghost/labels/good%20first%20issue) - Great for newcomers

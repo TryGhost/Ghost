@@ -15,6 +15,9 @@ Install:
 - [Corepack](https://nodejs.org/api/corepack.html), included with supported
   Node.js distributions
 
+For Node.js support in older Ghost releases, see the
+[Node.js compatibility reference](../reference/node-compatibility.md).
+
 The default environment binds ports `80`, `2368`, `3306`, `6379`, `8025`, and
 `8026`. Stop local services using those ports before starting Ghost.
 
