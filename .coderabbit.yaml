@@ -10,8 +10,8 @@ reviews:
   poem: false
   auto_review:
     ignore_usernames:
-      - tryghost-renovate
-      - dependabot
+      - tryghost-renovate[bot]
+      - dependabot[bot]
   pre_merge_checks:
     docstrings:
       mode: "off"
