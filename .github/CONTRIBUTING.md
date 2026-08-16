@@ -58,9 +58,7 @@ need an emoji until it becomes user-facing.
 
 - ✨ Feature
 - 🎨 Improvement or change
-- 💄 UI or styling improvement
 - 🐛 Bug fix
-- 🔒 Security improvement
 - 💡 Other noteworthy user-facing change
 
 Use 🌐 for [translation submissions](../docs/contributing/translating-ghost.md).

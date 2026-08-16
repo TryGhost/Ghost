@@ -82,15 +82,15 @@ fi
 # Give concise release-note guidance. Whether a change is user-facing requires
 # human judgment, so these notices are informative rather than enforcement.
 first_word="${subject%% *}"
-supported_emojis="✨ 🎨 💄 🐛 🔒 💡 🌐"
+contributor_emojis="✨ 🎨 🐛 🌐 💡"
 
-if [[ "$first_word" =~ ^(✨|🎨|💄|🐛|🔒|💡|🌐)$ ]]; then
+if [[ "$first_word" =~ ^(✨|🎨|🐛|🌐|💡|🔒)$ ]]; then
     echo -e "${yellow}Notice: Keep the emoji only for a significant user-facing PR title or squash commit.${no_color}"
 elif [[ -n "$(printf '%s' "$first_word" | LC_ALL=C tr -d '\000-\177')" ]]; then
-    echo -e "${yellow}Warning: Unsupported leading emoji. Use one of: ${supported_emojis}${no_color}"
+    echo -e "${yellow}Warning: Unsupported leading emoji. Use one of: ${contributor_emojis}${no_color}"
     echo -e "Emoji selection only matters for user-facing PR titles and squash commits."
 else
-    echo -e "${yellow}Notice: If this is a significant user-facing PR title or squash commit, add one of: ${supported_emojis}${no_color}"
+    echo -e "${yellow}Notice: If this is a significant user-facing PR title or squash commit, add one of: ${contributor_emojis}${no_color}"
 fi
 
 # Check for past tense verbs in subject
