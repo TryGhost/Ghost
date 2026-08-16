@@ -72,4 +72,5 @@ Hover/active/selected state tokens (`--interactive-hover`, `--button-hover`, `--
 
 ## Source of truth
 
-`apps/shade/AGENTS.md` (Tokens & dark mode → Dropdown surface contract). Storybook → Tokens / Tokens Guide.
+The `DropdownMenu`, `Select`, and `Popover` component files define the current
+surface contract. Storybook → Tokens / Tokens Guide explains the token model.
