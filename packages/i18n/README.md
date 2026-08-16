@@ -6,12 +6,18 @@ i18n translations for Ghost
 
 This is a monorepo package.
 
-Follow the instructions for the top-level repo.
-1. `git clone` this repo & `cd` into it as usual
-2. Run `pnpm` to install top-level dependencies.
+For a fresh clone or worktree, follow the setup instructions from the repository
+root:
+
+```bash
+corepack enable pnpm
+pnpm setup
+```
+
+After setup, run package commands from `packages/i18n` or with
+`pnpm --filter @tryghost/i18n <command>`.
 
 ## Test
 
 - `pnpm lint` run just eslint
 - `pnpm test` run lint and tests
-
