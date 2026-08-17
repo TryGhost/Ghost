@@ -25,7 +25,7 @@ type AutomationActionRevision = {
     email_clicked_count: number | null;
 };
 
-class AutomationActionRevisionsImporter extends TableImporter<AutomationActionRevision, AutomationAction> {
+export class AutomationActionRevisionsImporter extends TableImporter<AutomationActionRevision, AutomationAction> {
     static table = 'automation_action_revisions';
     static dependencies = ['automation_actions'];
 
@@ -130,5 +130,3 @@ class AutomationActionRevisionsImporter extends TableImporter<AutomationActionRe
         }
     }
 }
-
-module.exports = AutomationActionRevisionsImporter;

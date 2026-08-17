@@ -39,7 +39,7 @@ type AutomationRunStep = {
     locked_at: null;
 };
 
-class AutomationRunStepsImporter extends TableImporter<AutomationRunStep> {
+export class AutomationRunStepsImporter extends TableImporter<AutomationRunStep> {
     static table = 'automation_run_steps';
     static dependencies = ['automation_runs', 'automation_action_revisions', 'automation_action_edges'];
 
@@ -146,5 +146,3 @@ class AutomationRunStepsImporter extends TableImporter<AutomationRunStep> {
         }
     }
 }
-
-module.exports = AutomationRunStepsImporter;

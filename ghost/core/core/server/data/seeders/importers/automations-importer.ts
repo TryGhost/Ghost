@@ -26,7 +26,7 @@ const defaultAutomations = [{
     slug: MEMBER_WELCOME_EMAIL_SLUGS.paid
 }];
 
-class AutomationsImporter extends TableImporter<Automation> {
+export class AutomationsImporter extends TableImporter<Automation> {
     static table = 'automations';
     static dependencies: string[] = [];
 
@@ -58,5 +58,3 @@ class AutomationsImporter extends TableImporter<Automation> {
         };
     }
 }
-
-module.exports = AutomationsImporter;

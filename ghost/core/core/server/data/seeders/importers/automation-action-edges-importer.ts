@@ -12,7 +12,7 @@ type AutomationActionEdge = {
     target_action_id: string;
 };
 
-class AutomationActionEdgesImporter extends TableImporter<AutomationActionEdge> {
+export class AutomationActionEdgesImporter extends TableImporter<AutomationActionEdge> {
     static table = 'automation_action_edges';
     static dependencies = ['automation_actions'];
 
@@ -51,5 +51,3 @@ class AutomationActionEdgesImporter extends TableImporter<AutomationActionEdge> 
         }
     }
 }
-
-module.exports = AutomationActionEdgesImporter;

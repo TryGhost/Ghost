@@ -26,7 +26,7 @@ type AutomationRun = {
     member_email: string;
 };
 
-class AutomationRunsImporter extends TableImporter<AutomationRun, Automation> {
+export class AutomationRunsImporter extends TableImporter<AutomationRun, Automation> {
     static table = 'automation_runs';
     static dependencies = ['automations', 'members'];
 
@@ -82,5 +82,3 @@ class AutomationRunsImporter extends TableImporter<AutomationRun, Automation> {
         };
     }
 }
-
-module.exports = AutomationRunsImporter;

@@ -19,7 +19,7 @@ type AutomationAction = {
     type: 'wait' | 'send_email';
 };
 
-class AutomationActionsImporter extends TableImporter<AutomationAction, Automation> {
+export class AutomationActionsImporter extends TableImporter<AutomationAction, Automation> {
     static table = 'automation_actions';
     static dependencies = ['automations'];
 
@@ -68,5 +68,3 @@ class AutomationActionsImporter extends TableImporter<AutomationAction, Automati
         };
     }
 }
-
-module.exports = AutomationActionsImporter;
