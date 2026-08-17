@@ -1,5 +1,4 @@
 import debugFactory from '@tryghost/debug';
-// @ts-expect-error This module lacks type definitions.
 import * as databaseDate from '../utils/database-date';
 import path from 'node:path';
 import fs from 'node:fs';

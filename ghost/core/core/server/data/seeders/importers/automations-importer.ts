@@ -5,7 +5,6 @@ import type {Knex} from 'knex';
 import {TableImporter} from './table-importer';
 // @ts-expect-error This module currently lacks type definitions.
 import {blogStartDate} from '../utils/blog-info';
-// @ts-expect-error This module currently lacks type definitions.
 import * as databaseDate from '../utils/database-date';
 import {MEMBER_WELCOME_EMAIL_SLUGS} from '../../../services/member-welcome-emails/constants';
 

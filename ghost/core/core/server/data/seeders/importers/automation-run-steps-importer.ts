@@ -3,7 +3,6 @@ import errors from '@tryghost/errors';
 import {clamp} from 'lodash';
 import type {Knex} from 'knex';
 import {TableImporter} from './table-importer';
-// @ts-expect-error This module currently lacks type definitions.
 import * as databaseDate from '../utils/database-date';
 
 type AutomationRun = {

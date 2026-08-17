@@ -2,7 +2,6 @@ import {faker} from '@faker-js/faker';
 import errors from '@tryghost/errors';
 import type {Knex} from 'knex';
 import {TableImporter} from './table-importer';
-// @ts-expect-error This module currently lacks type definitions.
 import * as databaseDate from '../utils/database-date';
 import {DEFAULT_EMAIL_DESIGN_SETTING_SLUG} from '../../../services/member-welcome-emails/constants';
 

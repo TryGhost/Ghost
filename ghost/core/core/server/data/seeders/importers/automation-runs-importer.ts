@@ -4,7 +4,6 @@ import assert from 'node:assert/strict';
 import type {Knex} from 'knex';
 import {TableImporter} from './table-importer';
 import {parseEmailAddress} from '@tryghost/parse-email-address';
-// @ts-expect-error This module currently lacks type definitions.
 import * as databaseDate from '../utils/database-date';
 
 type Automation = {
