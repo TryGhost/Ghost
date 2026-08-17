@@ -566,11 +566,6 @@ jobs:
       - name: Build TS code
         run: pnpm nx run-many -t build:tsc
 
-      # Boot reads the card asset manifest, which is written at build time. The
-      # test targets declare build:assets in their nx dependsOn (ghost/core's
-      # package.json); this job boots via raw `node index.js`, so there's no
-      # target to inherit it from. Outside the measured command, so it doesn't
-      # affect the series.
       - name: Build assets
         run: pnpm --filter ghost run build:assets
 
