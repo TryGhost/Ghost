@@ -1,4 +1,10 @@
 module.exports = [
+    require('./automations-importer').AutomationsImporter,
+    require('./automation-actions-importer').AutomationActionsImporter,
+    require('./automation-action-revisions-importer').AutomationActionRevisionsImporter,
+    require('./automation-action-edges-importer').AutomationActionEdgesImporter,
+    require('./automation-runs-importer').AutomationRunsImporter,
+    require('./automation-run-steps-importer').AutomationRunStepsImporter,
     require('./newsletters-importer'),
     require('./posts-importer'),
     require('./users-importer'),

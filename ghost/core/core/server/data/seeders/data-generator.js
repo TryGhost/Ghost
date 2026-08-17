@@ -61,7 +61,9 @@ class DataGenerator {
                     const referencedTable = data.references.split('.')[0];
                     // Some nullable relationships point to tables the generator does not populate.
                     // Generated redirects belong to posts, so automation revisions are not a seed dependency.
-                    const isUnsupportedOptionalDependency = referencedTable === 'subscriptions' || (referencedTable === 'automation_action_revisions' && data.nullable);
+                    const isUnsupportedOptionalDependency = referencedTable === 'subscriptions'
+                        || (referencedTable === 'automation_action_revisions' && data.nullable)
+                        || (table.name === 'automation_action_revisions' && referencedTable === 'email_design_settings' && data.nullable);
                     if (!acc.includes(referencedTable) && !isUnsupportedOptionalDependency) {
                         acc.push(referencedTable);
                     }
