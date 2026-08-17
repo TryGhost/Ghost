@@ -89,9 +89,9 @@ catalog:
   '@tryghost/helpers': 1.1.106
   '@tryghost/limit-service': 1.5.6
   '@tryghost/logging': 5.3.3
-  '@tryghost/mongo-knex': 0.10.1
-  '@tryghost/nql': 0.13.1
-  '@tryghost/nql-lang': 0.6.6
+  '@tryghost/mongo-knex': 0.11.1
+  '@tryghost/nql': 0.13.3
+  '@tryghost/nql-lang': 0.7.0
   '@tryghost/request': 4.0.0
   '@tryghost/string': 0.3.5
   '@tryghost/timezone-data': 1.0.0
@@ -231,6 +231,8 @@ overrides:
   'knex-migrator>knex': 2.4.2
   '@tryghost/errors': 'catalog:'
   '@tryghost/logging': 'catalog:'
+  '@tryghost/nql': 'catalog:'
+  '@tryghost/nql-lang': 'catalog:'
   jackspeak: 4.2.3
   moment: 'catalog:'
   moment-timezone: 'catalog:'
