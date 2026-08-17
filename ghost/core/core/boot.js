@@ -489,6 +489,14 @@ async function initBackgroundServices({config}) {
         ]);
     }
 
+    try {
+        const memberJobs = require('./server/services/members/jobs');
+        await memberJobs.scheduleTokenCleanupJob();
+    } catch (err) {
+        const logging = require('@tryghost/logging');
+        logging.error(err);
+    }
+
     const updateCheck = require('./server/services/update-check');
     updateCheck.scheduleRecurringJobs();
     if (config.get('updateCheck:forceUpdate')) {
