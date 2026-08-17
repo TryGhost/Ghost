@@ -16,7 +16,6 @@ import {isPendingActivity} from '@src/utils/pending-activity';
 import {renderTimestamp} from '@src/utils/render-timestamp';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 import {useNavigationStack, useParams} from '@tryghost/admin-x-framework';
-import {usePreferencesForUser} from '@hooks/use-activity-pub-queries';
 import {useReplyChainData} from '@hooks/use-reply-chain-data';
 
 const FeedItemDivider: React.FC = () => (
@@ -26,8 +25,6 @@ const FeedItemDivider: React.FC = () => (
 const Note = () => {
     const {postId} = useParams();
     const {canGoBack} = useNavigationStack();
-    const {data: preferences} = usePreferencesForUser();
-    const showSensitiveMediaByDefault = preferences?.showSensitiveMedia ?? false;
 
     const [expandedChains, setExpandedChains] = useState<Set<string>>(new Set());
     const [fullyExpandedChains, setFullyExpandedChains] = useState<Set<string>>(new Set());
@@ -231,7 +228,6 @@ const Note = () => {
                                             likeCount={item.object.likeCount ?? 0}
                                             object={item.object}
                                             repostCount={item.object.repostCount ?? 0}
-                                            showSensitiveMediaByDefault={showSensitiveMediaByDefault}
                                             type='Note'
                                             onClick={() => {
                                                 navigate(`/${item.object.type === 'Article' ? 'reader' : 'notes'}/${encodeURIComponent(item.object.id)}`);
@@ -252,7 +248,6 @@ const Note = () => {
                                         object={object}
                                         repostCount={object.repostCount}
                                         showHeader={threadParents.length > 0}
-                                        showSensitiveMediaByDefault={showSensitiveMediaByDefault}
                                         showStats={true}
                                         type='Note'
                                     />
@@ -284,7 +279,6 @@ const Note = () => {
                                                             object={replyGroup.mainReply.object}
                                                             parentId={object.id}
                                                             repostCount={replyGroup.mainReply.object.repostCount ?? 0}
-                                                            showSensitiveMediaByDefault={showSensitiveMediaByDefault}
                                                             type='Note'
                                                             onClick={() => {
                                                                 navigate(`/notes/${encodeURIComponent(replyGroup.mainReply.id)}`);
@@ -306,7 +300,6 @@ const Note = () => {
                                                                 object={replyGroup.chain[0].object}
                                                                 parentId={object.id}
                                                                 repostCount={replyGroup.chain[0].object.repostCount ?? 0}
-                                                                showSensitiveMediaByDefault={showSensitiveMediaByDefault}
                                                                 type='Note'
                                                                 onClick={() => {
                                                                     navigate(`/notes/${encodeURIComponent(replyGroup.chain[0].id)}`);
@@ -334,7 +327,6 @@ const Note = () => {
                                                                     object={chainItem.object}
                                                                     parentId={object.id}
                                                                     repostCount={chainItem.object.repostCount ?? 0}
-                                                                    showSensitiveMediaByDefault={showSensitiveMediaByDefault}
                                                                     type='Note'
                                                                     onClick={() => {
                                                                         navigate(`/notes/${encodeURIComponent(chainItem.id)}`);

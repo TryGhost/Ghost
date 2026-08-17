@@ -1,5 +1,5 @@
 import FeedItemMenu from './feed-item-menu';
-import React, {useEffect, useLayoutEffect, useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {ActivityPubAttachment, ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Skeleton} from '@tryghost/shade/components';
 import {H4, Text} from '@tryghost/shade/primitives';
@@ -19,8 +19,16 @@ import {openLinksInNewTab, sanitizeHtml, stripHtml} from '../../utils/content-fo
 import {renderTimestamp} from '../../utils/render-timestamp';
 import {useDeleteMutationForUser, useFollowMutationForUser, useUnfollowMutationForUser} from '../../hooks/use-activity-pub-queries';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
+import {useSensitiveMediaDisclosure} from '@src/hooks/use-sensitive-media-disclosure';
 
-export function getAttachment(object: ObjectProperties): ActivityPubAttachment | ActivityPubAttachment[] | null {
+/**
+ * The subset of an object the attachment helpers below actually read. Keeping it
+ * narrow lets callers that only have media (such as notification previews) pass
+ * what they have without inventing a whole ObjectProperties.
+ */
+export type AttachmentSource = Pick<ObjectProperties, 'type' | 'image' | 'attachment'>;
+
+export function getAttachment(object: AttachmentSource): ActivityPubAttachment | ActivityPubAttachment[] | null {
     let attachment: ActivityPubAttachment | ActivityPubAttachment[] | undefined;
 
     if (object.image) {
@@ -55,7 +63,7 @@ export function getAttachment(object: ObjectProperties): ActivityPubAttachment |
 }
 
 export function renderFeedAttachment(
-    object: ObjectProperties,
+    object: AttachmentSource,
     onImageClick?: (url: string) => void,
     brokenImages?: Set<string>,
     onImageError?: (url: string) => void
@@ -342,11 +350,6 @@ export function ContentWarningOverlay({
     );
 }
 
-type SensitiveObjectProperties = ObjectProperties & {
-    sensitive?: boolean;
-    contentWarning?: string | null;
-};
-
 function renderInboxAttachment(object: ObjectProperties, isLoading: boolean | undefined) {
     const attachment = getAttachment(object);
 
@@ -423,7 +426,6 @@ interface FeedItemProps {
     onClick?: () => void;
     onDelete?: () => void;
     showStats?: boolean;
-    showSensitiveMediaByDefault?: boolean;
 }
 
 const noop = () => {};
@@ -449,20 +451,13 @@ const FeedItem: React.FC<FeedItemProps> = ({
     isChainParent = false,
     onClick: onClickHandler = noop,
     onDelete = noop,
-    showStats = true,
-    showSensitiveMediaByDefault = false
+    showStats = true
 }) => {
     const timestamp =
         new Date(object?.published ?? new Date()).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}) + ', ' + new Date(object?.published ?? new Date()).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit'});
 
     const [, setIsCopied] = useState(false);
     const [brokenImages, setBrokenImages] = useState<Set<string>>(new Set());
-    const [isSensitiveMediaRevealed, setIsSensitiveMediaRevealed] = useState(false);
-    const [isSensitiveMediaManuallyHidden, setIsSensitiveMediaManuallyHidden] = useState(false);
-    const [isContentWarningRevealed, setIsContentWarningRevealed] = useState(false);
-    const [showContentWarningOverlay, setShowContentWarningOverlay] = useState(true);
-    const [contentWarningMinHeight, setContentWarningMinHeight] = useState<number | undefined>(undefined);
-    const contentWarningWrapperRef = useRef<HTMLDivElement>(null);
 
     const contentRef = useRef<HTMLDivElement>(null);
     const [isTruncated, setIsTruncated] = useState(false);
@@ -470,24 +465,24 @@ const FeedItem: React.FC<FeedItemProps> = ({
     const deleteMutation = useDeleteMutationForUser('index');
     const navigate = useNavigateWithBasePath();
 
-    useEffect(() => {
-        setIsSensitiveMediaRevealed(false);
-        setIsSensitiveMediaManuallyHidden(false);
-        setIsContentWarningRevealed(false);
-        setShowContentWarningOverlay(true);
-        setContentWarningMinHeight(undefined);
-    }, [object?.id]);
-
-    useLayoutEffect(() => {
-        if (!isContentWarningRevealed || !showContentWarningOverlay) {
-            return;
-        }
-
-        // Content is mounted under the overlay; remove the overlay before paint
-        // so the browser never paints an empty intermediate frame.
-        setShowContentWarningOverlay(false);
-        setContentWarningMinHeight(undefined);
-    }, [isContentWarningRevealed, showContentWarningOverlay]);
+    const {
+        contentWarning,
+        shouldHideContentWarning,
+        shouldHideSensitiveMedia,
+        canHideSensitiveMedia,
+        isContentWarningRevealed,
+        showContentWarningOverlay,
+        contentWarningMinHeight,
+        contentWarningWrapperRef,
+        revealSensitiveMedia,
+        hideSensitiveMedia,
+        revealContentWarning
+    } = useSensitiveMediaDisclosure({
+        contentWarning: object?.contentWarning,
+        sensitive: object?.sensitive,
+        hasMedia: getAttachment(object) !== null,
+        resetKey: object?.id
+    });
 
     const followMutation = useFollowMutationForUser(
         'index',
@@ -577,41 +572,12 @@ const FeedItem: React.FC<FeedItemProps> = ({
         setBrokenImages(prev => new Set(prev).add(url));
     };
 
-    const sensitiveObject = object as SensitiveObjectProperties;
-    const hasSensitiveMedia = sensitiveObject.sensitive === true && getAttachment(object) !== null;
-    const contentWarning = sensitiveObject.contentWarning?.trim() || null;
-    const hasContentWarning = contentWarning !== null;
-    const shouldHideContentWarning = contentWarning !== null && !isContentWarningRevealed;
-    const shouldHideSensitiveMedia = hasSensitiveMedia && !hasContentWarning && !showSensitiveMediaByDefault && (isSensitiveMediaManuallyHidden || !isSensitiveMediaRevealed);
-    const canHideSensitiveMedia = hasSensitiveMedia && !hasContentWarning && !showSensitiveMediaByDefault && !shouldHideSensitiveMedia;
-
-    const handleRevealSensitiveMedia = (event: React.MouseEvent) => {
-        event.stopPropagation();
-        setIsSensitiveMediaManuallyHidden(false);
-        setIsSensitiveMediaRevealed(true);
-    };
-
-    const handleHideSensitiveMedia = (event: React.MouseEvent) => {
-        event.stopPropagation();
-        setIsSensitiveMediaManuallyHidden(true);
-        setIsSensitiveMediaRevealed(false);
-    };
-
-    const handleRevealContentWarning = (event: React.MouseEvent) => {
-        event.stopPropagation();
-        const height = contentWarningWrapperRef.current?.offsetHeight;
-        if (height) {
-            setContentWarningMinHeight(height);
-        }
-        setIsContentWarningRevealed(true);
-    };
-
     const renderFeedMedia = (mediaClickHandler?: (url: string) => void) => {
         if (shouldHideSensitiveMedia) {
             const media = renderFeedAttachment(object, undefined, brokenImages, handleImageError);
 
             if (!media) {
-                return <SensitiveMediaOverlay onReveal={handleRevealSensitiveMedia} />;
+                return <SensitiveMediaOverlay onReveal={revealSensitiveMedia} />;
             }
 
             const mediaWrapperClassName = clsx(
@@ -624,7 +590,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                     {media}
                     <SensitiveMediaOverlay
                         isLayered
-                        onReveal={handleRevealSensitiveMedia}
+                        onReveal={revealSensitiveMedia}
                     />
                 </div>
             );
@@ -645,7 +611,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
             return (
                 <div className={mediaWrapperClassName}>
                     {media}
-                    <SensitiveMediaHideButton label='Hide' onHide={handleHideSensitiveMedia} />
+                    <SensitiveMediaHideButton label='Hide' onHide={hideSensitiveMedia} />
                 </div>
             );
         }
@@ -663,7 +629,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                 isLayered={isLayered}
                 label={contentWarning}
                 size={layout === 'inbox' || layout === 'reply' ? 'compact' : 'default'}
-                onReveal={handleRevealContentWarning}
+                onReveal={revealContentWarning}
             />
         );
     };
@@ -1109,7 +1075,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                             <SensitiveMediaOverlay
                                 className='ml-8 hidden h-[91px] w-[121px] shrink-0 md:ml-9 @md/inbox-item:flex'
                                 size='compact'
-                                onReveal={handleRevealSensitiveMedia}
+                                onReveal={revealSensitiveMedia}
                             />
                         ) : renderInboxAttachment(object, isLoading)}
                     </div>

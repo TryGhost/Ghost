@@ -35,7 +35,11 @@ const Moderation: React.FC = () => {
     const [hoveredItemId, setHoveredItemId] = useState<string | null>(null);
     const navigate = useNavigateWithBasePath();
     const {data: preferences, isLoading: isLoadingPreferences} = usePreferencesForUser();
-    const updatePreferences = useUpdatePreferencesForUser();
+    const updatePreferences = useUpdatePreferencesForUser({
+        onError: () => {
+            toast.error('Could not update sensitive media preference.');
+        }
+    });
     const showSensitiveMedia = preferences?.showSensitiveMedia ?? false;
 
     const handleShowSensitiveMediaChange = (showSensitiveMediaValue: boolean) => {
@@ -108,7 +112,7 @@ const Moderation: React.FC = () => {
                             <Switch
                                 aria-label='Show sensitive media'
                                 checked={showSensitiveMedia}
-                                disabled={isLoadingPreferences || updatePreferences.isPending}
+                                disabled={isLoadingPreferences}
                                 onCheckedChange={handleShowSensitiveMediaChange}
                             />
                         </SettingAction>

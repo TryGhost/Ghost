@@ -1,5 +1,5 @@
 import React, {useEffect, useRef} from 'react';
-import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
+import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, LoadingIndicator, Skeleton} from '@tryghost/shade/components';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 
@@ -19,7 +19,8 @@ import {handleProfileClick} from '@utils/handle-profile-click';
 import {renderTimestamp} from '@src/utils/render-timestamp';
 import {sanitizeHtml, stripHtml} from '@src/utils/content-formatters';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
-import {useNotificationsForUser, usePreferencesForUser} from '@hooks/use-activity-pub-queries';
+import {useNotificationsForUser} from '@hooks/use-activity-pub-queries';
+import {useSensitiveMediaDisclosure} from '@hooks/use-sensitive-media-disclosure';
 
 interface NotificationGroup {
     id: string;
@@ -204,28 +205,32 @@ const ProfileLinkedContent: React.FC<{
 
 interface NotificationPostPreviewProps {
     post: Notification['post'];
-    showSensitiveMediaByDefault: boolean;
     variant: 'inline' | 'quoted';
 }
 
 const NotificationPostPreview: React.FC<NotificationPostPreviewProps> = ({
     post,
-    showSensitiveMediaByDefault,
     variant
 }) => {
-    const [isSensitiveMediaRevealed, setIsSensitiveMediaRevealed] = React.useState(false);
-    const [isContentWarningRevealed, setIsContentWarningRevealed] = React.useState(false);
+    const attachments = post?.attachments ?? [];
+    const hasAttachments = attachments.length > 0;
+
+    const {
+        contentWarning,
+        shouldHideContentWarning,
+        shouldHideSensitiveMedia,
+        revealSensitiveMedia,
+        revealContentWarning
+    } = useSensitiveMediaDisclosure({
+        contentWarning: post?.contentWarning,
+        sensitive: post?.sensitive,
+        hasMedia: hasAttachments,
+        resetKey: post?.id
+    });
 
     if (!post) {
         return null;
     }
-
-    const contentWarning = post.contentWarning?.trim() || null;
-    const attachments = post.attachments ?? [];
-    const hasAttachments = attachments.length > 0;
-    const hasContentWarning = contentWarning !== null;
-    const shouldHideContentWarning = contentWarning !== null && !isContentWarningRevealed;
-    const shouldHideSensitiveMedia = post.sensitive === true && hasAttachments && !hasContentWarning && !showSensitiveMediaByDefault && !isSensitiveMediaRevealed;
 
     if (shouldHideContentWarning && contentWarning) {
         if (variant === 'inline') {
@@ -233,10 +238,7 @@ const NotificationPostPreview: React.FC<NotificationPostPreviewProps> = ({
                 <button
                     className='mt-0.5 block max-w-full truncate text-left text-sm text-gray-700 hover:text-black dark:text-gray-600 dark:hover:text-white'
                     type='button'
-                    onClick={(event) => {
-                        event.stopPropagation();
-                        setIsContentWarningRevealed(true);
-                    }}
+                    onClick={revealContentWarning}
                 >
                     <span className='font-semibold'>Content warning:</span> {contentWarning} <span className='font-semibold'>Show</span>
                 </button>
@@ -248,10 +250,7 @@ const NotificationPostPreview: React.FC<NotificationPostPreviewProps> = ({
                 className='mt-2.5'
                 label={contentWarning}
                 size='compact'
-                onReveal={(event) => {
-                    event.stopPropagation();
-                    setIsContentWarningRevealed(true);
-                }}
+                onReveal={revealContentWarning}
             />
         );
     }
@@ -275,13 +274,8 @@ const NotificationPostPreview: React.FC<NotificationPostPreviewProps> = ({
             {hasAttachments && (
                 <div className='notification-attachments mb-1 [&_.attachment-gallery]:flex [&_.attachment-gallery]:flex-wrap [&_img]:aspect-square [&_img]:max-w-[calc(20%-6.4px)]'>
                     {shouldHideSensitiveMedia ? (
-                        <SensitiveMediaOverlay
-                            onReveal={(event) => {
-                                event.stopPropagation();
-                                setIsSensitiveMediaRevealed(true);
-                            }}
-                        />
-                    ) : renderFeedAttachment({...post, type: 'Note', attachment: attachments} as unknown as ObjectProperties)}
+                        <SensitiveMediaOverlay onReveal={revealSensitiveMedia} />
+                    ) : renderFeedAttachment({type: 'Note', attachment: attachments})}
                 </div>
             )}
         </div>
@@ -307,8 +301,6 @@ const Notifications: React.FC = () => {
     const maxAvatars = 5;
 
     const {data, error, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = useNotificationsForUser('index');
-    const {data: preferences} = usePreferencesForUser();
-    const showSensitiveMediaByDefault = preferences?.showSensitiveMedia ?? false;
 
     const notificationGroups = (
         data?.pages.flatMap((page) => {
@@ -528,7 +520,6 @@ const Notifications: React.FC = () => {
                                                 ) && (
                                                     <NotificationPostPreview
                                                         post={group.post}
-                                                        showSensitiveMediaByDefault={showSensitiveMediaByDefault}
                                                         variant={group.type !== 'reply' && group.type !== 'mention' ? 'inline' : 'quoted'}
                                                     />
                                                 )}

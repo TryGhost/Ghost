@@ -3,15 +3,13 @@ import InboxList from './components/inbox-list';
 import React, {useState} from 'react';
 import {Topic} from '@src/components/topic-filter';
 import {isApiError} from '@src/api/activitypub';
-import {useDiscoveryFeedForUser, useInboxForUser, usePreferencesForUser} from '@hooks/use-activity-pub-queries';
+import {useDiscoveryFeedForUser, useInboxForUser} from '@hooks/use-activity-pub-queries';
 
 const Inbox: React.FC = () => {
     const [topic, setTopic] = useState<Topic>('following');
 
     const {inboxQuery: followingQuery} = useInboxForUser({enabled: topic === 'following'});
     const {discoveryFeedQuery: discoverQuery} = useDiscoveryFeedForUser({enabled: topic !== 'following', topic});
-    const {data: preferences} = usePreferencesForUser();
-    const showSensitiveMediaByDefault = preferences?.showSensitiveMedia ?? false;
 
     const feedQueryData = topic === 'following' ? followingQuery : discoverQuery;
     const {data, error, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = feedQueryData;
@@ -31,7 +29,6 @@ const Inbox: React.FC = () => {
         hasNextPage={hasNextPage!}
         isFetchingNextPage={isFetchingNextPage}
         isLoading={isLoading}
-        showSensitiveMediaByDefault={showSensitiveMediaByDefault}
         onTopicChange={setTopic}
     />;
 };

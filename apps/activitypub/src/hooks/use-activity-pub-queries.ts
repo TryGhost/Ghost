@@ -1789,6 +1789,10 @@ export function useFeedForUser(options: {enabled: boolean}) {
 export function usePreferencesForUser() {
     return useQuery<Preferences>({
         queryKey: QUERY_KEYS.preferences,
+        // Preferences are owner/admin only, so a failure here is usually a 403
+        // that won't resolve by asking again. Callers fall back to hiding
+        // sensitive media.
+        retry: false,
         async queryFn() {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI('index', siteUrl);
@@ -1798,7 +1802,7 @@ export function usePreferencesForUser() {
     });
 }
 
-export function useUpdatePreferencesForUser() {
+export function useUpdatePreferencesForUser({onError}: {onError?: () => void} = {}) {
     const queryClient = useQueryClient();
 
     return useMutation({
@@ -1808,13 +1812,23 @@ export function useUpdatePreferencesForUser() {
 
             return api.updatePreferences(preferences);
         },
-        async onMutate() {
+        async onMutate(preferences) {
             await queryClient.cancelQueries({
                 queryKey: QUERY_KEYS.preferences
             });
+
+            const previousPreferences = queryClient.getQueryData<Preferences>(QUERY_KEYS.preferences);
+
+            queryClient.setQueryData(QUERY_KEYS.preferences, preferences);
+
+            return {previousPreferences};
         },
-        onError() {
-            toast.error('Could not update sensitive media preference.');
+        onError(_error, _preferences, context) {
+            if (context?.previousPreferences) {
+                queryClient.setQueryData(QUERY_KEYS.preferences, context.previousPreferences);
+            }
+
+            onError?.();
         },
         onSuccess(preferences) {
             queryClient.setQueryData(QUERY_KEYS.preferences, preferences);

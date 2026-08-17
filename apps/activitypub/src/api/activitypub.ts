@@ -214,6 +214,19 @@ export interface Preferences {
     showSensitiveMedia: boolean;
 }
 
+/**
+ * Fails closed: anything the server doesn't explicitly confirm leaves sensitive
+ * media hidden.
+ */
+function parsePreferences(json: object | null): Preferences {
+    return {
+        showSensitiveMedia:
+            json !== null &&
+            'showSensitiveMedia' in json &&
+            json.showSensitiveMedia === true
+    };
+}
+
 export const PostType = {
     Note: 0,
     Article: 1,
@@ -228,8 +241,10 @@ export interface Post {
     title: string;
     excerpt: string;
     summary: string | null;
-    sensitive: boolean;
-    contentWarning: string | null;
+    // Optional until the backend that persists them ships
+    // (TryGhost/ActivityPub#1958)
+    sensitive?: boolean;
+    contentWarning?: string | null;
     content: string;
     url: string;
     featureImageUrl: string | null;
@@ -696,29 +711,22 @@ export class ActivityPubAPI {
 
     async getPreferences(): Promise<Preferences> {
         const url = new URL('.ghost/activitypub/v1/preferences', this.apiUrl);
-        const json = await this.fetchJSON(url);
 
-        return {
-            showSensitiveMedia:
-                json !== null &&
-                'showSensitiveMedia' in json &&
-                json.showSensitiveMedia === true
-        };
+        return parsePreferences(await this.fetchJSON(url));
     }
 
     async updatePreferences(preferences: Preferences): Promise<Preferences> {
         const url = new URL('.ghost/activitypub/v1/preferences', this.apiUrl);
         const json = await this.fetchJSON(url, 'PUT', preferences);
 
+        // A body-less success means the write was accepted but not echoed back,
+        // so the submitted value is what's now stored. Parsing null here would
+        // silently report the preference as disabled.
         if (json === null) {
             return preferences;
         }
 
-        return {
-            showSensitiveMedia:
-                'showSensitiveMedia' in json &&
-                json.showSensitiveMedia === true
-        };
+        return parsePreferences(json);
     }
 
     async resetNotificationsCount() {

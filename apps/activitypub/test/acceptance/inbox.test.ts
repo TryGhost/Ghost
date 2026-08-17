@@ -273,6 +273,9 @@ test.describe('Inbox', async () => {
         await expect(iframe).toBeVisible();
         const iframeContent = iframe.contentFrame();
         await expect(iframeContent.getByText('This sensitive reader text should stay visible.')).toBeVisible();
+        // Baked into the initial document rather than applied after load, so
+        // media can never paint before it is concealed
+        await expect(iframeContent.locator('html')).toHaveClass(/gh-sensitive-media-hidden/);
         await expect(iframeContent.locator('img[src="https://techblog.example/content/images/sensitive-reader-media.jpg"]')).toBeHidden();
         await expect(iframeContent.locator('img[src="https://techblog.example/content/images/inline-sensitive.jpg"]')).toBeHidden();
         await expect(iframeContent.locator('iframe[src="https://www.youtube.com/embed/test"]')).toBeHidden();
@@ -297,6 +300,81 @@ test.describe('Inbox', async () => {
         await expect(iframeContent.locator('img[src="https://techblog.example/content/images/sensitive-reader-media.jpg"]')).toBeHidden();
         await expect(iframeContent.locator('img[src="https://techblog.example/content/images/inline-sensitive.jpg"]')).toBeHidden();
         await expect(iframeContent.locator('iframe[src="https://www.youtube.com/embed/test"]')).toBeHidden();
+    });
+
+    test('changing reading options does not reload the article iframe', async ({page}) => {
+        const articlePost = {
+            ...inboxFixture.posts[0],
+            id: 'https://techblog.example/.ghost/activitypub/article/reading-options',
+            title: 'Reading options article',
+            excerpt: 'This article body should survive a font change.',
+            content: '<p>This article body should survive a font change.</p>',
+            sensitive: false,
+            contentWarning: null
+        };
+
+        const testInbox = {
+            ...inboxFixture,
+            posts: [articlePost, ...inboxFixture.posts.slice(1)]
+        };
+
+        await mockApi({page, requests: {
+            getInbox: {
+                method: 'GET',
+                path: '/v1/feed/reader',
+                response: testInbox
+            },
+            getDiscoveryFeed: {
+                method: 'GET',
+                path: '/v1/feed/discover/top',
+                response: testInbox
+            },
+            getPost: {
+                method: 'GET',
+                path: `/v1/replies/${encodeURIComponent(articlePost.id)}`,
+                response: {
+                    ...articlePost,
+                    post: {
+                        ...articlePost,
+                        metadata: {
+                            ghostAuthors: []
+                        }
+                    },
+                    ancestors: {
+                        chain: [],
+                        next: null
+                    },
+                    children: [],
+                    next: null
+                }
+            }
+        }, options: {useActivityPub: true}});
+
+        await page.goto('#/reader');
+
+        await page.getByTestId('inbox-item').filter({
+            hasText: 'Reading options article'
+        }).getByText('Reading options article').click();
+
+        const modal = page.getByRole('dialog');
+        const iframeContent = modal.locator('iframe').contentFrame();
+        await expect(iframeContent.getByText('This article body should survive a font change.')).toBeVisible();
+
+        // Any state living inside the iframe is lost if srcdoc is rewritten, so
+        // this marker is what proves the document survived
+        await iframeContent.locator('body').evaluate((body) => {
+            body.setAttribute('data-reader-marker', 'stable');
+        });
+
+        await modal.getByRole('button', {name: 'Reading options'}).click();
+        await page.getByRole('button', {name: 'Increase text size'}).click();
+
+        await expect(iframeContent.locator('body')).toHaveAttribute('data-reader-marker', 'stable');
+
+        await page.getByRole('button', {name: /Serif/}).click();
+
+        await expect(iframeContent.locator('html')).toHaveClass(/has-serif-body/);
+        await expect(iframeContent.locator('body')).toHaveAttribute('data-reader-marker', 'stable');
     });
 
     test('sensitive reader articles without media do not show a media warning', async ({page}) => {

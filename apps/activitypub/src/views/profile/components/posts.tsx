@@ -11,8 +11,7 @@ export type PostsProps = {
     fetchNextPage: () => void,
     hasNextPage: boolean,
     isFetchingNextPage: boolean,
-    noResultsMessage: string,
-    showSensitiveMediaByDefault: boolean
+    noResultsMessage: string
 }
 
 const Posts: React.FC<PostsProps> = ({
@@ -21,8 +20,7 @@ const Posts: React.FC<PostsProps> = ({
     hasNextPage,
     isFetchingNextPage,
     isLoading,
-    noResultsMessage,
-    showSensitiveMediaByDefault
+    noResultsMessage
 }) => {
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -82,7 +80,6 @@ const Posts: React.FC<PostsProps> = ({
                             likeCount={activity.object.likeCount}
                             object={activity.object}
                             repostCount={activity.object.repostCount}
-                            showSensitiveMediaByDefault={showSensitiveMediaByDefault}
                             type={activity.type}
                             onClick={() => {
                                 if (activity.object.type === 'Note') {
