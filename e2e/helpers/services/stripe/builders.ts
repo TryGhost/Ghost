@@ -354,7 +354,8 @@ export function buildGiftCheckoutCompletedEvent(opts: {
                     name: opts.name
                 },
                 metadata: opts.metadata,
-                payment_intent: opts.paymentIntent
+                payment_intent: opts.paymentIntent,
+                payment_status: 'paid'
             }
         }
     };
