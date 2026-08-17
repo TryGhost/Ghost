@@ -43,7 +43,7 @@ describe('Staff roles', () => {
     const owner = user('Owner');
     const author = user('Author');
     const { boot } = fakeStaffWorld({ currentUser: owner, users: [owner, author] });
-    const edited = { ...author, roles: [role('Editor')] };
+    const edited = { ...author, roles: [role('Super Editor')] };
     const editApi = fakeAdminEndpoint('PUT', `/users/${author.id}/?include=roles`, {
       users: [edited],
     });
@@ -56,7 +56,7 @@ describe('Staff roles', () => {
 
     await expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible();
     expect(editApi.lastRequest?.body).toMatchObject({
-      users: [{ id: author.id, roles: [{ id: role('Editor').id, name: 'Editor' }] }],
+      users: [{ id: author.id, roles: [{ id: role('Super Editor').id, name: 'Super Editor' }] }],
     });
     await modal.getByRole('button', { name: 'Close' }).click();
 

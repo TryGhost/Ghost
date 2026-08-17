@@ -12,24 +12,25 @@ function getLabs(response: ReturnType<typeof settingsResponse>): Record<string, 
 describe('boot fixtures', () => {
   it('defaults labs flags to off in settings and config', () => {
     expect(getLabs(settingsResponse())).toEqual({
-      superEditors: false,
       editorExcerpt: false,
       additionalPaymentMethods: false,
     });
     expect(configResponse().config.labs).toEqual({
-      superEditors: false,
       editorExcerpt: false,
       additionalPaymentMethods: false,
     });
   });
 
   it('merges labs overrides without mutating the canned data', () => {
-    const overridden = settingsResponse({ labs: { superEditors: true } });
+    const overridden = settingsResponse({ labs: { editorExcerpt: true } });
 
-    expect(getLabs(overridden)).toMatchObject({ superEditors: true, editorExcerpt: false });
-    expect(getLabs(settingsResponse())).toMatchObject({ superEditors: false });
-    expect(configResponse({ labs: { superEditors: true } }).config.labs).toMatchObject({
-      superEditors: true,
+    expect(getLabs(overridden)).toMatchObject({
+      editorExcerpt: true,
+      additionalPaymentMethods: false,
+    });
+    expect(getLabs(settingsResponse())).toMatchObject({ editorExcerpt: false });
+    expect(configResponse({ labs: { editorExcerpt: true } }).config.labs).toMatchObject({
+      editorExcerpt: true,
     });
   });
 
