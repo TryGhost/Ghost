@@ -34,7 +34,7 @@ const Moderation: React.FC = () => {
 
     const [hoveredItemId, setHoveredItemId] = useState<string | null>(null);
     const navigate = useNavigateWithBasePath();
-    const {data: preferences, isLoading: isLoadingPreferences} = usePreferencesForUser();
+    const {data: preferences, isError: isPreferencesUnavailable, isLoading: isLoadingPreferences, isSuccess: hasPreferences} = usePreferencesForUser();
     const updatePreferences = useUpdatePreferencesForUser({
         onError: () => {
             toast.error('Could not update sensitive media preference.');
@@ -43,6 +43,10 @@ const Moderation: React.FC = () => {
     const showSensitiveMedia = preferences?.showSensitiveMedia ?? false;
 
     const handleShowSensitiveMediaChange = (showSensitiveMediaValue: boolean) => {
+        if (!hasPreferences) {
+            return;
+        }
+
         updatePreferences.mutate({
             showSensitiveMedia: showSensitiveMediaValue
         });
@@ -102,22 +106,24 @@ const Moderation: React.FC = () => {
                 <div className='flex items-center justify-between gap-8'>
                     <H2>Moderation</H2>
                 </div>
-                <div className='mt-6'>
-                    <SettingItem>
-                        <SettingHeader>
-                            <SettingTitle>Show sensitive media</SettingTitle>
-                            <SettingDescription>Display adult content or media marked as sensitive without a warning</SettingDescription>
-                        </SettingHeader>
-                        <SettingAction>
-                            <Switch
-                                aria-label='Show sensitive media'
-                                checked={showSensitiveMedia}
-                                disabled={isLoadingPreferences}
-                                onCheckedChange={handleShowSensitiveMediaChange}
-                            />
-                        </SettingAction>
-                    </SettingItem>
-                </div>
+                {!isPreferencesUnavailable && (
+                    <div className='mt-6'>
+                        <SettingItem>
+                            <SettingHeader>
+                                <SettingTitle>Show sensitive media</SettingTitle>
+                                <SettingDescription>Display adult content or media marked as sensitive without a warning</SettingDescription>
+                            </SettingHeader>
+                            <SettingAction>
+                                <Switch
+                                    aria-label='Show sensitive media'
+                                    checked={showSensitiveMedia}
+                                    disabled={isLoadingPreferences || !hasPreferences}
+                                    onCheckedChange={handleShowSensitiveMediaChange}
+                                />
+                            </SettingAction>
+                        </SettingItem>
+                    </div>
+                )}
                 <div className='mt-6'>
                     <Tabs defaultValue="blocked_users" variant='underline'>
                         <TabsList>

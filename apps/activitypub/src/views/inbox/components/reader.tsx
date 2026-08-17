@@ -308,10 +308,18 @@ const ArticleBody: React.FC<{
 
         // Font, colour and sensitive-media changes are patched onto the live
         // document by the effects below, so srcdoc is only written when the
-        // article changes. Rewriting it reloads the iframe and throws away
-        // scroll position and reading progress.
-        if (renderedArticleRef.current !== articleHtml) {
-            renderedArticleRef.current = articleHtml;
+        // article document itself changes. Rewriting it reloads the iframe and
+        // throws away scroll position and reading progress.
+        const documentIdentity = [
+            articleHtml,
+            heading,
+            excerpt ?? '',
+            image ?? '',
+            postUrl ?? '',
+            (authors ?? []).map(author => `${author.name}\0${author.profile_image}`).join('\n')
+        ].join('\n');
+        if (renderedArticleRef.current !== documentIdentity) {
+            renderedArticleRef.current = documentIdentity;
             setIsLoading(true);
             iframe.srcdoc = htmlContent;
         }
@@ -324,7 +332,7 @@ const ArticleBody: React.FC<{
                 iframeWindow.removeEventListener('keydown', handleIframeKeyDown);
             }
         };
-    }, [articleHtml, htmlContent, updateSensitiveMediaVisibility]);
+    }, [articleHtml, authors, excerpt, heading, htmlContent, image, postUrl, updateSensitiveMediaVisibility]);
 
     useEffect(() => {
         updateSensitiveMediaVisibility();

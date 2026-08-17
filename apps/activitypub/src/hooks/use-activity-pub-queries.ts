@@ -1806,6 +1806,7 @@ export function useUpdatePreferencesForUser({onError}: {onError?: () => void} = 
     const queryClient = useQueryClient();
 
     return useMutation({
+        scope: {id: 'preferences'},
         async mutationFn(preferences: Preferences) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI('index', siteUrl);
@@ -1824,7 +1825,11 @@ export function useUpdatePreferencesForUser({onError}: {onError?: () => void} = 
             return {previousPreferences};
         },
         onError(_error, _preferences, context) {
-            if (context?.previousPreferences) {
+            if (context?.previousPreferences === undefined) {
+                // There was nothing to roll back to, so drop the optimistic
+                // value rather than leaving showSensitiveMedia: true cached.
+                queryClient.removeQueries({queryKey: QUERY_KEYS.preferences});
+            } else {
                 queryClient.setQueryData(QUERY_KEYS.preferences, context.previousPreferences);
             }
 

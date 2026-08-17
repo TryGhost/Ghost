@@ -145,6 +145,41 @@ test.describe('Preferences', async () => {
         await expect(toggle).not.toBeChecked();
     });
 
+    test('I still see moderation controls when the preferences endpoint is unavailable', async ({page}) => {
+        await mockApi({page, requests: {
+            getMyAccount,
+            getPreferences: {
+                method: 'GET',
+                path: '/v1/preferences',
+                response: {},
+                responseStatus: 404
+            },
+            getBlockedAccounts: {
+                method: 'GET',
+                path: '/v1/blocks/accounts',
+                response: {
+                    blocked_accounts: [],
+                    next: null
+                }
+            },
+            getBlockedDomains: {
+                method: 'GET',
+                path: '/v1/blocks/domains',
+                response: {
+                    blocked_domains: [],
+                    next: null
+                }
+            }
+        }, options: {useActivityPub: true}});
+
+        await page.goto('#/preferences');
+        await page.getByRole('link', {name: /Moderation/}).click();
+
+        await expect(page.getByRole('heading', {name: 'Moderation'})).toBeVisible();
+        await expect(page.getByRole('tab', {name: 'Blocked users'})).toBeVisible();
+        await expect(page.getByRole('switch', {name: 'Show sensitive media'})).toHaveCount(0);
+    });
+
     test('I can open the Social Web domain screen from preferences', async ({page}) => {
         await mockApi({page, requests: {
             getMyAccount: getMyIndexAccount,
