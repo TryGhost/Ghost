@@ -1,10 +1,11 @@
 import React, {useEffect, useState} from 'react';
 import type {AutomationDetail} from '@tryghost/admin-x-framework/api/automations';
-import {Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, EmptyIndicator, HoverCard, HoverCardContent, HoverCardTrigger, Label, RadioGroup, RadioGroupItem} from '@tryghost/shade/components';
+import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, EmptyIndicator, HoverCard, HoverCardContent, HoverCardTrigger, Label, RadioGroup, RadioGroupItem} from '@tryghost/shade/components';
 import {Inline, Stack} from '@tryghost/shade/primitives';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
 import {toast} from 'sonner';
-import {useNavigate, useParams} from '@tryghost/admin-x-framework';
+import {useBlocker} from 'react-router';
+import {useConfirmUnload, useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {getScenario, mockAutomations} from '@/automations/proto/shared/mock';
 import {LEFT_PANEL_SLOT, leftPanelComponent} from './panel-variants';
 import {ProtoVariantSwitcher, ProtoVariantsProvider} from '@/automations/proto/shared/proto-variant-switcher';
@@ -130,6 +131,32 @@ const StopAutomationDialog: React.FC<{
     );
 };
 
+// Publishing to a LIVE automation confirms — but only confirms. What happens to
+// members already mid-flow is a real question the team still has to settle, and
+// offering a choice here would imply we'd answered it. A plain "are you sure"
+// marks the moment as deliberate without encoding a decision that doesn't exist
+// yet; options go back in when there's something to encode.
+const PublishChangesDialog: React.FC<{
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    onConfirm: () => void;
+}> = ({open, onOpenChange, onConfirm}) => (
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>Publish changes</AlertDialogTitle>
+                <AlertDialogDescription>
+                    Are you sure you want to publish these changes to the live automation?
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <Button onClick={onConfirm}>Publish</Button>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+    </AlertDialog>
+);
+
 /**
  * Float concept — Resend-style lifecycle. A live automation is read-only: the
  * canvas is a preview with per-node analytics and the primary action is Stop
@@ -157,15 +184,33 @@ const AutomationFloat: React.FC = () => {
     const [dirty, setDirty] = useState(false);
     const [saveState, setSaveState] = useState<SaveState>('saved');
     const [stopOpen, setStopOpen] = useState(false);
+    const [publishOpen, setPublishOpen] = useState(false);
+    // Edits autosave into `draft`; `publishedDraft` is what the automation is
+    // actually running. Publishing promotes one to the other — the same draft vs
+    // published split posts already have, and what lets a live automation be
+    // edited safely without stopping it first.
     const [draft, setDraft] = useState<AutomationDetail | null>(null);
+    const [publishedDraft, setPublishedDraft] = useState<AutomationDetail | null>(null);
     // Trigger + goals. Separate from `draft` because AutomationDetail carries no
     // trigger config yet — the canvases take it as its own prop.
     const [triggerConfig, setTriggerConfig] = useState<TriggerConfig>(DEFAULT_TRIGGER_CONFIG);
+    const [publishedTriggerConfig, setPublishedTriggerConfig] = useState<TriggerConfig>(DEFAULT_TRIGGER_CONFIG);
     const [switcherOpen, setSwitcherOpen] = useState(false);
     const [moreOpen, setMoreOpen] = useState(false);
+    // The left pane's search expands into this screen's top strip, where it would
+    // otherwise run into the automation title. The pane tells us when that happens.
+    const [paneSearchOpen, setPaneSearchOpen] = useState(false);
 
     // Which left-panel variation is active (flask switcher, bottom-right).
     const LeftPanel = leftPanelComponent(useProtoVariant(LEFT_PANEL_SLOT));
+
+    // Leaving with unpublished changes. Autosave means the work itself is safe, so
+    // the browser prompt is reserved for the one window where it genuinely isn't:
+    // an autosave still in flight. Navigating away inside the app is a different
+    // risk — the changes are saved but aren't running — so that gets a dialog that
+    // says exactly that, rather than threatening data loss it can't cause.
+    useConfirmUnload(saveState === 'saving');
+    const navigationBlocker = useBlocker(({currentLocation, nextLocation}) => dirty && currentLocation.pathname !== nextLocation.pathname);
 
     const goBack = () => navigate(toVersioned('/automations-proto/float'));
 
@@ -179,14 +224,13 @@ const AutomationFloat: React.FC = () => {
     }
 
     const {automation} = scenario;
-    // Edit is always available and enters the edit canvas straight away, live or not —
-    // it's never hidden behind Stop. `isEditable` (stopped) only governs whether edits
-    // can be APPLIED; while live, that's surfaced as a plain banner over the edit canvas
-    // (below), never a disabled button or a redirecting popover.
-    const isEditable = liveStatus === 'inactive';
+    // Editing is never gated on stopping the automation — you can edit a live one
+    // freely; publishing is where the consequences get decided.
     const showEditCanvas = editing;
     const selectedRun = selectedMemberId ? scenario.runs.find(r => r.id === selectedMemberId) ?? null : null;
-    const activeDraft = draft ?? automation;
+    // What's running (read canvas) vs what's being edited (edit canvas).
+    const publishedAutomation = publishedDraft ?? automation;
+    const activeDraft = draft ?? publishedAutomation;
 
     // Any edit marks the automation dirty and runs the fake autosave tick.
     const markEdited = () => {
@@ -205,16 +249,54 @@ const AutomationFloat: React.FC = () => {
         markEdited();
     };
 
-    // Start — take the (edited, stopped) automation live. No confirm dialog: going
-    // live is low-friction and reversible via Stop, and a blocking modal would
-    // interrupt the edit→start flow. A toast confirms it instead. All the friction
-    // lives on Stop.
+    // Start — take a stopped automation live. Read mode only now, so there's no
+    // edit state to settle here. No confirm dialog: going live is low-friction and
+    // reversible via Stop, and a blocking modal would interrupt the flow. All the
+    // friction lives on Stop and on publishing to something already running.
     const handleStart = () => {
-        setDirty(false);
         setLiveStatus('active');
-        setEditing(false); // leave the edit canvas — a live automation is read-only
         toast.success('Automation is live', {
             description: 'It’ll start enrolling members who match the trigger.'
+        });
+    };
+
+    // Publishing promotes the draft to the running version.
+    const publishChanges = () => {
+        setPublishOpen(false);
+        setPublishedDraft(activeDraft);
+        setPublishedTriggerConfig(triggerConfig);
+        setDraft(null);
+        setDirty(false);
+        toast.success('Changes published');
+    };
+
+    // A stopped automation has nobody mid-flow, so there's nothing to confirm and
+    // it publishes straight away. A live one confirms first.
+    const handlePublishClick = () => {
+        if (liveStatus === 'inactive') {
+            publishChanges();
+            return;
+        }
+        setPublishOpen(true);
+    };
+
+    // Discard reverts to what's published. An undo toast rather than a confirm
+    // dialog, matching the shipped header's discard.
+    const handleDiscard = () => {
+        const previousDraft = draft;
+        const previousTriggerConfig = triggerConfig;
+        setDraft(null);
+        setTriggerConfig(publishedTriggerConfig);
+        setDirty(false);
+        toast('Changes discarded', {
+            action: {
+                label: 'Undo',
+                onClick: () => {
+                    setDraft(previousDraft);
+                    setTriggerConfig(previousTriggerConfig);
+                    setDirty(true);
+                }
+            }
         });
     };
 
@@ -226,17 +308,30 @@ const AutomationFloat: React.FC = () => {
         setLiveStatus('inactive');
     };
 
-    const workingText = saveState === 'saving' ? 'Saving…' : dirty ? 'Unsaved changes' : 'No changes';
+    // Only while the pane is actually on screen — entering edit mode hides the pane
+    // (and its search) but the title stays put.
+    const titleHidden = paneSearchOpen && !showEditCanvas;
+
+    // Autosave still runs, so this reports the publish state, not the save state:
+    // the only thing worth flagging is work that isn't live yet. Nothing to say
+    // when everything is published.
+    const workingText = saveState === 'saving' ? 'Saving…' : dirty ? 'Unpublished changes' : null;
 
     return (
         <div className="fixed inset-0 z-50 flex overflow-hidden bg-background" data-testid="float-detail">
             {/* Left pane docked flush to the edge. On entering edit it slides off the
                 left (negative margin collapses its flex footprint to 0) and the canvas
                 grows leftward to fill. Always mounted so the transition can animate; the
-                canvas's ResizeObserver re-centres the flow as it grows. pt-16 clears the
-                title overlay that persists at the screen's top-left. */}
-            <aside className={cn('flex w-[480px] shrink-0 flex-col overflow-hidden bg-sidebar pt-16 transition-[margin] duration-150 ease-out', showEditCanvas ? '-ml-[480px]' : 'ml-0')}>
-                <LeftPanel scenario={scenario} selectedMemberId={selectedMemberId} onSelectMember={setSelectedMemberId} />
+                canvas's ResizeObserver re-centres the flow as it grows. Clearing the
+                title overlay is left to each panel variant — one keeps its content
+                below it, another puts controls on the same baseline as it. */}
+            <aside className={cn('flex w-[480px] shrink-0 flex-col overflow-hidden bg-sidebar transition-[margin] duration-150 ease-out', showEditCanvas ? '-ml-[480px]' : 'ml-0')}>
+                <LeftPanel
+                    scenario={scenario}
+                    selectedMemberId={selectedMemberId}
+                    onSearchOpenChange={setPaneSearchOpen}
+                    onSelectMember={setSelectedMemberId}
+                />
             </aside>
 
             {/* Canvas fills the remaining viewport (bounded, not full-bleed), so the flow
@@ -247,22 +342,11 @@ const AutomationFloat: React.FC = () => {
                     The inactive one is opacity-0 + pointer-events-none so clicks fall to
                     the active canvas beneath/above it. */}
                 <div className={cn('absolute inset-0 transition-opacity duration-150', showEditCanvas ? 'pointer-events-none opacity-0' : 'opacity-100')}>
-                    <FloatFlowCanvas automation={automation} selectedRun={selectedRun} triggerConfig={triggerConfig} />
+                    <FloatFlowCanvas automation={publishedAutomation} selectedRun={selectedRun} triggerConfig={publishedTriggerConfig} />
                 </div>
                 <div className={cn('absolute inset-0 transition-opacity duration-150', showEditCanvas ? 'opacity-100' : 'pointer-events-none opacity-0')}>
                     <FloatEditCanvas draft={activeDraft} triggerConfig={triggerConfig} onChange={handleDraftChange} onTriggerConfigChange={handleTriggerConfigChange} />
                 </div>
-
-                {/* Editing a live automation: you can explore/edit freely, but changes
-                    can't be applied until it's stopped. Surface that as a plain banner
-                    (Stop is right there in the header) — never a disabled Edit button or
-                    a popover that redirects you. pointer-events-none: it's informational. */}
-                {showEditCanvas && !isEditable && (
-                    <div className="pointer-events-none absolute top-4 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 rounded-lg border border-border-default bg-background px-4 py-2.5 shadow-lg">
-                        <LucideIcon.Info className="size-4 shrink-0 text-blue-500" />
-                        <span className="text-sm">This automation is live — stop it to apply your changes.</span>
-                    </div>
-                )}
 
                 {/* Top-right — autosave indicator (while editing), the ⋯ actions menu,
                     the always-available Edit/Done toggle, then the primary lifecycle
@@ -285,20 +369,30 @@ const AutomationFloat: React.FC = () => {
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
-                    {/* Edit is always available — it enters the edit canvas whether or not
-                        the automation is live (a banner explains the live case), toggling
-                        to Done while editing. */}
-                    {editing ? (
-                        <Button variant="outline" onClick={() => setEditing(false)}>Done</Button>
+                    {/* Edit mode is about the draft, so it carries only draft actions:
+                        Done when there's nothing outstanding, Discard/Publish when there
+                        is. Stop and Start are lifecycle actions and stay in read mode —
+                        stopping is no longer a prerequisite for editing. */}
+                    {showEditCanvas ? (
+                        dirty ? (
+                            <>
+                                <Button variant="outline" onClick={handleDiscard}>Discard changes</Button>
+                                <Button onClick={handlePublishClick}>Publish changes</Button>
+                            </>
+                        ) : (
+                            <Button variant="outline" onClick={() => setEditing(false)}>Done</Button>
+                        )
                     ) : (
-                        <Button variant="outline" onClick={() => setEditing(true)}>
-                            <LucideIcon.Pencil /> Edit
-                        </Button>
-                    )}
-                    {isEditable ? (
-                        <Button onClick={handleStart}>Start</Button>
-                    ) : (
-                        <Button onClick={() => setStopOpen(true)}>Stop</Button>
+                        <>
+                            <Button variant="outline" onClick={() => setEditing(true)}>
+                                <LucideIcon.Pencil /> Edit
+                            </Button>
+                            {liveStatus === 'inactive' ? (
+                                <Button onClick={handleStart}>Start</Button>
+                            ) : (
+                                <Button onClick={() => setStopOpen(true)}>Stop</Button>
+                            )}
+                        </>
                     )}
                 </div>
             </div>
@@ -308,10 +402,22 @@ const AutomationFloat: React.FC = () => {
                 space passes clicks through; the title row opts back in. */}
             <div className="pointer-events-none absolute top-4 left-4 z-30">
                 <Inline align="center" className="pointer-events-auto" gap="sm">
+                    {/* The back arrow always stays — search indents past it rather than
+                        covering it, so there's never a moment with no way out. Only the
+                        title yields the space. */}
                     <RailButton icon={LucideIcon.ArrowLeft} label="Back to automations" onClick={goBack} />
                     <HoverCard closeDelay={150} open={switcherOpen} openDelay={150} onOpenChange={setSwitcherOpen}>
                         <HoverCardTrigger asChild>
-                            <Button className="h-auto min-w-0 gap-2 rounded-full px-2 py-1 text-lg font-semibold" variant="ghost">
+                            <Button
+                                className={cn(
+                                    'h-auto min-w-0 gap-2 rounded-full px-2 py-1 text-lg font-semibold transition-opacity',
+                                    // Yields to the pane's search when it expands across
+                                    // the strip. Faded out rather than unmounted so the
+                                    // title doesn't pop back in as the input closes.
+                                    titleHidden && 'pointer-events-none opacity-0'
+                                )}
+                                variant="ghost"
+                            >
                                 <span className="truncate">{automation.name}</span>
                                 <StatusPill status={liveStatus} />
                             </Button>
@@ -341,8 +447,36 @@ const AutomationFloat: React.FC = () => {
                 </Inline>
             </div>
 
-            {/* Stop — the high-friction confirm that unlocks editing. */}
+            {/* Stop — the high-friction confirm for taking a live automation down. */}
             <StopAutomationDialog open={stopOpen} onConfirm={handleStop} onOpenChange={setStopOpen} />
+
+            {/* Publish — a deliberate confirm when the automation is already live. */}
+            <PublishChangesDialog open={publishOpen} onConfirm={publishChanges} onOpenChange={setPublishOpen} />
+
+            {/* Leaving the automation with changes that are saved but not running.
+                Not a data-loss warning — the draft survives — so it offers to leave
+                rather than to discard. */}
+            <AlertDialog
+                open={navigationBlocker.state === 'blocked'}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        navigationBlocker.reset?.();
+                    }
+                }}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Leave with unpublished changes?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Your changes are saved, but they won’t affect this automation until you publish them.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Keep editing</AlertDialogCancel>
+                        <Button onClick={() => navigationBlocker.proceed?.()}>Leave</Button>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
 
             {/* Prototype-only: the flask switcher for flipping design variations. */}
             <ProtoVariantSwitcher />

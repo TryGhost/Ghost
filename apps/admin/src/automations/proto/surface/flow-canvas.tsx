@@ -133,7 +133,7 @@ export const SurfaceFlowCanvas: React.FC<SurfaceFlowCanvasProps> = ({automation,
     const [analyticsActionId, setAnalyticsActionId] = useState<string | null>(null);
     const analyticsAction = analyticsActionId ? orderActions(automation).find(a => a.id === analyticsActionId) : undefined;
     const sheetEmail: SheetEmail | null = analyticsAction?.type === 'send_email' && analyticsAction.stats
-        ? {actionId: analyticsAction.id, subject: analyticsAction.data.email_subject, stats: analyticsAction.stats}
+        ? {actionId: analyticsAction.id, stats: analyticsAction.stats}
         : null;
 
     const {nodes, edges, contentBottom} = useMemo(() => {

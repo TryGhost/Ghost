@@ -7,4 +7,8 @@ export interface LeftPanelProps {
     scenario: AutomationScenario;
     selectedMemberId: string | null;
     onSelectMember: (runId: string | null) => void;
+    // Reported by variants whose search expands into the screen's top strip, where
+    // it would otherwise collide with the floating automation title. The screen
+    // hides the title while it's open; variants that don't do this never call it.
+    onSearchOpenChange?: (open: boolean) => void;
 }

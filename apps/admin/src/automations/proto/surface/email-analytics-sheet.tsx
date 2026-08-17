@@ -20,7 +20,6 @@ import {NodeHeader} from './flow-node-shell';
 
 export interface SheetEmail {
     actionId: string;
-    subject: string;
     stats: AutomationEmailStats;
 }
 

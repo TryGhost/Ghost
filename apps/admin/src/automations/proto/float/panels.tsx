@@ -1,11 +1,13 @@
-import React, {useEffect, useMemo, useRef, useState} from 'react';
-import {InputGroup, InputGroupAddon, InputGroupInput, MetricValue, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Table, TableBody, TableCell, TableHead, TableHeadButton, TableHeader, TableRow} from '@tryghost/shade/components';
+import React, {useEffect, useMemo, useState} from 'react';
+import {InputGroup, InputGroupAddon, InputGroupInput, MetricValue, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Table, TableBody, TableCell, TableHeader, TableRow} from '@tryghost/shade/components';
 import {Box, Inline, Stack} from '@tryghost/shade/primitives';
 import {GhAreaChart} from '@tryghost/shade/patterns';
 import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
 import type {AutomationRun, AutomationScenario} from '@/automations/proto/shared/mock';
 import {toAreaData} from '@/automations/proto/shared/chart';
+import {SortHead, type SortState} from '@/automations/proto/float/sort-head';
 import {startedLabel} from '@/automations/proto/shared/member-runs';
+import {useStickyList} from '@/automations/proto/float/use-sticky-list';
 
 // Content for the float concept's persistent left card — one "Performance" view
 // (adapted from the surface concept's SurfaceAnalyticsPane). The review collapsed
@@ -97,49 +99,10 @@ const STATUS_FACETS: {label: string; color: string; glyph: React.ReactNode}[] = 
 ];
 
 type SortKey = 'member' | 'started' | 'status';
-type SortDir = 'asc' | 'desc';
-type SortState = {key: SortKey; direction: SortDir};
 
 // One enriched row, so the status label / percent are computed once and reused
 // by the facet counts, the sort comparator, and the rendered row.
 type SortedRun = {run: AutomationRun; label: string; pct: number};
-
-// Sortable column header — reuses Shade's TableHeadButton (same primitive the
-// analytics tables sort with), overriding its uppercase/right-aligned defaults
-// back to this list's plain left-aligned muted header style. Only the active
-// column shows a direction arrow, to keep the header quiet. `className` sets the
-// (fixed) column width on the header cell — with table-fixed below, that width
-// governs the whole column.
-const SortHead: React.FC<{
-    label: string;
-    sortKey: SortKey;
-    sort: SortState;
-    onSort: (key: SortKey) => void;
-    className?: string;
-}> = ({label, sortKey, sort, onSort, className}) => {
-    const active = sort.key === sortKey;
-    return (
-        // Sticky-pinned below the search/chip bar (top: --stick-top, measured in
-        // panels). bg-background makes rows scroll under it; the border-collapse
-        // table means the row's own border-b won't stick, so the bottom divider is
-        // drawn as an inset box-shadow instead. z-10 sits under the bar's z-20.
-        <TableHead className={cn('sticky top-[var(--stick-top,80px)] z-10 bg-sidebar px-4 shadow-[inset_0_-1px_0_var(--border-default)]', className)}>
-            <TableHeadButton
-                className="font-medium text-muted-foreground normal-case"
-                // type="button" is required: Shade's Button sets no default type, so
-                // this renders a native submit button. The React admin mounts inside
-                // the Ember shell's forms, so a submit here fires an ancestor form and
-                // scroll jumps to the top on every sort. Only surfaced once the header
-                // went sticky (you couldn't reach the control mid-scroll before).
-                type="button"
-                onClick={() => onSort(sortKey)}
-            >
-                {label}
-                {active && (sort.direction === 'asc' ? <LucideIcon.ArrowUp /> : <LucideIcon.ArrowDown />)}
-            </TableHeadButton>
-        </TableHead>
-    );
-};
 
 interface CanvasSidePanelProps {
     scenario: AutomationScenario;
@@ -155,7 +118,8 @@ export const CanvasSidePanel: React.FC<CanvasSidePanelProps> = ({scenario, selec
     const [range, setRange] = useState('30');
     const [query, setQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
-    const [sort, setSort] = useState<SortState>({key: 'member', direction: 'asc'});
+    const [sort, setSort] = useState<SortState<SortKey>>({key: 'member', direction: 'asc'});
+    const {scrollRef, sentinelRef, stickyBlockRef, stickyBarRef, stuck} = useStickyList();
 
     const chartData = toAreaData(metrics.enrollments_by_day, {range: Number(range), label: 'Runs'});
     const chartMax = Math.max(...chartData.map(point => point.value), 1);
@@ -217,74 +181,10 @@ export const CanvasSidePanel: React.FC<CanvasSidePanelProps> = ({scenario, selec
         }
     }, [sorted, selectedMemberId, onSelectMember]);
 
-    // Sticky search + collapsing filters: when the sentinel just above the sticky
-    // bar scrolls out the top of the scroll container, the search bar has stuck —
-    // the 2x2 cards have scrolled off and the chip row shows in the bar. The -12px
-    // top rootMargin gives the trigger a small dead-zone: when a filter shrinks the
-    // table and the scroll clamps back to the boundary, the sentinel stays just
-    // outside it, so we don't flicker back to unstuck (which would drop the chips).
-    const scrollRef = useRef<HTMLDivElement>(null);
-    const sentinelRef = useRef<HTMLDivElement>(null);
-    const stickyBlockRef = useRef<HTMLDivElement>(null);
-    const stickyBarRef = useRef<HTMLDivElement>(null);
-    const [stuck, setStuck] = useState(false);
-    useEffect(() => {
-        const root = scrollRef.current;
-        const sentinel = sentinelRef.current;
-        if (!root || !sentinel) {
-            return;
-        }
-        const observer = new IntersectionObserver(
-            ([entry]) => setStuck(!entry.isIntersecting),
-            {root, rootMargin: '-12px 0px 0px 0px', threshold: 0}
-        );
-        observer.observe(sentinel);
-        return () => observer.disconnect();
-    }, []);
-
-    // Reserve at least a viewport of height for the sticky bar + table block, set
-    // from JS so it's reliable (a CSS percentage min-height can fail to resolve
-    // inside a flex scroll container). Without it, filtering to a few rows shrinks
-    // the content so far that the scroll collapses past the sentinel and unsticks
-    // the search + chips; with it, the scroll clamps to the block's top — headers
-    // just under the sticky bar — instead.
-    useEffect(() => {
-        const root = scrollRef.current;
-        const block = stickyBlockRef.current;
-        if (!root || !block) {
-            return;
-        }
-        const apply = () => {
-            block.style.minHeight = `${root.clientHeight}px`;
-        };
-        apply();
-        const observer = new ResizeObserver(apply);
-        observer.observe(root);
-        return () => observer.disconnect();
-    }, []);
-
-    // Dock the sortable table header directly beneath the sticky search/chip bar.
-    // The bar's height changes when the chips expand, so rather than a hardcoded
-    // offset we measure its live height and expose it as --stick-top on the block;
-    // the header cells sticky-pin at top: var(--stick-top). offsetHeight is integer
-    // px and the observer fires through the chip expand/collapse animation, so the
-    // header tracks the bar flush in every state.
-    useEffect(() => {
-        const bar = stickyBarRef.current;
-        const block = stickyBlockRef.current;
-        if (!bar || !block) {
-            return;
-        }
-        const apply = () => {
-            block.style.setProperty('--stick-top', `${bar.offsetHeight}px`);
-        };
-        apply();
-        const observer = new ResizeObserver(apply);
-        observer.observe(bar);
-        return () => observer.disconnect();
-    }, []);
-
     return (
+        // pt-16 clears the title overlay that floats at the screen's top-left; this
+        // variant keeps all of its content below it.
+        <div className="flex min-h-0 flex-1 flex-col pt-16">
         <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto">
             {/* Performance header + timeframe (drives the chart) + the chart itself.
                 Scrolls away under the sticky search bar below. */}
@@ -472,6 +372,7 @@ export const CanvasSidePanel: React.FC<CanvasSidePanelProps> = ({scenario, selec
                 </Table>
                 </div>
             </div>
+        </div>
         </div>
     );
 };

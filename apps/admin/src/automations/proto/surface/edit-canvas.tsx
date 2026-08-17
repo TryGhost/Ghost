@@ -300,7 +300,7 @@ export const SurfaceEditCanvas: React.FC<SurfaceEditCanvasProps> = ({draft, onCh
     // so edits to its subject show through while the sheet is open.
     const analyticsAction = ordered.find(a => a.id === analyticsActionId);
     const sheetEmail: SheetEmail | null = analyticsAction?.type === 'send_email' && analyticsAction.stats
-        ? {actionId: analyticsAction.id, subject: analyticsAction.data.email_subject, stats: analyticsAction.stats}
+        ? {actionId: analyticsAction.id, stats: analyticsAction.stats}
         : null;
 
     const {nodes, edges, contentBottom} = useMemo(() => {
