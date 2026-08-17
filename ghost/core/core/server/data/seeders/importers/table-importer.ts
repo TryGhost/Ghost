@@ -132,7 +132,8 @@ export abstract class TableImporter<
                 }
                 const csv = papaparse.unparse(slicedData, {
                     columns,
-                    header: i === 0
+                    header: i === 0,
+                    newline: '\n'
                 });
                 await fs.promises.appendFile(filePath, `${i === 0 ? '' : '\n'}${csv}`);
             }
