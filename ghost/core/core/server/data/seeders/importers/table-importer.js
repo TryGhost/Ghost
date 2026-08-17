@@ -184,4 +184,4 @@ class TableImporter {
     }
 }
 
-module.exports = TableImporter;
+exports.TableImporter = TableImporter;

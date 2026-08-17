@@ -1,4 +1,4 @@
-const TableImporter = require('./table-importer');
+const {TableImporter} = require('./table-importer');
 const {faker} = require('@faker-js/faker');
 const {faker: americanFaker} = require('@faker-js/faker/locale/en_US');
 const {blogStartDate: startTime} = require('../utils/blog-info');
