@@ -1,6 +1,6 @@
 import React, {useEffect, useMemo, useState} from 'react';
 import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger, InputGroup, InputGroupAddon, InputGroupInput, MetricValue, Table, TableBody, TableCell, TableHeader, TableRow} from '@tryghost/shade/components';
-import {Box, Stack} from '@tryghost/shade/primitives';
+import {Box, Inline, Stack} from '@tryghost/shade/primitives';
 import {FilterBar, GhAreaChart} from '@tryghost/shade/patterns';
 import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
 import type {AutomationRun} from '@/automations/proto/shared/mock';
@@ -156,16 +156,26 @@ export const LeftPanelVariantB: React.FC<LeftPanelProps> = ({scenario, selectedM
                 arrow and title floating to their left — so the pane's chrome reads as
                 one row across the top rather than starting again below it. Outside the
                 scroll container, so they stay put. */}
-            <div className={cn(
-                'flex shrink-0 items-center justify-end gap-2 pt-4 pr-6 pb-3',
-                // Open search takes the whole strip, so it indents past the back arrow
-                // rather than sitting under it — the exit stays reachable while the
-                // title behind it is hidden.
-                searchOpen ? 'pl-16' : 'pl-6'
-            )}>
+            <Inline
+                align="center"
+                className={cn(
+                    'shrink-0 pt-4 pr-6 pb-3',
+                    // Open search takes the whole strip, so it indents past the back
+                    // arrow rather than sitting under it — the exit stays reachable
+                    // while the title behind it is hidden.
+                    searchOpen ? 'pl-16' : 'pl-6'
+                )}
+                gap="sm"
+                justify="end"
+            >
                 {searchOpen ? (
                     <>
-                        <InputGroup className="w-full">
+                        {/* flex-1 + min-w-0, NOT w-full: w-full resolves against the
+                            whole strip, overflows it once the gap and buttons are
+                            counted, and flex resolves that by shrinking the siblings —
+                            so the icon buttons squash below 36px and appear to jump
+                            width as search opens. */}
+                        <InputGroup className="min-w-0 flex-1">
                             <InputGroupAddon>
                                 <LucideIcon.Search />
                             </InputGroupAddon>
@@ -178,6 +188,7 @@ export const LeftPanelVariantB: React.FC<LeftPanelProps> = ({scenario, selectedM
                         </InputGroup>
                         <Button
                             aria-label="Close search"
+                            className="shrink-0"
                             size="icon"
                             type="button"
                             variant="ghost"
@@ -190,7 +201,7 @@ export const LeftPanelVariantB: React.FC<LeftPanelProps> = ({scenario, selectedM
                         </Button>
                     </>
                 ) : (
-                    <Button aria-label="Search members" size="icon" type="button" variant="ghost" onClick={() => toggleSearch(true)}>
+                    <Button aria-label="Search members" className="shrink-0" size="icon" type="button" variant="ghost" onClick={() => toggleSearch(true)}>
                         <LucideIcon.Search strokeWidth={2} />
                     </Button>
                 )}
@@ -199,7 +210,7 @@ export const LeftPanelVariantB: React.FC<LeftPanelProps> = ({scenario, selectedM
                     is the affordance the rest of Ghost already uses. */}
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button aria-label="Filter" className={cn(range !== 'all' && 'bg-muted')} size="icon" type="button" variant="ghost">
+                        <Button aria-label="Filter" className={cn('shrink-0', range !== 'all' && 'bg-muted')} size="icon" type="button" variant="ghost">
                             <LucideIcon.ListFilter strokeWidth={2} />
                         </Button>
                     </DropdownMenuTrigger>
@@ -212,7 +223,7 @@ export const LeftPanelVariantB: React.FC<LeftPanelProps> = ({scenario, selectedM
                         </DropdownMenuRadioGroup>
                     </DropdownMenuContent>
                 </DropdownMenu>
-            </div>
+            </Inline>
 
             {/* An applied filter gets its own row beneath the controls, the way the
                 members page does it — so what's narrowing the list is always visible

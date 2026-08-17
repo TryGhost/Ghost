@@ -25,7 +25,7 @@ const LEFT_PANE = 'w-[480px]';
 const StatusPill: React.FC<{status: LiveStatus}> = ({status}) => (
     status === 'active'
         ? (
-            <Badge className="font-medium whitespace-nowrap text-green-800 dark:text-green" variant="success">Live</Badge>
+            <Badge className="font-medium whitespace-nowrap text-green-800 dark:text-green" variant="success">On</Badge>
         )
         : (
             <Badge className="font-medium whitespace-nowrap" variant="secondary">Off</Badge>
