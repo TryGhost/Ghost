@@ -177,14 +177,8 @@ const processStep = async ({
             break;
         case 'send_email': {
             if (!hasUpdatesAndAnnouncementsEnabled(member)) {
-                logging.info({
-                    system: {
-                        event: 'automations.poll.skipped_unsubscribed_member',
-                        member_id: step.member_id,
-                        step_id: step.id
-                    }
-                }, `[AUTOMATIONS] Member ${step.member_id} for step ${step.id} has unsubscribed from emails. Fast-finishing this step`);
-                break;
+                await automationsApi.markStepTerminal(step, 'member unsubscribed');
+                return null;
             }
             memberWelcomeEmailService.init();
             const trackClicks = labs.isSet('automationAnalytics') && Boolean(settingsCache.get('email_track_clicks'));
