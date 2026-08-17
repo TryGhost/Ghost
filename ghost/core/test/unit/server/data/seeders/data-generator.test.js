@@ -172,7 +172,79 @@ describe('Data Generator', function () {
             }));
         });
 
-        assert.deepEqual(edges, expectedEdges);
+        const bySourceAndTarget = (first, second) => {
+            return first.source_action_id.localeCompare(second.source_action_id) || first.target_action_id.localeCompare(second.target_action_id);
+        };
+        assert.deepEqual(edges.toSorted(bySourceAndTarget), expectedEdges.toSorted(bySourceAndTarget));
+    });
+
+    it('Can import automation runs and run steps', async function () {
+        const dataGenerator = new DataGenerator({
+            knex: db,
+            schema,
+            schemaTables,
+            logger: {
+                info: () => { },
+                ok: () => { },
+                warn: () => { }
+            },
+            tables: [{
+                name: 'automations',
+                quantity: 2
+            }, {
+                name: 'members',
+                quantity: 4
+            }, {
+                name: 'automation_actions',
+                quantity: 8
+            }, {
+                name: 'automation_action_revisions',
+                quantity: 16
+            }, {
+                name: 'automation_action_edges'
+            }, {
+                name: 'automation_runs',
+                quantity: 6
+            }, {
+                name: 'automation_run_steps',
+                quantity: 12
+            }]
+        });
+        await dataGenerator.importData();
+
+        const members = await db.select('id', 'email').from('members');
+        const runs = await db.select('id', 'automation_id', 'member_id', 'member_email').from('automation_runs');
+        const steps = await db.select('automation_run_id', 'automation_action_revision_id', 'status').from('automation_run_steps');
+        const revisions = await db.select('id', 'action_id', 'created_at').from('automation_action_revisions');
+        const actions = await db.select('id', 'automation_id').from('automation_actions');
+        const edges = await db.select('source_action_id', 'target_action_id').from('automation_action_edges');
+
+        assert.equal(runs.length, 6);
+        assert.equal(steps.length, 12);
+
+        const membersById = new Map(members.map(member => [member.id, member]));
+        const actionsById = new Map(actions.map(action => [action.id, action]));
+        const revisionsById = new Map(revisions.map(revision => [revision.id, revision]));
+        const latestRevisionIds = new Set([...Map.groupBy(revisions, revision => revision.action_id).values()].map((actionRevisions) => {
+            return actionRevisions.toSorted((first, second) => second.created_at.localeCompare(first.created_at) || second.id.localeCompare(first.id))[0].id;
+        }));
+        const edgeKeys = new Set(edges.map(edge => `${edge.source_action_id}:${edge.target_action_id}`));
+
+        for (const run of runs) {
+            assert.equal(run.member_email, membersById.get(run.member_id).email);
+
+            const runSteps = steps.filter(step => step.automation_run_id === run.id);
+            assert.deepEqual(runSteps.map(step => step.status), ['finished', 'pending']);
+
+            const stepActions = runSteps.map((step) => {
+                assert.ok(latestRevisionIds.has(step.automation_action_revision_id));
+                const revision = revisionsById.get(step.automation_action_revision_id);
+                return actionsById.get(revision.action_id);
+            });
+
+            assert.ok(stepActions.every(action => action.automation_id === run.automation_id));
+            assert.ok(edgeKeys.has(`${stepActions[0].id}:${stepActions[1].id}`));
+        }
     });
 
     it('Can import explicit offer redemptions', async function () {

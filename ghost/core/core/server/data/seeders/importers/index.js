@@ -3,6 +3,8 @@ module.exports = [
     require('./automation-actions-importer'),
     require('./automation-action-revisions-importer'),
     require('./automation-action-edges-importer'),
+    require('./automation-runs-importer'),
+    require('./automation-run-steps-importer'),
     require('./newsletters-importer'),
     require('./posts-importer'),
     require('./users-importer'),

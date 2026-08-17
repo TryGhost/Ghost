@@ -1,0 +1,86 @@
+import {faker} from '@faker-js/faker';
+import errors from '@tryghost/errors';
+import type {Knex} from 'knex';
+// @ts-expect-error This module currently lacks type definitions.
+import TableImporter from './table-importer';
+// @ts-expect-error This module currently lacks type definitions.
+import dateToDatabaseString from '../utils/database-date';
+
+type Automation = {
+    id: string;
+    created_at: string;
+};
+
+type Member = {
+    id: string;
+    email: string;
+    created_at: string;
+};
+
+type AutomationRun = {
+    id: string;
+    created_at: string;
+    updated_at: string;
+    automation_id: string;
+    member_id: string;
+    member_email: string;
+};
+
+class AutomationRunsImporter extends TableImporter {
+    static table = 'automation_runs';
+    static dependencies = ['automations', 'members'];
+
+    #automation?: Automation;
+    #members: Member[] = [];
+
+    // TableImporter is JavaScript, so TypeScript cannot infer these inherited members.
+    declare transaction: Knex.Transaction;
+    declare fastFakeObjectId: () => string;
+    declare importForEach: (models: Automation[], amount: number) => Promise<void>;
+
+    defaultQuantity = 20;
+
+    constructor(knex: Knex, transaction: Knex.Transaction) {
+        super(AutomationRunsImporter.table, knex, transaction);
+    }
+
+    async import(quantity = this.defaultQuantity): Promise<void> {
+        const automations = await this.transaction.select('id', 'created_at').from<Automation>('automations');
+        this.#members = await this.transaction.select('id', 'email', 'created_at').from<Member>('members');
+
+        if (automations.length === 0 || this.#members.length === 0) {
+            return;
+        }
+
+        await this.importForEach(automations, quantity / automations.length);
+    }
+
+    setReferencedModel(automation: Automation): void {
+        this.#automation = automation;
+    }
+
+    generate(): AutomationRun {
+        if (!this.#automation) {
+            throw new errors.IncorrectUsageError({message: 'Cannot generate automation run without an automation'});
+        }
+
+        const member = faker.helpers.arrayElement(this.#members);
+        const automationCreatedAt = dateToDatabaseString.parse(this.#automation.created_at);
+        const memberCreatedAt = dateToDatabaseString.parse(member.created_at);
+        const createdAt = faker.date.between({
+            from: new Date(Math.max(automationCreatedAt.valueOf(), memberCreatedAt.valueOf())),
+            to: new Date()
+        });
+
+        return {
+            id: this.fastFakeObjectId(),
+            created_at: dateToDatabaseString(createdAt),
+            updated_at: dateToDatabaseString(createdAt),
+            automation_id: this.#automation.id,
+            member_id: member.id,
+            member_email: member.email
+        };
+    }
+}
+
+module.exports = AutomationRunsImporter;
