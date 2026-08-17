@@ -84,6 +84,7 @@ const ThemeInstalledModal: React.FC<ThemeInstalledModalProps & {onClose: () => v
                     toast.success('Theme activated', {description: <div><span className='capitalize'>{updatedTheme.name}</span> is now your active theme.</div>});
                 } catch (e) {
                     handleError(e);
+                    return;
                 }
             }
             onActivate?.();

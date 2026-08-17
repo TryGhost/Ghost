@@ -2,6 +2,7 @@ import React, {type ReactNode} from 'react';
 import {ConfirmationModalContent} from '@/settings/app/components/confirmation-modal';
 import {ErrorTextCard, type FatalErrors, ThemeValidationDetailsDisclosure, ValidationProblemCard, getIssuesFromFatalErrors} from './theme-validation-details';
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
+import {formatNumber} from '@tryghost/shade/utils';
 
 export type {FatalErrors} from './theme-validation-details';
 
@@ -20,11 +21,11 @@ const InvalidThemeModal: React.FC<InvalidThemeModalProps & {onClose: () => void}
     const defaultOpen = validationDetailsDefaultOpen ?? configData?.config?.environment === 'development';
     const {blockingProblems, secondaryProblems, stringErrors} = getIssuesFromFatalErrors(fatalErrors);
     const blockingIssueCount = blockingProblems.length + stringErrors.length;
-    const promptText = prompt ?? <>Ghost found {blockingIssueCount === 1 ? 'a blocking validation error' : `${blockingIssueCount} blocking validation errors`} and did not save your theme. Fix {blockingIssueCount === 1 ? 'the issue' : 'the issues'} below and try again.</>;
+    const promptText = prompt ?? <>Ghost found {blockingIssueCount === 1 ? 'a blocking validation error' : `${formatNumber(blockingIssueCount)} blocking validation errors`} and did not save your theme. Fix {blockingIssueCount === 1 ? 'the issue' : 'the issues'} below and try again.</>;
 
     return <ConfirmationModalContent
         cancelLabel='Close'
-        okLabel={'Retry'}
+        okLabel={onRetry ? 'Retry' : ''}
         okVariant='default'
         prompt={<>
             <div className='space-y-5'>
