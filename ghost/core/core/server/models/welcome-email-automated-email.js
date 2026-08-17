@@ -1,6 +1,6 @@
 const ghostBookshelf = require('./base');
 const errors = require('@tryghost/errors');
-const urlUtils = require('../../shared/url-utils');
+const urlUtils = require('../../shared/url-utils').default;
 const lexicalLib = require('../lib/lexical');
 const {DEFAULT_EMAIL_DESIGN_SETTING_SLUG} = require('../services/member-welcome-emails/constants');
 

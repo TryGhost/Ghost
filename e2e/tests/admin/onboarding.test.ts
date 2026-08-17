@@ -6,10 +6,9 @@ type ChecklistState = 'pending' | 'started' | 'completed' | 'dismissed';
 
 const allSteps = ['customize-design', 'first-post', 'build-audience', 'share-publication'];
 const activeStartedAt = '2026-05-01T00:00:00.000Z';
-const navigationSteps: Array<[string, RegExp]> = [
+const legacyNavigationSteps: Array<[string, RegExp]> = [
     ['customize-design', /\/ghost\/(?:\?[^#]*)?#\/settings\/design\/edit\?ref=setup/],
-    ['first-post', /\/ghost\/(?:\?[^#]*)?#\/editor\/post/],
-    ['build-audience', /\/ghost\/(?:\?[^#]*)?#\/members/]
+    ['first-post', /\/ghost\/(?:\?[^#]*)?#\/editor\/post/]
 ];
 
 test.use({isolation: 'per-test'});
@@ -90,22 +89,6 @@ test.describe('Ghost Admin - Onboarding Checklist', () => {
         expect(typeof preferences.startedAt).toBe('string');
     });
 
-    test('analytics routes redirect to onboarding while active', async ({page}) => {
-        await startOnboarding(page);
-
-        await page.goto('/ghost/#/analytics');
-
-        let onboardingPage = new OnboardingPage(page);
-        await expect(onboardingPage.checklist).toBeVisible();
-        await expectOnboardingRoute(page);
-
-        await page.goto('/ghost/#/analytics/web');
-
-        onboardingPage = new OnboardingPage(page);
-        await expect(onboardingPage.checklist).toBeVisible();
-        await expectOnboardingRoute(page, {returnTo: '/analytics/web'});
-    });
-
     test('completed and dismissed users reach Analytics normally', async ({page}) => {
         const analyticsPage = new AnalyticsOverviewPage(page);
 
@@ -135,6 +118,20 @@ test.describe('Ghost Admin - Onboarding Checklist', () => {
         });
     });
 
+    legacyNavigationSteps.forEach(([step, expectedUrl]) => {
+        test(`${step} step marks complete and navigates`, async ({page}) => {
+            await startOnboarding(page);
+
+            const onboardingPage = new OnboardingPage(page);
+            await onboardingPage.step(step).click();
+
+            await expect(page).toHaveURL(expectedUrl);
+
+            const preferences = await getOnboardingPreferences(page);
+            expect(preferences.completedSteps).toContain(step);
+        });
+    });
+
     test('legacy started users without startedAt reach Analytics and are dismissed', async ({page}) => {
         const analyticsPage = new AnalyticsOverviewPage(page);
 
@@ -150,32 +147,6 @@ test.describe('Ghost Admin - Onboarding Checklist', () => {
         await expect.poll(async () => {
             return (await getOnboardingPreferences(page))?.completedSteps;
         }).toEqual([]);
-    });
-
-    navigationSteps.forEach(([step, expectedUrl]) => {
-        test(`${step} step marks complete and navigates`, async ({page}) => {
-            await startOnboarding(page);
-
-            const onboardingPage = new OnboardingPage(page);
-            await onboardingPage.step(step).click();
-
-            await expect(page).toHaveURL(expectedUrl);
-
-            const preferences = await getOnboardingPreferences(page);
-            expect(preferences.completedSteps).toContain(step);
-        });
-    });
-
-    test('share step opens the dialog and marks the step complete', async ({page}) => {
-        await startOnboarding(page);
-
-        const onboardingPage = new OnboardingPage(page);
-        await onboardingPage.step('share-publication').click();
-
-        await expect(onboardingPage.shareModal).toBeVisible();
-
-        const preferences = await getOnboardingPreferences(page);
-        expect(preferences.completedSteps).toContain('share-publication');
     });
 
     test('skip returns to the preserved analytics URL', async ({page}) => {

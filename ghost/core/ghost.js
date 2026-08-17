@@ -20,6 +20,5 @@ case 'generate-data':
     require('./core/cli/command').run(mode);
     break;
 default:
-    // New boot sequence
     require('./core/boot')();
 }

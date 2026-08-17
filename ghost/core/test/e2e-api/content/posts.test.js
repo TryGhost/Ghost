@@ -214,6 +214,18 @@ describe('Posts Content API', function () {
             .matchBodySnapshot();
     });
 
+    it('Can request the url of a single post with a narrowed fields list', async function () {
+        // `findOne` drops the primary key when `?fields` omits it, and the URL
+        // is looked up by id — so without the serializer forcing it back in,
+        // the post serializes /404/ instead of its own URL.
+        const {body} = await agent
+            .get('posts/slug/welcome/?fields=title,url')
+            .expectStatus(200);
+
+        assert.doesNotMatch(body.posts[0].url, /\/404\//);
+        assert.deepEqual(Object.keys(body.posts[0]).sort(), ['slug', 'title', 'url']);
+    });
+
     it('Can include relations', async function () {
         await agent
             .get('posts/?include=tags,authors')
@@ -357,6 +369,27 @@ describe('Posts Content API', function () {
         assert.equal(paidPostData.tiers.length, 1);
     });
 
+    it('ignores Payment Authorization on gated Content API reads', async function () {
+        const paidPost = testUtils.DataGenerator.forKnex.createPost({
+            slug: 'mp-content-api-paid',
+            visibility: 'paid',
+            lexical: testUtils.DataGenerator.markdownToLexical('Secret paid body'),
+            published_at: moment().add(35, 'seconds').toDate()
+        });
+        const created = await models.Post.add(paidPost, {context: {internal: true}});
+
+        try {
+            const {body} = await agent
+                .get(`posts/slug/mp-content-api-paid/?formats=html`)
+                .header('Authorization', 'Payment test-credential')
+                .expectStatus(200);
+
+            assert.doesNotMatch(body.posts[0].html || '', /Secret paid body/);
+        } finally {
+            await models.Post.destroy({id: created.id}, {context: {internal: true}});
+        }
+    });
+
     it('Can include specific tier for post with tiers visibility', async function () {
         const res = await agent
             .get(`tiers/`)
@@ -485,7 +518,7 @@ describe('Posts Content API', function () {
             published_at: publishedAt,
             slug: 'consistent-ordering-1',
             tags: [{slug: 'consistent-order-test'}],
-            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('post 1')
+            lexical: testUtils.DataGenerator.markdownToLexical('post 1')
         }, {context: {internal: true}});
 
         const post2 = await models.Post.add({
@@ -494,7 +527,7 @@ describe('Posts Content API', function () {
             published_at: publishedAt,
             slug: 'consistent-ordering-2',
             tags: [{slug: 'consistent-order-test'}],
-            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('post 2')
+            lexical: testUtils.DataGenerator.markdownToLexical('post 2')
         }, {context: {internal: true}});
 
         const page1Response = await agent

@@ -57,7 +57,7 @@ const MAX_COMMENT_CHARS = 2000;
 // The comment text comes from a model that is itself reading untrusted PR
 // content. Neutralise @-mentions so a prompt-injected translation can't trick
 // the bot into pinging users/teams, and cap length to avoid oversized payloads
-// or API rejection. The `​` zero-width space breaks the mention without
+// or API rejection. The zero-width space (U+200B) breaks the mention without
 // visibly changing the rendered text.
 function sanitiseModelText(text) {
     const s = (typeof text === 'string' ? text : '').trim();

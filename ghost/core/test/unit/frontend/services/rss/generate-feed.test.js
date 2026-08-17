@@ -6,7 +6,22 @@ const testUtils = require('../../../../utils');
 const configUtils = require('../../../../utils/config-utils');
 const routerManager = require('../../../../../core/frontend/services/routing').routerManager;
 const generateFeed = require('../../../../../core/frontend/services/rss/generate-feed');
-const {callRenderer} = require('../../../server/services/koenig/test-utils');
+const lexicalLib = require('../../../../../core/server/lib/lexical');
+
+async function renderCard(type, data) {
+    const lexical = JSON.stringify({
+        root: {
+            children: [{type, ...data}],
+            direction: null,
+            format: '',
+            indent: 0,
+            type: 'root',
+            version: 1
+        }
+    });
+
+    return await lexicalLib.render(lexical);
+}
 
 describe('RSS: Generate Feed', function () {
     const data = {};
@@ -86,6 +101,21 @@ describe('RSS: Generate Feed', function () {
             assert.match(xmlData, /<atom:link href="http:\/\/my-ghost-blog.com\/rss\/" rel="self"/);
             assert.match(xmlData, /type="application\/rss\+xml"\/><ttl>60<\/ttl>/);
             assert.match(xmlData, /<\/channel><\/rss>$/);
+        });
+
+        it('defaults status to published on the URL lookup (the serializer strips it)', async function () {
+            const post = _.cloneDeep(posts[0]);
+            // RSS posts come out of the Content API serializer, which deletes
+            // `status` — everything it serves is published.
+            delete post.status;
+            data.posts = [post];
+
+            routerManagerGetUrlForResourceStub.returns('http://my-ghost-blog.com/' + post.slug + '/');
+
+            await generateFeed(baseUrl, data);
+
+            sinon.assert.calledWith(routerManagerGetUrlForResourceStub,
+                sinon.match({id: post.id, type: 'posts', status: 'published'}), {absolute: true});
         });
 
         it('should get the item tags correct', async function () {
@@ -235,15 +265,17 @@ describe('RSS: Generate Feed', function () {
         });
 
         it('strips bookmark thumbnail, icon and metadata', async function () {
-            const html = callRenderer('bookmark', {
+            const html = await renderCard('bookmark', {
                 url: 'https://www.ghost.org/',
-                icon: 'https://www.ghost.org/favicon.ico',
-                title: 'Ghost',
-                description: 'doing kewl stuff',
-                author: 'ghost',
-                publisher: 'Ghost',
-                thumbnail: 'https://ghost.org/images/meta/ghost.png'
-            }).html;
+                metadata: {
+                    icon: 'https://www.ghost.org/favicon.ico',
+                    title: 'Ghost',
+                    description: 'doing kewl stuff',
+                    author: 'ghost',
+                    publisher: 'Ghost',
+                    thumbnail: 'https://ghost.org/images/meta/ghost.png'
+                }
+            });
 
             // sanity check: the rendered card contains the chrome we expect to remove
             assert.match(html, /kg-bookmark-thumbnail/);
@@ -262,7 +294,7 @@ describe('RSS: Generate Feed', function () {
         });
 
         it('strips video player chrome and leaves a playable video with poster and controls', async function () {
-            const html = callRenderer('video', {
+            const html = await renderCard('video', {
                 src: '/content/x.mp4',
                 mimeType: 'video/mp4',
                 width: 200,
@@ -270,7 +302,7 @@ describe('RSS: Generate Feed', function () {
                 duration: 60,
                 thumbnailSrc: '/content/images/x.jpg',
                 customThumbnailSrc: '/content/images/x-custom.jpg'
-            }).html;
+            });
 
             // sanity check: the rendered card contains the chrome we expect to remove
             assert.match(html, /kg-video-overlay/);
@@ -295,13 +327,13 @@ describe('RSS: Generate Feed', function () {
         });
 
         it('strips audio player chrome including the title and adds controls', async function () {
-            const html = callRenderer('audio', {
+            const html = await renderCard('audio', {
                 src: '/content/audio/x.mp3',
                 title: 'My Episode Title',
                 duration: 60,
                 mimeType: 'audio/mp3',
                 thumbnailSrc: '/content/images/x.jpg'
-            }).html;
+            });
 
             // sanity check: the rendered card contains the chrome we expect to remove
             assert.match(html, /kg-audio-thumbnail/);
@@ -328,13 +360,13 @@ describe('RSS: Generate Feed', function () {
         });
 
         it('cleans the generated excerpt so card chrome does not leak into the description', async function () {
-            const html = callRenderer('audio', {
+            const html = await renderCard('audio', {
                 src: '/content/audio/x.mp3',
                 title: 'Episode 1',
                 duration: 60,
                 mimeType: 'audio/mp3',
                 thumbnailSrc: '/content/images/x.jpg'
-            }).html;
+            });
 
             // sanity check: the raw card carries chrome text we don't want in the excerpt
             assert.match(html, /kg-audio-player/);

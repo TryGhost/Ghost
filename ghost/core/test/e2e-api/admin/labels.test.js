@@ -51,7 +51,7 @@ describe('Labels API', function () {
     });
 
     it('Errors when adding label with the same name', async function () {
-        const loggingStub = sinon.stub(logging, 'error');
+        const loggingStub = sinon.stub(logging, 'warn');
         await agent
             .post('labels')
             .body({labels: [{
@@ -112,7 +112,7 @@ describe('Labels API', function () {
     });
 
     it('Errors when editing label to a name that already exists', async function () {
-        const loggingStub = sinon.stub(logging, 'error');
+        const loggingStub = sinon.stub(logging, 'warn');
 
         const {body: targetBody} = await agent
             .post('labels')
@@ -155,7 +155,7 @@ describe('Labels API', function () {
     });
 
     it('Errors when adding label with a name over the schema limit', async function () {
-        const loggingStub = sinon.stub(logging, 'error');
+        const loggingStub = sinon.stub(logging, 'warn');
         await agent
             .post('labels')
             .body({labels: [{

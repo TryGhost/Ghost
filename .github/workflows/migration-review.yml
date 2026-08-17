@@ -9,7 +9,7 @@ permissions:
   contents: read
 jobs:
   createComment:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     if: github.repository_owner == 'TryGhost'
     name: Add migration review requirements
     permissions:
@@ -44,7 +44,6 @@ jobs:
             - [ ]  Uses the correct utils
             - [ ]  Contains a minimal changeset
             - [ ]  Does not mix DDL/DML operations
-            - [ ]  Tested in MySQL and SQLite
 
             ### Schema changes
 

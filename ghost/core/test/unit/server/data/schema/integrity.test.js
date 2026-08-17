@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const _ = require('lodash');
-const yaml = require('js-yaml');
 const crypto = require('crypto');
 const fs = require('fs-extra');
 const path = require('path');
@@ -12,7 +11,8 @@ const defaultSettings = require('../../../../../core/server/data/schema/default-
 // Routes are yaml so we can require the file directly
 const routeSettings = require('../../../../../core/server/services/route-settings');
 routeSettings.init();
-const validateRouteSettings = require('../../../../../core/server/services/route-settings/validate');
+const {parseRouteSettings} = require('../../../../../core/server/services/route-settings/route-settings-parser');
+const parseYaml = require('../../../../../core/server/services/route-settings/yaml-parser');
 
 /**
  * @NOTE
@@ -35,16 +35,20 @@ const validateRouteSettings = require('../../../../../core/server/services/route
  */
 describe('DB version integrity', function () {
     // Only these variables should need updating
-    const currentSchemaHash = '83bd80e87f81e4663242965e5048fc7a';
-    const currentFixturesHash = '16c0d239e8d04682ccb1894124179289';
-    const currentSettingsHash = '397be8628c753b1959b8954d5610f83f';
-    const currentRoutesHash = '3d180d52c663d173a6be791ef411ed01';
+    const currentSchemaHash = '3771a4cd7362a5f9311018812438f21b';
+    const currentFixturesHash = 'd4c9e4fabcec3365c42d37642216021b';
+    const currentSettingsHash = 'f57245b22af55ea5fc1e5e20913de9bb';
+    const currentRoutesHash = 'd8c25fa01bf6d22a2bcb05ba0de70dc1';
 
     // If this test is failing, then it is likely a change has been made that requires a DB version bump,
     // and the values above will need updating as confirmation
     it('should not change without fixing this test', function () {
         const routesPath = path.join(config.get('paths').defaultRouteSettings, 'default-routes.yaml');
-        const defaultRoutes = validateRouteSettings(yaml.load(fs.readFileSync(routesPath, 'utf-8')));
+        const defaultRoutesSource = fs.readFileSync(routesPath, 'utf-8');
+        // `yamlSource` is the verbatim file text, so hashing it would trip this
+        // canary on comment and whitespace edits that change no route at all.
+        // The bridge output this used to hash carried no such field either.
+        const defaultRoutes = _.omit(parseRouteSettings(parseYaml(defaultRoutesSource), defaultRoutesSource), 'yamlSource');
 
         const tablesNoValidation = _.cloneDeep(schema);
         let schemaHash;
@@ -67,6 +71,5 @@ describe('DB version integrity', function () {
         assert.equal(fixturesHash, currentFixturesHash, 'Fixtures have changed, please ensure a proper migration has been created if necessary and update the hash in this test.');
         assert.equal(settingsHash, currentSettingsHash, 'Default settings have changed, please ensure a proper migration has been created if necessary and update the hash in this test.');
         assert.equal(routesHash, currentRoutesHash, 'Default routes have changed, please ensure a proper migration has been created if necessary and update the hash in this test.');
-        assert.equal(routesHash, routeSettings.getDefaultHash());
     });
 });

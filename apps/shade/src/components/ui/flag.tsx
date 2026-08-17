@@ -1,6 +1,7 @@
 import {cn} from '@/lib/utils';
 import React from 'react';
-import ReactFlag from 'react-world-flags';
+import {hasFlag} from 'country-flag-icons';
+import * as Flags from 'country-flag-icons/react/3x2';
 
 interface FlagProps {
     width?: string;
@@ -9,6 +10,8 @@ interface FlagProps {
     countryCode?: string;
     fallback?: React.ReactNode | null | undefined;
 }
+
+type FlagComponent = React.ComponentType<React.SVGProps<SVGSVGElement>>;
 
 const Flag: React.FC<FlagProps> = ({
     className,
@@ -22,15 +25,22 @@ const Flag: React.FC<FlagProps> = ({
         height: height
     };
 
+    const code = countryCode ? countryCode.toUpperCase() : '';
+    const FlagIcon = code && hasFlag(code) ? (Flags as Record<string, FlagComponent>)[code] : undefined;
+
+    const defaultFallback = fallback || <span className='h-[14px] w-[22px] rounded-[2px] bg-muted-foreground/20' style={sizeStyle}></span>;
+
     return (
         <div className={cn('relative flex items-center justify-center overflow-hidden rounded-[2px]', className)} style={sizeStyle}>
-            <ReactFlag
-                className='absolute w-auto max-w-none rounded-[2px]'
-                code={`${countryCode}`}
-                fallback={fallback || <span className='h-[14px] w-[22px] rounded-[2px] bg-muted-foreground/20' style={sizeStyle}></span>}
-                style={{
-                    height: height
-                }} />
+            {FlagIcon
+                ? (
+                    <FlagIcon
+                        className='absolute w-auto max-w-none rounded-[2px]'
+                        style={{
+                            height: height
+                        }} />
+                )
+                : defaultFallback}
         </div>
     );
 };

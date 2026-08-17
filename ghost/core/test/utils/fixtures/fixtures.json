@@ -101,10 +101,6 @@
                     "description": "External Apps"
                 },
                 {
-                    "name": "Ghost Explore Integration",
-                    "description": "Internal Integration for the Ghost Explore directory"
-                },
-                {
                     "name": "Self-Serve Migration Integration",
                     "description": "Internal Integration for the Self-Serve migration tool"
                 },
@@ -126,11 +122,6 @@
             "name": "Permission",
             "entries": [
                 {
-                    "name": "Read explore data",
-                    "action_type": "read",
-                    "object_type": "explore"
-                },
-                {
                     "name": "Export database",
                     "action_type": "exportContent",
                     "object_type": "db"
@@ -144,6 +135,11 @@
                     "name": "Delete all content",
                     "action_type": "deleteAllContent",
                     "object_type": "db"
+                },
+                {
+                    "name": "Import content",
+                    "action_type": "importContent",
+                    "object_type": "content_import"
                 },
                 {
                     "name": "Send mail",
@@ -549,6 +545,31 @@
                     "name": "Delete labels",
                     "action_type": "destroy",
                     "object_type": "label"
+                },
+                {
+                    "name": "Browse member custom fields",
+                    "action_type": "browse",
+                    "object_type": "member_custom_field"
+                },
+                {
+                    "name": "Read member custom fields",
+                    "action_type": "read",
+                    "object_type": "member_custom_field"
+                },
+                {
+                    "name": "Edit member custom fields",
+                    "action_type": "edit",
+                    "object_type": "member_custom_field"
+                },
+                {
+                    "name": "Add member custom fields",
+                    "action_type": "add",
+                    "object_type": "member_custom_field"
+                },
+                {
+                    "name": "Delete member custom fields",
+                    "action_type": "destroy",
+                    "object_type": "member_custom_field"
                 },
                 {
                     "name": "Browse automated emails",
@@ -1039,13 +1060,6 @@
                     "api_keys": [{"type": "admin"}]
                 },
                 {
-                    "slug": "ghost-explore",
-                    "name": "Ghost Explore",
-                    "description": "Built-in Ghost Explore integration",
-                    "type": "core",
-                    "api_keys": [{"type": "admin", "role": "Ghost Explore Integration"}]
-                },
-                {
                     "slug": "self-serve-migration",
                     "name": "Self-Serve Migration Integration",
                     "description": "Core Self-Serve Migration integration",
@@ -1095,6 +1109,7 @@
             "entries": {
                 "Administrator": {
                     "db": "all",
+                    "content_import": "all",
                     "mail": "all",
                     "notification": "all",
                     "post": "all",
@@ -1113,6 +1128,7 @@
                     "member": "all",
                     "product": "all",
                     "label": "all",
+                    "member_custom_field": "all",
                     "automated_email": "all",
                     "email_design_setting": "all",
                     "email_preview": "all",
@@ -1124,7 +1140,6 @@
                     "authentication": "reset",
                     "members_stripe_connect": "auth",
                     "newsletter": "all",
-                    "explore": "read",
                     "comment": "all",
                     "link": "all",
                     "mention": "browse",
@@ -1143,11 +1158,9 @@
                     "automation": "poll",
                     "gift": "flushReminders"
                 },
-                "Ghost Explore Integration": {
-                    "explore": "read"
-                },
                 "Self-Serve Migration Integration": {
                     "db": "importContent",
+                    "content_import": "importContent",
                     "member": "add",
                     "tag": "read"
                 },
@@ -1168,6 +1181,7 @@
                     "member": "all",
                     "member_signin_url": "read",
                     "label": "all",
+                    "member_custom_field": "all",
                     "automated_email": "all",
                     "email_design_setting": "all",
                     "email_preview": "all",
@@ -1176,7 +1190,6 @@
                     "product": ["browse", "read", "add", "edit"],
                     "offer": ["browse", "read", "add", "edit"],
                     "newsletter": ["browse", "read", "add", "edit"],
-                    "explore": "read",
                     "comment": "all",
                     "link": "all",
                     "mention": "browse",
@@ -1186,7 +1199,7 @@
                     "gift_link": "manage"
                 },
                 "Editor": {
-                    "notification": "all",
+                    "notification": ["browse", "destroy"],
                     "post": "all",
                     "setting": ["browse", "read"],
                     "slug": "all",
@@ -1223,7 +1236,7 @@
                     "recommendation": ["browse", "read"]
                 },
                 "Super Editor": {
-                    "notification": "all",
+                    "notification": ["browse", "destroy"],
                     "post": "all",
                     "setting": ["browse", "read"],
                     "slug": "all",
@@ -1242,6 +1255,7 @@
                     "recommendation": ["browse", "read"],
                     "member": ["browse", "read", "add", "edit", "destroy"],
                     "member_signin_url": "read",
+                    "member_custom_field": ["browse", "read"],
                     "offer": ["browse", "read"],
                     "comment": "all",
                     "gift_link": "manage"

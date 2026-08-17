@@ -22,13 +22,13 @@ class PostEmailHandler {
      * Validates email can be sent before saving the post (if an email will be sent)
      *
      * @param {import('@tryghost/api-framework').Frame} frame
-     * @returns {Promise<void>}
+     * @returns {Promise<{newsletter: Object, emailRecipientFilter: string, emailCount: number}|null>}
      */
     async validateBeforeSave(frame) {
         const newStatus = frame.data.posts[0].status;
 
         if (!EMAIL_SENDING_STATUSES.includes(newStatus)) {
-            return;
+            return null;
         }
 
         const existingPost = await this.models.Post.findOne(
@@ -41,7 +41,7 @@ class PostEmailHandler {
         const sendingEmail = hasNewsletter && this.shouldSendEmail(newStatus, previousStatus);
 
         if (!sendingEmail) {
-            return;
+            return null;
         }
 
         const emailRecipientFilter = frame.options.email_segment || existingPost?.get('email_recipient_filter') || 'all';
@@ -50,7 +50,9 @@ class PostEmailHandler {
 
         const newsletter = await this.getNewsletter(frame, existingPost);
 
-        await this.emailService.checkCanSendEmail(newsletter, emailRecipientFilter);
+        const {emailCount} = await this.emailService.checkCanSendEmail(newsletter, emailRecipientFilter);
+
+        return {newsletter, emailRecipientFilter, emailCount};
     }
 
     /**
@@ -97,9 +99,14 @@ class PostEmailHandler {
      * Handles creating or retrying the newsletter email after post is saved
      *
      * @param {Object} model - The post model
+     * @param {Object} [options]
+     * @param {Object} [options.preflight] - Validation result from validateBeforeSave, passed through to createEmail
+     * @param {Object} [options.preflight.newsletter]
+     * @param {string} [options.preflight.emailRecipientFilter]
+     * @param {number} [options.preflight.emailCount]
      * @returns {Promise<void>}
      */
-    async createOrRetryEmail(model) {
+    async createOrRetryEmail(model, {preflight} = {}) {
         if (!model.get('newsletter_id')) {
             return;
         }
@@ -114,7 +121,7 @@ class PostEmailHandler {
         let email;
 
         if (!postEmail) {
-            email = await this.emailService.createEmail(model);
+            email = await this.emailService.createEmail(model, {preflight});
         } else if (postEmail.get('status') === 'failed') {
             email = await this.emailService.retryEmail(postEmail);
         }

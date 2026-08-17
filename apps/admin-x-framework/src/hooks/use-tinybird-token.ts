@@ -22,9 +22,8 @@ export const useTinybirdToken = (options: UseTinybirdTokenOptions = {}): UseTiny
     const effectiveEnabled = enabled && webAnalyticsEnabled;
     const tinybirdQuery = getTinybirdToken({enabled: effectiveEnabled});
 
-    // A disabled React Query (v4) still reports isLoading:true and can keep cached
-    // data/errors, so return an idle result — else direct consumers (the providers)
-    // hang on a loading placeholder or leak a stale token.
+    // A disabled React Query can keep cached data/errors, so return an idle
+    // result — else direct consumers (the providers) leak a stale token.
     if (!effectiveEnabled) {
         return {
             token: undefined,

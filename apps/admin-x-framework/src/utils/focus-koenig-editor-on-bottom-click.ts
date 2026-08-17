@@ -1,4 +1,14 @@
-import type {KoenigInstance} from '@tryghost/admin-x-design-system';
+// Structurally matches Koenig's editor API so callers can pass their local type.
+export type KoenigInstance = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any
+    editorInstance: {
+        getRootElement: () => HTMLElement | null
+    }
+    focusEditor: (options?: {position?: 'top' | 'bottom'}) => void
+    insertParagraphAtBottom: () => void
+    lastNodeIsDecorator: () => boolean
+};
 
 export function focusKoenigEditorOnBottomClick(
     editorAPI: KoenigInstance,

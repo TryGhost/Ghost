@@ -4,7 +4,7 @@ const logging = require('@tryghost/logging');
 const membersService = require('../members');
 const config = require('../../../shared/config');
 const settings = require('../../../shared/settings-cache');
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 const events = require('../../lib/common/events');
 const models = require('../../models');
 const {getConfig} = require('./config');
@@ -18,7 +18,7 @@ const settingsCache = require('../../../shared/settings-cache');
 async function configureApi() {
     const cfg = getConfig({settingsHelpers, config, urlUtils});
     if (cfg) {
-        cfg.testEnv = process.env.NODE_ENV.startsWith('test');
+        cfg.testEnv = config.isTestEnv();
         await module.exports.configure(cfg);
         return true;
     }

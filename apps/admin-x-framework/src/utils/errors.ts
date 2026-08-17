@@ -84,6 +84,14 @@ export class MaintenanceError extends APIError {
     }
 }
 
+export class UnauthorizedError extends APIError {
+    constructor(response: Response, data: unknown, errorOptions?: ErrorOptions) {
+        super(response, data, 'You are not authorised to make this request.', errorOptions);
+    }
+}
+
+export class SessionExpiredError extends UnauthorizedError {}
+
 export class ThemeValidationError extends JSONError {
     constructor(response: Response, data: ErrorResponse, errorOptions?: ErrorOptions) {
         super(response, data, 'Theme is not compatible or contains errors.', errorOptions);
@@ -110,14 +118,19 @@ export class ValidationError extends JSONError {
 
 export const errorsWithMessage = [ValidationError, ThemeValidationError, HostLimitError, EmailError];
 
-// The API error serializer puts the human-readable text in `context`;
-// `message` is only a generic summary
+/**
+ * What the server said went wrong, for showing to a person.
+ *
+ * The API serializer rewrites `message` to a generic summary and leaves the sentence that
+ * explains the failure — and usually what to do about it — in `context`, so that is read
+ * first. Any error carrying an API body is read the same way: a caller should not have to
+ * know which class it got back to find the text, and reading only one class left every
+ * other one showing "Could not save…" while the reason sat unread in the payload.
+ */
 export function getErrorMessage(error: unknown, fallback: string): string {
-    if (error instanceof ValidationError && error.data?.errors[0]) {
-        return error.data.errors[0].context || error.data.errors[0].message;
-    }
+    const apiError = error instanceof JSONError ? error.data?.errors?.[0] : undefined;
 
-    return fallback;
+    return apiError?.context || apiError?.message || fallback;
 }
 
 // Frontend errors

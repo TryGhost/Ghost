@@ -91,6 +91,21 @@ describe('ColorPicker Component', () => {
             const lastCall = handleChange.mock.calls[handleChange.mock.calls.length - 1];
             assert.equal(lastCall[0].toUpperCase(), '#000000');
         });
+
+        it('tracks one pointer throughout a drag and stops after release', () => {
+            const {gradient, handleChange} = renderGradient();
+
+            fireEvent.pointerDown(gradient, {clientX: 20, clientY: 20, pointerId: 1});
+            fireEvent.pointerMove(gradient, {clientX: 160, clientY: 120, pointerId: 1});
+            const dragCall = handleChange.mock.calls[handleChange.mock.calls.length - 1];
+
+            fireEvent.pointerMove(gradient, {clientX: 40, clientY: 180, pointerId: 2});
+            assert.deepEqual(handleChange.mock.calls[handleChange.mock.calls.length - 1], dragCall);
+
+            fireEvent.pointerUp(gradient, {pointerId: 1});
+            fireEvent.pointerMove(gradient, {clientX: 100, clientY: 100, pointerId: 1});
+            assert.deepEqual(handleChange.mock.calls[handleChange.mock.calls.length - 1], dragCall);
+        });
     });
 
     describe('hex input', () => {

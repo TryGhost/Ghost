@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const logging = require('@tryghost/logging');
 const config = require('../../../shared/config');
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 
 const Minifier = require('./minifier');
 const AssetsMinificationBase = require('./assets-minification-base');

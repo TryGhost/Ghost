@@ -1,16 +1,12 @@
 import * as Sentry from '@sentry/react';
-import {showToast} from '@tryghost/admin-x-design-system';
 import {useCallback} from 'react';
-import toast from 'react-hot-toast';
+import {toast} from 'sonner';
 import {useFramework} from '../providers/framework-provider';
-import {APIError, getErrorMessage} from '../utils/errors';
+import {APIError, SessionExpiredError, getErrorMessage} from '../utils/errors';
 
 function showErrorToast(message: React.ReactNode) {
-    toast.remove();
-    showToast({
-        message,
-        type: 'error'
-    });
+    toast.dismiss();
+    toast.error(message);
 }
 
 /**
@@ -32,7 +28,7 @@ const useHandleError = () => {
         // eslint-disable-next-line no-console
         console.error(error);
 
-        if (sentryDSN) {
+        if (sentryDSN && !(error instanceof SessionExpiredError)) {
             Sentry.withScope((scope) => {
                 if (error instanceof APIError && error.response) {
                     scope.setTag('api_url', error.response.url);
@@ -49,8 +45,12 @@ const useHandleError = () => {
         if (error instanceof APIError && error.response?.status === 418) {
             // We use this status in tests to indicate the API request was not mocked -
             // don't show a toast because it may block clicking things in the test,
-            // but still clear lingering toasts that would block clicks the same way
-            toast.remove();
+            // but still clear lingering toasts that would block clicks the same way.
+            toast.dismiss();
+        } else if (error instanceof SessionExpiredError) {
+            // Session-expiry 401s trigger a redirect to signin in the fetch
+            // layer - a toast would only flash while the page unloads
+            toast.dismiss();
         } else if (error instanceof APIError) {
             showErrorToast(getErrorMessage(error, error.message));
         } else {

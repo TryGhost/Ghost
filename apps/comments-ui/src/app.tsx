@@ -4,7 +4,7 @@ import AuthFrame from './auth-frame';
 import ContentBox from './components/content-box';
 import PopupBox from './components/popup-box';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import i18nLib from '@tryghost/i18n';
+import i18nLib from '@tryghost/i18n/registry/comments';
 import setupGhostApi from './utils/api';
 import {ActionHandler, SyncActionHandler, isSyncAction} from './actions';
 import {AppContext, Comment, DispatchActionType, EditableAppContext} from './app-context';
@@ -15,6 +15,12 @@ import {useOptions} from './utils/options';
 type AppProps = {
     scriptTag: HTMLElement;
     initialCommentId: string | null;
+};
+
+type AdminUser = {
+    roles: {
+        name: string;
+    }[];
 };
 
 const ALLOWED_MODERATORS = ['Owner', 'Administrator', 'Super Editor'];
@@ -129,7 +135,7 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId}) => {
                 adminUrl: options.adminUrl
             });
 
-            let admin = null;
+            let admin: AdminUser | null = null;
             try {
                 admin = await adminApi.getUser();
 

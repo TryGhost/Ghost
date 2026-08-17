@@ -24,6 +24,84 @@ export function sanitizeHtml(html: string): string {
     return DOMPurify.sanitize(html);
 }
 
+// Removes any <script> unless it loads a Twitter/X embed widget from an allowed
+// host; allowed scripts keep only their src, never inline code.
+function stripDisallowedScript(element: Element): void {
+    // Must stay in sync with allowedScriptHostnames in the backend sanitizer
+    // (https://github.com/TryGhost/ActivityPub/blob/main/src/helpers/html.ts)
+    const allowedScriptHostnames = ['platform.twitter.com', 'platform.x.com'];
+
+    let hasAllowedSrc = false;
+    try {
+        // Relative URLs must not pass, so no base URL here
+        const url = new URL(element.getAttribute('src') || '');
+        hasAllowedSrc = url.protocol === 'https:' && allowedScriptHostnames.includes(url.hostname);
+    } catch {
+        hasAllowedSrc = false;
+    }
+
+    if (!hasAllowedSrc) {
+        element.parentNode?.removeChild(element);
+        return;
+    }
+
+    // Allowed scripts may only load code via src, never run inline code
+    element.textContent = '';
+}
+
+// Removes iframes we can't safely embed and forces a restrictive sandbox on the rest.
+function sandboxIframe(element: Element): void {
+    // Only keep iframes with an absolute, cross-origin http(s) source. A relative
+    // or same-origin src would run same-origin with Ghost Admin, where allow-scripts
+    // + allow-same-origin can defeat the sandbox. This also rejects javascript:/data:
+    // and other non-http(s) schemes.
+    let isCrossOrigin = false;
+    try {
+        const url = new URL(element.getAttribute('src') || '', window.location.href);
+        isCrossOrigin =
+            (url.protocol === 'https:' || url.protocol === 'http:') &&
+            url.origin !== window.location.origin;
+    } catch {
+        isCrossOrigin = false;
+    }
+
+    if (!isCrossOrigin) {
+        element.parentNode?.removeChild(element);
+        return;
+    }
+
+    // Force a restrictive sandbox onto the (now verified cross-origin) frame,
+    // overriding any supplied value. Omits allow-top-navigation (no tab hijacking);
+    // allow-same-origin is safe here because the frame is cross-origin. Set before
+    // attribute sanitization so it survives via ADD_ATTR.
+    element.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups allow-presentation allow-forms');
+}
+
+// Article content needs looser rules than sanitizeHtml (iframes for YouTube
+// embeds, scripts for Twitter embeds), so it gets its own DOMPurify instance
+const articlePurify = DOMPurify(window);
+
+articlePurify.addHook('uponSanitizeElement', (node, data) => {
+    const element = node as Element;
+
+    if (data.tagName === 'script') {
+        stripDisallowedScript(element);
+    } else if (data.tagName === 'iframe') {
+        sandboxIframe(element);
+    }
+});
+
+export function sanitizeArticleContent(content: string): string {
+    return articlePurify.sanitize(content, {
+        ADD_TAGS: ['iframe', 'script'],
+        ADD_ATTR: ['target', 'frameborder', 'allowfullscreen', 'async', 'charset', 'sandbox'],
+        // Without this the HTML parser hoists leading <script>/<style> tags
+        // into <head>, which DOMPurify then discards — content starting with
+        // an embed script would lose it
+        FORCE_BODY: true
+    });
+}
+
 export function stripHtml(html: string, exclude: string[] = []): string {
     // If no exclusions, use the original logic
     if (exclude.length === 0) {

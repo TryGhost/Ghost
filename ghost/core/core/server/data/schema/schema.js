@@ -656,6 +656,73 @@ module.exports = {
         label_id: {type: 'string', maxlength: 24, nullable: false, references: 'labels.id', cascadeDelete: true},
         sort_order: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0}
     },
+    members_custom_fields: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        key: {type: 'string', maxlength: 191, nullable: false, unique: true},
+        name: {type: 'string', maxlength: 191, nullable: false, unique: true},
+        type: {
+            type: 'string',
+            maxlength: 50,
+            nullable: false,
+            // Keep in sync with FIELD_TYPE_IDS in @tryghost/custom-field-types,
+            // the source of truth (this static schema can't import it).
+            validations: {
+                isIn: [[
+                    'short_text',
+                    'long_text',
+                    'address'
+                ]]
+            }
+        },
+        status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'active', validations: {isIn: [['active', 'archived']]}},
+        // The publisher's order for the list, rewritten across every row whenever the
+        // list is reordered. Only the relative order carries meaning: creates append past
+        // the highest rank and deletes leave gaps, so the values are not a dense
+        // sequence. The default leaves a site that has never reordered with one value
+        // repeated, so reads tie-break on created_at and fall back to the order the
+        // fields were created in.
+        sort_order: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
+        created_at: {type: 'dateTime', nullable: false},
+        updated_at: {type: 'dateTime', nullable: true}
+    },
+    members_custom_field_values: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        // The field's stable key, not its id: a value is addressed by key everywhere it
+        // matters (the write names it, a filter names it, the key is immutable), so the row
+        // carries it directly and the read and filter paths skip an id-to-key join. Matches
+        // the referenced column's 191, as a foreign key must.
+        custom_field_key: {type: 'string', maxlength: 191, nullable: false, references: 'members_custom_fields.key', cascadeDelete: true},
+        member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', cascadeDelete: true},
+        // Which part of the field's value this row carries. A scalar has one part and
+        // stores it under the empty path; a composite stores one row per sub-field it
+        // fills, under that sub-field's key. Not nullable, because MySQL counts NULLs
+        // as distinct in a unique index and the constraint below would stop holding.
+        path: {type: 'string', maxlength: 191, nullable: false, defaultTo: ''},
+        // One row, one value: a part a member has not filled in has no row at all. The
+        // column stays nullable even so, because making it NOT NULL is only reachable
+        // through knex's dropNullable, which rewrites the column on MySQL and widens
+        // TEXT to MEDIUMTEXT — a migrated site would then accept sixteen megabytes in a
+        // column a fresh install bounds at 65,535 bytes. The bound matching long_text's
+        // exactly is worth more than the schema restating what the write path enforces.
+        value_text: {type: 'text', maxlength: 65535, nullable: true},
+        created_at: {type: 'dateTime', nullable: false},
+        updated_at: {type: 'dateTime', nullable: true},
+        // Named, because the name knex derives from the table and all three columns
+        // overruns MySQL's 64-character identifier limit. The migration that first
+        // created this table already shortened a column for the same reason; a third
+        // column spends what headroom that bought.
+        '@@UNIQUE_CONSTRAINTS@@': [
+            {columns: ['member_id', 'custom_field_key', 'path'], indexName: 'members_custom_field_values_leaf_unique'}
+        ],
+        // What a segment filter looks up: every member holding a given value for a
+        // given part of a given field. The value itself is not in the index — it is
+        // TEXT, so MySQL would need a prefix length, and the schema's index builder
+        // applies one length to every column in a composite index rather than to a
+        // single chosen one.
+        '@@INDEXES@@': [
+            ['custom_field_key', 'path']
+        ]
+    },
     members_stripe_customers: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         member_id: {type: 'string', maxlength: 24, nullable: false, unique: false, references: 'members.id', cascadeDelete: true},
@@ -780,6 +847,20 @@ module.exports = {
         newsletter_id: {type: 'string', maxlength: 24, nullable: true, references: 'newsletters.id', cascadeDelete: false},
         '@@INDEXES@@': [
             ['newsletter_id', 'created_at']
+        ]
+    },
+    machine_payment_events: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        post_id: {type: 'string', maxlength: 24, nullable: false, references: 'posts.id', cascadeDelete: true},
+        amount: {type: 'integer', nullable: false},
+        currency: {type: 'string', maxlength: 50, nullable: false},
+        protocol: {type: 'string', maxlength: 50, nullable: false},
+        method: {type: 'string', maxlength: 50, nullable: false},
+        stripe_payment_intent_id: {type: 'string', maxlength: 255, nullable: true, unique: true},
+        reference: {type: 'string', maxlength: 255, nullable: false},
+        created_at: {type: 'dateTime', nullable: false},
+        '@@UNIQUE_CONSTRAINTS@@': [
+            ['protocol', 'reference']
         ]
     },
     donation_payment_events: {
@@ -1039,20 +1120,6 @@ module.exports = {
         metadata: {type: 'string', maxlength: 2000, nullable: true},
         queue_entry: {type: 'integer', nullable: true, unsigned: true}
     },
-    redirects: {
-        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        from: {type: 'string', maxlength: 191, nullable: false, index: true},
-        to: {type: 'string', maxlength: 2000, nullable: false},
-        post_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'posts.id', setNullDelete: true},
-        created_at: {type: 'dateTime', nullable: false},
-        updated_at: {type: 'dateTime', nullable: true}
-    },
-    members_click_events: {
-        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', cascadeDelete: true},
-        redirect_id: {type: 'string', maxlength: 24, nullable: false, references: 'redirects.id', cascadeDelete: true},
-        created_at: {type: 'dateTime', nullable: false}
-    },
     members_feedback: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         score: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
@@ -1227,9 +1294,31 @@ module.exports = {
         email_subject: {type: 'string', maxlength: 300, nullable: true},
         email_lexical: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         email_design_setting_id: {type: 'string', maxlength: 24, nullable: true, references: 'email_design_settings.id', setNullDelete: true},
+        email_sent_count: {type: 'integer', nullable: true, unsigned: true},
+        email_opened_count: {type: 'integer', nullable: true, unsigned: true},
+        email_clicked_count: {type: 'integer', nullable: true, unsigned: true},
         '@@UNIQUE_CONSTRAINTS@@': [
             ['created_at', 'action_id']
         ]
+    },
+    redirects: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        from: {type: 'string', maxlength: 191, nullable: false, index: true},
+        to: {type: 'string', maxlength: 2000, nullable: false},
+        post_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'posts.id', setNullDelete: true},
+        automation_action_revision_id: {type: 'string', maxlength: 24, nullable: true, references: 'automation_action_revisions.id', setNullDelete: true},
+        to_hash: {type: 'binary', maxlength: 32, nullable: true},
+        created_at: {type: 'dateTime', nullable: false},
+        updated_at: {type: 'dateTime', nullable: true},
+        '@@UNIQUE_CONSTRAINTS@@': [
+            ['automation_action_revision_id', 'to_hash']
+        ]
+    },
+    members_click_events: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', cascadeDelete: true},
+        redirect_id: {type: 'string', maxlength: 24, nullable: false, references: 'redirects.id', cascadeDelete: true},
+        created_at: {type: 'dateTime', nullable: false}
     },
     automation_action_edges: {
         source_action_id: {type: 'string', maxlength: 24, nullable: false, references: 'automation_actions.id', restrictDelete: true},
@@ -1256,7 +1345,10 @@ module.exports = {
         finished_at: {type: 'dateTime', nullable: true},
         status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'pending', validations: {isIn: [['pending', 'automation disabled', 'failed', 'finished', 'member changed status', 'member unsubscribed']]}},
         locked_by: {type: 'string', maxlength: 191, nullable: true},
-        locked_at: {type: 'dateTime', nullable: true}
+        locked_at: {type: 'dateTime', nullable: true},
+        '@@INDEXES@@': [
+            ['status', 'ready_at', 'created_at', 'id']
+        ]
     },
     welcome_email_automated_emails: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
@@ -1291,12 +1383,36 @@ module.exports = {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         automated_email_id: {type: 'string', maxlength: 24, nullable: true, references: 'welcome_email_automated_emails.id'},
         automation_action_revision_id: {type: 'string', maxlength: 24, nullable: true, references: 'automation_action_revisions.id'},
+        automation_run_step_id: {type: 'string', maxlength: 24, nullable: true, references: 'automation_run_steps.id'},
         member_id: {type: 'string', maxlength: 24, nullable: false, index: true},
         member_uuid: {type: 'string', maxlength: 36, nullable: false},
         member_email: {type: 'string', maxlength: 191, nullable: false},
         member_name: {type: 'string', maxlength: 191, nullable: true},
+        mailgun_message_id: {type: 'string', maxlength: 1000, nullable: true},
+        delivered_at: {type: 'dateTime', nullable: true},
+        opened_at: {type: 'dateTime', nullable: true},
+        clicked_at: {type: 'dateTime', nullable: true},
+        track_opens: {type: 'boolean', nullable: false, defaultTo: false},
+        track_clicks: {type: 'boolean', nullable: false, defaultTo: false},
         created_at: {type: 'dateTime', nullable: false},
-        updated_at: {type: 'dateTime', nullable: true}
+        updated_at: {type: 'dateTime', nullable: true},
+        '@@INDEXES@@': [
+            // `mailgun_message_id` is too long for a MySQL index, so we use a
+            // prefix.
+            //
+            // We choose 31 because Mailgun message IDs look like this:
+            //
+            //     20200420080647.ab01cd02ef03ba04@mailgun.domain.example
+            //     YYYYMMDDHHMMSS.RANDOM-HEX-BYTES@DOMAIN
+            //
+            // That first part is unlikely to have conflicts, so let's use
+            // that. This index is for performance, not uniqueness, so it's
+            // okay if there's a conflict.
+            //
+            // Note that this prefix index only happens for MySQL. SQLite
+            // indexes the full value.
+            {columns: ['mailgun_message_id'], length: 31}
+        ]
     },
     gifts: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},

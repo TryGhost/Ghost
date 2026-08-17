@@ -5,8 +5,6 @@ const sinon = require('sinon');
 const testUtils = require('../../utils');
 const moment = require('moment');
 const _ = require('lodash');
-const {sequence} = require('@tryghost/promise');
-const urlService = require('../../../core/server/services/url');
 const ghostBookshelf = require('../../../core/server/models/base');
 const models = require('../../../core/server/models');
 const db = require('../../../core/server/data/db');
@@ -15,7 +13,7 @@ const events = require('../../../core/server/lib/common/events');
 const configUtils = require('../../utils/config-utils');
 const urlUtilsHelper = require('../../utils/url-utils');
 const context = testUtils.context.owner;
-const markdownToMobiledoc = testUtils.DataGenerator.markdownToMobiledoc;
+const markdownToLexical = testUtils.DataGenerator.markdownToLexical;
 
 /**
  * IMPORTANT:
@@ -33,10 +31,6 @@ describe('Post Model', function () {
 
     afterEach(function () {
         sinon.restore();
-    });
-
-    beforeEach(function () {
-        sinon.stub(urlService, 'getUrlByResourceId').withArgs(testUtils.DataGenerator.Content.posts[0].id).returns('/html-ipsum/');
     });
 
     describe('Single author posts', function () {
@@ -735,7 +729,7 @@ describe('Post Model', function () {
                     status: 'published',
                     published_at: previousPublishedAtDate,
                     title: 'published_at test',
-                    mobiledoc: markdownToMobiledoc('This is some content')
+                    lexical: markdownToLexical('This is some content')
                 }, context);
 
                 assertExists(newPost);
@@ -751,7 +745,7 @@ describe('Post Model', function () {
                 const newPost = await models.Post.add({
                     status: 'draft',
                     title: 'draft 1',
-                    mobiledoc: markdownToMobiledoc('This is some content')
+                    lexical: markdownToLexical('This is some content')
                 }, context);
 
                 assertExists(newPost);
@@ -766,7 +760,7 @@ describe('Post Model', function () {
                 const newPost = await models.Post.add({
                     status: 'draft',
                     title: 'draft 1',
-                    mobiledoc: markdownToMobiledoc('This is some content'),
+                    lexical: markdownToLexical('This is some content'),
                     authors: [{
                         id: testUtils.DataGenerator.forKnex.users[0].id,
                         name: testUtils.DataGenerator.forKnex.users[0].name
@@ -784,7 +778,7 @@ describe('Post Model', function () {
                     status: 'draft',
                     published_at: moment().toDate(),
                     title: 'draft 1',
-                    mobiledoc: markdownToMobiledoc('This is some content')
+                    lexical: markdownToLexical('This is some content')
                 }, context);
 
                 assertExists(newPost);
@@ -799,7 +793,7 @@ describe('Post Model', function () {
                 await assert.rejects(models.Post.add({
                     status: 'scheduled',
                     title: 'scheduled 1',
-                    mobiledoc: markdownToMobiledoc('This is some content')
+                    lexical: markdownToLexical('This is some content')
                 }, context), (err) => {
                     assertExists(err);
                     assert.equal((err instanceof errors.ValidationError), true);
@@ -813,7 +807,7 @@ describe('Post Model', function () {
                     status: 'scheduled',
                     published_at: moment().subtract(3, 'minute'),
                     title: 'scheduled 1',
-                    mobiledoc: markdownToMobiledoc('This is some content')
+                    lexical: markdownToLexical('This is some content')
                 }, context), (err) => {
                     assertExists(err);
                     assert.equal((err instanceof errors.ValidationError), true);
@@ -827,7 +821,7 @@ describe('Post Model', function () {
                     status: 'scheduled',
                     published_at: moment().add(1, 'minute'),
                     title: 'scheduled 1',
-                    mobiledoc: markdownToMobiledoc('This is some content')
+                    lexical: markdownToLexical('This is some content')
                 }, context);
                 assertExists(post);
 
@@ -842,7 +836,7 @@ describe('Post Model', function () {
                     status: 'scheduled',
                     published_at: moment().add(10, 'minute'),
                     title: 'scheduled 1',
-                    mobiledoc: markdownToMobiledoc('This is some content')
+                    lexical: markdownToLexical('This is some content')
                 }, context);
 
                 assertExists(post);
@@ -855,14 +849,13 @@ describe('Post Model', function () {
 
             it('can generate a non conflicting slug', async function () {
                 // Create 12 posts with the same title
-                const createdPosts = await sequence(_.times(12, function (i) {
-                    return function () {
-                        return models.Post.add({
-                            title: 'Test Title',
-                            mobiledoc: markdownToMobiledoc('Test Content ' + (i + 1))
-                        }, context);
-                    };
-                }));
+                const createdPosts = [];
+                for (let i = 0; i < 12; i += 1) {
+                    createdPosts.push(await models.Post.add({
+                        title: 'Test Title',
+                        lexical: markdownToLexical('Test Content ' + (i + 1))
+                    }, context));
+                }
 
                 // Should have created 12 posts
                 assert.equal(createdPosts.length, 12);
@@ -890,7 +883,7 @@ describe('Post Model', function () {
             it('can generate slugs without duplicate hyphens', async function () {
                 const newPost = {
                     title: 'apprehensive  titles  have  too  many  spaces—and m-dashes  —  –  and also n-dashes  ',
-                    mobiledoc: markdownToMobiledoc('Test Content 1')
+                    lexical: markdownToLexical('Test Content 1')
                 };
 
                 const createdPost = await models.Post.add(newPost, context);
@@ -904,7 +897,7 @@ describe('Post Model', function () {
             it('can generate a safe slug when a protected keyword is used', async function () {
                 const newPost = {
                     title: 'rss',
-                    mobiledoc: markdownToMobiledoc('Test Content 1')
+                    lexical: markdownToLexical('Test Content 1')
                 };
 
                 const createdPost = await models.Post.add(newPost, context);
@@ -918,7 +911,7 @@ describe('Post Model', function () {
             it('can generate slugs without non-ascii characters', async function () {
                 const newPost = {
                     title: 'भुते धडकी भरवणारा आहेत',
-                    mobiledoc: markdownToMobiledoc('Test Content 1')
+                    lexical: markdownToLexical('Test Content 1')
                 };
 
                 const createdPost = await models.Post.add(newPost, context);
@@ -928,12 +921,12 @@ describe('Post Model', function () {
             it('detects duplicate slugs before saving', async function () {
                 const firstPost = {
                     title: 'First post',
-                    mobiledoc: markdownToMobiledoc('First content 1')
+                    lexical: markdownToLexical('First content 1')
                 };
 
                 const secondPost = {
                     title: 'Second post',
-                    mobiledoc: markdownToMobiledoc('Second content 1')
+                    lexical: markdownToLexical('Second content 1')
                 };
 
                 // Create the first post

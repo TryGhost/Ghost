@@ -4,10 +4,11 @@ module.exports = {
         const MediaInliner = require('./external-media-inliner');
         const models = require('../../models');
         const jobsService = require('../jobs');
+        const adapterManager = require('../../services/adapter-manager').default;
 
-        const mediaStorage = require('../../adapters/storage').getStorage('media');
-        const imageStorage = require('../../adapters/storage').getStorage('images');
-        const fileStorage = require('../../adapters/storage').getStorage('files');
+        const mediaStorage = adapterManager.getAdapter('storage:media');
+        const imageStorage = adapterManager.getAdapter('storage:images');
+        const fileStorage = adapterManager.getAdapter('storage:files');
 
         const config = require('../../../shared/config');
 

@@ -1,5 +1,5 @@
 const legacyApiPathMatch = require('./legacy-api-path-match');
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 
 /**
  * If there is a version in the URL, and this is a valid API URL containing admin/content

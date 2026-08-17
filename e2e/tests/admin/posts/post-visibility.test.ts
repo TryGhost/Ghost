@@ -1,36 +1,8 @@
 import {Browser, BrowserContext, Page} from '@playwright/test';
-import {Member, createMemberFactory, createPostFactory, createTierFactory} from '@/data-factory';
+import {Member, buildLexicalParagraph, createMemberFactory, createPostFactory, createTierFactory} from '@/data-factory';
 import {PostPage} from '@/helpers/pages';
 import {expect, test} from '@/helpers/playwright';
 import {signInAsMember} from '@/helpers/playwright/flows/sign-in';
-
-function buildLexicalWithBody(body: string): string {
-    return JSON.stringify({
-        root: {
-            children: [{
-                children: [{
-                    detail: 0,
-                    format: 0,
-                    mode: 'normal',
-                    style: '',
-                    text: body,
-                    type: 'text',
-                    version: 1
-                }],
-                direction: 'ltr',
-                format: '',
-                indent: 0,
-                type: 'paragraph',
-                version: 1
-            }],
-            direction: 'ltr',
-            format: '',
-            indent: 0,
-            type: 'root',
-            version: 1
-        }
-    });
-}
 
 async function createAuthenticatedPublicPage(browser: Browser, baseURL: string, member: Member): Promise<{context: BrowserContext; page: Page; postPage: PostPage}> {
     const context = await browser.newContext({
@@ -59,7 +31,7 @@ test.describe('Ghost Admin - Post Visibility', () => {
             title,
             status: 'published',
             visibility: 'members',
-            lexical: buildLexicalWithBody(body)
+            lexical: buildLexicalParagraph(body)
         });
 
         const publicPage = new PostPage(page);
@@ -76,7 +48,7 @@ test.describe('Ghost Admin - Post Visibility', () => {
             title,
             status: 'published',
             visibility: 'paid',
-            lexical: buildLexicalWithBody(body)
+            lexical: buildLexicalParagraph(body)
         });
 
         const publicPage = new PostPage(page);
@@ -131,7 +103,7 @@ test.describe('Ghost Admin - Post Visibility', () => {
                 status: 'published',
                 visibility: 'tiers',
                 tiers: [{id: allowedTier.id}],
-                lexical: buildLexicalWithBody(body)
+                lexical: buildLexicalParagraph(body)
             });
 
             const accessMessage = `on the ${allowedTier.name} tier only`;

@@ -3,7 +3,7 @@ const path = require('path');
 const errors = require('@tryghost/errors');
 const imageTransform = require('@tryghost/image-transform');
 
-const storage = require('../../adapters/storage');
+const adapterManager = require('../../services/adapter-manager').default;
 const config = require('../../../shared/config');
 
 /** @type {import('@tryghost/api-framework').Controller} */
@@ -16,7 +16,7 @@ const controller = {
         },
         permissions: false,
         async query(frame) {
-            const store = storage.getStorage('images');
+            const store = adapterManager.getAdapter('storage:images');
 
             // Normalize
             const imageOptimizationOptions = config.get('imageOptimization');

@@ -34,6 +34,71 @@ describe('schema commands', function () {
         }
     });
 
+    describe('addTableColumn', function () {
+        // addTableColumn isn't exported, so we exercise it through createTable
+        // and stringify the builder rather than running it against a database.
+        function ddlFor(client, tableSpec) {
+            const Knex = require('knex');
+            const knex = Knex({client, useNullAsDefault: true});
+
+            try {
+                return commands.createTable('test_table', knex, tableSpec).toString();
+            } finally {
+                knex.destroy();
+            }
+        }
+
+        it('gives a binary column with a maxlength a bounded varbinary type on MySQL', function () {
+            const ddl = ddlFor('mysql2', {
+                to_hash: {type: 'binary', maxlength: 32, nullable: true}
+            });
+
+            assert.match(ddl, /`to_hash` varbinary\(32\)/);
+        });
+
+        // The bounded type is what makes the column indexable in full: MySQL
+        // can only index an unbounded blob with a prefix, and a prefix on a
+        // UNIQUE index would enforce uniqueness over the prefix alone.
+        it('falls back to an unbounded blob when a binary column has no maxlength', function () {
+            const ddl = ddlFor('mysql2', {
+                to_hash: {type: 'binary', nullable: true}
+            });
+
+            assert.match(ddl, /`to_hash` blob/);
+        });
+
+        it('indexes the whole binary column in a unique constraint, without a prefix', function () {
+            const ddl = ddlFor('mysql2', {
+                owner_id: {type: 'string', maxlength: 24, nullable: true},
+                to_hash: {type: 'binary', maxlength: 32, nullable: true},
+                '@@UNIQUE_CONSTRAINTS@@': [['owner_id', 'to_hash']]
+            });
+
+            // The column has to be bounded for this to be legal: MySQL rejects
+            // an unbounded blob in a key without a prefix length (ER_BLOB_KEY_WITHOUT_LENGTH).
+            assert.match(ddl, /`to_hash` varbinary\(32\)/);
+            assert.match(ddl, /add unique `test_table_owner_id_to_hash_unique`\(`owner_id`, `to_hash`\)/);
+        });
+
+        it('uses blob for binary columns on SQLite, which has no bounded binary type', function () {
+            const ddl = ddlFor('better-sqlite3', {
+                to_hash: {type: 'binary', maxlength: 32, nullable: true}
+            });
+
+            assert.match(ddl, /`to_hash` blob/);
+        });
+
+        it('still applies maxlength to string columns, defaulting to 191', function () {
+            const ddl = ddlFor('mysql2', {
+                bounded: {type: 'string', maxlength: 50, nullable: true},
+                unbounded: {type: 'string', nullable: true}
+            });
+
+            assert.match(ddl, /`bounded` varchar\(50\)/);
+            assert.match(ddl, /`unbounded` varchar\(191\)/);
+        });
+    });
+
     describe('createViewOrReplace', function () {
         // Guards the portability fix: views must never be created with MySQL's
         // default DEFINER security, which binds them to the migrating account

@@ -21,7 +21,6 @@ const allowedKeys = [
     'mailgunIsConfigured',
     'emailAnalytics',
     'hostSettings',
-    'tenor',
     'klipy',
     'pintura',
     'signupForm',
@@ -63,20 +62,6 @@ describe('Public-config Service', function () {
 
             assert.match(configProperties.version, /^\d+\.\d+\.\d+/);
             assert.notEqual(configProperties.version, '6.21.2+abc1234');
-        });
-
-        it('should return null for tenor apikey when unset', function () {
-            let configProperties = getConfigProperties();
-
-            assert.equal(configProperties.tenor.googleApiKey, null);
-        });
-
-        it('should return tenor apikey when set', function () {
-            configUtils.set('tenor:googleApiKey', 'TENOR_KEY');
-
-            let configProperties = getConfigProperties();
-
-            assert.equal(configProperties.tenor.googleApiKey, 'TENOR_KEY');
         });
 
         it('should return null for klipy apikey when unset', function () {
@@ -226,9 +211,6 @@ describe('Public-config Service', function () {
         });
 
         it('should return featurebase config with enabled=false when configured but disabled', function () {
-            configUtils.set('labs', {
-                featurebaseFeedback: true
-            });
             configUtils.set('featurebase', {
                 enabled: false,
                 organization: 'test-org',
@@ -242,9 +224,6 @@ describe('Public-config Service', function () {
         });
 
         it('should return only public featurebase config properties, not sensitive ones', function () {
-            configUtils.set('labs', {
-                featurebaseFeedback: true
-            });
             configUtils.set('featurebase', {
                 enabled: true,
                 organization: 'test-org',

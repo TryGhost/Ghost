@@ -1,5 +1,5 @@
 const debug = require('@tryghost/debug')('routing:static-pages-router');
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 const ParentRouter = require('./parent-router');
 const controllers = require('./controllers');
 
@@ -68,7 +68,6 @@ class StaticPagesRouter extends ParentRouter {
     _prepareContext(req, res, next) {
         res.routerOptions = {
             type: 'entry',
-            filter: this.filter,
             permalinks: this.permalinks.getValue({withUrlOptions: true}),
             resourceType: this.getResourceType(),
             query: this.RESOURCE_CONFIG,

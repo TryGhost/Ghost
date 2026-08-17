@@ -4,8 +4,8 @@ import {Check, ChevronDown, ChevronUp} from 'lucide-react';
 
 import {cn} from '@/lib/utils';
 import {SHADE_APP_NAMESPACES} from '@/shade-app';
-import {inputSurface} from '@/components/ui/input-surface';
-
+import {inputSurface, inputSurfaceClasses} from '@/components/ui/input-surface';
+import {consumeOverlayEscape} from '@/lib/overlay-escape';
 const Select = SelectPrimitive.Root;
 
 const SelectGroup = SelectPrimitive.Group;
@@ -20,7 +20,8 @@ const SelectTrigger = React.forwardRef<
         ref={ref}
         className={cn(
             inputSurface('self'),
-            'flex h-(--control-height) w-full items-center justify-between px-3 py-2 text-control whitespace-nowrap hover:bg-button-hover data-[placeholder]:text-muted-foreground dark:hover:bg-button-hover [&>span]:line-clamp-1',
+            inputSurfaceClasses.disabledFieldSelf,
+            'flex h-(--control-height) w-full items-center justify-between px-3 py-2 text-control whitespace-nowrap hover:bg-button-hover data-[placeholder]:text-muted-foreground [&>span]:line-clamp-1',
             className
         )}
         {...props}
@@ -70,17 +71,18 @@ SelectScrollDownButton.displayName = SelectPrimitive.ScrollDownButton.displayNam
 const SelectContent = React.forwardRef<
     React.ElementRef<typeof SelectPrimitive.Content>,
     React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
->(({className, children, position = 'popper', ...props}, ref) => (
+>(({className, children, onEscapeKeyDown, position = 'popper', ...props}, ref) => (
     <SelectPrimitive.Portal>
         <div className={SHADE_APP_NAMESPACES}>
             <SelectPrimitive.Content
                 ref={ref}
                 className={cn(
-                    'relative z-50 max-h-(--radix-select-content-available-height) min-w-[8rem] origin-(--radix-select-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-md border border-border/60 bg-surface-elevated-2 text-popover-foreground shadow-md data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 dark:border-border/30',
+                    'relative z-[9999] max-h-(--radix-select-content-available-height) min-w-[8rem] origin-(--radix-select-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-md border border-border/60 bg-surface-elevated-2 text-popover-foreground shadow-md data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 dark:border-border/30',
                     position === 'popper' && 'data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1',
                     className
                 )}
                 position={position}
+                onEscapeKeyDown={event => consumeOverlayEscape(event, onEscapeKeyDown)}
                 {...props}
             >
                 <SelectScrollUpButton />

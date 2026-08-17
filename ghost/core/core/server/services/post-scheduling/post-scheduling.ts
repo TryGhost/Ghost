@@ -1,12 +1,12 @@
 import moment from 'moment';
 import logging from '@tryghost/logging';
+import type {SchedulerAdapter, SchedulerJob} from '@tryghost/adapter-base-scheduling';
 import type {InternalApiKey, InternalKeys} from '../internal-keys';
-import type {SchedulerAdapter, SchedulerJob} from '../../adapters/scheduling/types';
 
 // CJS-only modules — typed loosely below. models is the Bookshelf registry
 // without TS declarations; the rest are JS modules without types.
 const models = require('../../models');
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 const {getSignedAdminToken} = require('../../adapters/scheduling/utils');
 const events = require('../../lib/common/events');
 

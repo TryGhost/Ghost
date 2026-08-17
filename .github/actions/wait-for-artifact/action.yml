@@ -1,0 +1,77 @@
+name: 'Wait for artifact'
+description: >-
+  Poll the current workflow run until a named artifact is available, failing fast
+  if the job that produces it has already concluded unsuccessfully. Used to let a
+  job depend on another job's artifact without a `needs` edge (so the two jobs can
+  run concurrently and only synchronise at the point the artifact is consumed).
+inputs:
+  artifact-name:
+    description: 'Name of the artifact to wait for'
+    required: true
+  job-name:
+    description: >-
+      Display name of the job that produces the artifact. Used to fail fast if
+      that job concludes without success (the artifact will never appear).
+    required: true
+  timeout-seconds:
+    description: 'Give up after this many seconds'
+    required: false
+    default: '600'
+  interval-seconds:
+    description: 'Seconds between polls'
+    required: false
+    default: '10'
+  github-token:
+    description: 'Token with actions:read on this repository'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Wait for ${{ inputs.artifact-name }} artifact
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        REPO: ${{ github.repository }}
+        RUN_ID: ${{ github.run_id }}
+        ARTIFACT_NAME: ${{ inputs.artifact-name }}
+        JOB_NAME: ${{ inputs.job-name }}
+        TIMEOUT: ${{ inputs.timeout-seconds }}
+        INTERVAL: ${{ inputs.interval-seconds }}
+      run: |
+        START=$(date +%s)
+
+        while true; do
+          # --paginate: a run can upload more than 100 artifacts (e2e shards,
+          # package matrices), so the target may be beyond the first page. Emit one
+          # line per matching unexpired artifact and count them; env.ARTIFACT_NAME
+          # is read via jq's env object rather than interpolated into the filter.
+          # On API failure the pipe yields no lines → COUNT=0 → keep waiting.
+          COUNT=$(gh api --paginate "repos/${REPO}/actions/runs/${RUN_ID}/artifacts?per_page=100" \
+            --jq '.artifacts[] | select(.name == env.ARTIFACT_NAME and .expired == false) | .id' 2>/dev/null | wc -l | tr -d '[:space:]')
+
+          if [ "$COUNT" -gt 0 ]; then
+            echo "${ARTIFACT_NAME} artifact is ready"
+            break
+          fi
+
+          # The artifact is never coming if the producing job already finished
+          # without success — fail now instead of waiting out the timeout.
+          # --paginate: the run can exceed 100 jobs (shards + package matrices).
+          # A queued/in-progress job has a null conclusion → empty → keep waiting.
+          CONCLUSION=$(gh api --paginate "repos/${REPO}/actions/runs/${RUN_ID}/jobs?per_page=100" \
+            --jq '.jobs[] | select(.name == env.JOB_NAME) | .conclusion // ""' 2>/dev/null | tail -n1 || echo "")
+          if [ -n "$CONCLUSION" ] && [ "$CONCLUSION" != "success" ]; then
+            echo "::error::${JOB_NAME} concluded '${CONCLUSION}' — the ${ARTIFACT_NAME} artifact will not be produced"
+            exit 1
+          fi
+
+          ELAPSED=$(( $(date +%s) - START ))
+          if [ "$ELAPSED" -ge "$TIMEOUT" ]; then
+            echo "::error::Timed out waiting for ${ARTIFACT_NAME} artifact (${TIMEOUT}s)"
+            exit 1
+          fi
+
+          echo "Waiting for ${ARTIFACT_NAME} artifact... (${ELAPSED}s elapsed)"
+          sleep "$INTERVAL"
+        done

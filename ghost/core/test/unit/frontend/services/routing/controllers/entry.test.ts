@@ -5,8 +5,8 @@ import type {Entry, RouterOptions} from '../../../../../../core/frontend/service
 const {assertExists} = require('../../../../../utils/assertions');
 const testUtils = require('../../../../../utils');
 const configUtils = require('../../../../../utils/config-utils');
-const deferred = require('../../../../../utils/deferred');
-const urlUtils = require('../../../../../../core/shared/url-utils');
+const {deferred} = require('../../../../../utils/deferred')
+const urlUtils = require('../../../../../../core/shared/url-utils').default;
 const controllers = require('../../../../../../core/frontend/services/routing/controllers');
 const renderer = require('../../../../../../core/frontend/services/rendering');
 const dataService = require('../../../../../../core/frontend/services/data');

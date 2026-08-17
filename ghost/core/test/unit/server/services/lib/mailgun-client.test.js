@@ -43,19 +43,35 @@ describe('MailgunClient', function () {
         sinon.restore();
     });
 
-    it('exports a number for configurable batch size', function () {
-        const configStub = sinon.stub(config, 'get');
-        configStub.withArgs('bulkEmail').returns({
-            mailgun: {
-                apiKey: 'apiKey',
-                domain: 'domain.com',
-                baseUrl: 'https://api.mailgun.net/v3'
-            },
-            batchSize: 1000
+    describe('getBatchSize', function () {
+        it('reads the batch size from config if available', function () {
+            const configStub = sinon.stub(config, 'get');
+            configStub.withArgs('bulkEmail').returns({
+                mailgun: {
+                    apiKey: 'apiKey',
+                    domain: 'domain.com',
+                    baseUrl: 'https://api.mailgun.net/v3'
+                },
+                batchSize: 1234
+            });
+
+            const mailgunClient = new MailgunClient({config, settings});
+            assert.equal(mailgunClient.getBatchSize(), 1234);
         });
 
-        const mailgunClient = new MailgunClient({config, settings});
-        assert(typeof mailgunClient.getBatchSize() === 'number');
+        it('has a default batch size if missing from config', function () {
+            const configStub = sinon.stub(config, 'get');
+            configStub.withArgs('bulkEmail').returns({
+                mailgun: {
+                    apiKey: 'apiKey',
+                    domain: 'domain.com',
+                    baseUrl: 'https://api.mailgun.net/v3'
+                }
+            });
+
+            const mailgunClient = new MailgunClient({config, settings});
+            assert.equal(mailgunClient.getBatchSize(), 1000);
+        });
     });
 
     it('exports a number for configurable target delivery window', function () {
@@ -242,7 +258,8 @@ describe('MailgunClient', function () {
                 from: 'from@example.com',
                 replyTo: 'replyTo@example.com',
                 html: '<p>Test Content</p>',
-                plaintext: 'Test Content'
+                plaintext: 'Test Content',
+                tags: ['another-tag']
             };
             const recipientData = {
                 'test@example.com': {
@@ -262,8 +279,8 @@ describe('MailgunClient', function () {
                         /form-data; name="text"[^]*Test Content/m,
                         /form-data; name="to"[^]*test@example.com/m,
                         /form-data; name="recipient-variables"[^]*\{"test@example.com":\{"name":"Test User"\}\}/m,
-                        /form-data; name="o:tag"[^]*bulk-email/m,
-                        /form-data; name="o:tag"[^]*ghost-email/m
+                        /form-data; name="o:tag"[^]*ghost-email/m,
+                        /form-data; name="o:tag"[^]*another-tag/m
                     ];
                     return regexList.every(regex => regex.test(body));
                 })
@@ -453,7 +470,7 @@ describe('MailgunClient', function () {
                     apiKey: 'apiKey',
                     domain: 'domain.com',
                     baseUrl: 'https://api.mailgun.net/v3',
-                    tag: 'custom-tag'
+                    tag: 'ignored-tag'
                 },
                 batchSize: 1000
             });
@@ -462,7 +479,8 @@ describe('MailgunClient', function () {
                 from: 'from@example.com',
                 replyTo: 'replyTo@example.com',
                 html: '<p>Test Content</p>',
-                plaintext: 'Test Content'
+                plaintext: 'Test Content',
+                tags: ['custom-tag']
             };
             const recipientData = {
                 'test@example.com': {
@@ -479,7 +497,7 @@ describe('MailgunClient', function () {
                     const regexList = [
                         /form-data; name="o:tag"[^]*custom-tag/m
                     ];
-                    return regexList.every(regex => regex.test(body));
+                    return regexList.every(regex => regex.test(body)) && !body.includes('ignored-tag');
                 })
                 .replyWithFile(200, `${__dirname}/fixtures/send-success.json`, {
                     'Content-Type': 'application/json'

@@ -1,0 +1,29 @@
+{
+  "name": "@internal/scripts",
+  "version": "0.0.0",
+  "description": "Repo automation scripts, invoked from CI workflows and local pnpm aliases",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "lint": "eslint . --cache",
+    "test:unit": "node --test",
+    "test": "pnpm run '/^test:/'"
+  },
+  "dependencies": {
+    "@octokit/core": "catalog:",
+    "@octokit/plugin-retry": "catalog:",
+    "@octokit/plugin-throttling": "catalog:",
+    "@pnpm/releasing.versioning": "catalog:",
+    "@pnpm/workspace.workspace-manifest-reader": "catalog:",
+    "camelcase-keys": "10.0.2",
+    "execa": "catalog:",
+    "js-yaml": "catalog:",
+    "picomatch": "4.0.5",
+    "semver": "catalog:"
+  },
+  "devDependencies": {
+    "@internal/cfg-eslint": "workspace:*",
+    "eslint": "catalog:"
+  }
+}

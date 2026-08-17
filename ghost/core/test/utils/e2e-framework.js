@@ -14,7 +14,6 @@
 // The output state checker is responsible for checking the response from the app after performing a request.
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('test');
-const {sequence} = require('@tryghost/promise');
 const {any, stringMatching} = require('@tryghost/express-test').snapshot;
 const {AsymmetricMatcher} = require('expect');
 const fs = require('fs-extra');
@@ -41,7 +40,7 @@ const db = require('./db-utils');
 const settingsService = require('../../core/server/services/settings/settings-service');
 const supertest = require('supertest');
 const {stopGhost} = require('./e2e-utils');
-const adapterManager = require('../../core/server/services/adapter-manager');
+const adapterManager = require('../../core/server/services/adapter-manager').default;
 const DomainEvents = require('@tryghost/domain-events');
 
 // Require additional assertions which help us keep our tests small and clear
@@ -77,7 +76,7 @@ const startGhost = async (options = {}) => {
     adapterManager.clearCache();
 
     // Reset the URL service so we clear out all the listeners
-    urlServiceUtils.resetGenerators();
+    urlServiceUtils.resetRouters();
 
     const defaults = {
         backend: true,
@@ -161,7 +160,12 @@ const initFixtures = async (...options) => {
 
     const fixtureOps = fixtureUtils.getFixtureOps(options);
 
-    return sequence(fixtureOps);
+    const results = [];
+    for (const fixtureOp of fixtureOps) {
+        results.push(await fixtureOp());
+    }
+
+    return results;
 };
 
 const getFixture = (type, index = 0) => {
@@ -236,6 +240,7 @@ const getContentAPIAgent = async () => {
  *
  * @param {Object} [options={}]
  * @param {boolean} [options.members] Include members in the boot process
+ * @param {string} [options.staffTokenRole] Authenticate with the fixture staff token for this role
  * @returns {Promise<InstanceType<AdminAPITestAgent>>} agent
  */
 const getAdminAPIAgent = async (options = {}) => {
@@ -249,10 +254,16 @@ const getAdminAPIAgent = async (options = {}) => {
         const app = await startGhost(bootOptions);
         const originURL = configUtils.config.get('url');
 
-        return new AdminAPITestAgent(app, {
+        const agent = new AdminAPITestAgent(app, {
             apiURL: '/ghost/api/admin/',
             originURL
         });
+
+        if (options.staffTokenRole) {
+            await agent.useStaffTokenFor(options.staffTokenRole);
+        }
+
+        return agent;
     } catch (error) {
         error.message = `Unable to create test agent. ${error.message}`;
         throw error;

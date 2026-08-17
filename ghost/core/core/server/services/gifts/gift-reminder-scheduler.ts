@@ -1,10 +1,10 @@
 import logging from '@tryghost/logging';
 import {Gift} from './gift';
+import type {SchedulerAdapter, SchedulerJob} from '@tryghost/adapter-base-scheduling';
 import type {InternalApiKey, InternalKeys} from '../internal-keys';
-import type {SchedulerAdapter, SchedulerJob} from '../../adapters/scheduling/types';
 import {GIFT_REMINDER_LEAD_DAYS} from './constants';
 // Same-domain (scheduling) primitives, used unconditionally.
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 const {getSignedAdminToken} = require('../../adapters/scheduling/utils');
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
@@ -12,11 +12,7 @@ const GIFT_REMINDER_LEAD_MS = GIFT_REMINDER_LEAD_DAYS * MS_PER_DAY;
 
 interface GiftReminderSchedulerDeps {
     apiUrl: string;
-    // Optional in deps so the JS wrapper can pass options.schedulerAdapter
-    // through without TS complaining at the JS/TS boundary. The class field
-    // below is non-optional; the constructor's adapter.register(this) call
-    // throws if undefined is passed through in practice.
-    adapter?: SchedulerAdapter;
+    adapter: SchedulerAdapter;
     internalKeys: InternalKeys;
     findUnsentReminders(): Promise<Gift[]>;
 }
@@ -29,7 +25,7 @@ export class GiftReminderScheduler {
 
     constructor({apiUrl, adapter, internalKeys, findUnsentReminders}: GiftReminderSchedulerDeps) {
         this.#apiUrl = apiUrl;
-        this.#adapter = adapter!;
+        this.#adapter = adapter;
         this.#internalKeys = internalKeys;
         this.#findUnsentReminders = findUnsentReminders;
         this.#adapter.register(this);

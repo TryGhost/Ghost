@@ -1,4 +1,5 @@
 import type {ReadonlyDeep} from 'type-fest';
+import type {Knex} from 'knex';
 
 export interface Pagination {
     page: number;
@@ -24,6 +25,19 @@ export interface WaitAction {
     };
 }
 
+export interface AutomationEmailStats {
+    email_clicked_count: number;
+    email_sent_count: number;
+    email_opened_count: number;
+    opened_rate: number | null;
+    clicked_rate: number | null;
+}
+
+export interface AutomationActionLink {
+    url: string;
+    clicked_count: number;
+}
+
 export interface SendEmailAction {
     id: string;
     type: 'send_email';
@@ -32,6 +46,7 @@ export interface SendEmailAction {
         email_lexical: string;
         email_design_setting_id: string;
     };
+    stats?: AutomationEmailStats;
 }
 
 export type AutomationAction = WaitAction | SendEmailAction;
@@ -60,6 +75,30 @@ export interface EditAutomationData {
     actions: AutomationAction[];
     edges: AutomationEdge[];
 }
+
+export type AutomatedEmailRecipientWithMailgunId = {
+    id: string;
+    mailgun_message_id: string;
+    automation_action_revision_id: string;
+};
+
+export type AutomatedEmailEvents = {
+    deliveredAt?: Date;
+    openedAt?: Date;
+    automationActionRevisionId: string;
+};
+
+export type RecordEmailSentOptions = Readonly<{
+    automationActionRevisionId: string;
+    automationRunStepId: string;
+    mailgunMessageId?: string;
+    memberEmail: string;
+    memberId: string;
+    memberName: string | null;
+    memberUuid: string;
+    trackClicks: boolean;
+    trackOpens: boolean;
+}>;
 
 type AutomationStepBase = {
     id: string;
@@ -99,6 +138,7 @@ export type AutomationStepTerminalStatus =
 export interface AutomationsRepository {
     browse(): Promise<Page<AutomationSummary>>;
     getById(id: string): Promise<Automation | null>;
+    getAutomationActionLinks(automationId: string, actionId: string): Promise<AutomationActionLink[] | null>;
     edit(id: string, data: EditAutomationData): Promise<Automation | null>;
     trigger(options: {
         memberEmail: string;
@@ -147,4 +187,32 @@ export interface AutomationsRepository {
         step: Pick<AutomationStepToRun, 'id' | 'locked_by'>,
         retryAt: Readonly<Date>
     ): Promise<boolean>;
+    /**
+     * Record a sent email and increment its action revision's sent count.
+     */
+    recordEmailSent(options: RecordEmailSentOptions): Promise<void>;
+    /**
+     * Fetch sent emails by their Mailgun IDs.
+     */
+    getAutomatedEmailRecipientsByMailgunIds(
+        mailgunMessageIds: ReadonlyArray<string>
+    ): Promise<AutomatedEmailRecipientWithMailgunId[]>;
+    /**
+     * Track delivery and open events.
+     */
+    trackEmailDeliveredAndOpened(
+        eventsByAutomatedEmailRecipientId: ReadonlyDeep<Map<string, AutomatedEmailEvents>>
+    ): Promise<void>;
+    /**
+     * Record the first click timestamp for the automated email recipient identified by a run step.
+     *
+     */
+    trackEmailClicked(options: {
+        automationActionRevisionId: string;
+        automationRunStepId: string;
+        memberId: string;
+        clickedAt: Readonly<Date>;
+    }, transactionOptions?: {
+        transacting?: Knex.Transaction;
+    }): Promise<void>;
 }

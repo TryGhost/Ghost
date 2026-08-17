@@ -10,6 +10,7 @@ const BACKUP_TABLES = [
     'integrations',
     'invites',
     'labels',
+    'machine_payment_events',
     'members',
     'members_labels',
     'members_products',
@@ -41,6 +42,8 @@ const BACKUP_TABLES = [
     'members_current_subscription',
     'members_subscription_created_events',
     'members_newsletters',
+    'members_custom_fields',
+    'members_custom_field_values',
     'mentions',
     'comments',
     'comment_likes',
@@ -108,7 +111,9 @@ const SETTING_KEYS_BLOCKLIST = [
     'members_stripe_webhook_id',
     'members_stripe_webhook_secret',
     'email_verification_required',
-    'indexnow_api_key'
+    'indexnow_api_key',
+    'machine_payments_secret',
+    'machine_payments_deposit_address'
 ];
 
 module.exports = {

@@ -1,0 +1,21 @@
+<GhPaginatedTokenInput
+    @extra={{hash
+        tokenComponent=(component "gh-token-input/tag-token")
+    }}
+    @loadPage={{this.loadTagsPage}}
+    @onChange={{this.updateTags}}
+    @onCreate={{this.createTag}}
+    @renderInPlace={{@renderInPlace}}
+    @searchDebounceMs={{this.searchDebounceMs}}
+    @searchPage={{this.searchTagsPage}}
+    @selected={{@selected}}
+    @showCreateWhen={{this.showCreateWhen}}
+    @sortOptions={{this.sortTags}}
+    @triggerId={{@triggerId}}
+    @triggerClass={{@triggerClass}}
+    @placeholder={{@placeholder}}
+    @allowCreation={{@allowCreation}}
+    @disabled={{@disabled}}
+    @selectedItemComponent={{@selectedItemComponent}}
+    @class={{@class}}
+/>

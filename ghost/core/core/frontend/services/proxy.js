@@ -4,10 +4,22 @@ const config = require('../../shared/config');
 const settingsHelpers = require('../../server/services/settings-helpers');
 const storageUtils = require('../../server/adapters/storage/utils');
 const internalKeys = require('../../server/services/internal-keys').default;
+const serverEventBus = require('../../server/lib/common/events');
+const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
+
+// The only server events the frontend may subscribe to. A narrow surface on
+// purpose: the shared bus's own header discourages widening cross-layer
+// coupling, so new event names here need the same scrutiny as new exports.
+const FRONTEND_SUBSCRIBABLE_EVENTS = ['site.changed'];
 
 // Require from the handlebars framework
 const {SafeString} = require('./handlebars');
+
+// sanitize-html over DOMPurify here: DOMPurify needs a DOM, and jsdom costs
+// ~116MB RSS to load. This module is on the boot path, so that was paid by
+// every process — including ones that never render a caption.
+const sanitizeHtml = require('sanitize-html');
 
 module.exports = {
     getFrontendKey: async () => {
@@ -37,7 +49,11 @@ module.exports = {
         (Array.isArray(data) ? data : [data]).forEach((resource) => {
             // feature_image_caption contains HTML, making it a SafeString spares theme devs from triple-curlies
             if (resource.feature_image_caption) {
-                resource.feature_image_caption = new SafeString(resource.feature_image_caption);
+                const sanitizedCaption = sanitizeHtml(resource.feature_image_caption, {
+                    allowedTags: ['a', 'b', 'i', 'span'],
+                    allowedAttributes: {'*': ['href', 'style']}
+                });
+                resource.feature_image_caption = new SafeString(sanitizedCaption);
             }
 
             // some properties are extracted to local template data to force one way of using it
@@ -62,24 +78,38 @@ module.exports = {
 
     // Settings helpers for calculated settings
     settingsHelpers: {
-        isWebAnalyticsEnabled: settingsHelpers.isWebAnalyticsEnabled.bind(settingsHelpers)
+        isWebAnalyticsEnabled: settingsHelpers.isWebAnalyticsEnabled.bind(settingsHelpers),
+        isStripeConnected: (...args) => settingsHelpers.isStripeConnected(...args),
+        // Delegates at call time (not bound at load) so tests that stub the
+        // method on the settings-helpers service are still seen through here.
+        getMembersValidationKey: (...args) => settingsHelpers.getMembersValidationKey(...args)
+    },
+
+    // Member actions needed by the frontend's unsubscribe route. Lazy so that
+    // loading the proxy does not pull the members service in ahead of boot.
+    get members() {
+        return require('../../server/services/members');
     },
 
     // TODO: Expose less of the API to make this safe
     api: require('../../server/api').endpoints,
 
+    // Narrow subscription surface for server events the frontend reacts to
+    serverEvents: {
+        on(eventName, listener) {
+            if (!FRONTEND_SUBSCRIBABLE_EVENTS.includes(eventName)) {
+                throw new errors.IncorrectUsageError({
+                    message: `The frontend may not subscribe to the server event "${eventName}"`,
+                    context: `Allowed events: ${FRONTEND_SUBSCRIBABLE_EVENTS.join(', ')}`
+                });
+            }
+            serverEventBus.on(eventName, listener);
+        }
+    },
+
     // Labs utils for enabling/disabling helpers
     labs: require('../../shared/labs'),
-    // Gift links service — reached through this seam so the entry controller
-    // doesn't require a server module directly.
-    giftLinks: require('../../server/services/gift-links'),
-    // Paid-member shim for gift-link reads (shared with previews). Lazy getter so
-    // the members service resolves at call time, avoiding boot-time require-order
-    // coupling.
-    get createPaidMemberShim() {
-        return require('../../server/services/members').createPaidMemberShim;
-    },
     // URGH... Yuk (unhelpful comment :D)
     urlService: require('../../server/services/url'),
-    urlUtils: require('../../shared/url-utils')
+    urlUtils: require('../../shared/url-utils').default
 };

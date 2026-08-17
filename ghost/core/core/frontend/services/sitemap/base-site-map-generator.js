@@ -2,7 +2,7 @@ const _ = require('lodash');
 const xml = require('xml');
 const moment = require('moment');
 const path = require('path');
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 const localUtils = require('./utils');
 
 // Sitemap specific xml namespace declarations that should not change
@@ -22,8 +22,27 @@ class BaseSiteMapGenerator {
         this.maxPerPage = 50000;
     }
 
-    hasCanonicalUrl(datum) {
-        return Boolean(datum?.canonical_url);
+    hasCanonicalUrl(datum, url) {
+        if (!datum?.canonical_url) {
+            return false;
+        }
+
+        // Sitemap data comes from raw knex queries which bypass model-layer
+        // attribute transforms, so canonical_url may still be transform-ready
+        // (__GHOST_URL__/...) and must be made absolute before comparing
+        const canonicalUrl = urlUtils.transformReadyToAbsolute(datum.canonical_url);
+
+        const normalizeUrl = (value) => {
+            const normalizedUrl = new URL(value);
+            normalizedUrl.pathname = normalizedUrl.pathname.replace(/\/+$/, '');
+            return normalizedUrl.href;
+        };
+
+        try {
+            return normalizeUrl(canonicalUrl) !== normalizeUrl(url);
+        } catch {
+            return canonicalUrl !== url;
+        }
     }
 
     generateXmlFromNodes(page) {
@@ -67,32 +86,19 @@ class BaseSiteMapGenerator {
         return sitemapXml;
     }
 
-    updateURL(datum) {
-        const url = this.nodeLookup[datum.id]?.url[0].loc;
-
-        if (url) {
-            this.removeUrl(url, datum);
-            this.addUrl(url, datum);
-        }
-    }
-
     addUrl(url, datum) {
-        const node = this.createUrlNodeFromDatum(url, datum);
+        // Computed once and threaded through: the three consumers below each
+        // used to construct their own moment() from the same datum, which
+        // dominates the cost of bulk adds.
+        const lastModified = this.getLastModifiedForDatum(datum);
+        const node = this.createUrlNodeFromDatum(url, datum, lastModified);
 
-        if (node && !this.hasCanonicalUrl(datum)) {
-            this.updateLastModified(datum);
-            this.updateLookups(datum, node);
+        if (node && !this.hasCanonicalUrl(datum, url)) {
+            this.updateLastModified(datum, lastModified);
+            this.updateLookups(datum, node, lastModified);
             // force regeneration of xml
             this.siteMapContent.clear();
         }
-    }
-
-    removeUrl(url, datum) {
-        this.removeFromLookups(datum);
-
-        // force regeneration of xml
-        this.siteMapContent.clear();
-        this.lastModified = Date.now();
     }
 
     /**
@@ -108,9 +114,7 @@ class BaseSiteMapGenerator {
         }
     }
 
-    updateLastModified(datum) {
-        const lastModified = this.getLastModifiedForDatum(datum);
-
+    updateLastModified(datum, lastModified = this.getLastModifiedForDatum(datum)) {
         if (lastModified > this.lastModified) {
             this.lastModified = lastModified;
         }
@@ -122,14 +126,14 @@ class BaseSiteMapGenerator {
      * @param {Object} datum
      * @returns
      */
-    createUrlNodeFromDatum(url, datum) {
+    createUrlNodeFromDatum(url, datum, lastModified = this.getLastModifiedForDatum(datum)) {
         let node;
         let imgNode;
 
         node = {
             url: [
                 {loc: url},
-                {lastmod: this.getLastModifiedForDatum(datum).toISOString()}
+                {lastmod: lastModified.toISOString()}
             ]
         };
 
@@ -187,26 +191,16 @@ class BaseSiteMapGenerator {
         return content;
     }
 
-    /**
-     * @NOTE
-     * The url service currently has no url update event.
-     * It removes and adds the url. If the url service extends it's
-     * feature set, we can detect if a node has changed.
-     */
-    updateLookups(datum, node) {
+    updateLookups(datum, node, lastModified = this.getLastModifiedForDatum(datum)) {
         this.nodeLookup[datum.id] = node;
-        this.nodeTimeLookup[datum.id] = this.getLastModifiedForDatum(datum);
-    }
-
-    removeFromLookups(datum) {
-        delete this.nodeLookup[datum.id];
-        delete this.nodeTimeLookup[datum.id];
+        this.nodeTimeLookup[datum.id] = lastModified;
     }
 
     reset() {
         this.nodeLookup = {};
         this.nodeTimeLookup = {};
         this.siteMapContent.clear();
+        this.lastModified = 0;
     }
 }
 

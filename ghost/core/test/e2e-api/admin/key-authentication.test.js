@@ -22,7 +22,7 @@ describe('Admin API key authentication', function () {
     });
 
     it('Can not access endpoint without a token header', async function () {
-        const loggingStub = sinon.stub(logging, 'error');
+        const loggingStub = sinon.stub(logging, 'warn');
         await request.get(localUtils.API.getApiQuery('posts/'))
             .set('Authorization', `Ghost`)
             .expect('Content-Type', /json/)
@@ -32,7 +32,7 @@ describe('Admin API key authentication', function () {
     });
 
     it('Can not access endpoint with a wrong endpoint token', async function () {
-        const loggingStub = sinon.stub(logging, 'error');
+        const loggingStub = sinon.stub(logging, 'warn');
         await request.get(localUtils.API.getApiQuery('posts/'))
             .set('Authorization', `Ghost ${localUtils.getValidAdminToken('https://wrong.com')}`)
             .expect('Content-Type', /json/)
@@ -109,7 +109,7 @@ describe('Admin API key authentication', function () {
             await testUtils.initFixtures('integrations');
             await testUtils.initFixtures('api_keys');
 
-            const loggingStub = sinon.stub(logging, 'error');
+            const loggingStub = sinon.stub(logging, 'warn');
 
             const firstResponse = await request.get(localUtils.API.getApiQuery('posts/'))
                 .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/admin/')}`)
@@ -122,13 +122,13 @@ describe('Admin API key authentication', function () {
             sinon.assert.calledOnce(loggingStub);
 
             // CASE: Test with a different API key, related to a core integration
-            const secondResponse = await request.get(localUtils.API.getApiQuery('explore/'))
+            const secondResponse = await request.get(localUtils.API.getApiQuery('tags/'))
                 .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/admin/', 4)}`)
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200);
 
-            assertExists(secondResponse.body.explore);
+            assertExists(secondResponse.body.tags);
         });
     });
 });

@@ -21,7 +21,7 @@ jobs:
       - name: Wait for Docker build job
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BUILD_JOB_NAME: Build & Publish Artifacts
+          BUILD_JOB_NAME: Build Docker Images
         run: |
           echo "Waiting for '${BUILD_JOB_NAME}' job to complete for $HEAD_SHA..."
           TIMEOUT=1800  # 30 minutes

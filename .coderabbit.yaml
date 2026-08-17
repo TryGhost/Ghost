@@ -1,11 +1,65 @@
 # yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
 reviews:
+  profile: quiet
+  review_details: true
   high_level_summary: false
   collapse_walkthrough: false
   changed_files_summary: false
   sequence_diagrams: false
   estimate_code_review_effort: false
   poem: false
+  auto_review:
+    ignore_usernames:
+      - tryghost-renovate[bot]
+      - dependabot[bot]
   pre_merge_checks:
     docstrings:
       mode: "off"
+    custom_checks:
+      - name: "Type-safe boundaries"
+        mode: "warning"
+        instructions: |
+          Fail only if the PR:
+          - consumes boundary data (HTTP input, external API/SDK responses, env/config,
+            DB/filesystem reads, queue/webhook/event payloads) without validating it
+            first — Zod by default, another format only where an external contract
+            requires it; or
+          - introduces `any`, unchecked `as`, `@ts-nocheck`, or `@ts-ignore` to bypass
+            typing boundary data; or
+          - hand-writes a type duplicating a shape a Zod schema describes (use z.infer).
+          Never fail for: internal function/module calls (no runtime validation needed),
+          pre-existing JS files touched incidentally, tests, scripts, or config files.
+      - name: "New files are TypeScript"
+        mode: "error"
+        instructions: |
+          Fail if the PR adds a new .js/.jsx/.cjs/.mjs source file, unless it is: a DB
+          migration (ghost/core/core/server/data/migrations/), under apps/ember-admin/,
+          a tool/config file, under scripts/ or docker/, or generated/vendored code.
+          Modifying pre-existing JS files never fails this check.
+  path_instructions:
+    - path: "**/*.{ts,tsx,mts,cts}"
+      instructions: |
+        Review lens: "where does this data become trusted?"
+        - Boundary data (HTTP input, external API/SDK responses, env/config,
+          DB/filesystem reads, queue/webhook/event payloads) is `unknown` until
+          validated — Zod by default.
+        - Infer boundary types via z.infer/z.input; flag handwritten duplicates.
+        - Flag `any`, unchecked `as` on boundary data, `@ts-nocheck`, and unexplained
+          `@ts-ignore`/`@ts-expect-error`.
+        - Validated data stays trusted: don't request Zod on internal calls, and flag
+          redundant re-validation.
+        - ghost/core golden path: schema.ts owns Zod schemas + inferred types, with
+          codec/serializer modules at the edges (see core/server/services/gift-links).
+        - Looser typing in tests is fine unless it hides a real defect.
+    - path: "**/*.{js,jsx,cjs,mjs}"
+      instructions: |
+        New source files must be TypeScript: flag new JS files as a required change
+        unless exempt (DB migrations, apps/ember-admin/, tool/config files, scripts/,
+        docker/, generated code).
+        Never request conversion of pre-existing JS files. If the PR substantially
+        reworks one (rewritten logic or significant new functions — not renames or
+        small fixes), you may leave ONE optional, non-blocking note for the whole PR
+        that those files are cheap TS-conversion candidates; skip minor changes and
+        exempt areas.
+        If the PR adds or changes a runtime boundary (parsing HTTP input, JSON, config,
+        external responses), suggest validating it — ideally with TS + Zod.

@@ -27,7 +27,7 @@ function FieldLegend({
     return (
         <legend
             className={cn(
-                'mb-2 font-medium',
+                'm-0 mb-2 w-fit border-0 p-0 leading-snug font-medium text-foreground',
                 'data-[variant=legend]:text-base',
                 'data-[variant=label]:text-control',
                 className
@@ -96,7 +96,7 @@ function FieldContent({className, ...props}: React.ComponentProps<'div'>) {
     return (
         <div
             className={cn(
-                'group/field-content flex flex-1 flex-col gap-1.5 leading-snug',
+                'group/field-content flex flex-1 flex-col gap-0.5 leading-snug',
                 className
             )}
             data-slot="field-content"

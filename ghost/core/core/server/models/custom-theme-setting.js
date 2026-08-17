@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const ghostBookshelf = require('./base');
-const urlUtils = require('../../shared/url-utils');
+const urlUtils = require('../../shared/url-utils').default;
 
 const CustomThemeSetting = ghostBookshelf.Model.extend({
     tableName: 'custom_theme_settings',

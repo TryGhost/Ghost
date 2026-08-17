@@ -23,9 +23,6 @@ module.exports = function apiRoutes() {
     router.get('/config', mw.authAdminApi, http(api.config.read));
     router.get('/config/featurebase', mw.authAdminApi, http(api.config.featurebase));
 
-    // ## Ghost Explore
-    router.get('/explore', mw.authAdminApi, http(api.explore.read));
-
     // ## Posts
     router.get('/posts', mw.authAdminApi, http(api.posts.browse));
     router.get('/posts/export', mw.authAdminApi, http(api.posts.exportCSV));
@@ -33,6 +30,7 @@ module.exports = function apiRoutes() {
     router.post('/posts', mw.authAdminApi, http(api.posts.add));
     router.delete('/posts', mw.authAdminApi, http(api.posts.bulkDestroy));
     router.put('/posts/bulk', mw.authAdminApi, http(api.posts.bulkEdit));
+    router.post('/posts/upload', mw.authAdminApi, labs.enabledMiddleware('csvContentImporter'), apiMw.upload.single('postsfile'), apiMw.upload.validation({type: 'posts'}), http(api.posts.importCSV));
     router.get('/posts/:id', mw.authAdminApi, http(api.posts.read));
     router.get('/posts/slug/:slug', mw.authAdminApi, http(api.posts.read));
     router.put('/posts/:id', mw.authAdminApi, http(api.posts.edit));
@@ -63,14 +61,14 @@ module.exports = function apiRoutes() {
     router.delete('/pages/:id', mw.authAdminApi, http(api.pages.destroy));
     router.post('/pages/:id/copy', mw.authAdminApi, http(api.pages.copy));
 
-    // Gift links (behind the giftLinks flag)
-    router.get('/posts/:id/gift_links', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.browse));
-    router.put('/posts/:id/gift_links', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.ensure));
-    router.post('/posts/:id/gift_links', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.create));
-    router.get('/pages/:id/gift_links', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.browse));
-    router.put('/pages/:id/gift_links', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.ensure));
-    router.post('/pages/:id/gift_links', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.create));
-    router.put('/gift_links/remove_all', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.removeAll));
+    // Gift links
+    router.get('/posts/:id/gift_links', mw.authAdminApi, http(api.giftLinks.browse));
+    router.put('/posts/:id/gift_links', mw.authAdminApi, http(api.giftLinks.ensure));
+    router.post('/posts/:id/gift_links', mw.authAdminApi, http(api.giftLinks.create));
+    router.get('/pages/:id/gift_links', mw.authAdminApi, http(api.giftLinks.browse));
+    router.put('/pages/:id/gift_links', mw.authAdminApi, http(api.giftLinks.ensure));
+    router.post('/pages/:id/gift_links', mw.authAdminApi, http(api.giftLinks.create));
+    router.put('/gift_links/remove_all', mw.authAdminApi, http(api.giftLinks.removeAll));
 
     // # Integrations
 
@@ -84,8 +82,8 @@ module.exports = function apiRoutes() {
     // ## Schedules
     router.put('/schedules/:resource/:id', mw.authAdminApiWithUrl, http(api.schedules.publish));
 
-    // ## Gift Reminders
-    router.put('/gifts/flush_reminders', mw.authAdminApiWithUrl, http(api.giftReminders.flushReminders));
+    // ## Gifts
+    router.put('/gifts/flush_reminders', mw.authAdminApiWithUrl, http(api.gifts.flushReminders));
 
     // ## Settings
     router.get('/settings/routes/yaml', mw.authAdminApi, http(api.settings.download));
@@ -156,6 +154,16 @@ module.exports = function apiRoutes() {
 
     router.get('/members/stripe_connect', mw.authAdminApi, http(api.membersStripeConnect.auth));
 
+    // Member custom field definitions — gated by the members_custom_fields flag.
+    // Registered before /members/:id so the literal path isn't captured by :id.
+    router.get('/members/custom_fields', mw.authAdminApi, labs.enabledMiddleware('membersCustomFields'), http(api.membersCustomFields.browse));
+    router.post('/members/custom_fields', mw.authAdminApi, labs.enabledMiddleware('membersCustomFields'), http(api.membersCustomFields.add));
+    // A PUT on the collection sets the publisher's order for the whole list.
+    router.put('/members/custom_fields', mw.authAdminApi, labs.enabledMiddleware('membersCustomFields'), http(api.membersCustomFields.reorder));
+    router.get('/members/custom_fields/:key', mw.authAdminApi, labs.enabledMiddleware('membersCustomFields'), http(api.membersCustomFields.read));
+    router.put('/members/custom_fields/:key', mw.authAdminApi, labs.enabledMiddleware('membersCustomFields'), http(api.membersCustomFields.edit));
+    router.delete('/members/custom_fields/:key', mw.authAdminApi, labs.enabledMiddleware('membersCustomFields'), http(api.membersCustomFields.destroy));
+
     router.get('/members/:id', mw.authAdminApi, http(api.members.read));
     router.put('/members/:id', mw.authAdminApi, http(api.members.edit));
     router.delete('/members/:id', mw.authAdminApi, http(api.members.destroy));
@@ -199,6 +207,7 @@ module.exports = function apiRoutes() {
 
     // ## Automations
     router.get('/automations', mw.authAdminApi, http(api.automations.browse));
+    router.get('/automations/:automation_id/actions/:action_id/links', mw.authAdminApi, http(api.automationActionLinks.browse));
     router.get('/automations/:id', mw.authAdminApi, http(api.automations.read));
     router.post('/automations/:id/email_preview', mw.authAdminApi, http(api.automationEmailPreviews.preview));
     router.post('/automations/:id/email_test', shared.middleware.brute.previewEmailLimiter, mw.authAdminApi, http(api.automationEmailPreviews.sendTestEmail));

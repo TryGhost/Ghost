@@ -6,15 +6,15 @@ const {promises: fs} = require('fs');
 const assert = require('node:assert/strict');
 const {Blob} = require('node:buffer');
 const config = require('../../../core/shared/config');
-const urlUtils = require('../../../core/shared/url-utils');
+const urlUtils = require('../../../core/shared/url-utils').default;
 const imageTransform = require('@tryghost/image-transform');
 const sinon = require('sinon');
 const {mockSystemTime} = require('../../utils/clock-utils');
-const storage = require('../../../core/server/adapters/storage');
 const {anyErrorId} = matchers;
 const {imageSize} = require('../../../core/server/lib/image');
 const configUtils = require('../../utils/config-utils');
 const logging = require('@tryghost/logging');
+const adapterManager = require('../../../core/server/services/adapter-manager').default;
 
 const images = [];
 let agent, frontendAgent, ghostServer;
@@ -247,7 +247,7 @@ describe('Images API', function () {
     it('Will error when filename is too long', async function () {
         const originalFilePath = p.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png');
         const fileContents = await fs.readFile(originalFilePath);
-        const loggingStub = sinon.stub(logging, 'error');
+        const loggingStub = sinon.stub(logging, 'warn');
         await uploadImageRequest({fileContents, filename: `${'a'.repeat(300)}.png`, contentType: 'image/png'})
             .expectStatus(400)
             .matchBodySnapshot({
@@ -261,7 +261,7 @@ describe('Images API', function () {
     it('Can not upload a json file', async function () {
         const originalFilePath = p.join(__dirname, '/../../utils/fixtures/data/redirects.json');
         const fileContents = await fs.readFile(originalFilePath);
-        const loggingStub = sinon.stub(logging, 'error');
+        const loggingStub = sinon.stub(logging, 'warn');
         await uploadImageRequest({fileContents, filename: 'redirects.json', contentType: 'application/json'})
             .expectStatus(415)
             .matchBodySnapshot({
@@ -275,7 +275,7 @@ describe('Images API', function () {
     it('Can not upload a file without extension', async function () {
         const originalFilePath = p.join(__dirname, '/../../utils/fixtures/data/redirects.json');
         const fileContents = await fs.readFile(originalFilePath);
-        const loggingStub = sinon.stub(logging, 'error');
+        const loggingStub = sinon.stub(logging, 'warn');
         await uploadImageRequest({fileContents, filename: 'redirects', contentType: 'image/png'})
             .expectStatus(415)
             .matchBodySnapshot({
@@ -289,7 +289,7 @@ describe('Images API', function () {
     it('Can not upload a json file with image mime type', async function () {
         const originalFilePath = p.join(__dirname, '/../../utils/fixtures/data/redirects.json');
         const fileContents = await fs.readFile(originalFilePath);
-        const loggingStub = sinon.stub(logging, 'error');
+        const loggingStub = sinon.stub(logging, 'warn');
         await uploadImageRequest({fileContents, filename: 'redirects.json', contentType: 'image/gif'})
             .expectStatus(415)
             .matchBodySnapshot({
@@ -303,7 +303,7 @@ describe('Images API', function () {
     it('Can not upload a json file with image file extension', async function () {
         const originalFilePath = p.join(__dirname, '/../../utils/fixtures/data/redirects.json');
         const fileContents = await fs.readFile(originalFilePath);
-        const loggingStub = sinon.stub(logging, 'error');
+        const loggingStub = sinon.stub(logging, 'warn');
         await uploadImageRequest({fileContents, filename: 'redirects.png', contentType: 'application/json'})
             .expectStatus(415)
             .matchBodySnapshot({
@@ -344,7 +344,7 @@ describe('Images API', function () {
         const originalFilePath = p.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png');
 
         // Delay the first original file upload by 400ms to force race condition
-        const store = storage.getStorage('images');
+        const store = adapterManager.getAdapter('storage:images');
         const saveStub = sinon.stub(store, 'save');
         let calls = 0;
         saveStub.callsFake(async function (file) {
@@ -441,7 +441,7 @@ describe('Images API', function () {
     });
 
     it('Passes the content type to the storage adapter when uploading a GIF', async function () {
-        const store = storage.getStorage('images');
+        const store = adapterManager.getAdapter('storage:images');
         const saveSpy = sinon.spy(store, 'save');
 
         const originalFilePath = p.join(__dirname, '/../../utils/fixtures/images/loadingcat.gif');
@@ -465,7 +465,7 @@ describe('Images API', function () {
         const originalFilePath = p.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png');
         const fileContents = await fs.readFile(originalFilePath);
 
-        const loggingStub = sinon.stub(logging, 'error');
+        const loggingStub = sinon.stub(logging, 'warn');
         await uploadImageRequest({fileContents, filename: 'test.png', contentType: 'image/png'})
             .expectStatus(400)
             .matchBodySnapshot({

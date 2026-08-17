@@ -4,11 +4,11 @@ const moment = require('moment');
 const testUtils = require('../../../../utils');
 const {Post} = require('../../../../../core/server/models/post');
 const events = require('../../../../../core/server/lib/common/events');
-const schedulingUtils = require('../../../../../core/server/adapters/scheduling/utils');
-const SchedulingDefault = require('../../../../../core/server/adapters/scheduling/scheduling-default');
-const urlUtils = require('../../../../../core/shared/url-utils');
+const SchedulingDefault = require('../../../../../core/server/adapters/scheduling/scheduling-default').default;
+const urlUtils = require('../../../../../core/shared/url-utils').default;
 const PostScheduling = require('../../../../../core/server/services/post-scheduling/post-scheduling').default;
 const nock = require('nock');
+const adapterManager = require('../../../../../core/server/services/adapter-manager').default;
 
 describe('PostScheduling', function () {
     let adapter;
@@ -27,7 +27,7 @@ describe('PostScheduling', function () {
         sinon.stub(adapter, 'run');
         sinon.stub(adapter, '_execute');
         sinon.stub(adapter, '_pingUrl').resolves();
-        sinon.stub(schedulingUtils, 'createAdapter').returns(Promise.resolve(adapter));
+        sinon.stub(adapterManager, 'getAdapter').returns(adapter);
         sinon.spy(adapter, 'schedule');
         sinon.spy(adapter, 'unschedule');
 
@@ -44,7 +44,7 @@ describe('PostScheduling', function () {
         it('wires event handlers and starts the adapter', async function () {
             const post = Post.forge(testUtils.DataGenerator.forKnex.createPost({
                 id: 1337,
-                mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('something')
+                lexical: testUtils.DataGenerator.markdownToLexical('something')
             }));
             nock('http://scheduler.local:1111').get(() => true).query(true).reply(200);
             nock('http://scheduler.local:1111').post(() => true).query(true).reply(200);
@@ -71,7 +71,7 @@ describe('PostScheduling', function () {
         function stubScheduledPost() {
             const post = Post.forge(testUtils.DataGenerator.forKnex.createPost({
                 id: 4004,
-                mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('something')
+                lexical: testUtils.DataGenerator.markdownToLexical('something')
             }));
             sinon.stub(Post, 'findAll').callsFake(({filter}) => {
                 return Promise.resolve(filter.includes('type:post') ? [post] : []);

@@ -7,6 +7,8 @@ module.exports = class ClickEvent {
     member_uuid;
     /** @type {ObjectID} */
     link_id;
+    /** @type {Date | undefined} */
+    timestamp;
 
     constructor(data) {
         if (!data.id) {
@@ -21,5 +23,6 @@ module.exports = class ClickEvent {
 
         this.member_uuid = data.member_uuid;
         this.link_id = data.link_id;
+        this.timestamp = data.timestamp;
     }
 };

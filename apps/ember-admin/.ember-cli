@@ -1,0 +1,20 @@
+{
+    "component-structure": "flat",
+    "component-class": "@glimmer/component",
+    /**
+        Ember CLI sends analytics information by default. The data is completely
+        anonymous, but there are times when you might want to disable this behavior.
+
+        Setting `disableAnalytics` to true will prevent any data from being sent.
+    */
+    "disableAnalytics": true,
+
+    /**
+        Default to Node's native FS watcher instead of Watchman. Watchman
+        repeatedly trips its "MustScanSubDirs UserDropped" recrawl warning
+        in this monorepo (Docker bind mounts + Vite dev writes), spamming
+        ~6 lines per rebuild. The node watcher is quieter and good enough
+        for our tree size.
+    */
+    "watcher": "node"
+}

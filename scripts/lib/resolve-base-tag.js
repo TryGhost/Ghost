@@ -1,5 +1,5 @@
-const semver = require('semver');
-const {execSync} = require('node:child_process');
+import {execSync} from 'node:child_process';
+import semver from 'semver';
 
 /**
  * Resolve the base git tag for diff/log comparisons during release preparation.
@@ -12,7 +12,7 @@ const {execSync} = require('node:child_process');
  * @param {string} repoDir - Path to the Ghost repo checkout
  * @returns {{tag: string, isPrerelease: boolean}}
  */
-function resolveBaseTag(version, repoDir) {
+export function resolveBaseTag(version, repoDir) {
     if (semver.prerelease(version)) {
         const tag = execSync(
             `git describe --tags --abbrev=0 --match 'v[0-9]*.[0-9]*.[0-9]*' --exclude 'v*-*' HEAD`,
@@ -27,5 +27,3 @@ function resolveBaseTag(version, repoDir) {
         isPrerelease: false
     };
 }
-
-module.exports = {resolveBaseTag};

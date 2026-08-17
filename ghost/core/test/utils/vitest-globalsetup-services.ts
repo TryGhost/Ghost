@@ -21,7 +21,7 @@ const PROBE_TIMEOUT_MS = 1000;
 
 // Resolve a service's host:port the same way the code under test does:
 //   - Redis: nconf maps `adapters:Redis:{host,port}` from these `__`-separated
-//     env vars (core/shared/config/loader.js uses `separator: '__'`); defaults
+//     env vars (core/shared/config/loader.ts uses `separator: '__'`); defaults
 //     match AdapterCacheRedis' 127.0.0.1:6379.
 //   - MinIO: test/utils/minio.ts reads MINIO_TEST_ENDPOINT (default
 //     http://127.0.0.1:9000); parse it for the host + port to probe.

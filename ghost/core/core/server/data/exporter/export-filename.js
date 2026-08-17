@@ -3,6 +3,7 @@ const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const security = require('@tryghost/security');
 const models = require('../../models');
+const path = require('path');
 
 const modelOptions = {context: {internal: true}};
 
@@ -14,7 +15,7 @@ const exportFileName = async function exportFileName(options) {
 
     // custom filename
     if (options.filename) {
-        return options.filename + '.json';
+        return path.basename(options.filename) + '.json';
     }
 
     try {

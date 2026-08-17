@@ -5,6 +5,7 @@ const tpl = require('@tryghost/tpl');
 const db = require('../db');
 const DatabaseInfo = require('@tryghost/database-info');
 const schema = require('./schema');
+const {defaultIndexName} = require('./lib/default-index-name');
 
 const messages = {
     hasPrimaryKeySQLiteError: 'Must use hasPrimaryKeySQLite on an SQLite3 database',
@@ -24,6 +25,11 @@ function addTableColumn(tableName, tableBuilder, columnName, columnSpec = schema
     // creation distinguishes between text with fieldtype, string with maxlength and all others
     if (columnSpec.type === 'text' && Object.prototype.hasOwnProperty.call(columnSpec, 'fieldtype')) {
         column = tableBuilder[columnSpec.type](columnName, columnSpec.fieldtype);
+    } else if (columnSpec.type === 'binary' && Object.prototype.hasOwnProperty.call(columnSpec, 'maxlength')) {
+        // knex emits an unbounded `blob` for a length-less binary column, which
+        // MySQL can only index with a prefix. Passing the length gives us
+        // `varbinary(N)`, which is indexable in full.
+        column = tableBuilder[columnSpec.type](columnName, columnSpec.maxlength);
     } else if (columnSpec.type === 'string') {
         if (Object.prototype.hasOwnProperty.call(columnSpec, 'maxlength')) {
             column = tableBuilder[columnSpec.type](columnName, columnSpec.maxlength);
@@ -99,7 +105,7 @@ function dropNullable(tableName, column, transaction = db.knex) {
  * @param {import('knex').Knex.Transaction} [transaction]
  * @param {object} columnSpec
   * @param {object} [options]
- * @param {'inplace'|'copy'|'auto'} [options.algorithm] - MySQL only
+ * @param {'instant'|'inplace'|'copy'|'auto'} [options.algorithm] - MySQL only
  */
 async function addColumn(tableName, column, transaction = db.knex, columnSpec, options = {}) {
     const addColumnBuilder = transaction.schema.table(tableName, function (table) {
@@ -136,7 +142,7 @@ async function addColumn(tableName, column, transaction = db.knex, columnSpec, o
  * @param {import('knex').Knex} [transaction]
  * @param {object} [columnSpec]
  * @param {object} [options]
- * @param {'inplace'|'copy'|'auto'} [options.algorithm] - MySQL only
+ * @param {'instant'|'inplace'|'copy'|'auto'} [options.algorithm] - MySQL only
  */
 async function dropColumn(tableName, column, transaction = db.knex, columnSpec = {}, options = {}) {
     if (Object.prototype.hasOwnProperty.call(columnSpec, 'references')) {
@@ -192,18 +198,37 @@ async function renameColumn(tableName, from, to, transaction = db.knex) {
 }
 
 /**
+ * Builds the column arguments for a MySQL index prefix, such as `col(123)`.
+ *
+ * @param {import('knex').Knex} knex
+ * @param {string|string[]} columns
+ * @param {number} length
+ * @returns {import('knex').Knex.Raw[]}
+ */
+function prefixIndexColumns(knex, columns, length) {
+    return (Array.isArray(columns) ? columns : [columns])
+        .map(col => knex.raw('?? (?)', [col, length]));
+}
+
+/**
  * Adds an non-unique index to a table over the given columns.
  *
  * @param {string} tableName - name of the table to add indexes to
  * @param {string|string[]} columns - column(s) to add indexes for
  * @param {import('knex').Knex} [transaction] - connection object containing knex reference
+ * @param {object} [options]
+ * @param {number} [options.length] - MySQL only: create a prefix index of this many characters
  */
-async function addIndex(tableName, columns, transaction = db.knex) {
+async function addIndex(tableName, columns, transaction = db.knex, options = {}) {
     try {
         logging.info(`Adding index for '${columns}' in table '${tableName}'`);
 
         return await transaction.schema.table(tableName, function (table) {
-            table.index(columns);
+            if (options.length && DatabaseInfo.isMySQL(transaction)) {
+                table.index(prefixIndexColumns(transaction, columns, options.length), defaultIndexName(tableName, columns));
+            } else {
+                table.index(columns);
+            }
         });
     } catch (err) {
         if (err.code === 'SQLITE_ERROR') {
@@ -251,13 +276,18 @@ async function dropIndex(tableName, columns, transaction = db.knex) {
  * @param {string} tableName - name of the table to add unique constraint to
  * @param {string|string[]} columns - column(s) to form unique constraint with
  * @param {import('knex').Knex} [transaction] - connection object containing knex reference
+ * @param {string} [indexName] - name for the constraint; knex derives one from the table
+ * and every column when omitted, which can overrun MySQL's 64-character limit
  */
-async function addUnique(tableName, columns, transaction = db.knex) {
+async function addUnique(tableName, columns, transaction = db.knex, indexName) {
     try {
         logging.info(`Adding unique constraint for '${columns}' in table '${tableName}'`);
 
         return await transaction.schema.table(tableName, function (table) {
-            table.unique(columns);
+            // Knex derives a name from the table and every column when it is not given
+            // one, and that can overrun MySQL's 64-character identifier limit on a wide
+            // table or a constraint over several columns.
+            table.unique(columns, indexName ? {indexName} : undefined);
         });
     } catch (err) {
         if (err.code === 'SQLITE_ERROR') {
@@ -279,12 +309,14 @@ async function addUnique(tableName, columns, transaction = db.knex) {
  * @param {string|string[]} columns - column(s) unique constraint was formed
  * @param {import('knex').Knex} transaction - connection object containing knex reference
  */
-async function dropUnique(tableName, columns, transaction = db.knex) {
+async function dropUnique(tableName, columns, transaction = db.knex, indexName) {
     try {
         logging.info(`Dropping unique constraint for '${columns}' in table '${tableName}'`);
 
         return await transaction.schema.table(tableName, function (table) {
-            table.dropUnique(columns);
+            // Named constraints have to be dropped by that name: the one knex would
+            // derive from the columns is not what is on the table.
+            table.dropUnique(columns, indexName);
         });
     } catch (err) {
         if (err.code === 'SQLITE_ERROR') {
@@ -500,10 +532,33 @@ function createTable(table, transaction = db.knex, tableSpec = schema[table]) {
             .forEach(column => addTableColumn(table, t, column, tableSpec[column]));
 
         if (tableSpec['@@INDEXES@@']) {
-            tableSpec['@@INDEXES@@'].forEach(index => t.index(index));
+            tableSpec['@@INDEXES@@'].forEach((index) => {
+                if (index && typeof index === 'object' && !Array.isArray(index)) {
+                    if (index.length && DatabaseInfo.isMySQL(transaction)) {
+                        t.index(
+                            prefixIndexColumns(transaction, index.columns, index.length),
+                            defaultIndexName(table, index.columns)
+                        );
+                    } else {
+                        // SQLite doesn't support prefix indexes, so we index the whole thing.
+                        t.index(index.columns);
+                    }
+                } else {
+                    t.index(index);
+                }
+            });
         }
         if (tableSpec['@@UNIQUE_CONSTRAINTS@@']) {
-            tableSpec['@@UNIQUE_CONSTRAINTS@@'].forEach(unique => t.unique(unique));
+            tableSpec['@@UNIQUE_CONSTRAINTS@@'].forEach((unique) => {
+                // An entry is normally the columns alone, and knex names the constraint
+                // after the table and every one of them. The object form is for when
+                // that derived name would overrun MySQL's 64-character limit.
+                if (unique && typeof unique === 'object' && !Array.isArray(unique)) {
+                    t.unique(unique.columns, {indexName: unique.indexName});
+                } else {
+                    t.unique(unique);
+                }
+            });
         }
         if (tableSpec['@@PRIMARY_KEY@@']) {
             t.primary(tableSpec['@@PRIMARY_KEY@@']);

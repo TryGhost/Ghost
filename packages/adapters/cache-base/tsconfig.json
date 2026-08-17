@@ -1,0 +1,10 @@
+{
+    "extends": "@internal/cfg-typescript/esm.json",
+    "compilerOptions": {
+        "rootDir": "src",
+        "outDir": "build"
+    },
+    "include": [
+        "src/**/*"
+    ]
+}

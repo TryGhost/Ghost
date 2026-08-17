@@ -17,28 +17,14 @@ const FETCH_ONLY_FORMATS = [
 ];
 
 class ImageSize {
-    constructor({config, storage, storageUtils, validator, urlUtils, request, probe}) {
+    constructor({config, imageStore, storageUtils, validator, urlUtils, fetchExternal, probe}) {
         this.config = config;
-        this.storage = storage;
+        this.imageStore = imageStore;
         this.storageUtils = storageUtils;
         this.validator = validator;
         this.urlUtils = urlUtils;
-        this.request = request;
+        this.fetchExternal = fetchExternal;
         this.probe = probe;
-
-        this.REQUEST_OPTIONS = {
-            // we need the user-agent, otherwise some https request may fail (e.g. cloudfare)
-            headers: {
-                'User-Agent': 'Mozilla/5.0 Safari/537.36'
-            },
-            timeout: {
-                request: this.config.get('times:getImageSizeTimeoutInMS') || 10000
-            },
-            retry: {
-                limit: 0 // for `got`, used with image-size
-            },
-            responseType: 'buffer'
-        };
 
         this.NEEDLE_OPTIONS = {
             // we need the user-agent, otherwise some https request may fail (e.g. cloudflare)
@@ -107,7 +93,7 @@ class ImageSize {
     // download full image then use image-size to get it's dimensions
     // returns promise which resolves dimensions
     _fetchImageSizeFromUrl(imageUrl) {
-        return this.request(imageUrl, this.REQUEST_OPTIONS).then((response) => {
+        return this.fetchExternal(imageUrl, this.NEEDLE_OPTIONS).then((response) => {
             return this._imageSizeFromBuffer(response.body);
         });
     }
@@ -248,8 +234,7 @@ class ImageSize {
         // get the storage readable filePath
         filePath = this.storageUtils.getLocalImagesStoragePath(imagePath);
 
-        return this.storage.getStorage('images')
-            .read({path: filePath})
+        return this.imageStore.read({path: filePath})
             .then((buf) => {
                 debug('Image fetched (storage):', filePath);
                 return this._imageSizeFromBuffer(buf);
@@ -298,10 +283,9 @@ class ImageSize {
      */
     async getOriginalImagePath(imagePath) {
         const {dir, name, ext} = path.parse(imagePath);
-        const storageInstance = this.storage.getStorage('images');
 
         const preferredUnoptimizedImagePath = path.join(dir, `${name}_o${ext}`);
-        const preferredUnoptimizedImagePathExists = await storageInstance.exists(preferredUnoptimizedImagePath);
+        const preferredUnoptimizedImagePathExists = await this.imageStore.exists(preferredUnoptimizedImagePath);
         if (preferredUnoptimizedImagePathExists) {
             return preferredUnoptimizedImagePath;
         }
@@ -315,7 +299,7 @@ class ImageSize {
         }
 
         const legacyOriginalImagePath = path.join(dir, `${imageName}_o${imageNumber || ''}${ext}`);
-        const legacyOriginalImageExists = await storageInstance.exists(legacyOriginalImagePath);
+        const legacyOriginalImageExists = await this.imageStore.exists(legacyOriginalImagePath);
 
         return legacyOriginalImageExists ? legacyOriginalImagePath : imagePath;
     }

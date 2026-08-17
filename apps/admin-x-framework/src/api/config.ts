@@ -28,10 +28,6 @@ export type Config = {
         id?: string;
     };
     emailAnalytics?: boolean;
-    tenor?: {
-        googleApiKey?: string | null;
-        contentFilter?: string;
-    };
     klipy?: {
         apiKey?: string | null;
         contentFilter?: string;
@@ -74,12 +70,36 @@ export type Config = {
             },
             publicSiteAccess?: {
                 disabled: boolean,
-                error?: string
+                // Copy shown in the pre-launch banner when public site access is disabled.
+                // Managed hosting providers can override these; each falls back to Ghost's default.
+                error?: string, // Banner message
+                title?: string, // Banner heading
+                upgradeUrl?: string // Destination for the banner's upgrade button
             }
         }
         billing?: {
             enabled?: boolean
             url?: string
+            // Copy and branding for the sidebar trial banner.
+            // Managed hosting providers can override these; each falls back to Ghost's default.
+            upgradeBanner?: {
+                title?: string // Banner heading
+                message?: string // Banner message, {{days}} is replaced with the remaining trial days
+                upgradeUrl?: string // Destination for the banner's upgrade button
+                logo?: string // Logo shown above the heading
+                logoDark?: string // Logo shown in dark mode, falls back to logo
+                logoAlt?: string // Alt text for the logo
+            }
+            // Search entries for billing paths, defined in host config (hostSettings.billing.search: {})
+            search?: {
+                groupName?: string
+                items?: {
+                    id?: string
+                    title?: string
+                    path?: string
+                    keywords?: string
+                }[]
+            }
         },
         pintura?: {
             js?: string

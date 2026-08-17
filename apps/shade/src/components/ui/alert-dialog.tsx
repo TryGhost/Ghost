@@ -26,13 +26,17 @@ const AlertDialogOverlay = React.forwardRef<
 ));
 AlertDialogOverlay.displayName = AlertDialogPrimitive.Overlay.displayName;
 
+type AlertDialogContentProps = React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Content> & {
+    overlayClassName?: string;
+};
+
 const AlertDialogContent = React.forwardRef<
     React.ElementRef<typeof AlertDialogPrimitive.Content>,
-    React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Content>
->(({className, ...props}, ref) => (
+    AlertDialogContentProps
+>(({className, overlayClassName, ...props}, ref) => (
     <AlertDialogPortal>
         <div className={SHADE_APP_NAMESPACES}>
-            <AlertDialogOverlay onClick={e => e.stopPropagation()} />
+            <AlertDialogOverlay className={overlayClassName} onClick={e => e.stopPropagation()} />
             <AlertDialogPrimitive.Content
                 ref={ref}
                 className={cn(
@@ -66,7 +70,7 @@ const AlertDialogFooter = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
     <div
         className={cn(
-            'flex flex-col-reverse sm:flex-row sm:justify-end sm:gap-2 [&>button]:min-w-20',
+            'flex flex-col-reverse sm:flex-row sm:justify-end sm:gap-2',
             className
         )}
         {...props}

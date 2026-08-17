@@ -1,6 +1,6 @@
 // Common test setup util - Ref: https://testing-library.com/docs/react-testing-library/setup#custom-render
 import {render} from '@testing-library/react';
-import i18n from '@tryghost/i18n';
+import i18n from '@tryghost/i18n/registry/portal';
 import AppContext from '../../src/app-context';
 import {testSite, member} from '../../src/utils/fixtures';
 

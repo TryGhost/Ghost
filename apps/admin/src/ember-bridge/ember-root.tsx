@@ -24,5 +24,5 @@ export const EmberRoot = React.memo(function EmberRoot() {
         };
     }, []);
 
-    return <div ref={ref} hidden={!isFallbackPresent} className="h-full w-full"></div>;
+    return <div ref={ref} className="size-full" hidden={!isFallbackPresent}></div>;
 });

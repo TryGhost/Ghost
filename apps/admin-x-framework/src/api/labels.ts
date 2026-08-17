@@ -1,7 +1,7 @@
 import {InfiniteData} from '@tanstack/react-query';
 import {Meta, createInfiniteQuery, createMutation, createQuery, createQueryWithId} from '../utils/api/hooks';
 import {apiUrl, useFetchApi} from '../utils/api/fetch-api';
-import {escapeNqlString} from '../utils/nql';
+import {escapeNqlString} from '@tryghost/nql-string';
 import {useCallback} from 'react';
 import {useQueryClient} from '@tanstack/react-query';
 
@@ -78,7 +78,7 @@ export const useInvalidateLabels = () => {
     const queryClient = useQueryClient();
 
     return useCallback(() => {
-        queryClient.invalidateQueries([dataType]);
+        queryClient.invalidateQueries({queryKey: [dataType]});
     }, [queryClient]);
 };
 

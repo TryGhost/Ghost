@@ -8,7 +8,7 @@ describe('Unit: endpoints/utils/validators/input/tags', function () {
     let sawExpectedStrictWarning = false;
 
     beforeEach(function () {
-        // The published `tags-add` schema in @tryghost/admin-api-schema declares
+        // The `tags-add` schema in the workspace package declares
         // `additionalProperties` on its `tags` property without a `type: object`,
         // so Ajv emits a one-off strict-mode warning via console.warn when it
         // compiles the schema on the first validate() call. Capture it so a

@@ -26,10 +26,6 @@ const AddDetailsPopup = (props: Props) => {
 
     const [error, setError] = useState({name: '', expertise: ''});
 
-    const stopPropagation = (event: Event) => {
-        event.stopPropagation();
-    };
-
     const close = (succeeded: boolean) => {
         dispatchAction('closePopup', {});
         props.callback(succeeded);
@@ -116,7 +112,7 @@ const AddDetailsPopup = (props: Props) => {
     });
 
     return (
-        <div className="rounded-none relative h-screen w-screen overflow-hidden bg-white p-[28px] text-center shadow-modal sm:h-auto sm:w-[720px] sm:rounded-xl sm:p-0" data-testid="profile-modal" onMouseDown={stopPropagation}>
+        <div className="rounded-none relative h-screen w-screen overflow-hidden bg-white p-[28px] text-center shadow-modal sm:h-auto sm:w-[720px] sm:rounded-xl sm:p-0" data-testid="profile-modal" onMouseDown={(event) => event.stopPropagation()}>
             <div className="flex">
                 <div className={`hidden w-[50%] flex-col items-center justify-center bg-neutral-800 sm:block sm:p-8`}>
                     <div className="mt-[-1px] flex flex-col gap-9 text-left">

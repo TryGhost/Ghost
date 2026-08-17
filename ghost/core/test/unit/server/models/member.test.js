@@ -49,6 +49,100 @@ describe('Unit: models/member', function () {
         });
     });
 
+    describe('onFetchingCollection: deep offset pagination', function () {
+        const knex = require('knex');
+        let db;
+
+        beforeAll(function () {
+            db = knex({client: 'mysql2'});
+        });
+
+        afterAll(async function () {
+            await db.destroy();
+        });
+
+        function onFetchingCollection(qb) {
+            new Member().onFetchingCollection(null, null, {query: qb});
+        }
+
+        it('rewrites deep-offset browse queries to a deferred join', function () {
+            const qb = db('members')
+                .where('members.status', 'free')
+                .orderByRaw('created_at DESC, id DESC')
+                .limit(100)
+                .offset(10300);
+
+            onFetchingCollection(qb);
+
+            const sql = qb.toString();
+            // filter, order and limit/offset all inside the id-only subquery
+            assert.match(sql, /inner join \(select `members`\.`id` as `deep_page_id` from `members` where `members`\.`status` = 'free' order by created_at DESC, id DESC limit 100 offset 10300\) as `deep_page`/);
+            // outer query keeps the order, drops the where/limit/offset
+            assert.match(sql, /`deep_page`\.`deep_page_id` order by created_at DESC, id DESC$/);
+            assert.equal(sql.indexOf('offset 10300'), sql.lastIndexOf('offset 10300'));
+        });
+
+        it('rewrites deep-offset queries whose filters contain subquery joins', function () {
+            // NQL label/tier filters compile to `where members.id in (select
+            // ... join ...)` — joins inside parens are not a different query
+            // shape and must not block the rewrite
+            const labelSubquery = db('members_labels')
+                .select('members_labels.member_id')
+                .innerJoin('labels', 'labels.id', 'members_labels.label_id')
+                .where('labels.slug', 'vip');
+            const qb = db('members')
+                .whereIn('members.id', labelSubquery)
+                .orderByRaw('created_at DESC, id DESC')
+                .limit(100)
+                .offset(10300);
+
+            onFetchingCollection(qb);
+
+            assert.ok(qb.toString().includes('deep_page'), 'filtered deep pages should still be rewritten');
+        });
+
+        it('leaves shallow pages untouched', function () {
+            const qb = db('members').orderByRaw('created_at DESC, id DESC').limit(100).offset(999);
+            const original = qb.toString();
+
+            onFetchingCollection(qb);
+
+            assert.equal(qb.toString(), original);
+        });
+
+        it('rewrites at exactly the threshold offset', function () {
+            const qb = db('members').orderByRaw('created_at DESC, id DESC').limit(100).offset(1000);
+
+            onFetchingCollection(qb);
+
+            assert.ok(qb.toString().includes('deep_page'), 'offset 1000 should trigger the rewrite');
+        });
+
+        it('leaves queries without numeric limit/offset untouched', function () {
+            const qb = db('members').where('members.status', 'free');
+            const original = qb.toString();
+
+            onFetchingCollection(qb);
+
+            assert.equal(qb.toString(), original);
+        });
+
+        it('leaves non-browse query shapes untouched', function () {
+            const unsafe = [
+                db('members').innerJoin('members_labels', 'members.id', 'members_labels.member_id').limit(100).offset(10300),
+                db('members').groupBy('status').limit(100).offset(10300),
+                db('members').select(db.raw('members.*, 1 as extra')).limit(100).offset(10300),
+                db('members').limit(100).offset(10300).forUpdate()
+            ];
+
+            for (const qb of unsafe) {
+                const original = qb.toString();
+                onFetchingCollection(qb);
+                assert.equal(qb.toString(), original);
+            }
+        });
+    });
+
     describe('onSaving', function () {
         it('skips labels without a name instead of throwing', async function () {
             const memberModel = new Member({email: 'test@example.com'});

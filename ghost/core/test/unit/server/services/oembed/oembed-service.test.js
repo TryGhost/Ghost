@@ -2,6 +2,8 @@ const assert = require('node:assert/strict');
 const nock = require('nock');
 const got = require('got').default;
 const sinon = require('sinon');
+const sharp = require('sharp');
+const zlib = require('zlib');
 
 const OembedService = require('../../../../../core/server/services/oembed/oembed-service');
 
@@ -272,6 +274,193 @@ describe('oembed-service', function () {
             assert.equal(response.metadata.title, 'Example');
         });
 
+        it('enriches other allowlisted provider bookmarks without discarding page metadata', async function () {
+            const knownProviderStub = sinon.stub(oembedService, 'knownProvider')
+                .resolves({
+                    title: 'Vimeo oEmbed title',
+                    author_name: 'Vimeo author',
+                    provider_name: 'Vimeo',
+                    thumbnail_url: 'https://i.vimeocdn.com/video/123.jpg'
+                });
+
+            sinon.stub(oembedService, 'processImageFromUrl').callsFake(async imageUrl => imageUrl);
+
+            nock('https://vimeo.com')
+                .get('/123456')
+                .query(true)
+                .reply(200, `<html><head>
+                    <title>Vimeo page title</title>
+                    <meta name="description" content="Vimeo page description">
+                    <link rel="icon" href="https://vimeo.com/favicon.ico">
+                </head></html>`);
+
+            try {
+                const response = await oembedService.fetchOembedDataFromUrl('https://vimeo.com/123456', 'bookmark');
+
+                assert.equal(response.metadata.title, 'Vimeo oEmbed title');
+                assert.equal(response.metadata.description, 'Vimeo page description');
+                assert.equal(response.metadata.author, 'Vimeo author');
+                assert.equal(response.metadata.publisher, 'Vimeo');
+                assert.equal(response.metadata.thumbnail, 'https://i.vimeocdn.com/video/123.jpg');
+                assert.equal(response.metadata.icon, 'https://vimeo.com/favicon.ico');
+                sinon.assert.calledOnce(knownProviderStub);
+            } finally {
+                sinon.restore();
+            }
+        });
+
+        it('falls back to page metadata when YouTube oEmbed fails', async function () {
+            nock('https://www.youtube.com')
+                .get('/oembed')
+                .query(true)
+                .reply(404);
+
+            nock('https://www.youtube.com')
+                .get('/watch')
+                .query({v: 'unavailable'})
+                .reply(200, `<html><head>
+                    <title>Fallback YouTube page title</title>
+                </head></html>`);
+
+            const response = await oembedService.fetchOembedDataFromUrl('https://www.youtube.com/watch?v=unavailable', 'bookmark');
+
+            assert.equal(response.metadata.title, 'Fallback YouTube page title');
+        });
+
+        it('uses bookmark enrichment when the provider page request fails', async function () {
+            const thumbnailUrl = 'https://i.ytimg.com/vi/blocked/hqdefault.jpg';
+            sinon.stub(oembedService, 'processImageFromUrl').resolves('/content/images/thumbnail/youtube.jpg');
+
+            nock('https://www.youtube.com')
+                .get('/oembed')
+                .query(true)
+                .reply(200, {
+                    title: 'YouTube oEmbed title',
+                    author_name: 'YouTube author',
+                    provider_name: 'YouTube',
+                    thumbnail_url: thumbnailUrl,
+                    type: 'video',
+                    version: '1.0'
+                });
+
+            nock('https://www.youtube.com')
+                .get('/watch')
+                .query({v: 'blocked'})
+                .reply(403);
+
+            try {
+                const response = await oembedService.fetchOembedDataFromUrl('https://www.youtube.com/watch?v=blocked', 'bookmark');
+
+                assert.equal(response.metadata.title, 'YouTube oEmbed title');
+                assert.equal(response.metadata.author, 'YouTube author');
+                assert.equal(response.metadata.publisher, 'YouTube');
+                assert.equal(response.metadata.thumbnail, '/content/images/thumbnail/youtube.jpg');
+                assert.equal(response.metadata.icon, 'https://static.ghost.org/v5.0.0/images/link-icon.svg');
+            } finally {
+                sinon.restore();
+            }
+        });
+
+        it('falls back to page metadata when bookmark enrichment times out', async function () {
+            nock('https://www.youtube.com')
+                .get('/oembed')
+                .query(true)
+                .delayConnection(500)
+                .reply(200, {
+                    title: 'Late YouTube oEmbed title',
+                    type: 'video',
+                    version: '1.0'
+                });
+
+            nock('https://www.youtube.com')
+                .get('/watch')
+                .query({v: 'slow'})
+                .reply(200, `<html><head>
+                    <title>Timely YouTube page title</title>
+                </head></html>`);
+
+            const response = await oembedService.fetchOembedDataFromUrl(
+                'https://www.youtube.com/watch?v=slow',
+                'bookmark',
+                {timeout: {request: 200}}
+            );
+
+            assert.equal(response.metadata.title, 'Timely YouTube page title');
+        });
+
+        it('does not process missing bookmark images', async function () {
+            const processImageFromUrlStub = sinon.stub(oembedService, 'processImageFromUrl')
+                .callsFake(async imageUrl => imageUrl);
+
+            try {
+                const response = await oembedService.fetchBookmarkData('https://www.example.com', '<html><head><title>Example</title></head></html>', 'bookmark');
+
+                assert.equal(response.metadata.title, 'Example');
+                assert.equal(response.metadata.thumbnail, null);
+                assert.equal(response.metadata.icon, 'https://static.ghost.org/v5.0.0/images/link-icon.svg');
+                sinon.assert.notCalled(processImageFromUrlStub);
+            } finally {
+                sinon.restore();
+            }
+        });
+
+        // Regression coverage for https://github.com/TryGhost/Ghost/issues/24741
+        // A YouTube bookmark request must build the card from the allowlisted
+        // oEmbed provider metadata (video title/author/publisher/thumbnail)
+        // rather than the generic scraped page, and must never leak the
+        // provider embed HTML into the bookmark card.
+        it('builds a YouTube bookmark card from allowlisted oEmbed provider metadata (#24741)', async function () {
+            const thumbnailUrl = 'https://i.ytimg.com/vi/0i1Xz-xiYSU/hqdefault.jpg';
+            const processImageFromUrlStub = sinon.stub(oembedService, 'processImageFromUrl')
+                .resolves('/content/images/thumbnail/youtube.jpg');
+
+            nock('https://www.youtube.com')
+                .get('/watch')
+                .query({v: '0i1Xz-xiYSU'})
+                .reply(200, `<html><head>
+                    <title>Generic YouTube page title</title>
+                    <meta name="description" content="Description from the page">
+                </head></html>`);
+
+            nock('https://www.youtube.com')
+                .get('/oembed')
+                .query(true)
+                .reply(200, {
+                    title: 'What happens in the European Space Agency\'s Mission Control?',
+                    author_name: 'Matt Gray',
+                    author_url: 'https://www.youtube.com/@MattGrayYES',
+                    type: 'video',
+                    version: '1.0',
+                    provider_name: 'YouTube',
+                    provider_url: 'https://www.youtube.com/',
+                    thumbnail_url: thumbnailUrl,
+                    html: '<iframe src="https://www.youtube.com/embed/0i1Xz-xiYSU"></iframe>',
+                    width: 200,
+                    height: 113
+                });
+
+            try {
+                const response = await oembedService.fetchOembedDataFromUrl('https://www.youtube.com/watch?v=0i1Xz-xiYSU', 'bookmark');
+
+                assert.equal(response.version, '1.0');
+                assert.equal(response.type, 'bookmark');
+                assert.equal(response.url, 'https://www.youtube.com/watch?v=0i1Xz-xiYSU');
+                assert.equal(response.metadata.url, 'https://www.youtube.com/watch?v=0i1Xz-xiYSU');
+                assert.equal(response.metadata.title, 'What happens in the European Space Agency\'s Mission Control?');
+                assert.equal(response.metadata.description, 'Description from the page');
+                assert.equal(response.metadata.author, 'Matt Gray');
+                assert.equal(response.metadata.publisher, 'YouTube');
+                assert.equal(response.metadata.thumbnail, '/content/images/thumbnail/youtube.jpg');
+                assert.equal(response.metadata.icon, 'https://static.ghost.org/v5.0.0/images/link-icon.svg');
+                sinon.assert.calledOnceWithExactly(processImageFromUrlStub, thumbnailUrl, 'thumbnail');
+                // The provider embed HTML must not leak into the bookmark card
+                assert.equal(response.metadata.html, undefined);
+                assert.equal(response.html, undefined);
+            } finally {
+                sinon.restore();
+            }
+        });
+
         it('prefers the standard favicon over an apple-touch-icon in the bookmark fallback', async function () {
             // With no oembed endpoint and no explicit type, fetchOembedDataFromUrl
             // falls through to the bookmark fallback (!data && !type). That path
@@ -433,6 +622,27 @@ describe('oembed-service', function () {
     describe('processImageFromUrl', function () {
         const UUID_RE = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/;
 
+        it('returns null without fetching when the image URL is missing', async function () {
+            const externalRequest = sinon.stub();
+            const service = new OembedService({
+                config: {
+                    getContentPath() {
+                        return '/tmp/content/images';
+                    }
+                },
+                imageStore: {
+                    getSanitizedFileName: sinon.stub().throws(new Error('getSanitizedFileName should not be called')),
+                    saveRaw: sinon.stub().throws(new Error('saveRaw should not be called'))
+                },
+                externalRequest
+            });
+
+            const storedUrl = await service.processImageFromUrl(null, 'thumbnail');
+
+            assert.equal(storedUrl, null);
+            sinon.assert.notCalled(externalRequest);
+        });
+
         it('stores downloaded bookmark assets via image storage and returns the adapter URL', async function () {
             const imageBytes = Buffer.from('img-bytes');
             const saveRaw = sinon.stub().resolves('https://storage.ghost.is/c/6f/a3/site/content/images/thumbnail/sample-x.png');
@@ -444,13 +654,9 @@ describe('oembed-service', function () {
                         return '/tmp/content/images';
                     }
                 },
-                storage: {
-                    getStorage() {
-                        return {
-                            getSanitizedFileName,
-                            saveRaw
-                        };
-                    }
+                imageStore: {
+                    getSanitizedFileName,
+                    saveRaw
                 },
                 externalRequest() {
                     return {
@@ -481,13 +687,9 @@ describe('oembed-service', function () {
                         return '/tmp/content/images';
                     }
                 },
-                storage: {
-                    getStorage() {
-                        return {
-                            getSanitizedFileName,
-                            saveRaw
-                        };
-                    }
+                imageStore: {
+                    getSanitizedFileName,
+                    saveRaw
                 },
                 externalRequest() {
                     return {
@@ -517,14 +719,10 @@ describe('oembed-service', function () {
                         return '/tmp/content/images';
                     }
                 },
-                storage: {
-                    getStorage() {
-                        return {
-                            getSanitizedFileName,
-                            saveRaw,
-                            exists
-                        };
-                    }
+                imageStore: {
+                    getSanitizedFileName,
+                    saveRaw,
+                    exists
                 },
                 externalRequest() {
                     return {
@@ -550,14 +748,10 @@ describe('oembed-service', function () {
                         return '/tmp/content/images';
                     }
                 },
-                storage: {
-                    getStorage() {
-                        return {
-                            getSanitizedFileName,
-                            generateUnique,
-                            saveRaw
-                        };
-                    }
+                imageStore: {
+                    getSanitizedFileName,
+                    generateUnique,
+                    saveRaw
                 },
                 externalRequest() {
                     return {
@@ -578,12 +772,8 @@ describe('oembed-service', function () {
                         return '/tmp/content/images';
                     }
                 },
-                storage: {
-                    getStorage() {
-                        return {
-                            getSanitizedFileName: sinon.stub().returns('sample')
-                        };
-                    }
+                imageStore: {
+                    getSanitizedFileName: sinon.stub().returns('sample')
                 },
                 externalRequest() {
                     return {
@@ -605,13 +795,9 @@ describe('oembed-service', function () {
                         return '/tmp/content/images';
                     }
                 },
-                storage: {
-                    getStorage() {
-                        return {
-                            getSanitizedFileName: sinon.stub().returns('sample'),
-                            saveRaw: sinon.stub().resolves('/stored')
-                        };
-                    }
+                imageStore: {
+                    getSanitizedFileName: sinon.stub().returns('sample'),
+                    saveRaw: sinon.stub().resolves('/stored')
                 },
                 externalRequest() {
                     throw new Error('Network error');
@@ -622,6 +808,139 @@ describe('oembed-service', function () {
                 () => service.processImageFromUrl('https://example.com/broken.png', 'thumbnail'),
                 {message: 'Network error'}
             );
+        });
+
+        describe('SVG bookmark images', function () {
+            const PNG_MAGIC = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+            const SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"><circle cx="8" cy="8" r="7" fill="red"/></svg>';
+
+            const buildService = (saveRaw, bytes) => new OembedService({
+                config: {
+                    getContentPath() {
+                        return '/tmp/content/images';
+                    }
+                },
+                imageStore: {
+                    getSanitizedFileName: sinon.stub().returns('favicon'),
+                    saveRaw
+                },
+                externalRequest() {
+                    return {
+                        buffer: async () => Buffer.from(bytes)
+                    };
+                }
+            });
+
+            it('stores an SVG icon as a PNG', async function () {
+                const saveRaw = sinon.stub().resolves('/stored');
+
+                await buildService(saveRaw, SVG).processImageFromUrl('https://example.com/favicon.svg', 'icon');
+
+                sinon.assert.calledOnce(saveRaw);
+                assert.match(saveRaw.firstCall.args[1], new RegExp(`^icon/favicon-${UUID_RE.source}\\.png$`));
+                assert.deepEqual(saveRaw.firstCall.args[0].subarray(0, 8), PNG_MAGIC);
+            });
+
+            it('bounds the output in both dimensions', async function () {
+                // Given only a width the height follows the source, so a few
+                // hundred bytes of extreme aspect ratio become tens of megabytes.
+                const saveRaw = sinon.stub().resolves('/stored');
+                const tall = '<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="8000"><rect width="1000" height="8000"/></svg>';
+
+                await buildService(saveRaw, tall).processImageFromUrl('https://example.com/favicon.svg', 'thumbnail');
+
+                const {width, height} = await sharp(saveRaw.firstCall.args[0]).metadata();
+                assert.equal(width, 256);
+                assert.equal(height, 256);
+            });
+
+            it('renders up to the target size rather than the source size', async function () {
+                const saveRaw = sinon.stub().resolves('/stored');
+
+                await buildService(saveRaw, SVG).processImageFromUrl('https://example.com/favicon.svg', 'icon');
+
+                const {width} = await sharp(saveRaw.firstCall.args[0]).metadata();
+                assert.equal(width, 256);
+            });
+
+            it('converts an SVG served under a misleading name', async function () {
+                const saveRaw = sinon.stub().resolves('/stored');
+
+                await buildService(saveRaw, SVG).processImageFromUrl('https://example.com/favicon.ico', 'icon');
+
+                assert.match(saveRaw.firstCall.args[1], /\.png$/);
+            });
+
+            it('converts a namespace-prefixed <svg:svg> root', async function () {
+                const saveRaw = sinon.stub().resolves('/stored');
+                const prefixed = '<svg:svg xmlns:svg="http://www.w3.org/2000/svg" width="16" height="16"><svg:circle cx="8" cy="8" r="7"/></svg:svg>';
+
+                await buildService(saveRaw, prefixed).processImageFromUrl('https://example.com/favicon.ico', 'icon');
+
+                assert.match(saveRaw.firstCall.args[1], /\.png$/);
+            });
+
+            it('converts anything served under an .svg name, whatever its case', async function () {
+                // Padding defeats the content sniff, so the extension is what
+                // guarantees nothing is stored as an SVG document.
+                const saveRaw = sinon.stub().resolves('/stored');
+                const padded = `<!--${'x'.repeat(2000)}-->${SVG}`;
+
+                await buildService(saveRaw, padded).processImageFromUrl('https://example.com/favicon.SVG', 'icon');
+
+                assert.match(saveRaw.firstCall.args[1], /\.png$/);
+            });
+
+            it('rejects a gzipped SVG rather than inflating it', async function () {
+                // libvips inflates these internally, so the byte cap cannot see
+                // their real size: 10KB on the wire took 47s to render.
+                const saveRaw = sinon.stub().resolves('/stored');
+
+                await assert.rejects(
+                    () => buildService(saveRaw, zlib.gzipSync(Buffer.from(SVG)))
+                        .processImageFromUrl('https://example.com/favicon.svgz', 'icon'),
+                    {message: /too large or compressed/}
+                );
+                sinon.assert.notCalled(saveRaw);
+            });
+
+            it('rejects an SVG too large to convert', async function () {
+                const saveRaw = sinon.stub().resolves('/stored');
+                const huge = `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><!--${'x'.repeat(64 * 1024)}--><circle r="8"/></svg>`;
+
+                await assert.rejects(
+                    () => buildService(saveRaw, huge).processImageFromUrl('https://example.com/favicon.svg', 'icon'),
+                    {message: /too large or compressed/}
+                );
+                sinon.assert.notCalled(saveRaw);
+            });
+
+            it('rejects markup that is not a convertible image', async function () {
+                const saveRaw = sinon.stub().resolves('/stored');
+                const service = buildService(saveRaw, '<!doctype html><html><body><svg><h1>404</h1></body></html>');
+
+                await assert.rejects(() => service.processImageFromUrl('https://example.com/favicon.svg', 'icon'));
+                sinon.assert.notCalled(saveRaw);
+            });
+
+            it('leaves raster images untouched', async function () {
+                const saveRaw = sinon.stub().resolves('/stored');
+
+                await buildService(saveRaw, PNG_MAGIC).processImageFromUrl('https://example.com/favicon.PNG', 'icon');
+
+                assert.deepEqual(saveRaw.firstCall.args[0], PNG_MAGIC);
+                // extension case is preserved, so existing URLs do not change
+                assert.match(saveRaw.firstCall.args[1], /\.PNG$/);
+            });
+
+            it('does not convert a raster file containing the text <svg', async function () {
+                const saveRaw = sinon.stub().resolves('/stored');
+                const png = Buffer.concat([PNG_MAGIC, Buffer.from('<svg width="1">')]);
+
+                await buildService(saveRaw, png).processImageFromUrl('https://example.com/favicon.png', 'icon');
+
+                assert.deepEqual(saveRaw.firstCall.args[0], png);
+            });
         });
     });
 
@@ -659,12 +978,10 @@ describe('oembed-service', function () {
                     getContentPath: sinon.stub().returns('/tmp/content/images')
                 },
                 externalRequest,
-                storage: {
-                    getStorage: sinon.stub().returns({
-                        getSanitizedFileName: sinon.stub().returns('favicon'),
-                        generateUnique: sinon.stub().resolves('/tmp/content/images/icon/favicon.png'),
-                        saveRaw: sinon.stub().resolves('/content/images/icon/favicon.png')
-                    })
+                imageStore: {
+                    getSanitizedFileName: sinon.stub().returns('favicon'),
+                    generateUnique: sinon.stub().resolves('/tmp/content/images/icon/favicon.png'),
+                    saveRaw: sinon.stub().resolves('/content/images/icon/favicon.png')
                 }
             });
 

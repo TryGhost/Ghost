@@ -113,7 +113,7 @@ function updateLikeCache(queryClient: QueryClient, id: string, liked: boolean) {
 
     for (const queryKey of queryKeys) {
         // Handle paginated caches (feed, inbox, etc.)
-        queryClient.setQueriesData(queryKey, (current?: {pages: {posts: Activity[]}[]}) => {
+        queryClient.setQueriesData({queryKey}, (current?: {pages: {posts: Activity[]}[]}) => {
             if (current === undefined) {
                 return current;
             }
@@ -144,7 +144,7 @@ function updateLikeCache(queryClient: QueryClient, id: string, liked: boolean) {
 
         // For the likes tab, add/remove the post
         if (queryKey === QUERY_KEYS.postsLikedByAccount) {
-            queryClient.setQueriesData(queryKey, (current?: {pages: {posts: Activity[]}[]}) => {
+            queryClient.setQueriesData({queryKey}, (current?: {pages: {posts: Activity[]}[]}) => {
                 if (!current) {
                     return current;
                 }
@@ -188,7 +188,7 @@ function updateFollowCache(queryClient: QueryClient, handle: string, authorHandl
     const preferredUsername = authorHandle.split('@')[1];
 
     for (const queryKey of queryKeys) {
-        queryClient.setQueriesData(queryKey, (current?: {pages: {posts: Activity[]}[]}) => {
+        queryClient.setQueriesData({queryKey}, (current?: {pages: {posts: Activity[]}[]}) => {
             if (current === undefined) {
                 return current;
             }
@@ -239,7 +239,7 @@ function updateFollowCache(queryClient: QueryClient, handle: string, authorHandl
 
     // Handle reply chain cache (used by Note.tsx and Reader.tsx)
     const replyChainQueryKey = QUERY_KEYS.replyChain(null);
-    queryClient.setQueriesData(replyChainQueryKey, (current?: ReplyChainResponse) => {
+    queryClient.setQueriesData({queryKey: replyChainQueryKey}, (current?: ReplyChainResponse) => {
         if (!current) {
             return current;
         }
@@ -320,7 +320,7 @@ function updateAccountFollowsCaches(queryClient: QueryClient, targetHandle: stri
 function updateLikeCacheOnce(queryClient: QueryClient, id: string, liked: boolean) {
     // Handle reply chain cache (used by Note.tsx and Reader.tsx)
     const replyChainQueryKey = QUERY_KEYS.replyChain(null);
-    queryClient.setQueriesData(replyChainQueryKey, (current?: ReplyChainResponse) => {
+    queryClient.setQueriesData({queryKey: replyChainQueryKey}, (current?: ReplyChainResponse) => {
         if (!current) {
             return current;
         }
@@ -510,7 +510,7 @@ function updateReplyCache(queryClient: QueryClient, id: string, delta: number) {
     ];
 
     for (const queryKey of queryKeys) {
-        queryClient.setQueriesData(queryKey, (current?: {pages: {posts: Activity[]}[]}) => {
+        queryClient.setQueriesData({queryKey}, (current?: {pages: {posts: Activity[]}[]}) => {
             if (!current) {
                 return current;
             }
@@ -581,6 +581,7 @@ export function useBlockedAccountsForUser(handle: string) {
 
             return api.getBlockedAccounts(pageParam);
         },
+        initialPageParam: undefined as string | undefined,
         getNextPageParam(prevPage) {
             return prevPage.next;
         }
@@ -597,6 +598,7 @@ export function useBlockedDomainsForUser(handle: string) {
 
             return api.getBlockedDomains(pageParam);
         },
+        initialPageParam: undefined as string | undefined,
         getNextPageParam(prevPage) {
             return prevPage.next;
         }
@@ -808,7 +810,7 @@ function updateRepostCache(queryClient: QueryClient, id: string, reposted: boole
 
     for (const queryKey of queryKeys) {
         // Handle paginated caches (feed, inbox, etc.)
-        queryClient.setQueriesData(queryKey, (current?: {pages: {posts: Activity[]}[]}) => {
+        queryClient.setQueriesData({queryKey}, (current?: {pages: {posts: Activity[]}[]}) => {
             if (current === undefined) {
                 return current;
             }
@@ -843,7 +845,7 @@ function updateRepostCache(queryClient: QueryClient, id: string, reposted: boole
 function updateRepostCacheOnce(queryClient: QueryClient, id: string, reposted: boolean) {
     // Handle reply chain cache (used by Note.tsx and Reader.tsx via useReplyChainForUser)
     const replyChainQueryKey = QUERY_KEYS.replyChain(null);
-    queryClient.setQueriesData(replyChainQueryKey, (current?: ReplyChainResponse) => {
+    queryClient.setQueriesData({queryKey: replyChainQueryKey}, (current?: ReplyChainResponse) => {
         if (!current) {
             return current;
         }
@@ -1654,6 +1656,7 @@ export function useAccountFollowsForUser(profileHandle: string, type: AccountFol
 
             return response;
         },
+        initialPageParam: undefined as string | undefined,
         getNextPageParam(prevPage) {
             return prevPage.next;
         }
@@ -1764,6 +1767,7 @@ export function useFeedForUser(options: {enabled: boolean}) {
                 };
             });
         },
+        initialPageParam: undefined as string | undefined,
         getNextPageParam(prevPage) {
             return prevPage.next;
         }
@@ -1836,6 +1840,7 @@ export function useInboxForUser(options: {enabled: boolean}) {
                 };
             });
         },
+        initialPageParam: undefined as string | undefined,
         getNextPageParam(prevPage) {
             return prevPage.next;
         }
@@ -1872,6 +1877,7 @@ export function useDiscoveryFeedForUser(options: {enabled: boolean; topic: strin
                 };
             });
         },
+        initialPageParam: undefined as string | undefined,
         getNextPageParam(prevPage) {
             return prevPage.next;
         }
@@ -1912,6 +1918,7 @@ export function usePostsByAccount(profileHandle: string, options: {enabled: bool
                 };
             });
         },
+        initialPageParam: undefined as string | undefined,
         getNextPageParam(prevPage) {
             return prevPage.next;
         }
@@ -1947,6 +1954,7 @@ export function usePostsLikedByAccount(options: {enabled: boolean}) {
                 };
             });
         },
+        initialPageParam: undefined as string | undefined,
         getNextPageParam(prevPage) {
             return prevPage.next;
         }
@@ -2121,9 +2129,9 @@ export function useDeleteMutationForUser(handle: string) {
             // Update the profile posts cache:
             // - Remove the post from any profile posts collections it may be in
             const profilePostsQueryKey = QUERY_KEYS.profilePosts(null);
-            const previousProfilePosts = queryClient.getQueriesData<{pages: {posts: Activity[]}[]}>(profilePostsQueryKey);
+            const previousProfilePosts = queryClient.getQueriesData<{pages: {posts: Activity[]}[]}>({queryKey: profilePostsQueryKey});
 
-            queryClient.setQueriesData(profilePostsQueryKey, (current?: {pages: {posts: Activity[]}[]}) => {
+            queryClient.setQueriesData({queryKey: profilePostsQueryKey}, (current?: {pages: {posts: Activity[]}[]}) => {
                 if (!current) {
                     return current;
                 }
@@ -2274,7 +2282,9 @@ export function useDeleteMutationForUser(handle: string) {
 
             queryClient.setQueryData(context.previousOutbox.key, context.previousOutbox.data);
             queryClient.setQueryData(context.previousLiked.key, context.previousLiked.data);
-            queryClient.setQueriesData(context.previousProfilePosts.key, context.previousProfilePosts.data);
+            context.previousProfilePosts.data.forEach(([queryKey, data]) => {
+                queryClient.setQueryData(queryKey, data);
+            });
 
             if (context.previousAccount) {
                 queryClient.setQueryData(context.previousAccount.key, context.previousAccount.data);
@@ -2309,6 +2319,7 @@ export function useNotificationsForUser(handle: string) {
 
             return api.getNotifications(pageParam);
         },
+        initialPageParam: undefined as string | undefined,
         getNextPageParam(prevPage) {
             return prevPage.next;
         }
@@ -2555,6 +2566,7 @@ export function useExploreProfilesForUserByTopic(handle: string, topic: string) 
                 next: response.next
             };
         },
+        initialPageParam: undefined as string | undefined,
         getNextPageParam(prevPage) {
             return prevPage.next;
         }

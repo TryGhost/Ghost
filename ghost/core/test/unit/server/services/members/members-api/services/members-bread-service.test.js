@@ -4,6 +4,17 @@ const MemberBreadService = require('../../../../../../../core/server/services/me
 const NextPaymentCalculator = require('../../../../../../../core/server/services/members/members-api/services/next-payment-calculator');
 const moment = require('moment');
 
+// The custom fields service is a required dependency: boot constructs it before
+// the members service, so the members service is never without one. Fixtures build
+// it the same way, otherwise a test fails on a dependency the code is entitled to
+// assume rather than on the behaviour it is checking.
+const createCustomFieldValuesStub = () => ({
+    getValuesForMembers: sinon.stub().resolves(new Map()),
+    namesValues: sinon.stub().returns(false),
+    planWrite: sinon.stub().resolves([]),
+    applyWrite: sinon.stub().resolves()
+});
+
 describe('MemberBreadService', function () {
     afterEach(function () {
         sinon.restore();
@@ -40,7 +51,7 @@ describe('MemberBreadService', function () {
         }
 
         // Helper to create a properly mocked service
-        function createService(memberRepositoryOverrides = {}) {
+        function createService(memberRepositoryOverrides = {}, customFieldValues = createCustomFieldValuesStub()) {
             const mockMemberModel = createMockMemberModel();
 
             const linkStripeCustomerStub = sinon.stub().resolves();
@@ -62,7 +73,8 @@ describe('MemberBreadService', function () {
                 newslettersService: {browse: sinon.stub().resolves([])},
                 settingsCache: {get: sinon.stub()},
                 emailSuppressionList: {getSuppressionData: getSuppressionDataStub},
-                settingsHelpers: {createUnsubscribeUrl: sinon.stub().returns('http://example.com/unsubscribe')}
+                settingsHelpers: {createUnsubscribeUrl: sinon.stub().returns('http://example.com/unsubscribe')},
+                customFieldValues
             });
 
             // Stub the read method to avoid having to mock all its dependencies
@@ -73,8 +85,40 @@ describe('MemberBreadService', function () {
                 status: 'free'
             });
 
-            return {service, memberRepository, linkStripeCustomerStub, createStub, getSuppressionDataStub};
+            return {service, memberRepository, linkStripeCustomerStub, createStub, getSuppressionDataStub, customFieldValues};
         }
+
+        it('refuses a create whose body names custom field values', async function () {
+            // Values can only be set on a later edit. The values service decides what
+            // counts as naming them, so drive it directly rather than through a body
+            // shape, which is the values service's own contract to test.
+            const customFieldValues = createCustomFieldValuesStub();
+            customFieldValues.namesValues.returns(true);
+            const {service, createStub} = createService({}, customFieldValues);
+
+            await assert.rejects(
+                () => service.add({email: 'test@example.com', custom_fields: {favourite_topic: 'Ghosts'}}, {}),
+                (error) => {
+                    assert.equal(error.errorType, 'ValidationError');
+                    assert.equal(error.property, 'custom_fields');
+                    return true;
+                }
+            );
+
+            assert.equal(createStub.called, false, 'the member must not be created');
+        });
+
+        it('creates a member when the body names no custom field values', async function () {
+            const {service, createStub, customFieldValues} = createService();
+
+            await service.add({email: 'test@example.com'}, {});
+
+            assert.equal(createStub.calledOnce, true);
+            // Asked unconditionally: the member data is handed over whether or not it
+            // carries the key, and an absent one is the values service's to judge.
+            assert.equal(customFieldValues.namesValues.calledOnce, true);
+            assert.equal(customFieldValues.namesValues.firstCall.args[0], undefined);
+        });
 
         it('passes context to linkStripeCustomer when stripe_customer_id is provided', async function () {
             // This test verifies that when a member is created via Admin API with a stripe_customer_id,
@@ -199,11 +243,16 @@ describe('MemberBreadService', function () {
     });
 
     describe('edit', function () {
-        function createMockMemberModel() {
+        function createMockMemberModel({previousStatus = 'free', subscriptions = []} = {}) {
             return {
                 id: 'member_123',
                 get: sinon.stub().returns(false),
-                related: sinon.stub().returns({find: () => null, toJSON: () => [], models: []}),
+                previous: sinon.stub().returns(previousStatus),
+                related: sinon.stub().returns({
+                    find: predicate => subscriptions.find(predicate) || null,
+                    toJSON: () => [],
+                    models: subscriptions
+                }),
                 toJSON: sinon.stub().returns({
                     id: 'member_123',
                     email: 'test@example.com'
@@ -211,28 +260,33 @@ describe('MemberBreadService', function () {
             };
         }
 
-        function createService() {
-            const mockMemberModel = createMockMemberModel();
+        function createService({stripeConfigured = false, previousStatus = 'free', subscriptions = []} = {}) {
+            const mockMemberModel = createMockMemberModel({previousStatus, subscriptions});
             const updateStub = sinon.stub().resolves(mockMemberModel);
             const getSuppressionDataStub = sinon.stub().resolves({suppressed: false, info: null});
+            const setComplimentarySubscription = sinon.stub().resolves();
+            const removeComplimentarySubscription = sinon.stub().resolves();
 
             const service = new MemberBreadService({
                 memberRepository: {
-                    update: updateStub
+                    update: updateStub,
+                    setComplimentarySubscription,
+                    removeComplimentarySubscription
                 },
-                stripeService: {configured: false},
+                stripeService: {configured: stripeConfigured},
                 memberAttributionService: {getAttributionFromContext: sinon.stub().resolves(null)},
                 emailService: {},
                 labsService: {isSet: sinon.stub().returns(false)},
                 newslettersService: {browse: sinon.stub().resolves([])},
                 settingsCache: {get: sinon.stub()},
                 emailSuppressionList: {getSuppressionData: getSuppressionDataStub},
-                settingsHelpers: {createUnsubscribeUrl: sinon.stub().returns('http://example.com/unsubscribe')}
+                settingsHelpers: {createUnsubscribeUrl: sinon.stub().returns('http://example.com/unsubscribe')},
+                customFieldValues: createCustomFieldValuesStub()
             });
 
             sinon.stub(service, 'read').resolves({id: 'member_123'});
 
-            return {service, updateStub, getSuppressionDataStub};
+            return {service, updateStub, getSuppressionDataStub, setComplimentarySubscription, removeComplimentarySubscription};
         }
 
         it('sets email_disabled to true when the new email is on the suppression list', async function () {
@@ -267,6 +321,70 @@ describe('MemberBreadService', function () {
 
             assert.equal(getSuppressionDataStub.called, false);
         });
+
+        // Comp handling on edit must only act on an actual status transition, because `comped`
+        // is derived from status and round-tripped on every edit.
+        // Ref: https://github.com/TryGhost/Ghost/issues/25735
+        const compSubData = {plan_nickname: 'Complimentary', status: 'active'};
+        const activeCompSubscription = {get: key => compSubData[key]};
+
+        // The bug: an already-comped member (no Stripe sub) round-trips comped:true.
+        it('does not create a complimentary subscription when editing an already-comped member (#25735)', async function () {
+            const {service, setComplimentarySubscription} = createService({stripeConfigured: true, previousStatus: 'comped'});
+
+            await service.edit({comped: true, labels: [{name: 'VIP'}]}, {id: 'member_123'});
+
+            assert.equal(setComplimentarySubscription.called, false);
+        });
+
+        // No regression: genuinely comping a previously-free member.
+        it('creates a complimentary subscription when comping a member that was not previously comped (#25735)', async function () {
+            const {service, setComplimentarySubscription} = createService({stripeConfigured: true, previousStatus: 'free'});
+
+            await service.edit({comped: true}, {id: 'member_123'});
+
+            assert.equal(setComplimentarySubscription.calledOnce, true);
+        });
+
+        // Idempotent: already comped via Stripe, comped:true round-tripped.
+        it('does not create a duplicate when an already-comped member has an active complimentary subscription (#25735)', async function () {
+            const {service, setComplimentarySubscription} = createService({stripeConfigured: true, previousStatus: 'comped', subscriptions: [activeCompSubscription]});
+
+            await service.edit({comped: true, labels: [{name: 'VIP'}]}, {id: 'member_123'});
+
+            assert.equal(setComplimentarySubscription.called, false);
+        });
+
+        // The remove branch keys on the model's loaded stripeSubscriptions relation, so this
+        // only covers the service-level contract when that relation is present on the model —
+        // the Admin API edit path does not load it.
+        it('removes the complimentary subscription when uncomping a member whose model has an active complimentary subscription loaded (#25735)', async function () {
+            const {service, removeComplimentarySubscription, setComplimentarySubscription} = createService({stripeConfigured: true, previousStatus: 'comped', subscriptions: [activeCompSubscription]});
+
+            await service.edit({comped: false}, {id: 'member_123'});
+
+            assert.equal(removeComplimentarySubscription.calledOnce, true);
+            assert.equal(setComplimentarySubscription.called, false);
+        });
+
+        // Ordinary edit (no comped field): no comp work at all.
+        it('does not touch subscriptions on an edit without comped (#25735)', async function () {
+            const {service, setComplimentarySubscription, removeComplimentarySubscription} = createService({stripeConfigured: true, previousStatus: 'comped'});
+
+            await service.edit({name: 'New Name'}, {id: 'member_123'});
+
+            assert.equal(setComplimentarySubscription.called, false);
+            assert.equal(removeComplimentarySubscription.called, false);
+        });
+
+        // Stripe not connected: comp branch never runs.
+        it('does not create a complimentary subscription when Stripe is not connected (#25735)', async function () {
+            const {service, setComplimentarySubscription} = createService({previousStatus: 'free'});
+
+            await service.edit({comped: true}, {id: 'member_123'});
+
+            assert.equal(setComplimentarySubscription.called, false);
+        });
     });
 
     describe('read', function () {
@@ -299,9 +417,11 @@ describe('MemberBreadService', function () {
 
         const defaultGiftService = {
             service: {
-                getActiveByMembers: sinon.stub().resolves(new Map())
+                getMemberPresentations: sinon.stub().resolves(new Map())
             }
         };
+
+        const defaultCustomFieldValues = createCustomFieldValuesStub();
 
         const getService = (options = {}) => {
             return new MemberBreadService({
@@ -313,7 +433,9 @@ describe('MemberBreadService', function () {
                 emailSuppressionList: emailSuppressionListStub,
                 nextPaymentCalculator: options.nextPaymentCalculator || nextPaymentCalculator,
                 offersAPI: options.offersAPI || defaultOffersAPI,
-                giftService: options.giftService || defaultGiftService
+                labsService: options.labsService || {isSet: sinon.stub().returns(false)},
+                giftService: options.giftService || defaultGiftService,
+                customFieldValues: options.customFieldValues || defaultCustomFieldValues
             });
         };
 
@@ -669,7 +791,7 @@ describe('MemberBreadService', function () {
 
             const giftServiceStub = {
                 service: {
-                    getActiveByMembers: sinon.stub().resolves(new Map([
+                    getMemberPresentations: sinon.stub().resolves(new Map([
                         [MEMBER_ID, {cadence: 'month', currency: 'eur', amount: 1500}]
                     ]))
                 }
@@ -680,7 +802,7 @@ describe('MemberBreadService', function () {
 
             assert.equal(member.subscriptions.length, 1);
 
-            sinon.assert.calledOnceWithExactly(giftServiceStub.service.getActiveByMembers, [MEMBER_ID]);
+            sinon.assert.calledOnceWithExactly(giftServiceStub.service.getMemberPresentations, [MEMBER_ID]);
 
             sinon.assert.match(member.subscriptions[0], {
                 id: '',
@@ -730,14 +852,14 @@ describe('MemberBreadService', function () {
 
             const giftServiceStub = {
                 service: {
-                    getActiveByMembers: sinon.stub().resolves(new Map())
+                    getMemberPresentations: sinon.stub().resolves(new Map())
                 }
             };
 
             const memberBreadService = getService({giftService: giftServiceStub});
             await memberBreadService.read({id: MEMBER_ID});
 
-            sinon.assert.notCalled(giftServiceStub.service.getActiveByMembers);
+            sinon.assert.notCalled(giftServiceStub.service.getMemberPresentations);
         });
 
         it('returns a member with attribution data', async function () {

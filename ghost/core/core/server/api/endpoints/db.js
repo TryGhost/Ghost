@@ -1,4 +1,5 @@
 const moment = require('moment-timezone');
+const path = require('path');
 const dbBackup = require('../../data/db/backup');
 const exporter = require('../../data/exporter');
 const importer = require('../../data/importer');
@@ -29,6 +30,11 @@ const controller = {
             }
         },
         query(frame) {
+            const filename = frame.options.filename;
+            if (filename && path.basename(filename) !== filename) {
+                throw new errors.ValidationError({message: 'Export filename must not contain path separators'});
+            }
+
             // NOTE: we need to have `include` property available as backupDatabase uses it internally
             Object.assign(frame.options, {include: frame.options.withRelated});
 

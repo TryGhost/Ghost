@@ -111,8 +111,8 @@ const Domain: React.FC = () => {
     const activeDomain = domainData?.domain ?? null;
     const defaultDomain = getDefaultDomain(domainData?.actorUrl, domainData?.handle);
     const currentUsername = getHandleParts(account?.handle).username;
-    const isUpdatingAccount = updateAccountMutation.isLoading;
-    const isMutating = updateDomainMutation.isLoading || validateDomainMutation.isLoading;
+    const isUpdatingAccount = updateAccountMutation.isPending;
+    const isMutating = updateDomainMutation.isPending || validateDomainMutation.isPending;
     const isDisabled = isLoadingDomain || isMutating;
     const isUsernameDisabled = isLoadingAccount || isUpdatingAccount || !account;
     const canSaveUsername = Boolean(isEditingUsername && usernameInput !== currentUsername);
@@ -421,7 +421,7 @@ const Domain: React.FC = () => {
                                     disabled
                                 />
                                 <Button className='h-9 text-sm sm:w-auto' disabled={isDisabled} variant='outline' onClick={handleRemove}>
-                                    {updateDomainMutation.isLoading ? (
+                                    {updateDomainMutation.isPending ? (
                                         <>
                                             <LoadingIndicator size='sm' />
                                             Removing...
@@ -520,7 +520,7 @@ const Domain: React.FC = () => {
                                         <Button disabled={isDisabled} variant='outline' onClick={handleCancel}>Cancel</Button>
                                         {canSave ? (
                                             <Button disabled={isDisabled} onClick={handleSave}>
-                                                {updateDomainMutation.isLoading ? (
+                                                {updateDomainMutation.isPending ? (
                                                     <>
                                                         <LoadingIndicator color='light' size='sm' />
                                                         Saving...
@@ -529,7 +529,7 @@ const Domain: React.FC = () => {
                                             </Button>
                                         ) : (
                                             <Button disabled={isDisabled || !canValidate || hasDomainLoadError} onClick={handleValidate}>
-                                                {validateDomainMutation.isLoading ? (
+                                                {validateDomainMutation.isPending ? (
                                                     <>
                                                         <LoadingIndicator color='light' size='sm' />
                                                         Validating...

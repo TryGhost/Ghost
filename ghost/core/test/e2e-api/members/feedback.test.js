@@ -355,4 +355,24 @@ describe('Members Feedback', function () {
         assert.equal(body3.feedback[0].score, 1);
         assert.equal(model3.get('updated_at').getTime(), model2.get('updated_at').getTime());
     });
+
+    describe('Redirect link', function () {
+        it('redirects to the post url with the feedback fragment', async function () {
+            const post = fixtureManager.get('posts', 0);
+
+            await membersAgent
+                .get(`/feedback/${post.id}/1/?uuid=${memberUuid}&key=${memberHmac}`)
+                .expectStatus(302)
+                .expectHeader('Location', new RegExp(`/${post.slug}/#/feedback/${post.id}/1/`));
+        });
+
+        it('redirects to the home page when the post no longer exists', async function () {
+            const unknownPostId = '5951f5fca366002ebd5dbef7';
+
+            await membersAgent
+                .get(`/feedback/${unknownPostId}/0/?uuid=${memberUuid}&key=${memberHmac}`)
+                .expectStatus(302)
+                .expectHeader('Location', new RegExp(`/#/feedback/${unknownPostId}/0/`));
+        });
+    });
 });

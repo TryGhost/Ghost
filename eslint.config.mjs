@@ -1,15 +1,7 @@
-import globals from 'globals';
-
-// Workspace-wide root config. Each workspace has its own eslint.config.mjs;
-// this file only handles files that fall outside any workspace, mainly the
-// scripts/ directory invoked via lint-staged when files there are touched.
-export default [
-    {
-        files: ['scripts/**/*.{js,cjs,mjs}'],
-        languageOptions: {
-            ecmaVersion: 2022,
-            sourceType: 'script',
-            globals: globals.node
-        }
-    }
-];
+// Workspace-wide root config. Every workspace has its own eslint.config.mjs,
+// and the one non-workspace tool in the repo (.github/scripts/i18n-review) is
+// deliberately self-contained and carries its own config + eslint dev dep — so
+// there is nothing left at the repo root to lint. This file stays as the flat
+// config entry point eslint resolves when invoked from the root, and to keep
+// stray root-level files from silently inheriting another workspace's rules.
+export default [];

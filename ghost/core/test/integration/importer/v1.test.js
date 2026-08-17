@@ -12,6 +12,17 @@ const importOptions = {
     returnImportedData: true
 };
 
+// v1 exports predate lexical: post content is mobiledoc, typically a single markdown card
+const markdownToMobiledoc = (content) => {
+    return JSON.stringify({
+        version: '0.3.1',
+        markups: [],
+        atoms: [],
+        cards: [['markdown', {markdown: content || ''}]],
+        sections: [[10, 0]]
+    });
+};
+
 describe('Importer 1.0', function () {
     beforeEach(testUtils.teardownDb);
     beforeEach(testUtils.setup('roles', 'owner'));
@@ -54,7 +65,8 @@ describe('Importer 1.0', function () {
             });
 
             exportData.data.posts[1] = testUtils.DataGenerator.forKnex.createPost({
-                slug: 'post2'
+                slug: 'post2',
+                mobiledoc: markdownToMobiledoc('## markdown')
             });
 
             exportData.data.posts[1].mobiledoc = '{';
@@ -91,6 +103,7 @@ describe('Importer 1.0', function () {
             });
 
             exportData.data.posts[0].mobiledoc = null;
+            exportData.data.posts[0].lexical = null;
 
             const options = Object.assign({formats: 'mobiledoc,lexical,html'}, testUtils.context.internal);
 
@@ -141,7 +154,8 @@ describe('Importer 1.0', function () {
             const exportData = exportedBodyV1().db[0];
 
             exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({
-                slug: 'post1'
+                slug: 'post1',
+                mobiledoc: markdownToMobiledoc('## markdown')
             });
 
             exportData.data.posts[0].html = null;
@@ -170,7 +184,7 @@ describe('Importer 1.0', function () {
             exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({
                 slug: 'post1',
                 html: '<div class="kg-card-markdown"><h1>This is my post content.</h1></div>',
-                mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('# This is my post content')
+                mobiledoc: markdownToMobiledoc('# This is my post content')
             });
 
             const options = Object.assign({formats: 'mobiledoc,lexical,html'}, testUtils.context.internal);

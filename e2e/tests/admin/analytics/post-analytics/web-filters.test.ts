@@ -124,27 +124,6 @@ test.describe('Ghost Admin - Post Analytics Web Filters', () => {
             await expect(postAnalyticsPage.getActiveFilter('Source')).toBeHidden();
         });
 
-        // TODO: This is flaky on CI, so we're skipping it for now.
-        test.skip('click on location row adds location filter', async ({page, browser, baseURL}) => {
-            // Generate traffic to the post
-            await withIsolatedPage(browser, {baseURL}, async ({page: publicPage}) => {
-                const postPage = new PublicPage(publicPage);
-                await postPage.goto(`/${postSlug}/`);
-            });
-
-            const postAnalyticsPage = new PostAnalyticsWebTrafficPage(page);
-            await postAnalyticsPage.gotoForPost(postId);
-
-            // Wait for locations card to show data with at least one row
-            await expect(postAnalyticsPage.locationsCard).toBeVisible();
-            await expect(postAnalyticsPage.getFirstLocationRow()).toBeVisible();
-
-            // Click the first location row (actual location code varies by environment)
-            await postAnalyticsPage.clickFirstLocationRow();
-
-            await expect(postAnalyticsPage.getActiveFilter('Location')).toBeVisible();
-        });
-
         test('applied filter is hidden from dropdown', async ({page, browser, baseURL}) => {
             // Generate traffic to the post
             await withIsolatedPage(browser, {baseURL}, async ({page: publicPage}) => {

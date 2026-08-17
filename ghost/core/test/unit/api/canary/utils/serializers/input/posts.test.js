@@ -135,8 +135,8 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
         // defaultRelations early-return on a non-empty withRelated must
         // not skip the force-load — otherwise the URL still 404s for
         // tag/author-filtered routes.
-        it('lazyRouting: merges the required relations into withRelated when caller passes both ?fields=url and ?include=email', function () {
-            sinon.stub(urlService.facade, 'getRequiredRelations').returns(['tags', 'authors']);
+        it('merges the required relations into withRelated when caller passes both ?fields=url and ?include=email', function () {
+            sinon.stub(urlService, 'getRequiredRelations').returns(['tags', 'authors']);
 
             const frame = {
                 apiType: 'admin',
@@ -154,10 +154,10 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
             assert.ok(frame.options.withRelated.includes('authors'), 'authors must be force-loaded for URL');
         });
 
-        it('lazyRouting: forces the required relations on the Content API path', function () {
+        it('forces the required relations on the Content API path', function () {
             // Content API uses mapWithRelated rather than defaultRelations;
             // both branches must invoke the helper.
-            sinon.stub(urlService.facade, 'getRequiredRelations').returns(['tags', 'authors']);
+            sinon.stub(urlService, 'getRequiredRelations').returns(['tags', 'authors']);
 
             const frame = {
                 apiType: 'content',
@@ -174,8 +174,8 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
             assert.ok(frame.options.withRelated.includes('authors'));
         });
 
-        it('lazyRouting: loads only the relations the live routes reference', function () {
-            sinon.stub(urlService.facade, 'getRequiredRelations').returns(['tags']);
+        it('loads only the relations the live routes reference', function () {
+            sinon.stub(urlService, 'getRequiredRelations').returns(['tags']);
 
             const frame = {
                 apiType: 'admin',
@@ -191,8 +191,104 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
             assert.ok(!frame.options.withRelated.includes('authors'), 'authors must not be loaded when no route references it');
         });
 
+        // `url` is computed for every serialized post unless `?fields`
+        // narrows it away, so a plain browse (no fields param) must also
+        // force-load the relations the URL service needs — and record them
+        // so the output serializer can strip what the caller didn't ask for.
+        it('forces required relations on a Content API browse without fields narrowing', function () {
+            sinon.stub(urlService, 'getRequiredRelations').returns(['tags', 'authors']);
+
+            const frame = {
+                apiType: 'content',
+                options: {
+                    context: {api_key: {id: 1, type: 'content'}},
+                    withRelated: ['authors']
+                }
+            };
+
+            serializers.input.posts.browse({}, frame);
+
+            assert.ok(frame.options.withRelated.includes('tags'));
+            assert.ok(frame.options.withRelated.includes('authors'));
+            // only the relation the caller did NOT request is recorded for stripping
+            assert.deepEqual(frame.forcedUrlRelations, ['tags']);
+        });
+
+        it('does not force relations when ?fields excludes url', function () {
+            sinon.stub(urlService, 'getRequiredRelations').returns(['tags', 'authors']);
+
+            const frame = {
+                apiType: 'content',
+                options: {
+                    context: {api_key: {id: 1, type: 'content'}},
+                    columns: ['id', 'title']
+                }
+            };
+
+            serializers.input.posts.browse({}, frame);
+
+            assert.ok(!frame.options.withRelated, 'no relations should be force-loaded when url is not serialized');
+            assert.equal(frame.forcedUrlRelations, undefined);
+        });
+
+        it('treats a nested include as covering its parent relation', function () {
+            sinon.stub(urlService, 'getRequiredRelations').returns(['tags', 'authors']);
+
+            // `authors.roles` eager-loads authors with roles nested, so the
+            // resource is not thin — forcing (and then stripping) `authors`
+            // would delete the very data the caller asked for.
+            const frame = {
+                apiType: 'admin',
+                options: {
+                    context: {user: 1},
+                    withRelated: ['authors.roles'],
+                    columns: ['id', 'url']
+                }
+            };
+
+            serializers.input.posts.browse({}, frame);
+
+            assert.ok(frame.options.withRelated.includes('authors.roles'));
+            assert.ok(!frame.options.withRelated.includes('authors'), 'authors is already covered by authors.roles');
+            assert.deepEqual(frame.forcedUrlRelations, ['tags']);
+        });
+
+        it('records nothing for stripping when the caller already requested the relations', function () {
+            sinon.stub(urlService, 'getRequiredRelations').returns(['tags', 'authors']);
+
+            const frame = {
+                apiType: 'content',
+                options: {
+                    context: {api_key: {id: 1, type: 'content'}},
+                    withRelated: ['tags', 'authors']
+                }
+            };
+
+            serializers.input.posts.browse({}, frame);
+
+            assert.deepEqual(frame.options.withRelated, ['tags', 'authors']);
+            assert.equal(frame.forcedUrlRelations, undefined);
+        });
+
+        it('keeps the full admin default relations when forcing fires on a plain admin browse', function () {
+            sinon.stub(urlService, 'getRequiredRelations').returns(['tags', 'authors']);
+
+            const frame = {
+                apiType: 'admin',
+                options: {
+                    context: {user: 1}
+                }
+            };
+
+            serializers.input.posts.browse({}, frame);
+
+            assert.deepEqual(frame.options.withRelated, ['tags', 'authors', 'authors.roles', 'email', 'tiers', 'newsletter', 'count.clicks']);
+            // admin defaults already include the required relations — nothing to strip
+            assert.equal(frame.forcedUrlRelations, undefined);
+        });
+
         it('does not force any relations when no route references tags or authors', function () {
-            sinon.stub(urlService.facade, 'getRequiredRelations').returns([]);
+            sinon.stub(urlService, 'getRequiredRelations').returns([]);
 
             const frame = {
                 apiType: 'admin',

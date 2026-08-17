@@ -1,10 +1,11 @@
 const debug = require('@tryghost/debug')('routing:collection-router');
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 const ParentRouter = require('./parent-router');
 
 const controllers = require('./controllers');
 const middleware = require('./middleware');
 const RSSRouter = require('./rss-router');
+const {toExpressNotation} = require('./permalink-adapter');
 
 /**
  * @description Collection Router for post resource.
@@ -26,15 +27,16 @@ class CollectionRouter extends ParentRouter {
 
         this.rss = object.rss !== false;
 
+        // convert domain `{slug}` -> Express/URL-service `:slug` at this boundary
         this.permalinks = {
-            value: object.permalink
+            value: toExpressNotation(object.permalink)
         };
 
         // @NOTE: see renderer/templates - we use unshift to prepend the templates
         this.templates = (object.templates || []).reverse();
 
         this.filter = object.filter;
-        this.data = object.data || {query: {}, router: {}};
+        this.data = object.data || {};
         this.order = object.order;
         this.limit = object.limit;
 
@@ -116,7 +118,7 @@ class CollectionRouter extends ParentRouter {
             templates: this.templates,
             identifier: this.identifier,
             name: this.routerName,
-            data: this.data.query
+            data: this.data
         };
 
         next();
@@ -136,8 +138,7 @@ class CollectionRouter extends ParentRouter {
      * @returns {string}
      */
     getResourceType() {
-        // @TODO: resourceAlias can be removed? We removed it. Looks like a last left over. Needs double checking.
-        return this.RESOURCE_CONFIG.resourceAlias || this.RESOURCE_CONFIG.resource;
+        return this.RESOURCE_CONFIG.resource;
     }
 
     /**

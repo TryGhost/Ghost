@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 const settingsCache = require('../../../shared/settings-cache');
 
 const COOKIE_NAME = 'ghost-admin-toolbar';
@@ -135,7 +135,7 @@ function getCleanRedirectUrl(req) {
     currentUrl.searchParams.delete(QUERY_PARAM);
     currentUrl.searchParams.delete(HIDE_QUERY_PARAM);
 
-    return `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`;
+    return `${urlUtils.createUrl(currentUrl.pathname)}${currentUrl.search}${currentUrl.hash}`;
 }
 
 function getQueryValue(value) {

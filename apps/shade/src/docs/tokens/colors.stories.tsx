@@ -155,7 +155,8 @@ export const Surface: Story = {
                 {name: 'page', cssVar: '--surface-page'},
                 {name: 'panel', cssVar: '--surface-panel'},
                 {name: 'elevated', cssVar: '--surface-elevated'},
-                {name: 'elevated-2', cssVar: '--surface-elevated-2'}
+                {name: 'elevated-2', cssVar: '--surface-elevated-2'},
+                {name: 'control-readonly', cssVar: '--control-readonly-surface'}
             ]}
             title="Surface"
         />

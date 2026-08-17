@@ -9,12 +9,13 @@ const vi = (vitest as any).vi || vitest;
  * Creates a properly typed mock UseQueryResult for API hooks
  * This utility ensures all required properties are present for TypeScript compatibility
  */
-export const createMockApiReturn = <T>(
+const createMockApiReturn = <T>(
     data: T | undefined,
     isLoading = false,
     error: Error | null = null
 ): UseQueryResult<T> => ({
         data,
+        isPending: isLoading,
         isLoading,
         error,
         refetch: vi.fn(),
@@ -22,8 +23,8 @@ export const createMockApiReturn = <T>(
         isLoadingError: false,
         isRefetchError: false,
         isSuccess: !isLoading && !error && data !== undefined,
-        isIdle: false,
-        status: isLoading ? 'loading' : error ? 'error' : 'success',
+        status: isLoading ? 'pending' : error ? 'error' : 'success',
+        fetchStatus: isLoading ? 'fetching' : 'idle',
         dataUpdatedAt: Date.now(),
         errorUpdatedAt: error ? Date.now() : 0,
         failureCount: error ? 1 : 0,
@@ -31,16 +32,15 @@ export const createMockApiReturn = <T>(
         isFetchedAfterMount: true,
         isFetching: isLoading,
         isPlaceholderData: false,
-        isPreviousData: false,
         isStale: false,
-        remove: vi.fn(),
         // Add missing properties for TypeScript compatibility
         failureReason: null,
         errorUpdateCount: 0,
         isInitialLoading: isLoading,
         isPaused: false,
         isRefetching: false,
-        isStaleByTime: false
+        isEnabled: true,
+        promise: Promise.resolve(data as T)
     } as unknown as UseQueryResult<T>);
 
 /**
@@ -61,33 +61,6 @@ export const mockApiHook = <T>(
 };
 
 /**
- * Creates a mock function that can be used with mockApiHook
- * Useful when you need to create mocks before importing modules
- */
-export const createMockApiHook = <T>() => {
-    const mockFn = vi.fn();
-    return {
-        mock: mockFn,
-        mockReturnValue: (data: T | undefined, isLoading = false, error: Error | null = null) => mockApiHook(mockFn, data, isLoading, error)
-    };
-};
-
-/**
- * Utility to create loading state mocks
- */
-export const createLoadingMock = <T>(mockFn: any): UseQueryResult<T> => mockApiHook<T>(mockFn, undefined, true, null);
-
-/**
- * Utility to create error state mocks
- */
-export const createErrorMock = <T>(mockFn: any, error: Error): UseQueryResult<T> => mockApiHook<T>(mockFn, undefined, false, error);
-
-/**
- * Utility to create success state mocks
- */
-export const createSuccessMock = <T>(mockFn: any, data: T): UseQueryResult<T> => mockApiHook<T>(mockFn, data, false, null);
-
-/**
  * Simplified mock utilities for common API hook states
  * These provide cleaner, more readable alternatives to mockApiHook for standard scenarios
  */
@@ -101,7 +74,7 @@ export const mockLoading = <T>(mockFn: any): UseQueryResult<T> => mockApiHook<T>
 
 /**
  * Mock an API hook in success state with data
- * @param mockFn The mock function to configure  
+ * @param mockFn The mock function to configure
  * @param data The data to return
  * @returns The configured mock result
  */
@@ -160,48 +133,4 @@ export const mockDataFactories = {
             ...metaOverrides
         }
     })
-};
-
-/**
- * Utility to wait for mock function calls in tests
- */
-export const waitForMockCall = async (mockFn: any, timeout = 1000) => {
-    const {waitFor} = await import('@testing-library/react');
-    return waitFor(() => expect(mockFn).toHaveBeenCalled(), {timeout});
-};
-
-/**
- * Utility to wait for specific number of mock function calls
- */
-export const waitForMockCalls = async (mockFn: any, count: number, timeout = 1000) => {
-    const {waitFor} = await import('@testing-library/react');
-    return waitFor(() => expect(mockFn).toHaveBeenCalledTimes(count), {timeout});
-};
-
-/**
- * Utility to reset all mocks in a test suite
- */
-export const resetAllMocks = () => {
-    vi.clearAllMocks();
-};
-
-/**
- * Type-safe mock creation for specific API hooks
- */
-export interface MockApiHookConfig<T> {
-    data?: T;
-    isLoading?: boolean;
-    error?: Error | null;
-}
-
-export const createTypedMockApiHook = <T>() => {
-    const mockFn = vi.fn();
-    
-    return {
-        mock: mockFn,
-        configure: (config: MockApiHookConfig<T>) => mockApiHook(mockFn, config.data, config.isLoading, config.error),
-        mockLoading: () => createLoadingMock<T>(mockFn),
-        mockError: (error: Error) => createErrorMock<T>(mockFn, error),
-        mockSuccess: (data: T) => createSuccessMock<T>(mockFn, data)
-    };
 };

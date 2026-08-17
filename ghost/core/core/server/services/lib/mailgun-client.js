@@ -4,11 +4,11 @@ const logging = require('@tryghost/logging');
 const metrics = require('@tryghost/metrics');
 const errors = require('@tryghost/errors');
 
+const DEFAULT_BATCH_SIZE = 1000;
+
 module.exports = class MailgunClient {
     #config;
     #settings;
-
-    static DEFAULT_BATCH_SIZE = 1000;
 
     constructor({config, settings}) {
         this.#config = config;
@@ -85,9 +85,9 @@ module.exports = class MailgunClient {
                 messageData['v:email-id'] = message.id;
             }
 
-            const tags = ['bulk-email', 'ghost-email'];
-            if (bulkEmailConfig?.mailgun?.tag) {
-                tags.push(bulkEmailConfig.mailgun.tag);
+            const tags = ['ghost-email'];
+            if (Array.isArray(message.tags)) {
+                tags.push(...message.tags);
             }
             messageData['o:tag'] = tags;
 
@@ -393,11 +393,11 @@ module.exports = class MailgunClient {
      * @returns {number}
      */
     getBatchSize() {
-        return this.#config.get('bulkEmail')?.batchSize ?? this.DEFAULT_BATCH_SIZE;
+        return this.#config.get('bulkEmail')?.batchSize ?? DEFAULT_BATCH_SIZE;
     }
 
     /**
-     * Returns the configured target delivery window in seconds
+     * Returns the configured target delivery window in milliseconds
      * Ghost will attempt to deliver emails evenly distributed over this window
      *
      * Defaults to 0 (no delay) if not set

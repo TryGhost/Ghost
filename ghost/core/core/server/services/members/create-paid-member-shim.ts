@@ -7,17 +7,26 @@ interface PaidMemberShim {
 }
 
 /**
- * Build a stand-in "all active paid tiers" member for content gating — NOT a real
- * member. It carries only the `status` and `products` that
+ * Build a stand-in paid member for content gating — NOT a real member. It
+ * carries only the `status` and `products` that
  * `contentGating.checkPostAccess` / `checkGatedBlockAccess` read, letting previews
  * (`member_status=paid`) and gift-link reads reveal gated content without a
- * logged-in member. Single source of truth for this security-sensitive grant.
+ * logged-in member. When a tier slug is supplied the shim has only that tier,
+ * including archived tiers; otherwise it has every active paid tier. Single
+ * source of truth for this security-sensitive grant.
  */
-export async function createPaidMemberShim(): Promise<PaidMemberShim> {
+export async function createPaidMemberShim(tierSlug?: string): Promise<PaidMemberShim> {
     let products: Array<{slug: string}> = [];
     try {
-        const paidProducts = await models.Product.findAll({status: 'active', type: 'paid'});
-        products = paidProducts.map((product: {get(key: string): string}) => ({slug: product.get('slug')}));
+        if (tierSlug) {
+            const paidProduct = await models.Product.findOne({slug: tierSlug, type: 'paid'});
+            if (paidProduct) {
+                products = [{slug: paidProduct.get('slug')}];
+            }
+        } else {
+            const paidProducts = await models.Product.findAll({status: 'active', type: 'paid'});
+            products = paidProducts.map((product: {get(key: string): string}) => ({slug: product.get('slug')}));
+        }
     } catch (error) {
         // Fall back to no tiers rather than failing the render — still grants
         // status:paid/members content, just not tier-specific blocks.

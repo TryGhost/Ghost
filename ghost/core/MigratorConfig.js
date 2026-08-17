@@ -2,15 +2,6 @@
  * knex-migrator requires this exact filename in the project root, therefore, linter naming rules are disabled here.
  * @see https://github.com/TryGhost/knex-migrator
  */
-const config = require('./core/shared/config');
-const ghostVersion = require('@tryghost/version');
-
-/**
- * knex-migrator can be used via CLI or within the application
- * when using the CLI, we need to ensure that our global overrides are triggered
- */
-require('./core/server/overrides');
-
 /**
  * Register tsx so that require() can resolve .ts files used in server code.
  *
@@ -25,6 +16,15 @@ try {
         throw err;
     }
 }
+
+const config = require('./core/shared/config');
+const ghostVersion = require('@tryghost/version');
+
+/**
+ * knex-migrator can be used via CLI or within the application
+ * when using the CLI, we need to ensure that our global overrides are triggered
+ */
+require('./core/server/overrides');
 
 module.exports = {
     currentVersion: ghostVersion.safe,

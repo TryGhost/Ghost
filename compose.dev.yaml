@@ -2,7 +2,7 @@ name: ghost-dev
 
 services:
   mysql:
-    image: mysql:8.4.10@sha256:d36d39a64cd12a5c1cc9e6aa2bfb5f8d4c81a2f6586e0a04a9ae13939db02209
+    image: mysql:8.4.11@sha256:b3b90af2a6552ae30c266fdb7d5dd55f3afb72404bb78d37fe8a23eb857fd3fb
     container_name: ghost-dev-mysql
     command: --innodb-buffer-pool-size=1G --innodb-log-buffer-size=500M --innodb-change-buffer-max-size=50 --innodb-flush-log-at-trx_commit=0 --innodb-flush-method=O_DIRECT --log-error-verbosity=1
     ports:
@@ -22,7 +22,7 @@ services:
       start_period: 10s
 
   redis:
-    image: redis:7.0@sha256:352c1fdadc91926edda08f45aeb3f27f37194c2f14101229c0523a11195c96e3
+    image: redis:7.4@sha256:e9b2e45ecd47fbb69b877cf8d045d5cccaaaed52524b6e098b4abe8212994f73
     container_name: ghost-dev-redis
     command: ["redis-server", "--loglevel", "warning"]
     ports:
@@ -40,7 +40,7 @@ services:
       retries: 120
 
   mailpit:
-    image: axllent/mailpit@sha256:956d688cbd13dca36c72d8e94c34d6d1cdf4a005aa6aa4ff6edaaac56c34d8df
+    image: axllent/mailpit@sha256:d5ecbb067db3705fa953d79e1b7f81ef84038df67aba6c52825d8c02a1ea748a
     container_name: ghost-dev-mailpit
     command: ["--quiet"]
     ports:
@@ -62,13 +62,22 @@ services:
     working_dir: /home/ghost/ghost/core
     command: ["pnpm", "dev"]
     volumes:
-      # Keep the runtime workspace graph aligned with the packages installed
-      # by docker/ghost-dev/Dockerfile. Mounting all of ghost/ exposes
-      # ghost/admin, which depends on apps/* and causes pnpm to repair the
-      # workspace before running scripts.
-      - ./ghost/core:/home/ghost/ghost/core
-      - ./ghost/i18n:/home/ghost/ghost/i18n
-      - ./ghost/parse-email-address:/home/ghost/ghost/parse-email-address
+      # Mount the backend source as whole-directory mounts instead of
+      # enumerating each server-graph workspace package. `pnpm dev` runs in
+      # ghost/core, and pnpm's verify-deps-before-run only checks ghost/core's
+      # own dependency closure — which is fully installed in the root
+      # /home/ghost/node_modules baked into the image and never mounted over —
+      # so the non-server packages these dirs also expose (e.g. koenig-lexical)
+      # fall outside that closure and don't trigger a
+      # workspace repair. Because root node_modules is never mounted,
+      # linux-built native modules survive; each package's local node_modules
+      # holds only relative symlinks that re-resolve into the root store.
+      # verify-deps-before-run=false is set below as belt-and-suspenders in
+      # case a future pnpm widens that check back to the whole workspace.
+      - ./ghost:/home/ghost/ghost
+      - ./koenig:/home/ghost/koenig
+      - ./configs:/home/ghost/configs
+      - ./packages:/home/ghost/packages
       # Mount specific content subdirectories to preserve themes/adapters from source
       - ghost-dev-data:/home/ghost/ghost/core/content/data
       - ghost-dev-images:/home/ghost/ghost/core/content/images
@@ -135,7 +144,7 @@ services:
         condition: service_healthy
 
   stripe:
-    image: stripe/stripe-cli:latest@sha256:eb2542f3d5d267a1c574c2d19a88223c1008260a99286ab1a9903517b157902e
+    image: stripe/stripe-cli:latest@sha256:4b7f2994f827ad134185daf180a8b70d7340f24d3614e1d70d2d09bf59b77980
     container_name: ghost-dev-stripe
     entrypoint: ["/entrypoint.sh"]
     profiles: ["stripe"]

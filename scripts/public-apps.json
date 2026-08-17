@@ -1,0 +1,32 @@
+[
+    {
+        "packageName": "@tryghost/portal",
+        "path": "apps/portal",
+        "configKey": "portal"
+    },
+    {
+        "packageName": "@tryghost/sodo-search",
+        "path": "apps/sodo-search",
+        "configKey": "sodoSearch"
+    },
+    {
+        "packageName": "@tryghost/comments-ui",
+        "path": "apps/comments-ui",
+        "configKey": "comments"
+    },
+    {
+        "packageName": "@tryghost/signup-form",
+        "path": "apps/signup-form",
+        "configKey": "signupForm"
+    },
+    {
+        "packageName": "@tryghost/announcement-bar",
+        "path": "apps/announcement-bar",
+        "configKey": "announcementBar"
+    },
+    {
+        "packageName": "@tryghost/admin-toolbar",
+        "path": "apps/admin-toolbar",
+        "configKey": "adminToolbar"
+    }
+]

@@ -6,8 +6,8 @@ const {MemberPageViewEvent} = require('../../shared/events');
 
 // App requires
 const config = require('../../shared/config');
-const storage = require('../../server/adapters/storage');
-const urlUtils = require('../../shared/url-utils');
+const adapterManager = require('../../server/services/adapter-manager').default;
+const urlUtils = require('../../shared/url-utils').default;
 const sitemapHandler = require('../services/sitemap/handler');
 const serveFavicon = require('./routers/serve-favicon');
 const servePublicFiles = require('./routers/serve-public-file');
@@ -69,23 +69,24 @@ module.exports = function setupSiteApp(routerConfig) {
     servePublicFiles(siteApp);
 
     const settingsCache = require('../../shared/settings-cache');
-    const labs = require('../../shared/labs');
     const routing = require('../services/routing');
     const {api} = require('../services/proxy');
     const {createLlmsService} = require('../services/llms/service');
     const {createLlmsHandler} = require('../services/llms/handler');
     const {createLlmsDiscovery} = require('./middleware/llms-discovery');
+    const machinePaymentsService = require('../../server/services/machine-payments');
 
     const llmsService = createLlmsService({
         settingsCache,
-        labs,
         config,
         urlUtils,
         routing,
-        api
+        api,
+        machinePaymentsService
     });
 
     siteApp.set('llmsService', llmsService);
+    siteApp.set('machinePaymentsService', machinePaymentsService);
 
     const llmsHandler = createLlmsHandler({
         llmsService,
@@ -93,14 +94,14 @@ module.exports = function setupSiteApp(routerConfig) {
         settingsCache
     });
 
-    siteApp.use(createLlmsDiscovery({settingsCache, labs}));
+    siteApp.use(createLlmsDiscovery({settingsCache}));
 
     // Serve site images using the storage adapter
-    siteApp.use(STATIC_IMAGE_URL_PREFIX, mw.handleImageSizes, storage.getStorage('images').serve());
+    siteApp.use(STATIC_IMAGE_URL_PREFIX, mw.handleImageSizes, adapterManager.getAdapter('storage:images').serve());
     // Serve site media using the storage adapter
-    siteApp.use(STATIC_MEDIA_URL_PREFIX, storage.getStorage('media').serve());
+    siteApp.use(STATIC_MEDIA_URL_PREFIX, adapterManager.getAdapter('storage:media').serve());
     // Serve site files using the storage adapter
-    siteApp.use(STATIC_FILES_URL_PREFIX, storage.getStorage('files').serve());
+    siteApp.use(STATIC_FILES_URL_PREFIX, adapterManager.getAdapter('storage:files').serve());
 
     // /member/.well-known/* serves files (e.g. jwks.json) so it needs to be mounted before the prettyUrl mw to avoid trailing slashes
     siteApp.use(

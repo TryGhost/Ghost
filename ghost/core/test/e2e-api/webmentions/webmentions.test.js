@@ -7,7 +7,7 @@ const {
 } = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 const assert = require('node:assert/strict');
-const urlUtils = require('../../../core/shared/url-utils');
+const urlUtils = require('../../../core/shared/url-utils').default;
 const nock = require('nock');
 const jobsService = require('../../../core/server/services/mentions-jobs');
 const DomainEvents = require('@tryghost/domain-events');

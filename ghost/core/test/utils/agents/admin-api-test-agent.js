@@ -8,7 +8,8 @@ const roleMap = {
     admin: 1,
     editor: 2,
     author: 3,
-    contributor: 7
+    contributor: 7,
+    superEditor: 9
 };
 
 const getRoleUserFromFixtures = (role) => {
@@ -17,8 +18,8 @@ const getRoleUserFromFixtures = (role) => {
 };
 
 const getUserApiKeyForRole = (role) => {
-    const roleIndex = Object.keys(roleMap).indexOf(role);
-    const {id: apiKeyId, secret: apiKeySecret} = DataGenerator.forKnex.user_api_keys[roleIndex];
+    const userId = DataGenerator.Content.users[roleMap[role]].id;
+    const {id: apiKeyId, secret: apiKeySecret} = DataGenerator.forKnex.user_api_keys.find(apiKey => apiKey.user_id === userId);
     return {apiKeyId, apiKeySecret};
 };
 
@@ -168,6 +169,11 @@ class AdminAPITestAgent extends TestAgent {
 
     async useZapierAdminAPIKey() {
         const {apiKeyId ,apiKeySecret} = await findIntegrationKey('zapier');
+        return this.useToken(apiKeyId, apiKeySecret);
+    }
+
+    async useSelfServeMigrationAdminAPIKey() {
+        const {apiKeyId ,apiKeySecret} = await findIntegrationKey('self-serve-migration');
         return this.useToken(apiKeyId, apiKeySecret);
     }
 }

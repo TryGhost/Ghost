@@ -14,7 +14,7 @@ const limitService = require('../services/limits');
 const mobiledocLib = require('../lib/mobiledoc');
 const lexicalLib = require('../lib/lexical');
 const relations = require('./relations');
-const urlUtils = require('../../shared/url-utils');
+const urlUtils = require('../../shared/url-utils').default;
 const {Tag} = require('./tag');
 const {Newsletter} = require('./newsletter');
 const {BadRequestError} = require('@tryghost/errors');
@@ -950,15 +950,29 @@ Post = ghostBookshelf.Model.extend({
     },
 
     authors: function authors() {
+        // posts_authors.id breaks sort_order ties deterministically (by attach
+        // order); without it MySQL can order tied rows differently per query,
+        // which changes the computed primary_author. See tags() below.
+        // `id` is pivoted in so it is in the SELECT list — the query uses
+        // DISTINCT, which requires ORDER BY columns to be selected.
         return this.belongsToMany('User', 'posts_authors', 'post_id', 'author_id')
-            .withPivot('sort_order')
-            .query('orderBy', 'sort_order', 'ASC');
+            .withPivot(['sort_order', 'id'])
+            .query('orderBy', 'sort_order', 'ASC')
+            .query('orderBy', 'posts_authors.id', 'ASC');
     },
 
     tags: function tags() {
+        // posts_tags.id breaks sort_order ties deterministically (by attach
+        // order). primary_tag is tags[0]-if-public, so a non-deterministic tie
+        // order (which MySQL produces for tags sharing a sort_order) makes the
+        // primary tag — and the post's URL under a {primary_tag} permalink —
+        // depend on the query shape.
+        // `id` is pivoted in so it is in the SELECT list — the query uses
+        // DISTINCT, which requires ORDER BY columns to be selected.
         return this.belongsToMany('Tag', 'posts_tags', 'post_id', 'tag_id')
-            .withPivot('sort_order')
-            .query('orderBy', 'sort_order', 'ASC');
+            .withPivot(['sort_order', 'id'])
+            .query('orderBy', 'sort_order', 'ASC')
+            .query('orderBy', 'posts_tags.id', 'ASC');
     },
 
     mobiledoc_revisions() {
@@ -992,8 +1006,8 @@ Post = ghostBookshelf.Model.extend({
      *     - `slug`: /:slug/
      *     - `published_at`: /:year/:slug
      *     - `author_id`: /:author/:slug, /:primary_author/:slug
-     *     - now, the UrlService pre-generates urls based on the resources
-     *     - you can ask `urlService.getUrlByResourceId(post.id)`
+     *     - now, the UrlService computes urls from the routing config
+     *     - you can ask `urlService.getUrlForResource(post)`
      *
      * ### events
      *   - you call `findAll` with `columns: id`
@@ -1332,7 +1346,16 @@ Post = ghostBookshelf.Model.extend({
     destroy: function destroy(unfilteredOptions) {
         let options = this.filterOptions(unfilteredOptions, 'destroy', {extraAllowedProperties: ['id']});
 
-        const destroyPost = () => {
+        const destroyPost = async () => {
+            // The `comments.in_reply_to_id` references form chains between a post's
+            // comments, which MySQL cannot resolve while cascade-deleting them
+            // alongside `comments.parent_id`. Clear the references first so the
+            // `comments.post_id` cascade delete can do its job
+            await ghostBookshelf.knex('comments')
+                .where('post_id', options.id)
+                .update('in_reply_to_id', null)
+                .transacting(options.transacting);
+
             return ghostBookshelf.Model.destroy.call(this, options);
         };
 

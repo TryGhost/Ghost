@@ -120,7 +120,10 @@ const commentMapper = (model, frame) => {
 
     if (jsonModel.post) {
         // We could use the post mapper here, but we need less field + don't need all the async behavior support
-        url.forPost(jsonModel.post.id, jsonModel.post, frame);
+        // Comments live on pages as well as posts; the URL service routes by
+        // the passed type, so a page typed 'posts' resolves to /404/.
+        const routerType = jsonModel.post.type === 'page' ? 'pages' : 'posts';
+        url.forPost(jsonModel.post.id, jsonModel.post, frame, routerType);
         response.post = _.pick(jsonModel.post, postFields);
 
         // Compute excerpt from custom_excerpt or plaintext (same logic as post serializer)

@@ -11,11 +11,10 @@ class CommentsServiceWrapper {
         const mailer = new GhostMailer();
         const settingsCache = require('../../../shared/settings-cache');
         const urlService = require('../url');
-        const urlUtils = require('../../../shared/url-utils');
+        const urlUtils = require('../../../shared/url-utils').default;
         const membersService = require('../members');
         const db = require('../../data/db');
         const settingsHelpers = require('../settings-helpers');
-        const labs = require('../../../shared/labs');
 
         this.api = new CommentsService({
             config,
@@ -26,8 +25,7 @@ class CommentsServiceWrapper {
             settingsHelpers,
             urlService,
             urlUtils,
-            contentGating: membersService.contentGating,
-            labs
+            contentGating: membersService.contentGating
         });
 
         const stats = new CommentsStats({db});

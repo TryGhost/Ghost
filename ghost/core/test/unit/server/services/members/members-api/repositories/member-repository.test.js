@@ -454,7 +454,11 @@ describe('MemberRepository', function () {
                 }),
                 edit: sinon.stub().resolves({
                     attributes: {},
-                    _previousAttributes: {}
+                    _previousAttributes: {},
+                    // The real _Member.edit resolves a bookshelf model; linkSubscription
+                    // loads relations off it when a subscription cancel flag changes
+                    load: sinon.stub().resolvesThis(),
+                    related: sinon.stub().returns({models: []})
                 })
             };
 
@@ -561,7 +565,11 @@ describe('MemberRepository', function () {
                 }),
                 edit: sinon.stub().resolves({
                     attributes: {},
-                    _previousAttributes: {}
+                    _previousAttributes: {},
+                    // The real _Member.edit resolves a bookshelf model; linkSubscription
+                    // loads relations off it when a subscription cancel flag changes
+                    load: sinon.stub().resolvesThis(),
+                    related: sinon.stub().returns({models: []})
                 })
             };
             MemberPaidSubscriptionEvent = {
@@ -696,6 +704,7 @@ describe('MemberRepository', function () {
             });
 
             sinon.stub(repo, 'getSubscriptionByStripeID').resolves({
+                load: sinon.stub().resolvesThis(),
                 get: sinon.stub().withArgs('offer_id').returns(null)
             });
 
@@ -1036,6 +1045,7 @@ describe('MemberRepository', function () {
 
             // Existing subscription
             sinon.stub(repo, 'getSubscriptionByStripeID').resolves({
+                load: sinon.stub().resolvesThis(),
                 get: sinon.stub().withArgs('offer_id').returns(null)
             });
 
@@ -1333,6 +1343,7 @@ describe('MemberRepository', function () {
             });
 
             sinon.stub(repo, 'getSubscriptionByStripeID').resolves({
+                load: sinon.stub().resolvesThis(),
                 id: 'sub_db_id',
                 get: sinon.stub().callsFake((key) => {
                     if (key === 'offer_id') {
@@ -1380,6 +1391,7 @@ describe('MemberRepository', function () {
             });
 
             sinon.stub(repo, 'getSubscriptionByStripeID').resolves({
+                load: sinon.stub().resolvesThis(),
                 id: 'sub_db_id',
                 get: sinon.stub().callsFake((key) => {
                     if (key === 'offer_id') {
@@ -1426,6 +1438,7 @@ describe('MemberRepository', function () {
             });
 
             sinon.stub(repo, 'getSubscriptionByStripeID').resolves({
+                load: sinon.stub().resolvesThis(),
                 id: 'sub_db_id',
                 get: sinon.stub().callsFake((key) => {
                     if (key === 'offer_id') {
@@ -1490,6 +1503,7 @@ describe('MemberRepository', function () {
             });
 
             sinon.stub(repo, 'getSubscriptionByStripeID').resolves({
+                load: sinon.stub().resolvesThis(),
                 id: 'sub_db_id',
                 get: sinon.stub().callsFake((key) => {
                     if (key === 'offer_id') {
@@ -1552,6 +1566,7 @@ describe('MemberRepository', function () {
             });
 
             sinon.stub(repo, 'getSubscriptionByStripeID').resolves({
+                load: sinon.stub().resolvesThis(),
                 id: 'sub_db_id',
                 get: sinon.stub().callsFake((key) => {
                     if (key === 'offer_id') {
@@ -1620,6 +1635,7 @@ describe('MemberRepository', function () {
             });
 
             sinon.stub(repo, 'getSubscriptionByStripeID').resolves({
+                load: sinon.stub().resolvesThis(),
                 id: 'sub_db_id',
                 get: sinon.stub().callsFake((key) => {
                     if (key === 'offer_id') {
@@ -1687,6 +1703,7 @@ describe('MemberRepository', function () {
             });
 
             sinon.stub(repo, 'getSubscriptionByStripeID').resolves({
+                load: sinon.stub().resolvesThis(),
                 id: 'sub_db_id',
                 get: sinon.stub().callsFake((key) => {
                     if (key === 'offer_id') {
@@ -1953,7 +1970,11 @@ describe('MemberRepository', function () {
                 }),
                 edit: sinon.stub().resolves({
                     attributes: {},
-                    _previousAttributes: {}
+                    _previousAttributes: {},
+                    // The real _Member.edit resolves a bookshelf model; linkSubscription
+                    // loads relations off it when a subscription cancel flag changes
+                    load: sinon.stub().resolvesThis(),
+                    related: sinon.stub().returns({models: []})
                 })
             };
 

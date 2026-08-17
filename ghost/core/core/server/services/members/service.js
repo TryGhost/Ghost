@@ -4,12 +4,12 @@ const tpl = require('@tryghost/tpl');
 const MembersSSR = require('./members-ssr');
 const db = require('../../data/db');
 const MembersConfigProvider = require('./members-config-provider');
-const makeMembersCSVImporter = require('./importer');
+const {makeImporter, makeExporter} = require('./import-export');
+const {resolveInlineThreshold} = require('./import-export/config');
 const MembersStats = require('./stats/members-stats');
 const memberJobs = require('./jobs');
 const logging = require('@tryghost/logging');
-const urlUtils = require('../../../shared/url-utils');
-const labsService = require('../../../shared/labs');
+const urlUtils = require('../../../shared/url-utils').default;
 const settingsCache = require('../../../shared/settings-cache');
 const config = require('../../../shared/config');
 const models = require('../../models');
@@ -46,10 +46,15 @@ const membersStats = new MembersStats({
 let membersApi;
 let verificationTrigger;
 
-const initMembersCSVImporter = ({stripeAPIService}) => {
-    return makeMembersCSVImporter({
-        storagePath: config.getContentPath('data'),
+const buildImporterDeps = ({stripeAPIService}) => {
+    // Required here, not statically: boot builds the custom fields services before this
+    // one (the exporter below relies on the same).
+    const customFields = require('../members-custom-fields');
+    return {
         getTimezone: () => settingsCache.get('timezone'),
+        // A getter rather than a value because the threshold is an operator
+        // setting that can change between requests
+        getInlineThreshold: () => resolveInlineThreshold(config.get('members:importer:inlineThreshold')),
         getMembersRepository: async () => {
             const api = await module.exports.api;
             return api.members;
@@ -75,16 +80,16 @@ const initMembersCSVImporter = ({stripeAPIService}) => {
         },
         getGiftService: () => giftService.service,
         sendEmail: ghostMailer.send.bind(ghostMailer),
-        isSet: flag => labsService.isSet(flag),
         addJob: jobsService.addJob.bind(jobsService),
         knex: db.knex,
         urlFor: urlUtils.urlFor.bind(urlUtils),
-        context: {
-            importer: true
-        },
         stripeAPIService,
-        productRepository: membersApi.productRepository
-    });
+        productRepository: membersApi.productRepository,
+        customFields: {
+            definitions: customFields.definitions,
+            values: customFields.values
+        }
+    };
 };
 
 const initVerificationTrigger = () => {
@@ -132,6 +137,11 @@ module.exports = {
             });
         }
 
+        module.exports.requestIntegrityTokenProvider = new RequestIntegrityTokenProvider({
+            themeSecret: settingsCache.get('theme_session_secret'),
+            tokenDuration: 1000 * 60 * 5
+        });
+
         module.exports.ssr = MembersSSR({
             cookieSecure: urlUtils.isSSL(urlUtils.getSiteUrl()),
             cookieKeys: [settingsCache.get('theme_session_secret')],
@@ -145,10 +155,22 @@ module.exports = {
         }
         module.exports.verificationTrigger = verificationTrigger;
 
-        const membersCSVImporter = initMembersCSVImporter({stripeAPIService: stripeService.api});
-        module.exports.processImport = async (options) => {
-            return await membersCSVImporter.process({...options, verificationTrigger});
-        };
+        const importerDeps = buildImporterDeps({stripeAPIService: stripeService.api});
+        const membersCSVImporter = makeImporter(importerDeps);
+        // The importer takes plain arguments and returns the domain outcome; callers build
+        // the request and shape the response. importCSV decides inline vs deferred by load
+        // (the endpoint); importInline always runs now (the Revue data import). This only
+        // supplies the verification trigger, a members-service internal.
+        module.exports.importCSV = (request) => membersCSVImporter.importCSV(request, verificationTrigger);
+        module.exports.importInline = (request) => membersCSVImporter.importInline(request, verificationTrigger);
+
+        // Constructed here rather than required statically: the exporter needs the
+        // custom fields services, which boot builds before this one.
+        const customFields = require('../members-custom-fields');
+        module.exports.export = makeExporter({
+            definitions: customFields.definitions,
+            values: customFields.values
+        });
 
         if (!env?.startsWith('testing')) {
             const membersMigrationJobName = 'members-migrations';
@@ -184,17 +206,15 @@ module.exports = {
     ssr: null,
     verificationTrigger: null,
 
-    requestIntegrityTokenProvider: new RequestIntegrityTokenProvider({
-        themeSecret: settingsCache.get('theme_session_secret'),
-        tokenDuration: 1000 * 60 * 5
-    }),
+    requestIntegrityTokenProvider: null,
 
     stripeConnect: require('./stripe-connect'),
 
-    processImport: null,
+    importCSV: null,
+    importInline: null,
 
     stats: membersStats,
-    export: require('./exporter/query')
+    export: null
 };
 
 module.exports.middleware = require('./middleware');

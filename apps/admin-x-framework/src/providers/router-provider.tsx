@@ -117,6 +117,7 @@ export function RouterProvider({
                     {children}
                 </NavigationStackProvider>
             ),
+            hydrateFallbackElement: <></>,
             children: routes.map(route => ({
                 ...route,
                 errorElement: route.errorElement || errorElement || <ErrorPage />
@@ -156,7 +157,7 @@ export function useNavigate() {
         }
 
         if (options?.crossApp) {
-            externalNavigate({route: to, isExternal: true});
+            externalNavigate({route: to, isExternal: true, replace: options.replace});
             return;
         }
 
@@ -183,9 +184,24 @@ interface CustomNavigateProps {
 
 export function Navigate({to, replace, state, crossApp}: CustomNavigateProps) {
     const {externalNavigate} = useFramework();
+    const lastExternalNavigation = useRef<{replace?: boolean; to: string} | null>(null);
+
+    useEffect(() => {
+        if (!crossApp) {
+            lastExternalNavigation.current = null;
+            return;
+        }
+
+        const previousNavigation = lastExternalNavigation.current;
+        if (previousNavigation?.to === to && previousNavigation.replace === replace) {
+            return;
+        }
+
+        lastExternalNavigation.current = {replace, to};
+        externalNavigate({route: to, isExternal: true, replace});
+    }, [crossApp, externalNavigate, replace, to]);
 
     if (crossApp) {
-        externalNavigate({route: to, isExternal: true});
         return null;
     }
 

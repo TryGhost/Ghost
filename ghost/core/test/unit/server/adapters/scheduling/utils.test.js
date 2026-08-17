@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
 const fs = require('fs-extra');
 const configUtils = require('../../../../utils/config-utils');
-const schedulingUtils = require('../../../../../core/server/adapters/scheduling/utils');
+const adapterManager = require('../../../../../core/server/services/adapter-manager').default;
 
 const schedulingPath = configUtils.config.getContentPath('adapters') + 'scheduling/';
 describe('Scheduling: utils', function () {
@@ -25,7 +25,7 @@ describe('Scheduling: utils', function () {
 
     describe('success', function () {
         it('create good adapter', function () {
-            const adapter = schedulingUtils.createAdapter();
+            const adapter = adapterManager.getAdapter('scheduling');
             assertExists(adapter);
         });
 
@@ -38,20 +38,23 @@ describe('Scheduling: utils', function () {
                 }
             });
 
-            const jsFile = '' +
-                'var util = require(\'util\');' +
-                'var SchedulingBase = require(\'../../../core/server/adapters/scheduling/scheduling-base\');' +
-                'var AnotherAdapter = function (){ SchedulingBase.call(this); };' +
-                'util.inherits(AnotherAdapter, SchedulingBase);' +
-                'AnotherAdapter.prototype.run = function (){};' +
-                'AnotherAdapter.prototype.schedule = function (){};' +
-                'AnotherAdapter.prototype.reschedule = function (){};' +
-                'AnotherAdapter.prototype.unschedule = function (){};' +
-                'module.exports = AnotherAdapter';
+            const jsFile = `
+                const {SchedulingBase} = require('@tryghost/adapter-base-scheduling');
+
+                module.exports = class AnotherAdapter extends SchedulingBase {
+                    constructor() {
+                        super();
+                    }
+
+                    run() {}
+                    schedule() {}
+                    unschedule() {}
+                }
+            `
 
             fs.writeFileSync(scope.adapter, jsFile);
 
-            const adapter = schedulingUtils.createAdapter();
+            const adapter = adapterManager.getAdapter('scheduling');
             assertExists(adapter);
         });
     });
@@ -59,13 +62,12 @@ describe('Scheduling: utils', function () {
     describe('error', function () {
         it('create with adapter, but missing fn\'s', function () {
             scope.adapter = schedulingPath + 'bad-adapter.js';
-            const jsFile = '' +
-                'var util = require(\'util\');' +
-                'var SchedulingBase = require(\'../../../core/server/adapters/scheduling/SchedulingBase\');' +
-                'var BadAdapter = function (){ SchedulingBase.call(this); };' +
-                'util.inherits(BadAdapter, SchedulingBase);' +
-                'BadAdapter.prototype.schedule = function (){};' +
-                'module.exports = BadAdapter';
+            const jsFile = `
+                const {SchedulingBase} = require('@tryghost/adapter-base-scheduling');
+                module.exports = class BadAdapter extends SchedulingBase {
+                  schedule() {}
+                }
+            `
 
             fs.writeFileSync(scope.adapter, jsFile);
 
@@ -76,7 +78,7 @@ describe('Scheduling: utils', function () {
             });
 
             assert.throws(
-                () => schedulingUtils.createAdapter(),
+                () => adapterManager.getAdapter('scheduling'),
                 (err) => {
                     assertExists(err);
                     assert.equal(err.errorType, 'IncorrectUsageError');

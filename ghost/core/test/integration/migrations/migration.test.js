@@ -91,17 +91,18 @@ describe('Migrations', function () {
         // Custom assertion to wrap all permissions
         function assertCompletePermissions(permissions) {
             // If you have to change this number, please add the relevant `assertHavePermission` checks below
-            assert.equal(permissions.length, 137);
+            assert.equal(permissions.length, 142);
 
             assertHavePermission(permissions, 'Export database', ['Administrator', 'DB Backup Integration']);
             assertHavePermission(permissions, 'Import database', ['Administrator', 'Self-Serve Migration Integration', 'DB Backup Integration']);
             assertHavePermission(permissions, 'Delete all content', ['Administrator', 'DB Backup Integration']);
+            assertHavePermission(permissions, 'Import content', ['Administrator', 'Self-Serve Migration Integration']);
             assertHavePermission(permissions, 'Backup database', ['Administrator', 'DB Backup Integration']);
 
             assertHavePermission(permissions, 'Send mail', ['Administrator', 'Admin Integration']);
 
             assertHavePermission(permissions, 'Browse notifications', ['Administrator', 'Editor', 'Admin Integration', 'Super Editor']);
-            assertHavePermission(permissions, 'Add notifications', ['Administrator', 'Editor', 'Admin Integration', 'Super Editor']);
+            assertHavePermission(permissions, 'Add notifications', ['Administrator', 'Admin Integration']);
             assertHavePermission(permissions, 'Delete notifications', ['Administrator', 'Editor', 'Admin Integration', 'Super Editor']);
 
             assertHavePermission(permissions, 'Browse posts', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration', 'Super Editor']);
@@ -187,6 +188,12 @@ describe('Migrations', function () {
             assertHavePermission(permissions, 'Add labels', ['Administrator', 'Admin Integration', 'Super Editor']);
             assertHavePermission(permissions, 'Delete labels', ['Administrator', 'Admin Integration', 'Super Editor']);
 
+            assertHavePermission(permissions, 'Browse member custom fields', ['Administrator', 'Admin Integration', 'Super Editor']);
+            assertHavePermission(permissions, 'Read member custom fields', ['Administrator', 'Admin Integration', 'Super Editor']);
+            assertHavePermission(permissions, 'Add member custom fields', ['Administrator', 'Admin Integration']);
+            assertHavePermission(permissions, 'Edit member custom fields', ['Administrator', 'Admin Integration']);
+            assertHavePermission(permissions, 'Delete member custom fields', ['Administrator', 'Admin Integration']);
+
             assertHavePermission(permissions, 'Read member signin urls');
             assertHavePermission(permissions, 'Read identities');
             assertHavePermission(permissions, 'Auth Stripe Connect for Members');
@@ -217,8 +224,6 @@ describe('Migrations', function () {
             assertHavePermission(permissions, 'Read newsletters', ['Administrator', 'Editor', 'Author', 'Admin Integration', 'Super Editor']);
             assertHavePermission(permissions, 'Edit newsletters', ['Administrator', 'Admin Integration']);
             assertHavePermission(permissions, 'Add newsletters', ['Administrator', 'Admin Integration']);
-
-            assertHavePermission(permissions, 'Read explore data', ['Administrator', 'Admin Integration', 'Ghost Explore Integration']);
 
             assertHavePermission(permissions, 'Browse comments', ['Administrator', 'Admin Integration', 'Super Editor']);
             assertHavePermission(permissions, 'Read comments', ['Administrator', 'Admin Integration', 'Super Editor']);
@@ -296,18 +301,17 @@ describe('Migrations', function () {
 
                 // Roles
                 assert(roles);
-                assert.equal(roles.length, 11);
+                assert.equal(roles.length, 10);
                 assert.equal(roles.at(0).get('name'), 'Administrator');
                 assert.equal(roles.at(1).get('name'), 'Editor');
                 assert.equal(roles.at(2).get('name'), 'Author');
                 assert.equal(roles.at(3).get('name'), 'Contributor');
                 assert.equal(roles.at(4).get('name'), 'Owner');
                 assert.equal(roles.at(5).get('name'), 'Admin Integration');
-                assert.equal(roles.at(6).get('name'), 'Ghost Explore Integration');
-                assert.equal(roles.at(7).get('name'), 'Self-Serve Migration Integration');
-                assert.equal(roles.at(8).get('name'), 'DB Backup Integration');
-                assert.equal(roles.at(9).get('name'), 'Scheduler Integration');
-                assert.equal(roles.at(10).get('name'), 'Super Editor');
+                assert.equal(roles.at(6).get('name'), 'Self-Serve Migration Integration');
+                assert.equal(roles.at(7).get('name'), 'DB Backup Integration');
+                assert.equal(roles.at(8).get('name'), 'Scheduler Integration');
+                assert.equal(roles.at(9).get('name'), 'Super Editor');
 
                 // Permissions
                 assertCompletePermissions(permissions.toJSON());
