@@ -206,6 +206,9 @@ catalog:
   '@pnpm/releasing.versioning': 1100.2.4
   '@pnpm/workspace.workspace-manifest-reader': 1100.1.5
   execa: 10.0.1
+  remark-cli: 12.0.1
+  remark-validate-links: 13.1.0
+  markdownlint-cli2: 0.23.2
 
 catalogs:
   react17:
