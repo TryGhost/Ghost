@@ -2,8 +2,7 @@ import {faker} from '@faker-js/faker';
 // @ts-expect-error This module currently lacks type definitions.
 import {slugify} from '@tryghost/string';
 import type {Knex} from 'knex';
-// @ts-expect-error This module currently lacks type definitions.
-import TableImporter from './table-importer';
+import {TableImporter} from './table-importer';
 // @ts-expect-error This module currently lacks type definitions.
 import {blogStartDate} from '../utils/blog-info';
 // @ts-expect-error This module currently lacks type definitions.
@@ -27,13 +26,11 @@ const defaultAutomations = [{
     slug: MEMBER_WELCOME_EMAIL_SLUGS.paid
 }];
 
-class AutomationsImporter extends TableImporter {
+class AutomationsImporter extends TableImporter<Automation> {
     static table = 'automations';
     static dependencies: string[] = [];
 
     #generated = 0;
-
-    declare fastFakeObjectId: () => string;
 
     defaultQuantity = 2;
 

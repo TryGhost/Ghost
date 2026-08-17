@@ -1,8 +1,7 @@
 import {faker} from '@faker-js/faker';
 import errors from '@tryghost/errors';
 import type {Knex} from 'knex';
-// @ts-expect-error This module currently lacks type definitions.
-import TableImporter from './table-importer';
+import {TableImporter} from './table-importer';
 // @ts-expect-error This module currently lacks type definitions.
 import dateToDatabaseString from '../utils/database-date';
 
@@ -25,17 +24,12 @@ type AutomationActionRevision = {
     email_clicked_count: number | null;
 };
 
-class AutomationActionRevisionsImporter extends TableImporter {
+class AutomationActionRevisionsImporter extends TableImporter<AutomationActionRevision, AutomationAction> {
     static table = 'automation_action_revisions';
     static dependencies = ['automation_actions'];
 
     #action?: AutomationAction;
     #revisionIndex = 0;
-
-    // TableImporter is JavaScript, so TypeScript cannot infer these inherited members.
-    declare transaction: Knex.Transaction;
-    declare fastFakeObjectId: () => string;
-    declare importForEach: (models: AutomationAction[], amount: number) => Promise<void>;
 
     defaultQuantity = 16;
 

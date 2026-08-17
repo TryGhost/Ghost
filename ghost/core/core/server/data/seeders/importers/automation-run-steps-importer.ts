@@ -1,6 +1,5 @@
 import type {Knex} from 'knex';
-// @ts-expect-error This module currently lacks type definitions.
-import TableImporter from './table-importer';
+import {TableImporter} from './table-importer';
 // @ts-expect-error This module currently lacks type definitions.
 import dateToDatabaseString from '../utils/database-date';
 
@@ -37,14 +36,9 @@ type AutomationRunStep = {
     locked_at: null;
 };
 
-class AutomationRunStepsImporter extends TableImporter {
+class AutomationRunStepsImporter extends TableImporter<AutomationRunStep> {
     static table = 'automation_run_steps';
     static dependencies = ['automation_runs', 'automation_action_revisions', 'automation_action_edges'];
-
-    // TableImporter is JavaScript, so TypeScript cannot infer these inherited members.
-    declare transaction: Knex.Transaction;
-    declare fastFakeObjectId: () => string;
-    declare batchInsert: (data: AutomationRunStep[]) => Promise<void>;
 
     defaultQuantity = 40;
 

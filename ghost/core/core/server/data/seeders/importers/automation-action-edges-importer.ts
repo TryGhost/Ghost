@@ -1,6 +1,5 @@
 import type {Knex} from 'knex';
-// @ts-expect-error This module currently lacks type definitions.
-import TableImporter from './table-importer';
+import {TableImporter} from './table-importer';
 
 type AutomationAction = {
     id: string;
@@ -13,13 +12,9 @@ type AutomationActionEdge = {
     target_action_id: string;
 };
 
-class AutomationActionEdgesImporter extends TableImporter {
+class AutomationActionEdgesImporter extends TableImporter<AutomationActionEdge> {
     static table = 'automation_action_edges';
     static dependencies = ['automation_actions'];
-
-    // TableImporter is JavaScript, so TypeScript cannot infer these inherited members.
-    declare transaction: Knex.Transaction;
-    declare batchInsert: (data: AutomationActionEdge[]) => Promise<void>;
 
     constructor(knex: Knex, transaction: Knex.Transaction) {
         super(AutomationActionEdgesImporter.table, knex, transaction);
