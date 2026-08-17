@@ -16,6 +16,23 @@ Uses an **Ember Bridge** system for smooth migration:
 pnpm dev
 ```
 
+### Labs flag switcher
+
+Toggle Labs feature flags without leaving the screen you're on. Off by default.
+To enable it, add this to your `ghost/core/config.local.json` (gitignored) —
+nodemon picks the change up, so you only need to reload the admin:
+
+```json
+{ "labs": { "devLabsPanel": true } }
+```
+
+A pill appears bottom-right on every admin screen. `Ctrl+Shift+L` opens it,
+`Esc` closes it. Changes apply without a reload and stay in sync with
+Settings → Labs. The flag list comes from `ghost/core/core/shared/labs.js`, so
+new flags appear automatically.
+
+Development only — the code is not included in production builds.
+
 ## Testing
 
 - **Unit tests** (`pnpm test:unit`): Vitest + jsdom, colocated `*.test.ts(x)` files.
