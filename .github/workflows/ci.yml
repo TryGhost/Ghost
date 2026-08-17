@@ -173,9 +173,6 @@ jobs:
               - '.github/workflows/ci.yml'
             core:
               - *shared
-              # Documentation and ownership metadata do not affect Ghost
-              # runtime behaviour, even when they live inside a project root.
-              - '!**/*.md'
               - '!.github/CODEOWNERS'
               - 'ghost/**'
               - '!ghost/core/core/server/data/tinybird/**'
@@ -192,6 +189,10 @@ jobs:
               - '!koenig/kg-unsplash-selector/**'
               - '!koenig/kg-simplemde/**'
               - '!koenig/*/test/**'
+              # Documentation does not affect Ghost runtime behaviour, even
+              # when it lives inside a project root. Keep this after every
+              # positive pattern so micromatch cannot add Markdown files back.
+              - '!**/*.md'
             unit-test-globals:
               - 'vitest.config.mjs'
             core-unit-test-globals:
