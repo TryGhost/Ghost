@@ -6,7 +6,7 @@ const databaseDatePattern = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:\.\d+)?$/;
  * @param {Readonly<Date | string>} date
  * @returns {string}
  */
-function dateToDatabaseString(date) {
+exports.dateToDatabaseString = function dateToDatabaseString(date) {
     if (typeof date === 'string') {
         // SQLite fix when reusing other dates from the db
         return date;
@@ -18,7 +18,7 @@ function dateToDatabaseString(date) {
  * @param {Readonly<Date | string | number>} date
  * @returns {Date}
  */
-dateToDatabaseString.parse = function parseDatabaseDate(date) {
+exports.parse = function parseDatabaseDate(date) {
     if (date instanceof Date) {
         return new Date(date);
     }
@@ -35,11 +35,9 @@ dateToDatabaseString.parse = function parseDatabaseDate(date) {
  * @param {Readonly<Date | string | number>} end
  * @returns {Date}
  */
-dateToDatabaseString.randomBetween = function randomBetween(start, end) {
-    const earliest = dateToDatabaseString.parse(start);
-    const latest = dateToDatabaseString.parse(end);
+exports.randomBetween = function randomBetween(start, end) {
+    const earliest = exports.parse(start);
+    const latest = exports.parse(end);
 
     return latest > earliest ? faker.date.between({from: earliest, to: latest}) : earliest;
 };
-
-module.exports = dateToDatabaseString;

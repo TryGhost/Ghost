@@ -1,6 +1,6 @@
 const {faker} = require('@faker-js/faker');
 const {TableImporter} = require('./table-importer');
-const dateToDatabaseString = require('../utils/database-date');
+const databaseDate = require('../utils/database-date');
 
 class MembersStripeCustomersImporter extends TableImporter {
     static table = 'members_stripe_customers';
@@ -35,7 +35,7 @@ class MembersStripeCustomersImporter extends TableImporter {
             // Only 30% of free members should have a stripe customer = have had a subscription in the past or tried to subscribe
             // The number should increase the older the member is
 
-            const daysSinceMemberCreated = Math.floor((new Date() - dateToDatabaseString.parse(this.model.created_at)) / (1000 * 60 * 60 * 24));
+            const daysSinceMemberCreated = Math.floor((new Date() - databaseDate.parse(this.model.created_at)) / (1000 * 60 * 60 * 24));
             const shouldHaveStripeCustomer = faker.number.int({min: 0, max: 100}) < Math.max(Math.min(daysSinceMemberCreated / 60, 15), 2);
 
             if (!shouldHaveStripeCustomer) {
