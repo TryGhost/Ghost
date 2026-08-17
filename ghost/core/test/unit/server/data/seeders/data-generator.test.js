@@ -132,15 +132,19 @@ describe('Data Generator', function () {
             }, {
                 name: 'automation_action_revisions',
                 quantity: 16
+            }, {
+                name: 'automation_action_edges'
             }]
         });
         await dataGenerator.importData();
 
-        const actions = await db.select('id', 'type').from('automation_actions');
+        const actions = await db.select('id', 'automation_id', 'created_at', 'type').from('automation_actions');
         const revisions = await db.select('action_id', 'wait_hours', 'email_subject', 'email_lexical').from('automation_action_revisions');
+        const edges = await db.select('source_action_id', 'target_action_id').from('automation_action_edges');
 
         assert.equal(actions.length, 8);
         assert.equal(revisions.length, 16);
+        assert.equal(edges.length, 6);
 
         for (const action of actions) {
             const actionRevisions = revisions.filter(revision => revision.action_id === action.id);
@@ -156,6 +160,19 @@ describe('Data Generator', function () {
                 assert.ok(actionRevisions.every(revision => revision.email_lexical !== null));
             }
         }
+
+        const actionsByAutomation = Map.groupBy(actions, action => action.automation_id);
+        const expectedEdges = [...actionsByAutomation.values()].flatMap((automationActions) => {
+            const sortedActions = automationActions.toSorted((first, second) => {
+                return first.created_at.localeCompare(second.created_at) || first.id.localeCompare(second.id);
+            });
+            return sortedActions.slice(1).map((action, index) => ({
+                source_action_id: sortedActions[index].id,
+                target_action_id: action.id
+            }));
+        });
+
+        assert.deepEqual(edges, expectedEdges);
     });
 
     it('Can import explicit offer redemptions', async function () {

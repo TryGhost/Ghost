@@ -2,6 +2,7 @@ module.exports = [
     require('./automations-importer'),
     require('./automation-actions-importer'),
     require('./automation-action-revisions-importer'),
+    require('./automation-action-edges-importer'),
     require('./newsletters-importer'),
     require('./posts-importer'),
     require('./users-importer'),
