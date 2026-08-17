@@ -93,20 +93,19 @@ export const useCanvasViewport = <NodeType extends Node = Node, EdgeType extends
         }
 
         // React Flow applies a new translateExtent to future interactions but does not constrain
-        // the current transform. Clamp it explicitly after the canvas or graph shrinks. Zoom
-        // changes already pass through React Flow's constraint path.
+        // the current transform. Clamp it explicitly after the canvas, graph, or zoom changes.
         const currentViewport = reactFlowInstance.getViewport();
         const nextExtent = getPanTranslateExtent({
             bottom: contentBottom,
             left: contentLeft,
             right: contentRight
-        }, canvasSize, {y: initialViewport.y, zoom: currentViewport.zoom});
+        }, canvasSize, {y: initialViewport.y, zoom});
         const nextViewport = constrainViewport(currentViewport, canvasSize, nextExtent);
 
         if (nextViewport.x !== currentViewport.x || nextViewport.y !== currentViewport.y) {
             void reactFlowInstance.setViewport(nextViewport);
         }
-    }, [canvasSize.height, canvasSize.width, contentBottom, contentLeft, contentRight, initialViewport.y, reactFlowInstance]);
+    }, [canvasSize.height, canvasSize.width, contentBottom, contentLeft, contentRight, initialViewport.y, reactFlowInstance, zoom]);
 
     return {
         measureCanvas,
