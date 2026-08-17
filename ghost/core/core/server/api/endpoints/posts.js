@@ -303,20 +303,12 @@ const controller = {
             method: 'destroy'
         },
         async query(frame) {
-            const postsToDelete = await models.Post.findAll({
-                filter: frame.options.filter,
-                status: 'all',
-                columns: ['status']
-            });
-
-            const allDraft = postsToDelete.length > 0 && postsToDelete.every((post) => {
-                return post.get('status') === 'draft';
-            });
-            if (allDraft) {
+            const result = await postsService.bulkDestroy(frame.options);
+            if (result.allDraft) {
                 frame.setHeader('X-Cache-Invalidate', '');
             }
 
-            return await postsService.bulkDestroy(frame.options);
+            return result;
         }
     },
 

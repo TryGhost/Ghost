@@ -226,20 +226,12 @@ const controller = {
             method: 'destroy'
         },
         async query(frame) {
-            const pagesToDelete = await models.Post.findAll({
-                filter: frame.options.filter,
-                status: 'all',
-                columns: ['status']
-            });
-
-            const allDraft = pagesToDelete.length > 0 && pagesToDelete.every((page) => {
-                return page.get('status') === 'draft';
-            });
-            if (allDraft) {
+            const result = await postsService.bulkDestroy(frame.options);
+            if (result.allDraft) {
                 frame.setHeader('X-Cache-Invalidate', '');
             }
 
-            return await postsService.bulkDestroy(frame.options);
+            return result;
         }
     },
 
