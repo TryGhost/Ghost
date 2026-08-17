@@ -118,6 +118,10 @@ environment and adds the listed tooling:
 Copy [`.env.example`](../../.env.example) to `.env` only when you need an
 optional integration. Never commit credentials or the local `.env` file.
 
+To open Ghost on a phone or another computer, or to exercise HTTPS,
+subdirectory, and separate-Admin URL behaviour, see
+[Testing development URLs and devices](testing-development-urls.md).
+
 ## Data and email
 
 After creating the local owner account, populate a development site with stable

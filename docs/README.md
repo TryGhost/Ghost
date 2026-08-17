@@ -96,6 +96,7 @@ Practice and contributor guides explain how to make and verify changes:
 - [Error handling](practices/error-handling.md)
 - [Internationalization](practices/internationalization.md)
 - [Performance testing](contributing/performance-testing.md)
+- [Testing development URLs and devices](contributing/testing-development-urls.md)
 
 Reference guides provide tables and other information to look up while working
 on Ghost:
