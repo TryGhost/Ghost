@@ -1,3 +1,6 @@
+import {faker} from '@faker-js/faker';
+import errors from '@tryghost/errors';
+import {clamp} from 'lodash';
 import type {Knex} from 'knex';
 import {TableImporter} from './table-importer';
 // @ts-expect-error This module currently lacks type definitions.
@@ -31,7 +34,7 @@ type AutomationRunStep = {
     step_attempts: number;
     started_at: string | null;
     finished_at: string | null;
-    status: 'pending' | 'finished';
+    status: 'pending' | 'finished' | 'failed';
     locked_by: null;
     locked_at: null;
 };
@@ -48,7 +51,7 @@ class AutomationRunStepsImporter extends TableImporter<AutomationRunStep> {
 
     async import(quantity = this.defaultQuantity): Promise<void> {
         const runs = await this.transaction.select('id', 'automation_id', 'created_at').from<AutomationRun>('automation_runs');
-        if (runs.length === 0 || quantity === 0) {
+        if (runs.length === 0) {
             return;
         }
 
@@ -72,9 +75,11 @@ class AutomationRunStepsImporter extends TableImporter<AutomationRunStep> {
 
         const targetActionIds = new Set(edges.map(edge => edge.target_action_id));
         const nextActionBySource = new Map(edges.map(edge => [edge.source_action_id, edge.target_action_id]));
-        const revisionsByAutomation = new Map<string, ActionRevision[]>();
+        const actionCountByAutomation = new Map<string, number>();
+        const actionPathByAutomation = new Map<string, ActionRevision[]>();
 
         for (const revision of latestRevisionByAction.values()) {
+            actionCountByAutomation.set(revision.automation_id, (actionCountByAutomation.get(revision.automation_id) ?? 0) + 1);
             if (targetActionIds.has(revision.action_id)) {
                 continue;
             }
@@ -86,38 +91,50 @@ class AutomationRunStepsImporter extends TableImporter<AutomationRunStep> {
                 const nextActionId = nextActionBySource.get(current.action_id);
                 current = nextActionId ? latestRevisionByAction.get(nextActionId) : undefined;
             }
-            revisionsByAutomation.set(revision.automation_id, path);
+            actionPathByAutomation.set(revision.automation_id, path);
         }
 
         const steps: AutomationRunStep[] = [];
         const stepsPerRun = quantity / runs.length;
+        const fullPathGeneratedForAutomation = new Set<string>();
         let fractionalCarry = 0;
 
         for (const run of runs) {
-            const revisions = revisionsByAutomation.get(run.automation_id) ?? [];
+            const actionPath = actionPathByAutomation.get(run.automation_id) ?? [];
+            const actionCount = actionCountByAutomation.get(run.automation_id) ?? 0;
+            if (actionPath.length === 0) {
+                throw new errors.InternalServerError({message: `Missing action path for automation run: ${run.id}`});
+            }
+            if (actionPath.length !== actionCount) {
+                throw new errors.InternalServerError({message: `Incomplete action path for automation run: ${run.id}`});
+            }
             fractionalCarry += stepsPerRun % 1;
             const extraStep = fractionalCarry >= 1 ? 1 : 0;
             fractionalCarry -= extraStep;
-            const runStepCount = Math.min(Math.floor(stepsPerRun) + extraStep, revisions.length);
+            const requestedStepCount = clamp(Math.floor(stepsPerRun) + extraStep, 1, actionCount);
+            const runStepCount = fullPathGeneratedForAutomation.has(run.automation_id) ? requestedStepCount : actionCount;
+            fullPathGeneratedForAutomation.add(run.automation_id);
             const runCreatedAt = dateToDatabaseString.parse(run.created_at);
+            const lastStepStatus = faker.helpers.arrayElement(['pending', 'finished', 'failed'] as const);
 
             for (let index = 0; index < runStepCount; index += 1) {
                 const createdAt = new Date(runCreatedAt);
                 createdAt.setHours(createdAt.getHours() + index);
                 const createdAtString = dateToDatabaseString(createdAt);
-                const isPending = index === runStepCount - 1;
+                const status = index === runStepCount - 1 ? lastStepStatus : 'finished';
+                const isTerminal = status !== 'pending';
 
                 steps.push({
                     id: this.fastFakeObjectId(),
                     created_at: createdAtString,
                     updated_at: createdAtString,
                     automation_run_id: run.id,
-                    automation_action_revision_id: revisions[index].revision_id,
+                    automation_action_revision_id: actionPath[index].revision_id,
                     ready_at: createdAtString,
-                    step_attempts: isPending ? 0 : 1,
-                    started_at: isPending ? null : createdAtString,
-                    finished_at: isPending ? null : createdAtString,
-                    status: isPending ? 'pending' : 'finished',
+                    step_attempts: isTerminal ? 1 : 0,
+                    started_at: isTerminal ? createdAtString : null,
+                    finished_at: isTerminal ? createdAtString : null,
+                    status,
                     locked_by: null,
                     locked_at: null
                 });
