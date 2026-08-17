@@ -3,7 +3,7 @@ import type {GiftCadence, GiftData, GiftDataInput, GiftStatus} from './gift-sche
 
 export type {GiftCadence, GiftStatus} from './gift-schema';
 
-export type RedeemableCheckFailureReason = 'redeemed' | 'consumed' | 'expired' | 'refunded' | 'paid-member';
+export type RedeemableCheckFailureReason = 'payment-pending' | 'redeemed' | 'consumed' | 'expired' | 'refunded' | 'paid-member';
 export type RedeemableCheckResult =
     | {redeemable: true}
     | {redeemable: false; reason: RedeemableCheckFailureReason};
@@ -29,9 +29,31 @@ export type GiftFromPurchaseData = Pick<GiftDataInput,
     | 'personalMessage'
 >;
 
+export type GiftFromCheckoutData = Pick<GiftDataInput,
+    | 'token'
+    | 'buyerEmail'
+    | 'buyerMemberId'
+    | 'tierId'
+    | 'cadence'
+    | 'duration'
+    | 'currency'
+    | 'amount'
+    | 'buyerName'
+    | 'recipientName'
+    | 'personalMessage'
+>;
+
+export interface CompleteGiftPurchaseData {
+    buyerEmail: string;
+    buyerMemberId: string | null;
+    stripeCheckoutSessionId: string;
+    stripePaymentIntentId: string;
+    purchasedAt?: Date;
+}
+
 export class Gift implements GiftData {
     token: string;
-    buyerEmail: string;
+    buyerEmail: string | null;
     buyerMemberId: string | null;
     buyerName: string | null;
     recipientName: string | null;
@@ -42,12 +64,13 @@ export class Gift implements GiftData {
     duration: number;
     currency: string;
     amount: number;
-    stripeCheckoutSessionId: string;
-    stripePaymentIntentId: string;
+    stripeCheckoutSessionId: string | null;
+    stripePaymentIntentId: string | null;
+    checkoutStartedAt: Date;
     consumesAt: Date | null;
-    expiresAt: Date;
+    expiresAt: Date | null;
     status: GiftStatus;
-    purchasedAt: Date;
+    purchasedAt: Date | null;
     redeemedAt: Date | null;
     consumedAt: Date | null;
     expiredAt: Date | null;
@@ -69,6 +92,7 @@ export class Gift implements GiftData {
         this.amount = data.amount;
         this.stripeCheckoutSessionId = data.stripeCheckoutSessionId;
         this.stripePaymentIntentId = data.stripePaymentIntentId;
+        this.checkoutStartedAt = data.checkoutStartedAt ?? data.purchasedAt ?? new Date();
         this.consumesAt = data.consumesAt;
         this.purchasedAt = data.purchasedAt;
         this.expiresAt = data.expiresAt;
@@ -90,6 +114,7 @@ export class Gift implements GiftData {
             ...data,
             redeemerMemberId: null,
             consumesAt: null,
+            checkoutStartedAt: purchasedAt,
             expiresAt,
             status: 'purchased',
             purchasedAt,
@@ -98,6 +123,54 @@ export class Gift implements GiftData {
             expiredAt: null,
             refundedAt: null,
             consumesSoonReminderSentAt: null
+        });
+    }
+
+    static fromCheckout(data: GiftFromCheckoutData) {
+        return new Gift({
+            ...data,
+            redeemerMemberId: null,
+            stripeCheckoutSessionId: null,
+            stripePaymentIntentId: null,
+            checkoutStartedAt: new Date(),
+            consumesAt: null,
+            expiresAt: null,
+            status: 'payment_pending',
+            purchasedAt: null,
+            redeemedAt: null,
+            consumedAt: null,
+            expiredAt: null,
+            refundedAt: null,
+            consumesSoonReminderSentAt: null
+        });
+    }
+
+    completePurchase(data: CompleteGiftPurchaseData): Gift | null {
+        if (this.status !== 'payment_pending') {
+            return null;
+        }
+
+        const purchasedAt = data.purchasedAt ?? new Date();
+        const expiresAt = new Date(purchasedAt);
+        expiresAt.setDate(expiresAt.getDate() + GIFT_EXPIRY_DAYS);
+
+        return new Gift({
+            ...this,
+            ...data,
+            purchasedAt,
+            expiresAt,
+            status: 'purchased'
+        });
+    }
+
+    bindCheckoutSession(checkoutSessionId: string): Gift | null {
+        if (this.status !== 'payment_pending' || this.stripeCheckoutSessionId !== null) {
+            return null;
+        }
+
+        return new Gift({
+            ...this,
+            stripeCheckoutSessionId: checkoutSessionId
         });
     }
 
@@ -118,6 +191,10 @@ export class Gift implements GiftData {
     }
 
     checkRedeemable(memberStatus: string | null): RedeemableCheckResult {
+        if (this.status === 'payment_pending') {
+            return {redeemable: false, reason: 'payment-pending'};
+        }
+
         if (this.isRedeemed()) {
             return {redeemable: false, reason: 'redeemed'};
         }

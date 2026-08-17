@@ -4,6 +4,7 @@ import type {Knex} from 'knex';
 import {Gift} from './gift';
 import {decodeGiftRow, encodeGift} from './gift-codec';
 import type {GiftCadence, GiftRow} from './gift-schema';
+import {toDatabaseDate} from '../../lib/db-date';
 
 type ParsedNqlFilter = unknown;
 
@@ -57,6 +58,11 @@ export interface FindPendingReminderOptions {
     transacting?: Knex.Transaction;
 }
 
+export interface AbandonedGiftCheckout {
+    id: string;
+    gift: Gift;
+}
+
 export interface GiftRepository {
     existsByCheckoutSessionId(checkoutSessionId: string): Promise<boolean>;
     getById(id: string, options?: RepositoryTransactionOptions): Promise<Gift | null>;
@@ -66,12 +72,14 @@ export interface GiftRepository {
     findPendingExpiration(): Promise<Gift[]>;
     findPendingReminder(options: FindPendingReminderOptions): Promise<Gift[]>;
     findUnsentReminders(): Promise<Gift[]>;
+    findAbandonedCheckouts(cutoff: Date, limit: number): Promise<AbandonedGiftCheckout[]>;
     getActiveByMember(memberId: string, options?: RepositoryTransactionOptions): Promise<Gift | null>;
     getActiveByMembers(memberIds: string[], options?: RepositoryTransactionOptions): Promise<Map<string, Gift>>;
     browsePurchaseEvents(options?: GiftEventBrowseOptions, filter?: ParsedNqlFilter): Promise<GiftEventPage>;
     browseRedemptionEvents(options?: GiftEventBrowseOptions, filter?: ParsedNqlFilter): Promise<GiftEventPage>;
     create(gift: Gift, options?: RepositoryTransactionOptions): Promise<string>;
     update(gift: Gift, options?: RepositoryTransactionOptions): Promise<void>;
+    deletePendingCheckout(id: string, options?: RepositoryTransactionOptions & {startedBefore?: Date}): Promise<boolean>;
     transaction<T>(callback: (transacting: Knex.Transaction) => Promise<T>): Promise<T>;
 }
 
@@ -267,6 +275,22 @@ export class GiftBookshelfRepository implements GiftRepository {
         return collection.models.map(model => this.toGift(model));
     }
 
+    async findAbandonedCheckouts(cutoff: Date, limit: number): Promise<AbandonedGiftCheckout[]> {
+        const collection = await this.model.findAll({
+            filter: `status:payment_pending+checkout_started_at:<='${cutoff.toISOString()}'`,
+            limit
+        } as BookshelfFindOptions & {limit: number});
+
+        return collection.models.map((model) => {
+            const row = model.toJSON();
+            if (!row.id) {
+                throw new errors.InternalServerError({message: 'Pending gift is missing an id'});
+            }
+
+            return {id: row.id, gift: decodeGiftRow(row)};
+        });
+    }
+
     async create(gift: Gift, options: RepositoryTransactionOptions = {}): Promise<string> {
         const created = await this.model.add(this.toRow(gift), options);
         const id = created.toJSON().id;
@@ -293,6 +317,21 @@ export class GiftBookshelfRepository implements GiftRepository {
             patch: true,
             ...options
         });
+    }
+
+    async deletePendingCheckout(id: string, options: RepositoryTransactionOptions & {startedBefore?: Date} = {}): Promise<boolean> {
+        const remove = async (transacting: Knex.Transaction) => {
+            const query = transacting('gifts')
+                .where({id, status: 'payment_pending'});
+
+            if (options.startedBefore) {
+                query.where('checkout_started_at', '<=', toDatabaseDate(options.startedBefore));
+            }
+
+            return await query.del() === 1;
+        };
+
+        return options.transacting ? remove(options.transacting) : this.transaction(remove);
     }
 
     async transaction<T>(callback: (transacting: Knex.Transaction) => Promise<T>): Promise<T> {
@@ -328,7 +367,7 @@ export class GiftBookshelfRepository implements GiftRepository {
         const queryOptions: GiftEventQueryOptions = {
             ...options,
             withRelated: [relation, 'tier'],
-            filter: `${memberIdColumn}:-null+custom:true`,
+            filter: `${memberIdColumn}:-null+${dateColumn}:-null+custom:true`,
             useBasicCount: true,
             mongoTransformer: chainTransformers(
                 replaceCustomFilter,

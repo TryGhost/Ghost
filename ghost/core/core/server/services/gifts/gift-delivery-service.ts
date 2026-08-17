@@ -59,7 +59,7 @@ export class GiftDeliveryService {
         this.deps = deps;
     }
 
-    async createForPurchase({giftId, recipientEmail}: {giftId: string; recipientEmail: string}, options: RepositoryTransactionOptions = {}): Promise<void> {
+    async createForCheckout({giftId, recipientEmail}: {giftId: string; recipientEmail: string}, options: RepositoryTransactionOptions = {}): Promise<string> {
         const delivery: GiftDeliveryData = {
             id: new ObjectID().toHexString(),
             giftId,
@@ -74,13 +74,38 @@ export class GiftDeliveryService {
         };
 
         await this.deps.giftDeliveryRepository.create(delivery, options);
+        return delivery.id;
+    }
 
-        const dispatch = () => DomainEvents.dispatch(SendGiftDeliveryEvent.create({deliveryId: delivery.id}));
+    async createForPurchase({giftId, recipientEmail}: {giftId: string; recipientEmail: string}, options: RepositoryTransactionOptions = {}): Promise<void> {
+        const deliveryId = await this.createForCheckout({giftId, recipientEmail}, options);
+
+        const dispatch = () => DomainEvents.dispatch(SendGiftDeliveryEvent.create({deliveryId}));
         if (options.transacting) {
             options.transacting.executionPromise.then(dispatch, () => {});
         } else {
             dispatch();
         }
+    }
+
+    async dispatchForGift(giftId: string): Promise<string | null> {
+        const delivery = await this.deps.giftDeliveryRepository.getByGiftId(giftId);
+        if (!delivery || delivery.status !== 'pending') {
+            return delivery?.recipientEmail ?? null;
+        }
+
+        DomainEvents.dispatch(SendGiftDeliveryEvent.create({deliveryId: delivery.id}));
+        return delivery.recipientEmail;
+    }
+
+    async recoverPending(limit = 1000): Promise<number> {
+        const deliveries = await this.deps.giftDeliveryRepository.findPendingForPurchasedGifts(limit);
+
+        for (const delivery of deliveries) {
+            DomainEvents.dispatch(SendGiftDeliveryEvent.create({deliveryId: delivery.id}));
+        }
+
+        return deliveries.length;
     }
 
     async cancelPendingForGift(token: string, options: RepositoryTransactionOptions = {}): Promise<boolean> {
@@ -137,7 +162,7 @@ export class GiftDeliveryService {
                 benefits: tier.toJSON().benefits,
                 cadence: gift.cadence,
                 duration: gift.duration,
-                expiresAt: gift.expiresAt
+                expiresAt: gift.expiresAt!
             });
         } catch (err) {
             logging.error(err);
@@ -198,7 +223,7 @@ export class GiftDeliveryService {
             }
 
             const gift = await this.deps.giftRepository.getById(delivery.giftId);
-            if (!gift || gift.status !== 'purchased' || gift.expiresAt.getTime() <= Date.now()) {
+            if (!gift || gift.status !== 'purchased' || !gift.expiresAt || !gift.buyerEmail || gift.expiresAt.getTime() <= Date.now()) {
                 return;
             }
 

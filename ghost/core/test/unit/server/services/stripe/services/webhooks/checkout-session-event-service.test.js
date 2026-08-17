@@ -109,12 +109,33 @@ describe('CheckoutSessionEventService', function () {
 
         it('should call handleGiftEvent if session mode is payment and session metadata ghost_gift is present', async function () {
             const service = createService();
-            const session = {mode: 'payment', metadata: {ghost_gift: 'true'}};
+            const session = {mode: 'payment', payment_status: 'paid', metadata: {ghost_gift: 'true'}};
             const handleGiftEventStub = sinon.stub(service, 'handleGiftEvent');
 
             await service.handleEvent(session);
 
             sinon.assert.calledWith(handleGiftEventStub, session);
+        });
+
+        it('waits for async payment success when a gift checkout is still unpaid', async function () {
+            const service = createService();
+            const session = {mode: 'payment', payment_status: 'unpaid', metadata: {ghost_gift_id: 'gift_123'}};
+            const handleGiftEventStub = sinon.stub(service, 'handleGiftEvent');
+
+            await service.handleEvent(session);
+            sinon.assert.notCalled(handleGiftEventStub);
+
+            await service.handleEvent({...session, payment_status: 'paid'}, 'checkout.session.async_payment_succeeded');
+            sinon.assert.calledOnce(handleGiftEventStub);
+        });
+
+        it('leaves failed async gift payments pending for retention cleanup', async function () {
+            const service = createService();
+            const handleGiftEventStub = sinon.stub(service, 'handleGiftEvent');
+
+            await service.handleEvent({mode: 'payment', metadata: {ghost_gift_id: 'gift_123'}}, 'checkout.session.async_payment_failed');
+
+            sinon.assert.notCalled(handleGiftEventStub);
         });
 
         it('should ignore false gift metadata flags', async function () {
@@ -621,6 +642,29 @@ describe('CheckoutSessionEventService', function () {
     });
 
     describe('handleGiftEvent', function () {
+        it('completes a pre-created gift using only its Stripe metadata identifier', async function () {
+            const service = createService();
+            await service.handleGiftEvent({
+                id: 'cs_test_123',
+                amount_total: 5000,
+                currency: 'usd',
+                customer: 'cust_123',
+                payment_intent: 'pi_test_456',
+                customer_details: {email: 'buyer@example.com'},
+                metadata: {ghost_gift_id: 'gift_123'}
+            });
+
+            sinon.assert.calledOnceWithExactly(giftService.completePurchase, {
+                giftId: 'gift_123',
+                buyerEmail: 'buyer@example.com',
+                stripeCustomerId: 'cust_123',
+                currency: 'usd',
+                amount: 5000,
+                stripeCheckoutSessionId: 'cs_test_123',
+                stripePaymentIntentId: 'pi_test_456'
+            });
+        });
+
         it('calls giftService.completePurchase with session data', async function () {
             const service = createService();
             const session = {

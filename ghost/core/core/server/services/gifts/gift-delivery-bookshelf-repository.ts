@@ -10,6 +10,7 @@ export interface GiftDeliveryRepository {
     getById(id: string, options?: RepositoryTransactionOptions): Promise<GiftDeliveryData | null>;
     getByGiftId(giftId: string, options?: RepositoryTransactionOptions): Promise<GiftDeliveryData | null>;
     getByProviderMessageId(providerMessageId: string): Promise<GiftDeliveryData | null>;
+    findPendingForPurchasedGifts(limit: number): Promise<GiftDeliveryData[]>;
     tryStartDelivery(id: string, now: Date): Promise<GiftDeliveryData | null>;
     markSent(id: string, sentAt: Date, providerMessageId: string | null): Promise<boolean>;
     markFailed(id: string): Promise<boolean>;
@@ -57,6 +58,19 @@ export class GiftDeliveryBookshelfRepository implements GiftDeliveryRepository {
         const model = await this.model.findOne({email_provider_message_id: providerMessageId}, {require: false});
 
         return model ? decodeGiftDeliveryRow(model.toJSON()) : null;
+    }
+
+    async findPendingForPurchasedGifts(limit: number): Promise<GiftDeliveryData[]> {
+        return this.transaction(async (transacting) => {
+            const rows = await transacting('gift_deliveries')
+                .select('gift_deliveries.*')
+                .join('gifts', 'gifts.id', 'gift_deliveries.gift_id')
+                .where('gift_deliveries.status', 'pending')
+                .where('gifts.status', 'purchased')
+                .limit(limit);
+
+            return rows.map(decodeGiftDeliveryRow);
+        });
     }
 
     async tryStartDelivery(id: string, now: Date): Promise<GiftDeliveryData | null> {

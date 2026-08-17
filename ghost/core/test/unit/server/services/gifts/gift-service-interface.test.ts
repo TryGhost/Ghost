@@ -37,6 +37,9 @@ describe('GiftService interface', function () {
             })
         };
         const giftRepository = {
+            create: sinon.stub().resolves('gift_1'),
+            update: sinon.stub().resolves(),
+            deletePendingCheckout: sinon.stub().resolves(true),
             getByToken: sinon.stub().resolves(null),
             getActiveByMember: sinon.stub().resolves(null),
             getActiveByMembers: sinon.stub().resolves(new Map()),
@@ -46,10 +49,17 @@ describe('GiftService interface', function () {
         };
         const checkoutAdapter = {
             getCustomerId: sinon.stub().resolves('cus_123'),
-            createSession: sinon.stub().resolves('https://checkout.stripe.test/session')
+            createSession: sinon.stub().resolves({id: 'cs_123', url: 'https://checkout.stripe.test/session'})
+        };
+        const giftDeliveryService = {
+            createForCheckout: sinon.stub().resolves(),
+            createForPurchase: sinon.stub().resolves(),
+            dispatchForGift: sinon.stub().resolves(null),
+            cancelPendingForGift: sinon.stub().resolves(false)
         };
         const service = new GiftService({
             giftRepository,
+            giftDeliveryService,
             memberRepository: {},
             tiersService: {
                 api: {
@@ -72,12 +82,13 @@ describe('GiftService interface', function () {
             service,
             tier,
             giftRepository,
-            checkoutAdapter
+            checkoutAdapter,
+            giftDeliveryService
         };
     }
 
     it('owns the complete gift checkout decision', async function () {
-        const {service, checkoutAdapter} = createService();
+        const {service, checkoutAdapter, giftRepository} = createService();
 
         const result = await service.startCheckout({
             tierId: 'tier_1',
@@ -108,19 +119,21 @@ describe('GiftService interface', function () {
         assert.equal(plan.amount, 12000);
         assert.equal(plan.currency, 'usd');
         assert.equal(plan.customerId, 'cus_123');
-        assert.equal(plan.metadata.ghost_gift, 'true');
-        assert.equal(plan.metadata.tier_id, 'tier_1');
-        assert.match(plan.metadata.gift_token, /^[A-Za-z0-9]{12}$/);
+        assert.deepEqual(plan.metadata, {ghost_gift_id: 'gift_1'});
+        assert.equal(plan.idempotencyKey, 'gift_1');
+        const createdGift = giftRepository.create.firstCall.firstArg;
+        assert.match(createdGift.token, /^[A-Za-z0-9]{12}$/);
+        assert.equal(createdGift.status, 'payment_pending');
         assert.equal(successUrl.searchParams.get('stripe'), 'gift-purchase-success');
-        assert.equal(successUrl.searchParams.get('gift_token'), plan.metadata.gift_token);
+        assert.equal(successUrl.searchParams.get('gift_token'), createdGift.token);
         assert.equal(successUrl.searchParams.get('gift_tier'), 'tier_1');
         assert.equal(successUrl.searchParams.get('gift_cadence'), 'year');
         assert.equal(successUrl.searchParams.get('gift_duration'), null);
         assert.equal(successUrl.searchParams.get('gift_delivery'), 'link');
     });
 
-    it('validates email delivery and writes only normalized reserved metadata', async function () {
-        const {service, checkoutAdapter} = createService({customizationEnabled: true});
+    it('validates email delivery and keeps recipient PII out of Stripe metadata', async function () {
+        const {service, checkoutAdapter, giftRepository, giftDeliveryService} = createService({customizationEnabled: true});
 
         await service.startCheckout({
             tierId: 'tier_1',
@@ -144,16 +157,20 @@ describe('GiftService interface', function () {
 
         const metadata = checkoutAdapter.createSession.firstCall.firstArg.metadata;
         const successUrl = new URL(checkoutAdapter.createSession.firstCall.firstArg.successUrl);
-        assert.equal(metadata.gift_delivery_method, 'email');
-        assert.equal(metadata.gift_recipient_email, 'recipient@example.com');
-        assert.equal(metadata.gift_recipient_name, 'Recipient');
-        assert.equal(metadata.gift_buyer_name, 'Buyer');
-        assert.equal(metadata.gift_personal_message, 'Enjoy your gift');
+        assert.deepEqual(metadata, {ghost_gift_id: 'gift_1'});
+        const createdGift = giftRepository.create.firstCall.firstArg;
+        assert.equal(createdGift.recipientName, 'Recipient');
+        assert.equal(createdGift.buyerName, 'Buyer');
+        assert.equal(createdGift.personalMessage, 'Enjoy your gift');
+        sinon.assert.calledOnceWithExactly(giftDeliveryService.createForCheckout, {
+            giftId: 'gift_1',
+            recipientEmail: 'recipient@example.com'
+        }, {transacting: 'trx'});
         assert.equal(successUrl.searchParams.get('gift_delivery'), 'email');
     });
 
     it('prefers the checkout buyer name over the authenticated member name', async function () {
-        const {service, checkoutAdapter} = createService({customizationEnabled: true});
+        const {service, giftRepository} = createService({customizationEnabled: true});
 
         await service.startCheckout({
             tierId: 'tier_1',
@@ -171,8 +188,7 @@ describe('GiftService interface', function () {
             }
         });
 
-        const metadata = checkoutAdapter.createSession.firstCall.firstArg.metadata;
-        assert.equal(metadata.gift_buyer_name, 'Mum');
+        assert.equal(giftRepository.create.firstCall.firstArg.buyerName, 'Mum');
     });
 
     it('rejects invalid email delivery input', async function () {
@@ -273,7 +289,7 @@ describe('GiftService interface', function () {
             assert.equal(plan.cadence, 'month');
             assert.equal(plan.duration, duration);
             assert.equal(plan.amount, 1000 * duration);
-            assert.equal(plan.metadata.duration, String(duration));
+            assert.deepEqual(plan.metadata, {ghost_gift_id: 'gift_1'});
             assert.equal(successUrl.searchParams.get('gift_duration'), String(duration));
         });
     }
@@ -400,6 +416,26 @@ describe('GiftService interface', function () {
             {context: 'Offers cannot be applied to gift subscriptions'}
         );
         sinon.assert.notCalled(checkoutAdapter.createSession);
+    });
+
+    it('deletes the pending gift when Stripe session creation fails', async function () {
+        const {service, checkoutAdapter, giftRepository} = createService();
+        checkoutAdapter.createSession.rejects(new Error('Stripe unavailable'));
+
+        await assert.rejects(() => service.startCheckout({
+            tierId: 'tier_1',
+            cadence: 'year',
+            metadata: {},
+            successUrl: 'https://example.com/',
+            buyer: {
+                memberId: null,
+                email: 'buyer@example.com',
+                name: null,
+                isAuthenticated: false
+            }
+        }), /Stripe unavailable/);
+
+        sinon.assert.calledOnceWithExactly(giftRepository.deletePendingCheckout, 'gift_1');
     });
 
     it('returns a stable continuation decision without exposing the Gift entity', async function () {

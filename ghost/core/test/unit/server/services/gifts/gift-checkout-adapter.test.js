@@ -33,6 +33,7 @@ describe('GiftCheckoutAdapter', function () {
     it('translates a stable customer ID into the Stripe customer shape', async function () {
         const {adapter, stripeApi} = createAdapter();
         stripeApi.createGiftCheckoutSession.resolves({
+            id: 'cs_123',
             url: 'https://checkout.stripe.test/session'
         });
 
@@ -40,15 +41,17 @@ describe('GiftCheckoutAdapter', function () {
             amount: 12000,
             currency: 'usd',
             customerId: 'cus_123',
-            customerEmail: null
+            customerEmail: null,
+            idempotencyKey: 'gift_123'
         });
 
-        assert.equal(result, 'https://checkout.stripe.test/session');
+        assert.deepEqual(result, {id: 'cs_123', url: 'https://checkout.stripe.test/session'});
         sinon.assert.calledOnceWithExactly(stripeApi.createGiftCheckoutSession, {
             amount: 12000,
             currency: 'usd',
             customerEmail: null,
-            customer: {id: 'cus_123'}
+            customer: {id: 'cus_123'},
+            idempotencyKey: 'gift_123'
         });
     });
 

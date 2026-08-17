@@ -51,6 +51,7 @@ describe('GiftDeliveryBookshelfRepository (integration)', function () {
             amount: 5000,
             stripe_checkout_session_id: `cs_claim_${giftSequence}`,
             stripe_payment_intent_id: `pi_claim_${giftSequence}`,
+            checkout_started_at: purchasedAt,
             consumes_at: null,
             expires_at: new Date(purchasedAt.getTime() + 365 * 24 * 60 * 60 * 1000),
             status: giftStatus,
@@ -91,6 +92,7 @@ describe('GiftDeliveryBookshelfRepository (integration)', function () {
             amount: 5000,
             stripe_checkout_session_id: `cs_legacy_${giftSequence}`,
             stripe_payment_intent_id: `pi_legacy_${giftSequence}`,
+            checkout_started_at: now,
             consumes_at: null,
             expires_at: new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000),
             status: 'purchased',
@@ -103,7 +105,7 @@ describe('GiftDeliveryBookshelfRepository (integration)', function () {
 
         const decoded = await giftRepository.getByToken(gift.get('token'));
 
-        assert.equal(decoded?.purchasedAt.toISOString(), new Date(gift.get('purchased_at')).toISOString());
+        assert.equal(decoded?.purchasedAt?.toISOString(), new Date(gift.get('purchased_at')).toISOString());
         assert.equal(await deliveryRepository.getByGiftId(gift.id), null);
     });
 
@@ -138,6 +140,50 @@ describe('GiftDeliveryBookshelfRepository (integration)', function () {
         });
 
         assert.equal(await deliveryRepository.tryStartDelivery(delivery.id, startedAt), null);
+    });
+
+    it('finds pending deliveries only after their gift has been purchased', async function () {
+        const purchased = await createPendingEmailGift();
+        await createPendingEmailGift({giftStatus: 'payment_pending'});
+
+        const deliveries = await deliveryRepository.findPendingForPurchasedGifts(100);
+
+        assert.deepEqual(deliveries.map(delivery => delivery.id), [purchased.delivery.id]);
+    });
+
+    it('deletes abandoned pending checkouts with their delivery PII', async function () {
+        giftSequence += 1;
+        const checkoutStartedAt = new Date('2026-06-01T00:00:00.000Z');
+        const gift = await models.Gift.add({
+            token: `pending-cleanup-${giftSequence}`,
+            buyer_email: `buyer-${giftSequence}@example.com`,
+            buyer_name: 'Gift Buyer',
+            recipient_name: 'Gift Recipient',
+            personal_message: 'Private message',
+            tier_id: paidTierId,
+            cadence: 'year',
+            duration: 1,
+            currency: 'usd',
+            amount: 5000,
+            stripe_checkout_session_id: `cs_pending_${giftSequence}`,
+            stripe_payment_intent_id: null,
+            checkout_started_at: checkoutStartedAt,
+            expires_at: null,
+            status: 'payment_pending',
+            purchased_at: null
+        });
+        await models.GiftDelivery.add({
+            gift_id: gift.id,
+            recipient_email: `recipient-${giftSequence}@example.com`,
+            status: 'pending'
+        });
+        const cutoff = new Date('2026-07-01T00:00:00.000Z');
+
+        const candidates = await giftRepository.findAbandonedCheckouts(cutoff, 100);
+        assert.deepEqual(candidates.map(candidate => candidate.id), [gift.id]);
+        assert.equal(await giftRepository.deletePendingCheckout(gift.id, {startedBefore: cutoff}), true);
+        assert.equal(await models.Gift.findOne({id: gift.id}, {require: false}), null);
+        assert.equal(await models.GiftDelivery.findOne({gift_id: gift.id}, {require: false}), null);
     });
 
     it('cancels a pending delivery by gift token', async function () {

@@ -24,6 +24,8 @@ const GIFT_NAME_MAX_LENGTH = 191;
 const GIFT_EMAIL_MAX_LENGTH = 191;
 const GIFT_CHECKOUT_MESSAGE_MAX_LENGTH = 250;
 const GIFT_STORED_MESSAGE_MAX_LENGTH = 500;
+const GIFT_CHECKOUT_RETENTION_DAYS = 30;
+const GIFT_CHECKOUT_CLEANUP_BATCH_SIZE = 1000;
 
 const errorMessages = {
     giftNotFound: 'This gift does not exist.',
@@ -163,9 +165,21 @@ export type GiftPurchaseData = z.input<typeof GiftPurchaseBaseSchema> & (
     | {deliveryMethod?: undefined}
 );
 
+const GiftPaymentCompletionSchema = z.object({
+    giftId: z.string().min(1),
+    buyerEmail: z.string().email().max(GIFT_EMAIL_MAX_LENGTH),
+    stripeCustomerId: z.string().min(1).nullable(),
+    currency: z.string().min(1),
+    amount: z.number().int().nonnegative(),
+    stripeCheckoutSessionId: z.string().min(1),
+    stripePaymentIntentId: z.string().min(1)
+});
+
+export type GiftPaymentCompletionData = z.input<typeof GiftPaymentCompletionSchema>;
+
 interface GiftServiceDeps {
     giftRepository: GiftRepository;
-    giftDeliveryService: Pick<GiftDeliveryService, 'createForPurchase' | 'cancelPendingForGift'>;
+    giftDeliveryService: Pick<GiftDeliveryService, 'createForCheckout' | 'createForPurchase' | 'dispatchForGift' | 'cancelPendingForGift'>;
     memberRepository: MemberRepository;
     tiersService: TiersService;
     giftEmailService: GiftEmailService;
@@ -173,7 +187,7 @@ interface GiftServiceDeps {
     giftReminderScheduler: Pick<GiftReminderScheduler, 'scheduleFor'>;
     checkoutAdapter: {
         getCustomerId(buyer: GiftCheckoutBuyer): Promise<string | null>;
-        createSession(data: GiftCheckoutSession): Promise<string>;
+        createSession(data: GiftCheckoutSession): Promise<{id: string; url: string}>;
     };
     labsService: {
         isSet(flag: string): boolean;
@@ -253,6 +267,7 @@ interface GiftCheckoutSession {
     cancelUrl?: string;
     customerId: string | null;
     customerEmail: string | null;
+    idempotencyKey: string;
 }
 
 export interface GiftRedemption {
@@ -426,33 +441,61 @@ export class GiftService {
             ? await this.deps.checkoutAdapter.getCustomerId(input.buyer)
             : null;
         const buyerName = delivery.buyerName ?? input.buyer.name;
-
-        const url = await this.deps.checkoutAdapter.createSession({
-            amount,
-            currency: tier.currency.toLowerCase(),
-            tierName: tier.name,
+        const gift = Gift.fromCheckout({
+            token,
+            buyerEmail: input.buyer.email,
+            buyerMemberId: input.buyer.isAuthenticated ? input.buyer.memberId : null,
+            buyerName,
+            recipientName: delivery.recipientName,
+            personalMessage: delivery.personalMessage,
+            tierId,
             cadence,
             duration,
-            metadata: {
-                ...input.metadata,
-                ghost_gift: 'true',
-                gift_token: token,
-                tier_id: tierId,
-                cadence,
-                duration: String(duration),
-                gift_delivery_method: delivery.deliveryMethod,
-                gift_recipient_email: delivery.recipientEmail ?? '',
-                gift_recipient_name: delivery.recipientName ?? '',
-                gift_buyer_name: buyerName ?? '',
-                gift_personal_message: delivery.personalMessage ?? ''
-            },
-            successUrl: successUrl.toString(),
-            cancelUrl: input.cancelUrl,
-            customerId,
-            customerEmail: customerId ? null : input.buyer.email
+            currency: tier.currency.toLowerCase(),
+            amount
+        });
+        const giftId = await this.deps.giftRepository.transaction(async (transacting) => {
+            const id = await this.deps.giftRepository.create(gift, {transacting});
+            if (delivery.deliveryMethod === 'email') {
+                await this.deps.giftDeliveryService.createForCheckout({
+                    giftId: id,
+                    recipientEmail: delivery.recipientEmail
+                }, {transacting});
+            }
+            return id;
         });
 
-        return {url};
+        let session: {id: string; url: string};
+        try {
+            session = await this.deps.checkoutAdapter.createSession({
+                amount,
+                currency: tier.currency.toLowerCase(),
+                tierName: tier.name,
+                cadence,
+                duration,
+                metadata: {ghost_gift_id: giftId},
+                successUrl: successUrl.toString(),
+                cancelUrl: input.cancelUrl,
+                customerId,
+                customerEmail: customerId ? null : input.buyer.email,
+                idempotencyKey: giftId
+            });
+        } catch (err) {
+            try {
+                await this.deps.giftRepository.deletePendingCheckout(giftId);
+            } catch (cleanupError) {
+                logging.error(cleanupError, `Failed to clean up gift checkout ${giftId} after Stripe session creation failed`);
+            }
+            throw err;
+        }
+
+        const bound = gift.bindCheckoutSession(session.id);
+        if (!bound) {
+            throw new errors.InternalServerError({message: `Failed to bind checkout session to gift: ${giftId}`});
+        }
+        await this.deps.giftRepository.update(bound);
+
+        return {url: session.url};
     }
 
     private generateToken(): string {
@@ -470,7 +513,65 @@ export class GiftService {
         return token;
     }
 
-    async completePurchase(input: GiftPurchaseData): Promise<boolean> {
+    async completePurchase(input: GiftPurchaseData | GiftPaymentCompletionData): Promise<boolean> {
+        if ('giftId' in input) {
+            return this.completePendingPurchase(input);
+        }
+
+        return this.completeLegacyPurchase(input);
+    }
+
+    private async completePendingPurchase(input: GiftPaymentCompletionData): Promise<boolean> {
+        const parsed = GiftPaymentCompletionSchema.safeParse(input);
+        if (!parsed.success) {
+            const issue = parsed.error.issues[0];
+            throw new errors.ValidationError({
+                message: 'Invalid gift purchase data.',
+                property: issue.path.join('.'),
+                context: issue.message
+            });
+        }
+        const data = parsed.data;
+        const member = data.stripeCustomerId
+            ? await this.deps.memberRepository.get({customer_id: data.stripeCustomerId})
+            : null;
+
+        const completed = await this.deps.giftRepository.transaction(async (transacting) => {
+            const gift = await this.deps.giftRepository.getById(data.giftId, {transacting, forUpdate: true});
+            if (!gift || gift.status !== 'payment_pending') {
+                return null;
+            }
+            if (gift.stripeCheckoutSessionId && gift.stripeCheckoutSessionId !== data.stripeCheckoutSessionId) {
+                throw new errors.ValidationError({message: 'Checkout session does not match gift.'});
+            }
+            if (gift.amount !== data.amount || gift.currency !== data.currency.toLowerCase()) {
+                throw new errors.ValidationError({message: 'Checkout amount does not match gift.'});
+            }
+
+            const purchased = gift.completePurchase({
+                buyerEmail: data.buyerEmail,
+                buyerMemberId: member?.id ?? gift.buyerMemberId,
+                stripeCheckoutSessionId: data.stripeCheckoutSessionId,
+                stripePaymentIntentId: data.stripePaymentIntentId
+            });
+            if (!purchased) {
+                return null;
+            }
+
+            await this.deps.giftRepository.update(purchased, {transacting});
+            return purchased;
+        });
+
+        if (!completed) {
+            return false;
+        }
+
+        const recipientEmail = await this.deps.giftDeliveryService.dispatchForGift(data.giftId);
+        await this.sendPurchaseNotifications(completed, member, recipientEmail);
+        return true;
+    }
+
+    private async completeLegacyPurchase(input: GiftPurchaseData): Promise<boolean> {
         const parsed = GiftPurchaseDataSchema.safeParse(input);
         if (!parsed.success) {
             const issue = parsed.error.issues[0];
@@ -517,22 +618,27 @@ export class GiftService {
             }
         });
 
-        const tier = await this.deps.tiersService.api.read(data.tierId);
+        await this.sendPurchaseNotifications(gift, member, data.recipientEmail);
+        return true;
+    }
+
+    private async sendPurchaseNotifications(gift: Gift, member: MemberModel | null, recipientEmail: string | null): Promise<void> {
+        const tier = await this.deps.tiersService.api.read(gift.tierId);
 
         if (!tier) {
-            throw new errors.NotFoundError({message: `Tier not found: ${data.tierId}`});
+            throw new errors.NotFoundError({message: `Tier not found: ${gift.tierId}`});
         }
 
         try {
             await this.deps.staffServiceEmails.notifyGiftPurchased({
                 name: member?.get('name') ?? null,
-                email: member?.get('email') ?? data.buyerEmail,
+                email: member?.get('email') ?? gift.buyerEmail!,
                 memberId: member?.id ?? null,
-                amount: data.amount,
-                currency: data.currency,
+                amount: gift.amount,
+                currency: gift.currency,
                 tierName: tier.name,
-                cadence: data.cadence,
-                duration: data.duration
+                cadence: gift.cadence,
+                duration: gift.duration
             });
         } catch (err) {
             logging.error('Failed to notify staff of gift purchase', err);
@@ -540,19 +646,17 @@ export class GiftService {
 
         try {
             await this.deps.giftEmailService.sendPurchaseConfirmation({
-                buyerEmail: data.buyerEmail,
-                token: data.token,
+                buyerEmail: gift.buyerEmail!,
+                token: gift.token,
                 tierName: tier.name,
-                cadence: data.cadence,
-                duration: data.duration,
-                expiresAt: gift.expiresAt,
-                recipientEmail: data.recipientEmail
+                cadence: gift.cadence,
+                duration: gift.duration,
+                expiresAt: gift.expiresAt!,
+                recipientEmail
             });
         } catch (err) {
             logging.error('Failed to send gift purchase confirmation email', err);
         }
-
-        return true;
     }
 
     private assertRedeemable(gift: Gift, memberStatus: string | null): Gift {
@@ -560,6 +664,8 @@ export class GiftService {
 
         if (!redeemableCheck.redeemable) {
             switch (redeemableCheck.reason) {
+            case 'payment-pending':
+                throw new errors.NotFoundError({message: tpl(errorMessages.giftNotFound)});
             case 'redeemed':
                 throw new errors.BadRequestError({
                     message: tpl(errorMessages.giftAlreadyRedeemed),
@@ -645,7 +751,7 @@ export class GiftService {
                     tierName: tier.name,
                     cadence: redeemed.cadence,
                     duration: redeemed.duration,
-                    buyerEmail: redeemed.buyerEmail
+                    buyerEmail: redeemed.buyerEmail!
                 });
             } catch (err) {
                 logging.error('Failed to notify staff of gift redemption', err);
@@ -780,7 +886,7 @@ export class GiftService {
     async getPreview(token: string): Promise<GiftPreview | null> {
         const gift = await this.deps.giftRepository.getByToken(token);
 
-        if (!gift) {
+        if (!gift || gift.status === 'payment_pending') {
             return null;
         }
 
@@ -1022,6 +1128,20 @@ export class GiftService {
         return {expiredCount};
     }
 
+    async processAbandonedCheckouts(): Promise<{deletedCount: number}> {
+        const cutoff = new Date(Date.now() - GIFT_CHECKOUT_RETENTION_DAYS * MS_PER_DAY);
+        const candidates = await this.deps.giftRepository.findAbandonedCheckouts(cutoff, GIFT_CHECKOUT_CLEANUP_BATCH_SIZE);
+        let deletedCount = 0;
+
+        for (const {id} of candidates) {
+            if (await this.deps.giftRepository.deletePendingCheckout(id, {startedBefore: cutoff})) {
+                deletedCount += 1;
+            }
+        }
+
+        return {deletedCount};
+    }
+
     async processReminders(): Promise<{remindedCount: number; skippedCount: number; failedCount: number}> {
         const now = new Date();
         const toRemind = await this.deps.giftRepository.findPendingReminder({
@@ -1155,7 +1275,7 @@ export class GiftService {
             buyer_name: gift.buyerName,
             recipient_name: gift.recipientName,
             message: gift.personalMessage,
-            expires_at: gift.expiresAt,
+            expires_at: gift.expiresAt!,
             consumes_at: gift.consumesAt,
             tier: {
                 id: tierJSON.id,

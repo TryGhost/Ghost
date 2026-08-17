@@ -67,6 +67,7 @@ function extractGiftToken(input) {
 const RESERVED_CHECKOUT_METADATA_KEYS = new Set([
     'ghost_donation',
     'ghost_gift',
+    'ghost_gift_id',
     'ghostSignupContext',
     'gift_token',
     'gift_delivery_method',

@@ -138,6 +138,15 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
     });
 
     DomainEvents.subscribe(StartGiftCleanupEvent, async () => {
+        const checkoutStart = Date.now();
+        try {
+            const {deletedCount} = await giftService.processAbandonedCheckouts();
+
+            logging.info(`Deleted ${deletedCount} abandoned gift checkouts in ${Date.now() - checkoutStart}ms`);
+        } catch (err) {
+            logging.error(err, 'Failed to clean abandoned gift checkouts');
+        }
+
         const consumedStart = Date.now();
         try {
             const {consumedCount, updatedMemberCount} = await giftService.processConsumed();
@@ -155,7 +164,25 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
         } catch (err) {
             logging.error(err, 'Failed to process expired gifts');
         }
+
+        try {
+            const recoveredCount = await deliveryService!.recoverPending();
+            if (recoveredCount > 0) {
+                logging.info(`Recovered ${recoveredCount} pending gift deliveries during cleanup`);
+            }
+        } catch (err) {
+            logging.error(err, 'Failed to recover pending gift deliveries during cleanup');
+        }
     });
+
+    try {
+        const recoveredCount = await deliveryService.recoverPending();
+        if (recoveredCount > 0) {
+            logging.info(`Recovered ${recoveredCount} pending gift deliveries`);
+        }
+    } catch (err) {
+        logging.error(err, 'Failed to recover pending gift deliveries');
+    }
 
     jobs.scheduleGiftCleanupJob();
     jobs.scheduleGiftReminderJob();

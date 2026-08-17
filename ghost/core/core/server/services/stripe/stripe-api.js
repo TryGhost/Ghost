@@ -711,10 +711,11 @@ module.exports = class StripeAPI {
      * @param {string} options.cancelUrl
      * @param {ICustomer|null} options.customer
      * @param {string} [options.customerEmail]
+     * @param {string} options.idempotencyKey
      *
      * @returns {Promise<ICheckoutSession>}
      */
-    async createGiftCheckoutSession({amount, currency, tierName, cadence, duration, metadata, successUrl, cancelUrl, customer, customerEmail}) {
+    async createGiftCheckoutSession({amount, currency, tierName, cadence, duration, metadata, successUrl, cancelUrl, customer, customerEmail, idempotencyKey}) {
         await this._rateLimitBucket.throttle();
 
         const cadenceLabel = cadence === 'year' ?
@@ -751,7 +752,7 @@ module.exports = class StripeAPI {
         this._applyAutomaticTaxSessionOptions(stripeSessionOptions, {hasCustomer: Boolean(customer)});
 
         // @ts-ignore
-        const session = await this._stripe.checkout.sessions.create(stripeSessionOptions);
+        const session = await this._stripe.checkout.sessions.create(stripeSessionOptions, {idempotencyKey});
 
         return session;
     }

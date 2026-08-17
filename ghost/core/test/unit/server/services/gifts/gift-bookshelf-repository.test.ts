@@ -388,7 +388,7 @@ describe('GiftBookshelfRepository', function () {
 
         sinon.assert.calledOnceWithMatch(GiftModel.findPage, {
             withRelated: ['buyer', 'tier'],
-            filter: 'buyer_member_id:-null+custom:true',
+            filter: 'buyer_member_id:-null+purchased_at:-null+custom:true',
             order: 'purchased_at desc, id desc',
             useBasicCount: true
         });
@@ -440,7 +440,7 @@ describe('GiftBookshelfRepository', function () {
 
         sinon.assert.calledOnceWithMatch(GiftModel.findPage, {
             withRelated: ['redeemer', 'tier'],
-            filter: 'redeemer_member_id:-null+custom:true',
+            filter: 'redeemer_member_id:-null+redeemed_at:-null+custom:true',
             order: 'redeemed_at asc',
             useBasicCount: true
         });

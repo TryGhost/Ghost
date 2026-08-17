@@ -15,7 +15,8 @@ function hasStripeMetadataKey(metadata, key) {
 }
 
 function hasConflictingCheckoutFlowMetadata(metadata) {
-    return hasStripeMetadataKey(metadata, 'ghost_donation') && hasStripeMetadataKey(metadata, 'ghost_gift');
+    const hasGift = hasStripeMetadataKey(metadata, 'ghost_gift') || hasStripeMetadataKey(metadata, 'ghost_gift_id');
+    return hasStripeMetadataKey(metadata, 'ghost_donation') && hasGift;
 }
 
 function getStripeResourceId(resource) {
@@ -66,7 +67,19 @@ module.exports = class CheckoutSessionEventService {
      * Delegates to the appropriate handler based on the session mode and metadata
      * @param {import('stripe').Stripe.Checkout.Session} session
      */
-    async handleEvent(session) {
+    async handleEvent(session, eventType = 'checkout.session.completed') {
+        if (eventType === 'checkout.session.async_payment_failed') {
+            return;
+        }
+
+        const asyncPaymentSucceeded = eventType === 'checkout.session.async_payment_succeeded';
+        if (asyncPaymentSucceeded) {
+            if (session.mode === 'payment' && (session.metadata?.ghost_gift_id || isStripeMetadataTrue(session.metadata?.ghost_gift))) {
+                await this.handleGiftEvent(session);
+            }
+            return;
+        }
+
         if (session.mode === 'setup') {
             await this.handleSetupEvent(session);
         }
@@ -83,7 +96,10 @@ module.exports = class CheckoutSessionEventService {
 
             if (isStripeMetadataTrue(session.metadata?.ghost_donation)) {
                 await this.handleDonationEvent(session);
-            } else if (isStripeMetadataTrue(session.metadata?.ghost_gift)) {
+            } else if (session.metadata?.ghost_gift_id || isStripeMetadataTrue(session.metadata?.ghost_gift)) {
+                if (session.payment_status !== 'paid') {
+                    return;
+                }
                 await this.handleGiftEvent(session);
             }
         }
@@ -95,6 +111,19 @@ module.exports = class CheckoutSessionEventService {
      * @param {import('stripe').Stripe.Checkout.Session} session
      */
     async handleGiftEvent(session) {
+        if (session.metadata?.ghost_gift_id) {
+            await this.deps.giftService.completePurchase({
+                giftId: session.metadata.ghost_gift_id,
+                buyerEmail: session.customer_details?.email,
+                stripeCustomerId: getStripeResourceId(session.customer),
+                currency: session.currency,
+                amount: session.amount_total,
+                stripeCheckoutSessionId: session.id,
+                stripePaymentIntentId: getStripeResourceId(session.payment_intent)
+            });
+            return;
+        }
+
         await this.deps.giftService.completePurchase({
             token: session.metadata?.gift_token,
             buyerEmail: session.customer_details?.email,

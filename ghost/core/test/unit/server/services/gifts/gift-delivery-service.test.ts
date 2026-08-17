@@ -61,6 +61,7 @@ describe('GiftDeliveryService', function () {
             getById: sinon.stub().resolves(null),
             getByGiftId: sinon.stub().resolves(null),
             getByProviderMessageId: sinon.stub().resolves(null),
+            findPendingForPurchasedGifts: sinon.stub().resolves([]),
             tryStartDelivery: sinon.stub().resolves(buildGiftDelivery({status: 'sending'})),
             markSent: sinon.stub().resolves(true),
             markFailed: sinon.stub().resolves(true),
@@ -100,6 +101,18 @@ describe('GiftDeliveryService', function () {
 
     afterEach(function () {
         sinon.restore();
+    });
+
+    it('re-dispatches pending deliveries for purchased gifts at boot', async function () {
+        giftDeliveryRepository.findPendingForPurchasedGifts.resolves([
+            buildGiftDelivery({id: 'delivery_1'}),
+            buildGiftDelivery({id: 'delivery_2'})
+        ]);
+        const service = createService();
+
+        assert.equal(await service.recoverPending(), 2);
+        assert.deepEqual(dispatchDelivery.firstCall.firstArg.data, {deliveryId: 'delivery_1'});
+        assert.deepEqual(dispatchDelivery.secondCall.firstArg.data, {deliveryId: 'delivery_2'});
     });
 
     it('creates a pending email delivery and dispatches it after the purchase transaction commits', async function () {
