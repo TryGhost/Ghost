@@ -14,9 +14,10 @@ class EmailBatchesImporter extends TableImporter {
         const emails = await this.transaction.select('id', 'created_at', 'email_count').from('emails');
 
         // 1 batch per 1000 recipients
-        await this.importForEach(emails, quantity ?? (() => {
+        const amount = typeof quantity === 'number' ? Math.ceil(quantity / emails.length) : () => {
             return Math.ceil(this.model.email_count / 1000);
-        }));
+        };
+        await this.importForEach(emails, amount);
     }
 
     generate() {
