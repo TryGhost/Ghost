@@ -6,14 +6,13 @@ import type {AutomationDetail, AutomationEmailStats, InsertActionAnchor} from '@
 import {insertSendEmailAction, insertWaitAction, removeAction, updateSendEmailAction, updateWaitAction} from '@tryghost/admin-x-framework/api/automations';
 import {Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Input, Popover, PopoverContent, PopoverTrigger, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
-import {DEFAULT_TRIGGER_CONFIG, type TriggerConfig, triggerSummary} from '@/automations/proto/shared/trigger-config';
+import {DEFAULT_TRIGGER_CONFIG, type TriggerConfig, availableCriteria, triggerSummary} from '@/automations/proto/shared/trigger-config';
 import {EDGE_STROKE, REACT_FLOW_THEME, REGULAR_NODE_HEIGHT, TAIL_NODE_HEIGHT, TRIGGER_SUMMARY_HEIGHT, type StepKind, formatWait, orderActions, panTranslateExtent, stackNodeY, stepKindIcon, useCenteredColumn} from './flow-utils';
 import {EmailAnalyticsSheet, type SheetEmail} from './email-analytics-sheet';
 import {EmailStatsFooter} from './email-analytics';
 import {NODE_BODY_PADDING, NodeCard, NodeHeader} from './flow-node-shell';
-import {NodeAnchor, NodePopover} from './node-popover';
 import {EmailPreview} from './email-preview';
-import {GoalsForm, TriggerFieldsForm} from './trigger-config-form';
+import {TriggerFieldsForm} from './trigger-config-form';
 
 // The real editor's StepPicker speaks 'send_email' | 'wait'; the proto's graph
 // helpers here take 'email' | 'wait'.
@@ -31,14 +30,21 @@ const waitToHours = (amount: number, unit: 'days' | 'hours'): number => (unit ==
 const EMAIL_FORM_HEIGHT = 330;
 const WAIT_FORM_HEIGHT = 112;
 
-// The trigger card grows once the paid trigger discloses its "Paid tiers" label +
-// tier chips, on top of the trigger select (same single-row shape as the wait form)
-// and the always-present goals row.
-const TRIGGER_TIER_BLOCK = 72;
-const TRIGGER_GOALS_ROW = 50;
-const triggerFormHeight = (config: TriggerConfig): number => (
-    WAIT_FORM_HEIGHT + (config.type === 'paid_subscription_starts' ? TRIGGER_TIER_BLOCK : 0) + TRIGGER_GOALS_ROW
-);
+// The trigger card is the trigger select (same single-row shape as the wait form)
+// plus a labelled block of chips for exit criteria, and another for tiers once the
+// paid trigger discloses it. A block is the gap above it, its label, and one row
+// of chips; exit criteria wrap to a second row once the paid trigger adds its
+// third (and longest) criterion.
+const TRIGGER_FIELD_BLOCK = 84;
+const TRIGGER_CHIP_ROW = 34;
+const triggerFormHeight = (config: TriggerConfig): number => {
+    const paid = config.type === 'paid_subscription_starts';
+    const extraCriteriaRows = availableCriteria(config).length > 2 ? 1 : 0;
+    return WAIT_FORM_HEIGHT
+        + TRIGGER_FIELD_BLOCK
+        + (extraCriteriaRows * TRIGGER_CHIP_ROW)
+        + (paid ? TRIGGER_FIELD_BLOCK : 0);
+};
 
 
 // Dashed circular "insert step" button, matched to the real add-step-edge.
@@ -61,12 +67,6 @@ type StepNodeData = {
     title: string;
     subtitle: string;
     selected: boolean;
-    // Trigger only: the in-canvas goals popover. Open state is owned by the canvas
-    // so it can also raise the node's z-index while the card hangs over the nodes
-    // below it.
-    popoverOpen?: boolean;
-    onTogglePopover?: () => void;
-    onClosePopover?: () => void;
     // Email only: opens the right-hand analytics sheet.
     onOpenAnalytics?: () => void;
     // Trigger node. Without onTriggerConfigChange the summary is read-only (the
@@ -98,7 +98,7 @@ const StepNode: React.FC<NodeProps> = ({data}) => {
         }
     };
     // Header action slot: overflow menu for editable steps. The trigger has no
-    // action — its fields are in the card and its goals row opens the popover.
+    // action — its fields are in the card and its exitCriteria row opens the popover.
     const action = clickable ? (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -114,37 +114,20 @@ const StepNode: React.FC<NodeProps> = ({data}) => {
         </DropdownMenu>
     ) : undefined;
     return (
-        <NodeAnchor>
-            <NodeCard border={d.selected ? 'selected' : 'default'}>
-                <NodeHeader action={action} icon={stepKindIcon[d.kind]} title={d.title} />
-                {isTrigger && (
-                    // The trigger's own fields sit in the card, like every other step's
-                    // form. nodrag/nopan + stopPropagation so using them doesn't pan the
-                    // canvas.
-                    <div className={cn('nodrag nopan cursor-default', NODE_BODY_PADDING)} onClick={e => e.stopPropagation()}>
-                        {configurable && d.onTriggerConfigChange ? (
-                            <>
-                                <TriggerFieldsForm config={triggerConfig} onChange={d.onTriggerConfigChange} />
-                                {/* Goals are a list that grows, so they stay in the popover —
-                                    this row reports the count and opens it. */}
-                                <button
-                                    aria-label="Edit goals"
-                                    className="mt-3 flex w-full items-center justify-between rounded-lg border border-border-default px-3 py-2 text-sm transition-colors hover:bg-muted/40 focus-visible:bg-muted/40 focus-visible:outline-none"
-                                    type="button"
-                                    onClick={d.onTogglePopover}
-                                >
-                                    <span className="text-muted-foreground">Goals</span>
-                                    <span className="flex items-center gap-1 text-muted-foreground tabular-nums">
-                                        {triggerConfig.goals.length}
-                                        <LucideIcon.ChevronRight className="size-4" />
-                                    </span>
-                                </button>
-                            </>
-                        ) : (
-                            <div className="text-sm text-muted-foreground">{triggerSummary(triggerConfig)}</div>
-                        )}
-                    </div>
-                )}
+        <NodeCard border={d.selected ? 'selected' : 'default'}>
+            <NodeHeader action={action} icon={stepKindIcon[d.kind]} title={d.title} />
+            {isTrigger && (
+                // The trigger's own fields sit in the card, like every other step's
+                // form — nothing about the trigger is behind a popover any more.
+                // nodrag/nopan + stopPropagation so using them doesn't pan the canvas.
+                <div className={cn('nodrag nopan cursor-default', NODE_BODY_PADDING)} onClick={e => e.stopPropagation()}>
+                    {configurable && d.onTriggerConfigChange ? (
+                        <TriggerFieldsForm config={triggerConfig} onChange={d.onTriggerConfigChange} />
+                    ) : (
+                        <div className="text-sm text-muted-foreground">{triggerSummary(triggerConfig)}</div>
+                    )}
+                </div>
+            )}
                 {clickable && (
                     // Always-visible inline edit form. nodrag/nopan + stopPropagation so typing
                     // and selecting don't pan the canvas or re-fire node selection.
@@ -192,16 +175,7 @@ const StepNode: React.FC<NodeProps> = ({data}) => {
                         )}
                     </div>
                 )}
-            </NodeCard>
-
-            {/* Goals are a short list, so they stay in-canvas. The email report is
-                not — that opens the right-hand sheet instead. */}
-            {configurable && d.onTriggerConfigChange && d.onClosePopover && (
-                <NodePopover open={Boolean(d.popoverOpen)} title="Goals" onClose={d.onClosePopover}>
-                    <GoalsForm config={triggerConfig} onChange={d.onTriggerConfigChange} />
-                </NodePopover>
-            )}
-        </NodeAnchor>
+        </NodeCard>
     );
 };
 
@@ -283,10 +257,7 @@ interface SurfaceEditCanvasProps {
 export const SurfaceEditCanvas: React.FC<SurfaceEditCanvasProps> = ({draft, onChange, triggerConfig, onTriggerConfigChange}) => {
     const {canvasRef, onInit, size} = useCenteredColumn();
     const [selectedId, setSelectedId] = useState<string | null>(null);
-    // Two separate surfaces: the trigger's goals popover (short list, in-canvas)
-    // and the email analytics sheet (a full report, right-hand). Tracked apart
-    // because they're independent and only the popover needs a raised node.
-    const [goalsOpen, setGoalsOpen] = useState(false);
+    // Which email the right-hand analytics sheet is reporting on.
     const [analyticsActionId, setAnalyticsActionId] = useState<string | null>(null);
     // Email-content dialog, opened from a card's inline "Edit email content" button.
     const [emailDialogOpen, setEmailDialogOpen] = useState(false);
@@ -325,14 +296,8 @@ export const SurfaceEditCanvas: React.FC<SurfaceEditCanvasProps> = ({draft, onCh
                 subtitle: '',
                 selected: false,
                 triggerConfig,
-                onTriggerConfigChange,
-                popoverOpen: goalsOpen,
-                onTogglePopover: () => setGoalsOpen(open => !open),
-                onClosePopover: () => setGoalsOpen(false)
+                onTriggerConfigChange
             },
-            // Raised while its popover is open so the card isn't painted over by the
-            // nodes it hangs in front of.
-            zIndex: goalsOpen ? 1000 : 0,
             draggable: false,
             connectable: false,
             selectable: false
@@ -403,7 +368,7 @@ export const SurfaceEditCanvas: React.FC<SurfaceEditCanvasProps> = ({draft, onCh
         const bottom = ys.length ? ys[ys.length - 1] + heights[heights.length - 1] : 0;
 
         return {nodes: built, edges: builtEdges, contentBottom: bottom};
-    }, [draft, ordered, selectedId, analyticsActionId, goalsOpen, triggerConfig, onTriggerConfigChange]);
+    }, [draft, ordered, selectedId, analyticsActionId, triggerConfig, onTriggerConfigChange]);
 
     const translateExtent = useMemo(
         () => panTranslateExtent(contentBottom, size),
@@ -434,7 +399,7 @@ export const SurfaceEditCanvas: React.FC<SurfaceEditCanvasProps> = ({draft, onCh
                         if (node.type !== 'step') {
                             return;
                         }
-                        // The trigger's fields live in its card and its goals row opens
+                        // The trigger's fields live in its card and its exitCriteria row opens
                         // the popover, so a bare card click does nothing.
                         if (node.id === '__trigger__') {
                             return;
@@ -443,10 +408,7 @@ export const SurfaceEditCanvas: React.FC<SurfaceEditCanvasProps> = ({draft, onCh
                     }}
                     // Doesn't dismiss the analytics sheet — that's a deliberate read,
                     // closed from its own control or Escape.
-                    onPaneClick={() => {
-                        setSelectedId(null);
-                        setGoalsOpen(false);
-                    }}
+                    onPaneClick={() => setSelectedId(null)}
                 >
                     <Background variant={BackgroundVariant.Dots} />
                 </ReactFlow>

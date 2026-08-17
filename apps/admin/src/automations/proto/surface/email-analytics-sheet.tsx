@@ -10,8 +10,8 @@ import {NodeHeader} from './flow-node-shell';
 // Deliberately NOT the old step sidebar: editing (subject, content, delete) now
 // lives in the node card, so this panel does one thing — a deeper read of how
 // that email performed. It exists because the full report (KPIs, donut, and the
-// top-clicked-links list) is far too much content for an in-canvas popover,
-// which is still the right size for the trigger's goals.
+// top-clicked-links list) is far too much content to sit in a node card or a
+// popover — it's the one thing here that genuinely needs its own surface.
 //
 // Chrome matches the shipped step sidebar (automations/components/canvas/
 // step-sidebar.tsx): an absolutely positioned aside that slides in over the

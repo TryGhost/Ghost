@@ -98,7 +98,7 @@ const FlowStepNode: React.FC<NodeProps> = ({data}) => {
                     </div>
                 ) : (
                     <>
-                        {/* Trigger: what this automation listens for, and how many goals
+                        {/* Trigger: what this automation listens for, and how many criteria
                             end it. Read-only on this canvas. */}
                         {d.kind === 'trigger' && !d.focused && d.summary && (
                             <div className={cn(NODE_BODY_PADDING, 'text-sm text-muted-foreground')}>{d.summary}</div>
