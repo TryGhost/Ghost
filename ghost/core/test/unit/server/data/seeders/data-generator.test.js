@@ -113,6 +113,51 @@ describe('Data Generator', function () {
         await dataGenerator.importData();
     });
 
+    it('Can import automation actions and revisions', async function () {
+        const dataGenerator = new DataGenerator({
+            knex: db,
+            schema,
+            schemaTables,
+            logger: {
+                info: () => { },
+                ok: () => { },
+                warn: () => { }
+            },
+            tables: [{
+                name: 'automations',
+                quantity: 2
+            }, {
+                name: 'automation_actions',
+                quantity: 8
+            }, {
+                name: 'automation_action_revisions',
+                quantity: 16
+            }]
+        });
+        await dataGenerator.importData();
+
+        const actions = await db.select('id', 'type').from('automation_actions');
+        const revisions = await db.select('action_id', 'wait_hours', 'email_subject', 'email_lexical').from('automation_action_revisions');
+
+        assert.equal(actions.length, 8);
+        assert.equal(revisions.length, 16);
+
+        for (const action of actions) {
+            const actionRevisions = revisions.filter(revision => revision.action_id === action.id);
+            assert.equal(actionRevisions.length, 2);
+
+            if (action.type === 'wait') {
+                assert.ok(actionRevisions.every(revision => revision.wait_hours !== null));
+                assert.ok(actionRevisions.every(revision => revision.email_subject === null));
+                assert.ok(actionRevisions.every(revision => revision.email_lexical === null));
+            } else {
+                assert.ok(actionRevisions.every(revision => revision.wait_hours === null));
+                assert.ok(actionRevisions.every(revision => revision.email_subject !== null));
+                assert.ok(actionRevisions.every(revision => revision.email_lexical !== null));
+            }
+        }
+    });
+
     it('Can import explicit offer redemptions', async function () {
         const dataGenerator = new DataGenerator({
             knex: db,
