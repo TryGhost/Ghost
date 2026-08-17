@@ -114,3 +114,5 @@ amount, and payment-provider links.
 For changing this structure, follow the
 [database migrations guide](../practices/database-migrations.md). Keep the
 schema definition, migration, exporter table lists, and integrity tests in sync.
+For initial data and settings defaults, see the
+[schema and default data guide](../../ghost/core/core/server/data/schema/README.md).
