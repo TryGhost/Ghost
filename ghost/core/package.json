@@ -47,6 +47,7 @@
         "dev": "nodemon index.js",
         "build:assets": "pnpm run '/^build:assets:/'",
         "build:assets:js": "node scripts/minify-assets.mjs",
+        "build:assets:cards": "node scripts/build-card-assets.mjs",
         "generate-golden-email": "node bin/generate-golden-email.js",
         "migrate:create": "node bin/create-migration.js",
         "build:assets:css": "postcss core/frontend/public/ghost.css --no-map --use cssnano -o core/frontend/public/ghost.min.css",
@@ -344,21 +345,25 @@
             },
             "test:e2e": {
                 "dependsOn": [
+                    "build:assets",
                     "^build"
                 ]
             },
             "test:integration": {
                 "dependsOn": [
+                    "build:assets",
                     "^build"
                 ]
             },
             "test:legacy": {
                 "dependsOn": [
+                    "build:assets",
                     "^build"
                 ]
             },
             "test:ci:e2e": {
                 "dependsOn": [
+                    "build:assets",
                     "^build"
                 ],
                 "outputs": [
@@ -367,11 +372,13 @@
             },
             "test:ci:legacy": {
                 "dependsOn": [
+                    "build:assets",
                     "^build"
                 ]
             },
             "test:ci:integration": {
                 "dependsOn": [
+                    "build:assets",
                     "^build"
                 ],
                 "outputs": [
