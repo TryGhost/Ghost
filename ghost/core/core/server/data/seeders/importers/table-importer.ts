@@ -3,7 +3,7 @@ import debugFactory from '@tryghost/debug';
 import dateToDatabaseString from '../utils/database-date';
 import path from 'node:path';
 import fs from 'node:fs';
-import {createObjectCsvWriter as createCsvWriter} from 'csv-writer';
+import papaparse from 'papaparse';
 import {luck} from '../utils/random';
 import os from 'node:os';
 import crypto from 'node:crypto';
@@ -107,12 +107,7 @@ export abstract class TableImporter<
                 // Ignore: file doesn't exist
             }
 
-            const csvWriter = createCsvWriter({
-                path: filePath,
-                header: Object.keys(data[0]).map((key) => {
-                    return {id: key, title: key};
-                })
-            });
+            const columns = Object.keys(data[0]);
 
             // Loop the data in chunks of 50.000 items
             const batchSize = 50000;
@@ -135,7 +130,11 @@ export abstract class TableImporter<
                         }
                     }
                 }
-                await csvWriter.writeRecords(slicedData);
+                const csv = papaparse.unparse(slicedData, {
+                    columns,
+                    header: i === 0
+                });
+                await fs.promises.appendFile(filePath, `${i === 0 ? '' : '\n'}${csv}`);
             }
 
             debug(`${this.name} saved CSV import file in ${Date.now() - now}ms`);
