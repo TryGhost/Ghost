@@ -36,7 +36,7 @@ allowBuilds:
   'msw@2.14.6': true
   'nx@23.1.1': true
   'protobufjs@7.6.4': true
-  're2@1.25.0': true
+  're2@1.26.1': true
   'sharp@0.35.3': true
   ssh2: false
 
@@ -100,7 +100,7 @@ catalog:
   '@types/lodash': 4.17.25
   '@types/luxon': 3.7.4
   '@types/jest': 29.5.14
-  '@types/jsdom': 28.0.3
+  '@types/jsdom': 30.0.0
   '@types/nconf': 0.10.7
   '@types/node': 22.20.1
   '@types/react': 18.3.31
@@ -143,7 +143,7 @@ catalog:
   glob: 13.0.6
   globals: 17.7.0
   js-yaml: 4.3.0
-  jsdom: 29.1.1
+  jsdom: 30.0.1
   jsonc-parser: 3.3.1
   knex-migrator: 5.4.1
   lodash: 4.18.1
