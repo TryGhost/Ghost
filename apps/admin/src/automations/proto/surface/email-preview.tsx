@@ -45,7 +45,10 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({subject, editable = f
                                 <LucideIcon.SquarePen />
                             </Button>
                         </TooltipTrigger>
-                        <TooltipContent>Edit email content</TooltipContent>
+                        {/* This preview sits inside a node card, so the canvas can
+                            pan out from under an open tooltip. See the OptionPicker
+                            for why floating content needs "always" here. */}
+                        <TooltipContent updatePositionStrategy="always">Edit email content</TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
             )}

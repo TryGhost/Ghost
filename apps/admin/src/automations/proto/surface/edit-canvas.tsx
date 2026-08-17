@@ -1,11 +1,12 @@
 import '@xyflow/react/dist/style.css';
 import React, {useMemo, useState} from 'react';
-import StepPicker, {type StepPickerType} from '@/automations/components/canvas/step-picker';
+import type {StepPickerType} from '@/automations/components/canvas/step-picker';
 import {Background, BackgroundVariant, BaseEdge, type Edge, EdgeLabelRenderer, type EdgeProps, Handle, type Node, type NodeProps, Position, ReactFlow, getSmoothStepPath} from '@xyflow/react';
 import type {AutomationDetail, AutomationEmailStats, InsertActionAnchor} from '@tryghost/admin-x-framework/api/automations';
 import {insertSendEmailAction, insertWaitAction, removeAction, updateSendEmailAction, updateWaitAction} from '@tryghost/admin-x-framework/api/automations';
-import {Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Input, Popover, PopoverContent, PopoverTrigger, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
+import {Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
+import {OptionPicker, type PickerOption} from '@/automations/proto/shared/option-picker';
 import {DEFAULT_TRIGGER_CONFIG, type TriggerConfig, availableCriteria, triggerSummary} from '@/automations/proto/shared/trigger-config';
 import {EDGE_STROKE, REACT_FLOW_THEME, REGULAR_NODE_HEIGHT, TAIL_NODE_HEIGHT, TRIGGER_SUMMARY_HEIGHT, type StepKind, formatWait, orderActions, panTranslateExtent, stackNodeY, stepKindIcon, useCenteredColumn} from './flow-utils';
 import {EmailAnalyticsSheet, type SheetEmail} from './email-analytics-sheet';
@@ -50,16 +51,26 @@ const triggerFormHeight = (config: TriggerConfig): number => {
 // Dashed circular "insert step" button, matched to the real add-step-edge.
 const INSERT_BUTTON_CLASSES = 'border-dashed border-border-default bg-surface-page text-text-secondary shadow-sm hover:border-border-strong';
 
+// The steps you can add, in the shared icon/title/description shape. Same rows
+// the trigger picker uses, so "what starts this" and "what happens next" are
+// chosen the same way.
+const STEP_PICKER_OPTIONS: PickerOption<StepPickerType>[] = [
+    {value: 'send_email', icon: LucideIcon.Mail, title: 'Email', description: 'Send an email'},
+    {value: 'wait', icon: LucideIcon.Clock, title: 'Wait', description: 'Add a delay before the next step'}
+];
+
 const AddStepPopover: React.FC<{children: React.ReactNode; onPick: (type: StepPickerType) => void; open: boolean; onOpenChange: (open: boolean) => void}> = ({children, onPick, open, onOpenChange}) => (
-    <Popover open={open} onOpenChange={onOpenChange}>
-        <PopoverTrigger asChild>{children}</PopoverTrigger>
-        <PopoverContent align="center" className="border-0 p-0 shadow-lg" side="top" sideOffset={12}>
-            <StepPicker onPick={(type) => {
-                onOpenChange(false);
-                onPick(type);
-            }} />
-        </PopoverContent>
-    </Popover>
+    <OptionPicker
+        align="center"
+        open={open}
+        options={STEP_PICKER_OPTIONS}
+        side="top"
+        sideOffset={12}
+        onOpenChange={onOpenChange}
+        onSelect={onPick}
+    >
+        {children}
+    </OptionPicker>
 );
 
 type StepNodeData = {
@@ -100,13 +111,20 @@ const StepNode: React.FC<NodeProps> = ({data}) => {
     // Header action slot: overflow menu for editable steps. The trigger has no
     // action — its fields are in the card and its exitCriteria row opens the popover.
     const action = clickable ? (
-        <DropdownMenu>
+        // modal={false} — the default wraps the menu in RemoveScroll and kills
+        // outside pointer events, which freezes the canvas underneath it. The
+        // menu is a small aside on one card, not something worth trapping the
+        // whole surface for; the picker is non-modal for the same reason, and so
+        // is the screen's own ⋯ menu.
+        <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
                 <Button aria-label="Step actions" size="icon" variant="ghost">
                     <LucideIcon.MoreHorizontal />
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            {/* "always" so the menu tracks its card when the canvas pans — see the
+                OptionPicker for the full why. */}
+            <DropdownMenuContent align="end" updatePositionStrategy="always">
                 <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => d.onDelete?.()}>
                     <LucideIcon.Trash2 /> Delete
                 </DropdownMenuItem>
@@ -166,7 +184,9 @@ const StepNode: React.FC<NodeProps> = ({data}) => {
                                     <SelectTrigger className="h-9 flex-1">
                                         <SelectValue />
                                     </SelectTrigger>
-                                    <SelectContent>
+                                    {/* Same as the menu above: track the card while
+                                        the canvas moves. */}
+                                    <SelectContent updatePositionStrategy="always">
                                         <SelectItem value="hours">Hours</SelectItem>
                                         <SelectItem value="days">Days</SelectItem>
                                     </SelectContent>
@@ -202,7 +222,7 @@ type PlusEdgeData = {onPick: (type: StepPickerType) => void};
 
 // Connecting line with a hover-revealed circular "+" at its midpoint, matched to
 // the real add-step-edge: the button fades in while the cursor is near the edge
-// (or the picker is open) and opens the shared StepPicker.
+// (or the picker is open) and opens the shared OptionPicker.
 const PlusEdge: React.FC<EdgeProps> = ({id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, data}) => {
     const [open, setOpen] = useState(false);
     const [edgeHovered, setEdgeHovered] = useState(false);

@@ -1,8 +1,9 @@
-import React from 'react';
-import {Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
+import React, {useState} from 'react';
+import {Button, Label} from '@tryghost/shade/components';
 import {Inline, Stack} from '@tryghost/shade/primitives';
-import {cn} from '@tryghost/shade/utils';
-import {EXIT_CRITERIA, TIER_OPTIONS, TRIGGER_OPTIONS, type ExitCriterionId, type TriggerConfig, type TriggerType, availableCriteria, exitCriterion, reconcileCriteria} from '@/automations/proto/shared/trigger-config';
+import {LucideIcon, cn} from '@tryghost/shade/utils';
+import {EXIT_CRITERIA, TIER_OPTIONS, TRIGGER_OPTIONS, type ExitCriterionId, type TriggerConfig, type TriggerType, availableCriteria, exitCriterion, reconcileCriteria, triggerLabel} from '@/automations/proto/shared/trigger-config';
+import {OptionPicker, type PickerOption} from '@/automations/proto/shared/option-picker';
 
 // The trigger's settings, rendered inside the node card alongside every other
 // step's inline form: what starts the automation, which tiers it watches, and
@@ -43,6 +44,14 @@ const ToggleChip: React.FC<{
     </button>
 );
 
+// The trigger list, in the shared icon/title/description shape.
+const TRIGGER_PICKER_OPTIONS: PickerOption<TriggerType>[] = TRIGGER_OPTIONS.map(option => ({
+    value: option.value,
+    icon: option.icon,
+    title: option.label,
+    description: option.description
+}));
+
 interface TriggerConfigFormProps {
     config: TriggerConfig;
     onChange: (next: TriggerConfig) => void;
@@ -51,6 +60,7 @@ interface TriggerConfigFormProps {
 export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({config, onChange}) => {
     const isPaid = config.type === 'paid_subscription_starts';
     const criteria = availableCriteria(config);
+    const [triggerPickerOpen, setTriggerPickerOpen] = useState(false);
 
     // Trigger and tier-scope changes rewrite which criteria exist, so they go
     // through reconcileCriteria rather than setting state directly.
@@ -85,17 +95,25 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({config, onC
         // single row of inputs would, or the card reads as one dense block.
         <Stack gap="xl">
             {/* No label — the card header already says "Trigger", the same way the
-                wait card's header names its duration field. */}
-            <Select value={config.type} onValueChange={value => changeType(value as TriggerType)}>
-                <SelectTrigger className="h-9">
-                    <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                    {TRIGGER_OPTIONS.map(option => (
-                        <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-                    ))}
-                </SelectContent>
-            </Select>
+                wait card's header names its duration field.
+
+                Reads as a select (h-9, full width, chevron) but opens the shared
+                picker, so choosing a trigger and choosing a step are the same
+                act in the same shape. A plain select would have shown two labels
+                a beat apart in meaning with nothing to tell them apart. */}
+            <OptionPicker
+                align="start"
+                open={triggerPickerOpen}
+                options={TRIGGER_PICKER_OPTIONS}
+                value={config.type}
+                onOpenChange={setTriggerPickerOpen}
+                onSelect={changeType}
+            >
+                <Button className="h-9 w-full justify-between px-3 font-normal" type="button" variant="outline">
+                    {triggerLabel(config)}
+                    <LucideIcon.ChevronDown className="opacity-50" />
+                </Button>
+            </OptionPicker>
 
             {/* Only the paid trigger watches tiers at all. */}
             {isPaid && (

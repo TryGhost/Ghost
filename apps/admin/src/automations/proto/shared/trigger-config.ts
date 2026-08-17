@@ -1,3 +1,6 @@
+import type {ElementType} from 'react';
+import {LucideIcon} from '@tryghost/shade/utils';
+
 // Trigger + exit criteria model for the proto. Proto-local on purpose: the
 // framework's AutomationDetail has no trigger config yet, so this lives beside
 // the mock data and is threaded through the canvases as its own prop rather than
@@ -20,9 +23,24 @@ export interface TriggerConfig {
 
 // Narrow list for now — the two triggers the team's proto covers. Adding a third
 // (custom event, leaves audience…) is one entry here plus its criteria below.
-export const TRIGGER_OPTIONS: {value: TriggerType; label: string}[] = [
-    {value: 'member_subscribes', label: 'Member subscribes'},
-    {value: 'paid_subscription_starts', label: 'Paid subscription starts'}
+//
+// Icon and description ride along with the label because the trigger is chosen
+// from the same icon/title/description picker the steps are — the two labels are
+// close enough ("subscribes" vs "paid subscription") that the description is
+// what actually tells them apart.
+export const TRIGGER_OPTIONS: {value: TriggerType; label: string; description: string; icon: ElementType}[] = [
+    {
+        value: 'member_subscribes',
+        label: 'Member subscribes',
+        description: 'Someone signs up as a member',
+        icon: LucideIcon.UserPlus
+    },
+    {
+        value: 'paid_subscription_starts',
+        label: 'Paid subscription starts',
+        description: 'Someone starts a paid subscription',
+        icon: LucideIcon.CreditCard
+    }
 ];
 
 // Proto-only tier fixtures — the mock scenarios carry no tiers. Presented as

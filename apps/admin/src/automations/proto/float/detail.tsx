@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import type {AutomationDetail} from '@tryghost/admin-x-framework/api/automations';
-import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, EmptyIndicator, HoverCard, HoverCardContent, HoverCardTrigger, Popover, PopoverClose, PopoverContent, PopoverTrigger} from '@tryghost/shade/components';
+import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, EmptyIndicator, HoverCard, HoverCardContent, HoverCardTrigger, Popover, PopoverClose, PopoverContent, PopoverTrigger} from '@tryghost/shade/components';
 import {Inline, Stack} from '@tryghost/shade/primitives';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
 import {toast} from 'sonner';
@@ -75,19 +75,20 @@ const StatusControl: React.FC<{status: LiveStatus; onSelect: (next: LiveStatus) 
 };
 
 // One rail button. `active` highlights it while its flyout is open. forwardRef
-// is required (not optional) because the ⋯ button is a DropdownMenuTrigger with
+// is required (not optional) whenever one of these is a Radix trigger with
 // `asChild`, which clones its child and attaches a ref — a plain function
-// component would silently drop it.
+// component would silently drop it. Kept even though no rail button is currently
+// a trigger: the ⋯ menu that was is coming back.
 interface RailButtonProps extends React.ComponentPropsWithoutRef<'button'> {
     icon: React.ElementType;
     label: string;
     active?: boolean;
 }
 
-// `...rest` is essential: when this is a DropdownMenuTrigger with `asChild`,
-// Radix clones it and injects the handlers that actually open the menu
-// (onPointerDown/onKeyDown) plus aria-*/data-state. Forwarding only the ref
-// isn't enough — those props must be spread onto the real <Button> too.
+// `...rest` is essential for the same case: Radix clones the trigger and injects
+// the handlers that actually open the menu (onPointerDown/onKeyDown) plus
+// aria-*/data-state. Forwarding only the ref isn't enough — those props must be
+// spread onto the real <Button> too.
 const RailButton = React.forwardRef<HTMLButtonElement, RailButtonProps>(({icon: Icon, label, active, ...rest}, ref) => (
     <Button
         ref={ref}
@@ -274,7 +275,6 @@ const AutomationFloat: React.FC = () => {
     const [triggerConfig, setTriggerConfig] = useState<TriggerConfig>(DEFAULT_TRIGGER_CONFIG);
     const [publishedTriggerConfig, setPublishedTriggerConfig] = useState<TriggerConfig>(DEFAULT_TRIGGER_CONFIG);
     const [switcherOpen, setSwitcherOpen] = useState(false);
-    const [moreOpen, setMoreOpen] = useState(false);
     // The left pane's search expands into this screen's top strip, where it would
     // otherwise run into the automation title. The pane tells us when that happens.
     const [paneSearchOpen, setPaneSearchOpen] = useState(false);
@@ -498,27 +498,13 @@ const AutomationFloat: React.FC = () => {
                     </div>
                 )}
 
-                {/* Top-right — autosave indicator (while editing), the ⋯ actions menu,
-                    the always-available Edit/Done toggle, then the primary lifecycle
-                    action: Stop while live (high-friction confirm), Start once stopped. */}
+                {/* Top-right — autosave indicator (while editing), the
+                    always-available Edit/Done toggle, then the primary lifecycle
+                    action: Stop while live (high-friction confirm), Start once stopped.
+                    Duplicate/Delete lived here behind a ⋯ menu; they're out of scope
+                    for now and will come back once there's a decision to design. */}
                 <div className="absolute top-4 right-4 z-10 flex items-center gap-3">
                     {showEditCanvas && indicatorText && <span className="text-xs text-muted-foreground">{indicatorText}</span>}
-                    {/* modal={false} so the menu doesn't block pointer events to the rest
-                        of the surface, matching how the analytics flyouts behave. */}
-                    <DropdownMenu modal={false} open={moreOpen} onOpenChange={setMoreOpen}>
-                        <DropdownMenuTrigger asChild>
-                            <RailButton active={moreOpen} icon={LucideIcon.MoreHorizontal} label="More actions" />
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuItem>
-                                <LucideIcon.Copy /> Duplicate
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-destructive focus:text-destructive">
-                                <LucideIcon.Trash2 /> Delete
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
                     {/* Without an edit mode this corner holds two things at most: the
                         draft to settle, when there is one, and the status control —
                         which is the lifecycle button and the status badge collapsed
