@@ -566,6 +566,14 @@ jobs:
       - name: Build TS code
         run: pnpm nx run-many -t build:tsc
 
+      # Boot reads the card asset manifest, which is written at build time. The
+      # test targets declare build:assets in their nx dependsOn (ghost/core's
+      # package.json); this job boots via raw `node index.js`, so there's no
+      # target to inherit it from. Outside the measured command, so it doesn't
+      # affect the series.
+      - name: Build assets
+        run: pnpm --filter ghost run build:assets
+
       - name: Run hyperfine on boot
         working-directory: ghost/core
         run: hyperfine --show-output --warmup 3 'GHOST_CI_SHUTDOWN_AFTER_BOOT=1 node index.js' --export-json boot-perf.json
