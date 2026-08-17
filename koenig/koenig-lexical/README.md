@@ -76,6 +76,9 @@ We use [Vitest](https://vitest.dev) for unit tests and
 end-to-end test suite lives in the repository's top-level
 [`e2e/`](../../e2e/) directory.
 
+Package tests live in `test/unit/` and `test/e2e/`, with shared test helpers in
+`test/utils/`.
+
 - `pnpm test` runs all tests and exits
 - `pnpm test:unit` runs unit tests
 - `pnpm test:unit:watch` runs unit tests and starts a test watcher that re-runs tests on file changes
@@ -88,6 +91,12 @@ end-to-end test suite lives in the repository's top-level
   in watch mode for exploring and re-running acceptance tests
 - `pnpm test:slowmo` runs headed acceptance tests with a 100ms delay between
   instructions (some tests may fail or time out due to the added delays)
+
+The acceptance-test commands use these environment variables:
+
+- `PLAYWRIGHT_HEADED=true` shows the browser UI.
+- `PLAYWRIGHT_HTML_REPORT=true` generates an HTML report.
+- `PLAYWRIGHT_SLOWMO=100` adds a delay in milliseconds between browser actions.
 
 Before tests are started we build a version of the demo app that is used for the unit tests.
 
