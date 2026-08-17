@@ -158,6 +158,7 @@ describe('Data Generator', function () {
 
             if (action.type === 'wait') {
                 assert.ok(actionRevisions.every(revision => revision.wait_hours !== null));
+                assert.ok(actionRevisions.every(revision => revision.wait_hours % 24 === 0));
                 assert.ok(actionRevisions.every(revision => revision.email_subject === null));
                 assert.ok(actionRevisions.every(revision => revision.email_lexical === null));
                 assert.ok(actionRevisions.every(revision => revision.email_design_setting_id === null));

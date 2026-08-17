@@ -84,7 +84,7 @@ class AutomationActionRevisionsImporter extends TableImporter<AutomationActionRe
         case 'wait':
             return {
                 ...common,
-                wait_hours: faker.number.int({min: 1, max: 168}),
+                wait_hours: faker.number.int({min: 1, max: 30}) * 24,
                 email_subject: null,
                 email_lexical: null,
                 email_design_setting_id: null
@@ -93,6 +93,7 @@ class AutomationActionRevisionsImporter extends TableImporter<AutomationActionRe
             if (!this.#emailDesignSettingId) {
                 throw new errors.InternalServerError({message: `Missing email design setting: ${DEFAULT_EMAIL_DESIGN_SETTING_SLUG}`});
             }
+            const emailBody = faker.lorem.sentence();
             return {
                 ...common,
                 wait_hours: null,
@@ -100,7 +101,22 @@ class AutomationActionRevisionsImporter extends TableImporter<AutomationActionRe
                 email_design_setting_id: this.#emailDesignSettingId,
                 email_lexical: JSON.stringify({
                     root: {
-                        children: [],
+                        children: [{
+                            children: [{
+                                detail: 0,
+                                format: 0,
+                                mode: 'normal',
+                                style: '',
+                                text: emailBody,
+                                type: 'text',
+                                version: 1
+                            }],
+                            direction: null,
+                            format: '',
+                            indent: 0,
+                            type: 'paragraph',
+                            version: 1
+                        }],
                         direction: null,
                         format: '',
                         indent: 0,
