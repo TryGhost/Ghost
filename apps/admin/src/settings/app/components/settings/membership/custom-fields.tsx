@@ -1,6 +1,5 @@
 import CustomFieldIcon from '@/shared/member-custom-fields/custom-field-icon';
 import CustomFieldModal from './custom-fields/custom-field-modal';
-import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import TopLevelGroup from '@/settings/app/components/top-level-group';
 import useFeatureFlag from '@/settings/app/hooks/use-feature-flag';
@@ -13,6 +12,7 @@ import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useQueryClient} from '@tryghost/admin-x-framework';
 import {withErrorBoundary} from '@/settings/app/components/error-boundary';
 import type {MemberCustomField} from '@tryghost/admin-x-framework/api/member-custom-fields';
+import {DialogPortal} from '@/settings/app/components/providers/dialog-portal';
 
 // How many fields render before the list collapses behind "Show all" — the
 // recommendations list's preview size.
@@ -189,7 +189,8 @@ const CustomFields: React.FC<{keywords: string[]}> = ({keywords}) => {
         previousCounts.current = {active: activeFields.length, archived: archivedFields.length};
     }, [activeFields.length, archivedFields.length]);
 
-    const openModal = (field?: MemberCustomField) => NiceModal.show(CustomFieldModal, {field});
+    const [editingField, setEditingField] = useState<{field?: MemberCustomField} | null>(null);
+    const openModal = (field?: MemberCustomField) => setEditingField({field});
 
     /**
      * Applied to the whole list rather than the active tab: a reorder names every
@@ -241,6 +242,7 @@ const CustomFields: React.FC<{keywords: string[]}> = ({keywords}) => {
                     <TabsContent value='archived-fields'><FieldList fields={archivedFields} openModal={openModal} showAll={showAllArchived} onShowAll={() => setShowAllArchived(true)} /></TabsContent>
                 </Tabs>
             )}
+            {editingField && <DialogPortal><CustomFieldModal field={editingField.field} onClose={() => setEditingField(null)} /></DialogPortal>}
         </TopLevelGroup>
     );
 };

@@ -1,4 +1,3 @@
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
 import {useCallback, useEffect, useRef, useState} from 'react';
 
@@ -90,15 +89,14 @@ const EmailPreviewBody: React.FC<EmailPreviewBodyProps> = ({children, className}
     </div>
 );
 
-interface WelcomeEmailModalProps {
+export interface WelcomeEmailModalProps {
     emailType: 'free' | 'paid';
     automatedEmail: AutomatedEmail;
 }
 
 type PreviewMode = 'edit' | 'preview';
 
-const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType = 'free', automatedEmail}) => {
-    const modal = useModal();
+const WelcomeEmailModal: React.FC<WelcomeEmailModalProps & {onClose: () => void}> = ({emailType = 'free', automatedEmail, onClose}) => {
     const {settings: globalSettings, config} = useGlobalData();
     const [siteTitle, defaultEmailAddress, supportEmailAddress] = getSettingValues<string>(globalSettings, ['title', 'default_email_address', 'support_email_address']);
     const {updateRoute} = useSettingsNavigation();
@@ -144,10 +142,8 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
     const isDirty = saveState === 'unsaved';
 
     const handleClose = useCallback(() => {
-        confirm(isDirty, () => {
-            modal.remove();
-        });
-    }, [confirm, modal, isDirty]);
+        confirm(isDirty, onClose);
+    }, [confirm, onClose, isDirty]);
 
     const handleSaveRef = useRef(handleSave);
     useEffect(() => {
@@ -216,6 +212,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
             size='full'
             testId='welcome-email-modal'
             width='full'
+            onClose={onClose}
         >
             <EmailPreviewModalContent
                 centeredHeaderContent={
@@ -331,6 +328,6 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
             <DirtyConfirmDialog {...dialogProps} />
         </SettingsModal>
     );
-});
+};
 
 export default WelcomeEmailModal;
