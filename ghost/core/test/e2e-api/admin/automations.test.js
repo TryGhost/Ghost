@@ -24,7 +24,8 @@ const matchAutomationBase = () => ({
 const matchAutomationSummary = () => ({
     ...matchAutomationBase(),
     stats: {
-        last_run_created_at: null
+        last_run_created_at: null,
+        total_run_count: 0
     }
 });
 
@@ -208,6 +209,25 @@ describe('Automations API', function () {
             const automation = body.automations.find(candidate => candidate.id === automationId);
 
             assert.equal(automation.stats.last_run_created_at, latestRunCreatedAt.toISOString());
+        });
+
+        it('returns zero total run counts for automations without runs', async function () {
+            const {body} = await agent.get('automations').expectStatus(200);
+
+            assert.deepEqual(body.automations.map(automation => automation.stats.total_run_count), [0, 0]);
+        });
+
+        it('returns the total automation run count', async function () {
+            const {body: beforeBody} = await agent.get('automations').expectStatus(200);
+            const automationId = beforeBody.automations[0].id;
+
+            await createAutomationRun(automationId, new Date('2026-01-01T00:00:00.000Z'));
+            await createAutomationRun(automationId, new Date('2026-01-02T00:00:00.000Z'));
+
+            const {body} = await agent.get('automations').expectStatus(200);
+            const automation = body.automations.find(candidate => candidate.id === automationId);
+
+            assert.equal(automation.stats.total_run_count, 2);
         });
 
         it('upserts the default free and paid automations', async function () {

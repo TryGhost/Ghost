@@ -680,6 +680,31 @@ describe('automations repository', function () {
             assert.deepEqual(automation.stats.last_run_created_at, latestRunCreatedAt);
         });
 
+        it('returns zero for "total run count" if the automation has no runs', async function () {
+            const result = await repo.browse();
+
+            assert(result.data.every(automation => automation.stats.total_run_count === 0));
+        });
+
+        it('returns the number of runs for the automation', async function () {
+            const automationId = (await getAutomationBySlug('member-welcome-email-free')).id;
+            const otherAutomationId = (await getAutomationBySlug('member-welcome-email-paid')).id;
+
+            await insertRun(automationId);
+            await insertRun(automationId);
+            await insertRun(automationId);
+            await insertRun(otherAutomationId);
+
+            const browseResult = await repo.browse();
+            const automation = browseResult.data.find(candidate => candidate.id === automationId);
+            const otherAutomation = browseResult.data.find(candidate => candidate.id === otherAutomationId);
+            assert(automation);
+            assert(otherAutomation);
+
+            assert.equal(automation.stats.total_run_count, 3);
+            assert.equal(otherAutomation.stats.total_run_count, 1);
+        });
+
         it('creates missing default free and paid automations', async function () {
             const automationIds = await knex('automations')
                 .whereIn('slug', ['member-welcome-email-free', 'member-welcome-email-paid'])
