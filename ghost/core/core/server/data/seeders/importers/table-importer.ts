@@ -82,8 +82,8 @@ export abstract class TableImporter<
             }
 
             const generatedData = await this.#generateData(currentAmount);
-            if (generatedData.length > 0) {
-                data.push(...generatedData);
+            for (const generatedModel of generatedData) {
+                data.push(generatedModel);
             }
         }
 
