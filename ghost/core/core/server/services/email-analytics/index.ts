@@ -14,6 +14,9 @@ import NewsletterEmailEventStorage from '../email-service/newsletter-email-event
 import EmailEventProcessor from '../email-service/email-event-processor';
 import type membersService from '../members';
 // @ts-expect-error This module lacks type definitions.
+import EmailAnalyticsWebhookController from './email-analytics-webhook-controller';
+import adapterManager from '../adapter-manager';
+// @ts-expect-error This module lacks type definitions.
 import type EmailSuppressionList from '../email-suppression-list';
 // @ts-expect-error This module lacks type definitions.
 import type {EmailRecipientFailure, EmailSpamComplaintEvent, Email} from '../../models';
@@ -33,6 +36,13 @@ export const newsletters = new EmailAnalyticsServiceWrapper({
 export const automations = new EmailAnalyticsServiceWrapper({
     logName: 'automations',
 });
+
+// Populated by init(). Exported as a mutable binding (rather than assigned in a
+// constructor, unlike stripeService.webhookController) so the route in web/members/app.js
+// can bind a lazy reference at require-time and still reach the real processor once
+// init() runs - normal boot order (initServices() before rootApp.use(ghostApp)) makes
+// this safe, but the route guards for undefined anyway in case that order ever changes.
+export let webhookController: InstanceType<typeof EmailAnalyticsWebhookController>;
 
 export const init = ({
     automationsApi,
@@ -83,6 +93,15 @@ export const init = ({
             prometheusClient
         }),
         prometheusClient
+    });
+
+    // Additive to the poll loop below: only reachable if the configured email adapter
+    // implements verifyWebhookRequest/parseWebhookEvents (see email-provider-base.js).
+    // Suppression and analytics converge here on the same EmailEventProcessor the
+    // Mailgun poll loop uses. See https://github.com/TryGhost/Ghost/issues/29828.
+    webhookController = new EmailAnalyticsWebhookController({
+        adapterManager,
+        emailEventProcessor: newsletterEmailEventProcessor
     });
 
     const newsletterMailgunTags = ['bulk-email'];

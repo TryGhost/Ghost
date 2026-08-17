@@ -193,5 +193,13 @@ module.exports = {
                 return _next('preview_email_blocked');
             }
         })(req, res, next);
+    },
+
+    /**
+     * Bounds per-IP request rate ahead of an adapter's own signature verification
+     * for the email analytics webhook.
+     */
+    emailAnalyticsWebhookLimiter(req, res, next) {
+        return spamPrevention.emailAnalyticsWebhook().prevent(req, res, next);
     }
 };

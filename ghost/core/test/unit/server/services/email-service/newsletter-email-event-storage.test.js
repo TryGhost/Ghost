@@ -3,6 +3,7 @@ const NewsletterEmailEventStorage = require('../../../../../core/server/services
 const sinon = require('sinon');
 const assert = require('node:assert/strict');
 const logging = require('@tryghost/logging');
+const configUtils = require('../../../../utils/config-utils');
 const {createDb, createPrometheusClient} = require('./utils');
 const config = require('../../../../../core/shared/config');
 
@@ -801,6 +802,59 @@ describe('Email Event Storage', function () {
         await eventHandler.handleComplained(event);
         sinon.assert.calledOnce(EmailSpamComplaintEvent.add);
         sinon.assert.calledOnce(logError);
+    });
+
+    describe('flushBatchedUpdates', function () {
+        beforeEach(function () {
+            configUtils.set('emailAnalytics:batchProcessing', true);
+        });
+
+        afterEach(function () {
+            configUtils.restore();
+        });
+
+        it('does not drop an update accumulated while a previous flush is still in flight', async function () {
+            // Regression: flushBatchedUpdates() used to .clear() the whole pending map
+            // after writing, which silently discards anything added between the
+            // snapshot and the clear - reachable once more than one caller can flush
+            // the same shared instance (e.g. two concurrent webhook requests, or the
+            // webhook path racing the Mailgun poll loop's batch processor).
+            let resolveRaw;
+            const raw = sinon.stub().callsFake(() => new Promise((resolve) => {
+                resolveRaw = resolve;
+            }));
+            const db = {knex: {raw}};
+            const storage = createEventStorage({db});
+
+            await storage.handleDelivered({emailRecipientId: 'A', timestamp: new Date(0)});
+            const firstFlush = storage.flushBatchedUpdates(); // snapshots 'A', raw() now in flight
+
+            await new Promise((resolve) => {
+                setImmediate(resolve);
+            });
+            await storage.handleDelivered({emailRecipientId: 'B', timestamp: new Date(0)}); // arrives mid-flush
+
+            resolveRaw();
+            await firstFlush;
+
+            const secondFlush = storage.flushBatchedUpdates(); // should write 'B' - not silently lost
+            resolveRaw();
+            await secondFlush;
+
+            assert.equal(raw.callCount, 2, 'expected a second flush to run for the update that arrived mid-flush');
+            const secondFlushRecipientIds = raw.secondCall.args[1];
+            assert.deepEqual(secondFlushRecipientIds, ['B']);
+        });
+
+        it('is a no-op when nothing is pending', async function () {
+            const raw = sinon.stub().resolves();
+            const db = {knex: {raw}};
+            const storage = createEventStorage({db});
+
+            await storage.flushBatchedUpdates();
+
+            assert.ok(raw.notCalled);
+        });
     });
 
     describe('recordEventStored', function () {

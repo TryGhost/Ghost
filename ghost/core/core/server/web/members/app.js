@@ -4,6 +4,7 @@ const express = require('../../../shared/express');
 const sentry = require('../../../shared/sentry');
 const membersService = require('../../services/members');
 const stripeService = require('../../services/stripe');
+const emailAnalyticsService = require('../../services/email-analytics');
 const audienceFeedbackService = require('../../services/audience-feedback');
 const middleware = membersService.middleware;
 const shared = require('../shared');
@@ -36,6 +37,20 @@ module.exports = function setupMembersApp() {
 
     // Webhooks
     membersApp.post('/webhooks/stripe', bodyParser.raw({type: 'application/json'}), stripeService.webhookController.handle.bind(stripeService.webhookController));
+
+    // Additive analytics/suppression ingestion path for adapters that support webhooks
+    // instead of polling (see https://github.com/TryGhost/Ghost/issues/29828). Raw body
+    // is preserved, same as the Stripe webhook above, since adapters typically need it
+    // to verify a signature before Ghost parses anything. Accepts any content-type - SNS
+    // posts `text/plain`, not `application/json`, and the adapter (not Ghost) owns
+    // parsing provider-specific payloads.
+    membersApp.post('/webhooks/email-analytics', shared.middleware.brute.emailAnalyticsWebhookLimiter, bodyParser.raw({type: () => true, limit: '5mb'}), function lazyEmailAnalyticsWebhookMw(req, res, next) {
+        if (!emailAnalyticsService.webhookController) {
+            res.writeHead(503);
+            return res.end();
+        }
+        return emailAnalyticsService.webhookController.handle(req, res).catch(next);
+    });
 
     // Initializes members specific routes as well as assigns members specific data to the req/res objects
     // We don't want to add global bodyParser middleware as that interferes with stripe webhook requests on - `/webhooks`.

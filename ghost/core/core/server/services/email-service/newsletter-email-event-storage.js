@@ -296,11 +296,25 @@ class NewsletterEmailEventStorage {
         if (failedCount > 0) {
             await this.#flushFailedUpdates();
         }
+    }
 
-        // Clear the pending updates
-        this.#pendingUpdates.delivered.clear();
-        this.#pendingUpdates.opened.clear();
-        this.#pendingUpdates.failed.clear();
+    /**
+     * Removes exactly the snapshotted entries from a pending-updates map, not the whole
+     * map - anything added (or overwritten with a newer timestamp) after the snapshot
+     * was taken and before this runs must survive to the next flush. A blanket .clear()
+     * here would silently drop concurrent writers - multiple callers can be flushing the
+     * same shared instance at once (e.g. the webhook path and the Mailgun batch
+     * processor, or two concurrent webhook requests).
+     * @private
+     * @param {Map<string, string>} pendingMap
+     * @param {Array<[string, string]>} snapshot
+     */
+    #clearFlushed(pendingMap, snapshot) {
+        for (const [id, snapshotTimestamp] of snapshot) {
+            if (pendingMap.get(id) === snapshotTimestamp) {
+                pendingMap.delete(id);
+            }
+        }
     }
 
     /**
@@ -326,6 +340,7 @@ class NewsletterEmailEventStorage {
         `;
 
         const rowCount = await this.#db.knex.raw(sql, recipientIds);
+        this.#clearFlushed(this.#pendingUpdates.delivered, updates);
         this.recordEventStored('delivered', updates.length);
         return rowCount;
     }
@@ -353,6 +368,7 @@ class NewsletterEmailEventStorage {
         `;
 
         const rowCount = await this.#db.knex.raw(sql, recipientIds);
+        this.#clearFlushed(this.#pendingUpdates.opened, updates);
         this.recordEventStored('opened', updates.length);
         return rowCount;
     }
@@ -380,6 +396,7 @@ class NewsletterEmailEventStorage {
         `;
 
         const rowCount = await this.#db.knex.raw(sql, recipientIds);
+        this.#clearFlushed(this.#pendingUpdates.failed, updates);
         return rowCount;
     }
 }

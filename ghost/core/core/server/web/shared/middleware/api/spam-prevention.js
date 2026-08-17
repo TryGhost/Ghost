@@ -44,6 +44,7 @@ let spamCheckoutSessionEmail = spam.checkout_session_email || {};
 let spamContentApiKey = spam.content_api_key || {};
 let spamWebmentionsBlock = spam.webmentions_block || {};
 let spamEmailPreviewBlock = spam.email_preview_block || {};
+let spamEmailAnalyticsWebhook = spam.email_analytics_webhook || {};
 let spamOtcVerificationEnumeration = spam.otc_verification_enumeration || {};
 let spamOtcVerification = spam.otc_verification || {};
 
@@ -53,6 +54,7 @@ let privateBlogInstance;
 let globalResetInstance;
 let globalBlockInstance;
 let webmentionsBlockInstance;
+let emailAnalyticsWebhookInstance;
 let userLoginInstance;
 let membersAuthInstance;
 let membersAuthEnumerationInstance;
@@ -198,6 +200,37 @@ const emailPreviewBlock = () => {
     );
 
     return emailPreviewBlockInstance;
+};
+
+// Bounds the per-IP request rate ahead of an adapter's own signature verification for
+// the email analytics webhook. Deliberately generous (providers legitimately deliver in
+// bursts) - this is a floor against abuse, not the endpoint's real authentication.
+const emailAnalyticsWebhook = () => {
+    const ExpressBrute = require('express-brute');
+    const BruteKnex = require('@tryghost/brute-knex');
+    const db = require('../../../../data/db');
+
+    store = store || new BruteKnex({
+        tablename: 'brute',
+        createTable: false,
+        knex: db.knex
+    });
+
+    if (!emailAnalyticsWebhookInstance) {
+        emailAnalyticsWebhookInstance = new ExpressBrute(store,
+            extend({
+                attachResetToRequest: false,
+                failCallback(req, res, next) {
+                    return next(new errors.TooManyRequestsError({
+                        message: tpl(messages.tooManyAttempts)
+                    }));
+                },
+                handleStoreError: handleStoreError
+            }, pick(spamEmailAnalyticsWebhook, spamConfigKeys))
+        );
+    }
+
+    return emailAnalyticsWebhookInstance;
 };
 
 const membersAuth = () => {
@@ -578,12 +611,14 @@ module.exports = {
     contentApiKey: contentApiKey,
     webmentionsBlock: webmentionsBlock,
     emailPreviewBlock: emailPreviewBlock,
+    emailAnalyticsWebhook: emailAnalyticsWebhook,
     reset: () => {
         store = undefined;
         memoryStore = undefined;
         privateBlogInstance = undefined;
         globalResetInstance = undefined;
         globalBlockInstance = undefined;
+        emailAnalyticsWebhookInstance = undefined;
         userLoginInstance = undefined;
         membersAuthInstance = undefined;
         membersAuthEnumerationInstance = undefined;
@@ -608,6 +643,7 @@ module.exports = {
         spamCheckoutSessionGlobal = spam.checkout_session_global || {};
         spamCheckoutSessionEmail = spam.checkout_session_email || {};
         spamContentApiKey = spam.content_api_key || {};
+        spamEmailAnalyticsWebhook = spam.email_analytics_webhook || {};
         spamOtcVerificationEnumeration = spam.otc_verification_enumeration || {};
         spamOtcVerification = spam.otc_verification || {};
     }

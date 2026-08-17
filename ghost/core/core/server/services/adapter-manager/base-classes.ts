@@ -4,6 +4,8 @@ import {SSOBase} from '@tryghost/adapter-base-sso';
 import {CacheBase} from '@tryghost/adapter-base-cache';
 import {RedirectsStoreBase} from '@tryghost/adapter-base-redirects';
 import {RouteSettingsStoreBase} from '@tryghost/adapter-base-route-settings';
+// @ts-expect-error This module lacks type definitions.
+import EmailProviderBase from '../../adapters/email/email-provider-base';
 
 import type {BaseClassMap} from './adapter-manager';
 
@@ -17,6 +19,7 @@ export const baseClasses = {
     scheduling: SchedulingBase,
     sso: SSOBase,
     cache: CacheBase,
+    email: EmailProviderBase,
     redirects: RedirectsStoreBase,
     'route-settings': RouteSettingsStoreBase
 } satisfies BaseClassMap;
