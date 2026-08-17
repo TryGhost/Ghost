@@ -20,7 +20,7 @@ export class AutomationActionEdgesImporter extends TableImporter<AutomationActio
         super(AutomationActionEdgesImporter.table, knex, transaction);
     }
 
-    async import(quantity?: number): Promise<void> {
+    async import(): Promise<void> {
         const actions = await this.transaction
             .select('id', 'automation_id', 'created_at')
             .from<AutomationAction>('automation_actions')
@@ -45,9 +45,8 @@ export class AutomationActionEdgesImporter extends TableImporter<AutomationActio
             }
         }
 
-        const edgesToImport = quantity === undefined ? edges : edges.slice(0, quantity);
-        if (edgesToImport.length > 0) {
-            await this.batchInsert(edgesToImport);
+        if (edges.length > 0) {
+            await this.batchInsert(edges);
         }
     }
 }

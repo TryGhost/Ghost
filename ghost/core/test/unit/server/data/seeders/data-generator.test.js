@@ -140,7 +140,8 @@ describe('Data Generator', function () {
                 name: 'automation_action_revisions',
                 quantity: 16
             }, {
-                name: 'automation_action_edges'
+                name: 'automation_action_edges',
+                quantity: 1
             }]
         });
         await dataGenerator.importData();
