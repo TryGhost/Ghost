@@ -271,7 +271,7 @@ export const CanvasSidePanel: React.FC<CanvasSidePanelProps> = ({scenario, selec
                 {/* Sticky control bar — search always; once stuck (the 2x2 cards have
                     scrolled off) a one-line chip row expands here in their place, via the
                     grid-rows 0fr→1fr height trick so the collapse animates. */}
-                <div ref={stickyBarRef} className={cn('sticky top-0 z-20 bg-sidebar px-6 py-4', stuck && 'border-b border-border-default')}>
+                <div ref={stickyBarRef} className={cn('sticky top-0 z-20 bg-surface-elevated px-6 py-4', stuck && 'border-b border-border-default')}>
                 <InputGroup className="w-full">
                     <InputGroupAddon>
                         <LucideIcon.Search />

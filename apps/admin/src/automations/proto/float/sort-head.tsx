@@ -28,10 +28,11 @@ export function SortHead<K extends string>({label, sortKey, sort, onSort, classN
     const active = sort.key === sortKey;
     return (
         // Sticky-pinned below the search/chip bar (top: --stick-top, measured by
-        // useStickyList). bg-sidebar makes rows scroll under it; the border-collapse
-        // table means the row's own border-b won't stick, so the bottom divider is
-        // drawn as an inset box-shadow instead. z-10 sits under the bar's z-20.
-        <TableHead className={cn('sticky top-[var(--stick-top,80px)] z-10 bg-sidebar px-4 shadow-[inset_0_-1px_0_var(--border-default)]', className)}>
+        // useStickyList). An opaque fill matching the pane makes rows scroll under
+        // it; the border-collapse table means the row's own border-b won't stick, so
+        // the bottom divider is drawn as an inset box-shadow instead. z-10 sits under
+        // the bar's z-20.
+        <TableHead className={cn('sticky top-[var(--stick-top,80px)] z-10 bg-surface-elevated px-4 shadow-[inset_0_-1px_0_var(--border-default)]', className)}>
             <TableHeadButton
                 className="font-medium text-muted-foreground normal-case"
                 // type="button" is required: Shade's Button sets no default type, so

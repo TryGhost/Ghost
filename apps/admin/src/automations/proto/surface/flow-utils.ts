@@ -7,16 +7,24 @@ import {LucideIcon} from '@tryghost/shade/utils';
 // those can export only components (react-refresh/only-export-components). Both
 // the read-only (flow-canvas) and editable (edit-canvas) canvases build on these.
 
-// Edge stroke + canvas theme vars, matched to the real automation-canvas
-// (automations/components/canvas/automation-canvas.tsx) so both proto canvases'
-// connector lines and dot background render identically to production — in both
-// light and dark mode. Shared here (rather than defined per-canvas) so the two
-// canvases can't drift back apart the way flow-canvas's did before.
+// Edge stroke + canvas theme vars, shared here (rather than defined per-canvas)
+// so the two canvases can't drift back apart the way flow-canvas's did before.
 export const EDGE_STROKE = 'var(--xy-edge-stroke)';
-// Canvas sits on the standard --background token (flips per theme); the left pane is
-// lifted to the lighter sidebar token so the two surfaces read apart. Dots: grey-500
-// in light, subtle white-alpha in dark.
-export const REACT_FLOW_THEME = '[--xy-background-color:var(--background)] [--xy-background-pattern-color:var(--color-grey-500)] [--xy-edge-stroke:var(--color-grey-300)] dark:[--xy-background-pattern-color:#ffffff1a] dark:[--xy-edge-stroke:var(--color-grey-800)]';
+// Canvas fill, taken verbatim from the shipping automation-canvas
+// (automations/components/canvas/automation-canvas.tsx): grey-50 in light, and
+// --background in dark, which is the stop below the cards' --surface-elevated.
+// The proto had drifted to --background in both modes (white cards on a white
+// page in light) and then to --surface-page (pure black in dark). Production had
+// already solved this; there's nothing here to invent.
+//
+// Exported because three things need the same fill and would each be a seam if
+// they drifted: the ReactFlow surface, the region behind it, and the dashed
+// insert buttons that cut out of it.
+export const CANVAS_SURFACE = 'bg-grey-50 dark:bg-background';
+
+// Dots + edges, also verbatim from the shipping canvas — same greys, same pair of
+// modes. This replaces a hardcoded #ffffff1a the proto had picked up for dark.
+export const REACT_FLOW_THEME = '[--xy-background-color:var(--color-grey-50)] [--xy-background-pattern-color:var(--color-grey-500)] [--xy-edge-stroke:var(--color-grey-300)] dark:[--xy-background-color:var(--background)] dark:[--xy-background-pattern-color:var(--color-grey-900)] dark:[--xy-edge-stroke:var(--color-grey-800)]';
 
 // Column layout — a single vertical stack of fixed-width nodes. Node y-positions
 // are derived from each node's *rendered height* plus a constant visible gap, so

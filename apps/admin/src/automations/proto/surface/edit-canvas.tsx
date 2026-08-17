@@ -8,7 +8,7 @@ import {Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTi
 import {LucideIcon, cn} from '@tryghost/shade/utils';
 import {OptionPicker, type PickerOption} from '@/automations/proto/shared/option-picker';
 import {DEFAULT_TRIGGER_CONFIG, type TriggerConfig, availableCriteria, triggerSummary} from '@/automations/proto/shared/trigger-config';
-import {EDGE_STROKE, REACT_FLOW_THEME, REGULAR_NODE_HEIGHT, TAIL_NODE_HEIGHT, TRIGGER_SUMMARY_HEIGHT, type StepKind, formatWait, orderActions, panTranslateExtent, stackNodeY, stepKindIcon, useCenteredColumn} from './flow-utils';
+import {CANVAS_SURFACE, EDGE_STROKE, REACT_FLOW_THEME, REGULAR_NODE_HEIGHT, TAIL_NODE_HEIGHT, TRIGGER_SUMMARY_HEIGHT, type StepKind, formatWait, orderActions, panTranslateExtent, stackNodeY, stepKindIcon, useCenteredColumn} from './flow-utils';
 import {EmailAnalyticsSheet, type SheetEmail} from './email-analytics-sheet';
 import {EmailStatsFooter} from './email-analytics';
 import {NODE_BODY_PADDING, NodeCard, NodeHeader} from './flow-node-shell';
@@ -49,7 +49,11 @@ const triggerFormHeight = (config: TriggerConfig): number => {
 
 
 // Dashed circular "insert step" button, matched to the real add-step-edge.
-const INSERT_BUTTON_CLASSES = 'border-dashed border-border-default bg-surface-page text-text-secondary shadow-sm hover:border-border-strong';
+// CANVAS_SURFACE: these read as an empty slot cut out of the canvas, so they take
+// the canvas's own fill (opaque, so the dot pattern doesn't show through the slot).
+// Previously --surface-page, which is pure black in dark mode — darker than the
+// canvas it sat on, so the buttons rendered as holes.
+const INSERT_BUTTON_CLASSES = `border-dashed border-border-default ${CANVAS_SURFACE} text-text-secondary shadow-sm hover:border-border-strong`;
 
 // The steps you can add, in the shared icon/title/description shape. Same rows
 // the trigger picker uses, so "what starts this" and "what happens next" are
@@ -208,7 +212,7 @@ const TailNode: React.FC<NodeProps> = ({data}) => {
         <div className="flex w-[400px]">
             <Handle position={Position.Top} style={{opacity: 0}} type="target" />
             <AddStepPopover open={open} onOpenChange={setOpen} onPick={onPick}>
-                <button aria-label="Add step" className="flex h-12 w-[400px] items-center justify-center rounded-lg border border-dashed border-border-default bg-surface-page text-text-secondary transition-colors hover:border-border-strong focus-visible:border-border-strong focus-visible:outline-none" type="button">
+                <button aria-label="Add step" className={`flex h-12 w-[400px] items-center justify-center rounded-lg border border-dashed border-border-default ${CANVAS_SURFACE} text-text-secondary transition-colors hover:border-border-strong focus-visible:border-border-strong focus-visible:outline-none`} type="button">
                     <LucideIcon.Plus className="size-5" strokeWidth={1.5} />
                 </button>
             </AddStepPopover>

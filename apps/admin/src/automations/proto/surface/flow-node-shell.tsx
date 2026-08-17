@@ -4,7 +4,12 @@ import {cn} from '@tryghost/shade/utils';
 
 // Shared node-card shell tokens — one source of truth so surface / radius / elevation /
 // padding updates apply to every card state (read step, edit step, terminal pill).
-export const NODE_CARD_SURFACE = 'bg-surface-elevated-2';
+//
+// --surface-elevated, not -2: a card sits one step above the canvas, which is what
+// that token is for. -2 is reserved for menus that open ON TOP of an elevated
+// surface, and cards were sitting on it — so a popover opened from a card was the
+// identical fill, and the two levels could never be tuned apart.
+export const NODE_CARD_SURFACE = 'bg-surface-elevated';
 export const NODE_CARD_SHELL = `w-[400px] rounded-xl border shadow-sm ${NODE_CARD_SURFACE}`;
 export const NODE_CARD_PADDING = 'p-6';
 

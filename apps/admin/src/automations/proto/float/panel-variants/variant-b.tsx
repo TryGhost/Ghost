@@ -310,7 +310,7 @@ export const LeftPanelVariantB: React.FC<LeftPanelProps> = ({scenario, selectedM
                     cards above have scrolled off (grid-rows 0fr→1fr so it animates).
                     Search left this bar for the top strip, so with nothing stuck the bar
                     collapses to nothing rather than holding empty space. */}
-                <div ref={stickyBarRef} className={cn('sticky top-0 z-20 bg-sidebar px-6', stuck && 'border-b border-border-default py-4')}>
+                <div ref={stickyBarRef} className={cn('sticky top-0 z-20 bg-surface-elevated px-6', stuck && 'border-b border-border-default py-4')}>
                     <div className={cn('grid transition-[grid-template-rows,opacity] duration-200 ease-out', stuck ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0')}>
                         <div className="overflow-hidden">
                             <div className="flex gap-2">

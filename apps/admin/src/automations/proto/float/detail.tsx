@@ -13,6 +13,7 @@ import {LEFT_PANEL_SLOT, leftPanelComponent} from './panel-variants';
 import {ProtoVariantSwitcher, ProtoVariantsProvider} from '@/automations/proto/shared/proto-variant-switcher';
 import {DEFAULT_TRIGGER_CONFIG, type TriggerConfig} from '@/automations/proto/shared/trigger-config';
 import {useProtoVariant} from '@/automations/proto/shared/proto-variants';
+import {CANVAS_SURFACE} from '@/automations/proto/surface/flow-utils';
 import {SurfaceEditCanvas as FloatEditCanvas} from '@/automations/proto/surface/edit-canvas';
 import {SurfaceFlowCanvas as FloatFlowCanvas} from '@/automations/proto/surface/flow-canvas';
 import {useVersionLink} from '@/automations/proto/shared/use-version-link';
@@ -456,7 +457,11 @@ const AutomationFloat: React.FC = () => {
                 canvas's ResizeObserver re-centres the flow as it grows. Clearing the
                 title overlay is left to each panel variant — one keeps its content
                 below it, another puts controls on the same baseline as it. */}
-            <aside className={cn('relative flex w-[480px] shrink-0 flex-col overflow-hidden bg-sidebar transition-[margin] duration-150 ease-out', paneHidden ? '-ml-[480px]' : 'ml-0')}>
+            {/* --surface-elevated, matching the right-hand analytics sheet: both are
+                content panels flanking the canvas, so they're the same step of the
+                ladder. This was on the --sidebar-* family, which is for the app's
+                global nav — it happened to match in dark and diverged in light. */}
+            <aside className={cn('relative flex w-[480px] shrink-0 flex-col overflow-hidden border-r border-border-default bg-surface-elevated transition-[margin] duration-150 ease-out', paneHidden ? '-ml-[480px]' : 'ml-0')}>
                 <LeftPanel
                     scenario={scenario}
                     selectedMemberId={selectedMemberId}
@@ -466,8 +471,10 @@ const AutomationFloat: React.FC = () => {
             </aside>
 
             {/* Canvas fills the remaining viewport (bounded, not full-bleed), so the flow
-                centres within its own region — no left-inset hack needed. */}
-            <div className="relative min-w-0 flex-1 overflow-hidden bg-background">
+                centres within its own region — no left-inset hack needed. Same fill as
+                REACT_FLOW_THEME paints inside it, so the region and the flow's own
+                background can't disagree at the edges. */}
+            <div className={cn('relative min-w-0 flex-1 overflow-hidden', CANVAS_SURFACE)}>
                 {/* Both canvases stay mounted and crossfade on mode change. No remount
                     means the incoming flow is already centred — no first-frame node flash.
                     The inactive one is opacity-0 + pointer-events-none so clicks fall to
