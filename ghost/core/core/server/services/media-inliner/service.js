@@ -1,9 +1,16 @@
+const MediaInlinerJob = require('./media-inliner-job').default;
+
+const DEFAULT_DOMAINS = [
+    'https://s3.amazonaws.com/revue',
+    'https://substackcdn.com'
+];
+
+let mediaInliner;
+
 module.exports = {
     async init() {
-        const debug = require('@tryghost/debug')('mediaInliner');
         const MediaInliner = require('./external-media-inliner');
         const models = require('../../models');
-        const jobsService = require('../jobs');
         const adapterManager = require('../../services/adapter-manager').default;
 
         const mediaStorage = adapterManager.getAdapter('storage:media');
@@ -12,7 +19,7 @@ module.exports = {
 
         const config = require('../../../shared/config');
 
-        const mediaInliner = new MediaInliner({
+        mediaInliner = new MediaInliner({
             PostModel: models.Post,
             TagModel: models.Tag,
             UserModel: models.User,
@@ -31,33 +38,26 @@ module.exports = {
         });
 
         this.api = {
-
             startMediaInliner: async (domains) => {
+                const debug = require('@tryghost/debug')('mediaInliner');
+                const jobsService = require('../jobs-service').getInstance();
+
                 if (!domains || !domains.length) {
-                    // default domains to inline from if none are provided
-                    domains = [
-                        'https://s3.amazonaws.com/revue',
-                        'https://substackcdn.com'
-                    ];
+                    domains = DEFAULT_DOMAINS;
                 }
 
                 debug('[Inliner] Starting media inlining job for domains: ', domains);
 
-                // @NOTE: the job is "inline" (aka non-offloaded into a thread), because usecases are currently
-                //        limited to migrational, so there is no expectations for site's availability etc.
-                await jobsService.addJob({
-                    name: 'external-media-inliner',
-                    job: (data) => {
-                        return mediaInliner.inline(data.domains);
-                    },
-                    data: {domains},
-                    offloaded: false
-                });
+                await jobsService.dispatch(new MediaInlinerJob({domains}));
 
                 return {
                     status: 'success'
                 };
             }
         };
+    },
+
+    inline(domains) {
+        return mediaInliner.inline(domains);
     }
 };

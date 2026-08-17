@@ -42,7 +42,7 @@ describe('Job: Clean tokens', function () {
         clock.restore();
         clock = null;
 
-        await jobsService.dispatch(new CleanTokensJob());
+        await jobsService.getInstance().dispatch(new CleanTokensJob());
 
         const firstDeleted = await waitFor(async () => {
             const exists = await models.SingleUseToken.findOne({id: firstToken.id});
