@@ -4,11 +4,13 @@ import React, {useCallback, useEffect, useState} from 'react';
 import ThemeCodeEditorModal from './theme/theme-code-editor-modal';
 import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
 import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+import {useUpgradeRoute} from '@/settings/app/hooks/use-upgrade-route';
 import {parseEditingThemeRoute} from './theme/theme-editor-utils';
 import {useCheckThemeLimitError} from '@/settings/app/hooks/use-check-theme-limit-error';
 
 const DesignAndThemeModal: React.FC = () => {
     const {route, updateRoute} = useSettingsNavigation();
+    const upgradeRoute = useUpgradeRoute();
     const currentPath = route;
     const [themeChangeError, setThemeChangeError] = useState<string|null>(null);
     const [isCheckingLimit, setIsCheckingLimit] = useState(false);
@@ -24,9 +26,9 @@ const DesignAndThemeModal: React.FC = () => {
     const showThemeLimitModal = useCallback((error: string) => {
         showLimit({
             prompt: error,
-            onOk: () => updateRoute({route: '/pro', isExternal: true})
+            onOk: () => updateRoute({route: upgradeRoute, isExternal: true})
         });
-    }, [showLimit, updateRoute]);
+    }, [showLimit, updateRoute, upgradeRoute]);
 
     useEffect(() => {
         const checkIfThemeChangeAllowed = async () => {

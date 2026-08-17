@@ -1,9 +1,13 @@
+import Ember from 'ember';
 import moment from 'moment-timezone';
+import upgradeUrl from 'ghost-admin/utils/upgrade-url';
 import {action} from '@ember/object';
 import {getPublicPreviewWarning} from 'ghost-admin/utils/public-preview-warning';
 import {htmlSafe} from '@ember/template';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
+
+const {Handlebars} = Ember;
 
 export default class PublishOptions {
     // passed in services
@@ -429,7 +433,7 @@ export default class PublishOptions {
                 await this.limit.limiter.errorIfIsOverLimit('members');
             }
         } catch (e) {
-            const linkedMessage = htmlSafe(e.message.replace(/please upgrade/i, '<a href="#/pro">$&</a>'));
+            const linkedMessage = htmlSafe(e.message.replace(/please upgrade/i, `<a href="${Handlebars.Utils.escapeExpression(upgradeUrl(this.config))}">$&</a>`));
             this.publishDisabledError = linkedMessage;
         }
     }

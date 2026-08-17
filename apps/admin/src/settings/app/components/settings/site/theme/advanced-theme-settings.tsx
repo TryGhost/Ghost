@@ -13,6 +13,7 @@ import {useCheckThemeLimitError} from '@/settings/app/hooks/use-check-theme-limi
 import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+import {useUpgradeRoute} from '@/settings/app/hooks/use-upgrade-route';
 
 interface ThemeActionProps {
     theme: Theme;
@@ -58,6 +59,7 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
     const {refreshActiveThemeData} = useCustomFonts();
     const handleError = useHandleError();
     const {route, updateRoute} = useSettingsNavigation();
+    const upgradeRoute = useUpgradeRoute();
     const {checkThemeLimitError} = useCheckThemeLimitError();
     const {confirm, showLimit} = useConfirmation();
 
@@ -133,7 +135,7 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
         if (limitError) {
             showLimit({
                 prompt: limitError,
-                onOk: () => updateRoute({route: '/pro', isExternal: true})
+                onOk: () => updateRoute({route: upgradeRoute, isExternal: true})
             });
             return;
         }
