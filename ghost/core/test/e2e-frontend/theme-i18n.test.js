@@ -1,141 +1,100 @@
 // # Theme i18n E2E Tests
 // Tests theme translations using the {{t}} helper
-// Uses the Admin API to change locale and labs settings
+// Uses the Admin API to change locale
 
 const assert = require('node:assert/strict');
 const cheerio = require('cheerio');
-const { agentProvider, fixtureManager } = require('../utils/e2e-framework');
+const {agentProvider, fixtureManager} = require('../utils/e2e-framework');
 const config = require('../../core/shared/config');
 
-// i18n singletons - need to reset basePath when content folder changes between tests
+// i18n singleton - need to reset basePath when content folder changes between tests
 const themeI18n = require('../../core/frontend/services/theme-engine/i18n');
-const themeI18next = require('../../core/frontend/services/theme-engine/i18next');
 
 describe('Theme i18n', function () {
-  let frontendAgent;
-  let adminAgent;
-  let ghostServer;
+    let frontendAgent;
+    let adminAgent;
+    let ghostServer;
 
-  // Helper to set locale and optionally labs flag
-  async function setLocale(locale, labs = null) {
-    const settings = [{ key: 'locale', value: locale }];
-    if (labs !== null) {
-      settings.push({ key: 'labs', value: JSON.stringify(labs) });
+    async function setLocale(locale) {
+        await adminAgent.put('settings/')
+            .body({settings: [{key: 'locale', value: locale}]})
+            .expectStatus(200);
     }
-    await adminAgent.put('settings/').body({ settings }).expectStatus(200);
-  }
 
-  /**
-   * Helper to assert translations on homepage
-   * @param {object} expected
-   * @param {string} [expected.translated]
-   * @param {string} [expected.untranslated]
-   * @param {string} [expected.interpolated]
-   */
-  async function assertTranslations({ translated, untranslated, interpolated }) {
-    await frontendAgent
-      .get('/')
-      .expect(200)
-      .expect((res) => {
-        const $ = cheerio.load(res.text);
-        if (translated) {
-          assert.equal($('.translation-test .translated').text(), translated);
-        }
-        if (untranslated) {
-          assert.equal($('.translation-test .untranslated').text(), untranslated);
-        }
-        if (interpolated) {
-          assert.equal($('.translation-test .interpolated').text(), interpolated);
-        }
-      });
-  }
+    /**
+     * Helper to assert translations on homepage
+     * @param {object} expected
+     * @param {string} [expected.translated]
+     * @param {string} [expected.untranslated]
+     * @param {string} [expected.interpolated]
+     */
+    async function assertTranslations({translated, untranslated, interpolated}) {
+        await frontendAgent.get('/')
+            .expect(200)
+            .expect((res) => {
+                const $ = cheerio.load(res.text);
+                if (translated) {
+                    assert.equal($('.translation-test .translated').text(), translated);
+                }
+                if (untranslated) {
+                    assert.equal($('.translation-test .untranslated').text(), untranslated);
+                }
+                if (interpolated) {
+                    assert.equal($('.translation-test .interpolated').text(), interpolated);
+                }
+            });
+    }
 
-  beforeAll(async function () {
-    const agents = await agentProvider.getAgentsWithFrontend();
-    frontendAgent = agents.frontendAgent;
-    adminAgent = agents.adminAgent;
-    ghostServer = agents.ghostServer;
-
-    // Reset i18n singletons basePath to use current test content folder
-    // This is needed because the singletons capture basePath at module load time
-    // and it may point to a different content folder from a previous test
-    const themesPath = config.getContentPath('themes');
-    themeI18n.basePath = themesPath;
-    themeI18next.basePath = themesPath;
-
-    await fixtureManager.init();
-    await adminAgent.loginAsOwner();
-
-    await adminAgent.put('themes/locale-theme/activate/').expectStatus(200);
-  });
-
-  afterAll(async function () {
-    await adminAgent.put('themes/source/activate/');
-    await setLocale('en', {});
-    await ghostServer.stop();
-  });
-
-  describe('Legacy translation service (themeI18n)', function () {
     beforeAll(async function () {
-      await setLocale('en', { themeTranslation: false });
-    });
+        const agents = await agentProvider.getAgentsWithFrontend();
+        frontendAgent = agents.frontendAgent;
+        adminAgent = agents.adminAgent;
+        ghostServer = agents.ghostServer;
 
-    it('translates keys in English', async function () {
-      await assertTranslations({ translated: 'Left Button on Top' });
-    });
+        // Reset i18n singleton basePath to use current test content folder
+        // This is needed because the singleton captures basePath at module load time
+        // and it may point to a different content folder from a previous test
+        themeI18n.basePath = config.getContentPath('themes');
 
-    it('returns key when translation is missing', async function () {
-      await assertTranslations({ untranslated: 'Missing Key' });
-    });
+        await fixtureManager.init();
+        await adminAgent.loginAsOwner();
 
-    it('interpolates variables', async function () {
-      await assertTranslations({ interpolated: 'Welcome, Ghost' });
-    });
-
-    it('translates keys in German', async function () {
-      await setLocale('de');
-      await assertTranslations({
-        translated: 'Oben Links.',
-        interpolated: 'Willkommen, Ghost',
-      });
-      await setLocale('en');
-    });
-  });
-
-  describe('New translation service (themeI18next)', function () {
-    beforeAll(async function () {
-      await setLocale('en', { themeTranslation: true });
+        await adminAgent.put('themes/locale-theme/activate/')
+            .expectStatus(200);
     });
 
     afterAll(async function () {
-      await setLocale('en', {});
+        await adminAgent.put('themes/source/activate/');
+        await setLocale('en');
+        await ghostServer.stop();
     });
 
-    it('translates keys in English', async function () {
-      await assertTranslations({ translated: 'Left Button on Top' });
-    });
+    describe('{{t}} helper', function () {
+        it('translates keys in English', async function () {
+            await assertTranslations({translated: 'Left Button on Top'});
+        });
 
-    it('returns key when translation is missing', async function () {
-      await assertTranslations({ untranslated: 'Missing Key' });
-    });
+        it('returns key when translation is missing', async function () {
+            await assertTranslations({untranslated: 'Missing Key'});
+        });
 
-    it('interpolates variables', async function () {
-      await assertTranslations({ interpolated: 'Welcome, Ghost' });
-    });
+        it('interpolates variables', async function () {
+            await assertTranslations({interpolated: 'Welcome, Ghost'});
+        });
 
-    it('translates keys in German', async function () {
-      await setLocale('de');
-      await assertTranslations({
-        translated: 'Oben Links.',
-        interpolated: 'Willkommen, Ghost',
-      });
-      await setLocale('en');
-    });
+        it('translates keys in German', async function () {
+            await setLocale('de');
+            await assertTranslations({
+                translated: 'Oben Links.',
+                interpolated: 'Willkommen, Ghost'
+            });
+            await setLocale('en');
+        });
 
-    it('falls back to English when locale file is missing', async function () {
-      await setLocale('fr');
-      await assertTranslations({ translated: 'Left Button on Top' });
-      await setLocale('en');
+        it('falls back to English when locale file is missing', async function () {
+            await setLocale('fr');
+            await assertTranslations({translated: 'Left Button on Top'});
+            await setLocale('en');
+        });
     });
-  });
 });

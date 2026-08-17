@@ -1,79 +1,103 @@
 const errors = require('@tryghost/errors');
-const logging = require('@tryghost/logging');
-const I18n = require('./i18n');
+const i18nLib = require('@tryghost/i18n');
+const path = require('path');
+const fs = require('fs-extra');
 
-class ThemeI18n extends I18n {
-  /**
-   * @param {object} [options]
-   * @param {string} options.basePath - the base path for the translation directory (e.g. where themes live)
-   * @param {string} [options.locale] - a locale string
-   */
-  constructor(options = {}) {
-    super(options);
-    // We don't care what gets passed in, themes use fulltext mode
-    this._stringMode = 'fulltext';
-  }
-
-  /**
-   * Setup i18n support for themes:
-   *  - Load correct language file into memory
-   *
-   * @param {object} options
-   * @param {string} options.activeTheme - name of the currently loaded theme
-   * @param {string} options.locale - name of the currently loaded locale
-   *
-   */
-  init({ activeTheme, locale } = {}) {
-    // This function is called during theme initialization, and when switching language or theme.
-    this._locale = locale || this._locale;
-    this._activetheme = activeTheme || this._activetheme;
-
-    super.init();
-  }
-
-  _translationFileDirs() {
-    return [this.basePath, this._activetheme, 'locales'];
-  }
-
-  _handleUninitialisedError(key) {
-    throw new errors.IncorrectUsageError({
-      message: `Theme translation was used before it was initialised with key ${key}`,
-    });
-  }
-
-  _handleFallbackToDefault() {
-    logging.warn(`Theme translations falling back to locales/${this.defaultLocale()}.json.`);
-  }
-
-  _handleMissingFileError(locale) {
-    if (locale !== this.defaultLocale()) {
-      logging.warn(`Theme translations file locales/${locale}.json not found.`);
+class ThemeI18n {
+    /**
+     * @param {object} options
+     * @param {string} options.basePath - the base path for the translation directory (e.g. where themes live)
+     * @param {string} [options.locale] - a locale string
+     */
+    constructor(options) {
+        if (!options || !options.basePath) {
+            throw new errors.IncorrectUsageError({message: 'basePath is required'});
+        }
+        this._basePath = options.basePath;
+        this._locale = options.locale || 'en';
+        this._activeTheme = null;
+        this._i18n = null;
     }
-  }
 
-  _handleInvalidFileError(locale, err) {
-    logging.error(
-      new errors.IncorrectUsageError({
-        err,
-        message: `Theme translations unable to parse locales/${locale}.json. Please check that it is valid JSON.`,
-      }),
-    );
-  }
+    /**
+     * BasePath getter & setter used for testing
+     */
+    set basePath(basePath) {
+        this._basePath = basePath;
+    }
 
-  _handleEmptyKeyError() {
-    logging.warn('Theme translations {{t}} helper called without a translation key.');
-  }
+    get basePath() {
+        return this._basePath;
+    }
 
-  _handleMissingKeyError() {
-    // This case cannot be reached in themes as we use the key as the fallback
-  }
+    /**
+     * Setup i18n support for themes:
+     *  - Load correct language file into memory
+     *
+     * @param {object} options
+     * @param {string} options.activeTheme - name of the currently loaded theme
+     * @param {string} options.locale - name of the currently loaded locale
+     */
+    init(options) {
+        if (!options || !options.activeTheme) {
+            throw new errors.IncorrectUsageError({message: 'activeTheme is required'});
+        }
 
-  _handleInvalidKeyError(key, err) {
-    throw new errors.IncorrectUsageError({
-      err,
-      message: `Theme translations {{t}} helper called with an invalid translation key: ${key}`,
-    });
-  }
+        this._locale = options.locale || this._locale;
+        this._activeTheme = options.activeTheme;
+
+        const themeLocalesPath = path.join(this._basePath, this._activeTheme, 'locales');
+
+        // Check if the theme path exists
+        const themePathExists = fs.existsSync(themeLocalesPath);
+
+        if (!themePathExists) {
+            // If the theme path doesn't exist, initialize with an empty resource
+            // this maintains interpolation of keys when locales files are missing.
+            this._i18n = i18nLib(this._locale, 'theme', {});
+            return;
+        }
+
+        // Initialize i18n with the theme path
+        // Note: @tryghost/i18n uses synchronous file operations internally
+        // This is fine in production but in tests we need to ensure the files exist first
+
+        const localePath = path.join(themeLocalesPath, `${this._locale}.json`);
+        const localeExists = fs.existsSync(localePath);
+
+        if (localeExists) {
+            // Initialize i18n
+            this._i18n = i18nLib(this._locale, 'theme', {themePath: themeLocalesPath});
+            return;
+        } 
+            
+        // If the requested locale fails, try English as fallback
+        const enPath = path.join(themeLocalesPath, 'en.json');
+        const enExists = fs.existsSync(enPath);
+
+        if (enExists) {
+            this._i18n = i18nLib('en', 'theme', {themePath: themeLocalesPath});
+            return;
+        }   
+        
+        // If both fail, initialize the empty resource so that i18next can handle interpolation.
+        this._i18n = i18nLib(this._locale, 'theme', {});        
+    }
+
+    /**
+     * Helper method to find and compile the given data context with a proper string resource.
+     *
+     * @param {string} key - The translation key
+     * @param {object} [bindings] - Optional bindings for the translation
+     * @returns {string}
+     */
+    t(key, bindings) {
+        if (!this._i18n) {
+            throw new errors.IncorrectUsageError({message: `Theme translation was used before it was initialised with key ${key}`});
+        }
+        const result = this._i18n.t(key, bindings);
+        return typeof result === 'string' ? result : String(result);
+    }
 }
 
 module.exports = ThemeI18n;
