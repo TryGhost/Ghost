@@ -19,7 +19,7 @@ const UniversalImportModal: React.FC = () => {
     const handleError = useHandleError();
     const {confirm} = useConfirmation();
 
-    const acceptedTypes = csvContentImporter
+    const acceptedTypes: React.ComponentProps<typeof Dropzone>['accept'] = csvContentImporter
         ? {'application/json': ['.json'], 'application/zip': ['.zip'], 'text/csv': ['.csv']}
         : {'application/json': ['.json'], 'application/zip': ['.zip']};
 
