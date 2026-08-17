@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const cleanTokens = require('../../../../../../core/server/services/members/jobs/clean-tokens-task').default;
+const CleanTokensJob = require('../../../../../../core/server/services/members/jobs/clean-tokens-job').default;
 
 describe('clean-tokens job', function () {
     afterEach(function () {
@@ -27,6 +28,15 @@ describe('clean-tokens job', function () {
             assert.equal(capturedWhere[1], '<');
             assert.match(capturedWhere[2], /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/);
             assert.equal(deleted, 3);
+        });
+    });
+
+    describe('CleanTokensJob', function () {
+        it('has a stable type and an empty, serialisable payload', function () {
+            assert.equal(CleanTokensJob.type, 'clean-tokens');
+
+            const job = new CleanTokensJob();
+            assert.equal(JSON.stringify(job), '{}');
         });
     });
 });

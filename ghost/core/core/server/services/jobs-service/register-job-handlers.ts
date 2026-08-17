@@ -1,3 +1,12 @@
+import {getInstance} from './index';
+import CleanTokensJob from '../members/jobs/clean-tokens-job';
+import cleanTokens from '../members/jobs/clean-tokens-task';
+
 export default function registerJobHandlers(): void {
-    // Job handlers are registered here as jobs migrate onto the class-based service.
+    const jobsService = getInstance();
+    const db = require('../../data/db');
+
+    jobsService.handle(CleanTokensJob, async () => {
+        await cleanTokens({db});
+    });
 }
