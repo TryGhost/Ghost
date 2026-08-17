@@ -3,6 +3,7 @@ import errors from '@tryghost/errors';
 import assert from 'node:assert/strict';
 import type {Knex} from 'knex';
 import {TableImporter} from './table-importer';
+import {parseEmailAddress} from '@tryghost/parse-email-address';
 // @ts-expect-error This module currently lacks type definitions.
 import dateToDatabaseString from '../utils/database-date';
 
@@ -24,6 +25,19 @@ type AutomationRun = {
     automation_id: string;
     member_id: string;
     member_email: string;
+};
+
+const assertExampleEmailDomain = (email: string) => {
+    const {domain} = parseEmailAddress(email) ?? {};
+    assert(domain, 'Refusing to seed an automation run for a member with no email');
+    assert(
+        domain === 'example.com' ||
+        domain === 'example.net' ||
+        domain === 'example.org' ||
+        domain === 'example.edu' ||
+        domain.endsWith('.example'),
+        `Refusing to seed an automation run for non-example email: ${email}`
+    );
 };
 
 export class AutomationRunsImporter extends TableImporter<AutomationRun, Automation> {
@@ -67,10 +81,7 @@ export class AutomationRunsImporter extends TableImporter<AutomationRun, Automat
             to: new Date()
         });
 
-        assert(
-            member.email.endsWith('example.com') || member.email.endsWith('.example'),
-            `Refusing to seed an automation run for non-example email: ${member.email}`
-        );
+        assertExampleEmailDomain(member.email);
 
         return {
             id: this.fastFakeObjectId(),
