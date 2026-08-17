@@ -245,7 +245,9 @@ const NotificationPostPreview: React.FC<NotificationPostPreviewProps> = ({
 
         return (
             <ContentWarningOverlay
+                className='mt-2.5'
                 label={contentWarning}
+                size='compact'
                 onReveal={(event) => {
                     event.stopPropagation();
                     setIsContentWarningRevealed(true);

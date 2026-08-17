@@ -1,5 +1,5 @@
 import FeedItemMenu from './feed-item-menu';
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useLayoutEffect, useRef, useState} from 'react';
 import {ActivityPubAttachment, ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Skeleton} from '@tryghost/shade/components';
 import {H4, Text} from '@tryghost/shade/primitives';
@@ -189,41 +189,69 @@ export function SensitiveMediaOverlay({
     size?: 'default' | 'compact';
     onReveal: (event: React.MouseEvent) => void;
 }) {
+    const isCompact = size === 'compact';
+
     return (
         <div
             className={clsx(
-                '[container-type:size] flex items-center justify-center overflow-hidden bg-foreground/45 p-[clamp(0.75rem,6cqh,2rem)] text-background backdrop-blur-xl',
-                isLayered ? 'absolute inset-0 rounded-none' : size === 'compact' ? 'relative rounded-xl' : 'relative mt-3 min-h-[300px] w-full rounded-xl',
+                'flex items-center justify-center overflow-hidden bg-foreground/45 text-background backdrop-blur-xl',
+                isCompact
+                    ? 'relative rounded-md p-2'
+                    : '[container-type:size] p-[clamp(0.75rem,6cqh,2rem)]',
+                isLayered
+                    ? 'absolute inset-0 rounded-none'
+                    : isCompact
+                        ? null
+                        : 'relative mt-3 min-h-[300px] w-full rounded-md',
                 className
             )}
             data-testid='sensitive-media-overlay'
             onClick={(event) => event.stopPropagation()}
         >
             <div className='absolute inset-0 bg-foreground/35' />
-            <div className='relative z-10 grid size-full max-w-[520px] grid-rows-[minmax(0,1fr)_auto_minmax(0.5rem,6cqh)_auto_minmax(0.75rem,8cqh)_auto_minmax(0,1fr)] justify-items-center text-center'>
-                <LucideIcon.EyeOff aria-hidden='true' className='row-start-2 size-[clamp(1.5rem,14cqh,2.25rem)]' strokeWidth={2.25} />
-                <div className='row-start-4 flex flex-col items-center gap-1'>
-                    <Text className='text-background' weight='bold'>Sensitive media</Text>
-                    <Text className='leading-tight text-background'>The following may contain sensitive material</Text>
+            {isCompact ? (
+                <div className='relative z-10 flex flex-col items-center justify-center gap-0.5 text-center'>
+                    <LucideIcon.EyeOff aria-hidden='true' className='size-5' strokeWidth={2.25} />
+                    <Text className='text-sm leading-none text-background' weight='bold'>Sensitive media</Text>
+                    <Button
+                        aria-label='Show media'
+                        className='mt-0.5 h-6 rounded-full bg-background/35 px-3 text-xs font-bold text-background shadow-[0_0_0_1px_color-mix(in_oklab,var(--background)_35%,transparent)] hover:bg-background/25 hover:text-background'
+                        size='sm'
+                        type='button'
+                        variant='ghost'
+                        onClick={onReveal}
+                    >
+                        Show
+                    </Button>
                 </div>
-                <Button
-                    aria-label='Show media'
-                    className='row-start-6 rounded-full bg-background/35 px-8 font-bold text-background shadow-[0_0_0_1px_color-mix(in_oklab,var(--background)_35%,transparent)] hover:bg-background/25 hover:text-background'
-                    size='default'
-                    type='button'
-                    variant='ghost'
-                    onClick={onReveal}
-                >
-                    Show
-                </Button>
-            </div>
+            ) : (
+                <div className='relative z-10 grid size-full max-w-[520px] grid-rows-[minmax(0,1fr)_auto_minmax(0.5rem,6cqh)_auto_minmax(0.75rem,8cqh)_auto_minmax(0,1fr)] justify-items-center text-center'>
+                    <LucideIcon.EyeOff aria-hidden='true' className='row-start-2 size-[clamp(1.5rem,14cqh,2.25rem)]' strokeWidth={2.25} />
+                    <div className='row-start-4 flex flex-col items-center gap-1'>
+                        <Text className='text-background' weight='bold'>Sensitive media</Text>
+                        <Text className='leading-tight text-background'>The following may contain sensitive material</Text>
+                    </div>
+                    <Button
+                        aria-label='Show media'
+                        className='row-start-6 rounded-full bg-background/35 px-8 font-bold text-background shadow-[0_0_0_1px_color-mix(in_oklab,var(--background)_35%,transparent)] hover:bg-background/25 hover:text-background'
+                        size='default'
+                        type='button'
+                        variant='ghost'
+                        onClick={onReveal}
+                    >
+                        Show
+                    </Button>
+                </div>
+            )}
         </div>
     );
 }
 
 export function SensitiveMediaHideButton({
+    label = 'Hide media',
     onHide
 }: {
+    label?: string;
     onHide: (event: React.MouseEvent) => void;
 }) {
     return (
@@ -235,50 +263,81 @@ export function SensitiveMediaHideButton({
             variant='ghost'
             onClick={onHide}
         >
-            Hide
+            {label}
         </Button>
     );
 }
 
 export function ContentWarningOverlay({
     className = '',
+    isLayered = false,
     label,
     size = 'default',
     onReveal
 }: {
     className?: string;
+    isLayered?: boolean;
     label: string;
     size?: 'default' | 'compact';
     onReveal: (event: React.MouseEvent) => void;
 }) {
+    const isCompact = size === 'compact';
+
     return (
         <div
             className={clsx(
-                '[container-type:size] flex items-center justify-center overflow-hidden bg-foreground/45 p-[clamp(0.75rem,6cqh,2rem)] text-background backdrop-blur-xl',
-                size === 'compact' ? 'relative w-full rounded-xl' : 'relative mt-3 min-h-[300px] w-full rounded-xl',
+                'flex w-full items-center justify-center overflow-hidden bg-foreground/45 text-background backdrop-blur-xl',
+                isCompact
+                    ? 'p-4'
+                    : '[container-type:inline-size] p-[clamp(0.75rem,6cqw,2rem)]',
+                isLayered
+                    ? 'absolute inset-0 rounded-none'
+                    : isCompact
+                        ? 'relative min-h-[73px] w-full rounded-md'
+                        : 'relative min-h-[300px] w-full rounded-md',
                 className
             )}
             data-testid='content-warning-overlay'
             onClick={(event) => event.stopPropagation()}
         >
             <div className='absolute inset-0 bg-foreground/35' />
-            <div className='relative z-10 grid size-full max-w-[520px] grid-rows-[minmax(0,1fr)_auto_clamp(1.25rem,3.85cqw,1.8rem)_auto_clamp(1.5rem,5.15cqw,2.4rem)_auto_minmax(0,1fr)] justify-items-center text-center'>
-                <LucideIcon.EyeOff aria-hidden='true' className='row-start-2 size-[clamp(1.5rem,4.85cqw,2.25rem)]' strokeWidth={2.25} />
-                <div className='row-start-4 flex flex-col items-center gap-1'>
-                    <Text className='text-background' weight='bold'>Content warning:</Text>
-                    <Text className='leading-tight text-background'>{label}</Text>
+            {isCompact ? (
+                <div className='relative z-10 flex w-full max-w-[520px] flex-col items-center justify-center gap-2 text-center'>
+                    <LucideIcon.EyeOff aria-hidden='true' className='size-5' strokeWidth={2.25} />
+                    <div className='flex flex-col items-center gap-0.5'>
+                        <Text className='text-sm text-background' weight='bold'>Content warning:</Text>
+                        <Text className='text-sm leading-tight text-background'>{label}</Text>
+                    </div>
+                    <Button
+                        aria-label='Show post'
+                        className='rounded-full bg-background/35 px-6 text-sm font-bold text-background shadow-[0_0_0_1px_color-mix(in_oklab,var(--background)_35%,transparent)] hover:bg-background/25 hover:text-background'
+                        size='sm'
+                        type='button'
+                        variant='ghost'
+                        onClick={onReveal}
+                    >
+                        Show
+                    </Button>
                 </div>
-                <Button
-                    aria-label='Show post'
-                    className='row-start-6 rounded-full bg-background/35 px-8 font-bold text-background shadow-[0_0_0_1px_color-mix(in_oklab,var(--background)_35%,transparent)] hover:bg-background/25 hover:text-background'
-                    size='default'
-                    type='button'
-                    variant='ghost'
-                    onClick={onReveal}
-                >
-                    Show
-                </Button>
-            </div>
+            ) : (
+                <div className='relative z-10 grid size-full max-w-[520px] grid-rows-[minmax(0,1fr)_auto_clamp(1.25rem,3.85cqw,1.8rem)_auto_clamp(1.5rem,5.15cqw,2.4rem)_auto_minmax(0,1fr)] justify-items-center text-center'>
+                    <LucideIcon.EyeOff aria-hidden='true' className='row-start-2 size-[clamp(1.5rem,4.85cqw,2.25rem)]' strokeWidth={2.25} />
+                    <div className='row-start-4 flex flex-col items-center gap-1'>
+                        <Text className='text-background' weight='bold'>Content warning:</Text>
+                        <Text className='leading-tight text-background'>{label}</Text>
+                    </div>
+                    <Button
+                        aria-label='Show post'
+                        className='row-start-6 rounded-full bg-background/35 px-8 font-bold text-background shadow-[0_0_0_1px_color-mix(in_oklab,var(--background)_35%,transparent)] hover:bg-background/25 hover:text-background'
+                        size='default'
+                        type='button'
+                        variant='ghost'
+                        onClick={onReveal}
+                    >
+                        Show
+                    </Button>
+                </div>
+            )}
         </div>
     );
 }
@@ -401,6 +460,9 @@ const FeedItem: React.FC<FeedItemProps> = ({
     const [isSensitiveMediaRevealed, setIsSensitiveMediaRevealed] = useState(false);
     const [isSensitiveMediaManuallyHidden, setIsSensitiveMediaManuallyHidden] = useState(false);
     const [isContentWarningRevealed, setIsContentWarningRevealed] = useState(false);
+    const [showContentWarningOverlay, setShowContentWarningOverlay] = useState(true);
+    const [contentWarningMinHeight, setContentWarningMinHeight] = useState<number | undefined>(undefined);
+    const contentWarningWrapperRef = useRef<HTMLDivElement>(null);
 
     const contentRef = useRef<HTMLDivElement>(null);
     const [isTruncated, setIsTruncated] = useState(false);
@@ -412,7 +474,20 @@ const FeedItem: React.FC<FeedItemProps> = ({
         setIsSensitiveMediaRevealed(false);
         setIsSensitiveMediaManuallyHidden(false);
         setIsContentWarningRevealed(false);
+        setShowContentWarningOverlay(true);
+        setContentWarningMinHeight(undefined);
     }, [object?.id]);
+
+    useLayoutEffect(() => {
+        if (!isContentWarningRevealed || !showContentWarningOverlay) {
+            return;
+        }
+
+        // Content is mounted under the overlay; remove the overlay before paint
+        // so the browser never paints an empty intermediate frame.
+        setShowContentWarningOverlay(false);
+        setContentWarningMinHeight(undefined);
+    }, [isContentWarningRevealed, showContentWarningOverlay]);
 
     const followMutation = useFollowMutationForUser(
         'index',
@@ -524,6 +599,10 @@ const FeedItem: React.FC<FeedItemProps> = ({
 
     const handleRevealContentWarning = (event: React.MouseEvent) => {
         event.stopPropagation();
+        const height = contentWarningWrapperRef.current?.offsetHeight;
+        if (height) {
+            setContentWarningMinHeight(height);
+        }
         setIsContentWarningRevealed(true);
     };
 
@@ -536,7 +615,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
             }
 
             const mediaWrapperClassName = clsx(
-                'relative mt-3 overflow-hidden rounded-xl [&>.attachment-gallery]:mt-0 [&>img]:mt-0 [&>img]:block',
+                'relative mt-3 overflow-hidden rounded-md [&>.attachment-gallery]:mt-0 [&>img]:mt-0 [&>img]:block',
                 Array.isArray(getAttachment(object)) ? 'w-full' : 'w-fit max-w-full'
             );
 
@@ -566,7 +645,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
             return (
                 <div className={mediaWrapperClassName}>
                     {media}
-                    <SensitiveMediaHideButton onHide={handleHideSensitiveMedia} />
+                    <SensitiveMediaHideButton label='Hide' onHide={handleHideSensitiveMedia} />
                 </div>
             );
         }
@@ -574,17 +653,82 @@ const FeedItem: React.FC<FeedItemProps> = ({
         return media;
     };
 
-    const renderContentWarningOverlay = () => {
+    const renderContentWarningOverlay = (isLayered = false) => {
         if (!contentWarning) {
             return null;
         }
 
         return (
             <ContentWarningOverlay
+                isLayered={isLayered}
                 label={contentWarning}
                 size={layout === 'inbox' || layout === 'reply' ? 'compact' : 'default'}
                 onReveal={handleRevealContentWarning}
             />
+        );
+    };
+
+    const renderNoteContent = (options?: {
+        contentClassName?: string;
+        mediaClickHandler?: (url: string) => void;
+        showName?: boolean;
+    }) => {
+        const {
+            contentClassName = 'ap-note-content break-anywhere line-clamp-[10] leading-[1.4285714286] tracking-[-0.006em] text-pretty text-gray-900 dark:text-gray-300 [&_p+p]:mt-3',
+            mediaClickHandler = openLightbox,
+            showName = false
+        } = options ?? {};
+
+        return (
+            <>
+                {showName && object.name && (
+                    <H4 className='break-anywhere mb-1 leading-tight' data-test-activity-heading>{object.name}</H4>
+                )}
+                <div className={contentClassName}>
+                    {!isLoading ?
+                        <div dangerouslySetInnerHTML={{
+                            __html: sanitizeHtml(openLinksInNewTab(object.content || '') ?? '')
+                        }} ref={contentRef}
+                        onClick={(e) => {
+                            const target = e.target as HTMLElement;
+                            if (
+                                target.tagName === 'A' ||
+                                target.closest('a')
+                            ) {
+                                e.stopPropagation();
+                            }
+                        }}
+                        />
+                        :
+                        <Skeleton count={2} />
+                    }
+                </div>
+                {isTruncated && (
+                    <button className='mt-1 text-blue-600' type='button'>Show more</button>
+                )}
+                {renderFeedMedia(mediaClickHandler)}
+            </>
+        );
+    };
+
+    const renderNoteContentWithWarning = (options?: {
+        contentClassName?: string;
+        mediaClickHandler?: (url: string) => void;
+        showName?: boolean;
+    }) => {
+        if (!contentWarning) {
+            return renderNoteContent(options);
+        }
+
+        return (
+            <div
+                ref={contentWarningWrapperRef}
+                className='relative w-full'
+                style={contentWarningMinHeight ? {minHeight: contentWarningMinHeight} : undefined}
+            >
+                {isContentWarningRevealed && renderNoteContent(options)}
+                {showContentWarningOverlay && renderContentWarningOverlay(isContentWarningRevealed)}
+            </div>
         );
     };
 
@@ -705,31 +849,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                                 </div>
                                         ) :
                                             <div className='relative'>
-                                                {shouldHideContentWarning ? renderContentWarningOverlay() : <>
-                                                    <div className='ap-note-content break-anywhere line-clamp-[10] leading-[1.4285714286] tracking-[-0.006em] text-pretty text-gray-900 dark:text-gray-300 [&_p+p]:mt-3'>
-                                                        {!isLoading ?
-                                                            <div dangerouslySetInnerHTML={{
-                                                                __html: sanitizeHtml(openLinksInNewTab(object.content || '') ?? '')
-                                                            }} ref={contentRef}
-                                                            onClick={(e) => {
-                                                                const target = e.target as HTMLElement;
-                                                                if (
-                                                                    target.tagName === 'A' ||
-                                                                    target.closest('a')
-                                                                ) {
-                                                                    e.stopPropagation();
-                                                                }
-                                                            }}
-                                                            />
-                                                            :
-                                                            <Skeleton count={2} />
-                                                        }
-                                                    </div>
-                                                    {isTruncated && (
-                                                        <button className='mt-1 text-blue-600' type='button'>Show more</button>
-                                                    )}
-                                                    {renderFeedMedia(openLightbox)}
-                                                </>}
+                                                {renderNoteContentWithWarning()}
                                             </div>
                                         }
                                     </div>
@@ -789,11 +909,10 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                 </>}
                                 <div className={`relative z-10 col-start-1 col-end-3 w-full gap-4`}>
                                     <div className='flex flex-col items-start'>
-                                        {shouldHideContentWarning ? renderContentWarningOverlay() : <>
-                                            {object.name && <H4 className='break-anywhere mb-1 leading-tight' data-test-activity-heading>{object.name}</H4>}
-                                            <div dangerouslySetInnerHTML={({__html: sanitizeHtml(openLinksInNewTab(object.content || '') ?? '')})} ref={contentRef} className='ap-note-content-large break-anywhere text-[1.6rem] tracking-[-0.011em] text-pretty text-gray-900 dark:text-gray-300 [&_p+p]:mt-3'></div>
-                                            {renderFeedMedia(openLightbox)}
-                                        </>}
+                                        {renderNoteContentWithWarning({
+                                            contentClassName: 'ap-note-content-large break-anywhere text-[1.6rem] tracking-[-0.011em] text-pretty text-gray-900 dark:text-gray-300 [&_p+p]:mt-3',
+                                            showName: true
+                                        })}
                                         <div className='space-between mt-3 ml-[-8px] flex'>
                                             {showStats && <FeedItemStats
                                                 actor={author}
@@ -988,7 +1107,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                         </div>
                         {shouldHideContentWarning ? null : shouldHideSensitiveMedia ? (
                             <SensitiveMediaOverlay
-                                className='ml-8 hidden h-[91px] w-[121px] shrink-0 items-center justify-center p-3 text-sm md:ml-9 @md/inbox-item:flex [&_button]:mt-1'
+                                className='ml-8 hidden h-[91px] w-[121px] shrink-0 md:ml-9 @md/inbox-item:flex'
                                 size='compact'
                                 onReveal={handleRevealSensitiveMedia}
                             />
