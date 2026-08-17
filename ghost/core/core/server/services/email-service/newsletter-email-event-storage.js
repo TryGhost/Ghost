@@ -120,7 +120,7 @@ class NewsletterEmailEventStorage {
     /**
      * @private
      * @param {'temporary'|'permanent'} severity
-     * @param {import('./events/email-temporary-bounced-event')|import('./events/email-bounced-event')} event
+     * @param {import('./events/email-temporary-bounced-event').EmailTemporaryBouncedEvent|import('./events/email-bounced-event').EmailBouncedEvent} event
      * @param {{transacting?: any}} options
      * @returns
      */
@@ -223,7 +223,7 @@ class NewsletterEmailEventStorage {
      */
 
     /**
-     * @param {import('./events/email-unsubscribed-event')} event
+     * @param {import('./events/email-unsubscribed-event').EmailUnsubscribedEvent} event
      * @returns {Promise<FindNewslettersToKeepResult>}
      */
     async findNewslettersToKeep(event) {
