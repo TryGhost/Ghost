@@ -4,7 +4,7 @@ const LastSeenAtUpdater = require('../../../../../core/server/services/members-e
 const DomainEvents = require('@tryghost/domain-events');
 const {MemberPageViewEvent, MemberCommentEvent, MemberSubscribeEvent, MemberLinkClickEvent} = require('../../../../../core/shared/events');
 const moment = require('moment');
-const EmailOpenedEvent = require('../../../../../core/server/services/email-service/events/email-opened-event');
+const {EmailOpenedEvent} = require('../../../../../core/server/services/email-service/events/email-opened-event');
 const EventEmitter = require('events');
 const logging = require('@tryghost/logging');
 
