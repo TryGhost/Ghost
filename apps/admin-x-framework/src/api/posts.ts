@@ -80,6 +80,17 @@ export const useDeletePost = createMutation<unknown, string>({
     path: id => `/posts/${id}/`
 });
 
+export const useImportContentCSV = createMutation<unknown, File>({
+    method: 'POST',
+    retry: false,
+    path: () => '/posts/upload/',
+    body: (file) => {
+        const formData = new FormData();
+        formData.append('postsfile', file);
+        return formData;
+    }
+});
+
 // Search index endpoints for efficient search
 export const useSearchIndexPosts = createQuery<PostsResponseType>({
     dataType,
