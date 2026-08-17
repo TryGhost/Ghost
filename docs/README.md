@@ -84,6 +84,7 @@ Codebase guides explain how the main systems fit together:
 - [Post analytics](codebase/post-analytics.md)
 - [Site UUID](codebase/site-uuid.md)
 - [Stripe flows](codebase/stripe-flows.md)
+- [Theme compatibility](codebase/theme-compatibility.md)
 
 Practice and contributor guides explain how to make and verify changes:
 
