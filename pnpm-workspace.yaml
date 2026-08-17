@@ -80,22 +80,23 @@ catalog:
   '@testing-library/jest-dom': 6.9.1
   '@testing-library/react': 14.3.1
   '@tryghost/api-framework': 3.3.5
-  '@tryghost/brute-knex': 3.2.1
+  '@tryghost/brute-knex': 3.2.2
   '@tryghost/color-utils': 0.2.20
   '@tryghost/custom-fonts': 1.0.11
-  '@tryghost/debug': 2.3.5
-  '@tryghost/domain-events': 3.3.5
-  '@tryghost/errors': 3.3.5
+  '@tryghost/debug': 2.3.8
+  '@tryghost/domain-events': 3.3.9
+  '@tryghost/errors': 3.3.8
   '@tryghost/helpers': 1.1.106
   '@tryghost/limit-service': 1.5.6
-  '@tryghost/logging': 5.3.3
+  '@tryghost/logging': 5.3.4
+  '@tryghost/metrics': 3.4.2
   '@tryghost/mongo-knex': 0.11.1
   '@tryghost/nql': 0.13.3
   '@tryghost/nql-lang': 0.7.0
-  '@tryghost/request': 4.0.0
+  '@tryghost/request': 4.0.1
   '@tryghost/string': 0.3.5
   '@tryghost/timezone-data': 1.0.0
-  '@tryghost/tpl': 2.3.5
+  '@tryghost/tpl': 2.3.8
   '@types/express': 4.17.25
   '@types/html-minifier': ^4.0.6
   '@types/lodash': 4.17.25
