@@ -213,6 +213,9 @@ catalog:
   remark-validate-links: 13.1.0
   markdownlint-cli2: 0.23.2
   parse-email-address: 0.0.4
+  '@breejs/later': 4.2.0
+  fastq: ^1.20.1
+  cron-validate: 1.4.5
 
 catalogs:
   react17:
@@ -230,6 +233,7 @@ overrides:
   # Ghost's migrations build queries with the 2.4.2 query builder and knex-migrator
   # executes them, so its knex must match Ghost's major or the 3.x runner throws on
   # the 2.x builder. Pin it back to 2.4.2 until ghost/core itself moves to knex 3.x.
+  cron-validate: 1.4.5
   'knex-migrator>knex': 2.4.2
   '@tryghost/errors': 'catalog:'
   '@tryghost/logging': 'catalog:'
