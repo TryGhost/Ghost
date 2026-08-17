@@ -17,32 +17,34 @@ import {useStickyList} from '@/automations/proto/float/use-sticky-list';
 // - All time by default. Coming in pre-filtered to 30 days meant the totals here
 //   silently disagreed with the automations list, which is the first thing anyone
 //   checks. The timeframe is still there, it just isn't applied for you.
-// - Three statuses instead of four. "Exited" absorbs every early ending —
+// - Three statuses instead of four. "Exited early" absorbs every early ending —
 //   unsubscribed, upgraded, failed — because from the flow's point of view they
 //   are one outcome: the member stopped before the end. Why they left is a
-//   property of that member, not a column in this table.
+//   property of that member, not a column in this table. The three match the
+//   shared run vocabulary in shared/member-runs, so the pane and anything else
+//   describing a run agree.
 // - "Entered" rather than "Started", which was ambiguous about whether it meant
 //   the run or the member.
 
 const CHART_HEIGHT = 'h-44';
 
-type StatusKey = 'Running' | 'Done' | 'Exited';
+type StatusKey = 'In progress' | 'Completed' | 'Exited early';
 type SortKey = 'member' | 'entered' | 'status';
 
 const statusOf = (run: AutomationRun): StatusKey => {
     if (run.status === 'in_progress') {
-        return 'Running';
+        return 'In progress';
     }
-    return run.status === 'completed' ? 'Done' : 'Exited';
+    return run.status === 'completed' ? 'Completed' : 'Exited early';
 };
 
 // Static in-progress glyph — a dashed track with a solid arc over it. Replaces
 // variant A's ring that filled to a synthetic percentage: that number was
 // invented (nothing in a run tells us how far through a wait a member is), and a
-// fixed mark says "running" without implying precision we don't have.
+// fixed mark says "in progress" without implying precision we don't have.
 // currentColor rather than the source's hex, so it takes the status colour and
 // flips with the theme.
-const RunningGlyph: React.FC = () => (
+const InProgressGlyph: React.FC = () => (
     <svg className="size-4 shrink-0" fill="none" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
         <circle cx="8" cy="8" r="6" stroke="currentColor" strokeDasharray="1 3" strokeLinecap="round" strokeWidth="1.5" />
         <path d="M8 14C11.3137 14 14 11.3137 14 8C14 4.68629 11.3137 2 8 2" stroke="currentColor" strokeWidth="1.5" />
@@ -53,9 +55,9 @@ const RunningGlyph: React.FC = () => (
 // the collapsed chips and the table's Status column, so the three always read as
 // the same thing.
 const STATUS_FACETS: {key: StatusKey; color: string; glyph: React.ReactNode}[] = [
-    {key: 'Running', color: 'text-blue-500', glyph: <RunningGlyph />},
-    {key: 'Done', color: 'text-green', glyph: <LucideIcon.Check className="size-4 shrink-0" strokeWidth={2} />},
-    {key: 'Exited', color: 'text-muted-foreground', glyph: <LucideIcon.LogOut className="size-4 shrink-0" strokeWidth={1.5} />}
+    {key: 'In progress', color: 'text-blue-500', glyph: <InProgressGlyph />},
+    {key: 'Completed', color: 'text-green', glyph: <LucideIcon.Check className="size-4 shrink-0" strokeWidth={2} />},
+    {key: 'Exited early', color: 'text-muted-foreground', glyph: <LucideIcon.LogOut className="size-4 shrink-0" strokeWidth={1.5} />}
 ];
 
 const facetColor = (status: StatusKey): string => STATUS_FACETS.find(facet => facet.key === status)?.color ?? '';
@@ -129,7 +131,7 @@ export const LeftPanelVariantB: React.FC<LeftPanelProps> = ({scenario, selectedM
 
     const sorted = useMemo(() => {
         const rows = statusFilter ? searched.filter(row => row.status === statusFilter) : [...searched];
-        const order: StatusKey[] = ['Running', 'Done', 'Exited'];
+        const order: StatusKey[] = ['In progress', 'Completed', 'Exited early'];
         rows.sort((a, b) => {
             // enrolled_at is ISO 8601, so a lexical compare is chronological.
             const cmp = sort.key === 'status'
