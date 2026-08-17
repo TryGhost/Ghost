@@ -1,5 +1,6 @@
 import {faker} from '@faker-js/faker';
 import errors from '@tryghost/errors';
+import assert from 'node:assert/strict';
 import type {Knex} from 'knex';
 import {TableImporter} from './table-importer';
 // @ts-expect-error This module currently lacks type definitions.
@@ -65,6 +66,11 @@ class AutomationRunsImporter extends TableImporter<AutomationRun, Automation> {
             from: new Date(Math.max(automationCreatedAt.valueOf(), memberCreatedAt.valueOf())),
             to: new Date()
         });
+
+        assert(
+            member.email.endsWith('example.com') || member.email.endsWith('.example'),
+            `Refusing to seed an automation run for non-example email: ${member.email}`
+        );
 
         return {
             id: this.fastFakeObjectId(),
