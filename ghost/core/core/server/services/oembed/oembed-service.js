@@ -52,6 +52,10 @@ const GZIP_MAGIC = [0x1f, 0x8b];
 const SVG_EXTENSIONS = new Set(['.svg', '.svgz']);
 const SVG_SNIFF_BYTES = 1024;
 
+const toBuffer = (bytes) => {
+    return Buffer.isBuffer(bytes) ? bytes : Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+};
+
 const shouldRasterize = (buffer, ext) => {
     if (SVG_EXTENSIONS.has(ext.toLowerCase())) {
         return true;
@@ -179,8 +183,8 @@ class OEmbedService {
      * @returns {Promise<Buffer>} - Promise resolving to the image buffer
      */
     async fetchImageBuffer(imageUrl) {
-        const buffer = await this.externalRequest(imageUrl).buffer();
-        return buffer;
+        const bytes = await this.externalRequest(imageUrl).buffer();
+        return toBuffer(bytes);
     }
 
     /**
@@ -305,6 +309,8 @@ class OEmbedService {
                 responseType: 'buffer',
                 ...options
             });
+
+        body = toBuffer(body);
 
         try {
             // Detect page encoding which might not be utf-8
