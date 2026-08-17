@@ -55,8 +55,8 @@ const InProgressGlyph: React.FC = () => (
 // the collapsed chips and the table's Status column, so the three always read as
 // the same thing.
 const STATUS_FACETS: {key: StatusKey; color: string; glyph: React.ReactNode}[] = [
-    {key: 'In progress', color: 'text-blue-500', glyph: <InProgressGlyph />},
-    {key: 'Completed', color: 'text-green', glyph: <LucideIcon.Check className="size-4 shrink-0" strokeWidth={2} />},
+    {key: 'In progress', color: 'text-blue-600 dark:text-blue', glyph: <InProgressGlyph />},
+    {key: 'Completed', color: 'text-green-600 dark:text-green', glyph: <LucideIcon.Check className="size-4 shrink-0" strokeWidth={2} />},
     {key: 'Exited early', color: 'text-muted-foreground', glyph: <LucideIcon.LogOut className="size-4 shrink-0" strokeWidth={1.5} />}
 ];
 

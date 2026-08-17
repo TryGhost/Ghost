@@ -91,10 +91,16 @@ const StatusGlyph: React.FC<{run: AutomationRun; label: string; pct: number}> = 
 // The four derived statuses, each with the same glyph + colour the table's
 // Status column uses — so the count/filter cards read as the same thing as the
 // column. Running shows a fixed ~50% ring just to convey the shape.
+//
+// -600 in light, the plain alias (-500) in dark. The palette is absolute — it
+// doesn't flip per mode — so a bare `text-green` is the same value on a white
+// pane as on a dark one, which is far too pale in light. These are unbacked
+// glyphs sitting straight on the surface, so they stop at -600; the -800 the
+// run badges use is tuned for text on a pastel /20 tint and reads heavy here.
 const STATUS_FACETS: {label: string; color: string; glyph: React.ReactNode}[] = [
-    {label: 'Running', color: 'text-blue-500', glyph: <ProgressRing value={50} />},
-    {label: 'Upgraded', color: 'text-green', glyph: <LucideIcon.ChevronsUp strokeWidth={1.5} />},
-    {label: 'Unsubscribed', color: 'text-yellow', glyph: <LucideIcon.CircleMinus strokeWidth={1.5} />},
+    {label: 'Running', color: 'text-blue-600 dark:text-blue', glyph: <ProgressRing value={50} />},
+    {label: 'Upgraded', color: 'text-green-600 dark:text-green', glyph: <LucideIcon.ChevronsUp strokeWidth={1.5} />},
+    {label: 'Unsubscribed', color: 'text-yellow-600 dark:text-yellow', glyph: <LucideIcon.CircleMinus strokeWidth={1.5} />},
     {label: 'Done', color: 'text-muted-foreground', glyph: <LucideIcon.Check strokeWidth={1.5} />}
 ];
 
@@ -338,10 +344,10 @@ export const CanvasSidePanel: React.FC<CanvasSidePanelProps> = ({scenario, selec
                         // via currentColor), Upgraded green, Unsubscribed yellow, and
                         // Done (settled) is muted. Mirrors the status cards' colours.
                         const statusColor = statusLabel === 'Upgraded'
-                            ? 'text-green'
+                            ? 'text-green-600 dark:text-green'
                             : statusLabel === 'Unsubscribed'
-                                ? 'text-yellow'
-                                : run.status === 'in_progress' ? 'text-blue-500' : 'text-muted-foreground';
+                                ? 'text-yellow-600 dark:text-yellow'
+                                : run.status === 'in_progress' ? 'text-blue-600 dark:text-blue' : 'text-muted-foreground';
                         return (
                             <TableRow
                                 key={run.id}

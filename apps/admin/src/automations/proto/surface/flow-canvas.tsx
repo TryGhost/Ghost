@@ -49,8 +49,8 @@ const FlowStepNode: React.FC<NodeProps> = ({data}) => {
         return (
             <div className={cn('flex w-[400px] items-center justify-center gap-2 rounded-full border px-4 py-2 text-sm font-medium', NODE_CARD_SURFACE, terminalBorder, muted && 'opacity-60')}>
                 <Handle position={Position.Top} style={{opacity: 0}} type="target" />
-                {done && <LucideIcon.Check className="size-4 text-green" strokeWidth={2.5} />}
-                <span className={cn(done && 'text-green', muted && 'text-muted-foreground')}>{d.title}</span>
+                {done && <LucideIcon.Check className="size-4 text-green-600 dark:text-green" strokeWidth={2.5} />}
+                <span className={cn(done && 'text-green-600 dark:text-green', muted && 'text-muted-foreground')}>{d.title}</span>
             </div>
         );
     }
@@ -60,9 +60,9 @@ const FlowStepNode: React.FC<NodeProps> = ({data}) => {
     const border: NodeBorder = d.analyticsOpen ? 'selected' : current ? 'current' : done ? 'done' : 'default';
     // Run-state icon fills the same header slot the overflow/lock occupies in edit mode.
     const action = done
-        ? <LucideIcon.Check className="size-4 text-green" strokeWidth={2.5} />
+        ? <LucideIcon.Check className="size-4 text-green-600 dark:text-green" strokeWidth={2.5} />
         : current
-            ? <LucideIcon.Clock className="size-4 text-blue" />
+            ? <LucideIcon.Clock className="size-4 text-blue-600 dark:text-blue" />
             : undefined;
 
     // Single-line header (no overline) matching edit mode's one-line title. Email flips

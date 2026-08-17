@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import type {AutomationDetail} from '@tryghost/admin-x-framework/api/automations';
-import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, EmptyIndicator, HoverCard, HoverCardContent, HoverCardTrigger, Popover, PopoverClose, PopoverContent, PopoverTrigger} from '@tryghost/shade/components';
+import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Button, EmptyIndicator, HoverCard, HoverCardContent, HoverCardTrigger, Popover, PopoverClose, PopoverContent, PopoverTrigger} from '@tryghost/shade/components';
 import {Inline, Stack} from '@tryghost/shade/primitives';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
 import {toast} from 'sonner';
@@ -11,6 +11,7 @@ import {type ChangeEntry, changeSummary} from './change-summary';
 import {EDITING_MODEL_SLOT} from './editing-model';
 import {LEFT_PANEL_SLOT, leftPanelComponent} from './panel-variants';
 import {ProtoVariantSwitcher, ProtoVariantsProvider} from '@/automations/proto/shared/proto-variant-switcher';
+import {StatusBadge} from '@/automations/proto/shared/status-badge';
 import {DEFAULT_TRIGGER_CONFIG, type TriggerConfig} from '@/automations/proto/shared/trigger-config';
 import {useProtoVariant} from '@/automations/proto/shared/proto-variants';
 import {CANVAS_SURFACE} from '@/automations/proto/surface/flow-utils';
@@ -21,59 +22,12 @@ import {useVersionLink} from '@/automations/proto/shared/use-version-link';
 type LiveStatus = 'active' | 'inactive';
 type SaveState = 'saved' | 'saving';
 
-const StatusPill: React.FC<{status: LiveStatus}> = ({status}) => (
-    status === 'active'
-        ? (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-green/20 px-2 py-0.5 text-xs font-medium text-green uppercase">
-                <span className="size-1.5 rounded-full bg-green" />
-                On
-            </span>
-        )
-        : (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground uppercase">
-                Off
-            </span>
-        )
-);
-
-// Status and the action that changes it, as one control. Reads as the current
-// state — a status dot and On/Off — but it's a button, so the thing you're
-// reacting to is also the thing you click. That's a shorter path than reading the
-// state in one corner and acting on it in another, and it's why the top-right
-// needs no separate lifecycle button.
-//
-// The menu names the action rather than the state ("Turn off automation", not
-// "Off"): with two states a bare state list makes you infer what selecting it
-// does, whereas one explicit verb says it.
-const StatusControl: React.FC<{status: LiveStatus; onSelect: (next: LiveStatus) => void}> = ({status, onSelect}) => {
-    const on = status === 'active';
-    return (
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                {/* Button shape, badge colours: ghost (so there's no border fighting
-                    the tint) with the same green/muted values the status badge uses.
-                    The chevron inherits the text colour, so it tints too. */}
-                <Button
-                    className={cn(on
-                        ? 'bg-green/20 text-green hover:bg-green/30'
-                        : 'bg-muted text-muted-foreground hover:bg-muted-foreground/20')}
-                    variant="ghost"
-                >
-                    <span className={cn('size-1.5 shrink-0 rounded-full', on ? 'bg-green' : 'bg-muted-foreground')} />
-                    {on ? 'On' : 'Off'}
-                    <LucideIcon.ChevronDown className="opacity-50" />
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-                {on ? (
-                    <DropdownMenuItem onClick={() => onSelect('inactive')}>Turn off automation</DropdownMenuItem>
-                ) : (
-                    <DropdownMenuItem onClick={() => onSelect('active')}>Turn on automation</DropdownMenuItem>
-                )}
-            </DropdownMenuContent>
-        </DropdownMenu>
-    );
-};
+// Every control in this screen's floating chrome sits directly on the canvas, and
+// Shade's outline variant is bg-transparent — the dot grid reads straight through
+// it, so the button looks like a hole rather than a thing. An opaque surface is
+// all that's needed; no shadow, because no button in Ghost carries one. Elevation
+// here is the border plus the fact that it's opaque over a textured canvas.
+const FLOATING_CONTROL = 'bg-surface-elevated';
 
 // One rail button. `active` highlights it while its flyout is open. forwardRef
 // is required (not optional) whenever one of these is a Radix trigger with
@@ -193,8 +147,8 @@ const UnpublishedChanges: React.FC<{
 }> = ({changes, onDiscard, onPublish}) => (
     <Popover>
         <PopoverTrigger asChild>
-            <Button variant="outline">
-                <LucideIcon.TriangleAlert className="text-yellow" />
+            <Button className={FLOATING_CONTROL} variant="outline">
+                <LucideIcon.TriangleAlert className="text-yellow-600 dark:text-yellow" />
                 Unpublished changes
             </Button>
         </PopoverTrigger>
@@ -409,19 +363,6 @@ const AutomationFloat: React.FC = () => {
         setLiveStatus('inactive');
     };
 
-    // The status control only chooses a direction; the confirm dialogs are still
-    // what actually commit it, so both routes into a status change agree.
-    const handleStatusSelect = (next: LiveStatus) => {
-        if (next === liveStatus) {
-            return;
-        }
-        if (next === 'active') {
-            setStartOpen(true);
-        } else {
-            setStopOpen(true);
-        }
-    };
-
     // Only while the pane is actually on screen — entering edit mode hides the pane
     // (and its search) but the title stays put.
     const titleHidden = paneSearchOpen && !paneHidden;
@@ -512,10 +453,17 @@ const AutomationFloat: React.FC = () => {
                     for now and will come back once there's a decision to design. */}
                 <div className="absolute top-4 right-4 z-10 flex items-center gap-3">
                     {showEditCanvas && indicatorText && <span className="text-xs text-muted-foreground">{indicatorText}</span>}
-                    {/* Without an edit mode this corner holds two things at most: the
-                        draft to settle, when there is one, and the status control —
-                        which is the lifecycle button and the status badge collapsed
-                        into one, so nothing here is purely decorative. */}
+                    {/* Without an edit mode this corner holds the draft to settle, when
+                        there is one, and the lifecycle verb — the same Turn on / Turn off
+                        the other editing model uses.
+
+                        This corner briefly carried a combined status-and-action control
+                        instead: a green pill that reported On/Off and changed it. It
+                        collapsed two things into one, but the green read as decoration
+                        rather than as Ghost, and a tinted control floating on the canvas
+                        never got enough contrast to hold. Status went back to a badge
+                        beside the title, where the list page also puts it, and the corner
+                        went back to naming the action. */}
                     {alwaysEditable && (
                         <>
                             {hasUnpublishedChanges && (
@@ -525,14 +473,18 @@ const AutomationFloat: React.FC = () => {
                                     onPublish={handlePublishClick}
                                 />
                             )}
-                            <StatusControl status={liveStatus} onSelect={handleStatusSelect} />
+                            {liveStatus === 'inactive' ? (
+                                <Button onClick={() => setStartOpen(true)}>Turn on</Button>
+                            ) : (
+                                <Button className={FLOATING_CONTROL} variant="outline" onClick={() => setStopOpen(true)}>Turn off</Button>
+                            )}
                         </>
                     )}
 
                     {/* Explicit edit mode keeps the draft actions in the header. */}
                     {!alwaysEditable && hasUnpublishedChanges && (
                         <>
-                            <Button variant="outline" onClick={handleDiscard}>Discard changes</Button>
+                            <Button className={FLOATING_CONTROL} variant="outline" onClick={handleDiscard}>Discard changes</Button>
                             <Button onClick={handlePublishClick}>Publish changes</Button>
                         </>
                     )}
@@ -542,10 +494,10 @@ const AutomationFloat: React.FC = () => {
                         read mode. */}
                     {!hasUnpublishedChanges && !alwaysEditable && (
                         showEditCanvas ? (
-                            <Button variant="outline" onClick={() => setEditing(false)}>Done</Button>
+                            <Button className={FLOATING_CONTROL} variant="outline" onClick={() => setEditing(false)}>Done</Button>
                         ) : (
                             <>
-                                <Button variant="outline" onClick={() => setEditing(true)}>
+                                <Button className={FLOATING_CONTROL} variant="outline" onClick={() => setEditing(true)}>
                                     <LucideIcon.Pencil /> Edit
                                 </Button>
                                 {/* Same reasoning as the always-editable branch above:
@@ -555,7 +507,7 @@ const AutomationFloat: React.FC = () => {
                                 {liveStatus === 'inactive' ? (
                                     <Button onClick={() => setStartOpen(true)}>Turn on</Button>
                                 ) : (
-                                    <Button variant="outline" onClick={() => setStopOpen(true)}>Turn off</Button>
+                                    <Button className={FLOATING_CONTROL} variant="outline" onClick={() => setStopOpen(true)}>Turn off</Button>
                                 )}
                             </>
                         )
@@ -604,11 +556,12 @@ const AutomationFloat: React.FC = () => {
                                 variant="ghost"
                             >
                                 <span className="truncate">{automation.name}</span>
-                                {/* Without an edit mode the badge becomes its own
-                                    control beside the title, so it can't live inside
-                                    this button — nesting one would be invalid and
-                                    unclickable. */}
-                                {!alwaysEditable && <StatusPill status={liveStatus} />}
+                                {/* Status reads beside the title in both editing models,
+                                    which is where the list page puts it too — so the
+                                    automation you opened is labelled the same way it was
+                                    in the list. It's a plain badge, not a control: the
+                                    lifecycle verb lives in the top-right corner. */}
+                                <StatusBadge status={liveStatus} />
                             </Button>
                         </HoverCardTrigger>
                         <HoverCardContent align="start" className="max-h-80 w-64 overflow-y-auto p-1">
@@ -628,7 +581,7 @@ const AutomationFloat: React.FC = () => {
                                     }}
                                 >
                                     <span className="truncate">{a.name}</span>
-                                    <StatusPill status={a.status} />
+                                    <StatusBadge status={a.status} />
                                 </Button>
                             ))}
                         </HoverCardContent>
