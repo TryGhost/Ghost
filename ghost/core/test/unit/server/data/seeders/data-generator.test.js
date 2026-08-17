@@ -85,6 +85,12 @@ describe('Data Generator', function () {
                 }
             });
         }
+
+        await db('email_design_settings').insert({
+            id: '000000000000000000000001',
+            slug: 'default-automated-email',
+            created_at: new Date()
+        });
     });
 
     afterEach(async function () {
@@ -139,7 +145,7 @@ describe('Data Generator', function () {
         await dataGenerator.importData();
 
         const actions = await db.select('id', 'automation_id', 'created_at', 'type').from('automation_actions');
-        const revisions = await db.select('action_id', 'wait_hours', 'email_subject', 'email_lexical').from('automation_action_revisions');
+        const revisions = await db.select('action_id', 'wait_hours', 'email_subject', 'email_lexical', 'email_design_setting_id').from('automation_action_revisions');
         const edges = await db.select('source_action_id', 'target_action_id').from('automation_action_edges');
 
         assert.equal(actions.length, 8);
@@ -154,10 +160,12 @@ describe('Data Generator', function () {
                 assert.ok(actionRevisions.every(revision => revision.wait_hours !== null));
                 assert.ok(actionRevisions.every(revision => revision.email_subject === null));
                 assert.ok(actionRevisions.every(revision => revision.email_lexical === null));
+                assert.ok(actionRevisions.every(revision => revision.email_design_setting_id === null));
             } else {
                 assert.ok(actionRevisions.every(revision => revision.wait_hours === null));
                 assert.ok(actionRevisions.every(revision => revision.email_subject !== null));
                 assert.ok(actionRevisions.every(revision => revision.email_lexical !== null));
+                assert.ok(actionRevisions.every(revision => revision.email_design_setting_id === '000000000000000000000001'));
             }
         }
 

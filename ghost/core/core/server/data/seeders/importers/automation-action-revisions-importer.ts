@@ -4,6 +4,7 @@ import type {Knex} from 'knex';
 import {TableImporter} from './table-importer';
 // @ts-expect-error This module currently lacks type definitions.
 import dateToDatabaseString from '../utils/database-date';
+import {DEFAULT_EMAIL_DESIGN_SETTING_SLUG} from '../../../services/member-welcome-emails/constants';
 
 type AutomationAction = {
     id: string;
@@ -18,7 +19,7 @@ type AutomationActionRevision = {
     wait_hours: number | null;
     email_subject: string | null;
     email_lexical: string | null;
-    email_design_setting_id: null;
+    email_design_setting_id: string | null;
     email_sent_count: number | null;
     email_opened_count: number | null;
     email_clicked_count: number | null;
@@ -29,6 +30,7 @@ class AutomationActionRevisionsImporter extends TableImporter<AutomationActionRe
     static dependencies = ['automation_actions'];
 
     #action?: AutomationAction;
+    #emailDesignSettingId?: string;
     #revisionIndex = 0;
 
     defaultQuantity = 16;
@@ -42,6 +44,15 @@ class AutomationActionRevisionsImporter extends TableImporter<AutomationActionRe
         if (actions.length === 0) {
             return;
         }
+
+        const emailDesignSetting = await this.transaction('email_design_settings')
+            .select('id')
+            .where('slug', DEFAULT_EMAIL_DESIGN_SETTING_SLUG)
+            .first<{id: string}>();
+        if (!emailDesignSetting) {
+            throw new errors.InternalServerError({message: `Missing email design setting: ${DEFAULT_EMAIL_DESIGN_SETTING_SLUG}`});
+        }
+        this.#emailDesignSettingId = emailDesignSetting.id;
 
         await this.importForEach(actions, quantity / actions.length);
     }
@@ -64,7 +75,6 @@ class AutomationActionRevisionsImporter extends TableImporter<AutomationActionRe
             id: this.fastFakeObjectId(),
             created_at: dateToDatabaseString(createdAt),
             action_id: this.#action.id,
-            email_design_setting_id: null,
             email_sent_count: null,
             email_opened_count: null,
             email_clicked_count: null
@@ -76,13 +86,18 @@ class AutomationActionRevisionsImporter extends TableImporter<AutomationActionRe
                 ...common,
                 wait_hours: faker.number.int({min: 1, max: 168}),
                 email_subject: null,
-                email_lexical: null
+                email_lexical: null,
+                email_design_setting_id: null
             };
         case 'send_email':
+            if (!this.#emailDesignSettingId) {
+                throw new errors.InternalServerError({message: `Missing email design setting: ${DEFAULT_EMAIL_DESIGN_SETTING_SLUG}`});
+            }
             return {
                 ...common,
                 wait_hours: null,
                 email_subject: faker.lorem.sentence(),
+                email_design_setting_id: this.#emailDesignSettingId,
                 email_lexical: JSON.stringify({
                     root: {
                         children: [],
