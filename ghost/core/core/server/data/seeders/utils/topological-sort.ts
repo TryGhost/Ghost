@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict';
 import type {ReadonlyDeep} from 'type-fest';
 
 type TopologicalSortable = ReadonlyDeep<{
@@ -26,9 +27,7 @@ export function topologicalSort<T extends TopologicalSortable>(objects: Readonly
         }
 
         const object = objectsByName.get(name);
-        if (!object) {
-            return;
-        }
+        assert(object, `Expected an object with name ${name}`);
 
         visited.add(name);
 
