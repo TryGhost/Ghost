@@ -2422,9 +2422,6 @@ importers:
       csso:
         specifier: 5.0.5
         version: 5.0.5
-      csv-writer:
-        specifier: 1.6.0
-        version: 1.6.0
       dequal:
         specifier: 'catalog:'
         version: 2.0.3
@@ -12572,9 +12569,6 @@ packages:
 
   csstype@3.2.3:
     resolution: {integrity: sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==}
-
-  csv-writer@1.6.0:
-    resolution: {integrity: sha512-NOx7YDFWEsM/fTRAJjRpPp8t+MKRVvniAg9wQlUKx20MFrPs73WLJhFf5iteqrxNYnsy924K3Iroh3yNHeYd2g==}
 
   custom-error-instance@2.1.1:
     resolution: {integrity: sha512-p6JFxJc3M4OTD2li2qaHkDCw9SfMw82Ldr6OC9Je1aXiGfhx2W8p3GaoeaGrPJTUN9NirTM/KTxHWMUdR1rsUg==}
@@ -33531,8 +33525,6 @@ snapshots:
       cssom: 0.3.8
 
   csstype@3.2.3: {}
-
-  csv-writer@1.6.0: {}
 
   custom-error-instance@2.1.1: {}
 

@@ -1,5 +1,5 @@
 const {faker} = require('@faker-js/faker');
-const TableImporter = require('./table-importer');
+const {TableImporter} = require('./table-importer');
 const {blogStartDate} = require('../utils/blog-info');
 
 const sixWeeksLater = new Date(blogStartDate);

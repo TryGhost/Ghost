@@ -1,4 +1,4 @@
-const TableImporter = require('./table-importer');
+const {TableImporter} = require('./table-importer');
 
 class MembersNewslettersImporter extends TableImporter {
     static table = 'members_newsletters';

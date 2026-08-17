@@ -1,6 +1,6 @@
 const {faker} = require('@faker-js/faker');
 const errors = require('@tryghost/errors');
-const TableImporter = require('./table-importer');
+const {TableImporter} = require('./table-importer');
 const dateToDatabaseString = require('../utils/database-date');
 
 class OfferRedemptionsImporter extends TableImporter {
