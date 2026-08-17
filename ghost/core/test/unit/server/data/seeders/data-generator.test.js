@@ -7,6 +7,7 @@ const ProductsImporter = importers.find(i => i.table === 'products');
 const OfferRedemptionsImporter = importers.find(i => i.table === 'offer_redemptions');
 const StripeProductsImporter = importers.find(i => i.table === 'stripe_products');
 const StripePricesImporter = importers.find(i => i.table === 'stripe_prices');
+const AutomationsImporter = importers.find(i => i.table === 'automations');
 
 const generateEvents = require('../../../../../core/server/data/seeders/utils/event-generator');
 const dateToDatabaseString = require('../../../../../core/server/data/seeders/utils/database-date');
@@ -198,6 +199,15 @@ describe('Importer', function () {
             table.date('created_at');
             table.date('updated_at');
         });
+
+        await db.schema.createTable('automations', function (table) {
+            table.string('id');
+            table.string('status');
+            table.string('name').unique();
+            table.string('slug').unique();
+            table.dateTime('created_at');
+            table.dateTime('updated_at');
+        });
     });
 
     afterEach(async function () {
@@ -228,6 +238,27 @@ describe('Importer', function () {
         const results = await db.select('id').from('stripe_products');
 
         assert.equal(results.length, 4);
+    });
+
+    it('Should import automations', async function () {
+        const transaction = await db.transaction();
+        const automationsImporter = new AutomationsImporter(db, transaction);
+        await automationsImporter.import(3);
+        await transaction.commit();
+
+        const automations = await db.select('id', 'status', 'name', 'slug').from('automations');
+
+        assert.equal(automations.length, 3);
+        assert.deepEqual(automations.slice(0, 2).map(({name, slug}) => ({name, slug})), [{
+            name: 'Free member welcome flow',
+            slug: 'member-welcome-email-free'
+        }, {
+            name: 'Paid member welcome flow',
+            slug: 'member-welcome-email-paid'
+        }]);
+        assert.equal(new Set(automations.map(automation => automation.name)).size, 3);
+        assert.equal(new Set(automations.map(automation => automation.slug)).size, 3);
+        assert.ok(automations.every(automation => ['active', 'inactive'].includes(automation.status)));
     });
 
     it('Should update products to reference price ids', async function () {

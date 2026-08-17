@@ -1,4 +1,5 @@
 module.exports = [
+    require('./automations-importer'),
     require('./newsletters-importer'),
     require('./posts-importer'),
     require('./users-importer'),
