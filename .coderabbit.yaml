@@ -15,7 +15,7 @@ reviews:
     enabled: true
     drafts: false
     ignore_usernames:
-      - tryghost-renovate[bot]
+      - app/tryghost-renovate
       - dependabot[bot]
   path_filters:
     - "!**/dist/**"
@@ -142,7 +142,7 @@ reviews:
         readiness guards, and stable public locators. Page objects may use necessary
         structural selectors for iframe/editor/theme internals but must not contain
         business assertions. Preserve the documented per-file/per-test isolation model.
-    - path: "**/*.{test,spec}.{js,jsx,ts,tsx}"
+    - path: "**/*{.,-}{test,spec}.{js,jsx,ts,tsx}"
       instructions: |
         Review whether tests prove changed behaviour, meaningful error/edge paths, and
         externally observable contracts without coupling to implementation details.
@@ -195,13 +195,13 @@ knowledge_base:
       - files: "docs/practices/internationalization.md"
         applyTo: "apps/**/*.{js,jsx,ts,tsx},packages/i18n/**"
       - files: "docs/contributing/testing.md"
-        applyTo: "**/*.{js,jsx,ts,tsx}"
+        applyTo: "**/{test,tests}/**,**/*{.,-}{test,spec}.{js,jsx,ts,tsx}"
       - files: "docs/codebase/monorepo-structure.md"
         applyTo: "package.json,pnpm-workspace.yaml,nx.json,apps/**,packages/**,ghost/core/**,koenig/**"
       - files: "docs/codebase/configuration.md"
         applyTo: "ghost/core/core/shared/config/**,ghost/core/config*.json*"
       - files: "docs/codebase/internal-caching.md"
-        applyTo: "ghost/core/core/server/**"
+        applyTo: "ghost/core/core/server/adapters/cache/**,ghost/core/core/server/adapters/lib/redis/**,ghost/core/core/server/**/*cache*.{js,ts},ghost/core/core/shared/config/**,packages/adapters/cache-base/**"
       - files: "docs/codebase/jobs.md"
         applyTo: "ghost/core/core/server/services/**"
       - files: "packages/README.md"
