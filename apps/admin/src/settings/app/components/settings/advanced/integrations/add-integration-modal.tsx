@@ -3,12 +3,14 @@ import {Field, FieldError, FieldGroup, FieldLabel, Input} from '@tryghost/shade/
 import {HostLimitError, useLimiter} from '@/settings/app/hooks/use-limiter';
 import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
 import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+import {useUpgradeRoute} from '@/settings/app/hooks/use-upgrade-route';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {useCreateIntegration} from '@tryghost/admin-x-framework/api/integrations';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 function AddIntegrationModal() {
     const {updateRoute} = useSettingsNavigation();
+    const upgradeRoute = useUpgradeRoute();
     const [name, setName] = useState('');
     const [errors, setErrors] = useState({name: ''});
     const {mutateAsync: createIntegration} = useCreateIntegration();
@@ -22,13 +24,13 @@ function AddIntegrationModal() {
                 if (error instanceof HostLimitError) {
                     showLimit({
                         prompt: error.message || `Your current plan doesn't support more custom integrations.`,
-                        onOk: () => updateRoute({route: '/pro', isExternal: true})
+                        onOk: () => updateRoute({route: upgradeRoute, isExternal: true})
                     });
                     updateRoute('integrations');
                 }
             });
         }
-    }, [limiter, showLimit, updateRoute]);
+    }, [limiter, showLimit, updateRoute, upgradeRoute]);
 
     return <SettingsModal
         okLabel='Add'

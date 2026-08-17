@@ -45,10 +45,14 @@ function apiKey(secret: string) {
     };
 }
 
-function limitedConfig() {
+const customIntegrationsLimit = {customIntegrations: {disabled: true, error: "Your plan does not support custom integrations"}};
+
+function limitedConfig(upgradeUrl?: string) {
     const response = configResponse();
     response.config.labs = {...response.config.labs, transistor: true};
-    response.config.hostSettings = {limits: {customIntegrations: {disabled: true, error: "Your plan does not support custom integrations"}}};
+    response.config.hostSettings = upgradeUrl ?
+        {limits: customIntegrationsLimit, billing: {upgradeUrl}} :
+        {limits: customIntegrationsLimit};
     return response;
 }
 
@@ -279,7 +283,16 @@ describe("Advanced integrations", () => {
         }
 
         await section.getByTestId("zapier-integration").getByRole("button", {name: "Upgrade"}).click();
-        expect(JSON.parse(document.body.dataset.externalNavigate!)).toMatchObject({route: "pro"});
+        expect(JSON.parse(document.body.dataset.externalNavigate!)).toMatchObject({route: "/pro"});
+    });
+
+    it("sends the upgrade CTA to a host's own billing app when one is configured", async () => {
+        fakeSettingsScreens();
+        await renderAdminApp("/settings/integrations", {boot: {browseConfig: {response: limitedConfig("#/pro/billing/plans")}}});
+
+        const section = settingsScreen.section("integrations");
+        await section.getByTestId("zapier-integration").getByRole("button", {name: "Upgrade"}).click();
+        expect(JSON.parse(document.body.dataset.externalNavigate!)).toMatchObject({route: "/pro/billing/plans"});
     });
 
     it("saves FirstPromoter configuration and warns before discarding later changes", async () => {

@@ -10,7 +10,7 @@
   "author": "Ghost Foundation",
   "license": "MIT",
   "engines": {
-    "node": "^22.13.1 || ^24.0.0"
+    "node": "^22.22.2 || ^24.15.0"
   },
   "main": "build/cjs/index.js",
   "module": "build/esm/index.js",

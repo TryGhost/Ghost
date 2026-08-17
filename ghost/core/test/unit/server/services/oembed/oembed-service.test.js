@@ -124,6 +124,28 @@ describe('oembed-service', function () {
         });
     });
 
+    describe('fetchPageHtml', function () {
+        it('decodes Uint8Array response bodies from Got 15', async function () {
+            const externalRequest = sinon.stub().resolves({
+                headers: {
+                    'content-type': 'text/html; charset=utf-8'
+                },
+                body: new Uint8Array(Buffer.from('<html><body>Hello</body></html>')),
+                url: 'https://www.example.com/'
+            });
+            const service = new OembedService({
+                config: {get() {
+                    return true;
+                }},
+                externalRequest
+            });
+
+            const response = await service.fetchPageHtml('https://www.example.com');
+
+            assert.equal(response.body, '<html><body>Hello</body></html>');
+        });
+    });
+
     describe('fetchOembedData', function () {
         const pageHtml = `<html><head><link type="application/json+oembed" href="https://www.example.com/oembed"></head></html>`;
 
@@ -621,6 +643,22 @@ describe('oembed-service', function () {
 
     describe('processImageFromUrl', function () {
         const UUID_RE = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/;
+
+        it('normalizes Uint8Array image responses from Got 15 to Buffer', async function () {
+            const bytes = new Uint8Array(Buffer.from('img-bytes'));
+            const service = new OembedService({
+                externalRequest() {
+                    return {
+                        buffer: async () => bytes
+                    };
+                }
+            });
+
+            const result = await service.fetchImageBuffer('https://example.com/sample.png');
+
+            assert.ok(Buffer.isBuffer(result));
+            assert.deepEqual(result, Buffer.from('img-bytes'));
+        });
 
         it('returns null without fetching when the image URL is missing', async function () {
             const externalRequest = sinon.stub();
