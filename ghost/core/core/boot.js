@@ -160,6 +160,14 @@ async function initCore({ghostServer, config}) {
             await mentionsJobService.shutdown();
         });
         debug('End: Mentions Job Service');
+
+        debug('Begin: Jobs Service');
+        const jobsService = require('./server/services/jobs-service');
+
+        ghostServer.registerCleanupTask(async () => {
+            await jobsService.shutdown({timeoutMs: config.get('server:shutdownTimeout')});
+        });
+        debug('End: Jobs Service');
     }
 
     debug('End: initCore');
@@ -610,6 +618,13 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
         }
 
         await initServices({ghostServer, config, prometheusClient});
+
+        debug('Begin: Register job handlers');
+        const jobsService = require('./server/services/jobs-service');
+        const service = jobsService.init();
+        require('./server/services/jobs-service/register-job-handlers').default();
+        await service.start();
+        debug('End: Register job handlers');
         debug('End: Load Ghost Services & Apps');
 
         // Step 5 - Mount the full Ghost app onto the minimal root app & disable maintenance mode

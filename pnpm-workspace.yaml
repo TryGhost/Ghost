@@ -206,6 +206,9 @@ catalog:
   '@pnpm/releasing.versioning': 1100.2.4
   '@pnpm/workspace.workspace-manifest-reader': 1100.1.5
   execa: 10.0.1
+  '@breejs/later': 4.2.0
+  fastq: ^1.20.1
+  cron-validate: ^1.5.3
 
 catalogs:
   react17:

@@ -4,6 +4,7 @@ import {SSOBase} from '@tryghost/adapter-base-sso';
 import {CacheBase} from '@tryghost/adapter-base-cache';
 import {RedirectsStoreBase} from '@tryghost/adapter-base-redirects';
 import {RouteSettingsStoreBase} from '@tryghost/adapter-base-route-settings';
+import {JobsBackendBase} from '@tryghost/adapter-base-jobs';
 
 import type {BaseClassMap} from './adapter-manager';
 
@@ -18,5 +19,6 @@ export const baseClasses = {
     sso: SSOBase,
     cache: CacheBase,
     redirects: RedirectsStoreBase,
-    'route-settings': RouteSettingsStoreBase
+    'route-settings': RouteSettingsStoreBase,
+    jobs: JobsBackendBase
 } satisfies BaseClassMap;

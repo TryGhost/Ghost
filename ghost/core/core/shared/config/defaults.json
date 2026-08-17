@@ -56,6 +56,12 @@
             "active": "FileStore",
             "FileStore": {},
             "S3RouteSettingsStore": {}
+        },
+        "jobs": {
+            "active": "InMemoryJobsBackend",
+            "InMemoryJobsBackend": {
+                "concurrency": 3
+            }
         }
     },
     "storage": {
