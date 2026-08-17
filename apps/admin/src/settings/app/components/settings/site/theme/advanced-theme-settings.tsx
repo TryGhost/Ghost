@@ -1,6 +1,5 @@
 import InvalidThemeModal, {type FatalErrors} from './invalid-theme-modal';
-import NiceModal from '@ebay/nice-modal-react';
-import React from 'react';
+import React, {useState} from 'react';
 import useCustomFonts from '@/settings/app/hooks/use-custom-fonts';
 import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from '@tryghost/shade/components';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
@@ -60,6 +59,7 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
     const {route, updateRoute} = useSettingsNavigation();
     const {checkThemeLimitError} = useCheckThemeLimitError();
     const {confirm, showLimit} = useConfirmation();
+    const [activationErrors, setActivationErrors] = useState<FatalErrors | null>(null);
 
     const handleActivate = async () => {
         try {
@@ -73,19 +73,8 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
             } else {
                 handleError(e);
             }
-            const title = 'Theme not activated';
-            const prompt = <>This theme couldn&apos;t be activated because Ghost found a blocking validation error. Fix the issue below and try again.</>;
-
             if (fatalErrors) {
-                NiceModal.show(InvalidThemeModal, {
-                    title,
-                    prompt,
-                    fatalErrors,
-                    onRetry: async (modal) => {
-                        modal?.remove();
-                        handleActivate();
-                    }
-                });
+                setActivationErrors(fatalErrors);
             }
         }
     };
@@ -172,6 +161,18 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
                     )}
                 </DropdownMenuContent>
             </DropdownMenu>
+            {activationErrors && (
+                <InvalidThemeModal
+                    fatalErrors={activationErrors}
+                    prompt={<>This theme couldn&apos;t be activated because Ghost found a blocking validation error. Fix the issue below and try again.</>}
+                    title='Theme not activated'
+                    onClose={() => setActivationErrors(null)}
+                    onRetry={async () => {
+                        setActivationErrors(null);
+                        handleActivate();
+                    }}
+                />
+            )}
         </div>
     );
 };

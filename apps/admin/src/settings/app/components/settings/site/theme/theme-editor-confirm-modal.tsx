@@ -1,4 +1,3 @@
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import type {ButtonProps} from '@tryghost/shade/components';
@@ -11,20 +10,14 @@ export type ThemeEditorConfirmModalProps = {
     okVariant?: ButtonProps['variant'];
 };
 
-const ThemeEditorConfirmModal = NiceModal.create<ThemeEditorConfirmModalProps>(({
+const ThemeEditorConfirmModal: React.FC<ThemeEditorConfirmModalProps & {onResolve: (result: boolean) => void}> = ({
     title,
     prompt,
     cancelLabel = 'Cancel',
     okLabel = 'OK',
-    okVariant = 'default'
+    okVariant = 'default',
+    onResolve
 }) => {
-    const modal = useModal();
-
-    const closeWithResult = (result: boolean) => {
-        modal.resolve(result);
-        modal.remove();
-    };
-
     return (
         <SettingsModal
             backDropClick={false}
@@ -34,14 +27,15 @@ const ThemeEditorConfirmModal = NiceModal.create<ThemeEditorConfirmModalProps>((
             testId='theme-editor-confirm-modal'
             title={title}
             width={540}
-            onCancel={() => closeWithResult(false)}
-            onOk={() => closeWithResult(true)}
+            onCancel={() => onResolve(false)}
+            onClose={() => onResolve(false)}
+            onOk={() => onResolve(true)}
         >
             <div className='py-4'>
                 {prompt}
             </div>
         </SettingsModal>
     );
-});
+};
 
 export default ThemeEditorConfirmModal;

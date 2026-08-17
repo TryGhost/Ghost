@@ -1,12 +1,11 @@
 import CodeMirror, {EditorView} from '@uiw/react-codemirror';
 import InvalidThemeModal, {type FatalErrors} from './invalid-theme-modal';
-import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import ThemeEditorConfirmModal from './theme-editor-confirm-modal';
 import ThemeEditorInputModal from './theme-editor-input-modal';
 import ThemeEditorToolbar from './theme-editor-toolbar';
 import ThemeFileTree from './theme-file-tree';
-import ThemeInstalledModal from './theme-installed-modal';
+import ThemeInstalledModal, {type ThemeInstalledModalProps} from './theme-installed-modal';
 import {TextWrap, Undo2} from 'lucide-react';
 import {
     cloneThemeFiles,
@@ -249,6 +248,10 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
     const [isSaving, setIsSaving] = useState(false);
     const [loadError, setLoadError] = useState<string | null>(null);
     const [isTextWrapEnabled, setIsTextWrapEnabled] = useState(false);
+    const [confirmRequest, setConfirmRequest] = useState<{props: ThemeEditorConfirmModalProps; resolve: (result: boolean) => void} | null>(null);
+    const [inputRequest, setInputRequest] = useState<{props: ThemeEditorInputModalProps; resolve: (result: string | null) => void} | null>(null);
+    const [saveErrors, setSaveErrors] = useState<FatalErrors | null>(null);
+    const [installedModal, setInstalledModal] = useState<ThemeInstalledModalProps | null>(null);
     const [editorExtensions, setEditorExtensions] = useState<Array<ReturnType<typeof search> | typeof oneDark | typeof editorSelectionTheme | typeof EditorView.lineWrapping | Awaited<ReturnType<typeof getLanguageExtension>>>>([]);
 
     useEffect(() => {
@@ -369,42 +372,16 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
         };
     }, [isTextWrapEnabled, selectedFile]);
 
-    const requestConfirmation = async ({
-        title,
-        prompt,
-        cancelLabel,
-        okLabel,
-        okVariant
-    }: ThemeEditorConfirmModalProps) => {
-        const confirmed = await NiceModal.show(ThemeEditorConfirmModal, {
-            title,
-            prompt,
-            cancelLabel,
-            okLabel,
-            okVariant
-        }) as boolean | undefined;
-
-        return Boolean(confirmed);
+    const requestConfirmation = (props: ThemeEditorConfirmModalProps) => {
+        return new Promise<boolean>((resolve) => {
+            setConfirmRequest({props, resolve});
+        });
     };
 
-    const requestInput = async ({
-        title,
-        prompt,
-        fieldTitle,
-        initialValue,
-        placeholder,
-        cancelLabel,
-        okLabel
-    }: ThemeEditorInputModalProps) => {
-        return await NiceModal.show(ThemeEditorInputModal, {
-            title,
-            prompt,
-            fieldTitle,
-            initialValue,
-            placeholder,
-            cancelLabel,
-            okLabel
-        }) as string | null;
+    const requestInput = (props: ThemeEditorInputModalProps) => {
+        return new Promise<string | null>((resolve) => {
+            setInputRequest({props, resolve});
+        });
     };
 
     const closeEditor = async () => {
@@ -781,10 +758,7 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
 
             if (!response.ok) {
                 if (response.status === 422 && data?.errors) {
-                    NiceModal.show(InvalidThemeModal, {
-                        title: 'Theme not saved',
-                        fatalErrors: data.errors as FatalErrors
-                    });
+                    setSaveErrors(data.errors as FatalErrors);
                     return;
                 }
 
@@ -812,7 +786,7 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
             await queryClient.invalidateQueries({queryKey: ['ThemesResponseType']});
 
             if (isSaveAs || uploadedTheme.errors?.length || uploadedTheme.warnings?.length) {
-                NiceModal.show(ThemeInstalledModal, {
+                setInstalledModal({
                     title: isSaveAs ? 'Theme saved' : 'Theme updated',
                     prompt: <><strong>{uploadedTheme.name}</strong> saved successfully.</>,
                     installedTheme: uploadedTheme
@@ -838,7 +812,7 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
 
     const selectedFileStatus = selectedFile ? changesMap.get(selectedFile.path) : null;
 
-    return (
+    return (<>
         <div
             aria-label={`Edit theme ${themeName}`}
             aria-modal='true'
@@ -967,7 +941,27 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
 
             </div>
         </div>
-    );
+        {confirmRequest && (
+            <ThemeEditorConfirmModal
+                {...confirmRequest.props}
+                onResolve={(result) => {
+                    setConfirmRequest(null);
+                    confirmRequest.resolve(result);
+                }}
+            />
+        )}
+        {inputRequest && (
+            <ThemeEditorInputModal
+                {...inputRequest.props}
+                onResolve={(result) => {
+                    setInputRequest(null);
+                    inputRequest.resolve(result);
+                }}
+            />
+        )}
+        {saveErrors && <InvalidThemeModal fatalErrors={saveErrors} title='Theme not saved' onClose={() => setSaveErrors(null)} />}
+        {installedModal && <ThemeInstalledModal {...installedModal} onClose={() => setInstalledModal(null)} />}
+    </>);
 };
 
 export default ThemeCodeEditorModal;
