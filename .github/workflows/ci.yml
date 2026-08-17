@@ -566,6 +566,9 @@ jobs:
       - name: Build TS code
         run: pnpm nx run-many -t build:tsc
 
+      - name: Build assets
+        run: pnpm --filter ghost run build:assets
+
       - name: Run hyperfine on boot
         working-directory: ghost/core
         run: hyperfine --show-output --warmup 3 'GHOST_CI_SHUTDOWN_AFTER_BOOT=1 node index.js' --export-json boot-perf.json
