@@ -12,8 +12,8 @@ export type {LeftPanelProps} from './types';
 // The original docked panel (panels.tsx) stays where it is and doubles as the
 // first variant.
 const VARIANTS: {id: string; label: string; component: React.FC<LeftPanelProps>}[] = [
-    {id: 'performance', label: 'Performance', component: CanvasSidePanel},
-    {id: 'variant-b', label: 'Variant B (stub)', component: LeftPanelVariantB}
+    {id: 'performance', label: 'Variant A — four statuses', component: CanvasSidePanel},
+    {id: 'variant-b', label: 'Variant B — simplified', component: LeftPanelVariantB}
 ];
 
 export const LEFT_PANEL_SLOT: ProtoSlot = {
