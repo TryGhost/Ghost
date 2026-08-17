@@ -23,6 +23,6 @@
     "lint": "oxlint -c ../../.oxlintrc.json ."
   },
   "dependencies": {
-    "@tryghost/logging": "workspace:*"
+    "@tryghost/logging": "workspace:^"
   }
 }
