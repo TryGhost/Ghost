@@ -1,7 +1,9 @@
 import React from 'react';
 import type {AutomationEmailStats} from '@tryghost/admin-x-framework/api/automations';
-import {type ChartConfig, ChartContainer, Separator} from '@tryghost/shade/components';
-import {Recharts, cn, formatNumber, formatPercentage} from '@tryghost/shade/utils';
+import {type ChartConfig, ChartContainer, DataList, DataListBar, DataListBody, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
+import {Box, Inline, Stack, Text} from '@tryghost/shade/primitives';
+import {LucideIcon, Recharts, cn, formatNumber, formatPercentage} from '@tryghost/shade/utils';
+import {type ProtoActionLink, actionLinks} from '@/automations/proto/shared/email-links';
 import {formatRate} from '@/automations/components/canvas/format-stats';
 import {OffValue} from '@/automations/components/canvas/off-value';
 
@@ -49,10 +51,13 @@ export const EmailStatsFooter: React.FC<StatsProps & {divider?: boolean}> = ({st
 
 const RING_CHART_CONFIG = {value: {label: 'Rate'}} satisfies ChartConfig;
 
+// Two rings, not three. The old outer "Sent" ring was always a full circle, so it
+// carried no information — it read as chrome. Sent is now the number in the middle:
+// the total the two rates are of. Opened and Clicked each move out one position,
+// leaving a hollow centre big enough for it.
 const RING_RADII = {
-    sent: {innerRadius: 88, outerRadius: 110},
-    opened: {innerRadius: 63, outerRadius: 85},
-    clicked: {innerRadius: 38, outerRadius: 60}
+    opened: {innerRadius: 88, outerRadius: 110},
+    clicked: {innerRadius: 63, outerRadius: 85}
 };
 
 // One ring of the nested donut. When `tracked` is false it renders as a faded
@@ -60,7 +65,7 @@ const RING_RADII = {
 const PerformanceRing: React.FC<{
     datatype: string;
     value: number;
-    color: 'purple' | 'blue' | 'teal';
+    color: 'blue' | 'teal';
     innerRadius: number;
     outerRadius: number;
     tracked?: boolean;
@@ -83,6 +88,8 @@ const PerformanceRing: React.FC<{
                     </radialGradient>
                 </defs>
                 <Recharts.PolarAngleAxis angleAxisId={0} domain={[0, 1]} tick={false} type="number" />
+                {/* No in-arc label any more — the rings are named by the legend below,
+                    so curved text on them was a second, harder-to-read copy. */}
                 <Recharts.RadialBar
                     angleAxisId={0}
                     cornerRadius={10}
@@ -90,24 +97,28 @@ const PerformanceRing: React.FC<{
                     fill={`url(#${gradientId})`}
                     minPointSize={-2}
                     background
-                >
-                    <Recharts.LabelList
-                        className="fill-foreground opacity-60"
-                        dataKey="datatype"
-                        fontSize={11}
-                        position="insideStart"
-                    />
-                </Recharts.RadialBar>
+                />
             </Recharts.RadialBarChart>
         </ChartContainer>
     );
 };
 
-const PerformanceChart: React.FC<{openRate: number; clickRate: number; opensTracked: boolean; clicksTracked: boolean}> = ({openRate, clickRate, opensTracked, clicksTracked}) => (
+const PerformanceChart: React.FC<{
+    openRate: number;
+    clickRate: number;
+    opensTracked: boolean;
+    clicksTracked: boolean;
+    sentCount: number;
+}> = ({openRate, clickRate, opensTracked, clicksTracked, sentCount}) => (
     <div className="relative mx-auto aspect-square size-[240px]">
-        <PerformanceRing color="purple" datatype="Sent" innerRadius={RING_RADII.sent.innerRadius} outerRadius={RING_RADII.sent.outerRadius} value={1} />
         <PerformanceRing color="blue" datatype="Opened" innerRadius={RING_RADII.opened.innerRadius} outerRadius={RING_RADII.opened.outerRadius} tracked={opensTracked} value={openRate} />
         <PerformanceRing color="teal" datatype="Clicked" innerRadius={RING_RADII.clicked.innerRadius} outerRadius={RING_RADII.clicked.outerRadius} tracked={clicksTracked} value={clickRate} />
+        {/* Sent lives in the hollow centre: the total both rates are measured
+            against. pointer-events-none so it never intercepts the rings. */}
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-0.5">
+            <span className="text-sm text-text-secondary">Sent</span>
+            <span className="text-2xl font-semibold tracking-tight tabular-nums">{formatNumber(sentCount)}</span>
+        </div>
     </div>
 );
 
@@ -127,22 +138,110 @@ const Kpi: React.FC<{label: string; color: string; tracked?: boolean; children: 
     </div>
 );
 
-export const EmailPerformance: React.FC<StatsProps> = ({stats, opensTracked = true, clicksTracked = true}) => {
+// --- Top clicked links -----------------------------------------------------
+
+// Ported from the shipped sidebar (automations/components/canvas/
+// email-performance-section.tsx, #29639) — same DataList markup, same
+// truncation, tooltip and count/percentage formatting. The only difference is
+// where the rows come from: no links API exists on this branch, so they're
+// generated per action id (see shared/email-links), which also means the
+// loading and error branches the real one carries have nothing to represent
+// here.
+const displayUrl = (url: string) => url.replace(/^https?:\/\//i, '');
+
+const TopClickedLinksContent: React.FC<{
+    clickedCount: number;
+    links: ProtoActionLink[];
+    sentCount: number;
+}> = ({clickedCount, links, sentCount}) => {
+    if (sentCount === 0) {
+        return <Text className="py-6 text-center" size="sm" tone="secondary">No emails sent yet.</Text>;
+    }
+
+    if (links.length === 0) {
+        return <Text className="py-6 text-center" size="sm" tone="secondary">No link data to show.</Text>;
+    }
+
+    return (
+        <TooltipProvider delayDuration={150}>
+            <DataList className="group/datalist">
+                <DataListBody>
+                    {links.map((link) => {
+                        const percentage = clickedCount > 0 ? Math.min(link.clicked_count / clickedCount, 1) : 0;
+                        return (
+                            <DataListRow key={link.url}>
+                                <DataListBar style={{width: `${Math.round(percentage * 100)}%`}} />
+                                <DataListItemContent>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <a className="block min-w-0 hover:underline" href={link.url} rel="noreferrer" target="_blank">
+                                                <Inline as="span" className="min-w-0" gap="sm">
+                                                    <LucideIcon.Link className="shrink-0 text-muted-foreground" size={16} strokeWidth={1.5} />
+                                                    <Text as="span" className="font-medium" truncate>{displayUrl(link.url)}</Text>
+                                                </Inline>
+                                            </a>
+                                        </TooltipTrigger>
+                                        <TooltipContent className="max-w-[28rem] break-all">{link.url}</TooltipContent>
+                                    </Tooltip>
+                                </DataListItemContent>
+                                <DataListItemValue>
+                                    <DataListItemValueAbs>{formatNumber(link.clicked_count)}</DataListItemValueAbs>
+                                    <DataListItemValuePerc>{formatPercentage(percentage)}</DataListItemValuePerc>
+                                </DataListItemValue>
+                            </DataListRow>
+                        );
+                    })}
+                </DataListBody>
+            </DataList>
+        </TooltipProvider>
+    );
+};
+
+// Each section is its own bordered card, matching the automation performance pane
+// (float/panels.tsx) so the two analytics surfaces read as one system. The cards
+// do the separating, so there are no rules between them.
+// actionId: identifies which email's links to show; omit to hide the section.
+export const EmailPerformance: React.FC<StatsProps & {actionId?: string}> = ({stats, opensTracked = true, clicksTracked = true, actionId}) => {
     // Mock rates are whole percentages (0–100); the donut wants 0–1.
     const openRate = (stats.opened_rate ?? 0) / 100;
     const clickRate = (stats.clicked_rate ?? 0) / 100;
+    const links = actionId ? actionLinks(actionId, stats.email_clicked_count) : [];
     return (
-        <div className="flex flex-col gap-5">
-            <Separator />
-            <div className="flex flex-col gap-5">
-                <h3 className="text-sm font-medium text-text-secondary">Email performance</h3>
-                <div className="grid grid-cols-3 gap-4">
-                    <Kpi color="var(--chart-purple)" label="Sent">{formatNumber(stats.email_sent_count)}</Kpi>
-                    <Kpi color="var(--chart-blue)" label="Opened" tracked={opensTracked}>{formatPercentage(openRate)}</Kpi>
-                    <Kpi color="var(--chart-teal)" label="Clicked" tracked={clicksTracked}>{formatPercentage(clickRate)}</Kpi>
-                </div>
-                <PerformanceChart clickRate={clickRate} clicksTracked={clicksTracked} openRate={openRate} opensTracked={opensTracked} />
-            </div>
-        </div>
+        <Stack gap="md">
+            {/* No section heading — the sheet's own title names this. Chart first, then
+                the two rates it plots; Sent is inside the rings. */}
+            <Box className="rounded-lg border border-border-default px-4 py-3">
+                <Stack gap="lg">
+                    <PerformanceChart
+                        clickRate={clickRate}
+                        clicksTracked={clicksTracked}
+                        openRate={openRate}
+                        opensTracked={opensTracked}
+                        sentCount={stats.email_sent_count}
+                    />
+                    <div className="grid grid-cols-2 gap-4">
+                        <Kpi color="var(--chart-blue)" label="Opened" tracked={opensTracked}>{formatPercentage(openRate)}</Kpi>
+                        <Kpi color="var(--chart-teal)" label="Clicked" tracked={clicksTracked}>{formatPercentage(clickRate)}</Kpi>
+                    </div>
+                </Stack>
+            </Box>
+            {/* Hidden entirely when click tracking is off — the Clicked KPI and ring
+                already convey that state (matches the shipped section). */}
+            {actionId && clicksTracked && (
+                <Box className="rounded-lg border border-border-default px-4 py-3">
+                    <Stack gap="md">
+                        <Inline justify="between">
+                            <Text size="sm" tone="secondary" weight="medium">Top clicked links</Text>
+                            <Text size="sm" tone="tertiary" weight="medium">Members</Text>
+                        </Inline>
+                        <TopClickedLinksContent
+                            clickedCount={stats.email_clicked_count}
+                            links={links}
+                            sentCount={stats.email_sent_count}
+                        />
+                    </Stack>
+                </Box>
+            )}
+        </Stack>
     );
 };

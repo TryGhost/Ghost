@@ -6,7 +6,10 @@ import {LucideIcon, cn} from '@tryghost/shade/utils';
 import {toast} from 'sonner';
 import {useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {getScenario, mockAutomations} from '@/automations/proto/shared/mock';
-import {CanvasSidePanel} from './panels';
+import {LEFT_PANEL_SLOT, leftPanelComponent} from './panel-variants';
+import {ProtoVariantSwitcher, ProtoVariantsProvider} from '@/automations/proto/shared/proto-variant-switcher';
+import {DEFAULT_TRIGGER_CONFIG, type TriggerConfig} from '@/automations/proto/shared/trigger-config';
+import {useProtoVariant} from '@/automations/proto/shared/proto-variants';
 import {SurfaceEditCanvas as FloatEditCanvas} from '@/automations/proto/surface/edit-canvas';
 import {SurfaceFlowCanvas as FloatFlowCanvas} from '@/automations/proto/surface/flow-canvas';
 import {useVersionLink} from '@/automations/proto/shared/use-version-link';
@@ -155,8 +158,14 @@ const AutomationFloat: React.FC = () => {
     const [saveState, setSaveState] = useState<SaveState>('saved');
     const [stopOpen, setStopOpen] = useState(false);
     const [draft, setDraft] = useState<AutomationDetail | null>(null);
+    // Trigger + goals. Separate from `draft` because AutomationDetail carries no
+    // trigger config yet — the canvases take it as its own prop.
+    const [triggerConfig, setTriggerConfig] = useState<TriggerConfig>(DEFAULT_TRIGGER_CONFIG);
     const [switcherOpen, setSwitcherOpen] = useState(false);
     const [moreOpen, setMoreOpen] = useState(false);
+
+    // Which left-panel variation is active (flask switcher, bottom-right).
+    const LeftPanel = leftPanelComponent(useProtoVariant(LEFT_PANEL_SLOT));
 
     const goBack = () => navigate(toVersioned('/automations-proto/float'));
 
@@ -179,11 +188,21 @@ const AutomationFloat: React.FC = () => {
     const selectedRun = selectedMemberId ? scenario.runs.find(r => r.id === selectedMemberId) ?? null : null;
     const activeDraft = draft ?? automation;
 
-    const handleDraftChange = (next: AutomationDetail) => {
-        setDraft(next);
+    // Any edit marks the automation dirty and runs the fake autosave tick.
+    const markEdited = () => {
         setDirty(true);
         setSaveState('saving');
         window.setTimeout(() => setSaveState('saved'), 700);
+    };
+
+    const handleDraftChange = (next: AutomationDetail) => {
+        setDraft(next);
+        markEdited();
+    };
+
+    const handleTriggerConfigChange = (next: TriggerConfig) => {
+        setTriggerConfig(next);
+        markEdited();
     };
 
     // Start — take the (edited, stopped) automation live. No confirm dialog: going
@@ -217,7 +236,7 @@ const AutomationFloat: React.FC = () => {
                 canvas's ResizeObserver re-centres the flow as it grows. pt-16 clears the
                 title overlay that persists at the screen's top-left. */}
             <aside className={cn('flex w-[480px] shrink-0 flex-col overflow-hidden bg-sidebar pt-16 transition-[margin] duration-150 ease-out', showEditCanvas ? '-ml-[480px]' : 'ml-0')}>
-                <CanvasSidePanel scenario={scenario} selectedMemberId={selectedMemberId} onSelectMember={setSelectedMemberId} />
+                <LeftPanel scenario={scenario} selectedMemberId={selectedMemberId} onSelectMember={setSelectedMemberId} />
             </aside>
 
             {/* Canvas fills the remaining viewport (bounded, not full-bleed), so the flow
@@ -228,10 +247,10 @@ const AutomationFloat: React.FC = () => {
                     The inactive one is opacity-0 + pointer-events-none so clicks fall to
                     the active canvas beneath/above it. */}
                 <div className={cn('absolute inset-0 transition-opacity duration-150', showEditCanvas ? 'pointer-events-none opacity-0' : 'opacity-100')}>
-                    <FloatFlowCanvas automation={automation} selectedRun={selectedRun} />
+                    <FloatFlowCanvas automation={automation} selectedRun={selectedRun} triggerConfig={triggerConfig} />
                 </div>
                 <div className={cn('absolute inset-0 transition-opacity duration-150', showEditCanvas ? 'opacity-100' : 'pointer-events-none opacity-0')}>
-                    <FloatEditCanvas draft={activeDraft} onChange={handleDraftChange} />
+                    <FloatEditCanvas draft={activeDraft} triggerConfig={triggerConfig} onChange={handleDraftChange} onTriggerConfigChange={handleTriggerConfigChange} />
                 </div>
 
                 {/* Editing a live automation: you can explore/edit freely, but changes
@@ -324,9 +343,20 @@ const AutomationFloat: React.FC = () => {
 
             {/* Stop — the high-friction confirm that unlocks editing. */}
             <StopAutomationDialog open={stopOpen} onConfirm={handleStop} onOpenChange={setStopOpen} />
+
+            {/* Prototype-only: the flask switcher for flipping design variations. */}
+            <ProtoVariantSwitcher />
         </div>
     );
 };
 
-export default AutomationFloat;
-export const Component = AutomationFloat;
+// Provider wraps the whole screen (not just the panel) so future slots — node
+// styles, header treatments — can register without moving anything.
+const AutomationFloatScreen: React.FC = () => (
+    <ProtoVariantsProvider slots={[LEFT_PANEL_SLOT]}>
+        <AutomationFloat />
+    </ProtoVariantsProvider>
+);
+
+export default AutomationFloatScreen;
+export const Component = AutomationFloatScreen;

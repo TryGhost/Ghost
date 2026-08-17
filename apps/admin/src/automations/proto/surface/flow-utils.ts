@@ -33,6 +33,7 @@ export const NODE_VISUAL_GAP = 112;
 // node's body layout changes, retune these. (The real canvas hardcodes the same
 // way — see REGULAR_NODE_HEIGHT / EMAIL_NODE_WITH_STATS_HEIGHT there.)
 export const REGULAR_NODE_HEIGHT = 72; // trigger / wait / email header only
+export const TRIGGER_SUMMARY_HEIGHT = 44; // trigger node's one-line config summary
 export const STATS_FOOTER_HEIGHT = 64; // email node's 3-metric stats footer
 export const DETAIL_FOOTER_HEIGHT = 36; // read-only run-detail footer (single line)
 export const TERMINAL_NODE_HEIGHT = 40; // read-only "Complete" pill

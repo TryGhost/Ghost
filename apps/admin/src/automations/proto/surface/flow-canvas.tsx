@@ -1,12 +1,14 @@
 import '@xyflow/react/dist/style.css';
-import React, {useMemo} from 'react';
+import React, {useMemo, useState} from 'react';
 import {Background, BackgroundVariant, type Edge, Handle, type Node, type NodeProps, Position, ReactFlow} from '@xyflow/react';
 import type {AutomationDetail, AutomationEmailStats} from '@tryghost/admin-x-framework/api/automations';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
 import type {AutomationRun, RunStepState} from '@/automations/proto/shared/mock';
-import {DETAIL_FOOTER_HEIGHT, EDGE_STROKE, REACT_FLOW_THEME, REGULAR_NODE_HEIGHT, STATS_FOOTER_HEIGHT, TERMINAL_NODE_HEIGHT, type StepKind, formatWait, orderActions, panTranslateExtent, stackNodeY, stepKindIcon, useCenteredColumn} from './flow-utils';
-import {NODE_BODY_PADDING, NODE_CARD_SURFACE, NodeCard, NodeHeader, type NodeBorder} from './flow-node-shell';
+import {DEFAULT_TRIGGER_CONFIG, type TriggerConfig, triggerLabel, triggerSummary} from '@/automations/proto/shared/trigger-config';
+import {DETAIL_FOOTER_HEIGHT, EDGE_STROKE, REACT_FLOW_THEME, REGULAR_NODE_HEIGHT, STATS_FOOTER_HEIGHT, TERMINAL_NODE_HEIGHT, TRIGGER_SUMMARY_HEIGHT, type StepKind, formatWait, orderActions, panTranslateExtent, stackNodeY, stepKindIcon, useCenteredColumn} from './flow-utils';
+import {EmailAnalyticsSheet, type SheetEmail} from './email-analytics-sheet';
 import {EmailStatsFooter} from './email-analytics';
+import {NODE_BODY_PADDING, NODE_CARD_SURFACE, NodeCard, NodeHeader, type NodeBorder} from './flow-node-shell';
 import {EmailPreview} from './email-preview';
 
 // Height the email preview (subject + body sheet) adds to a read/run email node, on
@@ -26,6 +28,13 @@ type FlowNodeData = {
     state?: RunStepState | 'done';
     stateDetail?: string | null;
     stats?: AutomationEmailStats;
+    // Trigger node: the one-line config summary (read-only here — configuring
+    // happens on the edit canvas).
+    summary?: string;
+    // Email node: opens the right-hand analytics sheet, and goes blue while that
+    // sheet is reporting on it.
+    onOpenAnalytics?: () => void;
+    analyticsOpen?: boolean;
 };
 
 const FlowStepNode: React.FC<NodeProps> = ({data}) => {
@@ -46,7 +55,9 @@ const FlowStepNode: React.FC<NodeProps> = ({data}) => {
         );
     }
 
-    const border: NodeBorder = current ? 'current' : done ? 'done' : 'default';
+    // Analytics wins the border: it only ever opens with no run in focus, so it
+    // can't be masking a run state here.
+    const border: NodeBorder = d.analyticsOpen ? 'selected' : current ? 'current' : done ? 'done' : 'default';
     // Run-state icon fills the same header slot the overflow/lock occupies in edit mode.
     const action = done
         ? <LucideIcon.Check className="size-4 text-green" strokeWidth={2.5} />
@@ -63,19 +74,40 @@ const FlowStepNode: React.FC<NodeProps> = ({data}) => {
 
     return (
         <NodeCard border={border} muted={muted}>
-            <NodeHeader action={action} icon={stepKindIcon[d.kind]} title={label} />
-            {isEmail ? (
-                <div className={NODE_BODY_PADDING}>
-                    <EmailPreview subject={d.subtitle || 'Untitled'} />
-                    {d.focused
-                        ? (d.stateDetail && <div className="mt-[24px] text-xs text-muted-foreground">{d.stateDetail}</div>)
-                        : (d.stats && <EmailStatsFooter divider={false} stats={d.stats} />)}
-                </div>
-            ) : (
-                d.focused && d.stateDetail && (
-                    <div className={cn(NODE_BODY_PADDING, 'text-xs text-muted-foreground')}>{d.stateDetail}</div>
-                )
-            )}
+                <NodeHeader action={action} icon={stepKindIcon[d.kind]} title={label} />
+                {isEmail ? (
+                    <div className={NODE_BODY_PADDING}>
+                        <EmailPreview subject={d.subtitle || 'Untitled'} />
+                        {d.focused
+                            ? (d.stateDetail && <div className="mt-[24px] text-xs text-muted-foreground">{d.stateDetail}</div>)
+                            : (d.stats && (
+                                // Clicking the summary opens the deeper read in the
+                                // right-hand analytics sheet.
+                                <button
+                                    aria-label="View email analytics"
+                                    className="nodrag nopan w-full rounded-lg text-left transition-colors hover:bg-muted/40 focus-visible:bg-muted/40 focus-visible:outline-none"
+                                    type="button"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        d.onOpenAnalytics?.();
+                                    }}
+                                >
+                                    <EmailStatsFooter divider={false} stats={d.stats} />
+                                </button>
+                            ))}
+                    </div>
+                ) : (
+                    <>
+                        {/* Trigger: what this automation listens for, and how many goals
+                            end it. Read-only on this canvas. */}
+                        {d.kind === 'trigger' && !d.focused && d.summary && (
+                            <div className={cn(NODE_BODY_PADDING, 'text-sm text-muted-foreground')}>{d.summary}</div>
+                        )}
+                        {d.focused && d.stateDetail && (
+                            <div className={cn(NODE_BODY_PADDING, 'text-xs text-muted-foreground')}>{d.stateDetail}</div>
+                        )}
+                    </>
+                )}
         </NodeCard>
     );
 };
@@ -90,11 +122,19 @@ interface SurfaceFlowCanvasProps {
     // Space to reserve on the left for a floating overlay (the performance card), so
     // the flow centres beside it and can't be panned underneath. 0 = full width.
     leftInset?: number;
+    // Read-only here — the trigger is configured on the edit canvas.
+    triggerConfig?: TriggerConfig;
 }
 
-export const SurfaceFlowCanvas: React.FC<SurfaceFlowCanvasProps> = ({automation, selectedRun, leftInset = 0}) => {
+export const SurfaceFlowCanvas: React.FC<SurfaceFlowCanvasProps> = ({automation, selectedRun, leftInset = 0, triggerConfig = DEFAULT_TRIGGER_CONFIG}) => {
     const {canvasRef, onInit, size} = useCenteredColumn(leftInset);
     const focused = Boolean(selectedRun);
+    // Which email the right-hand analytics sheet is reporting on.
+    const [analyticsActionId, setAnalyticsActionId] = useState<string | null>(null);
+    const analyticsAction = analyticsActionId ? orderActions(automation).find(a => a.id === analyticsActionId) : undefined;
+    const sheetEmail: SheetEmail | null = analyticsAction?.type === 'send_email' && analyticsAction.stats
+        ? {actionId: analyticsAction.id, subject: analyticsAction.data.email_subject, stats: analyticsAction.stats}
+        : null;
 
     const {nodes, edges, contentBottom} = useMemo(() => {
         const ordered = orderActions(automation);
@@ -108,7 +148,8 @@ export const SurfaceFlowCanvas: React.FC<SurfaceFlowCanvasProps> = ({automation,
         descriptors.push({id: '__trigger__', data: {
             kind: 'trigger',
             title: 'Trigger',
-            subtitle: 'Member signup',
+            subtitle: triggerLabel(triggerConfig),
+            summary: triggerSummary(triggerConfig),
             focused,
             state: focused ? 'done' : undefined,
             stateDetail: selectedRun ? fmtDateTime(selectedRun.enrolled_at) : null
@@ -137,7 +178,9 @@ export const SurfaceFlowCanvas: React.FC<SurfaceFlowCanvasProps> = ({automation,
                 focused,
                 state: step?.state,
                 stateDetail,
-                stats
+                stats,
+                onOpenAnalytics: () => setAnalyticsActionId(action.id),
+                analyticsOpen: analyticsActionId === action.id
             }});
         });
 
@@ -164,10 +207,13 @@ export const SurfaceFlowCanvas: React.FC<SurfaceFlowCanvasProps> = ({automation,
                 return TERMINAL_NODE_HEIGHT;
             }
             const preview = data.kind === 'email' ? EMAIL_PREVIEW_HEIGHT : 0;
+            // The trigger's config summary only shows while no run is in focus (a
+            // focused run shows its enrolment time in that slot instead).
+            const summary = (!focused && data.kind === 'trigger' && data.summary) ? TRIGGER_SUMMARY_HEIGHT : 0;
             const footer = focused
                 ? (data.stateDetail ? DETAIL_FOOTER_HEIGHT : 0)
                 : (data.stats ? STATS_FOOTER_HEIGHT : 0);
-            return REGULAR_NODE_HEIGHT + preview + footer;
+            return REGULAR_NODE_HEIGHT + preview + summary + footer;
         };
         const ys = stackNodeY(descriptors.map(d => nodeHeight(d.data)));
         const built: Node[] = descriptors.map((descriptor, i) => ({
@@ -204,7 +250,7 @@ export const SurfaceFlowCanvas: React.FC<SurfaceFlowCanvasProps> = ({automation,
         const bottom = ys.length ? ys[ys.length - 1] + nodeHeight(descriptors[descriptors.length - 1].data) : 0;
 
         return {nodes: built, edges: builtEdges, contentBottom: bottom};
-    }, [automation, selectedRun, focused]);
+    }, [automation, selectedRun, focused, triggerConfig, analyticsActionId]);
 
     const translateExtent = useMemo(
         () => panTranslateExtent(contentBottom, size, leftInset),
@@ -212,7 +258,9 @@ export const SurfaceFlowCanvas: React.FC<SurfaceFlowCanvasProps> = ({automation,
     );
 
     return (
-        <div ref={canvasRef} className="size-full">
+        // relative: the analytics sheet slides in over this region.
+        <div className="relative size-full">
+            <div ref={canvasRef} className="size-full">
             <ReactFlow
                 className={REACT_FLOW_THEME}
                 edges={edges}
@@ -231,6 +279,9 @@ export const SurfaceFlowCanvas: React.FC<SurfaceFlowCanvasProps> = ({automation,
             >
                 <Background variant={BackgroundVariant.Dots} />
             </ReactFlow>
+            </div>
+
+            <EmailAnalyticsSheet email={sheetEmail} onClose={() => setAnalyticsActionId(null)} />
         </div>
     );
 };
