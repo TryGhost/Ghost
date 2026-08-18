@@ -1,7 +1,8 @@
 import React from 'react';
 import TagColorField from './tag-color-field';
+import TagCodeInjectionModal from './tag-code-injection-modal';
 import TagImageField from './tag-image-field';
-import {Accordion, AccordionContent, AccordionItem, AccordionTrigger, Card, CardContent, CodeEditor, FieldError, Input, Label, Tabs, TabsContent, TabsList, TabsTrigger, Textarea} from '@tryghost/shade/components';
+import {Accordion, AccordionContent, AccordionItem, AccordionTrigger, Card, CardContent, FieldError, Input, Label, Tabs, TabsContent, TabsList, TabsTrigger, Textarea} from '@tryghost/shade/components';
 import {Grid, Inline, Stack} from '@tryghost/shade/primitives';
 import {DESCRIPTION_MAX_LENGTH, FACEBOOK_DESCRIPTION_RECOMMENDED_LENGTH, FACEBOOK_TITLE_RECOMMENDED_LENGTH, META_DESCRIPTION_RECOMMENDED_LENGTH, META_TITLE_RECOMMENDED_LENGTH, X_DESCRIPTION_RECOMMENDED_LENGTH, X_TITLE_RECOMMENDED_LENGTH, charLength, getBlogDomain, getSeoDescription, getSeoTitle, getSeoUrl, getSlugUrlPreview, validateTagField} from './tag-detail-edit';
 import {FacebookCardPreview, SeoPreview, XCardPreview} from './tag-detail-previews';
@@ -21,8 +22,6 @@ interface TagDetailFormProps {
 }
 
 const errorId = (field: TagFieldName) => `tag-${field}-error`;
-const htmlExtensions = [() => import('@codemirror/lang-html').then(module => module.html())];
-
 /** Ember's `gh-count-down-characters`: the used count, red once past the limit. */
 const UsedCharacters: React.FC<{value: string; limit: number; prefix: 'Maximum' | 'Recommended'}> = ({value, limit, prefix}) => {
     const used = charLength(value);
@@ -292,40 +291,13 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                     </Accordion>
                 </Card>
 
-                <Card data-testid='tag-code-injection-card'>
-                    <Accordion type='single' collapsible>
-                        <AccordionItem className='border-b-0' value='code-injection'>
-                            <AccordionTrigger className='px-6 py-5 hover:no-underline'>
-                                <Stack className='text-left' gap='none'>
-                                    <span className='text-[14px] font-semibold'>Code injection</span>
-                                    <span className='text-[13px] leading-[16px] font-normal tracking-normal text-muted-foreground'>Add styles/scripts to the header and footer.</span>
-                                </Stack>
-                            </AccordionTrigger>
-                            <AccordionContent className='px-6'>
-                                <Stack className='pt-1' gap='lg'>
-                                    <CodeEditor
-                                        data-testid='codeinjection-head'
-                                        editable={!disabled}
-                                        extensions={htmlExtensions}
-                                        height='128px'
-                                        title={<>Tag header <code className='ml-1 font-normal'>{'{{ghost_head}}'}</code></>}
-                                        value={draft.codeinjectionHead}
-                                        onChange={(value: string) => onChange({codeinjectionHead: value})}
-                                    />
-                                    <CodeEditor
-                                        data-testid='codeinjection-foot'
-                                        editable={!disabled}
-                                        extensions={htmlExtensions}
-                                        height='128px'
-                                        title={<>Tag footer <code className='ml-1 font-normal'>{'{{ghost_foot}}'}</code></>}
-                                        value={draft.codeinjectionFoot}
-                                        onChange={(value: string) => onChange({codeinjectionFoot: value})}
-                                    />
-                                </Stack>
-                            </AccordionContent>
-                        </AccordionItem>
-                    </Accordion>
-                </Card>
+                <TagCodeInjectionModal
+                    disabled={disabled}
+                    footerValue={draft.codeinjectionFoot}
+                    headerValue={draft.codeinjectionHead}
+                    onFooterChange={codeinjectionFoot => onChange({codeinjectionFoot})}
+                    onHeaderChange={codeinjectionHead => onChange({codeinjectionHead})}
+                />
             </Stack>
         </Grid>
     );

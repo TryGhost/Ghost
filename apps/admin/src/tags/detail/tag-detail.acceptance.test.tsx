@@ -102,9 +102,10 @@ describe('Tag detail (tagDetailsReact on)', () => {
 
         const codeInjectionCard = page.getByTestId('tag-code-injection-card');
         const codeInjectionTrigger = codeInjectionCard.getByRole('button', {name: /Code injection/});
-        await expect.element(codeInjectionTrigger).toHaveAttribute('aria-expanded', 'false');
-        expect(codeInjectionCard.getByRole('textbox', {name: /^Tag header/}).query()).toBeNull();
-        expect(codeInjectionCard.getByRole('textbox', {name: /^Tag footer/}).query()).toBeNull();
+        await expect.element(codeInjectionTrigger).toHaveAttribute('aria-haspopup', 'dialog');
+        expect(page.getByTestId('tag-code-injection-modal').query()).toBeNull();
+        expect(page.getByRole('textbox', {name: /^Tag header/}).query()).toBeNull();
+        expect(page.getByRole('textbox', {name: /^Tag footer/}).query()).toBeNull();
         expect(metadataCard.element().compareDocumentPosition(codeInjectionCard.element()) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     });
 
@@ -116,8 +117,13 @@ describe('Tag detail (tagDetailsReact on)', () => {
         await renderAdminApp(`/tags/${t.slug}`, FLAGS);
 
         await page.getByRole('button', {name: /Code injection/}).click();
-        const headerEditor = page.getByRole('textbox', {name: /^Tag header/});
-        const footerEditor = page.getByRole('textbox', {name: /^Tag footer/});
+        const modal = page.getByTestId('tag-code-injection-modal');
+        await expect.element(modal).toBeVisible();
+        const modalWidth = modal.element().getBoundingClientRect().width;
+        expect(modalWidth).toBeGreaterThanOrEqual(800);
+        expect(modalWidth).toBeLessThanOrEqual(1024);
+        const headerEditor = modal.getByRole('textbox', {name: /^Tag header/});
+        const footerEditor = modal.getByRole('textbox', {name: /^Tag footer/});
         await expect.element(headerEditor).toBeVisible();
         await expect.element(footerEditor).toBeVisible();
         await expect.poll(() => (headerEditor.element() as HTMLElement).innerText).toBe(head);
@@ -142,6 +148,8 @@ describe('Tag detail (tagDetailsReact on)', () => {
         await expect.poll(() => footerEditor.element().textContent).toBe('');
         await footerEditor.fill(updatedFoot);
         await expect.poll(() => (footerEditor.element() as HTMLElement).innerText).toBe(updatedFoot);
+        await modal.getByRole('button', {name: 'Close'}).click();
+        expect(page.getByTestId('tag-code-injection-modal').query()).toBeNull();
         await page.getByRole('button', {name: 'Save'}).click();
 
         await expect.element(page.getByRole('button', {name: 'Saved'})).toBeVisible();
@@ -150,7 +158,7 @@ describe('Tag detail (tagDetailsReact on)', () => {
         expect(saved.codeinjection_foot).toBe(updatedFoot);
     });
 
-    it('keeps CodeMirror autocomplete outside the clipped editor surface', async () => {
+    it('keeps CodeMirror autocomplete visible in the code injection modal', async () => {
         const t = tag({name: 'News', slug: 'news'});
         fakeTagWorld(t);
         await renderAdminApp(`/tags/${t.slug}`, FLAGS);
@@ -170,19 +178,15 @@ describe('Tag detail (tagDetailsReact on)', () => {
             const tooltip = document.querySelector<HTMLElement>('.cm-tooltip-autocomplete');
             const tooltipParent = tooltip?.closest<HTMLElement>('.cm-tooltip-parent');
             const container = tooltipParent?.firstElementChild as HTMLElement | null;
-            const editor = headerEditor.element().closest<HTMLElement>('[data-testid="codeinjection-head"]');
-
-            if (!tooltip || !tooltipParent || !container || !editor) {
+            if (!tooltip || !tooltipParent || !container) {
                 return null;
             }
 
             const tooltipRect = tooltip.getBoundingClientRect();
-            const editorRect = editor.getBoundingClientRect();
 
             return {
                 containerBackground: getComputedStyle(container).backgroundColor,
                 containerHeight: container.getBoundingClientRect().height,
-                escapesEditor: tooltipRect.bottom > editorRect.bottom || tooltipRect.top < editorRect.top,
                 hostParent: tooltipParent.parentElement?.tagName,
                 tooltipOnscreen: tooltipRect.bottom > 0
                     && tooltipRect.right > 0
@@ -193,7 +197,6 @@ describe('Tag detail (tagDetailsReact on)', () => {
         }).toEqual({
             containerBackground: 'rgba(0, 0, 0, 0)',
             containerHeight: 0,
-            escapesEditor: true,
             hostParent: 'BODY',
             tooltipOnscreen: true,
             tooltipPosition: 'fixed'
