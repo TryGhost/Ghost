@@ -15,12 +15,23 @@ export const NODE_CARD_PADDING = 'p-6';
 
 // Card border/emphasis per state, shared by both canvases so selection (edit) and
 // run state (read) stay visually consistent.
-export type NodeBorder = 'default' | 'selected' | 'current' | 'done';
+export type NodeBorder = 'default' | 'selected' | 'current' | 'done' | 'exited' | 'failed';
 const NODE_BORDER: Record<NodeBorder, string> = {
     default: 'border-border-default',
     selected: 'border-blue',
     current: 'border-blue',
-    done: 'border-green'
+    done: 'border-green',
+    // Where a member left the flow. Grey rather than a colour of its own — exiting
+    // isn't a failure to flag, it just isn't a completion, and green here read as
+    // "finished" on the one card that says the opposite. But it's the *strong*
+    // grey, not the default: the member did reach this step, so the card has to
+    // look marked rather than untouched. Default would have made it identical to
+    // the steps they never got to.
+    exited: 'border-border-strong',
+    // The one state that earns a colour of its own. Exiting is an outcome; failing
+    // is a fault, and the only card on the canvas a publisher may need to act on —
+    // so it's the only one allowed to raise its hand.
+    failed: 'border-red'
 };
 
 // The card skeleton: shell + border state + the two flow handles. Body content

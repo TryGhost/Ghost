@@ -1,4 +1,4 @@
-import type {AutomationRun, AutomationRunMetrics, AutomationScenario, EnrollmentPoint} from './types';
+import type {AutomationRun, AutomationRunMetrics, AutomationScenario, EnrollmentPoint, RunStep} from './types';
 import {cancellationSurvey, getAutomation, inactiveWinback, paidUpgradeNudge, welcomeSeries} from './automations';
 
 // ---------------------------------------------------------------------------
@@ -60,6 +60,17 @@ function shiftIso(iso: string | null, days: number): string | null {
     return d.toISOString();
 }
 
+// Failures don't clone. Everything else about a template repeats happily —
+// synthetic members retracing the same journey is the point — but a delivery
+// failure is meant to be the rare one you have to go looking for, and cloning the
+// template that carries it turned every exited run in the scenario into a broken
+// send.
+function cloneStep(step: RunStep, days: number): RunStep {
+    const next: RunStep = {...step, occurred_at: shiftIso(step.occurred_at, days)};
+    delete next.failed;
+    return next;
+}
+
 function cloneRunForMember(template: AutomationRun, automationId: string, index: number): AutomationRun {
     // Push each synthetic run further back in history than the last, so the
     // list reads as an ongoing history rather than a pile of same-day runs.
@@ -71,7 +82,7 @@ function cloneRunForMember(template: AutomationRun, automationId: string, index:
         member: buildSyntheticMember(automationId, index),
         enrolled_at: shiftIso(template.enrolled_at, days)!,
         completed_at: shiftIso(template.completed_at, days),
-        steps: template.steps.map(step => ({...step, occurred_at: shiftIso(step.occurred_at, days)}))
+        steps: template.steps.map(step => cloneStep(step, days))
     };
 }
 
@@ -108,7 +119,7 @@ const welcomeRunsBase: AutomationRun[] = [
         status: 'in_progress', enrolled_at: '2026-07-12T09:04:00Z', completed_at: null,
         current_action_id: 'act_tips_email', exit_reason: null,
         steps: [
-            {action_id: 'act_welcome_email', state: 'done', occurred_at: '2026-07-12T09:04:00Z', detail: 'Opened · clicked 1 link'},
+            {action_id: 'act_welcome_email', state: 'done', occurred_at: '2026-07-12T09:04:00Z', detail: 'Opened (1 link)'},
             {action_id: 'act_wait_3d', state: 'done', occurred_at: '2026-07-12T09:05:00Z', detail: 'Waited 3 days'},
             {action_id: 'act_tips_email', state: 'current', occurred_at: null, detail: 'Sends Jul 17'},
             {action_id: 'act_week1_email', state: 'upcoming', occurred_at: null, detail: null}
@@ -122,7 +133,7 @@ const welcomeRunsBase: AutomationRun[] = [
         steps: [
             {action_id: 'act_welcome_email', state: 'done', occurred_at: '2026-07-08T15:22:00Z', detail: 'Opened'},
             {action_id: 'act_wait_3d', state: 'done', occurred_at: '2026-07-08T15:23:00Z', detail: 'Waited 3 days'},
-            {action_id: 'act_tips_email', state: 'done', occurred_at: '2026-07-11T15:23:00Z', detail: 'Opened · clicked 2 links'},
+            {action_id: 'act_tips_email', state: 'done', occurred_at: '2026-07-11T15:23:00Z', detail: 'Opened (2 links)'},
             {action_id: 'act_week1_email', state: 'done', occurred_at: '2026-07-14T15:23:00Z', detail: 'Opened'}
         ]
     },
@@ -147,7 +158,7 @@ const welcomeRunsBase: AutomationRun[] = [
             {action_id: 'act_welcome_email', state: 'done', occurred_at: '2026-06-30T08:15:00Z', detail: 'Opened'},
             {action_id: 'act_wait_3d', state: 'done', occurred_at: '2026-06-30T08:16:00Z', detail: 'Waited 3 days'},
             {action_id: 'act_tips_email', state: 'done', occurred_at: '2026-07-03T08:16:00Z', detail: 'Opened'},
-            {action_id: 'act_week1_email', state: 'done', occurred_at: '2026-07-07T08:16:00Z', detail: 'Opened · clicked 1 link'}
+            {action_id: 'act_week1_email', state: 'done', occurred_at: '2026-07-07T08:16:00Z', detail: 'Opened (1 link)'}
         ]
     },
     {
@@ -158,7 +169,7 @@ const welcomeRunsBase: AutomationRun[] = [
         current_action_id: 'act_wait_3d', exit_reason: null,
         steps: [
             {action_id: 'act_welcome_email', state: 'done', occurred_at: '2026-07-21T09:06:00Z', detail: 'Delivered'},
-            {action_id: 'act_wait_3d', state: 'current', occurred_at: '2026-07-21T09:07:00Z', detail: 'Waiting — resumes Jul 24'},
+            {action_id: 'act_wait_3d', state: 'current', occurred_at: '2026-07-21T09:07:00Z', detail: 'Resumes Jul 24'},
             {action_id: 'act_tips_email', state: 'upcoming', occurred_at: null, detail: null},
             {action_id: 'act_week1_email', state: 'upcoming', occurred_at: null, detail: null}
         ]
@@ -171,7 +182,7 @@ const welcomeRunsBase: AutomationRun[] = [
         current_action_id: 'act_wait_3d', exit_reason: null,
         steps: [
             {action_id: 'act_welcome_email', state: 'done', occurred_at: '2026-07-21T05:20:00Z', detail: 'Opened'},
-            {action_id: 'act_wait_3d', state: 'current', occurred_at: '2026-07-21T05:21:00Z', detail: 'Waiting — resumes Jul 24'},
+            {action_id: 'act_wait_3d', state: 'current', occurred_at: '2026-07-21T05:21:00Z', detail: 'Resumes Jul 24'},
             {action_id: 'act_tips_email', state: 'upcoming', occurred_at: null, detail: null},
             {action_id: 'act_week1_email', state: 'upcoming', occurred_at: null, detail: null}
         ]
@@ -194,10 +205,13 @@ const winbackRunsBase: AutomationRun[] = [
     {
         id: 'run_ivy', automation_id: inactiveWinback.id,
         member: {id: 'mem_ivy', name: 'Ivy Sanders', email: 'ivy.sanders@example.com'},
+        // The one failure case in the fixtures: the send itself broke, so the run
+        // ended without the member doing anything. Still exited_early — they're out
+        // of the flow — with an exit_reason that names the system, not them.
         status: 'exited_early', enrolled_at: '2026-07-14T09:00:00Z', completed_at: null,
-        current_action_id: null, exit_reason: 'Unsubscribed',
+        current_action_id: null, exit_reason: 'Delivery failed',
         steps: [
-            {action_id: 'act_wb_hey', state: 'done', occurred_at: '2026-07-14T09:00:00Z', detail: 'Unsubscribed'},
+            {action_id: 'act_wb_hey', state: 'done', occurred_at: '2026-07-14T09:00:00Z', detail: 'Email not delivered', failed: true},
             {action_id: 'act_wb_wait', state: 'skipped', occurred_at: null, detail: null},
             {action_id: 'act_wb_offer', state: 'skipped', occurred_at: null, detail: null}
         ]
@@ -210,7 +224,7 @@ const winbackRunsBase: AutomationRun[] = [
         steps: [
             {action_id: 'act_wb_hey', state: 'done', occurred_at: '2026-07-05T12:30:00Z', detail: 'Opened'},
             {action_id: 'act_wb_wait', state: 'done', occurred_at: '2026-07-05T12:31:00Z', detail: 'Waited 7 days'},
-            {action_id: 'act_wb_offer', state: 'done', occurred_at: '2026-07-12T12:31:00Z', detail: 'Opened · clicked 1 link'}
+            {action_id: 'act_wb_offer', state: 'done', occurred_at: '2026-07-12T12:31:00Z', detail: 'Opened (1 link)'}
         ]
     },
     {
@@ -220,8 +234,8 @@ const winbackRunsBase: AutomationRun[] = [
         status: 'in_progress', enrolled_at: '2026-07-21T08:32:00Z', completed_at: null,
         current_action_id: 'act_wb_wait', exit_reason: null,
         steps: [
-            {action_id: 'act_wb_hey', state: 'done', occurred_at: '2026-07-21T08:32:00Z', detail: 'Delivered — not opened'},
-            {action_id: 'act_wb_wait', state: 'current', occurred_at: '2026-07-21T08:33:00Z', detail: 'Waiting — resumes Jul 28'},
+            {action_id: 'act_wb_hey', state: 'done', occurred_at: '2026-07-21T08:32:00Z', detail: 'Delivered, not opened'},
+            {action_id: 'act_wb_wait', state: 'current', occurred_at: '2026-07-21T08:33:00Z', detail: 'Resumes Jul 28'},
             {action_id: 'act_wb_offer', state: 'upcoming', occurred_at: null, detail: null}
         ]
     },
@@ -233,7 +247,7 @@ const winbackRunsBase: AutomationRun[] = [
         current_action_id: 'act_wb_wait', exit_reason: null,
         steps: [
             {action_id: 'act_wb_hey', state: 'done', occurred_at: '2026-07-21T03:45:00Z', detail: 'Opened'},
-            {action_id: 'act_wb_wait', state: 'current', occurred_at: '2026-07-21T03:46:00Z', detail: 'Waiting — resumes Jul 28'},
+            {action_id: 'act_wb_wait', state: 'current', occurred_at: '2026-07-21T03:46:00Z', detail: 'Resumes Jul 28'},
             {action_id: 'act_wb_offer', state: 'upcoming', occurred_at: null, detail: null}
         ]
     }
@@ -258,7 +272,7 @@ const upgradeRunsBase: AutomationRun[] = [
         status: 'completed', enrolled_at: '2026-07-09T10:00:00Z', completed_at: '2026-07-14T10:05:00Z',
         current_action_id: null, exit_reason: null,
         steps: [
-            {action_id: 'act_up_email', state: 'done', occurred_at: '2026-07-09T10:00:00Z', detail: 'Opened · clicked 1 link'},
+            {action_id: 'act_up_email', state: 'done', occurred_at: '2026-07-09T10:00:00Z', detail: 'Opened (1 link)'},
             {action_id: 'act_up_wait', state: 'done', occurred_at: '2026-07-09T10:01:00Z', detail: 'Waited 5 days'},
             {action_id: 'act_up_email2', state: 'done', occurred_at: '2026-07-14T10:01:00Z', detail: 'Opened'}
         ]
@@ -269,7 +283,7 @@ const upgradeRunsBase: AutomationRun[] = [
         status: 'exited_early', enrolled_at: '2026-07-16T14:20:00Z', completed_at: null,
         current_action_id: null, exit_reason: 'Upgraded to paid',
         steps: [
-            {action_id: 'act_up_email', state: 'done', occurred_at: '2026-07-16T14:20:00Z', detail: 'Opened · upgraded'},
+            {action_id: 'act_up_email', state: 'done', occurred_at: '2026-07-16T14:20:00Z', detail: 'Opened (upgraded)'},
             {action_id: 'act_up_wait', state: 'skipped', occurred_at: null, detail: null},
             {action_id: 'act_up_email2', state: 'skipped', occurred_at: null, detail: null}
         ]
@@ -282,7 +296,7 @@ const upgradeRunsBase: AutomationRun[] = [
         current_action_id: 'act_up_wait', exit_reason: null,
         steps: [
             {action_id: 'act_up_email', state: 'done', occurred_at: '2026-07-21T09:01:00Z', detail: 'Opened'},
-            {action_id: 'act_up_wait', state: 'current', occurred_at: '2026-07-21T09:02:00Z', detail: 'Waiting — resumes Jul 26'},
+            {action_id: 'act_up_wait', state: 'current', occurred_at: '2026-07-21T09:02:00Z', detail: 'Resumes Jul 26'},
             {action_id: 'act_up_email2', state: 'upcoming', occurred_at: null, detail: null}
         ]
     },
@@ -293,8 +307,8 @@ const upgradeRunsBase: AutomationRun[] = [
         status: 'in_progress', enrolled_at: '2026-07-21T02:10:00Z', completed_at: null,
         current_action_id: 'act_up_wait', exit_reason: null,
         steps: [
-            {action_id: 'act_up_email', state: 'done', occurred_at: '2026-07-21T02:10:00Z', detail: 'Opened · clicked 1 link'},
-            {action_id: 'act_up_wait', state: 'current', occurred_at: '2026-07-21T02:11:00Z', detail: 'Waiting — resumes Jul 26'},
+            {action_id: 'act_up_email', state: 'done', occurred_at: '2026-07-21T02:10:00Z', detail: 'Opened (1 link)'},
+            {action_id: 'act_up_wait', state: 'current', occurred_at: '2026-07-21T02:11:00Z', detail: 'Resumes Jul 26'},
             {action_id: 'act_up_email2', state: 'upcoming', occurred_at: null, detail: null}
         ]
     }

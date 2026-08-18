@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import type {AutomationDetail} from '@tryghost/admin-x-framework/api/automations';
 import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Button, EmptyIndicator, HoverCard, HoverCardContent, HoverCardTrigger, Popover, PopoverClose, PopoverContent, PopoverTrigger} from '@tryghost/shade/components';
-import {Inline, Stack} from '@tryghost/shade/primitives';
+import {Inline, Stack, Text} from '@tryghost/shade/primitives';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
 import {toast} from 'sonner';
 import {useBlocker} from 'react-router';
@@ -9,6 +9,8 @@ import {useConfirmUnload, useNavigate, useParams} from '@tryghost/admin-x-framew
 import {getScenario, mockAutomations} from '@/automations/proto/shared/mock';
 import {type ChangeEntry, changeSummary} from './change-summary';
 import {EDITING_MODEL_SLOT} from './editing-model';
+import {HEADER_SLOT} from './header-model';
+import {HeaderBar} from './header-bar';
 import {LEFT_PANEL_SLOT, leftPanelComponent} from './panel-variants';
 import {ProtoVariantSwitcher, ProtoVariantsProvider} from '@/automations/proto/shared/proto-variant-switcher';
 import {StatusBadge} from '@/automations/proto/shared/status-badge';
@@ -153,11 +155,22 @@ const UnpublishedChanges: React.FC<{
             </Button>
         </PopoverTrigger>
         <PopoverContent align="end" className="w-80 p-0">
-            <Stack className="max-h-72 overflow-y-auto p-4" gap="sm">
+            {/* The title sits outside the scroll area so it stays put while a long
+                list moves under it — and it's what makes the list legible: bare
+                bullets left you to infer that they were the diff. */}
+            <Stack className="p-5 pb-3" gap="sm">
+                <Text size="lg" weight="semibold">Publish these changes?</Text>
+            </Stack>
+            {/* Plain bulleted list rather than one of Shade's list components:
+                ActionList divides rows and hovers them, DataList pairs a label with a
+                value and a bar — both would say these entries are interactive or
+                measurable, and they're neither. They're a static description of a
+                diff, so they stay a stack of bullets. */}
+            <Stack className="max-h-72 overflow-y-auto px-5 pb-5" gap="sm">
                 {changes.length === 0 ? (
                     // Reachable while an edit is mid-flight, or if something changed
                     // that this summary doesn't know how to describe.
-                    <span className="text-sm text-muted-foreground">This draft differs from what’s live.</span>
+                    <Text size="sm" tone="secondary">This draft differs from what’s live.</Text>
                 ) : changes.map(change => (
                     <Inline key={change.id} align="start" className="text-sm" gap="sm">
                         <span className="mt-[7px] size-1.5 shrink-0 rounded-full bg-muted-foreground" />
@@ -167,16 +180,23 @@ const UnpublishedChanges: React.FC<{
             </Stack>
             {/* Both close the popover: discard would leave it hovering over a list it
                 just emptied, and publish opens a confirm dialog it would sit behind.
-                Discard's undo lives in the toast it raises. */}
-            <div className="flex gap-2 border-t border-border-default p-3">
+                Discard's undo lives in the toast it raises.
+
+                Bare verbs — the title above already establishes what they act on, so
+                repeating "changes" on both buttons only made them longer.
+
+                No divider: the title asks a question and the buttons answer it, so
+                ruling a line between them would split one exchange in two. The
+                padding is what separates them from the list. */}
+            <div className="flex gap-2 p-5 pt-0">
                 <PopoverClose asChild>
-                    <Button className="flex-1" size="sm" type="button" variant="outline" onClick={onDiscard}>
-                        Discard changes
+                    <Button className="flex-1" type="button" variant="outline" onClick={onDiscard}>
+                        Discard
                     </Button>
                 </PopoverClose>
                 <PopoverClose asChild>
-                    <Button className="flex-1" size="sm" type="button" onClick={onPublish}>
-                        Publish changes
+                    <Button className="flex-1" type="button" onClick={onPublish}>
+                        Publish
                     </Button>
                 </PopoverClose>
             </div>
@@ -238,6 +258,8 @@ const AutomationFloat: React.FC = () => {
     const LeftPanel = leftPanelComponent(useProtoVariant(LEFT_PANEL_SLOT));
     // Whether editing is a mode you enter, or just how the canvas always behaves.
     const alwaysEditable = useProtoVariant(EDITING_MODEL_SLOT) === 'always';
+    // Floating chrome over the canvas, or a docked full-width header above it.
+    const dockedHeader = useProtoVariant(HEADER_SLOT) === 'bar';
     // Only meaningful when there's no edit mode to hide the pane for you.
     const [paneCollapsed, setPaneCollapsed] = useState(false);
 
@@ -390,8 +412,92 @@ const AutomationFloat: React.FC = () => {
         })
         : [];
 
+    // The chrome's actions, built once and placed by whichever header variant is
+    // active — floating in the canvas's top-right corner, or in the docked bar's
+    // right zone. Both editing models are covered here, so switching header style
+    // can't quietly change what the screen lets you do.
+    //
+    // FLOATING_CONTROL only applies when they're actually floating: in the bar
+    // they sit on an opaque header already, and an extra surface there would read
+    // as a nested panel.
+    const outlineOnCanvas = dockedHeader ? undefined : FLOATING_CONTROL;
+    const chromeActions = (
+        <>
+            {/* Without an edit mode the chrome holds the draft to settle, when there
+                is one, and the lifecycle verb — the same Turn on / Turn off the other
+                editing model uses.
+
+                This briefly carried a combined status-and-action control instead: a
+                green pill that reported On/Off and changed it. It collapsed two things
+                into one, but the green read as decoration rather than as Ghost, and a
+                tinted control floating on the canvas never got enough contrast to
+                hold. Status went back to a badge beside the title, where the list page
+                also puts it, and the action went back to naming itself. */}
+            {alwaysEditable && (
+                <>
+                    {hasUnpublishedChanges && (
+                        <UnpublishedChanges
+                            changes={changes}
+                            onDiscard={handleDiscard}
+                            onPublish={handlePublishClick}
+                        />
+                    )}
+                    {liveStatus === 'inactive' ? (
+                        <Button onClick={() => setStartOpen(true)}>Turn on</Button>
+                    ) : (
+                        <Button className={outlineOnCanvas} variant="outline" onClick={() => setStopOpen(true)}>Turn off</Button>
+                    )}
+                </>
+            )}
+
+            {/* Explicit edit mode keeps the draft actions in the chrome. */}
+            {!alwaysEditable && hasUnpublishedChanges && (
+                <>
+                    <Button className={outlineOnCanvas} variant="outline" onClick={handleDiscard}>Discard changes</Button>
+                    <Button onClick={handlePublishClick}>Publish changes</Button>
+                </>
+            )}
+
+            {/* With one, edit mode carries only draft actions (Done here, since
+                there's nothing outstanding), and the lifecycle actions live in
+                read mode. */}
+            {!hasUnpublishedChanges && !alwaysEditable && (
+                showEditCanvas ? (
+                    <Button className={outlineOnCanvas} variant="outline" onClick={() => setEditing(false)}>Done</Button>
+                ) : (
+                    <>
+                        <Button className={outlineOnCanvas} variant="outline" onClick={() => setEditing(true)}>
+                            <LucideIcon.Pencil /> Edit
+                        </Button>
+                        {/* Same reasoning as the always-editable branch above: Start is
+                            the CTA, Stop is de-escalation. Kept identical so the two
+                            editing models differ only in the thing being compared. */}
+                        {liveStatus === 'inactive' ? (
+                            <Button onClick={() => setStartOpen(true)}>Turn on</Button>
+                        ) : (
+                            <Button className={outlineOnCanvas} variant="outline" onClick={() => setStopOpen(true)}>Turn off</Button>
+                        )}
+                    </>
+                )
+            )}
+        </>
+    );
+
     return (
-        <div className="fixed inset-0 z-50 flex overflow-hidden bg-background" data-testid="float-detail">
+        // flex-col in both variants: the docked header is a row above the pane and
+        // canvas, and with no header the same column collapses to just that row.
+        <div className="fixed inset-0 z-50 flex flex-col overflow-hidden bg-background" data-testid="float-detail">
+            {dockedHeader && (
+                <HeaderBar
+                    actions={chromeActions}
+                    paneCollapsed={paneHidden}
+                    status={liveStatus}
+                    title={automation.name}
+                    onBack={goBack}
+                    onTogglePane={alwaysEditable ? () => setPaneCollapsed(!paneCollapsed) : undefined}
+                />
+            )}
+            <div className="relative flex min-h-0 flex-1 overflow-hidden">
             {/* Left pane docked flush to the edge. On entering edit it slides off the
                 left (negative margin collapses its flex footprint to 0) and the canvas
                 grows leftward to fill. Always mounted so the transition can animate; the
@@ -404,8 +510,10 @@ const AutomationFloat: React.FC = () => {
                 global nav — it happened to match in dark and diverged in light. */}
             <aside className={cn('relative flex w-[480px] shrink-0 flex-col overflow-hidden border-r border-border-default bg-surface-elevated transition-[margin] duration-150 ease-out', paneHidden ? '-ml-[480px]' : 'ml-0')}>
                 <LeftPanel
+                    headerDocked={dockedHeader}
                     scenario={scenario}
                     selectedMemberId={selectedMemberId}
+                    onCollapse={alwaysEditable && !dockedHeader ? () => setPaneCollapsed(true) : undefined}
                     onSearchOpenChange={setPaneSearchOpen}
                     onSelectMember={setSelectedMemberId}
                 />
@@ -427,119 +535,43 @@ const AutomationFloat: React.FC = () => {
                     <FloatEditCanvas draft={activeDraft} triggerConfig={triggerConfig} onChange={handleDraftChange} onTriggerConfigChange={handleTriggerConfigChange} />
                 </div>
 
-                {/* Collapse toggle, sitting over the canvas just past the pane's edge —
-                    a control on the boundary rather than something floating on top of
-                    the pane's own header. It lives in the canvas region, so it stays put
-                    when the pane slides away; the title cluster carries the counterpart
-                    that brings the pane back. */}
-                {alwaysEditable && !paneCollapsed && (
-                    <div className="absolute top-4 left-4 z-10">
-                        <RailButton
-                            icon={LucideIcon.PanelLeft}
-                            // One icon for both states — it names the thing being
-                            // toggled rather than animating a direction, which is how
-                            // sidebar toggles read everywhere else. The label carries
-                            // the state for screen readers.
-                            label="Hide performance"
-                            onClick={() => setPaneCollapsed(true)}
-                        />
-                    </div>
-                )}
-
                 {/* Top-right — autosave indicator (while editing), the
                     always-available Edit/Done toggle, then the primary lifecycle
                     action: Stop while live (high-friction confirm), Start once stopped.
                     Duplicate/Delete lived here behind a ⋯ menu; they're out of scope
                     for now and will come back once there's a decision to design. */}
-                <div className="absolute top-4 right-4 z-10 flex items-center gap-3">
-                    {showEditCanvas && indicatorText && <span className="text-xs text-muted-foreground">{indicatorText}</span>}
-                    {/* Without an edit mode this corner holds the draft to settle, when
-                        there is one, and the lifecycle verb — the same Turn on / Turn off
-                        the other editing model uses.
-
-                        This corner briefly carried a combined status-and-action control
-                        instead: a green pill that reported On/Off and changed it. It
-                        collapsed two things into one, but the green read as decoration
-                        rather than as Ghost, and a tinted control floating on the canvas
-                        never got enough contrast to hold. Status went back to a badge
-                        beside the title, where the list page also puts it, and the corner
-                        went back to naming the action. */}
-                    {alwaysEditable && (
-                        <>
-                            {hasUnpublishedChanges && (
-                                <UnpublishedChanges
-                                    changes={changes}
-                                    onDiscard={handleDiscard}
-                                    onPublish={handlePublishClick}
-                                />
-                            )}
-                            {liveStatus === 'inactive' ? (
-                                <Button onClick={() => setStartOpen(true)}>Turn on</Button>
-                            ) : (
-                                <Button className={FLOATING_CONTROL} variant="outline" onClick={() => setStopOpen(true)}>Turn off</Button>
-                            )}
-                        </>
-                    )}
-
-                    {/* Explicit edit mode keeps the draft actions in the header. */}
-                    {!alwaysEditable && hasUnpublishedChanges && (
-                        <>
-                            <Button className={FLOATING_CONTROL} variant="outline" onClick={handleDiscard}>Discard changes</Button>
-                            <Button onClick={handlePublishClick}>Publish changes</Button>
-                        </>
-                    )}
-
-                    {/* With one, edit mode carries only draft actions (Done here, since
-                        there's nothing outstanding), and the lifecycle actions live in
-                        read mode. */}
-                    {!hasUnpublishedChanges && !alwaysEditable && (
-                        showEditCanvas ? (
-                            <Button className={FLOATING_CONTROL} variant="outline" onClick={() => setEditing(false)}>Done</Button>
-                        ) : (
-                            <>
-                                <Button className={FLOATING_CONTROL} variant="outline" onClick={() => setEditing(true)}>
-                                    <LucideIcon.Pencil /> Edit
-                                </Button>
-                                {/* Same reasoning as the always-editable branch above:
-                                    Start is the CTA, Stop is de-escalation. Kept
-                                    identical so the two editing models differ only in
-                                    the thing being compared. */}
-                                {liveStatus === 'inactive' ? (
-                                    <Button onClick={() => setStartOpen(true)}>Turn on</Button>
-                                ) : (
-                                    <Button className={FLOATING_CONTROL} variant="outline" onClick={() => setStopOpen(true)}>Turn off</Button>
-                                )}
-                            </>
-                        )
-                    )}
-
-                </div>
+                {!dockedHeader && (
+                    <div className="absolute top-4 right-4 z-10 flex items-center gap-3">
+                        {showEditCanvas && indicatorText && <span className="text-xs text-muted-foreground">{indicatorText}</span>}
+                        {chromeActions}
+                    </div>
+                )}
             </div>
 
             {/* Title — persistent overlay at the screen's top-left; stays put in edit
                 mode even though the pane hides. pointer-events-none container so empty
-                space passes clicks through; the title row opts back in. */}
+                space passes clicks through; the title row opts back in. Floating
+                variant only: the docked bar owns the title itself. */}
+            {!dockedHeader && (
             <div className="pointer-events-none absolute top-4 left-4 z-30">
-                <Inline align="center" className="pointer-events-auto" gap="sm">
+                {/* gap="none": every item here is a ghost button carrying its own
+                    padding, so a gap on top of that spaced the cluster out twice. The
+                    buttons sit flush and their padding does the separating, the way an
+                    icon toolbar reads. */}
+                <Inline align="center" className="pointer-events-auto" gap="none">
                     {/* The back arrow always stays — search indents past it rather than
                         covering it, so there's never a moment with no way out. Only the
                         title yields the space. */}
                     <RailButton icon={LucideIcon.ArrowLeft} label="Back to automations" onClick={goBack} />
-                    {/* Collapsed, the pane it belongs to isn't there to hold it, so it
-                        falls back to the title cluster — otherwise collapsing would be
-                        a one-way door. Open, it lives at the pane's own right edge
-                        (below). */}
-                    {alwaysEditable && paneCollapsed && (
-                        <RailButton
-                            icon={LucideIcon.PanelLeft}
-                            label="Show performance"
-                            onClick={() => setPaneCollapsed(false)}
-                        />
-                    )}
                     <HoverCard closeDelay={150} open={switcherOpen} openDelay={150} onOpenChange={setSwitcherOpen}>
                         <HoverCardTrigger asChild>
                             <Button
                                 className={cn(
+                                    // h-9 and the base rounded-md, so this sits in the same
+                                    // button shape as the icon buttons beside it — it used
+                                    // to be an auto-height pill, which read as a different
+                                    // kind of control sitting in the same row.
+                                    //
                                     // text-lg! (15px) — the `!` is required, not stylistic:
                                     // Button's base class sets text-control (13px), and
                                     // tailwind-merge can't tell that's a font size rather
@@ -547,7 +579,7 @@ const AutomationFloat: React.FC = () => {
                                     // important, source order wins and the title silently
                                     // renders at 13px. Shade's own size variants do the
                                     // same thing.
-                                    'h-auto min-w-0 gap-2 rounded-full px-2 py-1 text-lg! font-semibold transition-opacity',
+                                    'h-9 min-w-0 px-2 text-lg! font-semibold transition-opacity',
                                     // Yields to the pane's search when it expands across
                                     // the strip. Faded out rather than unmounted so the
                                     // title doesn't pop back in as the input closes.
@@ -586,7 +618,24 @@ const AutomationFloat: React.FC = () => {
                             ))}
                         </HoverCardContent>
                     </HoverCard>
+                    {/* Collapsed, the pane that holds this toggle isn't there to hold
+                        it, so it falls back to the title cluster — otherwise collapsing
+                        would be a one-way door. It lands to the right of the title,
+                        which is the position it occupies in the pane's own header. */}
+                    {alwaysEditable && paneCollapsed && (
+                        <RailButton
+                            // One icon for both states — it names the thing being
+                            // toggled rather than animating a direction, which is how
+                            // sidebar toggles read everywhere else. The label carries
+                            // the state for screen readers.
+                            icon={LucideIcon.PanelLeft}
+                            label="Show performance"
+                            onClick={() => setPaneCollapsed(false)}
+                        />
+                    )}
                 </Inline>
+            </div>
+            )}
             </div>
 
             {/* Lifecycle confirms — turning the automation on, and taking it off. */}
@@ -630,7 +679,7 @@ const AutomationFloat: React.FC = () => {
 // Provider wraps the whole screen (not just the panel) so future slots — node
 // styles, header treatments — can register without moving anything.
 const AutomationFloatScreen: React.FC = () => (
-    <ProtoVariantsProvider slots={[LEFT_PANEL_SLOT, EDITING_MODEL_SLOT]}>
+    <ProtoVariantsProvider slots={[LEFT_PANEL_SLOT, EDITING_MODEL_SLOT, HEADER_SLOT]}>
         <AutomationFloat />
     </ProtoVariantsProvider>
 );

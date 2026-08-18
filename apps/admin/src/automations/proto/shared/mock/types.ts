@@ -19,7 +19,15 @@ export type RunStep = {
     action_id: string;
     state: RunStepState;
     occurred_at: string | null;
-    detail: string | null; // e.g. "Opened · clicked 1 link", "Unsubscribed", "Sends Jul 17"
+    detail: string | null; // e.g. "Opened (1 link)", "Unsubscribed", "Sends Jul 17"
+    /**
+     * The step ran and something went wrong — a bounce, a send error. Its own
+     * flag rather than a `state`, because failing isn't a position in the flow:
+     * the step still happened (`state: 'done'`), it just didn't do its job. A run
+     * that ends this way is still `exited_early` — the member left the flow —
+     * but the reason is the system's, not theirs, and the UI says so.
+     */
+    failed?: boolean;
 };
 
 /** A lightweight member reference — a subset of the real Member. */

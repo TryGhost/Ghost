@@ -1,6 +1,6 @@
 import React, {useEffect, useMemo, useState} from 'react';
-import {InputGroup, InputGroupAddon, InputGroupInput, MetricValue, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Table, TableBody, TableCell, TableHeader, TableRow} from '@tryghost/shade/components';
-import {Box, Inline, Stack} from '@tryghost/shade/primitives';
+import {Button, InputGroup, InputGroupAddon, InputGroupInput, MetricValue, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Table, TableBody, TableCell, TableHeader, TableRow} from '@tryghost/shade/components';
+import {Box, Inline, Stack, Text} from '@tryghost/shade/primitives';
 import {GhAreaChart} from '@tryghost/shade/patterns';
 import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
 import type {AutomationRun, AutomationScenario} from '@/automations/proto/shared/mock';
@@ -114,12 +114,18 @@ interface CanvasSidePanelProps {
     scenario: AutomationScenario;
     selectedMemberId: string | null;
     onSelectMember: (runId: string | null) => void;
+    // Collapses the pane; absent when the editing model can't hide it, which is
+    // what tells this variant not to render the toggle. See panel-variants/types.
+    onCollapse?: () => void;
+    // The screen's chrome is a docked bar, so the pane titles itself. See
+    // panel-variants/types.
+    headerDocked?: boolean;
 }
 
 // The float concept's persistent left card: a single "Performance" view — total-
 // runs chart, member search, the 2x2 status cards (count + filter), and the runs
 // table. Replaces the old Overview/Runs rail flyouts.
-export const CanvasSidePanel: React.FC<CanvasSidePanelProps> = ({scenario, selectedMemberId, onSelectMember}) => {
+export const CanvasSidePanel: React.FC<CanvasSidePanelProps> = ({scenario, selectedMemberId, onSelectMember, onCollapse, headerDocked = false}) => {
     const {automation, metrics, runs} = scenario;
     const [range, setRange] = useState('30');
     const [query, setQuery] = useState('');
@@ -278,16 +284,34 @@ export const CanvasSidePanel: React.FC<CanvasSidePanelProps> = ({scenario, selec
                     scrolled off) a one-line chip row expands here in their place, via the
                     grid-rows 0fr→1fr height trick so the collapse animates. */}
                 <div ref={stickyBarRef} className={cn('sticky top-0 z-20 bg-surface-elevated px-6 py-4', stuck && 'border-b border-border-default')}>
-                <InputGroup className="w-full">
-                    <InputGroupAddon>
-                        <LucideIcon.Search />
-                    </InputGroupAddon>
-                    <InputGroupInput
-                        placeholder="Search members…"
-                        value={query}
-                        onChange={e => setQuery(e.target.value)}
-                    />
-                </InputGroup>
+                {/* Named only when the pane is a region of its own — under floating
+                    chrome the automation's title is the only title on screen, and a
+                    second one competing with it made the top read as two headers. */}
+                {headerDocked && (
+                    <Text className="pb-3" size="lg" weight="semibold">Members</Text>
+                )}
+                {/* min-w-0 flex-1 on the input, not w-full: w-full resolves against the
+                    whole bar and overflows it once the gap and the toggle are counted,
+                    and flex resolves that by squashing the button below 36px. */}
+                <Inline align="center" gap="sm">
+                    <InputGroup className="min-w-0 flex-1">
+                        <InputGroupAddon>
+                            <LucideIcon.Search />
+                        </InputGroupAddon>
+                        <InputGroupInput
+                            placeholder="Search members…"
+                            value={query}
+                            onChange={e => setQuery(e.target.value)}
+                        />
+                    </InputGroup>
+                    {/* Far right of the bar. It hides this pane, so it lives in it;
+                        collapsed, the screen puts it back beside the automation title. */}
+                    {onCollapse && (
+                        <Button aria-label="Hide performance" className="shrink-0" size="icon" type="button" variant="ghost" onClick={onCollapse}>
+                            <LucideIcon.PanelLeft strokeWidth={2} />
+                        </Button>
+                    )}
+                </Inline>
                 <div className={cn('grid transition-[grid-template-rows,opacity] duration-200 ease-out', stuck ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0')}>
                     <div className="overflow-hidden">
                         <div className="flex gap-2 pt-4">
@@ -363,7 +387,10 @@ export const CanvasSidePanel: React.FC<CanvasSidePanelProps> = ({scenario, selec
                                     <span className={`block min-w-0 truncate text-base ${isSelected ? 'font-semibold' : 'font-medium'}`}>{run.member.name}</span>
                                 </TableCell>
                                 <TableCell className="w-24 px-4 py-4 align-middle group-hover:bg-transparent">
-                                    <span className="block truncate text-sm text-muted-foreground">{startedLabel(run.enrolled_at)}</span>
+                                    {/* Same size and colour as the member column — it's a
+                                        value in its own right, not an annotation on the
+                                        name. Only the weight separates them. */}
+                                    <span className="block truncate text-base">{startedLabel(run.enrolled_at)}</span>
                                 </TableCell>
                                 <TableCell className="w-24 px-4 py-4 text-center align-middle group-hover:bg-transparent">
                                     {/* Icon only — the status cards above name each state. */}

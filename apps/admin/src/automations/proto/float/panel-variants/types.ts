@@ -11,4 +11,14 @@ export interface LeftPanelProps {
     // it would otherwise collide with the floating automation title. The screen
     // hides the title while it's open; variants that don't do this never call it.
     onSearchOpenChange?: (open: boolean) => void;
+    // Collapses the pane. Passed only by the editing model that can hide it, so
+    // its absence is what tells a variant not to render the toggle at all. The
+    // control sits at the far right of the variant's own header row — it belongs
+    // to the pane it hides, rather than floating on the canvas beside it.
+    onCollapse?: () => void;
+    // True when the screen's chrome is a docked header bar rather than floating
+    // overlays. The pane then owns its own top row — with a header above it there
+    // is no screen strip to reach into, and its controls would otherwise sit on a
+    // baseline that no longer exists.
+    headerDocked?: boolean;
 }

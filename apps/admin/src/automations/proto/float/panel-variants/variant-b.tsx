@@ -1,10 +1,11 @@
 import React, {useEffect, useMemo, useState} from 'react';
 import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger, InputGroup, InputGroupAddon, InputGroupInput, MetricValue, Table, TableBody, TableCell, TableHeader, TableRow} from '@tryghost/shade/components';
-import {Box, Inline, Stack} from '@tryghost/shade/primitives';
+import {Box, Inline, Stack, Text} from '@tryghost/shade/primitives';
 import {FilterBar, GhAreaChart} from '@tryghost/shade/patterns';
 import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
 import type {AutomationRun} from '@/automations/proto/shared/mock';
 import type {LeftPanelProps} from './types';
+import {InProgressGlyph} from '@/automations/proto/shared/run-glyphs';
 import {SortHead, type SortState} from '@/automations/proto/float/sort-head';
 import {startedLabel} from '@/automations/proto/shared/member-runs';
 import {toAreaData} from '@/automations/proto/shared/chart';
@@ -38,19 +39,6 @@ const statusOf = (run: AutomationRun): StatusKey => {
     return run.status === 'completed' ? 'Completed' : 'Exited early';
 };
 
-// Static in-progress glyph — a dashed track with a solid arc over it. Replaces
-// variant A's ring that filled to a synthetic percentage: that number was
-// invented (nothing in a run tells us how far through a wait a member is), and a
-// fixed mark says "in progress" without implying precision we don't have.
-// currentColor rather than the source's hex, so it takes the status colour and
-// flips with the theme.
-const InProgressGlyph: React.FC = () => (
-    <svg className="size-4 shrink-0" fill="none" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="8" cy="8" r="6" stroke="currentColor" strokeDasharray="1 3" strokeLinecap="round" strokeWidth="1.5" />
-        <path d="M8 14C11.3137 14 14 11.3137 14 8C14 4.68629 11.3137 2 8 2" stroke="currentColor" strokeWidth="1.5" />
-    </svg>
-);
-
 // Each status carries one glyph + colour, used identically by the count cards,
 // the collapsed chips and the table's Status column, so the three always read as
 // the same thing.
@@ -72,7 +60,7 @@ const RANGE_OPTIONS: {value: string; label: string}[] = [
 
 type EnrichedRun = {run: AutomationRun; status: StatusKey};
 
-export const LeftPanelVariantB: React.FC<LeftPanelProps> = ({scenario, selectedMemberId, onSelectMember, onSearchOpenChange}) => {
+export const LeftPanelVariantB: React.FC<LeftPanelProps> = ({scenario, selectedMemberId, onSelectMember, onSearchOpenChange, onCollapse, headerDocked = false}) => {
     const {automation, metrics, runs} = scenario;
     const [range, setRange] = useState('all');
     const [query, setQuery] = useState('');
@@ -154,43 +142,58 @@ export const LeftPanelVariantB: React.FC<LeftPanelProps> = ({scenario, selectedM
 
     return (
         <div className="flex min-h-0 flex-1 flex-col">
-            {/* Controls sit in the screen's top strip, on the same baseline as the back
-                arrow and title floating to their left — so the pane's chrome reads as
-                one row across the top rather than starting again below it. Outside the
-                scroll container, so they stay put. */}
+            {/* Floating chrome: the controls sit in the screen's top strip, on the
+                same baseline as the back arrow and title floating to their left, so the
+                top of the screen reads as one row rather than starting again below it.
+
+                Docked header: there is no strip to borrow — the bar above already owns
+                that row — so the pane titles itself and keeps its controls on its own
+                baseline. Outside the scroll container either way, so they stay put. */}
             <Inline
                 align="center"
                 className={cn(
                     'shrink-0 pt-4 pr-6 pb-3',
                     // Open search takes the whole strip, so it indents past the back
                     // arrow rather than sitting under it — the exit stays reachable
-                    // while the title behind it is hidden.
-                    searchOpen ? 'pl-16' : 'pl-6'
+                    // while the title behind it is hidden. Docked, the arrow is up in
+                    // the bar, so there's nothing to clear.
+                    searchOpen && !headerDocked ? 'pl-16' : 'pl-6'
                 )}
                 gap="sm"
-                justify="end"
+                justify={headerDocked && !searchOpen ? 'between' : 'end'}
             >
-                {searchOpen ? (
-                    <>
-                        {/* flex-1 + min-w-0, NOT w-full: w-full resolves against the
-                            whole strip, overflows it once the gap and buttons are
-                            counted, and flex resolves that by shrinking the siblings —
-                            so the icon buttons squash below 36px and appear to jump
-                            width as search opens. */}
-                        <InputGroup className="min-w-0 flex-1">
-                            <InputGroupAddon>
-                                <LucideIcon.Search />
-                            </InputGroupAddon>
-                            <InputGroupInput
-                                autoFocus
-                                placeholder="Search members…"
-                                value={query}
-                                onChange={e => setQuery(e.target.value)}
-                            />
-                        </InputGroup>
+                {/* Named only when the pane is a region of its own. Under floating
+                    chrome the automation's title is the only title on screen, and a
+                    second one competing with it made the strip read as two headers. */}
+                {headerDocked && !searchOpen && (
+                    <Text size="lg" weight="semibold">Members</Text>
+                )}
+                {/* flex-1 + min-w-0, NOT w-full: w-full resolves against the whole
+                    strip, overflows it once the gap and buttons are counted, and flex
+                    resolves that by shrinking the siblings — so the icon buttons squash
+                    below 36px and appear to jump width as search opens. */}
+                {searchOpen && (
+                    <InputGroup className="min-w-0 flex-1">
+                        <InputGroupAddon>
+                            <LucideIcon.Search />
+                        </InputGroupAddon>
+                        <InputGroupInput
+                            autoFocus
+                            placeholder="Search members…"
+                            value={query}
+                            onChange={e => setQuery(e.target.value)}
+                        />
+                    </InputGroup>
+                )}
+                {/* The icon buttons sit flush against each other — each already carries
+                    its own padding, so a gap on top of that spaced them twice and the
+                    row read as three unrelated controls instead of one toolbar. The
+                    outer gap still holds, which is what keeps them off the search
+                    field's border when it's open. */}
+                <Inline align="center" className="shrink-0" gap="none">
+                    {searchOpen ? (
                         <Button
                             aria-label="Close search"
-                            className="shrink-0"
                             size="icon"
                             type="button"
                             variant="ghost"
@@ -201,30 +204,39 @@ export const LeftPanelVariantB: React.FC<LeftPanelProps> = ({scenario, selectedM
                         >
                             <LucideIcon.X strokeWidth={2} />
                         </Button>
-                    </>
-                ) : (
-                    <Button aria-label="Search members" className="shrink-0" size="icon" type="button" variant="ghost" onClick={() => toggleSearch(true)}>
-                        <LucideIcon.Search strokeWidth={2} />
-                    </Button>
-                )}
-                {/* A plain filter button rather than a labelled timeframe control: the
-                    timeframe is one of several things we'll want to filter on, and this
-                    is the affordance the rest of Ghost already uses. */}
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button aria-label="Filter" className={cn('shrink-0', range !== 'all' && 'bg-muted')} size="icon" type="button" variant="ghost">
-                            <LucideIcon.ListFilter strokeWidth={2} />
+                    ) : (
+                        <Button aria-label="Search members" size="icon" type="button" variant="ghost" onClick={() => toggleSearch(true)}>
+                            <LucideIcon.Search strokeWidth={2} />
                         </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Entered</DropdownMenuLabel>
-                        <DropdownMenuRadioGroup value={range} onValueChange={setRange}>
-                            {RANGE_OPTIONS.map(option => (
-                                <DropdownMenuRadioItem key={option.value} value={option.value}>{option.label}</DropdownMenuRadioItem>
-                            ))}
-                        </DropdownMenuRadioGroup>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                    )}
+                    {/* A plain filter button rather than a labelled timeframe control: the
+                        timeframe is one of several things we'll want to filter on, and this
+                        is the affordance the rest of Ghost already uses. */}
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button aria-label="Filter" className={cn(range !== 'all' && 'bg-muted')} size="icon" type="button" variant="ghost">
+                                <LucideIcon.ListFilter strokeWidth={2} />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Entered</DropdownMenuLabel>
+                            <DropdownMenuRadioGroup value={range} onValueChange={setRange}>
+                                {RANGE_OPTIONS.map(option => (
+                                    <DropdownMenuRadioItem key={option.value} value={option.value}>{option.label}</DropdownMenuRadioItem>
+                                ))}
+                            </DropdownMenuRadioGroup>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                    {/* Last in the row, past the filter. It hides this pane, so it lives
+                        in it — a control on the thing it acts on. Collapsed, the screen
+                        puts it back beside the automation title, which is the only way
+                        back. */}
+                    {onCollapse && (
+                        <Button aria-label="Hide performance" size="icon" type="button" variant="ghost" onClick={onCollapse}>
+                            <LucideIcon.PanelLeft strokeWidth={2} />
+                        </Button>
+                    )}
+                </Inline>
             </Inline>
 
             {/* An applied filter gets its own row beneath the controls, the way the
@@ -310,7 +322,11 @@ export const LeftPanelVariantB: React.FC<LeftPanelProps> = ({scenario, selectedM
                     cards above have scrolled off (grid-rows 0fr→1fr so it animates).
                     Search left this bar for the top strip, so with nothing stuck the bar
                     collapses to nothing rather than holding empty space. */}
-                <div ref={stickyBarRef} className={cn('sticky top-0 z-20 bg-surface-elevated px-6', stuck && 'border-b border-border-default py-4')}>
+                {/* pb only, no pt: the header strip above already ends on pb-3, and
+                    stacking this bar's own top padding on top of that read as a gap
+                    between the chips and the header rather than as the chips sitting
+                    under it. */}
+                <div ref={stickyBarRef} className={cn('sticky top-0 z-20 bg-surface-elevated px-6', stuck && 'border-b border-border-default pb-4')}>
                     <div className={cn('grid transition-[grid-template-rows,opacity] duration-200 ease-out', stuck ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0')}>
                         <div className="overflow-hidden">
                             <div className="flex gap-2">
@@ -368,7 +384,11 @@ export const LeftPanelVariantB: React.FC<LeftPanelProps> = ({scenario, selectedM
                                             <span className={`block min-w-0 truncate text-base ${isSelected ? 'font-semibold' : 'font-medium'}`}>{run.member.name}</span>
                                         </TableCell>
                                         <TableCell className="w-24 px-4 py-4 align-middle group-hover:bg-transparent">
-                                            <span className="block truncate text-sm text-muted-foreground">{startedLabel(run.enrolled_at)}</span>
+                                            {/* Matches panels.tsx — same size and colour as
+                                                the member column, weight alone separating
+                                                them. Kept in step so the two left-pane
+                                                variants differ only where they mean to. */}
+                                            <span className="block truncate text-base">{startedLabel(run.enrolled_at)}</span>
                                         </TableCell>
                                         <TableCell className="w-20 px-4 py-4 text-center align-middle group-hover:bg-transparent">
                                             {/* Icon only — the cards above name each state. */}
