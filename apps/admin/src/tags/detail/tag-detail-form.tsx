@@ -1,7 +1,8 @@
 import React from 'react';
 import TagColorField from './tag-color-field';
+import TagCodeInjectionAccordion from './tag-code-injection-accordion';
 import TagImageField from './tag-image-field';
-import {Accordion, AccordionContent, AccordionItem, AccordionTrigger, Card, CardContent, CodeEditor, FieldError, Input, Label, Tabs, TabsContent, TabsList, TabsTrigger, Textarea} from '@tryghost/shade/components';
+import {Card, CardContent, FieldError, Input, Label, Tabs, TabsContent, TabsList, TabsTrigger, Textarea} from '@tryghost/shade/components';
 import {Grid, Inline, Stack} from '@tryghost/shade/primitives';
 import {DESCRIPTION_MAX_LENGTH, FACEBOOK_DESCRIPTION_RECOMMENDED_LENGTH, FACEBOOK_TITLE_RECOMMENDED_LENGTH, META_DESCRIPTION_RECOMMENDED_LENGTH, META_TITLE_RECOMMENDED_LENGTH, X_DESCRIPTION_RECOMMENDED_LENGTH, X_TITLE_RECOMMENDED_LENGTH, charLength, getBlogDomain, getSeoDescription, getSeoTitle, getSeoUrl, getSlugUrlPreview, validateTagField} from './tag-detail-edit';
 import {FacebookCardPreview, SeoPreview, XCardPreview} from './tag-detail-previews';
@@ -21,8 +22,6 @@ interface TagDetailFormProps {
 }
 
 const errorId = (field: TagFieldName) => `tag-${field}-error`;
-const htmlExtensions = [() => import('@codemirror/lang-html').then(module => module.html())];
-
 /** Ember's `gh-count-down-characters`: the used count, red once past the limit. */
 const UsedCharacters: React.FC<{value: string; limit: number; prefix: 'Maximum' | 'Recommended'}> = ({value, limit, prefix}) => {
     const used = charLength(value);
@@ -55,9 +54,10 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
         <Grid align='start' className='lg:grid-cols-2 sidebarlg:grid-cols-[minmax(0,5fr)_minmax(0,3fr)]' data-testid='tag-detail-form' gap='2xl'>
             {/* The main form and advanced settings collapse into one column
                 below the medium breakpoint. */}
-            <Card data-testid='tag-core-data-card'>
-                <CardContent className='p-6'>
-                    <Stack gap='lg'>
+            <Stack gap='lg'>
+                <Card data-testid='tag-core-data-card'>
+                    <CardContent className='p-6'>
+                        <Stack gap='lg'>
                         <Stack gap='sm'>
                             <Inline align='start' gap='md'>
                                 <Stack className='min-w-0 flex-1' gap='sm'>
@@ -132,22 +132,27 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                             <FieldError className='text-sm' id={errorId('description')}>{errors.description}</FieldError>
                             <UsedCharacters limit={DESCRIPTION_MAX_LENGTH} prefix='Maximum' value={draft.description} />
                         </Stack>
-                    </Stack>
-                </CardContent>
-            </Card>
+                        </Stack>
+                    </CardContent>
+                </Card>
 
-            <Stack gap='lg'>
-                <Card className='overflow-hidden' data-testid='tag-metadata-card'>
-                    <Accordion type='single' collapsible>
-                        <AccordionItem className='border-b-0' value='metadata'>
-                            <AccordionTrigger className='px-6 py-5 hover:no-underline'>
-                                <Stack className='text-left' gap='none'>
-                                    <span className='text-[14px] font-semibold'>Meta data</span>
-                                    <span className='text-[13px] leading-[16px] font-normal tracking-normal text-muted-foreground'>Extra content for search engines and social accounts.</span>
-                                </Stack>
-                            </AccordionTrigger>
-                            <AccordionContent className='px-6'>
-                                <Tabs defaultValue='search' variant='underline'>
+                <TagCodeInjectionAccordion
+                    disabled={disabled}
+                    footerValue={draft.codeinjectionFoot}
+                    headerValue={draft.codeinjectionHead}
+                    onFooterChange={codeinjectionFoot => onChange({codeinjectionFoot})}
+                    onHeaderChange={codeinjectionHead => onChange({codeinjectionHead})}
+                />
+            </Stack>
+
+            <Card className='overflow-hidden' data-testid='tag-metadata-card'>
+                <CardContent className='p-6'>
+                    <Stack gap='lg'>
+                        <Stack gap='none'>
+                            <span className='text-[14px] font-semibold'>Meta data</span>
+                            <span className='text-[13px] leading-[16px] font-normal tracking-normal text-muted-foreground'>Extra content for search engines and social accounts.</span>
+                        </Stack>
+                        <Tabs defaultValue='search' variant='underline'>
                         <TabsList aria-label='Tag metadata'>
                             <TabsTrigger value='search'>Search</TabsTrigger>
                             <TabsTrigger value='x-card'>X card</TabsTrigger>
@@ -201,7 +206,7 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                                         <FieldError className='text-sm' id={errorId('canonicalUrl')}>{errors.canonicalUrl}</FieldError>
                                     </Stack>
                                 </Stack>
-                                    <Stack className='-mx-6 -mb-6 bg-preview-canvas px-6 pt-5 pb-8' data-testid='search-preview-surface' gap='sm'>
+                                    <Stack className='-mx-6 -mb-6 bg-preview-canvas px-6 pt-5 pb-[34px]' data-testid='search-preview-surface' gap='sm'>
                                     <Label>Search Engine Result Preview</Label>
                                     <SeoPreview description={seoDescription} title={seoTitle} url={seoUrl} />
                                 </Stack>
@@ -233,7 +238,7 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                                         <UsedCharacters limit={X_DESCRIPTION_RECOMMENDED_LENGTH} prefix='Recommended' value={draft.twitterDescription} />
                                     </Stack>
                                 </Stack>
-                                    <Stack className='-mx-6 -mb-6 bg-preview-canvas px-6 pt-5 pb-8' data-testid='x-preview-surface' gap='sm'>
+                                    <Stack className='-mx-6 -mb-6 bg-preview-canvas px-6 pt-5 pb-[34px]' data-testid='x-preview-surface' gap='sm'>
                                     <Label>X preview</Label>
                                     <XCardPreview
                                         description={draft.twitterDescription || seoDescription || siteMetaDescription || ''}
@@ -271,7 +276,7 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                                         <UsedCharacters limit={FACEBOOK_DESCRIPTION_RECOMMENDED_LENGTH} prefix='Recommended' value={draft.ogDescription} />
                                     </Stack>
                                 </Stack>
-                                    <Stack className='-mx-6 -mb-6 bg-preview-canvas px-6 pt-5 pb-8' data-testid='facebook-preview-surface' gap='sm'>
+                                    <Stack className='-mx-6 -mb-6 bg-preview-canvas px-6 pt-5 pb-[34px]' data-testid='facebook-preview-surface' gap='sm'>
                                     <Label>Facebook preview</Label>
                                     {/* The description chain deliberately skips ogDescription: Ember read a
                                         nonexistent `facebookDescription` attribute, so ogDescription never
@@ -286,47 +291,10 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                                 </Stack>
                             </Stack>
                         </TabsContent>
-                                </Tabs>
-                            </AccordionContent>
-                        </AccordionItem>
-                    </Accordion>
-                </Card>
-
-                <Card data-testid='tag-code-injection-card'>
-                    <Accordion type='single' collapsible>
-                        <AccordionItem className='border-b-0' value='code-injection'>
-                            <AccordionTrigger className='px-6 py-5 hover:no-underline'>
-                                <Stack className='text-left' gap='none'>
-                                    <span className='text-[14px] font-semibold'>Code injection</span>
-                                    <span className='text-[13px] leading-[16px] font-normal tracking-normal text-muted-foreground'>Add styles/scripts to the header and footer.</span>
-                                </Stack>
-                            </AccordionTrigger>
-                            <AccordionContent className='px-6'>
-                                <Stack className='pt-1' gap='lg'>
-                                    <CodeEditor
-                                        data-testid='codeinjection-head'
-                                        editable={!disabled}
-                                        extensions={htmlExtensions}
-                                        height='128px'
-                                        title={<>Tag header <code className='ml-1 font-normal'>{'{{ghost_head}}'}</code></>}
-                                        value={draft.codeinjectionHead}
-                                        onChange={(value: string) => onChange({codeinjectionHead: value})}
-                                    />
-                                    <CodeEditor
-                                        data-testid='codeinjection-foot'
-                                        editable={!disabled}
-                                        extensions={htmlExtensions}
-                                        height='128px'
-                                        title={<>Tag footer <code className='ml-1 font-normal'>{'{{ghost_foot}}'}</code></>}
-                                        value={draft.codeinjectionFoot}
-                                        onChange={(value: string) => onChange({codeinjectionFoot: value})}
-                                    />
-                                </Stack>
-                            </AccordionContent>
-                        </AccordionItem>
-                    </Accordion>
-                </Card>
-            </Stack>
+                        </Tabs>
+                    </Stack>
+                </CardContent>
+            </Card>
         </Grid>
     );
 };

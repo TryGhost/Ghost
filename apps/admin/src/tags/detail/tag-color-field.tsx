@@ -1,6 +1,7 @@
 import React from 'react';
 import {InputGroup, InputGroupAddon, InputGroupInput, InputGroupText, Label, Popover, PopoverContent, PopoverTrigger} from '@tryghost/shade/components';
 import {ColorPicker, ColorPickerTrigger} from '@tryghost/shade/patterns';
+import {Stack} from '@tryghost/shade/primitives';
 
 interface TagColorFieldProps {
     value: string;
@@ -63,13 +64,14 @@ const TagColorField: React.FC<TagColorFieldProps> = ({value, disabled, errorId, 
 
     return (
         <Popover onOpenChange={() => allowPickerChanges.current = false}>
-            <div className='flex flex-col gap-1.5'>
+            <Stack gap='sm'>
                 <Label htmlFor='tag-accent-color'>Color</Label>
-                <InputGroup className='w-32' data-disabled={disabled ? 'true' : undefined}>
+                <InputGroup className='w-28' data-disabled={disabled ? 'true' : undefined}>
                     <InputGroupAddon align='inline-start'>
                         <PopoverTrigger asChild>
                             <ColorPickerTrigger
                                 aria-label='Accent color picker'
+                                className='-ml-1'
                                 disabled={disabled}
                                 value={value || '#ffffff'}
                             />
@@ -94,7 +96,7 @@ const TagColorField: React.FC<TagColorFieldProps> = ({value, disabled, errorId, 
                         }}
                     />
                 </InputGroup>
-            </div>
+            </Stack>
             <PopoverContent align='start' className='w-auto p-4'>
                 <div
                     onInputCapture={() => allowPickerChanges.current = true}

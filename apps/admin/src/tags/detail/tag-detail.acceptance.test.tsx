@@ -61,12 +61,6 @@ describe('Tag detail (tagDetailsReact on)', () => {
         await renderAdminApp(`/tags/${t.slug}`, FLAGS);
 
         const metadataCard = page.getByTestId('tag-metadata-card');
-        const metadataTrigger = metadataCard.getByRole('button', {name: /Meta data/});
-        await expect.element(metadataTrigger).toHaveAttribute('aria-expanded', 'false');
-        expect(metadataCard.getByRole('tab', {name: 'Search'}).query()).toBeNull();
-
-        await metadataTrigger.click();
-        await expect.element(metadataTrigger).toHaveAttribute('aria-expanded', 'true');
         const searchTab = metadataCard.getByRole('tab', {name: 'Search'});
         const xTab = metadataCard.getByRole('tab', {name: 'X card'});
         const facebookTab = metadataCard.getByRole('tab', {name: 'Facebook card'});
@@ -103,9 +97,11 @@ describe('Tag detail (tagDetailsReact on)', () => {
         const codeInjectionCard = page.getByTestId('tag-code-injection-card');
         const codeInjectionTrigger = codeInjectionCard.getByRole('button', {name: /Code injection/});
         await expect.element(codeInjectionTrigger).toHaveAttribute('aria-expanded', 'false');
-        expect(codeInjectionCard.getByRole('textbox', {name: /^Tag header/}).query()).toBeNull();
-        expect(codeInjectionCard.getByRole('textbox', {name: /^Tag footer/}).query()).toBeNull();
-        expect(metadataCard.element().compareDocumentPosition(codeInjectionCard.element()) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+        expect(page.getByRole('textbox', {name: /^Tag header/}).query()).toBeNull();
+        expect(page.getByRole('textbox', {name: /^Tag footer/}).query()).toBeNull();
+        const coreDataCard = page.getByTestId('tag-core-data-card');
+        expect(coreDataCard.element().compareDocumentPosition(codeInjectionCard.element()) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+        expect(codeInjectionCard.element().compareDocumentPosition(metadataCard.element()) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     });
 
     it('edits and saves tag code injection with CodeMirror', async () => {
@@ -115,7 +111,7 @@ describe('Tag detail (tagDetailsReact on)', () => {
         const saveApi = fakeTagWorld(t);
         await renderAdminApp(`/tags/${t.slug}`, FLAGS);
 
-        await page.getByRole('button', {name: /Code injection/}).click();
+        await expect.element(page.getByRole('button', {name: /Code injection/})).toHaveAttribute('aria-expanded', 'true');
         const headerEditor = page.getByRole('textbox', {name: /^Tag header/});
         const footerEditor = page.getByRole('textbox', {name: /^Tag footer/});
         await expect.element(headerEditor).toBeVisible();
@@ -150,7 +146,17 @@ describe('Tag detail (tagDetailsReact on)', () => {
         expect(saved.codeinjection_foot).toBe(updatedFoot);
     });
 
-    it('keeps CodeMirror autocomplete outside the clipped editor surface', async () => {
+    it('opens code injection when only the footer contains code', async () => {
+        const t = tag({name: 'News', slug: 'news', codeinjection_foot: '<script>footer();</script>'});
+        fakeTagWorld(t);
+        await renderAdminApp(`/tags/${t.slug}`, FLAGS);
+
+        const codeInjectionTrigger = page.getByRole('button', {name: /Code injection/});
+        await expect.element(codeInjectionTrigger).toHaveAttribute('aria-expanded', 'true');
+        await expect.element(page.getByRole('textbox', {name: /^Tag footer/})).toBeVisible();
+    });
+
+    it('keeps CodeMirror autocomplete visible in the code injection accordion', async () => {
         const t = tag({name: 'News', slug: 'news'});
         fakeTagWorld(t);
         await renderAdminApp(`/tags/${t.slug}`, FLAGS);
@@ -170,19 +176,15 @@ describe('Tag detail (tagDetailsReact on)', () => {
             const tooltip = document.querySelector<HTMLElement>('.cm-tooltip-autocomplete');
             const tooltipParent = tooltip?.closest<HTMLElement>('.cm-tooltip-parent');
             const container = tooltipParent?.firstElementChild as HTMLElement | null;
-            const editor = headerEditor.element().closest<HTMLElement>('[data-testid="codeinjection-head"]');
-
-            if (!tooltip || !tooltipParent || !container || !editor) {
+            if (!tooltip || !tooltipParent || !container) {
                 return null;
             }
 
             const tooltipRect = tooltip.getBoundingClientRect();
-            const editorRect = editor.getBoundingClientRect();
 
             return {
                 containerBackground: getComputedStyle(container).backgroundColor,
                 containerHeight: container.getBoundingClientRect().height,
-                escapesEditor: tooltipRect.bottom > editorRect.bottom || tooltipRect.top < editorRect.top,
                 hostParent: tooltipParent.parentElement?.tagName,
                 tooltipOnscreen: tooltipRect.bottom > 0
                     && tooltipRect.right > 0
@@ -193,7 +195,6 @@ describe('Tag detail (tagDetailsReact on)', () => {
         }).toEqual({
             containerBackground: 'rgba(0, 0, 0, 0)',
             containerHeight: 0,
-            escapesEditor: true,
             hostParent: 'BODY',
             tooltipOnscreen: true,
             tooltipPosition: 'fixed'
