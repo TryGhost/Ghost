@@ -1464,7 +1464,11 @@ jobs:
           tags: ${{ steps.meta-core.outputs.tags }}
           labels: ${{ steps.meta-core.outputs.labels }}
           cache-from: type=registry,ref=${{ steps.strategy.outputs.image-core-name }}:cache-main
-          cache-to: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref={0}:cache-{1},mode=max', steps.strategy.outputs.image-core-name, github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main') || '' }}
+          # PRs read cache-main but never write cache: the old cache-pr-N was
+          # write-only (cache-from is always cache-main) and mode=max cache export
+          # is the heaviest GHCR push in the run — skipping it on PRs cuts push
+          # volume with no rebuild cost. Only main/tag publish cache-main.
+          cache-to: ${{ steps.strategy.outputs.should-push == 'true' && github.event_name != 'pull_request' && format('type=registry,ref={0}:cache-main,mode=max', steps.strategy.outputs.image-core-name) || '' }}
 
       # Uploaded here, before the full image is even built: on the artifact path
       # consumers (Ghost-Moya CD) need the core image — server only, no admin —
@@ -1535,7 +1539,8 @@ jobs:
           tags: ${{ steps.meta-full.outputs.tags }}
           labels: ${{ steps.meta-full.outputs.labels }}
           cache-from: type=registry,ref=${{ steps.strategy.outputs.image-full-name }}:cache-main
-          cache-to: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref={0}:cache-{1},mode=max', steps.strategy.outputs.image-full-name, github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main') || '' }}
+          # See core image above: PRs skip cache-to; only main/tag publish cache-main.
+          cache-to: ${{ steps.strategy.outputs.should-push == 'true' && github.event_name != 'pull_request' && format('type=registry,ref={0}:cache-main,mode=max', steps.strategy.outputs.image-full-name) || '' }}
 
       # The production image artifact is saved before the e2e steps below:
       # Ghost-Moya CD discovers `docker-image-production` by name in this run
@@ -1711,7 +1716,8 @@ jobs:
           tags: ${{ steps.meta-e2e.outputs.tags }}
           labels: ${{ steps.meta-e2e.outputs.labels }}
           cache-from: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref={0}:cache-main', steps.strategy.outputs.image-e2e-name) || '' }}
-          cache-to: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref={0}:cache-{1},mode=max', steps.strategy.outputs.image-e2e-name, github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main') || '' }}
+          # See core image above: PRs skip cache-to; only main/tag publish cache-main.
+          cache-to: ${{ steps.strategy.outputs.should-push == 'true' && github.event_name != 'pull_request' && format('type=registry,ref={0}:cache-main,mode=max', steps.strategy.outputs.image-e2e-name) || '' }}
 
       - name: Save E2E image as artifact
         if: steps.strategy.outputs.use-artifact == 'true'
