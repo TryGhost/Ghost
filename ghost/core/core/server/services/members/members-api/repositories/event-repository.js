@@ -5,6 +5,10 @@ const {replaceFilters, expandFilters, splitFilter, getUsedKeys, chainTransformer
 const {default: ObjectID} = require('bson-objectid');
 const db = require('../../../../data/db');
 
+// Explicit global pages query a prefix from every source. Cap each prefix at
+// 100 full-size Admin API pages to bound database reads and in-memory sorting.
+const MAX_EVENT_CANDIDATES = 10_000;
+
 /**
  * This mongo transformer ignores the provided filter option and replaces the filter with a custom filter that was provided to the transformer. Allowing us to set a mongo filter instead of a string based NQL filter.
  */
@@ -73,8 +77,16 @@ module.exports = class EventRepository {
         }
 
         const requestedLimit = options.limit;
-        const page = options.page === undefined ? null : parseInt(options.page, 10) || 1;
-        const limit = page === null ? Number(requestedLimit) : parseInt(requestedLimit, 10) || 10;
+        const parsedPage = Number.parseInt(options.page, 10);
+        const page = options.page === undefined ? null : Math.max(1, parsedPage || 1);
+        const limit = page === null ? Number(requestedLimit) : Number.parseInt(requestedLimit, 10) || 10;
+        const candidateLimit = page === null ? null : page * limit;
+
+        if (candidateLimit > MAX_EVENT_CANDIDATES) {
+            throw new errors.BadRequestError({
+                message: 'Requested page is too large'
+            });
+        }
 
         const [typeFilter, otherFilter] = this.getNQLSubset(options.filter);
 
@@ -88,7 +100,7 @@ module.exports = class EventRepository {
         const sourceOptions = page === null ? options : {
             ...options,
             page: 1,
-            limit: page * limit
+            limit: candidateLimit
         };
 
         // Create a list of all events that can be queried

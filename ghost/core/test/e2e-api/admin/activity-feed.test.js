@@ -295,6 +295,12 @@ describe('Activity Feed API', function () {
             assert.equal(body.meta.pagination.limit, 100);
             assert(body.events.length <= 100);
         });
+
+        it('rejects page windows larger than 10,000 events', async function () {
+            await agent
+                .get('/members/events?limit=100&page=101')
+                .expectStatus(400);
+        });
     });
 
     // Activity feed

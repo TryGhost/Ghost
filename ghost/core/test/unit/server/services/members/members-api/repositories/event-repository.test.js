@@ -91,6 +91,44 @@ describe('EventRepository', function () {
             });
         });
 
+        it('normalizes negative pages to the first page', async function () {
+            const eventRepository = createRepository();
+
+            const result = await eventRepository.getEventTimeline({
+                filter: 'type:[login_event,payment_event]',
+                limit: '2',
+                page: '-1'
+            });
+
+            assert.deepEqual(result.events.map(event => event.data.id), ['login-4', 'payment-3']);
+            assert.deepEqual(result.meta.pagination, {
+                page: 1,
+                limit: 2,
+                pages: 2,
+                total: 4,
+                next: 2,
+                prev: null
+            });
+        });
+
+        it('rejects page windows larger than 10,000 events', async function () {
+            const eventRepository = createRepository();
+            const loginEvents = sinon.spy(eventRepository, 'getLoginEvents');
+            const paymentEvents = sinon.spy(eventRepository, 'getPaymentEvents');
+
+            await assert.rejects(eventRepository.getEventTimeline({
+                filter: 'type:[login_event,payment_event]',
+                limit: '100',
+                page: '101'
+            }), {
+                name: 'BadRequestError',
+                message: 'Requested page is too large'
+            });
+
+            sinon.assert.notCalled(loginEvents);
+            sinon.assert.notCalled(paymentEvents);
+        });
+
         it('uses integer pagination semantics', async function () {
             const eventRepository = createRepository();
 
