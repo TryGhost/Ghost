@@ -18,6 +18,11 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
     const createFailures = new Map<string, unknown>();
     const store = new ImportRunStore();
     let converterResolutions = 0;
+    // Late-bound: the importer captures deps at construction.
+    let htmlToLexicalFactory: () => (html: string) => unknown = () => {
+        converterResolutions += 1;
+        return (html: string) => ({converted: html});
+    };
 
     const deps = {
         readRows: async () => rows,
@@ -32,10 +37,7 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
                 return {id, toJSON: () => ({id, slug: `slug-${created.length}`})};
             }
         },
-        getHtmlToLexical: () => {
-            converterResolutions += 1;
-            return (html: string) => ({converted: html});
-        },
+        getHtmlToLexical: () => htmlToLexicalFactory(),
         addJob: (job: {name: string; offloaded: boolean; job: () => Promise<void>}) => {
             jobs.push(job);
         },
@@ -58,7 +60,11 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
         return accepted;
     };
 
-    return {importer, run, deps, created, reported, jobs, createFailures, store, converterResolutions: () => converterResolutions};
+    const setHtmlToLexicalFactory = (factory: () => (html: string) => unknown) => {
+        htmlToLexicalFactory = factory;
+    };
+
+    return {importer, run, deps, created, reported, jobs, createFailures, store, setHtmlToLexicalFactory, converterResolutions: () => converterResolutions};
 }
 
 describe('ContentCSVImporter', function () {
@@ -138,10 +144,39 @@ describe('ContentCSVImporter', function () {
         assert.equal(h.jobs.length, 1);
     });
 
-    it('reports a failed write instead of letting the job reject', async function () {
+    it('records a failed write against its row and imports the rest', async function () {
+        const h = harness([row('First'), row('Second'), row('Third')]);
+        h.createFailures.set('Second', new Error('insert failed'));
+
+        await h.run();
+
+        assert.deepEqual(h.created.map(call => call.data.title), ['First', 'Third'], 'the other rows still imported');
+        assert.deepEqual(h.reported, [], 'a row outcome is recorded, not reported');
+
+        const run = h.store.get('run_test');
+        assert.equal(run?.status, 'complete');
+        assert.deepEqual(run?.rows[1], {line: 3, title: 'Second', status: 'failed', reason: 'insert failed'});
+    });
+
+    it('skips a malformed row on its own and imports the rest', async function () {
+        const h = harness([row('First'), {title: '', html: '<p>No title</p>', published_at: undefined}, row('Third')]);
+
+        await h.run();
+
+        assert.deepEqual(h.created.map(call => call.data.title), ['First', 'Third']);
+
+        const run = h.store.get('run_test');
+        assert.equal(run?.status, 'complete');
+        assert.deepEqual(run?.rows[1], {line: 3, title: null, status: 'skipped', reason: 'title is required'});
+        assert.deepEqual(run?.rows.map(r => r.status), ['created', 'skipped', 'created']);
+    });
+
+    it('still reports a run-level failure that is nobody\'s row', async function () {
         const h = harness();
-        const failure = new Error('insert failed');
-        h.createFailures.set('First', failure);
+        const failure = new Error('converter unavailable');
+        h.setHtmlToLexicalFactory(() => {
+            throw failure;
+        });
 
         await h.run();
 

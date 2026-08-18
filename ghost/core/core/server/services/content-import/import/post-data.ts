@@ -1,8 +1,17 @@
-import type {PostImportRow} from './row';
+import {importableRowSchema, type PostImportRow} from './row';
 
 const {slugify} = require('@tryghost/string');
 
 export type HtmlToLexical = (html: string) => unknown;
+
+// A malformed row, refused before any write was attempted; distinct from a write
+// that failed, which the importer records separately.
+export class RowSkipped extends Error {
+    constructor(reason: string) {
+        super(reason);
+        this.name = 'RowSkipped';
+    }
+}
 
 // The values handed to models.Post.add. Content is lexical only: under
 // options.importing the model strips client-supplied html and regenerates it from
@@ -17,6 +26,11 @@ export interface PostData {
 }
 
 export default function buildPostData(row: PostImportRow, htmlToLexical: HtmlToLexical): PostData {
+    const check = importableRowSchema.safeParse(row);
+    if (!check.success) {
+        throw new RowSkipped(check.error.issues[0].message);
+    }
+
     const data: PostData = {
         title: row.title,
         // Slugified here with the standard rules: left to the model, the
@@ -26,7 +40,11 @@ export default function buildPostData(row: PostImportRow, htmlToLexical: HtmlToL
     };
 
     if (row.html) {
-        data.lexical = JSON.stringify(htmlToLexical(row.html));
+        try {
+            data.lexical = JSON.stringify(htmlToLexical(row.html));
+        } catch {
+            throw new RowSkipped('html could not be converted');
+        }
     }
 
     // The one date column dates the whole post; preserved only because the write runs

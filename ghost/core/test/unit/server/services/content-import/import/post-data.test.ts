@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import buildPostData from '../../../../../../core/server/services/content-import/import/post-data';
+import buildPostData, {RowSkipped} from '../../../../../../core/server/services/content-import/import/post-data';
 import {postImportRowSchema} from '../../../../../../core/server/services/content-import/import/row';
 
 // A stand-in converter that shows what it was given, so the test can assert both the
@@ -43,5 +43,71 @@ describe('buildPostData', function () {
         assert.equal('published_at' in data, false);
         assert.equal('created_at' in data, false);
         assert.equal('updated_at' in data, false);
+    });
+
+    const skipsWith = (cells: Record<string, string>, reason: string | RegExp) => {
+        assert.throws(() => buildPostData(row(cells), htmlToLexical), (error: unknown) => {
+            assert.ok(error instanceof RowSkipped, 'skipped, not a hard failure');
+            if (reason instanceof RegExp) {
+                assert.match(error.message, reason);
+            } else {
+                assert.equal(error.message, reason);
+            }
+            return true;
+        });
+    };
+
+    it('skips a row without a title', function () {
+        skipsWith({html: '<p>No title</p>'}, 'title is required');
+    });
+
+    it('skips a row whose title is only whitespace', function () {
+        skipsWith({title: '   '}, 'title is required');
+    });
+
+    it('skips a row whose title is longer than 255 characters', function () {
+        skipsWith({title: 'x'.repeat(256)}, 'title must be 255 characters or fewer');
+    });
+
+    it('accepts a title of exactly 255 characters', function () {
+        const data = buildPostData(row({title: 'x'.repeat(255)}), htmlToLexical);
+
+        assert.equal(data.title.length, 255);
+    });
+
+    it('skips a row whose published_at is not a date, quoting the cell', function () {
+        skipsWith(
+            {title: 'T', published_at: 'not-a-date'},
+            'published_at is not a valid date: "not-a-date"'
+        );
+    });
+
+    it('skips a row whose published_at is a rolled-over calendar date', function () {
+        // new Date() would normalize this to March 2 and quietly mis-date the post
+        skipsWith(
+            {title: 'T', published_at: '2025-02-30T00:00:00.000Z'},
+            'published_at is not a valid date: "2025-02-30T00:00:00.000Z"'
+        );
+    });
+
+    it('accepts a non-ISO date format that new Date can parse', function () {
+        const data = buildPostData(row({title: 'T', published_at: 'May 1, 2024'}), htmlToLexical);
+
+        assert.equal(data.published_at, 'May 1, 2024');
+    });
+
+    it('skips a row whose html cannot be converted', function () {
+        const throwingConverter = () => {
+            throw new Error('parser exploded');
+        };
+
+        assert.throws(
+            () => buildPostData(row({title: 'T', html: '<p>bad</p>'}), throwingConverter),
+            (error: unknown) => {
+                assert.ok(error instanceof RowSkipped);
+                assert.equal(error.message, 'html could not be converted');
+                return true;
+            }
+        );
     });
 });

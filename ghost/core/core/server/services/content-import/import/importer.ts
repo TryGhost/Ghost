@@ -1,4 +1,4 @@
-import buildPostData, {type HtmlToLexical, type PostData} from './post-data';
+import buildPostData, {RowSkipped, type HtmlToLexical, type PostData} from './post-data';
 import type {PostImportRow} from './row';
 import type {ImportRunStore} from './store';
 
@@ -111,21 +111,34 @@ class ContentCSVImporter {
             const htmlToLexical = this._getHtmlToLexical();
 
             for (const [index, row] of rows.entries()) {
-                // options.importing preserves the supplied timestamps and suppresses publish
-                // side-effects; the internal context resolves the default author to the site owner.
-                // A fresh options object per row: the model layer mutates it.
-                const post = await this._posts.create(buildPostData(row, htmlToLexical), {
-                    importing: true,
-                    context: {internal: true}
-                });
+                const line = index + 2;
 
-                this._store.record(runId, {
-                    line: index + 2,
-                    title: row.title,
-                    status: 'created',
-                    postId: post.id,
-                    url: this._urlForPost(post)
-                });
+                try {
+                    // options.importing preserves the supplied timestamps and suppresses publish
+                    // side-effects; the internal context resolves the default author to the site owner.
+                    // A fresh options object per row: the model layer mutates it.
+                    const post = await this._posts.create(buildPostData(row, htmlToLexical), {
+                        importing: true,
+                        context: {internal: true}
+                    });
+
+                    this._store.record(runId, {
+                        line,
+                        title: row.title,
+                        status: 'created',
+                        postId: post.id,
+                        url: this._urlForPost(post)
+                    });
+                } catch (error) {
+                    this._store.record(runId, {
+                        line,
+                        title: row.title || null,
+                        // skipped = refused before the write (fix the file);
+                        // failed = the write was attempted and lost
+                        status: error instanceof RowSkipped ? 'skipped' : 'failed',
+                        reason: messageOf(error)
+                    });
+                }
             }
         } catch (error) {
             this._report(error);
@@ -134,6 +147,13 @@ class ContentCSVImporter {
             this._store.finish(runId);
         }
     }
+}
+
+function messageOf(error: unknown): string {
+    if (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string' && error.message) {
+        return error.message;
+    }
+    return 'Unknown error';
 }
 
 export default ContentCSVImporter;

@@ -163,6 +163,57 @@ describe('Posts Importer API', function () {
         assert.equal(two.get('updated_at').toISOString(), '2024-06-15T18:45:00.000Z');
     });
 
+    it('Skips a malformed row on its own and imports the rest', async function () {
+        await agent.loginAsOwner();
+
+        const badRowsCsvPath = await csvFile('posts-import-with-bad-rows.csv',
+            'title,html,published_at\n' +
+            'Bad rows check one,<p>Before the bad row</p>,2024-03-01T00:00:00.000Z\n' +
+            ',<p>This row has no title</p>,2024-03-02T00:00:00.000Z\n' +
+            'Bad rows check date,<p>This row has a bad date</p>,not-a-date\n' +
+            'Bad rows check two,<p>After the bad rows</p>,2024-03-04T00:00:00.000Z\n'
+        );
+
+        await agent
+            .post('posts/upload/')
+            .attach('postsfile', badRowsCsvPath)
+            .expectStatus(202);
+
+        await jobsService.allSettled();
+
+        const {data: posts} = await models.Post.findPage({
+            filter: `title:~'Bad rows check'`,
+            status: 'all',
+            limit: 'all'
+        });
+
+        assert.deepEqual(
+            posts.map(post => post.get('title')).sort(),
+            ['Bad rows check one', 'Bad rows check two'],
+            'the good rows imported; the malformed ones did not'
+        );
+    });
+
+    it('Handles a CSV-named file of garbage bytes without failing', async function () {
+        await agent.loginAsOwner();
+
+        const {meta: {pagination: {total: before}}} = await models.Post.findPage({limit: 1, status: 'all'});
+
+        const garbageCsvPath = await csvFile('posts-import-garbage.csv',
+            '\u0000\u0001binary\u0002garbage\r\n\u0003more\u0000bytes,\u0004\r\n\u0005end\u0006'
+        );
+
+        await agent
+            .post('posts/upload/')
+            .attach('postsfile', garbageCsvPath)
+            .expectStatus(202);
+
+        await jobsService.allSettled();
+
+        const {meta: {pagination: {total: after}}} = await models.Post.findPage({limit: 1, status: 'all'});
+        assert.equal(after, before, 'no posts were created from garbage rows');
+    });
+
     it('Rejects an upload of more posts than the temporary cap, importing nothing', async function () {
         await agent.loginAsOwner();
 

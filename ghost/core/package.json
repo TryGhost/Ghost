@@ -231,6 +231,7 @@
         "simple-dom": "1.4.0",
         "stoppable": "1.1.0",
         "stripe": "8.222.0",
+        "temporal-polyfill": "catalog:",
         "terser": "5.48.0",
         "tiny-glob": "0.2.9",
         "tldts": "catalog:",
