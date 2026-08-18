@@ -1,7 +1,6 @@
 import EmailDesignModal from '@/settings/app/components/settings/email-design/email-design-modal';
 import EmailPreview from '@/settings/app/components/settings/email-design/email-preview';
 import HeaderImageField from '@/settings/app/components/settings/email-design/header-image-field';
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import ShowBadgeField from '@/settings/app/components/settings/email-design/show-badge-field';
 import WelcomeEmailPreviewContent from '@/settings/app/components/settings/email-design/welcome-email-preview-content';
 import useFeatureFlag from '@/settings/app/hooks/use-feature-flag';
@@ -333,8 +332,7 @@ const normalizeSenderValue = (value: string | null | undefined) => {
     return trimmed || null;
 };
 
-const WelcomeEmailCustomizeModal = NiceModal.create(() => {
-    const modal = useModal();
+const WelcomeEmailCustomizeModal: React.FC<{onClose: () => void}> = ({onClose}) => {
     const {siteData, settings: globalSettings, config} = useGlobalData();
     const [siteTitle, defaultEmailAddress, icon, supportEmailAddress] = getSettingValues<string>(
         globalSettings,
@@ -510,10 +508,6 @@ const WelcomeEmailCustomizeModal = NiceModal.create(() => {
         }));
     }, [updateForm]);
 
-    const handleClose = useCallback(() => {
-        modal.hide();
-    }, [modal]);
-
     const fetchErrorMessage = 'Unable to load email design settings. Please try again.';
     const modalOkProps = hasSaveError ? {
         ...okProps,
@@ -524,14 +518,9 @@ const WelcomeEmailCustomizeModal = NiceModal.create(() => {
     return (
         <EmailDesignProvider accentColor={siteData.accent_color} settings={designSettings} onSettingsChange={handleDesignChange}>
             <EmailDesignModal
-                afterClose={() => {
-                    modal.resolveHide();
-                    modal.remove();
-                }}
                 dirty={saveState === 'unsaved'}
                 isLoading={isLoading || isError}
                 okProps={modalOkProps}
-                open={modal.visible}
                 preview={isError ? (
                     <ErrorState message={fetchErrorMessage} />
                 ) : (
@@ -574,11 +563,12 @@ const WelcomeEmailCustomizeModal = NiceModal.create(() => {
                 }
                 testId="welcome-email-customize-modal"
                 title="Welcome emails"
-                onClose={handleClose}
+                open
+                onClose={onClose}
                 onSave={() => handleSave({fakeWhenUnchanged: true})}
             />
         </EmailDesignProvider>
     );
-});
+};
 
 export default WelcomeEmailCustomizeModal;

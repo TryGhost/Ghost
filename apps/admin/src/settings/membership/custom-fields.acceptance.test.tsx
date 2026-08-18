@@ -244,10 +244,8 @@ describe("Custom fields", () => {
         await expect(rows).toHaveCount(7);
         await expect.element(rows.last()).toHaveTextContent("Newest");
 
-        // Wait for the modal to finish closing (Save holds it open ~500ms for
-        // its saving state). Ending the test earlier leaves that removal
-        // pending, and it would fire into the NEXT test's freshly-opened
-        // modal — NiceModal keys modals by component and dispatches globally.
+        // Save holds the modal open for its ~500ms saving state. Verify the
+        // async save has completed and the parent-controlled modal unmounts.
         await expect(modal).toHaveCount(0);
     });
 
