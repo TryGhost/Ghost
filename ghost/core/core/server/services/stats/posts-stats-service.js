@@ -971,9 +971,7 @@ class PostsStatsService {
             const dailyChanges = [];
             for (const row of rawDeltas) {
                 if (row) {
-                    // @ts-ignore
                     const dateValue = row.date || '';
-                    // @ts-ignore
                     const changeValue = row.value || 0;
                     dailyChanges.push({
                         date: String(dateValue),
