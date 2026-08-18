@@ -72,11 +72,24 @@ module.exports = class EventRepository {
             options.limit = 10;
         }
 
+        const requestedLimit = options.limit;
+        const page = options.page === undefined ? null : parseInt(options.page, 10) || 1;
+        const limit = page === null ? Number(requestedLimit) : parseInt(requestedLimit, 10) || 10;
+
         const [typeFilter, otherFilter] = this.getNQLSubset(options.filter);
 
         // Changing this order might need a change in the query functions
         // because of the different underlying models.
         options.order = 'created_at desc, id desc';
+
+        // Every source must contribute all candidates up to the end of the requested
+        // global page. Applying the requested page to each source would skip events
+        // that belong in the merged timeline.
+        const sourceOptions = page === null ? options : {
+            ...options,
+            page: 1,
+            limit: page * limit
+        };
 
         // Create a list of all events that can be queried
         const pageActions = [
@@ -121,49 +134,68 @@ module.exports = class EventRepository {
         if (typeFilter) {
             // Ideally we should be able to create a NQL filter without having a string
             const query = new mingo.Query(typeFilter);
-            filteredPages = filteredPages.filter(page => query.test(page));
+            filteredPages = filteredPages.filter(pageAction => query.test(pageAction));
         }
 
         //Start the promises
-        const pages = filteredPages.map((page) => {
-            return this[page.action](options, otherFilter);
+        const pages = filteredPages.map((pageAction) => {
+            return this[pageAction.action](sourceOptions, otherFilter);
         });
 
         const allEventPages = await Promise.all(pages);
 
-        const allEvents = allEventPages.flatMap(page => page.data);
-        const totalEvents = allEventPages.reduce((accumulator, page) => accumulator + page.meta.pagination.total, 0);
+        const allEvents = allEventPages.flatMap(eventPage => eventPage.data);
+        const totalEvents = allEventPages.reduce((accumulator, eventPage) => accumulator + eventPage.meta.pagination.total, 0);
+
+        const sortedEvents = allEvents.sort((a, b) => {
+            const diff = new Date(b.data.created_at).getTime() - new Date(a.data.created_at).getTime();
+            if (diff !== 0) {
+                return diff;
+            }
+            // Tiebreaker for events sharing the same created_at:
+            // Signup > Newsletter subscription > Subscription / gift redemption event > Login
+            const tieOrder = {
+                login_event: 0,
+                subscription_event: 1,
+                gift_redemption_event: 1,
+                gift_ended_event: 1,
+                newsletter_event: 2,
+                signup_event: 3
+            };
+            const orderA = tieOrder[a.type];
+            const orderB = tieOrder[b.type];
+            if (orderA !== undefined && orderB !== undefined && orderA !== orderB) {
+                return orderA - orderB;
+            }
+            return b.data.id.localeCompare(a.data.id);
+        });
+
+        if (page !== null) {
+            const pagesCount = Math.max(1, Math.ceil(totalEvents / limit));
+            const start = (page - 1) * limit;
+
+            return {
+                events: sortedEvents.slice(start, start + limit),
+                meta: {
+                    pagination: {
+                        page,
+                        limit,
+                        pages: pagesCount,
+                        total: totalEvents,
+                        next: page < pagesCount ? page + 1 : null,
+                        prev: page > 1 ? page - 1 : null
+                    }
+                }
+            };
+        }
 
         return {
-            events: allEvents.sort(
-                (a, b) => {
-                    const diff = new Date(b.data.created_at).getTime() - new Date(a.data.created_at).getTime();
-                    if (diff !== 0) {
-                        return diff;
-                    }
-                    // Tiebreaker for events sharing the same created_at:
-                    // Signup > Newsletter subscription > Subscription / gift redemption event > Login
-                    const tieOrder = {
-                        login_event: 0,
-                        subscription_event: 1,
-                        gift_redemption_event: 1,
-                        gift_ended_event: 1,
-                        newsletter_event: 2,
-                        signup_event: 3
-                    };
-                    const orderA = tieOrder[a.type];
-                    const orderB = tieOrder[b.type];
-                    if (orderA !== undefined && orderB !== undefined && orderA !== orderB) {
-                        return orderA - orderB;
-                    }
-                    return b.data.id.localeCompare(a.data.id);
-                }
-            ).slice(0, options.limit),
+            events: sortedEvents.slice(0, limit),
             meta: {
                 pagination: {
-                    limit: options.limit,
+                    limit: requestedLimit,
                     total: totalEvents,
-                    pages: options.limit > 0 ? Math.ceil(totalEvents / options.limit) : null,
+                    pages: limit > 0 ? Math.ceil(totalEvents / limit) : null,
 
                     // Other values are unavailable (not possible to calculate easily)
                     page: null,

@@ -504,6 +504,7 @@ const controller = {
         },
         options: [
             'limit',
+            'page',
             'filter'
         ],
         permissions: {

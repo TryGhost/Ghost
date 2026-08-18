@@ -4,6 +4,114 @@ const sinon = require('sinon');
 const errors = require('@tryghost/errors');
 
 describe('EventRepository', function () {
+    describe('getEventTimeline', function () {
+        function createEventModel(id, createdAt) {
+            return {
+                toJSON() {
+                    return {
+                        id,
+                        created_at: createdAt,
+                        member: null
+                    };
+                }
+            };
+        }
+
+        function createPaginatedModel(events) {
+            return {
+                findPage(options) {
+                    const page = Number(options.page ?? 1);
+                    const limit = Number(options.limit);
+                    const start = (page - 1) * limit;
+                    const orderedEvents = options.order === 'created_at desc, id desc' ? events : [...events].reverse();
+
+                    return {
+                        data: orderedEvents.slice(start, start + limit),
+                        meta: {
+                            pagination: {
+                                total: events.length
+                            }
+                        }
+                    };
+                }
+            };
+        }
+
+        function createRepository() {
+            return new EventRepository({
+                EmailRecipient: null,
+                MemberLoginEvent: createPaginatedModel([
+                    createEventModel('login-4', '2026-08-17T04:00:00.000Z'),
+                    createEventModel('login-2', '2026-08-17T02:00:00.000Z')
+                ]),
+                MemberPaymentEvent: createPaginatedModel([
+                    createEventModel('payment-3', '2026-08-17T03:00:00.000Z'),
+                    createEventModel('payment-1', '2026-08-17T01:00:00.000Z')
+                ])
+            });
+        }
+
+        it('paginates the globally ordered timeline across interleaved event sources', async function () {
+            const eventRepository = createRepository();
+
+            const result = await eventRepository.getEventTimeline({
+                filter: 'type:[login_event,payment_event]',
+                limit: 2,
+                page: 2
+            });
+
+            assert.deepEqual(result.events.map(event => event.data.id), ['login-2', 'payment-1']);
+            assert.deepEqual(result.meta.pagination, {
+                page: 2,
+                limit: 2,
+                pages: 2,
+                total: 4,
+                next: null,
+                prev: 1
+            });
+        });
+
+        it('normalizes page zero to the first page', async function () {
+            const eventRepository = createRepository();
+
+            const result = await eventRepository.getEventTimeline({
+                filter: 'type:[login_event,payment_event]',
+                limit: '2',
+                page: '0'
+            });
+
+            assert.deepEqual(result.events.map(event => event.data.id), ['login-4', 'payment-3']);
+            assert.deepEqual(result.meta.pagination, {
+                page: 1,
+                limit: 2,
+                pages: 2,
+                total: 4,
+                next: 2,
+                prev: null
+            });
+        });
+
+        it('uses integer pagination semantics', async function () {
+            const eventRepository = createRepository();
+
+            const result = await eventRepository.getEventTimeline({
+                filter: 'type:[login_event,payment_event]',
+                limit: '2.5',
+                page: '1.5'
+            });
+
+            assert.deepEqual(result.events.map(event => event.data.id), ['login-4', 'payment-3']);
+            assert.deepEqual(result.meta.pagination, {
+                page: 1,
+                limit: 2,
+                pages: 2,
+                total: 4,
+                next: 2,
+                prev: null
+            });
+        });
+    });
+
     describe('getNQLSubset', function () {
         let eventRepository;
 

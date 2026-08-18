@@ -230,6 +230,73 @@ describe('Activity Feed API', function () {
         });
     });
 
+    describe('Page-based pagination', function () {
+        it('returns distinct global pages with standard pagination metadata', async function () {
+            const skippedTypes = ['email_opened_event', 'email_failed_event', 'email_delivered_event', 'aggregated_click_event'];
+            const filter = encodeURIComponent(`type:-[${skippedTypes.join(',')}]`);
+
+            const [{body: firstPage}, {body: secondPage}, {body: combinedPage}] = await Promise.all([
+                agent.get(`/members/events?filter=${filter}&limit=5&page=1`).expectStatus(200),
+                agent.get(`/members/events?filter=${filter}&limit=5&page=2`).expectStatus(200),
+                agent.get(`/members/events?filter=${filter}&limit=10&page=1`).expectStatus(200)
+            ]);
+
+            const eventIdentity = event => `${event.type}:${event.data.id}`;
+            const firstPageIds = firstPage.events.map(eventIdentity);
+            const secondPageIds = secondPage.events.map(eventIdentity);
+
+            assert.deepEqual([...firstPageIds, ...secondPageIds], combinedPage.events.map(eventIdentity));
+            assert.equal(firstPageIds.some(id => secondPageIds.includes(id)), false);
+            assert.deepEqual(firstPage.meta.pagination, {
+                page: 1,
+                limit: 5,
+                pages: 8,
+                total: 40,
+                next: 2,
+                prev: null
+            });
+            assert.deepEqual(secondPage.meta.pagination, {
+                page: 2,
+                limit: 5,
+                pages: 8,
+                total: 40,
+                next: 3,
+                prev: 1
+            });
+        });
+
+        it('applies member filters before paginating the global timeline', async function () {
+            const memberId = fixtureManager.get('members', 0).id;
+            const filter = encodeURIComponent(`data.member_id:'${memberId}'`);
+
+            const [{body: firstPage}, {body: secondPage}, {body: combinedPage}] = await Promise.all([
+                agent.get(`/members/events?filter=${filter}&limit=1&page=1`).expectStatus(200),
+                agent.get(`/members/events?filter=${filter}&limit=1&page=2`).expectStatus(200),
+                agent.get(`/members/events?filter=${filter}&limit=2&page=1`).expectStatus(200)
+            ]);
+
+            assert.equal(firstPage.events.length, 1);
+            assert.equal(secondPage.events.length, 1);
+            assert.deepEqual([...firstPage.events, ...secondPage.events], combinedPage.events);
+            assert.equal(firstPage.meta.pagination.total, combinedPage.meta.pagination.total);
+            assert.equal(secondPage.meta.pagination.total, combinedPage.meta.pagination.total);
+
+            for (const event of combinedPage.events) {
+                assert.equal(event.data.member_id, memberId);
+            }
+        });
+
+        it('caps the explicit page size at 100', async function () {
+            const {body} = await agent
+                .get('/members/events?limit=101&page=1')
+                .expectStatus(200);
+
+            assert.equal(body.meta.pagination.page, 1);
+            assert.equal(body.meta.pagination.limit, 100);
+            assert(body.events.length <= 100);
+        });
+    });
+
     // Activity feed
     it('Returns comments in activity feed', async function () {
         // Check activity feed
