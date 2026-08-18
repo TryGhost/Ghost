@@ -46,4 +46,17 @@ describe('parseTipsAndDonationsSettings', () => {
     it.each([null, [], 'invalid'])('rejects a non-object settings payload', (settings) => {
         expect(() => parseTipsAndDonationsSettings(settings)).toThrow();
     });
+
+    it.each([
+        {amount: -1, description: 'a negative amount'},
+        {amount: 1.5, description: 'a fractional amount'},
+        {amount: Infinity, description: 'a non-finite amount'},
+        {amount: Number.MAX_SAFE_INTEGER + 1, description: 'an unsafe integer amount'},
+        {amount: '9007199254740992', description: 'an overflowing digit-only amount'}
+    ])('rejects $description', ({amount}) => {
+        expect(() => parseTipsAndDonationsSettings({
+            donations_currency: 'USD',
+            donations_suggested_amount: amount
+        })).toThrow();
+    });
 });
