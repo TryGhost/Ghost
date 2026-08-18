@@ -80,7 +80,7 @@ export const useCanvasViewport = <NodeType extends Node = Node, EdgeType extends
     }, []);
 
     const onMove = useCallback<OnMove>((_, viewport) => {
-        setZoom(viewport.zoom);
+        setZoom(currentZoom => Math.abs(currentZoom - viewport.zoom) < 1e-6 ? currentZoom : viewport.zoom);
     }, []);
 
     const contentBottom = contentBounds?.bottom;
@@ -103,7 +103,10 @@ export const useCanvasViewport = <NodeType extends Node = Node, EdgeType extends
         const nextViewport = constrainViewport(currentViewport, canvasSize, nextExtent);
 
         if (nextViewport.x !== currentViewport.x || nextViewport.y !== currentViewport.y) {
-            void reactFlowInstance.setViewport(nextViewport);
+            void reactFlowInstance.setViewport(nextViewport, {
+                duration: 250,
+                interpolate: 'linear'
+            });
         }
     }, [canvasSize.height, canvasSize.width, contentBottom, contentLeft, contentRight, initialViewport.y, reactFlowInstance, zoom]);
 
