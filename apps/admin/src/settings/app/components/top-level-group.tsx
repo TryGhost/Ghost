@@ -31,7 +31,8 @@ interface TopLevelGroupProps {
     highlightOnModalClose?: boolean;
     enableCMDS?: boolean;
     onEditingChange?: (isEditing: boolean) => void;
-    onSave?: () => void;
+    /** May be async; the group fires it without awaiting, so the handler owns its own error handling. */
+    onSave?: () => void | Promise<unknown>;
     onCancel?: () => void;
 }
 
@@ -81,7 +82,7 @@ const TopLevelGroup: React.FC<TopLevelGroupProps> = ({
         const handleSaveShortcut = (event: KeyboardEvent) => {
             if ((event.metaKey || event.ctrlKey) && event.key === 's') {
                 event.preventDefault();
-                onSave?.();
+                void onSave?.();
             }
         };
 
@@ -100,7 +101,7 @@ const TopLevelGroup: React.FC<TopLevelGroupProps> = ({
         <Inline className='-mt-1.25' gap='sm'>
             <Button size='sm' type='button' variant='ghost' onClick={handleCancel}>Cancel</Button>
             {(saveState === 'unsaved' || alwaysShowSaveButton) && (
-                <Button disabled={saveState !== 'unsaved'} size='sm' type='button' onClick={onSave}>
+                <Button disabled={saveState !== 'unsaved'} size='sm' type='button' onClick={() => void onSave?.()}>
                     {saveState === 'saving' ? 'Saving...' : 'Save'}
                 </Button>
             )}
