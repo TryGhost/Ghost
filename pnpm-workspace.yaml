@@ -157,6 +157,7 @@ catalog:
   msw: 2.14.6
   nock: 14.0.17
   node-html-markdown: 2.0.0
+  oxfmt: 0.63.0
   postcss: 8.5.26
   preact: ^10.29.2
   prettier: 3.9.6

@@ -100,6 +100,7 @@
     "lint-staged": "catalog:",
     "markdownlint-cli2": "catalog:",
     "nx": "23.1.1",
+    "oxfmt": "catalog:",
     "remark-cli": "catalog:",
     "remark-validate-links": "catalog:",
     "rimraf": "6.1.3",
