@@ -141,6 +141,35 @@ export class MemberDetailsPage extends AdminPage {
     }
 
     /**
+     * Fill a composite field's parts, keyed by the label each part carries in the editor.
+     * A composite's inputs are labelled per part rather than by the field's own name, so
+     * they cannot be reached the way a scalar's single input is.
+     */
+    async setCompositeCustomFieldValue(fieldName: string, parts: Record<string, string>): Promise<void> {
+        await this.customFieldEditButton(fieldName).click();
+
+        for (const [partLabel, value] of Object.entries(parts)) {
+            await this.customFieldModal.getByLabel(partLabel, {exact: true}).fill(value);
+        }
+
+        await this.customFieldModal.getByRole('button', {name: 'Save', exact: true}).click();
+        await this.customFieldModal.waitFor({state: 'detached'});
+    }
+
+    /**
+     * The custom fields card's row for one field, named for the value it is showing.
+     * The row carries its rendered value in its accessible name, which is the only place
+     * the detail screen's rendering of a value can be read as one string.
+     */
+    customFieldRow(fieldName: string): Locator {
+        // A publisher names their own fields, so the name can hold regex metacharacters:
+        // "Address (home)" would match something other than itself, and "C++" would not
+        // compile at all.
+        const escaped = fieldName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        return this.page.getByRole('button', {name: new RegExp(`^Edit ${escaped}: `)});
+    }
+
+    /**
      * Removes a complimentary subscription from the first subscription row.
      * Removal always asks for confirmation first.
      */

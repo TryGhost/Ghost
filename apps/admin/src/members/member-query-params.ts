@@ -1,11 +1,25 @@
 import moment from 'moment-timezone';
 import {type ActiveColumn, type FilterPredicate, resolveField} from '@/shared/filters';
 import {memberFields} from './member-fields';
+import {formatMemberCustomFieldValue} from '@tryghost/admin-x-framework/api/member-custom-fields';
 import type {Member} from '@tryghost/admin-x-framework/api/members';
+import type {MemberCustomField} from '@tryghost/admin-x-framework/api/member-custom-fields';
 
 const MAX_ACTIVE_COLUMNS = 2;
 
 export type {ActiveColumn};
+
+/** All a column needs of a custom field: the name to head it with, and the type to read its value as. */
+export type MemberColumnCustomField = Pick<MemberCustomField, 'key' | 'name' | 'type'>;
+
+/**
+ * Runtime data the static field schema cannot hold. Custom fields are defined by the
+ * publisher, so their names arrive from the API; passing none (the default) simply leaves
+ * them out of the columns, which is also what the flag being off looks like.
+ */
+export interface MemberActiveColumnOptions {
+    customFields?: MemberColumnCustomField[];
+}
 
 export type ColumnValue = {
     text: string;
@@ -36,7 +50,10 @@ interface BuildMemberOperationParamsOptions {
     search: string;
 }
 
-export function getMemberActiveColumns(filters: FilterPredicate[]): MemberActiveColumn[] {
+export function getMemberActiveColumns(
+    filters: FilterPredicate[],
+    options: MemberActiveColumnOptions = {}
+): MemberActiveColumn[] {
     const columns = new Map<string, MemberActiveColumn>();
 
     for (const filter of filters) {
@@ -47,10 +64,30 @@ export function getMemberActiveColumns(filters: FilterPredicate[]): MemberActive
             continue;
         }
 
-        const getValue = fixedColumnValues[activeColumn.key];
+        const {context} = resolved;
 
-        if (getValue) {
-            columns.set(activeColumn.key, {...activeColumn, getValue});
+        // A field that declares a fixed column is read by the reader filed under it.
+        if (typeof activeColumn !== 'function') {
+            const getValue = fixedColumnValues[activeColumn.key];
+
+            if (getValue) {
+                columns.set(activeColumn.key, {...activeColumn, getValue});
+            }
+            continue;
+        }
+
+        // A pattern field stands for many columns, so it is hydrated from whatever runtime
+        // record names the key it matched, then resolves its own column from that name.
+        const hydrated = patternColumnHydrators[context.pattern]?.(context.params, options);
+
+        if (!hydrated) {
+            continue;
+        }
+
+        const column = activeColumn({...context, label: hydrated.label});
+
+        if (column) {
+            columns.set(column.key, {...column, getValue: hydrated.getValue});
         }
     }
 
@@ -174,5 +211,37 @@ const fixedColumnValues: Record<string, ColumnValueReader | undefined> = {
         return offers?.length
             ? {text: offers.join(', ')}
             : null;
+    }
+};
+
+/**
+ * How a pattern field's column is filled in, filed under the pattern it matches.
+ *
+ * A pattern field's columns are named by data that only exists at runtime, so each one
+ * says which record names it and how a member's value is read once a record is found.
+ * Returning null is how "nothing here answers to that key" is said, and it costs the
+ * column: unnamed is unshown. A second pattern field earning a column adds an entry here
+ * rather than a branch anywhere.
+ */
+const patternColumnHydrators: Record<
+    string,
+    ((params: Record<string, string>, options: MemberActiveColumnOptions) => {label: string; getValue: ColumnValueReader} | null) | undefined
+> = {
+    'custom_fields.:key': ({key}, {customFields}) => {
+        const field = customFields?.find(candidate => candidate.key === key);
+
+        if (!field) {
+            return null;
+        }
+
+        return {
+            label: field.name,
+            // The catalog turns whatever type the field is into one line, so this reads a
+            // composite the same way the member detail screen does.
+            getValue: (member) => {
+                const text = formatMemberCustomFieldValue(field.type, member.custom_fields?.[field.key]);
+                return text ? {text} : null;
+            }
+        };
     }
 };

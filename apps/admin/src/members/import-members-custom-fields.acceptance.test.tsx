@@ -17,6 +17,11 @@ const RAGGED_CSV = 'email,name,note\nada@example.com\ngrace@example.com,Grace Ho
 
 // A Ghost export re-imported somewhere its field no longer exists: archived since, or a
 // different site. The header says what the column is even though nothing matches it.
+// Every browse of the field list, whether or not it carries a status filter: the members
+// screen behind this modal asks for archived fields too, and an exact-path fake would
+// leave that request unhandled.
+const customFieldsBrowsePath = new RegExp('^/members/custom_fields/(\\?|$)');
+
 const EXPORTED_CSV = 'email,custom_fields.nickname\nada@example.com,Countess\n';
 
 /**
@@ -27,7 +32,7 @@ const EXPORTED_CSV = 'email,custom_fields.nickname\nada@example.com,Countess\n';
 function fakeCustomFieldsWorld() {
     const fields: Array<Record<string, unknown>> = [];
     fakeMembers([member({name: 'Ada Lovelace'})]);
-    fakeAdminEndpoint('GET', '/members/custom_fields/', () => ({members_custom_fields: fields}));
+    fakeAdminEndpoint('GET', customFieldsBrowsePath, () => ({members_custom_fields: fields}));
     const uploadApi = fakeAdminEndpoint('POST', '/members/upload/', {
         meta: {stats: {imported: 1, invalid: []}, import_label: {name: 'Import', slug: 'import'}}
     });
@@ -465,7 +470,7 @@ describe('Import members custom fields', () => {
     // A query whose only job is to add targets to a list must not be able to stop the import.
     it('imports with membership fields when custom fields cannot be loaded', async () => {
         fakeMembers([member({name: 'Ada Lovelace'})]);
-        fakeAdminEndpoint('GET', '/members/custom_fields/', {errors: [{message: 'nope'}]}, {status: 500});
+        fakeAdminEndpoint('GET', customFieldsBrowsePath, {errors: [{message: 'nope'}]}, {status: 500});
         const uploadApi = fakeAdminEndpoint('POST', '/members/upload/', {
             meta: {stats: {imported: 1, invalid: []}, import_label: {name: 'Import', slug: 'import'}}
         });

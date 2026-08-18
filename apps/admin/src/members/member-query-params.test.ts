@@ -5,6 +5,7 @@ import {
 } from './member-query-params';
 import {describe, expect, it} from 'vitest';
 import type {FilterPredicate} from '@/shared/filters';
+import type {MemberActiveColumnOptions} from './member-query-params';
 import type {Member, MemberSubscription} from '@tryghost/admin-x-framework/api/members';
 
 const sub = (overrides: Partial<MemberSubscription> = {}): MemberSubscription => ({
@@ -34,9 +35,9 @@ const member = (overrides: Partial<Member> = {}): Member => ({
  * ever reached through the filter that raised it, so a test that hand-wrote one could pass
  * against a column the app can no longer produce.
  */
-const columnFor = (field: string) => {
+const columnFor = (field: string, options?: MemberActiveColumnOptions) => {
     const filters: FilterPredicate[] = [{id: '1', field, operator: 'is', values: ['x']}];
-    return getMemberActiveColumns(filters)[0];
+    return getMemberActiveColumns(filters, options)[0];
 };
 
 describe('member-query-params', () => {
@@ -140,5 +141,64 @@ describe('a subscription column reads the resolved current_subscription', () => 
     it('returns null when the field is absent', () => {
         const m = member({subscriptions: [cancelledYearly]});
         expect(columnFor('subscriptions.status').getValue(m, 'UTC')).toBeNull();
+    });
+});
+
+describe('custom field columns', () => {
+    const customFields = [
+        {key: 'job_title', name: 'Job title', type: 'short_text' as const},
+        {key: 'shipping_address', name: 'Shipping address', type: 'address' as const}
+    ];
+
+    const filterOn = (key: string): FilterPredicate[] => [
+        {id: '1', field: `custom_fields.${key}`, operator: 'contains', values: ['x']}
+    ];
+
+    it('names one column per field filtered on, from the field itself', () => {
+        expect(getMemberActiveColumns(filterOn('job_title'), {customFields}).map(({key, label}) => ({key, label})))
+            .toEqual([{key: 'custom_fields.job_title', label: 'Job title'}]);
+    });
+
+    // The template resolves to one shared definition for every custom field, so two
+    // filters must still produce two distinct columns rather than collapsing into one.
+    it('gives two filtered fields a column each', () => {
+        const filters = [...filterOn('job_title'), ...filterOn('shipping_address')];
+
+        expect(getMemberActiveColumns(filters, {customFields}).map(column => column.key))
+            .toEqual(['custom_fields.job_title', 'custom_fields.shipping_address']);
+    });
+
+    // No names supplied is what the flag being off looks like from here, and what the
+    // moment before the fetch lands looks like too.
+    it('adds no column when the field cannot be named', () => {
+        expect(getMemberActiveColumns(filterOn('job_title'))).toEqual([]);
+        expect(getMemberActiveColumns(filterOn('nonexistent'), {customFields})).toEqual([]);
+    });
+
+    // Naming the column waits on the fetch; asking for the values must not, or the list
+    // fetches once without them and again once the names land.
+    it('asks for values as soon as a custom field is filtered on, named or not', () => {
+        expect(buildMemberListSearchParams({filters: filterOn('job_title'), nql: 'x', search: ''})?.include)
+            .toBe('labels,tiers,custom_fields');
+    });
+
+    it('reads a scalar value by key', () => {
+        const m = member({custom_fields: {job_title: 'Editor'}});
+
+        expect(columnFor('custom_fields.job_title', {customFields}).getValue(m, 'UTC'))
+            .toEqual({text: 'Editor'});
+    });
+
+    it('reads a composite value as one line', () => {
+        const m = member({custom_fields: {shipping_address: {line1: '1 Main St', city: 'Berlin', postal_code: '10115', country: 'DE'}}});
+
+        expect(columnFor('custom_fields.shipping_address', {customFields}).getValue(m, 'UTC'))
+            .toEqual({text: '1 Main St, Berlin, 10115, DE'});
+    });
+
+    it('returns null when the member has no value', () => {
+        const m = member({custom_fields: {}});
+
+        expect(columnFor('custom_fields.job_title', {customFields}).getValue(m, 'UTC')).toBeNull();
     });
 });

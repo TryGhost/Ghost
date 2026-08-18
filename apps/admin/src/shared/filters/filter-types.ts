@@ -25,6 +25,15 @@ export interface ActiveColumn {
     label: string;
 }
 
+export interface ActiveColumnContext extends CodecContext {
+    /**
+     * The display name the domain resolved for this key, where the schema cannot hold one:
+     * a publisher-defined field is named at runtime. Absent when the caller supplied no
+     * names, or has none for this key — a resolver returns null rather than guess.
+     */
+    label?: string;
+}
+
 export interface FilterField {
     operators: readonly string[];
     parseKeys?: readonly string[];
@@ -35,7 +44,12 @@ export interface FilterField {
     };
     options?: Array<{value: string; label: string}>;
     metadata?: {
-        activeColumn?: ActiveColumn;
+        /**
+         * A field whose key is a pattern stands for many columns, one per key it matches,
+         * so it resolves its column per instance from the matched params instead of
+         * declaring a fixed one.
+         */
+        activeColumn?: ActiveColumn | ((context: ActiveColumnContext) => ActiveColumn | null);
         /**
          * What the list must ask the API to return for this field's column to hold values.
          *
