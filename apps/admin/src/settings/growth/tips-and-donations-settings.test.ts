@@ -50,7 +50,9 @@ describe('parseTipsAndDonationsSettings', () => {
     it.each([
         {amount: -1, description: 'a negative amount'},
         {amount: 1.5, description: 'a fractional amount'},
-        {amount: Infinity, description: 'a non-finite amount'},
+        {amount: NaN, description: 'a NaN amount'},
+        {amount: Infinity, description: 'a positive infinite amount'},
+        {amount: -Infinity, description: 'a negative infinite amount'},
         {amount: Number.MAX_SAFE_INTEGER + 1, description: 'an unsafe integer amount'},
         {amount: '9007199254740992', description: 'an overflowing digit-only amount'}
     ])('rejects $description', ({amount}) => {
