@@ -255,6 +255,9 @@ catalogs:
     ajv-formats:
       specifier: 3.0.1
       version: 3.0.1
+    archiver:
+      specifier: ^8.0.0
+      version: 8.0.0
     better-sqlite3:
       specifier: 12.11.1
       version: 12.11.1
@@ -2377,6 +2380,9 @@ importers:
       '@tryghost/zip':
         specifier: 3.5.1
         version: 3.5.1(supports-color@10.2.2)
+      archiver:
+        specifier: 'catalog:'
+        version: 8.0.0
       body-parser:
         specifier: 1.20.6
         version: 1.20.6(supports-color@10.2.2)

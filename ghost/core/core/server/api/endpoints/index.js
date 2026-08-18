@@ -27,6 +27,10 @@ module.exports = {
         return apiFramework.pipeline(require('./db'), localUtils);
     },
 
+    get exports() {
+        return apiFramework.pipeline(require('./exports'), localUtils);
+    },
+
     get identities() {
         return apiFramework.pipeline(require('./identities'), localUtils);
     },
