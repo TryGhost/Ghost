@@ -103,12 +103,22 @@ export const userTypeForFieldType = (type: FieldType): MemberCustomFieldUserType
 // As above, for a field loaded from the API.
 export const userTypeForField = (field: MemberCustomField): MemberCustomFieldUserType => userTypeForFieldType(field.type);
 
-// A custom field CSV column offered as an import mapping target: the column name the
-// backend reads (`value`) and a human label for the picker.
-// The field's type rides along so a picker can show what kind of thing the column holds
-// without being handed the fields as well. Every column of a composite carries the
-// composite's own type, which is what its icon is drawn from.
-export type MemberCustomFieldCsvColumn = {label: string; value: string; type: FieldType};
+/**
+ * A custom field CSV column offered as an import mapping target.
+ *
+ * Name and part are given apart as well as joined: a name a publisher chose can hold brackets
+ * of its own, so the joined form cannot be split back into them. Every column of a composite
+ * carries the composite's own type, which is what its icon is drawn from.
+ */
+export type MemberCustomFieldCsvColumn = {
+    /** The CSV column the exporter writes and the importer reads. */
+    value: string;
+    fieldName: string;
+    partLabel?: string;
+    /** `fieldName`, or `fieldName (partLabel)`. */
+    label: string;
+    type: FieldType;
+};
 
 /**
  * The CSV import mapping targets for a set of custom fields: one per column the export
@@ -119,11 +129,16 @@ export type MemberCustomFieldCsvColumn = {label: string; value: string; type: Fi
 export const memberCustomFieldCsvColumns = (fields: MemberCustomField[]): MemberCustomFieldCsvColumn[] => {
     return fields.flatMap((field) => {
         const labels = partLabelsFor(field.type);
-        return csvColumnsForField({key: field.key, type: field.type}).map(({column, subField}) => ({
-            label: subField === null ? field.name : `${field.name} (${labels[subField]})`,
-            value: column,
-            type: field.type
-        }));
+        return csvColumnsForField({key: field.key, type: field.type}).map(({column, subField}) => {
+            const partLabel = subField === null ? undefined : labels[subField];
+            return {
+                value: column,
+                fieldName: field.name,
+                ...(partLabel === undefined ? {} : {partLabel}),
+                label: partLabel === undefined ? field.name : `${field.name} (${partLabel})`,
+                type: field.type
+            };
+        });
     });
 };
 

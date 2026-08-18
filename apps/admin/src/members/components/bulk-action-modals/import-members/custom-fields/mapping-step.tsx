@@ -8,7 +8,8 @@ import {LabelPicker} from '@/members/label-picker';
 import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
 import {MembersFieldMapping, columnsOf} from '@/members/components/bulk-action-modals/import-members/custom-fields/mapping';
 import {Fragment, useCallback, useLayoutEffect, useMemo, useRef, useState} from 'react';
-import {type MemberCustomField, type MemberCustomFieldCsvColumn} from '@tryghost/admin-x-framework/api/member-custom-fields';
+import {type FieldTarget} from '@/members/components/bulk-action-modals/import-members/custom-fields/field-targets';
+import {type MemberCustomField} from '@tryghost/admin-x-framework/api/member-custom-fields';
 import {type UseLabelPickerResult} from '@/members/hooks/use-label-picker';
 
 interface MappingPreviewRow {
@@ -31,8 +32,7 @@ interface MappingStepProps {
     mappingError: string | null;
     showMappingErrors: boolean;
     dataPreviewIndex: number;
-    fieldMappings: {label: string; value: string}[];
-    customFieldMappings: MemberCustomFieldCsvColumn[];
+    targets: FieldTarget[];
     labelPicker: UseLabelPickerResult;
     onUpdateMapping: (from: string, to: string | null) => void;
     onFieldCreated: (columnKey: string, column: string | null) => void;
@@ -82,8 +82,7 @@ export function MappingStep({
     mappingError,
     showMappingErrors,
     dataPreviewIndex,
-    fieldMappings,
-    customFieldMappings,
+    targets,
     labelPicker,
     onUpdateMapping,
     onFieldCreated,
@@ -470,12 +469,11 @@ export function MappingStep({
                                                         <FieldPicker
                                                             className={cn(!isImported(row) && 'invisible')}
                                                             columnKey={row.key}
-                                                            customFieldMappings={customFieldMappings}
                                                             disabled={isRowLocked(row)}
-                                                            fieldMappings={fieldMappings}
                                                             invalid={incomplete?.columns.has(row.key)}
                                                             open={openPicker?.columnKey === row.key}
                                                             search={openPicker?.columnKey === row.key ? openPicker.search : ''}
+                                                            targets={targets}
                                                             triggerRef={(node) => {
                                                                 if (node) {
                                                                     fieldTriggers.current.set(row.key, node);

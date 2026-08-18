@@ -143,10 +143,6 @@ describe('Import members custom fields', () => {
         await expect.element(fieldSelect('nickname')).not.toHaveTextContent('Custom');
     });
 
-    // The two "Name" rows are one item to a list that identifies its items by what they read
-    // as, and the whole of what this picker offers a publisher is the choice between them. So
-    // the choice is made the way it is most easily lost — from the keyboard, on the second of
-    // two identical labels — and read back off the request rather than off the control.
     it('selects the second of two fields sharing a name from the keyboard', async () => {
         const {uploadApi} = fakeCustomFieldsWorld();
         await renderAdminApp('/members', FLAGS);
@@ -159,20 +155,14 @@ describe('Import members custom fields', () => {
 
         await importToggle('city').click();
         await fieldSelect('city').click();
-        // Both are named "Name" and nothing else in either list is, so the list is down to the
-        // membership one, the custom one, and the row that makes a new field.
         await userEvent.fill(page.getByPlaceholder('Search fields...'), 'Name');
         await expect(page.getByRole('option', {name: 'Name', exact: true})).toHaveCount(2);
 
-        // Off the first match onto the second, and taken with the key that takes whatever is
-        // highlighted. Highlighting and selecting have to agree about which of the two this is.
+        // Highlighting and selecting have to agree about which of the two this is.
         await userEvent.keyboard('{ArrowDown}{Enter}');
 
-        // The custom one, which is the one the arrow was on. Reading the badge is not enough on
-        // its own: it says a custom field was chosen, not which column the import will write.
         await expect.element(fieldSelect('city')).toHaveTextContent('Custom');
-        // And `nickname` gives it up, because a target belongs to one column at a time. Nothing
-        // else would move it, so this is the custom field changing hands.
+        // A target belongs to one column at a time, so this is the custom field changing hands.
         await expect.element(fieldSelect('nickname')).toHaveTextContent('Select field');
 
         await importToggle('nickname').click();
@@ -186,10 +176,6 @@ describe('Import members custom fields', () => {
         });
     });
 
-    // Searching reads the names on the rows and nothing else. The columns behind them are
-    // namespaced, so a list that searched those too would answer "custom" with every custom
-    // field's column plus whatever a fuzzy match could reach by running out of one and into
-    // the other -- `subscribed_to_emails` and its own label hold a c-u-s-t-o-m between them.
     it('searches the names on the rows rather than the columns behind them', async () => {
         fakeCustomFieldsWorld();
         await renderAdminApp('/members', FLAGS);
@@ -201,13 +187,11 @@ describe('Import members custom fields', () => {
         await fieldSelect('nickname').click();
         await userEvent.fill(page.getByPlaceholder('Search fields...'), 'custom');
 
-        // The one row that offers to make a field is force-mounted, so it is there whatever the
-        // search says. Nothing else is: no field is named "custom".
+        // Force-mounted, so it survives any search. Nothing else should: no field is "custom".
         await expect.element(page.getByRole('option', {name: 'Add custom field'})).toBeVisible();
         await expect.element(page.getByRole('option', {name: 'Subscribed to emails'})).not.toBeInTheDocument();
         await expect.element(page.getByRole('option', {name: 'Nickname'})).not.toBeInTheDocument();
 
-        // And the name on the row still finds it.
         await userEvent.fill(page.getByPlaceholder('Search fields...'), 'nick');
         await expect.element(page.getByRole('option', {name: 'Nickname'})).toBeVisible();
     });
