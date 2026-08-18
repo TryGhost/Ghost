@@ -110,8 +110,9 @@ describe("Comments thread sidebar", () => {
 
         await commentsScreen.loadMoreRepliesButton().click();
 
+        await expect.poll(() => threadApi.requests.length).toBe(2);
+        await expect.element(commentsScreen.threadRow(replies.at(-1)!.id)).toBeVisible();
         await expect(commentsScreen.threadRows()).toHaveCount(6); // root + all 5 replies
         await expect.element(commentsScreen.loadMoreRepliesButton()).not.toBeInTheDocument();
-        await expect.poll(() => threadApi.requests.length).toBe(2);
     });
 });
