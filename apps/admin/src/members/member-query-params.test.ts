@@ -1,7 +1,6 @@
 import {
     buildMemberListSearchParams,
     buildMemberOperationParams,
-    getActiveColumnValue,
     getMemberActiveColumns
 } from './member-query-params';
 import {describe, expect, it} from 'vitest';
@@ -29,6 +28,16 @@ const member = (overrides: Partial<Member> = {}): Member => ({
     subscriptions: [],
     ...overrides
 } as Member);
+
+/**
+ * The column a filter on this field earns, read the way the list reads it: a column is only
+ * ever reached through the filter that raised it, so a test that hand-wrote one could pass
+ * against a column the app can no longer produce.
+ */
+const columnFor = (field: string) => {
+    const filters: FilterPredicate[] = [{id: '1', field, operator: 'is', values: ['x']}];
+    return getMemberActiveColumns(filters)[0];
+};
 
 describe('member-query-params', () => {
     it('keeps search separate while deriving includes from active field metadata', () => {
@@ -76,16 +85,14 @@ describe('member-query-params', () => {
             }
         ];
 
-        expect(getMemberActiveColumns(filters)).toEqual([
+        expect(getMemberActiveColumns(filters).map(({key, label}) => ({key, label}))).toEqual([
             {
                 key: 'labels',
-                label: 'Labels',
-                include: 'labels'
+                label: 'Labels'
             },
             {
                 key: 'subscriptions.current_period_end',
-                label: 'Next billing date',
-                include: 'subscriptions'
+                label: 'Next billing date'
             }
         ]);
     });
@@ -115,23 +122,23 @@ describe('member-query-params', () => {
     });
 });
 
-describe('getActiveColumnValue reads the resolved current_subscription', () => {
+describe('a subscription column reads the resolved current_subscription', () => {
     const activeMonthly = sub({id: 'a', status: 'active', plan: {id: 'p', nickname: 'M', interval: 'month', currency: 'usd', amount: 1000}});
     const cancelledYearly = sub({id: 'c', status: 'canceled', plan: {id: 'p', nickname: 'Y', interval: 'year', currency: 'usd', amount: 10000}});
 
     it('reads status and plan from current_subscription', () => {
         const m = member({current_subscription: activeMonthly, subscriptions: [activeMonthly, cancelledYearly]});
-        expect(getActiveColumnValue({key: 'subscriptions.status', label: 'Status'}, m, 'UTC')?.text).toBe('Active');
-        expect(getActiveColumnValue({key: 'subscriptions.plan_interval', label: 'Plan'}, m, 'UTC')?.text).toBe('Monthly');
+        expect(columnFor('subscriptions.status').getValue(m, 'UTC')?.text).toBe('Active');
+        expect(columnFor('subscriptions.plan_interval').getValue(m, 'UTC')?.text).toBe('Monthly');
     });
 
     it('returns null when the member has no current subscription', () => {
         const m = member({current_subscription: null, subscriptions: [cancelledYearly]});
-        expect(getActiveColumnValue({key: 'subscriptions.status', label: 'Status'}, m, 'UTC')).toBeNull();
+        expect(columnFor('subscriptions.status').getValue(m, 'UTC')).toBeNull();
     });
 
     it('returns null when the field is absent', () => {
         const m = member({subscriptions: [cancelledYearly]});
-        expect(getActiveColumnValue({key: 'subscriptions.status', label: 'Status'}, m, 'UTC')).toBeNull();
+        expect(columnFor('subscriptions.status').getValue(m, 'UTC')).toBeNull();
     });
 });

@@ -1,20 +1,29 @@
 import moment from 'moment-timezone';
-import {type FilterPredicate, resolveField} from '@/shared/filters';
+import {type ActiveColumn, type FilterPredicate, resolveField} from '@/shared/filters';
 import {memberFields} from './member-fields';
 import type {Member} from '@tryghost/admin-x-framework/api/members';
 
 const MAX_ACTIVE_COLUMNS = 2;
 
-export type ActiveColumn = {
-    key: string;
-    label: string;
-    include?: string;
-};
+export type {ActiveColumn};
 
 export type ColumnValue = {
     text: string;
     subtext?: string;
 };
+
+type ColumnValueReader = (member: Member, timezone: string) => ColumnValue | null;
+
+/**
+ * A column the member list appends, carrying how to read one member's value for it.
+ *
+ * The reader is attached where the column is built, which is where everything it needs is
+ * already in hand. A cell asks the column rather than working back from its key to the
+ * field behind it.
+ */
+export interface MemberActiveColumn extends ActiveColumn {
+    getValue: ColumnValueReader;
+}
 
 interface BuildMemberListSearchParamsOptions {
     filters: FilterPredicate[];
@@ -27,26 +36,43 @@ interface BuildMemberOperationParamsOptions {
     search: string;
 }
 
-export function getMemberActiveColumns(filters: FilterPredicate[]): ActiveColumn[] {
-    const columns = new Map<string, ActiveColumn>();
+export function getMemberActiveColumns(filters: FilterPredicate[]): MemberActiveColumn[] {
+    const columns = new Map<string, MemberActiveColumn>();
 
     for (const filter of filters) {
-        const activeColumn = resolveField(memberFields, filter.field, 'UTC')?.definition.metadata?.activeColumn;
+        const resolved = resolveField(memberFields, filter.field, 'UTC');
+        const activeColumn = resolved?.definition.metadata?.activeColumn;
 
-        if (activeColumn) {
-            columns.set(activeColumn.key, activeColumn);
+        if (!activeColumn) {
+            continue;
+        }
+
+        const getValue = fixedColumnValues[activeColumn.key];
+
+        if (getValue) {
+            columns.set(activeColumn.key, {...activeColumn, getValue});
         }
     }
 
     return Array.from(columns.values()).slice(0, MAX_ACTIVE_COLUMNS);
 }
 
+/**
+ * What the list asks the API for, given the filters applied.
+ *
+ * Read off the filtered fields themselves rather than off the columns they resolve to.
+ * Whether a value is needed follows from the filter, so it is known on the first render;
+ * whether a column can be named can wait on data still in flight, and a column can be
+ * dropped by the display budget while its values are still wanted.
+ */
 function getMemberIncludes(filters: FilterPredicate[]): string {
     const includes = new Set(['labels', 'tiers']);
 
-    for (const column of getMemberActiveColumns(filters)) {
-        if (column.include) {
-            includes.add(column.include);
+    for (const filter of filters) {
+        const columnInclude = resolveField(memberFields, filter.field, 'UTC')?.definition.metadata?.columnInclude;
+
+        if (columnInclude) {
+            includes.add(columnInclude);
         }
     }
 
@@ -96,31 +122,29 @@ function formatDateColumn(date: string | undefined, timezone: string): ColumnVal
     };
 }
 
-export function getActiveColumnValue(
-    column: ActiveColumn,
-    member: Member,
-    timezone: string
-): ColumnValue | null {
-    switch (column.key) {
-    case 'labels':
-        return member.labels?.length
-            ? {text: member.labels.map(l => l.name).join(', ')}
-            : null;
+/**
+ * How each fixed column reads a member, filed under the column its field declares. A field
+ * names a column and this names the same column's value, so the two are found the same way
+ * instead of one being declared and the other matched by hand.
+ */
+const fixedColumnValues: Record<string, ColumnValueReader | undefined> = {
+    labels: member => (member.labels?.length
+        ? {text: member.labels.map(l => l.name).join(', ')}
+        : null),
 
-    case 'tiers':
-        return member.tiers?.length
-            ? {text: member.tiers.map(t => t.name).join(', ')}
-            : null;
+    tiers: member => (member.tiers?.length
+        ? {text: member.tiers.map(t => t.name).join(', ')}
+        : null),
 
-    case 'subscriptions.plan_interval': {
+    'subscriptions.plan_interval': (member) => {
         const interval = member.current_subscription?.plan?.interval;
         if (!interval) {
             return null;
         }
         return {text: interval === 'month' ? 'Monthly' : 'Yearly'};
-    }
+    },
 
-    case 'subscriptions.status': {
+    'subscriptions.status': (member) => {
         const status = member.current_subscription?.status;
         if (!status) {
             return null;
@@ -131,21 +155,19 @@ export function getActiveColumnValue(
                 .map(part => part.charAt(0).toUpperCase() + part.slice(1))
                 .join(' ')
         };
-    }
+    },
 
-    case 'subscriptions.start_date':
-        return formatDateColumn(
-            member.current_subscription?.start_date,
-            timezone
-        );
+    'subscriptions.start_date': (member, timezone) => formatDateColumn(
+        member.current_subscription?.start_date,
+        timezone
+    ),
 
-    case 'subscriptions.current_period_end':
-        return formatDateColumn(
-            member.current_subscription?.current_period_end,
-            timezone
-        );
+    'subscriptions.current_period_end': (member, timezone) => formatDateColumn(
+        member.current_subscription?.current_period_end,
+        timezone
+    ),
 
-    case 'offer_redemptions': {
+    offer_redemptions: (member) => {
         const offers = member.subscriptions
             ?.map(s => s.offer?.name)
             .filter(Boolean);
@@ -153,8 +175,4 @@ export function getActiveColumnValue(
             ? {text: offers.join(', ')}
             : null;
     }
-
-    default:
-        return null;
-    }
-}
+};

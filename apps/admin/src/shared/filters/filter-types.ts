@@ -19,6 +19,12 @@ export interface FilterCodec {
     serialize: (predicate: FilterPredicate, ctx: CodecContext) => string[] | null;
 }
 
+/** A column the list appends while a filter on this field is active. */
+export interface ActiveColumn {
+    key: string;
+    label: string;
+}
+
 export interface FilterField {
     operators: readonly string[];
     parseKeys?: readonly string[];
@@ -29,11 +35,16 @@ export interface FilterField {
     };
     options?: Array<{value: string; label: string}>;
     metadata?: {
-        activeColumn?: {
-            key: string;
-            label: string;
-            include?: string;
-        };
+        activeColumn?: ActiveColumn;
+        /**
+         * What the list must ask the API to return for this field's column to hold values.
+         *
+         * Declared apart from the column, because the two questions are answerable at
+         * different moments: whether to ask follows from the filter alone, while naming
+         * the column can wait on data that arrives later. Tying them together would make
+         * the list fetch once without the values and again once the names landed.
+         */
+        columnInclude?: string;
     };
     codec: FilterCodec;
 }
