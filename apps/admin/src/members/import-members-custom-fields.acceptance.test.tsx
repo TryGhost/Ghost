@@ -109,10 +109,38 @@ describe('Import members custom fields', () => {
 
         // The row carries the new field immediately, from the create response: the browse query
         // is invalidated but not awaited, so waiting for the refetch would leave the picker
-        // blank in between. And the trigger names the list it came from, so a custom field
-        // called "Name" could not be read as the member's own name once the list is closed.
+        // blank in between.
         await expect.element(fieldSelect('nickname')).toHaveTextContent('Nickname');
-        await expect.element(fieldSelect('nickname')).toHaveTextContent('Custom field');
+    });
+
+    it('marks a custom field a membership field already has the name of', async () => {
+        fakeCustomFieldsWorld();
+        await renderAdminApp('/members', FLAGS);
+        await openMappingStep();
+
+        await openCreateForm('nickname');
+        await userEvent.fill(createForm().getByLabelText('Name'), 'Name');
+        await createForm().getByRole('button', {name: 'Save'}).click();
+
+        // Two rows read "Name" now, and the mark on the custom one is the whole of what tells
+        // them apart once the list is closed. The membership field carries nothing: it is the
+        // rule rather than the exception, and marking both is what this replaced.
+        await expect.element(fieldSelect('nickname')).toHaveTextContent('Name');
+        await expect.element(fieldSelect('nickname')).toHaveTextContent('Custom');
+        await expect.element(fieldSelect('name')).toHaveTextContent('Name');
+        await expect.element(fieldSelect('name')).not.toHaveTextContent('Custom');
+    });
+
+    it('leaves a custom field no membership field is named like unmarked', async () => {
+        fakeCustomFieldsWorld();
+        await renderAdminApp('/members', FLAGS);
+        await openMappingStep();
+
+        await openCreateForm('nickname');
+        await createForm().getByRole('button', {name: 'Save'}).click();
+
+        await expect.element(fieldSelect('nickname')).toHaveTextContent('Nickname');
+        await expect.element(fieldSelect('nickname')).not.toHaveTextContent('Custom');
     });
 
     it('puts the create form away when another picker is opened', async () => {
