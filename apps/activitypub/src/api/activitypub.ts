@@ -241,8 +241,6 @@ export interface Post {
     title: string;
     excerpt: string;
     summary: string | null;
-    // Optional until the backend that persists them ships
-    // (TryGhost/ActivityPub#1958)
     sensitive?: boolean;
     contentWarning?: string | null;
     content: string;
