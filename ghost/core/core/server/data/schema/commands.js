@@ -183,13 +183,16 @@ async function dropColumn(tableName, column, transaction = db.knex, columnSpec =
  * @param {string} from
  * @param {string} to
  * @param {import('knex').Knex.Transaction} [transaction]
+ * @param {object} [options]
+ * @param {'instant'|'inplace'|'copy'|'auto'} [options.algorithm] - MySQL only
  */
-async function renameColumn(tableName, from, to, transaction = db.knex) {
+async function renameColumn(tableName, from, to, transaction = db.knex, options = {}) {
     logging.info(`Renaming column '${from}' to '${to}' in table '${tableName}'`);
 
     if (DatabaseInfo.isMySQL(transaction)) {
         // The knex helper does a lot of interesting things with foreign keys that are slow on bigger MySQL clusters
-        return await transaction.raw(`ALTER TABLE \`${tableName}\` RENAME COLUMN \`${from}\` TO \`${to}\`;`);
+        const algorithm = options.algorithm && options.algorithm !== 'auto' ? `, algorithm=${options.algorithm}` : '';
+        return await transaction.raw(`ALTER TABLE \`${tableName}\` RENAME COLUMN \`${from}\` TO \`${to}\`${algorithm};`);
     }
 
     return await transaction.schema.table(tableName, function (table) {
@@ -276,13 +279,18 @@ async function dropIndex(tableName, columns, transaction = db.knex) {
  * @param {string} tableName - name of the table to add unique constraint to
  * @param {string|string[]} columns - column(s) to form unique constraint with
  * @param {import('knex').Knex} [transaction] - connection object containing knex reference
+ * @param {string} [indexName] - name for the constraint; knex derives one from the table
+ * and every column when omitted, which can overrun MySQL's 64-character limit
  */
-async function addUnique(tableName, columns, transaction = db.knex) {
+async function addUnique(tableName, columns, transaction = db.knex, indexName) {
     try {
         logging.info(`Adding unique constraint for '${columns}' in table '${tableName}'`);
 
         return await transaction.schema.table(tableName, function (table) {
-            table.unique(columns);
+            // Knex derives a name from the table and every column when it is not given
+            // one, and that can overrun MySQL's 64-character identifier limit on a wide
+            // table or a constraint over several columns.
+            table.unique(columns, indexName ? {indexName} : undefined);
         });
     } catch (err) {
         if (err.code === 'SQLITE_ERROR') {
@@ -304,12 +312,14 @@ async function addUnique(tableName, columns, transaction = db.knex) {
  * @param {string|string[]} columns - column(s) unique constraint was formed
  * @param {import('knex').Knex} transaction - connection object containing knex reference
  */
-async function dropUnique(tableName, columns, transaction = db.knex) {
+async function dropUnique(tableName, columns, transaction = db.knex, indexName) {
     try {
         logging.info(`Dropping unique constraint for '${columns}' in table '${tableName}'`);
 
         return await transaction.schema.table(tableName, function (table) {
-            table.dropUnique(columns);
+            // Named constraints have to be dropped by that name: the one knex would
+            // derive from the columns is not what is on the table.
+            table.dropUnique(columns, indexName);
         });
     } catch (err) {
         if (err.code === 'SQLITE_ERROR') {
@@ -542,7 +552,16 @@ function createTable(table, transaction = db.knex, tableSpec = schema[table]) {
             });
         }
         if (tableSpec['@@UNIQUE_CONSTRAINTS@@']) {
-            tableSpec['@@UNIQUE_CONSTRAINTS@@'].forEach(unique => t.unique(unique));
+            tableSpec['@@UNIQUE_CONSTRAINTS@@'].forEach((unique) => {
+                // An entry is normally the columns alone, and knex names the constraint
+                // after the table and every one of them. The object form is for when
+                // that derived name would overrun MySQL's 64-character limit.
+                if (unique && typeof unique === 'object' && !Array.isArray(unique)) {
+                    t.unique(unique.columns, {indexName: unique.indexName});
+                } else {
+                    t.unique(unique);
+                }
+            });
         }
         if (tableSpec['@@PRIMARY_KEY@@']) {
             t.primary(tableSpec['@@PRIMARY_KEY@@']);

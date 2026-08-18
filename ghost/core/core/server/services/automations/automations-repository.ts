@@ -65,6 +65,12 @@ export interface AutomationSummary {
     updated_at: string;
 }
 
+export interface AutomationBrowseResult extends AutomationSummary {
+    stats: {
+        last_run_created_at: Date | null;
+    };
+}
+
 export interface Automation extends AutomationSummary {
     actions: AutomationAction[];
     edges: AutomationEdge[];
@@ -90,6 +96,7 @@ export type AutomatedEmailEvents = {
 
 export type RecordEmailSentOptions = Readonly<{
     automationActionRevisionId: string;
+    automationRunStepId: string;
     mailgunMessageId?: string;
     memberEmail: string;
     memberId: string;
@@ -135,7 +142,7 @@ export type AutomationStepTerminalStatus =
     | 'member unsubscribed';
 
 export interface AutomationsRepository {
-    browse(): Promise<Page<AutomationSummary>>;
+    browse(): Promise<Page<AutomationBrowseResult>>;
     getById(id: string): Promise<Automation | null>;
     getAutomationActionLinks(automationId: string, actionId: string): Promise<AutomationActionLink[] | null>;
     edit(id: string, data: EditAutomationData): Promise<Automation | null>;
@@ -203,11 +210,12 @@ export interface AutomationsRepository {
         eventsByAutomatedEmailRecipientId: ReadonlyDeep<Map<string, AutomatedEmailEvents>>
     ): Promise<void>;
     /**
-     * Track the first click for an automated email recipient.
+     * Record the first click timestamp for the automated email recipient identified by a run step.
      *
      */
     trackEmailClicked(options: {
         automationActionRevisionId: string;
+        automationRunStepId: string;
         memberId: string;
         clickedAt: Readonly<Date>;
     }, transactionOptions?: {

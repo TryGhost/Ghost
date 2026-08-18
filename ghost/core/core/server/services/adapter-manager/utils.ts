@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {createRequire} from 'node:module';
+import errors from '@tryghost/errors';
 import type {AdapterConstructor} from "./types";
 import type {ConfigInstance} from '../../../shared/config/loader';
 
@@ -120,6 +121,62 @@ export function resolveAdapterExport(moduleExport: unknown): AdapterConstructor 
     }
 
     return null;
+}
+
+/**
+* Locate and load an adapter constructor by type and class name, trying each of
+* `pathsToAdapters` in order. Shared by the adapter manager and by
+* bin/validate-adapters.ts, so a name resolves — and fails — identically at build
+* time and at runtime.
+*/
+export function loadAdapterClass(
+    adapterType: string,
+    adapterClassName: string,
+    pathsToAdapters: string[],
+    loadAdapterFromPath: (path: string) => unknown
+): AdapterConstructor {
+    for (const pathToAdapters of pathsToAdapters) {
+        let pathToAdapter = path.join(pathToAdapters, adapterType, adapterClassName);
+        if (pathToAdapters === '') {
+            // We are loading from node_modules, we can remove the `adapterType` prefix
+            pathToAdapter = path.join(pathToAdapters, adapterClassName);
+        }
+        // An adapter directory may be a full module with its own
+        // package.json, in which case this resolves the `exports` entry
+        // point; otherwise the path passes through unchanged.
+        const moduleToLoad = resolveAdapterEntryPoint(pathToAdapter);
+
+        try {
+            const Adapter = resolveAdapterExport(loadAdapterFromPath(moduleToLoad));
+            if (Adapter) {
+                return Adapter;
+            }
+        } catch (err) {
+            // Catch runtime errors
+            if (!(err instanceof Error) || (err as NodeJS.ErrnoException).code !== 'MODULE_NOT_FOUND') {
+                throw new errors.IncorrectUsageError({err: err as Error});
+            }
+
+            // Catch missing dependencies BUT NOT missing adapter.
+            // Only check the first line — Node appends a "Require stack"
+            // that includes the adapter's own path, which would false-positive.
+            const firstLine = err.message.split('\n')[0];
+            if (!firstLine.includes(pathToAdapter)) {
+                // Name the unresolved module so the error is actionable, e.g.
+                // "Cannot find module 'superagent'" -> 'superagent'.
+                const missingMatch = /Cannot find module '([^']+)'/.exec(firstLine);
+                const missingModule = missingMatch ? ` '${missingMatch[1]}'` : '';
+                throw new errors.IncorrectUsageError({
+                    message: `You are missing a dependency${missingModule} in your adapter ${pathToAdapter}`,
+                    err: err as Error
+                });
+            }
+        }
+    }
+
+    throw new errors.IncorrectUsageError({
+        message: `Unable to find ${adapterType} adapter ${adapterClassName} in ${pathsToAdapters}.`
+    });
 }
 
 function getSchedulingConfig(config: ConfigInstance) {

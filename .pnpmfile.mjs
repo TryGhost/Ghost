@@ -2,10 +2,10 @@ import {glob, readFile} from 'node:fs/promises';
 
 // Global pnpm hooks for the Ghost monorepo.
 //
-// Only `beforePacking` is defined. It runs during `pnpm pack` / `pnpm publish`
-// and mutates the package.json written *into the tarball* — the on-disk
-// manifest is never touched, and dependency resolution / the shared lockfile
-// are unaffected (no `readPackage`/`afterAllResolved` hook here).
+// `beforePacking` runs during `pnpm pack` / `pnpm publish` and mutates the
+// package.json written *into the tarball* — the on-disk manifest is never
+// touched. `readPackage` runs during resolution, so it *does* feed the shared
+// lockfile.
 //
 // Applied to every packed/published package:
 //   - drop `nx`            — Nx target config, meaningless to consumers
@@ -65,6 +65,41 @@ function beforePacking(pkg) {
     return pkg;
 }
 
+function readPackage(pkg) {
+    // consolidate declares 48 template engines as optional peers. pnpm links any
+    // that another workspace package happens to satisfy, so react, react-dom and
+    // @babel/core rode into ghost's production deploy closure via
+    // nodemailer-mailgun-transport — the only thing that pulls consolidate in, and
+    // it never renders through it. packageExtensions can only add, so dropping the
+    // peers outright needs this hook.
+    if (pkg.name === 'consolidate') {
+        delete pkg.peerDependencies;
+        delete pkg.peerDependenciesMeta;
+    }
+
+    // knex declares sqlite3 as an optional peer dep, and we don't use it/don't
+    // want to install it in production, so we'll remove it from the knex peer
+    // deps
+    if (pkg.name === 'knex') {
+        delete pkg.peerDependencies?.sqlite3;
+        delete pkg.peerDependenciesMeta?.sqlite3;
+    }
+
+    // these deps pull in typescript as an optional peer dep, which ends up
+    // being included in Ghost's production image because of the way pnpm hoists
+    // optional peers. We don't want to ship ts in the prod image so we delete
+    // it from the manifest
+    //
+    // NOTE: auto-install-peers: false doesn't solve the problem here unfortunately,
+    // and it causes more issues with other deps
+    if (['viem', 'ox', 'abitype'].includes(pkg.name)) {
+        delete pkg.peerDependencies?.typescript;
+        delete pkg.peerDependenciesMeta?.typescript;
+    }
+
+    return pkg;
+}
+
 /**
  * Dynamic config update function to automatically exclude "private" packages
  * from pnpm's changelog detection. We can't remove the version fields
@@ -105,4 +140,4 @@ async function updateConfig(config) {
     return config;
 }
 
-export const hooks = {beforePacking, updateConfig};
+export const hooks = {beforePacking, readPackage, updateConfig};

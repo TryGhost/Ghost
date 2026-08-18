@@ -148,7 +148,7 @@ export default class PublishManagement extends Component {
     // its tier selector synchronously; a failed fetch degrades the preview to
     // the free/paid audience options and is retried on the next open
     async _ensureTiersLoaded() {
-        if (!this.feature.previewByTier || !this.settings.paidMembersEnabled || this.loadTiersTask.lastSuccessful) {
+        if (!this.settings.paidMembersEnabled || this.loadTiersTask.lastSuccessful) {
             return;
         }
 

@@ -10,7 +10,7 @@ describe('getAuthorUrl', function () {
     let urlServiceGetUrlForResourceStub;
 
     beforeEach(function () {
-        urlServiceGetUrlForResourceStub = sinon.stub(urlService.facade, 'getUrlForResource');
+        urlServiceGetUrlForResourceStub = sinon.stub(urlService, 'getUrlForResource');
     });
 
     afterEach(function () {

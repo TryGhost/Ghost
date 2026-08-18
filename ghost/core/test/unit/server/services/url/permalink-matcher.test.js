@@ -107,7 +107,7 @@ describe('permalink-matcher', function () {
     describe('value-format pre-filter', function () {
         // A captured value that can't fit its token's fixed format is a
         // guaranteed miss, so the matcher rejects it up front (parity-safe: the
-        // patterns are strict supersets of every value eager emits).
+        // patterns are strict supersets of every value a permalink can hold).
         it('returns null when an :id segment is not a 24-char ObjectId', function () {
             assert.equal(matchPermalink('/:id/', '/blahblah/'), null);
         });

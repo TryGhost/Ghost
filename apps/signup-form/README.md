@@ -6,65 +6,58 @@ Embed a Ghost signup form on any site.
 
 ### Pre-requisites
 
-- Run `pnpm` in Ghost monorepo root
-- Run `pnpm` in this directory
+- Run `pnpm setup` in the Ghost monorepo root
 
-### Running via Ghost `pnpm dev` in root folder
+### Running via Ghost from the monorepo root
 
-Signup Form runs automatically when using Ghost's development command from the monorepo root:
+Start Ghost with the public-app watchers enabled:
+
 ```bash
-pnpm dev
+pnpm dev:public
 ```
 
-This starts all frontend apps (including Signup Form.)
+This starts the standard development environment and the Signup Form watcher.
 
 ### Running the standalone demo page
 
-Run `pnpm dev:standalone` (in this package folder) to start the standalone development server with HMR for testing/developing the form in isolation.
-- This serves the demo page at http://localhost:6173
+Run `pnpm dev:standalone` from this directory to start the standalone
+development server with HMR. It serves the demo page at
+<http://localhost:6173>.
 
-`pnpm dev` on its own (in this package folder) only builds `umd/signup-form.min.js` and watches for changes — it does not bind a port. The UMD is served by Caddy at http://localhost:2368/ghost/assets/signup-form/signup-form.min.js when you run `pnpm dev` from the monorepo root.
+`pnpm dev` on its own (in this package folder) only builds `umd/signup-form.min.js` and watches for changes — it does not bind a port. The UMD is served by Caddy at http://localhost:2368/ghost/assets/signup-form/signup-form.min.js when you run `pnpm dev:public` from the monorepo root.
 
 ### Using the UMD build during development
 
-Vite by default only supports HRM with an ESM output. But when loading a script on a site as a ESM module (`<script type="module" src="...">`), you don't have access to `document.currentScript` inside the script, which is required to determine the location to inject the iframe. In development mode we use a workaround for this to make the ESM HMR work. But this workaround is not suitable for production.
+Vite's development server uses an ESM output for HMR. When a script is loaded as
+an ESM module (`<script type="module" src="...">`), `document.currentScript` is
+not available. Signup Form needs it to determine where to inject the iframe, so
+development mode uses a workaround that is not suitable for production.
 
-To test the real production behaviour without this hack, you can use http://localhost:6173/preview.html (served by `pnpm dev:standalone`). The page loads the production UMD via `<script src="http://localhost:2368/ghost/assets/signup-form/signup-form.min.js">`, which is served by Caddy when `pnpm dev` is also running from the monorepo root. Both processes need to be up at the same time.
-
-## Develop
-
-This is a monorepo package.
-
-Follow the instructions for the top-level repo.
-1. `git clone` this repo & `cd` into it as usual
-2. Run `pnpm` to install top-level dependencies.
+To test the production behavior, open <http://localhost:6173/preview.html> while
+`pnpm dev:standalone` is running. The page loads the UMD bundle from the
+development gateway, so `pnpm dev:public` must also be running from the monorepo
+root.
 
 ## Test
 
-- `pnpm lint` run just eslint
-- `pnpm test` run lint and tests
-- `pnpm test:e2e` run e2e tests on Chromium
-- `pnpm test:slowmo` run e2e tests visually (headed) and slower on Chromium
-- `pnpm test:e2e:full` run e2e tests on all browsers
+- `pnpm lint` runs ESLint.
+- `pnpm test:acceptance` runs acceptance tests on Chromium.
+- `pnpm test:acceptance:slowmo` runs acceptance tests headed and slowed down on
+  Chromium.
+- `pnpm test:acceptance:full` runs acceptance tests on all configured browsers.
 
 ## Release
 
-A patch release can be rolled out instantly in production, whereas a minor/major release requires the Ghost monorepo to be updated and released.
-In either case, you need sufficient permissions to release `@tryghost` packages on NPM.
+Patch releases are automatic. When Signup Form changes on `main`, CI publishes the next patch version to npm and clears the jsDelivr cache. Sites using that major/minor line receive the patch without a Ghost release.
 
-### Patch release
+For an intentional minor or major release:
 
-1. Run `pnpm ship` and select a patch version when prompted
+1. From a clean branch, run `pnpm ship` and select a minor or major version
 2. Merge the release commit to `main`
+3. Wait for a public Ghost release to ship the new default version line
 
-### Minor / major release
-
-1. Run `pnpm ship` and select a minor or major version when prompted
-2. Merge the release commit to `main`
-3. Wait until a new version of Ghost is released
-
-To use the new version of signup form in Ghost, update the version in Ghost core's default configuration (currently at `core/shared/config/default.json`)
+`pnpm ship` updates both the package version and Ghost's default Signup Form version.
 
 # Copyright & License
 
-Copyright (c) 2013-2026 Ghost Foundation - Released under the [MIT license](LICENSE).
+Copyright (c) 2013-2026 Ghost Foundation - Released under the [MIT license](https://github.com/TryGhost/Ghost/blob/main/LICENSE).

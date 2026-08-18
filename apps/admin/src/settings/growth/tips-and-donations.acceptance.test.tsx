@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { userEvent } from "vitest/browser";
+import { page, userEvent } from "vitest/browser";
 
-import { fakeEditSettings, fakeSettingsScreens, renderAdminApp, settingsResponse, type RenderAdminAppOptions } from "@test-utils/acceptance";
+import { currentRoute, fakeEditSettings, fakeSettingsScreens, renderAdminApp, settingsResponse, type RenderAdminAppOptions } from "@test-utils/acceptance";
 import { settingsScreen } from "@/settings/settings.screen";
 
 function withStripe(): RenderAdminAppOptions {
@@ -23,6 +23,22 @@ function withStripe(): RenderAdminAppOptions {
 }
 
 describe("Tips and donations settings", () => {
+    it("closes the currency dropdown with Escape without closing Settings", async () => {
+        fakeSettingsScreens();
+        await renderAdminApp("/settings", withStripe());
+
+        const currency = settingsScreen.tipsAndDonations().getByRole("combobox", {name: "Currency"});
+        await currency.click();
+        const search = page.getByPlaceholder("Search currencies...");
+        await expect.element(search).toBeVisible();
+
+        await userEvent.keyboard("{Escape}");
+
+        await expect(search).toHaveCount(0);
+        await expect.element(currency).toBeVisible();
+        await expect.poll(currentRoute).toBe("/settings");
+    });
+
     it("is hidden when Stripe is disabled", async () => {
         fakeSettingsScreens();
         await renderAdminApp("/settings");

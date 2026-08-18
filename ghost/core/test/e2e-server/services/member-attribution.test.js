@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const {assertObjectMatches} = require('../../utils/assertions');
 const {agentProvider, fixtureManager, configUtils} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
-const urlService = require('../../../core/server/services/url');
+const urlServiceUtils = require('../../utils/url-service-utils');
 const memberAttributionService = require('../../../core/server/services/member-attribution');
 const urlUtils = require('../../../core/shared/url-utils').default;
 
@@ -45,7 +45,7 @@ describe('Member Attribution Service', function () {
             it('resolves posts', async function () {
                 const id = fixtureManager.get('posts', 0).id;
                 const post = await models.Post.where('id', id).fetch({require: true});
-                const url = urlService.getUrlByResourceId(post.id, {absolute: false, withSubdirectory: true});
+                const url = urlServiceUtils.urlFor(post, 'posts', {absolute: false, withSubdirectory: true});
 
                 const attribution = await memberAttributionService.service.getAttribution([
                     {
@@ -59,7 +59,7 @@ describe('Member Attribution Service', function () {
                     type: 'post'
                 });
 
-                const absoluteUrl = urlService.getUrlByResourceId(post.id, {absolute: true, withSubdirectory: true});
+                const absoluteUrl = urlServiceUtils.urlFor(post, 'posts', {absolute: true, withSubdirectory: true});
 
                 assertObjectMatches(await attribution.fetchResource(), {
                     id: post.id,
@@ -72,9 +72,9 @@ describe('Member Attribution Service', function () {
             it('resolves removed resources', async function () {
                 const id = fixtureManager.get('posts', 0).id;
                 const post = await models.Post.where('id', id).fetch({require: true});
-                const url = urlService.getUrlByResourceId(post.id, {absolute: false, withSubdirectory: true});
-                const urlWithoutSubdirectory = urlService.getUrlByResourceId(post.id, {absolute: false, withSubdirectory: false});
-                const absoluteUrl = urlService.getUrlByResourceId(post.id, {absolute: true, withSubdirectory: true});
+                const url = urlServiceUtils.urlFor(post, 'posts', {absolute: false, withSubdirectory: true});
+                const urlWithoutSubdirectory = urlServiceUtils.urlFor(post, 'posts', {absolute: false, withSubdirectory: false});
+                const absoluteUrl = urlServiceUtils.urlFor(post, 'posts', {absolute: true, withSubdirectory: true});
 
                 const attribution = await memberAttributionService.service.getAttribution([
                     {
@@ -108,7 +108,7 @@ describe('Member Attribution Service', function () {
                 const post = await models.Post.where('id', id).fetch({require: true});
                 assert.equal(post.get('type'), 'page');
 
-                const url = urlService.getUrlByResourceId(post.id, {absolute: false, withSubdirectory: true});
+                const url = urlServiceUtils.urlFor(post, 'pages', {absolute: false, withSubdirectory: true});
 
                 const attribution = await memberAttributionService.service.getAttribution([
                     {
@@ -122,7 +122,7 @@ describe('Member Attribution Service', function () {
                     type: 'page'
                 });
 
-                const absoluteUrl = urlService.getUrlByResourceId(post.id, {absolute: true, withSubdirectory: true});
+                const absoluteUrl = urlServiceUtils.urlFor(post, 'pages', {absolute: true, withSubdirectory: true});
 
                 assertObjectMatches(await attribution.fetchResource(), {
                     id: post.id,
@@ -135,7 +135,7 @@ describe('Member Attribution Service', function () {
             it('resolves tags', async function () {
                 const id = fixtureManager.get('tags', 0).id;
                 const tag = await models.Tag.where('id', id).fetch({require: true});
-                const url = urlService.getUrlByResourceId(tag.id, {absolute: false, withSubdirectory: true});
+                const url = urlServiceUtils.urlFor(tag, 'tags', {absolute: false, withSubdirectory: true});
 
                 const attribution = await memberAttributionService.service.getAttribution([
                     {
@@ -149,7 +149,7 @@ describe('Member Attribution Service', function () {
                     type: 'tag'
                 });
 
-                const absoluteUrl = urlService.getUrlByResourceId(tag.id, {absolute: true, withSubdirectory: true});
+                const absoluteUrl = urlServiceUtils.urlFor(tag, 'tags', {absolute: true, withSubdirectory: true});
 
                 assertObjectMatches(await attribution.fetchResource(), {
                     id: tag.id,
@@ -162,7 +162,7 @@ describe('Member Attribution Service', function () {
             it('resolves authors', async function () {
                 const id = fixtureManager.get('users', 0).id;
                 const author = await models.User.where('id', id).fetch({require: true});
-                const url = urlService.getUrlByResourceId(author.id, {absolute: false, withSubdirectory: true});
+                const url = urlServiceUtils.urlFor(author, 'authors', {absolute: false, withSubdirectory: true});
 
                 const attribution = await memberAttributionService.service.getAttribution([
                     {
@@ -176,7 +176,7 @@ describe('Member Attribution Service', function () {
                     type: 'author'
                 });
 
-                const absoluteUrl = urlService.getUrlByResourceId(author.id, {absolute: true, withSubdirectory: true});
+                const absoluteUrl = urlServiceUtils.urlFor(author, 'authors', {absolute: true, withSubdirectory: true});
 
                 assertObjectMatches(await attribution.fetchResource(), {
                     id: author.id,
@@ -291,8 +291,8 @@ describe('Member Attribution Service', function () {
             it('resolves posts', async function () {
                 const id = fixtureManager.get('posts', 0).id;
                 const post = await models.Post.where('id', id).fetch({require: true});
-                const url = urlService.getUrlByResourceId(post.id, {absolute: false, withSubdirectory: true});
-                const urlWithoutSubdirectory = urlService.getUrlByResourceId(post.id, {absolute: false, withSubdirectory: false});
+                const url = urlServiceUtils.urlFor(post, 'posts', {absolute: false, withSubdirectory: true});
+                const urlWithoutSubdirectory = urlServiceUtils.urlFor(post, 'posts', {absolute: false, withSubdirectory: false});
 
                 // Check if we are actually testing with subdirectories
                 assert(url.startsWith('/subdirectory/'));
@@ -311,7 +311,7 @@ describe('Member Attribution Service', function () {
                     type: 'post'
                 });
 
-                const absoluteUrl = urlService.getUrlByResourceId(post.id, {absolute: true, withSubdirectory: true});
+                const absoluteUrl = urlServiceUtils.urlFor(post, 'posts', {absolute: true, withSubdirectory: true});
 
                 assertObjectMatches(await attribution.fetchResource(), {
                     id: post.id,
@@ -324,9 +324,9 @@ describe('Member Attribution Service', function () {
             it('resolves removed resources', async function () {
                 const id = fixtureManager.get('posts', 0).id;
                 const post = await models.Post.where('id', id).fetch({require: true});
-                const url = urlService.getUrlByResourceId(post.id, {absolute: false, withSubdirectory: true});
-                const urlWithoutSubdirectory = urlService.getUrlByResourceId(post.id, {absolute: false, withSubdirectory: false});
-                const absoluteUrl = urlService.getUrlByResourceId(post.id, {absolute: true, withSubdirectory: true});
+                const url = urlServiceUtils.urlFor(post, 'posts', {absolute: false, withSubdirectory: true});
+                const urlWithoutSubdirectory = urlServiceUtils.urlFor(post, 'posts', {absolute: false, withSubdirectory: false});
+                const absoluteUrl = urlServiceUtils.urlFor(post, 'posts', {absolute: true, withSubdirectory: true});
 
                 // Check if we are actually testing with subdirectories
                 assert(url.startsWith('/subdirectory/'));
@@ -361,8 +361,8 @@ describe('Member Attribution Service', function () {
                 const post = await models.Post.where('id', id).fetch({require: true});
                 assert.equal(post.get('type'), 'page');
 
-                const url = urlService.getUrlByResourceId(post.id, {absolute: false, withSubdirectory: true});
-                const urlWithoutSubdirectory = urlService.getUrlByResourceId(post.id, {absolute: false, withSubdirectory: false});
+                const url = urlServiceUtils.urlFor(post, 'pages', {absolute: false, withSubdirectory: true});
+                const urlWithoutSubdirectory = urlServiceUtils.urlFor(post, 'pages', {absolute: false, withSubdirectory: false});
 
                 const attribution = await memberAttributionService.service.getAttribution([
                     {
@@ -376,7 +376,7 @@ describe('Member Attribution Service', function () {
                     type: 'page'
                 });
 
-                const absoluteUrl = urlService.getUrlByResourceId(post.id, {absolute: true, withSubdirectory: true});
+                const absoluteUrl = urlServiceUtils.urlFor(post, 'pages', {absolute: true, withSubdirectory: true});
 
                 assertObjectMatches(await attribution.fetchResource(), {
                     id: post.id,
@@ -389,8 +389,8 @@ describe('Member Attribution Service', function () {
             it('resolves tags', async function () {
                 const id = fixtureManager.get('tags', 0).id;
                 const tag = await models.Tag.where('id', id).fetch({require: true});
-                const url = urlService.getUrlByResourceId(tag.id, {absolute: false, withSubdirectory: true});
-                const urlWithoutSubdirectory = urlService.getUrlByResourceId(tag.id, {absolute: false, withSubdirectory: false});
+                const url = urlServiceUtils.urlFor(tag, 'tags', {absolute: false, withSubdirectory: true});
+                const urlWithoutSubdirectory = urlServiceUtils.urlFor(tag, 'tags', {absolute: false, withSubdirectory: false});
 
                 const attribution = await memberAttributionService.service.getAttribution([
                     {
@@ -404,7 +404,7 @@ describe('Member Attribution Service', function () {
                     type: 'tag'
                 });
 
-                const absoluteUrl = urlService.getUrlByResourceId(tag.id, {absolute: true, withSubdirectory: true});
+                const absoluteUrl = urlServiceUtils.urlFor(tag, 'tags', {absolute: true, withSubdirectory: true});
 
                 assertObjectMatches(await attribution.fetchResource(), {
                     id: tag.id,
@@ -417,8 +417,8 @@ describe('Member Attribution Service', function () {
             it('resolves authors', async function () {
                 const id = fixtureManager.get('users', 0).id;
                 const author = await models.User.where('id', id).fetch({require: true});
-                const url = urlService.getUrlByResourceId(author.id, {absolute: false, withSubdirectory: true});
-                const urlWithoutSubdirectory = urlService.getUrlByResourceId(author.id, {absolute: false, withSubdirectory: false});
+                const url = urlServiceUtils.urlFor(author, 'authors', {absolute: false, withSubdirectory: true});
+                const urlWithoutSubdirectory = urlServiceUtils.urlFor(author, 'authors', {absolute: false, withSubdirectory: false});
 
                 const attribution = await memberAttributionService.service.getAttribution([
                     {
@@ -432,7 +432,7 @@ describe('Member Attribution Service', function () {
                     type: 'author'
                 });
 
-                const absoluteUrl = urlService.getUrlByResourceId(author.id, {absolute: true, withSubdirectory: true});
+                const absoluteUrl = urlServiceUtils.urlFor(author, 'authors', {absolute: true, withSubdirectory: true});
 
                 assertObjectMatches(await attribution.fetchResource(), {
                     id: author.id,

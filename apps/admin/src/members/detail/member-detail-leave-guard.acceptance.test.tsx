@@ -3,8 +3,6 @@ import {page} from 'vitest/browser';
 
 import {fakeAdminEndpoint, fakeMembers, member, renderAdminApp, type Member} from '@test-utils/acceptance';
 
-const FLAGS = {labs: {memberDetailsReact: true}};
-
 function fakeMemberDetailWorld(m: Member) {
     fakeMembers([m]);
     fakeAdminEndpoint('GET', new RegExp(`^/members/${m.id}/`), {members: [m]});
@@ -28,7 +26,7 @@ describe('Member detail leave guard', () => {
     it('guards leaving via the breadcrumb (react-router link) with unsaved edits', async () => {
         const m = member({name: 'Ada Lovelace'});
         fakeMemberDetailWorld(m);
-        await renderAdminApp(`/members/${m.id}`, FLAGS);
+        await renderAdminApp(`/members/${m.id}`);
 
         await page.getByLabelText('Name').fill('Ada B');
         await page.getByTestId('member-detail').getByRole('link', {name: 'Members'}).click();
@@ -39,7 +37,7 @@ describe('Member detail leave guard', () => {
     it('guards leaving via the sidebar (native hash anchor) with unsaved edits', async () => {
         const m = member({name: 'Ada Lovelace'});
         fakeMemberDetailWorld(m);
-        await renderAdminApp(`/members/${m.id}`, FLAGS);
+        await renderAdminApp(`/members/${m.id}`);
 
         await page.getByLabelText('Name').fill('Ada B');
         await page.getByRole('link', {name: 'Members'}).first().click();
@@ -50,7 +48,7 @@ describe('Member detail leave guard', () => {
     it('keeps editing on cancel and completes the navigation on Leave', async () => {
         const m = member({name: 'Ada Lovelace'});
         fakeMemberDetailWorld(m);
-        await renderAdminApp(`/members/${m.id}`, FLAGS);
+        await renderAdminApp(`/members/${m.id}`);
 
         await page.getByLabelText('Name').fill('Ada B');
         await page.getByRole('link', {name: 'Members'}).first().click();

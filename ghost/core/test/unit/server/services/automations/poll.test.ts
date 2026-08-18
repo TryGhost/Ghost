@@ -265,11 +265,9 @@ describe('automations poll', function () {
         sinon.assert.calledOnceWithExactly(automationsApi.markStepTerminal, step, 'member changed status');
     });
 
-    it('skips sending email if the member unsubscribed from updates & announcements', async function () {
-        const nextReadyAt = new Date(Date.now() + 60 * 1000);
+    it('ends the automation run if the member unsubscribed from updates & announcements', async function () {
         const step = buildEmailStep();
         automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
-        automationsApi.finishStepAndEnqueueNext.resolves(nextReadyAt);
         Member.findOne.resolves(buildMember({enable_updates_and_announcements: false}));
 
         await poll(options);
@@ -277,9 +275,9 @@ describe('automations poll', function () {
         sinon.assert.notCalled(memberWelcomeEmailService.init);
         sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
         sinon.assert.notCalled(automationsApi.recordEmailSent);
-        sinon.assert.notCalled(automationsApi.markStepTerminal);
-        sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
-        sinon.assert.calledOnceWithExactly(options.enqueueAnotherPollAt, nextReadyAt);
+        sinon.assert.calledOnceWithExactly(automationsApi.markStepTerminal, step, 'member unsubscribed');
+        sinon.assert.notCalled(automationsApi.finishStepAndEnqueueNext);
+        sinon.assert.notCalled(options.enqueueAnotherPollAt);
     });
 
     it('sends email if updates & announcements is unset and the member has newsletter subscriptions', async function () {
@@ -297,11 +295,9 @@ describe('automations poll', function () {
         sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
     });
 
-    it('skips sending email if updates & announcements is unset and the member has no newsletter subscriptions', async function () {
-        const nextReadyAt = new Date(Date.now() + 60 * 1000);
+    it('ends the automation run if updates & announcements is unset and the member has no newsletter subscriptions', async function () {
         const step = buildEmailStep();
         automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
-        automationsApi.finishStepAndEnqueueNext.resolves(nextReadyAt);
         Member.findOne.resolves(buildMember({
             enable_updates_and_announcements: null,
             newsletters: []
@@ -312,9 +308,9 @@ describe('automations poll', function () {
         sinon.assert.notCalled(memberWelcomeEmailService.init);
         sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
         sinon.assert.notCalled(automationsApi.recordEmailSent);
-        sinon.assert.notCalled(automationsApi.markStepTerminal);
-        sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
-        sinon.assert.calledOnceWithExactly(options.enqueueAnotherPollAt, nextReadyAt);
+        sinon.assert.calledOnceWithExactly(automationsApi.markStepTerminal, step, 'member unsubscribed');
+        sinon.assert.notCalled(automationsApi.finishStepAndEnqueueNext);
+        sinon.assert.notCalled(options.enqueueAnotherPollAt);
     });
 
     it('gift members run through paid automations', async function () {
@@ -368,6 +364,7 @@ describe('automations poll', function () {
         }));
         sinon.assert.calledOnceWithExactly(automationsApi.recordEmailSent, {
             automationActionRevisionId: 'revision-id',
+            automationRunStepId: step.id,
             mailgunMessageId: 'mailgun-message-id',
             memberEmail: 'member@example.com',
             memberId: 'member-id',
@@ -437,11 +434,13 @@ describe('automations poll', function () {
         await poll(options);
 
         sinon.assert.calledOnceWithExactly(automationsApi.recordEmailSent, sinon.match({
+            automationRunStepId: step.id,
             trackClicks: true
         }));
         sinon.assert.calledOnceWithExactly(memberWelcomeEmailService.api.sendAutomationEmail, sinon.match({
             trackClicks: true,
-            automationActionRevisionId: step.automation_action_revision_id
+            automationActionRevisionId: step.automation_action_revision_id,
+            automationRunStepId: step.id
         }));
     });
 
@@ -453,11 +452,13 @@ describe('automations poll', function () {
         await poll(options);
 
         sinon.assert.calledOnceWithExactly(automationsApi.recordEmailSent, sinon.match({
+            automationRunStepId: step.id,
             trackClicks: false
         }));
         sinon.assert.calledOnceWithExactly(memberWelcomeEmailService.api.sendAutomationEmail, sinon.match({
             trackClicks: false,
-            automationActionRevisionId: step.automation_action_revision_id
+            automationActionRevisionId: step.automation_action_revision_id,
+            automationRunStepId: step.id
         }));
     });
 
@@ -470,11 +471,13 @@ describe('automations poll', function () {
         await poll(options);
 
         sinon.assert.calledOnceWithExactly(automationsApi.recordEmailSent, sinon.match({
+            automationRunStepId: step.id,
             trackClicks: false
         }));
         sinon.assert.calledOnceWithExactly(memberWelcomeEmailService.api.sendAutomationEmail, sinon.match({
             trackClicks: false,
-            automationActionRevisionId: step.automation_action_revision_id
+            automationActionRevisionId: step.automation_action_revision_id,
+            automationRunStepId: step.id
         }));
     });
 
@@ -496,6 +499,7 @@ describe('automations poll', function () {
         }));
         sinon.assert.calledOnceWithExactly(automationsApi.recordEmailSent, {
             automationActionRevisionId: 'revision-id',
+            automationRunStepId: step.id,
             memberEmail: 'member@example.com',
             memberId: 'member-id',
             memberName: 'Test Member',

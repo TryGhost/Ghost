@@ -20,10 +20,6 @@ export const configData = {
             url: "http://editor.test/koenig-lexical.umd.js",
             version: ""
         },
-        adminX: {
-            url: "http://admin-x.test/admin-x-settings.umd.js",
-            version: "0.0"
-        },
         signupForm: {
             url: "https://signup-form.test/signup-form.min.js",
             version: "0.2"

@@ -1,6 +1,6 @@
 {
     "name": "ghost",
-    "version": "6.56.0-rc.0",
+    "version": "6.58.0-rc.0",
     "description": "The professional publishing platform",
     "author": "Ghost Foundation",
     "homepage": "https://ghost.org",
@@ -47,6 +47,7 @@
         "dev": "nodemon index.js",
         "build:assets": "pnpm run '/^build:assets:/'",
         "build:assets:js": "node scripts/minify-assets.mjs",
+        "build:assets:cards": "node scripts/build-card-assets.mjs",
         "generate-golden-email": "node bin/generate-golden-email.js",
         "migrate:create": "node bin/create-migration.js",
         "build:assets:css": "postcss core/frontend/public/ghost.css --no-map --use cssnano -o core/frontend/public/ghost.min.css",
@@ -92,7 +93,7 @@
         "@tryghost/adapter-base-sso": "workspace:*",
         "@tryghost/admin-api-schema": "workspace:*",
         "@tryghost/api-framework": "catalog:",
-        "@tryghost/bookshelf-plugins": "2.3.2",
+        "@tryghost/bookshelf-plugins": "2.3.8",
         "@tryghost/brute-knex": "catalog:",
         "@tryghost/color-utils": "catalog:",
         "@tryghost/config-url-helpers": "1.0.27",
@@ -116,7 +117,7 @@
         "@tryghost/kg-lexical-html-renderer": "workspace:*",
         "@tryghost/limit-service": "catalog:",
         "@tryghost/logging": "catalog:",
-        "@tryghost/metrics": "1.0.43",
+        "@tryghost/metrics": "catalog:",
         "@tryghost/mongo-knex": "catalog:",
         "@tryghost/mongo-utils": "0.6.5",
         "@tryghost/mw-error-handler": "1.0.13",
@@ -124,12 +125,13 @@
         "@tryghost/nodemailer": "2.3.1",
         "@tryghost/nql": "catalog:",
         "@tryghost/nql-lang": "catalog:",
+        "@tryghost/nql-string": "workspace:*",
         "@tryghost/parse-email-address": "workspace:*",
         "@tryghost/pretty-cli": "3.3.2",
         "@tryghost/prometheus-metrics": "1.0.8",
         "@tryghost/promise": "2.3.2",
         "@tryghost/referrer-parser": "0.1.21",
-        "@tryghost/request": "3.3.4",
+        "@tryghost/request": "catalog:",
         "@tryghost/root-utils": "2.3.2",
         "@tryghost/security": "1.0.6",
         "@tryghost/social-urls": "0.1.63",
@@ -139,7 +141,7 @@
         "@tryghost/validator": "0.2.22",
         "@tryghost/version": "2.3.2",
         "@tryghost/zip": "3.5.1",
-        "body-parser": "1.20.5",
+        "body-parser": "1.20.6",
         "bookshelf": "1.2.0",
         "bookshelf-relations": "2.8.0",
         "bson-objectid": "catalog:",
@@ -157,8 +159,6 @@
         "cors": "2.8.6",
         "countries-and-timezones": "3.9.0",
         "csso": "5.0.5",
-        "csv-writer": "1.6.0",
-        "date-fns": "2.30.0",
         "dequal": "catalog:",
         "dompurify": "catalog:",
         "downsize-cjs": "1.1.2",
@@ -176,7 +176,7 @@
         "fs-extra": "catalog:",
         "ghost-storage-base": "workspace:*",
         "glob": "catalog:",
-        "got": "13.0.0",
+        "got": "catalog:",
         "gscan": "6.4.2",
         "handlebars": "4.7.9",
         "heic-convert": "2.1.0",
@@ -185,38 +185,36 @@
         "human-number": "3.0.0",
         "iconv-lite": "0.7.2",
         "image-size": "1.2.1",
-        "intl": "1.2.5",
         "intl-messageformat": "5.4.3",
         "js-yaml": "catalog:",
         "jsdom": "catalog:",
         "jsonc-parser": "catalog:",
         "jsonwebtoken": "8.5.1",
         "juice": "9.1.0",
-        "keypair": "1.0.4",
         "knex": "2.4.2",
         "knex-migrator": "catalog:",
         "leaky-bucket": "2.2.0",
         "lodash": "catalog:",
         "luxon": "3.7.2",
         "mailgun.js": "10.4.0",
-        "metascraper": "5.51.1",
-        "metascraper-amazon": "5.51.2",
-        "metascraper-author": "5.51.1",
-        "metascraper-description": "5.51.1",
-        "metascraper-image": "5.51.1",
-        "metascraper-logo": "5.51.1",
-        "metascraper-logo-favicon": "5.51.1",
-        "metascraper-publisher": "5.51.1",
-        "metascraper-title": "5.51.1",
-        "metascraper-url": "5.51.1",
+        "metascraper": "5.55.2",
+        "metascraper-amazon": "5.55.2",
+        "metascraper-author": "5.55.2",
+        "metascraper-description": "5.55.2",
+        "metascraper-image": "5.55.2",
+        "metascraper-logo": "5.55.2",
+        "metascraper-logo-favicon": "5.55.2",
+        "metascraper-publisher": "5.55.2",
+        "metascraper-title": "5.55.2",
+        "metascraper-url": "5.55.2",
         "mime-types": "2.1.35",
         "mingo": "catalog:",
         "moment": "2.24.0",
         "moment-timezone": "0.5.45",
+        "mppx": "catalog:",
         "multer": "2.2.0",
         "mysql2": "3.22.5",
         "nconf": "0.13.0",
-        "node-fetch": "2.7.0",
         "node-html-markdown": "catalog:",
         "node-jose": "2.2.0",
         "nodemailer": "8.0.11",
@@ -238,6 +236,7 @@
         "tldts": "catalog:",
         "type-fest": "catalog:",
         "ua-parser-js": "1.0.41",
+        "unidecode": "catalog:",
         "xml": "1.0.1",
         "zod": "catalog:"
     },
@@ -254,14 +253,13 @@
         "@types/express": "catalog:",
         "@types/fs-extra": "11.0.4",
         "@types/js-yaml": "4.0.9",
-        "@types/jsdom": "28.0.3",
+        "@types/jsdom": "catalog:",
         "@types/jsonwebtoken": "9.0.10",
-        "@types/lodash": "4.17.24",
+        "@types/lodash": "4.17.25",
         "@types/lodash-es": "4.17.12",
         "@types/mime-types": "3.0.1",
         "@types/nconf": "catalog:",
         "@types/node": "catalog:",
-        "@types/node-fetch": "2.6.13",
         "@types/node-jose": "1.1.13",
         "@types/nodemailer": "8.0.1",
         "@types/on-headers": "1.0.4",
@@ -276,7 +274,7 @@
         "chai": "catalog:",
         "cli-progress": "3.12.0",
         "cssnano": "7.1.9",
-        "esbuild": "0.28.1",
+        "esbuild": "catalog:",
         "eslint": "catalog:",
         "eslint-plugin-ghost": "3.5.0",
         "expect": "29.7.0",
@@ -286,7 +284,7 @@
         "jwk-to-pem": "2.0.7",
         "jwks-rsa": "3.2.2",
         "lodash-es": "4.18.1",
-        "nock": "14.0.16",
+        "nock": "catalog:",
         "nodemon": "3.1.14",
         "postcss": "catalog:",
         "postcss-cli": "11.0.1",
@@ -345,21 +343,25 @@
             },
             "test:e2e": {
                 "dependsOn": [
+                    "build:assets",
                     "^build"
                 ]
             },
             "test:integration": {
                 "dependsOn": [
+                    "build:assets",
                     "^build"
                 ]
             },
             "test:legacy": {
                 "dependsOn": [
+                    "build:assets",
                     "^build"
                 ]
             },
             "test:ci:e2e": {
                 "dependsOn": [
+                    "build:assets",
                     "^build"
                 ],
                 "outputs": [
@@ -368,11 +370,13 @@
             },
             "test:ci:legacy": {
                 "dependsOn": [
+                    "build:assets",
                     "^build"
                 ]
             },
             "test:ci:integration": {
                 "dependsOn": [
+                    "build:assets",
                     "^build"
                 ],
                 "outputs": [

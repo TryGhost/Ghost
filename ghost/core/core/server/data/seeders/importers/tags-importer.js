@@ -1,6 +1,6 @@
 const {faker} = require('@faker-js/faker');
 const {slugify} = require('@tryghost/string');
-const TableImporter = require('./table-importer');
+const {TableImporter} = require('./table-importer');
 const dateToDatabaseString = require('../utils/database-date');
 
 class TagsImporter extends TableImporter {

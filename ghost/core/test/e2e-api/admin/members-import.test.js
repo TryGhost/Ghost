@@ -1,4 +1,6 @@
 const path = require('path');
+const os = require('node:os');
+const fs = require('node:fs');
 const assert = require('node:assert/strict');
 const supertest = require('supertest');
 const testUtils = require('../../utils');
@@ -193,6 +195,41 @@ describe('Members import', function () {
         assertExists(member);
         assert.equal(member.name, 'Hannah');
         assert.equal(member.note, 'do map me');
+    });
+
+    // A column the mapping names with an empty target is one the caller is leaving out, and
+    // it stays out even though the file has it and the importer has a field of that name to
+    // put it in. Naming it is the point: an unnamed column carries through under its own
+    // header instead, which is the opposite of excluding it.
+    //
+    // Its own file and its own address, because the members this suite imports outlive the
+    // test that made them -- a shared one would already have the name under test.
+    it('imports nothing from a column the mapping empties', async function () {
+        const email = 'member+emptied-column@example.com';
+        const csvPath = path.join(os.tmpdir(), `members-emptied-column-${process.pid}.csv`);
+        fs.writeFileSync(csvPath, `correo_electrpnico,nombre,note\n${email},Hannah,do map me\n`);
+
+        let res;
+        try {
+            res = await request
+                .post(localUtils.API.getApiQuery('members/upload/'))
+                .field('mapping[correo_electrpnico]', 'email')
+                .field('mapping[nombre]', '')
+                .field('mapping[note]', 'note')
+                .attach('membersfile', csvPath)
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/);
+        } finally {
+            fs.unlinkSync(csvPath);
+        }
+
+        assert.equal(res.status, 201);
+        assert.equal(res.body.meta.stats.imported, 1);
+
+        const member = await findMember(email);
+        assertExists(member);
+        assert.ok(!member.name, `the emptied column did not fill the name, got ${JSON.stringify(member.name)}`);
+        assert.equal(member.note, 'do map me', 'the columns that kept a target are unaffected');
     });
 
     // A form label containing a comma is one label, while a row label containing a

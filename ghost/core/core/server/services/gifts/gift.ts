@@ -1,7 +1,7 @@
 import {GIFT_EXPIRY_DAYS} from './constants';
+import type {GiftCadence, GiftData, GiftStatus} from './gift-schema';
 
-export type GiftStatus = 'purchased' | 'redeemed' | 'consumed' | 'expired' | 'refunded';
-export type GiftCadence = 'month' | 'year';
+export type {GiftCadence, GiftStatus} from './gift-schema';
 
 export type RedeemableCheckFailureReason = 'redeemed' | 'consumed' | 'expired' | 'refunded' | 'paid-member';
 export type RedeemableCheckResult =
@@ -13,43 +13,20 @@ export type ReassignableCheckResult =
     | {reassignable: true}
     | {reassignable: false; reason: ReassignableCheckFailureReason};
 
-interface GiftData {
-    token: string;
-    buyerEmail: string;
-    buyerMemberId: string | null;
-    redeemerMemberId: string | null;
-    tierId: string;
-    cadence: GiftCadence;
-    duration: number;
-    currency: string;
-    amount: number;
-    stripeCheckoutSessionId: string;
-    stripePaymentIntentId: string;
-    consumesAt: Date | null;
-    expiresAt: Date;
-    status: GiftStatus;
-    purchasedAt: Date;
-    redeemedAt: Date | null;
-    consumedAt: Date | null;
-    expiredAt: Date | null;
-    refundedAt: Date | null;
-    consumesSoonReminderSentAt: Date | null;
-}
+export type GiftFromPurchaseData = Pick<GiftData,
+    | 'token'
+    | 'buyerEmail'
+    | 'buyerMemberId'
+    | 'tierId'
+    | 'cadence'
+    | 'duration'
+    | 'currency'
+    | 'amount'
+    | 'stripeCheckoutSessionId'
+    | 'stripePaymentIntentId'
+>;
 
-export interface GiftFromPurchaseData {
-    token: string;
-    buyerEmail: string;
-    buyerMemberId: string | null;
-    tierId: string;
-    cadence: GiftCadence;
-    duration: number;
-    currency: string;
-    amount: number;
-    stripeCheckoutSessionId: string;
-    stripePaymentIntentId: string;
-}
-
-export class Gift {
+export class Gift implements GiftData {
     token: string;
     buyerEmail: string;
     buyerMemberId: string | null;

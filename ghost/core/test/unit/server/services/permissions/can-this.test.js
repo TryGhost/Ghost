@@ -559,6 +559,39 @@ describe('Permissions', function () {
                     sinon.assert.calledOnce(apiKeyProviderStub);
                     assert.equal(res, undefined);
                 });
+
+                it('Expected: Author user + API key cannot update the visibility of their own post', async function () {
+                    const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
+                        return Promise.resolve({
+                            permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions).models,
+                            roles: [testUtils.DataGenerator.Content.roles[2]] // Author role
+                        });
+                    });
+
+                    const apiKeyProviderStub = sinon.stub(providers, 'apiKey').callsFake(function () {
+                        return Promise.resolve({
+                            permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions).models,
+                            roles: [testUtils.DataGenerator.Content.roles[5]] // Admin Integration
+                        })
+                    });
+
+                    await assert.rejects(permissions
+                        .canThis({
+                            user: testUtils.DataGenerator.Content.users[0].id,
+                            api_key: {id: 123, type: 'admin'}
+                        })
+                        .edit
+                        .post({id: 1}, {visibility: 'members'}),
+                    function (err) {
+                        assert.equal(err.errorType, 'NoPermissionError');
+                        return true;
+                    }
+                    );
+
+                    sinon.assert.calledOnce(userProviderStub);
+                    sinon.assert.calledOnce(apiKeyProviderStub);
+                    sinon.assert.calledOnce(findPostSpy);
+                });
             });
         });
     });

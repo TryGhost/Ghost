@@ -1,7 +1,7 @@
+import PostShareModal from '@/shared/analytics/post-share-modal';
 import React, {useEffect, useState} from 'react';
 import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, Skeleton} from '@tryghost/shade/components';
 import {LucideIcon, cn, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade/utils';
-import {PostShareModal} from '@tryghost/shade/posts-stats';
 
 import {type Post, getPostMetricsToDisplay} from '@tryghost/admin-x-framework';
 import {getPostDestination} from '@/analytics/utils/url-helpers';

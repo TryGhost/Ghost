@@ -1,6 +1,6 @@
 import {useMemo, useState} from 'react';
 import {act, fireEvent, render, screen, waitFor} from '../../utils/test-utils';
-import {afterEach, beforeAll, describe, expect, it, vi} from 'vitest';
+import {afterAll, afterEach, beforeAll, describe, expect, it, vi} from 'vitest';
 import {createFilter, Filter, FilterFieldConfig, Filters, ValueSource} from '../../../../src/components/patterns/filters';
 
 vi.mock('@/components/ui/calendar', () => ({
@@ -435,5 +435,217 @@ describe('Filters', () => {
             // Picker should have closed — no more option role elements visible.
             expect(screen.queryByRole('option', {name: 'Gold'})).toBeNull();
         });
+    });
+
+    describe('group previewLimit', () => {
+        const originalResizeObserver = global.ResizeObserver;
+        const originalScrollIntoView = HTMLElement.prototype.scrollIntoView;
+
+        beforeAll(() => {
+            global.ResizeObserver = class {
+                observe() {
+                    return undefined;
+                }
+
+                unobserve() {
+                    return undefined;
+                }
+
+                disconnect() {
+                    return undefined;
+                }
+            } as unknown as typeof ResizeObserver;
+            HTMLElement.prototype.scrollIntoView = vi.fn();
+        });
+
+        afterAll(() => {
+            global.ResizeObserver = originalResizeObserver;
+            HTMLElement.prototype.scrollIntoView = originalScrollIntoView;
+        });
+
+        function PreviewLimitFilters({previewLimit}: Readonly<{previewLimit?: number}>) {
+            const [filters, setFilters] = useState<Filter<string>[]>([]);
+            const fields = useMemo(() => ([
+                {
+                    group: 'Custom fields',
+                    previewLimit,
+                    fields: Array.from({length: 8}, (_, index) => ({
+                        key: `custom_field.field_${index + 1}`,
+                        label: `Field ${index + 1}`,
+                        type: 'text' as const,
+                        operators: [{value: 'is', label: 'is'}]
+                    }))
+                }
+            ]), [previewLimit]);
+
+            return (
+                <Filters
+                    addButtonText="Add filter"
+                    allowMultiple={true}
+                    fields={fields}
+                    filters={filters}
+                    showSearchInput={true}
+                    onChange={setFilters}
+                />
+            );
+        }
+
+        it('previews only the first previewLimit fields behind a "Show more"', async () => {
+            render(<PreviewLimitFilters previewLimit={5} />);
+            fireEvent.click(screen.getByRole('button', {name: 'Add filter'}));
+
+            expect(await screen.findByRole('option', {name: 'Field 5'})).toBeDefined();
+            expect(screen.queryByRole('option', {name: 'Field 6'})).toBeNull();
+            expect(screen.getByRole('option', {name: 'Show 3 more'})).toBeDefined();
+        });
+
+        it('reveals the rest of the group when "Show more" is clicked', async () => {
+            render(<PreviewLimitFilters previewLimit={5} />);
+            fireEvent.click(screen.getByRole('button', {name: 'Add filter'}));
+
+            fireEvent.click(await screen.findByRole('option', {name: 'Show 3 more'}));
+
+            expect(await screen.findByRole('option', {name: 'Field 8'})).toBeDefined();
+            expect(screen.queryByRole('option', {name: /Show \d+ more/})).toBeNull();
+        });
+
+        it('uncaps the group while searching so a capped-out field is findable by name', async () => {
+            render(<PreviewLimitFilters previewLimit={5} />);
+            fireEvent.click(screen.getByRole('button', {name: 'Add filter'}));
+
+            const search = await screen.findByPlaceholderText('Search fields...');
+            fireEvent.change(search, {target: {value: 'Field 8'}});
+
+            expect(await screen.findByRole('option', {name: 'Field 8'})).toBeDefined();
+            // "Show more" is a capping affordance, never part of a search result.
+            expect(screen.queryByRole('option', {name: /Show \d+ more/})).toBeNull();
+        });
+
+        it('shows every field when no previewLimit is set', async () => {
+            render(<PreviewLimitFilters />);
+            fireEvent.click(screen.getByRole('button', {name: 'Add filter'}));
+
+            expect(await screen.findByRole('option', {name: 'Field 8'})).toBeDefined();
+            expect(screen.queryByRole('option', {name: /Show \d+ more/})).toBeNull();
+        });
+    });
+
+    describe('disabled fields and group empty state', () => {
+        const originalResizeObserver = global.ResizeObserver;
+        const originalScrollIntoView = HTMLElement.prototype.scrollIntoView;
+
+        beforeAll(() => {
+            global.ResizeObserver = class {
+                observe() {
+                    return undefined;
+                }
+
+                unobserve() {
+                    return undefined;
+                }
+
+                disconnect() {
+                    return undefined;
+                }
+            } as unknown as typeof ResizeObserver;
+            HTMLElement.prototype.scrollIntoView = vi.fn();
+        });
+
+        afterAll(() => {
+            global.ResizeObserver = originalResizeObserver;
+            HTMLElement.prototype.scrollIntoView = originalScrollIntoView;
+        });
+
+        function ReadOnlyFieldFilters() {
+            const [filters, setFilters] = useState<Filter<string>[]>([createFilter('custom_field.archived', 'is', ['London'])]);
+            const fields = useMemo(() => ([
+                {
+                    group: 'Custom fields',
+                    fields: [{
+                        key: 'custom_field.archived',
+                        label: 'Archived field',
+                        type: 'text' as const,
+                        readOnly: true,
+                        operators: [{value: 'is', label: 'is'}]
+                    }]
+                }
+            ]), []);
+
+            return <Filters fields={fields} filters={filters} showSearchInput={true} onChange={setFilters} />;
+        }
+
+        function ReadOnlyPickerFilters() {
+            const [filters, setFilters] = useState<Filter<string>[]>([createFilter('custom_field.archived', 'is', ['London'])]);
+            const fields = useMemo(() => ([
+                {
+                    group: 'Custom fields',
+                    fields: [
+                        {
+                            key: 'custom_field.archived',
+                            label: 'Archived field',
+                            type: 'text' as const,
+                            readOnly: true,
+                            operators: [{value: 'is', label: 'is'}]
+                        },
+                        {
+                            key: 'custom_field.active',
+                            label: 'Active field',
+                            type: 'text' as const,
+                            operators: [{value: 'is', label: 'is'}]
+                        }
+                    ]
+                }
+            ]), []);
+
+            // allowMultiple is what a caller passes to let one field carry several filters.
+            // It skips the applied-field de-dup, so it is the case where a read-only field
+            // would otherwise reappear in the picker while its own pill is on screen.
+            return <Filters addButtonText="Add filter" allowMultiple={true} fields={fields} filters={filters} showSearchInput={true} onChange={setFilters} />;
+        }
+
+        it('never offers a read-only field in the picker, even where a field may repeat', () => {
+            render(<ReadOnlyPickerFilters />);
+            fireEvent.click(screen.getByRole('button', {name: 'Add filter'}));
+
+            // The one that can be filtered on is offered...
+            expect(screen.getByRole('option', {name: 'Active field'})).toBeDefined();
+            // ...the read-only one is not: picking it would mint a second filter that could
+            // never be edited. Its existing pill is still on screen.
+            expect(screen.queryByRole('option', {name: 'Archived field'})).toBeNull();
+        });
+
+        function ReadOnlyOptionLabelFilters() {
+            const [filters, setFilters] = useState<Filter<string>[]>([createFilter('tier', 'is', ['t1'])]);
+            const fields = useMemo(() => ([{
+                key: 'tier',
+                label: 'Tier',
+                type: 'select' as const,
+                readOnly: true,
+                operators: [{value: 'is', label: 'is'}],
+                options: [{value: 't1', label: 'Gold'}]
+            }]), []);
+
+            return <Filters fields={fields} filters={filters} onChange={setFilters} />;
+        }
+
+        it('reads a read-only value through its option label, as the editable one does', () => {
+            render(<ReadOnlyOptionLabelFilters />);
+
+            expect(screen.getByText('Gold')).toBeDefined();
+            expect(screen.queryByText('t1')).toBeNull();
+        });
+
+        it('renders a read-only field showing its operator and value as static, non-editable text', () => {
+            render(<ReadOnlyFieldFilters />);
+
+            expect(screen.getByText('Archived field')).toBeDefined();
+            // Operator and value stay visible so the filter reads clearly...
+            expect(screen.getByText('is')).toBeDefined();
+            expect(screen.getByText('London')).toBeDefined();
+            // ...but there is nothing to edit: no input and no operator menu button.
+            expect(screen.queryByRole('textbox')).toBeNull();
+            expect(screen.queryByRole('button', {name: 'is'})).toBeNull();
+        });
+
     });
 });

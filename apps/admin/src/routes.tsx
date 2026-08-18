@@ -13,10 +13,11 @@ import { EmberFallback, ForceUpgradeGuard } from "./ember-bridge";
 import type { RouteHandle } from "./ember-bridge";
 import HomeRedirect from "./home-redirect";
 import { EmberListWithGiftLinks } from "./gift-link-modal-host";
-import { MemberDetailGate } from "./member-detail-gate";
+import { TagDetailGate } from "./tag-detail-gate";
 import { OnboardingRedirect } from "./onboarding/onboarding-redirect";
 import { type AccessRouteHandle, RouteAccessGuard } from "./route-access-guard";
 import { canAccessSettingsRoute } from "./settings/settings-access";
+import { settingsRouteChildren } from "./settings/routes";
 import { canManageAutomations, canManageMembers, canManageTags } from "@tryghost/admin-x-framework/api/users";
 
 import { NotFound } from "./not-found";
@@ -34,8 +35,6 @@ const EMBER_ROUTES: string[] = [
     "/posts/analytics/:postId/debug",
     "/restore",
     "/editor/*",
-    "/tags/new",
-    "/explore/*",
     "/migrate/*",
     "/members-activity",
 ];
@@ -64,13 +63,8 @@ const membersRoute: RouteObject = {
             // Covers both edit (`:member_id`) and create (the sentinel `new`)
             // — real member ids are 24-char hex ObjectIds, so they can't
             // collide with the literal "new".
-            //
-            // MemberDetailGate serves Ember or React depending on the
-            // `memberDetailsReact` Labs flag; the parent route's
-            // emberFallbackHandle covers both, since ForceUpgradeGuard checks
-            // every match rather than just the leaf.
             path: ":member_id",
-            Component: MemberDetailGate
+            lazy: lazyComponent(() => import("./members/detail/member-detail"))
         }
     ]
 };
@@ -111,12 +105,15 @@ const appRoutes: RouteObject[] = [
         lazy: lazyComponent(() => import("./automations/editor")),
     },
     {
-        // The tag detail route delegates to Ember. It must be declared
-        // so navigating from the tag list to a detail page doesn't trip
-        // the router error fallback before Ember takes over.
+        // Covers both edit (`:tagSlug`) and create (the sentinel `new`) —
+        // Ember's router declared `/tags/new` before `/tags/:tag_slug`, so a
+        // tag with the literal slug "new" was already unreachable.
+        //
+        // TagDetailGate serves Ember or React depending on the
+        // `tagDetailsReact` Labs flag.
         path: "/tags/:tagSlug",
-        Component: EmberFallback,
-        handle: { ...emberFallbackHandle, requiresAccess: canManageTags } satisfies RouteHandle & AccessRouteHandle,
+        Component: TagDetailGate,
+        handle: {requiresAccess: canManageTags} satisfies AccessRouteHandle,
     },
     membersRoute,
     {
@@ -181,8 +178,9 @@ const appRoutes: RouteObject[] = [
     {
         // hideAdminSidebar lives on the handle, not the lazy module, so the shell
         // hides at first paint instead of waiting on the settings chunk.
-        path: `settings/*`,
+        path: `settings`,
         lazy: lazyComponent(() => import("./settings/settings")),
+        children: settingsRouteChildren,
         handle: {
             allowInForceUpgrade: true,
             hideAdminSidebar: true,

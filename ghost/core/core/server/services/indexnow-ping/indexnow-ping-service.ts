@@ -36,17 +36,12 @@ type SettingsCache = {
 };
 
 type Config = {
+    get(key: string): unknown;
     isPrivacyDisabled(key: string): boolean;
 };
 
-type Labs = {
-    isSet(flag: string): boolean;
-};
-
 type UrlService = {
-    facade: {
-        getUrlForResource(resource: Record<string, unknown>, options: {absolute: boolean}): string | null;
-    };
+    getUrlForResource(resource: Record<string, unknown>, options: {absolute: boolean}): string | null;
 };
 
 type UrlUtils = {
@@ -86,7 +81,6 @@ type Post = {
 export type IndexNowPingServiceDeps = {
     settingsCache: SettingsCache;
     config: Config;
-    labs: Labs;
     urlService: UrlService;
     urlUtils: UrlUtils;
     request: RequestFn;
@@ -97,7 +91,6 @@ export type IndexNowPingServiceDeps = {
 export class IndexNowPingService {
     settingsCache: SettingsCache;
     config: Config;
-    labs: Labs;
     urlService: UrlService;
     urlUtils: UrlUtils;
     request: RequestFn;
@@ -105,10 +98,9 @@ export class IndexNowPingService {
     events: ModelEvents;
     listener: ModelEventListener;
 
-    constructor({settingsCache, config, labs, urlService, urlUtils, request, logging, events}: IndexNowPingServiceDeps) {
+    constructor({settingsCache, config, urlService, urlUtils, request, logging, events}: IndexNowPingServiceDeps) {
         this.settingsCache = settingsCache;
         this.config = config;
-        this.labs = labs;
         this.urlService = urlService;
         this.urlUtils = urlUtils;
         this.request = request;
@@ -139,6 +131,11 @@ export class IndexNowPingService {
      * Ping IndexNow with a URL.
      */
     async ping(post: Post): Promise<void> {
+        // Skip if in development
+        if (this.config.get('env') === 'development') {
+            return;
+        }
+
         // Skip pages - only ping for posts
         if (post.type === 'page') {
             return;
@@ -154,11 +151,6 @@ export class IndexNowPingService {
             return;
         }
 
-        // Skip if IndexNow is not enabled in labs
-        if (!this.labs.isSet('indexnow')) {
-            return;
-        }
-
         // Don't ping for the default posts
         if (post.slug && defaultPostSlugs.indexOf(post.slug) > -1) {
             return;
@@ -170,7 +162,7 @@ export class IndexNowPingService {
         // publishing.
         let url: string | null = null;
         try {
-            url = this.urlService.facade.getUrlForResource({...post, type: 'posts'}, {absolute: true});
+            url = this.urlService.getUrlForResource({...post, type: 'posts'}, {absolute: true});
 
             if (!url || url.endsWith('/404/')) {
                 this.logging.warn({

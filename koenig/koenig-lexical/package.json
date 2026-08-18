@@ -1,6 +1,7 @@
 {
   "name": "@tryghost/koenig-lexical",
-  "version": "1.9.0",
+  "version": "1.9.1",
+  "description": "Ghost's Lexical-based rich text post editor",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/TryGhost/Ghost.git",
@@ -23,8 +24,8 @@
     }
   },
   "scripts": {
-    "dev": "concurrently \"vite --host --force\" \"pnpm build --watch\" \"pnpm preview -l silent --host\" \"pnpm --filter @tryghost/kg-default-nodes dev\" \"pnpm --filter @tryghost/kg-default-transforms dev\"",
-    "dev:integrated": "concurrently \"pnpm build --watch\" \"pnpm preview -l silent --host\" \"pnpm --filter @tryghost/kg-default-nodes dev\" \"pnpm --filter @tryghost/kg-default-transforms dev\"",
+    "dev": "concurrently \"vite --host --force\" \"pnpm build --watch --emptyOutDir=false\" \"pnpm preview -l silent --host\" \"pnpm --filter @tryghost/kg-default-nodes dev\" \"pnpm --filter @tryghost/kg-default-transforms dev\"",
+    "dev:integrated": "concurrently \"pnpm build --watch --emptyOutDir=false\" \"pnpm preview -l silent --host\" \"pnpm --filter @tryghost/kg-default-nodes dev\" \"pnpm --filter @tryghost/kg-default-transforms dev\"",
     "dev:multiplayer": "concurrently \"vite\" \"pnpm multiplayer\"",
     "dev:test": "concurrently \"vite --port 5174\" \"pnpm multiplayer\"",
     "multiplayer": "HOST=localhost PORT=1234 npx y-websocket-server",
@@ -100,8 +101,8 @@
     "@uiw/react-codemirror": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "@vitest/coverage-v8": "catalog:",
-    "@vitest/ui": "4.1.9",
-    "autoprefixer": "10.5.2",
+    "@vitest/ui": "catalog:",
+    "autoprefixer": "10.5.4",
     "clsx": "catalog:",
     "concurrently": "catalog:",
     "dompurify": "catalog:",
@@ -123,7 +124,7 @@
     "pluralize": "8.0.0",
     "postcss": "catalog:",
     "postcss-import": "16.1.1",
-    "prettier": "3.9.4",
+    "prettier": "catalog:",
     "prettier-plugin-organize-attributes": "1.0.0",
     "prop-types": "15.8.1",
     "react": "catalog:",
@@ -134,7 +135,7 @@
     "react-router-dom": "7.18.1",
     "react-slider": "2.0.6",
     "storybook": "catalog:",
-    "stylelint": "17.14.0",
+    "stylelint": "catalog:",
     "tailwindcss": "catalog:tailwind3",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",

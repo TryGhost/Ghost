@@ -131,4 +131,21 @@ describe('DB API', function () {
                 }]
             });
     });
+
+    // CSV content is imported via POST /posts/upload/, not the db backup endpoint
+    it('Rejects CSV file uploads', async function () {
+        await agent
+            .post('db/')
+            .attach('importfile', path.join(__dirname, '../../utils/fixtures/csv/valid-posts-import.csv'))
+            .expectStatus(415)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId
+                }]
+            });
+    });
 });

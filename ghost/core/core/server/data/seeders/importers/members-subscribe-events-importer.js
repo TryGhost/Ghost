@@ -1,4 +1,4 @@
-const TableImporter = require('./table-importer');
+const {TableImporter} = require('./table-importer');
 const {luck} = require('../utils/random');
 const dateToDatabaseString = require('../utils/database-date');
 

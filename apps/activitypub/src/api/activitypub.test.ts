@@ -1,4 +1,5 @@
 import {ActivityPubAPI} from './activitypub';
+import {describe, expect, test} from 'vitest';
 
 function NotFound() {
     return new Response(null, {

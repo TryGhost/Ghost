@@ -19,9 +19,9 @@ describe('Search index controller', function () {
         sinon.restore();
     });
 
-    it('lazyRouting: forces the URL service required columns into the tags fetch', async function () {
-        sinon.stub(urlService.facade, 'getRequiredFields').withArgs('tags').returns(['visibility', 'slug']);
-        sinon.stub(urlService.facade, 'getRequiredRelations').returns([]);
+    it('forces the URL service required columns into the tags fetch', async function () {
+        sinon.stub(urlService, 'getRequiredFields').withArgs('tags').returns(['visibility', 'slug']);
+        sinon.stub(urlService, 'getRequiredRelations').returns([]);
 
         await searchIndexController.fetchTags.query();
 
@@ -29,10 +29,10 @@ describe('Search index controller', function () {
         assert.deepEqual(options.columns, ['id', 'slug', 'name', 'url', 'visibility']);
     });
 
-    it('lazyRouting: forces router-filter columns into the posts fetch', async function () {
-        const getRequiredFields = sinon.stub(urlService.facade, 'getRequiredFields');
+    it('forces router-filter columns into the posts fetch', async function () {
+        const getRequiredFields = sinon.stub(urlService, 'getRequiredFields');
         getRequiredFields.withArgs('posts').returns(['status', 'type', 'slug', 'featured']);
-        sinon.stub(urlService.facade, 'getRequiredRelations').returns([]);
+        sinon.stub(urlService, 'getRequiredRelations').returns([]);
 
         await searchIndexController.fetchPosts.query();
 
@@ -41,9 +41,9 @@ describe('Search index controller', function () {
         assert.ok(options.columns.includes('type'));
     });
 
-    it('lazyRouting: leaves columns untouched under the eager service', async function () {
-        sinon.stub(urlService.facade, 'getRequiredFields').returns([]);
-        sinon.stub(urlService.facade, 'getRequiredRelations').returns([]);
+    it('leaves columns untouched when the routing config needs none', async function () {
+        sinon.stub(urlService, 'getRequiredFields').returns([]);
+        sinon.stub(urlService, 'getRequiredRelations').returns([]);
 
         await searchIndexController.fetchTags.query();
 

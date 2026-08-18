@@ -1,5 +1,5 @@
 const {faker} = require('@faker-js/faker');
-const TableImporter = require('./table-importer');
+const {TableImporter} = require('./table-importer');
 const dateToDatabaseString = require('../utils/database-date');
 const generateEvents = require('../utils/event-generator');
 const {luck} = require('../utils/random');

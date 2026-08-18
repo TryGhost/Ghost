@@ -1,4 +1,4 @@
-const TableImporter = require('./table-importer');
+const {TableImporter} = require('./table-importer');
 const dateToDatabaseString = require('../utils/database-date');
 
 class MembersStatusEventsImporter extends TableImporter {

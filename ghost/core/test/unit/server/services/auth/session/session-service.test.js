@@ -299,6 +299,137 @@ describe('SessionService', function () {
         assert.equal(req.session.verified, undefined);
     });
 
+    it('#createSessionForUser does not carry verification to a different user after logout', async function () {
+        const getSession = createGetSession();
+
+        const findUserById = sinon.spy(async ({id}) => ({id}));
+        const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
+
+        const isStaffDeviceVerificationDisabled = sinon.stub().returns(false);
+
+        const sessionService = SessionService({
+            getSession,
+            findUserById,
+            getOriginOfRequest,
+            getSettingsCache,
+            isStaffDeviceVerificationDisabled,
+            urlUtils
+        });
+
+        const req = Object.create(express.request, {
+            ip: {
+                value: '0.0.0.0'
+            },
+            headers: {
+                value: {
+                    cookie: 'thing'
+                }
+            },
+            get: {
+                value: () => 'https://admin.example.com'
+            }
+        });
+        const res = Object.create(express.response);
+
+        await sessionService.createSessionForUser(req, res, {id: 'egg'});
+        await sessionService.verifySession(req, res);
+        assert.equal(await sessionService.isVerifiedSession(req, res), true);
+
+        // Trusted-device mode: logout keeps the verified flag
+        await sessionService.removeUserForSession(req, res);
+        assert.equal(req.session.user_id, undefined);
+        assert.equal(req.session.verified, true);
+
+        // A different user signing in must verify again
+        await sessionService.createSessionForUser(req, res, {id: 'bacon'});
+        assert.equal(req.session.user_id, 'bacon');
+        assert.equal(req.session.verified, undefined);
+        assert.equal(await sessionService.isVerifiedSession(req, res), false);
+    });
+
+    it('#createSessionForUser keeps trusted-device verification for the same user after logout', async function () {
+        const getSession = createGetSession();
+
+        const findUserById = sinon.spy(async ({id}) => ({id}));
+        const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
+
+        const isStaffDeviceVerificationDisabled = sinon.stub().returns(false);
+
+        const sessionService = SessionService({
+            getSession,
+            findUserById,
+            getOriginOfRequest,
+            getSettingsCache,
+            isStaffDeviceVerificationDisabled,
+            urlUtils
+        });
+
+        const req = Object.create(express.request, {
+            ip: {
+                value: '0.0.0.0'
+            },
+            headers: {
+                value: {
+                    cookie: 'thing'
+                }
+            },
+            get: {
+                value: () => 'https://admin.example.com'
+            }
+        });
+        const res = Object.create(express.response);
+
+        await sessionService.createSessionForUser(req, res, {id: 'egg'});
+        await sessionService.verifySession(req, res);
+
+        await sessionService.removeUserForSession(req, res);
+
+        await sessionService.createSessionForUser(req, res, {id: 'egg'});
+        assert.equal(req.session.user_id, 'egg');
+        assert.equal(req.session.verified, true);
+        assert.equal(await sessionService.isVerifiedSession(req, res), true);
+    });
+
+    it('Treats legacy verified sessions without verified_user_id as unverified', async function () {
+        const getSession = createGetSession({user_id: 'egg', verified: true, origin: 'https://admin.example.com'});
+
+        const findUserById = sinon.spy(async ({id}) => ({id}));
+        const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
+
+        const isStaffDeviceVerificationDisabled = sinon.stub().returns(false);
+
+        const sessionService = SessionService({
+            getSession,
+            findUserById,
+            getOriginOfRequest,
+            getSettingsCache,
+            isStaffDeviceVerificationDisabled,
+            urlUtils
+        });
+
+        const req = Object.create(express.request, {
+            ip: {
+                value: '0.0.0.0'
+            },
+            headers: {
+                value: {
+                    cookie: 'thing'
+                }
+            },
+            get: {
+                value: () => 'https://admin.example.com'
+            }
+        });
+        const res = Object.create(express.response);
+
+        assert.equal(await sessionService.isVerifiedSession(req, res), false);
+
+        // Verification is not carried into a new login either
+        await sessionService.createSessionForUser(req, res, {id: 'egg'});
+        assert.equal(req.session.verified, undefined);
+        assert.equal(await sessionService.isVerifiedSession(req, res), false);
+    });
+
     it('#createSessionForUser verifies session when valid token is provided on request', async function () {
         const getSession = createGetSession();
 
@@ -758,6 +889,10 @@ describe('SessionService', function () {
 
         assert.equal(req.session.user_id, 'egg');
         assert.equal(req.session.verified, true);
+        // Verification must be bound to the SSO user, or isVerifiedSession
+        // would reject it and lock the user into a re-verify loop
+        assert.equal(req.session.verified_user_id, 'egg');
+        assert.equal(await sessionService.isVerifiedSession(req, res), true);
     });
 
     it('Throws if the user id is invalid', async function () {

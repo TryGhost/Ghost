@@ -87,10 +87,13 @@ class CanThisResult {
                         }
                     }
 
+                    // Ensure permission decisions are based on the user's role if present, not their staff-token.
+                    const permissionsForModel = loadedPermissions.user ? {...loadedPermissions, apiKey: null} : loadedPermissions;
+
                     // Offer a chance for the TargetModel to override the results
                     if (TargetModel && _.isFunction(TargetModel.permissible)) {
                         return TargetModel.permissible(
-                            modelId, actType, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission
+                            modelId, actType, context, unsafeAttrs, permissionsForModel, hasUserPermission, hasApiKeyPermission
                         );
                     }
 

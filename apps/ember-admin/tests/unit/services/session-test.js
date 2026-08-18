@@ -23,6 +23,29 @@ describe('Unit: Service: session', function () {
         sinon.restore();
     });
 
+    describe('#postAuthPreparation', function () {
+        it('notifies React when the initial feature fetch completes', async function () {
+            service.postAuthPreparation.restore();
+            service.user = {role: {name: 'Administrator'}};
+            const stateBridge = this.owner.lookup('service:state-bridge');
+            const featureFlagsChange = sinon.spy();
+            stateBridge.on('featureFlagsChange', featureFlagsChange);
+
+            sinon.stub(service.configManager, 'fetchAuthenticated').resolves();
+            sinon.stub(service.feature, 'fetch').resolves();
+            sinon.stub(service.settings, 'fetch').resolves();
+            sinon.stub(service.membersUtils, 'fetch').resolves();
+            sinon.stub(service.frontend, 'loginIfNeeded').resolves();
+            sinon.stub(service.themeManagement, 'fetch').resolves();
+            sinon.stub(service, 'loadServerNotifications');
+            sinon.stub(service.koenig, 'fetch');
+
+            await service.postAuthPreparation();
+
+            expect(featureFlagsChange.calledOnce).to.be.true;
+        });
+    });
+
     describe('#handleAuthenticationTask', function () {
         it('populates the user and runs postAuthPreparation when no user is loaded', async function () {
             service.user = null;

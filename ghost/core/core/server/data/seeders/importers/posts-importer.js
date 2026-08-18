@@ -1,7 +1,7 @@
 const {faker} = require('@faker-js/faker');
 const {slugify} = require('@tryghost/string');
 const {luck} = require('../utils/random');
-const TableImporter = require('./table-importer');
+const {TableImporter} = require('./table-importer');
 const dateToDatabaseString = require('../utils/database-date');
 
 class PostsImporter extends TableImporter {

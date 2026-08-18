@@ -1,4 +1,4 @@
-import {describe, expect, it} from "vitest";
+import {beforeEach, describe, expect, it} from "vitest";
 
 import {
     allowUnhandledRequests,
@@ -20,6 +20,8 @@ function asRole(name: StaffRoleName): RenderAdminAppOptions {
     return {boot: {browseMe: {response: me}}};
 }
 
+const homeHandoff = (): unknown => JSON.parse(document.body.dataset.externalNavigate ?? "null");
+
 function fakePreferenceEdits(): EndpointCapture {
     return fakeAdminEndpoint("PUT", /^\/users\/\w+\/\?include=roles/, ({body}) => body);
 }
@@ -34,6 +36,10 @@ function onboardingPreferencesOf(request: CapturedEndpointRequest | undefined): 
 }
 
 describe("Home route", () => {
+    beforeEach(() => {
+        delete document.body.dataset.externalNavigate;
+    });
+
     it("sends admins to Analytics", async () => {
         // The analytics screens own their request graph; these specs assert only the dispatch.
         allowUnhandledRequests();
@@ -45,13 +51,13 @@ describe("Home route", () => {
     it("sends contributors to Posts", async () => {
         await renderAdminApp("/", asRole("Contributor"));
 
-        await expect.poll(currentRoute).toBe("/posts");
+        await expect.poll(homeHandoff).toMatchObject({route: "/posts", isExternal: true, replace: true});
     });
 
     it("sends other staff roles to Site", async () => {
         await renderAdminApp("/", asRole("Author"));
 
-        await expect.poll(currentRoute).toBe("/site");
+        await expect.poll(homeHandoff).toMatchObject({route: "/site", isExternal: true, replace: true});
     });
 
     it("starts the owner checklist and continues to onboarding on firstStart", async () => {

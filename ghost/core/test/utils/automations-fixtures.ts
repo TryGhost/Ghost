@@ -1,7 +1,6 @@
 import ObjectId from 'bson-objectid';
 import moment from 'moment';
 import {MEMBER_WELCOME_EMAIL_SLUGS} from '../../core/server/services/member-welcome-emails/constants';
-// @ts-expect-error Database has not been converted to TypeScript yet.
 import * as db from '../../core/server/data/db';
 
 export const TEST_EMAIL_DESIGN_SETTING_ID = '64b6f7b7c8f1a2b3c4d5e6f7';
@@ -103,6 +102,14 @@ export async function cleanupAutomationsFixture(): Promise<void> {
         .pluck('id');
 
     if (runIds.length > 0) {
+        const runStepIds: string[] = await db.knex('automation_run_steps')
+            .whereIn('automation_run_id', runIds)
+            .pluck('id');
+
+        await db.knex('automated_email_recipients')
+            .whereIn('automation_run_step_id', runStepIds)
+            .del();
+
         await db.knex('automation_run_steps')
             .whereIn('automation_run_id', runIds)
             .del();

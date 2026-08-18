@@ -6,7 +6,6 @@ describe('ExplorePingService', function () {
     let explorePingService;
     let settingsCacheStub;
     let configStub;
-    let labsStub;
     let loggingStub;
     let ghostVersionStub;
     let requestStub;
@@ -34,10 +33,6 @@ describe('ExplorePingService', function () {
 
         configStub.get.withArgs('url').returns('https://example.com');
         configStub.get.withArgs('explore:update_url').returns('https://explore.testing.com');
-
-        labsStub = {
-            isSet: sinon.stub().returns(true)
-        };
 
         loggingStub = {
             info: sinon.stub(),
@@ -77,7 +72,6 @@ describe('ExplorePingService', function () {
         explorePingService = new ExplorePingService({
             settingsCache: settingsCacheStub,
             config: configStub,
-            labs: labsStub,
             logging: loggingStub,
             ghostVersion: ghostVersionStub,
             request: requestStub,
@@ -216,7 +210,6 @@ describe('ExplorePingService', function () {
             explorePingService = new ExplorePingService({
                 settingsCache: settingsCacheStub,
                 config: configStub,
-                labs: labsStub,
                 logging: loggingStub,
                 ghostVersion: ghostVersionStub,
                 request: requestStub,
@@ -263,14 +256,6 @@ describe('ExplorePingService', function () {
     });
 
     describe('ping', function () {
-        it('does not ping if labs flag is not set', async function () {
-            labsStub.isSet.returns(false);
-
-            await explorePingService.ping();
-
-            sinon.assert.notCalled(requestStub);
-        });
-
         it('does not ping if explore URL is not set', async function () {
             configStub.get.withArgs('explore:update_url').returns(null);
 

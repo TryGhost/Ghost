@@ -11,6 +11,7 @@ import {DEFAULT_EMAIL_DESIGN_SETTING_SLUG, MEMBER_WELCOME_EMAIL_SLUGS} from '../
 import type {
     AutomatedEmailEvents,
     Automation,
+    AutomationBrowseResult,
     AutomationAction,
     AutomationEdge,
     AutomationEmailStats,
@@ -21,7 +22,7 @@ import type {
     EditAutomationData,
     Page
 } from './automations-repository';
-import {toDatabaseDate} from './database-date';
+import {fromDatabaseDate, toDatabaseDate, type DatabaseDate} from './database-date';
 import {getStaleLockCutoff} from './stale-lock-cutoff';
 import type {ExclusifyUnion, ReadonlyDeep} from 'type-fest';
 
@@ -48,10 +49,13 @@ interface AutomationRow {
     slug: string;
     name: string;
     status: string;
-    created_at: string;
-    updated_at: string;
+    created_at: DatabaseDate;
+    updated_at: DatabaseDate;
 }
 
+interface AutomationBrowseRow extends AutomationRow {
+    last_run_created_at: DatabaseDate | null;
+}
 
 interface ActionRow {
     id: string;
@@ -76,7 +80,7 @@ type ActionLinkRow = {
 
 type ActionRevisionRow = {
     action_id: string;
-    created_at: string;
+    created_at: DatabaseDate;
     wait_hours: number | null;
     email_subject: string | null;
     email_lexical: string | null;
@@ -108,7 +112,7 @@ type StepToRunRow = {
     action_id: string;
     automation_action_revision_id: string;
     type: string;
-    ready_at: string;
+    ready_at: DatabaseDate;
     step_attempts: number;
     wait_hours: number | null;
     email_subject: string | null;
@@ -145,12 +149,12 @@ export function createDatabaseAutomationsRepository({
     fakeWaitHoursMultiplier: number | null;
 }): AutomationsRepository {
     return {
-        async browse(): Promise<Page<AutomationSummary>> {
+        async browse(): Promise<Page<AutomationBrowseResult>> {
             return await knex.transaction(async (trx) => {
                 await ensureDefaultAutomations(trx);
                 const rows = await loadAutomations(trx);
                 return {
-                    data: rows.map(row => buildAutomationSummary(row)),
+                    data: rows.map(row => buildAutomationBrowseResult(row)),
                     meta: {
                         pagination: buildPagination(rows.length)
                     }
@@ -276,6 +280,7 @@ export function createDatabaseAutomationsRepository({
                     member_email: options.memberEmail,
                     member_name: options.memberName,
                     automation_action_revision_id: options.automationActionRevisionId,
+                    automation_run_step_id: options.automationRunStepId,
                     ...(options.mailgunMessageId ? {mailgun_message_id: options.mailgunMessageId} : {}),
                     track_clicks: options.trackClicks,
                     track_opens: options.trackOpens,
@@ -301,6 +306,15 @@ export function createDatabaseAutomationsRepository({
             }
 
             await knex.transaction(async (trx) => {
+                const revisionIds = new Set<string>();
+                for (const {openedAt, automationActionRevisionId} of eventsByAutomatedEmailRecipientId.values()) {
+                    if (openedAt) {
+                        revisionIds.add(automationActionRevisionId);
+                    }
+                }
+
+                const orderedRevisionIds = await lockActionRevisions(trx, revisionIds);
+
                 const notYetOpened = await lockNotYetOpened(trx, eventsByAutomatedEmailRecipientId);
                 const newOpensPerRevision = new Map<string, number>();
 
@@ -327,11 +341,11 @@ export function createDatabaseAutomationsRepository({
                     }
                 }
 
-                // Keep lock acquisition order consistent across concurrent transactions to avoid deadlocks.
-                const revisions = [...newOpensPerRevision.entries()]
-                    .sort(([left], [right]) => left.localeCompare(right));
-
-                for (const [id, opens] of revisions) {
+                for (const id of orderedRevisionIds) {
+                    const opens = newOpensPerRevision.get(id);
+                    if (!opens) {
+                        continue;
+                    }
                     await trx('automation_action_revisions')
                         .where({id})
                         .update({
@@ -341,25 +355,18 @@ export function createDatabaseAutomationsRepository({
             });
         },
 
-        async trackEmailClicked({automationActionRevisionId, memberId, clickedAt}, {transacting} = {}) {
+        async trackEmailClicked({automationActionRevisionId, automationRunStepId, memberId, clickedAt}, {transacting} = {}) {
             const trackClick = async (trx: Knex.Transaction) => {
-                // Match recordEmailSent's lock order to avoid deadlocks.
-                await trx('automation_action_revisions')
-                    .select('id')
-                    .where({id: automationActionRevisionId})
-                    .forUpdate()
-                    .first();
+                await lockActionRevisions(trx, [automationActionRevisionId]);
 
                 const recipient = await trx('automated_email_recipients')
                     .select('id', 'clicked_at')
                     .where({
                         automation_action_revision_id: automationActionRevisionId,
+                        automation_run_step_id: automationRunStepId,
                         member_id: memberId,
                         track_clicks: true
                     })
-                    .where('created_at', '<=', toDatabaseDate(clickedAt))
-                    .orderBy('created_at', 'desc')
-                    .orderBy('id', 'desc')
                     .forUpdate()
                     .first();
 
@@ -392,6 +399,29 @@ export function createDatabaseAutomationsRepository({
             await knex.transaction(trackClick);
         }
     };
+}
+
+/**
+ * Lock revisions before recipients because inserting a recipient takes a shared
+ * foreign-key lock on its revision. Updating that revision later can deadlock
+ * with another transaction that has already locked the revision and is waiting
+ * for the recipient. Keep multi-revision lock acquisition deterministic.
+ */
+async function lockActionRevisions(
+    trx: Knex.Transaction,
+    revisionIds: Iterable<string>
+): Promise<string[]> {
+    const sortedRevisionIds = [...new Set(revisionIds)]
+        .sort((left, right) => left.localeCompare(right));
+
+    if (sortedRevisionIds.length > 0) {
+        await trx('automation_action_revisions')
+            .select('id')
+            .whereIn('id', sortedRevisionIds)
+            .forUpdate();
+    }
+
+    return sortedRevisionIds;
 }
 
 /**
@@ -683,14 +713,14 @@ async function findNextPendingReadyAt(trx: Knex.Transaction, staleLockCutoff: Re
         })
         .orderBy('ready_at')
         .first();
-    return row?.next_ready_at ? new Date(row.next_ready_at) : null;
+    return row?.next_ready_at ? fromDatabaseDate(row.next_ready_at) : null;
 }
 
 function buildStepToRun(row: ReadonlyDeep<StepToRunRow>): AutomationStepToRun {
     const base = {
         id: row.id,
         step_attempts: row.step_attempts,
-        ready_at: new Date(row.ready_at),
+        ready_at: fromDatabaseDate(row.ready_at),
         locked_by: row.locked_by,
         automation_run_id: row.automation_run_id,
         automation_id: row.automation_id,
@@ -987,10 +1017,24 @@ async function loadAutomationBySlug(trx: Knex.Transaction, slug: string): Promis
     return row ?? null;
 }
 
-async function loadAutomations(trx: Knex.Transaction): Promise<AutomationRow[]> {
+async function loadAutomations(trx: Knex.Transaction): Promise<AutomationBrowseRow[]> {
+    const latestRunDates = trx('automation_runs')
+        .select('automation_id')
+        .max({last_run_created_at: 'created_at'})
+        .groupBy('automation_id')
+        .as('latest_run_dates');
     return await trx('automations')
-        .select('id', 'slug', 'name', 'status', 'created_at', 'updated_at')
-        .orderBy('name');
+        .select(
+            'automations.id',
+            'automations.slug',
+            'automations.name',
+            'automations.status',
+            'automations.created_at',
+            'automations.updated_at',
+            'latest_run_dates.last_run_created_at'
+        )
+        .leftJoin(latestRunDates, 'automations.id', 'latest_run_dates.automation_id')
+        .orderBy('automations.name');
 }
 
 async function updateAutomation(trx: Knex.Transaction, automation: AutomationRow): Promise<AutomationRow> {
@@ -1233,13 +1277,13 @@ async function insertActionRevisions(
     );
 }
 
-function getNextRevisionCreatedAt(latestCreatedAt: string | null, requestedCreatedAt: string) {
+function getNextRevisionCreatedAt(latestCreatedAt: DatabaseDate | null, requestedCreatedAt: string) {
     if (!latestCreatedAt) {
         return toDatabaseDate(requestedCreatedAt);
     }
 
-    const requestedTime = new Date(requestedCreatedAt).getTime();
-    const latestTime = new Date(latestCreatedAt).getTime();
+    const requestedTime = fromDatabaseDate(requestedCreatedAt).getTime();
+    const latestTime = fromDatabaseDate(latestCreatedAt).getTime();
 
     if (requestedTime > latestTime) {
         return toDatabaseDate(requestedCreatedAt);
@@ -1329,8 +1373,17 @@ function buildAutomationSummary(automation: AutomationRow): AutomationSummary {
     };
 }
 
-function serializeDate(date: string) {
-    const normalizedDate = new Date(date);
+function buildAutomationBrowseResult(automation: AutomationBrowseRow): AutomationBrowseResult {
+    return {
+        ...buildAutomationSummary(automation),
+        stats: {
+            last_run_created_at: automation.last_run_created_at ? fromDatabaseDate(automation.last_run_created_at) : null
+        }
+    };
+}
+
+function serializeDate(date: DatabaseDate) {
+    const normalizedDate = fromDatabaseDate(date);
     normalizedDate.setMilliseconds(0);
     return normalizedDate.toISOString();
 }

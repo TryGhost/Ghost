@@ -52,6 +52,16 @@ describe('Members import — custom fields', function () {
         return res.body.members.find((m: {email: string}) => m.email === email);
     };
 
+    // The rows behind a member's values, which is the only place the storage model is
+    // visible: the API hands back an assembled value either way.
+    const storedLeaves = async (email: string): Promise<Array<{path: string, value_text: string}>> => {
+        const member = await findMember(email);
+        return models.Base.knex('members_custom_field_values')
+            .where('member_id', member.id)
+            .orderBy('path')
+            .select('path', 'value_text');
+    };
+
     beforeAll(async function () {
         await localUtils.startGhost();
         request = supertest.agent(config.get('url'));
@@ -111,6 +121,48 @@ describe('Members import — custom fields', function () {
         assert.equal(member.custom_fields?.[key], 'Bex');
     });
 
+    // The mapping step's deselected column. It has to name the column with an empty target
+    // rather than omit it: an omitted column carries through under its own header, and a
+    // custom_fields.* header is exactly what the importer reads a value from — so omitting
+    // it would import the very column the publisher switched off.
+    //
+    // What these two prove is that the API accepts an empty mapping value and that nothing is
+    // written for the column. They do not prove the parser *drops* it — before the change it
+    // renamed the column to the empty string instead, which nothing downstream reads either.
+    // That distinction is pinned where it is observable, in csv/parse.test.ts.
+    it('imports nothing from a namespaced column the mapping empties', async function () {
+        const key = await createField('Nickname', 'short_text');
+        const email = 'cf-deselected@example.com';
+
+        const res = await importCSV(
+            `email,custom_fields.${key}\n${email},Bex\n`,
+            {email: 'email', [`custom_fields.${key}`]: ''}
+        );
+        assert.equal(res.status, 201);
+        assert.equal(res.body.meta.stats.imported, 1, 'the member still imports, without that column');
+
+        const member = await findMember(email);
+        assert.equal(member.custom_fields?.[key], undefined);
+        assert.deepEqual(await storedLeaves(email), [], 'nothing was written for the emptied column');
+    });
+
+    // The same column mapped and then emptied, so the emptying is what changes the outcome
+    // rather than the column never having had anywhere to go.
+    it('stops importing a column once the mapping empties it', async function () {
+        const key = await createField('Nickname', 'short_text');
+        const email = 'cf-deselected-mapped@example.com';
+        const csv = `Email Address,Preferred Name\n${email},Bex\n`;
+
+        await importCSV(csv, {'Email Address': 'email', 'Preferred Name': `custom_fields.${key}`});
+        assert.equal((await findMember(email)).custom_fields?.[key], 'Bex', 'the column imports while it is mapped');
+
+        const res = await importCSV(`Email Address,Preferred Name\n${email},Changed\n`, {'Email Address': 'email', 'Preferred Name': ''});
+        assert.equal(res.status, 201);
+        assert.equal(res.body.meta.stats.imported, 1);
+
+        assert.equal((await findMember(email)).custom_fields?.[key], 'Bex', 'and stops once it is emptied');
+    });
+
     it('reads an address from its sub-field columns', async function () {
         const key = await createField('Shipping Address', 'address');
         const email = 'cf-address@example.com';
@@ -129,19 +181,147 @@ describe('Members import — custom fields', function () {
         assert.deepEqual(member.custom_fields?.[key], {line1: '1 High Street', city: 'London', postal_code: 'E1 6AN', country: 'GB'});
     });
 
-    // A partial composite is an invalid value, so the whole row fails like any other.
-    it('fails a row whose address is missing a required sub-field', async function () {
+    // No sub-field is required, so a spreadsheet carrying only part of an address
+    // imports the part it has instead of failing the row.
+    it('imports a row whose address fills only some sub-fields', async function () {
         const key = await createField('Shipping Address', 'address');
         const email = 'cf-partial-address@example.com';
 
-        // city alone, no line1/postal_code/country.
         const res = await importCSV(`email,custom_fields.${key}.city\n${email},London\n`);
+        assert.equal(res.status, 201);
+        assert.equal(res.body.meta.stats.imported, 1);
+
+        const member = await findMember(email);
+        assert.deepEqual(member.custom_fields?.[key], {city: 'London'});
+    });
+
+    // The sub-field equivalent of the blank-cell rule above: a sub-field is a field, so a
+    // row writes the ones it fills and leaves the rest alone. Without this a file naming
+    // one column would replace the whole address, clearing five it never mentioned.
+    it('leaves the rest of a stored address alone when a file names only some of its columns', async function () {
+        const key = await createField('Shipping Address', 'address');
+        const email = 'cf-address-merge@example.com';
+        const columns = ['line1', 'city', 'postal_code', 'country'].map(sub => `custom_fields.${key}.${sub}`).join(',');
+
+        await importCSV(`email,${columns}\n${email},1 High Street,London,E1 6AN,GB\n`);
+        assert.deepEqual((await findMember(email)).custom_fields?.[key], {line1: '1 High Street', city: 'London', postal_code: 'E1 6AN', country: 'GB'});
+
+        const res = await importCSV(`email,custom_fields.${key}.line1\n${email},2 Low Street\n`);
+        assert.equal(res.status, 201);
+        assert.equal(res.body.meta.stats.imported, 1);
+
+        assert.deepEqual(
+            (await findMember(email)).custom_fields?.[key],
+            {line1: '2 Low Street', city: 'London', postal_code: 'E1 6AN', country: 'GB'},
+            'the columns the file did not carry kept their stored values'
+        );
+    });
+
+    // The case worth pinning, because it surprises people: emptying a cell does not clear
+    // the stored sub-field. A sub-field is a field, and a blank cell reads as "no data for
+    // this row" there exactly as it does for a blank `name` column. No field, core or
+    // custom, can be cleared through an import.
+    it('keeps a stored sub-field when its column is present but blank', async function () {
+        const key = await createField('Shipping Address', 'address');
+        const email = 'cf-address-blank-cell@example.com';
+        const columns = ['line1', 'city', 'postal_code', 'country'].map(sub => `custom_fields.${key}.${sub}`).join(',');
+
+        await importCSV(`email,${columns}\n${email},1 High Street,London,E1 6AN,GB\n`);
+
+        // The member moves somewhere with no postal code, so the publisher empties that
+        // cell and re-imports.
+        const res = await importCSV(`email,${columns}\n${email},"Flat 3, 8 Wan Chai Road",Hong Kong,,HK\n`);
+        assert.equal(res.status, 201);
+        assert.equal(res.body.meta.stats.imported, 1);
+
+        assert.deepEqual(
+            (await findMember(email)).custom_fields?.[key],
+            {line1: 'Flat 3, 8 Wan Chai Road', city: 'Hong Kong', postal_code: 'E1 6AN', country: 'HK'},
+            'the blanked cell left the stored postal code alone'
+        );
+    });
+
+    // Where messy country codes actually come from: a spreadsheet exported from something
+    // else, where the column was typed by hand over several years.
+    it('normalises the case of an imported country code', async function () {
+        const key = await createField('Shipping Address', 'address');
+        const email = 'cf-country-case@example.com';
+
+        const res = await importCSV(`email,custom_fields.${key}.country\n${email},gb\n`);
+        assert.equal(res.status, 201);
+        assert.equal(res.body.meta.stats.imported, 1);
+
+        assert.deepEqual((await findMember(email)).custom_fields?.[key], {country: 'GB'});
+    });
+
+    // A stray space is not data. Read as a value it would make this address all-whitespace,
+    // fail its "at least one part" rule, and take the member's name and email down with it.
+    it('reads a whitespace-only address cell as blank rather than failing the row', async function () {
+        const key = await createField('Shipping Address', 'address');
+        const email = 'cf-address-space@example.com';
+
+        const res = await importCSV(`email,custom_fields.${key}.city\n${email},"   "\n`);
+        assert.equal(res.status, 201);
+        assert.equal(res.body.meta.stats.imported, 1);
+
+        const member = await findMember(email);
+        assert.equal(member.custom_fields?.[key], undefined, 'the whitespace cell set no address');
+    });
+
+    // The parts of an address are rows, so an import that names one column touches one
+    // row and leaves its siblings where they are. Asserting the rows rather than the
+    // assembled value is what pins the storage itself: read back through the API these
+    // two cases look identical.
+    it('writes one row per part, and touches only the parts a file names', async function () {
+        const key = await createField('Shipping Address', 'address');
+        const email = 'cf-leaf-rows@example.com';
+        const columns = ['line1', 'city', 'country'].map(sub => `custom_fields.${key}.${sub}`).join(',');
+
+        await importCSV(`email,${columns}\n${email},1 High Street,London,GB\n`);
+        assert.deepEqual(await storedLeaves(email), [
+            {path: 'city', value_text: 'London'},
+            {path: 'country', value_text: 'GB'},
+            {path: 'line1', value_text: '1 High Street'}
+        ]);
+
+        await importCSV(`email,custom_fields.${key}.city\n${email},Bristol\n`);
+        assert.deepEqual(await storedLeaves(email), [
+            {path: 'city', value_text: 'Bristol'},
+            {path: 'country', value_text: 'GB'},
+            {path: 'line1', value_text: '1 High Street'}
+        ], 'only the named part moved');
+    });
+
+    // A composite can still be invalid, and when it is the whole row fails like any other.
+    it('fails a row whose address has a malformed sub-field', async function () {
+        const key = await createField('Shipping Address', 'address');
+        const email = 'cf-bad-address@example.com';
+
+        const res = await importCSV(`email,custom_fields.${key}.country\n${email},IRL\n`);
         assert.equal(res.status, 201);
         assert.equal(res.body.meta.stats.imported, 0);
         assert.equal(res.body.meta.stats.invalid.length, 1);
-        assert.match(res.body.meta.stats.invalid[0].error, /Shipping Address/);
+        // Read next to a spreadsheet, so it names the column down to the sub-field.
+        assert.equal(
+            res.body.meta.stats.invalid[0].error,
+            `custom_fields.${key}.country: Enter a 2-letter country code, like US.`
+        );
 
         assert.equal(await findMember(email), undefined, 'the failed row created no member');
+    });
+
+    // A reason carries the punctuation of the copy it quotes; this one has a comma in it.
+    it('carries a row\'s reasons as a list, so punctuation inside one cannot split it', async function () {
+        const key = await createField('Shipping Address', 'address');
+        const email = 'cf-reason-list@example.com';
+
+        const res = await importCSV(`email,custom_fields.${key}.country\n${email},IRL\n`);
+        assert.equal(res.status, 201);
+        assert.equal(res.body.meta.stats.invalid.length, 1);
+
+        const reason = `custom_fields.${key}.country: Enter a 2-letter country code, like US.`;
+        assert.deepEqual(res.body.meta.stats.invalid[0].errors, [reason]);
+        assert.equal(res.body.meta.stats.invalid[0].error, reason);
     });
 
     it('fails a row whose value is too long for its field type', async function () {
@@ -152,7 +332,10 @@ describe('Members import — custom fields', function () {
         assert.equal(res.status, 201);
         assert.equal(res.body.meta.stats.imported, 0);
         assert.equal(res.body.meta.stats.invalid.length, 1);
-        assert.match(res.body.meta.stats.invalid[0].error, /Nickname/);
+        assert.equal(
+            res.body.meta.stats.invalid[0].error,
+            `custom_fields.${key}: Use 255 characters or fewer.`
+        );
 
         assert.equal(await findMember(email), undefined);
     });
