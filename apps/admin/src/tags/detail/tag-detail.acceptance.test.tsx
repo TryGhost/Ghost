@@ -61,12 +61,6 @@ describe('Tag detail (tagDetailsReact on)', () => {
         await renderAdminApp(`/tags/${t.slug}`, FLAGS);
 
         const metadataCard = page.getByTestId('tag-metadata-card');
-        const metadataTrigger = metadataCard.getByRole('button', {name: /Meta data/});
-        await expect.element(metadataTrigger).toHaveAttribute('aria-expanded', 'false');
-        expect(metadataCard.getByRole('tab', {name: 'Search'}).query()).toBeNull();
-
-        await metadataTrigger.click();
-        await expect.element(metadataTrigger).toHaveAttribute('aria-expanded', 'true');
         const searchTab = metadataCard.getByRole('tab', {name: 'Search'});
         const xTab = metadataCard.getByRole('tab', {name: 'X card'});
         const facebookTab = metadataCard.getByRole('tab', {name: 'Facebook card'});
@@ -102,11 +96,12 @@ describe('Tag detail (tagDetailsReact on)', () => {
 
         const codeInjectionCard = page.getByTestId('tag-code-injection-card');
         const codeInjectionTrigger = codeInjectionCard.getByRole('button', {name: /Code injection/});
-        await expect.element(codeInjectionTrigger).toHaveAttribute('aria-haspopup', 'dialog');
-        expect(page.getByTestId('tag-code-injection-modal').query()).toBeNull();
+        await expect.element(codeInjectionTrigger).toHaveAttribute('aria-expanded', 'false');
         expect(page.getByRole('textbox', {name: /^Tag header/}).query()).toBeNull();
         expect(page.getByRole('textbox', {name: /^Tag footer/}).query()).toBeNull();
-        expect(metadataCard.element().compareDocumentPosition(codeInjectionCard.element()) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+        const coreDataCard = page.getByTestId('tag-core-data-card');
+        expect(coreDataCard.element().compareDocumentPosition(codeInjectionCard.element()) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+        expect(codeInjectionCard.element().compareDocumentPosition(metadataCard.element()) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     });
 
     it('edits and saves tag code injection with CodeMirror', async () => {
@@ -117,13 +112,8 @@ describe('Tag detail (tagDetailsReact on)', () => {
         await renderAdminApp(`/tags/${t.slug}`, FLAGS);
 
         await page.getByRole('button', {name: /Code injection/}).click();
-        const modal = page.getByTestId('tag-code-injection-modal');
-        await expect.element(modal).toBeVisible();
-        const modalWidth = modal.element().getBoundingClientRect().width;
-        expect(modalWidth).toBeGreaterThanOrEqual(800);
-        expect(modalWidth).toBeLessThanOrEqual(1024);
-        const headerEditor = modal.getByRole('textbox', {name: /^Tag header/});
-        const footerEditor = modal.getByRole('textbox', {name: /^Tag footer/});
+        const headerEditor = page.getByRole('textbox', {name: /^Tag header/});
+        const footerEditor = page.getByRole('textbox', {name: /^Tag footer/});
         await expect.element(headerEditor).toBeVisible();
         await expect.element(footerEditor).toBeVisible();
         await expect.poll(() => (headerEditor.element() as HTMLElement).innerText).toBe(head);
@@ -148,8 +138,6 @@ describe('Tag detail (tagDetailsReact on)', () => {
         await expect.poll(() => footerEditor.element().textContent).toBe('');
         await footerEditor.fill(updatedFoot);
         await expect.poll(() => (footerEditor.element() as HTMLElement).innerText).toBe(updatedFoot);
-        await modal.getByRole('button', {name: 'Close'}).click();
-        expect(page.getByTestId('tag-code-injection-modal').query()).toBeNull();
         await page.getByRole('button', {name: 'Save'}).click();
 
         await expect.element(page.getByRole('button', {name: 'Saved'})).toBeVisible();
@@ -158,7 +146,7 @@ describe('Tag detail (tagDetailsReact on)', () => {
         expect(saved.codeinjection_foot).toBe(updatedFoot);
     });
 
-    it('keeps CodeMirror autocomplete visible in the code injection modal', async () => {
+    it('keeps CodeMirror autocomplete visible in the code injection accordion', async () => {
         const t = tag({name: 'News', slug: 'news'});
         fakeTagWorld(t);
         await renderAdminApp(`/tags/${t.slug}`, FLAGS);

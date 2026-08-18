@@ -1,8 +1,8 @@
 import React from 'react';
 import TagColorField from './tag-color-field';
-import TagCodeInjectionModal from './tag-code-injection-modal';
+import TagCodeInjectionAccordion from './tag-code-injection-accordion';
 import TagImageField from './tag-image-field';
-import {Accordion, AccordionContent, AccordionItem, AccordionTrigger, Card, CardContent, FieldError, Input, Label, Tabs, TabsContent, TabsList, TabsTrigger, Textarea} from '@tryghost/shade/components';
+import {Card, CardContent, FieldError, Input, Label, Tabs, TabsContent, TabsList, TabsTrigger, Textarea} from '@tryghost/shade/components';
 import {Grid, Inline, Stack} from '@tryghost/shade/primitives';
 import {DESCRIPTION_MAX_LENGTH, FACEBOOK_DESCRIPTION_RECOMMENDED_LENGTH, FACEBOOK_TITLE_RECOMMENDED_LENGTH, META_DESCRIPTION_RECOMMENDED_LENGTH, META_TITLE_RECOMMENDED_LENGTH, X_DESCRIPTION_RECOMMENDED_LENGTH, X_TITLE_RECOMMENDED_LENGTH, charLength, getBlogDomain, getSeoDescription, getSeoTitle, getSeoUrl, getSlugUrlPreview, validateTagField} from './tag-detail-edit';
 import {FacebookCardPreview, SeoPreview, XCardPreview} from './tag-detail-previews';
@@ -54,9 +54,10 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
         <Grid align='start' className='lg:grid-cols-2 sidebarlg:grid-cols-[minmax(0,5fr)_minmax(0,3fr)]' data-testid='tag-detail-form' gap='2xl'>
             {/* The main form and advanced settings collapse into one column
                 below the medium breakpoint. */}
-            <Card data-testid='tag-core-data-card'>
-                <CardContent className='p-6'>
-                    <Stack gap='lg'>
+            <Stack gap='lg'>
+                <Card data-testid='tag-core-data-card'>
+                    <CardContent className='p-6'>
+                        <Stack gap='lg'>
                         <Stack gap='sm'>
                             <Inline align='start' gap='md'>
                                 <Stack className='min-w-0 flex-1' gap='sm'>
@@ -131,22 +132,27 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                             <FieldError className='text-sm' id={errorId('description')}>{errors.description}</FieldError>
                             <UsedCharacters limit={DESCRIPTION_MAX_LENGTH} prefix='Maximum' value={draft.description} />
                         </Stack>
-                    </Stack>
-                </CardContent>
-            </Card>
+                        </Stack>
+                    </CardContent>
+                </Card>
 
-            <Stack gap='lg'>
-                <Card className='overflow-hidden' data-testid='tag-metadata-card'>
-                    <Accordion type='single' collapsible>
-                        <AccordionItem className='border-b-0' value='metadata'>
-                            <AccordionTrigger className='px-6 py-5 hover:no-underline'>
-                                <Stack className='text-left' gap='none'>
-                                    <span className='text-[14px] font-semibold'>Meta data</span>
-                                    <span className='text-[13px] leading-[16px] font-normal tracking-normal text-muted-foreground'>Extra content for search engines and social accounts.</span>
-                                </Stack>
-                            </AccordionTrigger>
-                            <AccordionContent className='px-6'>
-                                <Tabs defaultValue='search' variant='underline'>
+                <TagCodeInjectionAccordion
+                    disabled={disabled}
+                    footerValue={draft.codeinjectionFoot}
+                    headerValue={draft.codeinjectionHead}
+                    onFooterChange={codeinjectionFoot => onChange({codeinjectionFoot})}
+                    onHeaderChange={codeinjectionHead => onChange({codeinjectionHead})}
+                />
+            </Stack>
+
+            <Card className='overflow-hidden' data-testid='tag-metadata-card'>
+                <CardContent className='p-6'>
+                    <Stack gap='lg'>
+                        <Stack gap='none'>
+                            <span className='text-[14px] font-semibold'>Meta data</span>
+                            <span className='text-[13px] leading-[16px] font-normal tracking-normal text-muted-foreground'>Extra content for search engines and social accounts.</span>
+                        </Stack>
+                        <Tabs defaultValue='search' variant='underline'>
                         <TabsList aria-label='Tag metadata'>
                             <TabsTrigger value='search'>Search</TabsTrigger>
                             <TabsTrigger value='x-card'>X card</TabsTrigger>
@@ -285,20 +291,10 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                                 </Stack>
                             </Stack>
                         </TabsContent>
-                                </Tabs>
-                            </AccordionContent>
-                        </AccordionItem>
-                    </Accordion>
-                </Card>
-
-                <TagCodeInjectionModal
-                    disabled={disabled}
-                    footerValue={draft.codeinjectionFoot}
-                    headerValue={draft.codeinjectionHead}
-                    onFooterChange={codeinjectionFoot => onChange({codeinjectionFoot})}
-                    onHeaderChange={codeinjectionHead => onChange({codeinjectionHead})}
-                />
-            </Stack>
+                        </Tabs>
+                    </Stack>
+                </CardContent>
+            </Card>
         </Grid>
     );
 };
