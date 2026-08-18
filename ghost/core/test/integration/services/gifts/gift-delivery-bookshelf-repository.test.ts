@@ -164,6 +164,24 @@ describe('GiftDeliveryBookshelfRepository (integration)', function () {
         assert.equal((await deliveryRepository.getById(delivery.id))?.status, 'pending');
     });
 
+    it('records acceptance details only on a cancelled delivery', async function () {
+        const sentAt = new Date('2026-08-18T10:00:00.000Z');
+        const cancelled = await createPendingEmailGift({deliveryStatus: 'cancelled'});
+        const sending = await createPendingEmailGift({deliveryStatus: 'sending', startedAt: new Date()});
+
+        assert.equal(await deliveryRepository.recordCancelledAcceptance(cancelled.delivery.id, sentAt, 'provider-1'), true);
+        assert.equal(await deliveryRepository.recordCancelledAcceptance(sending.delivery.id, sentAt, 'provider-2'), false);
+
+        const cancelledReloaded = await deliveryRepository.getById(cancelled.delivery.id);
+        assert.equal(cancelledReloaded?.status, 'cancelled');
+        assert.equal(cancelledReloaded?.emailProviderMessageId, 'provider-1');
+        assert.equal(cancelledReloaded?.emailSentAt?.toISOString(), sentAt.toISOString());
+
+        const sendingReloaded = await deliveryRepository.getById(sending.delivery.id);
+        assert.equal(sendingReloaded?.status, 'sending');
+        assert.equal(sendingReloaded?.emailProviderMessageId, null);
+    });
+
     it('does not start a delivery when the parent gift is no longer purchased', async function () {
         const startedAt = new Date();
         const {delivery} = await createPendingEmailGift({

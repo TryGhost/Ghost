@@ -92,4 +92,22 @@ describe('Gift delivery processing', function () {
         assert.equal(untouchedReloaded.get('status'), 'pending');
         assert.equal(untouchedReloaded.get('started_at'), null);
     });
+
+    it('keeps acceptance details on a delivery cancelled while its email was in flight', async function () {
+        const {gift, delivery} = await createPendingEmailGift();
+        deliverySend.callsFake(async () => {
+            // e.g. the gift is redeemed via the shared link before the email is accepted
+            await models.GiftDelivery.query().where({id: delivery.id}).update({status: 'cancelled', started_at: null});
+            return {id: '<provider-123>'};
+        });
+
+        DomainEvents.dispatch(SendGiftDeliveryEvent.create({deliveryId: delivery.id}));
+        await DomainEvents.allSettled();
+
+        sinon.assert.calledOnce(deliverySend);
+        const reloaded = await models.GiftDelivery.findOne({gift_id: gift.id}, {require: true});
+        assert.equal(reloaded.get('status'), 'cancelled');
+        assert.equal(reloaded.get('email_provider_message_id'), 'provider-123');
+        assert.ok(reloaded.get('email_sent_at'));
+    });
 });

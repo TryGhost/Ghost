@@ -10,6 +10,7 @@ export interface GiftDeliveryRepository {
     findRecoverableForPurchasedGifts(staleBefore: Date, limit: number): Promise<GiftDeliveryData[]>;
     tryStartDelivery(id: string, now: Date, staleBefore: Date): Promise<GiftDeliveryData | null>;
     markSent(id: string, sentAt: Date, providerMessageId: string | null): Promise<boolean>;
+    recordCancelledAcceptance(id: string, sentAt: Date, providerMessageId: string | null): Promise<boolean>;
     markFailed(id: string): Promise<boolean>;
     markCancelled(id: string): Promise<boolean>;
     cancelPendingForGift(token: string, options?: RepositoryTransactionOptions): Promise<boolean>;
@@ -104,6 +105,15 @@ export class GiftDeliveryBookshelfRepository implements GiftDeliveryRepository {
         });
     }
 
+    // A delivery cancelled while its email was in flight keeps the acceptance
+    // details so the message can still be correlated with transport outcomes
+    async recordCancelledAcceptance(id: string, sentAt: Date, providerMessageId: string | null): Promise<boolean> {
+        return this.updateState(id, 'cancelled', {
+            email_sent_at: toDatabaseDate(sentAt),
+            email_provider_message_id: providerMessageId
+        });
+    }
+
     async markFailed(id: string): Promise<boolean> {
         return this.updateState(id, 'sending', {
             status: 'failed',
@@ -133,7 +143,7 @@ export class GiftDeliveryBookshelfRepository implements GiftDeliveryRepository {
         await this.model.add(encodeGiftDelivery(delivery), options);
     }
 
-    private async updateState(id: string, from: 'sending', data: Record<string, unknown>): Promise<boolean> {
+    private async updateState(id: string, from: 'sending' | 'cancelled', data: Record<string, unknown>): Promise<boolean> {
         const updated = await this.knex('gift_deliveries')
             .where({id, status: from})
             .update(data);

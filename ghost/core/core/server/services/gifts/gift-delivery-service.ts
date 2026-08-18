@@ -81,8 +81,19 @@ export class GiftDeliveryService {
         const staleBefore = new Date(Date.now() - GIFT_DELIVERY_STALE_AFTER_MS);
         const deliveries = await this.deps.giftDeliveryRepository.findRecoverableForPurchasedGifts(staleBefore, limit);
 
+        // Sequential on purpose: recovery can find many deliveries at once and each
+        // send holds a mail transport call, so fanning out through events would open
+        // them all concurrently
         for (const delivery of deliveries) {
-            DomainEvents.dispatch(SendGiftDeliveryEvent.create({deliveryId: delivery.id}));
+            try {
+                await this.send(delivery.id);
+            } catch (err) {
+                logging.error({
+                    event: {name: 'gift_delivery.recovery_failed'},
+                    err,
+                    deliveryId: delivery.id
+                }, 'Failed to recover gift delivery');
+            }
         }
 
         return deliveries.length;
@@ -131,13 +142,24 @@ export class GiftDeliveryService {
         try {
             tier = await this.deps.tiersService.api.read(gift.tierId);
         } catch (err) {
-            logging.error(err);
+            logging.error({
+                event: {name: 'gift_delivery.tier_read_failed'},
+                err,
+                deliveryId: delivery.id,
+                giftId: delivery.giftId,
+                tierId: gift.tierId
+            }, 'Failed to read tier for gift delivery');
             await this.deps.giftDeliveryRepository.markFailed(delivery.id);
             return 'failed';
         }
 
         if (!tier) {
-            logging.error(`Tier not found for gift delivery: ${gift.tierId}`);
+            logging.error({
+                event: {name: 'gift_delivery.tier_missing'},
+                deliveryId: delivery.id,
+                giftId: delivery.giftId,
+                tierId: gift.tierId
+            }, 'Tier not found for gift delivery');
             await this.deps.giftDeliveryRepository.markFailed(delivery.id);
             return 'failed';
         }
@@ -158,18 +180,26 @@ export class GiftDeliveryService {
                 expiresAt: gift.expiresAt!
             });
         } catch (err) {
-            logging.error(err);
+            logging.error({
+                event: {name: 'gift_delivery.acceptance_failed'},
+                // The bulk mailer rejects with {error, messageData}; the rendered
+                // message and recipient must stay out of the logs
+                err: isMailgunRejection(err) ? err.error : err,
+                deliveryId: delivery.id,
+                giftId: delivery.giftId
+            }, 'Mail transport did not accept gift delivery');
             await this.deps.giftDeliveryRepository.markFailed(delivery.id);
             return 'failed';
         }
 
+        const sentAt = new Date();
         let persisted: boolean;
+        let cancelledDuringSend = false;
         try {
-            persisted = await this.deps.giftDeliveryRepository.markSent(
-                delivery.id,
-                new Date(),
-                result.providerMessageId
-            );
+            persisted = await this.deps.giftDeliveryRepository.markSent(delivery.id, sentAt, result.providerMessageId);
+            if (!persisted) {
+                cancelledDuringSend = await this.deps.giftDeliveryRepository.recordCancelledAcceptance(delivery.id, sentAt, result.providerMessageId);
+            }
         } catch (err) {
             logging.error({
                 event: {name: 'gift_delivery.acceptance_persistence.failed'},
@@ -179,14 +209,27 @@ export class GiftDeliveryService {
             return 'failed';
         }
 
-        if (!persisted) {
-            logging.error({
-                event: {name: 'gift_delivery.acceptance_persistence.failed'},
-                deliveryId: delivery.id
-            }, 'Failed to persist accepted gift delivery');
-            return 'failed';
+        if (persisted) {
+            return 'sent';
         }
 
-        return 'sent';
+        if (cancelledDuringSend) {
+            logging.info({
+                event: {name: 'gift_delivery.cancelled_during_send'},
+                deliveryId: delivery.id,
+                giftId: delivery.giftId
+            }, 'Gift delivery was cancelled while its email was in flight');
+            return 'skipped';
+        }
+
+        logging.error({
+            event: {name: 'gift_delivery.acceptance_persistence.failed'},
+            deliveryId: delivery.id
+        }, 'Failed to persist accepted gift delivery');
+        return 'failed';
     }
+}
+
+function isMailgunRejection(err: unknown): err is {error: unknown; messageData: unknown} {
+    return typeof err === 'object' && err !== null && 'error' in err && 'messageData' in err;
 }
