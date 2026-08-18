@@ -14,7 +14,7 @@ const emailAnalyticsJobScheduler = new EmailAnalyticsJobScheduler({
  * @returns {Promise<void>}
  */
 exports.scheduleRecurringNewslettersJob = async (...args) => {
-    if (!process.env.NODE_ENV.startsWith('test')) {
+    if (!process.env.NODE_ENV?.startsWith('test')) {
         await emailAnalyticsJobScheduler.scheduleRecurringNewslettersJob(...args);
     }
 };
@@ -24,7 +24,7 @@ exports.scheduleRecurringNewslettersJob = async (...args) => {
  * @returns {Promise<void>}
  */
 exports.scheduleRecurringAutomationsJob = async (...args) => {
-    if (!process.env.NODE_ENV.startsWith('test')) {
+    if (!process.env.NODE_ENV?.startsWith('test')) {
         await emailAnalyticsJobScheduler.scheduleRecurringAutomationsJob(...args);
     }
 };
