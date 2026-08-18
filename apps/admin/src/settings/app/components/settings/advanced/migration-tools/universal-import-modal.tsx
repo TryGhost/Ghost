@@ -1,5 +1,6 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
+import useFeatureFlag from '@/settings/app/hooks/use-feature-flag';
 import {Button, Dropzone} from '@tryghost/shade/components';
 import {ExternalLink} from 'lucide-react';
 import {Inline} from '@tryghost/shade/primitives';
@@ -7,13 +8,20 @@ import {SettingsModal} from '@tryghost/shade/patterns';
 import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useImportContent} from '@tryghost/admin-x-framework/api/db';
+import {useImportContentCSV} from '@tryghost/admin-x-framework/api/posts';
 
 const UniversalImportModal: React.FC = () => {
     const modal = useModal();
     const {mutateAsync: importContent} = useImportContent();
+    const {mutateAsync: importContentCSV} = useImportContentCSV();
+    const csvContentImporter = useFeatureFlag('csvContentImporter');
     const [uploading, setUploading] = useState(false);
     const handleError = useHandleError();
     const {confirm} = useConfirmation();
+
+    const acceptedTypes: React.ComponentProps<typeof Dropzone>['accept'] = csvContentImporter
+        ? {'application/json': ['.json'], 'application/zip': ['.zip'], 'text/csv': ['.csv']}
+        : {'application/json': ['.json'], 'application/zip': ['.zip']};
 
     return (
         <SettingsModal
@@ -34,12 +42,17 @@ const UniversalImportModal: React.FC = () => {
         >
             <div className='py-4'>
                 <Dropzone
-                    accept={{'application/json': ['.json'], 'application/zip': ['.zip']}}
+                    accept={acceptedTypes}
                     inputId="import-file"
+                    inputTestId="import-file"
                     onDropAccepted={async ([file]) => {
                         setUploading(true);
                         try {
-                            await importContent(file);
+                            if (csvContentImporter && file.name.toLowerCase().endsWith('.csv')) {
+                                await importContentCSV(file);
+                            } else {
+                                await importContent(file);
+                            }
                             modal.remove();
                             confirm({
                                 title: 'Import in progress',
@@ -56,9 +69,9 @@ const UniversalImportModal: React.FC = () => {
                         }
                     }}
                 >
-                    <div className="text-center">
+                    <div className="text-center" data-testid="import-file-description">
                         {uploading ? 'Uploading...' : <>
-                        Select any JSON or zip file that contains <br />posts and settings
+                        Select any {csvContentImporter ? 'JSON, zip or CSV' : 'JSON or zip'} file that contains <br />posts and settings
                         </>}
                     </div>
                 </Dropzone>
