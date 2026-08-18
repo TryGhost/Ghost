@@ -3,6 +3,7 @@ import {PortalPage} from './portal-page';
 
 export class PortalGiftPage extends PortalPage {
     readonly buyerEmailInput: Locator;
+    readonly buyerNameInput: Locator;
     readonly continueToDeliveryButton: Locator;
     readonly continueToPaymentButton: Locator;
     readonly giftCardDuration: Locator;
@@ -17,6 +18,7 @@ export class PortalGiftPage extends PortalPage {
         super(page);
 
         this.buyerEmailInput = this.portalFrame.getByLabel('Your email');
+        this.buyerNameInput = this.portalFrame.getByLabel('Your name');
         this.continueToDeliveryButton = this.portalFrame.getByRole('button', {name: 'Continue to delivery details'});
         this.continueToPaymentButton = this.portalFrame.getByRole('button', {name: 'Continue to payment'});
         this.giftCardDuration = this.portalFrame.getByTestId('gift-card-duration');

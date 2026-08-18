@@ -1643,6 +1643,10 @@ const BetaGiftPage = () => {
 
         const formErrors = ValidateInputForm({fields: fieldsToValidate});
 
+        if (isEmailDelivery && !trimmedBuyerName) {
+            formErrors.buyerName = t('Enter your name');
+        }
+
         // No confirm-email field: the buyer gets a confirmation copy, which
         // covers the (unlikely) mistyped-recipient case.
         if (isEmailDelivery && !trimmedRecipientEmail) {
@@ -1654,6 +1658,9 @@ const BetaGiftPage = () => {
         setErrors(formErrors);
 
         if (formHasErrors) {
+            if (formErrors.buyerName) {
+                setStep('plan');
+            }
             return;
         }
 

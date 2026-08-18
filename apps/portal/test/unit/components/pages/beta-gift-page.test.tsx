@@ -117,6 +117,27 @@ describe('BetaGiftPage', () => {
         expect(getByLabelText('Recipient\'s email')).toHaveAttribute('maxlength', '191');
     });
 
+    test('requires a buyer name for email delivery', () => {
+        const site = buildSite({labs: {giftSubCustomization: true}});
+        const {getByLabelText, getByRole, getByText, mockDoActionFn} = setup(site);
+
+        fireEvent.click(getByRole('button', {name: 'Continue to delivery details'}));
+        fireEvent.change(getByLabelText('Recipient\'s email'), {target: {value: 'recipient@example.com'}});
+        fireEvent.click(getByRole('button', {name: 'Continue to payment'}));
+
+        expect(mockDoActionFn).not.toHaveBeenCalled();
+        expect(getByText('Enter your name')).toBeInTheDocument();
+
+        fireEvent.change(getByLabelText('Your name'), {target: {value: 'Jamie'}});
+        fireEvent.click(getByRole('button', {name: 'Continue to delivery details'}));
+        fireEvent.click(getByRole('button', {name: 'Continue to payment'}));
+
+        expect(mockDoActionFn).toHaveBeenCalledWith('checkoutGift', expect.objectContaining({
+            deliveryMethod: 'email',
+            buyerName: 'Jamie'
+        }));
+    });
+
     test('omits the selector when only one duration is available', () => {
         const site = buildSite({
             labs: {

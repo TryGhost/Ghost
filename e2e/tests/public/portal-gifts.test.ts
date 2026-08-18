@@ -29,6 +29,7 @@ test.describe('Ghost Public - Portal Gifts', () => {
         const buyerEmail = `gift-buyer-${Date.now()}@example.com`;
 
         await portalGiftPage.buyerEmailInput.fill(buyerEmail);
+        await portalGiftPage.buyerNameInput.fill('Test Gift Buyer');
         await portalGiftPage.durationOption('3 months').click();
         const tier = portalGiftPage.tierOption(tierName);
         await tier.click();
