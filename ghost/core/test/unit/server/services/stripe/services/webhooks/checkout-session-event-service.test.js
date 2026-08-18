@@ -697,26 +697,51 @@ describe('CheckoutSessionEventService', function () {
             });
         });
 
-        it('allows async gift completion without Stripe customer details', async function () {
+        it('recovers the buyer email from the Stripe Customer when customer details are absent', async function () {
             const service = createService();
+            api.getCustomer.resolves({
+                id: 'cust_123',
+                email: 'recovered-buyer@example.com'
+            });
+
             await service.handleGiftEvent({
                 id: 'cs_test_123',
                 amount_total: 5000,
                 currency: 'usd',
-                customer: null,
+                customer: 'cust_123',
                 payment_intent: 'pi_test_456',
                 metadata: {ghost_gift_id: 'gift_123'}
             });
 
+            sinon.assert.calledOnceWithExactly(api.getCustomer, 'cust_123');
             sinon.assert.calledOnceWithExactly(giftService.completePurchase, {
                 giftId: 'gift_123',
-                buyerEmail: null,
-                stripeCustomerId: null,
+                buyerEmail: 'recovered-buyer@example.com',
+                stripeCustomerId: 'cust_123',
                 currency: 'usd',
                 amount: 5000,
                 stripeCheckoutSessionId: 'cs_test_123',
                 stripePaymentIntentId: 'pi_test_456'
             });
+        });
+
+        it('uses the buyer email from expanded Stripe Customer data', async function () {
+            const service = createService();
+
+            await service.handleGiftEvent({
+                id: 'cs_test_123',
+                amount_total: 5000,
+                currency: 'usd',
+                customer: {id: 'cust_123', email: 'expanded-buyer@example.com'},
+                payment_intent: 'pi_test_456',
+                metadata: {ghost_gift_id: 'gift_123'}
+            });
+
+            sinon.assert.notCalled(api.getCustomer);
+            sinon.assert.calledOnceWithExactly(giftService.completePurchase, sinon.match({
+                buyerEmail: 'expanded-buyer@example.com',
+                stripeCustomerId: 'cust_123'
+            }));
         });
 
         it('calls giftService.completePurchase with session data', async function () {
