@@ -272,10 +272,10 @@ const NotificationPostPreview: React.FC<NotificationPostPreviewProps> = ({
                 stripTags={['a']}
             />
             {hasAttachments && (
-                <div className='notification-attachments relative mb-1 [&_.attachment-gallery]:flex [&_.attachment-gallery]:flex-wrap [&_img]:aspect-square [&_img]:max-w-[calc(20%-6.4px)]'>
+                <div className='relative mt-2.5 aspect-square w-[calc(20%-6.4px)] min-w-[96px] overflow-hidden rounded-md [&_img]:absolute [&_img]:inset-0 [&_img]:mt-0 [&_img]:size-full [&_img]:max-h-none [&_img]:max-w-none [&_img]:object-cover [&>.attachment-gallery]:absolute [&>.attachment-gallery]:inset-0 [&>.attachment-gallery]:mt-0 [&>.attachment-gallery]:grid [&>.attachment-gallery]:size-full'>
                     {renderFeedAttachment({type: 'Note', attachment: attachments})}
                     {shouldHideSensitiveMedia && (
-                        <SensitiveMediaOverlay isLayered onReveal={revealSensitiveMedia} />
+                        <SensitiveMediaOverlay showLabel={false} size='compact' isLayered onReveal={revealSensitiveMedia} />
                     )}
                 </div>
             )}

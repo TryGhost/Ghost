@@ -955,7 +955,12 @@ export const Reader: React.FC<ReaderProps> = ({
                                                     onReveal={revealSensitiveMedia}
                                                 />
                                             )}
-                                            <div className='relative w-full'>
+                                            {canHideSensitiveMedia && (
+                                                <div className='mb-3 flex w-full justify-end'>
+                                                    <SensitiveMediaHideButton layout='inline' onHide={hideSensitiveMedia} />
+                                                </div>
+                                            )}
+                                            <div className='w-full'>
                                                 <ArticleBody
                                                     authors={authors}
                                                     backgroundColor={backgroundColor}
@@ -972,9 +977,6 @@ export const Reader: React.FC<ReaderProps> = ({
                                                     onIframeLoad={handleIframeLoad}
                                                     onLoadingChange={setIsLoading}
                                                 />
-                                                {canHideSensitiveMedia && (
-                                                    <SensitiveMediaHideButton onHide={hideSensitiveMedia} />
-                                                )}
                                             </div>
                                         </>}
                                         <div className='-ml-3 w-full' style={{maxWidth: currentGridWidth}}>

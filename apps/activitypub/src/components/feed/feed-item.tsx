@@ -190,11 +190,13 @@ export function SensitiveMediaOverlay({
     className = '',
     isLayered = false,
     size = 'default',
+    showLabel = true,
     onReveal
 }: {
     className?: string;
     isLayered?: boolean;
     size?: 'default' | 'compact';
+    showLabel?: boolean;
     onReveal: (event: React.MouseEvent) => void;
 }) {
     const isCompact = size === 'compact';
@@ -204,12 +206,12 @@ export function SensitiveMediaOverlay({
             className={clsx(
                 'flex items-center justify-center overflow-hidden bg-foreground/45 text-background backdrop-blur-xl',
                 isCompact
-                    ? 'relative rounded-md p-2'
+                    ? 'p-2'
                     : '[container-type:size] p-[clamp(0.75rem,6cqh,2rem)]',
                 isLayered
                     ? 'absolute inset-0 rounded-none'
                     : isCompact
-                        ? null
+                        ? 'relative rounded-md'
                         : 'relative mt-3 min-h-[300px] w-full rounded-md',
                 className
             )}
@@ -220,7 +222,9 @@ export function SensitiveMediaOverlay({
             {isCompact ? (
                 <div className='relative z-10 flex flex-col items-center justify-center gap-0.5 text-center'>
                     <LucideIcon.EyeOff aria-hidden='true' className='size-5' strokeWidth={2.25} />
-                    <Text className='text-sm leading-none text-background' weight='bold'>Sensitive media</Text>
+                    {showLabel && (
+                        <Text className='text-sm leading-none text-background' weight='bold'>Sensitive media</Text>
+                    )}
                     <Button
                         aria-label='Show media'
                         className='mt-0.5 h-6 rounded-full bg-background/35 px-3 text-xs font-bold text-background shadow-[0_0_0_1px_color-mix(in_oklab,var(--background)_35%,transparent)] hover:bg-background/25 hover:text-background'
@@ -257,15 +261,20 @@ export function SensitiveMediaOverlay({
 
 export function SensitiveMediaHideButton({
     label = 'Hide media',
+    layout = 'overlay',
     onHide
 }: {
     label?: string;
+    layout?: 'overlay' | 'inline';
     onHide: (event: React.MouseEvent) => void;
 }) {
     return (
         <Button
             aria-label='Hide sensitive media'
-            className='absolute top-5 right-5 z-20 rounded-full bg-foreground/80 px-6 font-bold text-background hover:bg-foreground/90 hover:text-background'
+            className={clsx(
+                'z-20 rounded-full bg-foreground/80 px-6 font-bold text-background hover:bg-foreground/90 hover:text-background',
+                layout === 'overlay' && 'absolute top-5 right-5'
+            )}
             size='default'
             type='button'
             variant='ghost'
