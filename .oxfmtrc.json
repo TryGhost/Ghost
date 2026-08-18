@@ -13,7 +13,6 @@
         "**/test/**/fixtures/**",
         "**/__snapshots__/**",
         "apps/ember-admin/**",
-        "package.json",
         "koenig/kg-default-nodes/**",
         "koenig/kg-lexical-html-renderer/**",
         "koenig/kg-simplemde/debug/**",
