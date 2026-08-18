@@ -1,4 +1,4 @@
-const TableImporter = require('../importers/table-importer');
+const {TableImporter} = require('../importers/table-importer');
 
 class JsonImporter extends TableImporter {
     constructor(knex, transaction) {

@@ -44,6 +44,10 @@ When a regression crosses several layers, prefer a focused test at the lowest
 layer that proves the fix. Add a broader acceptance or browser E2E test when the
 integration between layers is itself the behavior being protected.
 
+For physical-device testing and URL configurations such as HTTPS,
+subdirectories, or a separate Admin origin, see
+[Testing development URLs and devices](testing-development-urls.md).
+
 ## Run Focused Tests
 
 Nx can run a target for one workspace from the repository root:

@@ -974,7 +974,7 @@ module.exports = {
     email_batches: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         email_id: {type: 'string', maxlength: 24, nullable: false, references: 'emails.id'},
-        provider_id: {type: 'string', maxlength: 255, nullable: true},
+        mailgun_message_id: {type: 'string', maxlength: 255, nullable: true},
         fallback_sending_domain: {type: 'boolean', nullable: false, defaultTo: false},
         status: {
             type: 'string',
@@ -1331,7 +1331,10 @@ module.exports = {
         updated_at: {type: 'dateTime', nullable: false},
         automation_id: {type: 'string', maxlength: 24, nullable: false, references: 'automations.id', restrictDelete: true},
         member_id: {type: 'string', maxlength: 24, nullable: true, references: 'members.id', setNullDelete: true, index: true},
-        member_email: {type: 'string', maxlength: 191, nullable: false, validations: {isEmail: true}}
+        member_email: {type: 'string', maxlength: 191, nullable: false, validations: {isEmail: true}},
+        '@@INDEXES@@': [
+            ['automation_id', 'created_at']
+        ]
     },
     automation_run_steps: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},

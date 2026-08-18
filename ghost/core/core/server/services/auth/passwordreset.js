@@ -5,6 +5,7 @@ const tpl = require('@tryghost/tpl');
 const moment = require('moment');
 
 const models = require('../../models');
+const ghostBookshelf = require('../../models/base');
 const urlUtils = require('../../../shared/url-utils').default;
 const mail = require('../mail');
 
@@ -77,67 +78,62 @@ function extractTokenParts(options) {
 }
 
 function doReset(options, tokenParts, settingsAPI) {
-    let dbHash;
-
     const data = options.data.password_reset[0];
     const resetToken = data.token;
     const oldPassword = data.oldPassword;
     const newPassword = data.newPassword;
 
-    return settingsAPI.read(_.merge({key: 'db_hash'}, _.omit(options, 'data')))
-        .then((response) => {
-            dbHash = response.settings[0].value;
+    return ghostBookshelf.transaction(async (transacting) => {
+        const txOptions = {context: options.context, transacting};
 
-            return models.User.getByEmail(tokenParts.email, options);
-        })
-        .then((user) => {
-            if (!user) {
-                throw new errors.NotFoundError({message: tpl(messages.userNotFound)});
-            }
+        const settingsResponse = await settingsAPI.read({key: 'db_hash', ...txOptions});
+        const dbHash = settingsResponse.settings[0].value;
 
-            let compareResult = security.tokens.resetToken.compare({
-                token: resetToken,
-                dbHash: dbHash,
-                password: user.get('password')
-            });
+        const candidate = await models.User.getByEmail(tokenParts.email, txOptions);
+        if (!candidate) {
+            throw new errors.NotFoundError({message: tpl(messages.userNotFound)});
+        }
 
-            if (!compareResult.correct) {
-                let error;
-                if (compareResult.reason === 'expired' || compareResult.reason === 'invalid_expiry') {
-                    error = new errors.BadRequestError({
-                        message: tpl(messages.expired.message),
-                        context: tpl(messages.expired.context),
-                        help: tpl(messages.expired.help)
-                    });
-                } else {
-                    error = new errors.BadRequestError({
-                        message: tpl(messages.invalidToken.message),
-                        context: tpl(messages.invalidToken.context),
-                        help: tpl(messages.invalidToken.help)
-                    });
-                }
+        const user = await new models.User({id: candidate.id})
+            .fetch({...txOptions, forUpdate: true, require: true});
 
-                return Promise.reject(error);
-            }
-
-            return models.User.changePassword({
-                oldPassword: oldPassword,
-                newPassword: newPassword,
-                user_id: user.id
-            }, options);
-        })
-        .then((updatedUser) => {
-            updatedUser.set('status', 'active');
-            return updatedUser.save(options);
-        }).then((savedUser) => {
-            return {user: savedUser};
-        })
-        .catch((err) => {
-            if (errors.utils.isGhostError(err)) {
-                return Promise.reject(err);
-            }
-            return Promise.reject(new errors.UnauthorizedError({err: err}));
+        let compareResult = security.tokens.resetToken.compare({
+            token: resetToken,
+            dbHash: dbHash,
+            password: user.get('password')
         });
+
+        if (!compareResult.correct) {
+            if (compareResult.reason === 'expired' || compareResult.reason === 'invalid_expiry') {
+                throw new errors.BadRequestError({
+                    message: tpl(messages.expired.message),
+                    context: tpl(messages.expired.context),
+                    help: tpl(messages.expired.help)
+                });
+            } else {
+                throw new errors.BadRequestError({
+                    message: tpl(messages.invalidToken.message),
+                    context: tpl(messages.invalidToken.context),
+                    help: tpl(messages.invalidToken.help)
+                });
+            }
+        }
+
+        const updatedUser = await models.User.changePassword({
+            oldPassword: oldPassword,
+            newPassword: newPassword,
+            user_id: user.id
+        }, txOptions);
+
+        updatedUser.set('status', 'active');
+        const savedUser = await updatedUser.save(null, txOptions);
+        return {user: savedUser};
+    }).catch((err) => {
+        if (errors.utils.isGhostError(err)) {
+            return Promise.reject(err);
+        }
+        return Promise.reject(new errors.UnauthorizedError({err: err}));
+    });
 }
 
 async function sendResetNotification(data, mailAPI) {

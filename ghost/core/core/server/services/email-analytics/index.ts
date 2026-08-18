@@ -1,8 +1,7 @@
 import type {Knex} from 'knex';
 import type {PrometheusClient} from '@tryghost/prometheus-metrics';
 import type {ConfigInstance} from '../../../shared/config/loader';
-// @ts-expect-error This module lacks type definitions.
-import type Metrics from '@tryghost/metrics';
+import type {GhostMetrics} from '@tryghost/metrics';
 // @ts-expect-error This module lacks type definitions.
 import type SettingsCache from '../../../shared/settings-cache';
 import {EmailAnalyticsServiceWrapper} from './email-analytics-service-wrapper';
@@ -61,7 +60,7 @@ export const init = ({
         EmailRecipientFailure: EmailRecipientFailure;
         EmailSpamComplaintEvent: EmailSpamComplaintEvent;
     };
-    metrics: Pick<Metrics, 'metric'>;
+    metrics: Pick<GhostMetrics, 'metric'>;
     prometheusClient: Pick<PrometheusClient, 'registerCounter' | 'getMetric'> | null;
     settingsCache: Pick<typeof SettingsCache, 'get'>;
 }) => {

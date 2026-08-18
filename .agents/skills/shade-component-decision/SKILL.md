@@ -70,4 +70,5 @@ Each layer can use anything **below** it. The reverse is forbidden.
 
 ## Source of truth
 
-Full rules: `apps/shade/AGENTS.md`. Human-facing: Storybook → Overview / Layers.
+Storybook → Overview / Layers owns the layer model and promotion rules.
+Overview / Contributing owns the implementation requirements.

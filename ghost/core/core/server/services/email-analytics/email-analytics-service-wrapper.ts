@@ -3,8 +3,7 @@ import logging from '@tryghost/logging';
 import type {ConfigInstance} from '../../../shared/config/loader';
 // @ts-expect-error This module lacks type definitions.
 import type DomainEvents from '@tryghost/domain-events';
-// @ts-expect-error This module lacks type definitions.
-import type Metrics from '@tryghost/metrics';
+import type {GhostMetrics} from '@tryghost/metrics';
 import {EmailAnalyticsService, type CursorSeed, type EmailAnalyticsFetchResult, type JobNames} from './email-analytics-service';
 import type {BatchEventProcessor} from './batch-event-processor';
 import type {Queries} from './lib/queries';
@@ -13,7 +12,7 @@ import {fetchMailgunEvents} from './fetch-mailgun-events';
 export class EmailAnalyticsServiceWrapper {
     #logName: string;
     #config?: Pick<ConfigInstance, 'get'>;
-    #metrics?: Pick<Metrics, 'metric'>;
+    #metrics?: Pick<GhostMetrics, 'metric'>;
     #service?: EmailAnalyticsService;
     #fetching = false;
     #restoredSchedule = false;
@@ -46,7 +45,7 @@ export class EmailAnalyticsServiceWrapper {
         jobNames: JobNames;
         cursorSeed: CursorSeed;
         createEventProcessor: () => BatchEventProcessor;
-        metrics: Pick<Metrics, 'metric'>;
+        metrics: Pick<GhostMetrics, 'metric'>;
         settingsCache: {get: (key: string) => unknown};
     }>): void {
         if (this.#service) {

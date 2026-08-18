@@ -290,6 +290,17 @@ describe('Pages Bulk API', function () {
     });
 
     describe('Delete', function () {
+        it('Rejects restricted filter fields without broadening the operation', async function () {
+            const pagesBefore = await models.Post.findAll({filter: 'type:page', status: 'all'});
+
+            await agent
+                .delete('/pages/?filter=' + encodeURIComponent('authors.password:abcd'))
+                .expectStatus(400);
+
+            const pagesAfter = await models.Post.findAll({filter: 'type:page', status: 'all'});
+            assert.deepEqual(pagesAfter.pluck('id'), pagesBefore.pluck('id'));
+        });
+
         it('Can delete pages that match a tag', async function () {
             const tag = await models.Tag.findOne({id: fixtureManager.get('tags', 0).id});
             const filter = 'tag:' + tag.get('slug');

@@ -6,12 +6,12 @@ const logging = require('@tryghost/logging');
 const {createDb, createPrometheusClient} = require('./utils');
 const config = require('../../../../../core/shared/config');
 
-const EmailDeliveredEvent = require('../../../../../core/server/services/email-service/events/email-delivered-event');
-const EmailOpenedEvent = require('../../../../../core/server/services/email-service/events/email-opened-event');
-const EmailBouncedEvent = require('../../../../../core/server/services/email-service/events/email-bounced-event');
-const EmailTemporaryBouncedEvent = require('../../../../../core/server/services/email-service/events/email-temporary-bounced-event');
-const EmailUnsubscribedEvent = require('../../../../../core/server/services/email-service/events/email-unsubscribed-event');
-const SpamComplaintEvent = require('../../../../../core/server/services/email-service/events/spam-complaint-event');
+const {EmailDeliveredEvent} = require('../../../../../core/server/services/email-service/events/email-delivered-event');
+const {EmailOpenedEvent} = require('../../../../../core/server/services/email-service/events/email-opened-event');
+const {EmailBouncedEvent} = require('../../../../../core/server/services/email-service/events/email-bounced-event');
+const {EmailTemporaryBouncedEvent} = require('../../../../../core/server/services/email-service/events/email-temporary-bounced-event');
+const {EmailUnsubscribedEvent} = require('../../../../../core/server/services/email-service/events/email-unsubscribed-event');
+const {SpamComplaintEvent} = require('../../../../../core/server/services/email-service/events/spam-complaint-event');
 
 const createEventStorage = (dependencies = {}) => new NewsletterEmailEventStorage({config, ...dependencies});
 

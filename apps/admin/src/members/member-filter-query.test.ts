@@ -311,3 +311,53 @@ describe('isPredicateEnabled', () => {
         )).toBe(false);
     });
 });
+
+describe('member-filter-query - custom fields', () => {
+    // Serialize each operator to NQL, then parse it back, and confirm the predicate
+    // survives the round trip a saved segment relies on. Each field is its own
+    // predicate keyed `custom_field.<key>`; `values` is [subfield, value].
+    const cases: Array<{field: string; operator: string; values: [string, string]; nql: string}> = [
+        {field: 'custom_field.company', operator: 'is', values: ['', 'Ghost'], nql: "(custom_fields.key:'company'+custom_fields.value:'Ghost')"},
+        {field: 'custom_field.company', operator: 'is-not', values: ['', 'Ghost'], nql: "(custom_fields.key:'company'+custom_fields.value:-'Ghost')"},
+        {field: 'custom_field.company', operator: 'contains', values: ['', 'host'], nql: "(custom_fields.key:'company'+custom_fields.value:~'host')"},
+        {field: 'custom_field.company', operator: 'does-not-contain', values: ['', 'host'], nql: "(custom_fields.key:'company'+custom_fields.value:-~'host')"},
+        {field: 'custom_field.company', operator: 'starts-with', values: ['', 'Gh'], nql: "(custom_fields.key:'company'+custom_fields.value:~^'Gh')"},
+        {field: 'custom_field.company', operator: 'ends-with', values: ['', 'st'], nql: "(custom_fields.key:'company'+custom_fields.value:~$'st')"},
+        // A value that ends with a literal `$` must survive as contains, not be
+        // misread as ends-with when the regex source (`5\$`) is parsed back.
+        {field: 'custom_field.company', operator: 'contains', values: ['', '5$'], nql: "(custom_fields.key:'company'+custom_fields.value:~'5$')"},
+        {field: 'custom_field.shipping-address', operator: 'is', values: ['country', 'GB'], nql: "(custom_fields.key:'shipping-address'+custom_fields.value.country:'GB')"},
+        {field: 'custom_field.shipping-address', operator: 'is-not', values: ['country', 'GB'], nql: "(custom_fields.key:'shipping-address'+custom_fields.value.country:-'GB')"},
+        {field: 'custom_field.phone', operator: 'is-set', values: ['', ''], nql: "custom_fields.key:'phone'"},
+        {field: 'custom_field.phone', operator: 'is-not-set', values: ['', ''], nql: "custom_fields.key:-'phone'"},
+        // A part's set / not-set targets its presence via `path`, not the whole field.
+        {field: 'custom_field.shipping-address', operator: 'is-set', values: ['country', ''], nql: "(custom_fields.key:'shipping-address'+custom_fields.path:'country')"},
+        {field: 'custom_field.shipping-address', operator: 'is-not-set', values: ['country', ''], nql: "(custom_fields.key:'shipping-address'+custom_fields.path:-'country')"}
+    ];
+
+    it.each(cases)('serializes $field $operator to the expected NQL', ({field, operator, values, nql}) => {
+        const serialized = serializeMemberFilters([{id: 'x', field, operator, values}], 'UTC');
+        expect(serialized).toBe(nql);
+    });
+
+    it.each(cases)('parses $field $operator back into the same predicate', ({field, operator, values, nql}) => {
+        expect(stripIds(parseMemberFilter(nql, 'UTC'))).toEqual([
+            {field, operator, values}
+        ]);
+    });
+
+    it.each(cases)('round-trips $field $operator (predicate -> nql -> predicate)', ({field, operator, values}) => {
+        const predicate: FilterPredicate = {id: 'x', field, operator, values};
+        const nql = serializeMemberFilters([predicate], 'UTC');
+        expect(stripIds(parseMemberFilter(nql, 'UTC'))).toEqual([
+            {field, operator, values}
+        ]);
+    });
+
+    it('is enabled for every operator the custom field advertises', () => {
+        const fields = getMemberFields();
+        for (const {field, operator, values} of cases) {
+            expect(isPredicateEnabled({field, operator, values}, fields)).toBe(true);
+        }
+    });
+});

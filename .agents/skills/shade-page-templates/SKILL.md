@@ -94,4 +94,5 @@ If you're tempted to force a non-list shape into `ListPage`, stop and check whet
 
 ## Source of truth
 
-`apps/shade/AGENTS.md`. Human docs: Storybook → Page Templates / Page Types.
+Storybook → Page Templates / Page Types and the `ListPage` and `PageHeader`
+stories.

@@ -1,12 +1,11 @@
 const fs = require('fs-extra');
-const session = require('cookie-session');
-const crypto = require('crypto');
 const path = require('path');
 const config = require('../../../../shared/config');
 const urlUtils = require('../../../../shared/url-utils').default;
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const settingsCache = require('../../../../shared/settings-cache');
+const privateSiteAccess = require('../../../../shared/private-site-access');
 // routeKeywords.private: 'private'
 const privateRoute = '/private/';
 
@@ -14,27 +13,6 @@ const messages = {
     pageNotFound: 'Page not found.',
     wrongAccessCode: 'Incorrect access code.'
 };
-
-function getAccessCode() {
-    const accessCode = settingsCache.get('password');
-    return typeof accessCode === 'string' ? accessCode : '';
-}
-
-function hasAccessCode(accessCode) {
-    return typeof accessCode === 'string' && accessCode.trim().length > 0;
-}
-
-function verifySessionHash(salt, hash) {
-    const accessCode = getAccessCode();
-
-    if (!salt || !hash || !hasAccessCode(accessCode)) {
-        return false;
-    }
-
-    let hasher = crypto.createHash('sha256');
-    hasher.update(accessCode + salt, 'utf8');
-    return hasher.digest('hex') === hash;
-}
 
 function getRedirectUrl(query) {
     try {
@@ -57,11 +35,7 @@ function getRedirectUrl(query) {
 }
 
 function authenticatePrivateSession(req, res, next) {
-    const hash = req.session.token || '';
-    const salt = req.session.salt || '';
-    const isVerified = verifySessionHash(salt, hash);
-
-    if (isVerified) {
+    if (privateSiteAccess.hasAccess(req)) {
         return next();
     } else {
         let redirectUrl = urlUtils.urlFor({relativeUrl: privateRoute});
@@ -72,23 +46,7 @@ function authenticatePrivateSession(req, res, next) {
 }
 
 const privateBlogging = {
-    checkIsPrivate: function checkIsPrivate(req, res, next) {
-        let isPrivateBlog = settingsCache.get('is_private');
-
-        if (!isPrivateBlog) {
-            res.isPrivateBlog = false;
-            return next();
-        }
-
-        res.isPrivateBlog = true;
-
-        return session({
-            name: 'ghost-private',
-            maxAge: (30 * 24 * 60 * 60 * 1000), // 30 days in ms
-            signed: false,
-            sameSite: 'none'
-        })(req, res, next);
-    },
+    checkIsPrivate: privateSiteAccess.loadSession,
 
     filterPrivateRoutes: function filterPrivateRoutes(req, res, next) {
         // If this site is not in private mode, skip
@@ -145,11 +103,7 @@ const privateBlogging = {
             return res.redirect(urlUtils.urlFor('home', true));
         }
 
-        const hash = req.session.token || '';
-        const salt = req.session.salt || '';
-        const isVerified = verifySessionHash(salt, hash);
-
-        if (isVerified) {
+        if (privateSiteAccess.hasAccess(req)) {
             // redirect to home if user is already authenticated
             return res.redirect(urlUtils.urlFor('home', true));
         } else {
@@ -164,16 +118,9 @@ const privateBlogging = {
         }
 
         const submittedAccessCode = req.body && req.body.password;
-        const accessCode = getAccessCode();
-        const hasher = crypto.createHash('sha256');
-        const salt = Date.now().toString();
         const forward = getRedirectUrl(req.query);
 
-        if (hasAccessCode(accessCode) && hasAccessCode(submittedAccessCode) && accessCode === submittedAccessCode) {
-            hasher.update(submittedAccessCode + salt, 'utf8');
-            req.session.token = hasher.digest('hex');
-            req.session.salt = salt;
-
+        if (privateSiteAccess.grantAccess(req, submittedAccessCode)) {
             return res.redirect(urlUtils.urlFor({relativeUrl: forward}));
         } else {
             res.error = {

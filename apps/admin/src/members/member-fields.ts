@@ -133,6 +133,80 @@ const multipleActiveSubscriptionsCodec: FilterCodec = {
     }
 };
 
+// Presence operators: the extra an optional, per-member field has that a table column does
+// not — a column is always set, so no built-in field offers these.
+export const CUSTOM_FIELD_SET_OPERATORS: readonly string[] = ['is-set', 'is-not-set'];
+
+// A custom text field's operators, composed from the shared groups so the members filter
+// keeps one vocabulary: the equality pair (is / is-not) the scalar fields use, then the
+// text matching operators (contains, starts-with, …) with their duplicate `is` dropped,
+// then presence. Labels come from the shared createOperatorOptions default (dash to space),
+// which reads every one of these correctly, so no label map is needed.
+export const CUSTOM_FIELD_OPERATORS: readonly string[] = [
+    ...SCALAR_OPERATORS,
+    ...TEXT_OPERATORS.filter(op => !(SCALAR_OPERATORS as readonly string[]).includes(op)),
+    ...CUSTOM_FIELD_SET_OPERATORS
+];
+
+// NQL operator symbol for each value operator. The field is named in the value
+// position (`custom_fields.key:'…'`) so its key can carry hyphens; the value is
+// matched on `custom_fields.value` (scalar) or `custom_fields.value.<subfield>`
+// (address), which the members filter relation maps onto the real columns.
+const CUSTOM_FIELD_VALUE_SYMBOLS: Record<string, string> = {
+    is: '',
+    'is-not': '-',
+    contains: '~',
+    'does-not-contain': '-~',
+    'starts-with': '~^',
+    'ends-with': '~$'
+};
+
+const customFieldsCodec: FilterCodec = {
+    // Parsing a grouped custom-field expression back to a predicate is bespoke —
+    // its field and part are spread across a `(key + value)` pair — so it's handled
+    // by a compound matcher in member-filter-query.ts, not here.
+    parse() {
+        return null;
+    },
+    // The field's stable key comes from the dropdown entry (`custom_field.<key>`,
+    // resolved into `ctx.params.key`); the predicate carries only [subfield, value],
+    // with subfield '' for a scalar field or the "Any" (whole-field set/unset) case.
+    serialize(predicate, ctx) {
+        const fieldKey = ctx.params.key;
+        const [subfield, value] = predicate.values as [string, string];
+
+        if (!fieldKey) {
+            return null;
+        }
+
+        const keyClause = `custom_fields.key:${escapeNqlString(fieldKey)}`;
+
+        // set / not-set target a part's presence when a part is chosen (`path`), or the
+        // whole field otherwise (the bare key / its negation).
+        if (predicate.operator === 'is-set') {
+            return subfield
+                ? [`(${keyClause}+custom_fields.path:${escapeNqlString(subfield)})`]
+                : [keyClause];
+        }
+
+        if (predicate.operator === 'is-not-set') {
+            return subfield
+                ? [`(${keyClause}+custom_fields.path:-${escapeNqlString(subfield)})`]
+                : [`custom_fields.key:-${escapeNqlString(fieldKey)}`];
+        }
+
+        const symbol = CUSTOM_FIELD_VALUE_SYMBOLS[predicate.operator];
+
+        if (symbol === undefined || value === undefined || value === null || value === '') {
+            return null;
+        }
+
+        const valueKey = subfield ? `custom_fields.value.${subfield}` : 'custom_fields.value';
+
+        return [`(${keyClause}+${valueKey}:${symbol}${escapeNqlString(String(value))})`];
+    }
+};
+
 const baseMemberFields = defineFields({
     name: {
         operators: TEXT_OPERATORS,
@@ -453,6 +527,18 @@ const baseMemberFields = defineFields({
             {value: 'false', label: 'No'}
         ],
         codec: multipleActiveSubscriptionsCodec
+    },
+    // Each defined custom field is its own filter, named directly in the dropdown
+    // (`custom_field.<key>`), so this template supplies the shared operators and codec;
+    // use-member-filter-fields builds one entry per field from the definitions.
+    'custom_field.:key': {
+        operators: CUSTOM_FIELD_OPERATORS,
+        ui: {
+            label: 'Custom field',
+            type: 'custom',
+            component: 'custom-field'
+        },
+        codec: customFieldsCodec
     }
 });
 

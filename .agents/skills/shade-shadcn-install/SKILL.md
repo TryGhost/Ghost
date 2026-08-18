@@ -58,4 +58,5 @@ Raw ShadCN output is not Shade-quality yet. Do all of these:
 
 ## Source of truth
 
-`apps/shade/AGENTS.md`, Storybook → Overview / Contributing.
+Storybook → Overview / Contributing. This skill adds the agent-specific safety
+steps for running the destructive ShadCN CLI.

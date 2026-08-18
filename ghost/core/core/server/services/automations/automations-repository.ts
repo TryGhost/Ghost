@@ -65,6 +65,12 @@ export interface AutomationSummary {
     updated_at: string;
 }
 
+export interface AutomationBrowseResult extends AutomationSummary {
+    stats: {
+        last_run_created_at: Date | null;
+    };
+}
+
 export interface Automation extends AutomationSummary {
     actions: AutomationAction[];
     edges: AutomationEdge[];
@@ -136,7 +142,7 @@ export type AutomationStepTerminalStatus =
     | 'member unsubscribed';
 
 export interface AutomationsRepository {
-    browse(): Promise<Page<AutomationSummary>>;
+    browse(): Promise<Page<AutomationBrowseResult>>;
     getById(id: string): Promise<Automation | null>;
     getAutomationActionLinks(automationId: string, actionId: string): Promise<AutomationActionLink[] | null>;
     edit(id: string, data: EditAutomationData): Promise<Automation | null>;

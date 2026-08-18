@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const ObjectID = require('bson-objectid').default;
-const EmailDeliveredEvent = require('../../../../../../core/server/services/email-service/events/email-delivered-event');
+const {EmailDeliveredEvent} = require('../../../../../../core/server/services/email-service/events/email-delivered-event');
 
 describe('EmailDeliveredEvent', function () {
     it('exports a static create method to create instances', function () {
