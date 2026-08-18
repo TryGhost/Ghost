@@ -15,7 +15,8 @@ describe('GiftBookshelfRepository', function () {
             GiftModel: {
                 findPage: sinon.stub(),
                 ...GiftModel
-            }
+            },
+            knex: sinon.stub() as unknown as Knex
         });
     }
 

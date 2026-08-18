@@ -74,7 +74,7 @@ export interface GiftRepository {
     browseRedemptionEvents(options?: GiftEventBrowseOptions, filter?: ParsedNqlFilter): Promise<GiftEventPage>;
     create(gift: Gift, options?: RepositoryTransactionOptions): Promise<string>;
     update(gift: Gift, options?: RepositoryTransactionOptions): Promise<void>;
-    deletePendingCheckout(id: string, options?: RepositoryTransactionOptions & {startedBefore?: Date}): Promise<boolean>;
+    deletePendingCheckout(id: string): Promise<boolean>;
     transaction<T>(callback: (transacting: Knex.Transaction) => Promise<T>): Promise<T>;
 }
 
@@ -137,9 +137,11 @@ type GiftBookshelfModel = BookshelfModel<GiftRow>;
 
 export class GiftBookshelfRepository implements GiftRepository {
     private readonly model: GiftBookshelfModel;
+    private readonly knex: Knex;
 
-    constructor({GiftModel}: {GiftModel: GiftBookshelfModel}) {
+    constructor({GiftModel, knex}: {GiftModel: GiftBookshelfModel; knex: Knex}) {
         this.model = GiftModel;
+        this.knex = knex;
     }
 
     async existsByCheckoutSessionId(checkoutSessionId: string): Promise<boolean> {
@@ -271,12 +273,10 @@ export class GiftBookshelfRepository implements GiftRepository {
     }
 
     async deleteAbandonedCheckouts(cutoff: Date): Promise<number> {
-        return this.transaction(async (transacting) => {
-            return await transacting('gifts')
-                .where({status: 'payment_pending'})
-                .where('checkout_started_at', '<=', toDatabaseDate(cutoff))
-                .del();
-        });
+        return this.knex('gifts')
+            .where({status: 'payment_pending'})
+            .where('checkout_started_at', '<=', toDatabaseDate(cutoff))
+            .del();
     }
 
     async create(gift: Gift, options: RepositoryTransactionOptions = {}): Promise<string> {
@@ -307,19 +307,12 @@ export class GiftBookshelfRepository implements GiftRepository {
         });
     }
 
-    async deletePendingCheckout(id: string, options: RepositoryTransactionOptions & {startedBefore?: Date} = {}): Promise<boolean> {
-        const remove = async (transacting: Knex.Transaction) => {
-            const query = transacting('gifts')
-                .where({id, status: 'payment_pending'});
+    async deletePendingCheckout(id: string): Promise<boolean> {
+        const deleted = await this.knex('gifts')
+            .where({id, status: 'payment_pending'})
+            .del();
 
-            if (options.startedBefore) {
-                query.where('checkout_started_at', '<=', toDatabaseDate(options.startedBefore));
-            }
-
-            return await query.del() === 1;
-        };
-
-        return options.transacting ? remove(options.transacting) : this.transaction(remove);
+        return deleted === 1;
     }
 
     async transaction<T>(callback: (transacting: Knex.Transaction) => Promise<T>): Promise<T> {

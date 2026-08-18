@@ -1,6 +1,6 @@
 import type {Translate} from '../gift-email-renderer';
 
-export interface GiftDeliveryData {
+export interface GiftDeliveryEmailData {
     siteTitle: string;
     siteUrl: string;
     siteIconUrl: string | null;
@@ -23,7 +23,7 @@ export interface GiftDeliveryData {
     };
 }
 
-export function renderText(data: GiftDeliveryData, t: Translate): string {
+export function renderText(data: GiftDeliveryEmailData, t: Translate): string {
     const interpolation = {escapeValue: false};
     const greeting = data.recipientName ? `${t('Hi {recipientName},', {
         recipientName: data.recipientName,

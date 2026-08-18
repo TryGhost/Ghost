@@ -51,7 +51,8 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
     const {t} = require('../i18n');
 
     const repository = new GiftBookshelfRepository({
-        GiftModel
+        GiftModel,
+        knex: BaseModel.knex
     });
     const deliveryRepository = new GiftDeliveryBookshelfRepository({
         GiftDeliveryModel,

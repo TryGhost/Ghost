@@ -5,7 +5,7 @@ import type {GiftPurchaseConfirmationData} from './email-templates/gift-purchase
 import {renderText as renderPurchaseConfirmationText} from './email-templates/gift-purchase-confirmation';
 import type {GiftReminderData} from './email-templates/gift-reminder';
 import {renderText as renderReminderText} from './email-templates/gift-reminder';
-import type {GiftDeliveryData} from './email-templates/gift-delivery';
+import type {GiftDeliveryEmailData} from './email-templates/gift-delivery';
 import {renderText as renderDeliveryText} from './email-templates/gift-delivery';
 
 export type Translate = (key: string, options?: Record<string, unknown>) => string;
@@ -50,7 +50,7 @@ export class GiftEmailRenderer {
         };
     }
 
-    async renderDelivery(data: GiftDeliveryData): Promise<{html: string; text: string}> {
+    async renderDelivery(data: GiftDeliveryEmailData): Promise<{html: string; text: string}> {
         if (!this.deliveryTemplate) {
             const source = await fs.readFile(path.join(__dirname, './email-templates/gift-delivery.hbs'), 'utf8');
             this.deliveryTemplate = this.handlebars.compile(source);

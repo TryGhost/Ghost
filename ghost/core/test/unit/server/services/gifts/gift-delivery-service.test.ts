@@ -44,8 +44,7 @@ describe('GiftDeliveryService', function () {
             markFailed: sinon.stub().resolves(true),
             markCancelled: sinon.stub().resolves(true),
             cancelPendingForGift: sinon.stub().resolves(false),
-            create: sinon.stub().resolves(undefined),
-            transaction: sinon.stub()
+            create: sinon.stub().resolves(undefined)
         };
         giftEmailService = {
             sendGiftDelivery: sinon.stub().resolves({providerMessageId: 'provider-123'})

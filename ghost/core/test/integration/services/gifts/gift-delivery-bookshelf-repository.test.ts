@@ -17,7 +17,7 @@ describe('GiftDeliveryBookshelfRepository (integration)', function () {
 
         const paidTier = await models.Product.findOne({type: 'paid'}, {require: true});
         paidTierId = paidTier.id;
-        giftRepository = new GiftBookshelfRepository({GiftModel: models.Gift});
+        giftRepository = new GiftBookshelfRepository({GiftModel: models.Gift, knex: models.Base.knex});
         deliveryRepository = new GiftDeliveryBookshelfRepository({
             GiftDeliveryModel: models.GiftDelivery,
             knex: models.Base.knex

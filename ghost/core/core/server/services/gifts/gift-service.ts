@@ -217,13 +217,7 @@ const EmptyCheckoutStringSchema = z.preprocess(
 const RequiredCheckoutStringSchema = (max: number) => z.string().trim().min(1).max(max);
 const CheckoutBuyerEmailSchema = z.string().trim().email().max(GIFT_EMAIL_MAX_LENGTH);
 
-const GiftCheckoutDeliverySchema = z.preprocess((value) => {
-    if (!value || typeof value !== 'object' || 'deliveryMethod' in value) {
-        return value;
-    }
-
-    return {...value, deliveryMethod: 'link'};
-}, z.discriminatedUnion('deliveryMethod', [
+const GiftCheckoutDeliverySchema = z.discriminatedUnion('deliveryMethod', [
     z.object({
         deliveryMethod: z.literal('link'),
         recipientEmail: EmptyCheckoutStringSchema,
@@ -238,7 +232,7 @@ const GiftCheckoutDeliverySchema = z.preprocess((value) => {
         personalMessage: NullableCheckoutStringSchema(GIFT_CHECKOUT_MESSAGE_MAX_LENGTH),
         buyerName: RequiredCheckoutStringSchema(GIFT_NAME_MAX_LENGTH)
     })
-]));
+]);
 
 type GiftCheckoutDelivery = z.infer<typeof GiftCheckoutDeliverySchema>;
 

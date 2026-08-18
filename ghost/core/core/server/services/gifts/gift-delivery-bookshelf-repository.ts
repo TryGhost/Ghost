@@ -14,7 +14,6 @@ export interface GiftDeliveryRepository {
     markCancelled(id: string): Promise<boolean>;
     cancelPendingForGift(token: string, options?: RepositoryTransactionOptions): Promise<boolean>;
     create(delivery: GiftDeliveryData, options?: RepositoryTransactionOptions): Promise<void>;
-    transaction<T>(callback: (transacting: Knex.Transaction) => Promise<T>): Promise<T>;
 }
 
 type BookshelfDocument<T> = {
@@ -28,8 +27,19 @@ type BookshelfFindOptions = RepositoryTransactionOptions & {
 type GiftDeliveryBookshelfModel = {
     add(data: GiftDeliveryRow, options?: RepositoryTransactionOptions): Promise<BookshelfDocument<GiftDeliveryRow>>;
     findOne(data: Partial<GiftDeliveryRow>, options?: BookshelfFindOptions): Promise<BookshelfDocument<GiftDeliveryRow> | null>;
-    transaction<T>(callback: (transacting: Knex.Transaction) => Promise<T>): Promise<T>;
 };
+
+// Deliveries that still need a send attempt: never started, or claimed by a
+// process that has since died and left the claim stale
+function recoverableDeliveries(query: Knex.QueryBuilder, staleBefore: Date): void {
+    query.andWhere((recoverable) => {
+        recoverable.where('gift_deliveries.status', 'pending')
+            .orWhere((stale) => {
+                stale.where('gift_deliveries.status', 'sending')
+                    .where('gift_deliveries.started_at', '<=', toDatabaseDate(staleBefore));
+            });
+    });
+}
 
 export class GiftDeliveryBookshelfRepository implements GiftDeliveryRepository {
     private readonly model: GiftDeliveryBookshelfModel;
@@ -57,48 +67,32 @@ export class GiftDeliveryBookshelfRepository implements GiftDeliveryRepository {
             .select('gift_deliveries.*')
             .join('gifts', 'gifts.id', 'gift_deliveries.gift_id')
             .where('gifts.status', 'purchased')
-            .andWhere((query) => {
-                query.where('gift_deliveries.status', 'pending')
-                    .orWhere((stale) => {
-                        stale.where('gift_deliveries.status', 'sending')
-                            .where('gift_deliveries.started_at', '<=', toDatabaseDate(staleBefore));
-                    });
-            })
+            .modify(recoverableDeliveries, staleBefore)
             .limit(limit);
 
         return rows.map(decodeGiftDeliveryRow);
     }
 
     async tryStartDelivery(id: string, now: Date, staleBefore: Date): Promise<GiftDeliveryData | null> {
-        return this.transaction(async (transacting) => {
-            const startedAt = toDatabaseDate(now);
+        const claimed = await this.knex('gift_deliveries')
+            .where({id})
+            .whereExists((query) => {
+                query.select('gifts.id')
+                    .from('gifts')
+                    .whereRaw('gifts.id = gift_deliveries.gift_id')
+                    .where('gifts.status', 'purchased');
+            })
+            .modify(recoverableDeliveries, staleBefore)
+            .update({
+                status: 'sending',
+                started_at: toDatabaseDate(now)
+            });
 
-            const updated = await transacting('gift_deliveries')
-                .where({id})
-                .whereExists((query) => {
-                    query.select('gifts.id')
-                        .from('gifts')
-                        .whereRaw('gifts.id = gift_deliveries.gift_id')
-                        .where('gifts.status', 'purchased');
-                })
-                .andWhere((query) => {
-                    query.where('gift_deliveries.status', 'pending')
-                        .orWhere((stale) => {
-                            stale.where('gift_deliveries.status', 'sending')
-                                .where('gift_deliveries.started_at', '<=', toDatabaseDate(staleBefore));
-                        });
-                })
-                .update({
-                    status: 'sending',
-                    started_at: startedAt
-                });
+        if (claimed !== 1) {
+            return null;
+        }
 
-            if (updated !== 1) {
-                return null;
-            }
-
-            return this.getById(id, {transacting});
-        });
+        return this.getById(id);
     }
 
     async markSent(id: string, sentAt: Date, providerMessageId: string | null): Promise<boolean> {
@@ -137,10 +131,6 @@ export class GiftDeliveryBookshelfRepository implements GiftDeliveryRepository {
 
     async create(delivery: GiftDeliveryData, options: RepositoryTransactionOptions = {}): Promise<void> {
         await this.model.add(encodeGiftDelivery(delivery), options);
-    }
-
-    async transaction<T>(callback: (transacting: Knex.Transaction) => Promise<T>): Promise<T> {
-        return this.model.transaction(callback);
     }
 
     private async updateState(id: string, from: 'sending', data: Record<string, unknown>): Promise<boolean> {
