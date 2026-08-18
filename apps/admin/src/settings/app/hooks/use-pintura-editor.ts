@@ -4,10 +4,11 @@ import {type Setting, getSettingValues} from '@tryghost/admin-x-framework/api/se
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useCallback, useEffect, useRef, useState} from 'react';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 interface OpenEditorParams {
     image: string;
-    handleSave: (dest: File) => void;
+    handleSave: (dest: File) => void | Promise<void>;
 }
 
 type FrameOptionType = 'solidSharp' | 'solidRound' | 'lineSingle' | 'hook' | 'polaroid' | undefined;
@@ -47,6 +48,7 @@ declare global {
 
 export default function usePinturaEditor() {
     const {config: globalConfig, settings} = useGlobalData() as { config: Config, settings: Setting[] };
+    const handleError = useHandleError();
     const [pintura] = getSettingValues<boolean>(settings, ['pintura']);
     const [scriptLoaded, setScriptLoaded] = useState<boolean>(false);
     const [cssLoaded, setCssLoaded] = useState<boolean>(false);
@@ -219,13 +221,13 @@ export default function usePinturaEditor() {
                 });
 
                 editor.on('process', (result) => {
-                    handleSave(result.dest);
+                    Promise.resolve(handleSave(result.dest)).catch(handleError);
                 });
 
                 setIsOpen(true);
             }
         },
-        [isEnabled]
+        [handleError, isEnabled]
     );
 
     // Only allow closing the modal if the close button was clicked

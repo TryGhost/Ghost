@@ -39,7 +39,8 @@ export interface SettingsModalProps {
     footerClassName?: string;
     header?: boolean;
     padding?: boolean;
-    onOk?: () => void;
+    /** May be async; the modal fires it without awaiting, so the handler owns its own error handling. */
+    onOk?: () => void | Promise<void>;
     onCancel?: () => void;
     topRightContent?: 'close' | React.ReactNode;
     hideXOnMobile?: boolean;
@@ -222,7 +223,7 @@ const SettingsModal = forwardRef<HTMLElement, SettingsModalProps>(({
         const handleCMDS = (event: KeyboardEvent) => {
             if ((event.metaKey || event.ctrlKey) && event.key === 's') {
                 event.preventDefault();
-                onOk();
+                void onOk();
             }
         };
 
@@ -291,7 +292,7 @@ const SettingsModal = forwardRef<HTMLElement, SettingsModalProps>(({
                         </Button>
                     )}
                     {okLabel && (
-                        <Button data-testid='ok-modal' disabled={buttonsDisabled || okDisabled || okLoading} type='button' variant={okVariant} onClick={onOk}>
+                        <Button data-testid='ok-modal' disabled={buttonsDisabled || okDisabled || okLoading} type='button' variant={okVariant} onClick={() => void onOk?.()}>
                             {okLoading && <LoadingIndicator size='sm' />}
                             {okLabel}
                         </Button>
