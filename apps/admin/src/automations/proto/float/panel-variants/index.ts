@@ -3,6 +3,7 @@ import type {ProtoSlot} from '@/automations/proto/shared/proto-variants';
 import type {LeftPanelProps} from './types';
 import {CanvasSidePanel} from '@/automations/proto/float/panels';
 import {LeftPanelVariantB} from './variant-b';
+import {LeftPanelVariantC} from './variant-c';
 
 export type {LeftPanelProps} from './types';
 
@@ -13,7 +14,8 @@ export type {LeftPanelProps} from './types';
 // first variant.
 const VARIANTS: {id: string; label: string; component: React.FC<LeftPanelProps>}[] = [
     {id: 'performance', label: 'Variant A — four statuses', component: CanvasSidePanel},
-    {id: 'variant-b', label: 'Variant B — simplified', component: LeftPanelVariantB}
+    {id: 'variant-b', label: 'Variant B — simplified', component: LeftPanelVariantB},
+    {id: 'variant-c', label: 'Variant C — status leads', component: LeftPanelVariantC}
 ];
 
 export const LEFT_PANEL_SLOT: ProtoSlot = {

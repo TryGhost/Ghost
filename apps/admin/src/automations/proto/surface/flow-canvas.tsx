@@ -10,7 +10,7 @@ import {EmailAnalyticsSheet, type SheetEmail} from './email-analytics-sheet';
 import {EmailStatsFooter} from './email-analytics';
 import {NODE_BODY_PADDING, NODE_CARD_SURFACE, NodeCard, NodeHeader, type NodeBorder} from './flow-node-shell';
 import {EmailPreview} from './email-preview';
-import {InProgressGlyph} from '@/automations/proto/shared/run-glyphs';
+import {CompletedGlyph, ExitedGlyph, InProgressGlyph} from '@/automations/proto/shared/run-glyphs';
 
 // Height the email preview (subject + body sheet) adds to a read/run email node, on
 // top of the header. Footer (stats or run detail) is added separately. Estimated —
@@ -60,39 +60,17 @@ type FlowNodeData = {
 // runs table uses, so the step a member is sitting at is marked the way their row
 // is. States with nothing to mark (not reached, skipped) run text-only rather
 // than inventing a glyph for an absence.
-// TRYING: the state as a badge rather than a bare glyph.
-//
-// The idea is that the outcome is the part you scan for, so it gets a shape of
-// its own and the narrative drops back — one strong left anchor per card instead
-// of a uniform grey line you have to read to parse. The risk is a canvas of
-// coloured pills competing with the cards themselves, which is why it's worth
-// looking at rather than reasoning about. To undo: drop RunStateBadge and put the
-// glyph back inline.
-//
-// Tints follow the recipe the automation status badge uses — colour/20 fill,
-// -600 text in light, the plain alias in dark. Skipped and upcoming get no badge:
-// nothing happened, so there's no outcome to name.
-const STATE_BADGE: Partial<Record<NonNullable<FlowNodeData['state']>, {label: string; className: string; glyph: React.ReactNode}>> = {
-    done: {
-        label: 'Completed',
-        className: 'bg-green/20 text-green-600 dark:text-green',
-        glyph: <LucideIcon.Check className="size-3 shrink-0" strokeWidth={2.5} />
-    },
-    current: {
-        label: 'In progress',
-        className: 'bg-blue/20 text-blue-600 dark:text-blue',
-        glyph: <InProgressGlyph className="size-3" />
-    },
-    exited: {
-        label: 'Exited',
-        className: 'bg-muted text-muted-foreground',
-        glyph: <LucideIcon.LogOut className="size-3 shrink-0" strokeWidth={1.5} />
-    },
-    failed: {
-        label: 'Failed',
-        className: 'bg-red/20 text-red-600 dark:text-red',
-        glyph: <LucideIcon.CircleAlert className="size-3 shrink-0" strokeWidth={2} />
-    }
+// The badge version tried here read as too busy — a coloured pill on every card
+// competed with the cards themselves rather than sitting quietly at their foot.
+// Back to one muted text style, with only the leading icon carrying colour. The
+// three custom glyphs are drawn on the same circle at the same weight
+// specifically so this row keeps a rhythm even without the badge doing it —
+// same shape, four things happening to it.
+const STATE_ICON: Partial<Record<NonNullable<FlowNodeData['state']>, {className: string; glyph: React.ReactNode}>> = {
+    done: {className: 'text-green-600 dark:text-green', glyph: <CompletedGlyph />},
+    current: {className: 'text-blue-600 dark:text-blue', glyph: <InProgressGlyph />},
+    exited: {className: 'text-muted-foreground', glyph: <ExitedGlyph />},
+    failed: {className: 'text-red-600 dark:text-red', glyph: <LucideIcon.CircleAlert className="size-4 shrink-0" strokeWidth={2} />}
 };
 
 const RunDetailLine: React.FC<{
@@ -101,21 +79,16 @@ const RunDetailLine: React.FC<{
     detail?: string | null;
     at?: string | null;
 }> = ({state, label, detail, at}) => {
-    const badge = state ? STATE_BADGE[state] : undefined;
-    // Supporting text and timestamp share one muted run, joined by the same single
-    // separator the format uses everywhere else.
-    const tail = [detail, at].filter(Boolean).join(' · ');
+    const icon = state ? STATE_ICON[state] : undefined;
+    // The visible phrase leads with what happened; label only fills in where
+    // there's no detail to lead with (the trigger's "Entered" — enrolling isn't a
+    // step outcome the way "Opened" or "Unsubscribed" is). Timestamp trails behind
+    // the same single separator the format uses everywhere else.
+    const text = [detail ?? label, at].filter(Boolean).join(' · ');
     return (
-        <div className="flex items-center gap-2 text-xs">
-            {/* rounded-full + px-2, matching the automation status pill — same shape,
-                same fill recipe, just smaller to sit in a 12px line. */}
-            {badge && (
-                <span className={cn('inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-2xs font-semibold uppercase', badge.className)}>
-                    {badge.glyph}
-                    {label ?? badge.label}
-                </span>
-            )}
-            {tail && <span className="min-w-0 truncate text-muted-foreground">{tail}</span>}
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            {icon && <span className={cn('shrink-0', icon.className)}>{icon.glyph}</span>}
+            {text && <span className="min-w-0 truncate">{text}</span>}
         </div>
     );
 };
@@ -135,7 +108,7 @@ const FlowStepNode: React.FC<NodeProps> = ({data}) => {
         return (
             <div className={cn('flex w-[400px] items-center justify-center gap-2 rounded-full border px-4 py-2 text-sm font-medium', NODE_CARD_SURFACE, terminalBorder, muted && 'opacity-60')}>
                 <Handle position={Position.Top} style={{opacity: 0}} type="target" />
-                {done && <LucideIcon.Check className="size-4 text-green-600 dark:text-green" strokeWidth={2.5} />}
+                {done && <CompletedGlyph className="text-green-600 dark:text-green" />}
                 <span className={cn(done && 'text-green-600 dark:text-green', muted && 'text-muted-foreground')}>{d.title}</span>
             </div>
         );

@@ -6,6 +6,7 @@ import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
 import type {AutomationRun, AutomationScenario} from '@/automations/proto/shared/mock';
 import {toAreaData} from '@/automations/proto/shared/chart';
 import {SortHead, type SortState} from '@/automations/proto/float/sort-head';
+import {CompletedGlyph} from '@/automations/proto/shared/run-glyphs';
 import {startedLabel} from '@/automations/proto/shared/member-runs';
 import {useStickyList} from '@/automations/proto/float/use-sticky-list';
 
@@ -84,7 +85,13 @@ const StatusGlyph: React.FC<{run: AutomationRun; label: string; pct: number}> = 
     if (run.status === 'in_progress') {
         return <ProgressRing value={pct} />;
     }
-    const Icon = label === 'Upgraded' ? LucideIcon.ChevronsUp : label === 'Unsubscribed' ? LucideIcon.CircleMinus : LucideIcon.Check;
+    // Done takes the shared completed glyph so it matches the canvas. Upgraded and
+    // Unsubscribed stay on Lucide — they're this variant's own split of "exited
+    // early", and the shared set only draws the three states everything else uses.
+    if (label !== 'Upgraded' && label !== 'Unsubscribed') {
+        return <CompletedGlyph className="size-[18px]" />;
+    }
+    const Icon = label === 'Upgraded' ? LucideIcon.ChevronsUp : LucideIcon.CircleMinus;
     return <Icon className="size-[18px] shrink-0" strokeWidth={1.5} />;
 };
 
@@ -101,7 +108,7 @@ const STATUS_FACETS: {label: string; color: string; glyph: React.ReactNode}[] = 
     {label: 'Running', color: 'text-blue-600 dark:text-blue', glyph: <ProgressRing value={50} />},
     {label: 'Upgraded', color: 'text-green-600 dark:text-green', glyph: <LucideIcon.ChevronsUp strokeWidth={1.5} />},
     {label: 'Unsubscribed', color: 'text-yellow-600 dark:text-yellow', glyph: <LucideIcon.CircleMinus strokeWidth={1.5} />},
-    {label: 'Done', color: 'text-muted-foreground', glyph: <LucideIcon.Check strokeWidth={1.5} />}
+    {label: 'Done', color: 'text-muted-foreground', glyph: <CompletedGlyph className="size-[18px]" />}
 ];
 
 type SortKey = 'member' | 'started' | 'status';

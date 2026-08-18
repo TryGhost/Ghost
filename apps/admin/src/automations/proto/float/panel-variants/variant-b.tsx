@@ -5,7 +5,7 @@ import {FilterBar, GhAreaChart} from '@tryghost/shade/patterns';
 import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
 import type {AutomationRun} from '@/automations/proto/shared/mock';
 import type {LeftPanelProps} from './types';
-import {InProgressGlyph} from '@/automations/proto/shared/run-glyphs';
+import {CompletedGlyph, ExitedGlyph, InProgressGlyph} from '@/automations/proto/shared/run-glyphs';
 import {SortHead, type SortState} from '@/automations/proto/float/sort-head';
 import {startedLabel} from '@/automations/proto/shared/member-runs';
 import {toAreaData} from '@/automations/proto/shared/chart';
@@ -26,6 +26,11 @@ import {useStickyList} from '@/automations/proto/float/use-sticky-list';
 //   describing a run agree.
 // - "Entered" rather than "Started", which was ambiguous about whether it meant
 //   the run or the member.
+//
+// Variant C (variant-c.tsx) renders this same panel with `statusLeads` — the
+// status icon moves in front of the member name under a blank (but still
+// sortable) header. One base rather than a forked file, so the two variants can
+// only differ in the one thing they're comparing.
 
 const CHART_HEIGHT = 'h-44';
 
@@ -44,8 +49,8 @@ const statusOf = (run: AutomationRun): StatusKey => {
 // the same thing.
 const STATUS_FACETS: {key: StatusKey; color: string; glyph: React.ReactNode}[] = [
     {key: 'In progress', color: 'text-blue-600 dark:text-blue', glyph: <InProgressGlyph />},
-    {key: 'Completed', color: 'text-green-600 dark:text-green', glyph: <LucideIcon.Check className="size-4 shrink-0" strokeWidth={2} />},
-    {key: 'Exited early', color: 'text-muted-foreground', glyph: <LucideIcon.LogOut className="size-4 shrink-0" strokeWidth={1.5} />}
+    {key: 'Completed', color: 'text-green-600 dark:text-green', glyph: <CompletedGlyph />},
+    {key: 'Exited early', color: 'text-muted-foreground', glyph: <ExitedGlyph />}
 ];
 
 const facetColor = (status: StatusKey): string => STATUS_FACETS.find(facet => facet.key === status)?.color ?? '';
@@ -60,7 +65,22 @@ const RANGE_OPTIONS: {value: string; label: string}[] = [
 
 type EnrichedRun = {run: AutomationRun; status: StatusKey};
 
-export const LeftPanelVariantB: React.FC<LeftPanelProps> = ({scenario, selectedMemberId, onSelectMember, onSearchOpenChange, onCollapse, headerDocked = false}) => {
+// The one appended phrase in the status-leads layout: early exits carry their
+// reason after the name, lowercased so it continues the sentence ("Priya Nair
+// unsubscribed"). In-progress and completed rows stay bare — their glyphs are
+// self-explanatory, and the reason is the only text that adds something the icon
+// can't say. (Both a full labelled status column and suffixes on every row were
+// tried on the way here; one duplicated the glyph in words, the other made
+// every row talk.)
+const exitSuffix = (status: StatusKey, run: AutomationRun): string | null => {
+    if (status !== 'Exited early') {
+        return null;
+    }
+    const reason = run.exit_reason ?? 'Exited early';
+    return reason.charAt(0).toLowerCase() + reason.slice(1);
+};
+
+export const LeftPanelBase: React.FC<LeftPanelProps & {statusLeads?: boolean}> = ({scenario, selectedMemberId, onSelectMember, onSearchOpenChange, onCollapse, headerDocked = false, statusLeads = false}) => {
     const {automation, metrics, runs} = scenario;
     const [range, setRange] = useState('all');
     const [query, setQuery] = useState('');
@@ -211,11 +231,14 @@ export const LeftPanelVariantB: React.FC<LeftPanelProps> = ({scenario, selectedM
                     )}
                     {/* A plain filter button rather than a labelled timeframe control: the
                         timeframe is one of several things we'll want to filter on, and this
-                        is the affordance the rest of Ghost already uses. */}
+                        is the affordance the rest of Ghost already uses — the funnel from
+                        the members page filter bar, not a generic sliders icon, so the same
+                        action reads the same way everywhere it appears. FunnelPlus once a
+                        filter's applied is the members page's own convention too. */}
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button aria-label="Filter" className={cn(range !== 'all' && 'bg-muted')} size="icon" type="button" variant="ghost">
-                                <LucideIcon.ListFilter strokeWidth={2} />
+                                {range !== 'all' ? <LucideIcon.FunnelPlus strokeWidth={2} /> : <LucideIcon.Funnel strokeWidth={2} />}
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
@@ -359,15 +382,19 @@ export const LeftPanelVariantB: React.FC<LeftPanelProps> = ({scenario, selectedM
                     <Table className="table-fixed" data-testid="float-entries-table">
                         <TableHeader>
                             <TableRow className="hover:bg-transparent">
-                                <SortHead label="Member" onSort={onSort} sort={sort} sortKey="member" />
+                                {/* Status leading: the icon is the first thing in every
+                                    row, so grouping rows by it is what clicking this
+                                    header visibly does — the Member header sorts by
+                                    STATUS, with name as the tie-break inside each group. */}
+                                <SortHead label="Member" onSort={onSort} sort={sort} sortKey={statusLeads ? 'status' : 'member'} />
                                 <SortHead className="w-24" label="Entered" onSort={onSort} sort={sort} sortKey="entered" />
-                                <SortHead className="w-20" label="Status" onSort={onSort} sort={sort} sortKey="status" />
+                                {!statusLeads && <SortHead className="w-20" label="Status" onSort={onSort} sort={sort} sortKey="status" />}
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {sorted.length === 0 && (
                                 <TableRow className="hover:bg-transparent">
-                                    <TableCell className="py-6 text-center text-sm text-muted-foreground" colSpan={3}>No members match.</TableCell>
+                                    <TableCell className="py-6 text-center text-sm text-muted-foreground" colSpan={statusLeads ? 2 : 3}>No members match.</TableCell>
                                 </TableRow>
                             )}
                             {sorted.map(({run, status}) => {
@@ -381,7 +408,22 @@ export const LeftPanelVariantB: React.FC<LeftPanelProps> = ({scenario, selectedM
                                         onClick={() => onSelectMember(isSelected ? null : run.id)}
                                     >
                                         <TableCell className="min-w-0 px-4 py-4 group-hover:bg-transparent">
-                                            <span className={`block min-w-0 truncate text-base ${isSelected ? 'font-semibold' : 'font-medium'}`}>{run.member.name}</span>
+                                            {statusLeads ? (
+                                                <div className="flex min-w-0 items-center gap-2.5">
+                                                    <span className={cn('shrink-0', facetColor(status))} title={status}>{facetGlyph(status)}</span>
+                                                    {/* One truncating span so a long name + reason
+                                                        clips as a unit. The reason drops to muted —
+                                                        with most rows bare, the few that speak don't
+                                                        need full-strength text to be found, and muted
+                                                        keeps the name column reading as names. */}
+                                                    <span className="min-w-0 truncate text-base">
+                                                        <span className="font-semibold">{run.member.name}</span>
+                                                        {exitSuffix(status, run) && <span className="text-muted-foreground"> {exitSuffix(status, run)}</span>}
+                                                    </span>
+                                                </div>
+                                            ) : (
+                                                <span className={`block min-w-0 truncate text-base ${isSelected ? 'font-semibold' : 'font-medium'}`}>{run.member.name}</span>
+                                            )}
                                         </TableCell>
                                         <TableCell className="w-24 px-4 py-4 align-middle group-hover:bg-transparent">
                                             {/* Matches panels.tsx — same size and colour as
@@ -390,12 +432,14 @@ export const LeftPanelVariantB: React.FC<LeftPanelProps> = ({scenario, selectedM
                                                 variants differ only where they mean to. */}
                                             <span className="block truncate text-base">{startedLabel(run.enrolled_at)}</span>
                                         </TableCell>
-                                        <TableCell className="w-20 px-4 py-4 text-center align-middle group-hover:bg-transparent">
-                                            {/* Icon only — the cards above name each state. */}
-                                            <div className={cn('flex justify-center', facetColor(status))} title={status}>
-                                                {facetGlyph(status)}
-                                            </div>
-                                        </TableCell>
+                                        {!statusLeads && (
+                                            <TableCell className="w-20 px-4 py-4 text-center align-middle group-hover:bg-transparent">
+                                                {/* Icon only — the cards above name each state. */}
+                                                <div className={cn('flex justify-center', facetColor(status))} title={status}>
+                                                    {facetGlyph(status)}
+                                                </div>
+                                            </TableCell>
+                                        )}
                                     </TableRow>
                                 );
                             })}
@@ -407,3 +451,6 @@ export const LeftPanelVariantB: React.FC<LeftPanelProps> = ({scenario, selectedM
         </div>
     );
 };
+
+// Variant B proper: the trailing status column, as reviewed so far.
+export const LeftPanelVariantB: React.FC<LeftPanelProps> = props => <LeftPanelBase {...props} />;

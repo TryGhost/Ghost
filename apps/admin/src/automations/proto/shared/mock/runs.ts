@@ -64,9 +64,11 @@ function shiftIso(iso: string | null, days: number): string | null {
 // synthetic members retracing the same journey is the point — but a delivery
 // failure is meant to be the rare one you have to go looking for, and cloning the
 // template that carries it turned every exited run in the scenario into a broken
-// send.
+// send. The step flag alone isn't enough: the run-level exit_reason rides along
+// too, so a de-failed clone also gets an ordinary member-driven exit, or every
+// clone still *says* "Delivery failed" while its steps claim otherwise.
 function cloneStep(step: RunStep, days: number): RunStep {
-    const next: RunStep = {...step, occurred_at: shiftIso(step.occurred_at, days)};
+    const next: RunStep = {...step, occurred_at: shiftIso(step.occurred_at, days), detail: step.failed ? 'Unsubscribed' : step.detail};
     delete next.failed;
     return next;
 }
@@ -75,11 +77,13 @@ function cloneRunForMember(template: AutomationRun, automationId: string, index:
     // Push each synthetic run further back in history than the last, so the
     // list reads as an ongoing history rather than a pile of same-day runs.
     const days = 14 + index * 3;
+    const failedTemplate = template.steps.some(step => step.failed);
     return {
         ...template,
         id: `run_${automationId}_${index}`,
         automation_id: automationId,
         member: buildSyntheticMember(automationId, index),
+        exit_reason: failedTemplate ? 'Unsubscribed' : template.exit_reason,
         enrolled_at: shiftIso(template.enrolled_at, days)!,
         completed_at: shiftIso(template.completed_at, days),
         steps: template.steps.map(step => cloneStep(step, days))
