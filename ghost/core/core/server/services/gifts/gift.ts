@@ -41,8 +41,10 @@ export type GiftFromCheckoutData = Pick<GiftDataInput,
 >;
 
 export interface CompleteGiftPurchaseData {
-    buyerEmail: string;
+    buyerEmail: string | null;
     buyerMemberId: string | null;
+    currency: string;
+    amount: number;
     stripeCheckoutSessionId: string;
     stripePaymentIntentId: string;
     purchasedAt?: Date;

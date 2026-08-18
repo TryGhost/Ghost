@@ -123,7 +123,7 @@ interface StaffServiceEmails {
 
 const GiftPurchaseDataSchema = z.object({
     token: z.string().min(1),
-    buyerEmail: z.string().email().max(GIFT_EMAIL_MAX_LENGTH),
+    buyerEmail: z.string().min(1),
     stripeCustomerId: z.string().min(1).nullable(),
     tierId: z.string().min(1),
     cadence: GiftCadenceSchema,
@@ -136,9 +136,18 @@ const GiftPurchaseDataSchema = z.object({
 
 export type GiftPurchaseData = z.input<typeof GiftPurchaseDataSchema>;
 
+const StripeBuyerEmailSchema = z.unknown().transform((value): string | null => {
+    if (typeof value !== 'string') {
+        return null;
+    }
+
+    const email = value.trim();
+    return email && email.length <= GIFT_EMAIL_MAX_LENGTH ? email : null;
+});
+
 const GiftPaymentCompletionSchema = z.object({
     giftId: z.string().min(1),
-    buyerEmail: z.string().email().max(GIFT_EMAIL_MAX_LENGTH),
+    buyerEmail: StripeBuyerEmailSchema,
     stripeCustomerId: z.string().min(1).nullable(),
     currency: z.string().min(1),
     amount: z.number().int().nonnegative(),
@@ -202,6 +211,14 @@ const NullableCheckoutStringSchema = (max: number) => z.preprocess(
     z.string().trim().max(max).nullable().optional().default(null)
 );
 
+const EmptyCheckoutStringSchema = z.preprocess(
+    value => typeof value === 'string' && value.trim() === '' ? null : value,
+    z.null().optional().default(null)
+);
+
+const RequiredCheckoutStringSchema = (max: number) => z.string().trim().min(1).max(max);
+const CheckoutBuyerEmailSchema = z.string().trim().email().max(GIFT_EMAIL_MAX_LENGTH);
+
 const GiftCheckoutDeliverySchema = z.preprocess((value) => {
     if (!value || typeof value !== 'object' || 'deliveryMethod' in value) {
         return value;
@@ -211,9 +228,9 @@ const GiftCheckoutDeliverySchema = z.preprocess((value) => {
 }, z.discriminatedUnion('deliveryMethod', [
     z.object({
         deliveryMethod: z.literal('link'),
-        recipientEmail: z.null().optional().default(null),
-        recipientName: z.null().optional().default(null),
-        personalMessage: z.null().optional().default(null),
+        recipientEmail: EmptyCheckoutStringSchema,
+        recipientName: EmptyCheckoutStringSchema,
+        personalMessage: EmptyCheckoutStringSchema,
         buyerName: NullableCheckoutStringSchema(GIFT_NAME_MAX_LENGTH)
     }),
     z.object({
@@ -221,7 +238,7 @@ const GiftCheckoutDeliverySchema = z.preprocess((value) => {
         recipientEmail: z.string().trim().email().max(GIFT_EMAIL_MAX_LENGTH),
         recipientName: NullableCheckoutStringSchema(GIFT_NAME_MAX_LENGTH),
         personalMessage: NullableCheckoutStringSchema(GIFT_CHECKOUT_MESSAGE_MAX_LENGTH),
-        buyerName: NullableCheckoutStringSchema(GIFT_NAME_MAX_LENGTH)
+        buyerName: RequiredCheckoutStringSchema(GIFT_NAME_MAX_LENGTH)
     })
 ]));
 
@@ -303,6 +320,15 @@ export class GiftService {
                 context: 'Gift email delivery is not available'
             });
         }
+
+        const parsedBuyerEmail = CheckoutBuyerEmailSchema.safeParse(input.buyer.email);
+        if (customizationEnabled && !parsedBuyerEmail.success) {
+            throw new errors.BadRequestError({
+                message: 'Bad Request.',
+                context: `Invalid gift buyer email: ${parsedBuyerEmail.error.issues[0].message}`
+            });
+        }
+        const buyerEmail = parsedBuyerEmail.success ? parsedBuyerEmail.data : input.buyer.email;
 
         const parsedDelivery = GiftCheckoutDeliverySchema.safeParse(customizationEnabled ? {
             deliveryMethod: input.deliveryMethod ?? 'link',
@@ -408,15 +434,15 @@ export class GiftService {
             successUrl.searchParams.set('gift_duration', String(totalMonths));
         }
 
-        const customerId = input.buyer.isAuthenticated
-            ? await this.deps.checkoutAdapter.getCustomerId(input.buyer)
+        const buyer = {...input.buyer, email: buyerEmail};
+        const customerId = buyer.isAuthenticated
+            ? await this.deps.checkoutAdapter.getCustomerId(buyer)
             : null;
-        const buyerName = delivery.buyerName ?? input.buyer.name;
         const gift = Gift.fromCheckout({
             token,
-            buyerEmail: input.buyer.email,
-            buyerMemberId: input.buyer.isAuthenticated ? input.buyer.memberId : null,
-            buyerName,
+            buyerEmail,
+            buyerMemberId: buyer.isAuthenticated ? buyer.memberId : null,
+            buyerName: delivery.buyerName,
             recipientName: delivery.recipientName,
             personalMessage: delivery.personalMessage,
             tierId,
@@ -448,7 +474,7 @@ export class GiftService {
                 successUrl: successUrl.toString(),
                 cancelUrl: input.cancelUrl,
                 customerId,
-                customerEmail: customerId ? null : input.buyer.email,
+                customerEmail: customerId ? null : buyerEmail,
                 idempotencyKey: giftId
             });
         } catch (err) {
@@ -515,13 +541,11 @@ export class GiftService {
             if (gift.stripeCheckoutSessionId && gift.stripeCheckoutSessionId !== data.stripeCheckoutSessionId) {
                 throw new errors.ValidationError({message: 'Checkout session does not match gift.'});
             }
-            if (gift.amount !== data.amount || gift.currency !== data.currency.toLowerCase()) {
-                throw new errors.ValidationError({message: 'Checkout amount does not match gift.'});
-            }
-
             const purchased = gift.completePurchase({
-                buyerEmail: data.buyerEmail,
+                buyerEmail: gift.buyerEmail ?? data.buyerEmail,
                 buyerMemberId: member?.id ?? gift.buyerMemberId,
+                currency: data.currency.toLowerCase(),
+                amount: data.amount,
                 stripeCheckoutSessionId: data.stripeCheckoutSessionId,
                 stripePaymentIntentId: data.stripePaymentIntentId
             });
@@ -587,10 +611,16 @@ export class GiftService {
             throw new errors.NotFoundError({message: `Tier not found: ${gift.tierId}`});
         }
 
+        const buyerEmail = gift.buyerEmail ?? member?.get('email') ?? null;
+        if (!buyerEmail) {
+            logging.warn(`Skipping purchase notifications for gift ${gift.token} because the buyer email is unavailable`);
+            return;
+        }
+
         try {
             await this.deps.staffServiceEmails.notifyGiftPurchased({
                 name: member?.get('name') ?? null,
-                email: member?.get('email') ?? gift.buyerEmail!,
+                email: member?.get('email') ?? buyerEmail,
                 memberId: member?.id ?? null,
                 amount: gift.amount,
                 currency: gift.currency,
@@ -604,7 +634,7 @@ export class GiftService {
 
         try {
             await this.deps.giftEmailService.sendPurchaseConfirmation({
-                buyerEmail: gift.buyerEmail!,
+                buyerEmail,
                 token: gift.token,
                 tierName: tier.name,
                 cadence: gift.cadence,

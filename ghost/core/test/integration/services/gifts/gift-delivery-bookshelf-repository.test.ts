@@ -18,7 +18,10 @@ describe('GiftDeliveryBookshelfRepository (integration)', function () {
         const paidTier = await models.Product.findOne({type: 'paid'}, {require: true});
         paidTierId = paidTier.id;
         giftRepository = new GiftBookshelfRepository({GiftModel: models.Gift});
-        deliveryRepository = new GiftDeliveryBookshelfRepository({GiftDeliveryModel: models.GiftDelivery});
+        deliveryRepository = new GiftDeliveryBookshelfRepository({
+            GiftDeliveryModel: models.GiftDelivery,
+            knex: models.Base.knex
+        });
     });
 
     afterEach(async function () {
@@ -28,10 +31,12 @@ describe('GiftDeliveryBookshelfRepository (integration)', function () {
 
     async function createPendingEmailGift({
         startedAt = null,
+        deliveryStatus = 'pending',
         giftStatus = 'purchased',
         purchasedAt = new Date()
     }: {
         startedAt?: Date | null;
+        deliveryStatus?: string;
         giftStatus?: string;
         purchasedAt?: Date;
     } = {}) {
@@ -65,7 +70,7 @@ describe('GiftDeliveryBookshelfRepository (integration)', function () {
         const delivery = await models.GiftDelivery.add({
             gift_id: gift.id,
             recipient_email: `recipient-${giftSequence}@example.com`,
-            status: 'pending',
+            status: deliveryStatus,
             started_at: startedAt,
             email_sent_at: null,
             email_provider_message_id: null
@@ -112,8 +117,8 @@ describe('GiftDeliveryBookshelfRepository (integration)', function () {
         const {delivery} = await createPendingEmailGift();
 
         const starts = await Promise.all([
-            deliveryRepository.tryStartDelivery(delivery.id, startedAt),
-            deliveryRepository.tryStartDelivery(delivery.id, startedAt)
+            deliveryRepository.tryStartDelivery(delivery.id, startedAt, new Date(startedAt.getTime() - 60 * 60 * 1000)),
+            deliveryRepository.tryStartDelivery(delivery.id, startedAt, new Date(startedAt.getTime() - 60 * 60 * 1000))
         ]);
         const reloaded = await deliveryRepository.getById(delivery.id);
 
@@ -136,16 +141,44 @@ describe('GiftDeliveryBookshelfRepository (integration)', function () {
             giftStatus: 'refunded'
         });
 
-        assert.equal(await deliveryRepository.tryStartDelivery(delivery.id, startedAt), null);
+        assert.equal(await deliveryRepository.tryStartDelivery(delivery.id, startedAt, new Date(startedAt.getTime() - 60 * 60 * 1000)), null);
     });
 
-    it('finds pending deliveries only after their gift has been purchased', async function () {
+    it('finds pending and stale sending deliveries only for purchased gifts', async function () {
+        const now = new Date('2026-08-18T12:00:00.000Z');
+        const staleBefore = new Date('2026-08-18T11:00:00.000Z');
         const purchased = await createPendingEmailGift();
         await createPendingEmailGift({giftStatus: 'payment_pending'});
+        const stale = await createPendingEmailGift({
+            deliveryStatus: 'sending',
+            startedAt: new Date('2026-08-18T10:00:00.000Z')
+        });
+        await createPendingEmailGift({
+            deliveryStatus: 'sending',
+            startedAt: now
+        });
 
-        const deliveries = await deliveryRepository.findPendingForPurchasedGifts(100);
+        const deliveries = await deliveryRepository.findRecoverableForPurchasedGifts(staleBefore, 100);
 
-        assert.deepEqual(deliveries.map(delivery => delivery.id), [purchased.delivery.id]);
+        assert.deepEqual(new Set(deliveries.map(delivery => delivery.id)), new Set([purchased.delivery.id, stale.delivery.id]));
+    });
+
+    it('allows exactly one concurrent caller to reclaim a stale sending delivery', async function () {
+        const now = new Date('2026-08-18T12:00:00.000Z');
+        const staleBefore = new Date('2026-08-18T11:00:00.000Z');
+        const {delivery} = await createPendingEmailGift({
+            deliveryStatus: 'sending',
+            startedAt: new Date('2026-08-18T10:00:00.000Z')
+        });
+
+        const starts = await Promise.all([
+            deliveryRepository.tryStartDelivery(delivery.id, now, staleBefore),
+            deliveryRepository.tryStartDelivery(delivery.id, now, staleBefore)
+        ]);
+
+        assert.equal(starts.filter(Boolean).length, 1);
+        assert.equal(starts.filter(start => start === null).length, 1);
+        assert.equal((await deliveryRepository.getById(delivery.id))?.startedAt?.toISOString(), now.toISOString());
     });
 
     it('deletes abandoned pending checkouts with their delivery PII', async function () {
@@ -185,6 +218,13 @@ describe('GiftDeliveryBookshelfRepository (integration)', function () {
 
     it('cancels a pending delivery by gift token', async function () {
         const {gift, delivery} = await createPendingEmailGift();
+
+        assert.equal(await deliveryRepository.cancelPendingForGift(gift.get('token')), true);
+        assert.equal((await deliveryRepository.getById(delivery.id))?.status, 'cancelled');
+    });
+
+    it('cancels a sending delivery by gift token', async function () {
+        const {gift, delivery} = await createPendingEmailGift({deliveryStatus: 'sending', startedAt: new Date()});
 
         assert.equal(await deliveryRepository.cancelPendingForGift(gift.get('token')), true);
         assert.equal((await deliveryRepository.getById(delivery.id))?.status, 'cancelled');

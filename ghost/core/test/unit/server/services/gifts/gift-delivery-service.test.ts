@@ -38,7 +38,7 @@ describe('GiftDeliveryService', function () {
         giftDeliveryRepository = {
             getById: sinon.stub().resolves(null),
             getByGiftId: sinon.stub().resolves(null),
-            findPendingForPurchasedGifts: sinon.stub().resolves([]),
+            findRecoverableForPurchasedGifts: sinon.stub().resolves([]),
             tryStartDelivery: sinon.stub().resolves(buildGiftDelivery({status: 'sending'})),
             markSent: sinon.stub().resolves(true),
             markFailed: sinon.stub().resolves(true),
@@ -75,13 +75,14 @@ describe('GiftDeliveryService', function () {
     });
 
     it('re-dispatches pending deliveries for purchased gifts at boot', async function () {
-        giftDeliveryRepository.findPendingForPurchasedGifts.resolves([
+        giftDeliveryRepository.findRecoverableForPurchasedGifts.resolves([
             buildGiftDelivery({id: 'delivery_1'}),
             buildGiftDelivery({id: 'delivery_2'})
         ]);
         const service = createService();
 
         assert.equal(await service.recoverPending(), 2);
+        sinon.assert.calledOnceWithExactly(giftDeliveryRepository.findRecoverableForPurchasedGifts, sinon.match.date, 1000);
         assert.deepEqual(dispatchDelivery.firstCall.firstArg.data, {deliveryId: 'delivery_1'});
         assert.deepEqual(dispatchDelivery.secondCall.firstArg.data, {deliveryId: 'delivery_2'});
     });
@@ -100,8 +101,12 @@ describe('GiftDeliveryService', function () {
         const result = await service.send('delivery_1');
 
         assert.equal(result, 'sent');
-        sinon.assert.calledOnceWithExactly(giftDeliveryRepository.tryStartDelivery, 'delivery_1', sinon.match.date);
+        sinon.assert.calledOnceWithExactly(giftDeliveryRepository.tryStartDelivery, 'delivery_1', sinon.match.date, sinon.match.date);
         sinon.assert.calledOnceWithExactly(giftDeliveryRepository.markSent, 'delivery_1', sinon.match.date, 'provider-123');
+        sinon.assert.calledOnceWithExactly(giftEmailService.sendGiftDelivery, sinon.match({
+            buyerEmail: 'buyer@example.com',
+            buyerName: 'Buyer'
+        }));
     });
 
     it('records transactional transport acceptance without a provider message ID', async function () {
@@ -146,6 +151,20 @@ describe('GiftDeliveryService', function () {
 
     it('fails a started delivery whose gift is missing', async function () {
         giftRepository.getById.resolves(null);
+        const service = createService();
+
+        const result = await service.send('delivery_1');
+
+        assert.equal(result, 'failed');
+        sinon.assert.calledOnceWithExactly(giftDeliveryRepository.markFailed, 'delivery_1');
+        sinon.assert.notCalled(giftEmailService.sendGiftDelivery);
+    });
+
+    it('fails a started email delivery without required buyer details', async function () {
+        giftRepository.getById.resolves(buildGift({
+            buyerEmail: null,
+            buyerName: null
+        }));
         const service = createService();
 
         const result = await service.send('delivery_1');

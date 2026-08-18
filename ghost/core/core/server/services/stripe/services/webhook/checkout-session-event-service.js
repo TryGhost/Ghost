@@ -137,7 +137,7 @@ module.exports = class CheckoutSessionEventService {
         if (session.metadata?.ghost_gift_id) {
             await this.deps.giftService.completePurchase({
                 giftId: session.metadata.ghost_gift_id,
-                buyerEmail: session.customer_details?.email,
+                buyerEmail: session.customer_details?.email ?? null,
                 stripeCustomerId: getStripeResourceId(session.customer),
                 currency: session.currency,
                 amount: session.amount_total,

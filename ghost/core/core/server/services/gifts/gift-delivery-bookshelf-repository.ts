@@ -7,8 +7,8 @@ import type {RepositoryTransactionOptions} from './gift-bookshelf-repository';
 export interface GiftDeliveryRepository {
     getById(id: string, options?: RepositoryTransactionOptions): Promise<GiftDeliveryData | null>;
     getByGiftId(giftId: string, options?: RepositoryTransactionOptions): Promise<GiftDeliveryData | null>;
-    findPendingForPurchasedGifts(limit: number): Promise<GiftDeliveryData[]>;
-    tryStartDelivery(id: string, now: Date): Promise<GiftDeliveryData | null>;
+    findRecoverableForPurchasedGifts(staleBefore: Date, limit: number): Promise<GiftDeliveryData[]>;
+    tryStartDelivery(id: string, now: Date, staleBefore: Date): Promise<GiftDeliveryData | null>;
     markSent(id: string, sentAt: Date, providerMessageId: string | null): Promise<boolean>;
     markFailed(id: string): Promise<boolean>;
     markCancelled(id: string): Promise<boolean>;
@@ -33,9 +33,11 @@ type GiftDeliveryBookshelfModel = {
 
 export class GiftDeliveryBookshelfRepository implements GiftDeliveryRepository {
     private readonly model: GiftDeliveryBookshelfModel;
+    private readonly knex: Knex;
 
-    constructor({GiftDeliveryModel}: {GiftDeliveryModel: GiftDeliveryBookshelfModel}) {
+    constructor({GiftDeliveryModel, knex}: {GiftDeliveryModel: GiftDeliveryBookshelfModel; knex: Knex}) {
         this.model = GiftDeliveryModel;
+        this.knex = knex;
     }
 
     async getById(id: string, options: RepositoryTransactionOptions = {}): Promise<GiftDeliveryData | null> {
@@ -50,28 +52,42 @@ export class GiftDeliveryBookshelfRepository implements GiftDeliveryRepository {
         return model ? decodeGiftDeliveryRow(model.toJSON()) : null;
     }
 
-    async findPendingForPurchasedGifts(limit: number): Promise<GiftDeliveryData[]> {
-        return this.transaction(async (transacting) => {
-            const rows = await transacting('gift_deliveries')
-                .select('gift_deliveries.*')
-                .join('gifts', 'gifts.id', 'gift_deliveries.gift_id')
-                .where('gift_deliveries.status', 'pending')
-                .where('gifts.status', 'purchased')
-                .limit(limit);
+    async findRecoverableForPurchasedGifts(staleBefore: Date, limit: number): Promise<GiftDeliveryData[]> {
+        const rows = await this.knex('gift_deliveries')
+            .select('gift_deliveries.*')
+            .join('gifts', 'gifts.id', 'gift_deliveries.gift_id')
+            .where('gifts.status', 'purchased')
+            .andWhere((query) => {
+                query.where('gift_deliveries.status', 'pending')
+                    .orWhere((stale) => {
+                        stale.where('gift_deliveries.status', 'sending')
+                            .where('gift_deliveries.started_at', '<=', toDatabaseDate(staleBefore));
+                    });
+            })
+            .limit(limit);
 
-            return rows.map(decodeGiftDeliveryRow);
-        });
+        return rows.map(decodeGiftDeliveryRow);
     }
-    async tryStartDelivery(id: string, now: Date): Promise<GiftDeliveryData | null> {
+
+    async tryStartDelivery(id: string, now: Date, staleBefore: Date): Promise<GiftDeliveryData | null> {
         return this.transaction(async (transacting) => {
             const startedAt = toDatabaseDate(now);
-            const eligibleGifts = transacting('gifts')
-                .select('id')
-                .where('status', 'purchased');
 
             const updated = await transacting('gift_deliveries')
-                .where({id, status: 'pending'})
-                .whereIn('gift_id', eligibleGifts)
+                .where({id})
+                .whereExists((query) => {
+                    query.select('gifts.id')
+                        .from('gifts')
+                        .whereRaw('gifts.id = gift_deliveries.gift_id')
+                        .where('gifts.status', 'purchased');
+                })
+                .andWhere((query) => {
+                    query.where('gift_deliveries.status', 'pending')
+                        .orWhere((stale) => {
+                            stale.where('gift_deliveries.status', 'sending')
+                                .where('gift_deliveries.started_at', '<=', toDatabaseDate(staleBefore));
+                        });
+                })
                 .update({
                     status: 'sending',
                     started_at: startedAt
@@ -109,17 +125,14 @@ export class GiftDeliveryBookshelfRepository implements GiftDeliveryRepository {
     }
 
     async cancelPendingForGift(token: string, options: RepositoryTransactionOptions = {}): Promise<boolean> {
-        const update = async (transacting: Knex.Transaction) => {
-            const gift = transacting('gifts').select('id').where({token});
-            const updated = await transacting('gift_deliveries')
-                .where({status: 'pending'})
-                .whereIn('gift_id', gift)
-                .update({status: 'cancelled', started_at: null});
+        const db = options.transacting ?? this.knex;
+        const gift = db('gifts').select('id').where({token});
+        const updated = await db('gift_deliveries')
+            .whereIn('status', ['pending', 'sending'])
+            .whereIn('gift_id', gift)
+            .update({status: 'cancelled', started_at: null});
 
-            return updated === 1;
-        };
-
-        return options.transacting ? update(options.transacting) : this.transaction(update);
+        return updated === 1;
     }
 
     async create(delivery: GiftDeliveryData, options: RepositoryTransactionOptions = {}): Promise<void> {
@@ -131,13 +144,10 @@ export class GiftDeliveryBookshelfRepository implements GiftDeliveryRepository {
     }
 
     private async updateState(id: string, from: 'sending', data: Record<string, unknown>): Promise<boolean> {
-        return this.transaction(async (transacting) => {
-            const updated = await transacting('gift_deliveries')
-                .where({id, status: from})
-                .update(data);
+        const updated = await this.knex('gift_deliveries')
+            .where({id, status: from})
+            .update(data);
 
-            return updated === 1;
-        });
+        return updated === 1;
     }
-
 }

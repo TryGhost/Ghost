@@ -1475,6 +1475,9 @@ module.exports = {
         },
         started_at: {type: 'dateTime', nullable: true},
         email_sent_at: {type: 'dateTime', nullable: true},
-        email_provider_message_id: {type: 'string', maxlength: 1000, nullable: true}
+        email_provider_message_id: {type: 'string', maxlength: 1000, nullable: true},
+        '@@INDEXES@@': [
+            ['status', 'started_at']
+        ]
     }
 };

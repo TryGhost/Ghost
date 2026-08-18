@@ -27,7 +27,7 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
         return;
     }
 
-    const {Gift: GiftModel, GiftDelivery: GiftDeliveryModel, MemberStripeCustomer: StripeCustomerModel} = require('../../models');
+    const {Base: BaseModel, Gift: GiftModel, GiftDelivery: GiftDeliveryModel, MemberStripeCustomer: StripeCustomerModel} = require('../../models');
     const GiftCheckoutAdapter = require('./gift-checkout-adapter');
     const membersService = require('../members');
     const tiersService = require('../tiers');
@@ -54,7 +54,8 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
         GiftModel
     });
     const deliveryRepository = new GiftDeliveryBookshelfRepository({
-        GiftDeliveryModel
+        GiftDeliveryModel,
+        knex: BaseModel.knex
     });
     const checkoutAdapter = new GiftCheckoutAdapter({
         StripeCustomerModel,

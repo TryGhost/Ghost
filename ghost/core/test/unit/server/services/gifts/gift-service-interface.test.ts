@@ -8,6 +8,11 @@ function hasInvalidDeliveryContext(error: unknown): boolean {
     return typeof context === 'string' && context.startsWith('Invalid gift delivery data:');
 }
 
+function hasInvalidBuyerEmailContext(error: unknown): boolean {
+    const context = error && typeof error === 'object' ? (error as {context?: unknown}).context : null;
+    return typeof context === 'string' && context.startsWith('Invalid gift buyer email:');
+}
+
 describe('GiftService interface', function () {
     afterEach(function () {
         sinon.restore();
@@ -186,6 +191,73 @@ describe('GiftService interface', function () {
         });
 
         assert.equal(giftRepository.create.firstCall.firstArg.buyerName, 'Mum');
+    });
+
+    it('requires buyer name for email delivery', async function () {
+        const {service, checkoutAdapter} = createService({customizationEnabled: true});
+
+        await assert.rejects(() => service.startCheckout({
+            tierId: 'tier_1',
+            cadence: 'year',
+            deliveryMethod: 'email',
+            recipientEmail: 'recipient@example.com',
+            metadata: {},
+            successUrl: 'https://example.com/',
+            buyer: {
+                memberId: 'member_1',
+                email: 'buyer@example.com',
+                name: 'Account Name',
+                isAuthenticated: true
+            }
+        }), hasInvalidDeliveryContext);
+
+        sinon.assert.notCalled(checkoutAdapter.createSession);
+    });
+
+    it('keeps link gifts anonymous when buyer name is omitted', async function () {
+        const {service, giftRepository} = createService({customizationEnabled: true});
+
+        await service.startCheckout({
+            tierId: 'tier_1',
+            cadence: 'year',
+            deliveryMethod: 'link',
+            recipientEmail: '',
+            recipientName: '   ',
+            personalMessage: '',
+            metadata: {},
+            successUrl: 'https://example.com/',
+            buyer: {
+                memberId: 'member_1',
+                email: 'buyer@example.com',
+                name: 'Account Name',
+                isAuthenticated: true
+            }
+        });
+
+        const gift = giftRepository.create.firstCall.firstArg;
+        assert.equal(gift.buyerName, null);
+        assert.equal(gift.recipientName, null);
+        assert.equal(gift.personalMessage, null);
+    });
+
+    it('requires buyer email for customized gift checkout', async function () {
+        const {service, checkoutAdapter} = createService({customizationEnabled: true});
+
+        await assert.rejects(() => service.startCheckout({
+            tierId: 'tier_1',
+            cadence: 'year',
+            deliveryMethod: 'link',
+            metadata: {},
+            successUrl: 'https://example.com/',
+            buyer: {
+                memberId: null,
+                email: null,
+                name: null,
+                isAuthenticated: false
+            }
+        }), hasInvalidBuyerEmailContext);
+
+        sinon.assert.notCalled(checkoutAdapter.createSession);
     });
 
     it('rejects invalid email delivery input', async function () {

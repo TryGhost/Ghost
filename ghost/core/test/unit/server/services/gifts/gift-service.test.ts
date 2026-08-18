@@ -204,7 +204,7 @@ describe('GiftService', function () {
         it('completes a pre-created pending gift without reconstructing recipient data from Stripe', async function () {
             const pending = Gift.fromCheckout({
                 token: 'pending-token',
-                buyerEmail: null,
+                buyerEmail: 'checkout-buyer@example.com',
                 buyerMemberId: null,
                 buyerName: 'Buyer',
                 recipientName: 'Recipient',
@@ -221,10 +221,10 @@ describe('GiftService', function () {
 
             assert.equal(await service.completePurchase({
                 giftId: 'gift_1',
-                buyerEmail: 'buyer@example.com',
+                buyerEmail: null,
                 stripeCustomerId: null,
-                currency: 'usd',
-                amount: 5000,
+                currency: 'eur',
+                amount: 5500,
                 stripeCheckoutSessionId: 'cs_pending',
                 stripePaymentIntentId: 'pi_pending'
             }), true);
@@ -232,9 +232,44 @@ describe('GiftService', function () {
             const purchased = giftRepository.update.firstCall.firstArg;
             assert.equal(purchased.status, 'purchased');
             assert.equal(purchased.recipientName, 'Recipient');
+            assert.equal(purchased.buyerEmail, 'checkout-buyer@example.com');
+            assert.equal(purchased.currency, 'eur');
+            assert.equal(purchased.amount, 5500);
             assert.equal(purchased.stripePaymentIntentId, 'pi_pending');
             sinon.assert.notCalled(giftRepository.create);
             sinon.assert.calledOnceWithExactly(giftDeliveryService.dispatchForGift, 'gift_1');
+        });
+
+        it('completes a paid pending gift when Stripe omits buyer email', async function () {
+            const pending = Gift.fromCheckout({
+                token: 'pending-token',
+                buyerEmail: null,
+                buyerMemberId: null,
+                buyerName: null,
+                recipientName: null,
+                personalMessage: null,
+                tierId: 'tier_1',
+                cadence: 'year',
+                duration: 1,
+                currency: 'usd',
+                amount: 5000
+            }).bindCheckoutSession('cs_pending')!;
+            giftRepository.getById.resolves(pending);
+            const service = createService();
+
+            assert.equal(await service.completePurchase({
+                giftId: 'gift_1',
+                buyerEmail: undefined,
+                stripeCustomerId: null,
+                currency: 'usd',
+                amount: 5000,
+                stripeCheckoutSessionId: 'cs_pending',
+                stripePaymentIntentId: 'pi_pending'
+            }), true);
+
+            assert.equal(giftRepository.update.firstCall.firstArg.buyerEmail, null);
+            sinon.assert.notCalled(staffServiceEmails.notifyGiftPurchased);
+            sinon.assert.notCalled(giftEmailService.sendPurchaseConfirmation);
         });
 
         it('creates a Gift entity and saves it', async function () {
@@ -314,6 +349,14 @@ describe('GiftService', function () {
             const gift = giftRepository.create.getCall(0).args[0];
 
             assert.equal(gift.duration, 3);
+        });
+
+        it('keeps legacy completion tolerant of Stripe email formats', async function () {
+            const service = createService();
+
+            await service.completePurchase({...purchaseData, buyerEmail: 'unusual..local@example.com'});
+
+            assert.equal(giftRepository.create.firstCall.firstArg.buyerEmail, 'unusual..local@example.com');
         });
 
         it('throws ValidationError for an unnormalized duration', async function () {

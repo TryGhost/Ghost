@@ -2,6 +2,7 @@ import {GiftEmailRenderer, Translate} from './gift-email-renderer';
 import type {GiftCadence} from './gift-schema';
 import {Color} from '@tryghost/color-utils';
 import errors from '@tryghost/errors';
+import {getMailgunMessageId} from '../lib/mailgun-message-id';
 
 const DEFAULT_DATE_LOCALE = 'en-gb';
 const DEFAULT_ACCENT_COLOR = '#15212A';
@@ -68,7 +69,8 @@ interface ReminderData {
 interface GiftDeliverySendData {
     recipientEmail: string;
     recipientName: string | null;
-    buyerName: string | null;
+    buyerEmail: string;
+    buyerName: string;
     personalMessage: string | null;
     token: string;
     tierName: string;
@@ -128,26 +130,6 @@ export class GiftEmailService {
         return this.mixAccentColor('#15212A', 0.72, '#738A94');
     }
 
-    private getCadenceLabel(cadence: GiftCadence, duration: number): string {
-        if (duration === 1) {
-            return cadence === 'year' ? this.t('one-year') : this.t('one-month');
-        }
-        if (cadence === 'year') {
-            return this.t('{count} year', {count: duration});
-        }
-        return this.t('{count} month', {count: duration});
-    }
-
-    private getDeliveryCadenceLabel(cadence: GiftCadence, duration: number): string {
-        if (cadence === 'year') {
-            return this.t('one-year');
-        }
-        if (duration === 1) {
-            return this.t('one-month');
-        }
-        return this.t('{count}-month', {count: duration});
-    }
-
     private formatDate(date: Date): string {
         const locale = this.settingsCache.get('locale') || DEFAULT_DATE_LOCALE;
 
@@ -164,10 +146,6 @@ export class GiftEmailService {
         const siteTitle = this.settingsCache.get('title') ?? siteDomain;
 
         const giftLink = `${siteUrl.replace(/\/$/, '')}/gift/${token}`;
-        const cadenceLabel = recipientEmail
-            ? this.getDeliveryCadenceLabel(cadence, duration)
-            : this.getCadenceLabel(cadence, duration);
-
         const {html, text} = await this.renderer.renderPurchaseConfirmation({
             siteTitle,
             siteUrl,
@@ -177,7 +155,8 @@ export class GiftEmailService {
             toEmail: buyerEmail,
             gift: {
                 tierName,
-                cadenceLabel,
+                duration,
+                isMonthly: cadence === 'month',
                 link: giftLink,
                 expiresAt: this.formatDate(expiresAt),
                 recipientEmail
@@ -228,7 +207,7 @@ export class GiftEmailService {
         });
     }
 
-    async sendGiftDelivery({recipientEmail, recipientName, buyerName, personalMessage, token, tierName, benefits, cadence, duration, expiresAt}: GiftDeliverySendData): Promise<{providerMessageId: string | null}> {
+    async sendGiftDelivery({recipientEmail, recipientName, buyerEmail, buyerName, personalMessage, token, tierName, benefits, cadence, duration, expiresAt}: GiftDeliverySendData): Promise<{providerMessageId: string | null}> {
         const siteDomain = this.siteDomain;
         const siteUrl = this.urlUtils.getSiteUrl();
         const siteTitle = this.settingsCache.get('title') ?? siteDomain;
@@ -242,6 +221,7 @@ export class GiftEmailService {
             accentTint: this.accentTint,
             accentShade: this.accentShade,
             toEmail: recipientEmail,
+            buyerEmail,
             buyerName,
             recipientName,
             personalMessage,
@@ -254,12 +234,10 @@ export class GiftEmailService {
                 expiresAt: this.formatDate(expiresAt)
             }
         });
-        const subject = buyerName
-            ? this.t('{buyerName} sent you a gift', {
-                buyerName,
-                interpolation: {escapeValue: false}
-            })
-            : this.t('You\'ve received a gift');
+        const subject = this.t('{buyerName} sent you a gift', {
+            buyerName,
+            interpolation: {escapeValue: false}
+        });
 
         if (!this.bulkMailer.isConfigured()) {
             await this.transactionalMailer.send({
@@ -284,9 +262,7 @@ export class GiftEmailService {
             tags: ['gift-delivery'],
             disable_tracking: true
         }, {[recipientEmail]: {}}, []);
-        const providerMessageId = response && typeof response === 'object' && 'id' in response && typeof response.id === 'string'
-            ? response.id.trim().replace(/^<|>$/g, '')
-            : null;
+        const providerMessageId = getMailgunMessageId(response) ?? null;
 
         if (!providerMessageId) {
             throw new errors.EmailError({

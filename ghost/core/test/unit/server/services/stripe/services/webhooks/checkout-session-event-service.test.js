@@ -697,6 +697,28 @@ describe('CheckoutSessionEventService', function () {
             });
         });
 
+        it('allows async gift completion without Stripe customer details', async function () {
+            const service = createService();
+            await service.handleGiftEvent({
+                id: 'cs_test_123',
+                amount_total: 5000,
+                currency: 'usd',
+                customer: null,
+                payment_intent: 'pi_test_456',
+                metadata: {ghost_gift_id: 'gift_123'}
+            });
+
+            sinon.assert.calledOnceWithExactly(giftService.completePurchase, {
+                giftId: 'gift_123',
+                buyerEmail: null,
+                stripeCustomerId: null,
+                currency: 'usd',
+                amount: 5000,
+                stripeCheckoutSessionId: 'cs_test_123',
+                stripePaymentIntentId: 'pi_test_456'
+            });
+        });
+
         it('calls giftService.completePurchase with session data', async function () {
             const service = createService();
             const session = {
