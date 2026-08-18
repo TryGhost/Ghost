@@ -358,7 +358,7 @@ const RetentionOfferSidebar: React.FC<{
     );
 };
 
-const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
+const EditRetentionOfferModal: React.FC<{cadence: 'monthly' | 'yearly'}> = ({cadence}) => {
     const {updateRoute} = useSettingsNavigation();
     const {siteData} = useGlobalData();
     const {data: {tiers = []} = {}} = useBrowseTiers();
@@ -367,7 +367,6 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
     const {mutateAsync: editOffer} = useEditOffer();
     const invalidateOffers = useInvalidateOffers();
     const [href, setHref] = useState<string>('');
-    const cadence = id === 'monthly' ? 'monthly' : 'yearly' as const;
     const breadcrumbTitle = cadence === 'monthly' ? 'Monthly retention' : 'Yearly retention';
     const offerCadence = cadence === 'monthly' ? 'month' : 'year';
     const activePaidTiers = getPaidActiveTiers(tiers || []);
@@ -540,7 +539,7 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
     });
 
     const activeRetentionOfferId = editableRetentionOffer?.id || 'none';
-    const currentOfferKey = `${id}:${activeRetentionOfferId}`;
+    const currentOfferKey = `${cadence}:${activeRetentionOfferId}`;
 
     useEffect(() => {
         if (!hasFetchedOffers || isFetchingOffers || saveState === 'unsaved' || initializedOfferKey === currentOfferKey) {

@@ -48,4 +48,4 @@ const Offers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 };
 
-export default withErrorBoundary(Offers, 'Portal settings');
+export default withErrorBoundary(Offers, 'Offers');

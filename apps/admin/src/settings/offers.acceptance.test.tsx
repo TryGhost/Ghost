@@ -423,6 +423,14 @@ describe("Offers", () => {
             await expect.element(yearlyModal.getByLabelText("Amount off")).toHaveValue(30);
         });
 
+        it("falls back to the offers list for an invalid retention cadence", async () => {
+            retentionWorld([]);
+            await renderAdminApp("/settings/offers/edit/retention/not-a-cadence", withStripe());
+
+            await expect.element(offersScreen.listModal()).toBeVisible();
+            await expect(offersScreen.retentionModal()).toHaveCount(0);
+        });
+
         it("shows validation errors for invalid retention values on save", async () => {
             retentionWorld([retentionOffer({ id: "retention-month-active" })]);
             await renderAdminApp("/settings/offers/edit/retention/monthly", withStripe());

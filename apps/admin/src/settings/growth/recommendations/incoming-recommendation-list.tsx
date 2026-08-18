@@ -36,11 +36,11 @@ const IncomingRecommendationItem: React.FC<{incomingRecommendation: IncomingReco
     }, [stats, incomingRecommendation.url]);
 
     const recommendBack = () => {
-        updateRoute({route: `recommendations/add?url=${incomingRecommendation.url}`});
+        updateRoute({route: `recommendations/add?url=${encodeURIComponent(incomingRecommendation.url)}`});
     };
 
     const showDetails = () => {
-        window.open(incomingRecommendation.url, '_blank');
+        window.open(incomingRecommendation.url, '_blank', 'noopener,noreferrer');
     };
 
     const freeMembersLabel = signups === 1 ? 'free member' : 'free members';

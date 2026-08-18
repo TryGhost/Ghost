@@ -1,4 +1,4 @@
-import {describe, expect, it} from "vitest";
+import {describe, expect, it, vi} from "vitest";
 
 import {browseResponse, currentRoute, fakeAdminEndpoint, fakeSettingsScreens, renderAdminApp} from "@test-utils/acceptance";
 import {settingsScreen} from "@/settings/settings.screen";
@@ -33,7 +33,7 @@ const incomingRecommendations = [
         excerpt: "Incoming recommendation 1 excerpt",
         featured_image: "https://incoming1.com/image.jpg",
         favicon: "https://incoming1.com/favicon.ico",
-        url: "https://incoming1.com/?ref=ghost",
+        url: "https://incoming1.com/path?ref=ghost&source=email#featured",
         recommending_back: false,
     },
     {
@@ -182,7 +182,12 @@ describe("Recommendations settings", () => {
         await expect.element(rows.last()).toHaveTextContent("Incoming recommendation 2 title");
         await expect.element(rows.last()).toHaveTextContent("Recommending");
 
+        const openSpy = vi.spyOn(window, "open").mockReturnValue(null);
+        await rows.first().getByText("Incoming recommendation 1 title").click();
+        expect(openSpy).toHaveBeenCalledWith(incomingRecommendations[0].url, "_blank", "noopener,noreferrer");
+        openSpy.mockRestore();
+
         await rows.first().getByRole("button", {name: "Recommend back"}).click();
-        await expect.poll(currentRoute).toBe("/settings/recommendations/add?url=https://incoming1.com/?ref=ghost");
+        await expect.poll(currentRoute).toBe(`/settings/recommendations/add?url=${encodeURIComponent(incomingRecommendations[0].url)}`);
     });
 });
