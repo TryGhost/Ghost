@@ -1358,7 +1358,7 @@ module.exports = {
     newsletter_id: {
       type: 'string',
       maxlength: 24,
-      nullable: true,
+      nullable: false,
       references: 'newsletters.id',
       cascadeDelete: false,
     },
