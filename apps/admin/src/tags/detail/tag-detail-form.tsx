@@ -145,7 +145,7 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                 />
             </Stack>
 
-            <Card className='h-full overflow-hidden' data-testid='tag-metadata-card'>
+            <Card className='overflow-hidden' data-testid='tag-metadata-card'>
                 <CardContent className='p-6'>
                     <Stack gap='lg'>
                         <Stack gap='none'>
@@ -206,7 +206,7 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                                         <FieldError className='text-sm' id={errorId('canonicalUrl')}>{errors.canonicalUrl}</FieldError>
                                     </Stack>
                                 </Stack>
-                                    <Stack className='-mx-6 -mb-6 bg-preview-canvas px-6 pt-5 pb-8' data-testid='search-preview-surface' gap='sm'>
+                                    <Stack className='-mx-6 -mb-6 bg-preview-canvas px-6 pt-5 pb-[34px]' data-testid='search-preview-surface' gap='sm'>
                                     <Label>Search Engine Result Preview</Label>
                                     <SeoPreview description={seoDescription} title={seoTitle} url={seoUrl} />
                                 </Stack>
@@ -238,7 +238,7 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                                         <UsedCharacters limit={X_DESCRIPTION_RECOMMENDED_LENGTH} prefix='Recommended' value={draft.twitterDescription} />
                                     </Stack>
                                 </Stack>
-                                    <Stack className='-mx-6 -mb-6 bg-preview-canvas px-6 pt-5 pb-8' data-testid='x-preview-surface' gap='sm'>
+                                    <Stack className='-mx-6 -mb-6 bg-preview-canvas px-6 pt-5 pb-[34px]' data-testid='x-preview-surface' gap='sm'>
                                     <Label>X preview</Label>
                                     <XCardPreview
                                         description={draft.twitterDescription || seoDescription || siteMetaDescription || ''}
@@ -276,7 +276,7 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                                         <UsedCharacters limit={FACEBOOK_DESCRIPTION_RECOMMENDED_LENGTH} prefix='Recommended' value={draft.ogDescription} />
                                     </Stack>
                                 </Stack>
-                                    <Stack className='-mx-6 -mb-6 bg-preview-canvas px-6 pt-5 pb-8' data-testid='facebook-preview-surface' gap='sm'>
+                                    <Stack className='-mx-6 -mb-6 bg-preview-canvas px-6 pt-5 pb-[34px]' data-testid='facebook-preview-surface' gap='sm'>
                                     <Label>Facebook preview</Label>
                                     {/* The description chain deliberately skips ogDescription: Ember read a
                                         nonexistent `facebookDescription` attribute, so ogDescription never
