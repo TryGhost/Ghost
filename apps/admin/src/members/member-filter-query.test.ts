@@ -36,6 +36,28 @@ describe('member-filter-query', () => {
         ]);
     });
 
+    it('reads newsletter subscription state from the slug clause polarity', () => {
+        expect(stripIds(parseMemberFilter('(newsletters.slug:-weekly,email_disabled:1)', 'UTC'))).toEqual([
+            {field: 'newsletters.weekly', operator: 'is', values: ['unsubscribed']}
+        ]);
+
+        // Hand-written shapes pairing the slug with the "wrong" join and
+        // email_disabled value still follow the slug's polarity.
+        expect(stripIds(parseMemberFilter('(newsletters.slug:-weekly+email_disabled:0)', 'UTC'))).toEqual([
+            {field: 'newsletters.weekly', operator: 'is', values: ['unsubscribed']}
+        ]);
+
+        expect(stripIds(parseMemberFilter('(newsletters.slug:weekly,email_disabled:1)', 'UTC'))).toEqual([
+            {field: 'newsletters.weekly', operator: 'is', values: ['subscribed']}
+        ]);
+    });
+
+    it('round-trips a mismatched unsubscribed compound to the canonical shape', () => {
+        const parsed = parseMemberFilter('(newsletters.slug:-weekly+email_disabled:0)', 'UTC');
+
+        expect(serializeMemberFilters(parsed, 'UTC')).toBe('(newsletters.slug:-weekly,email_disabled:1)');
+    });
+
     it('parses legacy scalar set filters and preserves singleton offer ids', () => {
         const parsed = parseMemberFilter('offer_redemptions:\'offer_123\'', 'UTC');
 
