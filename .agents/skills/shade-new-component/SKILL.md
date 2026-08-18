@@ -114,4 +114,4 @@ See `shade-tokens-not-hex` and `shade-no-dark-variants`.
 
 ## Source of truth
 
-`apps/shade/AGENTS.md`. Human docs: Storybook → Overview / Contributing.
+Storybook → Overview / Contributing and the component's stories.

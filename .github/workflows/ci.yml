@@ -155,6 +155,7 @@ jobs:
               - 'scripts/**'
             docs:
               - '**/*.md'
+              - '**/*.mdx'
               - '.agents/**'
               - '.claude/**'
               - '.github/workflows/ci.yml'
@@ -191,8 +192,9 @@ jobs:
               - '!koenig/*/test/**'
               # Documentation does not affect Ghost runtime behaviour, even
               # when it lives inside a project root. Keep this after every
-              # positive pattern so micromatch cannot add Markdown files back.
+              # positive pattern so micromatch cannot add docs files back.
               - '!**/*.md'
+              - '!**/*.mdx'
             unit-test-globals:
               - 'vitest.config.mjs'
             core-unit-test-globals:
@@ -200,6 +202,7 @@ jobs:
               - 'ghost/core/test/utils/vitest-*.ts'
             any-code:
               - '!**/*.md'
+              - '!**/*.mdx'
               - '!.devcontainer/**'
               - '!.vscode/**'
               - *renovate_only
@@ -211,6 +214,7 @@ jobs:
             # added here as their conventions are confirmed.
             e2e:
               - '!**/*.md'
+              - '!**/*.mdx'
               - '!.devcontainer/**'
               - '!.vscode/**'
               - '!ghost/core/test/**'
