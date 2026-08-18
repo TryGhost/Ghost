@@ -153,6 +153,31 @@ describe('Posts Importer API', function () {
         assert.equal(two.get('slug'), 'content-check-post-two-with-a-comma');
     });
 
+    it('Rejects an upload of more posts than the temporary cap, importing nothing', async function () {
+        await agent.loginAsOwner();
+
+        const overCapRows = Array.from({length: 101}, (_, i) => `Over cap post ${i + 1},<p>${i + 1}</p>,2025-02-01T00:00:00.000Z`);
+        const overCapCsvPath = await csvFile('posts-import-over-cap.csv',
+            'title,html,published_at\n' + overCapRows.join('\n') + '\n'
+        );
+
+        const {body} = await agent
+            .post('posts/upload/')
+            .attach('postsfile', overCapCsvPath)
+            .expectStatus(422);
+
+        assert.match(body.errors[0].message, /more than 100 posts/);
+
+        await jobsService.allSettled();
+
+        const {data: posts} = await models.Post.findPage({
+            filter: `title:~'Over cap post'`,
+            status: 'all',
+            limit: 'all'
+        });
+        assert.equal(posts.length, 0, 'no posts were written from the rejected file');
+    });
+
     it('Cannot upload a posts CSV when the csvContentImporter flag is disabled', async function () {
         mockManager.mockLabsDisabled('csvContentImporter');
         await agent.loginAsOwner();

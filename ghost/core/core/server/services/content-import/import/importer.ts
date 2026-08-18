@@ -26,8 +26,11 @@ export type FailureReporter = (error: unknown) => void;
 type ReadRows = (path: string) => Promise<PostImportRow[]>;
 
 const messages = {
-    unreadableFile: 'The file could not be parsed as a CSV file.'
+    unreadableFile: 'The file could not be parsed as a CSV file.',
+    tooManyPosts: 'This file contains more than {max} posts. Imports are temporarily limited to {max} posts at a time — please split the file into smaller files and try again.'
 };
+
+const MAX_POSTS = 100;
 
 interface ImporterDeps {
     readRows: ReadRows;
@@ -61,6 +64,14 @@ class ContentCSVImporter {
             throw new errors.ValidationError({
                 message: tpl(messages.unreadableFile),
                 err: error
+            });
+        }
+
+        // Temporary while import state is held in memory: the durable job
+        // system milestone removes the cap.
+        if (rows.length > MAX_POSTS) {
+            throw new errors.ValidationError({
+                message: tpl(messages.tooManyPosts, {max: MAX_POSTS})
             });
         }
 

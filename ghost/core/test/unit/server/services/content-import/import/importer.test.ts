@@ -105,6 +105,31 @@ describe('ContentCSVImporter', function () {
         assert.equal(h.converterResolutions(), 1);
     });
 
+    it('rejects a file over the cap without scheduling any work', async function () {
+        const h = harness(Array.from({length: 101}, (_, i) => row(`Post ${i + 1}`)));
+
+        await assert.rejects(
+            h.importer.importCSV({filePath: '/tmp/posts.csv'}),
+            (error: {errorType?: string; message?: string}) => {
+                assert.equal(error.errorType, 'ValidationError');
+                assert.match(error.message ?? '', /more than 100 posts/);
+                return true;
+            }
+        );
+
+        assert.equal(h.jobs.length, 0, 'no job was scheduled');
+        assert.equal(h.created.length, 0, 'nothing was written');
+    });
+
+    it('accepts a file exactly at the cap', async function () {
+        const h = harness(Array.from({length: 100}, (_, i) => row(`Post ${i + 1}`)));
+
+        const accepted = await h.importer.importCSV({filePath: '/tmp/posts.csv'});
+
+        assert.deepEqual(accepted, {total: 100});
+        assert.equal(h.jobs.length, 1);
+    });
+
     it('reports a failed write instead of letting the job reject', async function () {
         const h = harness();
         const failure = new Error('insert failed');
