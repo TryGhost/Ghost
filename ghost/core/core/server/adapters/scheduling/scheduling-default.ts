@@ -40,10 +40,10 @@ export default class SchedulingDefault extends SchedulingBase {
     request = request;
 
     _addJob(job: SchedulerJob) {
-        let timestamp = moment(job.time).valueOf();
+        const timestamp = moment(job.time).valueOf();
         let keys: string[] = [];
-        let sortedJobs: Record<string, SchedulerJob[]> = {};
-        let instantJob: Record<string, SchedulerJob[]> = {};
+        const sortedJobs: Record<string, SchedulerJob[]> = {};
+        const instantJob: Record<string, SchedulerJob[]> = {};
         let i = 0;
 
         // CASE: should have been already pinged or should be pinged soon
@@ -95,15 +95,14 @@ export default class SchedulingDefault extends SchedulingBase {
         const self = this; // eslint-disable-line @typescript-eslint/no-this-alias
 
         keys.forEach(function (timestamp) {
-            let timeout: NodeJS.Timeout | undefined;
-            let diff = moment(Number(timestamp)).diff(moment());
+            const diff = moment(Number(timestamp)).diff(moment());
 
             // NOTE: awake a little before...
-            timeout = setTimeout(function () {
+            const timeout = setTimeout(function () {
                 clearTimeout(timeout);
 
                 (function retry() {
-                    let immediate = setImmediate(function () {
+                    const immediate = setImmediate(function () {
                         clearImmediate(immediate);
 
                         // CASE: It's not the time yet...

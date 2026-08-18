@@ -44,9 +44,7 @@ const tsLegacyRelaxations = {
     // LEGACY: tseslint v8 default. `// @ts-ignore` comments still exist.
     '@typescript-eslint/ban-ts-comment': 'off',
     // LEGACY: previous posture from plugin:ghost/ts allowed inferrable types.
-    '@typescript-eslint/no-inferrable-types': 'off',
-    // LEGACY: `let` declarations across the codebase could be `const`.
-    'prefer-const': 'off'
+    '@typescript-eslint/no-inferrable-types': 'off'
 };
 
 const migrationLoopRules = ['error',
