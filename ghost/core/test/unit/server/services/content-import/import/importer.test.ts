@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import ContentCSVImporter from '../../../../../../core/server/services/content-import/import/importer';
+import {ImportRunStore} from '../../../../../../core/server/services/content-import/import/store';
 import type {PostImportRow} from '../../../../../../core/server/services/content-import/import/row';
 import type {PostData} from '../../../../../../core/server/services/content-import/import/post-data';
 
@@ -15,6 +16,7 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
     const reported: unknown[] = [];
     const jobs: Array<{name: string; offloaded: boolean; job: () => Promise<void>}> = [];
     const createFailures = new Map<string, unknown>();
+    const store = new ImportRunStore();
     let converterResolutions = 0;
 
     const deps = {
@@ -26,7 +28,8 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
                     throw failure;
                 }
                 created.push({data, options});
-                return {id: `post_${created.length}`};
+                const id = `post_${created.length}`;
+                return {id, toJSON: () => ({id, slug: `slug-${created.length}`})};
             }
         },
         getHtmlToLexical: () => {
@@ -38,7 +41,10 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
         },
         report: (error: unknown) => {
             reported.push(error);
-        }
+        },
+        store,
+        urlForPost: (post: {id: string}) => `https://example.com/${post.id}/`,
+        newRunId: () => 'run_test'
     };
 
     const importer = new ContentCSVImporter(deps);
@@ -52,7 +58,7 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
         return accepted;
     };
 
-    return {importer, run, deps, created, reported, jobs, createFailures, converterResolutions: () => converterResolutions};
+    return {importer, run, deps, created, reported, jobs, createFailures, store, converterResolutions: () => converterResolutions};
 }
 
 describe('ContentCSVImporter', function () {
@@ -61,11 +67,12 @@ describe('ContentCSVImporter', function () {
 
         const accepted = await h.importer.importCSV({filePath: '/tmp/posts.csv'});
 
-        assert.deepEqual(accepted, {total: 2});
+        assert.deepEqual(accepted, {importId: 'run_test', total: 2});
         assert.equal(h.jobs.length, 1);
         assert.equal(h.jobs[0].name, 'content-import');
         assert.equal(h.jobs[0].offloaded, false);
         assert.equal(h.created.length, 0, 'nothing is written until the job runs');
+        assert.equal(h.store.get('run_test')?.status, 'running', 'the run is registered before the job starts');
     });
 
     it('writes one post per row, in order, under the importing options', async function () {
@@ -119,6 +126,7 @@ describe('ContentCSVImporter', function () {
 
         assert.equal(h.jobs.length, 0, 'no job was scheduled');
         assert.equal(h.created.length, 0, 'nothing was written');
+        assert.equal(h.store.get('run_test'), undefined, 'no run was registered');
     });
 
     it('accepts a file exactly at the cap', async function () {
@@ -126,7 +134,7 @@ describe('ContentCSVImporter', function () {
 
         const accepted = await h.importer.importCSV({filePath: '/tmp/posts.csv'});
 
-        assert.deepEqual(accepted, {total: 100});
+        assert.deepEqual(accepted, {importId: 'run_test', total: 100});
         assert.equal(h.jobs.length, 1);
     });
 
@@ -138,5 +146,21 @@ describe('ContentCSVImporter', function () {
         await h.run();
 
         assert.deepEqual(h.reported, [failure]);
+        assert.equal(h.store.get('run_test')?.status, 'complete', 'the run still reads as finished');
+    });
+
+    it('records a created outcome per row, 1-based, with the post id and URL', async function () {
+        const h = harness();
+
+        await h.run();
+
+        const run = h.store.get('run_test');
+        assert.equal(run?.status, 'complete');
+        assert.ok(run?.finishedAt instanceof Date);
+        assert.equal(run?.total, 2);
+        assert.deepEqual(run?.rows, [
+            {line: 2, title: 'First', status: 'created', postId: 'post_1', url: 'https://example.com/post_1/'},
+            {line: 3, title: 'Second', status: 'created', postId: 'post_2', url: 'https://example.com/post_2/'}
+        ]);
     });
 });

@@ -1,5 +1,6 @@
 import buildPostData, {type HtmlToLexical, type PostData} from './post-data';
 import type {PostImportRow} from './row';
+import type {ImportRunStore} from './store';
 
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
@@ -12,12 +13,19 @@ export interface ImportRequest {
     filePath: string;
 }
 
+// The id is what a completion report will be looked up by.
 export interface ImportAccepted {
+    importId: string;
     total: number;
 }
 
+export interface CreatedPost {
+    id: string;
+    toJSON(): Record<string, unknown>;
+}
+
 export interface PostsRepository {
-    create(data: PostData, options: object): Promise<{id: string}>;
+    create(data: PostData, options: object): Promise<CreatedPost>;
 }
 
 // Must not throw: it is called from catch blocks that exist to stop an error escaping.
@@ -39,6 +47,9 @@ interface ImporterDeps {
     getHtmlToLexical: () => HtmlToLexical;
     addJob: (job: {job: () => Promise<void>; offloaded: boolean; name: string}) => void;
     report: FailureReporter;
+    store: ImportRunStore;
+    urlForPost: (post: CreatedPost) => string;
+    newRunId: () => string;
 }
 
 class ContentCSVImporter {
@@ -47,13 +58,19 @@ class ContentCSVImporter {
     private _getHtmlToLexical: () => HtmlToLexical;
     private _addJob: ImporterDeps['addJob'];
     private _report: FailureReporter;
+    private _store: ImportRunStore;
+    private _urlForPost: (post: CreatedPost) => string;
+    private _newRunId: () => string;
 
-    constructor({readRows, posts, getHtmlToLexical, addJob, report}: ImporterDeps) {
+    constructor({readRows, posts, getHtmlToLexical, addJob, report, store, urlForPost, newRunId}: ImporterDeps) {
         this._readRows = readRows;
         this._posts = posts;
         this._getHtmlToLexical = getHtmlToLexical;
         this._addJob = addJob;
         this._report = report;
+        this._store = store;
+        this._urlForPost = urlForPost;
+        this._newRunId = newRunId;
     }
 
     async importCSV(request: ImportRequest): Promise<ImportAccepted> {
@@ -75,32 +92,46 @@ class ContentCSVImporter {
             });
         }
 
+        const runId = this._newRunId();
+        this._store.create(runId, rows.length);
+
         this._addJob({
-            job: () => this.runImportJob(rows),
+            job: () => this.runImportJob(runId, rows),
             offloaded: false,
             name: 'content-import'
         });
 
-        return {total: rows.length};
+        return {importId: runId, total: rows.length};
     }
 
     // Must resolve in every case: the job manager reads a rejected inline job as a
     // defect in the job itself, and there is no retry behind it.
-    private async runImportJob(rows: PostImportRow[]): Promise<void> {
+    private async runImportJob(runId: string, rows: PostImportRow[]): Promise<void> {
         try {
             const htmlToLexical = this._getHtmlToLexical();
 
-            for (const row of rows) {
+            for (const [index, row] of rows.entries()) {
                 // options.importing preserves the supplied timestamps and suppresses publish
                 // side-effects; the internal context resolves the default author to the site owner.
                 // A fresh options object per row: the model layer mutates it.
-                await this._posts.create(buildPostData(row, htmlToLexical), {
+                const post = await this._posts.create(buildPostData(row, htmlToLexical), {
                     importing: true,
                     context: {internal: true}
+                });
+
+                this._store.record(runId, {
+                    line: index + 2,
+                    title: row.title,
+                    status: 'created',
+                    postId: post.id,
+                    url: this._urlForPost(post)
                 });
             }
         } catch (error) {
             this._report(error);
+        } finally {
+            // However the run ended, it must read as finished.
+            this._store.finish(runId);
         }
     }
 }

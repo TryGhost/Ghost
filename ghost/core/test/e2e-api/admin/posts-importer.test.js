@@ -119,10 +119,13 @@ describe('Posts Importer API', function () {
             '"Content check post two, with a comma","<p>Second body, with a comma</p>",2024-06-15T18:45:00.000Z\n'
         );
 
-        await agent
+        const {body} = await agent
             .post('posts/upload/')
             .attach('postsfile', contentCsvPath)
             .expectStatus(202);
+
+        assert.match(body.meta.import_id, /^[0-9a-f]{24}$/);
+        assert.equal(body.meta.total, 2);
 
         await jobsService.allSettled();
 

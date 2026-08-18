@@ -136,8 +136,8 @@ const controller = {
             // The CSV must be parsed before the response goes out: the uploaded temp file is
             // deleted as soon as it is sent. The posts are written by a background job behind
             // the 202.
-            const {total} = await contentImportService.importCSV({filePath: frame.file.path});
-            return {meta: {total}};
+            const {importId, total} = await contentImportService.importCSV({filePath: frame.file.path});
+            return {meta: {import_id: importId, total}};
         }
     },
 

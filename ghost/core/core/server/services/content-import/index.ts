@@ -1,6 +1,7 @@
 import {z} from 'zod';
 import ContentCSVImporter, {type ImportRequest, type ImportAccepted, type FailureReporter} from './import/importer';
 import readPostRows from './import/reader';
+import {ImportRunStore} from './import/store';
 
 // The request is built from HTTP upload metadata, so it is validated at the
 // service boundary rather than trusted.
@@ -18,6 +19,8 @@ function makeImporter(): ContentCSVImporter {
     const models = require('../../models');
     const lexicalLib = require('../../lib/lexical');
     const jobsService = require('../jobs');
+    const urlService = require('../url');
+    const ObjectID = require('bson-objectid').default;
 
     // Inline jobs never reach the job manager's Sentry handler, which is wired to the
     // offloaded worker path only, so a throw here would be seen by nobody.
@@ -37,7 +40,11 @@ function makeImporter(): ContentCSVImporter {
         },
         getHtmlToLexical: () => lexicalLib.htmlToLexicalConverter,
         addJob: jobsService.addJob.bind(jobsService),
-        report
+        report,
+        store: new ImportRunStore(),
+        // Degrades to the 404 URL for a post the URL service cannot route yet (e.g. a draft).
+        urlForPost: post => urlService.getUrlForResource({...post.toJSON(), type: 'posts'}, {absolute: true}),
+        newRunId: () => new ObjectID().toHexString()
     });
 }
 
