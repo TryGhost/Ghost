@@ -16,6 +16,7 @@ export class RowSkipped extends Error {
 // The values handed to models.Post.add. Content is lexical only: under
 // options.importing the model strips client-supplied html and regenerates it from
 // lexical on save, so the CSV's html must be converted, never passed through.
+// No authors key: the model resolves the import's internal context to the owner.
 export interface PostData {
     title: string;
     slug: string;
@@ -23,9 +24,13 @@ export interface PostData {
     published_at?: string;
     created_at?: string;
     updated_at?: string;
+    status: 'published';
+    type: 'post';
+    visibility: 'public';
+    tags: Array<{name: string}>;
 }
 
-export default function buildPostData(row: PostImportRow, htmlToLexical: HtmlToLexical): PostData {
+export default function buildPostData(row: PostImportRow, htmlToLexical: HtmlToLexical, importTagNames: string[]): PostData {
     const check = importableRowSchema.safeParse(row);
     if (!check.success) {
         throw new RowSkipped(check.error.issues[0].message);
@@ -36,7 +41,15 @@ export default function buildPostData(row: PostImportRow, htmlToLexical: HtmlToL
         // Slugified here with the standard rules: left to the model, the
         // importing-context slug pass keeps every punctuation dash
         // (slugify requiredChangesOnly).
-        slug: slugify(row.title)
+        slug: slugify(row.title),
+        // Explicit rather than left to the model, which would default status to draft and
+        // visibility to the default_content_visibility setting. Never 'scheduled': the
+        // post scheduler has no importing check.
+        status: 'published',
+        type: 'post',
+        visibility: 'public',
+        // The # prefix gives the batch tags internal visibility.
+        tags: importTagNames.map(name => ({name}))
     };
 
     if (row.html) {

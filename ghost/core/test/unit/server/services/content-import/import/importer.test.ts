@@ -46,7 +46,9 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
         },
         store,
         urlForPost: (post: {id: string}) => `https://example.com/${post.id}/`,
-        newRunId: () => 'run_test'
+        newRunId: () => 'run_test',
+        getTimezone: () => 'Europe/Amsterdam',
+        now: () => new Date('2026-01-01T10:30:00.000Z')
     };
 
     const importer = new ContentCSVImporter(deps);
@@ -89,6 +91,20 @@ describe('ContentCSVImporter', function () {
         assert.deepEqual(h.created.map(call => call.data.title), ['First', 'Second']);
         for (const call of h.created) {
             assert.deepEqual(call.options, {importing: true, context: {internal: true}});
+        }
+    });
+
+    it('files every row of a run under a date-stamped tag and a unique run tag', async function () {
+        const h = harness();
+
+        await h.run();
+
+        // 10:30 UTC is 11:30 in Amsterdam: the stamp follows the site timezone
+        for (const call of h.created) {
+            assert.deepEqual(call.data.tags, [
+                {name: '#Import 2026-01-01 11:30'},
+                {name: '#Import Run run_test'}
+            ]);
         }
     });
 

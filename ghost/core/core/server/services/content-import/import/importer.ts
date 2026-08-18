@@ -1,6 +1,7 @@
+import moment from 'moment-timezone';
 import buildPostData, {RowSkipped, type HtmlToLexical, type PostData} from './post-data';
 import type {PostImportRow} from './row';
-import type {ImportRunStore} from './store';
+import type {Clock, ImportRunStore} from './store';
 
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
@@ -50,6 +51,18 @@ interface ImporterDeps {
     store: ImportRunStore;
     urlForPost: (post: CreatedPost) => string;
     newRunId: () => string;
+    getTimezone: () => string;
+    now?: Clock;
+}
+
+// Two batch tags for every imported post: a date stamp matching the JSON
+// importer's (api/endpoints/db.js), and a run tag unique to this import, which
+// the report milestones key on.
+function buildImportTagNames(runId: string, timezone: string, now: Date): string[] {
+    return [
+        `#Import ${moment(now).tz(timezone).format('YYYY-MM-DD HH:mm')}`,
+        `#Import Run ${runId}`
+    ];
 }
 
 class ContentCSVImporter {
@@ -61,8 +74,10 @@ class ContentCSVImporter {
     private _store: ImportRunStore;
     private _urlForPost: (post: CreatedPost) => string;
     private _newRunId: () => string;
+    private _getTimezone: () => string;
+    private _now: Clock;
 
-    constructor({readRows, posts, getHtmlToLexical, addJob, report, store, urlForPost, newRunId}: ImporterDeps) {
+    constructor({readRows, posts, getHtmlToLexical, addJob, report, store, urlForPost, newRunId, getTimezone, now = () => new Date()}: ImporterDeps) {
         this._readRows = readRows;
         this._posts = posts;
         this._getHtmlToLexical = getHtmlToLexical;
@@ -71,6 +86,8 @@ class ContentCSVImporter {
         this._store = store;
         this._urlForPost = urlForPost;
         this._newRunId = newRunId;
+        this._getTimezone = getTimezone;
+        this._now = now;
     }
 
     async importCSV(request: ImportRequest): Promise<ImportAccepted> {
@@ -93,10 +110,11 @@ class ContentCSVImporter {
         }
 
         const runId = this._newRunId();
+        const importTagNames = buildImportTagNames(runId, this._getTimezone(), this._now());
         this._store.create(runId, rows.length);
 
         this._addJob({
-            job: () => this.runImportJob(runId, rows),
+            job: () => this.runImportJob(runId, importTagNames, rows),
             offloaded: false,
             name: 'content-import'
         });
@@ -106,7 +124,7 @@ class ContentCSVImporter {
 
     // Must resolve in every case: the job manager reads a rejected inline job as a
     // defect in the job itself, and there is no retry behind it.
-    private async runImportJob(runId: string, rows: PostImportRow[]): Promise<void> {
+    private async runImportJob(runId: string, importTagNames: string[], rows: PostImportRow[]): Promise<void> {
         try {
             const htmlToLexical = this._getHtmlToLexical();
 
@@ -117,7 +135,7 @@ class ContentCSVImporter {
                     // options.importing preserves the supplied timestamps and suppresses publish
                     // side-effects; the internal context resolves the default author to the site owner.
                     // A fresh options object per row: the model layer mutates it.
-                    const post = await this._posts.create(buildPostData(row, htmlToLexical), {
+                    const post = await this._posts.create(buildPostData(row, htmlToLexical, importTagNames), {
                         importing: true,
                         context: {internal: true}
                     });

@@ -132,7 +132,8 @@ describe('Posts Importer API', function () {
         const {data: posts} = await models.Post.findPage({
             filter: `title:~'Content check post'`,
             status: 'all',
-            limit: 'all'
+            limit: 'all',
+            withRelated: ['tags', 'authors']
         });
 
         assert.equal(posts.length, 2);
@@ -142,6 +143,30 @@ describe('Posts Importer API', function () {
 
         assert.ok(one, 'first row was imported');
         assert.ok(two, 'second row was imported');
+
+        // Fields the CSV doesn't carry fall back to the import defaults
+        const owner = await models.User.getOwnerUser();
+        for (const post of [one, two]) {
+            assert.equal(post.get('status'), 'published');
+            assert.equal(post.get('type'), 'post');
+            assert.equal(post.get('visibility'), 'public');
+            assert.deepEqual(post.related('authors').map(author => author.get('id')), [owner.get('id')], 'the owner is the sole author');
+        }
+
+        // Both rows share the same two internal batch tags: a date stamp and a run tag
+        const tagsOne = one.related('tags').models;
+        const tagsTwo = two.related('tags').models;
+        assert.equal(tagsOne.length, 2);
+        assert.match(tagsOne[0].get('name'), /^#Import \d{4}-\d{2}-\d{2} \d{2}:\d{2}$/);
+        assert.equal(tagsOne[1].get('name'), `#Import Run ${body.meta.import_id}`);
+        for (const tag of tagsOne) {
+            assert.equal(tag.get('visibility'), 'internal');
+        }
+        assert.deepEqual(
+            tagsOne.map(tag => tag.get('id')),
+            tagsTwo.map(tag => tag.get('id')),
+            'shared tag rows, not new ones per post'
+        );
 
         // html is rendered from the converted lexical, not passed through
         assert.match(one.get('html'), /First <strong>imported<\/strong> body/);
@@ -161,6 +186,27 @@ describe('Posts Importer API', function () {
         assert.equal(one.get('updated_at').toISOString(), '2024-05-01T08:00:00.000Z');
         assert.equal(two.get('created_at').toISOString(), '2024-06-15T18:45:00.000Z');
         assert.equal(two.get('updated_at').toISOString(), '2024-06-15T18:45:00.000Z');
+    });
+
+    it('Imports public posts even when the site default visibility is paid', async function () {
+        mockManager.mockSetting('default_content_visibility', 'paid');
+        await agent.loginAsOwner();
+
+        const paidSiteCsvPath = await csvFile('posts-import-paid-site.csv',
+            'title,html,published_at\n' +
+            'Visibility check post,<p>Body</p>,2024-04-01T00:00:00.000Z\n'
+        );
+
+        await agent
+            .post('posts/upload/')
+            .attach('postsfile', paidSiteCsvPath)
+            .expectStatus(202);
+
+        await jobsService.allSettled();
+
+        const post = await models.Post.findOne({title: 'Visibility check post', status: 'all'});
+        // left to the model, visibility would have followed default_content_visibility
+        assert.equal(post.get('visibility'), 'public');
     });
 
     it('Skips a malformed row on its own and imports the rest', async function () {

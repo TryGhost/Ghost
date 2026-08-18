@@ -6,6 +6,8 @@ import {ImportRunStore} from './import/store';
 // The request is built from HTTP upload metadata, so it is validated at the
 // service boundary rather than trusted.
 const importRequestSchema = z.object({filePath: z.string().min(1)});
+// A junk timezone setting falls back to UTC rather than mis-stamping the batch tag.
+const timezoneSchema = z.string().min(1).catch('Etc/UTC');
 
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
@@ -19,6 +21,7 @@ function makeImporter(): ContentCSVImporter {
     const models = require('../../models');
     const lexicalLib = require('../../lib/lexical');
     const jobsService = require('../jobs');
+    const settingsCache = require('../../../shared/settings-cache');
     const urlService = require('../url');
     const ObjectID = require('bson-objectid').default;
 
@@ -44,7 +47,8 @@ function makeImporter(): ContentCSVImporter {
         store: new ImportRunStore(),
         // Degrades to the 404 URL for a post the URL service cannot route yet (e.g. a draft).
         urlForPost: post => urlService.getUrlForResource({...post.toJSON(), type: 'posts'}, {absolute: true}),
-        newRunId: () => new ObjectID().toHexString()
+        newRunId: () => new ObjectID().toHexString(),
+        getTimezone: () => timezoneSchema.parse(settingsCache.get('timezone'))
     });
 }
 
