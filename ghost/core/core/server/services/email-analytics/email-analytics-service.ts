@@ -371,7 +371,7 @@ export class EmailAnalyticsService {
         const eventProcessor = this.#createEventProcessor();
 
         // We keep the processing result here, so we also have a result in case of failures
-        let processingResult = new EventProcessingResult();
+        const processingResult = new EventProcessingResult();
         // Track cumulative event counts separately since processingResult gets reset during intermediate aggregations
         const cumulativeResult = new EventProcessingResult();
         let error: unknown = null;
