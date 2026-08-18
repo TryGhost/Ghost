@@ -1,6 +1,7 @@
 {
   "name": "@tryghost/kg-unsplash-selector",
   "version": "0.4.3",
+  "description": "React Unsplash image picker for Ghost's Koenig editor",
   "license": "MIT",
   "repository": {
     "type": "git",

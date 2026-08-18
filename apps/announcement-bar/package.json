@@ -2,6 +2,7 @@
     "name": "@tryghost/announcement-bar",
     "type": "module",
     "version": "1.1.28",
+    "description": "Announcement banner for Ghost sites",
     "license": "MIT",
     "repository": "https://github.com/TryGhost/Ghost",
     "author": "Ghost Foundation",

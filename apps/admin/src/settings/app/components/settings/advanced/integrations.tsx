@@ -13,6 +13,8 @@ import {useConfirmation} from '@/settings/app/components/providers/confirmation-
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+import {DEFAULT_UPGRADE_ROUTE} from '@tryghost/admin-x-framework/api/config';
+import {useUpgradeRoute} from '@/settings/app/hooks/use-upgrade-route';
 import {withErrorBoundary} from '@/settings/app/components/error-boundary';
 
 interface IntegrationItemProps {
@@ -23,6 +25,7 @@ interface IntegrationItemProps {
     onDelete?: () => void;
     active?: boolean;
     disabled?: boolean;
+    upgradeRoute?: string;
     testId?: string;
     custom?: boolean;
 }
@@ -45,6 +48,7 @@ const IntegrationItem: React.FC<IntegrationItemProps> = ({
     onDelete,
     active,
     disabled,
+    upgradeRoute = DEFAULT_UPGRADE_ROUTE,
     testId,
     custom = false
 }) => {
@@ -55,7 +59,7 @@ const IntegrationItem: React.FC<IntegrationItemProps> = ({
         e?.stopPropagation();
 
         if (disabled) {
-            updateRoute({route: 'pro', isExternal: true});
+            updateRoute({route: upgradeRoute, isExternal: true});
         } else {
             action();
         }
@@ -93,6 +97,7 @@ const IntegrationItem: React.FC<IntegrationItemProps> = ({
 
 const BuiltInIntegrations: React.FC = () => {
     const {config} = useGlobalData();
+    const upgradeRoute = useUpgradeRoute();
     const {updateRoute} = useSettingsNavigation();
 
     const openModal = (modal: string) => {
@@ -190,6 +195,7 @@ const BuiltInIntegrations: React.FC = () => {
                     icon={item.icon}
                     testId={item.testId}
                     title={item.title}
+                    upgradeRoute={upgradeRoute}
                 />
             ))}
         </ActionList>

@@ -458,12 +458,11 @@ describe('automations repository', function () {
         return result;
     };
 
-    const insertRun = async (automationId: string) => {
-        const now = toDatabaseDate(new Date());
+    const insertRun = async (automationId: string, createdAt = new Date()) => {
         const run = {
             id: ObjectId().toHexString(),
-            created_at: now,
-            updated_at: now,
+            created_at: toDatabaseDate(createdAt),
+            updated_at: toDatabaseDate(createdAt),
             automation_id: automationId,
             member_id: ObjectId().toHexString(),
             member_email: 'member@example.com'
@@ -658,6 +657,27 @@ describe('automations repository', function () {
                 'Free member welcome flow',
                 'Paid member welcome flow'
             ]);
+        });
+
+        it('returns null for "last run created at" if the automation has no runs', async function () {
+            const result = await repo.browse();
+
+            assert(result.data.every(automation => automation.stats.last_run_created_at === null));
+        });
+
+        it('returns the newest run creation time for the automation', async function () {
+            const automationId = (await getAutomationBySlug('member-welcome-email-free')).id;
+            const latestRunCreatedAt = new Date('2026-01-02T00:00:00.000Z');
+            const olderRunCreatedAt = new Date('2026-01-01T00:00:00.000Z');
+
+            await insertRun(automationId, latestRunCreatedAt);
+            await insertRun(automationId, olderRunCreatedAt);
+
+            const browseResult = await repo.browse();
+            const automation = browseResult.data.find(candidate => candidate.id === automationId);
+            assert(automation);
+
+            assert.deepEqual(automation.stats.last_run_created_at, latestRunCreatedAt);
         });
 
         it('creates missing default free and paid automations', async function () {

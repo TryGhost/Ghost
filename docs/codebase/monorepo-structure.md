@@ -34,6 +34,10 @@ service before changing it.
 - `shade/` is the current Admin design system.
 - `admin-x-framework/` provides shared Admin API hooks, routing, and utilities.
 
+The public apps build browser bundles loaded with script tags and read runtime
+configuration from data attributes. Ghost Core renders these integrations
+through theme helpers such as `{{ghost_head}}` and `{{comments}}`.
+
 Admin combines the React and Ember applications into one interface. See
 [`apps/admin/README.md`](../../apps/admin/README.md) for the current integration
 boundary.
@@ -53,6 +57,9 @@ boundary.
 Built Admin assets are copied into `ghost/core/core/built/admin/` for the Ghost
 release. Treat `built/`, `build/`, `dist/`, and `umd/` as generated output unless
 a nearby README says otherwise.
+
+For conventions used when adding a Ghost Core service, see the
+[services README](../../ghost/core/core/server/services/README.md).
 
 ## Koenig
 
@@ -77,6 +84,8 @@ modernizing an internal package. New internal packages start from
 
 `configs/` contains shared configuration packages. Workspaces depend on them by
 package name instead of copying configuration into each project.
+The [shared ESLint README](../../configs/eslint/README.md) explains the Node and
+React factories, standalone exceptions, and plugin dependency rules.
 
 ## Workspace dependencies
 

@@ -5,7 +5,7 @@ const ROOT = resolve(import.meta.dirname, '../..');
 const REPO_URL = 'https://github.com/TryGhost/Ghost';
 
 // Emoji priority order (lowest index = lowest priority, sorted descending)
-const EMOJI_ORDER = ['💡', '🐛', '🎨', '💄', '✨', '🔒'];
+const EMOJI_ORDER = ['💡', '🐛', '🎨', '✨', '🔒'];
 
 // User-facing emojis — only these are included in release notes
 const USER_FACING_EMOJIS = new Set(EMOJI_ORDER);

@@ -87,8 +87,8 @@ pnpm --filter @tryghost/e2e preflight:build
 ### Running Specific Tests
 
 ```bash
-# Specific test file
-pnpm test specific/folder/testfile.spec.ts
+# Run the Admin sign-in test
+pnpm test tests/admin/signin.test.ts
 
 # Matching a pattern
 pnpm test --grep "homepage"
@@ -99,6 +99,11 @@ pnpm test --debug
 
 ## Tests Development
 
+See [Writing Browser E2E Tests](../docs/contributing/e2e-testing.md) for the
+canonical conventions, Page Object pattern, locator priority, waiting patterns,
+and worked examples. This README covers the local workspace, infrastructure,
+fixtures, and commands.
+
 The test suite is organized into separate directories for different areas/functions:
 
 ### **Current Test Suites**
@@ -107,16 +112,6 @@ The test suite is organized into separate directories for different areas/functi
 - `tests/portal/` - Portal member journey tests
 
 We can decide whether to add additional sub-folders as we add more tests.
-
-Filenames are kebab-case — `eslint.config.js` enforces this. Test files end in
-`.test.ts` and are named after the behaviour under test, not the page:
-
-```text
-tests/admin/
-├── signin.test.ts
-├── two-factor-auth.test.ts
-└── whats-new.test.ts
-```
 
 Project folder structure can be seen below:
 
@@ -147,88 +142,6 @@ e2e/
 ├── package.json                # Dependencies and scripts
 └── tsconfig.json               # TypeScript configuration and path aliases
 ```
-
-### Writing Tests
-
-Tests use [Playwright Test](https://playwright.dev/docs/writing-tests). Use
-Arrange–Act–Assert (AAA) as a readability heuristic: set up the scenario, perform
-the behavior under test, then verify the outcome. Keep those phases clear through
-test structure and naming; comments are only useful when the boundaries would
-otherwise be unclear.
-
-Import through the `@/` path aliases defined in `tsconfig.json`, not relative paths:
-
-```typescript
-import {expect, test} from '@/helpers/playwright';
-import {HomePage} from '@/public-pages';
-
-test.describe('Ghost Homepage', () => {
-    test('loads correctly', async ({page}) => {
-        const homePage = new HomePage(page);
-
-        await homePage.goto();
-
-        await expect(homePage.title).toBeVisible();
-    });
-});
-```
-
-### Using Page Objects
-
-Page Objects are the default home for reusable knowledge about a page or major UI
-component. They encapsulate locators, readiness guards, and semantic interactions
-so tests can describe behavior rather than DOM structure. Assertions stay in test
-files.
-
-Prefer an existing Page Object when a test exercises reusable UI behavior. A direct
-semantic locator in a test is acceptable for a small, one-off assertion or
-interaction when creating a Page Object would add indirection without reuse.
-Structural selectors sometimes remain necessary for iframes, editor internals,
-generated theme markup, and elements without an accessible role. Keep those inside
-Page Objects where practical and prefer, in order:
-
-1. Accessible roles, labels, and visible text
-2. Stable test IDs
-3. Stable structural selectors when no semantic locator exists
-
-Avoid selectors coupled to visual styling, DOM position, or incidental class names.
-See [Playwright's locator guidance](https://playwright.dev/docs/locators) and
-[Martin Fowler's Page Object description](https://martinfowler.com/bliki/PageObject.html)
-for background.
-
-Admin page objects extend `AdminPage`, public and portal ones extend `BasePage`.
-The base class supplies `goto()`, `refresh()` and `pressKey()`, so a subclass
-only sets its own `pageUrl` and locators:
-
-```typescript
-// helpers/pages/admin/login-page.ts
-import {AdminPage} from './admin-page';
-import type {Locator, Page} from '@playwright/test';
-
-export class LoginPage extends AdminPage {
-    readonly emailAddressField: Locator;
-    readonly passwordField: Locator;
-    readonly signInButton: Locator;
-
-    constructor(page: Page) {
-        super(page);
-        this.pageUrl = '/ghost/#/signin';
-
-        this.emailAddressField = page.getByRole('textbox', {name: 'Email address'});
-        this.passwordField = page.getByRole('textbox', {name: 'Password'});
-        this.signInButton = page.getByRole('button', {name: 'Sign in →'});
-    }
-
-    async signIn(email: string, password: string) {
-        await this.emailAddressField.fill(email);
-        await this.passwordField.fill(password);
-        await this.signInButton.click();
-    }
-}
-```
-
-For worked examples of modals, iframes, and discovering selectors for new page
-objects, see the [test writing guide](./.claude/E2E_TEST_WRITING_GUIDE.md).
 
 ### Global Setup and Teardown
 

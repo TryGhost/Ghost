@@ -11,6 +11,7 @@ import {DEFAULT_EMAIL_DESIGN_SETTING_SLUG, MEMBER_WELCOME_EMAIL_SLUGS} from '../
 import type {
     AutomatedEmailEvents,
     Automation,
+    AutomationBrowseResult,
     AutomationAction,
     AutomationEdge,
     AutomationEmailStats,
@@ -52,6 +53,9 @@ interface AutomationRow {
     updated_at: DatabaseDate;
 }
 
+interface AutomationBrowseRow extends AutomationRow {
+    last_run_created_at: DatabaseDate | null;
+}
 
 interface ActionRow {
     id: string;
@@ -145,12 +149,12 @@ export function createDatabaseAutomationsRepository({
     fakeWaitHoursMultiplier: number | null;
 }): AutomationsRepository {
     return {
-        async browse(): Promise<Page<AutomationSummary>> {
+        async browse(): Promise<Page<AutomationBrowseResult>> {
             return await knex.transaction(async (trx) => {
                 await ensureDefaultAutomations(trx);
                 const rows = await loadAutomations(trx);
                 return {
-                    data: rows.map(row => buildAutomationSummary(row)),
+                    data: rows.map(row => buildAutomationBrowseResult(row)),
                     meta: {
                         pagination: buildPagination(rows.length)
                     }
@@ -1013,10 +1017,24 @@ async function loadAutomationBySlug(trx: Knex.Transaction, slug: string): Promis
     return row ?? null;
 }
 
-async function loadAutomations(trx: Knex.Transaction): Promise<AutomationRow[]> {
+async function loadAutomations(trx: Knex.Transaction): Promise<AutomationBrowseRow[]> {
+    const latestRunDates = trx('automation_runs')
+        .select('automation_id')
+        .max({last_run_created_at: 'created_at'})
+        .groupBy('automation_id')
+        .as('latest_run_dates');
     return await trx('automations')
-        .select('id', 'slug', 'name', 'status', 'created_at', 'updated_at')
-        .orderBy('name');
+        .select(
+            'automations.id',
+            'automations.slug',
+            'automations.name',
+            'automations.status',
+            'automations.created_at',
+            'automations.updated_at',
+            'latest_run_dates.last_run_created_at'
+        )
+        .leftJoin(latestRunDates, 'automations.id', 'latest_run_dates.automation_id')
+        .orderBy('automations.name');
 }
 
 async function updateAutomation(trx: Knex.Transaction, automation: AutomationRow): Promise<AutomationRow> {
@@ -1352,6 +1370,15 @@ function buildAutomationSummary(automation: AutomationRow): AutomationSummary {
         status: automation.status,
         created_at: serializeDate(automation.created_at),
         updated_at: serializeDate(automation.updated_at)
+    };
+}
+
+function buildAutomationBrowseResult(automation: AutomationBrowseRow): AutomationBrowseResult {
+    return {
+        ...buildAutomationSummary(automation),
+        stats: {
+            last_run_created_at: automation.last_run_created_at ? fromDatabaseDate(automation.last_run_created_at) : null
+        }
     };
 }
 

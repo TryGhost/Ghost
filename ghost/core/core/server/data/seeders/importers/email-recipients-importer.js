@@ -1,4 +1,4 @@
-const TableImporter = require('./table-importer');
+const {TableImporter} = require('./table-importer');
 const {faker} = require('@faker-js/faker');
 const generateEvents = require('../utils/event-generator');
 const dateToDatabaseString = require('../utils/database-date');

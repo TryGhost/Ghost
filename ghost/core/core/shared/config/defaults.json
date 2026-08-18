@@ -235,7 +235,7 @@
         },
         "assets": {
             "contentBasedHash": {
-                "enabled": false,
+                "enabled": true,
                 "maxSize": 100000
             }
         }

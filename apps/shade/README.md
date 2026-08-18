@@ -2,9 +2,12 @@
 
 Ghost Design System that can be used by micro-frontends.
 
-## Usage
+## Usage in embedded Ghost Admin apps
 
-Shade is consumed internally across Ghost apps. The package is currently private; when published, consumption will follow standard npm usage.
+Ghost Admin provides Shade's CSS and application wrapper centrally. Embedded
+Admin surfaces, including `apps/admin` and `apps/activitypub`, must not import
+`@tryghost/shade/styles.css` or add another `ShadeApp` wrapper. Import
+components from their layer-specific subpaths:
 
 Example:
 
@@ -15,6 +18,12 @@ export function Example() {
     return <Button>Continue</Button>;
 }
 ```
+
+## Usage in standalone surfaces
+
+The setup below applies only to a standalone surface that owns its complete
+application and CSS entry points. Shade is currently a private package; when
+published, consumption will follow standard npm usage.
 
 CSS-first styling contract:
 
@@ -44,9 +53,16 @@ import {ShadeApp} from '@tryghost/shade/app';
 
 This is a monorepo package.
 
-Follow the instructions for the top-level repo.
-1. `git clone` this repo & `cd` into it as usual
-2. Run `pnpm` to install top-level dependencies.
+For a fresh clone or worktree, follow the setup instructions from the repository
+root:
+
+```bash
+corepack enable pnpm
+pnpm setup
+```
+
+After setup, run the package commands below from `apps/shade` or with
+`pnpm --filter @tryghost/shade <command>`.
 
 Local docs with Storybook:
 

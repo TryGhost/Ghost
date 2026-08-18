@@ -36,7 +36,7 @@ allowBuilds:
   'msw@2.14.6': true
   'nx@23.1.1': true
   'protobufjs@7.6.4': true
-  're2@1.25.0': true
+  're2@1.26.1': true
   'sharp@0.35.3': true
   ssh2: false
 
@@ -80,27 +80,29 @@ catalog:
   '@testing-library/jest-dom': 6.9.1
   '@testing-library/react': 14.3.1
   '@tryghost/api-framework': 3.3.5
-  '@tryghost/brute-knex': 3.2.1
+  '@tryghost/brute-knex': 3.2.2
   '@tryghost/color-utils': 0.2.20
   '@tryghost/custom-fonts': 1.0.11
-  '@tryghost/debug': 2.3.5
-  '@tryghost/domain-events': 3.3.5
-  '@tryghost/errors': 3.3.5
+  '@tryghost/debug': 2.3.8
+  '@tryghost/domain-events': 3.3.9
+  '@tryghost/errors': 3.3.8
   '@tryghost/helpers': 1.1.106
   '@tryghost/limit-service': 1.5.6
-  '@tryghost/logging': 5.3.0
-  '@tryghost/mongo-knex': 0.10.1
-  '@tryghost/nql': 0.13.1
-  '@tryghost/nql-lang': 0.6.6
+  '@tryghost/logging': 5.3.4
+  '@tryghost/metrics': 3.4.2
+  '@tryghost/mongo-knex': 0.11.1
+  '@tryghost/nql': 0.13.3
+  '@tryghost/nql-lang': 0.7.0
+  '@tryghost/request': 4.0.1
   '@tryghost/string': 0.3.5
   '@tryghost/timezone-data': 1.0.0
-  '@tryghost/tpl': 2.3.5
+  '@tryghost/tpl': 2.3.8
   '@types/express': 4.17.25
   '@types/html-minifier': ^4.0.6
   '@types/lodash': 4.17.25
   '@types/luxon': 3.7.4
   '@types/jest': 29.5.14
-  '@types/jsdom': 28.0.3
+  '@types/jsdom': 30.0.0
   '@types/nconf': 0.10.7
   '@types/node': 22.20.1
   '@types/react': 18.3.31
@@ -142,8 +144,9 @@ catalog:
   fs-extra: 11.3.6
   glob: 13.0.6
   globals: 17.7.0
+  got: 15.1.0
   js-yaml: 4.3.0
-  jsdom: 29.1.1
+  jsdom: 30.0.1
   jsonc-parser: 3.3.1
   knex-migrator: 5.4.1
   lodash: 4.18.1
@@ -206,6 +209,10 @@ catalog:
   '@pnpm/releasing.versioning': 1100.2.4
   '@pnpm/workspace.workspace-manifest-reader': 1100.1.5
   execa: 10.0.1
+  remark-cli: 12.0.1
+  remark-validate-links: 13.1.0
+  markdownlint-cli2: 0.23.2
+  parse-email-address: 0.0.4
 
 catalogs:
   react17:
@@ -226,6 +233,8 @@ overrides:
   'knex-migrator>knex': 2.4.2
   '@tryghost/errors': 'catalog:'
   '@tryghost/logging': 'catalog:'
+  '@tryghost/nql': 'catalog:'
+  '@tryghost/nql-lang': 'catalog:'
   jackspeak: 4.2.3
   moment: 'catalog:'
   moment-timezone: 'catalog:'

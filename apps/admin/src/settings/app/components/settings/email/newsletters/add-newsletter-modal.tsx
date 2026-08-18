@@ -4,6 +4,7 @@ import {Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldLabe
 import {HostLimitError, useLimiter} from '@/settings/app/hooks/use-limiter';
 import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
 import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+import {useUpgradeRoute} from '@/settings/app/hooks/use-upgrade-route';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {formatNumber} from '@tryghost/shade/utils';
 import {useAddNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
@@ -12,6 +13,7 @@ import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 const AddNewsletterModal: React.FC = () => {
     const {updateRoute} = useSettingsNavigation();
+    const upgradeRoute = useUpgradeRoute();
     const returnRoute = useFeatureFlag('automations') ? 'emails' : 'newsletters';
     const handleError = useHandleError();
     const {showLimit} = useConfirmation();
@@ -77,11 +79,11 @@ const AddNewsletterModal: React.FC = () => {
         if (limitError) {
             showLimit({
                 prompt: limitError.message || `Your current plan doesn't support more newsletters.`,
-                onOk: () => updateRoute({route: '/pro', isExternal: true})
+                onOk: () => updateRoute({route: upgradeRoute, isExternal: true})
             });
             updateRoute(returnRoute);
         }
-    }, [limitError, returnRoute, updateRoute, showLimit]);
+    }, [limitError, returnRoute, updateRoute, showLimit, upgradeRoute]);
 
     if (isCheckingLimit || limitError) {
         return null;

@@ -16,6 +16,7 @@ import {useConfirmation} from '@/settings/app/components/providers/confirmation-
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+import {useUpgradeRoute} from '@/settings/app/hooks/use-upgrade-route';
 import {withErrorBoundary} from '@/settings/app/components/error-boundary';
 
 const StripeConnectedButton: React.FC<{className?: string; onClick: () => void;}> = ({className, onClick}) => {
@@ -43,6 +44,7 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const archivedTiers = getArchivedTiers(tiers || []);
     const defaultPaidTierCurrency = activeTiers.find(tier => tier.type === 'paid' && tier.currency)?.currency || 'USD';
     const {updateRoute} = useSettingsNavigation();
+    const upgradeRoute = useUpgradeRoute();
     const limiter = useLimiter();
     const {showLimit} = useConfirmation();
     const handleError = useHandleError();
@@ -105,7 +107,7 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 if (error instanceof HostLimitError) {
                     showLimit({
                         prompt: error.message || `Your current plan doesn't support Stripe Connect.`,
-                        onOk: () => updateRoute({route: '/pro', isExternal: true})
+                        onOk: () => updateRoute({route: upgradeRoute, isExternal: true})
                     });
                     return;
                 }

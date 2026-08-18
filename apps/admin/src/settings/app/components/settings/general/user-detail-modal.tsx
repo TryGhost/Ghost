@@ -15,6 +15,7 @@ import {LucideIcon} from '@tryghost/shade/utils';
 import {Pencil, Trash2} from 'lucide-react';
 import {useLocation, useParams} from '@tryghost/admin-x-framework';
 import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+import {useUpgradeRoute} from '@/settings/app/hooks/use-upgrade-route';
 import {SOCIAL_PLATFORM_CONFIGS, SOCIAL_PLATFORM_KEYS, getSocialValidationError} from '@/settings/app/utils/social-urls/index';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {Text} from '@tryghost/shade/primitives';
@@ -75,6 +76,7 @@ export interface UserDetailProps {
 
 const UserDetailModalContent: React.FC<{user: User; onDeletingUserChange: (isDeleting: boolean) => void}> = ({user, onDeletingUserChange}) => {
     const {updateRoute} = useSettingsNavigation();
+    const upgradeRoute = useUpgradeRoute();
     const location = useLocation();
 
     const getTabFromPath = (path: string): string => {
@@ -174,7 +176,7 @@ const UserDetailModalContent: React.FC<{user: User; onDeletingUserChange: (isDel
                     showLimit({
                         formSheet: true,
                         prompt: error.message || `Your current plan doesn't support more users.`,
-                        onOk: () => updateRoute({route: '/pro', isExternal: true})
+                        onOk: () => updateRoute({route: upgradeRoute, isExternal: true})
                     });
                     return;
                 } else {
