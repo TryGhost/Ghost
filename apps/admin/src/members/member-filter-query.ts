@@ -103,13 +103,15 @@ function matchNewsletterGroupedNode(node: AstNode): ParsedPredicate | null {
     }
 
     let slug: string | undefined;
-    let emailDisabledValue: number | undefined;
+    let slugNegated = false;
+    let hasEmailDisabled = false;
 
     for (const child of compound.children) {
         const newsletterSlug = child['newsletters.slug'];
 
         if (typeof newsletterSlug === 'string') {
             slug = newsletterSlug;
+            slugNegated = false;
         }
 
         if (
@@ -119,34 +121,27 @@ function matchNewsletterGroupedNode(node: AstNode): ParsedPredicate | null {
             typeof (newsletterSlug as Record<string, unknown>).$ne === 'string'
         ) {
             slug = (newsletterSlug as Record<string, string>).$ne;
+            slugNegated = true;
         }
 
         if (typeof child.email_disabled === 'number') {
-            emailDisabledValue = child.email_disabled;
+            hasEmailDisabled = true;
         }
     }
 
-    if (!slug) {
+    if (!slug || !hasEmailDisabled) {
         return null;
     }
 
-    if (compound.operator === '$and' && emailDisabledValue === 0) {
-        return {
-            field: `newsletters.${slug}`,
-            operator: 'is',
-            values: ['subscribed']
-        };
-    }
-
-    if (compound.operator === '$or' && emailDisabledValue === 1) {
-        return {
-            field: `newsletters.${slug}`,
-            operator: 'is',
-            values: ['unsubscribed']
-        };
-    }
-
-    return null;
+    // The slug clause's polarity is the subscription state. Serialize pairs it
+    // with a fixed join + email_disabled shape, but hand-written filters may
+    // pair them differently; the email_disabled clause only marks the compound
+    // as a newsletter subscription filter and never flips its meaning.
+    return {
+        field: `newsletters.${slug}`,
+        operator: 'is',
+        values: [slugNegated ? 'unsubscribed' : 'subscribed']
+    };
 }
 
 function matchFeedbackGroupedNode(node: AstNode): ParsedPredicate | null {
