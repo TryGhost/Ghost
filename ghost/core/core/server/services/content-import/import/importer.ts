@@ -132,9 +132,12 @@ class ContentCSVImporter {
                 const line = index + 2;
 
                 try {
-                    // options.importing preserves the supplied timestamps and suppresses publish
-                    // side-effects; the internal context resolves the default author to the site owner.
-                    // A fresh options object per row: the model layer mutates it.
+                    // options.importing preserves the supplied timestamps and keeps the import silent:
+                    // the webhook, Slack, IndexNow and mention consumers all stand down on it, and a
+                    // newsletter can only be attached in the API layer (post-scheduling does not check
+                    // it, one reason status is never 'scheduled'). Pinned by
+                    // test/e2e-webhooks/posts-importer.test.js. A fresh options object per row: the
+                    // model layer mutates it.
                     const post = await this._posts.create(buildPostData(row, htmlToLexical, importTagNames), {
                         importing: true,
                         context: {internal: true}
