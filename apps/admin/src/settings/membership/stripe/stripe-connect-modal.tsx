@@ -144,7 +144,7 @@ const Connect: React.FC = () => {
                 <Textarea aria-invalid={Boolean(error) || undefined} id='stripe-secure-key' placeholder='Paste your secure key here' onChange={onTokenChange} />
                 {error && <FieldError>{error}</FieldError>}
             </Field>
-            {submitEnabled && <Button className='mt-5' type='button' onClick={onSubmit}>Save Stripe settings</Button>}
+            {submitEnabled && <Button className='mt-5' type='button' onClick={() => void onSubmit()}>Save Stripe settings</Button>}
         </div>
     );
 };
@@ -187,7 +187,7 @@ const Connected: React.FC<{onClose?: () => void}> = ({onClose}) => {
     return (
         <section>
             <div className='flex items-center justify-between'>
-                <Button className='text-destructive hover:text-destructive' disabled={isFetchingMembers} type='button' variant='ghost' onClick={openDisconnectStripeModal}>
+                <Button className='text-destructive hover:text-destructive' disabled={isFetchingMembers} type='button' variant='ghost' onClick={() => void openDisconnectStripeModal()}>
                     <LucideIcon.Unlink />
                     Disconnect
                 </Button>
@@ -248,7 +248,7 @@ const Direct: React.FC<{onClose: () => void}> = ({onClose}) => {
             <FieldGroup className='mt-10 gap-8'>
                 <Field><FieldLabel htmlFor='stripe-publishable-key'>Publishable key</FieldLabel><Input id='stripe-publishable-key' value={publishableKey?.toString() ?? ''} onChange={e => updateSetting('stripe_publishable_key', e.target.value)} /></Field>
                 <Field><FieldLabel htmlFor='stripe-secure-key'>Secure key</FieldLabel><Input id='stripe-secure-key' value={secretKey?.toString() ?? ''} onChange={e => updateSetting('stripe_secret_key', e.target.value)} /></Field>
-                <Button className='mt-5' disabled={saveState === 'saving'} type='button' onClick={onSubmit}>Save Stripe settings</Button>
+                <Button className='mt-5' disabled={saveState === 'saving'} type='button' onClick={() => void onSubmit()}>Save Stripe settings</Button>
             </FieldGroup>
         </div>
     );
@@ -287,7 +287,7 @@ const StripeConnectModal: React.FC = () => {
             }
         };
 
-        checkLimit();
+        void checkLimit();
     }, [limiter, updateRoute, stripeEnabled, hasStripeConnectLimit, showLimit, upgradeRoute]);
 
     const startFlow = () => {

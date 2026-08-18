@@ -188,7 +188,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                 cancelLabel: 'Cancel',
                 okVariant: tier.active ? 'destructive' : 'default',
                 onOk: (confirmModal) => {
-                    updateTier({...tier, active: !tier.active});
+                    void updateTier({...tier, active: !tier.active});
                     confirmModal?.remove();
                     toast.success(`Tier ${tier.active ? 'archived' : 'reactivated'}`);
                 }
@@ -419,7 +419,7 @@ const TierDetailModal: React.FC = () => {
 
     useEffect(() => {
         if (tierId && !tier && !isEnd) {
-            fetchNextPage();
+            void fetchNextPage();
         }
     }, [fetchNextPage, isEnd, tierId, tier]);
 

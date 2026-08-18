@@ -12,7 +12,8 @@ interface EmailDesignModalProps {
     dirty?: boolean;
     isLoading?: boolean;
     okProps?: Pick<OkProps, 'disabled' | 'label' | 'variant'>;
-    onSave: () => void;
+    /** May be async; the modal fires it without awaiting, so the handler owns its own error handling. */
+    onSave: () => void | Promise<unknown>;
     onClose: () => void;
     afterClose?: () => void;
     testId?: string;
@@ -51,7 +52,7 @@ const EmailDesignModal: React.FC<EmailDesignModalProps> = ({
         const handleKeyDown = (e: KeyboardEvent) => {
             if ((e.metaKey || e.ctrlKey) && e.key === 's') {
                 e.preventDefault();
-                onSaveRef.current();
+                void onSaveRef.current();
             }
         };
         window.addEventListener('keydown', handleKeyDown);
@@ -99,7 +100,7 @@ const EmailDesignModal: React.FC<EmailDesignModalProps> = ({
                                     disabled={isLoading || okProps?.disabled}
                                     type='button'
                                     variant={okProps?.variant}
-                                    onClick={onSave}
+                                    onClick={() => void onSave()}
                                 >
                                     {okProps?.label || 'Save'}
                                 </Button>

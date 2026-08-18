@@ -132,7 +132,7 @@ const LookAndFeel: React.FC<{
                                         </ImageUploadActions>
                                     </ImageUploadPreview>
                                 ) : (
-                                    <ImageUploadDropzone accept={{'image/*': []}} aria-label='Upload Portal icon' className='size-full rounded-[calc(var(--radius-md)+1px)] border-0 bg-transparent p-0 hover:bg-surface-elevated' inputAriaLabel='Upload Portal icon' onDropAccepted={files => handleImageUpload(files[0])}>
+                                    <ImageUploadDropzone accept={{'image/*': []}} aria-label='Upload Portal icon' className='size-full rounded-[calc(var(--radius-md)+1px)] border-0 bg-transparent p-0 hover:bg-surface-elevated' inputAriaLabel='Upload Portal icon' onDropAccepted={files => void handleImageUpload(files[0])}>
                                         <Upload className='size-5' />
                                     </ImageUploadDropzone>
                                 )}

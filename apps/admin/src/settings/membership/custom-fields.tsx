@@ -212,7 +212,7 @@ const CustomFields: React.FC<{keywords: string[]}> = ({keywords}) => {
                 // The server's message says what to do; refetching is how the screen
                 // learns about the field it did not know about.
                 handleError(error);
-                queryClient.invalidateQueries({queryKey: [memberCustomFieldsDataType]});
+                void queryClient.invalidateQueries({queryKey: [memberCustomFieldsDataType]});
             })
             // Dropped either way: on success the cache holds this order, on failure the
             // server's is the one to show.

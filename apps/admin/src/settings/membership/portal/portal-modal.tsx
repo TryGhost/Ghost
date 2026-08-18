@@ -95,11 +95,10 @@ const PortalModal: React.FC = () => {
                     cancelLabel: '',
                     onOk: confirmModal => confirmModal?.remove()
                 });
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            } catch (e: any) {
+            } catch (e) {
                 let prompt = 'There was an error verifying your email address. Please try again.';
 
-                if (e?.message === 'Token expired') {
+                if (e instanceof Error && e.message === 'Token expired') {
                     prompt = 'Verification link has expired.';
                 }
                 confirm({
@@ -113,14 +112,14 @@ const PortalModal: React.FC = () => {
             }
         };
         if (verifyEmail) {
-            checkToken({token: verifyEmail});
+            void checkToken({token: verifyEmail});
         }
     }, [confirm, handleError, verifyEmail, verifyToken]);
 
-    const {formState, setFormState, saveState, handleSave, updateForm, okProps} = useForm({
+    const {formState, setFormState, saveState, handleSave, updateForm, okProps} = useForm<{settings: Dirtyable<Setting>[]; tiers: Dirtyable<Tier>[]}>({
         initialState: {
-            settings: settings as Dirtyable<Setting>[],
-            tiers: allTiers as Dirtyable<Tier>[] || []
+            settings,
+            tiers: allTiers || []
         },
 
         savingDelay: 500,
