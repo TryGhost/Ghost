@@ -97,7 +97,7 @@ const TestEmailDropdown: React.FC<TestEmailDropdownProps> = ({
                 className='w-full'
                 disabled={sendState === 'sending'}
                 type='button'
-                onClick={handleSendTestEmail}
+                onClick={() => void handleSendTestEmail()}
             >
                 {sendState === 'sent' ? 'Sent' : sendState === 'sending' ? 'Sending...' : 'Send'}
             </Button>

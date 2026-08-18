@@ -1,4 +1,4 @@
-import TierDetailPreview from '@/settings/app/components/settings/membership/tiers/tier-detail-preview';
+import TierDetailPreview from '@/settings/membership/tiers/tier-detail-preview';
 import assert from 'node:assert/strict';
 import {render, screen} from '@testing-library/react';
 

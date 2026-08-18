@@ -1,4 +1,4 @@
-import PortalFrame from '@/settings/app/components/settings/membership/portal/portal-frame';
+import PortalFrame from '@/settings/membership/portal/portal-frame';
 import SettingsBreadcrumbs from '@/settings/app/components/settings/settings-breadcrumbs';
 import {Button, Field, FieldDescription, FieldError, FieldGroup, FieldLabel, Input, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, Textarea} from '@tryghost/shade/components';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';

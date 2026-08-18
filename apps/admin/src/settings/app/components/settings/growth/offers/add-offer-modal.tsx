@@ -1,4 +1,4 @@
-import PortalFrame from '@/settings/app/components/settings/membership/portal/portal-frame';
+import PortalFrame from '@/settings/membership/portal/portal-frame';
 import {Button, Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldLabel, Input, InputGroup, InputGroupAddon, InputGroupInput, InputGroupText, RadioGroup, RadioGroupItem, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Textarea} from '@tryghost/shade/components';
 import {type ErrorMessages, useForm} from '@tryghost/admin-x-framework/hooks';
 import {JSONError} from '@tryghost/admin-x-framework/errors';

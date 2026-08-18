@@ -9,7 +9,7 @@ const isEmptyLexical = (lexical: string | null | undefined): boolean => {
     }
 
     try {
-        const parsed = JSON.parse(lexical);
+        const parsed = JSON.parse(lexical) as {root?: {children?: Array<{type?: string; children?: unknown[]}>}} | null;
         const children = parsed?.root?.children;
 
         // Empty if no children or only an empty paragraph

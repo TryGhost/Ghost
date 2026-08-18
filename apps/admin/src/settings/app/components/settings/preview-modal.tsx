@@ -70,7 +70,8 @@ export interface PreviewModalProps {
     backDropClick?: boolean;
 
     onCancel?: () => void;
-    onOk?: () => void;
+    /** May be async; the modal fires it without awaiting, so the handler owns its own error handling. */
+    onOk?: () => void | Promise<void>;
     onClose: () => void;
     afterClose?: () => void;
 }
@@ -122,7 +123,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
             const handleCMDS = (e: KeyboardEvent) => {
                 if ((e.metaKey || e.ctrlKey) && e.key === 's') {
                     e.preventDefault();
-                    onOk();
+                    void onOk();
                 }
             };
             if (enableCMDS) {
@@ -229,7 +230,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
                                 {sidebarButtons || (
                                     <Inline gap='md'>
                                         <Button disabled={buttonsDisabled} type='button' variant='outline' onClick={handleCancel}>{cancelLabel}</Button>
-                                        <Button disabled={buttonsDisabled} type='button' variant={okVariant} onClick={onOk}>{okLabel}</Button>
+                                        <Button disabled={buttonsDisabled} type='button' variant={okVariant} onClick={() => void onOk?.()}>{okLabel}</Button>
                                     </Inline>
                                 )}
                             </Inline>

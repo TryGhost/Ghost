@@ -85,8 +85,8 @@ const EmailEditorInner: React.FC<{
     registerAPI: (API: KoenigInstance | null) => void;
     onChange: (data: unknown) => void;
 }> = ({editor, darkMode, cardConfig, initialEditorState, placeholder, className, registerAPI, onChange}) => {
-    const koenig = editor.read();
-    const EmailEditor = koenig.EmailEditor;
+    // loadKoenig resolves the untyped @tryghost/koenig-lexical bundle
+    const {EmailEditor} = editor.read() as {EmailEditor: React.ComponentType<Record<string, unknown>>};
 
     return (
         <div className={cn('koenig-react-editor w-full', baseEditorStyles, className)}>

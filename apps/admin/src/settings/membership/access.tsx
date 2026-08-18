@@ -238,7 +238,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                                         data-testid='regenerate-access-code'
                                         disabled={isRegenerating}
                                         size='icon-xs'
-                                        onClick={handleRegenerateAccessCode}
+                                        onClick={() => void handleRegenerateAccessCode()}
                                     >
                                         <RefreshCw aria-hidden={true} />
                                     </InputGroupButton>
