@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>{{t 'Your gift has been sent'}}</title>
+  </head>
+  <body style="background-color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0;">
+    <table border="0" cellpadding="0" cellspacing="0" style="width: 100%;">
+      <tr>
+        <td></td>
+        <td style="display: block; margin: 0 auto; max-width: 540px; padding: 40px 20px;">
+          {{#if siteIconUrl}}<p style="padding-bottom: 40px; text-align: center;"><a href="{{siteUrl}}"><img src="{{siteIconUrl}}" alt="{{siteTitle}}" width="48" height="48"></a></p>{{/if}}
+          <h1 style="color: #15212A; font-size: 26px; line-height: 28px; margin: 0 0 16px;">{{t 'Your gift has been sent'}}</h1>
+          <p style="color: #3A464C; font-size: 16px; line-height: 24px; margin: 0 0 24px;">{{t 'Your gift was sent to {recipientEmail}. You can also share the link below yourself.' recipientEmail=(strong gift.recipientEmail)}}</p>
+          <p style="background: #F4F5F6; border-radius: 6px; color: #15212A; font-size: 15px; line-height: 22px; margin: 0; padding: 14px 16px; word-break: break-all;">{{gift.link}}</p>
+          <p style="color: #3A464C; font-size: 16px; line-height: 24px; margin: 24px 0 0;">{{t 'The link expires on {expiresAt} and can only be redeemed once.' expiresAt=(strong gift.expiresAt)}}</p>
+          <p style="color: #738A94; font-size: 11px; line-height: 16px; margin: 80px 0 0;">{{t 'This message was sent from {siteDomain} to {email}.' siteDomain=(linkTag siteUrl siteDomain) email=(linkTag (mailto toEmail) toEmail)}}</p>
+        </td>
+        <td></td>
+      </tr>
+    </table>
+  </body>
+</html>

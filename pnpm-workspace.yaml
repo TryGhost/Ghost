@@ -160,6 +160,7 @@ catalog:
   preact: ^10.29.2
   prettier: 3.9.6
   react: 18.3.1
+  react-day-picker: 9.14.0
   react-dom: 18.3.1
   react-router: 7.18.1
   semver: 7.8.5
