@@ -115,6 +115,7 @@ async function expectGiftCheckoutError(bodyOverrides = {}) {
             type: 'gift',
             tierId: paidTier.id,
             cadence: 'month',
+            customerEmail: 'gift-buyer@example.com',
             metadata: {},
             ...bodyOverrides
         })
@@ -440,6 +441,7 @@ describe('Gift Subscriptions', function () {
                     type: 'gift',
                     tierId: paidTier.id,
                     duration: 3,
+                    customerEmail: buyerEmail,
                     metadata: {}
                 })
                 .expectStatus(200);
@@ -554,6 +556,7 @@ describe('Gift Subscriptions', function () {
                     type: 'gift',
                     tierId: paidTier.id,
                     cadence: 'year',
+                    customerEmail: 'legacy-gift-buyer@example.com',
                     metadata: {}
                 })
                 .expectStatus(200);
@@ -648,6 +651,7 @@ describe('Gift Subscriptions', function () {
                     type: 'gift',
                     tierId: paidTier.id,
                     duration: 3,
+                    customerEmail: 'refund-buyer@example.com',
                     metadata: {}
                 })
                 .expectStatus(200);

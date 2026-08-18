@@ -613,7 +613,7 @@ export class GiftService {
 
         const buyerEmail = gift.buyerEmail ?? member?.get('email') ?? null;
         if (!buyerEmail) {
-            logging.warn(`Skipping purchase notifications for gift ${gift.token} because the buyer email is unavailable`);
+            logging.warn('Skipping purchase notifications because the buyer email is unavailable');
             return;
         }
 

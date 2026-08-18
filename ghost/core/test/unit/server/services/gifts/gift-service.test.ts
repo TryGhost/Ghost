@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import errors from '@tryghost/errors';
+import logging from '@tryghost/logging';
 import sinon from 'sinon';
 import type {Knex} from 'knex';
 import {GiftService, type GiftPurchaseData} from '../../../../../core/server/services/gifts/gift-service';
@@ -241,6 +242,7 @@ describe('GiftService', function () {
         });
 
         it('completes a paid pending gift when Stripe omits buyer email', async function () {
+            const warnLog = sinon.stub(logging, 'warn');
             const pending = Gift.fromCheckout({
                 token: 'pending-token',
                 buyerEmail: null,
@@ -270,6 +272,7 @@ describe('GiftService', function () {
             assert.equal(giftRepository.update.firstCall.firstArg.buyerEmail, null);
             sinon.assert.notCalled(staffServiceEmails.notifyGiftPurchased);
             sinon.assert.notCalled(giftEmailService.sendPurchaseConfirmation);
+            sinon.assert.calledOnceWithExactly(warnLog, 'Skipping purchase notifications because the buyer email is unavailable');
         });
 
         it('creates a Gift entity and saves it', async function () {
