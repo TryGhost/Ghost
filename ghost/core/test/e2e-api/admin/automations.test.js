@@ -4,11 +4,12 @@ const sinon = require('sinon');
 const domainEvents = require('@tryghost/domain-events');
 const ObjectId = require('bson-objectid').default;
 const models = require('../../../core/server/models');
+const labs = require('../../../core/shared/labs');
 const mailService = require('../../../core/server/services/mail');
 const {getSignedAdminToken} = require('../../../core/server/adapters/scheduling/utils');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../core/server/services/member-welcome-emails/constants');
-const {agentProvider, fixtureManager, matchers, assertions} = require('../../utils/e2e-framework');
-const {cleanupAutomationsFixture, EMPTY_EMAIL_LEXICAL, NON_EMPTY_EMAIL_LEXICAL, setupAutomationsFixture, TEST_EMAIL_DESIGN_SETTING_ID} = require('../../utils/automations-fixtures');
+const {agentProvider, dbUtils, fixtureManager, matchers, assertions, resetRateLimits} = require('../../utils/e2e-framework');
+const {cleanupAutomationsFixture, EMPTY_EMAIL_LEXICAL, NON_EMPTY_EMAIL_LEXICAL, setupAutomationsFixture, upsertEmailDesignSetting, TEST_EMAIL_DESIGN_SETTING_ID} = require('../../utils/automations-fixtures');
 const StartAutomationsPollEvent = require('../../../core/server/services/automations/events/start-automations-poll-event');
 
 const {anyContentVersion, anyEtag, anyErrorId, anyISODateTime, anyObjectId} = matchers;
@@ -88,11 +89,14 @@ const buildSendEmailAction = (dataOverrides = {}) => ({
 
 describe('Automations API', function () {
     let agent;
+    let membersAgent;
     let schedulerKey;
     let schedulerToken;
 
     beforeAll(async function () {
-        agent = await agentProvider.getAdminAPIAgent();
+        const agents = await agentProvider.getAgentsForMembers();
+        agent = agents.adminAgent;
+        membersAgent = agents.membersAgent;
         await fixtureManager.init('users', 'integrations', 'api_keys', 'members');
         await agent.loginAsOwner();
 
@@ -115,56 +119,56 @@ describe('Automations API', function () {
     });
 
     describe('browse', function () {
-        async function createAutomationRun(automationId, createdAt) {
-            const runId = ObjectId().toHexString();
-            await models.Base.knex('automation_runs').insert({
-                id: runId,
-                automation_id: automationId,
-                member_id: null,
-                member_email: 'member@example.com',
-                created_at: createdAt,
-                updated_at: createdAt
-            });
-            return runId;
+        function enableAutomationsLabsFlag() {
+            const labsStub = sinon.stub(labs, 'isSet');
+            labsStub.callThrough();
+            labsStub.withArgs('automations').returns(true);
         }
 
-        async function createAutomationRunStep(automationId, runId, status) {
-            const revisionId = await models.Base.knex('automation_action_revisions')
-                .innerJoin('automation_actions', 'automation_actions.id', 'automation_action_revisions.action_id')
-                .where('automation_actions.automation_id', automationId)
-                .first('automation_action_revisions.id')
-                .then(revision => revision.id);
-            const now = new Date();
-            await models.Base.knex('automation_run_steps').insert({
-                id: ObjectId().toHexString(),
-                automation_run_id: runId,
-                automation_action_revision_id: revisionId,
-                ready_at: now,
-                step_attempts: 0,
-                started_at: null,
-                finished_at: null,
-                status,
-                locked_by: null,
-                locked_at: null,
-                created_at: now,
-                updated_at: now
-            });
+        async function signUpMember(email) {
+            await dbUtils.truncate('brute');
+            await resetRateLimits();
+
+            const mailStub = sinon.stub(mailService.GhostMailer.prototype, 'sendMail').resolves('Mail sent');
+            try {
+                const {text: integrityToken} = await membersAgent.get('/api/integrity-token/').expectStatus(200);
+                await membersAgent.post('/api/send-magic-link')
+                    .body({email, emailType: 'signup', integrityToken})
+                    .expectStatus(201);
+
+                const magicLinkMail = mailStub.getCalls()
+                    .map(call => call.args[0])
+                    .find(mail => mail.to === email);
+                const [magicLinkUrl] = magicLinkMail.text.match(/https?:\/\/\S+/);
+                const {searchParams} = new URL(magicLinkUrl);
+
+                await membersAgent
+                    .get(`/?token=${searchParams.get('token')}&action=signup`)
+                    .expectStatus(302)
+                    .expectHeader('Location', /success=true/);
+
+                await domainEvents.allSettled();
+            } finally {
+                mailStub.restore();
+            }
         }
 
-        async function deleteActionsForAutomationIds(automationIds) {
-            const actionIds = await models.Base.knex('automation_actions')
-                .whereIn('automation_id', automationIds)
-                .pluck('id');
-            await models.Base.knex('automation_action_edges')
-                .whereIn('source_action_id', actionIds)
-                .orWhereIn('target_action_id', actionIds)
-                .del();
-            await models.Base.knex('automation_action_revisions')
-                .whereIn('action_id', actionIds)
-                .del();
-            await models.Base.knex('automation_actions')
-                .whereIn('id', actionIds)
-                .del();
+        // Signing up enqueues the automation run after the member creation
+        // transaction commits, so the run isn't guaranteed to exist by the time
+        // the signup request completes.
+        async function waitForTotalRunCount(automationId, totalRunCount) {
+            let automation;
+            for (let attempt = 0; attempt < 50; attempt++) {
+                const {body} = await agent.get('automations').expectStatus(200);
+                automation = body.automations.find(candidate => candidate.id === automationId);
+                if (automation.stats.total_run_count === totalRunCount) {
+                    return automation;
+                }
+                await new Promise((resolve) => {
+                    setTimeout(resolve, 100);
+                });
+            }
+            throw new Error(`Timed out waiting for automation ${automationId} to reach ${totalRunCount} runs (currently ${automation.stats.total_run_count})`);
         }
 
         async function createWelcomeEmailsForAutomations(automations) {
@@ -223,18 +227,29 @@ describe('Automations API', function () {
         });
 
         it('returns latest automation run timestamp', async function () {
+            enableAutomationsLabsFlag();
             const {body: beforeBody} = await agent.get('automations').expectStatus(200);
             const automationId = beforeBody.automations[0].id;
-            const olderRunCreatedAt = new Date('2026-01-01T00:00:00.000Z');
-            const latestRunCreatedAt = new Date('2026-01-02T00:00:00.000Z');
 
-            await createAutomationRun(automationId, olderRunCreatedAt);
-            await createAutomationRun(automationId, latestRunCreatedAt);
+            const beforeFirstSignup = new Date();
+            // Run timestamps are stored at second precision
+            beforeFirstSignup.setMilliseconds(0);
 
-            const {body} = await agent.get('automations').expectStatus(200);
-            const automation = body.automations.find(candidate => candidate.id === automationId);
+            await signUpMember('automation-latest-run-1@example.com');
+            const afterFirstRun = await waitForTotalRunCount(automationId, 1);
+            const firstRunCreatedAt = new Date(afterFirstRun.stats.last_run_created_at);
+            assert.ok(firstRunCreatedAt >= beforeFirstSignup);
+            assert.ok(firstRunCreatedAt <= new Date());
 
-            assert.equal(automation.stats.last_run_created_at, latestRunCreatedAt.toISOString());
+            // Wait for the clock to reach a later second so the second run's
+            // timestamp is distinguishable from the first
+            await new Promise((resolve) => {
+                setTimeout(resolve, 1100);
+            });
+
+            await signUpMember('automation-latest-run-2@example.com');
+            const afterSecondRun = await waitForTotalRunCount(automationId, 2);
+            assert.ok(new Date(afterSecondRun.stats.last_run_created_at) > firstRunCreatedAt);
         });
 
         it('returns zero total run counts for automations without runs', async function () {
@@ -244,14 +259,14 @@ describe('Automations API', function () {
         });
 
         it('returns the total automation run count', async function () {
+            enableAutomationsLabsFlag();
             const {body: beforeBody} = await agent.get('automations').expectStatus(200);
             const automationId = beforeBody.automations[0].id;
 
-            await createAutomationRun(automationId, new Date('2026-01-01T00:00:00.000Z'));
-            await createAutomationRun(automationId, new Date('2026-01-02T00:00:00.000Z'));
+            await signUpMember('automation-run-count-1@example.com');
+            await signUpMember('automation-run-count-2@example.com');
 
-            const {body} = await agent.get('automations').expectStatus(200);
-            const automation = body.automations.find(candidate => candidate.id === automationId);
+            const automation = await waitForTotalRunCount(automationId, 2);
 
             assert.equal(automation.stats.total_run_count, 2);
         });
@@ -263,44 +278,44 @@ describe('Automations API', function () {
         });
 
         it('returns the number of runs with pending steps', async function () {
+            enableAutomationsLabsFlag();
             const {body: beforeBody} = await agent.get('automations').expectStatus(200);
             const automationId = beforeBody.automations[0].id;
 
-            const pendingRunId = await createAutomationRun(automationId, new Date('2026-01-01T00:00:00.000Z'));
-            await createAutomationRunStep(automationId, pendingRunId, 'finished');
-            await createAutomationRunStep(automationId, pendingRunId, 'pending');
+            await signUpMember('automation-pending-run-1@example.com');
+            await signUpMember('automation-pending-run-2@example.com');
+            await waitForTotalRunCount(automationId, 2);
 
-            const finishedRunId = await createAutomationRun(automationId, new Date('2026-01-02T00:00:00.000Z'));
-            await createAutomationRunStep(automationId, finishedRunId, 'finished');
+            // Deactivating the automation cancels the pending steps of the
+            // first two runs, so they are no longer in progress
+            const {body: readBody} = await agent.get(`automations/${automationId}`).expectStatus(200);
+            const {actions, edges} = readBody.automations[0];
+            await agent
+                .put(`automations/${automationId}`)
+                .body({automations: [{status: 'inactive', actions, edges}]})
+                .expectStatus(200);
+            await agent
+                .put(`automations/${automationId}`)
+                .body({automations: [{status: 'active', actions, edges}]})
+                .expectStatus(200);
 
-            await createAutomationRun(automationId, new Date('2026-01-03T00:00:00.000Z'));
-
-            const {body} = await agent.get('automations').expectStatus(200);
-            const automation = body.automations.find(candidate => candidate.id === automationId);
+            await signUpMember('automation-pending-run-3@example.com');
+            const automation = await waitForTotalRunCount(automationId, 3);
 
             assert.equal(automation.stats.in_progress_run_count, 1);
         });
 
         it('upserts the default free and paid automations', async function () {
-            const existingAutomations = await models.Base.knex('automations')
-                .select('id')
-                .whereIn('slug', Object.values(MEMBER_WELCOME_EMAIL_SLUGS));
-            const existingAutomationIds = existingAutomations.map(automation => automation.id);
+            // Reset to the state of a site that has never had automations
+            await cleanupAutomationsFixture();
+            await upsertEmailDesignSetting();
 
-            await deleteActionsForAutomationIds(existingAutomationIds);
-            await models.Base.knex('automations')
-                .whereIn('id', existingAutomationIds)
-                .del();
-
-            await agent
+            const {body: firstBrowseBody} = await agent
                 .get('automations/')
                 .expectStatus(200)
                 .expect(cacheInvalidateHeaderNotSet());
 
-            const automations = await models.Base.knex('automations')
-                .select('id', 'name', 'slug', 'status')
-                .whereIn('slug', Object.values(MEMBER_WELCOME_EMAIL_SLUGS))
-                .orderBy('slug');
+            const automations = firstBrowseBody.automations;
 
             assert.deepEqual(automations.map(({name, slug, status}) => ({name, slug, status})), [{
                 name: 'Free member welcome flow',
@@ -310,7 +325,7 @@ describe('Automations API', function () {
                 name: 'Paid member welcome flow',
                 slug: MEMBER_WELCOME_EMAIL_SLUGS.paid,
                 status: 'inactive'
-            }].sort((left, right) => left.slug.localeCompare(right.slug)));
+            }]);
 
             await createWelcomeEmailsForAutomations(automations);
 
@@ -323,12 +338,17 @@ describe('Automations API', function () {
         });
 
         it('creates copied send_email actions for default welcome email automations without actions', async function () {
-            const automations = await models.Base.knex('automations')
-                .select('id', 'slug')
-                .whereIn('slug', Object.values(MEMBER_WELCOME_EMAIL_SLUGS));
-            const automationIds = automations.map(automation => automation.id);
+            // Reset to the state of a site that has never had automations, then
+            // let browse upsert the default automations — without actions,
+            // because there are no welcome emails to copy yet
+            await cleanupAutomationsFixture();
+            await upsertEmailDesignSetting();
 
-            await deleteActionsForAutomationIds(automationIds);
+            const {body: firstBrowseBody} = await agent
+                .get('automations/')
+                .expectStatus(200);
+            const automations = firstBrowseBody.automations;
+
             await createWelcomeEmailsForAutomations(automations);
 
             await agent
@@ -338,17 +358,12 @@ describe('Automations API', function () {
 
             await assertWelcomeEmailActionsWereCreated(automations);
 
+            // A subsequent browse must not create duplicate actions
             await agent
                 .get('automations/')
                 .expectStatus(200);
 
-            const totalActions = await models.Base.knex('automation_actions')
-                .whereIn('automation_id', automationIds)
-                .whereNull('deleted_at')
-                .count('id as count')
-                .first();
-
-            assert.equal(Number(totalActions.count), 2);
+            await assertWelcomeEmailActionsWereCreated(automations);
         });
     });
 
@@ -374,10 +389,11 @@ describe('Automations API', function () {
         it('returns aggregate click stats for email actions', async function () {
             const {body: browseBody} = await agent.get('automations').expectStatus(200);
             const automationId = browseBody.automations[0].id;
-            const action = await models.Base.knex('automation_actions')
-                .where({automation_id: automationId, type: 'send_email'})
-                .whereNull('deleted_at')
-                .first();
+            const {body: readBody} = await agent.get(`automations/${automationId}`).expectStatus(200);
+            const action = readBody.automations[0].actions.find(candidate => candidate.type === 'send_email');
+
+            // Sent and clicked counts are accumulated by the email sending and
+            // link tracking services, which are out of scope for this test
             await models.Base.knex('automation_action_revisions')
                 .where('action_id', action.id)
                 .update({email_sent_count: 3, email_clicked_count: 2});
@@ -402,28 +418,40 @@ describe('Automations API', function () {
         it('returns unique member click counts grouped across revisions', async function () {
             const {body} = await agent.get('automations').expectStatus(200);
             const automationId = body.automations[0].id;
-            const action = await models.Base.knex('automation_actions')
-                .where({automation_id: automationId, type: 'send_email'})
-                .first();
-            const revision = await models.Base.knex('automation_action_revisions')
+            const {body: readBody} = await agent.get(`automations/${automationId}`).expectStatus(200);
+            const action = readBody.automations[0].actions.find(candidate => candidate.type === 'send_email');
+
+            // Editing the email step creates a second revision of the action
+            await agent
+                .put(`automations/${automationId}`)
+                .body({
+                    automations: [{
+                        status: readBody.automations[0].status,
+                        actions: readBody.automations[0].actions.map((candidate) => {
+                            return candidate.id === action.id ? {
+                                ...candidate,
+                                data: {...candidate.data, email_subject: 'Updated email'}
+                            } : candidate;
+                        }),
+                        edges: readBody.automations[0].edges
+                    }]
+                })
+                .expectStatus(200);
+
+            // Redirects and member click events are created by the email link
+            // tracking service when sent emails are clicked, which is out of
+            // scope for this test
+            const [firstRevisionId, secondRevisionId] = await models.Base.knex('automation_action_revisions')
                 .where('action_id', action.id)
-                .first();
-            const secondRevisionId = ObjectId().toHexString();
-            await models.Base.knex('automation_action_revisions').insert({
-                id: secondRevisionId,
-                action_id: action.id,
-                created_at: new Date('2026-07-21T12:00:00.000Z'),
-                email_subject: 'Updated email',
-                email_lexical: NON_EMPTY_EMAIL_LEXICAL,
-                email_design_setting_id: TEST_EMAIL_DESIGN_SETTING_ID
-            });
+                .orderBy('created_at')
+                .pluck('id');
 
             const redirects = [{
                 id: ObjectId().toHexString(),
                 from: `/r/${ObjectId().toHexString()}`,
                 to: 'https://example.com/alpha',
                 to_hash: hashRedirectDestination('https://example.com/alpha'),
-                automation_action_revision_id: revision.id,
+                automation_action_revision_id: firstRevisionId,
                 created_at: new Date()
             }, {
                 id: ObjectId().toHexString(),
@@ -475,9 +503,10 @@ describe('Automations API', function () {
 
         it('returns 404 when the action belongs to a different automation', async function () {
             const {body} = await agent.get('automations').expectStatus(200);
-            const action = await models.Base.knex('automation_actions')
-                .where('automation_id', body.automations[0].id)
-                .first();
+            const {body: readBody} = await agent
+                .get(`automations/${body.automations[0].id}`)
+                .expectStatus(200);
+            const action = readBody.automations[0].actions[0];
 
             await agent
                 .get(`automations/${body.automations[1].id}/actions/${action.id}/links`)

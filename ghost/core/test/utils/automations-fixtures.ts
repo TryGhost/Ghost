@@ -233,7 +233,7 @@ function buildLinearEdges(actions: ReadonlyArray<{id: string}>) {
     }));
 }
 
-async function upsertEmailDesignSetting(): Promise<void> {
+export async function upsertEmailDesignSetting(): Promise<void> {
     const currentTime = new Date();
 
     await db.knex('email_design_settings')
