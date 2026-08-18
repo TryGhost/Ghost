@@ -1,6 +1,6 @@
 import React from 'react';
 
-import Analytics from '@/settings/app/components/settings/membership/analytics';
+import Analytics from '@/settings/membership/analytics';
 import PublicationLanguage from './publication-language';
 import SEOMeta from './seo-meta';
 import SearchableSection from '@/settings/app/components/searchable-section';

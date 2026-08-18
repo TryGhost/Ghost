@@ -154,7 +154,7 @@ const WelcomeEmailModal: React.FC<WelcomeEmailModalProps & {onClose: () => void}
         const handleCMDS = (e: KeyboardEvent) => {
             if ((e.metaKey || e.ctrlKey) && e.key === 's') {
                 e.preventDefault();
-                handleSaveRef.current({fakeWhenUnchanged: true});
+                void handleSaveRef.current({fakeWhenUnchanged: true});
             }
         };
         window.addEventListener('keydown', handleCMDS);
@@ -168,7 +168,7 @@ const WelcomeEmailModal: React.FC<WelcomeEmailModalProps & {onClose: () => void}
 
         if (nextMode === 'preview') {
             setPreviewSubjectOverride(null);
-            enterPreview(formState);
+            void enterPreview(formState);
         } else {
             setShowTestDropdown(false);
             setPreviewSubjectOverride(null);
@@ -235,7 +235,7 @@ const WelcomeEmailModal: React.FC<WelcomeEmailModalProps & {onClose: () => void}
                         <Button
                             disabled={okProps.disabled}
                             type='button'
-                            onClick={async () => await handleSave({fakeWhenUnchanged: true})}
+                            onClick={() => void handleSave({fakeWhenUnchanged: true})}
                         >
                             {saveButtonLabel}
                         </Button>

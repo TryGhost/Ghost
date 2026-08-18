@@ -224,7 +224,7 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
             }
         };
 
-        verify();
+        void verify();
     }, [confirm, handleError, verifyEmailToken, verifySenderUpdate]);
 
     const handleToggle = async (emailType: 'free' | 'paid') => {
@@ -309,10 +309,10 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 paidEmailForDisplay={paidEmailForDisplay}
                 paidWelcomeEmailEnabled={paidWelcomeEmailEnabled}
                 settings={settings}
-                onFreeEdit={() => handleEditClick('free')}
-                onFreeToggle={() => handleToggle('free')}
-                onPaidEdit={() => handleEditClick('paid')}
-                onPaidToggle={() => handleToggle('paid')}
+                onFreeEdit={() => void handleEditClick('free')}
+                onFreeToggle={() => void handleToggle('free')}
+                onPaidEdit={() => void handleEditClick('paid')}
+                onPaidToggle={() => void handleToggle('paid')}
             />
             {editingEmail && (
                 <DialogPortal>

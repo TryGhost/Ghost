@@ -1,7 +1,7 @@
 import * as assert from 'node:assert/strict';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {act, renderHook, waitFor} from '@testing-library/react';
-import {useWelcomeEmailPreview} from '@/settings/app/components/settings/membership/member-emails/use-welcome-email-preview';
+import {useWelcomeEmailPreview} from '@/settings/membership/member-emails/use-welcome-email-preview';
 
 const validLexical = JSON.stringify({
     root: {
@@ -41,7 +41,7 @@ const createDeferred = <T,>() => {
 };
 
 describe('useWelcomeEmailPreview', function () {
-    it('returns invalid state and skips network for invalid drafts', async function () {
+    it('returns invalid state and skips network for invalid drafts', function () {
         const previewWelcomeEmail = vi.fn();
         const setErrors = vi.fn();
         const {result} = renderHook(() => useWelcomeEmailPreview({
@@ -51,7 +51,7 @@ describe('useWelcomeEmailPreview', function () {
         }));
 
         act(() => {
-            result.current.enterPreview({subject: '   ', lexical: ''});
+            void result.current.enterPreview({subject: '   ', lexical: ''});
         });
 
         assert.equal(previewWelcomeEmail.mock.calls.length, 0);
@@ -77,8 +77,8 @@ describe('useWelcomeEmailPreview', function () {
         }));
 
         act(() => {
-            result.current.enterPreview({subject: 'First', lexical: validLexical});
-            result.current.enterPreview({subject: 'Second', lexical: validLexical});
+            void result.current.enterPreview({subject: 'First', lexical: validLexical});
+            void result.current.enterPreview({subject: 'Second', lexical: validLexical});
         });
 
         await act(async () => {
@@ -138,7 +138,7 @@ describe('useWelcomeEmailPreview', function () {
         }));
 
         act(() => {
-            result.current.enterPreview({subject: 'Welcome', lexical: validLexical});
+            void result.current.enterPreview({subject: 'Welcome', lexical: validLexical});
         });
 
         await waitFor(() => {
@@ -162,7 +162,7 @@ describe('useWelcomeEmailPreview', function () {
         }));
 
         act(() => {
-            result.current.enterPreview({subject: 'Welcome', lexical: validLexical});
+            void result.current.enterPreview({subject: 'Welcome', lexical: validLexical});
         });
 
         await waitFor(() => {

@@ -5,7 +5,7 @@ import NewslettersTabContent, {type NewslettersFilter} from './newsletters/newsl
 import React, {useEffect, useRef, useState} from 'react';
 import SearchableSection from '@/settings/app/components/searchable-section';
 import TopLevelGroup from '@/settings/app/components/top-level-group';
-import WelcomeEmailCustomizeModal from '@/settings/app/components/settings/membership/member-emails/welcome-email-customize-modal';
+import WelcomeEmailCustomizeModal from '@/settings/membership/member-emails/welcome-email-customize-modal';
 import useQueryParams from '@/settings/app/hooks/use-query-params';
 import {APIError} from '@tryghost/admin-x-framework/errors';
 import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';

@@ -33,7 +33,7 @@ const PortalFrame: React.FC<PortalFrameProps> = ({href, onDestroyed, selectedTab
             const originURL = new URL(event.origin);
 
             if (originURL.origin === new URL(href).origin) {
-                if (event?.data?.type === 'portal-preview-ready') {
+                if ((event.data as {type?: string} | null)?.type === 'portal-preview-ready') {
                     makeVisible();
                 }
             }

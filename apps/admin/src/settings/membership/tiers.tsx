@@ -147,9 +147,9 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     }
 
     const stripeButton = stripeEnabled ?
-        <StripeConnectedButton className='hidden tablet:!visible tablet:!inline-flex' onClick={openConnectModal} />
+        <StripeConnectedButton className='hidden tablet:!visible tablet:!inline-flex' onClick={() => void openConnectModal()} />
         :
-        <StripeButton className='hidden tablet:!visible tablet:!block' onClick={openConnectModal}/>;
+        <StripeButton className='hidden tablet:!visible tablet:!block' onClick={() => void openConnectModal()}/>;
 
     return (
         <TopLevelGroup
@@ -162,9 +162,9 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
         >
             <div className='w-full tablet:hidden'>
                 {stripeEnabled ?
-                    <StripeConnectedButton className='w-full' onClick={openConnectModal} />
+                    <StripeConnectedButton className='w-full' onClick={() => void openConnectModal()} />
                     :
-                    <StripeButton onClick={openConnectModal}/>
+                    <StripeButton onClick={() => void openConnectModal()}/>
                 }
             </div>
 
@@ -172,7 +172,7 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
             {isEnd === false && <Button
                 type='button'
                 variant='link'
-                onClick={() => fetchNextPage()}
+                onClick={() => void fetchNextPage()}
             >
                 {`Load more (showing ${formatNumber(tiers?.length || 0)}/${formatNumber(meta?.pagination.total || 0)} tiers)`}
             </Button>}

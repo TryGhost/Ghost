@@ -1,6 +1,6 @@
 // NOTE: counterpart lives in apps/admin/src/automations/components/email-modal/sender-details.ts — the email design modal needs equivalent sender-detail behavior in both apps until Automations GAs; keep in sync
 import {type Config, hasSendingDomain, isManagedEmail, sendingDomain} from '@tryghost/admin-x-framework/api/config';
-import {WELCOME_EMAIL_SLUGS} from '@/settings/app/components/settings/membership/member-emails/default-welcome-email-values';
+import {WELCOME_EMAIL_SLUGS} from '@/settings/membership/member-emails/default-welcome-email-values';
 import {renderReplyToEmailPlaceholder, renderSenderEmail} from './newsletter-emails';
 import type {AutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
 import type {Newsletter} from '@tryghost/admin-x-framework/api/newsletters';
