@@ -113,7 +113,7 @@ const EmbedSignupFormModal = () => {
                     embedScript={generatedScript}
                     handleClose={handleClose}
                     handleColorToggle={handleColorToggle}
-                    handleCopyClick={handleCopyClick}
+                    handleCopyClick={() => void handleCopyClick()}
                     handleLabelClick={addSelectedLabel}
                     handleLayoutSelect={setSelectedLayout}
                     isCopied={isCopied}

@@ -62,7 +62,7 @@ const Network: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 aria-label='Network'
                 checked={isChecked}
                 disabled={isDisabled}
-                onCheckedChange={toggleSocialWebSetting}
+                onCheckedChange={checked => void toggleSocialWebSetting(checked)}
             />
         }
         description='Distribute posts to the social web, so people can discover and follow your content across BlueSky, Threads, Mastodon, Flipboard, WordPress, and more.'

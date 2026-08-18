@@ -1,5 +1,5 @@
 import * as assert from 'assert/strict';
-import {MAX_RETENTION_OFFER_NAME_LENGTH, generateRetentionOfferName} from '@/settings/app/components/settings/growth/offers/offer-helpers';
+import {MAX_RETENTION_OFFER_NAME_LENGTH, generateRetentionOfferName} from '@/settings/growth/offers/offer-helpers';
 
 describe('generateRetentionOfferName', function () {
     it('keeps the full 8-character hash when the preferred wording fits', function () {

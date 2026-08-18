@@ -32,7 +32,7 @@ const Explore: React.FC<{ keywords: string[] }> = ({keywords}) => {
             setMembersCount(count);
         };
 
-        fetchMemberCount();
+        void fetchMemberCount();
     }, [fetchMembers]);
 
     const [accentColor, icon] = getSettingValues<string>(settings, ['accent_color', 'icon']);
@@ -65,7 +65,7 @@ const Explore: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 aria-label='Ghost Explore'
                 checked={exploreEnabled}
                 data-testid='explore-toggle'
-                onCheckedChange={checked => toggleSetting('explore_ping', checked)}
+                onCheckedChange={checked => void toggleSetting('explore_ping', checked)}
             />
         }
         description={`Promote your site across Ghost's website and publishing network`}
@@ -86,7 +86,7 @@ const Explore: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         checked={Boolean(shareGrowthData)}
                         data-testid='explore-growth-toggle'
                         id='explore-growth-toggle'
-                        onCheckedChange={checked => toggleSetting('explore_ping_growth', checked)}
+                        onCheckedChange={checked => void toggleSetting('explore_ping_growth', checked)}
                     />
                 </Field>
                 <div className='-mx-5 -mb-5 flex flex-col items-center bg-grey-50 px-7 py-10 md:-mx-7 md:-mb-7' data-testid='explore-preview'>

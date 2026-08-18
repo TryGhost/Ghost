@@ -293,7 +293,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                             <Input aria-invalid={Boolean(errors.code) || undefined} id='offer-code' placeholder='black-friday' value={overrides.code.value} onChange={(e) => {
                                 handleCodeInput(e);
                             }} onKeyDown={() => clearError('code')} />
-                            {errors.code ? <FieldError>{errors.code}</FieldError> : overrides.code.value !== '' && <FieldDescription><div className='flex items-center justify-between'><div>{homepageUrl}<span className='font-bold'>{overrides.code.value}</span></div><Button className='h-auto p-0 text-sm text-green hover:text-green' size='sm' type='button' variant='link' onClick={handleCopyClick}>{isCopied ? 'Copied' : 'Copy'}</Button></div></FieldDescription>}
+                            {errors.code ? <FieldError>{errors.code}</FieldError> : overrides.code.value !== '' && <FieldDescription><div className='flex items-center justify-between'><div>{homepageUrl}<span className='font-bold'>{overrides.code.value}</span></div><Button className='h-auto p-0 text-sm text-green hover:text-green' size='sm' type='button' variant='link' onClick={() => void handleCopyClick()}>{isCopied ? 'Copied' : 'Copy'}</Button></div></FieldDescription>}
                         </Field>
                     </div>
                 </section>
