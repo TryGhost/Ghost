@@ -190,4 +190,32 @@ describe("Recommendations settings", () => {
         await rows.first().getByRole("button", {name: "Recommend back"}).click();
         await expect.poll(currentRoute).toBe(`/settings/recommendations/add?url=${encodeURIComponent(incomingRecommendations[0].url)}`);
     });
+
+    it.each([
+        {scheme: "javascript", url: "javascript:alert(document.domain)"},
+        {scheme: "data", url: "data:text/html,<script>alert(document.domain)</script>"},
+    ])("blocks $scheme incoming recommendation URLs", async ({url}) => {
+        const unsafeRecommendation = {
+            ...incomingRecommendations[0],
+            id: `unsafe-${url}`,
+            title: "Unsafe incoming recommendation",
+            url,
+        };
+        fakeSettingsScreens();
+        fakeRecommendations();
+        fakeAdminEndpoint("GET", /^\/incoming_recommendations\/\?/, browseResponse("recommendations", [unsafeRecommendation], {limit: 5}));
+        await renderAdminApp("/settings/recommendations");
+
+        const section = settingsScreen.section("recommendations");
+        await section.getByRole("tab", {name: "Recommending you"}).click();
+        const row = section.getByTestId("incoming-recommendation-list-item");
+        const openSpy = vi.spyOn(window, "open").mockReturnValue(null);
+
+        await row.getByText("Unsafe incoming recommendation").click();
+        expect(openSpy).not.toHaveBeenCalled();
+
+        await row.getByRole("button", {name: "Recommend back"}).click();
+        await expect.poll(currentRoute).toBe("/settings/recommendations");
+        openSpy.mockRestore();
+    });
 });

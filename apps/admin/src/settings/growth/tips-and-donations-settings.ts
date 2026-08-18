@@ -32,7 +32,4 @@ export const tipsAndDonationsSettingsSchema = z.object({
 
 export type TipsAndDonationsSettings = z.infer<typeof tipsAndDonationsSettingsSchema>;
 
-export const parseTipsAndDonationsSettings = (settings: {
-    donations_currency?: unknown;
-    donations_suggested_amount?: unknown;
-}): TipsAndDonationsSettings => tipsAndDonationsSettingsSchema.parse(settings);
+export const parseTipsAndDonationsSettings = (settings: unknown): TipsAndDonationsSettings => tipsAndDonationsSettingsSchema.parse(settings);

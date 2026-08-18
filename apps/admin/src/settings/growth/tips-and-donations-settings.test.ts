@@ -42,4 +42,8 @@ describe('parseTipsAndDonationsSettings', () => {
     ])('rejects $description instead of applying a missing-value default', ({settings}) => {
         expect(() => parseTipsAndDonationsSettings(settings)).toThrow();
     });
+
+    it.each([null, [], 'invalid'])('rejects a non-object settings payload', (settings) => {
+        expect(() => parseTipsAndDonationsSettings(settings)).toThrow();
+    });
 });
