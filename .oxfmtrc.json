@@ -9,13 +9,15 @@
         "**/dist/**",
         "**/*.min.*",
         "**/*.hbs",
+        "**/*.html",
+        "**/test/**/fixtures/**",
+        "**/__snapshots__/**",
+        "apps/ember-admin/**",
         "package.json",
-        "skills-lock.json",
         "koenig/kg-default-nodes/**",
         "koenig/kg-lexical-html-renderer/**",
         "koenig/kg-simplemde/debug/**",
-        "koenig/koenig-lexical/**",
-        "ghost/core/test/utils/fixtures/settings/badroutes.yaml"
+        "koenig/koenig-lexical/**"
     ],
     "jsdoc": {
         "addDefaultToDescription": false,
