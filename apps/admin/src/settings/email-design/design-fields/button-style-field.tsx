@@ -1,5 +1,5 @@
 import {ToggleGroup, ToggleGroupItem} from '@tryghost/shade/components';
-import {useEmailDesign} from '@/settings/app/components/settings/email-design/email-design-context';
+import {useEmailDesign} from '@/settings/email-design/email-design-context';
 
 export const ButtonStyleField = () => {
     const {settings, onSettingsChange} = useEmailDesign();

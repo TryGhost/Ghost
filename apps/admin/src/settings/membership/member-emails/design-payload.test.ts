@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {DEFAULT_EMAIL_DESIGN} from '@/settings/app/components/settings/email-design/types';
+import {DEFAULT_EMAIL_DESIGN} from '@/settings/email-design/types';
 import {buildAutomatedEmailDesignPayload, mapApiToDesignSettings} from '@/settings/membership/member-emails/design-payload';
 
 describe('Welcome email design payload helpers', function () {

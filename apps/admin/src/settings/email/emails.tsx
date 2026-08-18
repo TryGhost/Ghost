@@ -16,13 +16,7 @@ import {useGlobalData} from '@/settings/app/components/providers/global-data-pro
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 import {useVerifyAutomatedEmailSender} from '@tryghost/admin-x-framework/api/automated-emails';
-
-export const searchKeywords = {
-    enableNewsletters: ['emails', 'newsletters', 'newsletter sending', 'enable', 'disable', 'turn on', 'turn off'],
-    emails: ['emails', 'newsletters', 'automation emails', 'transactional', 'design', 'customization', 'automations', 'welcome'],
-    defaultRecipients: ['newsletters', 'default recipients', 'emails'],
-    mailgun: ['mailgun', 'emails', 'newsletters']
-};
+import {searchKeywords} from './emails-search-keywords';
 
 const TransactionalTabContent: React.FC = () => {
     const [isCustomizeOpen, setIsCustomizeOpen] = useState(false);
@@ -130,7 +124,7 @@ const EmailsGroup: React.FC<{ keywords: string[]; newslettersEnabled: boolean }>
             }
         };
 
-        verify();
+        void verify();
     }, [confirm, handleError, updateRoute, verifyEmailToken, verifySenderUpdate]);
 
     const openNewNewsletter = () => {

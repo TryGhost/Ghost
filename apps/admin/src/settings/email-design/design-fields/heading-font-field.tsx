@@ -1,6 +1,6 @@
 import {FONT_OPTIONS, getValidWeight} from './font-constants';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
-import {useEmailDesign} from '@/settings/app/components/settings/email-design/email-design-context';
+import {useEmailDesign} from '@/settings/email-design/email-design-context';
 
 export const HeadingFontField = () => {
     const {settings, onSettingsChange} = useEmailDesign();

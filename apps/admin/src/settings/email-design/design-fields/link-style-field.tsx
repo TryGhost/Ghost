@@ -1,6 +1,6 @@
 import {Bold, Type, Underline} from 'lucide-react';
 import {ToggleGroup, ToggleGroupItem} from '@tryghost/shade/components';
-import {useEmailDesign} from '@/settings/app/components/settings/email-design/email-design-context';
+import {useEmailDesign} from '@/settings/email-design/email-design-context';
 
 export const LinkStyleField = () => {
     const {settings, onSettingsChange} = useEmailDesign();

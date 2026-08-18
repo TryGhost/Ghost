@@ -42,7 +42,7 @@ const EnableNewsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 aria-label='Newsletters'
                 checked={newslettersEnabled !== 'disabled' && !isDisabled}
                 disabled={isDisabled}
-                onCheckedChange={handleToggleChange}
+                onCheckedChange={checked => void handleToggleChange(checked)}
             />
         </>
     );

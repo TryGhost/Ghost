@@ -1,8 +1,8 @@
-import WelcomeEmailPreviewContent from '@/settings/app/components/settings/email-design/welcome-email-preview-content';
+import WelcomeEmailPreviewContent from '@/settings/email-design/welcome-email-preview-content';
 import assert from 'node:assert/strict';
-import {DEFAULT_EMAIL_DESIGN} from '@/settings/app/components/settings/email-design/types';
-import {EmailDesignProvider} from '@/settings/app/components/settings/email-design/email-design-context';
-import {LinkStyleField} from '@/settings/app/components/settings/email-design/design-fields/link-style-field';
+import {DEFAULT_EMAIL_DESIGN} from '@/settings/email-design/types';
+import {EmailDesignProvider} from '@/settings/email-design/email-design-provider';
+import {LinkStyleField} from '@/settings/email-design/design-fields/link-style-field';
 import {render, screen} from '@testing-library/react';
 
 describe('Welcome email link styles', function () {

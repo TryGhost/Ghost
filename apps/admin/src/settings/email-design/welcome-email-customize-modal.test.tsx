@@ -1,9 +1,9 @@
-import EmailDesignModal from '@/settings/app/components/settings/email-design/email-design-modal';
+import EmailDesignModal from '@/settings/email-design/email-design-modal';
 import React, {useState} from 'react';
 import assert from 'node:assert/strict';
-import {ButtonColorField} from '@/settings/app/components/settings/email-design/design-fields/button-color-field';
-import {DEFAULT_EMAIL_DESIGN} from '@/settings/app/components/settings/email-design/types';
-import {EmailDesignProvider} from '@/settings/app/components/settings/email-design/email-design-context';
+import {ButtonColorField} from '@/settings/email-design/design-fields/button-color-field';
+import {DEFAULT_EMAIL_DESIGN} from '@/settings/email-design/types';
+import {EmailDesignProvider} from '@/settings/email-design/email-design-provider';
 import {act, fireEvent, render, screen} from '@testing-library/react';
 
 vi.mock('@tryghost/shade/components', async () => {
@@ -74,7 +74,7 @@ describe('Welcome email customize modal', function () {
 
         assert.ok(screen.getByRole('textbox'));
 
-        await act(async () => {
+        act(() => {
             fireEvent.keyDown(document, {key: 'Escape'});
         });
 
@@ -82,13 +82,13 @@ describe('Welcome email customize modal', function () {
         assert.ok(screen.getByTestId('welcome-email-customize-modal'));
     });
 
-    it('keeps the customize modal open when Escape is pressed immediately after opening the color picker', async function () {
+    it('keeps the customize modal open when Escape is pressed immediately after opening the color picker', function () {
         vi.useFakeTimers();
         const onClose = vi.fn();
 
         render(<TestModal onClose={onClose} />);
 
-        await act(async () => {
+        act(() => {
             fireEvent.click(screen.getByText('Button color'));
             assert.equal(screen.queryByRole('textbox'), null);
             fireEvent.keyDown(document, {key: 'Escape'});

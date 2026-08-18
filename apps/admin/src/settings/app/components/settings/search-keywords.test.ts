@@ -1,6 +1,6 @@
 import * as assert from 'assert/strict';
-import {searchKeywords as emailSearchKeywords} from '@/settings/app/components/settings/email/email-settings';
-import {searchKeywords as emailsSearchKeywords} from '@/settings/app/components/settings/email/emails';
+import {searchKeywords as emailSearchKeywords} from '@/settings/email/search-keywords';
+import {searchKeywords as emailsSearchKeywords} from '@/settings/email/emails-search-keywords';
 import {searchKeywords as generalSearchKeywords} from '@/settings/general/search-keywords';
 import {searchKeywords as membershipSearchKeywords} from '@/settings/membership/search-keywords';
 

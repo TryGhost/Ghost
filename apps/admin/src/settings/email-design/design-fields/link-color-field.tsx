@@ -1,8 +1,8 @@
 import ColorPickerField from '@/settings/app/components/color-picker-field';
 import {getAutoSwatchHex} from './color-swatch-helpers';
-import {useEmailDesign} from '@/settings/app/components/settings/email-design/email-design-context';
+import {useEmailDesign} from '@/settings/email-design/email-design-context';
 
-export const SectionTitleColorField = () => {
+export const LinkColorField = () => {
     const {settings, onSettingsChange, accentColor} = useEmailDesign();
     const autoSwatchHex = getAutoSwatchHex(settings.background_color);
 
@@ -11,19 +11,19 @@ export const SectionTitleColorField = () => {
             accentColor={accentColor}
             swatches={[
                 {
-                    title: 'Auto',
-                    value: null,
-                    hex: autoSwatchHex
-                },
-                {
                     title: 'Accent',
                     value: 'accent',
                     hex: accentColor
+                },
+                {
+                    title: 'Auto',
+                    value: null,
+                    hex: autoSwatchHex
                 }
             ]}
-            title="Section title color"
-            value={settings.section_title_color}
-            onChange={color => onSettingsChange({section_title_color: color})}
+            title="Link color"
+            value={settings.link_color}
+            onChange={color => onSettingsChange({link_color: color})}
         />
     );
 };

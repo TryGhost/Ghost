@@ -6,13 +6,7 @@ import React from 'react';
 import SearchableSection from '@/settings/app/components/searchable-section';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
-
-export const searchKeywords = {
-    enableNewsletters: ['emails', 'newsletters', 'newsletter sending', 'enable', 'disable', 'turn on', 'turn off'],
-    newsletters: ['newsletters', 'emails', 'design', 'customization'],
-    defaultRecipients: ['newsletters', 'default recipients', 'emails'],
-    mailgun: ['mailgun', 'emails', 'newsletters']
-};
+import {searchKeywords} from './search-keywords';
 
 const EmailSettings: React.FC = () => {
     const {settings, config} = useGlobalData();
