@@ -154,6 +154,20 @@ describe('GiftDeliveryService', function () {
         }));
     });
 
+    it('resolves the tiers API at send time so boot wiring can hand over the uninitialised service', async function () {
+        const lateBoundTiers = {api: undefined as typeof tiersService.api | undefined};
+        const service = new GiftDeliveryService({
+            giftRepository,
+            giftDeliveryRepository,
+            tiersService: lateBoundTiers as unknown as typeof tiersService,
+            giftEmailService
+        });
+        lateBoundTiers.api = tiersService.api;
+
+        assert.equal(await service.send('delivery_1'), 'sent');
+        sinon.assert.calledOnceWithExactly(tiersService.api.read, 'tier_1');
+    });
+
     it('records transactional transport acceptance without a provider message ID', async function () {
         giftEmailService.sendGiftDelivery.resolves({providerMessageId: null});
         const service = createService();

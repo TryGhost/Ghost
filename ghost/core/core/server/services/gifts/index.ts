@@ -22,6 +22,8 @@ export interface GiftServiceInitOptions {
 export let controller: GiftController | undefined;
 export let service: GiftService | undefined;
 
+let deliveryService: GiftDeliveryService | undefined;
+
 export async function init(options: GiftServiceInitOptions): Promise<void> {
     if (service) {
         return;
@@ -103,6 +105,7 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
     });
 
     service = giftService;
+    deliveryService = giftDeliveryService;
     controller = new GiftController({service: giftService});
 
     DomainEvents.subscribe(SubscriptionActivatedEvent, async (event: {data: {memberId: string}}) => {
@@ -172,15 +175,26 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
         }
     });
 
+    jobs.scheduleGiftCleanupJob();
+    jobs.scheduleGiftReminderJob();
+}
+
+// Retries deliveries interrupted by a previous shutdown. Sending needs the tiers
+// and members services, which boot alongside this one, so this must run once
+// every service has finished initialising rather than from init().
+export async function recoverPendingDeliveries(): Promise<void> {
+    if (!deliveryService) {
+        return;
+    }
+
+    const logging = require('@tryghost/logging');
+
     try {
-        const recoveredCount = await giftDeliveryService.recoverPending();
+        const recoveredCount = await deliveryService.recoverPending();
         if (recoveredCount > 0) {
             logging.info(`Recovered ${recoveredCount} pending gift deliveries`);
         }
     } catch (err) {
         logging.error(err, 'Failed to recover pending gift deliveries');
     }
-
-    jobs.scheduleGiftCleanupJob();
-    jobs.scheduleGiftReminderJob();
 }
