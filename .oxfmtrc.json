@@ -14,7 +14,8 @@
         "koenig/kg-default-nodes/**",
         "koenig/kg-lexical-html-renderer/**",
         "koenig/kg-simplemde/debug/**",
-        "koenig/koenig-lexical/**"
+        "koenig/koenig-lexical/**",
+        "ghost/core/test/utils/fixtures/settings/badroutes.yaml"
     ],
     "jsdoc": {
         "addDefaultToDescription": false,
@@ -25,5 +26,13 @@
     "singleQuote": true,
     "sortPackageJson": false,
     "tabWidth": 4,
-    "trailingComma": "none"
+    "trailingComma": "none",
+    "overrides": [
+        {
+            "files": ["*.yml", "*.yaml"],
+            "options": {
+                "tabWidth": 2
+            }
+        }
+    ]
 }
