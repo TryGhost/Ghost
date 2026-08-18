@@ -12,6 +12,8 @@ export interface PostData {
     slug: string;
     lexical?: string;
     published_at?: string;
+    created_at?: string;
+    updated_at?: string;
 }
 
 export default function buildPostData(row: PostImportRow, htmlToLexical: HtmlToLexical): PostData {
@@ -27,9 +29,12 @@ export default function buildPostData(row: PostImportRow, htmlToLexical: HtmlToL
         data.lexical = JSON.stringify(htmlToLexical(row.html));
     }
 
-    // Left as the string; the model layer parses dateTime strings itself.
+    // The one date column dates the whole post; preserved only because the write runs
+    // under options.importing, which stops the model stamping its own timestamps.
     if (row.published_at) {
         data.published_at = row.published_at;
+        data.created_at = row.published_at;
+        data.updated_at = row.published_at;
     }
 
     return data;

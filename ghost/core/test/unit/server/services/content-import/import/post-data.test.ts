@@ -29,15 +29,19 @@ describe('buildPostData', function () {
         assert.equal('lexical' in data, false);
     });
 
-    it('passes published_at through as the CSV string when present', function () {
+    it('dates the whole post from the CSV date: published_at, created_at and updated_at', function () {
         const data = buildPostData(row({title: 'T', published_at: '2025-01-01T00:00:00.000Z'}), htmlToLexical);
 
         assert.equal(data.published_at, '2025-01-01T00:00:00.000Z');
+        assert.equal(data.created_at, '2025-01-01T00:00:00.000Z');
+        assert.equal(data.updated_at, '2025-01-01T00:00:00.000Z');
     });
 
-    it('omits published_at when the cell is absent', function () {
+    it('omits every date when the cell is absent, leaving the model to stamp now', function () {
         const data = buildPostData(row({title: 'T'}), htmlToLexical);
 
         assert.equal('published_at' in data, false);
+        assert.equal('created_at' in data, false);
+        assert.equal('updated_at' in data, false);
     });
 });

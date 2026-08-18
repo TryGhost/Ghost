@@ -151,6 +151,13 @@ describe('Posts Importer API', function () {
         // pass would keep the comma's double dash
         assert.equal(one.get('slug'), 'content-check-post-one');
         assert.equal(two.get('slug'), 'content-check-post-two-with-a-comma');
+
+        // created_at/updated_at follow the CSV date because the write runs under
+        // options.importing
+        assert.equal(one.get('created_at').toISOString(), '2024-05-01T08:00:00.000Z');
+        assert.equal(one.get('updated_at').toISOString(), '2024-05-01T08:00:00.000Z');
+        assert.equal(two.get('created_at').toISOString(), '2024-06-15T18:45:00.000Z');
+        assert.equal(two.get('updated_at').toISOString(), '2024-06-15T18:45:00.000Z');
     });
 
     it('Rejects an upload of more posts than the temporary cap, importing nothing', async function () {
