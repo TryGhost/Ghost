@@ -247,7 +247,7 @@ function interpretCustomFieldValue(raw: unknown): {operator: string; value: stri
 
 // A custom-field filter is `(custom_fields.key:'<key>'+custom_fields.value[.sub]:<v>)`,
 // or the flat `custom_fields.key:'<key>'` / `:-'<key>'` for set / not set. Each field
-// is its own predicate keyed `custom_field.<key>`, so the field's stable key becomes
+// is its own predicate keyed `custom_fields.<key>`, so the field's stable key becomes
 // part of the predicate field and the remaining `values` are [subfield, value]
 // (subfield '' for a scalar field or the whole-field set/unset case). This can't ride
 // the generic parser because the key lives in the value of the key clause, not the key.
@@ -258,11 +258,11 @@ function matchCustomFieldNode(node: AstNode): ParsedPredicate | null {
         const keyValue = node['custom_fields.key'];
 
         if (typeof keyValue === 'string') {
-            return {field: `custom_field.${keyValue}`, operator: 'is-set', values: ['', '']};
+            return {field: `custom_fields.${keyValue}`, operator: 'is-set', values: ['', '']};
         }
 
         if (keyValue && typeof keyValue === 'object' && !Array.isArray(keyValue) && typeof (keyValue as Record<string, unknown>).$ne === 'string') {
-            return {field: `custom_field.${(keyValue as Record<string, string>).$ne}`, operator: 'is-not-set', values: ['', '']};
+            return {field: `custom_fields.${(keyValue as Record<string, string>).$ne}`, operator: 'is-not-set', values: ['', '']};
         }
 
         return null;
@@ -305,7 +305,7 @@ function matchCustomFieldNode(node: AstNode): ParsedPredicate | null {
     // A `path` clause is a part's set / not-set: its presence, carrying no value.
     if (pathEntry) {
         return {
-            field: `custom_field.${fieldKey}`,
+            field: `custom_fields.${fieldKey}`,
             operator: pathEntry.negated ? 'is-not-set' : 'is-set',
             values: [pathEntry.subfield, '']
         };
@@ -322,7 +322,7 @@ function matchCustomFieldNode(node: AstNode): ParsedPredicate | null {
     }
 
     return {
-        field: `custom_field.${fieldKey}`,
+        field: `custom_fields.${fieldKey}`,
         operator: interpreted.operator,
         values: [valueEntry.subfield, interpreted.value]
     };
