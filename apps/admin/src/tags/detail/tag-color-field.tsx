@@ -71,6 +71,7 @@ const TagColorField: React.FC<TagColorFieldProps> = ({value, disabled, errorId, 
                         <PopoverTrigger asChild>
                             <ColorPickerTrigger
                                 aria-label='Accent color picker'
+                                className='-ml-1'
                                 disabled={disabled}
                                 value={value || '#ffffff'}
                             />
