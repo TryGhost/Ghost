@@ -273,6 +273,43 @@ describe('Gift Subscriptions', function () {
             assert.equal(gift.get('stripe_payment_intent_id'), 'pi_delayed_gift');
         });
 
+        it('rejects a paid gift webhook that carries no buyer email so Stripe retries it', async function () {
+            const paidTier = await getPaidTier();
+
+            await membersAgent.post('/api/create-stripe-checkout-session/')
+                .body({
+                    type: 'gift',
+                    tierId: paidTier.id,
+                    cadence: 'month',
+                    metadata: {}
+                })
+                .expectStatus(200);
+
+            const checkoutSession = getLatestCheckoutSession();
+
+            await assert.rejects(() => stripeMocker.sendWebhook({
+                type: 'checkout.session.completed',
+                data: {
+                    object: {
+                        id: checkoutSession.id,
+                        mode: 'payment',
+                        amount_total: paidTier.monthly_price,
+                        currency: paidTier.currency.toLowerCase(),
+                        customer: null,
+                        payment_status: 'paid',
+                        metadata: toWebhookMetadata(checkoutSession.metadata),
+                        payment_intent: 'pi_gift_no_email'
+                    }
+                }
+            }), {name: 'ValidationError', property: 'buyerEmail'});
+            await DomainEvents.allSettled();
+
+            const gift = await models.Gift.findOne({id: checkoutSession.metadata.ghost_gift_id}, {require: true});
+            assert.equal(gift.get('status'), 'payment_pending');
+            assert.equal(gift.get('buyer_email'), null);
+            mockManager.assert.sentEmailCount(0);
+        });
+
         it('Can purchase a gift as an authenticated member', async function () {
             const paidTier = await getPaidTier();
             const email = 'gift-member-buyer@example.com';

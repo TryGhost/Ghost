@@ -539,8 +539,16 @@ export class GiftService {
             if (gift.stripeCheckoutSessionId && gift.stripeCheckoutSessionId !== data.stripeCheckoutSessionId) {
                 throw new errors.ValidationError({message: 'Checkout session does not match gift.'});
             }
+            const buyerEmail = gift.buyerEmail ?? data.buyerEmail ?? member?.get('email') ?? null;
+            if (!buyerEmail) {
+                throw new errors.ValidationError({
+                    message: 'Invalid gift purchase data.',
+                    property: 'buyerEmail',
+                    context: 'A purchased gift requires a buyer email'
+                });
+            }
             const purchased = gift.completePurchase({
-                buyerEmail: gift.buyerEmail ?? data.buyerEmail,
+                buyerEmail,
                 buyerMemberId: member?.id ?? gift.buyerMemberId,
                 currency: data.currency.toLowerCase(),
                 amount: data.amount,

@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import errors from '@tryghost/errors';
-import logging from '@tryghost/logging';
 import sinon from 'sinon';
 import type {Knex} from 'knex';
 import {GiftService, type GiftPurchaseData} from '../../../../../core/server/services/gifts/gift-service';
@@ -241,9 +240,8 @@ describe('GiftService', function () {
             sinon.assert.calledOnceWithExactly(giftDeliveryService.dispatchForGift, 'gift_1');
         });
 
-        it('completes a paid pending gift when Stripe omits buyer email', async function () {
-            const warnLog = sinon.stub(logging, 'warn');
-            const pending = Gift.fromCheckout({
+        function buildAnonymousPendingGift() {
+            return Gift.fromCheckout({
                 token: 'pending-token',
                 buyerEmail: null,
                 buyerMemberId: null,
@@ -256,12 +254,15 @@ describe('GiftService', function () {
                 currency: 'usd',
                 amount: 5000
             }).bindCheckoutSession('cs_pending')!;
-            giftRepository.getById.resolves(pending);
+        }
+
+        it('completes a pending gift without a checkout buyer email using the Stripe customer email', async function () {
+            giftRepository.getById.resolves(buildAnonymousPendingGift());
             const service = createService();
 
             assert.equal(await service.completePurchase({
                 giftId: 'gift_1',
-                buyerEmail: undefined,
+                buyerEmail: ' stripe-buyer@example.com ',
                 stripeCustomerId: null,
                 currency: 'usd',
                 amount: 5000,
@@ -269,10 +270,53 @@ describe('GiftService', function () {
                 stripePaymentIntentId: 'pi_pending'
             }), true);
 
-            assert.equal(giftRepository.update.firstCall.firstArg.buyerEmail, null);
+            assert.equal(giftRepository.update.firstCall.firstArg.buyerEmail, 'stripe-buyer@example.com');
+            sinon.assert.calledOnceWithExactly(giftEmailService.sendPurchaseConfirmation, sinon.match({
+                buyerEmail: 'stripe-buyer@example.com'
+            }));
+        });
+
+        it('falls back to the Stripe customer member email when Stripe omits customer details', async function () {
+            const memberGet = sinon.stub();
+            memberGet.withArgs('name').returns('Member Name');
+            memberGet.withArgs('email').returns('member@example.com');
+            memberRepository.get.resolves({id: 'member_1', get: memberGet});
+            giftRepository.getById.resolves(buildAnonymousPendingGift());
+            const service = createService();
+
+            assert.equal(await service.completePurchase({
+                giftId: 'gift_1',
+                buyerEmail: null,
+                stripeCustomerId: 'cust_123',
+                currency: 'usd',
+                amount: 5000,
+                stripeCheckoutSessionId: 'cs_pending',
+                stripePaymentIntentId: 'pi_pending'
+            }), true);
+
+            const purchased = giftRepository.update.firstCall.firstArg;
+            assert.equal(purchased.buyerEmail, 'member@example.com');
+            assert.equal(purchased.buyerMemberId, 'member_1');
+        });
+
+        it('refuses to complete a pending gift when no buyer email is available', async function () {
+            giftRepository.getById.resolves(buildAnonymousPendingGift());
+            const service = createService();
+
+            await assert.rejects(() => service.completePurchase({
+                giftId: 'gift_1',
+                buyerEmail: undefined,
+                stripeCustomerId: null,
+                currency: 'usd',
+                amount: 5000,
+                stripeCheckoutSessionId: 'cs_pending',
+                stripePaymentIntentId: 'pi_pending'
+            }), (err: unknown) => err instanceof errors.ValidationError && (err as {property?: string}).property === 'buyerEmail');
+
+            sinon.assert.notCalled(giftRepository.update);
+            sinon.assert.notCalled(giftDeliveryService.dispatchForGift);
             sinon.assert.notCalled(staffServiceEmails.notifyGiftPurchased);
             sinon.assert.notCalled(giftEmailService.sendPurchaseConfirmation);
-            sinon.assert.calledOnceWithExactly(warnLog, 'Skipping purchase notifications because the buyer email is unavailable');
         });
 
         it('creates a Gift entity and saves it', async function () {
