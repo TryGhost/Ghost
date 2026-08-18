@@ -27,6 +27,76 @@ function K() {
     return this;
 }
 
+const AUTOMATIONS_REPLAY_SAMPLE_RATE = 1;
+const AUTOMATIONS_REPLAY_MASK_ATTRIBUTE = 'data-sentry-automations-mask';
+
+function isAutomationsUrl(url) {
+    const path = new URL(url).hash.replace(/^#/, '').split('?')[0].replace(/\/+$/, '');
+    return path === '/automations' || path.startsWith('/automations/');
+}
+
+function setupAutomationsSessionReplay(replay, shouldStartRecording) {
+    let initialRouteCheck;
+    let removeNavigationListener;
+    let recordingStarted = false;
+
+    const teardown = () => {
+        clearTimeout(initialRouteCheck);
+        removeNavigationListener?.();
+        document.body.removeAttribute(AUTOMATIONS_REPLAY_MASK_ATTRIBUTE);
+    };
+
+    const updateAutomationsMask = (url) => {
+        const isAutomations = isAutomationsUrl(url);
+
+        if (isAutomations) {
+            document.body.setAttribute(AUTOMATIONS_REPLAY_MASK_ATTRIBUTE, 'true');
+        } else {
+            document.body.removeAttribute(AUTOMATIONS_REPLAY_MASK_ATTRIBUTE);
+        }
+
+        return isAutomations;
+    };
+
+    const maybeStartRecording = (url) => {
+        const isAutomations = updateAutomationsMask(url);
+
+        if (!shouldStartRecording || !isAutomations || recordingStarted) {
+            return;
+        }
+
+        recordingStarted = true;
+        clearTimeout(initialRouteCheck);
+
+        replay.stop().then(() => replay.start()).catch((error) => {
+            try {
+                replay.startBuffering();
+            } catch (e) {
+                // Replay is still running, nothing to restore
+            }
+            console.error('Error starting Sentry Replay recording:', error); // eslint-disable-line no-console
+        });
+    };
+
+    // Keep listening after recording starts so portalled Automations content is
+    // masked only while an Automations route is active. React-owned admin
+    // routes navigate via pushState, which doesn't fire `hashchange`.
+    if (window.navigation) {
+        const onNavigate = event => maybeStartRecording(event.destination.url);
+        window.navigation.addEventListener('navigate', onNavigate);
+        removeNavigationListener = () => window.navigation.removeEventListener('navigate', onNavigate);
+    }
+
+    // Mask direct Automations loads before Replay creates its initial buffer.
+    updateAutomationsMask(window.location.href);
+
+    // Replay defers its sampling initialization during Sentry.init(). Queue the
+    // initial route check behind it to avoid starting a second rrweb recorder.
+    initialRouteCheck = setTimeout(() => maybeStartRecording(window.location.href));
+
+    return teardown;
+}
+
 let shortcuts = {};
 
 shortcuts.esc = {action: 'closeMenus', scope: 'default'};
@@ -192,6 +262,7 @@ export default Route.extend(ShortcutsRoute, {
     },
 
     willDestroy() {
+        this._cleanupAutomationsSessionReplay?.();
         this.ui.cleanupBodyDragHandlers();
     },
 
@@ -203,6 +274,15 @@ export default Route.extend(ShortcutsRoute, {
         if (this.config.sentry_dsn) {
             const sentryConfig = getSentryConfig(this.config.sentry_dsn, this.config.sentry_env, this.config.version);
             Sentry.init(sentryConfig);
+
+            // Keep error-triggered replay buffering everywhere and mask all
+            // Automations portals. Once a sampled app load enters Automations,
+            // record a full session replay for the rest of that load.
+            const replay = Sentry.getClient()?.getIntegrationByName('Replay');
+            if (replay) {
+                const shouldStartRecording = Math.random() < AUTOMATIONS_REPLAY_SAMPLE_RATE;
+                this._cleanupAutomationsSessionReplay = setupAutomationsSessionReplay(replay, shouldStartRecording);
+            }
         }
 
         if (this.session.isAuthenticated) {
