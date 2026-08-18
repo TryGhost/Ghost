@@ -66,7 +66,7 @@ const TagColorField: React.FC<TagColorFieldProps> = ({value, disabled, errorId, 
         <Popover onOpenChange={() => allowPickerChanges.current = false}>
             <Stack gap='sm'>
                 <Label htmlFor='tag-accent-color'>Color</Label>
-                <InputGroup className='w-32' data-disabled={disabled ? 'true' : undefined}>
+                <InputGroup className='w-28' data-disabled={disabled ? 'true' : undefined}>
                     <InputGroupAddon align='inline-start'>
                         <PopoverTrigger asChild>
                             <ColorPickerTrigger
