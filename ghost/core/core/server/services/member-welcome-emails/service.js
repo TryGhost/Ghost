@@ -420,10 +420,15 @@ class MemberWelcomeEmailService {
             tags = [MEMBER_WELCOME_EMAIL_TAG];
             sendEmail = this.#sendTransactionalEmail.bind(this);
             break;
-        case 'automation':
+        case 'automation': {
             tags = [AUTOMATION_EMAIL_TAG];
+            const mailgunTagFromConfig = config.get('bulkEmail:mailgun:tag');
+            if (typeof mailgunTagFromConfig === 'string' && mailgunTagFromConfig.length > 0) {
+                tags.push(mailgunTagFromConfig);
+            }
             sendEmail = this.#sendBulkEmail.bind(this);
             break;
+        }
         default: {
             /** @type {never} */ const _exhaustive = emailType;
             throw new errors.InternalServerError({
