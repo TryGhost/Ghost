@@ -21,8 +21,8 @@ const StaffToken: React.FC = () => {
                 setToken(`${newAPI.data.apiKey.id}:${newAPI.data.apiKey.secret}`);
             }
         };
-        getApiKey();
-    } , [apiKey]);
+        void getApiKey();
+    }, [apiKey]);
 
     const genConfirmation = () => {
         confirm({

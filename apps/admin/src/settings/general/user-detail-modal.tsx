@@ -372,7 +372,7 @@ const UserDetailModalContent: React.FC<{user: User; onDeletingUserChange: (isDel
                                                 </ImageUploadActions>
                                             </ImageUploadPreview>
                                         ) : (
-                                            <ImageUploadDropzone className='rounded-full bg-surface-inverse text-surface-inverse-foreground opacity-80 hover:opacity-100' inputId='avatar' inputTestId='profile-image-upload' onDropAccepted={files => handleImageUpload('profile_image', files[0])}>
+                                            <ImageUploadDropzone className='rounded-full bg-surface-inverse text-surface-inverse-foreground opacity-80 hover:opacity-100' inputId='avatar' inputTestId='profile-image-upload' onDropAccepted={files => void handleImageUpload('profile_image', files[0])}>
                                                 <LucideIcon.UserPlus className='size-8 text-surface-inverse-foreground' />
                                             </ImageUploadDropzone>
                                         )}
@@ -386,7 +386,7 @@ const UserDetailModalContent: React.FC<{user: User; onDeletingUserChange: (isDel
                                             handleSave: async (file: File) => handleImageUpload('cover_image', file)
                                         })}>Edit cover image</Button>}
                                         <Button className={coverButtonClasses} type='button' onClick={() => handleImageDelete('cover_image')}>Delete cover image</Button>
-                                    </div> : <Dropzone className='h-8' inputId='cover-image' inputTestId='cover-image-upload' variant='button' onDropAccepted={files => handleImageUpload('cover_image', files[0])}>Upload cover image</Dropzone>}
+                                    </div> : <Dropzone className='h-8' inputId='cover-image' inputTestId='cover-image-upload' variant='button' onDropAccepted={files => void handleImageUpload('cover_image', files[0])}>Upload cover image</Dropzone>}
                                     {showMenu && <div className="z-10">
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
@@ -418,7 +418,7 @@ const UserDetailModalContent: React.FC<{user: User; onDeletingUserChange: (isDel
                                                 {canSuspendUser && (
                                                     <>
                                                         <DropdownMenuItem onSelect={() => {
-                                                            confirmSuspend(formState);
+                                                            void confirmSuspend(formState);
                                                         }}>
                                                             {suspendUserLabel}
                                                         </DropdownMenuItem>

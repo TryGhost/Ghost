@@ -158,6 +158,29 @@ const ChangePasswordForm: React.FC<{user: User}> = ({user}) => {
         setEditPassword(true);
     };
 
+    const savePassword = async () => {
+        setSaveState('saving');
+        const validationErrors = validate({password: newPassword, confirmPassword: confirmNewPassword});
+        setErrors(validationErrors);
+        if (Object.keys(validationErrors).length > 0) {
+            setSaveState('');
+            return;
+        }
+        try {
+            await updatePassword({
+                newPassword,
+                confirmNewPassword,
+                oldPassword,
+                userId: user?.id
+            });
+            setSaveState('saved');
+        } catch (e) {
+            setSaveState('');
+            toast.error(e instanceof ValidationError ? e.message : `Couldn't update password. Please try again.`);
+            handleError(e, {withToast: false});
+        }
+    };
+
     let buttonLabel = 'Save password';
     if (saveState === 'saving') {
         buttonLabel = 'Saving...';
@@ -197,28 +220,7 @@ const ChangePasswordForm: React.FC<{user: User}> = ({user}) => {
                 <Button
                     data-testid='save-password-button'
                     type='button'
-                    onClick={async () => {
-                        setSaveState('saving');
-                        const validationErrors = validate({password: newPassword, confirmPassword: confirmNewPassword});
-                        setErrors(validationErrors);
-                        if (Object.keys(validationErrors).length > 0) {
-                            setSaveState('');
-                            return;
-                        }
-                        try {
-                            await updatePassword({
-                                newPassword,
-                                confirmNewPassword,
-                                oldPassword,
-                                userId: user?.id
-                            });
-                            setSaveState('saved');
-                        } catch (e) {
-                            setSaveState('');
-                            toast.error(e instanceof ValidationError ? e.message : `Couldn't update password. Please try again.`);
-                            handleError(e, {withToast: false});
-                        }
-                    }}
+                    onClick={() => void savePassword()}
                 >{buttonLabel}</Button>
             </div>
         </>

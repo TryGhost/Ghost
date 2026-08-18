@@ -3,7 +3,7 @@ import RoleSelector from './role-selector';
 import StaffToken from './staff-token';
 import {Field, FieldDescription, FieldError, FieldLabel, Input, Textarea} from '@tryghost/shade/components';
 import {SettingGroup, SettingGroupContent} from '@tryghost/shade/patterns';
-import {type UserDetailProps} from '@/settings/app/components/settings/general/user-detail-modal';
+import {type UserDetailProps} from '@/settings/general/user-detail-modal';
 import {formatNumber} from '@tryghost/shade/utils';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {hasAdminAccess} from '@tryghost/admin-x-framework/api/users';
