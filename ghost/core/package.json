@@ -191,7 +191,6 @@
         "jsonc-parser": "catalog:",
         "jsonwebtoken": "8.5.1",
         "juice": "9.1.0",
-        "keypair": "1.0.4",
         "knex": "2.4.2",
         "knex-migrator": "catalog:",
         "leaky-bucket": "2.2.0",
