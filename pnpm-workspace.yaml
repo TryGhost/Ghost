@@ -90,8 +90,8 @@ catalog:
   '@tryghost/limit-service': 1.5.6
   '@tryghost/logging': 5.3.4
   '@tryghost/metrics': 3.4.2
-  '@tryghost/mongo-knex': 0.11.1
-  '@tryghost/nql': 0.13.3
+  '@tryghost/mongo-knex': 0.11.2
+  '@tryghost/nql': 0.13.4
   '@tryghost/nql-lang': 0.7.0
   '@tryghost/request': 4.0.1
   '@tryghost/string': 0.3.5
