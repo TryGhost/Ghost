@@ -35,7 +35,7 @@ describe('member custom fields api helpers', () => {
     describe('memberCustomFieldCsvColumns', () => {
         it('gives a scalar field one target labelled by its name', () => {
             expect(memberCustomFieldCsvColumns([field({key: 'nickname', name: 'Nickname'})])).toEqual([
-                {label: 'Nickname', value: 'custom_fields.nickname', type: 'short_text'}
+                {label: 'Nickname', fieldName: 'Nickname', value: 'custom_fields.nickname', type: 'short_text'}
             ]);
         });
 
@@ -43,13 +43,25 @@ describe('member custom fields api helpers', () => {
             const columns = memberCustomFieldCsvColumns([field({key: 'shipping_address', name: 'Shipping Address', type: 'address'})]);
 
             expect(columns).toEqual([
-                {label: 'Shipping Address (Address line 1)', value: 'custom_fields.shipping_address.line1', type: 'address'},
-                {label: 'Shipping Address (Address line 2)', value: 'custom_fields.shipping_address.line2', type: 'address'},
-                {label: 'Shipping Address (City)', value: 'custom_fields.shipping_address.city', type: 'address'},
-                {label: 'Shipping Address (State)', value: 'custom_fields.shipping_address.state', type: 'address'},
-                {label: 'Shipping Address (Postal code)', value: 'custom_fields.shipping_address.postal_code', type: 'address'},
-                {label: 'Shipping Address (Country)', value: 'custom_fields.shipping_address.country', type: 'address'}
+                {label: 'Shipping Address (Address line 1)', fieldName: 'Shipping Address', partLabel: 'Address line 1', value: 'custom_fields.shipping_address.line1', type: 'address'},
+                {label: 'Shipping Address (Address line 2)', fieldName: 'Shipping Address', partLabel: 'Address line 2', value: 'custom_fields.shipping_address.line2', type: 'address'},
+                {label: 'Shipping Address (City)', fieldName: 'Shipping Address', partLabel: 'City', value: 'custom_fields.shipping_address.city', type: 'address'},
+                {label: 'Shipping Address (State)', fieldName: 'Shipping Address', partLabel: 'State', value: 'custom_fields.shipping_address.state', type: 'address'},
+                {label: 'Shipping Address (Postal code)', fieldName: 'Shipping Address', partLabel: 'Postal code', value: 'custom_fields.shipping_address.postal_code', type: 'address'},
+                {label: 'Shipping Address (Country)', fieldName: 'Shipping Address', partLabel: 'Country', value: 'custom_fields.shipping_address.country', type: 'address'}
             ]);
+        });
+
+        it('keeps a bracketed name whole alongside its part', () => {
+            const columns = memberCustomFieldCsvColumns([field({key: 'address_home', name: 'Address (Home)', type: 'address'})]);
+
+            expect(columns[2]).toEqual({
+                label: 'Address (Home) (City)',
+                fieldName: 'Address (Home)',
+                partLabel: 'City',
+                value: 'custom_fields.address_home.city',
+                type: 'address'
+            });
         });
 
         it('returns no targets for an empty field set', () => {
@@ -62,7 +74,7 @@ describe('member custom fields api helpers', () => {
             const future = field({key: 'mystery', name: 'Mystery', type: 'a_type_from_the_future' as MemberCustomField['type']});
 
             expect(memberCustomFieldCsvColumns([future])).toEqual([
-                {label: 'Mystery', value: 'custom_fields.mystery', type: 'a_type_from_the_future'}
+                {label: 'Mystery', fieldName: 'Mystery', value: 'custom_fields.mystery', type: 'a_type_from_the_future'}
             ]);
         });
     });

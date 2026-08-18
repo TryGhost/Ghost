@@ -8,6 +8,7 @@ import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} fro
 import {HostLimitError, JSONError, RequestEntityTooLargeError, ValidationError, getErrorMessage} from '@tryghost/admin-x-framework/errors';
 import {type ImportResponse} from '@/members/components/bulk-action-modals/import-members/state';
 import {MembersFieldMapping, detectFieldTypes, getFieldMappings} from '@/members/components/bulk-action-modals/import-members/custom-fields/mapping';
+import {fieldTargets} from '@/members/components/bulk-action-modals/import-members/custom-fields/field-targets';
 import {buildImportResponse} from '@/members/components/bulk-action-modals/import-members/upload';
 import {cn} from '@tryghost/shade/utils';
 import {createInitialImportState, importReducer} from '@/members/components/bulk-action-modals/import-members/reducer';
@@ -65,12 +66,14 @@ export function ImportMembersModal({
     useLayoutEffect(() => {
         detectOptionsRef.current = {importMemberTier, customFieldColumns};
     }, [importMemberTier, customFieldColumns]);
-    // Native targets only. Each row's kind decides which list its picker shows, and custom
-    // targets reach it through customFieldColumns. Auto-detection still sees both, via
-    // detectOptionsRef above.
-    const fieldMappings = useMemo(
-        () => getFieldMappings({importMemberTier}),
-        [importMemberTier]
+    // Auto-detection takes customFieldColumns separately, through detectOptionsRef above: it
+    // matches on column names rather than on what is offered.
+    const targets = useMemo(
+        () => fieldTargets({
+            membershipFields: getFieldMappings({importMemberTier}),
+            customFieldColumns
+        }),
+        [importMemberTier, customFieldColumns]
     );
 
     // Whether email is mapped is the mapping step's to answer, because it is the only thing
@@ -400,15 +403,14 @@ export function ImportMembersModal({
 
             {(state.status === 'MAPPING' || state.status === 'UPLOADING') && state.fileData !== null && (
                 <MappingStep
-                    customFieldMappings={customFieldColumns}
                     dataPreviewIndex={state.dataPreviewIndex}
-                    fieldMappings={fieldMappings}
                     fileData={state.fileData}
                     labelPicker={labelPicker}
                     mapping={state.mapping}
                     mappingError={state.mappingError}
                     showMappingErrors={state.showMappingErrors}
                     status={state.status}
+                    targets={targets}
                     onColumnsChanged={() => setHasEdits(true)}
                     onDataPreviewIndexChange={(nextIndex) => {
                         dispatch({
