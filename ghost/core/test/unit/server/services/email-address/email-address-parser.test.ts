@@ -55,13 +55,13 @@ describe('EmailAddressParser', function () {
         });
 
         it('should return null for null input', function () {
-            // @ts-ignore - Testing null input
+            // @ts-expect-error - Testing null input
             const email = EmailAddressParser.parse(null);
             assert.equal(email, null);
         });
 
         it('should return null for undefined input', function () {
-            // @ts-ignore - Testing undefined input
+            // @ts-expect-error - Testing undefined input
             const email = EmailAddressParser.parse(undefined);
             assert.equal(email, null);
         });

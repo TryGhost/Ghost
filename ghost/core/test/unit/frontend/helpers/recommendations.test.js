@@ -19,6 +19,8 @@ function trimSpaces(string) {
 
 describe('{{#recommendations}} helper', function () {
     let logging;
+    /** @type {sinon.SinonStub} */
+    let settingsCacheGetStub;
 
     beforeAll(async function () {
         hbs.express4({
@@ -33,9 +35,8 @@ describe('{{#recommendations}} helper', function () {
         hbs.registerHelper('readable_url', readable_url);
 
         // Stub settings cache
-        sinon.stub(settingsCache, 'get');
-        // @ts-ignore
-        settingsCache.get.withArgs('recommendations_enabled').returns(true);
+        settingsCacheGetStub = sinon.stub(settingsCache, 'get');
+        settingsCacheGetStub.withArgs('recommendations_enabled').returns(true);
 
         // Stub Recommendation Content API
         const meta = {pagination: {}};
@@ -129,8 +130,7 @@ describe('{{#recommendations}} helper', function () {
 
     describe('when recommendations_enabled is false', function () {
         beforeAll(function () {
-            // @ts-ignore
-            settingsCache.get.withArgs('recommendations_enabled').returns(true);
+            settingsCacheGetStub.withArgs('recommendations_enabled').returns(true);
         });
 
         it('renders nothing', async function () {

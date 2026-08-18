@@ -41,7 +41,7 @@ const tsLegacyRelaxations = {
     '@typescript-eslint/no-unused-expressions': 'off',
     // LEGACY: tseslint v8 default. `Function` used as a type for callbacks.
     '@typescript-eslint/no-unsafe-function-type': 'off',
-    // LEGACY: tseslint v8 default. `// @ts-ignore` comments still exist.
+    // LEGACY: tseslint v8 default.
     '@typescript-eslint/ban-ts-comment': 'off',
     // LEGACY: previous posture from plugin:ghost/ts allowed inferrable types.
     '@typescript-eslint/no-inferrable-types': 'off',
