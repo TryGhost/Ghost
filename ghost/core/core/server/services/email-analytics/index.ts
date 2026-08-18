@@ -6,7 +6,9 @@ import type {GhostMetrics} from '@tryghost/metrics';
 import type SettingsCache from '../../../shared/settings-cache';
 import {EmailAnalyticsServiceWrapper} from './email-analytics-service-wrapper';
 // @ts-expect-error This module lacks type definitions.
-import {AGGREGATE_MEMBER_STATS_METRIC_NAME, NewsletterEmailAnalyticsBatchProcessor} from './newsletter-email-analytics-batch-processor';
+import {AGGREGATE_MEMBER_STATS_METRIC_NAME} from './newsletter-email-analytics-batch-processor';
+// @ts-expect-error This module lacks type definitions.
+import {NewsletterEmailAnalyticsBatchProcessor} from './newsletter-email-analytics-batch-processor';
 // @ts-expect-error This module lacks type definitions.
 import NewsletterEmailEventStorage from '../email-service/newsletter-email-event-storage';
 // @ts-expect-error This module lacks type definitions.

@@ -25,7 +25,8 @@ module.exports = createTransactionalMigration(
             logging.info(`Updating ${rows.length} Tiers with price and currency information`);
         }
 
-        for (const row of rows) { // eslint-disable-line no-restricted-syntax
+        // eslint-disable-next-line no-restricted-syntax
+        for (const row of rows) {
             await knex('products').update(row).where('id', row.id);
         }
     },

@@ -11,7 +11,8 @@ const {SafeString} = require('../services/handlebars');
  */
 
 // We use the name body_class to match the helper for consistency
-module.exports = function body_class(options) { // eslint-disable-line camelcase
+// eslint-disable-next-line camelcase
+module.exports = function body_class(options) {
     let classes = [];
     const context = options.data.root.context || [];
     const obj = this.post || this.page;

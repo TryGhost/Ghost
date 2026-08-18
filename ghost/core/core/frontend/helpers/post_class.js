@@ -5,7 +5,8 @@
 const {SafeString} = require('../services/handlebars');
 
 // We use the name post_class to match the helper for consistency:
-module.exports = function post_class() { // eslint-disable-line camelcase
+// eslint-disable-next-line camelcase
+module.exports = function post_class() {
     let classes = ['post'];
 
     const tags = this.post && this.post.tags ? this.post.tags : this.tags || [];

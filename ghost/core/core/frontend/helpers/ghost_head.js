@@ -320,7 +320,8 @@ function getTinybirdTrackerScript(dataRoot) {
  *  Also see how the root object gets created, https://github.com/wycats/handlebars.js/blob/v4.0.6/lib/handlebars/runtime.js#L259
  */
 // We use the name ghost_head to match the helper for consistency:
-module.exports = async function ghost_head(options) { // eslint-disable-line camelcase
+// eslint-disable-next-line camelcase
+module.exports = async function ghost_head(options) {
     debug('begin');
     // if server error page do nothing
     if (options.data.root.statusCode >= 500) {

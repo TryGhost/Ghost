@@ -6,7 +6,8 @@ const metaData = require('../meta');
 const {getMetaDataDescription} = metaData;
 
 // We use the name meta_description to match the helper for consistency:
-module.exports = function meta_description(options) { // eslint-disable-line camelcase
+// eslint-disable-next-line camelcase
+module.exports = function meta_description(options) {
     options = options || {};
 
     return getMetaDataDescription(this, options.data.root) || '';

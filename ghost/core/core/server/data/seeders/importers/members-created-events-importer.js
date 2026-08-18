@@ -20,15 +20,16 @@ class MembersCreatedEventsImporter extends TableImporter {
     }
 
     generateSource() {
-        let source = 'member';
         if (luck(10)) {
-            source = 'admin';
-        } else if (luck(5)) {
-            source = 'api';
-        } else if (luck(5)) { // eslint-disable-line no-dupe-else-if
-            source = 'import';
+            return 'admin';
         }
-        return source;
+        if (luck(5)) {
+            return 'api';
+        }
+        if (luck(5)) {
+            return 'import';
+        }
+        return 'member';
     }
 
     generate() {

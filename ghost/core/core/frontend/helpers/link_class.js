@@ -12,7 +12,8 @@ const messages = {
     forIsRequired: 'The {{link_class}} helper requires a for="" attribute.'
 };
 
-module.exports = function link_class(options) { // eslint-disable-line camelcase
+// eslint-disable-next-line camelcase
+module.exports = function link_class(options) {
     options = options || {};
     options.hash = options.hash || {};
     options.data = options.data || {};
