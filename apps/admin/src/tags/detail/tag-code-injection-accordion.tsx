@@ -13,9 +13,11 @@ interface TagCodeInjectionAccordionProps {
 const htmlExtensions = [() => import('@codemirror/lang-html').then(module => module.html())];
 
 const TagCodeInjectionAccordion: React.FC<TagCodeInjectionAccordionProps> = ({disabled, headerValue, footerValue, onHeaderChange, onFooterChange}) => {
+    const hasCodeInjection = Boolean(headerValue.trim() || footerValue.trim());
+
     return (
         <Card data-testid='tag-code-injection-card'>
-            <Accordion type='single' collapsible>
+            <Accordion defaultValue={hasCodeInjection ? 'code-injection' : undefined} type='single' collapsible>
                 <AccordionItem className='border-b-0' value='code-injection'>
                     <AccordionTrigger className='px-6 py-5 hover:no-underline'>
                         <Stack className='text-left' gap='none'>

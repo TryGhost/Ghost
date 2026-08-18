@@ -111,7 +111,7 @@ describe('Tag detail (tagDetailsReact on)', () => {
         const saveApi = fakeTagWorld(t);
         await renderAdminApp(`/tags/${t.slug}`, FLAGS);
 
-        await page.getByRole('button', {name: /Code injection/}).click();
+        await expect.element(page.getByRole('button', {name: /Code injection/})).toHaveAttribute('aria-expanded', 'true');
         const headerEditor = page.getByRole('textbox', {name: /^Tag header/});
         const footerEditor = page.getByRole('textbox', {name: /^Tag footer/});
         await expect.element(headerEditor).toBeVisible();
@@ -144,6 +144,16 @@ describe('Tag detail (tagDetailsReact on)', () => {
         const saved = (saveApi.lastRequest?.body as {tags: Array<Record<string, unknown>>}).tags[0];
         expect(saved.codeinjection_head).toBe(updatedHead);
         expect(saved.codeinjection_foot).toBe(updatedFoot);
+    });
+
+    it('opens code injection when only the footer contains code', async () => {
+        const t = tag({name: 'News', slug: 'news', codeinjection_foot: '<script>footer();</script>'});
+        fakeTagWorld(t);
+        await renderAdminApp(`/tags/${t.slug}`, FLAGS);
+
+        const codeInjectionTrigger = page.getByRole('button', {name: /Code injection/});
+        await expect.element(codeInjectionTrigger).toHaveAttribute('aria-expanded', 'true');
+        await expect.element(page.getByRole('textbox', {name: /^Tag footer/})).toBeVisible();
     });
 
     it('keeps CodeMirror autocomplete visible in the code injection accordion', async () => {
