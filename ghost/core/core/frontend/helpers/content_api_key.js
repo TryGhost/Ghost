@@ -2,7 +2,8 @@ const {SafeString} = require('../services/handlebars');
 const logging = require('@tryghost/logging');
 const {getFrontendKey} = require('../services/proxy');
 
-module.exports = async function content_api_key() { // eslint-disable-line camelcase
+// eslint-disable-next-line camelcase
+module.exports = async function content_api_key() {
     try {
         const frontendKey = await getFrontendKey();
 

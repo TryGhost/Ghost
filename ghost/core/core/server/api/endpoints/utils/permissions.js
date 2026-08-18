@@ -41,7 +41,8 @@ const nonePublicAuth = async (apiConfig, frame) => {
     }
 
     try {
-        const result = await permissions.canThis(frame.options.context)[apiConfig.method][singular](permissionIdentifier, unsafeAttrObject);
+        const permissionCheck = permissions.canThis(frame.options.context)[apiConfig.method][singular];
+        const result = await permissionCheck(permissionIdentifier, unsafeAttrObject);
 
         /*
          * Allow the permissions function to return a list of excluded attributes.

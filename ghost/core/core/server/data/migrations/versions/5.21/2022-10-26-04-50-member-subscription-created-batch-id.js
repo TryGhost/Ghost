@@ -26,14 +26,16 @@ module.exports = createTransactionalMigration(
         }
 
         // Attach a unique id to each row
-        for (const row of rows) { // eslint-disable-line no-restricted-syntax
+        // eslint-disable-next-line no-restricted-syntax
+        for (const row of rows) {
             row.batch_id = ObjectId().toHexString();
         }
 
         // Create batches (insertBatch doesn't support the onConflict option)
         const batches = _.chunk(rows, 1000);
     
-        for (const batch of batches) { // eslint-disable-line no-restricted-syntax
+        // eslint-disable-next-line no-restricted-syntax
+        for (const batch of batches) {
             // Update the members_created_events table using INSERT ON DUPLICATE KEY UPDATE trick
             const response1 = await knex('members_created_events').insert(batch.map((r) => {
                 return {

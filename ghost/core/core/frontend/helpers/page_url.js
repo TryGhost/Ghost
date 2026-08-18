@@ -8,7 +8,8 @@ const metaData = require('../meta');
 const getPaginatedUrl = metaData.getPaginatedUrl;
 
 // We use the name page_url to match the helper for consistency:
-module.exports = function page_url(page, options) { // eslint-disable-line camelcase
+// eslint-disable-next-line camelcase
+module.exports = function page_url(page, options) {
     if (!options) {
         options = page;
         page = 1;
