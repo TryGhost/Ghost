@@ -1,6 +1,5 @@
 import debugFactory from '@tryghost/debug';
-// @ts-expect-error This module lacks type definitions.
-import dateToDatabaseString from '../utils/database-date';
+import * as databaseDate from '../utils/database-date';
 import path from 'node:path';
 import fs from 'node:fs';
 import papaparse from 'papaparse';
@@ -124,7 +123,7 @@ export abstract class TableImporter<
                         if (typeof value === 'boolean') {
                             mutableObj[key] = value ? 1 : 0;
                         } else if (value instanceof Date) {
-                            mutableObj[key] = dateToDatabaseString(value);
+                            mutableObj[key] = databaseDate.dateToDatabaseString(value);
                         } else if (value === null) {
                             mutableObj[key] = '\\N';
                         }

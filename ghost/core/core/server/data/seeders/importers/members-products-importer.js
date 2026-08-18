@@ -1,7 +1,7 @@
 const {faker} = require('@faker-js/faker');
 const {TableImporter} = require('./table-importer');
 const {luck} = require('../utils/random');
-const dateToDatabaseString = require('../utils/database-date');
+const databaseDate = require('../utils/database-date');
 
 class MembersProductsImporter extends TableImporter {
     static table = 'members_products';
@@ -34,7 +34,7 @@ class MembersProductsImporter extends TableImporter {
             member_id: this.model.id,
             product_id: this.getProduct().id,
             sort_order: 0,
-            expiry_at: this.model.status === 'paid' ? null : (luck(50) ? null : dateToDatabaseString(faker.date.future()))
+            expiry_at: this.model.status === 'paid' ? null : (luck(50) ? null : databaseDate.dateToDatabaseString(faker.date.future()))
         };
     }
 }

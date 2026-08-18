@@ -2,8 +2,7 @@ import {faker} from '@faker-js/faker';
 import errors from '@tryghost/errors';
 import type {Knex} from 'knex';
 import {TableImporter} from './table-importer';
-// @ts-expect-error This module currently lacks type definitions.
-import dateToDatabaseString from '../utils/database-date';
+import * as databaseDate from '../utils/database-date';
 
 type Automation = {
     id: string;
@@ -52,7 +51,7 @@ export class AutomationActionsImporter extends TableImporter<AutomationAction, A
         }
 
         const createdAt = faker.date.between({
-            from: dateToDatabaseString.parse(this.#automation.created_at),
+            from: databaseDate.parse(this.#automation.created_at),
             to: new Date()
         });
         const type = this.#actionIndex % 2 === 0 ? 'wait' : 'send_email';
@@ -60,8 +59,8 @@ export class AutomationActionsImporter extends TableImporter<AutomationAction, A
 
         return {
             id: this.fastFakeObjectId(),
-            created_at: dateToDatabaseString(createdAt),
-            updated_at: dateToDatabaseString(createdAt),
+            created_at: databaseDate.dateToDatabaseString(createdAt),
+            updated_at: databaseDate.dateToDatabaseString(createdAt),
             deleted_at: null,
             automation_id: this.#automation.id,
             type

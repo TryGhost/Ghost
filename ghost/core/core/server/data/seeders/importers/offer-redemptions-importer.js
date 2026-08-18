@@ -1,7 +1,7 @@
 const {faker} = require('@faker-js/faker');
 const errors = require('@tryghost/errors');
 const {TableImporter} = require('./table-importer');
-const dateToDatabaseString = require('../utils/database-date');
+const databaseDate = require('../utils/database-date');
 
 class OfferRedemptionsImporter extends TableImporter {
     static table = 'offer_redemptions';
@@ -53,7 +53,7 @@ class OfferRedemptionsImporter extends TableImporter {
             this.subscriptionPool.push({
                 memberId,
                 subscriptionId: subscription.id,
-                subscriptionCreatedAt: dateToDatabaseString.parse(subscription.created_at),
+                subscriptionCreatedAt: databaseDate.parse(subscription.created_at),
                 redemptionEndAt: this.getRedemptionEndDate(subscription.current_period_end),
                 availableOffers: [...matchingOffers],
                 lastRedeemedAt: null
@@ -78,7 +78,7 @@ class OfferRedemptionsImporter extends TableImporter {
 
     getRedemptionEndDate(currentPeriodEnd) {
         const now = new Date();
-        const endDate = currentPeriodEnd ? dateToDatabaseString.parse(currentPeriodEnd) : now;
+        const endDate = currentPeriodEnd ? databaseDate.parse(currentPeriodEnd) : now;
 
         return endDate > now ? now : endDate;
     }
@@ -86,7 +86,7 @@ class OfferRedemptionsImporter extends TableImporter {
     getCreatedAt(subscriptionState, offer) {
         const candidateEarliest = new Date(Math.max(
             subscriptionState.subscriptionCreatedAt.valueOf(),
-            dateToDatabaseString.parse(offer.created_at).valueOf(),
+            databaseDate.parse(offer.created_at).valueOf(),
             subscriptionState.lastRedeemedAt ? subscriptionState.lastRedeemedAt.valueOf() + 1000 : 0
         ));
         const earliest = new Date(Math.min(
@@ -98,7 +98,7 @@ class OfferRedemptionsImporter extends TableImporter {
 
         subscriptionState.lastRedeemedAt = createdAt;
 
-        return dateToDatabaseString(createdAt);
+        return databaseDate.dateToDatabaseString(createdAt);
     }
 
     generate() {

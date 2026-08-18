@@ -1,7 +1,7 @@
 const {TableImporter} = require('./table-importer');
 const {faker} = require('@faker-js/faker');
 const {luck} = require('../utils/random');
-const dateToDatabaseString = require('../utils/database-date');
+const databaseDate = require('../utils/database-date');
 
 class CommentReportsImporter extends TableImporter {
     static table = 'comment_reports';
@@ -49,7 +49,7 @@ class CommentReportsImporter extends TableImporter {
             return null;
         }
 
-        const reportTime = dateToDatabaseString.randomBetween(this.model.created_at, new Date());
+        const reportTime = databaseDate.randomBetween(this.model.created_at, new Date());
 
         const reporter = this.possibleReporters[faker.number.int(this.possibleReporters.length - 1)];
 
@@ -57,8 +57,8 @@ class CommentReportsImporter extends TableImporter {
             id: this.fastFakeObjectId(),
             comment_id: this.model.id,
             member_id: reporter.id,
-            created_at: dateToDatabaseString(reportTime),
-            updated_at: dateToDatabaseString(reportTime)
+            created_at: databaseDate.dateToDatabaseString(reportTime),
+            updated_at: databaseDate.dateToDatabaseString(reportTime)
         };
     }
 }

@@ -1,5 +1,5 @@
 const {TableImporter} = require('./table-importer');
-const dateToDatabaseString = require('../utils/database-date');
+const databaseDate = require('../utils/database-date');
 
 class MembersStatusEventsImporter extends TableImporter {
     static table = 'members_status_events';
@@ -31,7 +31,7 @@ class MembersStatusEventsImporter extends TableImporter {
             member_id: model.id,
             from_status: null,
             to_status: 'free',
-            created_at: dateToDatabaseString(model.created_at)
+            created_at: databaseDate.dateToDatabaseString(model.created_at)
         }];
         if (model.status !== 'free') {
             this.events.push({
@@ -39,7 +39,7 @@ class MembersStatusEventsImporter extends TableImporter {
                 member_id: model.id,
                 from_status: 'free',
                 to_status: model.status,
-                created_at: dateToDatabaseString(dateToDatabaseString.randomBetween(model.created_at, new Date()))
+                created_at: databaseDate.dateToDatabaseString(databaseDate.randomBetween(model.created_at, new Date()))
             });
         }
     }

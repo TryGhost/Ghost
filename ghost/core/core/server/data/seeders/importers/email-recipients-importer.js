@@ -1,7 +1,7 @@
 const {TableImporter} = require('./table-importer');
 const {faker} = require('@faker-js/faker');
 const generateEvents = require('../utils/event-generator');
-const dateToDatabaseString = require('../utils/database-date');
+const databaseDate = require('../utils/database-date');
 const debug = require('@tryghost/debug')('EmailRecipientsImporter');
 
 const emailStatus = {
@@ -111,7 +111,7 @@ class EmailRecipientsImporter extends TableImporter {
 
             if (!(memberSubscribeEvent.created_at instanceof Date)) {
                 // SQLite fix
-                memberSubscribeEvent.created_at = dateToDatabaseString.parse(memberSubscribeEvent.created_at);
+                memberSubscribeEvent.created_at = databaseDate.parse(memberSubscribeEvent.created_at);
             }
             this.membersSubscribeEventsCreatedAtsByNewsletterId.get(memberSubscribeEvent.newsletter_id).push(memberSubscribeEvent.created_at.getTime());
         }
@@ -125,8 +125,8 @@ class EmailRecipientsImporter extends TableImporter {
         this.batchIndex = this.batch.index;
 
         // Shallow clone members list so we can shuffle and modify it
-        const earliestOpenTime = dateToDatabaseString.parse(this.batch.updated_at);
-        const latestOpenTime = dateToDatabaseString.parse(this.batch.updated_at);
+        const earliestOpenTime = databaseDate.parse(this.batch.updated_at);
+        const latestOpenTime = databaseDate.parse(this.batch.updated_at);
         latestOpenTime.setDate(latestOpenTime.getDate() + 14);
 
         // Get all members that were subscribed to this newsletter BEFORE the batch was sent
@@ -164,7 +164,7 @@ class EmailRecipientsImporter extends TableImporter {
         }
 
         // The events are generated for a different time, so we need to move them to the batch time
-        timestamp = new Date(timestamp.getTime() - this.eventStartTimeUsed.getTime() + dateToDatabaseString.parse(this.batch.updated_at).getTime());
+        timestamp = new Date(timestamp.getTime() - this.eventStartTimeUsed.getTime() + databaseDate.parse(this.batch.updated_at).getTime());
 
         if (timestamp > new Date()) {
             timestamp = new Date();
@@ -187,9 +187,9 @@ class EmailRecipientsImporter extends TableImporter {
 
         let deliveredTime;
         if (status === emailStatus.opened) {
-            const startDate = dateToDatabaseString.parse(this.batch.updated_at);
+            const startDate = databaseDate.parse(this.batch.updated_at);
             const endDate = timestamp;
-            deliveredTime = dateToDatabaseString.randomBetween(startDate, endDate);
+            deliveredTime = databaseDate.randomBetween(startDate, endDate);
         }
 
         return {
@@ -198,10 +198,10 @@ class EmailRecipientsImporter extends TableImporter {
             email_id: this.model.id,
             batch_id: this.batch.id,
             member_id: member.id,
-            processed_at: dateToDatabaseString(this.batch.updated_at),
-            delivered_at: status === emailStatus.opened ? dateToDatabaseString(deliveredTime) : status === emailStatus.delivered ? dateToDatabaseString(timestamp) : null,
-            opened_at: status === emailStatus.opened ? dateToDatabaseString(timestamp) : null,
-            failed_at: status === emailStatus.failed ? dateToDatabaseString(timestamp) : null,
+            processed_at: databaseDate.dateToDatabaseString(this.batch.updated_at),
+            delivered_at: status === emailStatus.opened ? databaseDate.dateToDatabaseString(deliveredTime) : status === emailStatus.delivered ? databaseDate.dateToDatabaseString(timestamp) : null,
+            opened_at: status === emailStatus.opened ? databaseDate.dateToDatabaseString(timestamp) : null,
+            failed_at: status === emailStatus.failed ? databaseDate.dateToDatabaseString(timestamp) : null,
             member_uuid: member.uuid,
             member_email: member.email,
             member_name: member.name

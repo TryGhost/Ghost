@@ -2,8 +2,7 @@ import {faker} from '@faker-js/faker';
 import errors from '@tryghost/errors';
 import type {Knex} from 'knex';
 import {TableImporter} from './table-importer';
-// @ts-expect-error This module currently lacks type definitions.
-import dateToDatabaseString from '../utils/database-date';
+import * as databaseDate from '../utils/database-date';
 import {DEFAULT_EMAIL_DESIGN_SETTING_SLUG} from '../../../services/member-welcome-emails/constants';
 
 type AutomationAction = {
@@ -67,13 +66,13 @@ export class AutomationActionRevisionsImporter extends TableImporter<AutomationA
             throw new errors.IncorrectUsageError({message: 'Cannot generate automation action revision without an action'});
         }
 
-        const createdAt = dateToDatabaseString.parse(this.#action.created_at);
+        const createdAt = databaseDate.parse(this.#action.created_at);
         createdAt.setSeconds(createdAt.getSeconds() + this.#revisionIndex);
         this.#revisionIndex += 1;
 
         const common = {
             id: this.fastFakeObjectId(),
-            created_at: dateToDatabaseString(createdAt),
+            created_at: databaseDate.dateToDatabaseString(createdAt),
             action_id: this.#action.id,
             email_sent_count: null,
             email_opened_count: null,

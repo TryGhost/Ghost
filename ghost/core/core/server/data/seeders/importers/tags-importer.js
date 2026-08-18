@@ -1,7 +1,7 @@
 const {faker} = require('@faker-js/faker');
 const {slugify} = require('@tryghost/string');
 const {TableImporter} = require('./table-importer');
-const dateToDatabaseString = require('../utils/database-date');
+const databaseDate = require('../utils/database-date');
 
 class TagsImporter extends TableImporter {
     static table = 'tags';
@@ -32,7 +32,7 @@ class TagsImporter extends TableImporter {
             name: name,
             slug: slugify(name),
             description: faker.lorem.sentence(),
-            created_at: dateToDatabaseString(faker.date.between({from: threeYearsAgo, to: twoYearsAgo}))
+            created_at: databaseDate.dateToDatabaseString(faker.date.between({from: threeYearsAgo, to: twoYearsAgo}))
         };
     }
 }

@@ -2,7 +2,7 @@ const {TableImporter} = require('./table-importer');
 const {faker} = require('@faker-js/faker');
 const generateEvents = require('../utils/event-generator');
 const {luck} = require('../utils/random');
-const dateToDatabaseString = require('../utils/database-date');
+const databaseDate = require('../utils/database-date');
 
 class EmailsImporter extends TableImporter {
     static table = 'emails';
@@ -42,7 +42,7 @@ class EmailsImporter extends TableImporter {
                 : this.newsletters[1];
         }
 
-        const publishedAt = dateToDatabaseString.parse(this.model.published_at);
+        const publishedAt = databaseDate.parse(this.model.published_at);
         const timestamp = luck(60)
             ? publishedAt
             : generateEvents({
@@ -55,7 +55,7 @@ class EmailsImporter extends TableImporter {
 
         const recipientCount = this.membersSubscribeEvents
             .filter(entry => entry.newsletter_id === newsletter.id)
-            .filter(entry => dateToDatabaseString.parse(entry.created_at) < timestamp).length;
+            .filter(entry => databaseDate.parse(entry.created_at) < timestamp).length;
         const deliveredCount = Math.ceil(recipientCount * faker.number.float({
             max: 1,
             min: 0.9,
@@ -87,10 +87,10 @@ class EmailsImporter extends TableImporter {
             track_opens: true,
             track_clicks: true,
             feedback_enabled: true,
-            submitted_at: dateToDatabaseString(timestamp),
+            submitted_at: databaseDate.dateToDatabaseString(timestamp),
             newsletter_id: newsletter.id,
-            created_at: dateToDatabaseString(timestamp),
-            updated_at: dateToDatabaseString(timestamp)
+            created_at: databaseDate.dateToDatabaseString(timestamp),
+            updated_at: databaseDate.dateToDatabaseString(timestamp)
         };
     }
 }
