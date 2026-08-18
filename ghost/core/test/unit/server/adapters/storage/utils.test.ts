@@ -11,7 +11,6 @@ import type * as storageUtilsModule from '../../../../../core/server/adapters/st
 // come from the same `require` graph.
 const urlUtils: typeof urlUtilsInstance = require('../../../../../core/shared/url-utils').default;
 const configUtils = require('../../../../utils/config-utils');
-const {assertExists} = require('../../../../utils/assertions');
 
 // Stuff we are testing
 const storageUtils: typeof storageUtilsModule = require('../../../../../core/server/adapters/storage/utils');
@@ -38,7 +37,6 @@ describe('storage utils', function () {
             urlGetSubdirStub.returns('');
 
             const result = storageUtils.getLocalImagesStoragePath(url);
-            assertExists(result);
             assert.equal(result, '/2017/07/ghost-logo.png');
         });
 
@@ -51,7 +49,6 @@ describe('storage utils', function () {
             urlGetSubdirStub.returns('/blog');
 
             const result = storageUtils.getLocalImagesStoragePath(url);
-            assertExists(result);
             assert.equal(result, '/2017/07/ghost-logo.png');
         });
 
@@ -64,7 +61,6 @@ describe('storage utils', function () {
             urlGetSubdirStub.returns('');
 
             const result = storageUtils.getLocalImagesStoragePath(filePath);
-            assertExists(result);
             assert.equal(result, '/2017/07/ghost-logo.png');
         });
 
@@ -77,7 +73,6 @@ describe('storage utils', function () {
             urlGetSubdirStub.returns('/blog');
 
             const result = storageUtils.getLocalImagesStoragePath(filePath);
-            assertExists(result);
             assert.equal(result, '/2017/07/ghost-logo.png');
         });
 
@@ -90,7 +85,6 @@ describe('storage utils', function () {
             urlGetSubdirStub.returns('');
 
             const result = storageUtils.getLocalImagesStoragePath(url);
-            assertExists(result);
             assert.equal(result, 'http://example-blog.com/ghost-logo.png');
         });
     });
@@ -105,7 +99,6 @@ describe('storage utils', function () {
             urlGetSubdirStub.returns('');
 
             const result = storageUtils.isLocalImage(url);
-            assertExists(result);
             assert.equal(result, true);
         });
 
@@ -118,7 +111,6 @@ describe('storage utils', function () {
             urlGetSubdirStub.returns('/blog');
 
             const result = storageUtils.isLocalImage(url);
-            assertExists(result);
             assert.equal(result, true);
         });
 
@@ -131,7 +123,6 @@ describe('storage utils', function () {
             urlGetSubdirStub.returns('');
 
             const result = storageUtils.isLocalImage(url);
-            assertExists(result);
             assert.equal(result, true);
         });
 
@@ -144,7 +135,6 @@ describe('storage utils', function () {
             urlGetSubdirStub.returns('/blog');
 
             const result = storageUtils.isLocalImage(url);
-            assertExists(result);
             assert.equal(result, true);
         });
 
@@ -157,7 +147,6 @@ describe('storage utils', function () {
             urlGetSubdirStub.returns('');
 
             const result = storageUtils.isLocalImage(url);
-            assertExists(result);
             assert.equal(result, false);
         });
     });
