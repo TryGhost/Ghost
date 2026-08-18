@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/kg-markdown-html-renderer",
-  "version": "7.2.3",
+  "version": "7.2.4",
   "description": "Markdown to HTML rendering for Ghost's markdown card",
   "repository": {
     "type": "git",
@@ -43,9 +43,9 @@
     "@types/markdown-it": "14.1.2",
     "@types/node": "catalog:",
     "@types/semver": "7.8.0",
+    "@typescript/native": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "eslint-plugin-ghost": "catalog:",
-    "@typescript/native": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
     "vitest": "catalog:"
