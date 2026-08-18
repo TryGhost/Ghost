@@ -41,8 +41,6 @@ const tsLegacyRelaxations = {
     '@typescript-eslint/no-unused-expressions': 'off',
     // LEGACY: tseslint v8 default. `Function` used as a type for callbacks.
     '@typescript-eslint/no-unsafe-function-type': 'off',
-    // LEGACY: tseslint v8 default.
-    '@typescript-eslint/ban-ts-comment': 'off',
     // LEGACY: previous posture from plugin:ghost/ts allowed inferrable types.
     '@typescript-eslint/no-inferrable-types': 'off',
     // LEGACY: `let` declarations across the codebase could be `const`.
@@ -130,6 +128,12 @@ export default tseslint.config(
             }],
             'no-undef': 'off',
             '@typescript-eslint/no-explicit-any': 'off',
+            '@typescript-eslint/ban-ts-comment': ['error', {
+                'ts-check': false,
+                'ts-expect-error': 'allow-with-description',
+                'ts-ignore': true,
+                'ts-nocheck': true
+            }],
             ...tsLegacyRelaxations
         }
     },
