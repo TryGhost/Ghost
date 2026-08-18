@@ -12,7 +12,7 @@ import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/
 import {searchKeywords as advancedSearchKeywords} from './settings/advanced/advanced-settings';
 import {searchKeywords as emailSearchKeywords} from './settings/email/email-settings';
 import {searchKeywords as emailsSearchKeywords} from './settings/email/emails';
-import {searchKeywords as generalSearchKeywords} from './settings/general/general-settings';
+import {searchKeywords as generalSearchKeywords} from '@/settings/general/search-keywords';
 import {searchKeywords as growthSearchKeywords} from './settings/growth/growth-settings';
 import {searchKeywords as membershipSearchKeywords} from './settings/membership/membership-settings';
 import {searchKeywords as siteSearchKeywords} from './settings/site/site-settings';

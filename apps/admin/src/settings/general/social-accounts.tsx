@@ -119,7 +119,7 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
         setErrors(formErrors);
 
         if (Object.keys(formErrors).length === 0) {
-            handleSave();
+            void handleSave();
         }
     };
 

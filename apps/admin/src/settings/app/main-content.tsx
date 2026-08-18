@@ -1,7 +1,7 @@
 import ExitSettingsButton from './components/exit-settings-button';
 import Settings from './components/settings';
 import Sidebar from './components/sidebar';
-import Users from './components/settings/general/users';
+import Users from '@/settings/general/users';
 import {DirtyConfirmDialog, useDirtyConfirmation} from '@tryghost/shade/patterns';
 import {type ReactNode, useEffect} from 'react';
 import {Text} from '@tryghost/shade/primitives';

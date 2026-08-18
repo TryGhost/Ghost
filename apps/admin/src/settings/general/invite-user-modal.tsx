@@ -139,8 +139,7 @@ function InviteUserModal() {
             const title = 'Failed to send invitation';
             let message = (<span>If the problem persists, <a href="https://ghost.org/contact"><u>contact support</u>.</a>.</span>);
             if (e instanceof APIError) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const data = e.data as any; // we have unknown data types in the APIError/error classes
+                const data = e.data as {errors?: Array<{type?: string}>} | undefined;
                 if (data?.errors?.[0]?.type === 'EmailError') {
                     message = (<span>Check your Mailgun configuration.</span>);
                 }

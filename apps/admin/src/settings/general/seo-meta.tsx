@@ -216,7 +216,7 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
                                 </ImageUploadActions>
                             </ImageUploadPreview>
                         ) : (
-                            <ImageUploadDropzone className='rounded-b-none' inputAriaLabel='Upload Facebook image' inputId='facebook-image' onDropAccepted={files => handleFacebookImageUpload(files[0])}>
+                            <ImageUploadDropzone className='rounded-b-none' inputAriaLabel='Upload Facebook image' inputId='facebook-image' onDropAccepted={files => void handleFacebookImageUpload(files[0])}>
                                 Upload Facebook image
                             </ImageUploadDropzone>
                         )}
@@ -259,7 +259,7 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
                                 </ImageUploadActions>
                             </ImageUploadPreview>
                         ) : (
-                            <ImageUploadDropzone className='rounded-b-none' inputAriaLabel='Upload X image' inputId='twitter-image' onDropAccepted={files => handleTwitterImageUpload(files[0])}>
+                            <ImageUploadDropzone className='rounded-b-none' inputAriaLabel='Upload X image' inputId='twitter-image' onDropAccepted={files => void handleTwitterImageUpload(files[0])}>
                                 Upload X image
                             </ImageUploadDropzone>
                         )}
