@@ -39,19 +39,19 @@ export const settingsRouteChildren: RouteObject[] = [
     {path: 'integrations/firstpromoter', lazy: lazyComponent(() => import('./app/components/settings/advanced/integrations/first-promoter-modal'))},
     {path: 'integrations/pintura', lazy: lazyComponent(() => import('./app/components/settings/advanced/integrations/pintura-modal'))},
     {path: 'integrations/:integrationId', lazy: lazyComponent(() => import('./app/components/settings/advanced/integrations/custom-integration-modal'))},
-    {path: 'recommendations/add', lazy: lazyComponent(() => import('./app/components/settings/growth/recommendations/add-recommendation-modal'))},
+    {path: 'recommendations/add', lazy: lazyComponent(() => import('./growth/recommendations/add-recommendation-modal'))},
     // The edit flow opens from the recommendations list with the loaded record
     // (never URL-driven); the legacy route only ever redirected back in effect.
     {path: 'recommendations/edit', element: <Navigate to="/settings/recommendations" replace />},
-    {path: 'embed-signup-form/show', lazy: lazyComponent(() => import('./app/components/settings/growth/embed-signup/embed-signup-form-modal'))},
+    {path: 'embed-signup-form/show', lazy: lazyComponent(() => import('./growth/embed-signup/embed-signup-form-modal'))},
     // The offers container owns list/add/edit/retention/success views and
     // reads the path to pick between them.
-    {path: 'offers/new', lazy: lazyComponent(() => import('./app/components/settings/growth/offers/offers-container-modal'))},
-    {path: 'offers/edit', lazy: lazyComponent(() => import('./app/components/settings/growth/offers/offers-container-modal'))},
-    {path: 'offers/edit/:offerId', lazy: lazyComponent(() => import('./app/components/settings/growth/offers/offers-container-modal'))},
-    {path: 'offers/edit/retention/:offerId', lazy: lazyComponent(() => import('./app/components/settings/growth/offers/offers-container-modal'))},
-    {path: 'offers/success/:offerId', lazy: lazyComponent(() => import('./app/components/settings/growth/offers/offers-container-modal'))},
-    {path: 'explore/testimonial', lazy: lazyComponent(() => import('./app/components/settings/growth/explore/testimonials-modal'))},
+    {path: 'offers/new', lazy: lazyComponent(() => import('./growth/offers/offers-container-modal'))},
+    {path: 'offers/edit', lazy: lazyComponent(() => import('./growth/offers/offers-container-modal'))},
+    {path: 'offers/edit/:offerId', lazy: lazyComponent(() => import('./growth/offers/offers-container-modal'))},
+    {path: 'offers/edit/retention/:offerId', lazy: lazyComponent(() => import('./growth/offers/offers-container-modal'))},
+    {path: 'offers/success/:offerId', lazy: lazyComponent(() => import('./growth/offers/offers-container-modal'))},
+    {path: 'explore/testimonial', lazy: lazyComponent(() => import('./growth/explore/testimonials-modal'))},
     {path: 'about', lazy: lazyComponent(() => import('./general/about'))},
     // The lock-site setting was merged into the Access section.
     {path: 'locksite', element: <Navigate to="/settings/members" replace />},

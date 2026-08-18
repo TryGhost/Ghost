@@ -15,6 +15,15 @@ interface IncomingRecommendationListProps {
     isLoading: boolean
 }
 
+const getHttpRecommendationUrl = (url: string): string | null => {
+    try {
+        const protocol = new URL(url).protocol;
+        return protocol === 'http:' || protocol === 'https:' ? url : null;
+    } catch {
+        return null;
+    }
+};
+
 const IncomingRecommendationItem: React.FC<{incomingRecommendation: IncomingRecommendation, stats: ReferrerHistoryItem[]}> = ({incomingRecommendation, stats}) => {
     const {updateRoute} = useSettingsNavigation();
 
@@ -36,11 +45,17 @@ const IncomingRecommendationItem: React.FC<{incomingRecommendation: IncomingReco
     }, [stats, incomingRecommendation.url]);
 
     const recommendBack = () => {
-        updateRoute({route: `recommendations/add?url=${incomingRecommendation.url}`});
+        const url = getHttpRecommendationUrl(incomingRecommendation.url);
+        if (url) {
+            updateRoute({route: `recommendations/add?url=${encodeURIComponent(url)}`});
+        }
     };
 
     const showDetails = () => {
-        window.open(incomingRecommendation.url, '_blank');
+        const url = getHttpRecommendationUrl(incomingRecommendation.url);
+        if (url) {
+            window.open(url, '_blank', 'noopener,noreferrer');
+        }
     };
 
     const freeMembersLabel = signups === 1 ? 'free member' : 'free members';

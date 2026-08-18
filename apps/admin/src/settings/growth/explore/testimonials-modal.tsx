@@ -217,9 +217,7 @@ const TestimonialsModal = () => {
                                 <Button
                                     disabled={saveState === 'saving'}
                                     type='button'
-                                    onClick={async () => {
-                                        await handleSave();
-                                    }}
+                                    onClick={() => void handleSave()}
                                 >
                                     {saveState === 'saving' && <LoadingIndicator size='sm' />}
                                     Send testimonial

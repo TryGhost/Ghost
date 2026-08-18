@@ -1,5 +1,6 @@
 import React from 'react';
-import RecommendationDescriptionForm, {validateDescriptionForm} from './recommendation-description-form';
+import RecommendationDescriptionForm from './recommendation-description-form';
+import {validateDescriptionForm} from './recommendation-validation';
 import {Button} from '@tryghost/shade/components';
 import {type Recommendation, useDeleteRecommendation, useEditRecommendation} from '@tryghost/admin-x-framework/api/recommendations';
 import {SettingsModal} from '@tryghost/shade/patterns';

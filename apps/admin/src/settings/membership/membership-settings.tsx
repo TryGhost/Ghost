@@ -7,7 +7,7 @@ import React from 'react';
 import SearchableSection from '@/settings/app/components/searchable-section';
 import SpamFilters from '@/settings/app/components/settings/advanced/spam-filters';
 import Tiers from './tiers';
-import TipsAndDonations from '@/settings/app/components/settings/growth/tips-and-donations';
+import TipsAndDonations from '@/settings/growth/tips-and-donations';
 import useFeatureFlag from '@/settings/app/hooks/use-feature-flag';
 import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {searchKeywords} from './search-keywords';

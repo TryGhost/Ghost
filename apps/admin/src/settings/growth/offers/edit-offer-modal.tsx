@@ -55,7 +55,7 @@ const Sidebar: React.FC<{
                 setTimeout(() => setIsCopied(false), 2000);
             };
 
-            const confirmStatusChange = async () => {
+            const confirmStatusChange = () => {
                 if (offer?.status === 'active') {
                     confirm({
                         title: 'Archive offer',
@@ -139,7 +139,7 @@ const Sidebar: React.FC<{
                                     <FieldLabel htmlFor='offer-code'>Offer code</FieldLabel>
                                     <InputGroup data-invalid={Boolean(errors.code) || undefined}>
                                         <InputGroupInput aria-invalid={Boolean(errors.code) || undefined} id='offer-code' placeholder='black-friday' value={offer?.code ?? ''} onChange={e => updateOffer({code: e.target.value})} onKeyDown={() => clearError('code')} />
-                                        {offer?.code !== '' && <InputGroupAddon align='inline-end'><InputGroupButton onClick={handleCopyClick}>{isCopied ? 'Copied!' : 'Copy link'}</InputGroupButton></InputGroupAddon>}
+                                        {offer?.code !== '' && <InputGroupAddon align='inline-end'><InputGroupButton onClick={() => void handleCopyClick()}>{isCopied ? 'Copied!' : 'Copy link'}</InputGroupButton></InputGroupAddon>}
                                     </InputGroup>
                                     {errors.code ? <FieldError>{errors.code}</FieldError> : offer?.code !== '' && <FieldDescription className='truncate'>{homepageUrl}<span className='font-bold text-foreground'>{offer?.code}</span></FieldDescription>}
                                 </Field>

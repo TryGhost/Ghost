@@ -8,6 +8,7 @@ import {DirtyConfirmDialog, useDirtyConfirmation} from '@tryghost/shade/patterns
 import {SettingGroupContent} from '@tryghost/shade/patterns';
 import {currencySelectGroups, validateCurrencyAmount} from '@/settings/app/utils/currency';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {parseTipsAndDonationsSettings} from './tips-and-donations-settings';
 import {withErrorBoundary} from '@/settings/app/components/error-boundary';
 
 // Stripe doesn't allow amounts over 10,000 as a preset amount
@@ -36,12 +37,18 @@ const TipsAndDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
         }
     });
 
-    const [donationsCurrency = 'USD', donationsSuggestedAmount = '500'] = getSettingValues<string>(
+    const [donationsCurrencySetting, donationsSuggestedAmountSetting] = getSettingValues(
         localSettings,
         ['donations_currency', 'donations_suggested_amount']
     );
+    const {
+        donations_currency: donationsCurrency,
+        donations_suggested_amount: suggestedAmountInCents
+    } = parseTipsAndDonationsSettings({
+        donations_currency: donationsCurrencySetting,
+        donations_suggested_amount: donationsSuggestedAmountSetting
+    });
 
-    const suggestedAmountInCents = parseInt(donationsSuggestedAmount);
     const suggestedAmountInput = useCurrencyInput(suggestedAmountInCents, cents => handleSettingChange('donations_suggested_amount', cents.toString()));
     const donateUrl = `${siteData?.url.replace(/\/$/, '')}/#/portal/support`;
     const currencyOptions = currencySelectGroups().flatMap(group => group.options.map(option => ({...option, metadata: {groupKey: group.key, groupLabel: group.label}})));

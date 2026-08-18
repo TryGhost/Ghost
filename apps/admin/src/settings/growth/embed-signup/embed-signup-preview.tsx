@@ -31,7 +31,6 @@ const EmbedSignupPreview: React.FC<EmbedSignupPreviewProps> = ({backgroundColor,
             <html>
                 <head>
                     <style>body, html {height: 100%; padding: 0; margin: 0; overflow: hidden; background: ${backgroundColorRef.current}; transition: background-color 200ms ease;}</style>
-                    <style>${style}</style>
                 </head>
                 <body>${htmlRef.current}</body>
             </html>

@@ -68,7 +68,7 @@ const RecommendationList: React.FC<RecommendationListProps> = ({recommendations,
     const [editingRecommendation, setEditingRecommendation] = useState<Recommendation | null>(null);
 
     const copyRecommendationsUrl = () => {
-        navigator.clipboard.writeText(recommendationsURL);
+        void navigator.clipboard.writeText(recommendationsURL);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     };

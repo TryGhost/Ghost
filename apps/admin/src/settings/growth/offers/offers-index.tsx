@@ -5,61 +5,10 @@ import {type Offer, useBrowseOffers} from '@tryghost/admin-x-framework/api/offer
 import {type RetentionOffer, getRetentionOffers} from './offers-retention';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {type Tier, getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
-import {createOfferRedemptionFilterUrl, createOfferRedemptionsFilterUrl} from './offer-helpers';
-import {currencyToDecimal, getSymbol} from '@/settings/app/utils/currency';
+import {createOfferRedemptionFilterUrl, createOfferRedemptionsFilterUrl, getOfferCadence, getOfferDiscount, getOfferDuration} from './offer-helpers';
 import {toast} from 'sonner';
 import {useOffersShowArchived, useSortingState} from '@/settings/app/components/providers/settings-app-provider';
 import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
-
-export type OfferType = 'percent' | 'fixed' | 'trial';
-
-export const getOfferCadence = (cadence: string): string => {
-    return cadence === 'month' ? 'monthly' : 'yearly';
-};
-
-export const getOfferDuration = (duration: string): string => {
-    return (duration === 'once' ? 'First payment' : duration === 'repeating' ? 'Repeating' : 'Forever');
-};
-
-export const getOfferDiscount = (type: string, amount: number, cadence: string, currency: string, tier: Tier | undefined): {discountOffer: string, originalPriceWithCurrency: string, updatedPriceWithCurrency: string} => {
-    let discountOffer = '';
-    const originalPrice = cadence === 'month' ? tier?.monthly_price ?? 0 : tier?.yearly_price ?? 0;
-    let updatedPrice = originalPrice;
-
-    const formatToTwoDecimals = (num: number): number => parseFloat(num.toFixed(2));
-    const formatPrice = (num: number): string => formatNumber(formatToTwoDecimals(currencyToDecimal(num)), {maximumFractionDigits: 2});
-
-    let originalPriceWithCurrency = getSymbol(currency) + formatPrice(originalPrice);
-
-    switch (type) {
-    case 'percent':
-        discountOffer = `${formatNumber(amount)}% off`;
-        updatedPrice = originalPrice - ((originalPrice * amount) / 100);
-        break;
-    case 'fixed':
-        discountOffer = `${formatPrice(amount)} ${currency} off`;
-        updatedPrice = originalPrice - amount;
-        break;
-    case 'trial':
-        discountOffer = `${formatNumber(amount)} days free`;
-        originalPriceWithCurrency = '';
-        break;
-    default:
-        break;
-    };
-
-    if (updatedPrice < 0) {
-        updatedPrice = 0;
-    }
-
-    const updatedPriceWithCurrency = getSymbol(currency) + formatPrice(updatedPrice);
-
-    return {
-        discountOffer,
-        originalPriceWithCurrency,
-        updatedPriceWithCurrency
-    };
-};
 
 const OffersFilterMenu: React.FC<{
     showArchived: boolean;

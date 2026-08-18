@@ -1,4 +1,4 @@
-import EmbedSignupPreview from '@/settings/app/components/settings/growth/embed-signup/embed-signup-preview';
+import EmbedSignupPreview from '@/settings/growth/embed-signup/embed-signup-preview';
 import {render, waitFor} from '@testing-library/react';
 
 describe('EmbedSignupPreview', () => {

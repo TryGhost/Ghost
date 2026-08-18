@@ -95,7 +95,7 @@ const OfferSuccess: React.FC<{id: string}> = ({id}) => {
             <div className='mt-8 flex w-full max-w-md flex-col gap-8'>
                 <div className='flex flex-col-reverse gap-2'>
                     <Input name='offer-url' type='url' value={offerLink} disabled />
-                    <Button className='w-full' type='button' onClick={handleCopyClick}>{isCopied ? 'Copied!' : 'Copy link'}</Button>
+                    <Button className='w-full' type='button' onClick={() => void handleCopyClick()}>{isCopied ? 'Copied!' : 'Copy link'}</Button>
                 </div>
                 <div className='flex items-center gap-4 text-sm font-medium before:h-px before:grow before:bg-grey-300 before:content-[""] after:h-px after:grow after:bg-grey-300 after:content-[""] dark:before:bg-grey-800 dark:after:bg-grey-800'>OR</div>
                 <div className='flex gap-2'>

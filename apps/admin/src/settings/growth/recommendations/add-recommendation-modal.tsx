@@ -139,13 +139,13 @@ const AddRecommendationModal: React.FC = () => {
     React.useEffect(() => {
         if (showLoadingView && !didInitialSubmit.current) {
             didInitialSubmit.current = true;
-            onOk();
+            void onOk();
         }
     }, [showLoadingView, onOk]);
 
     useEffect(() => {
         if (enterPressed) {
-            onOk();
+            void onOk();
             setEnterPressed(false); // Reset for future use
         }
     }, [formState]);

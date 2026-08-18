@@ -13,7 +13,7 @@ import {searchKeywords as advancedSearchKeywords} from './settings/advanced/adva
 import {searchKeywords as emailSearchKeywords} from './settings/email/email-settings';
 import {searchKeywords as emailsSearchKeywords} from './settings/email/emails';
 import {searchKeywords as generalSearchKeywords} from '@/settings/general/search-keywords';
-import {searchKeywords as growthSearchKeywords} from './settings/growth/growth-settings';
+import {searchKeywords as growthSearchKeywords} from '@/settings/growth/search-keywords';
 import {searchKeywords as membershipSearchKeywords} from '@/settings/membership/search-keywords';
 import {searchKeywords as siteSearchKeywords} from './settings/site/site-settings';
 
