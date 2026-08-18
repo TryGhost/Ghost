@@ -192,9 +192,13 @@ function MembersListItemDynamicColumn({
 
     return (
         <div className="min-w-0">
-            <div className="truncate text-base">{value.text}</div>
+            {/* A dynamic column holds whatever a publisher collected, so its value has no
+                length a column width can be sized to — an address routinely outruns the
+                cell. The native title is the fallback for reading one in full: no cost per
+                row, which a tooltip component would have across a virtualised list. */}
+            <div className="truncate text-base" title={value.text}>{value.text}</div>
             {value.subtext && (
-                <div className="truncate text-base text-muted-foreground">
+                <div className="truncate text-base text-muted-foreground" title={value.subtext}>
                     {value.subtext}
                 </div>
             )}

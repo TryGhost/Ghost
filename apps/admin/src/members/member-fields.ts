@@ -149,8 +149,8 @@ export const CUSTOM_FIELD_OPERATORS: readonly string[] = [
 ];
 
 /**
- * The namespace custom fields are addressed under, so one field reads the same wherever
- * it is named.
+ * The namespace custom fields are addressed under, in filter field keys and list column
+ * keys alike, so one field reads the same wherever it is named.
  *
  * Named rather than spelled out at each use because the namespace describes a bag of
  * fields, and there is one bag today. An extension bringing its own bag would bring its
@@ -547,6 +547,20 @@ const baseMemberFields = defineFields({
             label: 'Custom field',
             type: 'custom',
             component: 'custom-field'
+        },
+        metadata: {
+            // One column per field filtered on, named after the field itself. A value a
+            // publisher collected varies member to member, which is what earns a column;
+            // it is shown whatever the operator, the way Label is. No name resolved means
+            // no such field for this site (or the flag is off), so no column either.
+            activeColumn: ({params, label}) => (label
+                ? {key: `${CUSTOM_FIELDS_PREFIX}${params.key}`, label}
+                : null),
+            // Asked for as soon as a custom field is filtered on, without waiting for the
+            // names: the values are what the column will hold, and they travel on the same
+            // request the filter already sends. The API takes this include whether or not
+            // the flag is on, and returns values only when it is.
+            columnInclude: 'custom_fields'
         },
         codec: customFieldsCodec
     }

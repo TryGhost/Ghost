@@ -98,6 +98,25 @@ export class MembersListPage extends AdminPage {
         await this.page.keyboard.press('Escape');
     }
 
+    /**
+     * A column the list appends for the filter applied to it, taken from the accessible
+     * table rather than the painted one.
+     *
+     * At desktop widths the header a reader sees is a sticky duplicate marked
+     * `aria-hidden`, and the header carrying the real column semantics is the in-flow one,
+     * collapsed to zero height so the two do not stack. So this locator resolves to a
+     * header that is present and never visible, and asserting on it means asserting the
+     * column exists. What the column is *showing* is asserted on the member's row.
+     */
+    getColumnHeader(label: string): Locator {
+        return this.page.getByRole('columnheader', {name: label, exact: true});
+    }
+
+    /** The cell of one member's row holding the given text, whichever column it sits in. */
+    getMemberCellWithText(name: string, text: string): Locator {
+        return this.getMemberByName(name).getByRole('cell').filter({hasText: text});
+    }
+
     async getVisibleMemberCount(): Promise<number> {
         return await this.memberRows.count();
     }
