@@ -45,6 +45,13 @@
     // We have to disable platform based automerge (forcing renovate to do it manually)
     // as otherwise renovate wont follow our schedule
     "platformAutomerge": false,
+    // Merge automerged PRs by rebasing the branch's own commits onto the base
+    // instead of squashing. Renovate branches are a single, concise commit
+    // (e.g. "chore(deps): update X to Y"), so a squash merge would replace that
+    // clean message with the PR title *and* the full PR body — release-note
+    // tables, changelogs, dependency dashboards — producing a giant commit
+    // message on main. Rebase preserves the branch commit message verbatim.
+    "automergeStrategy": "rebase",
     // Branch protection does not require up-to-date branches (the required
     // status checks ruleset has strict: false), so a green-but-behind branch
     // is still mergeable. Rebasing on every `main` commit therefore buys
