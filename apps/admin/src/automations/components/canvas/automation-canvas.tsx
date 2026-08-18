@@ -19,6 +19,8 @@ import {isEmptyEmailLexical} from '@/automations/utils';
 import {useFeatureFlag} from '@tryghost/admin-x-framework/hooks';
 import {useLocation, useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
 import type {EmailModalMode} from '@/automations/components/types';
+import {CANVAS_ZOOM_CONFIG, useCanvasViewport} from './use-canvas-viewport';
+import type {CanvasContentBounds} from './use-canvas-viewport';
 
 const NODE_X = 0;
 const NODE_WIDTH = 256;
@@ -31,6 +33,8 @@ const NODE_VISUAL_GAP_Y = 112;
 const REGULAR_NODE_HEIGHT = 68;
 const EMAIL_NODE_WITH_STATS_HEIGHT = 133;
 const INITIAL_VIEWPORT_Y = 40;
+// Rendered height of the tail node (h-12) — used to derive the content's bottom edge for the pan bound.
+const TAIL_NODE_HEIGHT = 48;
 const NODE_ENTER_ANIMATION_DURATION = 250;
 const DISABLED_REASON = 'Maximum steps added';
 const DEFAULT_EDGE_STROKE = 'var(--xy-edge-stroke)';
@@ -169,7 +173,7 @@ type BuildGraphParams = {
     selectedStepId: string | null;
 }
 
-const buildGraph = ({actionErrors, automation, automationAnalyticsEnabled, disabled, onDelete, onEditEmailBody, onPick, onPreviewEmail, onSelectStep, newStepId, selectedStepId}: BuildGraphParams): { nodes: AutomationFlowNode[]; edges: Edge[] } => {
+const buildGraph = ({actionErrors, automation, automationAnalyticsEnabled, disabled, onDelete, onEditEmailBody, onPick, onPreviewEmail, onSelectStep, newStepId, selectedStepId}: BuildGraphParams): { nodes: AutomationFlowNode[]; edges: Edge[]; contentBounds: CanvasContentBounds } => {
     const ordered = getInitialActionOrder(automation);
     const baseNodeProps = {
         draggable: false,
@@ -251,6 +255,14 @@ const buildGraph = ({actionErrors, automation, automationAnalyticsEnabled, disab
         draggable: false,
         connectable: false
     });
+    // Content bounds in flow coordinates, derived from node positions so the pan bound keeps
+    // working if the graph ever grows wider (e.g. branching).
+    const xs = nodes.map(node => node.position.x);
+    const contentBounds: CanvasContentBounds = {
+        left: Math.min(...xs),
+        right: Math.max(...xs) + NODE_WIDTH,
+        bottom: cursorY + TAIL_NODE_HEIGHT
+    };
 
     // Every connecting line between existing nodes gets a circular + on hover. The trailing edge into the
     // tail node intentionally has none — the rectangular tail button already covers that slot.
@@ -284,7 +296,7 @@ const buildGraph = ({actionErrors, automation, automationAnalyticsEnabled, disab
         style: {stroke: DEFAULT_EDGE_STROKE}
     });
 
-    return {nodes, edges};
+    return {nodes, edges, contentBounds};
 };
 
 const getInitialViewport = (canvasWidth: number): { x: number; y: number; zoom: number } => ({
@@ -473,6 +485,11 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
         });
     }, [actionErrors, automation, automationAnalyticsEnabled, handleContextMenuEditEmail, handleContextMenuPreviewEmail, handlePick, handleRequestDelete, newStepId, selectedStepId]);
 
+    const viewport = useCanvasViewport<AutomationFlowNode, Edge>({
+        contentBounds: graph?.contentBounds,
+        initialViewport: initialViewport.current
+    });
+
     const clearDetail = useCallback(() => {
         setSelectedStep(null);
     }, []);
@@ -539,22 +556,27 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     }
 
     return (
-        <div className='relative flex-1 overflow-hidden bg-background' data-testid='automation-canvas'>
+        <div ref={viewport.measureCanvas} className='relative flex-1 overflow-hidden bg-background' data-testid='automation-canvas'>
             <ReactFlow
                 className='[--xy-background-color:var(--color-grey-50)] [--xy-background-pattern-color:var(--color-grey-500)] [--xy-edge-stroke:var(--color-grey-300)] dark:[--xy-background-color:var(--background)] dark:[--xy-background-pattern-color:var(--color-grey-900)] dark:[--xy-edge-stroke:var(--color-grey-800)]'
                 defaultViewport={initialViewport.current}
                 edges={graph.edges}
                 edgesFocusable={false}
                 edgeTypes={edgeTypes}
+                maxZoom={CANVAS_ZOOM_CONFIG.maxZoom}
+                minZoom={CANVAS_ZOOM_CONFIG.minZoom}
                 nodes={graph.nodes}
                 nodesConnectable={false}
                 nodesDraggable={false}
                 nodesFocusable={false}
                 nodeTypes={nodeTypes}
                 proOptions={{hideAttribution: true}}
+                translateExtent={viewport.translateExtent}
                 zoomOnDoubleClick={false}
                 zoomOnScroll={false}
                 panOnScroll
+                onInit={viewport.onInit}
+                onMove={viewport.onMove}
                 onNodeClick={(event, node) => {
                     if (event.button !== 0) {
                         return;

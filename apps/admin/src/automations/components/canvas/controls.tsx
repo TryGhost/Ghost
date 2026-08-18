@@ -3,9 +3,9 @@ import React, {useState} from 'react';
 import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger} from '@tryghost/shade/components';
 import {Controls, useReactFlow, useViewport} from '@xyflow/react';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
+import {CANVAS_ZOOM_CONFIG} from './use-canvas-viewport';
 
 const VIEWPORT_ANIMATION_DURATION = 180;
-const ZOOM_PRESETS = [1.5, 1, 0.75, 0.5, 0.25];
 
 export const AutomationCanvasControls: React.FC = () => {
     const [open, setOpen] = useState(false);
@@ -36,6 +36,7 @@ export const AutomationCanvasControls: React.FC = () => {
             <Button
                 aria-label='Zoom out'
                 className='rounded-sm text-text-secondary hover:text-foreground'
+                disabled={zoom <= CANVAS_ZOOM_CONFIG.minZoom}
                 size='icon'
                 title='Zoom out'
                 type='button'
@@ -56,7 +57,7 @@ export const AutomationCanvasControls: React.FC = () => {
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align='center' className='w-40' side='top' sideOffset={12}>
-                    {ZOOM_PRESETS.map((preset) => {
+                    {CANVAS_ZOOM_CONFIG.presets.map((preset) => {
                         const presetPercent = Math.round(preset * 100);
                         const isSelected = Math.abs(zoom - preset) < 0.01;
                         return (
@@ -79,6 +80,7 @@ export const AutomationCanvasControls: React.FC = () => {
             <Button
                 aria-label='Zoom in'
                 className='rounded-sm text-text-secondary hover:text-foreground'
+                disabled={zoom >= CANVAS_ZOOM_CONFIG.maxZoom}
                 size='icon'
                 title='Zoom in'
                 type='button'
