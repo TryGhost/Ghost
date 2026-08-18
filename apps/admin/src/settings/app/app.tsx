@@ -1,5 +1,4 @@
 import MainContent from './main-content';
-import NiceModal from '@ebay/nice-modal-react';
 import SettingsAppProvider, {type UpgradeStatusType} from './components/providers/settings-app-provider';
 import {ConfirmationProvider} from './components/providers/confirmation-provider';
 import {DialogPortalProvider} from './components/providers/dialog-portal';
@@ -31,11 +30,9 @@ export function App({upgradeStatus}: AppProps) {
             <div className='admin-x-base admin-x-settings [--color-focus-ring:var(--color-green-500)] [--focus-ring:var(--color-green-500)]'>
                 <ConfirmationProvider>
                     <DialogPortalProvider>
-                        <NiceModal.Provider>
-                            <SettingsLocationSync />
-                            <MainContent />
-                            <Outlet />
-                        </NiceModal.Provider>
+                        <SettingsLocationSync />
+                        <MainContent />
+                        <Outlet />
                     </DialogPortalProvider>
                 </ConfirmationProvider>
             </div>

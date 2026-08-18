@@ -107,7 +107,6 @@
         "@dnd-kit/core": "catalog:",
         "@dnd-kit/sortable": "catalog:",
         "@dnd-kit/utilities": "catalog:",
-        "@ebay/nice-modal-react": "catalog:",
         "@hookform/resolvers": "5.4.0",
         "@number-flow/react": "0.6.2",
         "@radix-ui/react-accordion": "1.2.15",

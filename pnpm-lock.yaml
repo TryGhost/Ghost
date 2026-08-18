@@ -57,9 +57,6 @@ catalogs:
     '@dnd-kit/utilities':
       specifier: 3.2.2
       version: 3.2.2
-    '@ebay/nice-modal-react':
-      specifier: 1.2.13
-      version: 1.2.13
     '@eslint/compat':
       specifier: 2.1.0
       version: 2.1.0
@@ -748,9 +745,6 @@ importers:
       '@dnd-kit/sortable':
         specifier: 'catalog:'
         version: 7.0.2(@dnd-kit/core@6.3.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
-      '@ebay/nice-modal-react':
-        specifier: 'catalog:'
-        version: 1.2.13(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@sentry/react':
         specifier: 'catalog:'
         version: 7.120.4(react@18.3.1)
@@ -990,9 +984,6 @@ importers:
 
   apps/admin-x-framework:
     dependencies:
-      '@ebay/nice-modal-react':
-        specifier: 'catalog:'
-        version: 1.2.13(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@sentry/react':
         specifier: 'catalog:'
         version: 7.120.4(react@18.3.1)
@@ -1724,9 +1715,6 @@ importers:
       '@dnd-kit/utilities':
         specifier: 'catalog:'
         version: 3.2.2(react@18.3.1)
-      '@ebay/nice-modal-react':
-        specifier: 'catalog:'
-        version: 1.2.13(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@hookform/resolvers':
         specifier: 5.4.0
         version: 5.4.0(react-hook-form@7.80.0(react@18.3.1))
@@ -5281,12 +5269,6 @@ packages:
       prop-types: 15.8.1
       react: '>=17.0.2'
       react-dom: '>=17.0.2'
-
-  '@ebay/nice-modal-react@1.2.13':
-    resolution: {integrity: sha512-jx8xIWe/Up4tpNuM02M+rbnLoxdngTGk3Y8LjJsLGXXcSoKd/+eZStZcAlIO/jwxyz/bhPZnpqPJZWAmhOofuA==}
-    peerDependencies:
-      react: '>16.8.0'
-      react-dom: '>16.8.0'
 
   '@elastic/elasticsearch@8.19.2':
     resolution: {integrity: sha512-LMJCju/+AZkDlJArd/MYABWTDrHi4U7j3qGTKi1hYC7+67SaiYmYFItiueACQVrj2j3ECPMcguZ+7WrZeB+Z5g==}
@@ -24236,11 +24218,6 @@ snapshots:
       prop-types: 15.8.1
       react: 17.0.2
       react-dom: 17.0.2(react@17.0.2)
-
-  '@ebay/nice-modal-react@1.2.13(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
-    dependencies:
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
 
   '@elastic/elasticsearch@8.19.2(supports-color@10.2.2)':
     dependencies:

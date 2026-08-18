@@ -1,16 +1,17 @@
-import NiceModal from '@ebay/nice-modal-react';
+import {useState} from 'react';
 import type {Meta, StoryObj} from '@storybook/react-vite';
 
 import {Button} from '@/components/ui/button';
 import {Box} from '@/components/primitives/box';
 import {SettingsModal, type SettingsModalProps} from '@/components/patterns/settings-modal';
 
-const SettingsModalStory = (props: SettingsModalProps) => {
-    const StoryModal = NiceModal.create<SettingsModalProps>(() => <SettingsModal {...props} />);
+const SettingsModalStory = (props: Omit<SettingsModalProps, 'onClose'>) => {
+    const [open, setOpen] = useState(false);
 
     return (
         <Box className='min-h-72 bg-background p-8'>
-            <Button onClick={() => NiceModal.show(StoryModal)}>Open modal</Button>
+            <Button onClick={() => setOpen(true)}>Open modal</Button>
+            {open && <SettingsModal {...props} onClose={() => setOpen(false)} />}
         </Box>
     );
 };
@@ -22,15 +23,10 @@ const meta = {
     parameters: {
         docs: {
             description: {
-                component: 'Transitional compatibility shell for the existing settings NiceModal flows. New modal flows should use Shade Dialog primitives directly.'
+                component: 'Consumer-controlled shell for the legacy full-page settings dialogs. New modal flows should use Shade Dialog primitives directly.'
             }
         }
-    },
-    decorators: [Story => (
-        <NiceModal.Provider>
-            <Story />
-        </NiceModal.Provider>
-    )]
+    }
 } satisfies Meta<typeof SettingsModalStory>;
 
 export default meta;
