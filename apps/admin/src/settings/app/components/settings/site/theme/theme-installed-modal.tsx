@@ -1,4 +1,3 @@
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {type ReactNode} from 'react';
 import useCustomFonts from '@/settings/app/hooks/use-custom-fonts';
 import {ConfirmationModalContent} from '@/settings/app/components/confirmation-modal';
@@ -9,13 +8,15 @@ import {toast} from 'sonner';
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
-const ThemeInstalledModal: React.FC<{
+export type ThemeInstalledModalProps = {
     title: string
     prompt: ReactNode
     installedTheme: InstalledTheme;
     validationDetailsDefaultOpen?: boolean;
     onActivate?: () => void;
-}> = ({title, installedTheme, validationDetailsDefaultOpen, onActivate}) => {
+};
+
+const ThemeInstalledModal: React.FC<ThemeInstalledModalProps & {onClose: () => void}> = ({title, installedTheme, validationDetailsDefaultOpen, onActivate, onClose}) => {
     const {mutateAsync: activateTheme} = useActivateTheme();
     const {refreshActiveThemeData} = useCustomFonts();
     const handleError = useHandleError();
@@ -46,8 +47,6 @@ const ThemeInstalledModal: React.FC<{
         </>
     );
 
-    const modal = useModal();
-
     return <ConfirmationModalContent
         cancelLabel='Close'
         okLabel={okLabel}
@@ -75,7 +74,6 @@ const ThemeInstalledModal: React.FC<{
         </>}
         stickyFooter={true}
         title={modalTitle}
-        visible={modal.visible}
         onOk={async (activateModal) => {
             if (!installedTheme.active) {
                 try {
@@ -86,13 +84,14 @@ const ThemeInstalledModal: React.FC<{
                     toast.success('Theme activated', {description: <div><span className='capitalize'>{updatedTheme.name}</span> is now your active theme.</div>});
                 } catch (e) {
                     handleError(e);
+                    return;
                 }
             }
             onActivate?.();
             activateModal?.remove();
         }}
-        onRemove={() => modal.remove()}
+        onRemove={onClose}
     />;
 };
 
-export default NiceModal.create(ThemeInstalledModal);
+export default ThemeInstalledModal;
