@@ -1,7 +1,7 @@
 import {Field, FieldError, FieldLabel, Input} from '@tryghost/shade/components';
 import {SOCIAL_PLATFORM_CONFIGS, normalizeSocialInput} from '@/settings/app/utils/social-urls/index';
 import {SettingGroup, SettingGroupContent} from '@tryghost/shade/patterns';
-import {type UserDetailProps} from '@/settings/app/components/settings/general/user-detail-modal';
+import {type UserDetailProps} from '@/settings/general/user-detail-modal';
 import {useState} from 'react';
 import type {SocialPlatformKey} from '@/settings/app/utils/social-urls/index';
 

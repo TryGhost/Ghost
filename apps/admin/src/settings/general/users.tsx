@@ -134,6 +134,35 @@ const UserInviteActions: React.FC<{invite: UserInvite}> = ({invite}) => {
     if (resendState === 'progress') {
         resendActionLabel = 'Resending...';
     }
+
+    const revokeInvite = async () => {
+        try {
+            setRevokeState('progress');
+            await deleteInvite(invite.id);
+            toast.success(`Invitation revoked`, {description: invite.email});
+        } catch (e) {
+            handleError(e);
+        } finally {
+            setRevokeState('');
+        }
+    };
+
+    const resendInvite = async () => {
+        try {
+            setResendState('progress');
+            await deleteInvite(invite.id);
+            await addInvite({
+                email: invite.email,
+                roleId: invite.role_id
+            });
+            toast.success(`Invitation resent`, {description: invite.email});
+        } catch (e) {
+            handleError(e);
+        } finally {
+            setResendState('');
+        }
+    };
+
     return (
         <div className='flex gap-2'>
             <Button
@@ -142,17 +171,7 @@ const UserInviteActions: React.FC<{invite: UserInvite}> = ({invite}) => {
                 size='sm'
                 type='button'
                 variant='ghost'
-                onClick={async () => {
-                    try {
-                        setRevokeState('progress');
-                        await deleteInvite(invite.id);
-                        toast.success(`Invitation revoked`, {description: invite.email});
-                    } catch (e) {
-                        handleError(e);
-                    } finally {
-                        setRevokeState('');
-                    }
-                }}
+                onClick={() => void revokeInvite()}
             >{revokeActionLabel}</Button>
             <Button
                 className='ml-2'
@@ -160,21 +179,7 @@ const UserInviteActions: React.FC<{invite: UserInvite}> = ({invite}) => {
                 size='sm'
                 type='button'
                 variant='ghost'
-                onClick={async () => {
-                    try {
-                        setResendState('progress');
-                        await deleteInvite(invite.id);
-                        await addInvite({
-                            email: invite.email,
-                            roleId: invite.role_id
-                        });
-                        toast.success(`Invitation resent`, {description: invite.email});
-                    } catch (e) {
-                        handleError(e);
-                    } finally {
-                        setResendState('');
-                    }
-                }}
+                onClick={() => void resendInvite()}
             >{resendActionLabel}</Button>
         </div>
     );
@@ -255,6 +260,17 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
     };
 
     const require2fa = getSettingValue<boolean>(settings, 'require_email_mfa') || false;
+
+    const updateRequire2fa = async (newValue: boolean) => {
+        try {
+            await editSettings([{
+                key: 'require_email_mfa',
+                value: newValue
+            }]);
+        } catch (error) {
+            handleError(error);
+        }
+    };
     const {mutateAsync: editSettings} = useEditSettings();
     const handleError = useHandleError();
 
@@ -307,16 +323,7 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
                         <Switch
                             aria-label='Require email 2FA codes on staff logins'
                             checked={require2fa}
-                            onCheckedChange={async (newValue) => {
-                                try {
-                                    await editSettings([{
-                                        key: 'require_email_mfa',
-                                        value: newValue
-                                    }]);
-                                } catch (error) {
-                                    handleError(error);
-                                }
-                            }}
+                            onCheckedChange={newValue => void updateRequire2fa(newValue)}
                         />
                     </div>
                 </div>

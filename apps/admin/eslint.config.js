@@ -48,7 +48,7 @@ export default tseslint.config(
         extraSrcRules: {
             // The factory disables this (legacy violations elsewhere); this
             // workspace is clean, so keep enforcing it.
-            'react-refresh/only-export-components': ['error', {allowConstantExport: true}]
+            'react-refresh/only-export-components': ['error', {allowConstantExport: true, extraHOCs: ['withErrorBoundary']}]
         }
     }),
     // The factory is type-unaware; layer the type-checked rule set on top.
