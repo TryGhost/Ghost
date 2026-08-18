@@ -191,7 +191,6 @@ describe('Gift Subscriptions', function () {
                         currency: paidTier.currency.toLowerCase(),
                         customer: checkoutSession.customer,
                         customer_details: {email: 'gift-buyer@example.com'},
-                        payment_status: 'paid',
                         metadata: toWebhookMetadata(checkoutSession.metadata),
                         payment_intent: 'pi_gift_test_123'
                     }
@@ -311,7 +310,6 @@ describe('Gift Subscriptions', function () {
                         currency: paidTier.currency.toLowerCase(),
                         customer: checkoutSession.customer,
                         customer_details: {email},
-                        payment_status: 'paid',
                         metadata: toWebhookMetadata(checkoutSession.metadata),
                         payment_intent: 'pi_gift_member_test_456'
                     }
@@ -330,102 +328,6 @@ describe('Gift Subscriptions', function () {
             assert.equal(gift.get('cadence'), 'year');
             assert.equal(gift.get('amount'), paidTier.yearly_price);
             assert.equal(gift.get('status'), 'purchased');
-        });
-
-        it('Waits for async payment success before creating a gift', async function () {
-            const paidTier = await getPaidTier();
-
-            await membersAgent.post('/api/create-stripe-checkout-session/')
-                .body({
-                    type: 'gift',
-                    tierId: paidTier.id,
-                    cadence: 'month',
-                    metadata: {}
-                })
-                .expectStatus(200);
-
-            const checkoutSession = getLatestCheckoutSession();
-            const session = {
-                id: checkoutSession.id,
-                mode: 'payment',
-                payment_status: 'unpaid',
-                amount_total: paidTier.monthly_price,
-                currency: paidTier.currency.toLowerCase(),
-                customer: checkoutSession.customer,
-                customer_details: {email: 'async-gift-buyer@example.com'},
-                metadata: toWebhookMetadata(checkoutSession.metadata),
-                payment_intent: 'pi_async_gift_test'
-            };
-
-            await stripeMocker.sendWebhook({
-                type: 'checkout.session.completed',
-                data: {object: session}
-            });
-            await DomainEvents.allSettled();
-
-            let gifts = await models.Gift.findAll({
-                filter: `token:'${checkoutSession.metadata.gift_token}'`
-            });
-            assert.equal(gifts.length, 0, 'Should not create a gift before payment succeeds');
-
-            await stripeMocker.sendWebhook({
-                type: 'checkout.session.async_payment_succeeded',
-                data: {
-                    object: {
-                        ...session,
-                        payment_status: 'paid'
-                    }
-                }
-            });
-            await DomainEvents.allSettled();
-
-            gifts = await models.Gift.findAll({
-                filter: `token:'${checkoutSession.metadata.gift_token}'`
-            });
-            assert.equal(gifts.length, 1, 'Should create exactly one gift after payment succeeds');
-        });
-
-        it('Does not create a gift when async payment fails', async function () {
-            const paidTier = await getPaidTier();
-
-            await membersAgent.post('/api/create-stripe-checkout-session/')
-                .body({
-                    type: 'gift',
-                    tierId: paidTier.id,
-                    cadence: 'month',
-                    metadata: {}
-                })
-                .expectStatus(200);
-
-            const checkoutSession = getLatestCheckoutSession();
-            const session = {
-                id: checkoutSession.id,
-                mode: 'payment',
-                payment_status: 'unpaid',
-                amount_total: paidTier.monthly_price,
-                currency: paidTier.currency.toLowerCase(),
-                customer: checkoutSession.customer,
-                customer_details: {email: 'failed-async-gift-buyer@example.com'},
-                metadata: toWebhookMetadata(checkoutSession.metadata),
-                payment_intent: 'pi_failed_async_gift_test'
-            };
-
-            await stripeMocker.sendWebhook({
-                type: 'checkout.session.completed',
-                data: {object: session}
-            });
-            await DomainEvents.allSettled();
-
-            await stripeMocker.sendWebhook({
-                type: 'checkout.session.async_payment_failed',
-                data: {object: session}
-            });
-            await DomainEvents.allSettled();
-
-            const gifts = await models.Gift.findAll({
-                filter: `token:'${checkoutSession.metadata.gift_token}'`
-            });
-            assert.equal(gifts.length, 0, 'Should not create a gift when payment fails');
         });
 
         it('traces a customized 3-month gift from checkout through redemption and member access', async function () {
@@ -465,7 +367,6 @@ describe('Gift Subscriptions', function () {
                         currency: paidTier.currency.toLowerCase(),
                         customer: checkoutSession.customer,
                         customer_details: {email: buyerEmail},
-                        payment_status: 'paid',
                         metadata: toWebhookMetadata(checkoutSession.metadata),
                         payment_intent: `pi_gift_multi_month_${giftSequence + 1}`
                     }
@@ -612,7 +513,6 @@ describe('Gift Subscriptions', function () {
                         currency: paidTier.currency.toLowerCase(),
                         customer: checkoutSession.customer,
                         customer_details: {email: 'idempotent-buyer@example.com'},
-                        payment_status: 'paid',
                         metadata: toWebhookMetadata(checkoutSession.metadata),
                         payment_intent: 'pi_idempotent_test'
                     }
@@ -671,7 +571,6 @@ describe('Gift Subscriptions', function () {
                         currency: paidTier.currency.toLowerCase(),
                         customer: checkoutSession.customer,
                         customer_details: {email: 'refund-buyer@example.com'},
-                        payment_status: 'paid',
                         metadata: toWebhookMetadata(checkoutSession.metadata),
                         payment_intent: paymentIntentId
                     }

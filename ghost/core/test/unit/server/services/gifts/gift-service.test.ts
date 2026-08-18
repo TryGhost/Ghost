@@ -48,7 +48,7 @@ describe('GiftService', function () {
         findPendingExpiration: sinon.SinonStub<[], Promise<Gift[]>>;
         findPendingReminder: sinon.SinonStub<[FindPendingReminderOptions], Promise<Gift[]>>;
         findUnsentReminders: sinon.SinonStub<[], Promise<Gift[]>>;
-        findAbandonedCheckouts: sinon.SinonStub;
+        deleteAbandonedCheckouts: sinon.SinonStub<Parameters<GiftRepository['deleteAbandonedCheckouts']>, ReturnType<GiftRepository['deleteAbandonedCheckouts']>>;
         browsePurchaseEvents: sinon.SinonStub<Parameters<GiftRepository['browsePurchaseEvents']>, ReturnType<GiftRepository['browsePurchaseEvents']>>;
         browseRedemptionEvents: sinon.SinonStub<Parameters<GiftRepository['browseRedemptionEvents']>, ReturnType<GiftRepository['browseRedemptionEvents']>>;
         create: sinon.SinonStub;
@@ -106,7 +106,7 @@ describe('GiftService', function () {
             findPendingExpiration: sinon.stub<[], Promise<Gift[]>>().resolves([]),
             findPendingReminder: sinon.stub<[FindPendingReminderOptions], Promise<Gift[]>>().resolves([]),
             findUnsentReminders: sinon.stub<[], Promise<Gift[]>>().resolves([]),
-            findAbandonedCheckouts: sinon.stub().resolves([]),
+            deleteAbandonedCheckouts: sinon.stub<Parameters<GiftRepository['deleteAbandonedCheckouts']>, ReturnType<GiftRepository['deleteAbandonedCheckouts']>>().resolves(0),
             browsePurchaseEvents: sinon.stub<Parameters<GiftRepository['browsePurchaseEvents']>, ReturnType<GiftRepository['browsePurchaseEvents']>>().resolves({data: [], meta: {}}),
             browseRedemptionEvents: sinon.stub<Parameters<GiftRepository['browseRedemptionEvents']>, ReturnType<GiftRepository['browseRedemptionEvents']>>().resolves({data: [], meta: {}}),
             create: sinon.stub().resolves('gift_1'),
@@ -792,27 +792,19 @@ describe('GiftService', function () {
     });
 
     describe('processAbandonedCheckouts', function () {
-        function pendingGift() {
-            return buildGift({
-                status: 'payment_pending',
-                buyerEmail: 'buyer@example.com',
-                stripeCheckoutSessionId: 'cs_abandoned',
-                stripePaymentIntentId: null,
-                checkoutStartedAt: new Date(Date.now() - 31 * 24 * 60 * 60 * 1000),
-                purchasedAt: null,
-                expiresAt: null
-            });
-        }
-
         it('hard-deletes a pending checkout after 30 days without calling Stripe', async function () {
-            const gift = pendingGift();
-            giftRepository.findAbandonedCheckouts.resolves([{id: 'gift_1', gift}]);
+            const clock = sinon.useFakeTimers(new Date('2026-08-18T12:00:00.000Z'));
+            giftRepository.deleteAbandonedCheckouts.resolves(1);
             const service = createService();
 
             const result = await service.processAbandonedCheckouts();
 
             assert.deepEqual(result, {deletedCount: 1});
-            sinon.assert.calledOnce(giftRepository.deletePendingCheckout);
+            sinon.assert.calledOnceWithExactly(
+                giftRepository.deleteAbandonedCheckouts,
+                new Date('2026-07-19T12:00:00.000Z')
+            );
+            clock.restore();
         });
     });
 

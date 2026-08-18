@@ -24,7 +24,6 @@ const GIFT_NAME_MAX_LENGTH = 191;
 const GIFT_EMAIL_MAX_LENGTH = 191;
 const GIFT_CHECKOUT_MESSAGE_MAX_LENGTH = 250;
 const GIFT_CHECKOUT_RETENTION_DAYS = 30;
-const GIFT_CHECKOUT_CLEANUP_BATCH_SIZE = 1000;
 
 const errorMessages = {
     giftNotFound: 'This gift does not exist.',
@@ -200,7 +199,6 @@ export interface StartGiftCheckoutInput {
     recipientName?: unknown;
     buyerName?: unknown;
     personalMessage?: unknown;
-    metadata: Record<string, unknown>;
     successUrl: string;
     cancelUrl?: string;
     buyer: GiftCheckoutBuyer;
@@ -1118,14 +1116,7 @@ export class GiftService {
 
     async processAbandonedCheckouts(): Promise<{deletedCount: number}> {
         const cutoff = new Date(Date.now() - GIFT_CHECKOUT_RETENTION_DAYS * MS_PER_DAY);
-        const candidates = await this.deps.giftRepository.findAbandonedCheckouts(cutoff, GIFT_CHECKOUT_CLEANUP_BATCH_SIZE);
-        let deletedCount = 0;
-
-        for (const {id} of candidates) {
-            if (await this.deps.giftRepository.deletePendingCheckout(id, {startedBefore: cutoff})) {
-                deletedCount += 1;
-            }
-        }
+        const deletedCount = await this.deps.giftRepository.deleteAbandonedCheckouts(cutoff);
 
         return {deletedCount};
     }

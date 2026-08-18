@@ -693,7 +693,6 @@ module.exports = class RouterController {
      * @param {string} [options.email]
      * @param {string} options.successUrl
      * @param {string} options.cancelUrl
-     * @param {object} options.metadata
      * @param {object} [options.member]
      * @param {boolean} options.isAuthenticated
      * @returns
@@ -716,7 +715,6 @@ module.exports = class RouterController {
                 recipientName: options.recipientName,
                 buyerName: options.buyerName,
                 personalMessage: options.personalMessage,
-                metadata: options.metadata,
                 successUrl: options.successUrl,
                 cancelUrl: options.cancelUrl,
                 buyer: {

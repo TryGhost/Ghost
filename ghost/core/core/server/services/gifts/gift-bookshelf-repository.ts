@@ -58,11 +58,6 @@ export interface FindPendingReminderOptions {
     transacting?: Knex.Transaction;
 }
 
-export interface AbandonedGiftCheckout {
-    id: string;
-    gift: Gift;
-}
-
 export interface GiftRepository {
     existsByCheckoutSessionId(checkoutSessionId: string): Promise<boolean>;
     getById(id: string, options?: RepositoryTransactionOptions): Promise<Gift | null>;
@@ -72,7 +67,7 @@ export interface GiftRepository {
     findPendingExpiration(): Promise<Gift[]>;
     findPendingReminder(options: FindPendingReminderOptions): Promise<Gift[]>;
     findUnsentReminders(): Promise<Gift[]>;
-    findAbandonedCheckouts(cutoff: Date, limit: number): Promise<AbandonedGiftCheckout[]>;
+    deleteAbandonedCheckouts(cutoff: Date): Promise<number>;
     getActiveByMember(memberId: string, options?: RepositoryTransactionOptions): Promise<Gift | null>;
     getActiveByMembers(memberIds: string[], options?: RepositoryTransactionOptions): Promise<Map<string, Gift>>;
     browsePurchaseEvents(options?: GiftEventBrowseOptions, filter?: ParsedNqlFilter): Promise<GiftEventPage>;
@@ -275,19 +270,12 @@ export class GiftBookshelfRepository implements GiftRepository {
         return collection.models.map(model => this.toGift(model));
     }
 
-    async findAbandonedCheckouts(cutoff: Date, limit: number): Promise<AbandonedGiftCheckout[]> {
-        const collection = await this.model.findAll({
-            filter: `status:payment_pending+checkout_started_at:<='${cutoff.toISOString()}'`,
-            limit
-        } as BookshelfFindOptions & {limit: number});
-
-        return collection.models.map((model) => {
-            const row = model.toJSON();
-            if (!row.id) {
-                throw new errors.InternalServerError({message: 'Pending gift is missing an id'});
-            }
-
-            return {id: row.id, gift: decodeGiftRow(row)};
+    async deleteAbandonedCheckouts(cutoff: Date): Promise<number> {
+        return this.transaction(async (transacting) => {
+            return await transacting('gifts')
+                .where({status: 'payment_pending'})
+                .where('checkout_started_at', '<=', toDatabaseDate(cutoff))
+                .del();
         });
     }
 

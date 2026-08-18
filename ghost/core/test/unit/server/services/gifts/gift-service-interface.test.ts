@@ -98,7 +98,6 @@ describe('GiftService interface', function () {
             tierId: 'tier_1',
             cadence: 'year',
             duration: 1,
-            metadata: {attribution_id: 'post_1'},
             successUrl: 'https://example.com/',
             cancelUrl: 'https://example.com/cancel/',
             buyer: {
@@ -147,7 +146,6 @@ describe('GiftService interface', function () {
             recipientName: ' Recipient ',
             buyerName: ' Buyer ',
             personalMessage: ' Enjoy your gift ',
-            metadata: {},
             successUrl: 'https://example.com/',
             buyer: {
                 memberId: null,
@@ -180,7 +178,6 @@ describe('GiftService interface', function () {
             deliveryMethod: 'email',
             recipientEmail: 'recipient@example.com',
             buyerName: 'Mum',
-            metadata: {},
             successUrl: 'https://example.com/',
             buyer: {
                 memberId: 'member_1',
@@ -201,7 +198,6 @@ describe('GiftService interface', function () {
             cadence: 'year',
             deliveryMethod: 'email',
             recipientEmail: 'recipient@example.com',
-            metadata: {},
             successUrl: 'https://example.com/',
             buyer: {
                 memberId: 'member_1',
@@ -224,7 +220,6 @@ describe('GiftService interface', function () {
             recipientEmail: '',
             recipientName: '   ',
             personalMessage: '',
-            metadata: {},
             successUrl: 'https://example.com/',
             buyer: {
                 memberId: 'member_1',
@@ -247,7 +242,6 @@ describe('GiftService interface', function () {
             tierId: 'tier_1',
             cadence: 'year',
             deliveryMethod: 'link',
-            metadata: {},
             successUrl: 'https://example.com/',
             buyer: {
                 memberId: null,
@@ -267,7 +261,6 @@ describe('GiftService interface', function () {
             cadence: 'year',
             deliveryMethod: 'email',
             recipientEmail: 'not-an-email',
-            metadata: {},
             successUrl: 'https://example.com/',
             buyer: {
                 memberId: null,
@@ -294,7 +287,6 @@ describe('GiftService interface', function () {
             cadence: 'year',
             deliveryMethod: 'link',
             recipientEmail: 'recipient@example.com',
-            metadata: {},
             successUrl: 'https://example.com/',
             buyer: {
                 memberId: null,
@@ -311,7 +303,6 @@ describe('GiftService interface', function () {
         const base = {
             tierId: 'tier_1',
             cadence: 'year',
-            metadata: {},
             successUrl: 'https://example.com/',
             buyer: {
                 memberId: null,
@@ -342,7 +333,6 @@ describe('GiftService interface', function () {
             await service.startCheckout({
                 tierId: 'tier_1',
                 duration,
-                metadata: {},
                 successUrl: 'https://example.com/',
                 buyer: {
                     memberId: null,
@@ -370,7 +360,6 @@ describe('GiftService interface', function () {
             tierId: 'tier_1',
             cadence: 'year',
             duration: 3,
-            metadata: {},
             successUrl: 'https://example.com/',
             buyer: {
                 memberId: null,
@@ -395,7 +384,6 @@ describe('GiftService interface', function () {
         await service.startCheckout({
             tierId: 'tier_1',
             cadence: 'year',
-            metadata: {},
             successUrl: 'https://example.com/',
             buyer: {
                 memberId: null,
@@ -423,7 +411,6 @@ describe('GiftService interface', function () {
         await assert.rejects(() => service.startCheckout({
             tierId: 'tier_1',
             duration: 3,
-            metadata: {},
             successUrl: 'https://example.com/',
             buyer: {
                 memberId: null,
@@ -448,7 +435,6 @@ describe('GiftService interface', function () {
         await assert.rejects(() => service.startCheckout({
             tierId: 'tier_1',
             duration: 2,
-            metadata: {},
             successUrl: 'https://example.com/',
             buyer
         }), {context: 'Unsupported gift duration "2"'});
@@ -456,7 +442,6 @@ describe('GiftService interface', function () {
             tierId: 'tier_1',
             cadence: 'year',
             duration: 3,
-            metadata: {},
             successUrl: 'https://example.com/',
             buyer
         }), {context: 'Gift duration "3" conflicts with cadence "year"'});
@@ -473,7 +458,6 @@ describe('GiftService interface', function () {
                 offerId: 'offer_1',
                 cadence: 'year',
                 duration: 1,
-                metadata: {},
                 successUrl: 'https://example.com/',
                 buyer: {
                     memberId: null,
@@ -494,7 +478,6 @@ describe('GiftService interface', function () {
         await assert.rejects(() => service.startCheckout({
             tierId: 'tier_1',
             cadence: 'year',
-            metadata: {},
             successUrl: 'https://example.com/',
             buyer: {
                 memberId: null,
