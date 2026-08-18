@@ -1,18 +1,19 @@
-import ConfirmationModal, {type ConfirmationModalProps} from '@/settings/app/components/confirmation-modal';
-import NiceModal from '@ebay/nice-modal-react';
-import {act, fireEvent, render, screen, waitFor} from '@testing-library/react';
+import {type ConfirmationModalProps} from '@/settings/app/components/confirmation-modal';
+import {useEffect} from 'react';
+import {ConfirmationProvider, useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
+import {fireEvent, render, screen, waitFor} from '@testing-library/react';
 
 describe('ConfirmationModal', () => {
-    afterEach(() => {
-        void NiceModal.remove(ConfirmationModal);
-    });
-
     const showModal = (props: ConfirmationModalProps) => {
-        render(<NiceModal.Provider />);
-
-        act(() => {
-            void NiceModal.show(ConfirmationModal, props);
-        });
+        const Trigger = () => {
+            const {confirm} = useConfirmation();
+            useEffect(() => {
+                confirm(props);
+                 
+            }, [confirm]);
+            return null;
+        };
+        render(<ConfirmationProvider><Trigger /></ConfirmationProvider>);
     };
 
     it('renders the supplied content and confirms without closing implicitly', async () => {

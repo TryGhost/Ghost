@@ -1,7 +1,6 @@
 import AliAbdaal from '@/settings/app/assets/images/ali-abdaal.png';
 import IsaacSaul from '@/settings/app/assets/images/isaac-saul.png';
 import JoelWarner from '@/settings/app/assets/images/joel-warner.png';
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
 import {Avatar, Field, FieldError, FieldGroup, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Textarea} from '@tryghost/shade/components';
 import {Button, LoadingIndicator} from '@tryghost/shade/components';
@@ -10,18 +9,17 @@ import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'sonner';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 
 interface FormState {
     content: string;
     prev_platform: string;
 }
 
-const TestimonialsModal = NiceModal.create(() => {
+const TestimonialsModal = () => {
     const platformErrorId = React.useId();
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const handleError = useHandleError();
-    const modal = useModal();
     const {settings, currentUser, siteData, config} = useGlobalData();
 
     const exploreTestimonialsUrl = config.exploreTestimonialsUrl as string;
@@ -67,7 +65,6 @@ const TestimonialsModal = NiceModal.create(() => {
             toast.success('Thank you for your testimonial!');
 
             updateRoute('explore');
-            modal.remove();
         },
         onSaveError: handleError,
         onValidate: () => {
@@ -97,9 +94,6 @@ const TestimonialsModal = NiceModal.create(() => {
 
     return (
         <SettingsModal
-            afterClose={() => {
-                updateRoute('explore');
-            }}
             cancelLabel=''
             footer={false}
             padding={false}
@@ -107,6 +101,9 @@ const TestimonialsModal = NiceModal.create(() => {
             title=''
             topRightContent='close'
             width={920}
+            onClose={() => {
+                updateRoute('explore');
+            }}
         >
             <FieldGroup className='gap-8'>
                 <div className='flex items-stretch'>
@@ -234,6 +231,6 @@ const TestimonialsModal = NiceModal.create(() => {
             </FieldGroup>
         </SettingsModal>
     );
-});
+};
 
 export default TestimonialsModal;

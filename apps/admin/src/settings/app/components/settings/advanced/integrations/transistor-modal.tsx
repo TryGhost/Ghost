@@ -1,28 +1,28 @@
 import APIKeys from './api-keys';
 import BookmarkThumb from '@/settings/app/assets/images/integrations/ghost-transistor.png';
 import BrandIcon from '@/settings/app/components/icons/brand-icon';
-import ConfirmationModal from '@/settings/app/components/confirmation-modal';
 import IntegrationHeader from './integration-header';
-import NiceModal from '@ebay/nice-modal-react';
 import {Field, FieldContent, FieldDescription, FieldGroup, FieldLabel, FieldSet, Switch} from '@tryghost/shade/components';
 import {type Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useBrowseIntegrations} from '@tryghost/admin-x-framework/api/integrations';
+import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRefreshAPIKey} from '@tryghost/admin-x-framework/api/api-keys';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 
-const TransistorModal = NiceModal.create(() => {
-    const {updateRoute} = useRouting();
+function TransistorModal() {
+    const {updateRoute} = useSettingsNavigation();
     const {config, settings} = useGlobalData();
     const {mutateAsync: editSettings} = useEditSettings();
     const {data: {integrations} = {integrations: []}} = useBrowseIntegrations();
 
     const {mutateAsync: refreshAPIKey} = useRefreshAPIKey();
     const handleError = useHandleError();
+    const {confirm} = useConfirmation();
     const [regenerated, setRegenerated] = useState(false);
 
     const builtInApiIntegrationsDisabled = config.hostSettings?.limits?.customIntegrations?.disabled;
@@ -50,7 +50,7 @@ const TransistorModal = NiceModal.create(() => {
 
         setRegenerated(false);
 
-        NiceModal.show(ConfirmationModal, {
+        confirm({
             title: 'Regenerate Admin API Key',
             prompt: 'You will need to update the API key in your Transistor account settings after regenerating.',
             okLabel: 'Regenerate Admin API Key',
@@ -91,15 +91,15 @@ const TransistorModal = NiceModal.create(() => {
 
     return (
         <SettingsModal
-            afterClose={() => {
-                updateRoute('integrations');
-            }}
             cancelLabel='Close'
             dirty={enabled !== transistorEnabled}
             okLabel={okLabel}
             okVariant='default'
             testId='transistor-modal'
             title=''
+            onClose={() => {
+                updateRoute('integrations');
+            }}
             onOk={handleSave}
         >
             <IntegrationHeader
@@ -147,6 +147,6 @@ const TransistorModal = NiceModal.create(() => {
             </>
         </SettingsModal>
     );
-});
+}
 
 export default TransistorModal;

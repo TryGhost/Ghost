@@ -225,6 +225,44 @@ describe('useMemberFilterFields', () => {
         expect(subscriptionFields.map(field => field.key)).not.toContain('count.active_stripe_customers');
     });
 
+    it('gives each defined custom field its own named entry', () => {
+        const {result} = renderHook(() => useMemberFilterFields({
+            customFieldsEnabled: true,
+            customFields: [
+                {key: 'shipping_address', name: 'Shipping address', type: 'address'},
+                {key: 'job_title', name: 'Job title', type: 'short_text'}
+            ],
+            siteTimezone: 'UTC'
+        }));
+
+        const customFields = result.current.find(group => group.group === 'Custom fields')?.fields ?? [];
+
+        expect(customFields.map(field => ({key: field.key, label: field.label}))).toEqual([
+            {key: 'custom_field.shipping_address', label: 'Shipping address'},
+            {key: 'custom_field.job_title', label: 'Job title'}
+        ]);
+    });
+
+    it('omits the custom fields group when no fields are defined', () => {
+        const {result} = renderHook(() => useMemberFilterFields({
+            customFieldsEnabled: true,
+            customFields: [],
+            siteTimezone: 'UTC'
+        }));
+
+        expect(result.current.map(group => group.group)).not.toContain('Custom fields');
+    });
+
+    it('omits the custom fields group when the flag is off', () => {
+        const {result} = renderHook(() => useMemberFilterFields({
+            customFieldsEnabled: false,
+            customFields: [{key: 'job_title', name: 'Job title', type: 'short_text'}],
+            siteTimezone: 'UTC'
+        }));
+
+        expect(result.current.map(group => group.group)).not.toContain('Custom fields');
+    });
+
     it('hydrates grouped retention offers on the offer field', () => {
         const {result} = renderHook(() => useMemberFilterFields({
             paidMembersEnabled: true,

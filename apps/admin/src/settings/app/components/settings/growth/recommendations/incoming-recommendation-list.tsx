@@ -6,7 +6,7 @@ import {type IncomingRecommendation} from '@tryghost/admin-x-framework/api/recom
 import {Inline} from '@tryghost/shade/primitives';
 import {type ReferrerHistoryItem} from '@tryghost/admin-x-framework/api/referrers';
 import {cn, formatNumber} from '@tryghost/shade/utils';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 
 interface IncomingRecommendationListProps {
     incomingRecommendations: IncomingRecommendation[],
@@ -16,7 +16,7 @@ interface IncomingRecommendationListProps {
 }
 
 const IncomingRecommendationItem: React.FC<{incomingRecommendation: IncomingRecommendation, stats: ReferrerHistoryItem[]}> = ({incomingRecommendation, stats}) => {
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
 
     const signups = useMemo(() => {
         // Note: this should match the `getDomainFromUrl` method from OutboundLinkTagger

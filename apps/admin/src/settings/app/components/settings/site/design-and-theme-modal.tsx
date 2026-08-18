@@ -1,17 +1,17 @@
 import ChangeThemeModal from './theme-modal';
 import DesignModal from './design-modal';
-import LimitModal from '@/settings/app/components/limit-modal';
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useCallback, useEffect, useState} from 'react';
 import ThemeCodeEditorModal from './theme/theme-code-editor-modal';
-import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+import {useUpgradeRoute} from '@/settings/app/hooks/use-upgrade-route';
 import {parseEditingThemeRoute} from './theme/theme-editor-utils';
 import {useCheckThemeLimitError} from '@/settings/app/hooks/use-check-theme-limit-error';
 
-const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
-    const modal = useModal();
-    const {route, updateRoute} = useRouting();
-    const currentPath = route || pathName;
+const DesignAndThemeModal: React.FC = () => {
+    const {route, updateRoute} = useSettingsNavigation();
+    const upgradeRoute = useUpgradeRoute();
+    const currentPath = route;
     const [themeChangeError, setThemeChangeError] = useState<string|null>(null);
     const [isCheckingLimit, setIsCheckingLimit] = useState(false);
     const [isCheckingInstallation, setIsCheckingInstallation] = useState(false);
@@ -21,14 +21,14 @@ const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
     const [installationAllowed, setInstallationAllowed] = useState<boolean | null>(null);
     const [hasCheckedInstallation, setHasCheckedInstallation] = useState(false);
     const {themeName: editingThemeName, isInvalid: hasInvalidEditingThemeRoute} = parseEditingThemeRoute(currentPath);
-    const hasSupportedPath = currentPath === 'design/edit' || currentPath === 'design/change-theme' || currentPath === 'theme/install' || currentPath.startsWith('theme/edit/');
+    const {showLimit} = useConfirmation();
 
     const showThemeLimitModal = useCallback((error: string) => {
-        NiceModal.show(LimitModal, {
+        showLimit({
             prompt: error,
-            onOk: () => updateRoute({route: '/pro', isExternal: true})
+            onOk: () => updateRoute({route: upgradeRoute, isExternal: true})
         });
-    }, [updateRoute]);
+    }, [showLimit, updateRoute, upgradeRoute]);
 
     useEffect(() => {
         const checkIfThemeChangeAllowed = async () => {
@@ -48,7 +48,7 @@ const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
             // Show limit modal immediately if there's an error
             if (error) {
                 showThemeLimitModal(error);
-                modal.remove(); // Close the current modal
+                updateRoute('theme');
             }
         };
 
@@ -58,9 +58,9 @@ const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
             setThemeChangeError(null);
             setIsCheckingLimit(false);
         }
-    }, [checkThemeLimitError, currentPath, isThemeLimitCheckReady, modal, noThemeChangesAllowed, showThemeLimitModal]);
+    }, [checkThemeLimitError, currentPath, isThemeLimitCheckReady, noThemeChangesAllowed, showThemeLimitModal, updateRoute]);
 
-    // Reset states when pathName changes
+    // Reset states when the route changes
     useEffect(() => {
         if (currentPath !== 'theme/install') {
             setHasCheckedInstallation(false);
@@ -74,15 +74,8 @@ const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
             return;
         }
 
-        modal.remove();
         updateRoute('theme');
-    }, [hasInvalidEditingThemeRoute, modal, updateRoute]);
-
-    useEffect(() => {
-        if (!hasSupportedPath) {
-            modal.remove();
-        }
-    }, [hasSupportedPath, modal]);
+    }, [hasInvalidEditingThemeRoute, updateRoute]);
 
     useEffect(() => {
         let isCancelled = false;
@@ -118,7 +111,6 @@ const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
 
             if (error) {
                 showThemeLimitModal(error);
-                modal.remove();
                 updateRoute('theme');
             }
         };
@@ -128,7 +120,7 @@ const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
         return () => {
             isCancelled = true;
         };
-    }, [checkThemeLimitError, editingThemeName, isThemeLimitCheckReady, isThemeLimited, modal, showThemeLimitModal, updateRoute]);
+    }, [checkThemeLimitError, editingThemeName, isThemeLimitCheckReady, isThemeLimited, showThemeLimitModal, updateRoute]);
 
     // Check theme installation limits
     useEffect(() => {
@@ -156,12 +148,10 @@ const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
                 showThemeLimitModal(error);
                 // Clear URL parameters
                 window.history.replaceState({}, '', window.location.pathname + window.location.hash.split('?')[0]);
-                modal.remove();
                 updateRoute('theme');
             } else {
                 // Multiple themes allowed - show limit modal and then redirect
                 showThemeLimitModal(error);
-                modal.remove();
                 // Don't redirect to change-theme modal - just stay on current route
                 // This prevents both modals from being visible at the same time
                 updateRoute('theme');
@@ -227,7 +217,7 @@ const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
         };
 
         checkThemeInstallation();
-    }, [checkThemeLimitError, currentPath, isThemeLimitCheckReady, noThemeChangesAllowed, isThemeLimited, modal, showThemeLimitModal, updateRoute]);
+    }, [checkThemeLimitError, currentPath, isThemeLimitCheckReady, noThemeChangesAllowed, isThemeLimited, showThemeLimitModal, updateRoute]);
 
     if (currentPath === 'design/edit') {
         return <DesignModal />;
@@ -278,4 +268,4 @@ const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
     }
 };
 
-export default NiceModal.create(DesignAndThemeModal);
+export default DesignAndThemeModal;

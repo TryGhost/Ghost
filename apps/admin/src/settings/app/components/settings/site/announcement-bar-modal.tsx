@@ -1,7 +1,6 @@
 import AnnouncementBarPreview from './announcement-bar/announcement-bar-preview';
 import ColorSwatchField from '@/settings/app/components/color-swatch-field';
 import HtmlField from '@/settings/app/components/html-field';
-import NiceModal from '@ebay/nice-modal-react';
 import React, {useRef, useState} from 'react';
 import useSettingGroup from '@/settings/app/hooks/use-setting-group';
 import {Checkbox, Field, FieldGroup, FieldLabel, FieldLegend, FieldSet, PreviewChrome, Tabs, TabsList, TabsTrigger, ToggleGroup, ToggleGroupItem} from '@tryghost/shade/components';
@@ -13,7 +12,7 @@ import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'sonner';
 import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 
 type SidebarProps = {
     announcementContent?: string;
@@ -126,7 +125,7 @@ const AnnouncementBarModal: React.FC = () => {
     const [announcementVisibility] = getSettingValues<string[]>(localSettings, ['announcement_visibility']);
     const [paidMembersEnabled] = getSettingValues<boolean>(localSettings, ['paid_members_enabled']);
     const visibilitySettings = JSON.parse(announcementVisibility?.toString() || '[]') as string[];
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const [selectedPreviewTab, setSelectedPreviewTab] = useState('homepage');
     const [previewDevice, setPreviewDevice] = useState<'desktop' | 'mobile'>('desktop');
 
@@ -220,9 +219,6 @@ const AnnouncementBarModal: React.FC = () => {
     );
 
     return <PreviewModalContent
-        afterClose={() => {
-            updateRoute('announcement-bar');
-        }}
         buttonsDisabled={okProps.disabled}
         cancelLabel='Close'
         deviceSelector={deviceSelector}
@@ -236,6 +232,9 @@ const AnnouncementBarModal: React.FC = () => {
         testId='announcement-bar-modal'
         title='Announcement'
         titleHeadingLevel={5}
+        onClose={() => {
+            updateRoute('announcement-bar');
+        }}
         onOk={async () => {
             if (!(await handleSave({fakeWhenUnchanged: true}))) {
                 toast.error('An error occurred while saving your changes. Please try again.');
@@ -244,4 +243,4 @@ const AnnouncementBarModal: React.FC = () => {
     />;
 };
 
-export default NiceModal.create(AnnouncementBarModal);
+export default AnnouncementBarModal;

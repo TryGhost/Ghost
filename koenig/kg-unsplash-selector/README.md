@@ -1,32 +1,51 @@
 # Unsplash Selector
 
-Unsplash Selector in React
+React Unsplash image picker used by Ghost's Koenig editor and Admin.
 
-## Development
+## Install
 
-### Pre-requisites
+`npm install @tryghost/kg-unsplash-selector`
 
-- Run `pnpm install` in the Ghost monorepo root
+## Usage
 
-### Running the development version
+```jsx
+import {UnsplashSearchModal} from '@tryghost/kg-unsplash-selector';
 
-Run `pnpm dev` to start the development server to test/develop the settings standalone. This will generate a demo site from the `index.html` file which renders the app and makes it available on http://localhost:5173
-To Run it in-memory, meaning the app will run in memory and not make any requests to the Unsplash API, run `VITE_APP_TESTING=true pnpm dev`
+<UnsplashSearchModal
+    unsplashProviderConfig={unsplashConfig}
+    onClose={() => setOpen(false)}
+    onImageInsert={image => insert(image)}
+/>
+```
+
+Passing `null` as `unsplashProviderConfig` swaps in an in-memory provider that
+serves fixtures instead of calling the Unsplash API, which is what the
+standalone dev server uses.
 
 ## Develop
 
-This is a monorepo package.
+This package is part of the [Ghost monorepo](https://github.com/TryGhost/Ghost)
+and resolves through the pnpm workspace — there is no linking or per-package
+install step. Run `pnpm setup` in the monorepo root, then work in
+`koenig/kg-unsplash-selector`.
 
-Follow the instructions for the top-level repo.
-1. `git clone` this repo & `cd` into it as usual
-2. Run `pnpm install` from the Ghost monorepo root.
+Run `pnpm dev` to start a standalone development server, which renders the
+picker from `index.html` at http://localhost:5173. To develop without making
+requests to the Unsplash API, run `VITE_APP_TESTING=true pnpm dev` to serve
+in-memory fixtures instead.
 
-
+See the [Koenig README](../README.md) for the shared build, test and release
+workflow.
 
 ## Test
 
-- `pnpm lint` run just eslint
-- `pnpm test:acceptance` runs acceptance tests
-- `pnpm test:unit` runs unit tests
-- `pnpm test:acceptance path/to/test` runs a specific test
-- `pnpm test:acceptance:slowmo` runs acceptance tests in slow motion and headed mode, useful for debugging and developing tests
+- `pnpm test:unit` runs the unit tests
+- `pnpm test:acceptance` runs the Playwright acceptance tests
+- `pnpm test:acceptance <path>` runs a single acceptance test
+- `pnpm test:acceptance:slowmo` runs them headed and slowed down, for debugging
+- `pnpm test:acceptance:full` runs them against all configured browsers
+- `pnpm test` runs unit and acceptance tests
+
+# Copyright & License
+
+Copyright (c) 2013-2026 Ghost Foundation - Released under the [MIT license](https://github.com/TryGhost/Ghost/blob/main/LICENSE).

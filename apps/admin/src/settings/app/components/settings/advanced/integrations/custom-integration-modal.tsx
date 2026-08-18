@@ -1,6 +1,4 @@
 import APIKeys from './api-keys';
-import ConfirmationModal from '@/settings/app/components/confirmation-modal';
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
 import WebhooksTable from './webhooks-table';
 import {APIError} from '@tryghost/admin-x-framework/errors';
@@ -9,7 +7,9 @@ import {Box, Stack} from '@tryghost/shade/primitives';
 import {Field, FieldError, FieldLabel, Input} from '@tryghost/shade/components';
 import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
 import {type Integration, useBrowseIntegrations, useEditIntegration} from '@tryghost/admin-x-framework/api/integrations';
-import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
+import {useParams} from '@tryghost/admin-x-framework';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {Trash2} from 'lucide-react';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
@@ -17,13 +17,13 @@ import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/image
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({integration}) => {
-    const modal = useModal();
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
 
     const {mutateAsync: editIntegration} = useEditIntegration();
     const {mutateAsync: refreshAPIKey} = useRefreshAPIKey();
     const {mutateAsync: uploadImage} = useUploadImage();
     const handleError = useHandleError();
+    const {confirm} = useConfirmation();
 
     const {formState, updateForm, handleSave, saveState, errors, clearError, okProps} = useForm({
         initialState: integration,
@@ -55,17 +55,16 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
 
     useEffect(() => {
         if (integration.type !== 'custom') {
-            modal.remove();
             updateRoute('integrations');
         }
-    }, [integration.type, modal, updateRoute]);
+    }, [integration.type, updateRoute]);
 
     const handleRegenerate = (apiKey: APIKey, setRegenerated: (value: boolean) => void) => {
         setRegenerated(false);
 
         const name = apiKey.type === 'content' ? 'Content' : 'Admin';
 
-        NiceModal.show(ConfirmationModal, {
+        confirm({
             title: `Regenerate ${name} API Key`,
             prompt: `You can regenerate ${name} API Key any time, but any scripts or applications using it will need to be updated.`,
             okLabel: `Regenerate ${name} API Key`,
@@ -82,9 +81,6 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
     };
 
     return <SettingsModal
-        afterClose={() => {
-            updateRoute('integrations');
-        }}
         buttonsDisabled={okProps.disabled}
         cancelLabel='Close'
         dirty={saveState === 'unsaved'}
@@ -94,6 +90,9 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
         testId='custom-integration-modal'
         title={formState.name || 'Custom integration'}
         stickyFooter
+        onClose={() => {
+            updateRoute('integrations');
+        }}
         onOk={async () => {
             await handleSave({fakeWhenUnchanged: true});
         }}
@@ -170,15 +169,16 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
     </SettingsModal>;
 };
 
-const CustomIntegrationModal: React.FC<RoutingModalProps> = ({params}) => {
+function CustomIntegrationModal() {
+    const {integrationId} = useParams();
     const {data: {integrations} = {}} = useBrowseIntegrations();
-    const integration = integrations?.find(({id}) => id === params?.id);
+    const integration = integrations?.find(({id}) => id === integrationId);
 
     if (integration) {
         return <CustomIntegrationModalContent integration={integration} />;
     } else {
         return null;
     }
-};
+}
 
-export default NiceModal.create(CustomIntegrationModal);
+export default CustomIntegrationModal;

@@ -7,6 +7,8 @@ import {centsToDollars} from '@tryghost/shade/app';
 import {getPeriodText} from '@/shared/analytics/chart-helpers';
 import {useAppContext} from '@tryghost/admin-x-framework';
 import {useAnalytics} from '@/analytics/providers/analytics-context';
+import {useAnalyticsData} from '@/shared/analytics/use-analytics-data';
+import {upgradeRoute} from '@tryghost/admin-x-framework/api/config';
 import {useLimiter} from '@/analytics/hooks/use-limiter';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
@@ -134,6 +136,7 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
     const navigate = useNavigate();
     const {appSettings} = useAppContext();
     const limiter = useLimiter();
+    const {config} = useAnalyticsData();
     const isWebAnalyticsLimited = limiter.isLimited('limitAnalytics');
 
     const areaChartClassName = '-mb-3 h-[10vw] max-h-[200px] min-h-[100px] hover:cursor-pointer!';
@@ -199,7 +202,7 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
                     <CardContent className='flex h-full items-center justify-center p-6'>
                         <EmptyIndicator
                             actions={
-                                <Button variant='outline' onClick={() => navigate('/pro', {crossApp: true})}>
+                                <Button variant='outline' onClick={() => navigate(upgradeRoute(config), {crossApp: true})}>
                                 Upgrade now
                                 </Button>
                             }
@@ -222,7 +225,7 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
                     iconName='User'
                     linkto='/analytics/growth/'
                     title='Members'
-                    trendingFromValue={`${formatNumber(membersChartData[0].value)}`}
+                    trendingFromValue={`${formatNumber(membersChartData[0]?.value ?? 0)}`}
                     onClick={() => {
                         navigate('/analytics/growth/?tab=total-members');
                     }}
@@ -249,7 +252,7 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
                     iconName='Coins'
                     linkto='/analytics/growth/'
                     title='MRR'
-                    trendingFromValue={`${currencySymbol}${formatNumber(mrrChartData[0].value)}`}
+                    trendingFromValue={`${currencySymbol}${formatNumber(mrrChartData[0]?.value ?? 0)}`}
                     onClick={() => {
                         navigate('/analytics/growth/?tab=mrr');
                     }}

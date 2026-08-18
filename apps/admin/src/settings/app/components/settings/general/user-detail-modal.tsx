@@ -1,7 +1,4 @@
-import ConfirmationModal from '@/settings/app/components/confirmation-modal';
 import EmailNotificationsTab from './users/email-notifications-tab';
-import LimitModal from '@/settings/app/components/limit-modal';
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import ProfileTab from './users/profile-tab';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import SocialLinksTab from './users/social-links-tab';
@@ -16,13 +13,16 @@ import {HostLimitError, useLimiter} from '@/settings/app/hooks/use-limiter';
 import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {Pencil, Trash2} from 'lucide-react';
-import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {useLocation, useParams} from '@tryghost/admin-x-framework';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+import {useUpgradeRoute} from '@/settings/app/hooks/use-upgrade-route';
 import {SOCIAL_PLATFORM_CONFIGS, SOCIAL_PLATFORM_KEYS, getSocialValidationError} from '@/settings/app/utils/social-urls/index';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {Text} from '@tryghost/shade/primitives';
 import {type User, canAccessSettings, hasAdminAccess, isAdminUser, isAuthorOrContributor, isEditorUser, isOwnerUser, useDeleteUser, useEditUser, useGetUserBySlug, useMakeOwner} from '@tryghost/admin-x-framework/api/users';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {toast} from 'sonner';
+import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
 
 const validators: Record<string, (u: Partial<User>) => string> = {
@@ -75,7 +75,9 @@ export interface UserDetailProps {
 }
 
 const UserDetailModalContent: React.FC<{user: User; onDeletingUserChange: (isDeleting: boolean) => void}> = ({user, onDeletingUserChange}) => {
-    const {updateRoute, route} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
+    const upgradeRoute = useUpgradeRoute();
+    const location = useLocation();
 
     const getTabFromPath = (path: string): string => {
         const lastSegment = path.split('/').pop() || '';
@@ -89,6 +91,7 @@ const UserDetailModalContent: React.FC<{user: User; onDeletingUserChange: (isDel
     const {ownerUser} = useStaffUsers();
     const {currentUser} = useGlobalData();
     const handleError = useHandleError();
+    const {confirm, showLimit} = useConfirmation();
     const {formState, setFormState, saveState, handleSave, updateForm, errors, setErrors, clearError, okProps} = useForm({
         initialState: user,
         savingDelay: 500,
@@ -127,7 +130,7 @@ const UserDetailModalContent: React.FC<{user: User; onDeletingUserChange: (isDel
             if (savedUser.slug !== user.slug) {
                 // Keep the URL in sync with the new slug, replacing the
                 // history entry so refresh and back button still work
-                const tab = getTabFromPath(route);
+                const tab = getTabFromPath(location.pathname);
                 const urlSegment = tab === 'profile' ? '' : `/${tab}`;
                 updateRoute({route: `staff/${savedUser.slug}${urlSegment}`, replace: true});
             }
@@ -146,7 +149,6 @@ const UserDetailModalContent: React.FC<{user: User; onDeletingUserChange: (isDel
         }
     };
 
-    const mainModal = useModal();
     const {mutateAsync: uploadImage} = useUploadImage();
     const {mutateAsync: updateUser} = useEditUser();
     const {mutateAsync: deleteUser} = useDeleteUser();
@@ -171,10 +173,10 @@ const UserDetailModalContent: React.FC<{user: User; onDeletingUserChange: (isDel
                 await limiter?.errorIfWouldGoOverLimit('staff');
             } catch (error) {
                 if (error instanceof HostLimitError) {
-                    NiceModal.show(LimitModal, {
+                    showLimit({
                         formSheet: true,
                         prompt: error.message || `Your current plan doesn't support more users.`,
-                        onOk: () => updateRoute({route: '/pro', isExternal: true})
+                        onOk: () => updateRoute({route: upgradeRoute, isExternal: true})
                     });
                     return;
                 } else {
@@ -187,7 +189,7 @@ const UserDetailModalContent: React.FC<{user: User; onDeletingUserChange: (isDel
         if (_user.status === 'inactive') {
             warningText = 'This user will be able to log in again and will have the same permissions they had previously.';
         }
-        NiceModal.show(ConfirmationModal, {
+        confirm({
             title: 'Are you sure you want to suspend this user?',
             prompt: (
                 <>
@@ -215,7 +217,7 @@ const UserDetailModalContent: React.FC<{user: User; onDeletingUserChange: (isDel
     };
 
     const confirmDelete = (_user: User, {owner}: {owner: User}) => {
-        NiceModal.show(ConfirmationModal, {
+        confirm({
             title: 'Are you sure you want to delete this user?',
             prompt: (
                 <>
@@ -230,7 +232,6 @@ const UserDetailModalContent: React.FC<{user: User; onDeletingUserChange: (isDel
                 try {
                     await deleteUser(_user?.id);
                     modal?.remove();
-                    mainModal?.remove();
                     navigateOnClose();
                     // Let the destination route mount its toaster before publishing the success state.
                     setTimeout(() => toast.success('User deleted'), 100);
@@ -243,7 +244,7 @@ const UserDetailModalContent: React.FC<{user: User; onDeletingUserChange: (isDel
     };
 
     const confirmMakeOwner = () => {
-        NiceModal.show(ConfirmationModal, {
+        confirm({
             title: 'Transfer Ownership',
             prompt: 'Are you sure you want to transfer the ownership of this blog? You will not be able to undo this action.',
             okLabel: 'Yep — I\'m sure',
@@ -319,7 +320,7 @@ const UserDetailModalContent: React.FC<{user: User; onDeletingUserChange: (isDel
     // The footer carries the modal's own p-10 gutters, so its cap has to grow by them to line up with the content column.
     const standaloneFooterClasses = 'mx-auto w-full max-w-[calc(536px+5rem)]';
 
-    const initialTab = getTabFromPath(route);
+    const initialTab = getTabFromPath(location.pathname);
     const [selectedTab, setSelectedTab] = useState<string>(initialTab);
 
     const handleTabChange = (newTabId: string) => {
@@ -331,7 +332,6 @@ const UserDetailModalContent: React.FC<{user: User; onDeletingUserChange: (isDel
 
     return (
         <SettingsModal
-            afterClose={navigateOnClose}
             animate={!isStandalonePage}
             backDrop={!isStandalonePage}
             buttonsDisabled={okProps.disabled}
@@ -345,6 +345,7 @@ const UserDetailModalContent: React.FC<{user: User; onDeletingUserChange: (isDel
             stickyFooter={true}
             testId='user-detail-modal'
             width={isStandalonePage ? 'full' : 600}
+            onClose={navigateOnClose}
             onOk={async () => {
                 await (handleSave({fakeWhenUnchanged: true}));
             }}
@@ -410,7 +411,6 @@ const UserDetailModalContent: React.FC<{user: User; onDeletingUserChange: (isDel
                                                     </DropdownMenuItem>
                                                 )}
                                                 <DropdownMenuItem onSelect={() => {
-                                                    mainModal.remove();
                                                     updateRoute(`history/view/${formState.id}`);
                                                 }}>
                                                     View user activity
@@ -461,19 +461,20 @@ const UserDetailModalContent: React.FC<{user: User; onDeletingUserChange: (isDel
     );
 };
 
-const UserDetailModal: React.FC<RoutingModalProps> = ({params}) => {
+const UserDetailModal: React.FC = () => {
+    const {slug} = useParams();
     const {currentUser} = useGlobalData();
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const handleError = useHandleError();
     const [isDeletingUser, setIsDeletingUser] = useState(false);
 
     // Skip API call if it's the current user (we already have their data)
-    const isCurrentUser = currentUser.slug === params?.slug;
+    const isCurrentUser = currentUser.slug === slug;
 
     // Fetch user by slug if it's not the current user
     const {data: fetchedUserData, error} = useGetUserBySlug(
-        params?.slug || '',
-        {enabled: !isCurrentUser && !!params?.slug, defaultErrorHandler: false}
+        slug || '',
+        {enabled: !isCurrentUser && !!slug, defaultErrorHandler: false}
     );
 
     // Use current user data or fetched user data
@@ -490,7 +491,7 @@ const UserDetailModal: React.FC<RoutingModalProps> = ({params}) => {
     }, [error, isNotFoundError, handleError]);
 
     // The slug lookup has settled without finding a user
-    const hasResolvedMissingUser = !isCurrentUser && !!params?.slug && !user && (isNotFoundError || fetchedUserData !== undefined);
+    const hasResolvedMissingUser = !isCurrentUser && !!slug && !user && (isNotFoundError || fetchedUserData !== undefined);
 
     // Keep showing the last loaded user while a refetch is in flight, e.g.
     // when a slug change updates the URL and triggers a fetch by the new
@@ -501,7 +502,7 @@ const UserDetailModal: React.FC<RoutingModalProps> = ({params}) => {
     }
     const displayUser = user || (hasResolvedMissingUser ? undefined : lastUserRef.current);
 
-    const notFoundSlug = hasResolvedMissingUser ? (params?.slug ?? null) : null;
+    const notFoundSlug = hasResolvedMissingUser ? (slug ?? null) : null;
     const notFoundHandledRef = useRef<string | null>(null);
 
     useEffect(() => {
@@ -524,4 +525,4 @@ const UserDetailModal: React.FC<RoutingModalProps> = ({params}) => {
     return displayUser ? <UserDetailModalContent user={displayUser} onDeletingUserChange={setIsDeletingUser} /> : null;
 };
 
-export default NiceModal.create(UserDetailModal);
+export default UserDetailModal;

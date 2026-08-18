@@ -122,13 +122,13 @@ describe('Admin API key authentication', function () {
             sinon.assert.calledOnce(loggingStub);
 
             // CASE: Test with a different API key, related to a core integration
-            const secondResponse = await request.get(localUtils.API.getApiQuery('explore/'))
+            const secondResponse = await request.get(localUtils.API.getApiQuery('tags/'))
                 .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/admin/', 4)}`)
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200);
 
-            assertExists(secondResponse.body.explore);
+            assertExists(secondResponse.body.tags);
         });
     });
 });

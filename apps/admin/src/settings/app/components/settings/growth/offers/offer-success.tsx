@@ -9,10 +9,10 @@ import {formatNumber} from '@tryghost/shade/utils';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 
 const OfferSuccess: React.FC<{id: string}> = ({id}) => {
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const {data: {offers: offerById = []} = {}} = useBrowseOffersById(id ? id : '');
 
     const [offer, setOffer] = useState<Offer>();
@@ -70,9 +70,6 @@ const OfferSuccess: React.FC<{id: string}> = ({id}) => {
     };
 
     return <SettingsModal
-        afterClose={() => {
-            updateRoute('offers');
-        }}
         animate={false}
         backDropClick={false}
         footer={false}
@@ -81,6 +78,9 @@ const OfferSuccess: React.FC<{id: string}> = ({id}) => {
         testId='offer-success-modal'
         topRightContent='close'
         width={1140}
+        onClose={() => {
+            updateRoute('offers');
+        }}
     >
         <div className='-mt-6 flex h-full flex-col items-center justify-center text-center'>
             <SettingsBreadcrumbs

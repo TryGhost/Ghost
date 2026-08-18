@@ -15,7 +15,7 @@ describe('Proxy: serverEvents', function () {
         sinon.restore();
     });
 
-    ['site.changed', 'url.added', 'url.removed'].forEach(function (eventName) {
+    ['site.changed'].forEach(function (eventName) {
         it(`subscribes a listener to the permitted "${eventName}" event`, function () {
             const listener = () => {};
 

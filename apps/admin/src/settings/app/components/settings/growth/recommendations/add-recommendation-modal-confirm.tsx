@@ -1,5 +1,3 @@
-import AddRecommendationModal from './add-recommendation-modal';
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
 import RecommendationDescriptionForm, {validateDescriptionForm} from './recommendation-description-form';
 import trackEvent from '@/settings/app/utils/analytics';
@@ -9,16 +7,15 @@ import {LucideIcon} from '@tryghost/shade/utils';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {toast} from 'sonner';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
 
-interface AddRecommendationModalProps {
+interface AddRecommendationModalConfirmProps {
     recommendation: EditOrAddRecommendation,
-    animate?: boolean
+    onBack: (recommendation: EditOrAddRecommendation) => void,
+    onClose: () => void,
+    onSaved: () => void
 }
 
-const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({recommendation, animate}) => {
-    const modal = useModal();
-    const {updateRoute, route} = useRouting();
+const AddRecommendationModalConfirm: React.FC<AddRecommendationModalConfirmProps> = ({recommendation, onBack, onClose, onSaved}) => {
     const {mutateAsync: addRecommendation} = useAddRecommendation();
     const handleError = useHandleError();
 
@@ -28,12 +25,11 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
         },
         onSave: async (state) => {
             await addRecommendation(state);
-            modal.remove();
             toast.success('Recommendation added');
             trackEvent('Recommendation Added', {
                 oneClickSubscribe: state.one_click_subscribe
             });
-            updateRoute('recommendations');
+            onSaved();
         },
         onSaveError: handleError,
         onValidate: (state) => {
@@ -58,15 +54,8 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
                 return;
             }
 
-            // Switch modal without changing the route, but pass along any changes that were already made
-            modal.remove();
-            NiceModal.show(AddRecommendationModal, {
-                pathName: route,
-                animate: false,
-                recommendation: {
-                    ...formState
-                }
-            });
+            // Return to the form step, passing along any changes that were already made
+            onBack({...formState});
         }}>
             <LucideIcon.ArrowLeft />
             Back
@@ -74,11 +63,7 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
     );
 
     return <SettingsModal
-        afterClose={() => {
-            // Closed without saving: reset route
-            updateRoute('recommendations');
-        }}
-        animate={animate ?? true}
+        animate={false}
         backDropClick={false}
         cancelLabel={'Cancel'}
         dirty={true}
@@ -95,9 +80,9 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
                 // Already saving
                 return;
             }
-            modal.remove();
-            updateRoute('recommendations');
+            onClose();
         }}
+        onClose={onClose}
         onOk={async () => {
             if (saveState === 'saving') {
                 // Already saving
@@ -116,4 +101,4 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
     </SettingsModal>;
 };
 
-export default NiceModal.create(AddRecommendationModalConfirm);
+export default AddRecommendationModalConfirm;

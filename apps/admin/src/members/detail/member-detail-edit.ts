@@ -1,14 +1,16 @@
 import moment from 'moment-timezone';
-import {MEMBER_CUSTOM_FIELD_TYPES} from '@tryghost/admin-x-framework/api/member-custom-fields';
+import {MEMBER_CUSTOM_FIELD_TYPES, memberCustomFieldParts} from '@tryghost/admin-x-framework/api/member-custom-fields';
 import {dequal} from 'dequal';
 import type {EditMemberData, Member} from '@tryghost/admin-x-framework/api/members';
 import type {MemberCustomField, MemberCustomFieldAddress} from '@tryghost/admin-x-framework/api/member-custom-fields';
 
-// The sub-fields of the address composite, in display order. Partial because a
-// draft mid-edit (or a normalized sparse value) may hold any subset; the shared
-// AddressValue schema — enforced by the server — decides completeness.
-export const ADDRESS_SUBFIELD_KEYS = ['line1', 'line2', 'city', 'state', 'postal_code', 'country'] as const;
-export type EditableAddressValue = Partial<Pick<MemberCustomFieldAddress, typeof ADDRESS_SUBFIELD_KEYS[number]>>;
+// The parts of the address composite, in the order its value schema declares them, each
+// with the label every other surface shows it under.
+export const ADDRESS_PARTS = memberCustomFieldParts('address') ?? [];
+
+// Partial because a draft mid-edit (or a normalized sparse value) may hold any subset; the
+// shared AddressValue schema — enforced by the server — decides completeness.
+export type EditableAddressValue = Partial<MemberCustomFieldAddress>;
 export type EditableCustomFieldValue = string | EditableAddressValue;
 
 export interface MemberEditableLabel {
@@ -99,10 +101,10 @@ export function getEditableCustomFieldValues(customFields: Record<string, unknow
  */
 function addressToSave(value: Record<string, unknown>): EditableAddressValue | undefined {
     const address: EditableAddressValue = {};
-    for (const subfield of ADDRESS_SUBFIELD_KEYS) {
-        const subvalue = value[subfield];
+    for (const {key} of ADDRESS_PARTS) {
+        const subvalue = value[key];
         if (typeof subvalue === 'string') {
-            address[subfield] = subvalue.trim();
+            address[key] = subvalue.trim();
         }
     }
     return Object.values(address).some(part => part !== '') ? address : undefined;
@@ -115,10 +117,10 @@ function addressToSave(value: Record<string, unknown>): EditableAddressValue | u
  */
 function normalizeAddressValue(value: Record<string, unknown>): EditableAddressValue | undefined {
     const address: EditableAddressValue = {};
-    for (const subfield of ADDRESS_SUBFIELD_KEYS) {
-        const subvalue = value[subfield];
+    for (const {key} of ADDRESS_PARTS) {
+        const subvalue = value[key];
         if (typeof subvalue === 'string' && subvalue.trim() !== '') {
-            address[subfield] = subvalue.trim();
+            address[key] = subvalue.trim();
         }
     }
     return Object.keys(address).length ? address : undefined;
@@ -291,46 +293,14 @@ export function buildCustomFieldSavePayload(
     return {id: memberId, custom_fields: {[fieldKey]: customFieldValueToSave(value) ?? null}};
 }
 
-// What to do about a malformed address sub-field, in plain words. Schema messages
-// (zod's "Invalid input: expected string…") never reach the screen — the schema
-// decides WHETHER a value is valid, this copy says what to do about it.
-//
-// Country is the only sub-field that needs its own copy, because it is the only
-// one whose rule is not a length bound. No sub-field is required, so every other
-// one can fail only by being too long, and the generic length message says that
-// better than a per-sub-field phrasing could: it names the limit.
-const COUNTRY_CODE_MESSAGE = 'Enter a 2-letter country code, like US.';
-
-/** A schema issue translated into copy a person can act on. */
-function friendlyValidationMessage(
-    field: MemberCustomField,
-    issue: {code?: string; path: ReadonlyArray<PropertyKey>; maximum?: unknown}
-): string {
-    if (field.type === 'address' && issue.path[0] === 'country') {
-        return COUNTRY_CODE_MESSAGE;
-    }
-    // The composite's own rule, which names no sub-field: an address has to say
-    // something. The editor normalizes an all-blank address to a clear before it
-    // validates, so this is a backstop rather than a message the screen shows.
-    if (field.type === 'address' && issue.path.length === 0) {
-        return 'Enter at least one part of the address.';
-    }
-    const tooBigMaximum = issue.code === 'too_big' && typeof issue.maximum === 'number' ? issue.maximum : undefined;
-    if (tooBigMaximum !== undefined) {
-        return `Use ${tooBigMaximum} characters or fewer.`;
-    }
-    // The remaining scalar rule is long_text's byte bound; characters are the
-    // unit a person can reason about, bytes are not.
-    return 'This text is too long to save. Shorten it a little.';
-}
-
 /**
  * Client-side validation of custom field values against the shared catalog
- * schemas — the same schemas the server enforces, so the two can never
- * disagree on substance. Returns messages keyed by `fieldKey` (scalar) or
- * `fieldKey.subfield` (composite sub-field), matching the path shape of the
- * server's 422 `property` so both error sources render through one map.
- * Cleared/empty values are always valid — fields are optional.
+ * schemas. Each rule carries its own message, so what this returns for a
+ * violation is the same sentence the server returns for it, and the screen
+ * reads the same whichever tier caught it. Returns messages keyed by
+ * `fieldKey` (scalar) or `fieldKey.subfield` (composite sub-field), matching
+ * the path shape of the server's 422 `property` so both error sources render
+ * through one map. Cleared/empty values are always valid — fields are optional.
  */
 export function getCustomFieldValidationErrors(
     draftCustomFields: Record<string, EditableCustomFieldValue>,
@@ -356,7 +326,7 @@ export function getCustomFieldValidationErrors(
         if (!result.success) {
             for (const issue of result.error.issues) {
                 const key = [field.key, ...issue.path].join('.');
-                errors[key] ??= friendlyValidationMessage(field, issue);
+                errors[key] ??= issue.message;
             }
         }
     }

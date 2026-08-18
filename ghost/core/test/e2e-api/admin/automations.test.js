@@ -15,14 +15,21 @@ const {anyContentVersion, anyEtag, anyErrorId, anyISODateTime, anyObjectId} = ma
 const {cacheInvalidateHeaderNotSet} = assertions;
 const hashRedirectDestination = url => createHash('sha256').update(url).digest();
 
-const matchAutomationSummary = () => ({
+const matchAutomationBase = () => ({
     id: anyObjectId,
     created_at: anyISODateTime,
     updated_at: anyISODateTime
 });
 
+const matchAutomationSummary = () => ({
+    ...matchAutomationBase(),
+    stats: {
+        last_run_created_at: null
+    }
+});
+
 const matchAutomation = () => ({
-    ...matchAutomationSummary(),
+    ...matchAutomationBase(),
     actions: [{
         id: anyObjectId
     }, {
@@ -106,6 +113,17 @@ describe('Automations API', function () {
     });
 
     describe('browse', function () {
+        async function createAutomationRun(automationId, createdAt) {
+            await models.Base.knex('automation_runs').insert({
+                id: ObjectId().toHexString(),
+                automation_id: automationId,
+                member_id: null,
+                member_email: 'member@example.com',
+                created_at: createdAt,
+                updated_at: createdAt
+            });
+        }
+
         async function deleteActionsForAutomationIds(automationIds) {
             const actionIds = await models.Base.knex('automation_actions')
                 .whereIn('automation_id', automationIds)
@@ -169,6 +187,27 @@ describe('Automations API', function () {
                     'content-version': anyContentVersion,
                     etag: anyEtag
                 });
+        });
+
+        it('returns null last run timestamps for automations without runs', async function () {
+            const {body} = await agent.get('automations').expectStatus(200);
+
+            assert.deepEqual(body.automations.map(automation => automation.stats.last_run_created_at), [null, null]);
+        });
+
+        it('returns latest automation run timestamp', async function () {
+            const {body: beforeBody} = await agent.get('automations').expectStatus(200);
+            const automationId = beforeBody.automations[0].id;
+            const olderRunCreatedAt = new Date('2026-01-01T00:00:00.000Z');
+            const latestRunCreatedAt = new Date('2026-01-02T00:00:00.000Z');
+
+            await createAutomationRun(automationId, olderRunCreatedAt);
+            await createAutomationRun(automationId, latestRunCreatedAt);
+
+            const {body} = await agent.get('automations').expectStatus(200);
+            const automation = body.automations.find(candidate => candidate.id === automationId);
+
+            assert.equal(automation.stats.last_run_created_at, latestRunCreatedAt.toISOString());
         });
 
         it('upserts the default free and paid automations', async function () {

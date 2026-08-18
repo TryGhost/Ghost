@@ -121,6 +121,48 @@ describe('Members import — custom fields', function () {
         assert.equal(member.custom_fields?.[key], 'Bex');
     });
 
+    // The mapping step's deselected column. It has to name the column with an empty target
+    // rather than omit it: an omitted column carries through under its own header, and a
+    // custom_fields.* header is exactly what the importer reads a value from — so omitting
+    // it would import the very column the publisher switched off.
+    //
+    // What these two prove is that the API accepts an empty mapping value and that nothing is
+    // written for the column. They do not prove the parser *drops* it — before the change it
+    // renamed the column to the empty string instead, which nothing downstream reads either.
+    // That distinction is pinned where it is observable, in csv/parse.test.ts.
+    it('imports nothing from a namespaced column the mapping empties', async function () {
+        const key = await createField('Nickname', 'short_text');
+        const email = 'cf-deselected@example.com';
+
+        const res = await importCSV(
+            `email,custom_fields.${key}\n${email},Bex\n`,
+            {email: 'email', [`custom_fields.${key}`]: ''}
+        );
+        assert.equal(res.status, 201);
+        assert.equal(res.body.meta.stats.imported, 1, 'the member still imports, without that column');
+
+        const member = await findMember(email);
+        assert.equal(member.custom_fields?.[key], undefined);
+        assert.deepEqual(await storedLeaves(email), [], 'nothing was written for the emptied column');
+    });
+
+    // The same column mapped and then emptied, so the emptying is what changes the outcome
+    // rather than the column never having had anywhere to go.
+    it('stops importing a column once the mapping empties it', async function () {
+        const key = await createField('Nickname', 'short_text');
+        const email = 'cf-deselected-mapped@example.com';
+        const csv = `Email Address,Preferred Name\n${email},Bex\n`;
+
+        await importCSV(csv, {'Email Address': 'email', 'Preferred Name': `custom_fields.${key}`});
+        assert.equal((await findMember(email)).custom_fields?.[key], 'Bex', 'the column imports while it is mapped');
+
+        const res = await importCSV(`Email Address,Preferred Name\n${email},Changed\n`, {'Email Address': 'email', 'Preferred Name': ''});
+        assert.equal(res.status, 201);
+        assert.equal(res.body.meta.stats.imported, 1);
+
+        assert.equal((await findMember(email)).custom_fields?.[key], 'Bex', 'and stops once it is emptied');
+    });
+
     it('reads an address from its sub-field columns', async function () {
         const key = await createField('Shipping Address', 'address');
         const email = 'cf-address@example.com';
@@ -259,9 +301,27 @@ describe('Members import — custom fields', function () {
         assert.equal(res.status, 201);
         assert.equal(res.body.meta.stats.imported, 0);
         assert.equal(res.body.meta.stats.invalid.length, 1);
-        assert.match(res.body.meta.stats.invalid[0].error, /Shipping Address/);
+        // Read next to a spreadsheet, so it names the column down to the sub-field.
+        assert.equal(
+            res.body.meta.stats.invalid[0].error,
+            `custom_fields.${key}.country: Enter a 2-letter country code, like US.`
+        );
 
         assert.equal(await findMember(email), undefined, 'the failed row created no member');
+    });
+
+    // A reason carries the punctuation of the copy it quotes; this one has a comma in it.
+    it('carries a row\'s reasons as a list, so punctuation inside one cannot split it', async function () {
+        const key = await createField('Shipping Address', 'address');
+        const email = 'cf-reason-list@example.com';
+
+        const res = await importCSV(`email,custom_fields.${key}.country\n${email},IRL\n`);
+        assert.equal(res.status, 201);
+        assert.equal(res.body.meta.stats.invalid.length, 1);
+
+        const reason = `custom_fields.${key}.country: Enter a 2-letter country code, like US.`;
+        assert.deepEqual(res.body.meta.stats.invalid[0].errors, [reason]);
+        assert.equal(res.body.meta.stats.invalid[0].error, reason);
     });
 
     it('fails a row whose value is too long for its field type', async function () {
@@ -272,7 +332,10 @@ describe('Members import — custom fields', function () {
         assert.equal(res.status, 201);
         assert.equal(res.body.meta.stats.imported, 0);
         assert.equal(res.body.meta.stats.invalid.length, 1);
-        assert.match(res.body.meta.stats.invalid[0].error, /Nickname/);
+        assert.equal(
+            res.body.meta.stats.invalid[0].error,
+            `custom_fields.${key}: Use 255 characters or fewer.`
+        );
 
         assert.equal(await findMember(email), undefined);
     });

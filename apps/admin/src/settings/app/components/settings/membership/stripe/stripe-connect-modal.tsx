@@ -1,9 +1,6 @@
 import BookmarkThumb from '@/settings/app/assets/images/stripe-thumb.jpg';
-import ConfirmationModal from '@/settings/app/components/confirmation-modal';
 import GhostLogo from '@/settings/app/assets/images/orb-squircle.png';
 import GhostLogoPink from '@/settings/app/assets/images/orb-pink.png';
-import LimitModal from '@/settings/app/components/limit-modal';
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
 import StripeButton from '@/settings/app/components/stripe-button';
 import StripeLogo from '@/settings/app/assets/images/stripe-emblem.svg';
@@ -20,9 +17,11 @@ import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {toast} from 'sonner';
 import {useBrowseMembers} from '@tryghost/admin-x-framework/api/members';
 import {useBrowseTiers, useEditTier} from '@tryghost/admin-x-framework/api/tiers';
+import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+import {useUpgradeRoute} from '@/settings/app/hooks/use-upgrade-route';
 
 const RETRY_PRODUCT_SAVE_POLL_LENGTH = 1000;
 const RETRY_PRODUCT_SAVE_MAX_POLL = 15 * RETRY_PRODUCT_SAVE_POLL_LENGTH;
@@ -161,6 +160,7 @@ const Connected: React.FC<{onClose?: () => void}> = ({onClose}) => {
 
     const {mutateAsync: deleteStripeSettings} = useDeleteStripeSettings();
     const handleError = useHandleError();
+    const {confirm} = useConfirmation();
 
     const openDisconnectStripeModal = async () => {
         const {data} = await fetchMembers();
@@ -168,7 +168,7 @@ const Connected: React.FC<{onClose?: () => void}> = ({onClose}) => {
 
         // const hasActiveStripeSubscriptions = false; //...
         // this.ghostPaths.url.api('/members/') + '?filter=status:paid&limit=0';
-        NiceModal.show(ConfirmationModal, {
+        confirm({
             title: 'Disconnect Stripe',
             prompt: (hasActiveStripeSubscriptions ? 'Cannot disconnect while there are members with active Stripe subscriptions.' : <>You&lsquo;re about to disconnect your Stripe account {stripeConnectAccountName} from this site. This will automatically turn off paid memberships on this site.</>),
             okLabel: hasActiveStripeSubscriptions ? '' : 'Disconnect',
@@ -257,10 +257,11 @@ const Direct: React.FC<{onClose: () => void}> = ({onClose}) => {
 const StripeConnectModal: React.FC = () => {
     const {config, settings} = useGlobalData();
     const stripeConnectAccountId = getSettingValue(settings, 'stripe_connect_account_id');
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
+    const upgradeRoute = useUpgradeRoute();
     const [step, setStep] = useState<'start' | 'connect'>('start');
-    const mainModal = useModal();
     const limiter = useLimiter();
+    const {showLimit} = useConfirmation();
 
     // Extract specific values needed for checkStripeEnabled, so not to
     // cause unnecessary re-renders by passing the whole settings object
@@ -276,10 +277,10 @@ const StripeConnectModal: React.FC = () => {
                     await limiter?.errorIfWouldGoOverLimit('limitStripeConnect');
                 } catch (error) {
                     if (error instanceof HostLimitError) {
-                        mainModal.remove();
-                        NiceModal.show(LimitModal, {
+                        updateRoute('tiers');
+                        showLimit({
                             prompt: error.message || `Your current plan doesn't support Stripe Connect.`,
-                            onOk: () => updateRoute({route: '/pro', isExternal: true})
+                            onOk: () => updateRoute({route: upgradeRoute, isExternal: true})
                         });
                     }
                 }
@@ -287,14 +288,13 @@ const StripeConnectModal: React.FC = () => {
         };
 
         checkLimit();
-    }, [limiter, mainModal, updateRoute, stripeEnabled, hasStripeConnectLimit]);
+    }, [limiter, updateRoute, stripeEnabled, hasStripeConnectLimit, showLimit, upgradeRoute]);
 
     const startFlow = () => {
         setStep('connect');
     };
 
     const close = () => {
-        mainModal.remove();
         updateRoute('tiers');
     };
 
@@ -314,18 +314,18 @@ const StripeConnectModal: React.FC = () => {
     }
 
     return <SettingsModal
-        afterClose={() => {
-            updateRoute('tiers');
-        }}
         cancelLabel=''
         footer={<div className='mt-8'></div>}
         testId='stripe-modal'
         title=''
         width={stripeConnectAccountId ? 740 : 520}
         hideXOnMobile
+        onClose={() => {
+            updateRoute('tiers');
+        }}
     >
         {contents}
     </SettingsModal>;
 };
 
-export default NiceModal.create(StripeConnectModal);
+export default StripeConnectModal;

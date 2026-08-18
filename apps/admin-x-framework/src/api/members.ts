@@ -2,7 +2,7 @@ import {InfiniteData, useIsFetching, useQueryClient} from '@tanstack/react-query
 import {useEffect} from 'react';
 import {Meta, createInfiniteQuery, createMutation, createQuery, createQueryWithId} from '../utils/api/hooks';
 import {apiUrl} from '../utils/api/fetch-api';
-import type {Address} from '@tryghost/custom-field-types';
+import type {FieldValue} from '@tryghost/custom-field-types';
 import {useCurrentUser} from './current-user';
 import {canManageMembers} from './users';
 
@@ -220,7 +220,14 @@ export type ImportMembersCompleteResponseType = {
         originalImportSize?: number;
         stats: {
             imported: number;
-            invalid?: Array<Record<string, string> & {error: string}>;
+            // The submitted row echoed back, so the remaining keys are whatever columns the
+            // CSV had. `errors` is why the row failed; `error` is those reasons written out
+            // for the error report's single cell.
+            invalid?: Array<{
+                [column: string]: unknown;
+                error: string;
+                errors: string[];
+            }>;
         };
         import_label?: ImportMembersImportLabel | null;
     };
@@ -252,8 +259,11 @@ function buildImportMembersFormData({file, labels = [], mapping = {}}: ImportMem
         formData.append('labels', label);
     }
 
+    // An empty target is the caller naming a column to leave out of the import, and the
+    // importer only honours a column it is told about — so it has to survive to the wire.
+    // Null and undefined stay dropped: they are a column with nothing said about it.
     for (const [key, val] of Object.entries(mapping)) {
-        if (val) {
+        if (typeof val === 'string') {
             formData.append(`mapping[${key}]`, val);
         }
     }
@@ -500,11 +510,10 @@ export interface EditMemberData {
     newsletters?: Array<{id: string}>;
     tiers?: Array<{id: string; expiry_at?: string | null}>;
     // Merge semantics: only the keys present are written; `null` clears a
-    // value. Values are strings for text-backed fields and composite objects
-    // for address — every sub-field of which is optional, the server asking
-    // only that one of them is filled in. Requires the `membersCustomFields`
-    // flag server-side.
-    custom_fields?: Record<string, string | Address | null>;
+    // value. The value union is derived from the shared schemas, so a field type
+    // added there is writable here without this line being edited. Requires the
+    // `membersCustomFields` flag server-side.
+    custom_fields?: Record<string, FieldValue | null>;
 }
 
 export const useEditMember = createMutation<MembersResponseType, EditMemberData>({
@@ -618,7 +627,7 @@ const MEMBER_ACTIVITY_LIMIT = '20';
 // KNOWN LIMITATION: the cursor is `created_at`-only, without the id tie-breaker
 // Ember's version added (`+id:<'<lastId>'`). Two events emitted in the same
 // second on a page boundary can be skipped from the paginated list. The current
-// consumer (`MemberActivityFeed` in `apps/posts`) only fetches 5 events and
+// consumer (`MemberActivityFeed` in `apps/admin`) only fetches 5 events and
 // never calls `fetchNextPage`, so this is not exploitable today; add an id
 // secondary cursor before another screen starts paginating.
 function memberEventsCursor(events: MemberActivityEvent[]): string | undefined {

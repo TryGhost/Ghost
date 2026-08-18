@@ -2,11 +2,11 @@ import DesignSettingsImg from '@/settings/app/assets/images/design-settings.png'
 import React from 'react';
 import TopLevelGroup from '@/settings/app/components/top-level-group';
 import {Button} from '@tryghost/shade/components';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 import {withErrorBoundary} from '@/settings/app/components/error-boundary';
 
 const DesignSetting: React.FC<{ keywords: string[] }> = ({keywords}) => {
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const openPreviewModal = () => {
         updateRoute('design/edit');
     };

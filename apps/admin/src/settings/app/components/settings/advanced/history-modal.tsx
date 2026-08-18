@@ -1,10 +1,10 @@
 import InfiniteScrollListener from '@/settings/app/components/infinite-scroll-listener';
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import {type Action, getActionTitle, getContextResource, getLinkTarget, isBulkAction, useBrowseActions} from '@tryghost/admin-x-framework/api/actions';
 import {ActionList, ActionListItem, ActionListItemContent, Avatar, Button, Field, FieldLabel, LoadingIndicator, MultiSelectCombobox, NoValueLabel, NoValueLabelIcon, Popover, PopoverContent, PopoverTrigger, Switch, inputSurface} from '@tryghost/shade/components';
 import {ChevronDown, History, Pen, Plus, Trash2, X} from 'lucide-react';
 import {Inline, Stack} from '@tryghost/shade/primitives';
-import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {useParams} from '@tryghost/admin-x-framework';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {type User} from '@tryghost/admin-x-framework/api/users';
 import {formatNumber} from '@tryghost/shade/utils';
@@ -69,7 +69,7 @@ const HistoryFilter: React.FC<{
     toggleEventType: (event: string, included: boolean) => void;
     toggleResourceType: (resource: string, included: boolean) => void;
 }> = ({userId, excludedEvents, excludedResources, toggleEventType, toggleResourceType}) => {
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const usersApi = useFilterableApi<User, 'users', 'name'>({path: '/users/', filterKey: 'name', responseKey: 'users'});
 
     const [staffOptions, setStaffOptions] = useState<Array<{label: string; value: string}>>([]);
@@ -222,7 +222,7 @@ const HistoryFilter: React.FC<{
 };
 
 const HistoryActionDescription: React.FC<{action: Action}> = ({action}) => {
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const contextResource = getContextResource(action);
 
     if (action.resource_type === 'security_action' && action.context?.action_name === 'reset_authentication') {
@@ -274,9 +274,9 @@ const formatDateForFilter = (date: Date) => {
 
 const PAGE_SIZE = 200;
 
-const HistoryModal = NiceModal.create<RoutingModalProps>(({params}) => {
-    const modal = useModal();
-    const {updateRoute} = useRouting();
+function HistoryModal() {
+    const {userId} = useParams();
+    const {updateRoute} = useSettingsNavigation();
 
     const [excludedEvents, setExcludedEvents] = useState<string[]>([]);
     const [excludedResources, setExcludedResources] = useState<string[]>(['label']);
@@ -288,7 +288,7 @@ const HistoryModal = NiceModal.create<RoutingModalProps>(({params}) => {
             filter: [
                 excludedEvents.length && `event:-[${excludedEvents.join(',')}]`,
                 excludedResources.length && `resource_type:-[${excludedResources.join(',')}]`,
-                params?.user && `actor_id:'${params.user}'`
+                userId && `actor_id:'${userId}'`
             ].filter(Boolean).join('+')
         },
         getNextPageParams: (lastPage, otherParams) => ({
@@ -308,13 +308,10 @@ const HistoryModal = NiceModal.create<RoutingModalProps>(({params}) => {
         setter(values => (included ? values.concat(value) : values.filter(current => current !== value)));
     };
 
-    const hasActiveFilters = excludedEvents.length > 0 || excludedResources.length > 0 || params?.user;
+    const hasActiveFilters = excludedEvents.length > 0 || excludedResources.length > 0 || userId;
 
     return (
         <SettingsModal
-            afterClose={() => {
-                updateRoute('history');
-            }}
             cancelLabel=''
             okLabel='Close'
             scrolling={true}
@@ -328,10 +325,12 @@ const HistoryModal = NiceModal.create<RoutingModalProps>(({params}) => {
                 excludedResources={excludedResources}
                 toggleEventType={(event, included) => toggleValue(setExcludedEvents, event, !included)}
                 toggleResourceType={(resource, included) => toggleValue(setExcludedResources, resource, !included)}
-                userId={params?.user}
+                userId={userId}
             />}
+            onClose={() => {
+                updateRoute('history');
+            }}
             onOk={() => {
-                modal.remove();
                 updateRoute('history');
             }}
         >
@@ -389,6 +388,6 @@ const HistoryModal = NiceModal.create<RoutingModalProps>(({params}) => {
             </div>
         </SettingsModal>
     );
-});
+}
 
 export default HistoryModal;

@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import errors from '@tryghost/errors';
 import {QUERY} from './config';
-import type {RouteData, DataEntry, DataShortForm, DataLongFormEntry} from '@tryghost/adapter-base-route-settings';
+import type {RouteData, DataEntry, DataShortForm, DataShortFormResource, DataLongFormEntry} from '@tryghost/adapter-base-route-settings';
 
 /**
  * A resolved Content API call: which controller to reach for, which method to
@@ -30,9 +30,13 @@ interface ResourceConfig {
     options?: Record<string, unknown>;
 }
 
+// Without this, a domain resource with no entry here would only fail per request.
+QUERY satisfies Record<DataShortFormResource, ResourceConfig>;
+
 /**
- * Not every entry in QUERY is reachable from route data — `previews` and `email`
- * are internal routers with no `type`, so they resolve to no API call.
+ * A superset: `previews` and `email` are internal routers with no `type`, so
+ * nothing here resolves them — but the preview and email routers hand their
+ * QUERY entry straight to a controller, so removing one still breaks them.
  */
 const RESOURCE_CONFIGS: Record<string, ResourceConfig | undefined> = QUERY;
 
@@ -101,9 +105,12 @@ function resolveLongForm(entry: DataLongFormEntry): ApiCallSpec {
 /**
  * Resolve a single route data entry into a Content API call.
  *
- * This is the one place that knows how a domain `resource` maps onto a Ghost API
- * controller — routes.yaml talks about `tags`, the API is reached via
- * `tagsPublic`. Callers work with the domain model and never name a controller.
+ * Resolves how a domain `resource` maps onto a Ghost API controller — routes.yaml
+ * talks about `tags`, the API is reached via `tagsPublic`. Callers work with the
+ * domain model and never name a controller.
+ *
+ * Not the only such place yet: four routers still put a raw QUERY entry on
+ * `res.routerOptions.query` for their controllers to index directly.
  *
  * @example resolveApiCall('tag.food')
  *   // => {controller: 'tagsPublic', type: 'read', resource: 'tags', options: {slug: 'food', visibility: 'public'}}

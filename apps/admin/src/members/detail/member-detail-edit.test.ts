@@ -345,9 +345,30 @@ describe('getCustomFieldValidationErrors', () => {
         expect(getCustomFieldValidationErrors({home_address: {country: 'HK'}}, fields)).toEqual({});
     });
 
-    it('explains a malformed country code rather than echoing the schema message', () => {
-        const errors = getCustomFieldValidationErrors({home_address: {...validAddress, country: 'DEU'}}, fields);
-        expect(errors).toEqual({'home_address.country': 'Enter a 2-letter country code, like US.'});
+    it('explains a malformed country code in words a person can act on, however it was wrong', () => {
+        // Spelled out rather than read from the catalog: the API returns this same string,
+        // and an expectation computed from the catalog would pass whatever it said.
+        const message = 'Enter a 2-letter country code, like US.';
+
+        for (const country of ['DEU', '12', 'D']) {
+            expect(getCustomFieldValidationErrors({home_address: {...validAddress, country}}, fields))
+                .toEqual({'home_address.country': message});
+        }
+    });
+
+    it('reports every part that is wrong, not just the first', () => {
+        // The server stops at the first issue because it only needs to refuse the write.
+        // The screen is placing a message under each input, so it needs all of them.
+        const errors = getCustomFieldValidationErrors(
+            {job_title: 'x'.repeat(256), home_address: {country: 'DEU', line1: 'x'.repeat(256)}},
+            fields
+        );
+
+        expect(errors).toEqual({
+            job_title: 'Use 255 characters or fewer.',
+            'home_address.country': 'Enter a 2-letter country code, like US.',
+            'home_address.line1': 'Use 255 characters or fewer.'
+        });
     });
 
     it('reports an over-long short_text value with the limit a person can act on', () => {
@@ -402,11 +423,13 @@ describe('parseCustomFieldServerErrors', () => {
     const serverError = (apiErrors: Array<{property?: string | null; context?: string | null; message?: string | null}>) => ({data: {errors: apiErrors}});
 
     it('maps a custom-fields 422 onto its dotted field path, preferring context', () => {
+        // `message` is the same generic line on every rejected edit; the reason a person
+        // reads is in `context`.
         expect(parseCustomFieldServerErrors(serverError([{
             property: 'custom_fields.home_address.postal_code',
-            context: 'Required',
-            message: 'Invalid value for custom field \'Home address\'.'
-        }]))).toEqual({'home_address.postal_code': 'Required'});
+            context: 'Use 32 characters or fewer.',
+            message: 'Validation error, cannot edit member.'
+        }]))).toEqual({'home_address.postal_code': 'Use 32 characters or fewer.'});
     });
 
     it('falls back to the message when context is empty', () => {

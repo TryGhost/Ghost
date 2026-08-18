@@ -6,6 +6,7 @@ const ObjectId = require('bson-objectid').default;
 const pick = require('lodash/pick');
 const DomainEvents = require('@tryghost/domain-events');
 const PostEmailHandler = require('./post-email-handler');
+const {validateAdminApiBulkFilterTransformer} = require('../../api/endpoints/utils/api-filter-utils');
 
 const messages = {
     invalidVisibilityFilter: 'Invalid visibility filter.',
@@ -25,6 +26,15 @@ class PostsService {
         this.emailService = emailService;
         this.postsExporter = postsExporter;
         this.postEmailHandler = new PostEmailHandler({models, emailService});
+    }
+
+    #getFilteredBulkPostQuery(options) {
+        return this.models.Post.getFilteredCollectionQuery({
+            filter: options.filter,
+            status: 'all',
+            transacting: options.transacting,
+            mongoTransformer: validateAdminApiBulkFilterTransformer
+        });
     }
 
     /**
@@ -215,11 +225,7 @@ class PostsService {
             }
         }
 
-        const postRows = await this.models.Post.getFilteredCollectionQuery({
-            filter: options.filter,
-            status: 'all',
-            transacting: options.transacting
-        }).select('posts.id');
+        const postRows = await this.#getFilteredBulkPostQuery(options).select('posts.id');
 
         const postTags = data.tags.reduce((pt, tag) => {
             return pt.concat(postRows.map((post) => {
@@ -245,7 +251,7 @@ class PostsService {
     /**
      *
      * @param {Object} options
-     * @returns Promise<{successful: number, unsuccessful: number, deleteIds: string[]}>
+     * @returns Promise<{successful: number, unsuccessful: number, deleteIds: string[], allDraft: boolean}>
      */
     async #bulkDestroy(options) {
         if (!options.transacting) {
@@ -257,12 +263,11 @@ class PostsService {
             });
         }
 
-        const postRows = await this.models.Post.getFilteredCollectionQuery({
-            filter: options.filter,
-            status: 'all',
-            transacting: options.transacting
-        }).leftJoin('emails', 'posts.id', 'emails.post_id').select('posts.id', 'emails.id as email_id');
+        const postRows = await this.#getFilteredBulkPostQuery(options)
+            .leftJoin('emails', 'posts.id', 'emails.post_id')
+            .select('posts.id', 'posts.status', 'emails.id as email_id');
         const deleteIds = postRows.map(row => row.id);
+        const allDraft = postRows.length > 0 && postRows.every(row => row.status === 'draft');
 
         // We also need to collect the email ids because the email relation doesn't have cascase, and we need to delete the related relations of the post
         const deleteEmailIds = postRows.map(row => row.email_id).filter(id => !!id);
@@ -328,6 +333,7 @@ class PostsService {
         const result = await this.models.Post.bulkDestroy(deleteIds, 'posts', {...options, throwErrors: true});
 
         result.deleteIds = deleteIds;
+        result.allDraft = allDraft;
 
         return result;
     }
@@ -354,11 +360,7 @@ class PostsService {
             });
         }
 
-        const postRows = await this.models.Post.getFilteredCollectionQuery({
-            filter: options.filter,
-            status: 'all',
-            transacting: options.transacting
-        }).select('posts.id');
+        const postRows = await this.#getFilteredBulkPostQuery(options).select('posts.id');
 
         const editIds = postRows.map(row => row.id);
 

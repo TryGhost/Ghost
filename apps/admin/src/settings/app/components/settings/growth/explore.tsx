@@ -11,14 +11,14 @@ import {SettingGroupContent} from '@tryghost/shade/patterns';
 import {useBrowseMembers} from '@tryghost/admin-x-framework/api/members';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 import {withErrorBoundary} from '@/settings/app/components/error-boundary';
 
 const Explore: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {settings} = useGlobalData();
     const {mutateAsync: editSettings} = useEditSettings();
     const handleError = useHandleError();
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
 
     // Get members count
     const {refetch: fetchMembers} = useBrowseMembers({

@@ -1,7 +1,5 @@
 import BrandIcon from '@/settings/app/components/icons/brand-icon';
-import ConfirmationModal from '@/settings/app/components/confirmation-modal';
 import IntegrationsSettingsImg from '@/settings/app/assets/images/integrations-settings.png';
-import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import TopLevelGroup from '@/settings/app/components/top-level-group';
 import usePinturaEditor from '@/settings/app/hooks/use-pintura-editor';
@@ -11,9 +9,12 @@ import {LucideIcon} from '@tryghost/shade/utils';
 import {Plug} from 'lucide-react';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'sonner';
+import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+import {DEFAULT_UPGRADE_ROUTE} from '@tryghost/admin-x-framework/api/config';
+import {useUpgradeRoute} from '@/settings/app/hooks/use-upgrade-route';
 import {withErrorBoundary} from '@/settings/app/components/error-boundary';
 
 interface IntegrationItemProps {
@@ -24,6 +25,7 @@ interface IntegrationItemProps {
     onDelete?: () => void;
     active?: boolean;
     disabled?: boolean;
+    upgradeRoute?: string;
     testId?: string;
     custom?: boolean;
 }
@@ -46,17 +48,18 @@ const IntegrationItem: React.FC<IntegrationItemProps> = ({
     onDelete,
     active,
     disabled,
+    upgradeRoute = DEFAULT_UPGRADE_ROUTE,
     testId,
     custom = false
 }) => {
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
 
     const handleClick = (e?: React.MouseEvent<HTMLElement>) => {
         // Prevent the click event from bubbling up when clicking the delete button
         e?.stopPropagation();
 
         if (disabled) {
-            updateRoute({route: 'pro', isExternal: true});
+            updateRoute({route: upgradeRoute, isExternal: true});
         } else {
             action();
         }
@@ -94,7 +97,8 @@ const IntegrationItem: React.FC<IntegrationItemProps> = ({
 
 const BuiltInIntegrations: React.FC = () => {
     const {config} = useGlobalData();
-    const {updateRoute} = useRouting();
+    const upgradeRoute = useUpgradeRoute();
+    const {updateRoute} = useSettingsNavigation();
 
     const openModal = (modal: string) => {
         updateRoute(modal);
@@ -191,6 +195,7 @@ const BuiltInIntegrations: React.FC = () => {
                     icon={item.icon}
                     testId={item.testId}
                     title={item.title}
+                    upgradeRoute={upgradeRoute}
                 />
             ))}
         </ActionList>
@@ -198,9 +203,10 @@ const BuiltInIntegrations: React.FC = () => {
 };
 
 const CustomIntegrations: React.FC<{integrations: Integration[]}> = ({integrations}) => {
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const {mutateAsync: deleteIntegration} = useDeleteIntegration();
     const handleError = useHandleError();
+    const {confirm} = useConfirmation();
 
     if (integrations.length) {
         return (
@@ -220,7 +226,7 @@ const CustomIntegrations: React.FC<{integrations: Integration[]}> = ({integratio
                         title={integration.name}
                         custom
                         onDelete={() => {
-                            NiceModal.show(ConfirmationModal, {
+                            confirm({
                                 title: 'Are you sure?',
                                 prompt: 'Deleting this integration will remove all webhooks and api keys associated with it.',
                                 okVariant: 'destructive',
@@ -251,7 +257,7 @@ const CustomIntegrations: React.FC<{integrations: Integration[]}> = ({integratio
 const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const [selectedTab, setSelectedTab] = useState<'built-in' | 'custom'>('built-in');
     const {data: {integrations} = {integrations: []}} = useBrowseIntegrations();
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
 
     const buttons = (
         <Button

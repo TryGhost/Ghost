@@ -49,6 +49,14 @@ describe('Private Blogging', function () {
             sinon.assert.called(next);
             assert.equal(res.isPrivateBlog, true);
         });
+
+        it('Sets res.isPrivateBlog true if setting is truthy', function () {
+            settingsStub.withArgs('is_private').returns('true');
+
+            privateBlogging.checkIsPrivate(req, res, next);
+            sinon.assert.called(next);
+            assert.equal(res.isPrivateBlog, true);
+        });
     });
 
     // The remainder of these tests set res.isPrivateBlog true or false directly

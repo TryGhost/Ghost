@@ -1,6 +1,5 @@
 import BrandIcon from '@/settings/app/components/icons/brand-icon';
 import IntegrationHeader from './integration-header';
-import NiceModal from '@ebay/nice-modal-react';
 import pinturaScreenshot from '@/settings/app/assets/images/pintura-screenshot.png';
 import {Dropzone, Field, FieldContent, FieldDescription, FieldGroup, FieldLabel, FieldLegend, FieldSet, Switch} from '@tryghost/shade/components';
 import {type Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
@@ -9,11 +8,11 @@ import {toast} from 'sonner';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 import {useUploadFile} from '@tryghost/admin-x-framework/api/files';
 
-const PinturaModal = NiceModal.create(() => {
-    const {updateRoute} = useRouting();
+function PinturaModal() {
+    const {updateRoute} = useSettingsNavigation();
     const [uploadingState, setUploadingState] = useState({
         js: false,
         css: false
@@ -76,15 +75,15 @@ const PinturaModal = NiceModal.create(() => {
 
     return (
         <SettingsModal
-            afterClose={() => {
-                updateRoute('integrations');
-            }}
             cancelLabel='Close'
             dirty={isDirty}
             okLabel={okLabel}
             okVariant='default'
             testId='pintura-modal'
             title=''
+            onClose={() => {
+                updateRoute('integrations');
+            }}
             onOk={handleToggleChange}
         >
             <IntegrationHeader
@@ -142,6 +141,6 @@ const PinturaModal = NiceModal.create(() => {
             </div>
         </SettingsModal>
     );
-});
+}
 
 export default PinturaModal;

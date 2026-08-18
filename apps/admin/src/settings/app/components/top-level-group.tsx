@@ -10,7 +10,7 @@ import {
     SettingGroupTitle
 } from '@tryghost/shade/patterns';
 import {createComponentId} from '@/settings/app/utils/search';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 import {useScrollSection} from '@/settings/app/hooks/use-scroll-section';
 import {useSearch} from './providers/settings-app-provider';
 
@@ -56,7 +56,7 @@ const TopLevelGroup: React.FC<TopLevelGroupProps> = ({
     onCancel
 }) => {
     const {checkVisible, noResult, registerComponent, unregisterComponent} = useSearch();
-    const {route} = useRouting();
+    const {route} = useSettingsNavigation();
     const [highlight, setHighlight] = useState(false);
     const {ref} = useScrollSection(navid);
     const uniqueId = useId();

@@ -54,7 +54,7 @@ function trimLeadingWhitespace(strings, ...values) {
 
 function createApiInstance(config) {
     const membersApiInstance = MembersApi({
-        urlService: urlService.facade,
+        urlService,
         tokenConfig: config.getTokenConfig(),
         auth: {
             getSigninURL: config.getSigninURL.bind(config),

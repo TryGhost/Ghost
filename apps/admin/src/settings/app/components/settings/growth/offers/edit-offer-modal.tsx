@@ -1,5 +1,3 @@
-import ConfirmationModal from '@/settings/app/components/confirmation-modal';
-import NiceModal from '@ebay/nice-modal-react';
 import PortalFrame from '@/settings/app/components/settings/membership/portal/portal-frame';
 import SettingsBreadcrumbs from '@/settings/app/components/settings/settings-breadcrumbs';
 import {Button, Field, FieldDescription, FieldError, FieldGroup, FieldLabel, Input, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, Textarea} from '@tryghost/shade/components';
@@ -12,9 +10,10 @@ import {formatNumber} from '@tryghost/shade/utils';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {getOfferPortalPreviewUrl, type offerPortalPreviewUrlTypes} from '@/settings/app/utils/get-offers-portal-preview-url';
 import {toast} from 'sonner';
+import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 
 function formatTimestamp(timestamp: string): string {
     const date = new Date(timestamp);
@@ -34,12 +33,13 @@ const Sidebar: React.FC<{
             const {siteData} = useGlobalData();
             const [isCopied, setIsCopied] = useState(false);
             const handleError = useHandleError();
+            const {confirm} = useConfirmation();
             const {mutateAsync: editOffer} = useEditOffer();
 
             const [nameLength, setNameLength] = useState(offer?.name.length || 0);
             const nameLengthColor = nameLength > 40 ? 'text-red' : 'text-green';
 
-            const {updateRoute} = useRouting();
+            const {updateRoute} = useSettingsNavigation();
 
             useEffect(() => {
                 if (offer?.name) {
@@ -57,7 +57,7 @@ const Sidebar: React.FC<{
 
             const confirmStatusChange = async () => {
                 if (offer?.status === 'active') {
-                    NiceModal.show(ConfirmationModal, {
+                    confirm({
                         title: 'Archive offer',
                         prompt: <>
                             <p>New members will no longer be able to subscribe using this offer.</p>
@@ -77,7 +77,7 @@ const Sidebar: React.FC<{
                         }
                     });
                 } else {
-                    NiceModal.show(ConfirmationModal, {
+                    confirm({
                         title: 'Reactivate offer',
                         prompt: <>
                             <p>Reactivating <strong>{offer?.name}</strong> will allow new members to subscribe using this offer. Existing members will remain unchanged.</p>
@@ -164,7 +164,7 @@ const Sidebar: React.FC<{
 
 const EditOfferModal: React.FC<{id: string}> = ({id}) => {
     const {siteData} = useGlobalData();
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const handleError = useHandleError();
     const {mutateAsync: editOffer} = useEditOffer();
 
@@ -245,9 +245,6 @@ const EditOfferModal: React.FC<{id: string}> = ({id}) => {
     };
 
     return offerById ? <PreviewModalContent
-        afterClose={() => {
-            updateRoute('offers');
-        }}
         backDropClick={false}
         cancelLabel='Cancel'
         dirty={saveState === 'unsaved'}
@@ -268,6 +265,9 @@ const EditOfferModal: React.FC<{id: string}> = ({id}) => {
         title='Offer'
         width={1140}
         onCancel={goBack}
+        onClose={() => {
+            updateRoute('offers');
+        }}
         onOk={async () => {
             try {
                 if (await handleSave({force: true})) {

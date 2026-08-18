@@ -37,24 +37,10 @@ Router.map(function () {
     this.route('tag.new', {path: '/tags/new'});
     this.route('tag', {path: '/tags/:tag_slug'});
 
-    this.route('explore', function () {
-        // actual Ember route, not rendered in iframe
-        this.route('connect');
-        // iframe sub pages, used for categories
-        this.route('explore-sub', {path: '/*sub'}, function () {
-            // needed to allow search to work, as it uses URL
-            // params for search queries. They don't need to
-            // be visible, but may not be cut off.
-            this.route('explore-query', {path: '/*query'});
-        });
-    });
-
     this.route('migrate', function () {
         this.route('migrate', {path: '/*platform'});
     });
 
-    this.route('member.new', {path: '/members/new'});
-    this.route('member', {path: '/members/:member_id'});
     this.route('members-activity');
 
     this.route('react-fallback', {path: '/*path'});

@@ -8,13 +8,12 @@ import {NON_EMPTY_EMAIL_LEXICAL} from '../../../../utils/automations-fixtures';
 import ghostConfig from '../../../../../core/shared/config';
 import {createDatabaseAutomationsRepository} from '../../../../../core/server/services/automations/database-automations-repository';
 import type {AutomatedEmailEvents, AutomationAction, AutomationsRepository, AutomationStepToRun} from '../../../../../core/server/services/automations/automations-repository';
+import {DATABASE_DATE_FORMAT, fromDatabaseDate, toDatabaseDate} from '../../../../../core/server/services/automations/database-date';
 
 const HOUR_MS = 60 * 60 * 1000;
 const FAKE_WAIT_HOURS_MULTIPLIER = 2500;
-const DATABASE_DATE_FORMAT = 'YYYY-MM-DD HH:mm:ss';
 
-const toDatabaseDate = (date: Date | string): string => moment(date).format(DATABASE_DATE_FORMAT);
-const toRepositoryDateISOString = (date: Date | string): string => new Date(toDatabaseDate(date)).toISOString();
+const toRepositoryDateISOString = (date: Date | string): string => fromDatabaseDate(toDatabaseDate(date)).toISOString();
 const linkLexical = (url: string): string => JSON.stringify({
     root: {
         children: [{
@@ -30,7 +29,7 @@ const hashRedirectDestination = (url: string): Buffer => createHash('sha256').up
 
 const addHours = (dateCol: unknown, hours: number): Date => {
     assert(typeof dateCol === 'string', 'Expected date column to be a string');
-    return moment(dateCol, DATABASE_DATE_FORMAT).add(hours, 'hours').toDate();
+    return moment(fromDatabaseDate(dateCol)).add(hours, 'hours').toDate();
 };
 
 const createDatabase = async (): Promise<Knex> => {
@@ -459,12 +458,11 @@ describe('automations repository', function () {
         return result;
     };
 
-    const insertRun = async (automationId: string) => {
-        const now = toDatabaseDate(new Date());
+    const insertRun = async (automationId: string, createdAt = new Date()) => {
         const run = {
             id: ObjectId().toHexString(),
-            created_at: now,
-            updated_at: now,
+            created_at: toDatabaseDate(createdAt),
+            updated_at: toDatabaseDate(createdAt),
             automation_id: automationId,
             member_id: ObjectId().toHexString(),
             member_email: 'member@example.com'
@@ -659,6 +657,27 @@ describe('automations repository', function () {
                 'Free member welcome flow',
                 'Paid member welcome flow'
             ]);
+        });
+
+        it('returns null for "last run created at" if the automation has no runs', async function () {
+            const result = await repo.browse();
+
+            assert(result.data.every(automation => automation.stats.last_run_created_at === null));
+        });
+
+        it('returns the newest run creation time for the automation', async function () {
+            const automationId = (await getAutomationBySlug('member-welcome-email-free')).id;
+            const latestRunCreatedAt = new Date('2026-01-02T00:00:00.000Z');
+            const olderRunCreatedAt = new Date('2026-01-01T00:00:00.000Z');
+
+            await insertRun(automationId, latestRunCreatedAt);
+            await insertRun(automationId, olderRunCreatedAt);
+
+            const browseResult = await repo.browse();
+            const automation = browseResult.data.find(candidate => candidate.id === automationId);
+            assert(automation);
+
+            assert.deepEqual(automation.stats.last_run_created_at, latestRunCreatedAt);
         });
 
         it('creates missing default free and paid automations', async function () {

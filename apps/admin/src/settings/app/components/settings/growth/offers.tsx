@@ -5,11 +5,11 @@ import {checkStripeEnabled} from '@tryghost/admin-x-framework/api/settings';
 import {getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 import {withErrorBoundary} from '@/settings/app/components/error-boundary';
 
 const Offers: React.FC<{ keywords: string[] }> = ({keywords}) => {
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const {settings, config} = useGlobalData();
 
     const {data: {offers: allOffers = []} = {}} = useBrowseOffers();

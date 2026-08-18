@@ -81,9 +81,9 @@ describe('Member Custom Fields Admin API', function () {
             assert.deepEqual(body.members_custom_fields, []);
         });
 
-        it('creates a field, minting a slug key from the name', async function () {
+        it('creates a field, minting an underscored key from the name', async function () {
             const created = await createField({name: 'Favourite topic'});
-            assert.equal(created.key, 'favourite-topic');
+            assert.equal(created.key, 'favourite_topic');
             assert.equal(created.name, 'Favourite topic');
             assert.equal(created.type, 'short_text');
             // A new field is active; status travels with the definition so the UI
@@ -96,16 +96,24 @@ describe('Member Custom Fields Admin API', function () {
             assert.equal(list.members_custom_fields.length, 1);
 
             const read = (await agent.get(`members/custom_fields/${created.key}/`).expectStatus(200)).body;
-            assert.equal(read.members_custom_fields[0].key, 'favourite-topic');
+            assert.equal(read.members_custom_fields[0].key, 'favourite_topic');
         });
 
-        it('mints a suffixed key when the derived slug collides', async function () {
-            // Two distinct names can derive the same slug ("!" is stripped), so
+        // A key is referenced from filters, CSV columns, replacement strings and
+        // themes, and the hyphen is the character those disagree about. Nothing a
+        // publisher can type may put one in a key, including typing one themselves.
+        it('mints underscores for a name that already contains hyphens', async function () {
+            const created = await createField({name: 'T-Shirt size'});
+            assert.equal(created.key, 't_shirt_size');
+        });
+
+        it('mints a suffixed key when the derived base collides', async function () {
+            // Two distinct names can derive the same base ("!" is stripped), so
             // the key is suffixed even though the names stay unique.
             const first = await createField({name: 'Favourite topic'});
             const second = await createField({name: 'Favourite topic!'});
-            assert.equal(first.key, 'favourite-topic');
-            assert.equal(second.key, 'favourite-topic-2');
+            assert.equal(first.key, 'favourite_topic');
+            assert.equal(second.key, 'favourite_topic_2');
         });
 
         it('rejects a duplicate name, case-insensitively', async function () {
@@ -118,7 +126,7 @@ describe('Member Custom Fields Admin API', function () {
                 .expectStatus(422);
         });
 
-        it('rejects a name with no sluggable characters', async function () {
+        it('rejects a name with no usable characters', async function () {
             await agent
                 .post('members/custom_fields/')
                 .body({members_custom_fields: [{name: '!!!', type: 'short_text'}]})
@@ -127,16 +135,12 @@ describe('Member Custom Fields Admin API', function () {
 
         // A key names a property on the plain objects carrying a member's values, so
         // one naming a member of Object.prototype reads back as inherited rather than
-        // absent wherever it is indexed. Those keys are already taken, so the
-        // publisher keeps the name and the key takes a suffix. The match is on the
-        // slug rather than the name, which is what catches every spelling that
-        // collapses onto it.
+        // absent wherever it is indexed. That key is already taken, so the publisher
+        // keeps the name and the key takes a suffix. The match is on the key rather
+        // than the name, which is what catches every spelling that collapses onto it.
         const reservedSpellings = [
-            {name: 'Constructor', key: 'constructor-2'},
-            {name: 'constructor', key: 'constructor-2'},
-            {name: '__proto__', key: '__proto__-2'},
-            {name: '__PROTO__', key: '__proto__-2'},
-            {name: '＿＿ｐｒｏｔｏ＿＿', key: '__proto__-2'}
+            {name: 'Constructor', key: 'constructor_2'},
+            {name: 'constructor', key: 'constructor_2'}
         ];
         for (const {name, key} of reservedSpellings) {
             it(`mints ${key} for the name ${name}, and the value round-trips`, async function () {
@@ -150,20 +154,35 @@ describe('Member Custom Fields Admin API', function () {
             });
         }
 
+        // The other prototype name a publisher could reach for needs no reserving:
+        // minting trims leading and trailing separators, so no spelling of it can
+        // produce the key itself.
+        for (const name of ['__proto__', '__PROTO__', '＿＿ｐｒｏｔｏ＿＿']) {
+            it(`cannot mint __proto__ from the name ${name}`, async function () {
+                const field = await createField({name});
+                assert.equal(field.key, 'proto');
+
+                const memberId = await createMember();
+                await setValues(memberId, {proto: 'Bex'});
+
+                assert.deepEqual(await readValues(memberId), {proto: 'Bex'});
+            });
+        }
+
         // A reserved key is claimed by whichever field takes the suffix first, so the
         // next one along has to keep counting rather than collide with it.
         it('keeps counting past a reserved key already claimed by another field', async function () {
             const first = await createField({name: 'Constructor'});
             const second = await createField({name: 'Constructor!'});
 
-            assert.equal(first.key, 'constructor-2');
-            assert.equal(second.key, 'constructor-3');
+            assert.equal(first.key, 'constructor_2');
+            assert.equal(second.key, 'constructor_3');
         });
 
         // The batch runs in one transaction, so mintKey sees the rows minted earlier
         // in the same request — reserving a key must hold within a batch too, not
         // just across separate requests.
-        it('mints distinct keys when two definitions in one batch both slug onto a reserved key', async function () {
+        it('mints distinct keys when two definitions in one batch both derive a reserved key', async function () {
             const {body} = await agent
                 .post('members/custom_fields/')
                 .body({members_custom_fields: [
@@ -174,19 +193,33 @@ describe('Member Custom Fields Admin API', function () {
 
             assert.deepEqual(
                 body.members_custom_fields.map((f: {key: string}) => f.key),
-                ['constructor-2', 'constructor-3']
+                ['constructor_2', 'constructor_3']
             );
         });
 
-        // A reserved slug must not take a whole prefix with it — only the exact key.
+        // A reserved key must not take a whole prefix with it, only the exact key.
         it('leaves a name that merely starts with a reserved word unsuffixed', async function () {
             const field = await createField({name: 'Constructor role'});
-            assert.equal(field.key, 'constructor-role');
+            assert.equal(field.key, 'constructor_role');
 
             const memberId = await createMember();
             await setValues(memberId, {[field.key]: 'Foreman'});
 
-            assert.deepEqual(await readValues(memberId), {'constructor-role': 'Foreman'});
+            assert.deepEqual(await readValues(memberId), {constructor_role: 'Foreman'});
+        });
+
+        // The key column is shorter than the name column, so a long name is cut to
+        // fit. The cut can land mid-separator, and a key ending in one is a shape
+        // minting is not allowed to produce.
+        it('mints a key that fits the column without ending in a separator', async function () {
+            const created = await createField({name: `${'a'.repeat(185)} bcdef`});
+
+            assert.ok(created.key.length <= 191, `key was ${created.key.length} characters`);
+            assert.doesNotMatch(created.key, /_$/);
+
+            // And the suffix a collision adds lands against that trimmed base.
+            const second = await createField({name: `${'a'.repeat(185)} bcdeg`});
+            assert.doesNotMatch(second.key, /__/);
         });
 
         it('rejects a name that exceeds the maximum length', async function () {
@@ -301,7 +334,7 @@ describe('Member Custom Fields Admin API', function () {
             await agent.get('members/custom_fields/?filter=' + encodeURIComponent('status:')).expectStatus(400);
         });
 
-        it('archives a field, keeping its name and slug reserved', async function () {
+        it('archives a field, keeping its name and key reserved', async function () {
             const first = await createField({name: 'Favourite topic'});
 
             const archived = await setStatus(first.key, 'archived');
@@ -318,10 +351,10 @@ describe('Member Custom Fields Admin API', function () {
                 .body({members_custom_fields: [{name: 'Favourite topic', type: 'short_text'}]})
                 .expectStatus(422);
 
-            // ...and so does its slug: a different name deriving the same slug is
+            // ...and so does its key: a different name deriving the same base is
             // suffixed rather than reusing (and resurrecting) the old key.
             const second = await createField({name: 'Favourite topic!'});
-            assert.equal(second.key, 'favourite-topic-2');
+            assert.equal(second.key, 'favourite_topic_2');
         });
 
         it('restores an archived field', async function () {
@@ -362,7 +395,7 @@ describe('Member Custom Fields Admin API', function () {
             assert.equal(list.length, 1);
         });
 
-        it('permanently deletes an archived field, freeing its name and slug', async function () {
+        it('permanently deletes an archived field, freeing its name and key', async function () {
             const original = await createField({name: 'Favourite topic'});
             await setStatus(original.key, 'archived');
 
@@ -373,10 +406,10 @@ describe('Member Custom Fields Admin API', function () {
             assert.deepEqual(list, []);
             await agent.get(`members/custom_fields/${original.key}/`).expectStatus(404);
 
-            // The row is gone, so the name and its base slug are free again: a
+            // The row is gone, so the name and its base key are free again: a
             // fresh field with the same name reclaims the original (unsuffixed) key.
             const fresh = await createField({name: 'Favourite topic'});
-            assert.equal(fresh.key, 'favourite-topic');
+            assert.equal(fresh.key, 'favourite_topic');
         });
     });
 
@@ -401,8 +434,8 @@ describe('Member Custom Fields Admin API', function () {
             assert.equal(list.members_custom_fields.length, 3);
         });
 
-        it('mints distinct keys when two definitions in the batch derive the same slug', async function () {
-            // Within a batch each insert is visible to the next, so slug collision
+        it('mints distinct keys when two definitions in the batch derive the same base', async function () {
+            // Within a batch each insert is visible to the next, so a collision
             // resolves exactly as it would across two separate requests.
             const {body} = await agent
                 .post('members/custom_fields/')
@@ -414,7 +447,7 @@ describe('Member Custom Fields Admin API', function () {
 
             assert.deepEqual(
                 body.members_custom_fields.map((field: {key: string}) => field.key),
-                ['favourite-topic', 'favourite-topic-2']
+                ['favourite_topic', 'favourite_topic_2']
             );
         });
 
@@ -509,6 +542,218 @@ describe('Member Custom Fields Admin API', function () {
 
             const list = (await agent.get('members/custom_fields/').expectStatus(200)).body.members_custom_fields;
             assert.deepEqual(list.map((field: {key: string}) => field.key), ['company']);
+        });
+    });
+
+    describe('Ordering', function () {
+        // Order is a property of the list, not of a field: it is set by PUTting the
+        // whole collection in the order it should have, and read back as the order
+        // the list comes out in. No field ever carries a sort order over the API.
+        async function reorder(keys: string[], status = 200) {
+            const {body} = await agent
+                .put('members/custom_fields/')
+                .body({members_custom_fields: keys.map(key => ({key}))})
+                .expectStatus(status);
+            return body;
+        }
+
+        async function browseKeys(filter?: string): Promise<string[]> {
+            const url = filter
+                ? `members/custom_fields/?filter=${encodeURIComponent(filter)}`
+                : 'members/custom_fields/';
+            const {body} = await agent.get(url).expectStatus(200);
+            return body.members_custom_fields.map((field: {key: string}) => field.key);
+        }
+
+        it('returns definitions in the order they were created until they are reordered', async function () {
+            await createField({name: 'Company'});
+            await createField({name: 'Shirt size'});
+            await createField({name: 'Address'});
+
+            assert.deepEqual(await browseKeys(), ['company', 'shirt_size', 'address']);
+        });
+
+        it('returns definitions in the order a reorder gave them', async function () {
+            await createField({name: 'Company'});
+            await createField({name: 'Shirt size'});
+            await createField({name: 'Address'});
+
+            const {members_custom_fields: reordered} = await reorder(['address', 'company', 'shirt_size']);
+
+            // The response is the new list, so a client re-syncs from it rather than
+            // trusting the order it just guessed.
+            assert.deepEqual(reordered.map((field: {key: string}) => field.key), ['address', 'company', 'shirt_size']);
+            assert.deepEqual(await browseKeys(), ['address', 'company', 'shirt_size']);
+        });
+
+        // The state every existing site is in the moment the column is added: the
+        // migration writes no ranks, so every row holds the same default and nothing
+        // tells them apart but creation time. Creating fields through the API cannot
+        // reach this state — each create appends a distinct rank — so it is set up
+        // directly, which is exactly what the migration does to a real site.
+        async function asNeverReordered() {
+            await models.Base.knex('members_custom_fields').update({sort_order: 0});
+        }
+
+        it('falls back to creation order while every field holds the default rank', async function () {
+            await createField({name: 'One'});
+            await createField({name: 'Two'});
+            await createField({name: 'Three'});
+            await asNeverReordered();
+
+            assert.deepEqual(await browseKeys(), ['one', 'two', 'three']);
+        });
+
+
+
+
+
+        it('appends a newly created field to the end of a reordered list', async function () {
+            await createField({name: 'Company'});
+            await createField({name: 'Shirt size'});
+            await reorder(['shirt_size', 'company']);
+
+            await createField({name: 'Address'});
+
+            assert.deepEqual(await browseKeys(), ['shirt_size', 'company', 'address']);
+        });
+
+        it('appends every field of a batch create in the order the batch gave them', async function () {
+            await createField({name: 'Company'});
+            await reorder(['company']);
+
+            await agent
+                .post('members/custom_fields/')
+                .body({members_custom_fields: [
+                    {name: 'Shirt size', type: 'short_text'},
+                    {name: 'Address', type: 'address'}
+                ]})
+                .expectStatus(201);
+
+            assert.deepEqual(await browseKeys(), ['company', 'shirt_size', 'address']);
+        });
+
+        // Order is one total order over every definition, so archiving takes a field
+        // out of sight without disturbing it and restoring puts it back where it was.
+        it('keeps an archived field in its place and restores it there', async function () {
+            await createField({name: 'Company'});
+            await createField({name: 'Shirt size'});
+            await createField({name: 'Address'});
+            await reorder(['address', 'company', 'shirt_size']);
+
+            await setStatus('company', 'archived');
+            assert.deepEqual(await browseKeys(), ['address', 'shirt_size']);
+            assert.deepEqual(
+                await browseKeys('status:[active,archived]'),
+                ['address', 'company', 'shirt_size']
+            );
+
+            await setStatus('company', 'active');
+            assert.deepEqual(await browseKeys(), ['address', 'company', 'shirt_size']);
+        });
+
+        it('reorders around an archived field', async function () {
+            await createField({name: 'Company'});
+            await createField({name: 'Shirt size'});
+            await createField({name: 'Address'});
+            await setStatus('shirt_size', 'archived');
+
+            // Settings holds both statuses, so the list it sends names all three.
+            const {members_custom_fields: reordered} = await reorder(['address', 'shirt_size', 'company']);
+
+            // The response mirrors the request: an order names every definition, so it
+            // returns every definition. This is the one read that does not hide archived
+            // fields, and a caller re-syncing from it gets back exactly what it sent.
+            assert.deepEqual(
+                reordered.map((field: {key: string}) => field.key),
+                ['address', 'shirt_size', 'company']
+            );
+            assert.equal(reordered[1].status, 'archived');
+
+            assert.deepEqual(await browseKeys(), ['address', 'company']);
+            assert.deepEqual(
+                await browseKeys('status:[active,archived]'),
+                ['address', 'shirt_size', 'company']
+            );
+        });
+
+        // A list that does not name every definition exactly once is rejected rather
+        // than partly applied. This is also what makes a stale client safe: if a
+        // colleague added a field since this client loaded, its list no longer names
+        // every definition and the reorder bounces instead of silently demoting the
+        // new field.
+        it('rejects a list that leaves a definition out', async function () {
+            await createField({name: 'Company'});
+            await createField({name: 'Shirt size'});
+
+            await reorder(['shirt_size'], 422);
+
+            assert.deepEqual(await browseKeys(), ['company', 'shirt_size']);
+        });
+
+        it('rejects a list naming a field that does not exist', async function () {
+            await createField({name: 'Company'});
+
+            await reorder(['company', 'nonexistent'], 422);
+
+            assert.deepEqual(await browseKeys(), ['company']);
+        });
+
+        it('rejects a list naming the same field twice', async function () {
+            await createField({name: 'Company'});
+            await createField({name: 'Shirt size'});
+
+            await reorder(['company', 'company'], 422);
+
+            assert.deepEqual(await browseKeys(), ['company', 'shirt_size']);
+        });
+
+
+
+        // A member's values are an object keyed by field, and an object cannot carry an
+        // order: JSON says nothing about member order, and JavaScript hoists any key
+        // that looks like an array index — a field named "2024" enumerates first however
+        // it was inserted. The definition list is the array that carries the order, and
+        // it is what every surface renders from. All this pins is that reordering does
+        // not disturb the values themselves.
+        it('leaves a member\'s values untouched when the list is reordered', async function () {
+            await createField({name: 'Company'});
+            await createField({name: 'Shirt size'});
+            const memberId = await createMember();
+            await setValues(memberId, {company: 'Ghost', 'shirt_size': 'M'});
+
+            await reorder(['shirt_size', 'company']);
+
+            assert.deepEqual(await readValues(memberId), {company: 'Ghost', 'shirt_size': 'M'});
+        });
+
+        // `updated_at` says when the definition changed, and a definition does not change
+        // when the list around it is reordered. Left alone so one drag does not read as
+        // an edit to every field on the site.
+        it('does not mark the fields as edited', async function () {
+            await createField({name: 'Company'});
+            await createField({name: 'Shirt size'});
+
+            await reorder(['shirt_size', 'company']);
+
+            const {body} = await agent.get('members/custom_fields/').expectStatus(200);
+            for (const field of body.members_custom_fields) {
+                assert.equal(field.updated_at, null, `${field.key} should not have been touched`);
+            }
+        });
+
+        it('never exposes a sort order on a field', async function () {
+            await createField({name: 'Company'});
+            await createField({name: 'Shirt size'});
+            const {members_custom_fields: reordered} = await reorder(['shirt_size', 'company']);
+
+            for (const field of reordered) {
+                assert.equal(field.sort_order, undefined);
+                assert.equal(field.sortOrder, undefined);
+            }
+
+            const {body} = await agent.get('members/custom_fields/shirt_size/').expectStatus(200);
+            assert.equal(body.members_custom_fields[0].sort_order, undefined);
         });
     });
 
@@ -880,6 +1125,84 @@ describe('Member Custom Fields Admin API', function () {
             const memberId = await createMember();
 
             await setValues(memberId, {[field.key]: ''}, 422);
+        });
+
+        describe('what a rejected value says', function () {
+            // `message` is the generic "cannot edit member" every rejection carries; the
+            // reason a person reads is `context`.
+            async function reasonFor(customFields: Record<string, unknown>, memberId: string) {
+                const body = await setValues(memberId, customFields, 422);
+                return body.errors[0].context;
+            }
+
+            it('gives a length failure the limit rather than the measurement', async function () {
+                const field = await createField({name: 'Job title'});
+                const memberId = await createMember();
+
+                assert.equal(
+                    await reasonFor({[field.key]: 'x'.repeat(256)}, memberId),
+                    'Use 255 characters or fewer.'
+                );
+            });
+
+            it('gives a sub-field failure the sub-field\'s own limit, not the field\'s', async function () {
+                // postal_code is bounded well under the 255 its siblings carry, and the
+                // reason has to name the bound that actually stopped the save.
+                const field = await createField({name: 'Home address', type: 'address'});
+                const memberId = await createMember();
+
+                assert.equal(
+                    await reasonFor({[field.key]: {postal_code: 'x'.repeat(33)}}, memberId),
+                    'Use 32 characters or fewer.'
+                );
+            });
+
+            it('says what a country code should be, whichever way it was wrong', async function () {
+                // One rule broken three ways; fixing any of them needs the same sentence.
+                const field = await createField({name: 'Home address', type: 'address'});
+                const memberId = await createMember();
+                const expected = 'Enter a 2-letter country code, like US.';
+
+                assert.equal(await reasonFor({[field.key]: {country: 'IRL'}}, memberId), expected);
+                assert.equal(await reasonFor({[field.key]: {country: '12'}}, memberId), expected);
+                assert.equal(await reasonFor({[field.key]: {country: 'D'}}, memberId), expected);
+            });
+
+            it('asks for a part when an address names none', async function () {
+                const field = await createField({name: 'Home address', type: 'address'});
+                const memberId = await createMember();
+
+                assert.equal(
+                    await reasonFor({[field.key]: {}}, memberId),
+                    'Enter at least one part of the address.'
+                );
+            });
+
+            it('hands the caller a sentence rather than schema wording', async function () {
+                // Covers what the API can be sent, not only what the editor sends. The
+                // catalog's own test walks every rule; this proves the sentence survives
+                // the service, the error handler and the wire.
+                const address = await createField({name: 'Home address', type: 'address'});
+                const text = await createField({name: 'Job title'});
+                const memberId = await createMember();
+                const schemaWording = /Too big|Too small|Invalid input|Unrecognized|expected /;
+
+                const reasons = [
+                    await reasonFor({[text.key]: 'x'.repeat(256)}, memberId),
+                    await reasonFor({[text.key]: 42}, memberId),
+                    await reasonFor({[address.key]: {line1: 'x'.repeat(256)}}, memberId),
+                    await reasonFor({[address.key]: {postal_code: 'x'.repeat(33)}}, memberId),
+                    await reasonFor({[address.key]: {country: 'IRL'}}, memberId),
+                    await reasonFor({[address.key]: {city: 42}}, memberId),
+                    await reasonFor({[address.key]: {}}, memberId)
+                ];
+
+                for (const reason of reasons) {
+                    assert.doesNotMatch(reason, schemaWording);
+                    // A sentence, not a fragment: something a screen can show unedited.
+                    assert.match(reason, /^[A-Z].*\.$/);
+                }
+            });
         });
 
         it('omits a stored value whose type is no longer valid, without failing the read', async function () {
@@ -1423,7 +1746,7 @@ describe('Member Custom Fields Admin API', function () {
         // context rather than in resource_id, which holds the row id.
         const contextOf = (a: {context: unknown}) =>
             (typeof a.context === 'string' ? JSON.parse(a.context) : a.context) as
-                {primary_name?: string; key?: string; previous_name?: string};
+                {primary_name?: string; key?: string; previous_name?: string; action_name?: string; count?: number};
 
         beforeAll(async function () {
             actorId = (await agent.get('users/me/').expectStatus(200)).body.users[0].id;
@@ -1454,6 +1777,28 @@ describe('Member Custom Fields Admin API', function () {
 
             const row = await models.Base.knex('members_custom_fields').where('key', field.key).first();
             assert.equal(actions[0].resource_id, row.id);
+        });
+
+        // A reorder is one act by the publisher, so it is one entry — not one per
+        // field whose position happened to shift. It belongs to no single field, so
+        // it carries no resource_id, and the count is what lets the activity feed
+        // read it as "3 custom fields reordered".
+        it('records a single action when the list is reordered', async function () {
+            await createField({name: 'Company'});
+            await createField({name: 'Shirt size'});
+            await createField({name: 'Address'});
+
+            await agent
+                .put('members/custom_fields/')
+                .body({members_custom_fields: [{key: 'address'}, {key: 'company'}, {key: 'shirt_size'}]})
+                .expectStatus(200);
+
+            const edited = (await customFieldActions()).filter((a: {event: string}) => a.event === 'edited');
+            assert.equal(edited.length, 1, 'a reorder records one action, not one per field');
+            assert.equal(edited[0].resource_id, null);
+            assert.equal(contextOf(edited[0]).action_name, 'reordered');
+            assert.equal(contextOf(edited[0]).count, 3);
+            assert.equal(edited[0].actor_id, actorId);
         });
 
         it('records an "edited" action when a field is renamed', async function () {
@@ -1668,6 +2013,13 @@ describe('Member Custom Fields Admin API', function () {
                 .body({members_custom_fields: [{name: 'Topic', type: 'short_text'}]})
                 .expectStatus(403);
         });
+
+        it('forbids a role without permission from reordering', async function () {
+            await agent
+                .put('members/custom_fields/')
+                .body({members_custom_fields: [{key: 'topic'}]})
+                .expectStatus(403);
+        });
     });
 
     describe('Flag disabled', function () {
@@ -1678,6 +2030,13 @@ describe('Member Custom Fields Admin API', function () {
 
         it('404s the definitions endpoint', async function () {
             await agent.get('members/custom_fields/').expectStatus(404);
+        });
+
+        it('404s the reorder endpoint', async function () {
+            await agent
+                .put('members/custom_fields/')
+                .body({members_custom_fields: [{key: 'company'}]})
+                .expectStatus(404);
         });
     });
 });

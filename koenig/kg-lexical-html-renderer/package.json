@@ -1,6 +1,7 @@
 {
   "name": "@tryghost/kg-lexical-html-renderer",
   "version": "1.4.3",
+  "description": "Renders serialized Lexical state to front-end or email HTML for Ghost",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/TryGhost/Ghost.git",
@@ -8,6 +9,9 @@
   },
   "author": "Ghost Foundation",
   "license": "MIT",
+  "engines": {
+    "node": "^22.22.2 || ^24.15.0"
+  },
   "main": "build/cjs/index.js",
   "module": "build/esm/index.js",
   "types": "build/esm/index.d.ts",

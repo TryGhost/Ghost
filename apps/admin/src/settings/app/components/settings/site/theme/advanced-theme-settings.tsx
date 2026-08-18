@@ -1,6 +1,4 @@
-import ConfirmationModal from '@/settings/app/components/confirmation-modal';
 import InvalidThemeModal, {type FatalErrors} from './invalid-theme-modal';
-import LimitModal from '@/settings/app/components/limit-modal';
 import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import useCustomFonts from '@/settings/app/hooks/use-custom-fonts';
@@ -12,8 +10,10 @@ import {type Theme, isActiveTheme, isDefaultTheme, isDeletableTheme, isLegacyThe
 import {downloadFile, getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {toast} from 'sonner';
 import {useCheckThemeLimitError} from '@/settings/app/hooks/use-check-theme-limit-error';
+import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+import {useUpgradeRoute} from '@/settings/app/hooks/use-upgrade-route';
 
 interface ThemeActionProps {
     theme: Theme;
@@ -58,8 +58,10 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
     const {mutateAsync: deleteTheme} = useDeleteTheme();
     const {refreshActiveThemeData} = useCustomFonts();
     const handleError = useHandleError();
-    const {route, updateRoute} = useRouting();
+    const {route, updateRoute} = useSettingsNavigation();
+    const upgradeRoute = useUpgradeRoute();
     const {checkThemeLimitError} = useCheckThemeLimitError();
+    const {confirm, showLimit} = useConfirmation();
 
     const handleActivate = async () => {
         try {
@@ -96,7 +98,7 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
     };
 
     const handleDelete = async () => {
-        NiceModal.show(ConfirmationModal, {
+        confirm({
             title: 'Are you sure you want to delete this?',
             prompt: (
                 <>
@@ -131,9 +133,9 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
         const limitError = await checkThemeLimitError('.');
 
         if (limitError) {
-            NiceModal.show(LimitModal, {
+            showLimit({
                 prompt: limitError,
-                onOk: () => updateRoute({route: '/pro', isExternal: true})
+                onOk: () => updateRoute({route: upgradeRoute, isExternal: true})
             });
             return;
         }

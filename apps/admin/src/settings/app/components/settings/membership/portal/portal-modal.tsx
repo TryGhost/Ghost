@@ -1,7 +1,5 @@
 import AccountPage from './account-page';
-import ConfirmationModal from '@/settings/app/components/confirmation-modal';
 import LookAndFeel from './look-and-feel';
-import NiceModal from '@ebay/nice-modal-react';
 import PortalPreview from './portal-preview';
 import React, {useEffect, useState} from 'react';
 import SignupOptions from './signup-options';
@@ -12,9 +10,10 @@ import {type Setting, type SettingValue, getSettingValues, useEditSettings} from
 import {Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {type Tier, useBrowseTiers, useEditTier} from '@tryghost/admin-x-framework/api/tiers';
 import {fullEmailAddress} from '@tryghost/admin-x-framework/api/site';
+import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
 import {useFocusContext} from '@tryghost/shade/app';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 import {verifyEmailToken} from '@tryghost/admin-x-framework/api/email-verification';
 
 type PreviewTab = 'signup' | 'account' | 'links';
@@ -64,13 +63,14 @@ const Sidebar: React.FC<{
 };
 
 const PortalModal: React.FC = () => {
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const {darkMode} = useFocusContext();
 
     const [selectedPreviewTab, setSelectedPreviewTab] = useState<PreviewTab>('signup');
     const [selectedSidebarTab, setSelectedSidebarTab] = useState<SidebarTab>('signupOptions');
 
     const handleError = useHandleError();
+    const {confirm} = useConfirmation();
     const {settings, siteData, config} = useGlobalData();
     const {mutateAsync: editSettings} = useEditSettings();
     const {data: {tiers: allTiers} = {}} = useBrowseTiers();
@@ -88,7 +88,7 @@ const PortalModal: React.FC = () => {
             try {
                 const {settings: verifiedSettings} = await verifyToken({token});
                 const [supportEmail] = getSettingValues<string>(verifiedSettings, ['members_support_address']);
-                NiceModal.show(ConfirmationModal, {
+                confirm({
                     title: 'Support address verified',
                     prompt: <>Your support email address has been changed to <strong>{supportEmail}</strong>.</>,
                     okLabel: 'Close',
@@ -102,7 +102,7 @@ const PortalModal: React.FC = () => {
                 if (e?.message === 'Token expired') {
                     prompt = 'Verification link has expired.';
                 }
-                NiceModal.show(ConfirmationModal, {
+                confirm({
                     title: 'Error verifying support address',
                     prompt: prompt,
                     okLabel: 'Close',
@@ -115,7 +115,7 @@ const PortalModal: React.FC = () => {
         if (verifyEmail) {
             checkToken({token: verifyEmail});
         }
-    }, [handleError, verifyEmail, verifyToken]);
+    }, [confirm, handleError, verifyEmail, verifyToken]);
 
     const {formState, setFormState, saveState, handleSave, updateForm, okProps} = useForm({
         initialState: {
@@ -143,7 +143,7 @@ const PortalModal: React.FC = () => {
                 const currentEmail = currentSettings.find(setting => setting.key === 'support_email_address')?.value ||
                     fullEmailAddress(currentSettings.find(setting => setting.key === 'members_support_address')?.value?.toString() || 'noreply', siteData, config);
 
-                NiceModal.show(ConfirmationModal, {
+                confirm({
                     title: 'Confirm email address',
                     prompt: <>
                         We&apos;ve sent a confirmation email to <strong>{newEmail}</strong>.
@@ -235,9 +235,6 @@ const PortalModal: React.FC = () => {
     );
 
     return <PreviewModalContent
-        afterClose={() => {
-            updateRoute('portal');
-        }}
         buttonsDisabled={okProps.disabled}
         cancelLabel='Close'
         dirty={saveState === 'unsaved'}
@@ -249,6 +246,9 @@ const PortalModal: React.FC = () => {
         sidebar={sidebar}
         testId='portal-modal'
         title='Portal'
+        onClose={() => {
+            updateRoute('portal');
+        }}
         onOk={async () => {
             if (!Object.values(errors).filter(Boolean).length) {
                 await handleSave({force: true});
@@ -257,4 +257,4 @@ const PortalModal: React.FC = () => {
     />;
 };
 
-export default NiceModal.create(PortalModal);
+export default PortalModal;

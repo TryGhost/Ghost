@@ -1,6 +1,6 @@
 import React from 'react';
 import {FacebookLogo, GoogleLogo, XLogo} from '@tryghost/shade/components';
-import {LucideIcon} from '@tryghost/shade/utils';
+import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {truncateText} from './tag-detail-edit';
 
 /**
@@ -47,7 +47,7 @@ export const XCardPreview: React.FC<{
             <XLogo className='mt-1 size-5 shrink-0' />
             <div className='min-w-0 flex-1'>
                 <span className='text-sm font-semibold'>{siteHeader}</span>
-                <span className='ml-1 text-sm text-muted-foreground'>12 hrs</span>
+                <span className='ml-1 text-sm text-muted-foreground'>{formatNumber(12)} hrs</span>
                 <FakePostLines />
                 <div className='overflow-hidden rounded-md border border-border'>
                     {image && (
@@ -63,9 +63,9 @@ export const XCardPreview: React.FC<{
                     </div>
                 </div>
                 <div className='mt-2 flex items-center gap-6 text-sm text-muted-foreground'>
-                    <span className='flex items-center gap-1'><LucideIcon.MessageCircle className='size-3.5' />2</span>
-                    <span className='flex items-center gap-1'><LucideIcon.Repeat2 className='size-3.5' />11</span>
-                    <span className='flex items-center gap-1'><LucideIcon.Heart className='size-3.5' />32</span>
+                    <span className='flex items-center gap-1'><LucideIcon.MessageCircle className='size-3.5' />{formatNumber(2)}</span>
+                    <span className='flex items-center gap-1'><LucideIcon.Repeat2 className='size-3.5' />{formatNumber(11)}</span>
+                    <span className='flex items-center gap-1'><LucideIcon.Heart className='size-3.5' />{formatNumber(32)}</span>
                     <span className='flex items-center gap-1'><LucideIcon.Share className='size-3.5' /></span>
                 </div>
             </div>
@@ -82,10 +82,10 @@ export const FacebookCardPreview: React.FC<{
 }> = ({siteHeader, domain, image, title, description}) => (
     <div className='rounded-md border border-border bg-surface-elevated p-4' data-testid='facebook-card-preview'>
         <div className='flex items-center gap-3'>
-            <FacebookLogo className='size-8 shrink-0' />
+            <FacebookLogo className='size-10 shrink-0' />
             <div className='flex flex-col'>
                 <span className='text-sm font-semibold'>{siteHeader}</span>
-                <span className='text-sm text-muted-foreground'>12 hrs</span>
+                <span className='text-sm text-muted-foreground'>{formatNumber(12)} hrs</span>
             </div>
         </div>
         <FakePostLines />
@@ -100,9 +100,9 @@ export const FacebookCardPreview: React.FC<{
             </div>
         </div>
         <div className='mt-2 flex items-center gap-4 text-sm text-muted-foreground'>
-            <span className='flex items-center gap-1'><LucideIcon.ThumbsUp className='size-3.5' /><LucideIcon.Heart className='size-3.5' />182</span>
-            <span>7 comments</span>
-            <span>2 shares</span>
+            <span className='flex items-center gap-1'><LucideIcon.ThumbsUp className='size-3.5' />{formatNumber(182)}</span>
+            <span>{formatNumber(7)} comments</span>
+            <span>{formatNumber(2)} shares</span>
         </div>
     </div>
 );

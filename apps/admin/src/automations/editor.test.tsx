@@ -114,7 +114,7 @@ type MockEditMutationOptions = {
     onSuccess?: (data: AutomationDetailResponseType) => void;
     onError?: (error?: unknown) => void;
 };
-const mockUseReadAutomation = vi.fn<(...args: unknown[]) => {data?: AutomationDetailResponseType; isLoading?: boolean; isError?: boolean}>();
+const mockUseReadAutomation = vi.fn<(...args: unknown[]) => {data?: AutomationDetailResponseType; isLoading?: boolean; isFetching?: boolean; isError?: boolean; isFetchedAfterMount?: boolean}>();
 const mockUseBrowseAutomationActionLinks = vi.fn<(...args: unknown[]) => {data?: AutomationActionLinksResponseType; isLoading: boolean; isError: boolean}>();
 const mockEditMutation = {
     mutate: vi.fn<(payload: EditAutomationPayload, options: MockEditMutationOptions) => void>(),
@@ -123,6 +123,8 @@ const mockEditMutation = {
 };
 const mockReactFlow = {
     fitView: vi.fn(),
+    getViewport: vi.fn(() => ({x: 0, y: 0, zoom: mockViewportZoom})),
+    setViewport: vi.fn(),
     zoomIn: vi.fn(),
     zoomOut: vi.fn(),
     zoomTo: vi.fn()
@@ -135,7 +137,10 @@ vi.mock('@tryghost/admin-x-framework/api/automations', async () => {
     );
     return {
         ...actual,
-        useReadAutomation: (...args: unknown[]) => mockUseReadAutomation(...args),
+        useReadAutomation: (...args: unknown[]) => ({
+            isFetchedAfterMount: true,
+            ...mockUseReadAutomation(...args)
+        }),
         useBrowseAutomationActionLinks: (...args: unknown[]) => mockUseBrowseAutomationActionLinks(...args),
         useEditAutomation: () => mockEditMutation
     };
@@ -165,6 +170,8 @@ type StubReactFlowProps = {
     edgeTypes?: Record<string, React.ComponentType<EdgeRenderProps>>;
     onNodeClick?: (event: React.MouseEvent<HTMLDivElement>, node: StubNode) => void;
     onNodeDoubleClick?: (event: React.MouseEvent<HTMLDivElement>, node: StubNode) => void;
+    onInit?: (instance: typeof mockReactFlow) => void;
+    onMove?: (event: MouseEvent | TouchEvent | null, viewport: {x: number; y: number; zoom: number}) => void;
     onPaneClick?: (event: React.MouseEvent<HTMLDivElement>) => void;
     zoomOnDoubleClick?: boolean;
 };
@@ -175,8 +182,13 @@ vi.mock('@xyflow/react', async () => {
     const actual = await vi.importActual<typeof import('@xyflow/react')>('@xyflow/react');
     return {
         ...actual,
-        ReactFlow: ({nodes, edges, children, className, nodeTypes, edgeTypes, onNodeClick, onNodeDoubleClick, onPaneClick, zoomOnDoubleClick}: StubReactFlowProps) => (
-            <div className={className} data-testid='react-flow-mock' data-zoom-on-double-click={String(zoomOnDoubleClick)} onClick={onPaneClick}>
+        ReactFlow: ({nodes, edges, children, className, nodeTypes, edgeTypes, onInit, onNodeClick, onNodeDoubleClick, onPaneClick, zoomOnDoubleClick}: StubReactFlowProps) => {
+            React.useEffect(() => {
+                onInit?.(mockReactFlow);
+            }, [onInit]);
+
+            return (
+                <div className={className} data-testid='react-flow-mock' data-zoom-on-double-click={String(zoomOnDoubleClick)} onClick={onPaneClick}>
                 {nodes.map((node) => {
                     const nodeType = node.type ?? 'default';
                     const Custom = nodeTypes?.[nodeType];
@@ -220,8 +232,9 @@ vi.mock('@xyflow/react', async () => {
                     })}
                 </ul>
                 {children}
-            </div>
-        ),
+                </div>
+            );
+        },
         Background: () => null,
         Controls: ({children, className, showFitView, showInteractive, showZoom, style}: {children?: React.ReactNode; className?: string; showFitView?: boolean; showInteractive?: boolean; showZoom?: boolean; style?: React.CSSProperties}) => (
             <div
@@ -290,6 +303,17 @@ const renderEditor = (initialEntries = ['/automations/automation-id-1']) => {
     };
 };
 
+const rerenderEditorRoute = (router: ReturnType<typeof createMemoryRouter>) => act(async () => {
+    await router.navigate('/automations/automation-id-1', {replace: true});
+});
+
+const withEmailSubject = (automation: AutomationDetail, emailSubject: string): AutomationDetail => ({
+    ...automation,
+    actions: automation.actions.map(action => action.type === 'send_email'
+        ? {...action, data: {...action.data, email_subject: emailSubject}}
+        : action)
+});
+
 const withEmptyEmailBodies = (fixture: AutomationDetail): AutomationDetail => ({
     ...fixture,
     actions: fixture.actions.map(action => (
@@ -341,6 +365,9 @@ describe('AutomationEditor', () => {
         });
         mockEditMutation.mutate.mockReset();
         mockReactFlow.fitView.mockReset();
+        mockReactFlow.getViewport.mockReset();
+        mockReactFlow.getViewport.mockImplementation(() => ({x: 0, y: 0, zoom: mockViewportZoom}));
+        mockReactFlow.setViewport.mockReset();
         mockReactFlow.zoomIn.mockReset();
         mockReactFlow.zoomOut.mockReset();
         mockReactFlow.zoomTo.mockReset();
@@ -363,6 +390,137 @@ describe('AutomationEditor', () => {
 
         expect(screen.getByTestId('automation-canvas-loading')).toBeInTheDocument();
         expect(screen.getByRole('button', {name: 'Publish'})).toBeDisabled();
+    });
+
+    it('waits for a fresh response before cached automation data becomes editable', async () => {
+        const cachedAutomation = withEmailSubject(automationDetail, 'Cached subject');
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [cachedAutomation]},
+            isLoading: false,
+            isFetching: false,
+            isFetchedAfterMount: false,
+            isError: false
+        });
+
+        const {router} = renderEditor();
+
+        expect(mockUseReadAutomation).toHaveBeenCalledWith('automation-id-1', {
+            defaultErrorHandler: false,
+            refetchOnMount: 'always'
+        });
+        expect(screen.getByTestId('automation-canvas-loading')).toBeInTheDocument();
+        expect(screen.queryByText('Cached subject')).not.toBeInTheDocument();
+
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isFetching: false,
+            isFetchedAfterMount: true,
+            isError: false
+        });
+        await rerenderEditorRoute(router);
+
+        expect(screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'})).toBeInTheDocument();
+        expect(screen.queryByTestId('automation-canvas-loading')).not.toBeInTheDocument();
+    });
+
+    it('does not fall back to cached automation data when the fresh request fails', () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isFetching: false,
+            isError: true
+        });
+
+        renderEditor();
+
+        expect(screen.getByRole('alert')).toHaveTextContent('Couldn\'t load automation');
+        expect(screen.queryByTestId('automation-canvas')).not.toBeInTheDocument();
+        expect(screen.queryByText('Welcome to The Blueprint')).not.toBeInTheDocument();
+    });
+
+    it('keeps a dirty editing session intact when a later read refresh fails', async () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        const {router} = renderEditor();
+
+        fireEvent.click(screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'}));
+        const sidebar = screen.getByRole('complementary', {name: 'Step details'});
+        const subjectInput = within(sidebar).getByDisplayValue('Welcome to The Blueprint');
+        fireEvent.change(subjectInput, {target: {value: 'Locally edited subject'}});
+        fireEvent.blur(subjectInput);
+        expect(screen.getByRole('button', {name: 'Publish changes'})).toBeEnabled();
+
+        const refreshedAutomation = withEmailSubject(automationDetail, 'Server-refreshed subject');
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [refreshedAutomation]},
+            isLoading: false,
+            isFetchedAfterMount: true,
+            isError: true
+        });
+        await rerenderEditorRoute(router);
+
+        expect(screen.getByTestId('automation-canvas')).toBeInTheDocument();
+        expect(screen.queryByText('Couldn\'t load automation')).not.toBeInTheDocument();
+        expect(within(sidebar).getByDisplayValue('Locally edited subject')).toBeInTheDocument();
+        expect(within(sidebar).queryByDisplayValue('Server-refreshed subject')).not.toBeInTheDocument();
+        expect(screen.getByRole('button', {name: 'Publish changes'})).toBeEnabled();
+
+        fireEvent.click(screen.getByRole('link', {name: 'Back to automations'}));
+        expect(screen.getByRole('alertdialog', {name: 'Discard unsaved changes?'})).toBeInTheDocument();
+        expect(screen.queryByTestId('automations-list-route')).not.toBeInTheDocument();
+    });
+
+    it('does not reuse an old draft when navigating from A to B and back to A', async () => {
+        const initialA = withEmailSubject(automationDetail, 'Initial A subject');
+        const freshA = withEmailSubject(automationDetail, 'Fresh A subject');
+        const automationB = {
+            ...withEmailSubject(automationDetail, 'Automation B subject'),
+            id: 'automation-id-2',
+            name: 'Paid member welcome flow',
+            slug: 'member-welcome-email-paid'
+        };
+        let aResponse: 'initial' | 'fetching' | 'fresh' = 'initial';
+
+        mockUseReadAutomation.mockImplementation((automationId) => {
+            if (automationId === 'automation-id-2') {
+                return {
+                    data: {automations: [automationB]},
+                    isLoading: false,
+                    isFetching: false,
+                    isFetchedAfterMount: true,
+                    isError: false
+                };
+            }
+
+            return {
+                data: {automations: [aResponse === 'fresh' ? freshA : initialA]},
+                isLoading: false,
+                isFetching: aResponse === 'fetching',
+                isFetchedAfterMount: aResponse !== 'fetching',
+                isError: false
+            };
+        });
+
+        const {router} = renderEditor();
+        expect(screen.getByRole('button', {name: 'Send email: Initial A subject'})).toBeInTheDocument();
+
+        await act(async () => router.navigate('/automations/automation-id-2'));
+        expect(screen.getByRole('button', {name: 'Send email: Automation B subject'})).toBeInTheDocument();
+
+        aResponse = 'fetching';
+        await act(async () => router.navigate('/automations/automation-id-1'));
+        expect(screen.getByTestId('automation-canvas-loading')).toBeInTheDocument();
+        expect(screen.queryByText('Initial A subject')).not.toBeInTheDocument();
+
+        aResponse = 'fresh';
+        await rerenderEditorRoute(router);
+        expect(screen.getByRole('button', {name: 'Send email: Fresh A subject'})).toBeInTheDocument();
+        expect(screen.queryByText('Initial A subject')).not.toBeInTheDocument();
     });
 
     it('renders the error banner when the read query fails', () => {
@@ -596,7 +754,7 @@ describe('AutomationEditor', () => {
         fireEvent.click(screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'}));
 
         const sidebar = screen.getByRole('complementary', {name: 'Step details'});
-        expect(mockUseBrowseAutomationActionLinks).toHaveBeenCalledWith('automation-id-1', 'action-email', {defaultErrorHandler: false, enabled: true});
+        expect(mockUseBrowseAutomationActionLinks).toHaveBeenCalledWith('automation-id-1', 'action-email', {defaultErrorHandler: false, enabled: true, refetchOnMount: 'always'});
         expect(within(sidebar).getAllByRole('link')).toHaveLength(10);
 
         const firstLink = within(sidebar).getByRole('link', {name: 'example.com/link-1'});
@@ -658,7 +816,7 @@ describe('AutomationEditor', () => {
         fireEvent.click(screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'}));
 
         expect(screen.getByText('No emails sent yet.')).toBeInTheDocument();
-        expect(mockUseBrowseAutomationActionLinks).toHaveBeenCalledWith('automation-id-1', 'action-email', {defaultErrorHandler: false, enabled: false});
+        expect(mockUseBrowseAutomationActionLinks).toHaveBeenCalledWith('automation-id-1', 'action-email', {defaultErrorHandler: false, enabled: false, refetchOnMount: 'always'});
     });
 
     it('hides clicked links and skips the request when click tracking is off', () => {
@@ -702,10 +860,11 @@ describe('AutomationEditor', () => {
         expect(controls).toHaveClass('overflow-hidden', 'rounded-md');
         expect(screen.getByRole('button', {name: 'Zoom out'})).toBeInTheDocument();
         expect(screen.getByRole('button', {name: 'Zoom level 100%'})).toHaveTextContent('100%');
-        expect(screen.getByRole('button', {name: 'Zoom in'})).toBeInTheDocument();
+        expect(screen.getByRole('button', {name: 'Zoom in'})).toBeDisabled();
     });
 
     it('animates viewport changes from the custom canvas controls', () => {
+        mockViewportZoom = 0.75;
         mockUseReadAutomation.mockReturnValue({
             data: {automations: [automationDetail]},
             isLoading: false,
@@ -733,11 +892,11 @@ describe('AutomationEditor', () => {
 
         fireEvent.pointerDown(screen.getByRole('button', {name: 'Zoom level 75%'}), {button: 0, ctrlKey: false});
 
-        expect(screen.getByRole('menuitem', {name: '150%'})).toBeInTheDocument();
+        expect(screen.queryByRole('menuitem', {name: '150%'})).not.toBeInTheDocument();
         expect(screen.getByRole('menuitem', {name: '100%'})).toBeInTheDocument();
         expect(screen.getByRole('menuitem', {name: '75%'})).toBeInTheDocument();
         expect(screen.getByRole('menuitem', {name: '50%'})).toBeInTheDocument();
-        expect(screen.getByRole('menuitem', {name: '25%'})).toBeInTheDocument();
+        expect(screen.queryByRole('menuitem', {name: '25%'})).not.toBeInTheDocument();
         expect(screen.getByRole('menuitem', {name: 'Fit to view'})).toBeInTheDocument();
         expect(screen.getByRole('menuitem', {name: '75%'}).querySelector('svg')).toBeInTheDocument();
     });
@@ -752,14 +911,41 @@ describe('AutomationEditor', () => {
         renderEditor();
 
         fireEvent.pointerDown(screen.getByRole('button', {name: 'Zoom level 100%'}), {button: 0, ctrlKey: false});
-        fireEvent.click(screen.getByRole('menuitem', {name: '150%'}));
+        fireEvent.click(screen.getByRole('menuitem', {name: '75%'}));
 
-        expect(mockReactFlow.zoomTo).toHaveBeenCalledWith(1.5, {duration: 180});
+        expect(mockReactFlow.zoomTo).toHaveBeenCalledWith(0.75, {duration: 180});
 
         fireEvent.pointerDown(screen.getByRole('button', {name: 'Zoom level 100%'}), {button: 0, ctrlKey: false});
         fireEvent.click(screen.getByRole('menuitem', {name: 'Fit to view'}));
 
         expect(mockReactFlow.fitView).toHaveBeenCalledWith({duration: 180});
+    });
+
+    it('re-constrains the viewport when deleting a step shrinks the graph', async () => {
+        const clientWidthSpy = vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(1000);
+        const clientHeightSpy = vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(800);
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        try {
+            renderEditor();
+            await waitFor(() => expect(mockReactFlow.setViewport).toHaveBeenCalled());
+            mockReactFlow.setViewport.mockClear();
+            // This is the bottom-most valid viewport for the original two-step graph. Once one
+            // step is deleted, it falls outside the shorter graph's new translate extent.
+            mockReactFlow.getViewport.mockReturnValue({x: 372, y: -188, zoom: 1});
+
+            fireEvent.click(screen.getByRole('button', {name: 'Wait: 1 day'}));
+            fireEvent.click(within(screen.getByRole('complementary', {name: 'Step details'})).getByRole('button', {name: 'Delete step'}));
+
+            await waitFor(() => expect(mockReactFlow.setViewport).toHaveBeenCalledWith({x: 372, y: -8, zoom: 1}));
+        } finally {
+            clientWidthSpy.mockRestore();
+            clientHeightSpy.mockRestore();
+        }
     });
 
     it('opens a read-only sidebar for the trigger step', () => {

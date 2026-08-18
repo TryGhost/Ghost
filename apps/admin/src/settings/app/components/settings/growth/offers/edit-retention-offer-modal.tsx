@@ -12,7 +12,7 @@ import {getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/ap
 import {toast} from 'sonner';
 import {useEffect, useMemo, useState} from 'react';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 
 type RetentionOfferFormState = {
     enabled: boolean;
@@ -359,7 +359,7 @@ const RetentionOfferSidebar: React.FC<{
 };
 
 const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const {siteData} = useGlobalData();
     const {data: {tiers = []} = {}} = useBrowseTiers();
     const {data: {offers: allOffers = []} = {}, isFetched: hasFetchedOffers, isFetching: isFetchingOffers} = useBrowseOffers();
@@ -639,7 +639,6 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
 
     return (
         <PreviewModalContent
-            afterClose={() => updateRoute('offers')}
             backDropClick={false}
             cancelLabel='Cancel'
             dirty={saveState === 'unsaved'}
@@ -660,6 +659,7 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
             title='Offer'
             width={1140}
             onCancel={goBack}
+            onClose={() => updateRoute('offers')}
             onOk={handleSaveClick}
         />
     );

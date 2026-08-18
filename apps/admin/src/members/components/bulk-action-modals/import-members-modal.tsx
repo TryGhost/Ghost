@@ -307,7 +307,14 @@ export function ImportMembersModal({
 
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
-            <DialogContent className={cn('gap-0', isWide && 'max-w-2xl')}>
+            {/* While mapping, the dialog is bounded to the viewport and laid out as a column, so
+                the table takes the leftover height and the footer stays reachable on a short
+                screen. 8vmin matches the dialog's own top offset. */}
+            <DialogContent className={cn(
+                'gap-0',
+                isWide && 'max-w-2xl',
+                isWide && 'flex max-h-[calc(100vh-16vmin)] flex-col'
+            )}>
                 <DialogHeader>
                     <DialogTitle>{title}</DialogTitle>
                     <DialogDescription className="sr-only">

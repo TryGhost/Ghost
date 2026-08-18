@@ -1,8 +1,7 @@
 import APIKeys from '@/settings/app/components/settings/advanced/integrations/api-keys';
-import ConfirmationModal from '@/settings/app/components/confirmation-modal';
-import NiceModal from '@ebay/nice-modal-react';
 import {Text} from '@tryghost/shade/primitives';
 import {genStaffToken, getStaffToken} from '@tryghost/admin-x-framework/api/staff-token';
+import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
 import {useEffect, useState} from 'react';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
@@ -11,6 +10,7 @@ const StaffToken: React.FC = () => {
         enabled: false
     });
     const handleError = useHandleError();
+    const {confirm} = useConfirmation();
     const [token, setToken] = useState('');
     const {mutateAsync: newApiKey} = genStaffToken();
 
@@ -25,7 +25,7 @@ const StaffToken: React.FC = () => {
     } , [apiKey]);
 
     const genConfirmation = () => {
-        NiceModal.show(ConfirmationModal, {
+        confirm({
             title: 'Regenerate your Staff Access Token',
             prompt: 'You can regenerate your Staff Access Token any time, but any scripts or applications using it will need to be updated.',
             okLabel: 'Regenerate your Staff Access Token',

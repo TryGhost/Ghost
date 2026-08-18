@@ -1,19 +1,18 @@
 import APIKeys from './api-keys';
 import BrandIcon from '@/settings/app/components/icons/brand-icon';
-import ConfirmationModal from '@/settings/app/components/confirmation-modal';
 import IntegrationHeader from './integration-header';
-import NiceModal from '@ebay/nice-modal-react';
 import ZapierLogo from '@/settings/app/assets/images/zapier-logo.svg';
 import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Button} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useBrowseIntegrations} from '@tryghost/admin-x-framework/api/integrations';
+import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRefreshAPIKey} from '@tryghost/admin-x-framework/api/api-keys';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 import {useSettingsApp} from '@/settings/app/components/providers/settings-app-provider';
 
 export interface ZapierTemplate {
@@ -23,15 +22,15 @@ export interface ZapierTemplate {
     url: string;
 }
 
-const ZapierModal = NiceModal.create(() => {
-    const modal = NiceModal.useModal();
-    const {updateRoute} = useRouting();
+function ZapierModal() {
+    const {updateRoute} = useSettingsNavigation();
     const {zapierTemplates} = useSettingsApp();
     const {data: {integrations} = {integrations: []}} = useBrowseIntegrations();
     const {config} = useGlobalData();
 
     const {mutateAsync: refreshAPIKey} = useRefreshAPIKey();
     const handleError = useHandleError();
+    const {confirm} = useConfirmation();
     const [regenerated, setRegenerated] = useState(false);
 
     const zapierDisabled = config.hostSettings?.limits?.customIntegrations?.disabled;
@@ -51,7 +50,7 @@ const ZapierModal = NiceModal.create(() => {
 
         setRegenerated(false);
 
-        NiceModal.show(ConfirmationModal, {
+        confirm({
             title: 'Regenerate Admin API Key',
             prompt: 'You will need to locate the Ghost App within your Zapier account and click on "Reconnect" to enter the new Admin API Key.',
             okLabel: 'Regenerate Admin API Key',
@@ -69,9 +68,6 @@ const ZapierModal = NiceModal.create(() => {
 
     return (
         <SettingsModal
-            afterClose={() => {
-                updateRoute('integrations');
-            }}
             cancelLabel=''
             footer={
                 <div className='mx-8 flex w-full items-center justify-between'>
@@ -83,7 +79,7 @@ const ZapierModal = NiceModal.create(() => {
                         View more Ghost integrations powered by <span><img alt='Zapier' className='relative top-[-2px] inline-block' src={ZapierLogo} /></span>
                     </a>
                     <Button type='button' onClick={() => {
-                        modal.remove();
+                        updateRoute('integrations');
                     }}>Close</Button>
                 </div>
             }
@@ -92,9 +88,11 @@ const ZapierModal = NiceModal.create(() => {
             testId='zapier-modal'
             title=''
             stickyFooter
+            onClose={() => {
+                updateRoute('integrations');
+            }}
             onOk={() => {
                 updateRoute('integrations');
-                modal.remove();
             }}
         >
             <IntegrationHeader
@@ -132,6 +130,6 @@ const ZapierModal = NiceModal.create(() => {
             </ActionList>
         </SettingsModal>
     );
-});
+}
 
 export default ZapierModal;

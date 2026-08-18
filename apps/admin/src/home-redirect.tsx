@@ -45,10 +45,10 @@ const HomeRedirect = () => {
     }
 
     if (isContributorUser(currentUser)) {
-        return <Navigate to="/posts" replace />;
+        return <Navigate to="/posts" crossApp replace />;
     }
 
-    return <Navigate to="/site" replace />;
+    return <Navigate to="/site" crossApp replace />;
 };
 
 export default HomeRedirect;

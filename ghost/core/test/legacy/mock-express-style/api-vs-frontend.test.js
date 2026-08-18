@@ -36,7 +36,7 @@ function asRouteSettings({routes = {}, collections = {}, taxonomies = {}}) {
 describe('Frontend behavior tests', function () {
     let app;
 
-    beforeAll(localUtils.urlService.resetGenerators);
+    beforeAll(localUtils.urlService.resetRouters);
     beforeAll(testUtils.teardownDb);
     beforeAll(testUtils.setup('users:roles', 'posts'));
 
@@ -375,7 +375,7 @@ describe('Frontend behavior tests', function () {
                     }
                 }));
 
-                localUtils.urlService.resetGenerators();
+                localUtils.urlService.resetRouters();
                 localUtils.defaultMocks(sinon, {theme: 'test-theme'});
 
                 app = await localUtils.initGhost();
@@ -480,7 +480,7 @@ describe('Frontend behavior tests', function () {
                     taxonomies: {}
                 }));
 
-                localUtils.urlService.resetGenerators();
+                localUtils.urlService.resetRouters();
                 localUtils.defaultMocks(sinon, {theme: 'test-theme'});
 
                 app = await localUtils.initGhost();
@@ -533,7 +533,7 @@ describe('Frontend behavior tests', function () {
                     taxonomies: {}
                 }));
 
-                localUtils.urlService.resetGenerators();
+                localUtils.urlService.resetRouters();
                 localUtils.defaultMocks(sinon);
 
                 app = await localUtils.initGhost();
@@ -625,7 +625,7 @@ describe('Frontend behavior tests', function () {
                     taxonomies: {}
                 }));
 
-                localUtils.urlService.resetGenerators();
+                localUtils.urlService.resetRouters();
                 localUtils.defaultMocks(sinon);
 
                 app = await localUtils.initGhost();
@@ -701,7 +701,7 @@ describe('Frontend behavior tests', function () {
                     taxonomies: {}
                 }));
 
-                localUtils.urlService.resetGenerators();
+                localUtils.urlService.resetRouters();
                 localUtils.defaultMocks(sinon);
 
                 app = await localUtils.initGhost();
@@ -812,7 +812,7 @@ describe('Frontend behavior tests', function () {
                     }
                 }));
 
-                localUtils.urlService.resetGenerators();
+                localUtils.urlService.resetRouters();
                 localUtils.defaultMocks(sinon);
 
                 app = await localUtils.initGhost();
@@ -917,7 +917,7 @@ describe('Frontend behavior tests', function () {
                     }
                 }));
 
-                localUtils.urlService.resetGenerators();
+                localUtils.urlService.resetRouters();
                 localUtils.defaultMocks(sinon);
 
                 app = await localUtils.initGhost();
@@ -975,7 +975,7 @@ describe('Frontend behavior tests', function () {
                     }
                 }));
 
-                localUtils.urlService.resetGenerators();
+                localUtils.urlService.resetRouters();
                 localUtils.defaultMocks(sinon);
 
                 app = await localUtils.initGhost();
@@ -1026,7 +1026,7 @@ describe('Frontend behavior tests', function () {
                     }
                 }));
 
-                localUtils.urlService.resetGenerators();
+                localUtils.urlService.resetRouters();
                 localUtils.defaultMocks(sinon, {theme: 'test-theme'});
 
                 app = await localUtils.initGhost();
@@ -1074,7 +1074,7 @@ describe('Frontend behavior tests', function () {
 
     describe('extended routes.yaml: routes', function () {
         describe('channels', function () {
-            beforeAll(localUtils.urlService.resetGenerators);
+            beforeAll(localUtils.urlService.resetRouters);
             beforeAll(testUtils.teardownDb);
             beforeAll(testUtils.setup('users:roles', 'posts'));
 
@@ -1369,7 +1369,7 @@ describe('Frontend behavior tests', function () {
                 taxonomies: {}
             }));
 
-            localUtils.urlService.resetGenerators();
+            localUtils.urlService.resetRouters();
             localUtils.defaultMocks(sinon, {theme: 'test-theme'});
 
             app = await localUtils.initGhost();

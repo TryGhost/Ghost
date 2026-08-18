@@ -18,16 +18,18 @@ const PAGE_SCOPE = {type: 'page', status: 'published'};
 const POST_RELATIONS = ['tags', 'authors'];
 const RELATION_KEYS = ['tags', 'authors', 'primary_tag', 'primary_author'];
 
-// Drop the same fields the eager resourceConfig excludes so the resolved record
-// has the same shape the eager service exposes (no post body, no extra
-// author/tag fields). posts_meta is an auto-loaded relation eager never keeps.
+// Drop the same columns the URL service excludes from filter evaluation, so a
+// resolved record keeps the shape callers have always seen (no post body, no
+// extra author/tag fields). posts_meta is an auto-loaded relation Ghost has
+// never exposed here.
 function excludeFor(type: string): string[] {
     const cfg = resourcesConfig.find((c: {type: string}) => c.type === type);
-    const exclude = (cfg && cfg.modelOptions.exclude) || [];
+    const exclude = cfg?.exclude ?? [];
     return [...exclude, 'posts_meta'];
 }
 
-// Eager trims relations to {id, slug} via withRelatedFields; match that.
+// Relations are trimmed to {id, slug}: permalinks and filters read nothing
+// else off them, and callers have never seen more.
 function trimRelation(value: unknown): unknown {
     if (Array.isArray(value)) {
         return value.map(item => _.pick(item, ['id', 'slug']));
@@ -38,12 +40,12 @@ function trimRelation(value: unknown): unknown {
     return value;
 }
 
-function pruneToEagerShape(record: Record<string, unknown>, type: string): Record<string, unknown> {
+function pruneToPublicShape(record: Record<string, unknown>, type: string): Record<string, unknown> {
     const pruned = _.omit(record, excludeFor(type));
 
     if (type === 'pages') {
-        // Eager always exposes primary_tag/primary_author as null on pages (they
-        // are virtual Post fields) but never carries the tags/authors arrays.
+        // primary_tag/primary_author are always null on pages (they are virtual
+        // Post fields), and pages never carry the tags/authors arrays.
         pruned.primary_tag = null;
         pruned.primary_author = null;
         return pruned;
@@ -59,8 +61,9 @@ function pruneToEagerShape(record: Record<string, unknown>, type: string): Recor
 
 /**
  * Builds the per-request DB lookup hook injected into LazyUrlService.resolveUrl.
- * Visibility rules mirror the eager service so a guessed slug can't surface
- * anything the eager path hid; unknown types resolve to null.
+ * Visibility rules match the forward lookup's base filters, so a guessed slug
+ * can't surface anything a generated URL would have hidden; unknown types
+ * resolve to null.
  */
 export function createFindResource(models: Models): FindResource {
     const loadOne = async (
@@ -78,7 +81,7 @@ export function createFindResource(models: Models): FindResource {
         if (Array.isArray(record.authors)) {
             record.primary_author = record.authors[0] ?? null;
         }
-        return pruneToEagerShape(record, type);
+        return pruneToPublicShape(record, type);
     };
 
     return (type: string, params: ResourceLookupParams): Promise<Record<string, unknown> | null> => {

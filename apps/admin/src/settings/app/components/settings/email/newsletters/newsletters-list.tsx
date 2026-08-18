@@ -3,7 +3,7 @@ import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent
 import {Inline} from '@tryghost/shade/primitives';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {type Newsletter} from '@tryghost/admin-x-framework/api/newsletters';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 
 interface NewslettersListProps {
     newsletters: Newsletter[];
@@ -23,7 +23,7 @@ const NewsletterItemContainer: React.FC<Partial<SortableItemContainerProps>> = (
 }) => {
     void separator; // we don't use the separator prop and it will error if it gets passed to the DragIndicator component
 
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
 
     const showDetails = () => {
         updateRoute({route: `newsletters/${id}`});

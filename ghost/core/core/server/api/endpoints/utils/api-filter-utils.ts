@@ -1,4 +1,5 @@
-import {rejectStatements} from '@tryghost/mongo-utils';
+import errors from '@tryghost/errors';
+import {getUsedKeys, rejectStatements} from '@tryghost/mongo-utils';
 
 const CONTENT_API_RESTRICTED_FIELDS = new Set([
     'password',
@@ -19,4 +20,16 @@ export const rejectContentApiRestrictedFieldsTransformer = (input: unknown) => {
 
 export const rejectAdminApiRestrictedFieldsTransformer = (input: unknown) => {
     return rejectStatements(input, (key: string) => hasRestrictedSegment(key, ADMIN_API_RESTRICTED_FIELDS));
+};
+
+export const validateAdminApiBulkFilterTransformer = (input: unknown) => {
+    const restrictedField = getUsedKeys(input).find((key: string) => hasRestrictedSegment(key, ADMIN_API_RESTRICTED_FIELDS));
+
+    if (restrictedField) {
+        throw new errors.BadRequestError({
+            message: 'Restricted fields cannot be used in bulk operation filters.'
+        });
+    }
+
+    return input;
 };

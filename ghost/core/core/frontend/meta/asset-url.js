@@ -6,6 +6,7 @@ const urlUtils = require('../../shared/url-utils').default;
 const {SafeString} = require('../services/handlebars');
 const assetHash = require('../services/asset-hash');
 const themeEngine = require('../services/theme-engine');
+const {cardAssets} = require('../services/assets-minification');
 
 /**
  * Serve either uploaded favicon or default
@@ -121,9 +122,12 @@ function getAssetUrl(assetPath, hasMinFile) {
         return getFaviconUrl();
     }
 
-    // Determine asset type
-    const isPublicAsset = assetPath.match(/^public\//);
-    const isThemeAsset = !isPublicAsset && !assetPath.match(/^asset/);
+    // Determine asset type. Anything that isn't a public asset is served out of the
+    // active theme's assets/ directory — but a caller may already have spelled that
+    // prefix themselves, in which case we must not add it a second time.
+    const isPublicAsset = !!assetPath.match(/^public\//);
+    const isThemeAsset = !isPublicAsset;
+    const hasAssetsPrefix = isThemeAsset && !!assetPath.match(/^asset/);
 
     // CASE: Build the output URL
     // If assetCdnUrl is configured, use it as the base (produces an absolute URL).
@@ -134,7 +138,7 @@ function getAssetUrl(assetPath, hasMinFile) {
         : urlUtils.urlJoin(urlUtils.getSubdir(), '/');
 
     // Optionally add /assets/
-    if (isThemeAsset) {
+    if (isThemeAsset && !hasAssetsPrefix) {
         output = urlUtils.urlJoin(output, 'assets/');
     }
 
@@ -149,12 +153,19 @@ function getAssetUrl(assetPath, hasMinFile) {
     // Get the appropriate hash for this asset (ignore URL anchor)
     const hashPath = assetPath.includes('#') ? assetPath.slice(0, assetPath.indexOf('#')) : assetPath;
     let hash;
-    // Use file-based SHA256 hash if enabled via config (defaults to false for backwards compatibility)
-    if (config.get('caching:assets:contentBasedHash:enabled')) {
+
+    // Card assets are assembled in memory, so their content hash is always
+    // available and always matches the bytes we serve — there's no file to miss
+    // and therefore no reason to gate this on contentBasedHash
+    const cardType = cardAssets.getCardType(hashPath);
+    if (cardType !== null) {
+        hash = cardAssets.getHash(cardType);
+    } else if (config.get('caching:assets:contentBasedHash:enabled')) {
         if (isThemeAsset) {
-            // For theme assets, use file-based SHA256 hash
-            hash = getThemeAssetHash(hashPath);
-        } else if (isPublicAsset) {
+            // Theme assets resolve relative to the theme's assets/ directory, so an
+            // explicitly-spelled prefix has to come back off before we look the file up
+            hash = getThemeAssetHash(hashPath.replace(/^assets\//, ''));
+        } else {
             // For public assets, use file-based SHA256 hash
             hash = getPublicAssetHash(hashPath);
         }

@@ -13,6 +13,9 @@ import {getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/ap
 import {getSiteTimezone} from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
+import {useFeatureFlag} from '@tryghost/admin-x-framework/hooks';
+import {useBrowseMemberCustomFields, useBrowseMemberCustomFieldsIncludingArchived} from '@tryghost/admin-x-framework/api/member-custom-fields';
+import type {MemberCustomField} from '@tryghost/admin-x-framework/api/member-custom-fields';
 import {useEmailPostValueSource, useLabelValueSource, usePostResourceValueSource, useTierValueSource} from '@/shared/filter-sources';
 import type {MemberView} from '@/members/hooks/use-member-views';
 
@@ -27,6 +30,7 @@ interface MembersFiltersProps {
 }
 
 const EMPTY_OFFERS: typeof buildOfferOptions extends (offers: infer T) => unknown ? T : never = [];
+const EMPTY_CUSTOM_FIELDS: MemberCustomField[] = [];
 
 function mapOfferRedemptionFilters(
     filters: Filter[],
@@ -93,6 +97,26 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     const emailValueSource = useEmailPostValueSource();
     const labelValueSource = useLabelValueSource();
     const {valueSource: tierValueSource, hasMultipleTiers} = useTierValueSource();
+    const customFieldsEnabled = useFeatureFlag('membersCustomFields');
+    // The picker lists active fields — the endpoint the members page has always used.
+    const {data: customFieldsData} = useBrowseMemberCustomFields({enabled: customFieldsEnabled});
+    const customFields = customFieldsData?.members_custom_fields ?? EMPTY_CUSTOM_FIELDS;
+    const referencedCustomFieldKeys = useMemo(() => new Set(
+        filters
+            .map(filter => filter.field)
+            .filter(field => field.startsWith('custom_field.'))
+            .map(field => field.slice('custom_field.'.length))
+            .filter(Boolean)
+    ), [filters]);
+    // Only when the current filter references a custom field do we also pull the archived
+    // ones, so a saved segment on a since-archived field still renders its read-only pill.
+    // Skipped otherwise, so the common members view makes no extra request.
+    const {data: archivedCustomFieldsData} = useBrowseMemberCustomFieldsIncludingArchived({
+        enabled: customFieldsEnabled && referencedCustomFieldKeys.size > 0
+    });
+    const archivedCustomFields = useMemo(() => (archivedCustomFieldsData?.members_custom_fields ?? EMPTY_CUSTOM_FIELDS)
+        .filter(field => field.status === 'archived' && referencedCustomFieldKeys.has(field.key))
+        .map(field => ({key: field.key, name: field.name})), [archivedCustomFieldsData, referencedCustomFieldKeys]);
 
     const filterFields = useMemberFilterFields({
         newsletters,
@@ -109,7 +133,10 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
         membersTrackSources,
         emailTrackOpens,
         emailTrackClicks,
-        siteTimezone
+        siteTimezone,
+        customFieldsEnabled,
+        customFields,
+        archivedCustomFields
     });
 
     const hasFilters = filters.length > 0;

@@ -9,7 +9,7 @@ import {formatNumber} from '@tryghost/shade/utils';
 import {keepPreviousData} from '@tanstack/react-query';
 import {useBrowseIncomingRecommendations, useBrowseRecommendations} from '@tryghost/admin-x-framework/api/recommendations';
 import {useReferrerHistory} from '@tryghost/admin-x-framework/api/referrers';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 import {withErrorBoundary} from '@/settings/app/components/error-boundary';
 
 const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
@@ -95,7 +95,7 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 
     // Add a new recommendation
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const openAddNewRecommendationModal = () => {
         updateRoute('recommendations/add');
     };

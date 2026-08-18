@@ -13,7 +13,7 @@ import {getSettingValue, useEditSettings} from '@tryghost/admin-x-framework/api/
 import {toast} from 'sonner';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 import {withErrorBoundary} from '@/settings/app/components/error-boundary';
 
 interface OwnerProps {
@@ -33,7 +33,7 @@ interface InviteListProps {
 }
 
 const Owner: React.FC<OwnerProps> = ({user}) => {
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const {currentUser} = useGlobalData();
 
     const showDetailModal = () => {
@@ -61,7 +61,7 @@ const Owner: React.FC<OwnerProps> = ({user}) => {
 };
 
 const UsersList: React.FC<UsersListProps> = ({users, groupname}) => {
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const {currentUser} = useGlobalData();
 
     const showDetailModal = (user: User) => {
@@ -226,7 +226,7 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
         invitesHasNextPage,
         fetchNextInvitePage
     } = useStaffUsers();
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const {settings, config, currentUser} = useGlobalData();
 
     const showInviteModal = () => {

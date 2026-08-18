@@ -1,10 +1,7 @@
 import ColorPickerField from '@/settings/app/components/color-picker-field';
-import ConfirmationModal from '@/settings/app/components/confirmation-modal';
 import HeaderImageField from '@/settings/app/components/settings/email-design/header-image-field';
 import HtmlField from '@/settings/app/components/html-field';
-import LimitModal from '@/settings/app/components/limit-modal';
 import NewsletterPreview from './newsletter-preview';
-import NiceModal from '@ebay/nice-modal-react';
 import React, {useCallback, useEffect, useState} from 'react';
 import useFeatureFlag from '@/settings/app/hooks/use-feature-flag';
 import useSettingGroup from '@/settings/app/hooks/use-setting-group';
@@ -16,7 +13,10 @@ import {Inline, Stack} from '@tryghost/shade/primitives';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {type Newsletter, useBrowseNewsletters, useEditNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {PreviewModalContent} from '@/settings/app/components/settings/preview-modal';
-import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
+import {useParams} from '@tryghost/admin-x-framework';
+import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+import {useUpgradeRoute} from '@/settings/app/hooks/use-upgrade-route';
 import {getSettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {hasSendingDomain, isManagedEmail, sendingDomain} from '@tryghost/admin-x-framework/api/config';
 import {renderReplyToEmail, renderSenderEmail} from '@/settings/app/utils/newsletter-emails';
@@ -97,7 +97,8 @@ const Sidebar: React.FC<{
     clearError: (field: string) => void;
 }> = ({newsletter, onlyOne, updateNewsletter, validate, errors, clearError}) => {
     type FontOption = {value: string; label: string; className?: string};
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
+    const upgradeRoute = useUpgradeRoute();
     const {mutateAsync: editNewsletter} = useEditNewsletter();
     const limiter = useLimiter();
     const {settings, config, siteData} = useGlobalData();
@@ -106,6 +107,7 @@ const Sidebar: React.FC<{
     const {localSettings} = useSettingGroup();
     const [siteTitle] = getSettingValues(localSettings, ['title']) as string[];
     const handleError = useHandleError();
+    const {confirm, showLimit} = useConfirmation();
     const {data: {newsletters: apiNewsletters} = {}} = useBrowseNewsletters();
     const commentsEnabled = ['all', 'paid'].includes(getSettingValue(settings, 'comments_enabled') || '');
 
@@ -152,7 +154,7 @@ const Sidebar: React.FC<{
 
     const confirmStatusChange = async () => {
         if (newsletter.status === 'active') {
-            NiceModal.show(ConfirmationModal, {
+            confirm({
                 title: 'Archive newsletter',
                 prompt: <>
                     <div className="mb-6">Your newsletter <strong>{newsletter.name}</strong> will no longer be visible to members or available as an option when publishing new posts.</div>
@@ -175,9 +177,9 @@ const Sidebar: React.FC<{
                 await limiter?.errorIfWouldGoOverLimit('newsletters');
             } catch (error) {
                 if (error instanceof HostLimitError) {
-                    NiceModal.show(LimitModal, {
+                    showLimit({
                         prompt: error.message || `Your current plan doesn't support more newsletters.`,
-                        onOk: () => updateRoute({route: '/pro', isExternal: true})
+                        onOk: () => updateRoute({route: upgradeRoute, isExternal: true})
                     });
                     return;
                 } else {
@@ -185,7 +187,7 @@ const Sidebar: React.FC<{
                 }
             }
 
-            NiceModal.show(ConfirmationModal, {
+            confirm({
                 title: 'Reactivate newsletter',
                 prompt: <>
                         Reactivating <strong>{newsletter.name}</strong> will immediately make it visible to members and re-enable it as an option when publishing new posts.
@@ -685,7 +687,7 @@ const Sidebar: React.FC<{
 const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: boolean;}> = ({newsletter, onlyOne}) => {
     const {config} = useGlobalData();
     const {mutateAsync: editNewsletter} = useEditNewsletter();
-    const {updateRoute} = useRouting();
+    const {updateRoute} = useSettingsNavigation();
     const returnRoute = useFeatureFlag('automations') ? 'emails' : 'newsletters';
     const handleError = useHandleError();
 
@@ -741,7 +743,6 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
     const sidebar = <Sidebar clearError={clearError} errors={errors} newsletter={formState} onlyOne={onlyOne} updateNewsletter={updateNewsletter} validate={validate} />;
 
     return <PreviewModalContent
-        afterClose={() => updateRoute(returnRoute)}
         buttonsDisabled={okProps.disabled}
         cancelLabel='Close'
         dirty={saveState === 'unsaved'}
@@ -754,15 +755,17 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
         sidebarPadding={false}
         testId='newsletter-modal'
         title='Newsletter'
+        onClose={() => updateRoute(returnRoute)}
         onOk={async () => {
             await handleSave({fakeWhenUnchanged: true});
         }}
     />;
 };
 
-const NewsletterDetailModal: React.FC<RoutingModalProps> = ({params}) => {
+const NewsletterDetailModal: React.FC = () => {
+    const {newsletterId} = useParams();
     const {data: {newsletters, isEnd} = {}, fetchNextPage} = useBrowseNewsletters();
-    const newsletter = newsletters?.find(({id}) => id === params?.id);
+    const newsletter = newsletters?.find(({id}) => id === newsletterId);
 
     useEffect(() => {
         if (!newsletter && !isEnd) {
@@ -777,4 +780,4 @@ const NewsletterDetailModal: React.FC<RoutingModalProps> = ({params}) => {
     }
 };
 
-export default NiceModal.create(NewsletterDetailModal);
+export default NewsletterDetailModal;

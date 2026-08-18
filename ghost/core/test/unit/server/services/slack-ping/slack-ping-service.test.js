@@ -29,9 +29,7 @@ function createService() {
     const settingsCache = {get: sinon.stub()};
 
     const urlService = {
-        facade: {
-            getUrlForResource: sinon.stub()
-        }
+        getUrlForResource: sinon.stub()
     };
 
     const urlUtils = {urlFor: sinon.stub().returns(null)};
@@ -114,10 +112,10 @@ describe('Slack Ping', function () {
             const {requests, scope} = mockSlackWebhook();
 
             deps.settingsCache.get.withArgs('slack_url').returns(slackURL);
-            deps.urlService.facade.getUrlForResource
+            deps.urlService.getUrlForResource
                 .withArgs(sinon.match({id: testPost.id, type: 'posts'}), {absolute: true})
                 .returns('http://myblog.com/' + testPost.slug + '/');
-            deps.urlService.facade.getUrlForResource
+            deps.urlService.getUrlForResource
                 .withArgs(sinon.match({id: testAuthor.id, type: 'authors'}), {absolute: true})
                 .returns('http://myblog.com/author/' + testAuthor.slug + '/');
 
@@ -127,10 +125,10 @@ describe('Slack Ping', function () {
 
             assert.equal(scope.isDone(), true);
             assert.equal(requests[0].attachments[1].fields[0].value, `<http://myblog.com/author/${testAuthor.slug}/ | ${testAuthor.name}>`);
-            // tags must reach the URL service so the lazy backend can evaluate
+            // tags must reach the URL service so it can evaluate
             // collection filters like `tag:foo` when resolving the post URL
             sinon.assert.calledWith(
-                deps.urlService.facade.getUrlForResource,
+                deps.urlService.getUrlForResource,
                 sinon.match({id: testPost.id, type: 'posts', tags: [testTag]}),
                 {absolute: true}
             );
@@ -146,7 +144,7 @@ describe('Slack Ping', function () {
             service.handlePostEvent(createPostModel(testPost), {importing: true});
 
             assert.equal(scope.isDone(), false);
-            sinon.assert.notCalled(deps.urlService.facade.getUrlForResource);
+            sinon.assert.notCalled(deps.urlService.getUrlForResource);
         });
     });
 
@@ -160,7 +158,7 @@ describe('Slack Ping', function () {
             const {requests, scope} = mockSlackWebhook();
 
             deps.settingsCache.get.withArgs('slack_url').returns(slackURL);
-            deps.urlService.facade.getUrlForResource
+            deps.urlService.getUrlForResource
                 .withArgs(sinon.match({id: post.id, type: 'posts'}), {absolute: true})
                 .returns('http://myblog.com/' + post.slug + '/');
 
@@ -169,7 +167,7 @@ describe('Slack Ping', function () {
             await waitFor(() => scope.isDone());
 
             assert.equal(scope.isDone(), true);
-            sinon.assert.calledOnce(deps.urlService.facade.getUrlForResource);
+            sinon.assert.calledOnce(deps.urlService.getUrlForResource);
             sinon.assert.calledWith(deps.settingsCache.get, 'slack_url');
 
             const requestData = requests[0];
@@ -195,7 +193,7 @@ describe('Slack Ping', function () {
             await waitFor(() => scope.isDone());
 
             assert.equal(scope.isDone(), true);
-            sinon.assert.notCalled(deps.urlService.facade.getUrlForResource);
+            sinon.assert.notCalled(deps.urlService.getUrlForResource);
             sinon.assert.calledWith(deps.settingsCache.get, 'slack_url');
 
             const requestData = requests[0];
@@ -233,7 +231,7 @@ describe('Slack Ping', function () {
             service.handlePostEvent(createPostModel(post));
 
             assert.equal(scope.isDone(), false);
-            sinon.assert.calledOnce(deps.urlService.facade.getUrlForResource);
+            sinon.assert.calledOnce(deps.urlService.getUrlForResource);
             sinon.assert.calledWith(deps.settingsCache.get, 'slack_url');
         });
 
@@ -247,7 +245,7 @@ describe('Slack Ping', function () {
             service.handlePostEvent(createPostModel(post));
 
             assert.equal(scope.isDone(), false);
-            sinon.assert.calledOnce(deps.urlService.facade.getUrlForResource);
+            sinon.assert.calledOnce(deps.urlService.getUrlForResource);
             sinon.assert.calledWith(deps.settingsCache.get, 'slack_url');
         });
 
@@ -259,7 +257,7 @@ describe('Slack Ping', function () {
 
             service.handlePostEvent(createPostModel(post));
 
-            sinon.assert.called(deps.urlService.facade.getUrlForResource);
+            sinon.assert.called(deps.urlService.getUrlForResource);
             sinon.assert.calledWith(deps.settingsCache.get, 'slack_url');
         });
     });

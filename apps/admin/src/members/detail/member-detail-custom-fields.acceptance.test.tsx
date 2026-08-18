@@ -3,7 +3,7 @@ import {page, userEvent} from 'vitest/browser';
 
 import {fakeAdminEndpoint, fakeMembers, member, renderAdminApp, type Member} from '@test-utils/acceptance';
 
-const FLAGS = {labs: {memberDetailsReact: true, membersCustomFields: true}};
+const FLAGS = {labs: {membersCustomFields: true}};
 
 const FIELDS = [
     {key: 'job_title', name: 'Job title', type: 'short_text', created_at: '2026-07-14T00:00:00.000Z', updated_at: null},
@@ -206,7 +206,7 @@ describe('Member detail custom fields', () => {
             errors: [{
                 property: 'custom_fields.job_title',
                 context: 'Rejected by the server for reasons the client could not know.',
-                message: 'Invalid value for custom field \'Job title\'.'
+                message: 'Validation error, cannot edit member.'
             }]
         }, {status: 422});
         await renderAdminApp(`/members/${m.id}`, FLAGS);

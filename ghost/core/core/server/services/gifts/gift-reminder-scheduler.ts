@@ -12,11 +12,7 @@ const GIFT_REMINDER_LEAD_MS = GIFT_REMINDER_LEAD_DAYS * MS_PER_DAY;
 
 interface GiftReminderSchedulerDeps {
     apiUrl: string;
-    // Optional in deps so the JS wrapper can pass options.schedulerAdapter
-    // through without TS complaining at the JS/TS boundary. The class field
-    // below is non-optional; the constructor's adapter.register(this) call
-    // throws if undefined is passed through in practice.
-    adapter?: SchedulerAdapter;
+    adapter: SchedulerAdapter;
     internalKeys: InternalKeys;
     findUnsentReminders(): Promise<Gift[]>;
 }
@@ -29,7 +25,7 @@ export class GiftReminderScheduler {
 
     constructor({apiUrl, adapter, internalKeys, findUnsentReminders}: GiftReminderSchedulerDeps) {
         this.#apiUrl = apiUrl;
-        this.#adapter = adapter!;
+        this.#adapter = adapter;
         this.#internalKeys = internalKeys;
         this.#findUnsentReminders = findUnsentReminders;
         this.#adapter.register(this);
