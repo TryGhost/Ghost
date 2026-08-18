@@ -1,4 +1,3 @@
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import useFeatureFlag from '@/settings/app/hooks/use-feature-flag';
 import {Button, Dropzone} from '@tryghost/shade/components';
@@ -10,8 +9,7 @@ import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useImportContent} from '@tryghost/admin-x-framework/api/db';
 import {useImportContentCSV} from '@tryghost/admin-x-framework/api/posts';
 
-const UniversalImportModal: React.FC = () => {
-    const modal = useModal();
+const UniversalImportModal: React.FC<{onClose: () => void}> = ({onClose}) => {
     const {mutateAsync: importContent} = useImportContent();
     const {mutateAsync: importContentCSV} = useImportContentCSV();
     const csvContentImporter = useFeatureFlag('csvContentImporter');
@@ -32,13 +30,14 @@ const UniversalImportModal: React.FC = () => {
                         Learn more
                         <ExternalLink aria-hidden='true' className='size-3' />
                     </a>
-                    <Button disabled={uploading} type='button' variant='outline' onClick={() => modal.remove()}>Cancel</Button>
+                    <Button disabled={uploading} type='button' variant='outline' onClick={onClose}>Cancel</Button>
                 </Inline>
             }
             okLabel=''
             size='sm'
             testId='universal-import-modal'
             title='Universal import'
+            onClose={onClose}
         >
             <div className='py-4'>
                 <Dropzone
@@ -53,7 +52,7 @@ const UniversalImportModal: React.FC = () => {
                             } else {
                                 await importContent(file);
                             }
-                            modal.remove();
+                            onClose();
                             confirm({
                                 title: 'Import in progress',
                                 prompt: `Your import is being processed, and you'll receive a confirmation email as soon as it’s complete. Usually this only takes a few minutes, but larger imports may take longer.`,
@@ -80,4 +79,4 @@ const UniversalImportModal: React.FC = () => {
     );
 };
 
-export default NiceModal.create(UniversalImportModal);
+export default UniversalImportModal;
