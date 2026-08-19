@@ -3,6 +3,7 @@ const debug = require('@tryghost/debug')('stripe');
 const ghostConfig = require('../../../shared/config');
 const stripe = require('stripe');
 const i18n = require('../i18n');
+const {stripeCheckoutCollectionOptions} = require('./services/checkout/session-options');
 
 /* Stripe has the following rate limits:
 *  - For most APIs, 100 read requests per second in live mode, 25 read requests per second in test mode
@@ -543,6 +544,8 @@ module.exports = class StripeAPI {
      * @param {string} options.customerEmail
      * @param {number} options.trialDays
      * @param {string} [options.coupon]
+     * @param {import('../tier-checkout-config').ResolvedCheckout} [options.checkout] What
+     *   the tier's checkout asks for beyond the payment. Absent, or empty, adds nothing.
      *
      * @returns {Promise<ICheckoutSession>}
      */
@@ -618,6 +621,12 @@ module.exports = class StripeAPI {
         }
 
         this._applyAutomaticTaxSessionOptions(stripeSessionOptions, {hasCustomer: Boolean(customerId)});
+
+        // Applied after automatic tax so the two agree about `tax_id_collection`: both ask
+        // for the same thing, and a site with either reason to collect gets it. Nothing is
+        // added for a tier that has configured nothing, so an unconfigured site's request
+        // is unchanged.
+        Object.assign(stripeSessionOptions, stripeCheckoutCollectionOptions(options.checkout));
 
         const session = await this._stripe.checkout.sessions.create(stripeSessionOptions);
 

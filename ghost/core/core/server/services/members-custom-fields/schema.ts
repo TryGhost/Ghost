@@ -27,6 +27,30 @@ type CustomFieldRank = {sort_order: number};
 
 type CustomFieldRow = z.infer<typeof DbCustomField> & CustomFieldRank;
 
+/**
+ * How a value arrived. The path it took, not the person who took it: who edited a member's
+ * fields is already recorded as an action, and Stripe is not a person at all.
+ *
+ * Required by every write, so a writer has to name itself rather than inheriting someone
+ * else's identity. Open rather than a closed list: a binding names its own writer, and a
+ * central enumeration of them would be the one place every new integration had to be added
+ * to — which is the thing keying bindings on their source exists to avoid. Ghost's own
+ * channels are named below so nothing writing from here has to spell one out.
+ */
+export const WRITTEN_BY = {
+    binding: 'binding',
+    user: 'user',
+    integration: 'integration',
+    import: 'import'
+} as const;
+
+export const WrittenBy = z.object({
+    type: z.string(),
+    /** Absent for a writer with no identity to give: an import, until runs are tracked. */
+    id: z.string().nullable()
+});
+export type WrittenBy = z.infer<typeof WrittenBy>;
+
 // One part of a member's value. What a `path` means is storage.ts's business, so the row
 // carries it as a plain string.
 export const DbCustomFieldValue = z.object({
@@ -37,6 +61,9 @@ export const DbCustomFieldValue = z.object({
     // Nullable like the column, though nothing here writes a null: a part with no value
     // has no row.
     value_text: z.string().nullable(),
+    // Nullable only for rows written before the columns existed; every write states a type.
+    written_by_type: z.string().nullable(),
+    written_by_id: z.string().nullable(),
     created_at: DbDate,
     updated_at: DbDate.nullable()
 });
@@ -56,6 +83,25 @@ export const DbCustomFieldLeaf = z.object({
     value_text: z.string()
 });
 
+/**
+ * Where one writer's port lands. A row exists only while it is bound, so "no row" is the
+ * whole of what unbound means.
+ *
+ * `source` and `port` stay plain strings: what a writer calls the thing it collects belongs
+ * to that writer, so a row naming one this build has never heard of is a row to ignore
+ * rather than one to refuse.
+ */
+export const DbCustomFieldBinding = z.object({
+    id: z.string(),
+    product_id: z.string(),
+    port: z.string(),
+    custom_field_key: z.string(),
+    created_at: DbDate,
+    updated_at: DbDate.nullable()
+});
+
+type CustomFieldBindingRow = z.infer<typeof DbCustomFieldBinding>;
+
 declare module 'knex/types/tables' {
     interface Tables {
         members_custom_fields: Knex.CompositeTableType<
@@ -69,6 +115,13 @@ declare module 'knex/types/tables' {
             CustomFieldValueRow,
             Omit<z.input<typeof DbCustomFieldValue>, 'updated_at'>,
             Partial<CustomFieldValueRow>
+        >;
+        members_custom_field_bindings: Knex.CompositeTableType<
+            CustomFieldBindingRow,
+            // `updated_at` is set on insert as well as update: a binding is a setting, and
+            // "when was this last stated" is the same question whichever way it got there.
+            z.input<typeof DbCustomFieldBinding>,
+            Partial<CustomFieldBindingRow>
         >;
     }
 }

@@ -125,6 +125,20 @@ module.exports = function apiRoutes() {
     // Tiers
     router.get('/tiers', mw.authAdminApi, http(api.tiers.browse));
     router.post('/tiers', mw.authAdminApi, http(api.tiers.add));
+    // What a tier's checkout asks for, read when a Stripe checkout session is built.
+    // Registered before /tiers/:id so the literal path isn't captured by :id.
+    //
+    // A sub-resource rather than a key on the tier, because the tier payload is a public
+    // projection: `tiers-public` shares this docName's serializer, so anything on a tier is
+    // rendered by themes. This is admin-only configuration that no client renders, since
+    // the questions are drawn by Stripe's own checkout page rather than by Portal.
+    //
+    // Named for the configuration rather than the checkout, so it cannot be mistaken for
+    // the session that `create-stripe-checkout-session` creates from it.
+    router.get('/tiers/checkout_config', mw.authAdminApi, labs.enabledMiddleware('membersCustomFields'), http(api.tiersCheckoutConfig.browse));
+    router.get('/tiers/:id/checkout_config', mw.authAdminApi, labs.enabledMiddleware('membersCustomFields'), http(api.tiersCheckoutConfig.read));
+    router.put('/tiers/:id/checkout_config', mw.authAdminApi, labs.enabledMiddleware('membersCustomFields'), http(api.tiersCheckoutConfig.edit));
+
     router.get('/tiers/:id', mw.authAdminApi, http(api.tiers.read));
     router.put('/tiers/:id', mw.authAdminApi, http(api.tiers.edit));
 

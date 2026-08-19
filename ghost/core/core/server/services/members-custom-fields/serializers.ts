@@ -11,12 +11,27 @@ const CustomFieldResource = z.object({
     type: z.string(),
     status: z.string(),
     created_at: z.date(),
-    updated_at: z.date().nullable()
+    updated_at: z.date().nullable(),
+    // Relations, present only when the request asked for them. Absent rather than empty,
+    // so a caller can tell "not requested" from "nothing depends on this".
+    bindings: z.array(z.object({port: z.string()})).optional(),
+    tiers: z.array(z.object({id: z.string(), name: z.string()})).optional()
 });
 const CustomFieldsResponse = z.object({members_custom_fields: z.array(CustomFieldResource)});
 
-export const toCustomFieldsResponse = z.array(CustomField)
+/** A definition as the endpoints hand it over: the domain shape, plus anything joined on. */
+export const CustomFieldWithRelations = CustomField.extend({
+    // What writes into this field: one entry per writer, so "three things feed this" is a
+    // count rather than an inference.
+    bindings: z.array(z.object({port: z.string()})).optional(),
+    tiers: z.array(z.object({id: z.string(), name: z.string()})).optional()
+});
+export type CustomFieldWithRelations = z.infer<typeof CustomFieldWithRelations>;
+
+export const toCustomFieldsResponse = z.array(CustomFieldWithRelations)
     .transform((fields): z.input<typeof CustomFieldsResponse> => ({
+        // Shallow, so a relation's own keys are left as they were written — they are
+        // already the names the response uses.
         members_custom_fields: fields.map(field => snakeKeys(field))
     }))
     .pipe(CustomFieldsResponse);

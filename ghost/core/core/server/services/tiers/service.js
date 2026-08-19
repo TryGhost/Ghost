@@ -30,6 +30,16 @@ class TiersServiceWrapper {
             repository,
             slugService
         });
+
+        // What a tier's checkout asks, kept beside the tier rather than inside it: these
+        // rows are read live on every request, because deleting a custom field cascades a
+        // question away without the repository above ever seeing it, and a cached copy
+        // would go on naming a field the site no longer has.
+        //
+        // Boot builds the custom fields services before this one, so both collaborators
+        // are ready by the time this runs.
+        const {TierCheckoutConfigService} = require('../tier-checkout-config');
+        this.checkout = new TierCheckoutConfigService({knex: models.Base.knex});
     }
 }
 

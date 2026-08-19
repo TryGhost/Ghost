@@ -110,6 +110,7 @@ describe('StripeAPI', function () {
             assert.equal(mockStripe.checkout.sessions.create.firstCall.firstArg.subscription_data.trial_period_days, undefined);
         });
 
+
         it('passes customer ID successfully to Stripe', async function () {
             const mockCustomer = {
                 id: mockCustomerId,

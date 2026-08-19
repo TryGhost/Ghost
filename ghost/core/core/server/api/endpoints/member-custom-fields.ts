@@ -40,24 +40,31 @@ const controller = {
         // passes `filter=status:[active,archived]` to see both. No pagination or order
         // options: the list comes back in the publisher's own order, which is changed
         // by reordering it rather than by asking for it differently.
-        options: ['filter'],
+        //
+        // `include` is renamed to `withRelated` by the framework before this runs, the same
+        // way it is for every other resource, and forwarded from here exactly like `filter`.
+        // Which relations exist and how they load is the service's business.
+        options: ['filter', 'include'],
         permissions(frame: Frame) {
             return canThis(frame).browse.member_custom_field();
         },
         query(frame: Frame) {
-            return definitions!.browse({filter: frame.options.filter as string | undefined});
+            return definitions!.browse({
+                filter: frame.options.filter as string | undefined,
+                withRelated: frame.options.withRelated
+            });
         }
     },
 
     read: {
         headers: noCacheInvalidation,
-        options: ['key'],
+        options: ['key', 'include'],
         validation: {options: {key: {required: true}}},
         permissions(frame: Frame) {
             return canThis(frame).read.member_custom_field(frame.options.key);
         },
         query(frame: Frame) {
-            return definitions!.read(frame.options.key);
+            return definitions!.read(frame.options.key, {withRelated: frame.options.withRelated});
         }
     },
 
