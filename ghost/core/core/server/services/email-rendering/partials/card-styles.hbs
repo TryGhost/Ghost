@@ -621,6 +621,211 @@ img.kg-cta-image {
     width: 100%;
 }
 
+/* Paywall card - mirrors the CTA card, which it shares a layout with */
+.kg-paywall-card {
+    margin: 0 0 1.5em 0;
+    padding: 0 24px;
+    {{#if hasRoundedImageCorners}}
+        border-radius: 6px;
+    {{else}}
+        border-radius: 0;
+    {{/if}}
+}
+
+.kg-paywall-card + * {
+    margin-top: 1.5em !important;
+}
+
+.kg-paywall-card + hr {
+    margin-top: 3em !important;
+}
+
+.kg-paywall-card.kg-paywall-bg-none {
+    padding: 0;
+    border-radius: 0;
+}
+
+.kg-paywall-card.kg-paywall-bg-none:not(.kg-paywall-no-dividers) {
+    border-top: 1px solid {{dividerColor}};
+    border-bottom: 1px solid {{dividerColor}};
+}
+
+.kg-paywall-bg-white {
+    {{#if backgroundIsDark}}
+        background-color: #15212A;
+        background-color: rgba(0, 0, 0, 0.15);
+        border: 1px solid #343434;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+    {{else}}
+        background-color: #ffffff;
+        background-color: rgba(255, 255, 255, 0.25);
+        border: 1px solid #e0e7eb;
+        border: 1px solid rgba(0, 0, 0, 0.12);
+    {{/if}}
+}
+
+.kg-paywall-bg-grey {
+    background: #f1f2f4;
+}
+
+/* Background only. The readable text colour is written inline on each element
+   by the renderer, because a site's accent can be anything and CSS can't
+   measure its contrast. Nothing here may set `color` - an `!important` rule
+   would outrank those inline styles and undo the whole thing. */
+.kg-paywall-bg-accent {
+    background: {{accentColor}};
+}
+
+/* The renderer writes the readable colour onto the heading and text cells
+   themselves - nothing here may set `color` on those, or an `!important` rule
+   would outrank the inline style and undo it.
+
+   Their children are a different matter. The heading's paragraph is unwrapped
+   so its text sits straight in the cell, but the body keeps its <p>, which
+   picks up a colour of its own from the email's base styles and so stops
+   inheriting. These force it back. */
+.kg-paywall-bg-accent .kg-paywall-text p,
+.kg-paywall-bg-accent .kg-paywall-text span,
+.kg-paywall-bg-accent .kg-paywall-heading span {
+    color: inherit !important;
+}
+
+.kg-paywall-bg-blue {
+    background: #E9F6FB;
+}
+
+.kg-paywall-bg-green {
+    background: #E8F8EA;
+}
+
+.kg-paywall-bg-yellow {
+    background: #FCF4E3;
+}
+
+.kg-paywall-bg-red {
+    background: #FBE9E9;
+}
+
+.kg-paywall-bg-pink {
+    background: #FCEEF8;
+}
+
+.kg-paywall-bg-purple {
+    background: #F2EDFC;
+}
+
+table.kg-paywall-content-wrapper {
+    padding: 24px 0 26px;
+}
+
+.kg-paywall-bg-none.kg-paywall-no-dividers table.kg-paywall-content-wrapper {
+    padding: 0;
+}
+
+.kg-paywall-minimal .kg-paywall-image-container {
+    padding-right: 24px;
+}
+
+.kg-paywall-immersive .kg-paywall-image-container {
+    padding-bottom: 24px;
+}
+
+img.kg-paywall-image {
+    display: block;
+    border: 0;
+    {{#if hasRoundedImageCorners}}
+        border-radius: 4px;
+    {{else}}
+        border-radius: 0;
+    {{/if}}
+}
+
+.kg-paywall-minimal img.kg-paywall-image {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+}
+
+.kg-paywall-immersive img.kg-paywall-image {
+    margin: 0 auto;
+    height: auto;
+    width: 100%;
+    max-width: 100%;
+}
+
+.kg-paywall-heading {
+    padding-bottom: 12px;
+    font-size: 22px;
+    /* weight comes from the card's own content; the default copy ships bold */
+    font-weight: 400;
+    line-height: 1.25;
+}
+
+.kg-paywall-heading b,
+.kg-paywall-heading strong {
+    font-weight: 700;
+}
+
+.post-content .kg-paywall-heading,
+.post-content .kg-paywall-text {
+    font-family: Georgia, serif;
+}
+
+.post-content-sans-serif .kg-paywall-heading,
+.post-content-sans-serif .kg-paywall-text {
+    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+}
+
+.post-content-sans-serif .kg-paywall-text {
+    font-size: 17px;
+}
+
+.kg-paywall-immersive.kg-paywall-centered .kg-paywall-heading,
+.kg-paywall-immersive.kg-paywall-centered .kg-paywall-text p {
+    text-align: center;
+}
+
+.kg-paywall-text p {
+    margin-bottom: 1em;
+    line-height: 1.4;
+}
+
+.kg-paywall-text p:last-child {
+    margin-bottom: 0;
+}
+
+.kg-paywall-text a:not(.kg-paywall-link-accent .kg-paywall-text a) {
+    color: #15212A;
+    text-decoration: underline;
+}
+
+.kg-paywall-link-accent .kg-paywall-text a {
+    color: {{accentColor}} !important;
+}
+
+.kg-paywall-button-container {
+    padding-top: 20px;
+}
+
+.kg-paywall-immersive.kg-paywall-centered table.btn {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.kg-paywall-has-img.kg-paywall-immersive table.btn {
+    width: 100%;
+}
+
+.kg-paywall-card .btn a.kg-style-accent {
+    {{#if hasOutlineButtons}}
+    background-color: transparent !important;
+    color: {{accentColor}} !important;
+    {{else}}
+    background-color: {{accentColor}} !important;
+    color: #fff !important;
+    {{/if}}
+}
+
 .kg-product-card {
     margin: 0 0 1.5em;
     {{#if hasRoundedImageCorners}}

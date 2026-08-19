@@ -246,6 +246,15 @@ export default Model.extend(Comparable, ValidationEngine, {
         return this.visibility === 'public' ? true : false;
     }),
 
+    // A paywall card gates the post from inside the content, so the post is
+    // still worth sending to free members - they get the preview and the
+    // upgrade prompt. Checked against the serialized lexical rather than a
+    // model attribute because the card lives in the editor's content.
+    hasPaywallCard: computed('lexical', 'lexicalScratch', function () {
+        const lexical = this.lexicalScratch || this.lexical || '';
+        return lexical.includes('"type":"paywall-v2"');
+    }),
+
     visibilitySegment: computed('visibility', 'isPublic', 'tiers', function () {
         if (this.isPublic) {
             return this.settings.defaultContentVisibility === 'paid' ? 'status:-free' : 'status:free,status:-free';

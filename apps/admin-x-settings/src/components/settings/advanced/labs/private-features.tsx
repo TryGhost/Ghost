@@ -91,6 +91,14 @@ const features: Feature[] = [{
     title: 'Gift subscription customization',
     description: 'Enables fixed-duration gift subscription purchases before publisher configuration is available',
     flag: 'giftSubCustomization'
+}, {
+    title: 'Paywall card',
+    description: 'Adds an editable paywall card that splits a gated post into a free preview and custom web and email upgrade prompts',
+    flag: 'paywallV2'
+}, {
+    title: 'Stepped publish flow',
+    description: 'Presents the publish options as numbered questions with more guidance at each step',
+    flag: 'publishFlowSteps'
 }];
 
 const AlphaFeatures: React.FC = () => {

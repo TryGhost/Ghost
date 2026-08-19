@@ -104,7 +104,9 @@ export function buildCardConfigPost(post, defaultContentVisibility) {
         displayName: post.displayName,
         isPage: post.isPage,
         showTitleAndFeatureImage: post.showTitleAndFeatureImage,
-        visibility: post.visibility || defaultContentVisibility
+        visibility: post.visibility || defaultContentVisibility,
+        // slugs only - the paywall card reads these to seed its own tier selection
+        tiers: (post.tiers || []).map(tier => tier.slug).filter(Boolean)
     };
 }
 
@@ -189,6 +191,11 @@ const FILE_UPLOADER = {
 
 const NOOP = () => {};
 
+// Gating a post and ungating it are opposite moves on the same thing, so they
+// share a notification key: toggling access replaces the last message rather
+// than leaving two contradictory ones stacked up.
+const PAYWALL_ACCESS_NOTIFICATION_KEY = 'post-access.paywall';
+
 const KGEditorComponent = ({cardConfig, darkMode, editorArgs, editorResource, isInitInstance, onError}) => {
     return (
         <div data-secondary-instance={isInitInstance ? true : false} style={isInitInstance ? {display: 'none'} : {}}>
@@ -224,6 +231,7 @@ export default class KoenigLexicalEditor extends Component {
     @service membersUtils;
     @service search;
     @service session;
+    @service notifications;
     @service settings;
     @service store;
 
@@ -428,6 +436,54 @@ export default class KoenigLexicalEditor extends Component {
             return labels.map(label => label.name);
         };
 
+        /**
+         * A paywall was inserted into a public post, so the post is gated to
+         * match. Uses `this.args.cardConfig.post` rather than the narrowed copy
+         * handed to React, because this needs the writable Ember model.
+         *
+         * No explicit save: inserting the card is itself a content change, so
+         * the editor's autosave carries the access with it.
+         */
+        const setPostVisibility = (visibility) => {
+            const post = this.args.cardConfig?.post;
+
+            if (!post || post.visibility === visibility) {
+                return;
+            }
+
+            post.set('visibility', visibility);
+            post.set('tiers', []);
+        };
+
+        /**
+         * A paywall went into a public post, so the post was gated to match.
+         *
+         * The author asked for a paywall, not for an access level - naming the
+         * one they got is what stops the chip quietly reading something else
+         * than it did a moment ago. Which level it is, is the answer to whether
+         * they can charge for it, so it's worth saying rather than implying.
+         */
+        const onPostGated = (visibility) => {
+            const label = visibility === 'paid' ? 'paid members only' : 'members only';
+
+            this.notifications.showNotification(`Post set to ${label}`, {
+                key: PAYWALL_ACCESS_NOTIFICATION_KEY
+            });
+        };
+
+        /**
+         * The post went public and its paywall went with it.
+         *
+         * Said out loud because it's a deletion the author didn't ask for and
+         * may not be looking at - the card can sit anywhere in the post, and
+         * both its paywalls go with it.
+         */
+        const onPaywallRemoved = () => {
+            this.notifications.showNotification('Paywall removed', {
+                key: PAYWALL_ACCESS_NOTIFICATION_KEY
+            });
+        };
+
         const searchLinks = async (term) => {
             // when no term is present we should show latest 5 posts
             if (!term) {
@@ -497,15 +553,22 @@ export default class KoenigLexicalEditor extends Component {
             fetchAutocompleteLinks,
             fetchEmbed,
             fetchLabels,
+            setPostVisibility,
+            onPostGated,
+            onPaywallRemoved,
             renderLabels: !this.session.user.isContributor,
             feature: {
                 transistor: this.settings.transistor,
-                paywallImprovements: this.feature.paywallImprovements
+                paywallImprovements: this.feature.paywallImprovements,
+                paywallV2: this.feature.paywallV2
             },
             deprecated: { // todo fix typo
                 headerV1: true // if false, shows header v1 in the menu
             },
             membersEnabled: this.settings.membersSignupAccess === 'all',
+            // gating works with invite-only members too, so it needs a broader
+            // signal than `membersEnabled` (which the signup card uses)
+            membersGatingEnabled: this.membersUtils.isMembersEnabled,
             searchLinks,
             siteTitle: this.settings.title,
             siteDescription: this.settings.description,

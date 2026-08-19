@@ -66,12 +66,15 @@ export interface CardConfigPost {
     isPage?: boolean;
     showTitleAndFeatureImage?: boolean;
     visibility: PostVisibility;
+    // tier slugs, only meaningful when `visibility` is 'tiers'
+    tiers?: string[];
 }
 
 // no index signature: a new flag must be declared here before a card can read it
 export interface CardConfigFeature {
     transistor?: boolean;
     paywallImprovements?: boolean;
+    paywallV2?: boolean;
 }
 
 export interface CardConfig {
@@ -80,6 +83,22 @@ export interface CardConfig {
     fetchEmbed?: (url: string, options: FetchEmbedOptions) => Promise<EmbedResponse>;
     fetchLabels?: () => Promise<string[]>;
     fetchAutocompleteLinks?: () => Promise<{value: string; label: string}[]>;
+    // Gates the post. Only ever called for a paywall inserted into a public
+    // post, where the author has asked for part of it to be gated without
+    // having said who for.
+    setPostVisibility?: (visibility: PostVisibility) => void;
+    // Set when a paywall card is being edited as a global default rather than
+    // inside a post: it fixes which of the card's two paywalls is on screen, and
+    // takes away the chrome that only means something in a post.
+    paywallDefaults?: {target: 'web' | 'email'};
+    // A paywall was inserted into a public post, so the post was gated to match.
+    // The author asked for the paywall, not for the access change that had to
+    // come with it, so the host says which one it picked.
+    onPostGated?: (visibility: PostVisibility) => void;
+    // The post went public, so its paywall was taken out from under the author.
+    // They can't be expected to notice content disappearing from a card that
+    // may be well down the post, so the host says so.
+    onPaywallRemoved?: () => void;
     searchLinks?: (term?: string) => Promise<unknown>;
     siteUrl?: string;
     klipy?: {apiKey: string; contentFilter?: string} | null;

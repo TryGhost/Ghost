@@ -11,7 +11,7 @@ export interface CardMenuItem {
     shortcut?: string;
     section?: string;
     matches?: ((query: string, label?: string) => boolean) | string[];
-    isHidden?: (context: {config: unknown}) => boolean;
+    isHidden?: (context: {config: unknown; editor?: unknown}) => boolean;
     postType?: string;
     insertParams?: unknown;
     insertCommand?: unknown;
@@ -21,7 +21,7 @@ export interface CardMenuItem {
     [key: string]: unknown;
 }
 
-export function buildCardMenu(nodes, {query, config} = {}) {
+export function buildCardMenu(nodes, {query, config, editor} = {}) {
     let menu = new Map();
 
     query = query?.toLowerCase();
@@ -29,8 +29,9 @@ export function buildCardMenu(nodes, {query, config} = {}) {
     let maxItemIndex = -1;
 
     function addMenuItem(item) {
-        // items hidden based on missing config (e.g. GIF provider API key)
-        if (!!item.isHidden && item.isHidden?.({config})) {
+        // items hidden based on missing config (e.g. GIF provider API key) or on
+        // the current document (e.g. a post may only hold one paywall)
+        if (!!item.isHidden && item.isHidden?.({config, editor})) {
             return;
         }
 

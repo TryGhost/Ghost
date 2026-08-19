@@ -8,12 +8,24 @@ const HAS_GATED_BLOCKS_REGEX = /<!--\s*kg-gated-block:begin/;
 // Match gated block comments
 // e.g. <!--kg-gated-block:begin nonMember:true memberSegment:"status:free"-->...gated content<!--kg-gated-block:end-->
 const GATED_BLOCK_REGEX = /<!--kg-gated-block:begin ([^\n]+?)\s*-->([\s\S]*?)<!--kg-gated-block:end-->/g;
-// Match the key-value pairs (with optional quotes around the value) in the gated-block:begin comment
-const GATED_BLOCK_PARAM_REGEX = /\b(?<key>\w+):["']?(?<value>[^"'\s]+)["']?/g;
+// Match the key-value pairs in the gated-block:begin comment. A double-quoted
+// value is taken whole so segments can contain the single quotes NQL wraps tier
+// slugs in, e.g. memberSegment:"product:-'bronze'"
+const GATED_BLOCK_PARAM_REGEX = /\b(?<key>\w+):(?:"(?<quoted>[^"]*)"|'(?<singleQuoted>[^']*)'|(?<bare>[^"'\s]+))/g;
+
+// Tier-gated paywalls name the tiers that *can't* read on, one negated product
+// per tier ANDed together - the shape `getPaywallMemberSegment` builds in
+// kg-default-nodes. Slugs are matched loosely because Ghost allows unicode in
+// them; the NQL layer below only ever sees `product` keys either way.
+const TIER_SEGMENT_PATTERN = /^product:-'[^'"\s+,]+'(\+product:-'[^'"\s+,]+')*$/;
 
 const ALLOWED_GATED_BLOCK_PARAMS = {
     nonMember: {type: 'boolean'},
-    memberSegment: {type: 'string', allowedValues: ['', 'status:free,status:-free', 'status:free', 'status:-free']}
+    memberSegment: {
+        type: 'string',
+        allowedValues: ['', 'status:free,status:-free', 'status:free', 'status:-free'],
+        allowedPattern: TIER_SEGMENT_PATTERN
+    }
 };
 const ALLOWED_GATED_BLOCK_KEYS = Object.keys(ALLOWED_GATED_BLOCK_PARAMS);
 
@@ -23,7 +35,10 @@ const parseGatedBlockParams = function (paramsString) {
     const matches = paramsString.matchAll(GATED_BLOCK_PARAM_REGEX);
     for (const match of matches) {
         const key = match.groups.key;
-        let value = match.groups.value;
+        const {quoted, singleQuoted, bare} = match.groups;
+        // an empty quoted value stays undefined so it drops out below, matching
+        // the behaviour before quoted values were captured whole
+        let value = quoted || singleQuoted || bare;
 
         if (!ALLOWED_GATED_BLOCK_KEYS.includes(key)) {
             continue;
@@ -40,8 +55,14 @@ const parseGatedBlockParams = function (paramsString) {
             continue;
         }
 
-        if (ALLOWED_GATED_BLOCK_PARAMS[key].allowedValues && !ALLOWED_GATED_BLOCK_PARAMS[key].allowedValues.includes(value)) {
-            continue;
+        const {allowedValues, allowedPattern} = ALLOWED_GATED_BLOCK_PARAMS[key];
+        if (allowedValues || allowedPattern) {
+            const isAllowed = (allowedValues && allowedValues.includes(value)) ||
+                (allowedPattern && allowedPattern.test(value));
+
+            if (!isAllowed) {
+                continue;
+            }
         }
 
         params[key] = value;

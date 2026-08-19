@@ -5,6 +5,7 @@ import {enableLabsFlag} from '../../helpers/labs-flag';
 import {enableMembers} from '../../helpers/members';
 import {enableStripe} from '../../helpers/stripe';
 import {expect} from 'chai';
+import {selectChoose} from 'ember-power-select/test-support/helpers';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../../helpers/visit';
@@ -38,6 +39,66 @@ describe('Acceptance: Editor / Visibility', function () {
         enableMembers(this.server);
 
         await authenticateSession();
+    });
+
+    // Access is what the reader is let past, so it moves onto the post itself
+    // and out of the settings drawer - next to the paywall it governs
+    it('moves access out of the sidebar and onto the post with paywallV2 on', async function () {
+        enableLabsFlag(this.server, 'paywallV2');
+
+        const post = this.server.create('post', {authors: [author], status: 'draft'});
+        await visit(`/editor/post/${post.id}`);
+
+        expect(find('[data-test-button="post-access-chip"]'), 'access chip').to.exist;
+        expect(find('[data-test-text="post-access-chip"]')).to.have.trimmed.text('Public');
+
+        await click('[data-test-psm-trigger]');
+        expect(find('[data-test-select="post-visibility"]'), 'sidebar access').to.not.exist;
+    });
+
+    it('changes access from the chip', async function () {
+        enableLabsFlag(this.server, 'paywallV2');
+
+        const post = this.server.create('post', {authors: [author], status: 'draft'});
+        await visit(`/editor/post/${post.id}`);
+
+        await click('[data-test-button="post-access-chip"]');
+        await click('[data-test-access-option="paid"]');
+
+        // the chip states the level as the bare noun in both placements - the
+        // menu it came from is where "Paid members only" is spelled out
+        expect(find('[data-test-text="post-access-chip"]')).to.have.trimmed.text('Paid');
+
+        const putRequests = this.server.pretender.handledRequests.filter(
+            req => req.method === 'PUT' && req.url.includes('/posts/')
+        );
+        const lastPut = JSON.parse(putRequests[putRequests.length - 1].requestBody);
+        expect(lastPut.posts[0].visibility, 'visibility in PUT request').to.equal('paid');
+    });
+
+    // One tier is worth naming; several are only worth counting
+    it('names a single tier and counts the rest', async function () {
+        enableLabsFlag(this.server, 'paywallV2');
+
+        const premium = this.server.create('tier', {name: 'Premium', type: 'paid'});
+
+        const post = this.server.create('post', {authors: [author], status: 'draft'});
+
+        await visit(`/editor/post/${post.id}`);
+
+        // The tier picker opens under the level rather than behind a second
+        // step, so the menu stays open throughout. Tier-gating starts on the
+        // first tier, because a post gated on none of them won't save.
+        await click('[data-test-button="post-access-chip"]');
+        await click('[data-test-access-option="tiers"]');
+        expect(find('[data-test-access-tiers]'), 'tier picker').to.exist;
+        expect(find('[data-test-text="post-access-chip"]')).to.have.trimmed.text('Default Tier');
+
+        await selectChoose('[data-test-access-tiers] .ember-power-select-trigger', premium.name);
+        expect(find('[data-test-text="post-access-chip"]')).to.have.trimmed.text('2 tiers');
+
+        // picking tiers must not close the menu out from under the author
+        expect(find('[data-test-access-tiers]'), 'tier picker still open').to.exist;
     });
 
     it('can change visibility to members only', async function () {

@@ -1,0 +1,60 @@
+{{! The plain-text summary of the choices, used by the single-screen review.
+    The stepped flow uses ConfirmSummaryList instead - with three decisions to
+    confirm rather than one, a paragraph stops being scannable. }}
+<p class="gh-publish-confirmation" data-test-text="confirm-details">
+    {{#if @publishOptions.isScheduled}}
+        {{#let (moment-site-tz @publishOptions.scheduledAtUTC) as |scheduledAt|}}
+            On
+            <strong>
+                {{moment-format scheduledAt "D MMM YYYY"}}
+                at
+                {{moment-format scheduledAt "HH:mm"}}
+            </strong>
+            your
+        {{/let}}
+    {{else}}
+        Your
+    {{/if}}
+
+    {{@publishOptions.post.displayName}}
+
+    {{#if @willPublish}}
+        will be published on your site{{#if @willEmail}}, and delivered to{{else}}.{{/if}}
+    {{/if}}
+
+    {{#if @willEmail}}
+        {{#unless @willPublish}}
+            will be delivered to
+        {{/unless}}
+
+        {{#let (members-count-fetcher query=(hash filter=@publishOptions.fullRecipientFilter)) as |countFetcher|}}
+            <strong>
+                {{if (eq @recipientType "all") "all"}}
+
+                {{format-number countFetcher.count}}
+
+                {{!-- @recipientType = none/free/paid/all/specific --}}
+                {{if (not-eq @recipientType "all") @recipientType}}
+            </strong>
+
+            {{#if @publishOptions.onlyDefaultNewsletter}}
+                <strong>{{gh-pluralize countFetcher.count "subscriber" without-count=true}}</strong>{{#if @willPublish}}.{{else}},{{/if}}
+            {{else}}
+                <strong>{{gh-pluralize countFetcher.count "subscriber" without-count=true}}</strong>
+                of <strong>{{@publishOptions.newsletter.name}}</strong>{{#if @willPublish}}.{{else}},{{/if}}
+            {{/if}}
+        {{/let}}
+
+        {{#unless @willPublish}}
+            and will <strong>not</strong> be published on your site.
+        {{/unless}}
+    {{/if}}
+
+    {{#if @previewAudience}}
+        <span data-test-text="confirm-access">
+            {{! Without a card the gate sits at the top of the post, so there is
+                nothing above it to read - they meet the paywall and nothing else. }}
+            {{capitalize-first-letter @previewAudience}} will get {{if @hasPreview "a preview and the" "the"}} paywall.
+        </span>
+    {{/if}}
+</p>

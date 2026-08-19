@@ -11,6 +11,7 @@ const content = require('../../../../core/frontend/helpers/content');
 const has = require('../../../../core/frontend/helpers/has');
 const is = require('../../../../core/frontend/helpers/is');
 const t = require('../../../../core/frontend/helpers/t');
+const labs = require('../../../../core/shared/labs');
 const {setupI18nTest, initLocale} = require('../../../utils/i18n-test-utils');
 
 describe('{{content}} helper', function () {
@@ -139,6 +140,34 @@ describe('{{content}} helper with no access', function () {
                 assert(rendered.string.includes('"color:#abcdef"'));
 
                 assertExists(rendered);
+            });
+
+            it('suppresses the built-in CTA when a paywall-v2 card renders its own', function () {
+                // labs.isSet is already stubbed by setupI18nTest, so extend it
+                labs.isSet.withArgs('paywallV2').returns(true);
+                const html = '<p>Free content</p><div class="kg-card kg-paywall-card">Upgrade to continue reading</div>';
+
+                const rendered = content.call({html: html, access: false}, optionsData);
+
+                assert(rendered.string.includes('kg-paywall-card'));
+                assert(!rendered.string.includes('gh-post-upgrade-cta'));
+            });
+
+            it('keeps the built-in CTA when the paywallV2 flag is off', function () {
+                labs.isSet.withArgs('paywallV2').returns(false);
+                const html = '<p>Free content</p><div class="kg-card kg-paywall-card">Upgrade to continue reading</div>';
+
+                const rendered = content.call({html: html, access: false}, optionsData);
+
+                assert(rendered.string.includes('gh-post-upgrade-cta'));
+            });
+
+            it('keeps the built-in CTA when the post has no paywall-v2 card', function () {
+                labs.isSet.withArgs('paywallV2').returns(true);
+
+                const rendered = content.call({html: '<p>Free content</p>', access: false}, optionsData);
+
+                assert(rendered.string.includes('gh-post-upgrade-cta'));
             });
 
             it('outputs free content if available via paywall card', function () {

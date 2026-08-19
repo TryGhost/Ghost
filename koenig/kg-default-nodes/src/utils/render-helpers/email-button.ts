@@ -14,6 +14,11 @@ export interface EmailButtonOptions {
     buttonWidth?: string;
     /** The color of the button, no color defaults to newsletter button color setting */
     color?: string;
+    /** Overrides the label colour, which is otherwise derived from `color`.
+     *  Used where the label has to be a specific colour rather than merely
+     *  readable - a paywall on the brand colour puts the brand colour back on
+     *  its button label. */
+    textColor?: string;
     /** The style of the button */
     style?: 'fill' | 'outline';
 }
@@ -24,6 +29,9 @@ const defaultOptions: Required<EmailButtonOptions> = {
     alignment: '',
     buttonWidth: '',
     color: '',
+    // empty means "derive it from `color`", which is what every caller but the
+    // brand-coloured paywall wants
+    textColor: '',
     style: 'fill'
 };
 
@@ -71,7 +79,11 @@ function _isValidHexColor(color: string) {
     return /^#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})$/.test(color);
 }
 
-function _getTextColor({color, style}: EmailButtonOptions) {
+function _getTextColor({color, style, textColor}: EmailButtonOptions) {
+    if (textColor && _isValidHexColor(textColor)) {
+        return textColor;
+    }
+
     if (_isColoredFill({color, style}) && _isValidHexColor(color!)) {
         return textColorForBackgroundColor(color!).hex();
     }
@@ -100,8 +112,8 @@ function _getButtonStyle({color, style}: EmailButtonOptions) {
     );
 }
 
-function _getLinkStyle({color, style}: EmailButtonOptions) {
-    const textColor = _getTextColor({color, style});
+function _getLinkStyle({color, style, textColor: textColorOverride}: EmailButtonOptions) {
+    const textColor = _getTextColor({color, style, textColor: textColorOverride});
 
     return stylex(
         _isColoredFill({color, style}) && textColor && {

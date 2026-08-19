@@ -172,7 +172,9 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
                 cardType={cardType}
                 cardWidth={width}
                 feature={cardConfig?.feature}
-                IndicatorIcon={IndicatorIcon}
+                // the indicator marks a card's place in a post; a global
+                // default isn't in one
+                IndicatorIcon={cardConfig?.paywallDefaults ? undefined : IndicatorIcon}
                 isDragging={isDragging}
                 isEditing={isEditing}
                 isSelected={isSelected}

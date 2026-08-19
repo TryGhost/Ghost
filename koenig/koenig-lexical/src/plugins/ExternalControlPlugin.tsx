@@ -1,14 +1,23 @@
+import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
 import {$canShowPlaceholder} from '@lexical/text';
 import {$createParagraphNode, $getRoot, $isDecoratorNode} from 'lexical';
+import {$insertPaywallCardAtTop} from '../utils/$insertPaywallCard';
 import {$selectDecoratorNode} from '../utils/$selectDecoratorNode';
 import {DRAG_DROP_PASTE} from '@lexical/rich-text';
+import {EDIT_CARD_COMMAND} from './KoenigBehaviourPlugin';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 // used to register a minimal API for controlling the editor from the consuming app
 // designed to allow typical behaviours without the consuming app needing to bundle the lexical library
 export const ExternalControlPlugin = ({registerAPI}) => {
     const [editor] = useLexicalComposerContext();
+    const {cardConfig} = React.useContext(KoenigComposerContext);
+
+    // through a ref because the host rebuilds `post` on every render, and the
+    // API is registered once
+    const postRef = React.useRef(cardConfig?.post);
+    postRef.current = cardConfig?.post;
 
     React.useEffect(() => {
         if (!registerAPI) {
@@ -92,6 +101,25 @@ export const ExternalControlPlugin = ({registerAPI}) => {
                         paragraphNode.selectStart();
                     }
                 });
+            },
+            // The free preview goes in from outside the writing surface - the
+            // action sits beside the post's access, not in the card menu - so
+            // it needs a way in that doesn't involve a selection.
+            insertPaywallCard() {
+                let cardKey = null;
+
+                editor.update(() => {
+                    cardKey = $insertPaywallCardAtTop(postRef.current)?.getKey() || null;
+                });
+
+                // Opens in edit mode, the same as inserting any other card from
+                // the menu does - the author asked for a paywall, so they're put
+                // where they can write it. Dispatched after the update rather
+                // than inside it: the command resolves the node by key, so the
+                // card has to be in the tree first.
+                if (cardKey) {
+                    editor.dispatchCommand(EDIT_CARD_COMMAND, {cardKey});
+                }
             },
             insertFiles(files) {
                 editor.dispatchCommand(DRAG_DROP_PASTE, files);

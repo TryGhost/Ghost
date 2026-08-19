@@ -16,6 +16,7 @@ import {renderHtmlNode} from '../../src/nodes/html/html-renderer.js';
 import {renderImageNode} from '../../src/nodes/image/image-renderer.js';
 import {renderMarkdownNode} from '../../src/nodes/markdown/markdown-renderer.js';
 import {renderPaywallNode} from '../../src/nodes/paywall/paywall-renderer.js';
+import {renderPaywallV2Node} from '../../src/nodes/paywall-v2/paywallv2-renderer.js';
 import {renderProductNode} from '../../src/nodes/product/product-renderer.js';
 import {renderSignupCardToDOM} from '../../src/nodes/signup/signup-renderer.js';
 import {renderToggleNode} from '../../src/nodes/toggle/toggle-renderer.js';
@@ -46,6 +47,7 @@ const nodeRenderers: Record<string, RendererFn | Record<number, RendererFn>> = {
     image: renderImageNode,
     markdown: renderMarkdownNode,
     paywall: renderPaywallNode,
+    'paywall-v2': renderPaywallV2Node,
     product: renderProductNode,
     signup: renderSignupCardToDOM,
     toggle: renderToggleNode,

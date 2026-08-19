@@ -8,6 +8,17 @@
         {{on "dragover" this.editorPaneDragover}}
         {{on "drop" this.editorPaneDrop}}
     >
+        {{! Access sits on the post, not in the settings drawer: it's what the
+            reader is let past, so it belongs where the content is. Rendered
+            inside the scrolling pane so it leaves the screen with the top of
+            the post rather than floating over what follows. }}
+        <Editor::PostAccessChip
+            @placement="canvas"
+            @post={{@cardOptions.post}}
+            @savePostTask={{@savePostTask}}
+            @insertFreePreview={{this.insertFreePreview}}
+        />
+
         <GhEditorFeatureImage
             @image={{@featureImage}}
             @updateImage={{@setFeatureImage}}

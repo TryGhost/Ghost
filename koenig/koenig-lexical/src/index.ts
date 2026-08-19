@@ -6,6 +6,7 @@ import KoenigComposableEditor from './components/KoenigComposableEditor';
 import KoenigComposer from './components/KoenigComposer';
 import KoenigEditor from './components/KoenigEditor';
 import KoenigNestedComposer from './components/KoenigNestedComposer';
+import PaywallDefaultsEditor from './components/PaywallDefaultsEditor';
 
 /* Plugins */
 import AllDefaultPlugins from './plugins/AllDefaultPlugins';
@@ -78,6 +79,7 @@ export {
     KoenigEditor,
     KoenigNestedComposer,
     KoenigCardWrapper,
+    PaywallDefaultsEditor,
 
     AllDefaultPlugins,
 

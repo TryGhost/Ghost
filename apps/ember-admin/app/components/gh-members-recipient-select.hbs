@@ -1,4 +1,10 @@
+{{! @hideSegments takes the base segments a caller presents its own way -
+    the free/paid split, when the audience is named by what each half
+    receives instead. The hidden segments stay in the filter regardless:
+    `updateFilter` merges against what is already there rather than
+    rebuilding from the visible controls. }}
 <div class="gh-publish-send-to {{if this.isSpecificChecked "mb4"}}">
+    {{#unless this.hideFree}}
     <div class="gh-publish-send-to-option">
         <div class="for-checkbox {{if @disabled "disabled"}}">
             <label class="checkbox" for="send-email-to-free">
@@ -26,7 +32,8 @@
             </label>
         </div>
     </div>
-    {{#if this.isPaidAvailable}}
+    {{/unless}}
+    {{#if (and this.isPaidAvailable (not this.hidePaid))}}
         <div class="gh-publish-send-to-option">
             <div class="for-checkbox {{if @disabled "disabled"}}">
                 <label class="checkbox" for="send-email-to-paid">

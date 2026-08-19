@@ -1,0 +1,46 @@
+{{! The stepped flow's review.
+
+    One line per surface the post goes out on. Each names the destination and
+    then, after a comma, who meets the paywall there - a consequence of that
+    surface rather than a fact of its own.
+
+    All one type style. These lines finish the sentence the heading starts, so
+    a scale or a colour shift between them would imply a hierarchy that isn't
+    there.
+
+    The email count is everyone the send reaches, not just the audience that
+    gets the whole post: technically they are all emailed, and the clause says
+    how many of them meet the paywall instead. }}
+<div class="gh-publish-summary" data-test-text="confirm-details">
+    {{#if @siteSummary}}
+        <p class="gh-publish-summary-line" data-test-summary="site">{{@siteSummary}}</p>
+    {{/if}}
+
+    {{#if @emailShape}}
+        {{#let (members-count-fetcher query=(hash filter=@publishOptions.fullRecipientFilter)) as |sendCount|}}
+            {{! newsletterSuffix carries its own leading space and the full stop
+                closes hard against it, so nothing opens up before the period }}
+            <p class="gh-publish-summary-line" data-test-summary="email">
+                Emailed to {{format-number sendCount.count}} {{gh-pluralize sendCount.count "subscriber" without-count=true}}{{@newsletterSuffix~}}.
+
+                {{#if (eq @emailShape "preview-only")}}
+                    {{! nobody was picked for the post itself, so everyone
+                        emailed meets the paywall }}
+                    All recipients will receive a preview and the paywall.
+                {{else if (eq @emailShape "post-and-preview")}}
+                    {{#let (members-count-fetcher query=(hash filter=@publishOptions.previewRecipientFilter)) as |previewCount|}}
+                        {{format-number previewCount.count}} {{gh-pluralize previewCount.count "recipient" without-count=true}} will receive a preview and the paywall.
+                    {{/let}}
+                {{/if}}
+            </p>
+        {{/let}}
+    {{/if}}
+
+    {{! An email-only send is easy to make by accident, so the absence gets said
+        out loud rather than being left for the author to infer from silence. }}
+    {{#unless @willPublish}}
+        <p class="gh-publish-summary-line gh-publish-summary-note" data-test-summary="not-published">
+            It won&rsquo;t be published on your site
+        </p>
+    {{/unless}}
+</div>

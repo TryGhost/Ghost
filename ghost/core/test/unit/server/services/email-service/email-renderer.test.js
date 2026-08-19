@@ -2464,6 +2464,131 @@ describe('Email renderer', function () {
             assert(!preview.html.includes('Become a paid member of Test Blog to get access to all'));
         });
 
+        function createPaidPost() {
+            return {
+                related: () => null,
+                get: (key) => {
+                    if (key === 'lexical') {
+                        return '{}';
+                    }
+                    if (key === 'visibility') {
+                        return 'paid';
+                    }
+                    if (key === 'title') {
+                        return 'Test Post';
+                    }
+                },
+                getLazyRelation: () => {
+                    return {models: [{get: k => (k === 'name' ? 'Test Author' : undefined)}]};
+                }
+            };
+        }
+
+        function createNewsletter() {
+            return {
+                get: (key) => {
+                    if (key === 'show_post_title_section') {
+                        return true;
+                    }
+                    if (key === 'feedback_enabled') {
+                        return true;
+                    }
+                    return false;
+                }
+            };
+        }
+
+        it('drops the handlebars paywall when a paywall-v2 card renders its own', async function () {
+            labsEnabled = {paywallV2: true};
+            // the card sits before the marker so it survives truncation, and is
+            // marked for removal from audiences that can read on
+            renderedPost = '<div> Lexical Test </div> some text for both <div data-gh-paywall="true"><table class="kg-card kg-paywall-card"><tr><td>Upgrade to continue reading</td></tr></table></div><!--members-only--> finishing part only for members';
+            const post = createPaidPost();
+            const newsletter = createNewsletter();
+
+            const noAccess = await emailRenderer.renderBody(post, newsletter, 'status:free', {});
+
+            assert(noAccess.html.includes('kg-paywall-card'));
+            assert(!noAccess.html.includes('finishing part only for members'));
+            // the card is the only paywall - no duplicate from paywall.hbs
+            assert(!noAccess.html.includes('Become a paid member of Test Blog to get access to all'));
+            assert(!noAccess.html.includes('data-gh-paywall'));
+        });
+
+        it('drops the paywall-v2 card for an audience that can read on', async function () {
+            labsEnabled = {paywallV2: true};
+            renderedPost = '<div> Lexical Test </div> some text for both <div data-gh-paywall="true"><table class="kg-card kg-paywall-card"><tr><td>Upgrade to continue reading</td></tr></table></div><!--members-only--> finishing part only for members';
+            const post = createPaidPost();
+            const newsletter = createNewsletter();
+
+            const hasAccess = await emailRenderer.renderBody(post, newsletter, 'status:-free', {});
+
+            assert(!hasAccess.html.includes('kg-paywall-card'));
+            assert(hasAccess.html.includes('finishing part only for members'));
+        });
+
+        it('keeps the paywall-v2 card for a wrong-tier paid audience', async function () {
+            labsEnabled = {paywallV2: true};
+            renderedPost = '<div> Lexical Test </div> some text for both <div data-gh-paywall="true"><table class="kg-card kg-paywall-card"><tr><td>Upgrade to continue reading</td></tr></table></div><!--members-only--> finishing part only for members';
+            const post = {
+                related: key => (key === 'tiers' ? {toJSON: () => [{slug: 'gold'}]} : null),
+                get: (key) => {
+                    if (key === 'lexical') {
+                        return '{}';
+                    }
+                    if (key === 'visibility') {
+                        return 'tiers';
+                    }
+                    if (key === 'title') {
+                        return 'Test Post';
+                    }
+                },
+                getLazyRelation: () => {
+                    return {models: [{get: k => (k === 'name' ? 'Test Author' : undefined)}]};
+                }
+            };
+            const newsletter = createNewsletter();
+
+            // paid, but not on the tier that can read this post - the free/paid
+            // segment axis can't describe this audience, so the card is kept by
+            // access instead
+            const wrongTier = await emailRenderer.renderBody(post, newsletter, 'status:-free+product:\'bronze\'', {});
+            assert(wrongTier.html.includes('kg-paywall-card'));
+            assert(!wrongTier.html.includes('finishing part only for members'));
+            assert(!wrongTier.html.includes('Become a paid member of Test Blog to get access to all'));
+
+            const rightTier = await emailRenderer.renderBody(post, newsletter, 'status:-free+product:\'gold\'', {});
+            assert(!rightTier.html.includes('kg-paywall-card'));
+            assert(rightTier.html.includes('finishing part only for members'));
+        });
+
+        it('keeps the handlebars paywall when the post has no paywall-v2 card', async function () {
+            labsEnabled = {paywallV2: true};
+            renderedPost = '<div> Lexical Test </div> some text for both <!--members-only--> finishing part only for members';
+            const post = createPaidPost();
+            const newsletter = createNewsletter();
+
+            const noAccess = await emailRenderer.renderBody(post, newsletter, 'status:free', {});
+
+            assert(!noAccess.html.includes('finishing part only for members'));
+            assert(noAccess.html.includes('Become a paid member of Test Blog to get access to all'));
+        });
+
+        // Access gates the post on the site; a paywall card is what splits the
+        // email. Without one there's nowhere to cut, so everyone the publisher
+        // picked gets the whole post - including free members on a paid post.
+        it('sends the whole post to every recipient when no paywall card splits it', async function () {
+            labsEnabled = {paywallV2: true};
+            renderedPost = '<div> Lexical Test </div> the entire post, start to finish';
+            const post = createPaidPost();
+            const newsletter = createNewsletter();
+
+            const noAccess = await emailRenderer.renderBody(post, newsletter, 'status:free', {});
+
+            assert(noAccess.html.includes('the entire post, start to finish'));
+            assert(!noAccess.html.includes('Become a paid member of Test Blog to get access to all'));
+        });
+
         it('renders tier-gated content according to a specific tier segment', async function () {
             renderedPost = '<div> Lexical Test </div> some text for both <!--members-only--> finishing part only for members';
             const post = {

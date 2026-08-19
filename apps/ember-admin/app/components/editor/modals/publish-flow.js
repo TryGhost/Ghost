@@ -21,6 +21,8 @@ export default class PublishModalComponent extends Component {
     @tracked postCount = null;
 
     get recipientType() {
+        // the post audience, matching the count it sits next to in the review -
+        // the preview audience is described by its own sentence
         const filter = this.args.data.publishOptions.recipientFilter;
 
         if (!filter) {

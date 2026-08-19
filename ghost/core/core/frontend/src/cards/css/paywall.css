@@ -1,0 +1,265 @@
+/* Mirrors cta.css - the paywall card is deliberately the same layout as the
+   call to action card, with a heading and a sign-in footer instead of a
+   sponsor label. Kept as its own file so the two can diverge. */
+
+.kg-paywall-card,
+.kg-paywall-card * {
+    box-sizing: border-box;
+}
+
+.kg-paywall-card {
+    display: flex;
+    flex-direction: column;
+    border-radius: 8px;
+}
+
+.kg-paywall-bg-grey {
+    background: rgba(151, 163, 175, 0.14)
+}
+
+/* Full strength, unlike the tints below - the brand colour is the point. The
+   readable text colour is computed by the renderer and written inline on the
+   card, since CSS can't measure the contrast of a colour it doesn't know. */
+.kg-paywall-bg-accent {
+    background: var(--ghost-accent-color);
+}
+
+.kg-paywall-bg-white {
+    background: transparent;
+    box-shadow: inset 0 0 0 1px rgba(124, 139, 154, 0.2);
+}
+
+.kg-paywall-bg-blue {
+    background: rgba(33, 172, 232, 0.12);
+}
+
+.kg-paywall-bg-green {
+    background: rgba(52, 183, 67, 0.12);
+}
+
+.kg-paywall-bg-yellow {
+    background: rgba(240, 165, 15, 0.13);
+}
+
+.kg-paywall-bg-red {
+    background: rgba(209, 46, 46, 0.11);
+}
+
+.kg-paywall-bg-pink {
+    background: rgba(225, 71, 174, 0.11);
+}
+
+.kg-paywall-bg-purple {
+    background: rgba(135, 85, 236, 0.12);
+}
+
+.kg-paywall-content {
+    display: flex;
+    padding: 1.5em;
+    gap: 1.5em;
+}
+
+@media (max-width: 600px) {
+    .kg-paywall-content {
+        padding: 1.25em;
+        gap: 1.25em;
+    }
+}
+
+.kg-paywall-bg-none .kg-paywall-content {
+    padding: 1.5em 0;
+}
+
+.kg-paywall-bg-none:not(.kg-paywall-no-dividers) .kg-paywall-content {
+    border-top: 1px solid rgba(124, 139, 154, 0.2);
+}
+
+.kg-paywall-bg-none.kg-paywall-no-dividers .kg-paywall-content {
+    padding: 0;
+}
+
+@media (max-width: 600px) {
+    .kg-paywall-bg-none .kg-paywall-content {
+        padding: 1.25em 0;
+    }
+}
+
+.kg-paywall-minimal .kg-paywall-content {
+    flex-direction: row;
+}
+
+@media (max-width: 600px) {
+    .kg-paywall-minimal .kg-paywall-content {
+        flex-direction: column;
+        gap: 1.6rem;
+    }
+}
+
+.kg-paywall-immersive .kg-paywall-content {
+    flex-direction: column;
+}
+
+.kg-paywall-content-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+}
+
+.kg-paywall-immersive.kg-paywall-centered .kg-paywall-content-inner {
+    align-items: center;
+}
+
+.kg-paywall-image-container {
+    flex-shrink: 0;
+}
+
+.kg-paywall-image-container img {
+    width: 100%;
+    height: auto;
+    margin: 0;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+.kg-paywall-minimal .kg-paywall-image-container img {
+    width: 64px;
+    height: 64px;
+}
+
+@media (max-width: 600px) {
+    .kg-paywall-minimal .kg-paywall-image-container img {
+        width: 52px;
+        height: 52px;
+    }
+}
+
+/* Deliberately not an <h1>-<h6>: themes style headings bold, which would stop an
+   author ever having a normal-weight heading. Weight comes from the content, the
+   same way the call to action card works. The default copy ships bold.
+   Scoped through .kg-paywall-card so a theme's own rules can't outrank it. */
+.kg-paywall-card .kg-paywall-heading {
+    margin: 0;
+    font-size: 1.3em;
+    font-weight: 400;
+    line-height: 1.25em;
+    text-wrap: pretty;
+}
+
+.kg-paywall-card .kg-paywall-heading b,
+.kg-paywall-card .kg-paywall-heading strong {
+    font-weight: 700;
+}
+
+.kg-paywall-card .kg-paywall-heading i,
+.kg-paywall-card .kg-paywall-heading em {
+    font-style: italic;
+}
+
+.kg-paywall-card.kg-paywall-immersive.kg-paywall-centered .kg-paywall-heading {
+    text-align: center;
+}
+
+.kg-paywall-text p {
+    margin: 0;
+    line-height: 1.5em;
+    text-wrap: pretty;
+}
+
+.kg-paywall-bg-none .kg-paywall-text p {
+    line-height: unset;
+}
+
+.kg-paywall-immersive.kg-paywall-centered .kg-paywall-text {
+    text-align: center;
+}
+
+.kg-paywall-text p + p {
+    margin-top: 1.25em;
+}
+
+.kg-paywall-text a {
+    color: currentColor;
+    transition: opacity 0.15s ease-in-out;
+}
+
+.kg-paywall-text a:hover {
+    color: currentColor;
+    opacity: 0.85;
+}
+
+.kg-paywall-link-accent .kg-paywall-text a {
+    color: var(--ghost-accent-color);
+}
+
+a.kg-paywall-button {
+    display: flex;
+    position: static;
+    align-items: center;
+    justify-content: center;
+    padding: 0 1em;
+    height: 2.5em;
+    width: max-content;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+    font-size: 0.95em;
+    font-weight: 500;
+    line-height: 1.65;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: opacity 0.15s ease-in-out;
+}
+
+a.kg-paywall-button:hover {
+    opacity: 0.85;
+}
+
+a.kg-paywall-button.kg-style-accent {
+    background-color: var(--ghost-accent-color);
+}
+
+.kg-paywall-immersive.kg-paywall-has-img a.kg-paywall-button {
+    width: 100%;
+}
+
+/* Sign-in prompt, always rendered so existing members can get past the paywall */
+.kg-paywall-footer {
+    padding: 0 1.5em 1.5em;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+    font-size: 0.85em;
+    line-height: 1.5em;
+}
+
+.kg-paywall-immersive.kg-paywall-centered .kg-paywall-footer {
+    text-align: center;
+}
+
+.kg-paywall-bg-none .kg-paywall-footer {
+    padding: 1.5em 0 0;
+}
+
+.kg-paywall-footer span {
+    color: color-mix(in srgb, currentColor 55%, transparent);
+}
+
+.kg-paywall-footer a {
+    color: currentColor;
+    text-decoration: underline;
+    transition: opacity 0.15s ease-in-out;
+}
+
+.kg-paywall-footer a:hover {
+    opacity: 0.85;
+}
+
+.kg-paywall-link-accent .kg-paywall-footer a {
+    color: var(--ghost-accent-color);
+}
+
+@media (max-width: 600px) {
+    .kg-paywall-footer {
+        padding: 0 1.25em 1.25em;
+    }
+
+    .kg-paywall-bg-none .kg-paywall-footer {
+        padding: 1.25em 0 0;
+    }
+}

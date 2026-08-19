@@ -1,0 +1,28 @@
+{{#if this.isVisible}}
+    {{! Floating over the editor rather than sitting in the chrome: it's a
+        prototype switch for comparing the variants, not part of any of them,
+        and anywhere in the header would make it look like another control the
+        post actually has. Bottom left is the one corner the editor keeps empty.
+
+        The group carries the label now that the options don't sit behind a
+        visible one - four bare words in a corner say nothing on their own to
+        anyone who can't see where they point. }}
+    <div
+        class="gh-access-placement-toggle"
+        role="group"
+        aria-label="Post access placement"
+        data-test-access-placement-toggle
+    >
+        {{#each this.placements key="name" as |placement|}}
+            <button
+                type="button"
+                class="gh-access-placement-toggle-option"
+                aria-pressed="{{placement.isSelected}}"
+                data-test-access-placement-option={{placement.name}}
+                {{on "click" (fn this.select placement.name)}}
+            >
+                {{placement.label}}
+            </button>
+        {{/each}}
+    </div>
+{{/if}}

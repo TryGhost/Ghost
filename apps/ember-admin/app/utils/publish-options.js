@@ -1,4 +1,5 @@
 import moment from 'moment-timezone';
+import {PREVIEW_SEGMENT, hasEmailAudienceSplit, segmentParts} from 'ghost-admin/utils/email-audience-segments';
 import {action} from '@ember/object';
 import {getPublicPreviewWarning} from 'ghost-admin/utils/public-preview-warning';
 import {htmlSafe} from '@ember/template';
@@ -27,7 +28,8 @@ export default class PublishOptions {
     get willEmail() {
         return (
             (this.publishType !== 'publish'
-                && this.recipientFilter
+                // the union, so a send that's only a preview still counts as email
+                && this.combinedRecipientFilter
                 && this.post.isDraft
                 && !this.post.email
             )
@@ -218,11 +220,181 @@ export default class PublishOptions {
         return filter;
     }
 
+    // Whether a paywall card gates the post, which is what makes a preview
+    // worth offering and gives it its own step
+    get hasAudienceSplit() {
+        return hasEmailAudienceSplit(this.post);
+    }
+
+    // --- the preview audience -------------------------------------------------
+    //
+    // Tracked apart from `recipientFilter` rather than mixed into it, because
+    // the two questions are asked separately and the answer to the first
+    // decides what the second may contain. A single filter couldn't tell
+    // "chosen to receive the post" from "chosen to receive the teaser".
+
+    @tracked selectedPreviewFilter = undefined;
+    @tracked availableTiers = [];
+
+    /**
+     * Whoever the full send already reaches, and so can't be a preview
+     * recipient.
+     *
+     * Segment names aren't independent - "paid members" contains every tier -
+     * so a tier in the full send takes "paid members" off the table and vice
+     * versa. Labels can't be reasoned about: one may hold anyone, and the
+     * renderer gates per-recipient regardless.
+     */
+    get previewHiddenSegments() {
+        const fullSegments = segmentParts(this.recipientFilter);
+        const hidden = new Set(fullSegments);
+
+        const includesPaid = fullSegments.includes('status:-free');
+        const includesTier = fullSegments.some(segment => segment.startsWith('tier:'));
+
+        if (includesPaid || includesTier) {
+            hidden.add('status:-free');
+        }
+
+        if (includesPaid) {
+            this.availableTiers.forEach(tier => hidden.add(`tier:${tier.slug}`));
+        }
+
+        return [...hidden];
+    }
+
+    /**
+     * Everyone the full send left out - the preview audience unless the author
+     * says otherwise, and what makes the two add up to the whole newsletter.
+     *
+     * One definition, used both for the value the step lands on and for the one
+     * answering "yes" restores. They were computed separately at first, and
+     * drifted: landing on the step gave free members only, while toggling gave
+     * free members plus every tier the post skipped.
+     *
+     * Labels aren't guessed at - they're the author's own grouping, and adding
+     * one on their behalf would pick an audience they never asked for.
+     */
+    get defaultPreviewFilter() {
+        if (!this.hasAudienceSplit) {
+            return null;
+        }
+
+        const taken = this.previewHiddenSegments;
+
+        const candidates = [
+            PREVIEW_SEGMENT,
+            'status:-free',
+            ...this.availableTiers.map(tier => `tier:${tier.slug}`)
+        ];
+
+        const remaining = candidates.filter(segment => !taken.includes(segment));
+
+        // a tier is only worth naming when "paid members" didn't already cover
+        // it, otherwise the same people arrive twice over
+        const segments = remaining.includes('status:-free')
+            ? remaining.filter(segment => !segment.startsWith('tier:'))
+            : remaining;
+
+        return segments.join(',') || null;
+    }
+
+    get previewFilter() {
+        return this.selectedPreviewFilter === undefined ? this.defaultPreviewFilter : this.selectedPreviewFilter;
+    }
+
+    // What the send is actually built from: both audiences unioned, exactly the
+    // shape a single recipient picker has always produced. The renderer decides
+    // per-recipient which version of the post to build.
+    get combinedRecipientFilter() {
+        const segments = [this.recipientFilter, this.previewFilter]
+            .filter(Boolean)
+            .join(',')
+            .split(',')
+            .map(segment => segment.trim())
+            .filter(Boolean);
+
+        return [...new Set(segments)].join(',') || null;
+    }
+
+    /**
+     * Names the preview audience in a phrase short enough to sit in a sentence.
+     *
+     * A single tier is worth naming - "Bronze" says more than "1 tier". Past
+     * one, and for labels at any number, they're counted instead: spelling out
+     * a combination turns a line meant to reassure into one to decode.
+     *
+     * Lives here rather than on the step so the review can say the same thing
+     * the step did, in the same words.
+     */
+    get previewAudienceLabel() {
+        const segments = segmentParts(this.previewFilter);
+
+        if (!segments.length) {
+            return null;
+        }
+
+        const hasFree = segments.includes(PREVIEW_SEGMENT);
+        const hasPaid = segments.includes('status:-free');
+        const tiers = segments.filter(segment => segment.startsWith('tier:'));
+
+        if (segments.length === 1) {
+            if (hasFree) {
+                return 'free members';
+            }
+
+            if (hasPaid) {
+                return 'paid members';
+            }
+
+            // "674 Bronze members", not "674 Bronze" - the tier name keeps its
+            // own casing as a proper noun, but still needs a noun after it
+            if (tiers.length === 1) {
+                const slug = tiers[0].slice('tier:'.length);
+                const name = this.availableTiers.find(tier => tier.slug === slug)?.name || slug;
+
+                return `${name} members`;
+            }
+        }
+
+        // bare "members" so it reads after a number - "674 all members" doesn't
+        if (segments.length === 2 && hasFree && hasPaid) {
+            return 'members';
+        }
+
+        return 'selected members';
+    }
+
+    // Counted apart from each other so the review can say who gets the post and
+    // who gets the teaser, rather than one number covering both
+    get postRecipientFilter() {
+        return this._scopedToNewsletter(this.recipientFilter);
+    }
+
+    get previewRecipientFilter() {
+        return this._scopedToNewsletter(this.previewFilter);
+    }
+
+    // parenthesised because a segment list is comma-joined and NQL binds `+`
+    // tighter than `,` - without it the newsletter would only apply to the first
+    _scopedToNewsletter(filter) {
+        if (!filter) {
+            return null;
+        }
+
+        return this.newsletter ? `${this.newsletter.recipientFilter}+(${filter})` : filter;
+    }
+
+    @action
+    setPreviewFilter(newFilter) {
+        this.selectedPreviewFilter = newFilter;
+    }
+
     get fullRecipientFilter() {
         let filter = this.newsletter.recipientFilter;
 
-        if (this.recipientFilter) {
-            filter += `+(${this.recipientFilter})`;
+        if (this.combinedRecipientFilter) {
+            filter += `+(${this.combinedRecipientFilter})`;
         }
 
         return filter;
@@ -308,6 +480,15 @@ export default class PublishOptions {
             promises.push(this.store.query('newsletter', {status: 'active', limit: 'all', include: 'count.active_members'}));
         }
 
+        // paid tiers - the preview audience is worked out from who the full
+        // send left out, which means knowing every tier there is. The free tier
+        // isn't something a paywall can gate on, so it's not fetched.
+        if (!this.user.isContributor) {
+            promises.push(this.store.query('tier', {filter: 'type:paid', limit: 'all'}).then((tiers) => {
+                this.availableTiers = tiers.toArray ? tiers.toArray() : [...tiers];
+            }));
+        }
+
         yield Promise.all(promises);
     }
 
@@ -325,7 +506,9 @@ export default class PublishOptions {
 
         if (willEmail) {
             adapterOptions.newsletter = this.newsletter.slug;
-            adapterOptions.emailSegment = this.recipientFilter;
+            // both audiences, as one segment - the split is a question the UI
+            // asks, not something the send needs to know about
+            adapterOptions.emailSegment = this.combinedRecipientFilter;
         }
 
         try {

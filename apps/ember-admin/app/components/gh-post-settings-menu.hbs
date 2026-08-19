@@ -74,10 +74,24 @@
                         </div>
                         {{/unless}}
 
-                        {{#if this.showVisibilityInput}}
+                        {{! With paywallV2 off this is the only access control there is.
+                            With it on, access moves onto the post itself unless the
+                            placement toggle puts it back here - see Editor::PostAccessChip. }}
+                        {{#if (and this.showVisibilityInput (or (not (feature 'paywallV2')) this.editorAccessPlacement.isSidebar))}}
                             <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="visibility">
                                 <label for="visibility-input">{{capitalize @post.displayName}} access</label>
                                 <GhPsmVisibilityInput @post={{this.post}} @savePostOnChange={{this.savePost}} @triggerId="visibility-input" />
+                                {{! The offer describes the access the post ends up with,
+                                    so it goes under whichever input settles that. On tiers
+                                    the picker below is still part of the same answer, and a
+                                    description sitting above an unanswered input would be
+                                    describing something the author hasn't finished saying. }}
+                                {{#unless (eq this.post.visibility "tiers")}}
+                                    <Editor::AccessPreviewHint
+                                        @post={{this.post}}
+                                        @insertFreePreview={{@insertFreePreview}}
+                                    />
+                                {{/unless}}
                             </GhFormGroup>
 
                             {{#if (eq this.post.visibility "tiers")}}
@@ -87,6 +101,14 @@
                                         @onChange={{action "setVisibility"}}
                                         @renderInPlace={{true}}
                                         @hideOptionsWhenAllSelected={{true}}
+                                    />
+                                    {{! Ahead of the error the way Shade orders a field:
+                                        description, then message. The description is always
+                                        true of the field; the error is only sometimes there,
+                                        and it reads as the last word when it is. }}
+                                    <Editor::AccessPreviewHint
+                                        @post={{this.post}}
+                                        @insertFreePreview={{@insertFreePreview}}
                                     />
                                     <GhErrorMessage @errors={{this.post.errors}} @property="tiers" data-test-error="tiers" />
                                 </GhFormGroup>

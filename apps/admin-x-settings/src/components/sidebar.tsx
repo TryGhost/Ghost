@@ -104,6 +104,7 @@ const Sidebar: React.FC = () => {
     const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
     const hasAutomations = useFeatureFlag('automations');
     const hasCustomFields = useFeatureFlag('membersCustomFields');
+    const hasPaywallV2 = useFeatureFlag('paywallV2');
     const hasNewslettersEnabled = newslettersEnabled !== 'disabled';
     const mailgunIsConfigured = Boolean(config.mailgunIsConfigured);
     const hasMailgun = hasNewslettersEnabled && !mailgunIsConfigured;
@@ -130,7 +131,8 @@ const Sidebar: React.FC = () => {
         growthSearchKeywords.explore,
         growthSearchKeywords.recommendations,
         growthSearchKeywords.embedSignupForm,
-        ...(hasStripeEnabled ? [growthSearchKeywords.offers] : [])
+        ...(hasStripeEnabled ? [growthSearchKeywords.offers] : []),
+        ...(hasPaywallV2 ? [growthSearchKeywords.paywalls] : [])
     ].flat(), [hasStripeEnabled]);
 
     // Focus in on search field when pressing "/"
@@ -304,6 +306,7 @@ const Sidebar: React.FC = () => {
                     <NavItem icon={<LucideIcon.Globe />} keywords={growthSearchKeywords.explore} navid='explore' title="Ghost Explore" onClick={handleSectionClick} />
                     <NavItem icon={<LucideIcon.Heart />} keywords={growthSearchKeywords.recommendations} navid='recommendations' title="Recommendations" onClick={handleSectionClick} />
                     <NavItem icon={<LucideIcon.ClipboardType />} keywords={growthSearchKeywords.embedSignupForm} navid='embed-signup-form' title="Signup forms" onClick={handleSectionClick} />
+                    {hasPaywallV2 && <NavItem icon={<LucideIcon.Lock />} keywords={growthSearchKeywords.paywalls} navid='paywalls' title="Paywalls" onClick={handleSectionClick} />}
                     {hasStripeEnabled && <NavItem icon={<LucideIcon.Tag />} keywords={growthSearchKeywords.offers} navid='offers' title="Offers" onClick={handleSectionClick} />}
                 </NavSection>
 

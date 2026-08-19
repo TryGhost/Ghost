@@ -1,0 +1,7 @@
+{{! Progress through the flow: Ghost green for where you are, a muted version
+    for the questions either side of it. }}
+<div class="gh-publish-step-dots" data-test-step-progress>
+    {{#each @dots as |dot|}}
+        <span class="gh-publish-step-dot {{if dot.isCurrent "is-current"}} {{if dot.isComplete "is-complete"}}"></span>
+    {{/each}}
+</div>

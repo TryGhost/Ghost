@@ -1141,3 +1141,571 @@
         width: auto;
     }
 }
+
+/* Stepped publish flow (publishFlowSteps flag)
+   One question per screen rather than a stack of settings rows.
+
+   Type and colour across these screens use four roles, all drawn from Ghost's
+   own grey ramp - no computed one-offs, so nothing sits half a step from a
+   token that already exists:
+
+     2.4rem / 600 / --black      the question being asked
+     1.5rem / 400 / --black      everything said back to you: step notes, the
+                                 line confirming a choice, the review
+     1.4rem / 500 / --darkgrey   labels and chips - things you act on
+     1.3rem / 400 / --midgrey    fine print: timezone, validation
+
+   The paywall hover card is deliberately outside this. It's a facsimile of the
+   author's published paywall, so its type follows that card rather than the
+   admin chrome around it. */
+.gh-publish-steps {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.gh-publish-step-dots {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    margin-bottom: 1.6rem;
+}
+
+.gh-publish-step-dot {
+    width: .8rem;
+    height: .8rem;
+    border-radius: 50%;
+    /* muted Ghost green for the questions either side of where you are */
+    background: var(--green);
+    opacity: .25;
+    transition: opacity .2s ease-out, transform .2s ease-out;
+}
+
+.gh-publish-step-dot.is-complete {
+    opacity: .45;
+}
+
+.gh-publish-step-dot.is-current {
+    opacity: 1;
+    transform: scale(1.15);
+}
+
+.gh-publish-step {
+    margin-bottom: 3.2rem;
+    animation: gh-publish-step-in .2s ease-out;
+}
+
+@keyframes gh-publish-step-in {
+    from {
+        opacity: 0;
+        transform: translateY(.6rem);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+/* Going back reverses the travel. Both directions rising made "Back" feel like
+   another step forward, which is the one thing the motion is there to say. */
+.gh-publish-steps.is-back .gh-publish-step {
+    animation-name: gh-publish-step-in-back;
+}
+
+@keyframes gh-publish-step-in-back {
+    from {
+        opacity: 0;
+        transform: translateY(-.6rem);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@keyframes gh-publish-step-fade {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.gh-publish-step-question {
+    margin: 0 0 2.4rem;
+    color: var(--black);
+    font-size: 2.4rem;
+    font-weight: 600;
+    line-height: 1.3em;
+}
+
+/* One prose treatment across the flow. The notes that introduce a step, the
+   lines confirming what a choice means, and the review's statements are all the
+   same kind of text - something being said to the author rather than something
+   they act on - so they're set once and share it. */
+.gh-publish-step-note,
+.gh-publish-step-callout,
+.gh-publish-summary-line {
+    margin: 0;
+    color: var(--black);
+    font-size: 1.5rem;
+    font-weight: 400;
+    line-height: 1.5em;
+}
+
+/* pulled up under the question it belongs to */
+.gh-publish-step-note {
+    margin: -1.2rem 0 2.4rem;
+}
+
+/* the shared option components assume the accordion's form spacing */
+.gh-publish-step .gh-publish-setting-form,
+.gh-publish-step fieldset {
+    margin: 0;
+    padding-bottom: 0;
+}
+
+.gh-publish-steps .gh-publish-cta {
+    align-items: center;
+}
+
+/* Continue is pressed at every step, so it acknowledges the press. Scoped to
+   the stepped flow rather than .gh-btn, which is used across the whole admin. */
+.gh-publish-steps .gh-publish-cta .gh-btn {
+    transition: transform .16s ease-out;
+}
+
+.gh-publish-steps .gh-publish-cta .gh-btn:active {
+    transform: scale(.97);
+}
+
+/* Outranks `.gh-btn span { display: block }`, which would otherwise stack the
+   label and the arrow. Keeps the span's own padding and height, so the button
+   still measures the same as every other gh-btn. */
+.gh-btn span.gh-publish-cta-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .8rem;
+}
+
+.gh-publish-cta-arrow {
+    width: 1.8rem;
+    height: 1.8rem;
+    flex-shrink: 0;
+}
+
+/* Nudges forward on hover, in the direction it points. Held back from
+   `transform` on the button itself, which owns the press. */
+.gh-publish-steps .gh-publish-cta .gh-btn .gh-publish-cta-arrow {
+    transition: transform .16s ease-out;
+}
+
+.gh-publish-steps .gh-publish-cta .gh-btn:hover .gh-publish-cta-arrow {
+    transform: translateX(.2rem);
+}
+
+.gh-publish-step-field {
+    margin-bottom: 3.2rem;
+}
+
+.gh-publish-step-field + .gh-publish-types {
+    margin-top: 0;
+}
+
+/* An answer that reveals a follow-up question needs the same gap between them
+   as any two sections - the shared fieldset reset zeroes its margin, so the
+   space has to come from this side. */
+.gh-publish-types + .gh-publish-step-field {
+    margin-top: 3.2rem;
+}
+
+/* the step already carries the gap to the buttons, so a trailing field
+   shouldn't add a second one */
+.gh-publish-step > .gh-publish-step-field:last-child {
+    margin-bottom: 0;
+}
+
+/* One text style across the steps: field labels, chips and the callout all read
+   the same, so the only hierarchy is the question heading above them.
+
+   `display: block` matters: `.gh-main-section-header` was written for headings,
+   which are block already, but these are <label> elements. Left inline, their
+   vertical padding paints without taking up any space, so the control below
+   rides up underneath the text instead of sitting below it. Margin, not
+   padding, for the gap - it's space between two elements, not inside one. */
+.gh-publish-step .gh-main-section-header.small {
+    display: block;
+    padding: 0;
+    margin: 0 0 .2rem;
+    color: var(--darkgrey);
+    font-size: 1.4rem;
+    font-weight: 500;
+    letter-spacing: .2px;
+    text-transform: none;
+}
+
+/* Chips are controls, not copy - dragging across them shouldn't select text */
+.gh-publish-step .gh-publish-types label,
+.gh-publish-step .gh-publish-schedule label,
+.gh-publish-step .gh-publish-send-to-option label {
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* Recipients: the selected chip is distinct enough on its own, so the
+   checkmark is dropped and the chip reclaims its left padding. */
+.gh-publish-step .gh-publish-send-to-option .input-toggle-component {
+    display: none;
+}
+
+/* Colour only - the checked state also swaps 1px/18px for 2px/17px to hold the
+   chip's size steady, and transitioning border-width or padding would animate
+   layout. Those swap instantly under a crossfading colour, which reads clean. */
+.gh-publish-step .gh-publish-send-to-option label p {
+    padding: 0 18px;
+    transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+
+.gh-publish-step .gh-publish-send-to-option .for-checkbox input:checked + .flex p {
+    padding: 0 17px;
+}
+
+.gh-publish-step .gh-publish-send-to {
+    flex-wrap: wrap;
+    gap: 1.2rem;
+    margin-bottom: 0;
+}
+
+.gh-publish-step .gh-publish-send-to-option {
+    margin-right: 0;
+}
+
+/* specific-people picker gets the same breathing room as the newsletter select */
+.gh-publish-step .gh-publish-send-to.mb4 {
+    margin-bottom: 3.2rem;
+}
+
+/* the scheduling inputs, same gap again, and a date-sized time field */
+/* sized to their content rather than splitting the column - a date and a time
+   don't need half the modal each */
+.gh-publish-step .gh-date-time-picker {
+    display: grid;
+    grid-template-columns: 15rem 11rem;
+    grid-column-gap: 1.6rem;
+    justify-content: start;
+    margin-top: 3.2rem;
+}
+
+/* Every control on these steps stands 38px tall, matching the pills. The
+   insides keep their own sizing - only the field around them is normalised. */
+.gh-publish-step .gh-date-time-picker-date,
+.gh-publish-step .gh-date-time-picker-time {
+    width: 100%;
+    height: 38px;
+    min-width: 0;
+    margin: 0;
+    padding: 8px 14px;
+}
+
+.gh-publish-step .gh-publish-newsletter-trigger,
+.gh-publish-step .ember-power-select-trigger:not(.ember-power-select-multiple-trigger) {
+    display: flex;
+    align-items: center;
+    min-height: 38px;
+    padding: 0 14px;
+}
+
+.gh-publish-step .ember-power-select-multiple-trigger {
+    align-items: center;
+    min-height: 38px;
+    padding: 3px 10px;
+}
+
+.gh-publish-step .gh-date-time-picker input {
+    font-size: 1.4rem;
+    letter-spacing: .2px;
+}
+
+.gh-publish-step .gh-date-time-picker-timezone {
+    margin: 0;
+    color: var(--midgrey);
+    font-size: 1.3rem;
+    font-weight: 500;
+}
+
+.gh-publish-step .gh-date-time-picker-error {
+    grid-column: span 2;
+    margin-top: .8rem;
+    font-size: 1.3rem;
+    font-weight: 400;
+}
+
+/* closes a step, so it sits well clear of the controls above it */
+.gh-publish-step-callout {
+    margin: 3.2rem 0 0;
+}
+
+/* Review: one line per surface. Separating the two is what the whole flow has
+   been for, so the review says them as two statements rather than one
+   paragraph - the gap between them is what does that work now. */
+.gh-publish-summary {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2.4rem;
+    max-width: 52rem;
+}
+
+/* the note reports an absence rather than a destination, so it sits a little
+   apart from the lines that do */
+.gh-publish-summary-note {
+    margin-top: .4rem;
+}
+
+/* "paywall" carries a preview of the author's own card on hover */
+.gh-paywall-hint {
+    position: relative;
+    display: inline-block;
+}
+
+/* Opens downward when the word sits near the top of a step - upward would put
+   the card over the question heading and out through the top of the modal. */
+.gh-paywall-hint.is-below .gh-paywall-hint-card {
+    top: calc(100% + 1rem);
+    bottom: auto;
+    transform-origin: top center;
+}
+
+/* Hidden with visibility rather than display, because `display` can't be
+   transitioned - the card used to appear from nothing, which nothing physical
+   does. It now grows from the word it belongs to: origin sits on the edge
+   nearest the text, so the card reads as coming out of it rather than being
+   dropped on top. Visibility flips only after the fade-out finishes, which is
+   what the trailing 0s-with-delay does. */
+.gh-paywall-hint-card {
+    position: absolute;
+    bottom: calc(100% + 1rem);
+    left: 50%;
+    z-index: 100;
+    visibility: hidden;
+    opacity: 0;
+    /* wider than the 500px flow it hangs off - it's previewing an email, and a
+       narrow column made the author's own paywall read as a different card to
+       the one that sends */
+    width: 52rem;
+    max-width: calc(100vw - 4rem);
+    padding: 1.6rem;
+    transform: translateX(-50%) scale(.96);
+    transform-origin: bottom center;
+    transition: opacity .15s ease-out, transform .15s ease-out, visibility 0s linear .15s;
+    border: 1px solid var(--whitegrey);
+    border-radius: 6px;
+    background: var(--white);
+    box-shadow: 0 1rem 3rem rgba(0, 0, 0, .12);
+    cursor: default;
+    text-align: left;
+}
+
+/* hover isn't available on touch, so there's nothing to hint at - the word
+   stays plain text and the card never renders */
+@media (hover: hover) and (pointer: fine) {
+    .gh-paywall-hint-term {
+        text-decoration: underline dotted currentColor;
+        text-underline-offset: .3em;
+        text-decoration-thickness: 1px;
+        cursor: help;
+    }
+
+    .gh-paywall-hint:hover .gh-paywall-hint-card,
+    .gh-paywall-hint:focus-within .gh-paywall-hint-card {
+        visibility: visible;
+        opacity: 1;
+        transform: translateX(-50%) scale(1);
+        /* no wait on the way in - the delay above only holds visibility open
+           long enough for the fade-out to finish */
+        transition-delay: 0s;
+    }
+}
+
+/* the tail of the post above the card, fading in so it reads as a continuation
+   rather than the start of something */
+.gh-paywall-hint-excerpt {
+    display: block;
+    margin-bottom: 1.2rem;
+    color: var(--darkgrey);
+    font-size: 1.5rem;
+    line-height: 1.6em;
+    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 2em);
+    mask-image: linear-gradient(to bottom, transparent, #000 2em);
+}
+
+/* Flex, matching .kg-paywall-content - the direction is what separates the two
+   layouts, so the image can sit beside the text or above it. */
+.gh-paywall-hint-body {
+    display: flex;
+    gap: 1.5rem;
+    padding: 2rem;
+    border-radius: 6px;
+}
+
+.gh-paywall-hint-immersive {
+    flex-direction: column;
+}
+
+.gh-paywall-hint-minimal {
+    flex-direction: row;
+}
+
+/* Only the immersive layout centres. A minimal card's text sits beside its
+   image, where centring reads as a mistake - the rendered card scopes this the
+   same way through .kg-paywall-immersive. */
+.gh-paywall-hint-immersive.is-centered .gh-paywall-hint-content {
+    align-items: center;
+    text-align: center;
+}
+
+.gh-paywall-hint-immersive.is-centered .gh-paywall-hint-button {
+    align-self: center;
+}
+
+.gh-paywall-hint-content {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.gh-paywall-hint-bg-white { background: transparent; box-shadow: inset 0 0 0 1px var(--whitegrey-d1); }
+
+/* No background at all, so the only thing marking the card out from the
+   paragraphs around it is the rule - and only when the author kept it. */
+.gh-paywall-hint-bg-none {
+    padding: 2rem 0;
+    background: transparent;
+}
+
+.gh-paywall-hint-bg-none.has-dividers {
+    border-top: 1px solid var(--whitegrey-d1);
+}
+
+.gh-paywall-hint-bg-grey { background: rgba(151, 163, 175, .14); }
+.gh-paywall-hint-bg-blue { background: rgba(33, 172, 232, .12); }
+.gh-paywall-hint-bg-green { background: rgba(52, 183, 67, .12); }
+.gh-paywall-hint-bg-yellow { background: rgba(240, 165, 15, .13); }
+.gh-paywall-hint-bg-red { background: rgba(209, 46, 46, .11); }
+.gh-paywall-hint-bg-pink { background: rgba(225, 71, 174, .11); }
+.gh-paywall-hint-bg-purple { background: rgba(135, 85, 236, .12); }
+
+/* Full strength, matching the card - the others are tints. The readable text
+   colour is set inline by the template, which runs the accent through the same
+   contrast helper the editor card uses. */
+.gh-paywall-hint-bg-accent {
+    background: var(--accent-color);
+}
+
+.gh-paywall-hint-bg-accent .gh-paywall-hint-heading,
+.gh-paywall-hint-bg-accent .gh-paywall-hint-text,
+.gh-paywall-hint-bg-accent .gh-paywall-hint-signin {
+    color: inherit;
+}
+
+.gh-paywall-hint-image {
+    display: block;
+    flex-shrink: 0;
+}
+
+.gh-paywall-hint-image img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
+    object-fit: cover;
+}
+
+/* 64px square beside the text, the size .kg-paywall-minimal renders */
+.gh-paywall-hint-minimal .gh-paywall-hint-image img {
+    width: 6.4rem;
+    height: 6.4rem;
+}
+
+.gh-paywall-hint-heading {
+    display: block;
+    margin-bottom: .6rem;
+    color: var(--black);
+    font-size: 1.8rem;
+    /* matches .kg-paywall-heading in the rendered card */
+    font-weight: 700;
+    line-height: 1.3em;
+}
+
+.gh-paywall-hint-text {
+    display: block;
+    color: var(--darkgrey);
+    font-size: 1.5rem;
+    line-height: 1.5em;
+}
+
+/* Links inside the copy take the card's own link colour - the default follows
+   the text, the other is the site's accent, same as .kg-paywall-link-accent. */
+.gh-paywall-hint-link-text .gh-paywall-hint-text a {
+    color: currentColor;
+}
+
+.gh-paywall-hint-link-accent .gh-paywall-hint-text a {
+    color: var(--accent-color);
+}
+
+/* Colours are written inline by the template, from what the author set on the
+   card - these two are the fallback for a card that stored none. */
+.gh-paywall-hint-button {
+    align-self: flex-start;
+    display: inline-block;
+    margin-top: 1.4rem;
+    padding: .6rem 1.6rem;
+    border-radius: 5px;
+    background: var(--black);
+    color: var(--white);
+    font-size: 1.4rem;
+    font-weight: 500;
+}
+
+.gh-paywall-hint-signin {
+    display: block;
+    margin-top: 1.4rem;
+    color: var(--midgrey);
+    font-size: 1.3rem;
+}
+
+/* Fewer and gentler, not none: the fades still explain that the screen changed,
+   but nothing travels and nothing scales. */
+@media (prefers-reduced-motion: reduce) {
+    .gh-publish-step,
+    .gh-publish-steps.is-back .gh-publish-step {
+        animation-name: gh-publish-step-fade;
+    }
+
+    .gh-paywall-hint-card {
+        transform: translateX(-50%);
+        transition-property: opacity, visibility;
+    }
+
+    .gh-paywall-hint:hover .gh-paywall-hint-card,
+    .gh-paywall-hint:focus-within .gh-paywall-hint-card {
+        transform: translateX(-50%);
+    }
+
+    .gh-publish-steps .gh-publish-cta .gh-btn:active {
+        transform: none;
+    }
+
+    .gh-publish-steps .gh-publish-cta .gh-btn:hover .gh-publish-cta-arrow {
+        transform: none;
+    }
+}

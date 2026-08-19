@@ -468,6 +468,16 @@ export default class LexicalEditorController extends Controller {
         this.editorAPI = API;
     }
 
+    /**
+     * Adds a free preview from the header placement of the access chip, which
+     * sits outside the writing surface and so can't reach the editor API the
+     * way the canvas placement does.
+     */
+    @action
+    insertFreePreview() {
+        this.editorAPI?.insertPaywallCard();
+    }
+
     @action
     registerSecondaryEditorAPI(API) {
         this.secondaryEditorAPI = API;

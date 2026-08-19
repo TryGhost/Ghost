@@ -234,8 +234,10 @@ function usePlusCardMenu(editor) {
     // build up the card menu based on registered nodes and current search
     React.useEffect(() => {
         const cardNodes = getEditorCardNodes(editor);
-        setCardMenu(buildCardMenu(cardNodes, {config: cardConfig}));
-    }, [cardConfig, editor, setCardMenu]);
+        setCardMenu(buildCardMenu(cardNodes, {config: cardConfig, editor}));
+        // isShowingMenu is a dependency so the menu is rebuilt each time it opens -
+        // some items are hidden based on the document, which changes as the author edits
+    }, [cardConfig, editor, isShowingMenu, setCardMenu]);
 
     const style = {
         top: `${topPosition}px`

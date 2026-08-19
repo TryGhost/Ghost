@@ -13,7 +13,14 @@
 const {templates, hbs, SafeString} = require('../services/handlebars');
 const downsize = require('downsize-cjs');
 const _ = require('lodash');
+const labs = require('../../shared/labs');
 const createFrame = hbs.handlebars.createFrame;
+
+// A paywall-v2 card renders its own upgrade prompt inside the post content, so
+// the built-in CTA below it would be a second paywall on the same page.
+function hasPaywallCard(html) {
+    return labs.isSet('paywallV2') && (html || '').includes('kg-paywall-card');
+}
 
 function restrictedCta(options) {
     options = options || {};
@@ -47,7 +54,7 @@ module.exports = function content(options = {}) {
         this.html = '';
     }
 
-    if (!_.isUndefined(this.access) && !this.access) {
+    if (!_.isUndefined(this.access) && !this.access && !hasPaywallCard(this.html)) {
         return restrictedCta.apply(self, args);
     }
 

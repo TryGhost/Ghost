@@ -582,7 +582,27 @@ class EmailRenderer {
             }
         });
 
+        // A paywall card's audience is "everyone this segment can't read on as",
+        // which the free/paid axis above can't express for tier-gated posts - a
+        // paid member on the wrong tier still hits the paywall. Keyed off the
+        // access the segment actually has instead.
+        $('[data-gh-paywall]').get().forEach((node) => {
+            if (audience.hasPostAccess) {
+                $(node).remove();
+            } else {
+                $(node).removeAttr('data-gh-paywall');
+            }
+        });
+
         html = $.html();
+
+        // A paywall-v2 card renders its own upgrade prompt, aimed at exactly the
+        // segments that can't read on. Checked after segment stripping so the
+        // handlebars paywall is only dropped when the card actually survived for
+        // this audience.
+        if (addPaywall && this.#labs?.isSet('paywallV2') && html.includes('kg-paywall-card')) {
+            addPaywall = false;
+        }
 
         const templateData = await this.getTemplateData({
             post,

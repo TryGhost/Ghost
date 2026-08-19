@@ -233,6 +233,19 @@ export default class GhKoenigEditorLexical extends Component {
         this.args.registerAPI(API);
     }
 
+    /**
+     * Adds a free preview to the post from outside the writing surface.
+     *
+     * The action lives beside the post's access rather than in the card menu,
+     * because that's where an author decides how much of a gated post to give
+     * away - but access itself is untouched by this: gating and previewing are
+     * two separate decisions.
+     */
+    @action
+    insertFreePreview() {
+        this.editorAPI?.insertPaywallCard();
+    }
+
     @action
     registerSecondaryEditorAPI(API) {
         this.secondaryEditorAPI = API;

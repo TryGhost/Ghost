@@ -185,3 +185,53 @@ em-emoji-picker {
         border-bottom: 1px solid var(--grey-900);
     }
 }
+
+/* The paywall sits in the post as the reader will see it, whether or not the
+   card is being edited - so the author writes up to a wall they can see rather
+   than one they have to open first.
+
+   A grid row rather than plain flow because the card's height depends on the
+   copy in it and on which target is showing, and `1fr` measures that without a
+   number being written here. `min-height: 0` stops the row flooring at its
+   content's min-content height. */
+.kg-paywall-v2-pane {
+    display: grid;
+    grid-template-rows: 1fr;
+}
+
+.kg-paywall-v2-pane-inner {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* The rules either side of the paywall badge, drawn as a zigzag so the line
+   reads as a cut across the post rather than a plain divider - the post really
+   is severed here, and the free half is what's above it.
+
+   Masked rather than drawn: the zigzag lives in the mask as an opaque stroke
+   and the visible colour comes from `background-color`, so there's no colour
+   baked into the data URI and dark mode is a one-line override. A `border-top`
+   can't be anything but straight, which is why these are real elements. */
+.kg-paywall-v2-cut {
+    flex: 1 1 0%;
+    height: 8px;
+    background-color: var(--grey-300);
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='8'%3E%3Cpath d='M0 6.25L5.5 1.75L11 6.25' fill='none' stroke='%23fff' stroke-width='1.25' stroke-linecap='square'/%3E%3C/svg%3E");
+    mask-repeat: repeat-x;
+    mask-size: 11px 8px;
+    mask-position: left center;
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='8'%3E%3Cpath d='M0 6.25L5.5 1.75L11 6.25' fill='none' stroke='%23fff' stroke-width='1.25' stroke-linecap='square'/%3E%3C/svg%3E");
+    -webkit-mask-repeat: repeat-x;
+    -webkit-mask-size: 11px 8px;
+    -webkit-mask-position: left center;
+}
+
+/* the cut on the right of the badge starts its tiling from the badge, so the
+   zigzag stays symmetrical about the label */
+.kg-paywall-v2-cut:last-child {
+    mask-position: right center;
+    -webkit-mask-position: right center;
+}

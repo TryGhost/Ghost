@@ -22,6 +22,7 @@ import NewsletterDetailModal from '../../settings/email/newsletters/newsletter-d
 import OfferSuccess from '../../settings/growth/offers/offer-success';
 // import OffersModal from '../../settings/growth/offers/OffersIndex';
 import OffersContainerModal from '../../settings/growth/offers/offers-container-modal';
+import PaywallsModal from '../../settings/growth/paywalls/paywalls-modal';
 import PinturaModal from '../../settings/advanced/integrations/pintura-modal';
 import PortalModal from '../../settings/membership/portal/portal-modal';
 import SlackModal from '../../settings/advanced/integrations/slack-modal';
@@ -47,6 +48,7 @@ const modals = {
     NavigationModal,
     NewsletterDetailModal,
     PinturaModal,
+    PaywallsModal,
     PortalModal,
     SlackModal,
     StripeConnectModal,

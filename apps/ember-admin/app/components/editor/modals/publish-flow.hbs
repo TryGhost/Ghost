@@ -44,6 +44,13 @@
                 @cancel={{this.toggleConfirm}}
                 @close={{@close}}
             />
+        {{else if this.feature.publishFlowSteps}}
+            <Editor::Modals::PublishFlow::SteppedOptions
+                @publishOptions={{@data.publishOptions}}
+                @recipientType={{this.recipientType}}
+                @confirm={{this.toggleConfirm}}
+                @close={{@close}}
+            />
         {{else}}
             <Editor::Modals::PublishFlow::Options
                 @publishOptions={{@data.publishOptions}}

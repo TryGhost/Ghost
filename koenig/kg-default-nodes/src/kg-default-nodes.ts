@@ -16,6 +16,7 @@ import * as bookmark from './nodes/bookmark/BookmarkNode.js';
 import * as file from './nodes/file/FileNode.js';
 import * as header from './nodes/header/HeaderNode.js';
 import * as paywall from './nodes/paywall/PaywallNode.js';
+import * as paywallV2 from './nodes/paywall-v2/PaywallV2Node.js';
 import * as product from './nodes/product/ProductNode.js';
 import * as embed from './nodes/embed/EmbedNode.js';
 import * as email from './nodes/email/EmailNode.js';
@@ -50,6 +51,8 @@ export * from './nodes/bookmark/BookmarkNode.js';
 export * from './nodes/file/FileNode.js';
 export * from './nodes/header/HeaderNode.js';
 export * from './nodes/paywall/PaywallNode.js';
+export * from './nodes/paywall-v2/PaywallV2Node.js';
+export * from './nodes/paywall-v2/paywall-access.js';
 export * from './nodes/product/ProductNode.js';
 export * from './nodes/embed/EmbedNode.js';
 export * from './nodes/email/EmailNode.js';
@@ -118,6 +121,7 @@ export const DEFAULT_NODES = [
     header.HeaderNode,
     bookmark.BookmarkNode,
     paywall.PaywallNode,
+    paywallV2.PaywallV2Node,
     product.ProductNode,
     embed.EmbedNode,
     email.EmailNode,

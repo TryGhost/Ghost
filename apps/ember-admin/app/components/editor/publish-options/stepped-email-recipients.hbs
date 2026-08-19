@@ -1,0 +1,36 @@
+{{! Template-only: the recipient checkboxes are the shared component, this just
+    puts the newsletter above them. The newsletter constrains who can receive
+    the post, so it's the wider decision and belongs first. }}
+{{#if (gt @publishOptions.newsletters.length 1)}}
+    <div class="gh-publish-step-field" data-test-select="newsletter">
+        <label class="gh-main-section-header small bn">Newsletter</label>
+        <PowerSelect
+            @selected={{@publishOptions.newsletter}}
+            @options={{@publishOptions.newsletters}}
+            @onChange={{@publishOptions.setNewsletter}}
+            @triggerComponent={{component "gh-power-select/trigger"}}
+            @triggerClass="gh-publish-newsletter-trigger"
+            @dropdownClass="gh-publish-newsletter-dropdown"
+            @renderInPlace={{false}}
+            as |newsletter|
+        >
+            <span data-test-select-option={{newsletter.name}}>{{newsletter.name}}</span>
+            {{!-- TODO: remove conditional when author/editor can fetch member counts --}}
+            {{#if @publishOptions.user.isAdmin}}
+                <span class="gh-newsletter-count">{{format-number newsletter.count.active_members}}</span>
+            {{/if}}
+        </PowerSelect>
+    </div>
+{{/if}}
+
+{{! Free / paid / specific people, multi-select: every option today's flow
+    offers, unchanged. The recipient filter is additive, so combinations like
+    "free members plus a label" are valid. Whatever is picked here is what the
+    preview step then can't offer. }}
+<GhMembersRecipientSelect
+    @filter={{@publishOptions.recipientFilter}}
+    @newsletter={{@publishOptions.newsletter}}
+    @onChange={{@publishOptions.setRecipientFilter}}
+    @renderInPlace={{false}}
+    @dropdownClass="gh-publish-newsletter-dropdown"
+/>

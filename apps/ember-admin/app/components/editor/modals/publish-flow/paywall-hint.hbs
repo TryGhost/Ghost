@@ -1,0 +1,36 @@
+{{! The word "paywall" with the author's own paywall card behind it on hover.
+    Whitespace control keeps punctuation tight against the word, and the card is
+    absolutely positioned so it adds no inline width. }}
+{{~#if @preview~}}
+    <span class="gh-paywall-hint {{if @below "is-below"}}"><span class="gh-paywall-hint-term">paywall.</span><span class="gh-paywall-hint-card" aria-hidden="true">
+        {{~#if @preview.precedingText~}}
+            <span class="gh-paywall-hint-excerpt">{{@preview.precedingText}}</span>
+        {{~/if~}}
+        {{! the brand colour can be anything, so its text colour is computed
+            rather than assumed - every other background is a fixed tint with
+            its own rule in the stylesheet }}
+        {{! Mirrors the rendered card's structure so the layouts can differ the
+            way they do on the site: minimal puts a 64px square beside the text,
+            immersive stacks a full-width image above it. }}
+        <span class="gh-paywall-hint-body gh-paywall-hint-bg-{{@preview.backgroundColor}} gh-paywall-hint-{{@preview.layout}} gh-paywall-hint-link-{{@preview.linkColor}} {{if @preview.isCentered "is-centered"}} {{if @preview.showDividers "has-dividers"}}" style={{@preview.textColorStyle}}>
+        {{~#if @preview.imageUrl~}}
+            <span class="gh-paywall-hint-image"><img src={{@preview.imageUrl}} alt=""></span>
+        {{~/if~}}
+        <span class="gh-paywall-hint-content">
+        {{~#if @preview.heading~}}
+            <span class="gh-paywall-hint-heading">{{@preview.heading}}</span>
+        {{~/if~}}
+        {{~#if @preview.text~}}
+            <span class="gh-paywall-hint-text">{{@preview.text}}</span>
+        {{~/if~}}
+        {{~#if @preview.buttonText~}}
+            <span class="gh-paywall-hint-button" style={{@preview.buttonStyle}}>{{@preview.buttonText}}</span>
+        {{~/if~}}
+        {{~#if @preview.showSignIn~}}
+            <span class="gh-paywall-hint-signin">Already a member? Sign in</span>
+        {{~/if~}}
+        </span>
+    </span></span></span>
+{{~else~}}
+    paywall.
+{{~/if~}}

@@ -1,74 +1,77 @@
-<div class="gh-publish-title" data-test-publish-flow="confirm">
-    <div class="green">Ready, set, publish.</div>
-    <div>Share it with the world.</div>
-</div>
-<p class="gh-publish-confirmation" data-test-text="confirm-details">
-    {{#if @publishOptions.isScheduled}}
-        {{#let (moment-site-tz @publishOptions.scheduledAtUTC) as |scheduledAt|}}
-            On
-            <strong>
-                {{moment-format scheduledAt "D MMM YYYY"}}
-                at
-                {{moment-format scheduledAt "HH:mm"}}
-            </strong>
-            your
-        {{/let}}
-    {{else}}
-        Your
-    {{/if}}
+{{#if this.isStepped}}
+    <div class="gh-publish-steps" data-test-publish-flow="confirm">
+        <Editor::Modals::PublishFlow::StepDots @dots={{this.dots}} />
 
-    {{@publishOptions.post.displayName}}
+        <div class="gh-publish-step">
+            {{! the question runs straight into the opening of the sentence the
+                summary lines finish, so the review reads as one statement }}
+            <h2 class="gh-publish-step-question" data-test-step-question>
+                {{this.reviewHeading}} {{this.summaryLead}}
+            </h2>
 
-    {{#if this.willPublish}}
-        will be published on your site{{#if this.willEmail}}, and delivered to{{else}}.{{/if}}
-    {{/if}}
+            <Editor::Modals::PublishFlow::ConfirmSummaryList
+                @publishOptions={{@publishOptions}}
+                @willPublish={{this.willPublish}}
+                @siteSummary={{this.siteSummary}}
+                @emailShape={{this.emailShape}}
+                @newsletterSuffix={{this.newsletterSuffix}}
+            />
+        </div>
 
-    {{#if this.willEmail}}
-        {{#unless this.willPublish}}
-            will be delivered to
-        {{/unless}}
+        {{#if this.errorMessage}}
+            <p class="error gh-box gh-box-error mt3 mb3" data-test-confirm-error>
+                {{this.errorMessage}}
+            </p>
+        {{/if}}
 
-        {{#let (members-count-fetcher query=(hash filter=@publishOptions.fullRecipientFilter)) as |countFetcher|}}
-            <strong>
-                {{if (eq @recipientType "all") "all"}}
+        <div class="gh-publish-cta">
+            <GhTaskButton
+                @task={{this.confirmTask}}
+                @buttonText={{this.confirmButtonText}}
+                @runningText={{this.confirmRunningText}}
+                @successText={{this.confirmSuccessText}}
+                @class="gh-btn gh-btn-large"
+                @idleClass="gh-btn-pulse"
+                @runningClass="gh-btn-green gh-btn-icon"
+                @failureClass="gh-btn-red gh-btn-icon"
+                data-test-button="confirm-publish"
+            />
+            <button type="button" class="gh-btn gh-btn-link gh-btn-large gh-publish-cta-secondary" {{on "click" @cancel}} data-test-button="back-to-options">Back</button>
+        </div>
+    </div>
+{{else}}
+    <div class="gh-publish-title" data-test-publish-flow="confirm">
+        <div class="green">Ready, set, publish.</div>
+        <div>Share it with the world.</div>
+    </div>
 
-                {{format-number countFetcher.count}}
-
-                {{!-- @recipientType = none/free/paid/all/specific --}}
-                {{if (not-eq @recipientType "all") @recipientType}}
-            </strong>
-
-            {{#if @publishOptions.onlyDefaultNewsletter}}
-                <strong>{{gh-pluralize countFetcher.count "subscriber" without-count=true}}</strong>{{#if this.willPublish}}.{{else}},{{/if}}
-            {{else}}
-                <strong>{{gh-pluralize countFetcher.count "subscriber" without-count=true}}</strong>
-                of <strong>{{@publishOptions.newsletter.name}}</strong>{{#if this.willPublish}}.{{else}},{{/if}}
-            {{/if}}
-        {{/let}}
-
-        {{#unless this.willPublish}}
-            and will <strong>not</strong> be published on your site.
-        {{/unless}}
-    {{/if}}
-</p>
-
-{{#if this.errorMessage}}
-    <p class="error gh-box gh-box-error mt3 mb3" data-test-confirm-error>
-        {{this.errorMessage}}
-    </p>
-{{/if}}
-
-<div class="gh-publish-cta">
-    <GhTaskButton
-        @task={{this.confirmTask}}
-        @buttonText={{this.confirmButtonText}}
-        @runningText={{this.confirmRunningText}}
-        @successText={{this.confirmSuccessText}}
-        @class="gh-btn gh-btn-large"
-        @idleClass="gh-btn-pulse"
-        @runningClass="gh-btn-green gh-btn-icon"
-        @failureClass="gh-btn-red gh-btn-icon"
-        data-test-button="confirm-publish"
+    <Editor::Modals::PublishFlow::ConfirmSummary
+        @publishOptions={{@publishOptions}}
+        @recipientType={{@recipientType}}
+        @willPublish={{this.willPublish}}
+        @willEmail={{this.willEmail}}
+        @previewAudience={{this.legacyPreviewAudience}}
+        @hasPreview={{@publishOptions.post.hasPaywallCard}}
     />
-    <button type="button" class="gh-btn gh-btn-link gh-btn-large gh-publish-cta-secondary" {{on "click" @cancel}} data-test-button="back-to-options">Back to settings</button>
-</div>
+
+    {{#if this.errorMessage}}
+        <p class="error gh-box gh-box-error mt3 mb3" data-test-confirm-error>
+            {{this.errorMessage}}
+        </p>
+    {{/if}}
+
+    <div class="gh-publish-cta">
+        <GhTaskButton
+            @task={{this.confirmTask}}
+            @buttonText={{this.confirmButtonText}}
+            @runningText={{this.confirmRunningText}}
+            @successText={{this.confirmSuccessText}}
+            @class="gh-btn gh-btn-large"
+            @idleClass="gh-btn-pulse"
+            @runningClass="gh-btn-green gh-btn-icon"
+            @failureClass="gh-btn-red gh-btn-icon"
+            data-test-button="confirm-publish"
+        />
+        <button type="button" class="gh-btn gh-btn-link gh-btn-large gh-publish-cta-secondary" {{on "click" @cancel}} data-test-button="back-to-options">Back to settings</button>
+    </div>
+{{/if}}

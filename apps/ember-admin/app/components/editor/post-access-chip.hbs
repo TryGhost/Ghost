@@ -1,0 +1,112 @@
+{{#if this.isVisible}}
+    {{! Two placements, one control. On the canvas it sits with the post rather
+        than in the editor chrome, so it scrolls away with the content it
+        describes - access is a property of the post, and the top of the post is
+        where the author states it. In the header it sits in the breadcrumb row,
+        between where the post came from and what state it's in, and stays put. }}
+    <div class="gh-editor-access {{if this.isHeader 'gh-editor-access--header'}}" data-test-access-placement={{this.variant}}>
+        <GhBasicDropdown
+            @verticalPosition="below"
+            @horizontalPosition={{if this.isHeader "left" "center"}}
+            as |dd|
+        >
+            <dd.Trigger class="gh-editor-access-chip" data-test-button="post-access-chip">
+                {{svg-jar this.icon class="gh-editor-access-chip-icon"}}
+                <span class="gh-editor-access-chip-label" data-test-text="post-access-chip">{{this.label}}</span>
+                {{! Shown wherever the offer is behind the menu, and only while
+                    it stands. The original canvas variant says "Add free
+                    preview" in words beside the chip; folding that into the
+                    menu buys back the width and costs the only sign the offer
+                    exists. The dot is the smallest thing that says "there's
+                    something in here" - it marks the menu, and the menu does
+                    the explaining. }}
+                {{#if (and this.offerInMenu this.canAddFreePreview)}}
+                    <span
+                        class="gh-editor-access-chip-dot"
+                        aria-hidden="true"
+                        data-test-access-preview-hint
+                    ></span>
+                {{/if}}
+            </dd.Trigger>
+
+            <dd.Content class="gh-editor-access-menu">
+                {{! Keyed on `name`: `accessLevels` rebuilds its objects on every
+                    render, so with the default identity key Ember tore down and
+                    recreated all four buttons whenever the post changed. The
+                    button under the pointer was replaced between mousedown and
+                    click, and the dropdown service's body listener - which
+                    closes everything when a click isn't inside a dropdown -
+                    couldn't find the now-detached button inside one, so picking
+                    a level closed the menu. }}
+                <ul class="gh-editor-access-menu-list">
+                    {{#each this.accessLevels key="name" as |level|}}
+                        <li>
+                            <button
+                                type="button"
+                                class="gh-editor-access-menu-item"
+                                aria-current="{{level.isSelected}}"
+                                data-test-access-option={{level.name}}
+                                {{on "click" (fn this.selectLevel level.name dd)}}
+                            >
+                                <span>{{level.label}}</span>
+                                {{#if level.isSelected}}
+                                    {{svg-jar "lucide-check" class="gh-editor-access-menu-check"}}
+                                {{/if}}
+                            </button>
+                        </li>
+                    {{/each}}
+                </ul>
+
+                {{! The tier picker belongs to the level above it, so it sits in
+                    the same menu with no rule between them - it's the rest of
+                    that answer, not a separate section.
+
+                    `renderInPlace` keeps the power-select's options inside this
+                    dropdown's DOM, so choosing a tier isn't read as a click
+                    outside and doesn't close the menu out from under the
+                    author. }}
+                {{#if (eq this.visibility "tiers")}}
+                    <div class="gh-editor-access-menu-tiers" data-test-access-tiers>
+                        <GhPostSettingsMenu::VisibilitySegmentSelect
+                            @tiers={{this.post.tiers}}
+                            @onChange={{this.setTiers}}
+                            @renderInPlace={{true}}
+                            @hideOptionsWhenAllSelected={{true}}
+                        />
+                    </div>
+                {{/if}}
+
+                {{! Ruled off from the levels above because it answers a
+                    different question - those say who gets in, this says how
+                    much they read first. }}
+                {{#if (and this.offerInMenu this.canAddFreePreview)}}
+                    <div class="gh-editor-access-menu-footer">
+                        <button
+                            type="button"
+                            class="gh-editor-access-menu-item gh-editor-access-menu-preview"
+                            data-test-button="add-free-preview"
+                            {{on "click" (fn this.addFreePreview dd)}}
+                        >
+                            <span>Add free preview</span>
+                        </button>
+                    </div>
+                {{/if}}
+            </dd.Content>
+        </GhBasicDropdown>
+
+        {{! The original canvas variant's offer: stated in words beside the
+            chip rather than tucked behind it. This row is centred over an empty
+            page and has the width to spare, which is the whole reason the
+            variant exists to be compared against the ones that don't. }}
+        {{#if (and (not this.offerInMenu) this.canAddFreePreview)}}
+            <button
+                type="button"
+                class="gh-editor-access-preview"
+                data-test-button="add-free-preview"
+                {{on "click" (fn this.addFreePreview null)}}
+            >
+                Add free preview
+            </button>
+        {{/if}}
+    </div>
+{{/if}}

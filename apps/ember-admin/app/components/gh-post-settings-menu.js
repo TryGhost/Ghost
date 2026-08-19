@@ -12,6 +12,7 @@ import {tracked} from '@glimmer/tracking';
 @classic
 @tagName('')
 export default class GhPostSettingsMenu extends Component {
+    @service editorAccessPlacement;
     @service feature;
     @service store;
     @service ajax;

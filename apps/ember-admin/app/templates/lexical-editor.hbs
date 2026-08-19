@@ -30,6 +30,17 @@
                                 </LinkTo>
                             {{/if}}
                         {{/if}}
+                        {{! Between where the post came from and what state
+                            it's in. Access reads as part of the same sentence
+                            those two make - this post, from here, in this
+                            state, open to these people. }}
+                        <Editor::PostAccessChip
+                            @placement="header"
+                            @post={{this.post}}
+                            @savePostTask={{this.savePostTask}}
+                            @insertFreePreview={{this.insertFreePreview}}
+                        />
+
                         {{#if (or (not this.ui.isFullScreen) (not this.fromAnalytics) this.post.didEmailFail) }}
                             <div class="gh-editor-post-status">
                                 <span>
@@ -143,6 +154,7 @@
                 @savePostTask={{this.savePostTask}}
                 @editorAPI={{this.editorAPI}}
                 @secondaryEditorAPI={{this.secondaryEditorAPI}}
+                @insertFreePreview={{this.insertFreePreview}}
                 @toggleSettingsMenu={{this.toggleSettingsMenu}}
             />
         {{/if}}
@@ -163,6 +175,10 @@
             @close={{this.closePostHistory}}
             @modifier="total-overlay post-history" />
     {{/if}}
+
+    {{! Prototype only - switches which of the two access placements above is
+        the one rendering. Goes when one of them wins. }}
+    <Editor::AccessPlacementToggle />
 
 </div>
 {{/if}}

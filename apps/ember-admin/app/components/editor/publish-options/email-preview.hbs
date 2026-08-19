@@ -1,0 +1,34 @@
+{{! "Preview" is this step's own word, so it gets defined before it's used -
+    the answer means nothing to someone who doesn't know what arrives.
+
+    The card hangs off this line rather than a line below the chips, because
+    this one doesn't change with the selection - someone about to pick nobody is
+    exactly who benefits from seeing what they'd be sending. }}
+<p class="gh-publish-step-note" data-test-text="preview-explainer">
+    A preview is everything above your email
+    <Editor::Modals::PublishFlow::PaywallHint @preview={{this.paywallPreview}} @below={{true}} />
+</p>
+
+{{! No yes/no in front of this: picking someone is the yes, and clearing the
+    selection is the no. The other steps all answer their question with one
+    control, and a preview sent to nobody is just a preview that isn't sent.
+
+    Everyone the full send already reaches is hidden, so a member can't be sent
+    both the post and the teaser for it. }}
+<GhMembersRecipientSelect
+    @filter={{@publishOptions.previewFilter}}
+    @newsletter={{@publishOptions.newsletter}}
+    @onChange={{@publishOptions.setPreviewFilter}}
+    @hideSegments={{this.hiddenSegments}}
+    @renderInPlace={{false}}
+    @dropdownClass="gh-publish-newsletter-dropdown"
+/>
+
+{{! Only the empty answer gets said out loud. A selection speaks for itself -
+    the chips name it and carry its count, the question above asked for it, and
+    the review confirms it again at the end. Restating it here was the same
+    sentence twice on one screen. Nobody is the one answer that would otherwise
+    read as a step left unfinished. }}
+{{#unless this.previewSummary}}
+    <p class="gh-publish-step-callout" data-test-step-access>No preview will be sent.</p>
+{{/unless}}

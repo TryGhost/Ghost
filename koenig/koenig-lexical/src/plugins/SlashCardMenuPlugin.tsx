@@ -318,9 +318,11 @@ function useSlashCardMenu(editor) {
     // build up the card menu based on registered nodes and current search
     React.useEffect(() => {
         const cardNodes = getEditorCardNodes(editor);
-        setCardMenu(buildCardMenu(cardNodes, {insert, query, config: cardConfig}));
+        setCardMenu(buildCardMenu(cardNodes, {insert, query, config: cardConfig, editor}));
         setSelectedItemIndex(0);
-    }, [editor, query, insert, setCardMenu, setSelectedItemIndex, cardConfig]);
+        // isShowingMenu is a dependency so the menu is rebuilt each time it opens -
+        // some items are hidden based on the document, which changes as the author edits
+    }, [editor, query, insert, isShowingMenu, setCardMenu, setSelectedItemIndex, cardConfig]);
 
     // attach a resize observer to call setMenuPosition when the window resizes
     React.useEffect(() => {

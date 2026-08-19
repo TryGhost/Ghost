@@ -57,6 +57,7 @@
         "@testing-library/react": "catalog:",
         "@tryghost/admin-x-framework": "workspace:*",
         "@tryghost/custom-fonts": "catalog:",
+        "@tryghost/koenig-lexical": "workspace:*",
         "@tryghost/shade": "workspace:*",
         "@types/node": "catalog:",
         "@types/react": "catalog:",

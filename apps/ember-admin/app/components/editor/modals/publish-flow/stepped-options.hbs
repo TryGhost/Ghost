@@ -1,0 +1,138 @@
+<div class="gh-publish-steps {{if this.isGoingBack "is-back"}}" data-test-publish-flow="options" data-test-publish-step={{this.currentStep.name}}>
+    <Editor::Modals::PublishFlow::StepDots @dots={{this.dots}} />
+
+    {{#if (eq this.currentStep.name "publishType")}}
+        <div class="gh-publish-step">
+            <h2 class="gh-publish-step-question" data-test-step-question>{{this.currentStep.question}}</h2>
+
+            {{#if @publishOptions.publishDisabledError}}
+                <p class="gh-box gh-content-box pa" data-test-publish-type-error="publish-disabled">
+                    {{@publishOptions.publishDisabledError}}
+                </p>
+            {{else if @publishOptions.emailUnavailable}}
+                <p class="gh-publish-step-note">
+                    This post will be published on your site. Newsletters aren’t enabled, so there’s nothing to send.
+                </p>
+            {{else}}
+                <Editor::PublishOptions::PublishType
+                    @publishOptions={{@publishOptions}}
+                />
+            {{/if}}
+
+            {{#if @publishOptions.willEmail}}
+                <Editor::EmailSizeWarning @post={{@publishOptions.post}} as |overLimit emailSizeKb| >
+                    {{#if overLimit}}
+                        <p class="gh-box gh-content-box pa gh-publish-setting-email-warning open">
+                            <div class="gh-email-preview-clip-title mb">This email is <span class="yellow-d1">{{emailSizeKb}}kB</span></div>
+                            <div class="gh-email-preview-clip-description">Email newsletters may get clipped in the inbox behind a “View entire message” link when they’re over 100kB.</div>
+                        </p>
+                    {{/if}}
+                </Editor::EmailSizeWarning>
+            {{/if}}
+
+            {{! Only speaks up when someone is actually stopped. A public post
+                has no paywall to explain, and saying so anyway is a line that
+                appears on every post to report that nothing is happening.
+                Sits last to match the send's own closing line one step along.
+
+                The preview is only named when a card exists to make one: without
+                one the gate sits at the top of the post, and there is nothing
+                above it to read. The card's presence is what `webPaywallPreview`
+                answers - it returns null when the post has none. }}
+            {{#if (and @publishOptions.willPublish this.webAudience (not @publishOptions.publishDisabledError))}}
+                <p class="gh-publish-step-callout" data-test-step-web-access>
+                    On your site, {{this.webAudience}} will see
+                    {{#if this.webPaywallPreview}}a preview and the{{else}}the{{/if}}
+                    <Editor::Modals::PublishFlow::PaywallHint @preview={{this.webPaywallPreview}} />
+                </p>
+            {{/if}}
+        </div>
+    {{/if}}
+
+    {{#if (eq this.currentStep.name "emailRecipients")}}
+        <div class="gh-publish-step">
+            <h2 class="gh-publish-step-question" data-test-step-question>{{this.currentStep.question}}</h2>
+
+            {{#if (and @publishOptions.post.email (not @publishOptions.emailDisabledInSettings))}}
+                <p class="gh-publish-step-note" data-test-already-sent>
+                    {{#if (eq @publishOptions.post.email.status "failed")}}
+                        Retrying a send to
+                    {{else}}
+                        Already sent to
+                    {{/if}}
+                    {{format-number @publishOptions.post.email.emailCount}}
+                    {{gh-pluralize @publishOptions.post.email.emailCount "subscriber" without-count=true}}.
+                </p>
+            {{/if}}
+
+            <Editor::PublishOptions::SteppedEmailRecipients
+                @publishOptions={{@publishOptions}}
+            />
+
+            {{! sits last so it stays below the specific-people picker too. Only
+                needed when there's no preview step to say it properly - with
+                one, the paywall is that step's whole subject. }}
+            {{#unless @publishOptions.hasAudienceSplit}}
+                {{#if this.previewAudience}}
+                    {{! `previewAudience` is already null without a card - over
+                        email there's no paywall at all then, so there's nothing
+                        to say rather than something to word differently. }}
+                    <p class="gh-publish-step-callout" data-test-step-access>
+                        {{capitalize-first-letter this.previewAudience}} will get a preview and the
+                        <Editor::Modals::PublishFlow::PaywallHint @preview={{this.paywallPreview}} />
+                    </p>
+                {{/if}}
+            {{/unless}}
+        </div>
+    {{/if}}
+
+    {{#if (eq this.currentStep.name "emailPreview")}}
+        <div class="gh-publish-step">
+            <h2 class="gh-publish-step-question" data-test-step-question>{{this.currentStep.question}}</h2>
+
+            <Editor::PublishOptions::EmailPreview
+                @publishOptions={{@publishOptions}}
+            />
+        </div>
+    {{/if}}
+
+    {{#if (eq this.currentStep.name "publishAt")}}
+        <div class="gh-publish-step">
+            <h2 class="gh-publish-step-question" data-test-step-question>{{this.currentStep.question}}</h2>
+
+            <Editor::PublishOptions::PublishAt
+                @publishOptions={{@publishOptions}}
+            />
+        </div>
+    {{/if}}
+
+    {{#unless @publishOptions.publishDisabledError}}
+        <div class="gh-publish-cta">
+            <button
+                type="button"
+                class="gh-btn gh-btn-black gh-btn-large"
+                {{on "click" this.next}}
+                data-test-button="continue"
+            >
+                {{! the icon sits inside the span, not beside it - .gh-btn span
+                    is the block that carries the button's padding and height,
+                    so a sibling would be pushed onto its own line }}
+                <span class="gh-publish-cta-label">
+                    {{this.continueText}}
+                    {{svg-jar "lucide-arrow-right" class="gh-publish-cta-arrow"}}
+                </span>
+            </button>
+
+            {{#unless this.isFirstStep}}
+                <button
+                    type="button"
+                    class="gh-btn gh-btn-link gh-btn-large gh-publish-cta-secondary"
+                    {{on "click" this.back}}
+                    data-test-button="back-step"
+                >
+                    Back
+                </button>
+            {{/unless}}
+        </div>
+    {{/unless}}
+</div>

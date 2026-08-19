@@ -1369,3 +1369,421 @@ figure {
     font-weight: 300;
     letter-spacing: 0.3px;
 }
+
+
+/* Post access chip
+/* ---------------------------------------------------------- */
+
+/*
+The post's access, stated on the post rather than filed in the settings drawer.
+
+It lives in the scrolling content above the title, so it leaves the screen with
+the top of the post - access is a property of the post, and it reads as one.
+Nothing floats over the writing, which is why the badge needs no surface of its
+own: it sits on the same empty canvas the title does.
+
+Surfaces below follow Shade's recipes so this reads as the same system as the
+React admin: `--radius-md` (6px) on menus, `--radius-full` on the badge, the
+`shadow-md` ramp, and `--text-control` (1.3rem) on every control label. Written
+as concrete values because Ember admin has no access to Shade's tokens.
+*/
+/*
+Positioned absolutely inside the scroll container, not in the pane's flow. That
+puts it on the header line at rest - centred between the back button and the
+publish buttons, reading as part of the chrome - while still scrolling away
+with the post, because absolutely positioned children of a scrolling element
+move with its content. In the flow it sat below the feature-image row, a long
+way down an empty canvas, where it read as missing.
+
+`top` matches `.gh-editor-header`'s margin and `height` matches its row, so the
+two line up exactly. Kept under the header's z-index: they never overlap
+horizontally, and the header's controls should win if they ever do.
+*/
+.gh-editor-access {
+    position: absolute;
+    top: 24px;
+    left: 50%;
+    z-index: 700;
+    display: flex;
+    height: 34px;
+    align-items: center;
+    transform: translateX(-50%);
+}
+
+.gh-editor-access-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 34px;
+    padding: 0 10px;
+    font-size: 1.3rem;
+    font-weight: 500;
+    color: var(--darkgrey);
+    letter-spacing: .2px;
+    white-space: nowrap;
+    cursor: pointer;
+    background: transparent;
+    border-radius: 999px;
+    transition: background 150ms ease-out;
+}
+
+.gh-editor-access-chip:hover,
+.gh-editor-access-chip[aria-expanded="true"] {
+    background: color-mix(in srgb, var(--whitegrey) 92%, transparent);
+}
+
+.gh-editor-access-chip-icon {
+    width: 13px;
+    height: 13px;
+    color: var(--midgrey);
+}
+
+/*
+A link, not a second chip. The chip beside it is a control - something the post
+always has an answer to, which opens a menu - and this is an offer the author
+can take or leave once. Giving it the same padded, filled shape would say the
+two are the same kind of thing.
+*/
+.gh-editor-access-preview {
+    /* bare text in a button, so it doesn't inherit the page font on its own */
+    font-family: inherit;
+    /*
+    Spacing lives on the link rather than as a `gap` on the row. The dropdown
+    keeps a placeholder element between the trigger and this link which only
+    becomes a rendered flex item while the menu is open - as a gap that was an
+    extra 4px appearing on open, and since the row is centred, everything on it
+    slid sideways as the menu came down.
+    */
+    margin-left: 4px;
+    padding: 0;
+    font-size: 1.3rem;
+    font-weight: 500;
+    color: var(--green-d2);
+    letter-spacing: .2px;
+    white-space: nowrap;
+    cursor: pointer;
+    background: none;
+    border: none;
+    transition: color 150ms ease-out;
+}
+
+.gh-editor-access-preview:hover {
+    color: var(--green-d3);
+    text-decoration: underline;
+}
+
+/*
+Shade's dropdown surface, matched by hand rather than imported: `rounded-md`, a
+hairline border at 60%, the `shadow-md` ramp and `p-1` around the items. The
+gap under the badge is Shade's `sideOffset`.
+
+Fixed width on purpose. The tier picker inside grows with every tier added, and
+a menu that changes width as you fill it moves the options you are still
+choosing from.
+*/
+.gh-editor-access-menu {
+    box-sizing: border-box;
+    width: 270px;
+    margin-top: 6px;
+    padding: 4px;
+    background: var(--white);
+    border: 1px solid color-mix(in srgb, var(--lightgrey) 60%, transparent);
+    border-radius: 6px;
+    box-shadow:
+        0 0 1px rgba(0, 0, 0, 0.12),
+        0 1px 6px rgba(0, 0, 0, 0.03),
+        0 8px 10px -8px rgba(0, 0, 0, 0.05),
+        0 24px 37px -21px rgba(0, 0, 0, 0.05);
+}
+
+.gh-editor-access-menu-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+/* Ghost's global list styles put 10px under every `li`, which spaced the menu
+   out to twice Shade's rhythm */
+.gh-editor-access-menu-list li {
+    margin: 0;
+}
+
+/* Shade's `DropdownMenuItem`: `flex items-center gap-2 rounded-xs px-2 py-1.5
+   text-control`, with the check pushed to the end */
+.gh-editor-access-menu-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    padding: 6px 8px;
+    font-size: 1.3rem;
+    font-weight: 400;
+    line-height: 1.4em;
+    color: var(--darkgrey);
+    text-align: left;
+    background: none;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background 100ms ease-out;
+}
+
+.gh-editor-access-menu-item:hover {
+    background: var(--whitegrey);
+}
+
+/* Shade uses lucide's Check at `size-4`; Ghost's own `check` icon is a much
+   longer, thinner tick that reads as a different family */
+.gh-editor-access-menu-check {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    color: var(--darkgrey);
+}
+
+/* No rule above it: the tiers are the rest of the answer the list above
+   started, not a separate section. */
+.gh-editor-access-menu-tiers {
+    padding: 4px;
+}
+
+/*
+The picker sizes itself to its chips rather than reserving rows. `min-height: 0`
+drops the token input's two-row floor, so one line of tiers takes one line, and
+`flex-wrap` only kicks in once they genuinely overflow.
+*/
+.gh-editor-access-menu .gh-editor-access-menu-tiers .ember-power-select-trigger {
+    box-sizing: border-box;
+    max-width: 100%;
+    min-width: 0;
+    min-height: 0;
+    /* the tokens bring their own 2px margins, so no gap on top of them - and
+       the caret needs far less than the 28px the shared rule reserves */
+    padding: 2px 18px 2px 2px;
+    flex-wrap: wrap;
+    gap: 0;
+}
+
+/* The trigger is a grid (`1fr 24px`) with `!important` padding, so the tokens
+   get a fixed column to wrap inside and there's no widening it from here. The
+   tokens already carry 2px margins of their own, so the shared 4px gap on top
+   is what tipped a full row over the edge. */
+.gh-editor-access-menu .gh-editor-access-menu-tiers .ember-power-select-multiple-options {
+    gap: 0;
+}
+
+/* The search field is what pushed the picker onto a second row: between its
+   own width and its margins it never fit beside a full row of tiers, so it
+   wrapped and took a line of its own even when the tiers themselves needed
+   only one. Collapsed to nothing it rides along on the same line until the
+   tiers genuinely overflow - and the options are listed underneath anyway, so
+   typing to filter is the shortcut rather than the main route. */
+.gh-editor-access-menu .gh-editor-access-menu-tiers .ember-power-select-trigger-multiple-input {
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+    margin: 0;
+}
+
+/* The picker renders its options in place, so the menu grows downwards to hold
+   them rather than opening a second layer over itself. */
+.gh-editor-access-menu-tiers .ember-power-select-dropdown {
+    position: static;
+    border: none;
+    box-shadow: none;
+}
+
+/*
+The header placement. Everything the canvas placement does to lift itself over
+the top of the post is undone here - in the header it's a sibling of the back
+button and the post status, and the row's own `gap-2` spaces it.
+*/
+.gh-editor-access--header {
+    position: static;
+    top: auto;
+    left: auto;
+    z-index: auto;
+    transform: none;
+}
+
+/*
+Matched to `.gh-editor-back-button` rather than to the canvas chip: in the
+header it belongs to the row it's in. The white fill isn't decoration - the
+header sits over the scrolling post, and the controls on it are only legible
+because each one carries its own ground.
+*/
+.gh-editor-access--header .gh-editor-access-chip {
+    padding: 0 12px;
+    font-size: 1.35rem;
+    color: var(--darkgrey);
+    background: var(--white);
+    border-radius: var(--border-radius);
+}
+
+.gh-editor-access--header .gh-editor-access-chip:hover,
+.gh-editor-access--header .gh-editor-access-chip[aria-expanded="true"] {
+    background: var(--whitegrey);
+}
+
+/*
+A tier can be named anything, and a long one would push the post status off the
+row - the one thing this placement can't afford to do. Truncated rather than
+wrapped: the chip is one line in a row of one-line controls, and the full name
+is in the menu a click away.
+*/
+.gh-editor-access--header .gh-editor-access-chip-label {
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/*
+Green because it's the colour the canvas placement already gives this exact
+offer: the "Add free preview" link there is `--green-d2`. Someone who has seen
+one placement should recognise the other.
+
+Smaller than the 6px status dot in the content list, deliberately. That one is
+the row's subject - it's what you scan the column for. This one sits inside a
+control that already has a subject, and at 6px it read as a second thing on the
+chip rather than a mark on it. It only has to be seen, not read.
+*/
+.gh-editor-access-chip-dot {
+    flex-shrink: 0;
+    width: 4px;
+    height: 4px;
+    background: var(--green);
+    border-radius: 999px;
+}
+
+@media (max-width: 500px) {
+    /* the same trade the back button makes at this width - the padlock still
+       says the post is gated, which is the part worth keeping */
+    .gh-editor-access--header .gh-editor-access-chip-label {
+        display: none;
+    }
+
+    .gh-editor-access--header .gh-editor-access-chip {
+        padding: 0 8px;
+    }
+}
+
+/*
+Ruled off from the levels above it. Inside the menu the preview offer has lost
+the visual separation it had beside the chip, and without a line it reads as a
+fifth access level - which is exactly the thing it isn't.
+*/
+.gh-editor-access-menu-footer {
+    margin-top: 4px;
+    padding-top: 4px;
+    border-top: 1px solid color-mix(in srgb, var(--lightgrey) 60%, transparent);
+}
+
+.gh-editor-access-menu-preview {
+    color: var(--green-d2);
+}
+
+/* the shared item rule only moves the background on hover, which leaves the
+   green text flat while every other row lifts */
+.gh-editor-access-menu-preview:hover {
+    color: var(--green-d3);
+}
+
+/*
+The sidebar placement's offer, as the description under the access input.
+
+Nearly all of this comes from `.form-group p`, which is already Ghost's
+description recipe and the same one Shade's `FormDescription` uses: muted
+`--midgrey`, a step down from the label in weight and size. Restating that here
+would be a second copy of it to drift from.
+
+Two things it doesn't give. The gap is 4px there, matching the label's own 4px
+below itself; this sits a little further off, because it's a sentence rather
+than the one-word hints that rule was written for and 4px reads as attached to
+the input. And a line-height, which that rule never needed - its descriptions
+are a single line, and this one runs to two.
+
+The specificity is deliberate: `.form-group p` is (0,1,1), so a bare class
+would lose to it regardless of source order.
+*/
+.form-group .gh-editor-access-hint {
+    margin-top: 6px;
+    line-height: 1.5em;
+}
+
+/*
+Only the link needs saying beyond that, and only the parts that make a button
+sit inside running text as a word rather than a control. Green because that's
+this offer's colour in all three placements - the canvas link and the header's
+menu row are the same `--green-d2` - so it's recognisably the same thing
+wherever the toggle puts it.
+*/
+.gh-editor-access-hint-link {
+    padding: 0;
+    /* Buttons don't inherit `font-family` - that's why Ghost's own convention
+       is to put button text in a `<span>`, which does. This one is a word in
+       the middle of a sentence rather than a label in a control, so it inherits
+       directly instead of growing a wrapper to do it. */
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+    vertical-align: baseline;
+    color: var(--green-d2);
+    cursor: pointer;
+    background: none;
+    border: none;
+    transition: color 150ms ease-out;
+}
+
+.gh-editor-access-hint-link:hover {
+    color: var(--green-d3);
+    text-decoration: underline;
+}
+
+/*
+The placement toggle. Prototype furniture: fixed to the one corner the editor
+leaves empty, above the editor's own chrome so it stays reachable, and small
+enough to be ignorable while writing.
+*/
+.gh-access-placement-toggle {
+    position: fixed;
+    bottom: 16px;
+    left: 16px;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 3px;
+    font-size: 1.2rem;
+    background: var(--white);
+    border: 1px solid var(--whitegrey);
+    border-radius: 999px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06), 0 8px 20px -12px rgba(0, 0, 0, 0.2);
+}
+
+.gh-access-placement-toggle-option {
+    padding: 4px 10px;
+    font-family: inherit;
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: var(--midgrey-l2);
+    letter-spacing: .2px;
+    white-space: nowrap;
+    cursor: pointer;
+    background: none;
+    border: none;
+    border-radius: 999px;
+    transition: background 120ms ease-out, color 120ms ease-out;
+}
+
+.gh-access-placement-toggle-option:hover {
+    color: var(--darkgrey);
+    background: var(--whitegrey-l1);
+}
+
+.gh-access-placement-toggle-option[aria-pressed="true"] {
+    color: var(--darkgrey);
+    background: var(--whitegrey);
+}

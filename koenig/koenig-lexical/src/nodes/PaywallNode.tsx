@@ -14,7 +14,12 @@ export class PaywallNode extends BasePaywallNode {
         insertCommand: INSERT_PAYWALL_COMMAND,
         matches: ['public preview','preview', 'public intro', 'members only', 'paywall'],
         priority: 6,
-        shortcut: '/paywall'
+        shortcut: '/paywall',
+        // the paywall-v2 card replaces this one outright - existing content still
+        // renders, but only one paywall should be offered
+        isHidden: ({config}) => {
+            return config?.feature?.paywallV2 === true;
+        }
     };
 
     getIcon() {

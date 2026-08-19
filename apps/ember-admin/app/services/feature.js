@@ -85,6 +85,8 @@ export default class FeatureService extends Service {
     @feature('memberDetailsReact') memberDetailsReact;
     @feature('previewByTier') previewByTier;
     @feature('paywallImprovements') paywallImprovements;
+    @feature('paywallV2') paywallV2;
+    @feature('publishFlowSteps') publishFlowSteps;
     @feature('automations') automations;
     @feature('csvContentImporter') csvContentImporter;
     _user = null;

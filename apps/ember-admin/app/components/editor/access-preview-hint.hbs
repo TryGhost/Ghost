@@ -1,0 +1,18 @@
+{{#if this.isVisible}}
+    {{! Shade's `FormDescription` slot, in Ember's markup. The offer is a note
+        about the input above it - what you can do now that the post is gated -
+        so it goes where a note about that input goes, rather than becoming a
+        second field competing with it.
+
+        The link leads and the sentence explains it, rather than the other way
+        round: the author is scanning the drawer, and the clickable words are
+        what they're scanning for. }}
+    <p class="gh-editor-access-hint">
+        <button
+            type="button"
+            class="gh-editor-access-hint-link"
+            data-test-button="add-free-preview"
+            {{on "click" this.addFreePreview}}
+        >Add a free preview</button> to show the start of this post to everyone, with a paywall to upgrade below it.
+    </p>
+{{/if}}

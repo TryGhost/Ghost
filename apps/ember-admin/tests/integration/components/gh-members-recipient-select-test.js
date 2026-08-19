@@ -89,6 +89,48 @@ describe('Integration: Component: gh-members-recipient-select', function () {
         expect(optionTexts).to.include('VIP');
     });
 
+    // on a paid post every tier sits above the paywall, so the preview step
+    // hides all of them - with no labels there is then nothing to specify, and
+    // offering the checkbox would open an empty picker
+    it('hides the Specific checkbox when every option is hidden', async function () {
+        server.create('tier', {name: 'Premium', slug: 'premium', type: 'paid', active: true});
+        server.create('tier', {name: 'Basic', slug: 'basic', type: 'paid', active: true});
+
+        this.set('filter', 'status:free');
+        this.set('onChange', () => {});
+        this.set('hideSegments', ['status:-free', 'tier:premium', 'tier:basic']);
+
+        await render(hbs`<GhMembersRecipientSelect
+            @filter={{this.filter}}
+            @newsletter={{this.newsletter}}
+            @onChange={{this.onChange}}
+            @hideSegments={{this.hideSegments}}
+        />`);
+        await timeout(100);
+
+        expect(this.element.querySelector('[data-test-checkbox="specific-members"]')).to.not.exist;
+    });
+
+    it('keeps the Specific checkbox when a label is still selectable', async function () {
+        server.create('tier', {name: 'Premium', slug: 'premium', type: 'paid', active: true});
+        server.create('tier', {name: 'Basic', slug: 'basic', type: 'paid', active: true});
+        server.create('label', {name: 'VIP', slug: 'vip'});
+
+        this.set('filter', 'status:free');
+        this.set('onChange', () => {});
+        this.set('hideSegments', ['status:-free', 'tier:premium', 'tier:basic']);
+
+        await render(hbs`<GhMembersRecipientSelect
+            @filter={{this.filter}}
+            @newsletter={{this.newsletter}}
+            @onChange={{this.onChange}}
+            @hideSegments={{this.hideSegments}}
+        />`);
+        await timeout(100);
+
+        expect(this.element.querySelector('[data-test-checkbox="specific-members"]')).to.exist;
+    });
+
     it('selects specific options and fires onChange with filter', async function () {
         server.create('tier', {name: 'Gold', slug: 'gold', type: 'paid', active: true});
         server.create('tier', {name: 'Silver', slug: 'silver', type: 'paid', active: true});

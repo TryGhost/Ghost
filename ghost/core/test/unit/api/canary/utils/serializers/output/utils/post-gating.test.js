@@ -246,6 +246,14 @@ describe('Unit: endpoints/utils/serializers/output/utils/post-gating', function 
         }, {
             input: 'memberSegment:"status:free" nonMember:true',
             output: {nonMember: true, memberSegment: 'status:free'}
+        }, {
+            // tier-gated paywalls name the tiers that can't read on - the single
+            // quotes NQL wraps slugs in have to survive the parse
+            input: 'nonMember:true memberSegment:"product:-\'bronze\'"',
+            output: {nonMember: true, memberSegment: 'product:-\'bronze\''}
+        }, {
+            input: 'nonMember:true memberSegment:"product:-\'bronze\'+product:-\'gold\'"',
+            output: {nonMember: true, memberSegment: 'product:-\'bronze\'+product:-\'gold\''}
         }];
 
         validTestCases.forEach(function (testCase) {
@@ -273,6 +281,14 @@ describe('Unit: endpoints/utils/serializers/output/utils/post-gating', function 
             output: {}
         }, {
             input: 'memberSegment',
+            output: {}
+        }, {
+            // only the negated-product shape tier paywalls emit is allowed, so a
+            // segment can't smuggle arbitrary NQL in through the post body
+            input: 'memberSegment:"product:\'bronze\'"',
+            output: {}
+        }, {
+            input: 'memberSegment:"status:-free+product:-\'bronze\'"',
             output: {}
         }];
 

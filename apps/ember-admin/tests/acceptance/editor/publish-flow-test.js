@@ -182,6 +182,289 @@ describe('Acceptance: Publish flow', function () {
     // email unavailable state occurs when
     // 1. members signup access is set to "none"
     // 2. default newsletter recipients is set to "disabled"
+    describe('stepped publish flow', function () {
+        beforeEach(async function () {
+            enableLabsFlag(this.server, 'publishFlowSteps');
+            await loginAsRole('Administrator', this.server);
+        });
+
+        it('asks one question per step and walks forward to the review', async function () {
+            await disableMembers(this.server);
+
+            const post = this.server.create('post', {status: 'draft'});
+            await visit(`/editor/post/${post.id}`);
+            await click('[data-test-button="publish-flow"]');
+
+            // members disabled, so there is no audience question - two questions
+            // plus the review, one dot each
+            expect(findAll('[data-test-step-progress] .gh-publish-step-dot').length).to.equal(3);
+            expect(find('[data-test-step-progress] .gh-publish-step-dot.is-current')).to.exist;
+            expect(find('[data-test-step-question]')).to.contain.text('How would you like to publish this post?');
+            expect(find('[data-test-button="back-step"]'), 'back on first step').to.not.exist;
+
+            await click('[data-test-button="continue"]');
+
+            expect(find('[data-test-step-question]')).to.contain.text('When should it be published?');
+            expect(find('[data-test-button="back-step"]'), 'back on later steps').to.exist;
+
+            await click('[data-test-button="continue"]');
+
+            expect(find('[data-test-publish-flow="confirm"]'), 'confirm step').to.exist;
+        });
+
+        it('keeps recipients multi-select, with the newsletter above them', async function () {
+            enableMembers(this.server);
+            enableMailgun(this.server);
+            enableNewsletters(this.server);
+            enableStripe(this.server);
+            this.server.createList('member', 3);
+
+            const post = this.server.create('post', {status: 'draft'});
+            await visit(`/editor/post/${post.id}`);
+            await click('[data-test-button="publish-flow"]');
+
+            // step 1 defaults to publish+send, so the audience question exists
+            await click('[data-test-button="continue"]');
+
+            expect(find('[data-test-publish-step]').getAttribute('data-test-publish-step')).to.equal('emailRecipients');
+
+            // free/paid stay independent - the filter is additive, so
+            // combinations like "free members plus a label" have to be possible
+            expect(find('[data-test-checkbox="free-members"]'), 'free checkbox').to.exist;
+            expect(find('[data-test-checkbox="paid-members"]'), 'paid checkbox').to.exist;
+
+            await click('[data-test-checkbox="free-members"]');
+            expect(find('[data-test-checkbox="paid-members"]').checked, 'paid still checked').to.be.true;
+        });
+
+        // a paragraph above a paywall card, i.e. a post with a preview worth sending
+        const GATED_LEXICAL = '{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"The opening paragraph.","type":"extended-text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1},{"type":"paywall-v2","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}';
+
+        async function setupEmailSite(server) {
+            enableMembers(server);
+            enableMailgun(server);
+            enableNewsletters(server);
+            enableStripe(server);
+            server.createList('member', 3);
+        }
+
+        it('asks about the preview on its own step, after the audience', async function () {
+            enableLabsFlag(this.server, 'paywallV2');
+            await setupEmailSite(this.server);
+
+            const post = this.server.create('post', {
+                status: 'draft',
+                visibility: 'paid',
+                lexical: GATED_LEXICAL
+            });
+
+            await visit(`/editor/post/${post.id}`);
+            await click('[data-test-button="publish-flow"]');
+
+            // publish type, audience, preview, timing, then the review
+            expect(findAll('[data-test-step-progress] .gh-publish-step-dot').length).to.equal(5);
+
+            await click('[data-test-button="continue"]');
+            expect(find('[data-test-publish-step]').getAttribute('data-test-publish-step')).to.equal('emailRecipients');
+
+            // the full send offers everything it offers today - nothing is
+            // hidden here, the preview step is constrained by this one instead
+            expect(find('[data-test-checkbox="free-members"]'), 'free checkbox').to.exist;
+            expect(find('[data-test-checkbox="paid-members"]'), 'paid checkbox').to.exist;
+
+            await click('[data-test-button="continue"]');
+
+            expect(find('[data-test-publish-step]').getAttribute('data-test-publish-step')).to.equal('emailPreview');
+            expect(find('[data-test-step-question]')).to.contain.text('Who should receive an email preview?');
+
+            // the card is the author's opt-in, so an audience is already picked -
+            // selecting is the yes, there's no separate one to give
+            expect(find('[data-test-checkbox="free-members"]').checked, 'free members').to.be.true;
+            expect(find('[data-test-text="preview-explainer"]'), 'explainer').to.exist;
+
+            await click('[data-test-button="continue"]');
+            expect(find('[data-test-publish-step]').getAttribute('data-test-publish-step')).to.equal('publishAt');
+        });
+
+        it('offers the preview only to people the full send left out', async function () {
+            enableLabsFlag(this.server, 'paywallV2');
+            await setupEmailSite(this.server);
+
+            const post = this.server.create('post', {
+                status: 'draft',
+                visibility: 'paid',
+                lexical: GATED_LEXICAL
+            });
+
+            await visit(`/editor/post/${post.id}`);
+            await click('[data-test-button="publish-flow"]');
+            await click('[data-test-button="continue"]');
+            await click('[data-test-button="continue"]');
+
+            // the full send took paid members, so they can't be picked again
+            // here - that's what stops anyone getting both versions
+            expect(find('[data-test-checkbox="paid-members"]'), 'paid checkbox').to.not.exist;
+            expect(find('[data-test-checkbox="free-members"]'), 'free checkbox').to.exist;
+        });
+
+        it('reads an empty selection as no preview', async function () {
+            enableLabsFlag(this.server, 'paywallV2');
+            await setupEmailSite(this.server);
+
+            const post = this.server.create('post', {
+                status: 'draft',
+                visibility: 'paid',
+                lexical: GATED_LEXICAL
+            });
+
+            await visit(`/editor/post/${post.id}`);
+            await click('[data-test-button="publish-flow"]');
+            await click('[data-test-button="continue"]');
+            await click('[data-test-button="continue"]');
+
+            // a selection speaks for itself - the chips name it and the review
+            // confirms it, so nothing restates it here
+            expect(find('[data-test-step-access]'), 'no restatement while someone is selected').to.not.exist;
+
+            // clearing the selection is the "no" - there's no separate control
+            await click('[data-test-checkbox="free-members"]');
+
+            expect(find('[data-test-checkbox="free-members"]').checked, 'free members').to.be.false;
+            expect(find('[data-test-step-access]')).to.contain.text('No preview will be sent.');
+        });
+
+        it('states the post, the preview and the web paywall separately on the review', async function () {
+            enableLabsFlag(this.server, 'paywallV2');
+            await setupEmailSite(this.server);
+
+            const post = this.server.create('post', {
+                status: 'draft',
+                visibility: 'paid',
+                lexical: GATED_LEXICAL
+            });
+
+            await visit(`/editor/post/${post.id}`);
+            await click('[data-test-button="publish-flow"]');
+            await click('[data-test-button="continue"]');
+            await click('[data-test-button="continue"]');
+            await click('[data-test-button="continue"]');
+            await click('[data-test-button="continue"]');
+
+            expect(find('[data-test-publish-flow="confirm"]'), 'review').to.exist;
+
+            // one row per surface, with the paywall said as part of each rather
+            // than as a separate claim to reconcile
+            expect(find('[data-test-summary="site"]')).to.contain.text('Published on your site');
+            expect(find('[data-test-summary="site"]')).to.contain.text('public visitors');
+            expect(find('[data-test-summary="site"]')).to.contain.text('will see the paywall');
+
+            expect(find('[data-test-summary="email"]')).to.contain.text('Emailed to');
+
+            // the preview, named the way the preview step named it - lowercase
+            // here because it sits mid-sentence rather than starting one
+            expect(find('[data-test-summary="email"]')).to.contain.text('will receive a preview and the paywall');
+            expect(find('[data-test-summary="email"]')).to.contain.text('will get a preview and the paywall');
+        });
+
+        it('leaves out the preview sentence when no preview is going out', async function () {
+            enableLabsFlag(this.server, 'paywallV2');
+            await setupEmailSite(this.server);
+
+            const post = this.server.create('post', {
+                status: 'draft',
+                visibility: 'paid',
+                lexical: GATED_LEXICAL
+            });
+
+            await visit(`/editor/post/${post.id}`);
+            await click('[data-test-button="publish-flow"]');
+            await click('[data-test-button="continue"]');
+            await click('[data-test-button="continue"]');
+
+            // clear the preview audience, then carry on to the review
+            await click('[data-test-checkbox="free-members"]');
+            await click('[data-test-button="continue"]');
+            await click('[data-test-button="continue"]');
+
+            // the email sentence stops after the audience - no preview clause
+            expect(find('[data-test-summary="email"]')).to.not.contain.text('preview');
+
+            // and the site paywall is unaffected by the email decision
+            expect(find('[data-test-summary="site"]')).to.contain.text('will see the paywall');
+        });
+
+        it('skips the preview step when no paywall card gates the post', async function () {
+            enableLabsFlag(this.server, 'paywallV2');
+            await setupEmailSite(this.server);
+
+            const post = this.server.create('post', {status: 'draft', visibility: 'paid'});
+
+            await visit(`/editor/post/${post.id}`);
+            await click('[data-test-button="publish-flow"]');
+            await click('[data-test-button="continue"]');
+            await click('[data-test-button="continue"]');
+
+            // no card means no preview worth sending, so the question isn't asked
+            expect(find('[data-test-publish-step]').getAttribute('data-test-publish-step')).to.equal('publishAt');
+        });
+
+        it('keeps the flat recipient list when no paywall card gates the post', async function () {
+            enableLabsFlag(this.server, 'paywallV2');
+            await setupEmailSite(this.server);
+
+            const post = this.server.create('post', {status: 'draft', visibility: 'paid'});
+
+            await visit(`/editor/post/${post.id}`);
+            await click('[data-test-button="publish-flow"]');
+            await click('[data-test-button="continue"]');
+
+            // no card means no preview worth sending, so there's nothing to split
+            expect(find('[data-test-audience="split"]'), 'split audience').to.not.exist;
+            expect(find('[data-test-checkbox="paid-members"]'), 'paid checkbox').to.exist;
+        });
+
+        it('hides the preview audience until the preview is turned on', async function () {
+            enableLabsFlag(this.server, 'paywallV2');
+            await setupEmailSite(this.server);
+
+            const post = this.server.create('post', {
+                status: 'draft',
+                visibility: 'paid',
+                lexical: GATED_LEXICAL
+            });
+
+            await visit(`/editor/post/${post.id}`);
+            await click('[data-test-button="publish-flow"]');
+            await click('[data-test-button="continue"]');
+
+            await click('[data-test-checkbox="paywall-preview"]');
+
+            expect(find('[data-test-checkbox="paywall-preview"]').checked, 'preview off').to.be.false;
+            expect(find('[data-test-audience-row="preview"]'), 'preview audience').to.not.exist;
+
+            // the full post keeps going out either way
+            expect(find('[data-test-audience-row="full"]'), 'full post line').to.exist;
+
+            await click('[data-test-checkbox="paywall-preview"]');
+
+            expect(find('[data-test-audience-row="preview"]'), 'preview audience back').to.exist;
+        });
+
+        it('can step back to an earlier question', async function () {
+            await disableMembers(this.server);
+
+            const post = this.server.create('post', {status: 'draft'});
+            await visit(`/editor/post/${post.id}`);
+            await click('[data-test-button="publish-flow"]');
+
+            await click('[data-test-button="continue"]');
+            expect(find('[data-test-publish-step]').getAttribute('data-test-publish-step')).to.equal('publishAt');
+
+            await click('[data-test-button="back-step"]');
+            expect(find('[data-test-publish-step]').getAttribute('data-test-publish-step')).to.equal('publishType');
+        });
+    });
+
     async function testEmailUnavailableFlow() {
         await loginAsRole('Administrator', this.server);
 

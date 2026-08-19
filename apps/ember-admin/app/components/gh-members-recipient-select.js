@@ -44,6 +44,21 @@ export default class GhMembersRecipientSelect extends Component {
         return this.membersUtils.isStripeEnabled;
     }
 
+    // Segments a caller has taken over presenting itself. Hiding the checkbox
+    // doesn't remove the segment from the filter - it just stops this control
+    // offering it a second time.
+    get hiddenSegments() {
+        return this.args.hideSegments || [];
+    }
+
+    get hideFree() {
+        return this.hiddenSegments.includes('status:free');
+    }
+
+    get hidePaid() {
+        return this.hiddenSegments.includes('status:-free');
+    }
+
     get specificFilters() {
         const filterItems = (this.args.filter || '').split(',');
         const filterItemsArray = filterItems.reject(item => isBlank(item) || BASE_FILTERS.includes(item?.trim()));
@@ -54,12 +69,26 @@ export default class GhMembersRecipientSelect extends Component {
         return this.forceSpecificChecked || this.specificFilters.size > 0;
     }
 
+    // Counts what's left after @hideSegments rather than everything that
+    // exists, so the checkbox never opens onto an empty picker - on a paid post
+    // every tier is hidden, and with no labels there is nothing to specify
     get hasSpecificOptions() {
-        return this._tierOptions.length > 0 || this.labelsManager.labels.length > 0;
+        return this.nonLabelOptions.length > 0 || this.labelsManager.labels.length > 0;
     }
 
+    // Hidden segments are dropped from the tier lists too, not just the base
+    // checkboxes - a caller that owns "paid members" owns the tiers inside it,
+    // and offering them here would put the same people in two places
     get nonLabelOptions() {
-        return this._tierOptions;
+        if (!this.hiddenSegments.length) {
+            return this._tierOptions;
+        }
+
+        return this._tierOptions
+            .map(group => Object.assign({}, group, {
+                options: (group.options || []).filter(option => !this.hiddenSegments.includes(option.segment))
+            }))
+            .filter(group => group.options.length);
     }
 
     get selectedSpecificSegments() {
