@@ -16,6 +16,23 @@ const messages = {
 
 const createFrame = hbs.handlebars.createFrame;
 
+/**
+ * @typedef {Object} NavigationItem
+ * @property {string} url
+ * @property {string} [label]
+ * @property {string} [icon]
+ * @property {string} [visibility]
+ */
+
+/**
+ * @typedef {Object} NavigationMember
+ * @property {'free' | 'paid' | string} status
+ */
+
+/**
+ * @param {string | null | undefined} icon
+ * @returns {string}
+ */
 function getNavigationIconName(icon) {
     if (!icon) {
         return '';
@@ -28,6 +45,52 @@ function getNavigationIconName(icon) {
         return decodeURIComponent(name);
     } catch (e) {
         return name;
+    }
+}
+
+/**
+ * @param {string} href
+ * @param {string | undefined} url
+ * @returns {boolean}
+ */
+function isCurrentNavigationUrl(href, url) {
+    if (!url) {
+        return false;
+    }
+
+    const strippedHref = href.replace(/\/+$/, '');
+    const strippedCurrentUrl = url.replace(/\/+$/, '');
+    return strippedHref === strippedCurrentUrl;
+}
+
+/**
+ * @param {NavigationItem} item
+ * @param {NavigationMember | null | undefined} member
+ * @returns {boolean}
+ */
+function isNavigationItemVisible(item, member) {
+    const visibility = item.visibility || 'public';
+    const isMember = !!member;
+    const isFreeMember = isMember && member.status === 'free';
+    const isPaidMember = isMember && member.status !== 'free';
+
+    switch (visibility) {
+    case 'members':
+        return isMember;
+    case 'paid':
+        return isPaidMember;
+    case 'public_free':
+        return !isMember || isFreeMember;
+    case 'public_paid':
+        return !isMember || isPaidMember;
+    case 'public_only':
+        return !isMember;
+    case 'free_members':
+        return isFreeMember;
+    case 'none':
+        return false;
+    default:
+        return true;
     }
 }
 
@@ -47,7 +110,7 @@ module.exports = function navigation(options) {
     const member = options.data.member || options.data.root.member;
     let output;
 
-    if (!_.isObject(navigationData) || _.isFunction(navigationData)) {
+    if (!Array.isArray(navigationData)) {
         throw new errors.IncorrectUsageError({
             message: tpl(messages.invalidData)
         });
@@ -71,66 +134,31 @@ module.exports = function navigation(options) {
         });
     }
 
-    // Icon and visibility are coerced rather than thrown on (see map/_isVisible
-    // below): a bad icon is dropped and an unrecognised visibility falls back to
-    // public, so malformed data can never 500 a whole site's front end.
-
-    // strips trailing slashes and compares urls
-    function _isCurrentUrl(href, url) {
-        if (!url) {
-            return false;
-        }
-
-        const strippedHref = href.replace(/\/+$/, '');
-        const strippedCurrentUrl = url.replace(/\/+$/, '');
-        return strippedHref === strippedCurrentUrl;
-    }
+    // Icon and visibility are coerced rather than thrown on (see map below):
+    // a bad icon is dropped and an unrecognised visibility falls back to public,
+    // so malformed data can never 500 a whole site's front end.
 
     // {{navigation}} should no-op if no data passed in
     if (navigationData.length === 0) {
         return new SafeString('');
     }
 
-    function _isVisible(item) {
-        const visibility = item.visibility || 'public';
-        const isMember = !!member;
-        const isFreeMember = isMember && member.status === 'free';
-        const isPaidMember = isMember && member.status !== 'free';
+    output = navigationData
+        .filter(item => isNavigationItemVisible(item, member))
+        .map(function (e) {
+            const out = {};
+            const icon = _.isString(e.icon) ? e.icon : null;
+            const iconName = getNavigationIconName(icon);
+            const hasLabel = _.isString(e.label) && e.label.trim().length > 0;
 
-        switch (visibility) {
-            case 'members':
-                return isMember;
-            case 'paid':
-                return isPaidMember;
-            case 'public_free':
-                return !isMember || isFreeMember;
-            case 'public_paid':
-                return !isMember || isPaidMember;
-            case 'public_only':
-                return !isMember;
-            case 'free_members':
-                return isFreeMember;
-            case 'none':
-                return false;
-            default:
-                return true;
-        }
-    }
-
-    output = navigationData.filter(_isVisible).map(function (e) {
-        const out = {};
-        const icon = _.isString(e.icon) ? e.icon : null;
-        const iconName = getNavigationIconName(icon);
-        const hasLabel = _.isString(e.label) && e.label.trim().length > 0;
-
-        out.current = _isCurrentUrl(e.url, currentUrl);
-        out.icon = icon || null;
-        out.iconAlt = hasLabel ? '' : iconName;
-        out.label = e.label;
-        out.slug = slugify(hasLabel ? e.label : iconName);
-        out.url = e.url;
-        return out;
-    });
+            out.current = isCurrentNavigationUrl(e.url, currentUrl);
+            out.icon = icon || null;
+            out.iconAlt = hasLabel ? '' : iconName;
+            out.label = e.label;
+            out.slug = slugify(hasLabel ? e.label : iconName);
+            out.url = e.url;
+            return out;
+        });
 
     if (output.length === 0) {
         return new SafeString('');
