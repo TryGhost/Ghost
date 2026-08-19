@@ -145,7 +145,7 @@ async function initCore({ghostServer, config}) {
 
         ghostServer.registerCleanupTask(async () => {
             await jobService.shutdown();
-        });
+        }, 'Job Service');
         debug('End: Job Service');
 
         // Mentions Job Service allows mentions to be processed in the background
@@ -158,7 +158,7 @@ async function initCore({ghostServer, config}) {
 
         ghostServer.registerCleanupTask(async () => {
             await mentionsJobService.shutdown();
-        });
+        }, 'Mentions Job Service');
         debug('End: Mentions Job Service');
 
         debug('Begin: Jobs Service');
@@ -166,7 +166,7 @@ async function initCore({ghostServer, config}) {
 
         ghostServer.registerCleanupTask(async () => {
             await jobsService.shutdown({timeoutMs: config.get('server:shutdownTimeout')});
-        });
+        }, 'Jobs Service (in-memory)');
         debug('End: Jobs Service');
     }
 
@@ -580,7 +580,7 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
                 if (prometheusClient) {
                     prometheusClient.stop();
                 }
-            });
+            }, 'Prometheus client');
             debug('End: load server + minimal app');
         }
 
