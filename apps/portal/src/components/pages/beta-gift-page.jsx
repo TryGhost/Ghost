@@ -1199,106 +1199,6 @@ html[dir="rtl"] .gh-portal-content.gift .gh-portal-btn-site-title-back {
     z-index: 3;
 }
 
-/* Preserve the original gift surfaces while the capability is disabled. */
-.gh-portal-content.legacy .gh-portal-closeicon,
-.gh-portal-content.legacy .gh-portal-closeicon:hover {
-    color: rgba(255, 255, 255, 0.5) !important;
-}
-
-.gh-portal-content.legacy .gh-portal-closeicon:hover {
-    color: rgba(255, 255, 255, 0.8) !important;
-}
-
-.gh-portal-content.legacy .gh-portal-gift-checkout-left {
-    padding: 64px 48px;
-}
-
-.gh-portal-content.gift.legacy .gh-portal-gift-checkout-left {
-    align-items: flex-start;
-}
-
-.gh-portal-content.legacy .gh-portal-gift-checkout-inner {
-    margin-block: 0;
-}
-
-.gh-portal-content.legacy .gh-portal-gift-checkout-header {
-    margin-bottom: 16px;
-}
-
-.gh-portal-content.legacy .gh-portal-gift-checkout-header .gh-portal-main-title {
-    margin: 0 0 12px;
-}
-
-.gh-portal-content.legacy .gh-portal-gift-checkout-subtitle {
-    font-size: 1.6rem;
-}
-
-.gh-portal-content.legacy .gh-portal-gift-checkout-label,
-.gh-portal-content.legacy .gh-portal-gift-checkout-email .gh-portal-input-label {
-    margin-bottom: 12px;
-    color: var(--grey6);
-    font-size: 1.2rem;
-    font-weight: 500;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-}
-
-.gh-portal-content.legacy .gh-portal-gift-checkout-email .gh-portal-input-labelcontainer {
-    align-items: initial;
-    margin-bottom: 12px;
-}
-
-.gh-portal-content.legacy .gh-portal-gift-checkout-email .gh-portal-input-label {
-    margin-bottom: 0;
-}
-
-.gh-portal-content.legacy .gh-portal-gift-checkout-email .gh-portal-input {
-    height: 48px;
-    margin-bottom: 0;
-}
-
-.gh-portal-content.legacy .gh-portal-gift-checkout .gh-portal-products-pricetoggle {
-    margin: 0;
-}
-
-.gh-portal-content.legacy .gh-portal-gift-duration-selector {
-    display: flex;
-    gap: 4px;
-    min-height: 44px;
-    padding: 4px;
-    border-radius: 999px;
-    background: #F3F3F3;
-}
-
-.gh-portal-content.legacy .gh-portal-gift-duration-selector .gh-portal-btn {
-    flex: 1;
-    height: 36px !important;
-    padding: 0 8px;
-    border: 0;
-    border-radius: 999px;
-    background: transparent;
-    color: var(--grey5);
-    font-size: 1.4rem;
-    white-space: nowrap;
-}
-
-.gh-portal-content.legacy .gh-portal-gift-duration-selector .gh-portal-btn.active {
-    color: var(--grey0);
-    background: var(--white);
-    box-shadow: 0 1px 3px rgba(var(--blackrgb), 0.08);
-}
-
-.gh-portal-content.legacy .gh-portal-gift-checkout-tier-price {
-    font-weight: 500;
-}
-
-.gh-portal-content.legacy .gh-portal-gift-checkout-cta-wrapper {
-    margin: 0 0 -64px;
-    padding: 32px 0 64px;
-    background: linear-gradient(0deg, rgba(var(--whitergb), 1) 60%, rgba(var(--whitergb), 0) 100%);
-}
-
-
 @media (max-width: 880px) {
     .gh-portal-popup-container.full-size.gift,
     .gh-portal-popup-container.full-size.giftSuccess,
@@ -1366,10 +1266,6 @@ html[dir="rtl"] .gh-portal-content.gift .gh-portal-btn-site-title-back {
         margin: 0;
         padding: 24px 0;
         background: linear-gradient(0deg, rgba(var(--whitergb), 1) 70%, rgba(var(--whitergb), 0) 100%);
-    }
-
-    .gh-portal-content.legacy .gh-portal-gift-checkout-cta-wrapper {
-        padding: 32px 0 24px;
     }
 }
 
@@ -1491,8 +1387,8 @@ const BetaGiftPage = () => {
     if (products.length === 0) {
         return (
             <>
-                <CloseButton />
                 <div className='gh-portal-content gift'>
+                    <CloseButton />
                     <div className='gh-portal-gift-checkout'>
                         <div className='gh-portal-gift-checkout-left'>
                             <div className='gh-portal-gift-checkout-bg' aria-hidden='true' />
@@ -1542,6 +1438,7 @@ const BetaGiftPage = () => {
         label: t('Your email'),
         name: 'email',
         required: true,
+        maxLength: GIFT_EMAIL_MAX_LENGTH,
         errorMessage: errors.email || ''
     };
 
@@ -1681,10 +1578,7 @@ const BetaGiftPage = () => {
 
     return (
         <>
-            <div className='gh-portal-content gift immediate' ref={contentRef}>
-                {/* On the delivery step the in-content "← Back" (returns to the
-                    plan step) is the right affordance, so hide the global back
-                    arrow there to avoid two back controls with different targets. */}
+            <div className='gh-portal-content gift' ref={contentRef}>
                 <CloseButton />
                 <div className='gh-portal-gift-checkout'>
                     <div className='gh-portal-gift-checkout-left' data-step={step}>

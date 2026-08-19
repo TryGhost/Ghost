@@ -7,6 +7,7 @@ import GiftCard from '../common/gift-card';
 import GiftDetailsToggle from '../common/gift-details-toggle';
 import InputForm from '../common/input-form';
 import {ValidateInputForm} from '../../utils/form';
+import {getDateString} from '../../utils/date-time';
 import {getGiftDurationLabel, getGiftIntroduction, getGiftRedemptionErrorMessage} from '../../utils/gift-redemption-notification';
 import {t} from '../../utils/i18n';
 import useCardTilt from '../../utils/use-card-tilt';
@@ -184,15 +185,13 @@ const BetaGiftRedemptionPage = () => {
         siteTitle
     };
     const headerText = getGiftIntroduction({buyerName, cadence: gift.cadence, duration: gift.duration, siteTitle});
-    const expiryLabel = gift.expires_at
-        ? new Date(gift.expires_at).toLocaleDateString(undefined, {day: 'numeric', month: 'short', year: 'numeric'})
-        : '';
+    const expiryLabel = getDateString(gift.expires_at);
     const benefits = gift.tier.benefits || [];
     const tierDescription = gift.tier.description || '';
 
     return (
         <>
-            <div className='gh-portal-content giftRedemption immediate'>
+            <div className='gh-portal-content giftRedemption'>
                 <CloseButton />
                 <div className='gh-portal-gift-checkout'>
                     <div className='gh-portal-gift-checkout-left'>

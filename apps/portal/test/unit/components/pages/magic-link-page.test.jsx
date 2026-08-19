@@ -74,8 +74,24 @@ describe('MagicLinkPage', () => {
     });
 
     describe('Gift redemption', () => {
-        test('keeps the submitted recipient name on the gift card', () => {
-            const {getByText} = setupTest({
+        const giftPageData = {
+            email: 'taylor@example.com',
+            name: 'Taylor',
+            gift: {
+                amount: 5000,
+                buyer_name: 'Jamie',
+                cadence: 'year',
+                currency: 'usd',
+                duration: 1,
+                tier: {
+                    name: 'Premium',
+                    benefits: []
+                }
+            }
+        };
+
+        test('carries the redemption page\'s card details through to the magic link screen', () => {
+            const {getByText, queryByText} = setupTest({
                 lastPage: 'gift',
                 site: {
                     title: 'The Blueprint',
@@ -83,22 +99,32 @@ describe('MagicLinkPage', () => {
                         giftSubCustomization: true
                     }
                 },
-                pageData: {
-                    email: 'taylor@example.com',
-                    name: 'Taylor',
-                    gift: {
-                        cadence: 'year',
-                        duration: 1,
-                        tier: {
-                            name: 'Premium',
-                            benefits: []
-                        }
-                    }
-                }
+                pageData: giftPageData
             });
 
             expect(getByText('To')).toBeInTheDocument();
             expect(getByText('Taylor')).toBeInTheDocument();
+            expect(getByText('From')).toBeInTheDocument();
+            expect(getByText('Jamie')).toBeInTheDocument();
+            // The recipient is never shown what the gift cost, matching the
+            // redemption page they arrived from.
+            expect(queryByText('Gift value')).not.toBeInTheDocument();
+            expect(queryByText('$50')).not.toBeInTheDocument();
+        });
+
+        test('keeps the gift value on the card without the customization flag', () => {
+            const {getByText, queryByText} = setupTest({
+                lastPage: 'gift',
+                site: {
+                    title: 'The Blueprint'
+                },
+                pageData: giftPageData
+            });
+
+            expect(getByText('Name')).toBeInTheDocument();
+            expect(getByText('Gift value')).toBeInTheDocument();
+            expect(getByText('$50')).toBeInTheDocument();
+            expect(queryByText('From')).not.toBeInTheDocument();
         });
     });
 

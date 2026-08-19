@@ -20,10 +20,11 @@ export function getGiftDurationLabel({cadence, duration} = {}) {
 // Gold membership". Must match the backend's getCadenceLabel so the delivery
 // email and the redemption page describe the gift identically.
 export function getGiftDurationAttributiveLabel({cadence, duration} = {}) {
+    // The duration catalogue tops out at 12 months, which resolves to a single
+    // year, so a yearly gift is always "1 year". Multi-year durations need a
+    // plural form here before the catalogue can offer them.
     if (cadence === 'year') {
-        return duration === 1
-            ? t('1 year')
-            : t('{years} year', {years: duration});
+        return t('1 year');
     }
 
     return duration === 1

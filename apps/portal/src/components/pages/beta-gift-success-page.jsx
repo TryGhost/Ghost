@@ -155,7 +155,7 @@ const BetaGiftSuccessPage = () => {
 
     return (
         <>
-            <div className='gh-portal-content giftSuccess immediate'>
+            <div className='gh-portal-content giftSuccess'>
                 <CloseButton />
                 <div className='gh-portal-gift-checkout'>
                     <div className='gh-portal-gift-checkout-left'>

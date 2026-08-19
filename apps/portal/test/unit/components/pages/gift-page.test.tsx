@@ -2,9 +2,7 @@ import {fireEvent, render} from '../../../utils/test-utils';
 import GiftPage from '../../../../src/components/pages/gift-page';
 import {getPriceData, getProductData, getSiteData} from '../../../../src/utils/fixtures-generator';
 
-type SiteData = ReturnType<typeof getSiteData>;
-
-function buildSite(overrides: Partial<Parameters<typeof getSiteData>[0]> = {}) {
+function buildSite() {
     const product = getProductData({
         id: 'tier_123',
         name: 'Premium',
@@ -15,12 +13,11 @@ function buildSite(overrides: Partial<Parameters<typeof getSiteData>[0]> = {}) {
     return getSiteData({
         products: [product],
         portalProducts: [product.id],
-        portalDefaultPlan: 'monthly',
-        ...overrides
+        portalDefaultPlan: 'monthly'
     });
 }
 
-function setup(site: SiteData) {
+function setup(site: ReturnType<typeof buildSite>) {
     return render(<GiftPage />, {
         overrideContext: {
             site,
@@ -32,8 +29,10 @@ function setup(site: SiteData) {
     });
 }
 
+// Fixed-duration gifting now lives on BetaGiftPage, which serves every site with
+// giftSubCustomization enabled, so this page is only ever the cadence-only flow.
 describe('GiftPage', () => {
-    test('preserves the cadence selector and cadence-only checkout when customization is disabled', () => {
+    test('preserves the cadence selector and cadence-only checkout', () => {
         const {getByRole, mockDoActionFn, queryByRole} = setup(buildSite());
 
         expect(getByRole('button', {name: '1 month'})).toBeInTheDocument();
@@ -46,87 +45,5 @@ describe('GiftPage', () => {
             tierId: 'tier_123',
             cadence: 'month'
         });
-    });
-
-    test('offers the full fixed-duration catalogue and updates the price and request', () => {
-        const site = buildSite({
-            labs: {
-                giftSubCustomization: true
-            }
-        });
-        const {getAllByText, getByRole, mockDoActionFn} = setup(site);
-
-        expect(getByRole('button', {name: '1 month'})).toHaveAttribute('aria-pressed', 'true');
-        expect(getByRole('button', {name: '3 months'})).toHaveAttribute('aria-pressed', 'false');
-        expect(getByRole('button', {name: '6 months'})).toBeInTheDocument();
-        expect(getByRole('button', {name: '12 months'})).toBeInTheDocument();
-        expect(getAllByText('$5').length).toBeGreaterThan(0);
-
-        fireEvent.click(getByRole('button', {name: '3 months'}));
-
-        expect(getByRole('button', {name: '1 month'})).toHaveAttribute('aria-pressed', 'false');
-        expect(getByRole('button', {name: '3 months'})).toHaveAttribute('aria-pressed', 'true');
-        expect(getAllByText('$15').length).toBeGreaterThan(0);
-
-        fireEvent.click(getByRole('button', {name: 'Continue'}));
-
-        expect(mockDoActionFn).toHaveBeenCalledWith('checkoutGift', {
-            tierId: 'tier_123',
-            duration: 3
-        });
-    });
-
-    test('defaults to 12 months for a yearly Portal default', () => {
-        const site = buildSite({
-            labs: {
-                giftSubCustomization: true
-            },
-            portalDefaultPlan: 'yearly'
-        });
-        const {getByRole, mockDoActionFn} = setup(site);
-
-        expect(getByRole('button', {name: '12 months'})).toHaveAttribute('aria-pressed', 'true');
-
-        fireEvent.click(getByRole('button', {name: 'Continue'}));
-
-        expect(mockDoActionFn).toHaveBeenCalledWith('checkoutGift', {
-            tierId: 'tier_123',
-            duration: 12
-        });
-    });
-
-    test('omits the selector when only one duration is available', () => {
-        const site = buildSite({
-            labs: {
-                giftSubCustomization: true
-            },
-            portalPlans: ['yearly']
-        });
-        const {getByRole, mockDoActionFn, queryByRole} = setup(site);
-
-        expect(queryByRole('group', {name: 'Plan'})).not.toBeInTheDocument();
-
-        fireEvent.click(getByRole('button', {name: 'Continue'}));
-
-        expect(mockDoActionFn).toHaveBeenCalledWith('checkoutGift', {
-            tierId: 'tier_123',
-            duration: 12
-        });
-    });
-
-    test('falls back to the first available duration when the default plan is unavailable', () => {
-        const site = buildSite({
-            labs: {
-                giftSubCustomization: true
-            },
-            portalPlans: ['monthly'],
-            portalDefaultPlan: 'yearly'
-        });
-        const {getByRole, queryByRole} = setup(site);
-
-        expect(getByRole('button', {name: '1 month'})).toHaveAttribute('aria-pressed', 'true');
-        expect(getByRole('button', {name: '3 months'})).toBeInTheDocument();
-        expect(getByRole('button', {name: '6 months'})).toBeInTheDocument();
-        expect(queryByRole('button', {name: '12 months'})).not.toBeInTheDocument();
     });
 });
