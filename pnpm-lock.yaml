@@ -2653,6 +2653,9 @@ importers:
       stripe:
         specifier: 8.222.0
         version: 8.222.0
+      temporal-polyfill:
+        specifier: 'catalog:'
+        version: 0.3.2
       terser:
         specifier: 5.48.0
         version: 5.48.0

@@ -24,7 +24,8 @@ const UniversalImportModal: React.FC<{onClose: () => void}> = ({onClose}) => {
     const importFile = async (file: File) => {
         setUploading(true);
         try {
-            if (csvContentImporter && file.name.toLowerCase().endsWith('.csv')) {
+            const isCSV = csvContentImporter && file.name.toLowerCase().endsWith('.csv');
+            if (isCSV) {
                 await importContentCSV(file);
             } else {
                 await importContent(file);
@@ -32,7 +33,10 @@ const UniversalImportModal: React.FC<{onClose: () => void}> = ({onClose}) => {
             onClose();
             confirm({
                 title: 'Import in progress',
-                prompt: `Your import is being processed, and you'll receive a confirmation email as soon as it’s complete. Usually this only takes a few minutes, but larger imports may take longer.`,
+                // CSV imports don't send a completion email yet, so don't promise one
+                prompt: isCSV
+                    ? `Your import is being processed, and imported posts will appear on your site as soon as it’s complete. Usually this only takes a few minutes, but larger imports may take longer.`
+                    : `Your import is being processed, and you'll receive a confirmation email as soon as it’s complete. Usually this only takes a few minutes, but larger imports may take longer.`,
                 cancelLabel: '',
                 okLabel: 'Got it',
                 onOk: confirmModal => confirmModal?.remove(),
