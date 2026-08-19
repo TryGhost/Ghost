@@ -117,6 +117,7 @@
     "@tryghost/limit-service": "catalog:",
     "@tryghost/logging": "catalog:",
     "@tryghost/metrics": "catalog:",
+    "@tryghost/mg-clean-html": "catalog:",
     "@tryghost/mongo-knex": "catalog:",
     "@tryghost/mongo-utils": "0.6.5",
     "@tryghost/mw-error-handler": "1.0.13",

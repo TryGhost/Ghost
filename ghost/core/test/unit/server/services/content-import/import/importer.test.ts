@@ -23,6 +23,7 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
   const store = new ImportRunStore();
   let converterResolutions = 0;
   let markdownRendererResolutions = 0;
+  let cleanerResolutions = 0;
   // Late-bound: the importer captures deps at construction.
   let htmlToLexicalFactory: () => (html: string) => unknown = () => {
     converterResolutions += 1;
@@ -31,6 +32,10 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
   let markdownToHtmlFactory: () => (markdown: string) => string = () => {
     markdownRendererResolutions += 1;
     return (markdown: string) => `<p>${markdown}</p>`;
+  };
+  let cleanHTMLFactory: () => (args: { html: string; opinionated: boolean }) => string = () => {
+    cleanerResolutions += 1;
+    return ({ html }) => html;
   };
 
   const deps = {
@@ -48,6 +53,7 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
     },
     getHtmlToLexical: () => htmlToLexicalFactory(),
     getMarkdownToHtml: () => markdownToHtmlFactory(),
+    getCleanHTML: () => cleanHTMLFactory(),
     addJob: (job: { name: string; offloaded: boolean; job: () => Promise<void> }) => {
       jobs.push(job);
     },
@@ -84,6 +90,11 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
   const setMarkdownToHtmlFactory = (factory: () => (markdown: string) => string) => {
     markdownToHtmlFactory = factory;
   };
+  const setCleanHTMLFactory = (
+    factory: () => (args: { html: string; opinionated: boolean }) => string,
+  ) => {
+    cleanHTMLFactory = factory;
+  };
 
   return {
     importer,
@@ -97,8 +108,10 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
     store,
     setHtmlToLexicalFactory,
     setMarkdownToHtmlFactory,
+    setCleanHTMLFactory,
     converterResolutions: () => converterResolutions,
     markdownRendererResolutions: () => markdownRendererResolutions,
+    cleanerResolutions: () => cleanerResolutions,
   };
 }
 
@@ -237,6 +250,14 @@ describe('ContentCSVImporter', function () {
     assert.equal(h.markdownRendererResolutions(), 1);
   });
 
+  it('resolves the HTML cleaner once per run, not per row', async function () {
+    const h = harness();
+
+    await h.run();
+
+    assert.equal(h.cleanerResolutions(), 1);
+  });
+
   it('rejects a file over the cap without scheduling any work', async function () {
     const h = harness(Array.from({ length: 101 }, (_, i) => row(`Post ${i + 1}`)));
 
@@ -361,6 +382,29 @@ describe('ContentCSVImporter', function () {
       title: 'Bad markdown',
       status: 'skipped',
       reason: 'markdown could not be converted',
+    });
+  });
+
+  it('isolates an HTML cleaning failure to its row', async function () {
+    const h = harness([row('First'), row('Bad clean'), row('Third')]);
+    h.setCleanHTMLFactory(() => ({ html }) => {
+      if (html.includes('Bad clean')) {
+        throw new Error('cleaner failed');
+      }
+      return html;
+    });
+
+    await h.run();
+
+    assert.deepEqual(
+      h.created.map((call) => call.data.title),
+      ['First', 'Third'],
+    );
+    assert.deepEqual(h.store.get('run_test')?.rows[1], {
+      line: 3,
+      title: 'Bad clean',
+      status: 'skipped',
+      reason: 'html could not be cleaned',
     });
   });
 

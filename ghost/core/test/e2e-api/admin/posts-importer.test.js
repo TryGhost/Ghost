@@ -340,10 +340,25 @@ describe('Posts Importer API', function () {
 
     const post = await models.Post.findOne({ title: 'Markdown field post', status: 'all' });
     assert.ok(post);
-    assert.match(
-      post.get('html'),
-      /<h2[^>]*>Imported heading with <strong>strong text<\/strong><\/h2>/,
+    assert.match(post.get('html'), /<h2[^>]*>Imported heading with strong text<\/h2>/);
+  });
+
+  it('Cleans supplied HTML before converting it to post content', async function () {
+    await agent.loginAsOwner();
+
+    const cleanupCsvPath = await csvFile(
+      'posts-import-clean-html.csv',
+      'title,html\n' +
+        'Clean HTML post,"<p style=""text-align: center; color: red; background: blue""><span style=""font-weight: bold"">Clean me</span></p>"\n',
     );
+
+    await agent.post('posts/upload/').attach('postsfile', cleanupCsvPath).expectStatus(202);
+    await jobsService.allSettled();
+
+    const post = await models.Post.findOne({ title: 'Clean HTML post', status: 'all' });
+    assert.ok(post);
+    assert.match(post.get('html'), /<p><strong>Clean me<\/strong><\/p>/);
+    assert.doesNotMatch(post.get('html'), /style=/);
   });
 
   it('Skips a malformed row on its own and imports the rest', async function () {

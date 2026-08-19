@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { cleanHTML as officialCleanHTML } from '@tryghost/mg-clean-html';
 import buildPostData, {
   RowSkipped,
 } from '../../../../../../core/server/services/content-import/import/post-data';
@@ -20,6 +21,34 @@ describe('buildPostData', function () {
     assert.equal(data.lexical, JSON.stringify({ converted: '<p>Hello</p>' }));
     // the model strips client-supplied html when importing, so passing it would be a no-op
     assert.equal('html' in data, false);
+  });
+
+  it('runs opinionated HTML cleanup before lexical conversion', function () {
+    const source =
+      '<p style="text-align: center; color: red; background: blue"><span style="font-weight: bold">Hello</span></p><p><br></p><h2><strong>Header</strong></h2>';
+    const data = buildPostData(
+      row({ title: 'T', html: source }),
+      htmlToLexical,
+      TAGS,
+      markdownToHtml,
+      officialCleanHTML,
+    );
+
+    assert.equal(data.lexical, JSON.stringify({ converted: '<p><b>Hello</b></p><h2>Header</h2>' }));
+  });
+
+  it('preserves protected Instagram embed markup during cleanup', function () {
+    const source =
+      '<blockquote class="instagram-media"><p style="text-align: center; color: red">Protected</p></blockquote>';
+    const data = buildPostData(
+      row({ title: 'T', html: source }),
+      htmlToLexical,
+      TAGS,
+      markdownToHtml,
+      officialCleanHTML,
+    );
+
+    assert.equal(data.lexical, JSON.stringify({ converted: source }));
   });
 
   it('slugs the title with the standard rules, not the importing-mode pass', function () {
@@ -57,6 +86,19 @@ describe('buildPostData', function () {
     );
 
     assert.equal(data.lexical, JSON.stringify({ converted: '<h1>Hello</h1>' }));
+  });
+
+  it('cleans markdown-rendered HTML before converting it to lexical', function () {
+    const styledMarkdownRenderer = () => '<p style="text-align: right; color: red">Hello</p>';
+    const data = buildPostData(
+      row({ title: 'T', markdown: 'Hello' }),
+      htmlToLexical,
+      TAGS,
+      styledMarkdownRenderer,
+      officialCleanHTML,
+    );
+
+    assert.equal(data.lexical, JSON.stringify({ converted: '<p>Hello</p>' }));
   });
 
   it('skips a row that supplies both html and markdown', function () {
@@ -298,6 +340,28 @@ describe('buildPostData', function () {
       (error: unknown) => {
         assert.ok(error instanceof RowSkipped);
         assert.equal(error.message, 'html could not be converted');
+        return true;
+      },
+    );
+  });
+
+  it('skips a row whose html cannot be cleaned', function () {
+    const throwingCleaner = () => {
+      throw new Error('cleaner exploded');
+    };
+
+    assert.throws(
+      () =>
+        buildPostData(
+          row({ title: 'T', html: '<p>bad</p>' }),
+          htmlToLexical,
+          TAGS,
+          markdownToHtml,
+          throwingCleaner,
+        ),
+      (error: unknown) => {
+        assert.ok(error instanceof RowSkipped);
+        assert.equal(error.message, 'html could not be cleaned');
         return true;
       },
     );

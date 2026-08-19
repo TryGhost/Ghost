@@ -4,6 +4,7 @@ const { slugify } = require('@tryghost/string');
 
 export type HtmlToLexical = (html: string) => unknown;
 export type MarkdownToHtml = (markdown: string) => string;
+export type CleanHTML = (args: { html: string; opinionated: boolean }) => string;
 
 // A malformed row, refused before any write was attempted; distinct from a write
 // that failed, which the importer records separately.
@@ -82,6 +83,7 @@ export default function buildPostData(
   htmlToLexical: HtmlToLexical,
   importTagNames: string[],
   markdownToHtml?: MarkdownToHtml,
+  cleanHTML?: CleanHTML,
 ): PostData {
   const check = importableRowSchema.safeParse(row);
   if (!check.success) {
@@ -108,20 +110,34 @@ export default function buildPostData(
     throw new RowSkipped('html and markdown cannot both be provided');
   }
 
+  let sourceHTML = row.html;
+  let sourceKind: 'html' | 'markdown' = 'html';
   if (row.markdown) {
     if (!markdownToHtml) {
       throw new RowSkipped('markdown could not be converted');
     }
     try {
-      data.lexical = JSON.stringify(htmlToLexical(markdownToHtml(row.markdown)));
+      sourceHTML = markdownToHtml(row.markdown);
+      sourceKind = 'markdown';
     } catch {
       throw new RowSkipped('markdown could not be converted');
     }
-  } else if (row.html) {
+  }
+
+  if (sourceHTML) {
+    let cleanedHTML = sourceHTML;
+    if (cleanHTML) {
+      try {
+        cleanedHTML = cleanHTML({ html: sourceHTML, opinionated: true });
+      } catch {
+        throw new RowSkipped('html could not be cleaned');
+      }
+    }
+
     try {
-      data.lexical = JSON.stringify(htmlToLexical(row.html));
+      data.lexical = JSON.stringify(htmlToLexical(cleanedHTML));
     } catch {
-      throw new RowSkipped('html could not be converted');
+      throw new RowSkipped(`${sourceKind} could not be converted`);
     }
   }
 

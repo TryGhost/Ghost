@@ -73,6 +73,7 @@ function makeImporter(): ContentCSVImporter {
     },
     getHtmlToLexical: () => lexicalLib.htmlToLexicalConverter,
     getMarkdownToHtml: () => require('@tryghost/kg-markdown-html-renderer').render,
+    getCleanHTML: () => require('@tryghost/mg-clean-html').cleanHTML,
     addJob: jobsService.addJob.bind(jobsService),
     report,
     store: new ImportRunStore(),

@@ -1,6 +1,7 @@
 import moment from 'moment-timezone';
 import buildPostData, {
   RowSkipped,
+  type CleanHTML,
   type HtmlToLexical,
   type MarkdownToHtml,
   type PostData,
@@ -65,6 +66,7 @@ interface ImporterDeps {
   // A getter so the heavy html->lexical require resolves once per run
   getHtmlToLexical: () => HtmlToLexical;
   getMarkdownToHtml: () => MarkdownToHtml;
+  getCleanHTML: () => CleanHTML;
   addJob: (job: { job: () => Promise<void>; offloaded: boolean; name: string }) => void;
   report: FailureReporter;
   store: ImportRunStore;
@@ -86,6 +88,7 @@ class ContentCSVImporter {
   private _posts: PostsRepository;
   private _getHtmlToLexical: () => HtmlToLexical;
   private _getMarkdownToHtml: () => MarkdownToHtml;
+  private _getCleanHTML: () => CleanHTML;
   private _addJob: ImporterDeps['addJob'];
   private _report: FailureReporter;
   private _store: ImportRunStore;
@@ -99,6 +102,7 @@ class ContentCSVImporter {
     posts,
     getHtmlToLexical,
     getMarkdownToHtml,
+    getCleanHTML,
     addJob,
     report,
     store,
@@ -111,6 +115,7 @@ class ContentCSVImporter {
     this._posts = posts;
     this._getHtmlToLexical = getHtmlToLexical;
     this._getMarkdownToHtml = getMarkdownToHtml;
+    this._getCleanHTML = getCleanHTML;
     this._addJob = addJob;
     this._report = report;
     this._store = store;
@@ -169,6 +174,7 @@ class ContentCSVImporter {
     try {
       const htmlToLexical = this._getHtmlToLexical();
       const markdownToHtml = this._getMarkdownToHtml();
+      const cleanHTML = this._getCleanHTML();
       let attemptedWrites = 0;
       let successfulWrites = 0;
       let failedWrites = 0;
@@ -179,7 +185,7 @@ class ContentCSVImporter {
         let data: PostData;
 
         try {
-          data = buildPostData(row, htmlToLexical, importTagNames, markdownToHtml);
+          data = buildPostData(row, htmlToLexical, importTagNames, markdownToHtml, cleanHTML);
         } catch (error) {
           if (error instanceof RowSkipped) {
             this._store.record(runId, {
