@@ -133,6 +133,12 @@ export interface StripeCheckoutSessionRequest {
         };
     };
     submit_type?: 'auto' | 'book' | 'donate' | 'pay' | 'send';
+    // What the page collects for itself, as opposed to the questions above. Recorded so a
+    // test can assert what a publisher's configuration actually asked Stripe for, and so a
+    // completion can only carry data the checkout collected.
+    shipping_address_collection?: {allowed_countries: string[]};
+    tax_id_collection?: {enabled: boolean};
+    phone_number_collection?: {enabled: boolean};
 }
 
 export interface RecordedStripeCheckoutSession {

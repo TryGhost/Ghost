@@ -465,7 +465,10 @@ export class FakeStripeServer extends FakeServer {
                     invoice_creation: body.invoice_creation,
                     submit_type: body.submit_type,
                     subscription_data: body.subscription_data,
-                    line_items: body.line_items
+                    line_items: body.line_items,
+                    shipping_address_collection: body.shipping_address_collection,
+                    tax_id_collection: body.tax_id_collection,
+                    phone_number_collection: body.phone_number_collection
                 },
                 response: {
                     mode,
