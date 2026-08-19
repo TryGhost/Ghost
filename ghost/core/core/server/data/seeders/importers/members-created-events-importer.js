@@ -13,7 +13,7 @@ class MembersCreatedEventsImporter extends TableImporter {
 
     async import(quantity) {
         const members = await this.transaction.select('id', 'created_at').from('members');
-        this.posts = await this.transaction.select('id', 'published_at', 'visibility', 'type', 'slug').from('posts').orderBy('published_at', 'desc');
+        this.posts = await this.transaction.select('id', 'published_at', 'visibility', 'type', 'slug').from('posts').whereNotNull('published_at').orderBy('published_at', 'desc');
         this.incomingRecommendations = await this.transaction.select('id', 'source', 'created_at').from('mentions');
 
         await this.importForEach(members, quantity ? quantity / members.length : 1);

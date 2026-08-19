@@ -5,6 +5,7 @@ import type {Knex} from 'knex';
 import {TableImporter} from './table-importer';
 import {parseEmailAddress} from '@tryghost/parse-email-address';
 import {fromDatabaseDate, toDatabaseDate} from '../../../lib/db-date';
+import {randomDateBetween} from '../utils/random';
 
 type Automation = {
     id: string;
@@ -75,10 +76,7 @@ export class AutomationRunsImporter extends TableImporter<AutomationRun, Automat
         const member = faker.helpers.arrayElement(this.#members);
         const automationCreatedAt = fromDatabaseDate(this.#automation.created_at);
         const memberCreatedAt = fromDatabaseDate(member.created_at);
-        const createdAt = faker.date.between({
-            from: new Date(Math.max(automationCreatedAt.valueOf(), memberCreatedAt.valueOf())),
-            to: new Date()
-        });
+        const createdAt = randomDateBetween(new Date(Math.max(automationCreatedAt.valueOf(), memberCreatedAt.valueOf())), new Date());
 
         assertExampleEmailDomain(member.email);
 

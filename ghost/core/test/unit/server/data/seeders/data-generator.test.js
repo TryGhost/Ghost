@@ -11,7 +11,7 @@ const AutomationsImporter = importers.find(i => i.table === 'automations');
 const AutomationRunStepsImporter = importers.find(i => i.table === 'automation_run_steps');
 
 const generateEvents = require('../../../../../core/server/data/seeders/utils/event-generator');
-const databaseDate = require('../../../../../core/server/data/seeders/utils/database-date');
+const {randomDateBetween} = require('../../../../../core/server/data/seeders/utils/random');
 
 const DataGenerator = require('../../../../../core/server/data/seeders/data-generator');
 
@@ -483,7 +483,7 @@ describe('Events Generator', function () {
         const startDate = new Date('2026-03-26T11:50:00.000Z');
         const endDate = new Date('2026-03-26T10:00:00.000Z');
 
-        assert.equal(databaseDate.randomBetween(startDate, endDate).toISOString(), startDate.toISOString());
+        assert.equal(randomDateBetween(startDate, endDate).toISOString(), startDate.toISOString());
     });
 
     it('Generates a set of timestamps which meet the criteria', function () {

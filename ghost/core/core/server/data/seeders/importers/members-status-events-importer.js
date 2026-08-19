@@ -1,5 +1,5 @@
 const {TableImporter} = require('./table-importer');
-const databaseDate = require('../utils/database-date');
+const {randomDateBetween} = require('../utils/random');
 const {toDatabaseDate} = require('../../../lib/db-date');
 
 class MembersStatusEventsImporter extends TableImporter {
@@ -40,7 +40,7 @@ class MembersStatusEventsImporter extends TableImporter {
                 member_id: model.id,
                 from_status: 'free',
                 to_status: model.status,
-                created_at: toDatabaseDate(databaseDate.randomBetween(model.created_at, new Date()))
+                created_at: toDatabaseDate(randomDateBetween(model.created_at, new Date()))
             });
         }
     }

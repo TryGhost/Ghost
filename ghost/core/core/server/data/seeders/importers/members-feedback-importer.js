@@ -1,6 +1,5 @@
 const {TableImporter} = require('./table-importer');
-const {luck} = require('../utils/random');
-const databaseDate = require('../utils/database-date');
+const {luck, randomDateBetween} = require('../utils/random');
 const {fromDatabaseDate, toDatabaseDate} = require('../../../lib/db-date');
 
 class MembersFeedbackImporter extends TableImporter {
@@ -26,9 +25,9 @@ class MembersFeedbackImporter extends TableImporter {
         }
 
         const openedAt = fromDatabaseDate(this.model.opened_at);
-        const laterOn = fromDatabaseDate(this.model.opened_at);
+        const laterOn = new Date(openedAt);
         laterOn.setMinutes(laterOn.getMinutes() + 60);
-        const feedbackTime = databaseDate.randomBetween(openedAt, laterOn);
+        const feedbackTime = randomDateBetween(openedAt, laterOn);
 
         const postId = this.emails.find(email => email.id === this.model.email_id).post_id;
         return {

@@ -1,6 +1,7 @@
 const {faker} = require('@faker-js/faker');
 const errors = require('@tryghost/errors');
 const {TableImporter} = require('./table-importer');
+const {randomDateBetween} = require('../utils/random');
 const {fromDatabaseDate, toDatabaseDate} = require('../../../lib/db-date');
 
 class OfferRedemptionsImporter extends TableImporter {
@@ -93,8 +94,7 @@ class OfferRedemptionsImporter extends TableImporter {
             candidateEarliest.valueOf(),
             subscriptionState.redemptionEndAt.valueOf()
         ));
-        const latest = subscriptionState.redemptionEndAt > earliest ? subscriptionState.redemptionEndAt : earliest;
-        const createdAt = latest.valueOf() === earliest.valueOf() ? earliest : faker.date.between({from: earliest, to: latest});
+        const createdAt = randomDateBetween(earliest, subscriptionState.redemptionEndAt);
 
         subscriptionState.lastRedeemedAt = createdAt;
 

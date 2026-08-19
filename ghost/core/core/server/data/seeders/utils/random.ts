@@ -1,4 +1,5 @@
 import {faker} from '@faker-js/faker';
+import {fromDatabaseDate, type DatabaseDate} from '../../../lib/db-date';
 
 /**
  * Adds another degree of randomness into some decisions
@@ -9,3 +10,10 @@ export const luck = (lowerThan: number): boolean => faker.number.int({
     min: 1,
     max: 100
 }) <= lowerThan;
+
+export function randomDateBetween(start: DatabaseDate, end: DatabaseDate): Date {
+    const earliest = fromDatabaseDate(start);
+    const latest = fromDatabaseDate(end);
+
+    return latest > earliest ? faker.date.between({from: earliest, to: latest}) : earliest;
+}

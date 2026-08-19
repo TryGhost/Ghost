@@ -1,7 +1,6 @@
 const {TableImporter} = require('./table-importer');
 const {faker} = require('@faker-js/faker');
-const {luck} = require('../utils/random');
-const databaseDate = require('../utils/database-date');
+const {luck, randomDateBetween} = require('../utils/random');
 const {toDatabaseDate} = require('../../../lib/db-date');
 
 class CommentReportsImporter extends TableImporter {
@@ -50,7 +49,7 @@ class CommentReportsImporter extends TableImporter {
             return null;
         }
 
-        const reportTime = databaseDate.randomBetween(this.model.created_at, new Date());
+        const reportTime = randomDateBetween(this.model.created_at, new Date());
 
         const reporter = this.possibleReporters[faker.number.int(this.possibleReporters.length - 1)];
 
