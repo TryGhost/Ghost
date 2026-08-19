@@ -238,8 +238,8 @@ describe('useMemberFilterFields', () => {
         const customFields = result.current.find(group => group.group === 'Custom fields')?.fields ?? [];
 
         expect(customFields.map(field => ({key: field.key, label: field.label}))).toEqual([
-            {key: 'custom_field.shipping_address', label: 'Shipping address'},
-            {key: 'custom_field.job_title', label: 'Job title'}
+            {key: 'custom_fields.shipping_address', label: 'Shipping address'},
+            {key: 'custom_fields.job_title', label: 'Job title'}
         ]);
     });
 

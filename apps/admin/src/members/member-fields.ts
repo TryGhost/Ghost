@@ -148,6 +148,16 @@ export const CUSTOM_FIELD_OPERATORS: readonly string[] = [
     ...CUSTOM_FIELD_SET_OPERATORS
 ];
 
+/**
+ * The namespace custom fields are addressed under, in filter field keys and list column
+ * keys alike, so one field reads the same wherever it is named.
+ *
+ * Named rather than spelled out at each use because the namespace describes a bag of
+ * fields, and there is one bag today. An extension bringing its own bag would bring its
+ * own namespace, which is a change to what this resolves to rather than to its callers.
+ */
+export const CUSTOM_FIELDS_PREFIX = 'custom_fields.';
+
 // NQL operator symbol for each value operator. The field is named in the value
 // position (`custom_fields.key:'…'`) so its key can carry hyphens; the value is
 // matched on `custom_fields.value` (scalar) or `custom_fields.value.<subfield>`
@@ -168,7 +178,7 @@ const customFieldsCodec: FilterCodec = {
     parse() {
         return null;
     },
-    // The field's stable key comes from the dropdown entry (`custom_field.<key>`,
+    // The field's stable key comes from the dropdown entry (`custom_fields.<key>`,
     // resolved into `ctx.params.key`); the predicate carries only [subfield, value],
     // with subfield '' for a scalar field or the "Any" (whole-field set/unset) case.
     serialize(predicate, ctx) {
@@ -242,9 +252,9 @@ const baseMemberFields = defineFields({
         metadata: {
             activeColumn: {
                 key: 'labels',
-                label: 'Labels',
-                include: 'labels'
-            }
+                label: 'Labels'
+            },
+            columnInclude: 'labels'
         },
         codec: setCodec()
     },
@@ -317,9 +327,9 @@ const baseMemberFields = defineFields({
         metadata: {
             activeColumn: {
                 key: 'tiers',
-                label: 'Tiers',
-                include: 'tiers'
-            }
+                label: 'Tiers'
+            },
+            columnInclude: 'tiers'
         },
         codec: setCodec()
     },
@@ -351,9 +361,9 @@ const baseMemberFields = defineFields({
         metadata: {
             activeColumn: {
                 key: 'subscriptions.plan_interval',
-                label: 'Billing period',
-                include: 'subscriptions'
-            }
+                label: 'Billing period'
+            },
+            columnInclude: 'subscriptions'
         },
         codec: scalarCodec()
     },
@@ -368,9 +378,9 @@ const baseMemberFields = defineFields({
         metadata: {
             activeColumn: {
                 key: 'subscriptions.status',
-                label: 'Subscription status',
-                include: 'subscriptions'
-            }
+                label: 'Subscription status'
+            },
+            columnInclude: 'subscriptions'
         },
         codec: scalarCodec()
     },
@@ -384,9 +394,9 @@ const baseMemberFields = defineFields({
         metadata: {
             activeColumn: {
                 key: 'subscriptions.start_date',
-                label: 'Paid start date',
-                include: 'subscriptions'
-            }
+                label: 'Paid start date'
+            },
+            columnInclude: 'subscriptions'
         },
         codec: dateCodec()
     },
@@ -400,9 +410,9 @@ const baseMemberFields = defineFields({
         metadata: {
             activeColumn: {
                 key: 'subscriptions.current_period_end',
-                label: 'Next billing date',
-                include: 'subscriptions'
-            }
+                label: 'Next billing date'
+            },
+            columnInclude: 'subscriptions'
         },
         codec: dateCodec()
     },
@@ -529,14 +539,28 @@ const baseMemberFields = defineFields({
         codec: multipleActiveSubscriptionsCodec
     },
     // Each defined custom field is its own filter, named directly in the dropdown
-    // (`custom_field.<key>`), so this template supplies the shared operators and codec;
+    // (`custom_fields.<key>`), so this template supplies the shared operators and codec;
     // use-member-filter-fields builds one entry per field from the definitions.
-    'custom_field.:key': {
+    'custom_fields.:key': {
         operators: CUSTOM_FIELD_OPERATORS,
         ui: {
             label: 'Custom field',
             type: 'custom',
             component: 'custom-field'
+        },
+        metadata: {
+            // One column per field filtered on, named after the field itself. A value a
+            // publisher collected varies member to member, which is what earns a column;
+            // it is shown whatever the operator, the way Label is. No name resolved means
+            // no such field for this site (or the flag is off), so no column either.
+            activeColumn: ({params, label}) => (label
+                ? {key: `${CUSTOM_FIELDS_PREFIX}${params.key}`, label}
+                : null),
+            // Asked for as soon as a custom field is filtered on, without waiting for the
+            // names: the values are what the column will hold, and they travel on the same
+            // request the filter already sends. The API takes this include whether or not
+            // the flag is on, and returns values only when it is.
+            columnInclude: 'custom_fields'
         },
         codec: customFieldsCodec
     }

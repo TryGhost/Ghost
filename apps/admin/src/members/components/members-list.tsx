@@ -6,7 +6,7 @@ import {Table, TableBody, TableCell, TableRow} from '@tryghost/shade/components'
 import {buildMemberDetailPath} from '@/members/member-detail-hash';
 import {forwardRef, useEffect, useMemo, useRef, useState} from 'react';
 import {getMemberTableLayout, getMemberTableLayoutStyles} from './member-table-layout';
-import type {ActiveColumn} from '@/members/member-query-params';
+import type {MemberActiveColumn} from '@/members/member-query-params';
 import type {RefObject} from 'react';
 
 const SpacerRow = ({height}: { height: number }) => (
@@ -43,7 +43,7 @@ interface MembersListProps {
     fetchNextPage: () => void;
     isLoading?: boolean;
     showEmailOpenRate?: boolean;
-    activeColumns: ActiveColumn[];
+    activeColumns: MemberActiveColumn[];
     timezone: string;
     pageHeaderRef?: RefObject<HTMLElement | null>;
     onRowClick?: (memberId: string) => void;
