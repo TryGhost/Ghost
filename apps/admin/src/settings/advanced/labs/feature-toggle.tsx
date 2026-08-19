@@ -71,7 +71,7 @@ const FeatureToggleConfirmationModal: React.FC<FeatureToggleConfirmationModalPro
 
 const FeatureToggle: React.FC<FeatureToggleProps> = ({label, flag, disabled, confirmation}) => {
     const {settings} = useGlobalData();
-    const labs = JSON.parse(getSettingValue<string>(settings, 'labs') || '{}');
+    const labs = JSON.parse(getSettingValue<string>(settings, 'labs') || '{}') as Record<string, boolean | undefined>;
     const {mutateAsync: editSettings} = useEditSettings();
     const client = useQueryClient();
     const handleError = useHandleError();
@@ -102,13 +102,13 @@ const FeatureToggle: React.FC<FeatureToggleProps> = ({label, flag, disabled, con
     };
 
     return <>
-        <Switch aria-label={label || flag} checked={isEnabled} disabled={disabled} name={`feature-${flag}`} onCheckedChange={async (newValue) => {
+        <Switch aria-label={label || flag} checked={isEnabled} disabled={disabled} name={`feature-${flag}`} onCheckedChange={(newValue) => {
             if (confirmation && newValue) {
                 setIsConfirming(true);
                 return;
             }
 
-            await saveFeatureValue(newValue);
+            void saveFeatureValue(newValue);
         }} />
         {confirmation && isConfirming && (
             <DialogPortal>

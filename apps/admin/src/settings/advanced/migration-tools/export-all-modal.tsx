@@ -80,7 +80,7 @@ const ExportAllModal: React.FC<{open: boolean; onOpenChange: (open: boolean) => 
     };
 
     const triggerMockDownload = () => {
-        const emptyZip = new Uint8Array([0x50, 0x4b, 0x05, 0x06, ...new Array(18).fill(0)]);
+        const emptyZip = new Uint8Array([0x50, 0x4b, 0x05, 0x06, ...new Array<number>(18).fill(0)]);
         const url = URL.createObjectURL(new Blob([emptyZip], {type: 'application/zip'}));
         const anchor = document.createElement('a');
         anchor.href = url;

@@ -121,7 +121,7 @@ function PinturaModal() {
                                     <div>Upload Pintura script</div>
                                     <div className='text-sm text-grey-600'>Upload the <code>pintura-umd.js</code> file from the Pintura package</div>
                                 </div>
-                                <Dropzone accept={{'text/javascript': ['.js'], 'application/javascript': ['.js']}} disabled={uploadingState.js} variant='button' onDropAccepted={files => handleUpload(files[0], 'js')}>
+                                <Dropzone accept={{'text/javascript': ['.js'], 'application/javascript': ['.js']}} disabled={uploadingState.js} variant='button' onDropAccepted={files => void handleUpload(files[0], 'js')}>
                                     {uploadingState.js ? 'Uploading...' : 'Upload'}
                                 </Dropzone>
                             </div>
@@ -130,7 +130,7 @@ function PinturaModal() {
                                     <div>Upload Pintura styles</div>
                                     <div className='text-sm text-grey-600'>Upload the <code>pintura.css</code> file from the Pintura package</div>
                                 </div>
-                                <Dropzone accept={{'text/css': ['.css']}} disabled={uploadingState.css} variant='button' onDropAccepted={files => handleUpload(files[0], 'css')}>
+                                <Dropzone accept={{'text/css': ['.css']}} disabled={uploadingState.css} variant='button' onDropAccepted={files => void handleUpload(files[0], 'css')}>
                                     {uploadingState.css ? 'Uploading...' : 'Upload'}
                                 </Dropzone>
                             </div>

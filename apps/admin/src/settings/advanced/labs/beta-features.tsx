@@ -21,9 +21,33 @@ const BetaFeatures: React.FC = () => {
     const handleError = useHandleError();
     const [redirectsUploading, setRedirectsUploading] = useState<boolean>(false);
     const [routesUploading, setRoutesUploading] = useState<boolean>(false);
-    const labs = JSON.parse(getSettingValue<string>(settings, 'labs') || '{}');
+    const labs = JSON.parse(getSettingValue<string>(settings, 'labs') || '{}') as Record<string, boolean | undefined>;
     const isAutomationsEnabled = !!labs.automations;
     const [openEditor, setOpenEditor] = useState<'redirects' | 'routes' | null>(null);
+
+    const uploadRedirectsFile = async (file: File) => {
+        try {
+            setRedirectsUploading(true);
+            await uploadRedirects(file);
+            toast.success('Redirects uploaded');
+        } catch (e) {
+            handleError(e);
+        } finally {
+            setRedirectsUploading(false);
+        }
+    };
+
+    const uploadRoutesFile = async (file: File) => {
+        try {
+            setRoutesUploading(true);
+            await uploadRoutes(file);
+            toast.success('Routes uploaded');
+        } catch (e) {
+            handleError(e);
+        } finally {
+            setRoutesUploading(false);
+        }
+    };
 
     const openRedirectsEditor = () => setOpenEditor('redirects');
     const openRoutesEditor = () => setOpenEditor('routes');
@@ -65,17 +89,7 @@ const BetaFeatures: React.FC = () => {
                             <Dropzone
                                 inputId='upload-redirects'
                                 variant='buttonSecondary'
-                                onDropAccepted={async ([file]) => {
-                                    try {
-                                        setRedirectsUploading(true);
-                                        await uploadRedirects(file);
-                                        toast.success('Redirects uploaded');
-                                    } catch (e) {
-                                        handleError(e);
-                                    } finally {
-                                        setRedirectsUploading(false);
-                                    }
-                                }}
+                                onDropAccepted={([file]) => void uploadRedirectsFile(file)}
                             >
                                 {redirectsUploading ? 'Uploading ...' : 'Upload redirects file'}
                             </Dropzone>
@@ -92,17 +106,7 @@ const BetaFeatures: React.FC = () => {
                             <Dropzone
                                 inputId='upload-routes'
                                 variant='buttonSecondary'
-                                onDropAccepted={async ([file]) => {
-                                    try {
-                                        setRoutesUploading(true);
-                                        await uploadRoutes(file);
-                                        toast.success('Routes uploaded');
-                                    } catch (e) {
-                                        handleError(e);
-                                    } finally {
-                                        setRoutesUploading(false);
-                                    }
-                                }}
+                                onDropAccepted={([file]) => void uploadRoutesFile(file)}
                             >
                                 {routesUploading ? 'Uploading ...' : 'Upload routes file'}
                             </Dropzone>

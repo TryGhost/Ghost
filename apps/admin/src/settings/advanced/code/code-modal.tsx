@@ -48,7 +48,7 @@ const CodeModal: React.FC<CodeModalProps> = ({onClose}) => {
         const handleCMDS = (e: KeyboardEvent) => {
             if ((e.metaKey || e.ctrlKey) && e.key === 's') {
                 e.preventDefault();
-                onSaveClick();
+                void onSaveClick();
             }
         };
         window.addEventListener('keydown', handleCMDS);
@@ -71,7 +71,7 @@ const CodeModal: React.FC<CodeModalProps> = ({onClose}) => {
                 <Text as='h2' className='md:text-3xl' leading='heading' size='2xl' weight='bold'>Code injection</Text>
                 <Inline gap='md'>
                     <Button type='button' variant='outline' onClick={onClose}>Close</Button>
-                    <Button disabled={isSaving} type='button' onClick={onSaveClick}>{savingTitle}</Button>
+                    <Button disabled={isSaving} type='button' onClick={() => void onSaveClick()}>{savingTitle}</Button>
                 </Inline>
             </div>
             <Tabs className='mb-16 flex flex-auto flex-col' value={selectedTab} variant='underline' onValueChange={value => setSelectedTab(value as typeof selectedTab)}>

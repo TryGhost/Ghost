@@ -1,5 +1,5 @@
 import {type ComponentId, type SearchService} from '@/settings/utils/search';
-import {type ZapierTemplate} from '@/settings/app/components/settings/advanced/integrations/zapier-modal';
+import {type ZapierTemplate} from '@/settings/advanced/integrations/zapier-modal';
 import {createContext, useContext} from 'react';
 import {officialThemes} from '@/settings/data/official-themes';
 import {zapierTemplates} from '@/settings/data/zapier-templates';

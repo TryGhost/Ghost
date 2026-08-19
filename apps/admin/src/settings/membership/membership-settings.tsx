@@ -5,7 +5,7 @@ import MemberEmails from './member-emails';
 import Portal from './portal';
 import React from 'react';
 import SearchableSection from '@/settings/components/searchable-section';
-import SpamFilters from '@/settings/app/components/settings/advanced/spam-filters';
+import SpamFilters from '@/settings/advanced/spam-filters';
 import Tiers from './tiers';
 import TipsAndDonations from '@/settings/growth/tips-and-donations';
 import useFeatureFlag from '@/settings/hooks/use-feature-flag';

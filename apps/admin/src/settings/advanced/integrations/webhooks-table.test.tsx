@@ -1,4 +1,4 @@
-import WebhooksTable from '@/settings/app/components/settings/advanced/integrations/webhooks-table';
+import WebhooksTable from '@/settings/advanced/integrations/webhooks-table';
 import {ConfirmationProvider} from '@/settings/providers/confirmation-provider';
 import {type Integration} from '@tryghost/admin-x-framework/api/integrations';
 import {render, screen} from '@testing-library/react';

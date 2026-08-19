@@ -1,4 +1,4 @@
-import APIKeys from '@/settings/app/components/settings/advanced/integrations/api-keys';
+import APIKeys from '@/settings/advanced/integrations/api-keys';
 import {Text} from '@tryghost/shade/primitives';
 import {genStaffToken, getStaffToken} from '@tryghost/admin-x-framework/api/staff-token';
 import {useConfirmation} from '@/settings/providers/confirmation-context';

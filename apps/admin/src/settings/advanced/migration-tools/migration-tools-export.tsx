@@ -50,7 +50,7 @@ const MigrationToolsExport: React.FC = () => {
     return (
         <div className='grid grid-cols-1 gap-4 pt-4 md:grid-cols-2 lg:grid-cols-3'>
             <Button className='h-9 font-semibold' type='button' variant='secondary' onClick={() => downloadAllContent()}><LucideIcon.Download />Content &amp; settings</Button>
-            <Button className='h-9 font-semibold' data-testid='post-analytics-export-button' disabled={isExportingPosts} type='button' variant='secondary' onClick={exportPosts}>{isExportingPosts ? <><LoadingIndicator size='sm' /><span className='sr-only'>Loading...</span></> : <><LucideIcon.TrendingUp />Post analytics</>}</Button>
+            <Button className='h-9 font-semibold' data-testid='post-analytics-export-button' disabled={isExportingPosts} type='button' variant='secondary' onClick={() => void exportPosts()}>{isExportingPosts ? <><LoadingIndicator size='sm' /><span className='sr-only'>Loading...</span></> : <><LucideIcon.TrendingUp />Post analytics</>}</Button>
         </div>
     );
 };

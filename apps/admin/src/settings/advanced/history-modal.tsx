@@ -300,7 +300,7 @@ function HistoryModal() {
 
     const fetchNext = useCallback(() => {
         if (!data?.isEnd) {
-            fetchNextPage();
+            void fetchNextPage();
         }
     }, [data?.isEnd, fetchNextPage]);
 
