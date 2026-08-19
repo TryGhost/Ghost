@@ -459,6 +459,7 @@ export function buildDonationCheckoutCompletedEvent(opts: {
       object: {
         object: 'checkout.session',
         mode: 'payment',
+        payment_status: 'paid',
         amount_total: opts.amount,
         currency: opts.currency,
         customer: opts.customerId ?? null,

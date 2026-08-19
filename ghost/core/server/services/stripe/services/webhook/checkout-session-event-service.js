@@ -109,7 +109,7 @@ module.exports = class CheckoutSessionEventService {
     }
 
     if (eventType === 'checkout.session.async_payment_succeeded') {
-      if (session.mode === 'payment' && isGiftCheckoutSession(session)) {
+      if (session.mode === 'payment') {
         await this.handlePaymentEvent(session);
       }
       return;
@@ -129,9 +129,9 @@ module.exports = class CheckoutSessionEventService {
   }
 
   /**
-   * Routes a `payment` mode session to the donation or gift handler. Gift purchases
-   * may complete asynchronously, so their handler only runs once Stripe reports the
-   * session as paid, whichever event carried it.
+   * Routes a paid `payment` mode session to the donation or gift handler. Payments
+   * may complete asynchronously, so handlers only run once Stripe reports the session
+   * as paid, whichever event carried it.
    *
    * @param {import('stripe').Stripe.Checkout.Session} session
    */
@@ -147,10 +147,11 @@ module.exports = class CheckoutSessionEventService {
       return;
     }
 
+    if (session.payment_status !== 'paid') {
+      return;
+    }
+
     if (isGiftCheckoutSession(session)) {
-      if (session.payment_status !== 'paid') {
-        return;
-      }
       await this.handleGiftEvent(session);
       return;
     }
