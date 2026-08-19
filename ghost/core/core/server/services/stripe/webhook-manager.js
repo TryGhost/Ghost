@@ -43,6 +43,8 @@ module.exports = class WebhookManager {
     /** @type {WebhookEvent[]} */
     static events = [
         'checkout.session.completed',
+        'checkout.session.async_payment_succeeded',
+        'checkout.session.async_payment_failed',
         'customer.subscription.deleted',
         'customer.subscription.updated',
         'customer.subscription.created',
