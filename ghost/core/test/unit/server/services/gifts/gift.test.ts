@@ -29,14 +29,14 @@ describe('Gift', function () {
             const gift = Gift.fromPurchase(purchaseData);
             const after = new Date();
 
-            assert.ok(gift.purchasedAt >= before);
-            assert.ok(gift.purchasedAt <= after);
+            assert.ok(gift.purchasedAt! >= before);
+            assert.ok(gift.purchasedAt! <= after);
         });
 
         it('sets expiresAt to GIFT_EXPIRY_DAYS after purchasedAt', function () {
             const gift = Gift.fromPurchase(purchaseData);
             const daysDiff = Math.round(
-                (gift.expiresAt.getTime() - gift.purchasedAt.getTime()) / (1000 * 60 * 60 * 24)
+                (gift.expiresAt!.getTime() - gift.purchasedAt!.getTime()) / (1000 * 60 * 60 * 24)
             );
 
             assert.equal(daysDiff, GIFT_EXPIRY_DAYS);
@@ -67,6 +67,43 @@ describe('Gift', function () {
             assert.equal(gift.amount, 5000);
             assert.equal(gift.stripeCheckoutSessionId, 'cs_123');
             assert.equal(gift.stripePaymentIntentId, 'pi_456');
+        });
+    });
+
+    describe('fromCheckout', function () {
+        it('holds local purchase details without creating a redeemable gift', function () {
+            const gift = Gift.fromCheckout({
+                token: 'pending-token',
+                buyerEmail: null,
+                buyerMemberId: null,
+                buyerName: 'Buyer',
+                recipientName: 'Recipient',
+                personalMessage: 'Enjoy this gift',
+                tierId: 'tier_1',
+                cadence: 'year',
+                duration: 1,
+                currency: 'usd',
+                amount: 5000
+            });
+
+            assert.equal(gift.status, 'payment_pending');
+            assert.equal(gift.stripeCheckoutSessionId, null);
+            assert.equal(gift.stripePaymentIntentId, null);
+            assert.equal(gift.purchasedAt, null);
+            assert.equal(gift.expiresAt, null);
+            assert.deepEqual(gift.checkRedeemable(null), {redeemable: false, reason: 'payment-pending'});
+
+            const purchased = gift.bindCheckoutSession('cs_123')?.completePurchase({
+                buyerEmail: 'buyer@example.com',
+                buyerMemberId: null,
+                stripeCheckoutSessionId: 'cs_123',
+                stripePaymentIntentId: 'pi_123'
+            });
+            assert.equal(purchased?.status, 'purchased');
+            assert.equal(purchased?.recipientName, 'Recipient');
+            assert.equal(purchased?.currency, 'usd');
+            assert.equal(purchased?.amount, 5000);
+            assert.ok(purchased?.expiresAt);
         });
     });
 

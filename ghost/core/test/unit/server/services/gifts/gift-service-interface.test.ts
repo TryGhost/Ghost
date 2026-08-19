@@ -3,6 +3,16 @@ import sinon from 'sinon';
 import {GiftService} from '../../../../../core/server/services/gifts/gift-service';
 import {buildGift} from './utils';
 
+function hasInvalidDeliveryContext(error: unknown): boolean {
+    const context = error && typeof error === 'object' ? (error as {context?: unknown}).context : null;
+    return typeof context === 'string' && context.startsWith('Invalid gift delivery data:');
+}
+
+function hasInvalidBuyerEmailContext(error: unknown): boolean {
+    const context = error && typeof error === 'object' ? (error as {context?: unknown}).context : null;
+    return typeof context === 'string' && context.startsWith('Invalid gift buyer email:');
+}
+
 describe('GiftService interface', function () {
     afterEach(function () {
         sinon.restore();
@@ -32,6 +42,9 @@ describe('GiftService interface', function () {
             })
         };
         const giftRepository = {
+            create: sinon.stub().resolves('gift_1'),
+            update: sinon.stub().resolves(),
+            deletePendingCheckout: sinon.stub().resolves(true),
             getByToken: sinon.stub().resolves(null),
             getActiveByMember: sinon.stub().resolves(null),
             getActiveByMembers: sinon.stub().resolves(new Map()),
@@ -41,10 +54,16 @@ describe('GiftService interface', function () {
         };
         const checkoutAdapter = {
             getCustomerId: sinon.stub().resolves('cus_123'),
-            createSession: sinon.stub().resolves('https://checkout.stripe.test/session')
+            createSession: sinon.stub().resolves({id: 'cs_123', url: 'https://checkout.stripe.test/session'})
+        };
+        const giftDeliveryService = {
+            createForCheckout: sinon.stub().resolves(),
+            dispatchForGift: sinon.stub().resolves(null),
+            cancelPendingForGift: sinon.stub().resolves(false)
         };
         const service = new GiftService({
             giftRepository,
+            giftDeliveryService,
             memberRepository: {},
             tiersService: {
                 api: {
@@ -67,18 +86,18 @@ describe('GiftService interface', function () {
             service,
             tier,
             giftRepository,
-            checkoutAdapter
+            checkoutAdapter,
+            giftDeliveryService
         };
     }
 
     it('owns the complete gift checkout decision', async function () {
-        const {service, checkoutAdapter} = createService();
+        const {service, checkoutAdapter, giftRepository} = createService();
 
         const result = await service.startCheckout({
             tierId: 'tier_1',
             cadence: 'year',
             duration: 1,
-            metadata: {attribution_id: 'post_1'},
             successUrl: 'https://example.com/',
             cancelUrl: 'https://example.com/cancel/',
             buyer: {
@@ -103,14 +122,174 @@ describe('GiftService interface', function () {
         assert.equal(plan.amount, 12000);
         assert.equal(plan.currency, 'usd');
         assert.equal(plan.customerId, 'cus_123');
-        assert.equal(plan.metadata.ghost_gift, 'true');
-        assert.equal(plan.metadata.tier_id, 'tier_1');
-        assert.match(plan.metadata.gift_token, /^[A-Za-z0-9]{12}$/);
+        assert.deepEqual(plan.metadata, {ghost_gift_id: 'gift_1'});
+        assert.equal(plan.idempotencyKey, 'gift_1');
+        const createdGift = giftRepository.create.firstCall.firstArg;
+        assert.match(createdGift.token, /^[A-Za-z0-9]{12}$/);
+        assert.equal(createdGift.status, 'payment_pending');
         assert.equal(successUrl.searchParams.get('stripe'), 'gift-purchase-success');
-        assert.equal(successUrl.searchParams.get('gift_token'), plan.metadata.gift_token);
+        assert.equal(successUrl.searchParams.get('gift_token'), createdGift.token);
         assert.equal(successUrl.searchParams.get('gift_tier'), 'tier_1');
         assert.equal(successUrl.searchParams.get('gift_cadence'), 'year');
         assert.equal(successUrl.searchParams.get('gift_duration'), null);
+        assert.equal(successUrl.searchParams.get('gift_delivery'), 'link');
+    });
+
+    it('validates email delivery and keeps recipient PII out of Stripe metadata', async function () {
+        const {service, checkoutAdapter, giftRepository, giftDeliveryService} = createService({customizationEnabled: true});
+
+        await service.startCheckout({
+            tierId: 'tier_1',
+            cadence: 'year',
+            deliveryMethod: 'email',
+            recipientEmail: ' recipient@example.com ',
+            recipientName: ' Recipient ',
+            buyerName: ' Buyer ',
+            personalMessage: ' Enjoy your gift ',
+            successUrl: 'https://example.com/',
+            buyer: {
+                memberId: null,
+                email: 'buyer@example.com',
+                name: null,
+                isAuthenticated: false
+            }
+        });
+
+        const metadata = checkoutAdapter.createSession.firstCall.firstArg.metadata;
+        const successUrl = new URL(checkoutAdapter.createSession.firstCall.firstArg.successUrl);
+        assert.deepEqual(metadata, {ghost_gift_id: 'gift_1'});
+        const createdGift = giftRepository.create.firstCall.firstArg;
+        assert.equal(createdGift.recipientName, 'Recipient');
+        assert.equal(createdGift.buyerName, 'Buyer');
+        assert.equal(createdGift.personalMessage, 'Enjoy your gift');
+        sinon.assert.calledOnceWithExactly(giftDeliveryService.createForCheckout, {
+            giftId: 'gift_1',
+            recipientEmail: 'recipient@example.com'
+        }, {transacting: 'trx'});
+        assert.equal(successUrl.searchParams.get('gift_delivery'), 'email');
+    });
+
+    it('prefers the checkout buyer name over the authenticated member name', async function () {
+        const {service, giftRepository} = createService({customizationEnabled: true});
+
+        await service.startCheckout({
+            tierId: 'tier_1',
+            cadence: 'year',
+            deliveryMethod: 'email',
+            recipientEmail: 'recipient@example.com',
+            buyerName: 'Mum',
+            successUrl: 'https://example.com/',
+            buyer: {
+                memberId: 'member_1',
+                email: 'buyer@example.com',
+                name: 'Account Name',
+                isAuthenticated: true
+            }
+        });
+
+        assert.equal(giftRepository.create.firstCall.firstArg.buyerName, 'Mum');
+    });
+
+    const invalidCheckouts = [
+        {
+            name: 'email delivery without a buyer name',
+            overrides: {deliveryMethod: 'email', recipientEmail: 'recipient@example.com'},
+            expected: hasInvalidDeliveryContext
+        },
+        {
+            name: 'email delivery with a malformed recipient email',
+            overrides: {deliveryMethod: 'email', recipientEmail: 'not-an-email', buyerName: 'Buyer'},
+            expected: hasInvalidDeliveryContext
+        },
+        {
+            name: 'a personal message over the length limit',
+            overrides: {deliveryMethod: 'email', recipientEmail: 'recipient@example.com', buyerName: 'Buyer', personalMessage: 'x'.repeat(251)},
+            expected: hasInvalidDeliveryContext
+        },
+        {
+            name: 'email-only fields in link mode',
+            overrides: {deliveryMethod: 'link', recipientEmail: 'recipient@example.com'},
+            expected: hasInvalidDeliveryContext
+        },
+        {
+            name: 'a buyer without an email',
+            overrides: {deliveryMethod: 'link', buyer: {memberId: null, email: null, name: null, isAuthenticated: false}},
+            expected: hasInvalidBuyerEmailContext
+        }
+    ];
+
+    for (const {name, overrides, expected} of invalidCheckouts) {
+        it(`rejects ${name}`, async function () {
+            const {service, checkoutAdapter} = createService({customizationEnabled: true});
+
+            await assert.rejects(() => service.startCheckout({
+                tierId: 'tier_1',
+                cadence: 'year',
+                successUrl: 'https://example.com/',
+                buyer: {
+                    memberId: 'member_1',
+                    email: 'buyer@example.com',
+                    name: 'Account Name',
+                    isAuthenticated: true
+                },
+                ...overrides
+            }), expected);
+
+            sinon.assert.notCalled(checkoutAdapter.createSession);
+        });
+    }
+
+    it('keeps link gifts anonymous when buyer name is omitted', async function () {
+        const {service, giftRepository} = createService({customizationEnabled: true});
+
+        await service.startCheckout({
+            tierId: 'tier_1',
+            cadence: 'year',
+            deliveryMethod: 'link',
+            recipientEmail: '',
+            recipientName: '   ',
+            personalMessage: '',
+            successUrl: 'https://example.com/',
+            buyer: {
+                memberId: 'member_1',
+                email: 'buyer@example.com',
+                name: 'Account Name',
+                isAuthenticated: true
+            }
+        });
+
+        const gift = giftRepository.create.firstCall.firstArg;
+        assert.equal(gift.buyerName, null);
+        assert.equal(gift.recipientName, null);
+        assert.equal(gift.personalMessage, null);
+    });
+
+    it('keeps omitted and explicit link delivery compatible while the flag is disabled', async function () {
+        const {service, checkoutAdapter} = createService();
+        const base = {
+            tierId: 'tier_1',
+            cadence: 'year',
+            successUrl: 'https://example.com/',
+            buyer: {
+                memberId: null,
+                email: 'buyer@example.com',
+                name: null,
+                isAuthenticated: false
+            }
+        };
+
+        await service.startCheckout(base);
+        await service.startCheckout({...base, deliveryMethod: 'link'});
+        await assert.rejects(() => service.startCheckout({
+            ...base,
+            deliveryMethod: 'email',
+            recipientEmail: 'recipient@example.com'
+        }), {context: 'Gift email delivery is not available'});
+        await assert.rejects(() => service.startCheckout({
+            ...base,
+            buyerName: 'Buyer'
+        }), {context: 'Gift email delivery is not available'});
+        assert.equal(checkoutAdapter.createSession.callCount, 2);
     });
 
     for (const duration of [3, 6]) {
@@ -120,7 +299,6 @@ describe('GiftService interface', function () {
             await service.startCheckout({
                 tierId: 'tier_1',
                 duration,
-                metadata: {},
                 successUrl: 'https://example.com/',
                 buyer: {
                     memberId: null,
@@ -136,7 +314,7 @@ describe('GiftService interface', function () {
             assert.equal(plan.cadence, 'month');
             assert.equal(plan.duration, duration);
             assert.equal(plan.amount, 1000 * duration);
-            assert.equal(plan.metadata.duration, String(duration));
+            assert.deepEqual(plan.metadata, {ghost_gift_id: 'gift_1'});
             assert.equal(successUrl.searchParams.get('gift_duration'), String(duration));
         });
     }
@@ -148,7 +326,6 @@ describe('GiftService interface', function () {
             tierId: 'tier_1',
             cadence: 'year',
             duration: 3,
-            metadata: {},
             successUrl: 'https://example.com/',
             buyer: {
                 memberId: null,
@@ -173,7 +350,6 @@ describe('GiftService interface', function () {
         await service.startCheckout({
             tierId: 'tier_1',
             cadence: 'year',
-            metadata: {},
             successUrl: 'https://example.com/',
             buyer: {
                 memberId: null,
@@ -201,7 +377,6 @@ describe('GiftService interface', function () {
         await assert.rejects(() => service.startCheckout({
             tierId: 'tier_1',
             duration: 3,
-            metadata: {},
             successUrl: 'https://example.com/',
             buyer: {
                 memberId: null,
@@ -226,7 +401,6 @@ describe('GiftService interface', function () {
         await assert.rejects(() => service.startCheckout({
             tierId: 'tier_1',
             duration: 2,
-            metadata: {},
             successUrl: 'https://example.com/',
             buyer
         }), {context: 'Unsupported gift duration "2"'});
@@ -234,7 +408,6 @@ describe('GiftService interface', function () {
             tierId: 'tier_1',
             cadence: 'year',
             duration: 3,
-            metadata: {},
             successUrl: 'https://example.com/',
             buyer
         }), {context: 'Gift duration "3" conflicts with cadence "year"'});
@@ -251,7 +424,6 @@ describe('GiftService interface', function () {
                 offerId: 'offer_1',
                 cadence: 'year',
                 duration: 1,
-                metadata: {},
                 successUrl: 'https://example.com/',
                 buyer: {
                     memberId: null,
@@ -263,6 +435,25 @@ describe('GiftService interface', function () {
             {context: 'Offers cannot be applied to gift subscriptions'}
         );
         sinon.assert.notCalled(checkoutAdapter.createSession);
+    });
+
+    it('deletes the pending gift when Stripe session creation fails', async function () {
+        const {service, checkoutAdapter, giftRepository} = createService();
+        checkoutAdapter.createSession.rejects(new Error('Stripe unavailable'));
+
+        await assert.rejects(() => service.startCheckout({
+            tierId: 'tier_1',
+            cadence: 'year',
+            successUrl: 'https://example.com/',
+            buyer: {
+                memberId: null,
+                email: 'buyer@example.com',
+                name: null,
+                isAuthenticated: false
+            }
+        }), /Stripe unavailable/);
+
+        sinon.assert.calledOnceWithExactly(giftRepository.deletePendingCheckout, 'gift_1');
     });
 
     it('returns a stable continuation decision without exposing the Gift entity', async function () {
@@ -293,7 +484,10 @@ describe('GiftService interface', function () {
         const {service, giftRepository} = createService();
         giftRepository.getByToken.resolves(buildGift({
             token: 'gift-token',
-            tierId: 'tier_1'
+            tierId: 'tier_1',
+            buyerName: 'Jamie',
+            recipientName: 'Taylor',
+            personalMessage: 'Enjoy!'
         }));
 
         const result = await service.getRedeemable({
@@ -307,6 +501,9 @@ describe('GiftService interface', function () {
             duration: 1,
             currency: 'usd',
             amount: 5000,
+            buyer_name: 'Jamie',
+            recipient_name: 'Taylor',
+            message: 'Enjoy!',
             expires_at: new Date('2030-01-01T00:00:00.000Z'),
             consumes_at: null,
             tier: {

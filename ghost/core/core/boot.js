@@ -472,6 +472,11 @@ async function initBackgroundServices({config}) {
         logging.error(err);
     }
 
+    // Retry gift deliveries interrupted by a prior shutdown. Not awaited: recovery
+    // sends sequentially and must not hold up the remaining background services.
+    const giftService = require('./server/services/gifts');
+    giftService.recoverPendingDeliveries();
+
     const activitypub = require('./server/services/activitypub');
     await activitypub.init();
     // Load email analytics recurring jobs

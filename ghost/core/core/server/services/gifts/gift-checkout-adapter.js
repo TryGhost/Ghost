@@ -48,12 +48,14 @@ module.exports = class GiftCheckoutAdapter {
     }
 
     async createSession(data) {
-        const {customerId, ...sessionData} = data;
+        const {customerId, idempotencyKey, ...sessionData} = data;
         const session = await this.getStripeApi().createGiftCheckoutSession({
             ...sessionData,
-            customer: customerId ? {id: customerId} : null
+            customer: customerId ? {id: customerId} : null,
+            idempotencyKey
         });
 
-        return session.url;
+        return {id: session.id, url: session.url};
     }
+
 };

@@ -1,10 +1,13 @@
 import type {SchedulerAdapter} from '@tryghost/adapter-base-scheduling';
 import type {InternalKeys} from '../internal-keys';
 import {GiftBookshelfRepository} from './gift-bookshelf-repository';
+import {GiftDeliveryBookshelfRepository} from './gift-delivery-bookshelf-repository';
+import {GiftDeliveryService} from './gift-delivery-service';
 import {GiftService} from './gift-service';
 import {GiftReminderScheduler} from './gift-reminder-scheduler';
 import {GiftEmailService} from './gift-email-service';
 import {GiftController} from './gift-controller';
+import {SendGiftDeliveryEvent} from './events/send-gift-delivery-event';
 
 export interface GiftServiceInitOptions {
     apiUrl: string;
@@ -19,12 +22,14 @@ export interface GiftServiceInitOptions {
 export let controller: GiftController | undefined;
 export let service: GiftService | undefined;
 
+let deliveryService: GiftDeliveryService | undefined;
+
 export async function init(options: GiftServiceInitOptions): Promise<void> {
     if (service) {
         return;
     }
 
-    const {Gift: GiftModel, MemberStripeCustomer: StripeCustomerModel} = require('../../models');
+    const {Base: BaseModel, Gift: GiftModel, GiftDelivery: GiftDeliveryModel, MemberStripeCustomer: StripeCustomerModel} = require('../../models');
     const GiftCheckoutAdapter = require('./gift-checkout-adapter');
     const membersService = require('../members');
     const tiersService = require('../tiers');
@@ -37,6 +42,8 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
     const jobs = require('./jobs');
 
     const {GhostMailer} = require('../mail');
+    const MailgunClient = require('../lib/mailgun-client');
+    const config = require('../../../shared/config');
     const settingsCache = require('../../../shared/settings-cache');
     const labsService = require('../../../shared/labs');
     const urlUtils = require('../../../shared/url-utils').default;
@@ -46,7 +53,12 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
     const {t} = require('../i18n');
 
     const repository = new GiftBookshelfRepository({
-        GiftModel
+        GiftModel,
+        knex: BaseModel.knex
+    });
+    const deliveryRepository = new GiftDeliveryBookshelfRepository({
+        GiftDeliveryModel,
+        knex: BaseModel.knex
     });
     const checkoutAdapter = new GiftCheckoutAdapter({
         StripeCustomerModel,
@@ -54,12 +66,19 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
     });
 
     const giftEmailService = new GiftEmailService({
-        mailer: new GhostMailer(),
+        transactionalMailer: new GhostMailer(),
+        bulkMailer: new MailgunClient({config, settings: settingsCache}),
         settingsCache,
         urlUtils,
         getFromAddress: () => EmailAddressParser.stringify(settingsHelpers.getDefaultEmail()),
         blogIcon,
         t
+    });
+    const giftDeliveryService = new GiftDeliveryService({
+        giftRepository: repository,
+        giftDeliveryRepository: deliveryRepository,
+        tiersService,
+        giftEmailService
     });
 
     const giftReminderScheduler = new GiftReminderScheduler({
@@ -68,9 +87,9 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
         internalKeys: options.internalKeys,
         findUnsentReminders: () => repository.findUnsentReminders()
     });
-
     const giftService = new GiftService({
         giftRepository: repository,
+        giftDeliveryService,
         get memberRepository() {
             return membersService.api.members;
         },
@@ -86,6 +105,7 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
     });
 
     service = giftService;
+    deliveryService = giftDeliveryService;
     controller = new GiftController({service: giftService});
 
     DomainEvents.subscribe(SubscriptionActivatedEvent, async (event: {data: {memberId: string}}) => {
@@ -107,7 +127,26 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
         }
     });
 
+    DomainEvents.subscribe(SendGiftDeliveryEvent, async (event: {data: {deliveryId: string}}) => {
+        const start = Date.now();
+        try {
+            const result = await giftDeliveryService.send(event.data.deliveryId);
+            logging.info(`Gift delivery ${event.data.deliveryId} ${result} in ${Date.now() - start}ms`);
+        } catch (err) {
+            logging.error(err, `Failed to process gift delivery ${event.data.deliveryId}`);
+        }
+    });
+
     DomainEvents.subscribe(StartGiftCleanupEvent, async () => {
+        const checkoutStart = Date.now();
+        try {
+            const {deletedCount} = await giftService.processAbandonedCheckouts();
+
+            logging.info(`Deleted ${deletedCount} abandoned gift checkouts in ${Date.now() - checkoutStart}ms`);
+        } catch (err) {
+            logging.error(err, 'Failed to clean abandoned gift checkouts');
+        }
+
         const consumedStart = Date.now();
         try {
             const {consumedCount, updatedMemberCount} = await giftService.processConsumed();
@@ -125,8 +164,37 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
         } catch (err) {
             logging.error(err, 'Failed to process expired gifts');
         }
+
+        try {
+            const {sentCount, skippedCount, failedCount} = await giftDeliveryService.recoverPending();
+            if (sentCount + skippedCount + failedCount > 0) {
+                logging.info(`Gift delivery recovery during cleanup: ${sentCount} sent, ${skippedCount} skipped, ${failedCount} failed`);
+            }
+        } catch (err) {
+            logging.error(err, 'Failed to recover pending gift deliveries during cleanup');
+        }
     });
 
     jobs.scheduleGiftCleanupJob();
     jobs.scheduleGiftReminderJob();
+}
+
+// Retries deliveries interrupted by a previous shutdown. Sending needs the tiers
+// and members services, which boot alongside this one, so this must run once
+// every service has finished initialising rather than from init().
+export async function recoverPendingDeliveries(): Promise<void> {
+    if (!deliveryService) {
+        return;
+    }
+
+    const logging = require('@tryghost/logging');
+
+    try {
+        const {sentCount, skippedCount, failedCount} = await deliveryService.recoverPending();
+        if (sentCount + skippedCount + failedCount > 0) {
+            logging.info(`Gift delivery recovery: ${sentCount} sent, ${skippedCount} skipped, ${failedCount} failed`);
+        }
+    } catch (err) {
+        logging.error(err, 'Failed to recover pending gift deliveries');
+    }
 }

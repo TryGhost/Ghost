@@ -67,6 +67,7 @@ function extractGiftToken(input) {
 const RESERVED_CHECKOUT_METADATA_KEYS = new Set([
     'ghost_donation',
     'ghost_gift',
+    'ghost_gift_id',
     'ghostSignupContext',
     'gift_token',
     'tier_id',
@@ -684,10 +685,14 @@ module.exports = class RouterController {
      * @param {string} [options.offerId]
      * @param {string} [options.cadence]
      * @param {number} [options.duration]
+     * @param {'link'|'email'} [options.deliveryMethod]
+     * @param {string} [options.recipientEmail]
+     * @param {string} [options.recipientName]
+     * @param {string} [options.buyerName]
+     * @param {string} [options.personalMessage]
      * @param {string} [options.email]
      * @param {string} options.successUrl
      * @param {string} options.cancelUrl
-     * @param {object} options.metadata
      * @param {object} [options.member]
      * @param {boolean} options.isAuthenticated
      * @returns
@@ -705,7 +710,11 @@ module.exports = class RouterController {
                 offerId: options.offerId,
                 cadence: options.cadence,
                 duration: options.duration,
-                metadata: options.metadata,
+                deliveryMethod: options.deliveryMethod,
+                recipientEmail: options.recipientEmail,
+                recipientName: options.recipientName,
+                buyerName: options.buyerName,
+                personalMessage: options.personalMessage,
                 successUrl: options.successUrl,
                 cancelUrl: options.cancelUrl,
                 buyer: {
@@ -857,6 +866,11 @@ module.exports = class RouterController {
                 offerId: req.body.offerId,
                 cadence: req.body.cadence,
                 duration: req.body.duration,
+                deliveryMethod: req.body.deliveryMethod,
+                recipientEmail: req.body.recipientEmail,
+                recipientName: req.body.recipientName,
+                buyerName: req.body.buyerName,
+                personalMessage: req.body.personalMessage,
                 successUrl: siteUrl,
                 cancelUrl: options.cancelUrl || siteUrl
             });
