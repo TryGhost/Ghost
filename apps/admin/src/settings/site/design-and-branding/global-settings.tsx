@@ -71,6 +71,18 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
     const {unsplashConfig} = useFramework();
     const handleError = useHandleError();
 
+    const uploadSettingImage = async (key: 'icon' | 'logo' | 'cover_image', file: File) => {
+        try {
+            updateSetting(key, getImageUrl(await uploadImage({file})));
+        } catch (e) {
+            const error = e as APIError;
+            if (error.response!.status === 415) {
+                error.message = 'Unsupported file type';
+            }
+            handleError(error);
+        }
+    };
+
     const editor = usePinturaEditor();
 
     const {data: themesData} = useBrowseThemes();
@@ -185,17 +197,7 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
                                     </ImageUploadActions>
                                 </ImageUploadPreview>
                             ) : (
-                                <ImageUploadDropzone inputId='logo' onDropAccepted={async ([file]) => {
-                                    try {
-                                        updateSetting('icon', getImageUrl(await uploadImage({file})));
-                                    } catch (e) {
-                                        const error = e as APIError;
-                                        if (error.response!.status === 415) {
-                                            error.message = 'Unsupported file type';
-                                        }
-                                        handleError(error);
-                                    }
-                                }}>Upload icon</ImageUploadDropzone>
+                                <ImageUploadDropzone inputId='logo' onDropAccepted={([file]) => void uploadSettingImage('icon', file)}>Upload icon</ImageUploadDropzone>
                             )}
                         </ImageUpload>
                     </div>
@@ -215,17 +217,7 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
                                     </ImageUploadActions>
                                 </ImageUploadPreview>
                             ) : (
-                                <ImageUploadDropzone inputId='site-logo' onDropAccepted={async ([file]) => {
-                                    try {
-                                        updateSetting('logo', getImageUrl(await uploadImage({file})));
-                                    } catch (e) {
-                                        const error = e as APIError;
-                                        if (error.response!.status === 415) {
-                                            error.message = 'Unsupported file type';
-                                        }
-                                        handleError(error);
-                                    }
-                                }}>Upload logo</ImageUploadDropzone>
+                                <ImageUploadDropzone inputId='site-logo' onDropAccepted={([file]) => void uploadSettingImage('logo', file)}>Upload logo</ImageUploadDropzone>
                             )}
                         </ImageUpload>
                     </div>
@@ -255,17 +247,7 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
                             </ImageUploadPreview>
                         ) : (
                             <>
-                                <ImageUploadDropzone inputId='cover' onDropAccepted={async ([file]) => {
-                                    try {
-                                        updateSetting('cover_image', getImageUrl(await uploadImage({file})));
-                                    } catch (e) {
-                                        const error = e as APIError;
-                                        if (error.response!.status === 415) {
-                                            error.message = 'Unsupported file type';
-                                        }
-                                        handleError(error);
-                                    }
-                                }}>Upload cover</ImageUploadDropzone>
+                                <ImageUploadDropzone inputId='cover' onDropAccepted={([file]) => void uploadSettingImage('cover_image', file)}>Upload cover</ImageUploadDropzone>
                                 {unsplashEnabled && <ImageUploadActions className='top-1 right-1 opacity-100'>
                                     <ImageUploadAction aria-label='Select publication cover from Unsplash' data-testid='toggle-unsplash-button' onClick={() => setShowUnsplash(true)}><Images /></ImageUploadAction>
                                 </ImageUploadActions>}

@@ -53,7 +53,7 @@ const DesignAndThemeModal: React.FC = () => {
         };
 
         if (currentPath === 'design/change-theme' && isThemeLimitCheckReady) {
-            checkIfThemeChangeAllowed();
+            void checkIfThemeChangeAllowed();
         } else {
             setThemeChangeError(null);
             setIsCheckingLimit(false);
@@ -216,7 +216,7 @@ const DesignAndThemeModal: React.FC = () => {
             setIsCheckingInstallation(false);
         };
 
-        checkThemeInstallation();
+        void checkThemeInstallation();
     }, [checkThemeLimitError, currentPath, isThemeLimitCheckReady, noThemeChangesAllowed, isThemeLimited, showThemeLimitModal, updateRoute]);
 
     if (currentPath === 'design/edit') {

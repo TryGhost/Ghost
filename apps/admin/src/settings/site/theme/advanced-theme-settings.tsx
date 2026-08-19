@@ -23,12 +23,13 @@ interface ThemeSettingProps {
 }
 
 function getThemeLabel(theme: Theme): React.ReactNode {
-    let label: React.ReactNode = theme.package?.name || theme.name;
+    const name = theme.package?.name || theme.name;
+    let label: React.ReactNode = name;
 
     if (isDefaultTheme(theme)) {
-        label += ' (default)';
+        label = `${name} (default)`;
     } else if (isLegacyTheme(theme)) {
-        label += ' (legacy)';
+        label = `${name} (legacy)`;
     } else if (theme.package?.name !== theme.name) {
         label =
             <span className='md:text-base'>
@@ -81,12 +82,12 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
         }
     };
 
-    const handleDownload = async () => {
+    const handleDownload = () => {
         const {apiRoot} = getGhostPaths();
         downloadFile(`${apiRoot}/themes/${theme.name}/download`);
     };
 
-    const handleDelete = async () => {
+    const handleDelete = () => {
         confirm({
             title: 'Are you sure you want to delete this?',
             prompt: (
@@ -96,9 +97,7 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
                     {' '}
                     <span
                         className='cursor-pointer text-green-500'
-                        onClick={() => {
-                            handleDownload();
-                        }}
+                        onClick={handleDownload}
                     >
                         your theme before continuing
                     </span>
@@ -142,7 +141,7 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
                 size='sm'
                 type='button'
                 variant='ghost'
-                onClick={handleActivate}
+                onClick={() => void handleActivate()}
             >Activate</Button>
         );
     }
@@ -156,7 +155,7 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
                 </DropdownMenuTrigger>
                 {/* legacy Modal overlay is z-[1000]; keep the portalled menu above it */}
                 <DropdownMenuContent align='end' className='z-[9999]'>
-                    <DropdownMenuItem onSelect={handleEditCode}>Edit code</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => void handleEditCode()}>Edit code</DropdownMenuItem>
                     <DropdownMenuItem onSelect={handleDownload}>Download</DropdownMenuItem>
                     {isDeletableTheme(theme) && (
                         <DropdownMenuItem onSelect={handleDelete}>Delete</DropdownMenuItem>
@@ -169,9 +168,9 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
                     prompt={<>This theme couldn&apos;t be activated because Ghost found a blocking validation error. Fix the issue below and try again.</>}
                     title='Theme not activated'
                     onClose={() => setActivationErrors(null)}
-                    onRetry={async () => {
+                    onRetry={() => {
                         setActivationErrors(null);
-                        handleActivate();
+                        void handleActivate();
                     }}
                 />
             )}

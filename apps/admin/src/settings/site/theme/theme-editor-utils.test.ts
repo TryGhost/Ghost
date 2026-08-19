@@ -11,7 +11,7 @@ import {
     isEditablePath,
     parseEditingThemeRoute,
     packThemeArchive
-} from '@/settings/app/components/settings/site/theme/theme-editor-utils';
+} from '@/settings/site/theme/theme-editor-utils';
 
 const createArchiveBuffer = async (build: (zip: JSZip) => void) => {
     const zip = new JSZip();

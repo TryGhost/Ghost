@@ -10,7 +10,7 @@ import {PreviewModalContent} from '@/settings/app/components/settings/preview-mo
 import {type Setting, type SettingValue, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
-import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {type Dirtyable, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
 import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
 
@@ -82,10 +82,10 @@ const DesignModal: React.FC = () => {
         updateForm,
         setFormState,
         okProps
-    } = useForm({
+    } = useForm<{settings: Dirtyable<Setting>[]; themeSettings: Dirtyable<CustomThemeSetting>[] | undefined}>({
         initialState: {
-            settings: settings as Array<Setting & { dirty?: boolean }>,
-            themeSettings: themeSettings ? (themeSettings.custom_theme_settings as Array<CustomThemeSetting & { dirty?: boolean }>) : undefined
+            settings,
+            themeSettings: themeSettings?.custom_theme_settings
         },
         savingDelay: 500,
         onSave: async () => {

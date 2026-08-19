@@ -15,7 +15,7 @@ import {searchKeywords as emailsSearchKeywords} from '@/settings/email/emails-se
 import {searchKeywords as generalSearchKeywords} from '@/settings/general/search-keywords';
 import {searchKeywords as growthSearchKeywords} from '@/settings/growth/search-keywords';
 import {searchKeywords as membershipSearchKeywords} from '@/settings/membership/search-keywords';
-import {searchKeywords as siteSearchKeywords} from './settings/site/site-settings';
+import {searchKeywords as siteSearchKeywords} from '@/settings/site/search-keywords';
 
 import useFeatureFlag from '@/settings/app/hooks/use-feature-flag';
 import {useGlobalData} from './providers/global-data-provider';

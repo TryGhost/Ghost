@@ -75,14 +75,14 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
             }
         };
 
-        checkUploadLimit();
+        void checkUploadLimit();
     }, [checkThemeLimitError, isThemeLimited]);
 
     const onClose = () => {
         updateRoute('/');
     };
 
-    const onThemeUpload = async (file: File) => {
+    const onThemeUpload = (file: File) => {
         const themeFileName = file?.name.replace(/\.zip$/, '');
         const existingThemeNames = themes.map(t => t.name);
         if (isDefaultOrLegacyTheme({name: themeFileName})) {
@@ -96,7 +96,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
                         <p>Rename your zip file and try again.</p>
                     </>
                 ),
-                onOk: async (confirmModal) => {
+                onOk: (confirmModal) => {
                     confirmModal?.remove();
                 }
             });
@@ -129,7 +129,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
             });
         } else {
             setCurrentTab('installed');
-            handleThemeUpload({file, onActivate: onClose});
+            void handleThemeUpload({file, onActivate: onClose});
         }
     };
 
@@ -268,7 +268,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
                 prompt={<>This theme couldn&apos;t be uploaded because Ghost found a blocking validation error. Fix the issue below and upload the theme again.</>}
                 title='Theme not uploaded'
                 onClose={() => setUploadErrors(null)}
-                onRetry={async () => {
+                onRetry={() => {
                     setUploadErrors(null);
                     handleUpload();
                 }}
@@ -397,7 +397,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
             }
         };
 
-        handleUrlInstallation();
+        void handleUrlInstallation();
     }, [themeRef, source, installTheme, handleError, activateTheme, updateRoute, themes, installedFromMarketplace, checkThemeLimitError, confirm, isMounted]);
 
     if (!themes) {

@@ -1,10 +1,11 @@
 import React, {type ReactNode} from 'react';
 import {ConfirmationModalContent} from '@/settings/app/components/confirmation-modal';
-import {ErrorTextCard, type FatalErrors, ThemeValidationDetailsDisclosure, ValidationProblemCard, getIssuesFromFatalErrors} from './theme-validation-details';
+import {ErrorTextCard, ThemeValidationDetailsDisclosure, ValidationProblemCard} from './theme-validation-details';
+import {type FatalErrors, getIssuesFromFatalErrors} from './theme-validation-issues';
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {formatNumber} from '@tryghost/shade/utils';
 
-export type {FatalErrors} from './theme-validation-details';
+export type {FatalErrors} from './theme-validation-issues';
 
 export type InvalidThemeModalProps = {
     title: string
