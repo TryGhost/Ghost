@@ -8,7 +8,7 @@ import {NON_EMPTY_EMAIL_LEXICAL} from '../../../../utils/automations-fixtures';
 import ghostConfig from '../../../../../core/shared/config';
 import {createDatabaseAutomationsRepository} from '../../../../../core/server/services/automations/database-automations-repository';
 import type {AutomatedEmailEvents, AutomationAction, AutomationsRepository, AutomationStepToRun} from '../../../../../core/server/services/automations/automations-repository';
-import {DATABASE_DATE_FORMAT, fromDatabaseDate, toDatabaseDate} from '../../../../../core/server/services/automations/database-date';
+import {DATABASE_DATE_FORMAT, fromDatabaseDate, toDatabaseDate} from '../../../../../core/server/lib/db-date';
 
 const HOUR_MS = 60 * 60 * 1000;
 const FAKE_WAIT_HOURS_MULTIPLIER = 2500;
