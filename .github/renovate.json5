@@ -514,44 +514,6 @@
             "automergeType": "pr"
         },
 
-        // The catalog rule above is local, so it is evaluated after package
-        // rules inherited from the shared preset. Repeat the shared CSS/style
-        // exclusion locally so adding catalog support does not turn intentionally
-        // human-reviewed build-pipeline updates into automerges, and label every
-        // such PR so it is easy to find.
-        {
-            "description": "Require human review for CSS preprocessor updates",
-            "matchPackageNames": [
-                "/^postcss/",
-                "/^css/",
-                "/^sass/",
-                "/^less/",
-                "/^styl/",
-                "autoprefixer",
-                "cssnano",
-                "postcss",
-                "postcss-cli",
-                "postcss-import",
-                "postcss-custom-media",
-                "postcss-custom-properties",
-                "postcss-color-mod-function",
-                "postcss-easy-import",
-                "ember-cli-postcss",
-                "gulp-postcss",
-                "sass",
-                "node-sass",
-                "sass-embedded",
-                "less",
-                "stylus",
-                "stylelint",
-                "tailwindcss"
-            ],
-            "automerge": false,
-            "addLabels": [
-                "needs:review"
-            ]
-        },
-
         // Overrides change transitive resolution across the entire workspace,
         // so keep them manual and make that policy explicit on their PRs.
         {
@@ -708,8 +670,8 @@
         },
 
         // Security patches and minors automerge after CI passes regardless
-        // of any other automerge exclusion (e.g. the CSS preprocessor rule
-        // in the shared preset). Security majors are intentionally left
+        // of any other automerge exclusion (e.g. the third-party action rule
+        // above). Security majors are intentionally left
         // for human merge — but the `vulnerabilityAlerts` block above
         // still opens them without a dashboard-approval tick.
         {
