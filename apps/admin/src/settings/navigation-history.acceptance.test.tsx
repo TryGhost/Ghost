@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { page } from "vitest/browser";
 
 import { currentRoute, fakeAnalyticsOverview, fakeSettingsScreens, renderAdminApp } from "@test-utils/acceptance";
 import { settingsScreen } from "./settings.screen";
@@ -77,6 +78,25 @@ describe("Settings navigation history", () => {
 
         await settingsScreen.confirmationAction("Leave").click();
         await expect.poll(currentRoute).toBe("/settings/staff");
+    });
+
+    it("confirms before the back button closes a dirty dialog when settings was entered from the sidebar", async () => {
+        const {boot} = fakeStaffWorld();
+        await renderAdminApp("/site", {boot});
+
+        await page.getByRole("link", { name: "Settings" }).click();
+        await expect.element(settingsScreen.users()).toBeVisible();
+        await settingsScreen.users().getByTestId("owner-user").click();
+        const modal = settingsScreen.userDetailModal();
+        await expect.element(modal).toBeVisible();
+        await modal.getByLabelText("Location").fill("Somewhere new");
+        await flushEffects();
+
+        window.history.back();
+
+        await expect.element(settingsScreen.confirmationModal()).toHaveTextContent(/leave/i);
+        await settingsScreen.confirmationAction("Leave").click();
+        await expect.poll(currentRoute).toBe("/settings");
         await expect.element(modal).not.toBeInTheDocument();
     });
 
