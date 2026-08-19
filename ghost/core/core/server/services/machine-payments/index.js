@@ -73,6 +73,17 @@ class MachinePaymentsServiceWrapper {
             depositAddressStore.getOrCreateAddress({network: x402Network}).catch((err) => {
                 logging.warn(err);
             });
+
+            const x402CaipNetwork = config.get('machinePayments:x402:network') || 'eip155:8453';
+            const x402FacilitatorUrl = config.get('machinePayments:x402:facilitatorUrl');
+            const x402OrgFacilitator = 'https://x402.org/facilitator';
+            if (x402CaipNetwork === 'eip155:8453' && (!x402FacilitatorUrl || x402FacilitatorUrl === x402OrgFacilitator)) {
+                logging.warn(
+                    'x402 is configured for Base mainnet but the facilitator URL is missing or set to the x402.org '
+                    + 'testnet facilitator. Use the default xpay facilitator or another mainnet provider. '
+                    + 'For local testing, override machinePayments.x402.network to eip155:84532 in config.'
+                );
+            }
         }
 
         this.#initialized = true;

@@ -238,6 +238,37 @@ describe('Unit: server/services/machine-payments/adapters', function () {
             assert.equal(runtime.honoCreateCount, 4);
         });
 
+        it('logs and returns null when the x402 middleware does not produce a 402', async function () {
+            sinon.stub(logging, 'warn');
+            const adapter = new X402Adapter({
+                depositAddressStore: {
+                    getOrCreateAddress: async () => '0xrecipient'
+                },
+                facilitatorClient: {},
+                runtimeFactory: () => ({
+                    paymentMiddlewareFromConfig: () => () => {},
+                    HTTPFacilitatorClient: class {},
+                    ExactEvmScheme: class {},
+                    Hono: class {
+                        use() {}
+
+                        get() {}
+
+                        on() {}
+
+                        fetch() {
+                            return Promise.resolve(new Response('', {status: 500}));
+                        }
+                    }
+                })
+            });
+
+            const challenge = await adapter.challenge(new Request('http://example.com/paid.md'), terms);
+
+            assert.equal(challenge, null);
+            assert.match(String(logging.warn.firstCall.args[0]), /x402 challenge unavailable/);
+        });
+
         it('fulfills with a validated settlement reference header', async function () {
             const paymentResponse = Buffer.from(JSON.stringify({
                 transaction: '0xfulfilled'

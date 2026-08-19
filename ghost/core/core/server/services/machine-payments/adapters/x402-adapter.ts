@@ -1,11 +1,13 @@
 import crypto from 'node:crypto';
 import errors from '@tryghost/errors';
+import logging from '@tryghost/logging';
 import {z} from 'zod';
 import config from '../../../../shared/config';
 import type {Fulfillment, PaymentAdapter, PaymentTerms} from '../types';
 import type {PaymentAmountTerms} from '../pricing';
 
-export const X402_ROUTE_CACHE_LIMIT = 128;
+const X402_ROUTE_CACHE_LIMIT = 128;
+const BASE_MAINNET = 'eip155:8453';
 
 const settlementResponseSchema = z.object({
     transaction: z.string().optional(),
@@ -127,11 +129,18 @@ export class X402Adapter implements PaymentAdapter {
     }
 
     async challenge(request: Request, terms: PaymentTerms): Promise<Response | null> {
-        const response = await this.#dispatch(request, terms, {body: ''});
-        if (response.status === 402) {
-            return response;
+        try {
+            const response = await this.#dispatch(request, terms, {body: ''});
+            if (response.status === 402) {
+                return response;
+            }
+
+            logging.warn(`x402 challenge unavailable for ${terms.url}: HTTP ${response.status}`);
+            return null;
+        } catch (err) {
+            logging.warn(err);
+            return null;
         }
-        return null;
     }
 
     async fulfill(request: Request, terms: PaymentTerms): Promise<Fulfillment> {
@@ -156,9 +165,11 @@ export class X402Adapter implements PaymentAdapter {
             });
         }
 
+        const stripeNetwork = config.get('machinePayments:x402:stripeNetwork') || 'base';
+
         return {
             protocol: 'x402',
-            method: 'base',
+            method: stripeNetwork,
             reference: settlementReference(paymentResponse),
             amount: terms.amount,
             currency: terms.currency,
@@ -168,7 +179,7 @@ export class X402Adapter implements PaymentAdapter {
     }
 
     async #dispatch(request: Request, terms: PaymentTerms, responseData: DispatchOptions): Promise<Response> {
-        const network = config.get('machinePayments:x402:network') || 'eip155:8453';
+        const network = config.get('machinePayments:x402:network') || BASE_MAINNET;
         const stripeNetwork = config.get('machinePayments:x402:stripeNetwork') || 'base';
         const method = (terms.method || 'GET').toUpperCase();
         const route = `${method} ${new URL(terms.url).pathname}`;

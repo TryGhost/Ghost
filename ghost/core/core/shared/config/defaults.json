@@ -283,7 +283,7 @@
         "x402": {
             "network": "eip155:8453",
             "stripeNetwork": "base",
-            "facilitatorUrl": null
+            "facilitatorUrl": "https://facilitator.xpay.sh"
         },
         "mpp": {
             "secretKey": null,
