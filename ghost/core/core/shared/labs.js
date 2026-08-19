@@ -51,6 +51,7 @@ const PRIVATE_FEATURES = [
     'themeTranslation',
     'pictureImageFormats',
     'getHelperDeduplication',
+    'navigationIcons',
     'membersCustomFields',
     'paywallImprovements',
     'giftSubCustomization',

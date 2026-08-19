@@ -4,10 +4,10 @@ import Network from './network';
 import Offers from './offers';
 import React from 'react';
 import Recommendations from './recommendations';
-import SearchableSection from '@/settings/app/components/searchable-section';
+import SearchableSection from '@/settings/components/searchable-section';
 import {checkStripeEnabled} from '@tryghost/admin-x-framework/api/settings';
 import {searchKeywords} from './search-keywords';
-import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
+import {useGlobalData} from '@/settings/providers/global-data-context';
 
 const GrowthSettings: React.FC = () => {
     const {config, settings} = useGlobalData();

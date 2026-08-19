@@ -6,7 +6,7 @@ import {SettingsModal} from '@tryghost/shade/patterns';
 import {ValidationError, getErrorMessage} from '@tryghost/admin-x-framework/errors';
 import {memberCustomFieldUserTypes, useCreateMemberCustomField, useDeleteMemberCustomField, useEditMemberCustomField, userTypeForField} from '@tryghost/admin-x-framework/api/member-custom-fields';
 import {toast} from 'sonner';
-import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
+import {useConfirmation} from '@/settings/providers/confirmation-context';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import type {MemberCustomField} from '@tryghost/admin-x-framework/api/member-custom-fields';
 

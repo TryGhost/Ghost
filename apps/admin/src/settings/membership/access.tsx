@@ -1,15 +1,15 @@
 import React from 'react';
-import TopLevelGroup from '@/settings/app/components/top-level-group';
-import useSettingGroup from '@/settings/app/hooks/use-setting-group';
+import TopLevelGroup from '@/settings/components/top-level-group';
+import useSettingGroup from '@/settings/hooks/use-setting-group';
 import {Banner, Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldDescription, FieldError, FieldLabel, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, MultiSelectCombobox, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Separator, Button as ShadeButton} from '@tryghost/shade/components';
 import {RefreshCw} from 'lucide-react';
 import {SettingGroupContent} from '@tryghost/shade/patterns';
 import {getSettingValues, isSettingReadOnly, useRegenerateAccessCode} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'sonner';
 import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
-import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
-import {useLimiter} from '@/settings/app/hooks/use-limiter';
-import {withErrorBoundary} from '@/settings/app/components/error-boundary';
+import {useGlobalData} from '@/settings/providers/global-data-context';
+import {useLimiter} from '@/settings/hooks/use-limiter';
+import {withErrorBoundary} from '@/settings/components/with-error-boundary';
 
 const SITE_VISIBILITY_OPTIONS = [
     {

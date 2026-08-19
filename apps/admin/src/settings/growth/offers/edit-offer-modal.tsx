@@ -1,19 +1,19 @@
 import PortalFrame from '@/settings/membership/portal/portal-frame';
-import SettingsBreadcrumbs from '@/settings/app/components/settings/settings-breadcrumbs';
+import SettingsBreadcrumbs from '@/settings/components/settings-breadcrumbs';
 import {Button, Field, FieldDescription, FieldError, FieldGroup, FieldLabel, Input, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, Textarea} from '@tryghost/shade/components';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {type Offer, useBrowseOffersById, useEditOffer} from '@tryghost/admin-x-framework/api/offers';
-import {PreviewModalContent} from '@/settings/app/components/settings/preview-modal';
+import {PreviewModalContent} from '@/settings/components/preview-modal';
 import {createOfferRedemptionFilterUrl} from './offer-helpers';
 import {formatNumber} from '@tryghost/shade/utils';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
-import {getOfferPortalPreviewUrl, type offerPortalPreviewUrlTypes} from '@/settings/app/utils/get-offers-portal-preview-url';
+import {getOfferPortalPreviewUrl, type offerPortalPreviewUrlTypes} from '@/settings/utils/get-offers-portal-preview-url';
 import {toast} from 'sonner';
-import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
+import {useConfirmation} from '@/settings/providers/confirmation-context';
 import {useEffect, useState} from 'react';
-import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
-import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+import {useGlobalData} from '@/settings/providers/global-data-context';
+import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
 
 function formatTimestamp(timestamp: string): string {
     const date = new Date(timestamp);

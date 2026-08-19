@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
-import TopLevelGroup from '@/settings/app/components/top-level-group';
-import usePinturaEditor from '@/settings/app/hooks/use-pintura-editor';
-import useSettingGroup from '@/settings/app/hooks/use-setting-group';
+import TopLevelGroup from '@/settings/components/top-level-group';
+import usePinturaEditor from '@/settings/hooks/use-pintura-editor';
+import useSettingGroup from '@/settings/hooks/use-setting-group';
 import {APIError} from '@tryghost/admin-x-framework/errors';
 import {FacebookLogo, Field, FieldDescription, FieldLabel, GoogleLogo, Input, Switch, Tabs, TabsContent, TabsList, TabsTrigger, XLogo} from '@tryghost/shade/components';
 import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
@@ -11,7 +11,7 @@ import {SettingGroupContent} from '@tryghost/shade/patterns';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {withErrorBoundary} from '@/settings/app/components/error-boundary';
+import {withErrorBoundary} from '@/settings/components/with-error-boundary';
 
 interface SearchEnginePreviewProps {
     title: string;

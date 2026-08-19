@@ -1,4 +1,4 @@
-import BrandIcon, {type BrandIconName} from '@/settings/app/components/icons/brand-icon';
+import BrandIcon, {type BrandIconName} from '@/settings/components/icons/brand-icon';
 import React, {useState} from 'react';
 import {APIError} from '@tryghost/admin-x-framework/errors';
 import {Button, Field, FieldGroup, FieldLabel, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch, ToggleGroup, ToggleGroupItem} from '@tryghost/shade/components';

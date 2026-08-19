@@ -10,10 +10,10 @@ import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {getWelcomeEmailValidationErrors} from './welcome-email-validation';
 import {useBrowseAutomatedEmails, useEditAutomatedEmail, usePreviewWelcomeEmail} from '@tryghost/admin-x-framework/api/automated-emails';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
-import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+import {useGlobalData} from '@/settings/providers/global-data-context';
+import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
 import {useWelcomeEmailPreview} from './use-welcome-email-preview';
-import {useWelcomeEmailSenderDetails} from '@/settings/app/hooks/use-welcome-email-sender-details';
+import {useWelcomeEmailSenderDetails} from '@/settings/hooks/use-welcome-email-sender-details';
 
 import TestEmailDropdown from './test-email-dropdown';
 import type {AutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';

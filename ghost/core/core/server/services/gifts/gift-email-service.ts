@@ -11,6 +11,7 @@ interface Mailer {
         text: string;
         from: string;
         forceTextContent: boolean;
+        disableTracking?: boolean;
     }): Promise<void>;
 }
 
@@ -119,7 +120,8 @@ export class GiftEmailService {
             html,
             text,
             from: this.getFromAddress(),
-            forceTextContent: true
+            forceTextContent: true,
+            disableTracking: true
         });
     }
 

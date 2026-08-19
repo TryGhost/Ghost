@@ -7,7 +7,7 @@ import {type UserDetailProps} from '@/settings/general/user-detail-modal';
 import {formatNumber} from '@tryghost/shade/utils';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {hasAdminAccess} from '@tryghost/admin-x-framework/api/users';
-import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
+import {useGlobalData} from '@/settings/providers/global-data-context';
 
 const BasicInputs: React.FC<UserDetailProps> = ({errors, clearError, user, setUserData}) => {
     const {currentUser, siteData} = useGlobalData();

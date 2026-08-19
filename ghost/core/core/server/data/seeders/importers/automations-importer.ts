@@ -5,7 +5,7 @@ import type {Knex} from 'knex';
 import {TableImporter} from './table-importer';
 // @ts-expect-error This module currently lacks type definitions.
 import {blogStartDate} from '../utils/blog-info';
-import * as databaseDate from '../utils/database-date';
+import {toDatabaseDate} from '../../../lib/db-date';
 import {MEMBER_WELCOME_EMAIL_SLUGS} from '../../../services/member-welcome-emails/constants';
 
 type Automation = {
@@ -52,8 +52,8 @@ export class AutomationsImporter extends TableImporter<Automation> {
             status: faker.helpers.arrayElement(['active', 'inactive']),
             name,
             slug,
-            created_at: databaseDate.dateToDatabaseString(createdAt),
-            updated_at: databaseDate.dateToDatabaseString(createdAt)
+            created_at: toDatabaseDate(createdAt),
+            updated_at: toDatabaseDate(createdAt)
         };
     }
 }

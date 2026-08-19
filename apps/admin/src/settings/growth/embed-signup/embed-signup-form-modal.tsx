@@ -1,12 +1,12 @@
 import EmbedSignupPreview from './embed-signup-preview';
 import EmbedSignupSidebar, {type SelectedLabelTypes} from './embed-signup-sidebar';
-import useSettingGroup from '@/settings/app/hooks/use-setting-group';
-import {type EmbedSignupLayout, generateCode} from '@/settings/app/utils/generate-embed-code';
+import useSettingGroup from '@/settings/hooks/use-setting-group';
+import {type EmbedSignupLayout, generateCode} from '@/settings/utils/generate-embed-code';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useEffect, useState} from 'react';
-import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
-import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+import {useGlobalData} from '@/settings/providers/global-data-context';
+import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
 
 const EmbedSignupFormModal = () => {
     const [selectedColor, setSelectedColor] = useState<string>('#08090c');

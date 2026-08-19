@@ -22,7 +22,7 @@ import type {
     EditAutomationData,
     Page
 } from './automations-repository';
-import {fromDatabaseDate, toDatabaseDate, type DatabaseDate} from './database-date';
+import {fromDatabaseDate, toDatabaseDate, type DatabaseDate} from '../../lib/db-date';
 import {getStaleLockCutoff} from './stale-lock-cutoff';
 import type {ExclusifyUnion, ReadonlyDeep} from 'type-fest';
 

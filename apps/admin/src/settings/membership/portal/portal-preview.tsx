@@ -3,8 +3,8 @@ import PortalLinks from './portal-links';
 import React from 'react';
 import {type Setting} from '@tryghost/admin-x-framework/api/settings';
 import {type Tier} from '@tryghost/admin-x-framework/api/tiers';
-import {getPortalPreviewUrl} from '@/settings/app/utils/get-portal-preview-url';
-import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
+import {getPortalPreviewUrl} from '@/settings/utils/get-portal-preview-url';
+import {useGlobalData} from '@/settings/providers/global-data-context';
 
 interface PortalPreviewProps {
     darkMode: boolean;

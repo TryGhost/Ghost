@@ -1,12 +1,12 @@
 import LOCALE_DATA from '@tryghost/i18n/lib/locale-data.json';
 import React from 'react';
-import TopLevelGroup from '@/settings/app/components/top-level-group';
-import useSettingGroup from '@/settings/app/hooks/use-setting-group';
+import TopLevelGroup from '@/settings/components/top-level-group';
+import useSettingGroup from '@/settings/hooks/use-setting-group';
 import {Button, Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldDescription, FieldError, FieldLabel, Input, MultiSelectCombobox} from '@tryghost/shade/components';
 import {SettingGroupContent} from '@tryghost/shade/patterns';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
-import {validateLocale} from '@/settings/app/utils/locale-validation';
-import {withErrorBoundary} from '@/settings/app/components/error-boundary';
+import {validateLocale} from '@/settings/utils/locale-validation';
+import {withErrorBoundary} from '@/settings/components/with-error-boundary';
 
 const PublicationLanguage: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const languageErrorId = React.useId();

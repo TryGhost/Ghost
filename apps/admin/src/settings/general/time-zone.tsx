@@ -1,12 +1,12 @@
 import React, {useEffect, useState} from 'react';
-import TopLevelGroup from '@/settings/app/components/top-level-group';
-import useSettingGroup from '@/settings/app/hooks/use-setting-group';
+import TopLevelGroup from '@/settings/components/top-level-group';
+import useSettingGroup from '@/settings/hooks/use-setting-group';
 import {Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldDescription, FieldLabel, MultiSelectCombobox} from '@tryghost/shade/components';
 import {SettingGroupContent} from '@tryghost/shade/patterns';
-import {getLocalTime} from '@/settings/app/utils/helpers';
+import {getLocalTime} from '@/settings/utils/helpers';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {timezoneDataWithGMTOffset} from '@tryghost/timezone-data';
-import {withErrorBoundary} from '@/settings/app/components/error-boundary';
+import {withErrorBoundary} from '@/settings/components/with-error-boundary';
 
 interface TimezoneDataDropdownOption {
     name: string;

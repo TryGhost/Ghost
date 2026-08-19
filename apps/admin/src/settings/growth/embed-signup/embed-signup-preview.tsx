@@ -1,6 +1,6 @@
-import IframeBuffering from '@/settings/app/utils/iframe-buffering';
+import IframeBuffering from '@/settings/utils/iframe-buffering';
 import React, {useCallback, useRef} from 'react';
-import {type EmbedSignupLayout, getEmbedPreviewLayoutMarker} from '@/settings/app/utils/generate-embed-code';
+import {type EmbedSignupLayout, getEmbedPreviewLayoutMarker} from '@/settings/utils/generate-embed-code';
 
 type EmbedSignupPreviewProps = {
     backgroundColor: string;

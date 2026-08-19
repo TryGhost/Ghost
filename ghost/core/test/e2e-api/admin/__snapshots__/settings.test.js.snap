@@ -608,7 +608,7 @@ Object {
     },
     Object {
       "key": "navigation",
-      "value": "[{\\"label\\":\\"label1\\"}]",
+      "value": "[{\\"label\\":\\"label1\\",\\"url\\":\\"/\\"}]",
     },
     Object {
       "key": "secondary_navigation",
@@ -1001,7 +1001,7 @@ Object {
     },
     Object {
       "key": "navigation",
-      "value": "[{\\"label\\":\\"label1\\"}]",
+      "value": "[{\\"label\\":\\"label1\\",\\"url\\":\\"/\\"}]",
     },
     Object {
       "key": "secondary_navigation",
@@ -1467,7 +1467,7 @@ Object {
     },
     Object {
       "key": "navigation",
-      "value": "[{\\"label\\":\\"label1\\"}]",
+      "value": "[{\\"label\\":\\"label1\\",\\"url\\":\\"/\\"}]",
     },
     Object {
       "key": "secondary_navigation",
@@ -1933,7 +1933,7 @@ Object {
     },
     Object {
       "key": "navigation",
-      "value": "[{\\"label\\":\\"label1\\"}]",
+      "value": "[{\\"label\\":\\"label1\\",\\"url\\":\\"/\\"}]",
     },
     Object {
       "key": "secondary_navigation",
@@ -2444,7 +2444,7 @@ Object {
     },
     Object {
       "key": "navigation",
-      "value": "[{\\"label\\":\\"label1\\"}]",
+      "value": "[{\\"label\\":\\"label1\\",\\"url\\":\\"/\\"}]",
     },
     Object {
       "key": "secondary_navigation",
@@ -2909,7 +2909,7 @@ Object {
     },
     Object {
       "key": "navigation",
-      "value": "[{\\"label\\":\\"label1\\"}]",
+      "value": "[{\\"label\\":\\"label1\\",\\"url\\":\\"/\\"}]",
     },
     Object {
       "key": "secondary_navigation",
@@ -3379,7 +3379,7 @@ Object {
     },
     Object {
       "key": "navigation",
-      "value": "[{\\"label\\":\\"label1\\"}]",
+      "value": "[{\\"label\\":\\"label1\\",\\"url\\":\\"/\\"}]",
     },
     Object {
       "key": "secondary_navigation",
@@ -3923,7 +3923,7 @@ Object {
     },
     Object {
       "key": "navigation",
-      "value": "[{\\"label\\":\\"label1\\"}]",
+      "value": "[{\\"label\\":\\"label1\\",\\"url\\":\\"/\\"}]",
     },
     Object {
       "key": "secondary_navigation",
@@ -4389,7 +4389,7 @@ Object {
     },
     Object {
       "key": "navigation",
-      "value": "[{\\"label\\":\\"label1\\"}]",
+      "value": "[{\\"label\\":\\"label1\\",\\"url\\":\\"/\\"}]",
     },
     Object {
       "key": "secondary_navigation",
@@ -4855,7 +4855,7 @@ Object {
     },
     Object {
       "key": "navigation",
-      "value": "[{\\"label\\":\\"label1\\"}]",
+      "value": "[{\\"label\\":\\"label1\\",\\"url\\":\\"/\\"}]",
     },
     Object {
       "key": "secondary_navigation",
@@ -5325,7 +5325,7 @@ Object {
     },
     Object {
       "key": "navigation",
-      "value": "[{\\"label\\":\\"label1\\"}]",
+      "value": "[{\\"label\\":\\"label1\\",\\"url\\":\\"/\\"}]",
     },
     Object {
       "key": "secondary_navigation",
@@ -5790,7 +5790,7 @@ Object {
     },
     Object {
       "key": "navigation",
-      "value": "[{\\"label\\":\\"label1\\"}]",
+      "value": "[{\\"label\\":\\"label1\\",\\"url\\":\\"/\\"}]",
     },
     Object {
       "key": "secondary_navigation",
@@ -6260,7 +6260,7 @@ Object {
     },
     Object {
       "key": "navigation",
-      "value": "[{\\"label\\":\\"label1\\"}]",
+      "value": "[{\\"label\\":\\"label1\\",\\"url\\":\\"/\\"}]",
     },
     Object {
       "key": "secondary_navigation",
@@ -6729,7 +6729,7 @@ Object {
     },
     Object {
       "key": "navigation",
-      "value": "[{\\"label\\":\\"label1\\"}]",
+      "value": "[{\\"label\\":\\"label1\\",\\"url\\":\\"/\\"}]",
     },
     Object {
       "key": "secondary_navigation",
@@ -7118,7 +7118,7 @@ Object {
     },
     Object {
       "key": "navigation",
-      "value": "[{\\"label\\":\\"label1\\"}]",
+      "value": "[{\\"label\\":\\"label1\\",\\"url\\":\\"/\\"}]",
     },
     Object {
       "key": "secondary_navigation",
@@ -7584,7 +7584,7 @@ Object {
     },
     Object {
       "key": "navigation",
-      "value": "[{\\"label\\":\\"label1\\"}]",
+      "value": "[{\\"label\\":\\"label1\\",\\"url\\":\\"/\\"}]",
     },
     Object {
       "key": "secondary_navigation",
@@ -8050,7 +8050,7 @@ Object {
     },
     Object {
       "key": "navigation",
-      "value": "[{\\"label\\":\\"label1\\"}]",
+      "value": "[{\\"label\\":\\"label1\\",\\"url\\":\\"/\\"}]",
     },
     Object {
       "key": "secondary_navigation",
@@ -8517,7 +8517,7 @@ Object {
     },
     Object {
       "key": "navigation",
-      "value": "[{\\"label\\":\\"label1\\"}]",
+      "value": "[{\\"label\\":\\"label1\\",\\"url\\":\\"/\\"}]",
     },
     Object {
       "key": "secondary_navigation",
@@ -9083,7 +9083,7 @@ Object {
     },
     Object {
       "key": "navigation",
-      "value": "[{\\"label\\":\\"label1\\"}]",
+      "value": "[{\\"label\\":\\"label1\\",\\"url\\":\\"/\\"}]",
     },
     Object {
       "key": "secondary_navigation",

@@ -1,11 +1,11 @@
 import {GhostLogo, Separator} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
-import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
 import {SettingsModal} from '@tryghost/shade/patterns';
-import {linkToGitHubReleases} from '@/settings/app/utils/link-to-github-releases';
-import {showDatabaseWarning} from '@/settings/app/utils/show-database-warning';
-import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
-import {useUpgradeStatus} from '@/settings/app/components/providers/settings-app-provider';
+import {linkToGitHubReleases} from '@/settings/utils/link-to-github-releases';
+import {showDatabaseWarning} from '@/settings/utils/show-database-warning';
+import {useGlobalData} from '@/settings/providers/global-data-context';
+import {useUpgradeStatus} from '@/settings/providers/settings-app-context';
 
 const adminBuildVersion = import.meta.env.GHOST_BUILD_VERSION;
 

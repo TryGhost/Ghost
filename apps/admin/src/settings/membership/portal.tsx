@@ -1,12 +1,12 @@
-import FakeLogo from '@/settings/app/assets/images/portal-splash-default-logo.png';
+import FakeLogo from '@/settings/assets/images/portal-splash-default-logo.png';
 import React from 'react';
-import TopLevelGroup from '@/settings/app/components/top-level-group';
-import UserAddIcon from '@/settings/app/assets/images/portal-splash-user-add.png';
+import TopLevelGroup from '@/settings/components/top-level-group';
+import UserAddIcon from '@/settings/assets/images/portal-splash-user-add.png';
 import {Button} from '@tryghost/shade/components';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
-import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
-import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
-import {withErrorBoundary} from '@/settings/app/components/error-boundary';
+import {useGlobalData} from '@/settings/providers/global-data-context';
+import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
+import {withErrorBoundary} from '@/settings/components/with-error-boundary';
 
 const SignupOptionImage: React.FC<{color:string, title: string, price: string}> = ({title, color, price}) => {
     return (

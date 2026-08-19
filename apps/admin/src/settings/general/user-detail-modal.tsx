@@ -3,27 +3,27 @@ import ProfileTab from './users/profile-tab';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import SocialLinksTab from './users/social-links-tab';
 import clsx from 'clsx';
-import usePinturaEditor from '@/settings/app/hooks/use-pintura-editor';
-import useStaffUsers from '@/settings/app/hooks/use-staff-users';
+import usePinturaEditor from '@/settings/hooks/use-pintura-editor';
+import useStaffUsers from '@/settings/hooks/use-staff-users';
 import validator from 'validator';
 import {APIError} from '@tryghost/admin-x-framework/errors';
 import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Dropzone, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {HostLimitError, useLimiter} from '@/settings/app/hooks/use-limiter';
+import {HostLimitError, useLimiter} from '@/settings/hooks/use-limiter';
 import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {Pencil, Trash2} from 'lucide-react';
 import {useLocation, useParams} from '@tryghost/admin-x-framework';
-import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
-import {useUpgradeRoute} from '@/settings/app/hooks/use-upgrade-route';
-import {SOCIAL_PLATFORM_CONFIGS, SOCIAL_PLATFORM_KEYS, getSocialValidationError} from '@/settings/app/utils/social-urls/index';
+import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
+import {useUpgradeRoute} from '@/settings/hooks/use-upgrade-route';
+import {SOCIAL_PLATFORM_CONFIGS, SOCIAL_PLATFORM_KEYS, getSocialValidationError} from '@/settings/utils/social-urls/index';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {Text} from '@tryghost/shade/primitives';
 import {type User, canAccessSettings, hasAdminAccess, isAdminUser, isAuthorOrContributor, isEditorUser, isOwnerUser, useDeleteUser, useEditUser, useGetUserBySlug, useMakeOwner} from '@tryghost/admin-x-framework/api/users';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {toast} from 'sonner';
-import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
-import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
+import {useConfirmation} from '@/settings/providers/confirmation-context';
+import {useGlobalData} from '@/settings/providers/global-data-context';
 
 const validators: Record<string, (u: Partial<User>) => string> = {
     name: ({name}) => {
