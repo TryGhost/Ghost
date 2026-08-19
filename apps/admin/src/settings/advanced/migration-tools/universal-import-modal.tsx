@@ -102,6 +102,8 @@ const UniversalImportModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
     );
   };
 
+  const missingTitle = csvImport !== null && !csvImport.mapping.hasTarget('title');
+
   const footer = csvImport ? (
     <Inline align="center" className="w-full p-8" justify="between">
       <Button
@@ -116,7 +118,7 @@ const UniversalImportModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
         <Button disabled={uploading} type="button" variant="outline" onClick={onClose}>
           Cancel
         </Button>
-        <Button disabled={uploading} type="button" onClick={() => void importCSV()}>
+        <Button disabled={uploading || missingTitle} type="button" onClick={() => void importCSV()}>
           {uploading ? 'Uploading...' : 'Import'}
         </Button>
       </Inline>
@@ -153,6 +155,7 @@ const UniversalImportModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
           <MappingStep
             disabled={uploading}
             mapping={csvImport.mapping}
+            missingTitle={missingTitle}
             rows={csvImport.rows}
             sampleIndex={csvImport.sampleIndex}
             onMappingChange={updateMapping}

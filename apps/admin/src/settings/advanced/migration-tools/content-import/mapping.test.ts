@@ -31,4 +31,12 @@ describe('ContentFieldMapping', () => {
 
     expect(mapping.toJSON()).toEqual({ Title: '', 'Post HTML': '', 'Published At': '' });
   });
+
+  it('reports whether the required title target is mapped', () => {
+    const missing = ContentFieldMapping.detect(['Headline']);
+    const complete = missing.update('Headline', 'title');
+
+    expect(missing.hasTarget('title')).toBe(false);
+    expect(complete.hasTarget('title')).toBe(true);
+  });
 });

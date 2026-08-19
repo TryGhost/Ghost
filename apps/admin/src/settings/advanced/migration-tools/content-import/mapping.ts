@@ -1,7 +1,7 @@
 export const CONTENT_FIELD_MAPPINGS = [
-  { label: 'Title', value: 'title' },
-  { label: 'HTML', value: 'html' },
-  { label: 'Published at', value: 'published_at' },
+  { label: 'Title', value: 'title', required: true },
+  { label: 'HTML', value: 'html', required: false },
+  { label: 'Published at', value: 'published_at', required: false },
 ] as const;
 
 export class ContentFieldMapping {
@@ -24,6 +24,10 @@ export class ContentFieldMapping {
 
   get(column: string): string | null {
     return this.mapping[column] ?? null;
+  }
+
+  hasTarget(target: string): boolean {
+    return Object.values(this.mapping).includes(target);
   }
 
   update(column: string, target: string | null): ContentFieldMapping {

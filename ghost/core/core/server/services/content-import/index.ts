@@ -24,6 +24,9 @@ const mappingSchema = z.record(z.string(), z.string()).superRefine((mapping, ctx
     }
     targets.add(target);
   }
+  if (!targets.has('title')) {
+    ctx.addIssue({ code: 'custom', message: 'Post field mapping must include "title"' });
+  }
 });
 const importRequestSchema = z.object({
   filePath: z.string().min(1),
@@ -90,5 +93,15 @@ export function importCSV(request: ImportRequest): Promise<ImportAccepted> {
   if (!importer) {
     throw new errors.InternalServerError({ message: 'Content import service used before init' });
   }
-  return importer.importCSV(importRequestSchema.parse(request));
+
+  const parsedRequest = importRequestSchema.safeParse(request);
+
+  if (!parsedRequest.success) {
+    throw new errors.ValidationError({
+      message: parsedRequest.error.issues[0]?.message ?? 'Invalid content import request',
+      err: parsedRequest.error,
+    });
+  }
+
+  return importer.importCSV(parsedRequest.data);
 }

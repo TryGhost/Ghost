@@ -151,6 +151,17 @@ describe('UniversalImportModal', () => {
     expect(mockImportContentCSV).not.toHaveBeenCalled();
   });
 
+  it('blocks importing while the required title field is unmapped', async () => {
+    mockUseFeatureFlag.mockReturnValue(true);
+    showModal();
+
+    await dropFile(new File(['Headline\nHello'], 'posts.csv', { type: 'text/csv' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Required field missing: Title');
+    expect(screen.getByRole('button', { name: 'Import' })).toBeDisabled();
+    expect(mockImportContentCSV).not.toHaveBeenCalled();
+  });
+
   it('still sends JSON files to the db import when csvContentImporter is enabled', async () => {
     mockUseFeatureFlag.mockReturnValue(true);
     showModal();

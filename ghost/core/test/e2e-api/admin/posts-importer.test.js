@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
+const FormData = require('form-data');
 const os = require('node:os');
 const {
   agentProvider,
@@ -102,6 +103,62 @@ describe('Posts Importer API', function () {
     await agent.loginAsContributor();
 
     await agent.post('posts/upload/').attach('postsfile', csvPath).expectStatus(403);
+  });
+
+  it('Rejects an explicit mapping without a title target', async function () {
+    await agent.loginAsOwner();
+
+    const bodyOnlyCsvPath = await csvFile(
+      'posts-import-body-only-mapping.csv',
+      'Body\n<p>This mapping has no title target</p>\n',
+    );
+    const form = new FormData();
+    form.append('mapping[Body]', 'html');
+    form.append('postsfile', await fs.readFile(bodyOnlyCsvPath), {
+      filename: path.basename(bodyOnlyCsvPath),
+      contentType: 'text/csv',
+    });
+
+    const { body } = await agent.post('posts/upload/').body(form).expectStatus(422);
+
+    assert.match(body.errors[0].message, /mapping must include "title"/);
+  });
+
+  it('Rejects unsafe, unknown, and duplicate field mappings', async function () {
+    await agent.loginAsOwner();
+
+    const mappedCsvPath = await csvFile(
+      'posts-import-invalid-mappings.csv',
+      'First,Second\nOne,Two\n',
+    );
+    const cases = [
+      {
+        mapping: { constructor: 'title' },
+        reason: /Invalid CSV header mapping: "constructor"/,
+      },
+      {
+        mapping: { First: 'title', Second: 'authors' },
+        reason: /Unknown post field mapping: "authors"/,
+      },
+      {
+        mapping: { First: 'title', Second: 'title' },
+        reason: /Post field is mapped more than once: "title"/,
+      },
+    ];
+
+    for (const { mapping, reason } of cases) {
+      const form = new FormData();
+      for (const [header, field] of Object.entries(mapping)) {
+        form.append(`mapping[${header}]`, field);
+      }
+      form.append('postsfile', await fs.readFile(mappedCsvPath), {
+        filename: path.basename(mappedCsvPath),
+        contentType: 'text/csv',
+      });
+
+      const { body } = await agent.post('posts/upload/').body(form).expectStatus(422);
+      assert.match(body.errors[0].message, reason);
+    }
   });
 
   it('Imports each CSV row as a post with its content and publish date', async function () {

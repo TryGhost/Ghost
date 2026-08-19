@@ -1,4 +1,5 @@
 import {
+  Banner,
   Select,
   SelectContent,
   SelectItem,
@@ -20,6 +21,7 @@ interface MappingStepProps {
   mapping: ContentFieldMapping;
   sampleIndex: number;
   disabled: boolean;
+  missingTitle: boolean;
   onMappingChange: (column: string, target: string | null) => void;
   onSampleIndexChange: (index: number) => void;
 }
@@ -29,6 +31,7 @@ export function MappingStep({
   mapping,
   sampleIndex,
   disabled,
+  missingTitle,
   onMappingChange,
   onSampleIndexChange,
 }: MappingStepProps) {
@@ -42,6 +45,16 @@ export function MappingStep({
       <Text tone="secondary">
         Choose which Ghost field each column in your CSV should import as.
       </Text>
+      {missingTitle && (
+        <Banner role="alert" size="sm" variant="warning">
+          <Inline align="center" gap="sm">
+            <LucideIcon.TriangleAlert className="size-4 shrink-0 text-state-warning" />
+            <Text size="sm" weight="semibold">
+              Required field missing: Title
+            </Text>
+          </Inline>
+        </Banner>
+      )}
       <div className="overflow-hidden rounded-md border border-border-default">
         <div className="max-h-[50vh] overflow-auto">
           <Table className="table-fixed">
@@ -113,6 +126,7 @@ export function MappingStep({
                         {CONTENT_FIELD_MAPPINGS.map((field) => (
                           <SelectItem key={field.value} value={field.value}>
                             {field.label}
+                            {field.required ? ' (required)' : ''}
                           </SelectItem>
                         ))}
                       </SelectContent>
