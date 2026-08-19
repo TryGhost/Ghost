@@ -172,6 +172,8 @@ module.exports = function navigation(options) {
     // CASE: The navigation helper will forward attributes passed to it.
     _.merge(this, options.hash);
     const data = createFrame(options.data);
+    // The template only wraps labels/renders icons when the flag is on, so pre-flag markup is unchanged
+    data.navigationIcons = navigationIconsEnabled;
 
     return templates.execute('navigation', this, {data});
 };
