@@ -1,0 +1,181 @@
+{
+  "id": "cs_test_a1YnnBBjnCdOg0U3Vsen6LEWYp9JkPdeTqBnP0ZriFhZsoNpAufR9uaUmZ",
+  "object": "checkout.session",
+  "adaptive_pricing": {
+    "enabled": true
+  },
+  "after_expiration": null,
+  "allow_promotion_codes": null,
+  "amount_subtotal": 500,
+  "amount_total": 500,
+  "automatic_tax": {
+    "enabled": false,
+    "liability": null,
+    "provider": null,
+    "status": null
+  },
+  "billing_address_collection": null,
+  "branding_settings": {
+    "background_color": "#ffffff",
+    "border_style": "rounded",
+    "button_color": "#0074d4",
+    "display_name": "Example Publication",
+    "font_family": "default",
+    "icon": null,
+    "logo": null
+  },
+  "cancel_url": "https://example.com/cancel",
+  "client_reference_id": null,
+  "client_secret": null,
+  "collected_information": {
+    "business_name": "Example Company Ltd",
+    "individual_name": null,
+    "shipping_details": {
+      "address": {
+        "city": "London",
+        "country": "GB",
+        "line1": "Apartment 1",
+        "line2": "1 Example Street",
+        "postal_code": "EC1A 1AA",
+        "state": null
+      },
+      "name": "Jamie Example"
+    }
+  },
+  "consent": null,
+  "consent_collection": null,
+  "created": 1787091163,
+  "currency": "usd",
+  "currency_conversion": null,
+  "custom_fields": [
+    {
+      "key": "delivery_notes",
+      "label": {
+        "custom": "Delivery notes",
+        "type": "custom"
+      },
+      "optional": true,
+      "text": {
+        "default_value": null,
+        "maximum_length": null,
+        "minimum_length": null,
+        "value": "These are delivery notes"
+      },
+      "type": "text"
+    }
+  ],
+  "custom_text": {
+    "after_submit": null,
+    "shipping_address": null,
+    "submit": null,
+    "terms_of_service_acceptance": null
+  },
+  "customer": "cus_V67VaSsCShqIuI",
+  "customer_account": null,
+  "customer_creation": "always",
+  "customer_details": {
+    "address": {
+      "city": "London",
+      "country": "GB",
+      "line1": "Apartment 1",
+      "line2": "1 Example Street",
+      "postal_code": "EC1A 1AA",
+      "state": null
+    },
+    "business_name": "Example Company Ltd",
+    "email": "member@example.com",
+    "individual_name": null,
+    "name": "Example Company Ltd",
+    "phone": null,
+    "tax_exempt": "none",
+    "tax_ids": [
+      {
+        "type": "gb_vat",
+        "value": "GB123456789"
+      }
+    ]
+  },
+  "customer_email": null,
+  "discounts": [],
+  "expires_at": 1787177562,
+  "integration_identifier": null,
+  "invoice": "in_1U5vGmCvhsRvBqJ0YdYrEKnB",
+  "invoice_creation": null,
+  "livemode": false,
+  "locale": null,
+  "managed_payments": {
+    "enabled": false
+  },
+  "metadata": {},
+  "mode": "subscription",
+  "origin_context": null,
+  "payment_intent": null,
+  "payment_link": null,
+  "payment_method_collection": "always",
+  "payment_method_configuration_details": {
+    "id": "pmc_000000000000000000000000",
+    "parent": null
+  },
+  "payment_method_options": {
+    "card": {
+      "request_three_d_secure": "automatic"
+    }
+  },
+  "payment_method_types": [
+    "card",
+    "link",
+    "amazon_pay"
+  ],
+  "payment_status": "paid",
+  "permissions": null,
+  "phone_number_collection": {
+    "enabled": false
+  },
+  "recovered_from": null,
+  "saved_payment_method_options": {
+    "allow_redisplay_filters": [
+      "always"
+    ],
+    "payment_method_remove": "disabled",
+    "payment_method_save": null
+  },
+  "setup_intent": null,
+  "shipping": {
+    "address": {
+      "city": "London",
+      "country": "GB",
+      "line1": "Apartment 1",
+      "line2": "1 Example Street",
+      "postal_code": "EC1A 1AA",
+      "state": null
+    },
+    "carrier": null,
+    "name": "Jamie Example",
+    "phone": null,
+    "tracking_number": null
+  },
+  "shipping_address_collection": {
+    "allowed_countries": [
+      "GB",
+      "US"
+    ]
+  },
+  "shipping_options": [],
+  "shipping_rate": null,
+  "status": "complete",
+  "submit_type": null,
+  "subscription": "sub_1U5vGmCvhsRvBqJ0Asiwj5Es",
+  "success_url": "https://example.com/success",
+  "tax_id_collection": {
+    "enabled": true,
+    "required": "never"
+  },
+  "total_details": {
+    "amount_discount": 0,
+    "amount_shipping": 0,
+    "amount_tax": 0
+  },
+  "ui_mode": "hosted",
+  "url": null,
+  "wallet_options": null
+}
