@@ -4,7 +4,7 @@ import {ScrollSectionContext} from './use-scroll-section';
 const scrollMargin = 193;
 
 const scrollToSection = (element: HTMLDivElement, doneInitialScroll: boolean) => {
-    const root = document.getElementById('admin-x-settings-scroller')!;
+    const root = document.getElementById('settings-scroller')!;
     const top = element.getBoundingClientRect().top + root.scrollTop;
 
     root.scrollTo({
@@ -14,8 +14,7 @@ const scrollToSection = (element: HTMLDivElement, doneInitialScroll: boolean) =>
 };
 
 const scrollSidebarNav = (navElement: HTMLLIElement, doneInitialScroll: boolean) => {
-    // const sidebar = document.getElementById('admin-x-settings-sidebar')!;
-    const sidebar = document.getElementById('admin-x-settings-sidebar-scroller')!;
+    const sidebar = document.getElementById('settings-sidebar-scroller')!;
 
     const bounds = navElement.getBoundingClientRect();
 

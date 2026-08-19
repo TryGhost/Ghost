@@ -10,7 +10,7 @@ type UnsplashSelectorModalProps = {
 
 const UnsplashSelector : React.FC<UnsplashSelectorModalProps> = ({unsplashProviderConfig, onClose, onImageInsert}) => {
     return (
-        <Portal classNames='admin-x-settings'>
+        <Portal classNames='settings-app'>
             <UnsplashSearchModal
                 unsplashProviderConfig={unsplashProviderConfig}
                 onClose={onClose}
