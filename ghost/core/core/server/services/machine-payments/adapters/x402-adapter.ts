@@ -25,14 +25,14 @@ const x402ConfigSchema = z.object({
 }).superRefine((value, ctx) => {
     if (![BASE_MAINNET, BASE_SEPOLIA].includes(value.network)) {
         ctx.addIssue({
-            code: z.ZodIssueCode.custom,
+            code: 'custom',
             message: `machinePayments.x402.network must be ${BASE_MAINNET} or ${BASE_SEPOLIA}`
         });
     }
 
     if (value.network === BASE_MAINNET && value.facilitatorUrl.replace(/\/+$/, '') === X402_ORG_FACILITATOR) {
         ctx.addIssue({
-            code: z.ZodIssueCode.custom,
+            code: 'custom',
             message: 'machinePayments.x402.facilitatorUrl cannot be the x402.org testnet facilitator on Base mainnet'
         });
     }
