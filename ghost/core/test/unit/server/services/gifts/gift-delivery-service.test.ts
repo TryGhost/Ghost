@@ -86,11 +86,13 @@ describe('GiftDeliveryService', function () {
     it('recovers pending deliveries for purchased gifts one at a time', async function () {
         giftDeliveryRepository.findRecoverableForPurchasedGifts.resolves([
             buildGiftDelivery({id: 'delivery_1'}),
-            buildGiftDelivery({id: 'delivery_2'})
+            buildGiftDelivery({id: 'delivery_2'}),
+            buildGiftDelivery({id: 'delivery_3'})
         ]);
         giftDeliveryRepository.tryStartDelivery
             .withArgs('delivery_1').resolves(buildGiftDelivery({id: 'delivery_1', status: 'sending'}))
-            .withArgs('delivery_2').resolves(buildGiftDelivery({id: 'delivery_2', status: 'sending'}));
+            .withArgs('delivery_2').resolves(buildGiftDelivery({id: 'delivery_2', status: 'sending'}))
+            .withArgs('delivery_3').resolves(null);
         let inFlight = 0;
         let maxInFlight = 0;
         giftEmailService.sendGiftDelivery.callsFake(async () => {
@@ -104,7 +106,11 @@ describe('GiftDeliveryService', function () {
         });
         const service = createService();
 
-        assert.equal(await service.recoverPending(), 2);
+        assert.deepEqual(await service.recoverPending(), {
+            sentCount: 2,
+            skippedCount: 1,
+            failedCount: 0
+        });
         sinon.assert.calledOnceWithExactly(giftDeliveryRepository.findRecoverableForPurchasedGifts, sinon.match.date, 1000);
         sinon.assert.notCalled(dispatchDelivery);
         sinon.assert.calledTwice(giftEmailService.sendGiftDelivery);
@@ -124,7 +130,11 @@ describe('GiftDeliveryService', function () {
             .withArgs('delivery_2').resolves(buildGiftDelivery({id: 'delivery_2', status: 'sending'}));
         const service = createService();
 
-        assert.equal(await service.recoverPending(), 2);
+        assert.deepEqual(await service.recoverPending(), {
+            sentCount: 1,
+            skippedCount: 0,
+            failedCount: 1
+        });
         sinon.assert.calledOnce(giftEmailService.sendGiftDelivery);
         sinon.assert.calledOnceWithExactly(errorLog, sinon.match({
             event: {name: 'gift_delivery.recovery_failed'},
@@ -212,14 +222,38 @@ describe('GiftDeliveryService', function () {
         }), sinon.match.string);
     });
 
-    it('does not retry an accepted handoff when persistence fails with a recoverable-looking code', async function () {
+    it('retries accepted handoff persistence once', async function () {
+        const warningLog = sinon.stub(logging, 'warn');
+        giftDeliveryRepository.markSent.onFirstCall().rejects({code: 'ECONNREFUSED'});
+        giftDeliveryRepository.markSent.onSecondCall().resolves(true);
+        const service = createService();
+
+        const result = await service.send('delivery_1');
+
+        assert.equal(result, 'sent');
+        sinon.assert.calledTwice(giftDeliveryRepository.markSent);
+        sinon.assert.notCalled(giftDeliveryRepository.markFailed);
+        sinon.assert.calledOnceWithExactly(warningLog, sinon.match({
+            event: {name: 'gift_delivery.acceptance_persistence.retrying'},
+            deliveryId: 'delivery_1'
+        }), sinon.match.string);
+    });
+
+    it('moves an accepted handoff out of recovery when persistence retries fail', async function () {
+        const errorLog = sinon.stub(logging, 'error');
+        sinon.stub(logging, 'warn');
         giftDeliveryRepository.markSent.rejects({code: 'ECONNREFUSED'});
         const service = createService();
 
         const result = await service.send('delivery_1');
 
         assert.equal(result, 'failed');
-        sinon.assert.notCalled(giftDeliveryRepository.markFailed);
+        sinon.assert.calledTwice(giftDeliveryRepository.markSent);
+        sinon.assert.calledOnceWithExactly(giftDeliveryRepository.markFailed, 'delivery_1');
+        sinon.assert.calledOnceWithExactly(errorLog, sinon.match({
+            event: {name: 'gift_delivery.acceptance_persistence.failed'},
+            deliveryId: 'delivery_1'
+        }), sinon.match.string);
     });
 
     it('does not send when another worker or lifecycle transition starts the delivery first', async function () {

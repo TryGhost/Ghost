@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import errors from '@tryghost/errors';
+import logging from '@tryghost/logging';
 import sinon from 'sinon';
 import type {Knex} from 'knex';
 import {GiftService, type GiftPurchaseData} from '../../../../../core/server/services/gifts/gift-service';
@@ -256,6 +257,104 @@ describe('GiftService', function () {
             }).bindCheckoutSession('cs_pending')!;
         }
 
+        it('logs identifiers when a paid checkout has no matching gift', async function () {
+            const errorLog = sinon.stub(logging, 'error');
+            const service = createService();
+
+            assert.equal(await service.completePurchase({
+                giftId: 'missing_gift',
+                buyerEmail: 'buyer@example.com',
+                stripeCustomerId: null,
+                currency: 'usd',
+                amount: 5000,
+                stripeCheckoutSessionId: 'cs_missing',
+                stripePaymentIntentId: 'pi_missing'
+            }), false);
+
+            sinon.assert.calledOnceWithExactly(errorLog, sinon.match({
+                event: {name: 'gift_purchase.completion_gift_missing'},
+                giftId: 'missing_gift',
+                stripeCheckoutSessionId: 'cs_missing',
+                stripePaymentIntentId: 'pi_missing'
+            }), sinon.match.string);
+            sinon.assert.notCalled(giftDeliveryService.dispatchForGift);
+        });
+
+        it('continues purchase notifications when gift delivery dispatch fails', async function () {
+            const errorLog = sinon.stub(logging, 'error');
+            giftRepository.getById.resolves(buildAnonymousPendingGift());
+            giftDeliveryService.dispatchForGift.rejects(new Error('dispatch unavailable'));
+            const service = createService();
+
+            assert.equal(await service.completePurchase({
+                giftId: 'gift_1',
+                buyerEmail: 'buyer@example.com',
+                stripeCustomerId: null,
+                currency: 'usd',
+                amount: 5000,
+                stripeCheckoutSessionId: 'cs_pending',
+                stripePaymentIntentId: 'pi_pending'
+            }), true);
+
+            sinon.assert.calledOnce(staffServiceEmails.notifyGiftPurchased);
+            sinon.assert.calledOnceWithExactly(giftEmailService.sendPurchaseConfirmation, sinon.match({
+                buyerEmail: 'buyer@example.com',
+                recipientEmail: null
+            }));
+            sinon.assert.calledOnceWithExactly(errorLog, sinon.match({
+                event: {name: 'gift_delivery.dispatch_failed'},
+                giftId: 'gift_1'
+            }), sinon.match.string);
+        });
+
+        it('does not fail a completed purchase when its tier cannot be read for notifications', async function () {
+            const errorLog = sinon.stub(logging, 'error');
+            giftRepository.getById.resolves(buildAnonymousPendingGift());
+            tiersService.api.read.rejects(new Error('tiers unavailable'));
+            const service = createService();
+
+            assert.equal(await service.completePurchase({
+                giftId: 'gift_1',
+                buyerEmail: 'buyer@example.com',
+                stripeCustomerId: null,
+                currency: 'usd',
+                amount: 5000,
+                stripeCheckoutSessionId: 'cs_pending',
+                stripePaymentIntentId: 'pi_pending'
+            }), true);
+
+            sinon.assert.notCalled(staffServiceEmails.notifyGiftPurchased);
+            sinon.assert.notCalled(giftEmailService.sendPurchaseConfirmation);
+            sinon.assert.calledOnceWithExactly(errorLog, sinon.match({
+                event: {name: 'gift_purchase_notifications.tier_read_failed'},
+                tierId: 'tier_1'
+            }), sinon.match.string);
+        });
+
+        it('does not fail a completed purchase when its tier is missing for notifications', async function () {
+            const errorLog = sinon.stub(logging, 'error');
+            giftRepository.getById.resolves(buildAnonymousPendingGift());
+            tiersService.api.read.resolves(null);
+            const service = createService();
+
+            assert.equal(await service.completePurchase({
+                giftId: 'gift_1',
+                buyerEmail: 'buyer@example.com',
+                stripeCustomerId: null,
+                currency: 'usd',
+                amount: 5000,
+                stripeCheckoutSessionId: 'cs_pending',
+                stripePaymentIntentId: 'pi_pending'
+            }), true);
+
+            sinon.assert.notCalled(staffServiceEmails.notifyGiftPurchased);
+            sinon.assert.notCalled(giftEmailService.sendPurchaseConfirmation);
+            sinon.assert.calledOnceWithExactly(errorLog, sinon.match({
+                event: {name: 'gift_purchase_notifications.tier_missing'},
+                tierId: 'tier_1'
+            }), sinon.match.string);
+        });
+
         it('completes a pending gift without a checkout buyer email using the Stripe customer email', async function () {
             giftRepository.getById.resolves(buildAnonymousPendingGift());
             const service = createService();
@@ -447,18 +546,20 @@ describe('GiftService', function () {
             assert.equal(emailData.duration, 1);
         });
 
-        it('throws when tier is not found', async function () {
+        it('keeps a legacy purchase completed when its tier is not found for notifications', async function () {
+            const errorLog = sinon.stub(logging, 'error');
             tiersService.api.read.resolves(null);
 
             const service = createService();
 
-            await assert.rejects(
-                () => service.completePurchase(purchaseData),
-                {message: 'Tier not found: tier_1'}
-            );
+            assert.equal(await service.completePurchase(purchaseData), true);
 
             sinon.assert.notCalled(staffServiceEmails.notifyGiftPurchased);
             sinon.assert.notCalled(giftEmailService.sendPurchaseConfirmation);
+            sinon.assert.calledOnceWithExactly(errorLog, sinon.match({
+                event: {name: 'gift_purchase_notifications.tier_missing'},
+                tierId: 'tier_1'
+            }), sinon.match.string);
         });
 
         it('uses buyerEmail and null name when buyer is not a member', async function () {

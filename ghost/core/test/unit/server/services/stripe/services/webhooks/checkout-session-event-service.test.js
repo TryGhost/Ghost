@@ -697,7 +697,31 @@ describe('CheckoutSessionEventService', function () {
             });
         });
 
-        it('recovers the buyer email from the Stripe Customer when customer details are absent', async function () {
+        it('defers missing buyer email recovery to the pre-created gift service', async function () {
+            const service = createService();
+
+            await service.handleGiftEvent({
+                id: 'cs_test_123',
+                amount_total: 5000,
+                currency: 'usd',
+                customer: 'cust_123',
+                payment_intent: 'pi_test_456',
+                metadata: {ghost_gift_id: 'gift_123'}
+            });
+
+            sinon.assert.notCalled(api.getCustomer);
+            sinon.assert.calledOnceWithExactly(giftService.completePurchase, {
+                giftId: 'gift_123',
+                buyerEmail: null,
+                stripeCustomerId: 'cust_123',
+                currency: 'usd',
+                amount: 5000,
+                stripeCheckoutSessionId: 'cs_test_123',
+                stripePaymentIntentId: 'pi_test_456'
+            });
+        });
+
+        it('recovers the buyer email from the Stripe Customer for a legacy gift', async function () {
             const service = createService();
             api.getCustomer.resolves({
                 id: 'cust_123',
@@ -710,19 +734,21 @@ describe('CheckoutSessionEventService', function () {
                 currency: 'usd',
                 customer: 'cust_123',
                 payment_intent: 'pi_test_456',
-                metadata: {ghost_gift_id: 'gift_123'}
+                metadata: {
+                    ghost_gift: 'true',
+                    gift_token: 'abc-123-token',
+                    tier_id: 'tier_456',
+                    cadence: 'year',
+                    duration: '1'
+                }
             });
 
             sinon.assert.calledOnceWithExactly(api.getCustomer, 'cust_123');
-            sinon.assert.calledOnceWithExactly(giftService.completePurchase, {
-                giftId: 'gift_123',
+            sinon.assert.calledOnceWithExactly(giftService.completePurchase, sinon.match({
+                token: 'abc-123-token',
                 buyerEmail: 'recovered-buyer@example.com',
-                stripeCustomerId: 'cust_123',
-                currency: 'usd',
-                amount: 5000,
-                stripeCheckoutSessionId: 'cs_test_123',
-                stripePaymentIntentId: 'pi_test_456'
-            });
+                stripeCustomerId: 'cust_123'
+            }));
         });
 
         it('uses the buyer email from expanded Stripe Customer data', async function () {

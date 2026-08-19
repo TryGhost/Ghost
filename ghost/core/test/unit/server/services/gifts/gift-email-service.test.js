@@ -238,7 +238,9 @@ describe('GiftEmailService', function () {
                 sinon.assert.match(message[field], sinon.match('https://example.com/gift/abc-123'));
             }
             sinon.assert.match(message.plaintext, sinon.match('Buyer has gifted you a 1-year Gold membership to Test Site'));
+            sinon.assert.match(message.plaintext, sinon.match('Redeem your gift:\nhttps://example.com/gift/abc-123'));
             sinon.assert.match(message.plaintext, sinon.match('This message was sent from example.com to recipient@example.com on behalf of Buyer (buyer@example.com).'));
+            sinon.assert.match(message.html, sinon.match('Redeem your gift:'));
             sinon.assert.match(message.html, sinon.match('<strong>Buyer</strong> has gifted you a <strong>1</strong>-year <strong>Gold</strong> membership to Test Site'));
             sinon.assert.match(message.html, sinon.match('on behalf of Buyer (<a href="mailto:buyer@example.com"'));
             sinon.assert.match(message.html, sinon.match('background:#fff3ed'));

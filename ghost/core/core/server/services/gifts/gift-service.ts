@@ -527,7 +527,16 @@ export class GiftService {
 
         const completed = await this.deps.giftRepository.transaction(async (transacting) => {
             const gift = await this.deps.giftRepository.getById(data.giftId, {transacting, forUpdate: true});
-            if (!gift || gift.status !== 'payment_pending') {
+            if (!gift) {
+                logging.error({
+                    event: {name: 'gift_purchase.completion_gift_missing'},
+                    giftId: data.giftId,
+                    stripeCheckoutSessionId: data.stripeCheckoutSessionId,
+                    stripePaymentIntentId: data.stripePaymentIntentId
+                }, 'Paid checkout completion has no matching gift');
+                return null;
+            }
+            if (gift.status !== 'payment_pending') {
                 return null;
             }
             if (gift.stripeCheckoutSessionId && gift.stripeCheckoutSessionId !== data.stripeCheckoutSessionId) {
@@ -561,7 +570,16 @@ export class GiftService {
             return false;
         }
 
-        const recipientEmail = await this.deps.giftDeliveryService.dispatchForGift(data.giftId);
+        let recipientEmail: string | null = null;
+        try {
+            recipientEmail = await this.deps.giftDeliveryService.dispatchForGift(data.giftId);
+        } catch (err) {
+            logging.error({
+                event: {name: 'gift_delivery.dispatch_failed'},
+                err,
+                giftId: data.giftId
+            }, 'Failed to dispatch purchased gift delivery');
+        }
         await this.sendPurchaseNotifications(completed, member, recipientEmail);
         return true;
     }
@@ -605,10 +623,24 @@ export class GiftService {
     }
 
     private async sendPurchaseNotifications(gift: Gift, member: MemberModel | null, recipientEmail: string | null): Promise<void> {
-        const tier = await this.deps.tiersService.api.read(gift.tierId);
+        let tier: Tier | null;
+        try {
+            tier = await this.deps.tiersService.api.read(gift.tierId);
+        } catch (err) {
+            logging.error({
+                event: {name: 'gift_purchase_notifications.tier_read_failed'},
+                err,
+                tierId: gift.tierId
+            }, 'Failed to read tier for gift purchase notifications');
+            return;
+        }
 
         if (!tier) {
-            throw new errors.NotFoundError({message: `Tier not found: ${gift.tierId}`});
+            logging.error({
+                event: {name: 'gift_purchase_notifications.tier_missing'},
+                tierId: gift.tierId
+            }, 'Tier not found for gift purchase notifications');
+            return;
         }
 
         const buyerEmail = gift.buyerEmail ?? member?.get('email') ?? null;

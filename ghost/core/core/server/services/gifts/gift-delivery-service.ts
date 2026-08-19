@@ -45,6 +45,12 @@ interface GiftDeliveryServiceDeps {
     giftEmailService: GiftEmailService;
 }
 
+export interface GiftDeliveryRecoveryResult {
+    sentCount: number;
+    skippedCount: number;
+    failedCount: number;
+}
+
 export class GiftDeliveryService {
     private readonly deps: GiftDeliveryServiceDeps;
 
@@ -77,17 +83,24 @@ export class GiftDeliveryService {
         return delivery.recipientEmail;
     }
 
-    async recoverPending(limit = 1000): Promise<number> {
+    async recoverPending(limit = 1000): Promise<GiftDeliveryRecoveryResult> {
         const staleBefore = new Date(Date.now() - GIFT_DELIVERY_STALE_AFTER_MS);
         const deliveries = await this.deps.giftDeliveryRepository.findRecoverableForPurchasedGifts(staleBefore, limit);
+        const result: GiftDeliveryRecoveryResult = {
+            sentCount: 0,
+            skippedCount: 0,
+            failedCount: 0
+        };
 
         // Sequential on purpose: recovery can find many deliveries at once and each
         // send holds a mail transport call, so fanning out through events would open
         // them all concurrently
         for (const delivery of deliveries) {
             try {
-                await this.send(delivery.id);
+                const deliveryResult = await this.send(delivery.id);
+                result[`${deliveryResult}Count`] += 1;
             } catch (err) {
+                result.failedCount += 1;
                 logging.error({
                     event: {name: 'gift_delivery.recovery_failed'},
                     err,
@@ -96,7 +109,7 @@ export class GiftDeliveryService {
             }
         }
 
-        return deliveries.length;
+        return result;
     }
 
     async cancelPendingForGift(token: string, options: RepositoryTransactionOptions = {}): Promise<boolean> {
@@ -197,16 +210,37 @@ export class GiftDeliveryService {
         let cancelledDuringSend = false;
         try {
             persisted = await this.deps.giftDeliveryRepository.markSent(delivery.id, sentAt, result.providerMessageId);
-            if (!persisted) {
-                cancelledDuringSend = await this.deps.giftDeliveryRepository.recordCancelledAcceptance(delivery.id, sentAt, result.providerMessageId);
-            }
         } catch (err) {
-            logging.error({
-                event: {name: 'gift_delivery.acceptance_persistence.failed'},
+            logging.warn({
+                event: {name: 'gift_delivery.acceptance_persistence.retrying'},
                 err,
                 deliveryId: delivery.id
-            }, 'Failed to persist accepted gift delivery');
-            return 'failed';
+            }, 'Retrying accepted gift delivery persistence');
+
+            try {
+                persisted = await this.deps.giftDeliveryRepository.markSent(delivery.id, sentAt, result.providerMessageId);
+            } catch (retryErr) {
+                logging.error({
+                    event: {name: 'gift_delivery.acceptance_persistence.failed'},
+                    err: retryErr,
+                    deliveryId: delivery.id
+                }, 'Failed to persist accepted gift delivery');
+
+                try {
+                    await this.deps.giftDeliveryRepository.markFailed(delivery.id);
+                } catch (markFailedErr) {
+                    logging.error({
+                        event: {name: 'gift_delivery.acceptance_terminal_persistence.failed'},
+                        err: markFailedErr,
+                        deliveryId: delivery.id
+                    }, 'Failed to move accepted gift delivery out of recovery');
+                }
+                return 'failed';
+            }
+        }
+
+        if (!persisted) {
+            cancelledDuringSend = await this.deps.giftDeliveryRepository.recordCancelledAcceptance(delivery.id, sentAt, result.providerMessageId);
         }
 
         if (persisted) {

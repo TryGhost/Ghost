@@ -49,7 +49,7 @@ export function renderText(data: GiftDeliveryEmailData, t: Translate): string {
     const message = data.personalMessage ? `\n"${data.personalMessage}"\n— ${data.buyerName}\n` : '';
     const benefits = data.gift.benefits.length ? `\n${t('What\'s included:')}\n${data.gift.benefits.map(benefit => `- ${benefit}`).join('\n')}\n` : '';
 
-    return `${t('A gift, just for you')}\n\n${greeting}${intro}\n${message}${benefits}\n${t('Redeem your gift')}:\n${data.gift.link}\n\n${t('This gift can only be redeemed once and expires on {expiresAt}.', {
+    return `${t('A gift, just for you')}\n\n${greeting}${intro}\n${message}${benefits}\n${t('Redeem your gift:')}\n${data.gift.link}\n\n${t('This gift can only be redeemed once and expires on {expiresAt}.', {
         expiresAt: data.gift.expiresAt,
         interpolation
     })}\n\n---\n${t('This message was sent from {siteDomain} to {email} on behalf of {buyerName} ({buyerEmail}).', {

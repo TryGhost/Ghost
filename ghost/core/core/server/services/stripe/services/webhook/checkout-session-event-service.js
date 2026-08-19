@@ -40,6 +40,18 @@ function getStripeResourceId(resource) {
     return null;
 }
 
+function getGiftBuyerEmailFromSession(session) {
+    if (session.customer_details?.email) {
+        return session.customer_details.email;
+    }
+
+    if (session.customer && typeof session.customer === 'object' && !session.customer.deleted && session.customer.email) {
+        return session.customer.email;
+    }
+
+    return null;
+}
+
 /**
  * Handles `checkout.session.completed` webhook events
  *
@@ -135,12 +147,11 @@ module.exports = class CheckoutSessionEventService {
      */
     async handleGiftEvent(session) {
         const stripeCustomerId = getStripeResourceId(session.customer);
-        const buyerEmail = await this.getGiftBuyerEmail(session, stripeCustomerId);
 
         if (session.metadata?.ghost_gift_id) {
             await this.deps.giftService.completePurchase({
                 giftId: session.metadata.ghost_gift_id,
-                buyerEmail,
+                buyerEmail: getGiftBuyerEmailFromSession(session),
                 stripeCustomerId,
                 currency: session.currency,
                 amount: session.amount_total,
@@ -150,6 +161,7 @@ module.exports = class CheckoutSessionEventService {
             return;
         }
 
+        const buyerEmail = await this.getGiftBuyerEmail(session, stripeCustomerId);
         await this.deps.giftService.completePurchase({
             token: session.metadata?.gift_token,
             buyerEmail,
@@ -165,21 +177,18 @@ module.exports = class CheckoutSessionEventService {
     }
 
     /**
-     * Stripe webhook events contain a snapshot of the Checkout Session. If that
-     * snapshot has no customer details, recover the required buyer email from
-     * the Customer associated with the session.
+     * Legacy gift Checkout sessions predate persisted buyer details. If their
+     * webhook snapshot has no customer details, recover the required buyer email
+     * from the Customer associated with the session.
      *
      * @param {import('stripe').Stripe.Checkout.Session} session
      * @param {string|null} stripeCustomerId
      * @returns {Promise<string|null>}
      */
     async getGiftBuyerEmail(session, stripeCustomerId) {
-        if (session.customer_details?.email) {
-            return session.customer_details.email;
-        }
-
-        if (session.customer && typeof session.customer === 'object' && !session.customer.deleted && session.customer.email) {
-            return session.customer.email;
+        const sessionEmail = getGiftBuyerEmailFromSession(session);
+        if (sessionEmail) {
+            return sessionEmail;
         }
 
         if (!stripeCustomerId) {

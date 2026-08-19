@@ -166,9 +166,9 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
         }
 
         try {
-            const recoveredCount = await giftDeliveryService.recoverPending();
-            if (recoveredCount > 0) {
-                logging.info(`Recovered ${recoveredCount} pending gift deliveries during cleanup`);
+            const {sentCount, skippedCount, failedCount} = await giftDeliveryService.recoverPending();
+            if (sentCount + skippedCount + failedCount > 0) {
+                logging.info(`Gift delivery recovery during cleanup: ${sentCount} sent, ${skippedCount} skipped, ${failedCount} failed`);
             }
         } catch (err) {
             logging.error(err, 'Failed to recover pending gift deliveries during cleanup');
@@ -190,9 +190,9 @@ export async function recoverPendingDeliveries(): Promise<void> {
     const logging = require('@tryghost/logging');
 
     try {
-        const recoveredCount = await deliveryService.recoverPending();
-        if (recoveredCount > 0) {
-            logging.info(`Recovered ${recoveredCount} pending gift deliveries`);
+        const {sentCount, skippedCount, failedCount} = await deliveryService.recoverPending();
+        if (sentCount + skippedCount + failedCount > 0) {
+            logging.info(`Gift delivery recovery: ${sentCount} sent, ${skippedCount} skipped, ${failedCount} failed`);
         }
     } catch (err) {
         logging.error(err, 'Failed to recover pending gift deliveries');
