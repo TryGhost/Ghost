@@ -51,6 +51,7 @@
     "express": "4.22.2",
     "knex": "3.1.0",
     "stripe": "8.222.0",
+    "zod": "catalog:",
     "@typescript/native": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:"
