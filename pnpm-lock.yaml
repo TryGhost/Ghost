@@ -2185,6 +2185,9 @@ importers:
       typescript-eslint:
         specifier: 'catalog:'
         version: 8.67.0(@typescript/typescript6@6.0.2)(eslint@9.39.4(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)
+      zod:
+        specifier: 'catalog:'
+        version: 4.4.3
 
   ghost/core:
     dependencies:
