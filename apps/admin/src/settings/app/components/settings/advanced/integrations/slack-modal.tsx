@@ -1,12 +1,12 @@
-import BrandIcon from '@/settings/app/components/icons/brand-icon';
+import BrandIcon from '@/settings/components/icons/brand-icon';
 import IntegrationHeader from './integration-header';
-import useSettingGroup from '@/settings/app/hooks/use-setting-group';
+import useSettingGroup from '@/settings/hooks/use-setting-group';
 import validator from 'validator';
 import {Button, Field, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldSet, Input} from '@tryghost/shade/components';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {getSettingValues, useTestSlack} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'sonner';
-import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
 
 function SlackModal() {
     const {updateRoute} = useSettingsNavigation();

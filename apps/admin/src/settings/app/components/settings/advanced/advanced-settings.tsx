@@ -5,7 +5,7 @@ import Integrations from './integrations';
 import Labs from './labs';
 import MigrationTools from './migration-tools';
 import React from 'react';
-import SearchableSection from '@/settings/app/components/searchable-section';
+import SearchableSection from '@/settings/components/searchable-section';
 
 export const searchKeywords = {
     integrations: ['advanced', 'integrations', 'zapier', 'slack', 'unsplash', 'first promoter', 'firstpromoter', 'pintura', 'disqus', 'analytics', 'ulysses', 'typeform', 'buffer', 'plausible', 'github', 'webhooks'],

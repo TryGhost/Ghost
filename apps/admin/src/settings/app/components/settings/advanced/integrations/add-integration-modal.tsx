@@ -1,9 +1,9 @@
 import {useEffect, useState} from 'react';
 import {Field, FieldError, FieldGroup, FieldLabel, Input} from '@tryghost/shade/components';
-import {HostLimitError, useLimiter} from '@/settings/app/hooks/use-limiter';
-import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
-import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
-import {useUpgradeRoute} from '@/settings/app/hooks/use-upgrade-route';
+import {HostLimitError, useLimiter} from '@/settings/hooks/use-limiter';
+import {useConfirmation} from '@/settings/providers/confirmation-context';
+import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
+import {useUpgradeRoute} from '@/settings/hooks/use-upgrade-route';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {useCreateIntegration} from '@tryghost/admin-x-framework/api/integrations';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';

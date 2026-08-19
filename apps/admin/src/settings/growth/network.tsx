@@ -1,17 +1,17 @@
 import React from 'react';
-import SettingImg from '@/settings/app/assets/images/network.png';
-import TopLevelGroup from '@/settings/app/components/top-level-group';
+import SettingImg from '@/settings/assets/images/network.png';
+import TopLevelGroup from '@/settings/components/top-level-group';
 import validator from 'validator';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {type Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {SettingGroupContent} from '@tryghost/shade/patterns';
 import {Switch} from '@tryghost/shade/components';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
-import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
+import {useGlobalData} from '@/settings/providers/global-data-context';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {useLimiter} from '@/settings/app/hooks/use-limiter';
-import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
-import {withErrorBoundary} from '@/settings/app/components/error-boundary';
+import {useLimiter} from '@/settings/hooks/use-limiter';
+import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
+import {withErrorBoundary} from '@/settings/components/with-error-boundary';
 
 const Network: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {settings} = useGlobalData();

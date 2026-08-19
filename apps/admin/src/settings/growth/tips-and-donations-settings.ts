@@ -1,4 +1,4 @@
-import {currencySelectGroups} from '@/settings/app/utils/currency';
+import {currencySelectGroups} from '@/settings/utils/currency';
 import {z} from 'zod';
 
 const DEFAULT_DONATIONS_CURRENCY = 'USD';

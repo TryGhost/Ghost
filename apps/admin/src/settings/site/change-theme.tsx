@@ -1,16 +1,16 @@
 import React, {useEffect, useState} from 'react';
-import TopLevelGroup from '@/settings/app/components/top-level-group';
+import TopLevelGroup from '@/settings/components/top-level-group';
 import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {SettingGroupContent} from '@tryghost/shade/patterns';
 import {Text} from '@tryghost/shade/primitives';
 import {type Theme, useBrowseThemes} from '@tryghost/admin-x-framework/api/themes';
 import {downloadFile, getGhostPaths} from '@tryghost/admin-x-framework/helpers';
-import {useCheckThemeLimitError} from '@/settings/app/hooks/use-check-theme-limit-error';
-import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
-import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
-import {useUpgradeRoute} from '@/settings/app/hooks/use-upgrade-route';
-import {withErrorBoundary} from '@/settings/app/components/error-boundary';
+import {useCheckThemeLimitError} from '@/settings/hooks/use-check-theme-limit-error';
+import {useConfirmation} from '@/settings/providers/confirmation-context';
+import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
+import {useUpgradeRoute} from '@/settings/hooks/use-upgrade-route';
+import {withErrorBoundary} from '@/settings/components/with-error-boundary';
 
 const ChangeTheme: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const [themeLimitError, setThemeLimitError] = useState<string|null>(null);

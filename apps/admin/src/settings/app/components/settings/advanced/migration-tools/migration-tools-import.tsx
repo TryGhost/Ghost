@@ -1,10 +1,10 @@
-import BrandIcon from '@/settings/app/components/icons/brand-icon';
+import BrandIcon from '@/settings/components/icons/brand-icon';
 import React, {useState} from 'react';
 import UniversalImportModal from './universal-import-modal';
 import {Button} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
-import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
-import {DialogPortal} from '@/settings/app/components/providers/dialog-portal';
+import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
+import {DialogPortal} from '@/settings/providers/dialog-portal';
 
 const MigrationToolsImport: React.FC = () => {
     const {updateRoute} = useSettingsNavigation();

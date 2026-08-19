@@ -1,4 +1,4 @@
-import ColorPickerField from '@/settings/app/components/color-picker-field';
+import ColorPickerField from '@/settings/components/color-picker-field';
 import React, {useEffect, useState} from 'react';
 import {type CustomThemeSetting} from '@tryghost/admin-x-framework/api/custom-theme-settings';
 import {Field, FieldContent, FieldDescription, FieldLabel, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch} from '@tryghost/shade/components';

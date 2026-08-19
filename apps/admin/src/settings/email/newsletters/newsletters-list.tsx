@@ -3,7 +3,7 @@ import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent
 import {Inline} from '@tryghost/shade/primitives';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {type Newsletter} from '@tryghost/admin-x-framework/api/newsletters';
-import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
 
 interface NewslettersListProps {
     newsletters: Newsletter[];

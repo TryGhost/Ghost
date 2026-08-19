@@ -1,9 +1,9 @@
-import HtmlField from '@/settings/app/components/html-field';
+import HtmlField from '@/settings/components/html-field';
 import React, {useCallback, useEffect, useMemo} from 'react';
 import {Checkbox, Field, FieldGroup, FieldLabel, FieldLegend, FieldSet, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch} from '@tryghost/shade/components';
 import {type Setting, type SettingValue, checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {type Tier, getPaidActiveTiers} from '@tryghost/admin-x-framework/api/tiers';
-import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
+import {useGlobalData} from '@/settings/providers/global-data-context';
 
 type SignupCheckbox = {
     checked: boolean;

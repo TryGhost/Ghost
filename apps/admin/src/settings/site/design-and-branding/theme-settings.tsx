@@ -1,10 +1,10 @@
 import React from 'react';
 import ThemeSetting from './theme-setting';
-import useCustomFonts from '@/settings/app/hooks/use-custom-fonts';
+import useCustomFonts from '@/settings/hooks/use-custom-fonts';
 import {type CustomThemeSetting} from '@tryghost/admin-x-framework/api/custom-theme-settings';
 import {FieldGroup, FieldLegend, FieldSet} from '@tryghost/shade/components';
 import {type Theme, useBrowseThemes} from '@tryghost/admin-x-framework/api/themes';
-import {isCustomThemeSettingVisible} from '@/settings/app/utils/is-custom-theme-settings-visible';
+import {isCustomThemeSettingVisible} from '@/settings/utils/is-custom-theme-settings-visible';
 
 interface ThemeSettingsProps {
     sections: Array<{

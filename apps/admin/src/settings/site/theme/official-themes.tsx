@@ -1,8 +1,8 @@
-import MarketplaceBgImage from '@/settings/app/assets/images/footer-marketplace-bg.png';
+import MarketplaceBgImage from '@/settings/assets/images/footer-marketplace-bg.png';
 import React, {useEffect, useState} from 'react';
 import clsx from 'clsx';
 import {ModalPage} from '@tryghost/shade/page-templates';
-import {type OfficialTheme, type ThemeVariant, useOfficialThemes} from '@/settings/app/components/providers/settings-app-provider';
+import {type OfficialTheme, type ThemeVariant, useOfficialThemes} from '@/settings/providers/settings-app-context';
 import {Text} from '@tryghost/shade/primitives';
 
 const VARIANT_LOOP_INTERVAL = 3000;

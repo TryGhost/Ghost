@@ -2,11 +2,11 @@ import NavigationIconUpload from './navigation-icon-upload';
 import NavigationVisibilityDropdown from './navigation-visibility-dropdown';
 import React, {type ReactNode} from 'react';
 import clsx from 'clsx';
-import useUrlInput from '@/settings/app/hooks/use-url-input';
-import {type EditableItem, type NavigationItem, type NavigationItemErrors} from '@/settings/app/hooks/site/use-navigation-editor';
+import useUrlInput from '@/settings/hooks/use-url-input';
+import {type EditableItem, type NavigationItem, type NavigationItemErrors} from '@/settings/hooks/site/use-navigation-editor';
 import {Field, FieldError, FieldLabel, Input} from '@tryghost/shade/components';
 import {Inline} from '@tryghost/shade/primitives';
-import {formatUrl} from '@/settings/app/utils/format-url';
+import {formatUrl} from '@/settings/utils/format-url';
 import {navigationColumnClasses, navigationFieldOffsetClass, navigationRowClasses} from './navigation-layout';
 
 export type NavigationItemEditorProps = React.HTMLAttributes<HTMLDivElement> & {

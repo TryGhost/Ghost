@@ -3,7 +3,7 @@ import EditOfferModal from './edit-offer-modal';
 import EditRetentionOfferModal from './edit-retention-offer-modal';
 import OfferSuccess from './offer-success';
 import {OffersIndexModal} from './offers-index';
-import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
 
 type OffersRouteHandlerProps = {
     route: string;

@@ -1,4 +1,4 @@
-// NOTE: duplicated in apps/admin/src/settings/app/components/settings/membership/member-emails/default-welcome-email-values.ts — the email design modal needs it in both apps until Automations GAs; keep in sync
+// NOTE: duplicated in apps/admin/src/settings/membership/member-emails/default-welcome-email-values.ts — the email design modal needs it in both apps until Automations GAs; keep in sync
 import type {AutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
 
 export type WelcomeEmailType = 'free' | 'paid';

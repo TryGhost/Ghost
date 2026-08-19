@@ -1,4 +1,4 @@
-import {NAVIGATION_ITEM_VISIBILITY, type NavigationItemVisibility} from '@/settings/app/hooks/site/use-navigation-editor';
+import {NAVIGATION_ITEM_VISIBILITY, type NavigationItemVisibility} from '@/settings/hooks/site/use-navigation-editor';
 
 export const navigationVisibilityLabels = {
     public: 'Everyone',

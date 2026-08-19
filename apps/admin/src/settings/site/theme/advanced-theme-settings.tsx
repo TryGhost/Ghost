@@ -1,6 +1,6 @@
 import InvalidThemeModal, {type FatalErrors} from './invalid-theme-modal';
 import React, {useState} from 'react';
-import useCustomFonts from '@/settings/app/hooks/use-custom-fonts';
+import useCustomFonts from '@/settings/hooks/use-custom-fonts';
 import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from '@tryghost/shade/components';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {LucideIcon} from '@tryghost/shade/utils';
@@ -8,11 +8,11 @@ import {ModalPage} from '@tryghost/shade/page-templates';
 import {type Theme, isActiveTheme, isDefaultTheme, isDeletableTheme, isLegacyTheme, useActivateTheme, useDeleteTheme} from '@tryghost/admin-x-framework/api/themes';
 import {downloadFile, getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {toast} from 'sonner';
-import {useCheckThemeLimitError} from '@/settings/app/hooks/use-check-theme-limit-error';
-import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
+import {useCheckThemeLimitError} from '@/settings/hooks/use-check-theme-limit-error';
+import {useConfirmation} from '@/settings/providers/confirmation-context';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
-import {useUpgradeRoute} from '@/settings/app/hooks/use-upgrade-route';
+import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
+import {useUpgradeRoute} from '@/settings/hooks/use-upgrade-route';
 
 interface ThemeActionProps {
     theme: Theme;

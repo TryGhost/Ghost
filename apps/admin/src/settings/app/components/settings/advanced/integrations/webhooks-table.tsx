@@ -6,7 +6,7 @@ import {type Integration} from '@tryghost/admin-x-framework/api/integrations';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {getWebhookEventLabel} from './webhook-event-options';
 import {toast} from 'sonner';
-import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
+import {useConfirmation} from '@/settings/providers/confirmation-context';
 import {type Webhook, useDeleteWebhook} from '@tryghost/admin-x-framework/api/webhooks';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 

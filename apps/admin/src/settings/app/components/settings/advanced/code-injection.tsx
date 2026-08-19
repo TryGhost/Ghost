@@ -1,9 +1,9 @@
 import CodeModal from './code/code-modal';
 import React, {useState} from 'react';
-import TopLevelGroup from '@/settings/app/components/top-level-group';
+import TopLevelGroup from '@/settings/components/top-level-group';
 import {Button} from '@tryghost/shade/components';
-import {withErrorBoundary} from '@/settings/app/components/error-boundary';
-import {DialogPortal} from '@/settings/app/components/providers/dialog-portal';
+import {withErrorBoundary} from '@/settings/components/with-error-boundary';
+import {DialogPortal} from '@/settings/providers/dialog-portal';
 
 const CodeInjection: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const [isCodeModalOpen, setIsCodeModalOpen] = useState(false);

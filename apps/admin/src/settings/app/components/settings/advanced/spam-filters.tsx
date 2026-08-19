@@ -1,10 +1,10 @@
 import React from 'react';
-import TopLevelGroup from '@/settings/app/components/top-level-group';
-import useSettingGroup from '@/settings/app/hooks/use-setting-group';
+import TopLevelGroup from '@/settings/components/top-level-group';
+import useSettingGroup from '@/settings/hooks/use-setting-group';
 import {Field, FieldDescription, FieldError, FieldLabel, Textarea} from '@tryghost/shade/components';
 import {SettingGroupContent} from '@tryghost/shade/patterns';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
-import {withErrorBoundary} from '@/settings/app/components/error-boundary';
+import {withErrorBoundary} from '@/settings/components/with-error-boundary';
 
 const SpamFilters: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {

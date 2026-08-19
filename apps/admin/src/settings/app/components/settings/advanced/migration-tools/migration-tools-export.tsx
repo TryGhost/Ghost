@@ -1,6 +1,6 @@
 import ExportAllModal, {type ExportMode} from './export-all-modal';
 import React from 'react';
-import useFeatureFlag from '@/settings/app/hooks/use-feature-flag';
+import useFeatureFlag from '@/settings/hooks/use-feature-flag';
 import {Button, LoadingIndicator} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {blobDownloadFromEndpoint} from '@tryghost/admin-x-framework/helpers';

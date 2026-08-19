@@ -1,18 +1,18 @@
 import React from 'react';
-import TopLevelGroup from '@/settings/app/components/top-level-group';
-import trackEvent from '@/settings/app/utils/analytics';
-import useStaffUsers from '@/settings/app/hooks/use-staff-users';
+import TopLevelGroup from '@/settings/components/top-level-group';
+import trackEvent from '@/settings/utils/analytics';
+import useStaffUsers from '@/settings/hooks/use-staff-users';
 import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Button} from '@tryghost/shade/components';
 import {formatNumber} from '@tryghost/shade/utils';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {toast} from 'sonner';
-import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
+import {useConfirmation} from '@/settings/providers/confirmation-context';
 import {useDeleteAllContent} from '@tryghost/admin-x-framework/api/db';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useQueryClient} from '@tryghost/admin-x-framework';
 import {useRemoveAllGiftLinks} from '@tryghost/admin-x-framework/api/gift-links';
 import {useResetAuth} from '@tryghost/admin-x-framework/api/security';
-import {withErrorBoundary} from '@/settings/app/components/error-boundary';
+import {withErrorBoundary} from '@/settings/components/with-error-boundary';
 
 const DangerZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {mutateAsync: deleteAllContent} = useDeleteAllContent();

@@ -2,11 +2,11 @@ import ChangeThemeModal from './theme-modal';
 import DesignModal from './design-modal';
 import React, {useCallback, useEffect, useState} from 'react';
 import ThemeCodeEditorModal from './theme/theme-code-editor-modal';
-import {useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
-import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
-import {useUpgradeRoute} from '@/settings/app/hooks/use-upgrade-route';
+import {useConfirmation} from '@/settings/providers/confirmation-context';
+import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
+import {useUpgradeRoute} from '@/settings/hooks/use-upgrade-route';
 import {parseEditingThemeRoute} from './theme/theme-editor-utils';
-import {useCheckThemeLimitError} from '@/settings/app/hooks/use-check-theme-limit-error';
+import {useCheckThemeLimitError} from '@/settings/hooks/use-check-theme-limit-error';
 
 const DesignAndThemeModal: React.FC = () => {
     const {route, updateRoute} = useSettingsNavigation();

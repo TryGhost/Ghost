@@ -2,7 +2,7 @@ import FeatureToggle from './feature-toggle';
 import LabItem from './lab-item';
 import React, {useEffect, useState} from 'react';
 import {ActionList} from '@tryghost/shade/components';
-import {HostLimitError, useLimiter} from '@/settings/app/hooks/use-limiter';
+import {HostLimitError, useLimiter} from '@/settings/hooks/use-limiter';
 
 type Feature = {
     title: string;

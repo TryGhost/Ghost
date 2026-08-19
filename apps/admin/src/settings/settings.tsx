@@ -1,4 +1,4 @@
-import { App } from "./app/app";
+import { App } from "./layout/app";
 
 export default function Settings() {
     // Full-screen takeover inside the shell tree (automations-editor pattern);

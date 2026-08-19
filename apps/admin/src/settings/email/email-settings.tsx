@@ -3,9 +3,9 @@ import EnableNewsletters from './enable-newsletters';
 import MailGun from './mailgun';
 import Newsletters from './newsletters';
 import React from 'react';
-import SearchableSection from '@/settings/app/components/searchable-section';
+import SearchableSection from '@/settings/components/searchable-section';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
-import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
+import {useGlobalData} from '@/settings/providers/global-data-context';
 import {searchKeywords} from './search-keywords';
 
 const EmailSettings: React.FC = () => {

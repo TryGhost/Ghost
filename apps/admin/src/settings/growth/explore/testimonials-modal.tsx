@@ -1,6 +1,6 @@
-import AliAbdaal from '@/settings/app/assets/images/ali-abdaal.png';
-import IsaacSaul from '@/settings/app/assets/images/isaac-saul.png';
-import JoelWarner from '@/settings/app/assets/images/joel-warner.png';
+import AliAbdaal from '@/settings/assets/images/ali-abdaal.png';
+import IsaacSaul from '@/settings/assets/images/isaac-saul.png';
+import JoelWarner from '@/settings/assets/images/joel-warner.png';
 import React from 'react';
 import {Avatar, Field, FieldError, FieldGroup, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Textarea} from '@tryghost/shade/components';
 import {Button, LoadingIndicator} from '@tryghost/shade/components';
@@ -8,8 +8,8 @@ import {SettingsModal} from '@tryghost/shade/patterns';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'sonner';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
-import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
+import {useGlobalData} from '@/settings/providers/global-data-context';
+import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
 
 interface FormState {
     content: string;

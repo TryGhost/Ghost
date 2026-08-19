@@ -4,7 +4,7 @@ import validator from 'validator';
 import {Field, FieldError, FieldGroup, FieldLabel, Input} from '@tryghost/shade/components';
 import {type Setting, type SettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {fullEmailAddress, getEmailDomain} from '@tryghost/admin-x-framework/api/site';
-import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
+import {useGlobalData} from '@/settings/providers/global-data-context';
 
 const AccountPage: React.FC<{
     localSettings: Setting[]

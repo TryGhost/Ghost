@@ -1,13 +1,13 @@
 import React, {useState} from 'react';
-import trackEvent from '@/settings/app/utils/analytics';
+import trackEvent from '@/settings/utils/analytics';
 import {type ConfigResponseType, configDataType} from '@tryghost/admin-x-framework/api/config';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {Switch} from '@tryghost/shade/components';
 import {getSettingValue, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
-import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
+import {useGlobalData} from '@/settings/providers/global-data-context';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useQueryClient} from '@tanstack/react-query';
-import {DialogPortal} from '@/settings/app/components/providers/dialog-portal';
+import {DialogPortal} from '@/settings/providers/dialog-portal';
 
 type ConfirmationProps = {
     title: string;

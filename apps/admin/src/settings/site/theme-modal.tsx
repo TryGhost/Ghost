@@ -7,14 +7,14 @@ import ThemePreview from './theme/theme-preview';
 import {Button, Dropzone, LoadingIndicator, Tabs, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {type InstalledTheme, type Theme, type ThemesInstallResponseType, isDefaultOrLegacyTheme, useActivateTheme, useBrowseThemes, useInstallTheme, useUploadTheme} from '@tryghost/admin-x-framework/api/themes';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
-import {type OfficialTheme} from '@/settings/app/components/providers/settings-app-provider';
+import {type OfficialTheme} from '@/settings/providers/settings-app-context';
 import {PageHeader, SettingsModal} from '@tryghost/shade/patterns';
 import {toast} from 'sonner';
-import {useCheckThemeLimitError} from '@/settings/app/hooks/use-check-theme-limit-error';
-import {type ConfirmationHandle, useConfirmation} from '@/settings/app/components/providers/confirmation-provider';
+import {useCheckThemeLimitError} from '@/settings/hooks/use-check-theme-limit-error';
+import {type ConfirmationHandle, useConfirmation} from '@/settings/providers/confirmation-context';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {useSettingsNavigation} from '@/settings/app/hooks/use-settings-navigation';
-import {useUpgradeRoute} from '@/settings/app/hooks/use-upgrade-route';
+import {useSettingsNavigation} from '@/settings/hooks/use-settings-navigation';
+import {useUpgradeRoute} from '@/settings/hooks/use-upgrade-route';
 
 interface ThemeToolbarProps {
     selectedTheme: OfficialTheme|null;

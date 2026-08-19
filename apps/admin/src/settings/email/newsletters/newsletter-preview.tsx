@@ -2,9 +2,9 @@ import NewsletterPreviewContent from './newsletter-preview-content';
 import React from 'react';
 import {type Newsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
-import {renderReplyToEmail, renderSenderEmail} from '@/settings/app/utils/newsletter-emails';
+import {renderReplyToEmail, renderSenderEmail} from '@/settings/utils/newsletter-emails';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
-import {useGlobalData} from '@/settings/app/components/providers/global-data-provider';
+import {useGlobalData} from '@/settings/providers/global-data-context';
 
 const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => {
     const {currentUser, settings, siteData, config} = useGlobalData();
