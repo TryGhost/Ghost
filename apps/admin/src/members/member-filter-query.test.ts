@@ -64,21 +64,24 @@ describe('member-filter-query', () => {
             {field: 'newsletters.weekly', operator: 'is', values: ['unsubscribed']}
         ]);
 
-        // Hand-written shapes pairing the slug with the "wrong" join and
-        // email_disabled value still follow the slug's polarity.
-        expect(stripIds(parseMemberFilter('(newsletters.slug:-weekly+email_disabled:0)', 'UTC'))).toEqual([
-            {field: 'newsletters.weekly', operator: 'is', values: ['unsubscribed']}
-        ]);
-
-        expect(stripIds(parseMemberFilter('(newsletters.slug:weekly,email_disabled:1)', 'UTC'))).toEqual([
+        expect(stripIds(parseMemberFilter('(newsletters.slug:weekly+email_disabled:0)', 'UTC'))).toEqual([
             {field: 'newsletters.weekly', operator: 'is', values: ['subscribed']}
         ]);
     });
 
-    it('round-trips a mismatched unsubscribed compound to the canonical shape', () => {
-        const parsed = parseMemberFilter('(newsletters.slug:-weekly+email_disabled:0)', 'UTC');
-
-        expect(serializeMemberFilters(parsed, 'UTC')).toBe('(newsletters.slug:-weekly,email_disabled:1)');
+    it('leaves a newsletter pair unread when its parts are arranged to mean something else', () => {
+        // Being on the list *or* having bounced is a wider set of members than being on the
+        // list and not having bounced, so these are not the filter they resemble. Reading them
+        // as one would answer with a different set of members and then save that back.
+        for (const filter of [
+            '(newsletters.slug:weekly,email_disabled:1)',
+            '(newsletters.slug:-weekly+email_disabled:0)',
+            '(newsletters.slug:weekly+email_disabled:1)'
+        ]) {
+            expect(stripIds(parseMemberFilter(filter, 'UTC'))).not.toContainEqual(
+                expect.objectContaining({field: 'newsletters.weekly'})
+            );
+        }
     });
 
     it('parses legacy scalar set filters and preserves singleton offer ids', () => {
