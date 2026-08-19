@@ -49,8 +49,8 @@ test.describe('Ghost Public - Portal Gifts', () => {
         const checkoutSession = stripe!.getCheckoutSessions().at(-1);
         expect(checkoutSession).toBeDefined();
 
-        const giftToken = checkoutSession!.response.metadata.gift_token;
-        expect(giftToken).toBeDefined();
+        const giftToken = new URL(checkoutSession!.response.success_url).searchParams.get('gift_token');
+        expect(giftToken).not.toBeNull();
 
         const giftResponse = await page.request.get(`/members/api/gifts/${encodeURIComponent(giftToken!)}/redeem/`);
         expect(giftResponse.ok()).toBe(true);
