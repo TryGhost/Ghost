@@ -46,15 +46,16 @@ const NavigationIconUpload: React.FC<NavigationIconUploadProps> = ({idPrefix, it
         {item.icon ? (
             <ImageUploadPreview>
                 <ImageUploadImage alt='' className='size-[38px] rounded-lg object-contain p-2.5' src={item.icon} />
-                <ImageUploadActions>
+                <ImageUploadActions className='inset-0 flex items-center justify-center'>
                     <ImageUploadAction
                         aria-label='Remove navigation icon'
+                        className='size-full rounded-lg bg-black/75 p-0 text-white hover:bg-black/90 hover:text-white'
                         onClick={() => {
                             clearError?.('icon');
                             updateItem?.({icon: ''});
                         }}
                     >
-                        <Trash2 />
+                        <Trash2 className='size-4' />
                     </ImageUploadAction>
                 </ImageUploadActions>
             </ImageUploadPreview>
