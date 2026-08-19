@@ -7,6 +7,7 @@ const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const {slugify} = require('@tryghost/string');
 const _ = require('lodash');
+const labs = require('../../shared/labs');
 
 const messages = {
     invalidData: 'navigation data is not an object or is a function',
@@ -143,11 +144,13 @@ module.exports = function navigation(options) {
         return new SafeString('');
     }
 
+    const navigationIconsEnabled = labs.isSet('navigationIcons');
+
     output = navigationData
-        .filter(item => isNavigationItemVisible(item, member))
+        .filter(item => navigationIconsEnabled ? isNavigationItemVisible(item, member) : true)
         .map(function (e) {
             const out = {};
-            const icon = _.isString(e.icon) ? e.icon : null;
+            const icon = navigationIconsEnabled && _.isString(e.icon) ? e.icon : null;
             const iconName = getNavigationIconName(icon);
             const hasLabel = _.isString(e.label) && e.label.trim().length > 0;
 

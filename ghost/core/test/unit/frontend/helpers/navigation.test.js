@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../utils/assertions');
+const sinon = require('sinon');
 const hbs = require('../../../../core/frontend/services/theme-engine/engine');
 const configUtils = require('../../../utils/config-utils');
 const path = require('path');
@@ -10,6 +11,7 @@ const foreach = require('../../../../core/frontend/helpers/foreach');
 const link_class = require('../../../../core/frontend/helpers/link_class');
 const url = require('../../../../core/frontend/helpers/url');
 const navigation = require('../../../../core/frontend/helpers/navigation');
+const labs = require('../../../../core/shared/labs');
 
 const handlebars = require('../../../../core/frontend/services/theme-engine/engine').handlebars;
 
@@ -18,6 +20,7 @@ const runHelperThunk = data => () => runHelper(data);
 
 describe('{{navigation}} helper', function () {
     let optionsData;
+    let labsStub;
 
     beforeAll(async function () {
         hbs.express4({
@@ -36,6 +39,8 @@ describe('{{navigation}} helper', function () {
     });
 
     beforeEach(function () {
+        labsStub = sinon.stub(labs, 'isSet').returns(true);
+
         optionsData = {
             data: {
                 site: {
@@ -47,6 +52,10 @@ describe('{{navigation}} helper', function () {
                 }
             }
         };
+    });
+
+    afterEach(function () {
+        sinon.restore();
     });
 
     it('should throw errors on invalid data', function () {
@@ -302,6 +311,37 @@ describe('{{navigation}} helper', function () {
 
         assertExists(rendered);
         assert.equal(rendered.string, '');
+    });
+
+    describe('when navigationIcons lab is disabled', function () {
+        beforeEach(function () {
+            labsStub.withArgs('navigationIcons').returns(false);
+        });
+
+        it('does not render icons', function () {
+            optionsData.data.site.navigation = [
+                {label: 'Foo', url: '/foo', icon: 'https://example.com/icon.svg'}
+            ];
+
+            const rendered = runHelper(optionsData);
+
+            assertExists(rendered);
+            assert(!rendered.string.includes('class="nav-icon"'));
+            assert(rendered.string.includes('<span class="nav-label">Foo</span>'));
+        });
+
+        it('does not filter items by visibility', function () {
+            optionsData.data.site.navigation = [
+                {label: 'Hidden', url: '/hidden', visibility: 'none'},
+                {label: 'Paid', url: '/paid', visibility: 'paid'}
+            ];
+
+            const rendered = runHelper(optionsData);
+
+            assertExists(rendered);
+            assert(rendered.string.includes('<span class="nav-label">Hidden</span>'));
+            assert(rendered.string.includes('<span class="nav-label">Paid</span>'));
+        });
     });
 
     describe('type="secondary"', function () {
