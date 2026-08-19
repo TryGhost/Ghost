@@ -226,28 +226,30 @@ class PostsService {
         }
 
         const postRows = await this.#getFilteredBulkPostQuery(options).select('posts.id');
+        const postIds = postRows.map(post => post.id);
 
         // The same tag can be passed more than once in a single request
         const tagIds = [...new Set(data.tags.map(tag => tag.id))];
 
         // Posts in the selection may already carry the tag, filter those pairs out
-        const existingRows = tagIds.length ?
+        const existingRows = tagIds.length && postIds.length ?
             await options.transacting('posts_tags')
                 .whereIn('tag_id', tagIds)
+                .whereIn('post_id', postIds)
                 .select('post_id', 'tag_id') :
             [];
         const existing = new Set(existingRows.map(row => `${row.post_id}:${row.tag_id}`));
 
         const postTags = [];
         for (const tagId of tagIds) {
-            for (const post of postRows) {
-                if (existing.has(`${post.id}:${tagId}`)) {
+            for (const postId of postIds) {
+                if (existing.has(`${postId}:${tagId}`)) {
                     continue;
                 }
 
                 postTags.push({
                     id: (new ObjectId()).toHexString(),
-                    post_id: post.id,
+                    post_id: postId,
                     tag_id: tagId,
                     sort_order: 0
                 });
