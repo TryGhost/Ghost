@@ -14,6 +14,7 @@ const unavailableNotice = {
 } as const;
 
 const RuntimeProof = import.meta.env.DEV ? lazy(() => import('./runtime-proof')) : null;
+const PreviewRuntimeProof = import.meta.env.DEV ? lazy(() => import('./workspaces/theme/preview/preview-runtime-proof')) : null;
 
 const BuilderRoute = () => {
     const [searchParams] = useSearchParams();
@@ -30,6 +31,10 @@ const BuilderRoute = () => {
 
     if (RuntimeProof && searchParams.get('proof') === 'pi') {
         return <Suspense fallback={null}><RuntimeProof /></Suspense>;
+    }
+
+    if (PreviewRuntimeProof && searchParams.get('proof') === 'preview') {
+        return <Suspense fallback={null}><PreviewRuntimeProof /></Suspense>;
     }
 
     return (
