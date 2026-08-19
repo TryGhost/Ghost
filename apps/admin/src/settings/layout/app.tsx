@@ -1,4 +1,5 @@
 import MainContent from './main-content';
+import {DirtyNavigationGuard} from './dirty-navigation-guard';
 import SettingsAppProvider from '@/settings/providers/settings-app-provider';
 import {type UpgradeStatusType} from '@/settings/providers/settings-app-context';
 import {ConfirmationProvider} from '@/settings/providers/confirmation-provider';
@@ -34,6 +35,7 @@ export function App({upgradeStatus}: AppProps) {
                         <SettingsLocationSync />
                         <MainContent />
                         <Outlet />
+                        <DirtyNavigationGuard />
                     </DialogPortalProvider>
                 </ConfirmationProvider>
             </div>
