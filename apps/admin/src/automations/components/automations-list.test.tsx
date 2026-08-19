@@ -46,7 +46,7 @@ describe('AutomationsList', () => {
         expect(screen.getByText('Welcome new free members after they sign up.')).toBeInTheDocument();
         expect(screen.getByText('Paid member welcome flow')).toBeInTheDocument();
         expect(screen.getByText('Welcome new paid members after they start their subscription.')).toBeInTheDocument();
-        expect(screen.getByText('Live')).toBeInTheDocument();
+        expect(screen.getByText('On')).toBeInTheDocument();
         expect(screen.getByText('Off')).toBeInTheDocument();
         expect(screen.getByRole('columnheader', {name: 'Last entry'})).toBeInTheDocument();
         expect(screen.getByRole('columnheader', {name: 'Total entries'})).toBeInTheDocument();
