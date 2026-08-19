@@ -224,6 +224,49 @@ describe('Unit: server/services/machine-payments/adapters', function () {
         assert.match(String(logging.warn.secondCall.args[0]), /testnet facilitator on Base mainnet/);
     });
 
+    it('rejects HTTP facilitator URLs and normalized mainnet x402.org variants', function () {
+        sinon.stub(logging, 'warn');
+
+        assert.equal(parseX402Config({
+            network: 'eip155:8453',
+            stripeNetwork: 'base',
+            facilitatorUrl: 'http://facilitator.xpay.sh'
+        }), null);
+        assert.match(String(logging.warn.firstCall.args[0]), /must use HTTPS/);
+
+        for (const facilitatorUrl of [
+            'https://X402.ORG/facilitator',
+            'https://x402.org:443/facilitator/',
+            'https://X402.ORG:443/facilitator/'
+        ]) {
+            assert.equal(parseX402Config({
+                network: 'eip155:8453',
+                stripeNetwork: 'base',
+                facilitatorUrl
+            }), null, `expected mainnet rejection for ${facilitatorUrl}`);
+        }
+
+        assert.match(String(logging.warn.secondCall.args[0]), /testnet facilitator on Base mainnet/);
+    });
+
+    it('accepts normalized x402.org facilitator URLs on Base Sepolia', function () {
+        for (const facilitatorUrl of [
+            'https://x402.org/facilitator',
+            'https://X402.ORG/facilitator',
+            'https://x402.org:443/facilitator/'
+        ]) {
+            assert.deepEqual(parseX402Config({
+                network: 'eip155:84532',
+                stripeNetwork: 'base',
+                facilitatorUrl
+            }), {
+                network: 'eip155:84532',
+                stripeNetwork: 'base',
+                facilitatorUrl
+            }, `expected testnet acceptance for ${facilitatorUrl}`);
+        }
+    });
+
     it('evicts the oldest cached route when the bounded cache is full', function () {
         const cache = new BoundedRouteCache(2);
 

@@ -12,6 +12,13 @@ const BASE_SEPOLIA = 'eip155:84532';
 const X402_ORG_FACILITATOR = 'https://x402.org/facilitator';
 const DEFAULT_FACILITATOR_URL = 'https://facilitator.xpay.sh';
 
+function normalizeFacilitatorUrl(urlString: string): string {
+    const parsed = new URL(urlString);
+    const origin = parsed.origin.toLowerCase();
+    const pathname = parsed.pathname.replace(/\/+$/, '') || '/';
+    return `${origin}${pathname}`;
+}
+
 const x402ConfigSchema = z.object({
     network: z.string().regex(/^eip155:\d+$/, {
         message: 'machinePayments.x402.network must be a CAIP-2 EVM network (eip155:<chainId>)'
@@ -30,7 +37,22 @@ const x402ConfigSchema = z.object({
         });
     }
 
-    if (value.network === BASE_MAINNET && value.facilitatorUrl.replace(/\/+$/, '') === X402_ORG_FACILITATOR) {
+    let parsedFacilitatorUrl: URL;
+    try {
+        parsedFacilitatorUrl = new URL(value.facilitatorUrl);
+    } catch {
+        return;
+    }
+
+    if (parsedFacilitatorUrl.protocol !== 'https:') {
+        ctx.addIssue({
+            code: 'custom',
+            message: 'machinePayments.x402.facilitatorUrl must use HTTPS'
+        });
+        return;
+    }
+
+    if (value.network === BASE_MAINNET && normalizeFacilitatorUrl(value.facilitatorUrl) === X402_ORG_FACILITATOR) {
         ctx.addIssue({
             code: 'custom',
             message: 'machinePayments.x402.facilitatorUrl cannot be the x402.org testnet facilitator on Base mainnet'
