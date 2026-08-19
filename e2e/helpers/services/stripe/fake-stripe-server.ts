@@ -16,6 +16,10 @@ import {
 } from './builders';
 import {renderFakeCheckoutPage, renderFakeDonationCheckoutPage} from './fake-checkout-page-renderer';
 
+// Measured against Stripe test mode; re-measure with `pnpm stripe:probe`.
+const MAX_CUSTOM_FIELDS = 3;
+const MAX_CUSTOM_FIELD_LABEL_LENGTH = 50;
+
 export class FakeStripeServer extends FakeServer {
     private readonly products: Map<string, StripeProduct> = new Map();
     private readonly prices: Map<string, StripePrice> = new Map();
@@ -425,6 +429,13 @@ export class FakeStripeServer extends FakeServer {
         });
 
         this.app.post('/v1/checkout/sessions', (req, res) => {
+            const invalid = this.validateCheckoutSessionRequest(req.body);
+            if (invalid) {
+                this.debug(`Rejecting checkout session: ${invalid}`);
+                res.status(400).json({error: {type: 'invalid_request_error', message: invalid}});
+                return;
+            }
+
             const mode = this.parseCheckoutMode(req.body.mode);
             const discounts = this.parseDiscounts(req.body.discounts) ?? [];
             const missingCouponId = discounts.find((discount) => {
@@ -751,6 +762,52 @@ export class FakeStripeServer extends FakeServer {
                 };
             })
             .filter(item => item.id && item.price);
+    }
+
+    /**
+     * Constraints Stripe enforces on session creation, measured against test mode at
+     * API version 2020-08-27 rather than taken from the docs or the OpenAPI spec, both
+     * of which disagree with the API here. The spec carries no `maxItems` on
+     * `custom_fields` and states the `customer_update` rule only in prose, so a
+     * schema-driven check would accept all three of these.
+     *
+     * Messages are Stripe's own, so a test asserting on a rejection asserts on the
+     * string production would see.
+     *
+     * Returns an error message, or null when the request is one Stripe would accept.
+     */
+    private validateCheckoutSessionRequest(body: Record<string, unknown>): string | null {
+        const rawFields = body.custom_fields;
+        const fields = Array.isArray(rawFields)
+            ? rawFields
+            : (rawFields && typeof rawFields === 'object' ? Object.values(rawFields) : []);
+
+        if (fields.length > MAX_CUSTOM_FIELDS) {
+            return `Array custom_fields exceeded maximum ${MAX_CUSTOM_FIELDS} allowed elements.`;
+        }
+
+        for (const field of fields) {
+            const label = (field as {label?: {custom?: unknown}})?.label?.custom;
+            if (typeof label === 'string' && label.length > MAX_CUSTOM_FIELD_LABEL_LENGTH) {
+                return `Invalid string: ${label}; must be at most ${MAX_CUSTOM_FIELD_LABEL_LENGTH} characters`;
+            }
+        }
+
+        // Presence, not truthiness: form decoding turns `customer_update=` into an empty
+        // string, which Stripe treats as an attempt to unset the parameter and refuses.
+        if ('customer_update' in body) {
+            if (body.customer_update === '') {
+                return 'You passed an empty string for \'customer_update\'. We assume empty values are an '
+                    + 'attempt to unset a parameter; however \'customer_update\' cannot be unset. You should '
+                    + 'remove \'customer_update\' from your request or supply a non-empty value.';
+            }
+
+            if (!body.customer) {
+                return '`customer_update` can only be used with `customer`.';
+            }
+        }
+
+        return null;
     }
 
     private parseCustomFields(value: unknown): RecordedStripeCheckoutSession['request']['custom_fields'] {
