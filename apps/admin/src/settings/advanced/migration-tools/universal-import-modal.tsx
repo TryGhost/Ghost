@@ -21,6 +21,30 @@ const UniversalImportModal: React.FC<{onClose: () => void}> = ({onClose}) => {
         ? {'application/json': ['.json'], 'application/zip': ['.zip'], 'text/csv': ['.csv']}
         : {'application/json': ['.json'], 'application/zip': ['.zip']};
 
+    const importFile = async (file: File) => {
+        setUploading(true);
+        try {
+            if (csvContentImporter && file.name.toLowerCase().endsWith('.csv')) {
+                await importContentCSV(file);
+            } else {
+                await importContent(file);
+            }
+            onClose();
+            confirm({
+                title: 'Import in progress',
+                prompt: `Your import is being processed, and you'll receive a confirmation email as soon as it’s complete. Usually this only takes a few minutes, but larger imports may take longer.`,
+                cancelLabel: '',
+                okLabel: 'Got it',
+                onOk: confirmModal => confirmModal?.remove(),
+                formSheet: false
+            });
+        } catch (e) {
+            handleError(e);
+        } finally {
+            setUploading(false);
+        }
+    };
+
     return (
         <SettingsModal
             backDropClick={false}
@@ -44,29 +68,7 @@ const UniversalImportModal: React.FC<{onClose: () => void}> = ({onClose}) => {
                     accept={acceptedTypes}
                     inputId="import-file"
                     inputTestId="import-file"
-                    onDropAccepted={async ([file]) => {
-                        setUploading(true);
-                        try {
-                            if (csvContentImporter && file.name.toLowerCase().endsWith('.csv')) {
-                                await importContentCSV(file);
-                            } else {
-                                await importContent(file);
-                            }
-                            onClose();
-                            confirm({
-                                title: 'Import in progress',
-                                prompt: `Your import is being processed, and you'll receive a confirmation email as soon as it’s complete. Usually this only takes a few minutes, but larger imports may take longer.`,
-                                cancelLabel: '',
-                                okLabel: 'Got it',
-                                onOk: confirmModal => confirmModal?.remove(),
-                                formSheet: false
-                            });
-                        } catch (e) {
-                            handleError(e);
-                        } finally {
-                            setUploading(false);
-                        }
-                    }}
+                    onDropAccepted={([file]) => void importFile(file)}
                 >
                     <div className="text-center" data-testid="import-file-description">
                         {uploading ? 'Uploading...' : <>

@@ -75,7 +75,7 @@ function SlackModal() {
                             <Input id='slack-username' value={slackUsername} onChange={e => updateSetting('slack_username', e.target.value)} />
                             <FieldDescription>The username to display messages from</FieldDescription>
                         </Field>
-                        <Button type='button' variant='outline' onClick={handleTestClick}>Send test notification</Button>
+                        <Button type='button' variant='outline' onClick={() => void handleTestClick()}>Send test notification</Button>
                     </div>
                     </FieldGroup>
                 </FieldSet>

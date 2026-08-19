@@ -1,4 +1,4 @@
-import {type ZapierTemplate} from '@/settings/app/components/settings/advanced/integrations/zapier-modal';
+import {type ZapierTemplate} from '@/settings/advanced/integrations/zapier-modal';
 
 // Ghost logo images
 import OrbBlack1 from '@/settings/assets/images/logos/orb-black-1.png';

@@ -1,5 +1,5 @@
 import {useState} from 'react';
-import UniversalImportModal from '@/settings/app/components/settings/advanced/migration-tools/universal-import-modal';
+import UniversalImportModal from '@/settings/advanced/migration-tools/universal-import-modal';
 import {ConfirmationProvider} from '@/settings/providers/confirmation-provider';
 import {act, fireEvent, render, screen, waitFor} from '@testing-library/react';
 
@@ -26,7 +26,7 @@ vi.mock('@tryghost/admin-x-framework/hooks', async () => {
 });
 
 vi.mock('@/settings/hooks/use-feature-flag', () => ({
-    default: (flag: string) => mockUseFeatureFlag(flag)
+    default: (flag: string) => mockUseFeatureFlag(flag) as boolean
 }));
 
 describe('UniversalImportModal', () => {
@@ -57,6 +57,7 @@ describe('UniversalImportModal', () => {
         // "not called" assertion afterwards can't pass vacuously
         await act(async () => {
             fireEvent.change(input, {target: {files: [file]}});
+            await Promise.resolve();
         });
     };
 

@@ -87,7 +87,7 @@ const YamlFileEditorModal: React.FC<YamlFileEditorModalProps> = ({
             }
         };
 
-        loadContent();
+        void loadContent();
 
         return () => {
             isMounted = false;

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import AdvancedSettings from '@/settings/app/components/settings/advanced/advanced-settings';
+import AdvancedSettings from '@/settings/advanced/advanced-settings';
 import EmailSettings from '@/settings/email/email-settings';
 import Emails from '@/settings/email/emails';
 import GeneralSettings from '@/settings/general/general-settings';

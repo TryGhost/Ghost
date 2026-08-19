@@ -9,7 +9,7 @@ import {useFocusContext} from '@tryghost/shade/app';
 
 import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 
-import {searchKeywords as advancedSearchKeywords} from '@/settings/app/components/settings/advanced/advanced-settings';
+import {searchKeywords as advancedSearchKeywords} from '@/settings/advanced/search-keywords';
 import {searchKeywords as emailSearchKeywords} from '@/settings/email/search-keywords';
 import {searchKeywords as emailsSearchKeywords} from '@/settings/email/emails-search-keywords';
 import {searchKeywords as generalSearchKeywords} from '@/settings/general/search-keywords';

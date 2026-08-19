@@ -23,6 +23,7 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
     const {mutateAsync: refreshAPIKey} = useRefreshAPIKey();
     const {mutateAsync: uploadImage} = useUploadImage();
     const handleError = useHandleError();
+
     const {confirm} = useConfirmation();
 
     const {formState, updateForm, handleSave, saveState, errors, clearError, okProps} = useForm({
@@ -46,6 +47,19 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
             return newErrors;
         }
     });
+
+    const handleIconUpload = async (file: File) => {
+        try {
+            const imageUrl = getImageUrl(await uploadImage({file}));
+            updateForm(state => ({...state, icon_image: imageUrl}));
+        } catch (e) {
+            const error = e as APIError;
+            if (error.response!.status === 415) {
+                error.message = 'Unsupported file type';
+            }
+            handleError(error);
+        }
+    };
 
     const adminApiKey = integration.api_keys?.find(key => key.type === 'admin');
     const contentApiKey = integration.api_keys?.find(key => key.type === 'content');
@@ -110,18 +124,7 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
                             </ImageUploadActions>
                         </ImageUploadPreview>
                     ) : (
-                        <ImageUploadDropzone className='text-center' inputId='custom-integration-icon' onDropAccepted={async ([file]) => {
-                            try {
-                                const imageUrl = getImageUrl(await uploadImage({file}));
-                                updateForm(state => ({...state, icon_image: imageUrl}));
-                            } catch (e) {
-                                const error = e as APIError;
-                                if (error.response!.status === 415) {
-                                    error.message = 'Unsupported file type';
-                                }
-                                handleError(error);
-                            }
-                        }}>
+                        <ImageUploadDropzone className='text-center' inputId='custom-integration-icon' onDropAccepted={([file]) => void handleIconUpload(file)}>
                             Upload icon
                         </ImageUploadDropzone>
                     )}
