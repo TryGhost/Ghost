@@ -99,6 +99,38 @@ function dropNullable(tableName, column, transaction = db.knex) {
     });
 }
 
+// MySQL raises these when an explicit ALGORITHM isn't supported for the operation,
+// which varies by server version (RENAME COLUMN only accepts INSTANT from 8.0.28).
+const UNSUPPORTED_ALGORITHM_ERRORS = new Set([
+    'ER_ALTER_OPERATION_NOT_SUPPORTED',
+    'ER_ALTER_OPERATION_NOT_SUPPORTED_REASON'
+]);
+
+/**
+ * Runs an ALTER TABLE with an explicit MySQL algorithm, retrying without it if the
+ * server doesn't support that algorithm for the operation.
+ *
+ * @param {import('knex').Knex} transaction
+ * @param {string} sql - ALTER statement without a trailing semicolon or algorithm clause
+ * @param {'instant'|'inplace'|'copy'|'auto'} [algorithm]
+ */
+async function rawWithAlgorithm(transaction, sql, algorithm) {
+    if (!algorithm || algorithm === 'auto') {
+        return await transaction.raw(sql);
+    }
+
+    try {
+        return await transaction.raw(`${sql}, algorithm=${algorithm}`);
+    } catch (err) {
+        if (!UNSUPPORTED_ALGORITHM_ERRORS.has(err.code)) {
+            throw err;
+        }
+
+        logging.warn(`ALGORITHM=${algorithm} is not supported by this server for: ${sql} - retrying without it`);
+        return await transaction.raw(sql);
+    }
+}
+
 /**
  * @param {string} tableName
  * @param {string} column
@@ -120,19 +152,15 @@ async function addColumn(tableName, column, transaction = db.knex, columnSpec, o
     }
 
     for (const sqlQuery of addColumnBuilder.toSQL()) {
-        let sql = sqlQuery.sql;
-
-        if (DatabaseInfo.isMySQL(transaction)) {
-            // Guard against an ending semicolon
-            sql = sql.replace(/;\s*$/, '');
-            if (options?.algorithm !== 'auto') {
-                // default to copy if not specified
-                const algorithm = options?.algorithm || 'copy';
-                sql += `, algorithm=${algorithm}`;
-            }
+        if (!DatabaseInfo.isMySQL(transaction)) {
+            await transaction.raw(sqlQuery.sql);
+            continue;
         }
 
-        await transaction.raw(sql);
+        // Guard against an ending semicolon
+        const sql = sqlQuery.sql.replace(/;\s*$/, '');
+        // default to copy if not specified
+        await rawWithAlgorithm(transaction, sql, options?.algorithm || 'copy');
     }
 }
 
@@ -162,19 +190,15 @@ async function dropColumn(tableName, column, transaction = db.knex, columnSpec =
     }
 
     for (const sqlQuery of dropColumnBuilder.toSQL()) {
-        let sql = sqlQuery.sql;
-
-        if (DatabaseInfo.isMySQL(transaction)) {
-            // Guard against an ending semicolon
-            sql = sql.replace(/;\s*$/, '');
-            if (options?.algorithm !== 'auto') {
-                // default to copy if not specified
-                const algorithm = options?.algorithm || 'copy';
-                sql += `, algorithm=${algorithm}`;
-            }
+        if (!DatabaseInfo.isMySQL(transaction)) {
+            await transaction.raw(sqlQuery.sql);
+            continue;
         }
 
-        await transaction.raw(sql);
+        // Guard against an ending semicolon
+        const sql = sqlQuery.sql.replace(/;\s*$/, '');
+        // default to copy if not specified
+        await rawWithAlgorithm(transaction, sql, options?.algorithm || 'copy');
     }
 }
 
@@ -191,8 +215,8 @@ async function renameColumn(tableName, from, to, transaction = db.knex, options 
 
     if (DatabaseInfo.isMySQL(transaction)) {
         // The knex helper does a lot of interesting things with foreign keys that are slow on bigger MySQL clusters
-        const algorithm = options.algorithm && options.algorithm !== 'auto' ? `, algorithm=${options.algorithm}` : '';
-        return await transaction.raw(`ALTER TABLE \`${tableName}\` RENAME COLUMN \`${from}\` TO \`${to}\`${algorithm};`);
+        const sql = `ALTER TABLE \`${tableName}\` RENAME COLUMN \`${from}\` TO \`${to}\``;
+        return await rawWithAlgorithm(transaction, sql, options.algorithm);
     }
 
     return await transaction.schema.table(tableName, function (table) {
