@@ -11,7 +11,7 @@ const AutomationsImporter = importers.find(i => i.table === 'automations');
 const AutomationRunStepsImporter = importers.find(i => i.table === 'automation_run_steps');
 
 const generateEvents = require('../../../../../core/server/data/seeders/utils/event-generator');
-const databaseDate = require('../../../../../core/server/data/seeders/utils/database-date');
+const {randomDateBetween} = require('../../../../../core/server/data/seeders/utils/random');
 
 const DataGenerator = require('../../../../../core/server/data/seeders/data-generator');
 
@@ -479,26 +479,11 @@ describe('Importer', function () {
 });
 
 describe('Events Generator', function () {
-    it('Parses database timestamps as UTC in non-UTC timezones', function () {
-        const originalTZ = process.env.TZ;
-        try {
-            process.env.TZ = 'America/New_York';
-            const result = databaseDate.parse('2026-03-26 11:50:00.000');
-            assert.equal(result.toISOString(), '2026-03-26T11:50:00.000Z');
-        } finally {
-            if (originalTZ === undefined) {
-                delete process.env.TZ;
-            } else {
-                process.env.TZ = originalTZ;
-            }
-        }
-    });
-
     it('Returns the start date when a range is inverted', function () {
         const startDate = new Date('2026-03-26T11:50:00.000Z');
         const endDate = new Date('2026-03-26T10:00:00.000Z');
 
-        assert.equal(databaseDate.randomBetween(startDate, endDate).toISOString(), startDate.toISOString());
+        assert.equal(randomDateBetween(startDate, endDate).toISOString(), startDate.toISOString());
     });
 
     it('Generates a set of timestamps which meet the criteria', function () {

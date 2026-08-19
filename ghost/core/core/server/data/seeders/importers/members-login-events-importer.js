@@ -1,7 +1,7 @@
 const {TableImporter} = require('./table-importer');
 const {luck} = require('../utils/random');
 const generateEvents = require('../utils/event-generator');
-const databaseDate = require('../utils/database-date');
+const {fromDatabaseDate, toDatabaseDate} = require('../../../lib/db-date');
 
 class MembersLoginEventsImporter extends TableImporter {
     static table = 'members_login_events';
@@ -34,7 +34,7 @@ class MembersLoginEventsImporter extends TableImporter {
 
     setReferencedModel(model) {
         this.model = model;
-        const memberCreatedAt = databaseDate.parse(model.created_at);
+        const memberCreatedAt = fromDatabaseDate(model.created_at);
 
         const endDate = new Date();
         const daysBetween = Math.ceil((endDate.valueOf() - memberCreatedAt.valueOf()) / (1000 * 60 * 60 * 24));
@@ -60,7 +60,7 @@ class MembersLoginEventsImporter extends TableImporter {
         }
         return {
             id: this.fastFakeObjectId(),
-            created_at: databaseDate.dateToDatabaseString(timestamp),
+            created_at: toDatabaseDate(timestamp),
             member_id: this.model.id
         };
     }

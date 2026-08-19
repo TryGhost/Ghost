@@ -1,7 +1,8 @@
 const {faker} = require('@faker-js/faker');
 const errors = require('@tryghost/errors');
 const {TableImporter} = require('./table-importer');
-const databaseDate = require('../utils/database-date');
+const {randomDateBetween} = require('../utils/random');
+const {fromDatabaseDate, toDatabaseDate} = require('../../../lib/db-date');
 
 class OfferRedemptionsImporter extends TableImporter {
     static table = 'offer_redemptions';
@@ -53,7 +54,7 @@ class OfferRedemptionsImporter extends TableImporter {
             this.subscriptionPool.push({
                 memberId,
                 subscriptionId: subscription.id,
-                subscriptionCreatedAt: databaseDate.parse(subscription.created_at),
+                subscriptionCreatedAt: fromDatabaseDate(subscription.created_at),
                 redemptionEndAt: this.getRedemptionEndDate(subscription.current_period_end),
                 availableOffers: [...matchingOffers],
                 lastRedeemedAt: null
@@ -78,7 +79,7 @@ class OfferRedemptionsImporter extends TableImporter {
 
     getRedemptionEndDate(currentPeriodEnd) {
         const now = new Date();
-        const endDate = currentPeriodEnd ? databaseDate.parse(currentPeriodEnd) : now;
+        const endDate = currentPeriodEnd ? fromDatabaseDate(currentPeriodEnd) : now;
 
         return endDate > now ? now : endDate;
     }
@@ -86,19 +87,18 @@ class OfferRedemptionsImporter extends TableImporter {
     getCreatedAt(subscriptionState, offer) {
         const candidateEarliest = new Date(Math.max(
             subscriptionState.subscriptionCreatedAt.valueOf(),
-            databaseDate.parse(offer.created_at).valueOf(),
+            fromDatabaseDate(offer.created_at).valueOf(),
             subscriptionState.lastRedeemedAt ? subscriptionState.lastRedeemedAt.valueOf() + 1000 : 0
         ));
         const earliest = new Date(Math.min(
             candidateEarliest.valueOf(),
             subscriptionState.redemptionEndAt.valueOf()
         ));
-        const latest = subscriptionState.redemptionEndAt > earliest ? subscriptionState.redemptionEndAt : earliest;
-        const createdAt = latest.valueOf() === earliest.valueOf() ? earliest : faker.date.between({from: earliest, to: latest});
+        const createdAt = randomDateBetween(earliest, subscriptionState.redemptionEndAt);
 
         subscriptionState.lastRedeemedAt = createdAt;
 
-        return databaseDate.dateToDatabaseString(createdAt);
+        return toDatabaseDate(createdAt);
     }
 
     generate() {

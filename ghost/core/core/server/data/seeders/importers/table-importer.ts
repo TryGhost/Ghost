@@ -1,5 +1,5 @@
 import debugFactory from '@tryghost/debug';
-import * as databaseDate from '../utils/database-date';
+import {toDatabaseDate} from '../../../lib/db-date';
 import path from 'node:path';
 import fs from 'node:fs';
 import papaparse from 'papaparse';
@@ -123,7 +123,7 @@ export abstract class TableImporter<
                         if (typeof value === 'boolean') {
                             mutableObj[key] = value ? 1 : 0;
                         } else if (value instanceof Date) {
-                            mutableObj[key] = databaseDate.dateToDatabaseString(value);
+                            mutableObj[key] = toDatabaseDate(value);
                         } else if (value === null) {
                             mutableObj[key] = '\\N';
                         }

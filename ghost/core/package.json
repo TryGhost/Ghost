@@ -264,6 +264,7 @@
         "@types/jsonwebtoken": "9.0.10",
         "@types/lodash": "4.17.25",
         "@types/lodash-es": "4.17.12",
+        "@types/luxon": "catalog:",
         "@types/mime-types": "3.0.1",
         "@types/nconf": "catalog:",
         "@types/node": "catalog:",

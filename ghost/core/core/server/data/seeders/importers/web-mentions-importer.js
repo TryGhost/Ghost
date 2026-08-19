@@ -1,6 +1,6 @@
 const {TableImporter} = require('./table-importer');
 const {faker} = require('@faker-js/faker');
-const databaseDate = require('../utils/database-date');
+const {toDatabaseDate} = require('../../../lib/db-date');
 
 class WebMentionsImporter extends TableImporter {
     static table = 'mentions';
@@ -31,7 +31,7 @@ class WebMentionsImporter extends TableImporter {
             target: `${this.baseUrl}`,
             resource_id: null,
             resource_type: null,
-            created_at: databaseDate.dateToDatabaseString(faker.date.past()),
+            created_at: toDatabaseDate(faker.date.past()),
             payload: JSON.stringify({}),
             deleted: 0,
             verified: 1

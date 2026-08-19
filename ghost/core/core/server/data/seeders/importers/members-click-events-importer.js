@@ -1,7 +1,7 @@
 const {TableImporter} = require('./table-importer');
 const {faker} = require('@faker-js/faker');
-const {luck} = require('../utils/random');
-const databaseDate = require('../utils/database-date');
+const {luck, randomDateBetween} = require('../utils/random');
+const {fromDatabaseDate, toDatabaseDate} = require('../../../lib/db-date');
 
 class MembersClickEventsImporter extends TableImporter {
     static table = 'members_click_events';
@@ -50,9 +50,9 @@ class MembersClickEventsImporter extends TableImporter {
         }
         this.amount -= 1;
 
-        const openedAt = databaseDate.parse(this.model.opened_at);
+        const openedAt = fromDatabaseDate(this.model.opened_at);
         const laterOn = new Date(openedAt.getTime() + 1000 * 60 * 15);
-        const clickTime = faker.date.between({from: openedAt.getTime(), to: laterOn.getTime()}); //added getTime here because it threw random errors
+        const clickTime = randomDateBetween(openedAt, laterOn);
 
         return {
             id: this.fastFakeObjectId(),
@@ -61,7 +61,7 @@ class MembersClickEventsImporter extends TableImporter {
                 min: 0,
                 max: this.redirectList.length - 1
             }))].id,
-            created_at: databaseDate.dateToDatabaseString(clickTime)
+            created_at: toDatabaseDate(clickTime)
         };
     }
 }

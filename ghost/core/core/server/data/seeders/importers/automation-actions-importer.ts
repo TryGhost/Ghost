@@ -1,8 +1,8 @@
-import {faker} from '@faker-js/faker';
 import errors from '@tryghost/errors';
 import type {Knex} from 'knex';
 import {TableImporter} from './table-importer';
-import * as databaseDate from '../utils/database-date';
+import {toDatabaseDate} from '../../../lib/db-date';
+import {randomDateBetween} from '../utils/random';
 
 type Automation = {
     id: string;
@@ -50,17 +50,14 @@ export class AutomationActionsImporter extends TableImporter<AutomationAction, A
             throw new errors.IncorrectUsageError({message: 'Cannot generate automation action without an automation'});
         }
 
-        const createdAt = faker.date.between({
-            from: databaseDate.parse(this.#automation.created_at),
-            to: new Date()
-        });
+        const createdAt = randomDateBetween(this.#automation.created_at, new Date());
         const type = this.#actionIndex % 2 === 0 ? 'wait' : 'send_email';
         this.#actionIndex += 1;
 
         return {
             id: this.fastFakeObjectId(),
-            created_at: databaseDate.dateToDatabaseString(createdAt),
-            updated_at: databaseDate.dateToDatabaseString(createdAt),
+            created_at: toDatabaseDate(createdAt),
+            updated_at: toDatabaseDate(createdAt),
             deleted_at: null,
             automation_id: this.#automation.id,
             type

@@ -3,7 +3,7 @@ import errors from '@tryghost/errors';
 import {clamp} from 'lodash';
 import type {Knex} from 'knex';
 import {TableImporter} from './table-importer';
-import * as databaseDate from '../utils/database-date';
+import {fromDatabaseDate, toDatabaseDate} from '../../../lib/db-date';
 
 type AutomationRun = {
     id: string;
@@ -113,13 +113,13 @@ export class AutomationRunStepsImporter extends TableImporter<AutomationRunStep>
             const requestedStepCount = clamp(Math.floor(stepsPerRun) + extraStep, 1, actionCount);
             const runStepCount = fullPathGeneratedForAutomation.has(run.automation_id) ? requestedStepCount : actionCount;
             fullPathGeneratedForAutomation.add(run.automation_id);
-            const runCreatedAt = databaseDate.parse(run.created_at);
+            const runCreatedAt = fromDatabaseDate(run.created_at);
             const lastStepStatus = faker.helpers.arrayElement(['pending', 'finished', 'failed'] as const);
 
             for (let index = 0; index < runStepCount; index += 1) {
                 const createdAt = new Date(runCreatedAt);
                 createdAt.setHours(createdAt.getHours() + index);
-                const createdAtString = databaseDate.dateToDatabaseString(createdAt);
+                const createdAtString = toDatabaseDate(createdAt);
                 const status = index === runStepCount - 1 ? lastStepStatus : 'finished';
                 const isTerminal = status !== 'pending';
 
