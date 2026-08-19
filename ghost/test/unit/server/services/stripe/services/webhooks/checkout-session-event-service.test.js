@@ -35,6 +35,7 @@ describe('CheckoutSessionEventService', function () {
 
     donationRepository = {
       save: sinon.stub(),
+      existsByCheckoutSessionId: sinon.stub().resolves(false),
     };
 
     giftService = {
@@ -291,9 +292,23 @@ describe('CheckoutSessionEventService', function () {
   });
 
   describe('handleDonationEvent', function () {
+    it('does not save or notify staff when the checkout session already exists', async function () {
+      const service = createService();
+      const session = { id: 'cs_existing_donation' };
+      donationRepository.existsByCheckoutSessionId.resolves(true);
+
+      await service.handleDonationEvent(session);
+
+      sinon.assert.calledOnceWithExactly(donationRepository.existsByCheckoutSessionId, session.id);
+      sinon.assert.notCalled(memberRepository.get);
+      sinon.assert.notCalled(donationRepository.save);
+      sinon.assert.notCalled(staffServiceEmails.notifyDonationReceived);
+    });
+
     it('can handle donation event', async function () {
       const service = createService();
       const session = {
+        id: 'cs_test_donation',
         custom_fields: [{ key: 'donation_message', text: { value: 'Test donation message' } }],
         amount_total: 1000,
         currency: 'usd',
@@ -319,6 +334,7 @@ describe('CheckoutSessionEventService', function () {
 
       assert.equal(savedDonationEvent.amount, 1000);
       assert.equal(savedDonationEvent.currency, 'usd');
+      assert.equal(savedDonationEvent.stripeCheckoutSessionId, 'cs_test_donation');
       assert.equal(savedDonationEvent.name, 'Test Name');
       assert.equal(savedDonationEvent.email, '');
       assert.equal(savedDonationEvent.donationMessage, 'Test donation message');
@@ -333,6 +349,7 @@ describe('CheckoutSessionEventService', function () {
     it('donation message is null if its empty', async function () {
       const service = createService();
       const session = {
+        id: 'cs_empty_donation_message',
         custom_fields: [
           { key: 'donation_message', text: { value: '' } },
           { key: 'donation_message', text: { value: null } },
@@ -364,6 +381,7 @@ describe('CheckoutSessionEventService', function () {
     it('can handle donation event with member', async function () {
       const service = createService();
       const session = {
+        id: 'cs_member_donation',
         custom_fields: [{ key: 'donation_message', text: { value: 'Test donation message' } }],
         amount_total: 1000,
         currency: 'usd',
@@ -413,6 +431,7 @@ describe('CheckoutSessionEventService', function () {
     it('can handle donation event with empty customer email', async function () {
       const service = createService();
       const session = {
+        id: 'cs_empty_customer_email',
         custom_fields: [{ key: 'donation_message', text: { value: 'Test donation message' } }],
         amount_total: 1000,
         currency: 'usd',
