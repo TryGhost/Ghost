@@ -209,6 +209,11 @@ module.exports = class CheckoutSessionEventService {
    * @param {import('stripe').Stripe.Checkout.Session} session
    */
   async handleDonationEvent(session) {
+    const donationRepository = this.deps.donationRepository;
+    if (await donationRepository.existsByCheckoutSessionId(session.id)) {
+      return;
+    }
+
     const donationField = session.custom_fields?.find((obj) => obj?.key === 'donation_message');
     const donationMessage = donationField?.text?.value ? donationField.text.value : null;
     const amount = session.amount_total;
@@ -226,6 +231,7 @@ module.exports = class CheckoutSessionEventService {
       memberId: member?.id ?? null,
       amount,
       currency,
+      stripeCheckoutSessionId: session.id,
       donationMessage,
       attributionId: session.metadata?.attribution_id ?? null,
       attributionUrl: session.metadata?.attribution_url ?? null,
@@ -240,7 +246,6 @@ module.exports = class CheckoutSessionEventService {
       utmContent: session.metadata?.utm_content ?? null,
     });
 
-    const donationRepository = this.deps.donationRepository;
     await donationRepository.save(data);
 
     const staffServiceEmails = this.deps.staffServiceEmails;
