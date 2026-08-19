@@ -242,10 +242,23 @@ class PostsService {
 
         // Create tags that don't exist
         for (const tag of tags) {
-            if (!tag.id) {
-                const createdTag = await this.models.Tag.add(tag, {transacting: options.transacting, context: options.context});
-                tag.id = createdTag.id;
+            if (tag.id) {
+                continue;
             }
+
+            // A name may belong to a tag that already exists. Match on the slug
+            // it generates rather than the name itself, because the slug is
+            // unique and case insensitive on every supported database
+            const slug = await this.models.Base.Model.generateSlug(this.models.Tag, tag.name, {skipDuplicateChecks: true});
+            const existingTag = await this.models.Tag.findOne({slug}, {transacting: options.transacting});
+
+            if (existingTag) {
+                tag.id = existingTag.id;
+                continue;
+            }
+
+            const createdTag = await this.models.Tag.add(tag, {transacting: options.transacting, context: options.context});
+            tag.id = createdTag.id;
         }
 
         const postRows = await this.#getFilteredBulkPostQuery(options).select('posts.id');

@@ -301,6 +301,34 @@ describe('Posts Bulk API', function () {
             assert.equal(duplicates.length, 0, `Expect no duplicate posts_tags rows, got ${JSON.stringify(duplicates)}`);
         });
 
+        it('Reuses an existing tag when it is added by name', async function () {
+            const filter = 'status:[draft]';
+            const existing = await models.Tag.add({name: 'Already here'}, {context: {internal: true}});
+
+            const countTagsLike = async () => {
+                const rows = await models.Base.knex('tags')
+                    .whereRaw('LOWER(name) = ?', ['already here'])
+                    .select('id');
+                return rows.length;
+            };
+
+            // Same name, and the same name in a different case, both belong to
+            // the tag that is already there
+            for (const name of ['Already here', 'ALREADY HERE']) {
+                await agent
+                    .put('/posts/bulk/?filter=' + encodeURIComponent(filter))
+                    .body({bulk: {action: 'addTag', meta: {tags: [{name}]}}})
+                    .expectStatus(200);
+
+                assert.equal(await countTagsLike(), 1, `Expect no new tag to be created for "${name}"`);
+            }
+
+            const posts = await models.Post.findAll({filter, status: 'all', withRelated: ['tags']});
+            for (const post of posts) {
+                assert(post.related('tags').find(t => t.id === existing.id), `Expect post ${post.id} to have the existing tag`);
+            }
+        });
+
         it('Does not confuse a tag id with another tag of the same name', async function () {
             const filter = 'status:[draft]';
             const existing = await models.Tag.findOne({slug: fixtureManager.get('tags', 1).slug});
