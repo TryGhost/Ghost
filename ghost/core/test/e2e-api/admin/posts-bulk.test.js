@@ -233,6 +233,52 @@ describe('Posts Bulk API', function () {
             }
         });
 
+        it('Does not add a tag to posts that already have it', async function () {
+            const filter = 'status:[published]';
+            const tag = await models.Tag.findOne({slug: fixtureManager.get('tags', 0).slug});
+            assert(tag);
+
+            const addTag = async () => {
+                await agent
+                    .put('/posts/bulk/?filter=' + encodeURIComponent(filter))
+                    .body({bulk: {action: 'addTag', meta: {tags: [{id: tag.id}]}}})
+                    .expectStatus(200);
+            };
+
+            // Apply the tag, then apply the same tag again - which the bulk action in Admin allows
+            await addTag();
+            await addTag();
+
+            const duplicates = await models.Base.knex('posts_tags')
+                .where('tag_id', tag.id)
+                .select('post_id')
+                .count('* as rows')
+                .groupBy('post_id')
+                .having('rows', '>', 1);
+
+            assert.equal(duplicates.length, 0, `Expect no duplicate posts_tags rows, got ${JSON.stringify(duplicates)}`);
+        });
+
+        it('Does not add the same tag twice when it is passed twice', async function () {
+            const filter = 'status:[draft]';
+            const tag = await models.Tag.findOne({slug: fixtureManager.get('tags', 2).slug});
+            assert(tag);
+
+            await agent
+                .put('/posts/bulk/?filter=' + encodeURIComponent(filter))
+                .body({bulk: {action: 'addTag', meta: {tags: [{id: tag.id}, {id: tag.id}]}}})
+                .expectStatus(200);
+
+            const duplicates = await models.Base.knex('posts_tags')
+                .where('tag_id', tag.id)
+                .select('post_id')
+                .count('* as rows')
+                .groupBy('post_id')
+                .having('rows', '>', 1);
+
+            assert.equal(duplicates.length, 0, `Expect no duplicate posts_tags rows, got ${JSON.stringify(duplicates)}`);
+        });
+
         it('Can add multiple tags to posts and create new tags', async function () {
             const filter = 'status:[draft]';
             const tag = await models.Tag.findOne({id: fixtureManager.get('tags', 1).id});

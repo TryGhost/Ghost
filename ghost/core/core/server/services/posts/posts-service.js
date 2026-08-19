@@ -227,18 +227,37 @@ class PostsService {
 
         const postRows = await this.#getFilteredBulkPostQuery(options).select('posts.id');
 
-        const postTags = data.tags.reduce((pt, tag) => {
-            return pt.concat(postRows.map((post) => {
-                return {
+        // The same tag can be passed more than once in a single request
+        const tagIds = [...new Set(data.tags.map(tag => tag.id))];
+
+        // Posts in the selection may already carry the tag, filter those pairs out
+        const existingRows = tagIds.length ?
+            await options.transacting('posts_tags')
+                .whereIn('tag_id', tagIds)
+                .select('post_id', 'tag_id') :
+            [];
+        const existing = new Set(existingRows.map(row => `${row.post_id}:${row.tag_id}`));
+
+        const postTags = [];
+        for (const tagId of tagIds) {
+            for (const post of postRows) {
+                if (existing.has(`${post.id}:${tagId}`)) {
+                    continue;
+                }
+
+                postTags.push({
                     id: (new ObjectId()).toHexString(),
                     post_id: post.id,
-                    tag_id: tag.id,
+                    tag_id: tagId,
                     sort_order: 0
-                };
-            }));
-        }, []);
+                });
+            }
+        }
 
-        await options.transacting('posts_tags').insert(postTags);
+        if (postTags.length) {
+            await options.transacting('posts_tags').insert(postTags);
+        }
+
         await this.models.Post.addActions('edited', postRows.map(p => p.id), options);
 
         return {
