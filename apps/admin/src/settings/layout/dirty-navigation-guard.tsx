@@ -1,7 +1,7 @@
 import {DirtyConfirmDialog} from '@tryghost/shade/patterns';
 import {NavigationType, useBlocker, useLocation} from 'react-router';
 import {matchRoutes} from '@tryghost/admin-x-framework';
-import {settingsRouteChildren} from '@/settings/routes';
+import {type SettingsRouteHandle, settingsRouteChildren} from '@/settings/routes';
 import {useConfirmUnload} from '@tryghost/admin-x-framework/hooks';
 import {useGlobalDirtyState} from '@tryghost/shade/utils';
 import {useEffect, useRef} from 'react';
@@ -17,7 +17,7 @@ const dialogIdentity = (pathname: string): string => {
     if (!leaf?.lazy) {
         return 'settings';
     }
-    const group = (leaf.handle as {dialogGroup?: string} | undefined)?.dialogGroup;
+    const group = (leaf.handle as SettingsRouteHandle | undefined)?.dialogGroup;
     return group ? `group:${group}` : `route:${leaf.path ?? ''}`;
 };
 
