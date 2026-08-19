@@ -92,7 +92,7 @@ const GiftEmailPreview = ({
                     </div>
 
                     <p className='gh-portal-gift-email-lede'>
-                        <Interpolate mapping={giftDetails} string={lede} />.
+                        <Interpolate mapping={giftDetails} string={lede} />
                     </p>
 
                     <div aria-hidden={!message} className='gh-portal-gift-checkout-reveal' data-open={!!message}>

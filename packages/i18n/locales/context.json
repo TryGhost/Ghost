@@ -260,6 +260,7 @@
     "Recipient's email": "Label for the intended recipient email field in the Portal gift delivery form",
     "Recipient's name": "Label for the intended recipient name field in the Portal gift delivery form",
     "Recommendations": "A suggestion by/for another site of interest to users",
+    "Redeem your gift": "CTA button label on the Portal gift redemption page when the recipient is signed out",
     "Redeem your gift subscription": "Fallback link text shown on the gift preview page when JavaScript is disabled, used to redeem a gift subscription",
     "Redeem your gift:": "Call to action for the redemption link in the HTML and plain-text gift delivery emails",
     "Redeem your membership": "CTA button label on the Portal gift redemption page",

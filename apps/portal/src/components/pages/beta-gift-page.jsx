@@ -1411,9 +1411,8 @@ function GiftDurationSwitch({offeredDurations, activeDuration, setSelectedDurati
     );
 }
 
-// The backend accepts up to 500 (Stripe's metadata value limit); 250 is the
-// product's choice for how long a gift note should get.
 const GIFT_EMAIL_MAX_LENGTH = 191;
+const GIFT_NAME_MAX_LENGTH = 191;
 const GIFT_MESSAGE_MAX_LENGTH = 250;
 
 function getTierPriceLabel(product, months) {
@@ -1523,10 +1522,12 @@ const BetaGiftPage = () => {
     // one ("6 months").
     const activeDurationLabel = getGiftDurationAttributiveLabel(emailDuration);
     const isPurchasing = action === 'checkoutGift:running';
-    const hasErrors = Object.values(errors).some(errorMessage => !!errorMessage);
+    const hasErrors = step === 'plan'
+        ? !!(errors.email || errors.buyerName)
+        : !!errors.recipientEmail;
     const isDisabled = isCookiesDisabled() || isPurchasing || hasErrors;
     const isLoggedIn = !!member;
-    const showBuyerName = !member?.name;
+    const showBuyerName = !(member?.name || '').trim();
     const showBuyerEmail = !isLoggedIn;
     // On the delivery step the email being composed is the more useful thing to
     // show than the gift card — it's what the recipient actually opens. The card
@@ -1562,6 +1563,7 @@ const BetaGiftPage = () => {
         label: t('Your name'),
         name: 'buyerName',
         required: false,
+        maxLength: GIFT_NAME_MAX_LENGTH,
         errorMessage: errors.buyerName || ''
     };
 
@@ -1572,6 +1574,7 @@ const BetaGiftPage = () => {
         label: t('Recipient\'s name'),
         name: 'recipientName',
         required: false,
+        maxLength: GIFT_NAME_MAX_LENGTH,
         errorMessage: ''
     };
 

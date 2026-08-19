@@ -56,7 +56,7 @@ describe('BetaGiftPage', () => {
 
         fireEvent.change(getByLabelText('Your name'), {target: {value: 'Jamie'}});
         fireEvent.click(getByRole('button', {name: 'Continue to delivery details'}));
-        expect(container.querySelector('.gh-portal-gift-email-lede')).toHaveTextContent('Jamie has gifted you a 3-month Premium membership to The Blueprint.');
+        expect(container.querySelector('.gh-portal-gift-email-lede')).toHaveTextContent('Jamie has gifted you a 3-month Premium membership to The Blueprint');
         fireEvent.change(getByLabelText('Recipient\'s name'), {target: {value: 'Taylor'}});
         fireEvent.change(getByLabelText('Recipient\'s email'), {target: {value: 'recipient@example.com'}});
         fireEvent.change(getByLabelText('Optional message'), {target: {value: 'Enjoy!'}});
@@ -85,7 +85,7 @@ describe('BetaGiftPage', () => {
         expect(getByRole('radio', {name: '12 months'})).toHaveAttribute('aria-checked', 'true');
 
         fireEvent.click(getByRole('button', {name: 'Continue to delivery details'}));
-        expect(container.querySelector('.gh-portal-gift-email-lede')).toHaveTextContent('You\'ve been gifted a 1-year Premium membership to The Blueprint.');
+        expect(container.querySelector('.gh-portal-gift-email-lede')).toHaveTextContent('You\'ve been gifted a 1-year Premium membership to The Blueprint');
     });
 
     test('does not reuse buyer details left in page data by another flow', () => {
@@ -108,13 +108,16 @@ describe('BetaGiftPage', () => {
         expect(getByLabelText('Your email')).toHaveValue('b');
     });
 
-    test('limits recipient email addresses to the backend maximum', () => {
+    test('limits recipient details to the backend maximums', () => {
         const site = buildSite({labs: {giftSubCustomization: true}});
         const {getByLabelText, getByRole} = setup(site);
+
+        expect(getByLabelText('Your name')).toHaveAttribute('maxlength', '191');
 
         fireEvent.click(getByRole('button', {name: 'Continue to delivery details'}));
 
         expect(getByLabelText('Recipient\'s email')).toHaveAttribute('maxlength', '191');
+        expect(getByLabelText('Recipient\'s name')).toHaveAttribute('maxlength', '191');
     });
 
     test('requires a buyer name for email delivery', () => {
@@ -136,6 +139,35 @@ describe('BetaGiftPage', () => {
             deliveryMethod: 'email',
             buyerName: 'Jamie'
         }));
+    });
+
+    test('does not let a hidden recipient error lock the plan step', () => {
+        const site = buildSite({labs: {giftSubCustomization: true}});
+        const {getByLabelText, getByRole, getByText} = setup(site);
+
+        fireEvent.click(getByRole('button', {name: 'Continue to delivery details'}));
+        fireEvent.click(getByRole('button', {name: 'Continue to payment'}));
+
+        expect(getByText('Enter your name')).toBeInTheDocument();
+        fireEvent.change(getByLabelText('Your name'), {target: {value: 'Jamie'}});
+        expect(getByRole('button', {name: 'Continue to delivery details'})).not.toBeDisabled();
+
+        fireEvent.click(getByRole('button', {name: 'Continue to delivery details'}));
+        expect(getByText('Enter the recipient\'s email address')).toBeInTheDocument();
+        expect(getByRole('button', {name: 'Continue to payment'})).toBeDisabled();
+    });
+
+    test('shows a buyer name field for a whitespace-only member name', () => {
+        const site = buildSite({labs: {giftSubCustomization: true}});
+        const {getByLabelText} = setup(site, {
+            member: {
+                email: 'buyer@example.com',
+                name: '   ',
+                status: 'free'
+            }
+        });
+
+        expect(getByLabelText('Your name')).toBeInTheDocument();
     });
 
     test('omits the selector when only one duration is available', () => {
