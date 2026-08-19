@@ -1,5 +1,5 @@
 import type {AutomationStepToRun, AutomationsRepository} from './automations-repository';
-import {getMailgunMessageId} from './mailgun-message-id';
+import {getMailgunMessageId} from '../lib/mailgun-message-id';
 import logging from '@tryghost/logging';
 import errors from '@tryghost/errors';
 import {MEMBER_WELCOME_EMAIL_ELIGIBLE_STATUSES, MEMBER_WELCOME_EMAIL_SLUGS} from '../member-welcome-emails/constants';
