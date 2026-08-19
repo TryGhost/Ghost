@@ -190,25 +190,54 @@ describe('GiftService interface', function () {
         assert.equal(giftRepository.create.firstCall.firstArg.buyerName, 'Mum');
     });
 
-    it('requires buyer name for email delivery', async function () {
-        const {service, checkoutAdapter} = createService({customizationEnabled: true});
+    const invalidCheckouts = [
+        {
+            name: 'email delivery without a buyer name',
+            overrides: {deliveryMethod: 'email', recipientEmail: 'recipient@example.com'},
+            expected: hasInvalidDeliveryContext
+        },
+        {
+            name: 'email delivery with a malformed recipient email',
+            overrides: {deliveryMethod: 'email', recipientEmail: 'not-an-email', buyerName: 'Buyer'},
+            expected: hasInvalidDeliveryContext
+        },
+        {
+            name: 'a personal message over the length limit',
+            overrides: {deliveryMethod: 'email', recipientEmail: 'recipient@example.com', buyerName: 'Buyer', personalMessage: 'x'.repeat(251)},
+            expected: hasInvalidDeliveryContext
+        },
+        {
+            name: 'email-only fields in link mode',
+            overrides: {deliveryMethod: 'link', recipientEmail: 'recipient@example.com'},
+            expected: hasInvalidDeliveryContext
+        },
+        {
+            name: 'a buyer without an email',
+            overrides: {deliveryMethod: 'link', buyer: {memberId: null, email: null, name: null, isAuthenticated: false}},
+            expected: hasInvalidBuyerEmailContext
+        }
+    ];
 
-        await assert.rejects(() => service.startCheckout({
-            tierId: 'tier_1',
-            cadence: 'year',
-            deliveryMethod: 'email',
-            recipientEmail: 'recipient@example.com',
-            successUrl: 'https://example.com/',
-            buyer: {
-                memberId: 'member_1',
-                email: 'buyer@example.com',
-                name: 'Account Name',
-                isAuthenticated: true
-            }
-        }), hasInvalidDeliveryContext);
+    for (const {name, overrides, expected} of invalidCheckouts) {
+        it(`rejects ${name}`, async function () {
+            const {service, checkoutAdapter} = createService({customizationEnabled: true});
 
-        sinon.assert.notCalled(checkoutAdapter.createSession);
-    });
+            await assert.rejects(() => service.startCheckout({
+                tierId: 'tier_1',
+                cadence: 'year',
+                successUrl: 'https://example.com/',
+                buyer: {
+                    memberId: 'member_1',
+                    email: 'buyer@example.com',
+                    name: 'Account Name',
+                    isAuthenticated: true
+                },
+                ...overrides
+            }), expected);
+
+            sinon.assert.notCalled(checkoutAdapter.createSession);
+        });
+    }
 
     it('keeps link gifts anonymous when buyer name is omitted', async function () {
         const {service, giftRepository} = createService({customizationEnabled: true});
@@ -233,69 +262,6 @@ describe('GiftService interface', function () {
         assert.equal(gift.buyerName, null);
         assert.equal(gift.recipientName, null);
         assert.equal(gift.personalMessage, null);
-    });
-
-    it('requires buyer email for customized gift checkout', async function () {
-        const {service, checkoutAdapter} = createService({customizationEnabled: true});
-
-        await assert.rejects(() => service.startCheckout({
-            tierId: 'tier_1',
-            cadence: 'year',
-            deliveryMethod: 'link',
-            successUrl: 'https://example.com/',
-            buyer: {
-                memberId: null,
-                email: null,
-                name: null,
-                isAuthenticated: false
-            }
-        }), hasInvalidBuyerEmailContext);
-
-        sinon.assert.notCalled(checkoutAdapter.createSession);
-    });
-
-    it('rejects invalid email delivery input', async function () {
-        const {service, checkoutAdapter} = createService({customizationEnabled: true});
-        const input = {
-            tierId: 'tier_1',
-            cadence: 'year',
-            deliveryMethod: 'email',
-            recipientEmail: 'not-an-email',
-            successUrl: 'https://example.com/',
-            buyer: {
-                memberId: null,
-                email: 'buyer@example.com',
-                name: null,
-                isAuthenticated: false
-            }
-        };
-
-        await assert.rejects(() => service.startCheckout(input), hasInvalidDeliveryContext);
-        await assert.rejects(() => service.startCheckout({
-            ...input,
-            recipientEmail: 'recipient@example.com',
-            personalMessage: 'x'.repeat(251)
-        }), hasInvalidDeliveryContext);
-        sinon.assert.notCalled(checkoutAdapter.createSession);
-    });
-
-    it('rejects email-only fields in link mode', async function () {
-        const {service, checkoutAdapter} = createService({customizationEnabled: true});
-
-        await assert.rejects(() => service.startCheckout({
-            tierId: 'tier_1',
-            cadence: 'year',
-            deliveryMethod: 'link',
-            recipientEmail: 'recipient@example.com',
-            successUrl: 'https://example.com/',
-            buyer: {
-                memberId: null,
-                email: 'buyer@example.com',
-                name: null,
-                isAuthenticated: false
-            }
-        }), hasInvalidDeliveryContext);
-        sinon.assert.notCalled(checkoutAdapter.createSession);
     });
 
     it('keeps omitted and explicit link delivery compatible while the flag is disabled', async function () {

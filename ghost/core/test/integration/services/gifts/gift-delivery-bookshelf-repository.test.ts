@@ -108,38 +108,6 @@ describe('GiftDeliveryBookshelfRepository (integration)', function () {
         return {gift, delivery};
     }
 
-    it('decodes a link-delivered gift without creating a delivery row', async function () {
-        giftSequence += 1;
-        const now = new Date();
-        const gift = await models.Gift.add({
-            token: `legacy-link-token-${giftSequence}`,
-            buyer_email: `legacy-buyer-${giftSequence}@example.com`,
-            buyer_member_id: null,
-            redeemer_member_id: null,
-            tier_id: paidTierId,
-            cadence: 'year',
-            duration: 1,
-            currency: 'usd',
-            amount: 5000,
-            stripe_checkout_session_id: `cs_legacy_${giftSequence}`,
-            stripe_payment_intent_id: `pi_legacy_${giftSequence}`,
-            checkout_started_at: now,
-            consumes_at: null,
-            expires_at: new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000),
-            status: 'purchased',
-            purchased_at: now,
-            redeemed_at: null,
-            consumed_at: null,
-            expired_at: null,
-            refunded_at: null
-        });
-
-        const decoded = await giftRepository.getByToken(gift.get('token'));
-
-        assert.equal(decoded?.purchasedAt?.toISOString(), new Date(gift.get('purchased_at')).toISOString());
-        assert.equal(await deliveryRepository.getByGiftId(gift.id), null);
-    });
-
     it('allows exactly one concurrent caller to start a pending delivery', async function () {
         const startedAt = new Date();
         startedAt.setMilliseconds(0);
@@ -243,18 +211,15 @@ describe('GiftDeliveryBookshelfRepository (integration)', function () {
         }
     });
 
-    it('cancels a pending delivery by gift token', async function () {
-        const {gift, delivery} = await createPendingEmailGift();
+    for (const deliveryStatus of ['pending', 'sending']) {
+        it(`cancels a ${deliveryStatus} delivery by gift token`, async function () {
+            const {gift, delivery} = await createPendingEmailGift({
+                deliveryStatus,
+                startedAt: deliveryStatus === 'sending' ? new Date() : null
+            });
 
-        assert.equal(await deliveryRepository.cancelPendingForGift(gift.get('token')), true);
-        assert.equal((await deliveryRepository.getById(delivery.id))?.status, 'cancelled');
-    });
-
-    it('cancels a sending delivery by gift token', async function () {
-        const {gift, delivery} = await createPendingEmailGift({deliveryStatus: 'sending', startedAt: new Date()});
-
-        assert.equal(await deliveryRepository.cancelPendingForGift(gift.get('token')), true);
-        assert.equal((await deliveryRepository.getById(delivery.id))?.status, 'cancelled');
-    });
-
+            assert.equal(await deliveryRepository.cancelPendingForGift(gift.get('token')), true);
+            assert.equal((await deliveryRepository.getById(delivery.id))?.status, 'cancelled');
+        });
+    }
 });

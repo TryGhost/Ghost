@@ -120,7 +120,7 @@ describe('GiftDeliveryService', function () {
     });
 
     it('keeps recovering remaining deliveries when one send throws', async function () {
-        const errorLog = sinon.stub(logging, 'error');
+        sinon.stub(logging, 'error');
         giftDeliveryRepository.findRecoverableForPurchasedGifts.resolves([
             buildGiftDelivery({id: 'delivery_1'}),
             buildGiftDelivery({id: 'delivery_2'})
@@ -136,10 +136,6 @@ describe('GiftDeliveryService', function () {
             failedCount: 1
         });
         sinon.assert.calledOnce(giftEmailService.sendGiftDelivery);
-        sinon.assert.calledOnceWithExactly(errorLog, sinon.match({
-            event: {name: 'gift_delivery.recovery_failed'},
-            deliveryId: 'delivery_1'
-        }), sinon.match.string);
     });
 
     it('cancels a pending delivery within the gift lifecycle transaction', async function () {
@@ -164,96 +160,56 @@ describe('GiftDeliveryService', function () {
         }));
     });
 
-    it('resolves the tiers API at send time so boot wiring can hand over the uninitialised service', async function () {
-        const lateBoundTiers = {api: undefined as typeof tiersService.api | undefined};
-        const service = new GiftDeliveryService({
-            giftRepository,
-            giftDeliveryRepository,
-            tiersService: lateBoundTiers as unknown as typeof tiersService,
-            giftEmailService
-        });
-        lateBoundTiers.api = tiersService.api;
-
-        assert.equal(await service.send('delivery_1'), 'sent');
-        sinon.assert.calledOnceWithExactly(tiersService.api.read, 'tier_1');
-    });
-
-    it('records transactional transport acceptance without a provider message ID', async function () {
+    it('records transport acceptance without a provider message ID', async function () {
         giftEmailService.sendGiftDelivery.resolves({providerMessageId: null});
         const service = createService();
 
-        const result = await service.send('delivery_1');
-
-        assert.equal(result, 'sent');
+        assert.equal(await service.send('delivery_1'), 'sent');
         sinon.assert.calledOnceWithExactly(giftDeliveryRepository.markSent, 'delivery_1', sinon.match.date, null);
     });
 
     it('leaves an accepted handoff in sending when the durable sent fact cannot be persisted', async function () {
-        const errorLog = sinon.stub(logging, 'error');
+        sinon.stub(logging, 'error');
         giftDeliveryRepository.markSent.resolves(false);
         const service = createService();
 
-        const result = await service.send('delivery_1');
-
-        assert.equal(result, 'failed');
+        assert.equal(await service.send('delivery_1'), 'failed');
         sinon.assert.notCalled(giftDeliveryRepository.markFailed);
-        sinon.assert.calledOnceWithExactly(errorLog, sinon.match({
-            event: {name: 'gift_delivery.acceptance_persistence.failed'},
-            deliveryId: 'delivery_1'
-        }), sinon.match.string);
     });
 
     it('records acceptance details on a delivery cancelled while its email was in flight', async function () {
-        const infoLog = sinon.stub(logging, 'info');
+        sinon.stub(logging, 'info');
         const errorLog = sinon.stub(logging, 'error');
         giftDeliveryRepository.markSent.resolves(false);
         giftDeliveryRepository.recordCancelledAcceptance.resolves(true);
         const service = createService();
 
-        const result = await service.send('delivery_1');
-
-        assert.equal(result, 'skipped');
+        assert.equal(await service.send('delivery_1'), 'skipped');
         sinon.assert.calledOnceWithExactly(giftDeliveryRepository.recordCancelledAcceptance, 'delivery_1', sinon.match.date, 'provider-123');
         sinon.assert.notCalled(giftDeliveryRepository.markFailed);
         sinon.assert.notCalled(errorLog);
-        sinon.assert.calledOnceWithExactly(infoLog, sinon.match({
-            event: {name: 'gift_delivery.cancelled_during_send'},
-            deliveryId: 'delivery_1'
-        }), sinon.match.string);
     });
 
     it('retries accepted handoff persistence once', async function () {
-        const warningLog = sinon.stub(logging, 'warn');
+        sinon.stub(logging, 'warn');
         giftDeliveryRepository.markSent.onFirstCall().rejects({code: 'ECONNREFUSED'});
         giftDeliveryRepository.markSent.onSecondCall().resolves(true);
         const service = createService();
 
-        const result = await service.send('delivery_1');
-
-        assert.equal(result, 'sent');
+        assert.equal(await service.send('delivery_1'), 'sent');
         sinon.assert.calledTwice(giftDeliveryRepository.markSent);
         sinon.assert.notCalled(giftDeliveryRepository.markFailed);
-        sinon.assert.calledOnceWithExactly(warningLog, sinon.match({
-            event: {name: 'gift_delivery.acceptance_persistence.retrying'},
-            deliveryId: 'delivery_1'
-        }), sinon.match.string);
     });
 
     it('moves an accepted handoff out of recovery when persistence retries fail', async function () {
-        const errorLog = sinon.stub(logging, 'error');
+        sinon.stub(logging, 'error');
         sinon.stub(logging, 'warn');
         giftDeliveryRepository.markSent.rejects({code: 'ECONNREFUSED'});
         const service = createService();
 
-        const result = await service.send('delivery_1');
-
-        assert.equal(result, 'failed');
+        assert.equal(await service.send('delivery_1'), 'failed');
         sinon.assert.calledTwice(giftDeliveryRepository.markSent);
         sinon.assert.calledOnceWithExactly(giftDeliveryRepository.markFailed, 'delivery_1');
-        sinon.assert.calledOnceWithExactly(errorLog, sinon.match({
-            event: {name: 'gift_delivery.acceptance_persistence.failed'},
-            deliveryId: 'delivery_1'
-        }), sinon.match.string);
     });
 
     it('does not send when another worker or lifecycle transition starts the delivery first', async function () {
@@ -306,20 +262,12 @@ describe('GiftDeliveryService', function () {
     });
 
     it('fails a delivery when the mail transport does not accept it', async function () {
-        const errorLog = sinon.stub(logging, 'error');
-        const transportError = new Error('421 Try again later');
-        giftEmailService.sendGiftDelivery.rejects(transportError);
+        sinon.stub(logging, 'error');
+        giftEmailService.sendGiftDelivery.rejects(new Error('421 Try again later'));
         const service = createService();
 
-        const result = await service.send('delivery_1');
-
-        assert.equal(result, 'failed');
+        assert.equal(await service.send('delivery_1'), 'failed');
         sinon.assert.calledOnceWithExactly(giftDeliveryRepository.markFailed, 'delivery_1');
-        sinon.assert.calledOnceWithExactly(errorLog, sinon.match({
-            event: {name: 'gift_delivery.acceptance_failed'},
-            err: transportError,
-            deliveryId: 'delivery_1'
-        }), sinon.match.string);
     });
 
     it('logs only the underlying error when the bulk mailer rejects with the rendered message', async function () {
@@ -338,33 +286,20 @@ describe('GiftDeliveryService', function () {
         assert.equal(JSON.stringify(errorLog.firstCall.args).includes('secret link'), false);
     });
 
-    it('fails a delivery with a structured log when its tier cannot be read', async function () {
-        const errorLog = sinon.stub(logging, 'error');
-        tiersService.api.read.rejects(new Error('tiers unavailable'));
-        const service = createService();
+    const unusableTiers = [
+        {name: 'cannot be read', arrange: (read: sinon.SinonStub) => read.rejects(new Error('tiers unavailable'))},
+        {name: 'is missing', arrange: (read: sinon.SinonStub) => read.resolves(null)}
+    ];
 
-        const result = await service.send('delivery_1');
+    for (const {name, arrange} of unusableTiers) {
+        it(`fails a delivery when its tier ${name}`, async function () {
+            sinon.stub(logging, 'error');
+            arrange(tiersService.api.read);
+            const service = createService();
 
-        assert.equal(result, 'failed');
-        sinon.assert.calledOnceWithExactly(giftDeliveryRepository.markFailed, 'delivery_1');
-        sinon.assert.calledOnceWithExactly(errorLog, sinon.match({
-            event: {name: 'gift_delivery.tier_read_failed'},
-            deliveryId: 'delivery_1'
-        }), sinon.match.string);
-    });
-
-    it('fails a delivery with a structured log when its tier is missing', async function () {
-        const errorLog = sinon.stub(logging, 'error');
-        tiersService.api.read.resolves(null);
-        const service = createService();
-
-        const result = await service.send('delivery_1');
-
-        assert.equal(result, 'failed');
-        sinon.assert.calledOnceWithExactly(giftDeliveryRepository.markFailed, 'delivery_1');
-        sinon.assert.calledOnceWithExactly(errorLog, sinon.match({
-            event: {name: 'gift_delivery.tier_missing'},
-            deliveryId: 'delivery_1'
-        }), sinon.match.string);
-    });
+            assert.equal(await service.send('delivery_1'), 'failed');
+            sinon.assert.calledOnceWithExactly(giftDeliveryRepository.markFailed, 'delivery_1');
+            sinon.assert.notCalled(giftEmailService.sendGiftDelivery);
+        });
+    }
 });

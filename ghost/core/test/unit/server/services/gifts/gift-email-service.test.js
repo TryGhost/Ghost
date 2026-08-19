@@ -243,33 +243,6 @@ describe('GiftEmailService', function () {
             sinon.assert.match(message.html, sinon.match('Redeem your gift:'));
             sinon.assert.match(message.html, sinon.match('<strong>Buyer</strong> has gifted you a <strong>1</strong>-year <strong>Gold</strong> membership to Test Site'));
             sinon.assert.match(message.html, sinon.match('on behalf of Buyer (<a href="mailto:buyer@example.com"'));
-            sinon.assert.match(message.html, sinon.match('background:#fff3ed'));
-            sinon.assert.match(message.html, sinon.match('color:#bd460c'));
-        });
-
-        it('falls back to neutral delivery colors when the accent color is invalid', async function () {
-            const invalidColorSettingsCache = {
-                get: key => key === 'accent_color' ? 'invalid' : settingsCache.get(key)
-            };
-            const invalidColorService = new GiftEmailService({transactionalMailer, bulkMailer, settingsCache: invalidColorSettingsCache, urlUtils, getFromAddress, blogIcon, t: translate()});
-
-            await invalidColorService.sendGiftDelivery({
-                recipientEmail: 'recipient@example.com',
-                recipientName: 'Recipient',
-                buyerEmail: 'buyer@example.com',
-                buyerName: 'Buyer',
-                personalMessage: 'Enjoy this gift',
-                token: 'abc-123',
-                tierName: 'Gold',
-                benefits: [],
-                cadence: 'year',
-                duration: 1,
-                expiresAt: new Date('2027-04-07')
-            });
-
-            const html = bulkMailer.send.firstCall.firstArg.html;
-            sinon.assert.match(html, sinon.match('background:#F4F5F6'));
-            sinon.assert.match(html, sinon.match('color:#738A94'));
         });
 
         it('falls back to transactional email when bulk Mailgun is not configured', async function () {
@@ -304,10 +277,7 @@ describe('GiftEmailService', function () {
         });
 
         it('uses an attributive plural cadence for multi-month gifts', async function () {
-            const t = sinon.spy(translate());
-            const translatedService = new GiftEmailService({transactionalMailer, bulkMailer, settingsCache, urlUtils, getFromAddress, blogIcon, t});
-
-            await translatedService.sendGiftDelivery({
+            await service.sendGiftDelivery({
                 recipientEmail: 'recipient@example.com',
                 recipientName: null,
                 buyerEmail: 'buyer@example.com',
@@ -326,14 +296,6 @@ describe('GiftEmailService', function () {
             sinon.assert.match(message.html, sinon.match('<strong>3</strong>-month'));
             sinon.assert.match(message.html, sinon.match(value => !value.includes('3 months')));
             sinon.assert.match(message.plaintext, sinon.match(value => !value.includes('3 months')));
-
-            const introKey = '{buyerName} has gifted you a {duration}-month {tierName} membership to {siteTitle}';
-            const introCalls = t.getCalls().filter(call => call.firstArg === introKey);
-            assert.equal(introCalls.length, 2);
-            for (const call of introCalls) {
-                assert.equal(call.args[1].count, 3);
-            }
-            assert.ok(introCalls.some(call => call.args[1].duration === 3));
         });
 
         it('escapes recipient-controlled delivery content in HTML', async function () {

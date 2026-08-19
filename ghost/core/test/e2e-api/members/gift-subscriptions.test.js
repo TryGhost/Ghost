@@ -273,6 +273,46 @@ describe('Gift Subscriptions', function () {
             assert.equal(gift.get('stripe_payment_intent_id'), 'pi_delayed_gift');
         });
 
+        it('leaves a gift unpurchased when delayed payment fails', async function () {
+            const paidTier = await getPaidTier();
+
+            await membersAgent.post('/api/create-stripe-checkout-session/')
+                .body({
+                    type: 'gift',
+                    tierId: paidTier.id,
+                    cadence: 'month',
+                    metadata: {}
+                })
+                .expectStatus(200);
+
+            const checkoutSession = getLatestCheckoutSession();
+            const session = {
+                id: checkoutSession.id,
+                mode: 'payment',
+                payment_status: 'unpaid',
+                amount_total: paidTier.monthly_price,
+                currency: paidTier.currency.toLowerCase(),
+                customer: checkoutSession.customer,
+                customer_details: {email: 'failed-gift-buyer@example.com'},
+                metadata: toWebhookMetadata(checkoutSession.metadata),
+                payment_intent: 'pi_failed_gift'
+            };
+
+            await stripeMocker.sendWebhook({
+                type: 'checkout.session.completed',
+                data: {object: session}
+            });
+            await stripeMocker.sendWebhook({
+                type: 'checkout.session.async_payment_failed',
+                data: {object: session}
+            });
+            await DomainEvents.allSettled();
+
+            const gift = await models.Gift.findOne({id: checkoutSession.metadata.ghost_gift_id}, {require: true});
+            assert.equal(gift.get('status'), 'payment_pending');
+            assert.equal(gift.get('purchased_at'), null);
+        });
+
         it('recovers the buyer email when the paid gift webhook has no customer details', async function () {
             const paidTier = await getPaidTier();
             const customer = stripeMocker.createCustomer({email: 'recovered-buyer@example.com'});
