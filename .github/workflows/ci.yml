@@ -1192,6 +1192,37 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
+  job_stripe_fixtures:
+    runs-on: ubuntu-latest
+    needs: [job_setup]
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.affected_projects_str != ''
+    name: Stripe fixture checks
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        env:
+          FORCE_COLOR: 0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Asserts the fake Stripe server against responses captured from Stripe, and
+      # that it refuses the requests Stripe refuses. Needs no Ghost, no Docker and
+      # no browser, so it does not belong in the e2e matrix that waits on the image.
+      - name: Check Stripe fixtures
+        run: pnpm --filter @tryghost/e2e test:fixtures
+
+      - uses: tryghost/actions/actions/slack-build@e7a401946f91165a6426290705f501a377ec1533 # main
+        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        with:
+          status: ${{ job.status }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
   job_build_admin:
     name: Build Admin
     needs: [job_setup]
@@ -2149,6 +2180,7 @@ jobs:
         job_lint,
         job_lint_docs,
         job_lint_packages,
+        job_stripe_fixtures,
         job_i18n,
         job_build_admin,
         job_pack,
