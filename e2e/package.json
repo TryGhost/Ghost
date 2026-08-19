@@ -18,6 +18,7 @@
     "stripe:provision": "node --experimental-strip-types ./scripts/provision-stripe-environment.ts",
     "stripe:fixtures": "node --experimental-strip-types ./scripts/capture-stripe-fixtures.ts",
     "stripe:fixtures:checkout": "node --experimental-strip-types ./scripts/capture-completed-checkout.ts",
+    "stripe:probe": "node --experimental-strip-types ./scripts/probe-stripe-constraints.ts",
     "preflight:build": "bash ./scripts/prepare-ci-e2e-build-mode.sh",
     "test": "bash ./scripts/run-playwright-host.sh playwright test --project=main",
     "test:analytics": "bash ./scripts/run-playwright-host.sh playwright test --project=analytics",
