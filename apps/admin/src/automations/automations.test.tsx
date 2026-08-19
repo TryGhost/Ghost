@@ -94,6 +94,11 @@ describe('Automations', () => {
     it('shows free and paid sequences when Stripe is connected', () => {
         renderPage();
 
+        expect(mockUseBrowseAutomations).toHaveBeenCalledWith({
+            defaultErrorHandler: false,
+            refetchOnMount: 'always',
+            staleTime: 0
+        });
         expect(screen.getByText('Free member welcome flow')).toBeInTheDocument();
         expect(screen.getByText('Paid member welcome flow')).toBeInTheDocument();
     });
