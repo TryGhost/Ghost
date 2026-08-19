@@ -53,6 +53,33 @@ describe("Settings navigation history", () => {
         await expect.element(modal).not.toBeInTheDocument();
     });
 
+    it("confirms before leaving a dirty direct-load dialog with the forward button", async () => {
+        const {boot, currentUser} = fakeStaffWorld();
+        await renderAdminApp(`/settings/staff/${currentUser.slug}`, {boot});
+
+        const modal = settingsScreen.userDetailModal();
+        await modal.getByRole("button", { name: "Close" }).click();
+        await expect.poll(currentRoute).toBe("/settings/staff");
+
+        window.history.back();
+        await expect.poll(currentRoute).toBe(`/settings/staff/${currentUser.slug}`);
+        await modal.getByLabelText("Location").fill("Somewhere new");
+        await flushEffects();
+
+        window.history.forward();
+
+        await expect.element(settingsScreen.confirmationModal()).toHaveTextContent(/leave/i);
+        await settingsScreen.confirmationAction("Stay").click();
+        await expect.poll(currentRoute).toBe(`/settings/staff/${currentUser.slug}`);
+        await expect.element(modal).toBeVisible();
+
+        window.history.forward();
+
+        await settingsScreen.confirmationAction("Leave").click();
+        await expect.poll(currentRoute).toBe("/settings/staff");
+        await expect.element(modal).not.toBeInTheDocument();
+    });
+
     it("does not prompt when the back button only switches a dirty dialog's tab", async () => {
         const {boot, currentUser} = fakeStaffWorld();
         await renderAdminApp(`/settings/staff/${currentUser.slug}`, {boot});

@@ -6,7 +6,9 @@ import {useEffect, useRef} from 'react';
 import {z} from 'zod';
 import {dialogIdentity} from './dirty-navigation-guard-identity';
 
-const historyStateSchema = z.record(z.string(), z.unknown()).nullable();
+const historyStateSchema = z.looseObject({
+    idx: z.number().int().nonnegative().optional()
+}).nullable();
 
 // Only history (back/forward) navigations are blocked: every in-app way out of a
 // dirty settings dialog already runs its own dirty confirmation before navigating.
@@ -15,11 +17,11 @@ export const DirtyNavigationGuard: React.FC = () => {
     const leaveConfirmedRef = useRef(false);
     const location = useLocation();
     // history.state already belongs to the target entry when the blocker runs, so
-    // remember whether the entry being left was created by the router (it has a key).
+    // remember whether the entry being left was tracked by the router (it has an index).
     const onRouterEntryRef = useRef(false);
     useEffect(() => {
         const historyState = historyStateSchema.safeParse(window.history.state);
-        onRouterEntryRef.current = historyState.success && typeof historyState.data?.key === 'string';
+        onRouterEntryRef.current = historyState.success && historyState.data?.idx !== undefined;
     }, [location]);
 
     useConfirmUnload(isDirty);
