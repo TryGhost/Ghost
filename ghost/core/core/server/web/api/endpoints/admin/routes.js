@@ -1,6 +1,6 @@
 const express = require('../../../../../shared/express');
 const api = require('../../../../api').endpoints;
-const { http } = require('@tryghost/api-framework');
+const {http} = require('@tryghost/api-framework');
 const auth = require('../../../../services/auth');
 const apiMw = require('../../middleware');
 const mw = require('./middleware');
@@ -12,548 +12,438 @@ const shared = require('../../../shared');
  * @returns {import('express').Router}
  */
 module.exports = function apiRoutes() {
-  const router = express.Router('admin api');
-
-  router.use(apiMw.cors);
-
-  // ## Public
-  router.get('/site', mw.publicAdminApi, http(api.site.read));
-
-  // ## Configuration
-  router.get('/config', mw.authAdminApi, http(api.config.read));
-  router.get('/config/featurebase', mw.authAdminApi, http(api.config.featurebase));
-
-  // ## Posts
-  router.get('/posts', mw.authAdminApi, http(api.posts.browse));
-  router.get('/posts/export', mw.authAdminApi, http(api.posts.exportCSV));
-
-  router.post('/posts', mw.authAdminApi, http(api.posts.add));
-  router.delete('/posts', mw.authAdminApi, http(api.posts.bulkDestroy));
-  router.put('/posts/bulk', mw.authAdminApi, http(api.posts.bulkEdit));
-  router.post(
-    '/posts/upload',
-    mw.authAdminApi,
-    labs.enabledMiddleware('csvContentImporter'),
-    apiMw.upload.single('postsfile'),
-    apiMw.upload.validation({ type: 'posts' }),
-    http(api.posts.importCSV),
-  );
-  router.get('/posts/:id', mw.authAdminApi, http(api.posts.read));
-  router.get('/posts/slug/:slug', mw.authAdminApi, http(api.posts.read));
-  router.put('/posts/:id', mw.authAdminApi, http(api.posts.edit));
-  router.delete('/posts/:id', mw.authAdminApi, http(api.posts.destroy));
-  router.post('/posts/:id/copy', mw.authAdminApi, http(api.posts.copy));
-
-  router.get('/mentions', mw.authAdminApi, http(api.mentions.browse));
-
-  // Comments - browseAll must come before :id routes
-  router.get('/comments', mw.authAdminApi, http(api.comments.browseAll));
-  router.get('/comments/:id', mw.authAdminApi, http(api.commentReplies.read));
-  router.get('/comments/:id/replies', mw.authAdminApi, http(api.commentReplies.browse));
-  router.get('/comments/:id/reports', mw.authAdminApi, http(api.commentReports.browse));
-  router.get('/comments/:id/likes', mw.authAdminApi, http(api.commentLikes.browse));
-  router.get('/comments/:id/dislikes', mw.authAdminApi, http(api.commentDislikes.browse));
-  router.get('/comments/post/:post_id', mw.authAdminApi, http(api.comments.browse));
-  router.post('/comments', mw.authAdminApi, http(api.comments.add));
-  router.put('/comments/:id', mw.authAdminApi, http(api.comments.edit));
-
-  // ## Pages
-  router.get('/pages', mw.authAdminApi, http(api.pages.browse));
-  router.delete('/pages', mw.authAdminApi, http(api.pages.bulkDestroy));
-  router.put('/pages/bulk', mw.authAdminApi, http(api.pages.bulkEdit));
-  router.post('/pages', mw.authAdminApi, http(api.pages.add));
-  router.get('/pages/:id', mw.authAdminApi, http(api.pages.read));
-  router.get('/pages/slug/:slug', mw.authAdminApi, http(api.pages.read));
-  router.put('/pages/:id', mw.authAdminApi, http(api.pages.edit));
-  router.delete('/pages/:id', mw.authAdminApi, http(api.pages.destroy));
-  router.post('/pages/:id/copy', mw.authAdminApi, http(api.pages.copy));
-
-  // Gift links
-  router.get('/posts/:id/gift_links', mw.authAdminApi, http(api.giftLinks.browse));
-  router.put('/posts/:id/gift_links', mw.authAdminApi, http(api.giftLinks.ensure));
-  router.post('/posts/:id/gift_links', mw.authAdminApi, http(api.giftLinks.create));
-  router.get('/pages/:id/gift_links', mw.authAdminApi, http(api.giftLinks.browse));
-  router.put('/pages/:id/gift_links', mw.authAdminApi, http(api.giftLinks.ensure));
-  router.post('/pages/:id/gift_links', mw.authAdminApi, http(api.giftLinks.create));
-  router.put('/gift_links/remove_all', mw.authAdminApi, http(api.giftLinks.removeAll));
-
-  // # Integrations
-
-  router.get('/integrations', mw.authAdminApi, http(api.integrations.browse));
-  router.get('/integrations/:id', mw.authAdminApi, http(api.integrations.read));
-  router.post('/integrations', mw.authAdminApi, http(api.integrations.add));
-  router.post(
-    '/integrations/:id/api_key/:keyid/refresh',
-    mw.authAdminApi,
-    http(api.integrations.edit),
-  );
-  router.put('/integrations/:id', mw.authAdminApi, http(api.integrations.edit));
-  router.delete('/integrations/:id', mw.authAdminApi, http(api.integrations.destroy));
-
-  // ## Schedules
-  router.put('/schedules/:resource/:id', mw.authAdminApiWithUrl, http(api.schedules.publish));
-
-  // ## Gifts
-  router.put('/gifts/flush_reminders', mw.authAdminApiWithUrl, http(api.gifts.flushReminders));
-
-  // ## Settings
-  router.get('/settings/routes/yaml', mw.authAdminApi, http(api.settings.download));
-  router.post(
-    '/settings/routes/yaml',
-    mw.authAdminApi,
-    apiMw.upload.single('routes'),
-    apiMw.upload.validation({ type: 'routes' }),
-    http(api.settings.upload),
-  );
-
-  router.get('/settings', mw.authAdminApi, http(api.settings.browse));
-  router.put('/settings', mw.authAdminApi, http(api.settings.edit));
-  router.post(
-    '/settings/access_code/regenerate',
-    mw.authAdminApi,
-    http(api.settings.regenerateAccessCode),
-  );
-  router.put('/settings/verifications/', mw.authAdminApi, http(api.settings.verifyKeyUpdate));
-  router.delete(
-    '/settings/stripe/connect',
-    mw.authAdminApi,
-    http(api.settings.disconnectStripeConnectIntegration),
-  );
-
-  // ## Users
-  router.get('/users', mw.authAdminApi, http(api.users.browse));
-  router.get('/users/:id', mw.authAdminApi, http(api.users.read));
-  router.get('/users/slug/:slug', mw.authAdminApi, http(api.users.read));
-  // NOTE: We don't expose any email addresses via the public api.
-  router.get('/users/email/:email', mw.authAdminApi, http(api.users.read));
-  router.get('/users/:id/token', mw.authAdminApi, http(api.users.readStaffToken));
-
-  router.put('/users/password', mw.authAdminApi, http(api.users.changePassword));
-  router.put('/users/owner', mw.authAdminApi, http(api.users.transferOwnership));
-  router.put('/users/:id', mw.authAdminApi, http(api.users.edit));
-  router.put('/users/:id/token', mw.authAdminApi, http(api.users.regenerateStaffToken));
-  router.delete('/users/:id', mw.authAdminApi, http(api.users.destroy));
-
-  // ## Tags
-  router.get('/tags', mw.authAdminApi, http(api.tags.browse));
-  router.get('/tags/:id', mw.authAdminApi, http(api.tags.read));
-  router.get('/tags/slug/:slug', mw.authAdminApi, http(api.tags.read));
-  router.post('/tags', mw.authAdminApi, http(api.tags.add));
-  router.put('/tags/:id', mw.authAdminApi, http(api.tags.edit));
-  router.delete('/tags/:id', mw.authAdminApi, http(api.tags.destroy));
-
-  // Tiers
-  router.get('/tiers', mw.authAdminApi, http(api.tiers.browse));
-  router.post('/tiers', mw.authAdminApi, http(api.tiers.add));
-  router.get('/tiers/:id', mw.authAdminApi, http(api.tiers.read));
-  router.put('/tiers/:id', mw.authAdminApi, http(api.tiers.edit));
-
-  // ## Members
-  router.get('/members', mw.authAdminApi, http(api.members.browse));
-  router.post('/members', mw.authAdminApi, http(api.members.add));
-  router.delete('/members', mw.authAdminApi, http(api.members.bulkDestroy));
-  router.put('/members/bulk', mw.authAdminApi, http(api.members.bulkEdit));
-
-  router.get('/offers', mw.authAdminApi, http(api.offers.browse));
-  router.post('/offers', mw.authAdminApi, http(api.offers.add));
-  router.get('/offers/:id', mw.authAdminApi, http(api.offers.read));
-  router.put('/offers/:id', mw.authAdminApi, http(api.offers.edit));
-
-  router.get('/members/stats/count', mw.authAdminApi, http(api.members.memberStats));
-  router.get('/members/stats/mrr', mw.authAdminApi, http(api.members.mrrStats));
-
-  router.get('/members/events', mw.authAdminApi, http(api.members.activityFeed));
-
-  router.get('/members/upload', mw.authAdminApi, http(api.members.exportCSV));
-  router.post(
-    '/members/upload',
-    mw.authAdminApi,
-    apiMw.upload.single('membersfile'),
-    apiMw.upload.validation({ type: 'members' }),
-    http(api.members.importCSV),
-  );
-
-  router.get('/members/stripe_connect', mw.authAdminApi, http(api.membersStripeConnect.auth));
-
-  // Member custom field definitions — gated by the members_custom_fields flag.
-  // Registered before /members/:id so the literal path isn't captured by :id.
-  router.get(
-    '/members/custom_fields',
-    mw.authAdminApi,
-    labs.enabledMiddleware('membersCustomFields'),
-    http(api.membersCustomFields.browse),
-  );
-  router.post(
-    '/members/custom_fields',
-    mw.authAdminApi,
-    labs.enabledMiddleware('membersCustomFields'),
-    http(api.membersCustomFields.add),
-  );
-  // A PUT on the collection sets the publisher's order for the whole list.
-  router.put(
-    '/members/custom_fields',
-    mw.authAdminApi,
-    labs.enabledMiddleware('membersCustomFields'),
-    http(api.membersCustomFields.reorder),
-  );
-  router.get(
-    '/members/custom_fields/:key',
-    mw.authAdminApi,
-    labs.enabledMiddleware('membersCustomFields'),
-    http(api.membersCustomFields.read),
-  );
-  router.put(
-    '/members/custom_fields/:key',
-    mw.authAdminApi,
-    labs.enabledMiddleware('membersCustomFields'),
-    http(api.membersCustomFields.edit),
-  );
-  router.delete(
-    '/members/custom_fields/:key',
-    mw.authAdminApi,
-    labs.enabledMiddleware('membersCustomFields'),
-    http(api.membersCustomFields.destroy),
-  );
-
-  router.get('/members/:id', mw.authAdminApi, http(api.members.read));
-  router.put('/members/:id', mw.authAdminApi, http(api.members.edit));
-  router.delete('/members/:id', mw.authAdminApi, http(api.members.destroy));
-  router.delete('/members/:id/sessions', mw.authAdminApi, http(api.members.logout));
-  router.delete(
-    '/members/:id/suppression',
-    mw.authAdminApi,
-    http(api.members.deleteEmailSuppression),
-  );
-
-  router.post('/members/:id/subscriptions/', mw.authAdminApi, http(api.members.createSubscription));
-  router.put(
-    '/members/:id/subscriptions/:subscription_id',
-    mw.authAdminApi,
-    http(api.members.editSubscription),
-  );
-
-  router.get('/members/:id/signin_urls', mw.authAdminApi, http(api.memberSigninUrls.read));
-
-  router.post(
-    '/members/:id/commenting/disable',
-    mw.authAdminApi,
-    http(api.memberCommenting.disable),
-  );
-  router.post('/members/:id/commenting/enable', mw.authAdminApi, http(api.memberCommenting.enable));
-
-  // ## Stats
-  router.get('/stats/member_count', mw.authAdminApi, http(api.stats.memberCountHistory));
-  router.get('/stats/mrr', mw.authAdminApi, http(api.stats.mrr));
-  router.get('/stats/subscriptions', mw.authAdminApi, http(api.stats.subscriptions));
-  router.get('/stats/referrers', mw.authAdminApi, http(api.stats.referrersHistory));
-  router.get('/stats/posts/:id/stats', mw.authAdminApi, http(api.stats.postStats));
-  router.get('/stats/top-posts', mw.authAdminApi, http(api.stats.topPosts));
-  router.get('/stats/top-posts-views', mw.authAdminApi, http(api.stats.topPostsViews));
-  router.get('/stats/top-content', mw.authAdminApi, http(api.stats.topContent));
-  router.get('/stats/newsletter-stats', mw.authAdminApi, http(api.stats.newsletterStats));
-  router.get(
-    '/stats/newsletter-basic-stats',
-    mw.authAdminApi,
-    http(api.stats.newsletterBasicStats),
-  );
-  router.get(
-    '/stats/newsletter-click-stats',
-    mw.authAdminApi,
-    http(api.stats.newsletterClickStats),
-  );
-  router.get('/stats/subscriber-count', mw.authAdminApi, http(api.stats.subscriberCount));
-  router.get('/stats/posts/:id/top-referrers', mw.authAdminApi, http(api.stats.postReferrers));
-  router.get('/stats/posts/:id/growth', mw.authAdminApi, http(api.stats.postGrowthStats));
-  router.get('/stats/top-sources-growth', mw.authAdminApi, http(api.stats.topSourcesGrowth));
-  router.post('/stats/posts-visitor-counts', mw.authAdminApi, http(api.stats.postsVisitorCounts));
-  router.post('/stats/posts-member-counts', mw.authAdminApi, http(api.stats.postsMemberCounts));
-
-  // ## Labels
-  router.get('/labels', mw.authAdminApi, http(api.labels.browse));
-  router.get('/labels/:id', mw.authAdminApi, http(api.labels.read));
-  router.get('/labels/slug/:slug', mw.authAdminApi, http(api.labels.read));
-  router.post('/labels', mw.authAdminApi, http(api.labels.add));
-  router.put('/labels/:id', mw.authAdminApi, http(api.labels.edit));
-  router.delete('/labels/:id', mw.authAdminApi, http(api.labels.destroy));
-
-  // ## Automations
-  router.get('/automations', mw.authAdminApi, http(api.automations.browse));
-  router.get(
-    '/automations/:automation_id/actions/:action_id/links',
-    mw.authAdminApi,
-    http(api.automationActionLinks.browse),
-  );
-  router.get('/automations/:id', mw.authAdminApi, http(api.automations.read));
-  router.post(
-    '/automations/:id/email_preview',
-    mw.authAdminApi,
-    http(api.automationEmailPreviews.preview),
-  );
-  router.post(
-    '/automations/:id/email_test',
-    shared.middleware.brute.previewEmailLimiter,
-    mw.authAdminApi,
-    http(api.automationEmailPreviews.sendTestEmail),
-  );
-  router.put('/automations/poll', mw.authAdminApiWithUrl, http(api.automations.poll));
-  router.put('/automations/:id', mw.authAdminApi, http(api.automations.edit));
-
-  // ## Automated Emails
-  router.get('/automated_emails', mw.authAdminApi, http(api.automatedEmails.browse));
-  router.get('/automated_emails/design', mw.authAdminApi, http(api.automatedEmailDesign.read));
-  router.put('/automated_emails/senders', mw.authAdminApi, http(api.automatedEmails.editSenders));
-  router.put(
-    '/automated_emails/verifications',
-    mw.authAdminApi,
-    http(api.automatedEmails.verifySenderUpdate),
-  );
-  router.get('/automated_emails/:id', mw.authAdminApi, http(api.automatedEmails.read));
-  router.post('/automated_emails', mw.authAdminApi, http(api.automatedEmails.add));
-  router.put('/automated_emails/design', mw.authAdminApi, http(api.automatedEmailDesign.edit));
-  router.put('/automated_emails/:id', mw.authAdminApi, http(api.automatedEmails.edit));
-  router.post('/automated_emails/:id/preview', mw.authAdminApi, http(api.automatedEmails.preview));
-  router.post(
-    '/automated_emails/:id/test',
-    shared.middleware.brute.previewEmailLimiter,
-    mw.authAdminApi,
-    http(api.automatedEmails.sendTestEmail),
-  );
-
-  // ## Roles
-  router.get('/roles/', mw.authAdminApi, http(api.roles.browse));
-
-  // ## Slugs
-  router.get('/slugs/:type/:name', mw.authAdminApi, http(api.slugs.generate));
-  router.get('/slugs/:type/:name/:id', mw.authAdminApi, http(api.slugs.generate));
-
-  // ## Themes
-  router.get('/themes/', mw.authAdminApi, http(api.themes.browse));
-
-  router.get('/themes/:name/download', mw.authAdminApi, http(api.themes.download));
-
-  router.get('/themes/active', mw.authAdminApi, http(api.themes.readActive));
-
-  router.post(
-    '/themes/upload',
-    mw.authAdminApi,
-    apiMw.upload.themeZip('file'),
-    apiMw.upload.validation({ type: 'themes' }),
-    http(api.themes.upload),
-  );
-
-  router.post('/themes/install', mw.authAdminApi, http(api.themes.install));
-
-  router.put('/themes/:name/activate', mw.authAdminApi, http(api.themes.activate));
-
-  router.delete('/themes/:name', mw.authAdminApi, http(api.themes.destroy));
-
-  // ## Notifications
-  router.get('/notifications', mw.authAdminApi, http(api.notifications.browse));
-  router.post('/notifications', mw.authAdminApi, http(api.notifications.add));
-  router.delete(
-    '/notifications/:notification_id',
-    mw.authAdminApi,
-    http(api.notifications.destroy),
-  );
-
-  // ## DB
-  router.get('/db', mw.authAdminApi, http(api.db.exportContent));
-  router.post(
-    '/db',
-    mw.authAdminApi,
-    apiMw.upload.single('importfile'),
-    apiMw.upload.validation({ type: 'db' }),
-    http(api.db.importContent),
-  );
-  router.delete('/db', mw.authAdminApi, http(api.db.deleteAllContent));
-  router.post('/db/backup', mw.authAdminApi, http(api.db.backupContent));
-
-  router.post('/db/media/inline', mw.authAdminApi, http(api.db.inlineMedia));
-
-  // ## Exports
-  router.get(
-    '/exports/download',
-    mw.authAdminApi,
-    labs.enabledMiddleware('selfServeArchives'),
-    http(api.exports.download),
-  );
-
-  // ## Slack
-  router.post('/slack/test', mw.authAdminApi, http(api.slack.sendTest));
-
-  // ## Tinybird
-  router.get('/tinybird/token', mw.authAdminApi, http(api.tinybird.token));
-
-  // ## Featurebase
-  router.get('/featurebase/token', mw.authAdminApi, http(api.featurebase.token));
-
-  // ## Sessions
-  // We don't need auth when creating a new session (logging in)
-  router.post(
-    '/session',
-    shared.middleware.brute.globalBlock,
-    shared.middleware.brute.userLogin,
-    http(api.session.add),
-  );
-  router.delete('/session', mw.authAdminApi, http(api.session.delete));
-  router.post(
-    '/session/verify',
-    shared.middleware.brute.sendVerificationCode,
-    http(api.session.sendVerification),
-  );
-  router.put('/session/verify', shared.middleware.brute.userVerification, http(api.session.verify));
-
-  // ## Identity
-  router.get('/identities', mw.authAdminApi, http(api.identities.read));
-
-  // ## Authentication
-  router.post(
-    '/authentication/password_reset',
-    shared.middleware.brute.globalReset,
-    shared.middleware.brute.userReset,
-    http(api.authentication.generateResetToken),
-  );
-  router.put(
-    '/authentication/password_reset',
-    shared.middleware.brute.globalBlock,
-    auth.session.initSession,
-    http(api.authentication.resetPassword),
-  );
-  router.post('/authentication/invitation', http(api.authentication.acceptInvitation));
-  router.get('/authentication/invitation', http(api.authentication.isInvitation));
-  router.post('/authentication/setup', http(api.authentication.setup));
-  router.put('/authentication/setup', mw.authAdminApi, http(api.authentication.updateSetup));
-  router.get('/authentication/setup', http(api.authentication.isSetup));
-  router.post('/authentication/reset', mw.authAdminApi, http(api.authentication.reset));
-
-  // ## Images
-  router.post(
-    '/images/upload',
-    mw.authAdminApi,
-    apiMw.upload.single('file'),
-    apiMw.upload.validation({ type: 'images' }),
-    http(api.images.upload),
-  );
-
-  // ## media
-  router.post(
-    '/media/upload',
-    mw.authAdminApi,
-    apiMw.upload.media('file', 'thumbnail'),
-    apiMw.upload.mediaValidation({ type: 'media' }),
-    http(api.media.upload),
-  );
-  router.put(
-    '/media/thumbnail/upload',
-    mw.authAdminApi,
-    apiMw.upload.single('file'),
-    apiMw.upload.validation({ type: 'images' }),
-    http(api.media.uploadThumbnail),
-  );
-
-  // ## files
-  router.post(
-    '/files/upload',
-    mw.authAdminApi,
-    apiMw.upload.single('file'),
-    apiMw.upload.fileValidation({ type: 'files' }),
-    http(api.files.upload),
-  );
-
-  // ## Invites
-  router.get('/invites', mw.authAdminApi, http(api.invites.browse));
-  router.get('/invites/:id', mw.authAdminApi, http(api.invites.read));
-  router.post('/invites', mw.authAdminApi, http(api.invites.add));
-  router.delete('/invites/:id', mw.authAdminApi, http(api.invites.destroy));
-
-  // ## Redirects
-  router.get('/redirects/download', mw.authAdminApi, http(api.redirects.download));
-  router.post(
-    '/redirects/upload',
-    mw.authAdminApi,
-    apiMw.upload.single('redirects'),
-    apiMw.upload.validation({ type: 'redirects' }),
-    http(api.redirects.upload),
-  );
-
-  // ## Webhooks (RESTHooks)
-  router.post('/webhooks', mw.authAdminApi, http(api.webhooks.add));
-  router.put('/webhooks/:id', mw.authAdminApi, http(api.webhooks.edit));
-  router.delete('/webhooks/:id', mw.authAdminApi, http(api.webhooks.destroy));
-
-  // ## Oembed (fetch response from oembed provider)
-  router.get('/oembed', mw.authAdminApi, http(api.oembed.read));
-
-  // ## Actions
-  router.get('/actions', mw.authAdminApi, http(api.actions.browse));
-
-  // ## Email Preview
-  router.get('/email_previews/posts/:id', mw.authAdminApi, http(api.email_previews.read));
-  // preview sending have an additional rate limiter to prevent abuse
-  router.post(
-    '/email_previews/posts/:id',
-    shared.middleware.brute.previewEmailLimiter,
-    mw.authAdminApi,
-    http(api.email_previews.sendTestEmail),
-  );
-
-  // ## Emails
-  router.get('/emails', mw.authAdminApi, http(api.emails.browse));
-  router.get('/emails/:id', mw.authAdminApi, http(api.emails.read));
-  router.put('/emails/:id/retry', mw.authAdminApi, http(api.emails.retry));
-  router.get('/emails/:id/batches', mw.authAdminApi, http(api.emails.browseBatches));
-  router.get('/emails/:id/recipient-failures', mw.authAdminApi, http(api.emails.browseFailures));
-  router.get('/emails/:id/analytics', mw.authAdminApi, http(api.emails.analyticsStatus));
-  router.put('/emails/:id/analytics', mw.authAdminApi, http(api.emails.scheduleAnalytics));
-  router.delete('/emails/analytics', mw.authAdminApi, http(api.emails.cancelScheduledAnalytics));
-
-  // ## Snippets
-  router.get('/snippets', mw.authAdminApi, http(api.snippets.browse));
-  router.get('/snippets/:id', mw.authAdminApi, http(api.snippets.read));
-  router.post('/snippets', mw.authAdminApi, http(api.snippets.add));
-  router.put('/snippets/:id', mw.authAdminApi, http(api.snippets.edit));
-  router.delete('/snippets/:id', mw.authAdminApi, http(api.snippets.destroy));
-
-  // ## Custom theme settings
-  router.get('/custom_theme_settings', mw.authAdminApi, http(api.customThemeSettings.browse));
-  router.put('/custom_theme_settings', mw.authAdminApi, http(api.customThemeSettings.edit));
-
-  router.get('/newsletters', mw.authAdminApi, http(api.newsletters.browse));
-  router.get('/newsletters/:id', mw.authAdminApi, http(api.newsletters.read));
-  router.post('/newsletters', mw.authAdminApi, http(api.newsletters.add));
-  router.put(
-    '/newsletters/verifications/',
-    mw.authAdminApi,
-    http(api.newsletters.verifyPropertyUpdate),
-  );
-  router.put('/newsletters/:id', mw.authAdminApi, http(api.newsletters.edit));
-
-  router.get('/links', mw.authAdminApi, http(api.links.browse));
-  router.put('/links/bulk', mw.authAdminApi, http(api.links.bulkEdit));
-
-  // Recommendations
-  router.get('/recommendations', mw.authAdminApi, http(api.recommendations.browse));
-  router.get('/recommendations/:id', mw.authAdminApi, http(api.recommendations.read));
-  router.post('/recommendations', mw.authAdminApi, http(api.recommendations.add));
-  router.post('/recommendations/check', mw.authAdminApi, http(api.recommendations.check));
-  router.put('/recommendations/:id', mw.authAdminApi, http(api.recommendations.edit));
-  router.delete('/recommendations/:id', mw.authAdminApi, http(api.recommendations.destroy));
-
-  // Incoming recommendations
-  router.get(
-    '/incoming_recommendations',
-    mw.authAdminApi,
-    http(api.incomingRecommendations.browse),
-  );
-
-  // Feedback
-  router.get('/feedback/:id', mw.authAdminApi, http(api.feedbackMembers.browse));
-
-  // Search index
-  router.get('/search-index/posts', mw.authAdminApi, http(api.searchIndex.fetchPosts));
-  router.get('/search-index/pages', mw.authAdminApi, http(api.searchIndex.fetchPages));
-  router.get('/search-index/tags', mw.authAdminApi, http(api.searchIndex.fetchTags));
-  router.get('/search-index/users', mw.authAdminApi, http(api.searchIndex.fetchUsers));
-
-  return router;
+    const router = express.Router('admin api');
+
+    router.use(apiMw.cors);
+
+    // ## Public
+    router.get('/site', mw.publicAdminApi, http(api.site.read));
+
+    // ## Configuration
+    router.get('/config', mw.authAdminApi, http(api.config.read));
+    router.get('/config/featurebase', mw.authAdminApi, http(api.config.featurebase));
+
+    // ## Posts
+    router.get('/posts', mw.authAdminApi, http(api.posts.browse));
+    router.get('/posts/export', mw.authAdminApi, http(api.posts.exportCSV));
+
+    router.post('/posts', mw.authAdminApi, http(api.posts.add));
+    router.delete('/posts', mw.authAdminApi, http(api.posts.bulkDestroy));
+    router.put('/posts/bulk', mw.authAdminApi, http(api.posts.bulkEdit));
+    router.post('/posts/upload', mw.authAdminApi, labs.enabledMiddleware('csvContentImporter'), apiMw.upload.single('postsfile'), apiMw.upload.validation({type: 'posts'}), http(api.posts.importCSV));
+    router.get('/posts/:id', mw.authAdminApi, http(api.posts.read));
+    router.get('/posts/slug/:slug', mw.authAdminApi, http(api.posts.read));
+    router.put('/posts/:id', mw.authAdminApi, http(api.posts.edit));
+    router.delete('/posts/:id', mw.authAdminApi, http(api.posts.destroy));
+    router.post('/posts/:id/copy', mw.authAdminApi, http(api.posts.copy));
+
+    router.get('/mentions', mw.authAdminApi, http(api.mentions.browse));
+
+    // Comments - browseAll must come before :id routes
+    router.get('/comments', mw.authAdminApi, http(api.comments.browseAll));
+    router.get('/comments/:id', mw.authAdminApi, http(api.commentReplies.read));
+    router.get('/comments/:id/replies', mw.authAdminApi, http(api.commentReplies.browse));
+    router.get('/comments/:id/reports', mw.authAdminApi, http(api.commentReports.browse));
+    router.get('/comments/:id/likes', mw.authAdminApi, http(api.commentLikes.browse));
+    router.get('/comments/:id/dislikes', mw.authAdminApi, http(api.commentDislikes.browse));
+    router.get('/comments/post/:post_id', mw.authAdminApi, http(api.comments.browse));
+    router.post('/comments', mw.authAdminApi, http(api.comments.add));
+    router.put('/comments/:id', mw.authAdminApi, http(api.comments.edit));
+
+    // ## Pages
+    router.get('/pages', mw.authAdminApi, http(api.pages.browse));
+    router.delete('/pages', mw.authAdminApi, http(api.pages.bulkDestroy));
+    router.put('/pages/bulk', mw.authAdminApi, http(api.pages.bulkEdit));
+    router.post('/pages', mw.authAdminApi, http(api.pages.add));
+    router.get('/pages/:id', mw.authAdminApi, http(api.pages.read));
+    router.get('/pages/slug/:slug', mw.authAdminApi, http(api.pages.read));
+    router.put('/pages/:id', mw.authAdminApi, http(api.pages.edit));
+    router.delete('/pages/:id', mw.authAdminApi, http(api.pages.destroy));
+    router.post('/pages/:id/copy', mw.authAdminApi, http(api.pages.copy));
+
+    // Gift links
+    router.get('/posts/:id/gift_links', mw.authAdminApi, http(api.giftLinks.browse));
+    router.put('/posts/:id/gift_links', mw.authAdminApi, http(api.giftLinks.ensure));
+    router.post('/posts/:id/gift_links', mw.authAdminApi, http(api.giftLinks.create));
+    router.get('/pages/:id/gift_links', mw.authAdminApi, http(api.giftLinks.browse));
+    router.put('/pages/:id/gift_links', mw.authAdminApi, http(api.giftLinks.ensure));
+    router.post('/pages/:id/gift_links', mw.authAdminApi, http(api.giftLinks.create));
+    router.put('/gift_links/remove_all', mw.authAdminApi, http(api.giftLinks.removeAll));
+
+    // # Integrations
+
+    router.get('/integrations', mw.authAdminApi, http(api.integrations.browse));
+    router.get('/integrations/:id', mw.authAdminApi, http(api.integrations.read));
+    router.post('/integrations', mw.authAdminApi, http(api.integrations.add));
+    router.post('/integrations/:id/api_key/:keyid/refresh', mw.authAdminApi, http(api.integrations.edit));
+    router.put('/integrations/:id', mw.authAdminApi, http(api.integrations.edit));
+    router.delete('/integrations/:id', mw.authAdminApi, http(api.integrations.destroy));
+
+    // ## Schedules
+    router.put('/schedules/:resource/:id', mw.authAdminApiWithUrl, http(api.schedules.publish));
+
+    // ## Gifts
+    router.put('/gifts/flush_reminders', mw.authAdminApiWithUrl, http(api.gifts.flushReminders));
+
+    // ## Settings
+    router.get('/settings/routes/yaml', mw.authAdminApi, http(api.settings.download));
+    router.post('/settings/routes/yaml',
+        mw.authAdminApi,
+        apiMw.upload.single('routes'),
+        apiMw.upload.validation({type: 'routes'}),
+        http(api.settings.upload)
+    );
+
+    router.get('/settings', mw.authAdminApi, http(api.settings.browse));
+    router.put('/settings', mw.authAdminApi, http(api.settings.edit));
+    router.post('/settings/access_code/regenerate', mw.authAdminApi, http(api.settings.regenerateAccessCode));
+    router.put('/settings/verifications/', mw.authAdminApi, http(api.settings.verifyKeyUpdate));
+    router.delete('/settings/stripe/connect', mw.authAdminApi, http(api.settings.disconnectStripeConnectIntegration));
+
+    // ## Users
+    router.get('/users', mw.authAdminApi, http(api.users.browse));
+    router.get('/users/:id', mw.authAdminApi, http(api.users.read));
+    router.get('/users/slug/:slug', mw.authAdminApi, http(api.users.read));
+    // NOTE: We don't expose any email addresses via the public api.
+    router.get('/users/email/:email', mw.authAdminApi, http(api.users.read));
+    router.get('/users/:id/token', mw.authAdminApi, http(api.users.readStaffToken));
+
+    router.put('/users/password', mw.authAdminApi, http(api.users.changePassword));
+    router.put('/users/owner', mw.authAdminApi, http(api.users.transferOwnership));
+    router.put('/users/:id', mw.authAdminApi, http(api.users.edit));
+    router.put('/users/:id/token', mw.authAdminApi, http(api.users.regenerateStaffToken));
+    router.delete('/users/:id', mw.authAdminApi, http(api.users.destroy));
+
+    // ## Tags
+    router.get('/tags', mw.authAdminApi, http(api.tags.browse));
+    router.get('/tags/:id', mw.authAdminApi, http(api.tags.read));
+    router.get('/tags/slug/:slug', mw.authAdminApi, http(api.tags.read));
+    router.post('/tags', mw.authAdminApi, http(api.tags.add));
+    router.put('/tags/:id', mw.authAdminApi, http(api.tags.edit));
+    router.delete('/tags/:id', mw.authAdminApi, http(api.tags.destroy));
+
+    // Tiers
+    router.get('/tiers', mw.authAdminApi, http(api.tiers.browse));
+    router.post('/tiers', mw.authAdminApi, http(api.tiers.add));
+    router.get('/tiers/:id', mw.authAdminApi, http(api.tiers.read));
+    router.put('/tiers/:id', mw.authAdminApi, http(api.tiers.edit));
+
+    // ## Members
+    router.get('/members', mw.authAdminApi, http(api.members.browse));
+    router.post('/members', mw.authAdminApi, http(api.members.add));
+    router.delete('/members', mw.authAdminApi, http(api.members.bulkDestroy));
+    router.put('/members/bulk', mw.authAdminApi, http(api.members.bulkEdit));
+
+    router.get('/offers', mw.authAdminApi, http(api.offers.browse));
+    router.post('/offers', mw.authAdminApi, http(api.offers.add));
+    router.get('/offers/:id', mw.authAdminApi, http(api.offers.read));
+    router.put('/offers/:id', mw.authAdminApi, http(api.offers.edit));
+
+    router.get('/members/stats/count', mw.authAdminApi, http(api.members.memberStats));
+    router.get('/members/stats/mrr', mw.authAdminApi, http(api.members.mrrStats));
+
+    router.get('/members/events', mw.authAdminApi, http(api.members.activityFeed));
+
+    router.get('/members/upload', mw.authAdminApi, http(api.members.exportCSV));
+    router.post('/members/upload',
+        mw.authAdminApi,
+        apiMw.upload.single('membersfile'),
+        apiMw.upload.validation({type: 'members'}),
+        http(api.members.importCSV)
+    );
+
+    router.get('/members/stripe_connect', mw.authAdminApi, http(api.membersStripeConnect.auth));
+
+    // Member custom field definitions — gated by the members_custom_fields flag.
+    // Registered before /members/:id so the literal path isn't captured by :id.
+    router.get('/members/custom_fields', mw.authAdminApi, labs.enabledMiddleware('membersCustomFields'), http(api.membersCustomFields.browse));
+    router.post('/members/custom_fields', mw.authAdminApi, labs.enabledMiddleware('membersCustomFields'), http(api.membersCustomFields.add));
+    // A PUT on the collection sets the publisher's order for the whole list.
+    router.put('/members/custom_fields', mw.authAdminApi, labs.enabledMiddleware('membersCustomFields'), http(api.membersCustomFields.reorder));
+    router.get('/members/custom_fields/:key', mw.authAdminApi, labs.enabledMiddleware('membersCustomFields'), http(api.membersCustomFields.read));
+    router.put('/members/custom_fields/:key', mw.authAdminApi, labs.enabledMiddleware('membersCustomFields'), http(api.membersCustomFields.edit));
+    router.delete('/members/custom_fields/:key', mw.authAdminApi, labs.enabledMiddleware('membersCustomFields'), http(api.membersCustomFields.destroy));
+
+    router.get('/members/:id', mw.authAdminApi, http(api.members.read));
+    router.put('/members/:id', mw.authAdminApi, http(api.members.edit));
+    router.delete('/members/:id', mw.authAdminApi, http(api.members.destroy));
+    router.delete('/members/:id/sessions', mw.authAdminApi, http(api.members.logout));
+    router.delete('/members/:id/suppression', mw.authAdminApi, http(api.members.deleteEmailSuppression));
+
+    router.post('/members/:id/subscriptions/', mw.authAdminApi, http(api.members.createSubscription));
+    router.put('/members/:id/subscriptions/:subscription_id', mw.authAdminApi, http(api.members.editSubscription));
+
+    router.get('/members/:id/signin_urls', mw.authAdminApi, http(api.memberSigninUrls.read));
+
+    router.post('/members/:id/commenting/disable', mw.authAdminApi, http(api.memberCommenting.disable));
+    router.post('/members/:id/commenting/enable', mw.authAdminApi, http(api.memberCommenting.enable));
+
+    // ## Stats
+    router.get('/stats/member_count', mw.authAdminApi, http(api.stats.memberCountHistory));
+    router.get('/stats/mrr', mw.authAdminApi, http(api.stats.mrr));
+    router.get('/stats/subscriptions', mw.authAdminApi, http(api.stats.subscriptions));
+    router.get('/stats/referrers', mw.authAdminApi, http(api.stats.referrersHistory));
+    router.get('/stats/posts/:id/stats', mw.authAdminApi, http(api.stats.postStats));
+    router.get('/stats/top-posts', mw.authAdminApi, http(api.stats.topPosts));
+    router.get('/stats/top-posts-views', mw.authAdminApi, http(api.stats.topPostsViews));
+    router.get('/stats/top-content', mw.authAdminApi, http(api.stats.topContent));
+    router.get('/stats/newsletter-stats', mw.authAdminApi, http(api.stats.newsletterStats));
+    router.get('/stats/newsletter-basic-stats', mw.authAdminApi, http(api.stats.newsletterBasicStats));
+    router.get('/stats/newsletter-click-stats', mw.authAdminApi, http(api.stats.newsletterClickStats));
+    router.get('/stats/subscriber-count', mw.authAdminApi, http(api.stats.subscriberCount));
+    router.get('/stats/posts/:id/top-referrers', mw.authAdminApi, http(api.stats.postReferrers));
+    router.get('/stats/posts/:id/growth', mw.authAdminApi, http(api.stats.postGrowthStats));
+    router.get('/stats/top-sources-growth', mw.authAdminApi, http(api.stats.topSourcesGrowth));
+    router.post('/stats/posts-visitor-counts', mw.authAdminApi, http(api.stats.postsVisitorCounts));
+    router.post('/stats/posts-member-counts', mw.authAdminApi, http(api.stats.postsMemberCounts));
+
+    // ## Labels
+    router.get('/labels', mw.authAdminApi, http(api.labels.browse));
+    router.get('/labels/:id', mw.authAdminApi, http(api.labels.read));
+    router.get('/labels/slug/:slug', mw.authAdminApi, http(api.labels.read));
+    router.post('/labels', mw.authAdminApi, http(api.labels.add));
+    router.put('/labels/:id', mw.authAdminApi, http(api.labels.edit));
+    router.delete('/labels/:id', mw.authAdminApi, http(api.labels.destroy));
+
+    // ## Automations
+    router.get('/automations', mw.authAdminApi, http(api.automations.browse));
+    router.get('/automations/:automation_id/actions/:action_id/links', mw.authAdminApi, http(api.automationActionLinks.browse));
+    router.get('/automations/:id', mw.authAdminApi, http(api.automations.read));
+    router.post('/automations/:id/email_preview', mw.authAdminApi, http(api.automationEmailPreviews.preview));
+    router.post('/automations/:id/email_test', shared.middleware.brute.previewEmailLimiter, mw.authAdminApi, http(api.automationEmailPreviews.sendTestEmail));
+    router.put('/automations/poll', mw.authAdminApiWithUrl, http(api.automations.poll));
+    router.put('/automations/:id', mw.authAdminApi, http(api.automations.edit));
+
+    // ## Automated Emails
+    router.get('/automated_emails', mw.authAdminApi, http(api.automatedEmails.browse));
+    router.get('/automated_emails/design', mw.authAdminApi, http(api.automatedEmailDesign.read));
+    router.put('/automated_emails/senders', mw.authAdminApi, http(api.automatedEmails.editSenders));
+    router.put('/automated_emails/verifications', mw.authAdminApi, http(api.automatedEmails.verifySenderUpdate));
+    router.get('/automated_emails/:id', mw.authAdminApi, http(api.automatedEmails.read));
+    router.post('/automated_emails', mw.authAdminApi, http(api.automatedEmails.add));
+    router.put('/automated_emails/design', mw.authAdminApi, http(api.automatedEmailDesign.edit));
+    router.put('/automated_emails/:id', mw.authAdminApi, http(api.automatedEmails.edit));
+    router.post('/automated_emails/:id/preview', mw.authAdminApi, http(api.automatedEmails.preview));
+    router.post('/automated_emails/:id/test', shared.middleware.brute.previewEmailLimiter, mw.authAdminApi, http(api.automatedEmails.sendTestEmail));
+
+    // ## Roles
+    router.get('/roles/', mw.authAdminApi, http(api.roles.browse));
+
+    // ## Slugs
+    router.get('/slugs/:type/:name', mw.authAdminApi, http(api.slugs.generate));
+    router.get('/slugs/:type/:name/:id', mw.authAdminApi, http(api.slugs.generate));
+
+    // ## Themes
+    router.get('/themes/', mw.authAdminApi, http(api.themes.browse));
+
+    router.get('/themes/:name/download',
+        mw.authAdminApi,
+        http(api.themes.download)
+    );
+
+    router.get('/themes/active',
+        mw.authAdminApi,
+        http(api.themes.readActive)
+    );
+
+    router.post('/themes/upload',
+        mw.authAdminApi,
+        apiMw.upload.themeZip('file'),
+        apiMw.upload.validation({type: 'themes'}),
+        http(api.themes.upload)
+    );
+
+    router.post('/themes/install', mw.authAdminApi, http(api.themes.install));
+
+    router.put('/themes/:name/activate',
+        mw.authAdminApi,
+        http(api.themes.activate)
+    );
+
+    router.delete('/themes/:name',
+        mw.authAdminApi,
+        http(api.themes.destroy)
+    );
+
+    // ## Notifications
+    router.get('/notifications', mw.authAdminApi, http(api.notifications.browse));
+    router.post('/notifications', mw.authAdminApi, http(api.notifications.add));
+    router.delete('/notifications/:notification_id', mw.authAdminApi, http(api.notifications.destroy));
+
+    // ## DB
+    router.get('/db', mw.authAdminApi, http(api.db.exportContent));
+    router.post('/db',
+        mw.authAdminApi,
+        apiMw.upload.single('importfile'),
+        apiMw.upload.validation({type: 'db'}),
+        http(api.db.importContent)
+    );
+    router.delete('/db', mw.authAdminApi, http(api.db.deleteAllContent));
+    router.post('/db/backup',
+        mw.authAdminApi,
+        http(api.db.backupContent)
+    );
+
+    router.post('/db/media/inline',
+        mw.authAdminApi,
+        http(api.db.inlineMedia)
+    );
+
+    // ## Exports
+    router.get('/exports/download', mw.authAdminApi, labs.enabledMiddleware('selfServeArchives'), http(api.exports.download));
+    router.post('/exports', mw.authAdminApi, labs.enabledMiddleware('selfServeArchives'), http(api.exports.add));
+
+    // ## Slack
+    router.post('/slack/test', mw.authAdminApi, http(api.slack.sendTest));
+
+    // ## Tinybird
+    router.get('/tinybird/token', mw.authAdminApi, http(api.tinybird.token));
+
+    // ## Featurebase
+    router.get('/featurebase/token', mw.authAdminApi, http(api.featurebase.token));
+
+    // ## Sessions
+    // We don't need auth when creating a new session (logging in)
+    router.post('/session',
+        shared.middleware.brute.globalBlock,
+        shared.middleware.brute.userLogin,
+        http(api.session.add)
+    );
+    router.delete('/session', mw.authAdminApi, http(api.session.delete));
+    router.post('/session/verify', shared.middleware.brute.sendVerificationCode, http(api.session.sendVerification));
+    router.put('/session/verify', shared.middleware.brute.userVerification, http(api.session.verify));
+
+    // ## Identity
+    router.get('/identities', mw.authAdminApi, http(api.identities.read));
+
+    // ## Authentication
+    router.post('/authentication/password_reset',
+        shared.middleware.brute.globalReset,
+        shared.middleware.brute.userReset,
+        http(api.authentication.generateResetToken)
+    );
+    router.put('/authentication/password_reset',
+        shared.middleware.brute.globalBlock,
+        auth.session.initSession,
+        http(api.authentication.resetPassword)
+    );
+    router.post('/authentication/invitation', http(api.authentication.acceptInvitation));
+    router.get('/authentication/invitation', http(api.authentication.isInvitation));
+    router.post('/authentication/setup', http(api.authentication.setup));
+    router.put('/authentication/setup', mw.authAdminApi, http(api.authentication.updateSetup));
+    router.get('/authentication/setup', http(api.authentication.isSetup));
+    router.post('/authentication/reset', mw.authAdminApi, http(api.authentication.reset));
+
+    // ## Images
+    router.post('/images/upload',
+        mw.authAdminApi,
+        apiMw.upload.single('file'),
+        apiMw.upload.validation({type: 'images'}),
+        http(api.images.upload)
+    );
+
+    // ## media
+    router.post('/media/upload',
+        mw.authAdminApi,
+        apiMw.upload.media('file', 'thumbnail'),
+        apiMw.upload.mediaValidation({type: 'media'}),
+        http(api.media.upload)
+    );
+    router.put('/media/thumbnail/upload',
+        mw.authAdminApi,
+        apiMw.upload.single('file'),
+        apiMw.upload.validation({type: 'images'}),
+        http(api.media.uploadThumbnail)
+    );
+
+    // ## files
+    router.post('/files/upload',
+        mw.authAdminApi,
+        apiMw.upload.single('file'),
+        apiMw.upload.fileValidation({type: 'files'}),
+        http(api.files.upload)
+    );
+
+    // ## Invites
+    router.get('/invites', mw.authAdminApi, http(api.invites.browse));
+    router.get('/invites/:id', mw.authAdminApi, http(api.invites.read));
+    router.post('/invites', mw.authAdminApi, http(api.invites.add));
+    router.delete('/invites/:id', mw.authAdminApi, http(api.invites.destroy));
+
+    // ## Redirects
+    router.get('/redirects/download', mw.authAdminApi, http(api.redirects.download));
+    router.post('/redirects/upload',
+        mw.authAdminApi,
+        apiMw.upload.single('redirects'),
+        apiMw.upload.validation({type: 'redirects'}),
+        http(api.redirects.upload)
+    );
+
+    // ## Webhooks (RESTHooks)
+    router.post('/webhooks', mw.authAdminApi, http(api.webhooks.add));
+    router.put('/webhooks/:id', mw.authAdminApi, http(api.webhooks.edit));
+    router.delete('/webhooks/:id', mw.authAdminApi, http(api.webhooks.destroy));
+
+    // ## Oembed (fetch response from oembed provider)
+    router.get('/oembed', mw.authAdminApi, http(api.oembed.read));
+
+    // ## Actions
+    router.get('/actions', mw.authAdminApi, http(api.actions.browse));
+
+    // ## Email Preview
+    router.get('/email_previews/posts/:id', mw.authAdminApi, http(api.email_previews.read));
+    // preview sending have an additional rate limiter to prevent abuse
+    router.post('/email_previews/posts/:id', shared.middleware.brute.previewEmailLimiter, mw.authAdminApi, http(api.email_previews.sendTestEmail));
+
+    // ## Emails
+    router.get('/emails', mw.authAdminApi, http(api.emails.browse));
+    router.get('/emails/:id', mw.authAdminApi, http(api.emails.read));
+    router.put('/emails/:id/retry', mw.authAdminApi, http(api.emails.retry));
+    router.get('/emails/:id/batches', mw.authAdminApi, http(api.emails.browseBatches));
+    router.get('/emails/:id/recipient-failures', mw.authAdminApi, http(api.emails.browseFailures));
+    router.get('/emails/:id/analytics', mw.authAdminApi, http(api.emails.analyticsStatus));
+    router.put('/emails/:id/analytics', mw.authAdminApi, http(api.emails.scheduleAnalytics));
+    router.delete('/emails/analytics', mw.authAdminApi, http(api.emails.cancelScheduledAnalytics));
+
+    // ## Snippets
+    router.get('/snippets', mw.authAdminApi, http(api.snippets.browse));
+    router.get('/snippets/:id', mw.authAdminApi, http(api.snippets.read));
+    router.post('/snippets', mw.authAdminApi, http(api.snippets.add));
+    router.put('/snippets/:id', mw.authAdminApi, http(api.snippets.edit));
+    router.delete('/snippets/:id', mw.authAdminApi, http(api.snippets.destroy));
+
+    // ## Custom theme settings
+    router.get('/custom_theme_settings', mw.authAdminApi, http(api.customThemeSettings.browse));
+    router.put('/custom_theme_settings', mw.authAdminApi, http(api.customThemeSettings.edit));
+
+    router.get('/newsletters', mw.authAdminApi, http(api.newsletters.browse));
+    router.get('/newsletters/:id', mw.authAdminApi, http(api.newsletters.read));
+    router.post('/newsletters', mw.authAdminApi, http(api.newsletters.add));
+    router.put('/newsletters/verifications/', mw.authAdminApi, http(api.newsletters.verifyPropertyUpdate));
+    router.put('/newsletters/:id', mw.authAdminApi, http(api.newsletters.edit));
+
+    router.get('/links', mw.authAdminApi, http(api.links.browse));
+    router.put('/links/bulk', mw.authAdminApi, http(api.links.bulkEdit));
+
+    // Recommendations
+    router.get('/recommendations', mw.authAdminApi, http(api.recommendations.browse));
+    router.get('/recommendations/:id', mw.authAdminApi, http(api.recommendations.read));
+    router.post('/recommendations', mw.authAdminApi, http(api.recommendations.add));
+    router.post('/recommendations/check', mw.authAdminApi, http(api.recommendations.check));
+    router.put('/recommendations/:id', mw.authAdminApi, http(api.recommendations.edit));
+    router.delete('/recommendations/:id', mw.authAdminApi, http(api.recommendations.destroy));
+
+    // Incoming recommendations
+    router.get('/incoming_recommendations', mw.authAdminApi, http(api.incomingRecommendations.browse));
+
+    // Feedback
+    router.get('/feedback/:id', mw.authAdminApi, http(api.feedbackMembers.browse));
+
+    // Search index
+    router.get('/search-index/posts', mw.authAdminApi, http(api.searchIndex.fetchPosts));
+    router.get('/search-index/pages', mw.authAdminApi, http(api.searchIndex.fetchPages));
+    router.get('/search-index/tags', mw.authAdminApi, http(api.searchIndex.fetchTags));
+    router.get('/search-index/users', mw.authAdminApi, http(api.searchIndex.fetchUsers));
+
+    return router;
 };

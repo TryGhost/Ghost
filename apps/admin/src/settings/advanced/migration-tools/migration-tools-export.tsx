@@ -14,9 +14,8 @@ const MigrationToolsExport: React.FC = () => {
 
   const hasSelfServeArchives = useFeatureFlag('selfServeArchives');
   const { data: configData } = useBrowseConfig();
-  const mode: ExportMode = configData?.config.hostSettings?.export?.generate_archive_url
-    ? 'async'
-    : 'sync';
+  const webhookUrl = configData?.config.hostSettings?.export?.webhookUrl;
+  const mode: ExportMode = typeof webhookUrl === 'string' && webhookUrl.length > 0 ? 'async' : 'sync';
 
   const exportPosts = async () => {
     if (isExportingPosts) {

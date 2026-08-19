@@ -117,7 +117,7 @@ export type Config = {
     export?: {
       // Host archive webhook — when set, "Export data" delivers the
       // archive by email instead of a synchronous download
-      generate_archive_url?: string;
+      webhookUrl?: string;
     };
   };
   security?: {
