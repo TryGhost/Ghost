@@ -4,6 +4,12 @@ import type {Page} from '@playwright/test';
 
 type ChecklistState = 'pending' | 'started' | 'completed' | 'dismissed';
 
+interface OnboardingPreferences {
+    completedSteps: string[];
+    checklistState: ChecklistState;
+    startedAt?: string;
+}
+
 const allSteps = ['customize-design', 'first-post', 'build-audience', 'share-publication'];
 const activeStartedAt = '2026-05-01T00:00:00.000Z';
 const legacyNavigationSteps: Array<[string, RegExp]> = [
@@ -21,18 +27,18 @@ async function getCurrentUser(page: Page) {
     return body.users[0];
 }
 
-async function setOnboardingState(page: Page, checklistState: ChecklistState, completedSteps: string[] = [], startedAt: string | null | undefined = checklistState === 'started' ? activeStartedAt : undefined) {
+async function getOnboardingPreferences(page: Page) {
     const user = await getCurrentUser(page);
     const preferences = user.accessibility ? JSON.parse(user.accessibility) : {};
 
-    preferences.onboarding = {
-        completedSteps,
-        checklistState
-    };
+    return preferences.onboarding;
+}
 
-    if (startedAt) {
-        preferences.onboarding.startedAt = startedAt;
-    }
+async function putOnboardingPreferences(page: Page, onboarding: OnboardingPreferences) {
+    const user = await getCurrentUser(page);
+    const preferences = user.accessibility ? JSON.parse(user.accessibility) : {};
+
+    preferences.onboarding = onboarding;
 
     const response = await page.request.put(`/ghost/api/admin/users/${user.id}/?include=roles`, {
         data: {
@@ -43,15 +49,31 @@ async function setOnboardingState(page: Page, checklistState: ChecklistState, co
         }
     });
     expect(response.ok()).toBe(true);
-
-    await page.reload({waitUntil: 'load'});
 }
 
-async function getOnboardingPreferences(page: Page) {
-    const user = await getCurrentUser(page);
-    const preferences = user.accessibility ? JSON.parse(user.accessibility) : {};
+/**
+ * Sets the onboarding preferences through the API and leaves the page detached
+ * from Admin, so the caller navigates to load Admin against them.
+ *
+ * Admin fills in a missing user preference by writing the whole accessibility
+ * blob, merged over the user it read when the page loaded, and it queues one
+ * such write per mounted consumer. A write from here lands between those queued
+ * writes and the next one reverts it, so detach first to discard the queue and
+ * write until the server agrees to cover a write already on the wire.
+ */
+async function setOnboardingState(page: Page, checklistState: ChecklistState, completedSteps: string[] = [], startedAt: string | null | undefined = checklistState === 'started' ? activeStartedAt : undefined) {
+    const onboarding: OnboardingPreferences = {completedSteps, checklistState};
 
-    return preferences.onboarding;
+    if (startedAt) {
+        onboarding.startedAt = startedAt;
+    }
+
+    await page.goto('about:blank');
+
+    await expect(async () => {
+        await putOnboardingPreferences(page, onboarding);
+        expect(await getOnboardingPreferences(page)).toEqual(onboarding);
+    }).toPass({timeout: 15000});
 }
 
 async function expectOnboardingRoute(page: Page, {returnTo = '/analytics'}: {returnTo?: string} = {}) {
