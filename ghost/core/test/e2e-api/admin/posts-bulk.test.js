@@ -301,6 +301,22 @@ describe('Posts Bulk API', function () {
             assert.equal(duplicates.length, 0, `Expect no duplicate posts_tags rows, got ${JSON.stringify(duplicates)}`);
         });
 
+        it('Does not confuse a tag id with another tag of the same name', async function () {
+            const filter = 'status:[draft]';
+            const existing = await models.Tag.findOne({slug: fixtureManager.get('tags', 1).slug});
+            assert(existing);
+
+            // A tag named after another tag's id - contrived, but the two are
+            // deduplicated against each other if they share a key space
+            await agent
+                .put('/posts/bulk/?filter=' + encodeURIComponent(filter))
+                .body({bulk: {action: 'addTag', meta: {tags: [{id: existing.id}, {name: existing.id}]}}})
+                .expectStatus(200);
+
+            const named = await models.Tag.findAll({filter: `name:'${existing.id}'`});
+            assert.equal(named.length, 1, 'Expect the tag named after the id to still be created');
+        });
+
         it('Rejects tags that are not usable objects', async function () {
             const validTag = await models.Tag.findOne({slug: fixtureManager.get('tags', 0).slug});
             const invalidTags = [

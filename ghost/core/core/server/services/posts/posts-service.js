@@ -230,7 +230,7 @@ class PostsService {
         // before creating, otherwise a repeated name-only tag is created twice
         const seen = new Set();
         const tags = data.tags.filter((tag) => {
-            const key = tag.id || tag.name.toLocaleLowerCase();
+            const key = tag.id ? `id:${tag.id}` : `name:${tag.name.toLocaleLowerCase()}`;
 
             if (seen.has(key)) {
                 return false;
