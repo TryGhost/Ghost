@@ -313,15 +313,18 @@ describe('Gift Subscriptions', function () {
             assert.equal(gift.get('purchased_at'), null);
         });
 
-        it('recovers the buyer email when the paid gift webhook has no customer details', async function () {
+        it('uses the persisted buyer email when the paid gift webhook has no customer details', async function () {
+            enableGiftCustomization();
+
             const paidTier = await getPaidTier();
-            const customer = stripeMocker.createCustomer({email: 'recovered-buyer@example.com'});
+            const buyerEmail = 'persisted-buyer@example.com';
 
             await membersAgent.post('/api/create-stripe-checkout-session/')
                 .body({
                     type: 'gift',
                     tierId: paidTier.id,
-                    cadence: 'month',
+                    duration: 1,
+                    customerEmail: buyerEmail,
                     metadata: {}
                 })
                 .expectStatus(200);
@@ -336,7 +339,7 @@ describe('Gift Subscriptions', function () {
                         mode: 'payment',
                         amount_total: paidTier.monthly_price,
                         currency: paidTier.currency.toLowerCase(),
-                        customer: customer.id,
+                        customer: checkoutSession.customer,
                         payment_status: 'paid',
                         metadata: toWebhookMetadata(checkoutSession.metadata),
                         payment_intent: 'pi_gift_no_email'
@@ -347,9 +350,9 @@ describe('Gift Subscriptions', function () {
 
             const gift = await models.Gift.findOne({id: checkoutSession.metadata.ghost_gift_id}, {require: true});
             assert.equal(gift.get('status'), 'purchased');
-            assert.equal(gift.get('buyer_email'), 'recovered-buyer@example.com');
+            assert.equal(gift.get('buyer_email'), buyerEmail);
             mockManager.assert.sentEmail({to: 'jbloggs@example.com'});
-            mockManager.assert.sentEmail({to: 'recovered-buyer@example.com'});
+            mockManager.assert.sentEmail({to: buyerEmail});
         });
 
         it('Can purchase a gift as an authenticated member', async function () {
