@@ -148,8 +148,6 @@ const GiftPaymentCompletionSchema = z.object({
     giftId: z.string().min(1),
     buyerEmail: StripeBuyerEmailSchema,
     stripeCustomerId: z.string().min(1).nullable(),
-    currency: z.string().min(1),
-    amount: z.number().int().nonnegative(),
     stripeCheckoutSessionId: z.string().min(1),
     stripePaymentIntentId: z.string().min(1)
 });
@@ -550,11 +548,11 @@ export class GiftService {
                     context: 'A purchased gift requires a buyer email'
                 });
             }
+            // The pre-created gift owns the checkout price. Stripe's total may
+            // include automatic tax, so completion only adds settlement facts.
             const purchased = gift.completePurchase({
                 buyerEmail,
                 buyerMemberId: member?.id ?? gift.buyerMemberId,
-                currency: data.currency.toLowerCase(),
-                amount: data.amount,
                 stripeCheckoutSessionId: data.stripeCheckoutSessionId,
                 stripePaymentIntentId: data.stripePaymentIntentId
             });

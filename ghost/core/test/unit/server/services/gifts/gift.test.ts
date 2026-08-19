@@ -96,15 +96,13 @@ describe('Gift', function () {
             const purchased = gift.bindCheckoutSession('cs_123')?.completePurchase({
                 buyerEmail: 'buyer@example.com',
                 buyerMemberId: null,
-                currency: 'eur',
-                amount: 4600,
                 stripeCheckoutSessionId: 'cs_123',
                 stripePaymentIntentId: 'pi_123'
             });
             assert.equal(purchased?.status, 'purchased');
             assert.equal(purchased?.recipientName, 'Recipient');
-            assert.equal(purchased?.currency, 'eur');
-            assert.equal(purchased?.amount, 4600);
+            assert.equal(purchased?.currency, 'usd');
+            assert.equal(purchased?.amount, 5000);
             assert.ok(purchased?.expiresAt);
         });
     });

@@ -678,7 +678,7 @@ describe('CheckoutSessionEventService', function () {
             const service = createService();
             await service.handleGiftEvent({
                 id: 'cs_test_123',
-                amount_total: 5000,
+                amount_total: 5500,
                 currency: 'usd',
                 customer: 'cust_123',
                 payment_intent: 'pi_test_456',
@@ -690,8 +690,6 @@ describe('CheckoutSessionEventService', function () {
                 giftId: 'gift_123',
                 buyerEmail: 'buyer@example.com',
                 stripeCustomerId: 'cust_123',
-                currency: 'usd',
-                amount: 5000,
                 stripeCheckoutSessionId: 'cs_test_123',
                 stripePaymentIntentId: 'pi_test_456'
             });
@@ -714,8 +712,6 @@ describe('CheckoutSessionEventService', function () {
                 giftId: 'gift_123',
                 buyerEmail: null,
                 stripeCustomerId: 'cust_123',
-                currency: 'usd',
-                amount: 5000,
                 stripeCheckoutSessionId: 'cs_test_123',
                 stripePaymentIntentId: 'pi_test_456'
             });

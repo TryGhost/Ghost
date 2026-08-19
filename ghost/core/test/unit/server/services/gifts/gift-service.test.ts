@@ -224,8 +224,6 @@ describe('GiftService', function () {
                 giftId: 'gift_1',
                 buyerEmail: null,
                 stripeCustomerId: null,
-                currency: 'eur',
-                amount: 5500,
                 stripeCheckoutSessionId: 'cs_pending',
                 stripePaymentIntentId: 'pi_pending'
             }), true);
@@ -234,8 +232,8 @@ describe('GiftService', function () {
             assert.equal(purchased.status, 'purchased');
             assert.equal(purchased.recipientName, 'Recipient');
             assert.equal(purchased.buyerEmail, 'checkout-buyer@example.com');
-            assert.equal(purchased.currency, 'eur');
-            assert.equal(purchased.amount, 5500);
+            assert.equal(purchased.currency, 'usd');
+            assert.equal(purchased.amount, 5000);
             assert.equal(purchased.stripePaymentIntentId, 'pi_pending');
             sinon.assert.notCalled(giftRepository.create);
             sinon.assert.calledOnceWithExactly(giftDeliveryService.dispatchForGift, 'gift_1');

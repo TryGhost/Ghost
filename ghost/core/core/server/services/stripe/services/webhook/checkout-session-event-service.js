@@ -153,8 +153,6 @@ module.exports = class CheckoutSessionEventService {
                 giftId: session.metadata.ghost_gift_id,
                 buyerEmail: getGiftBuyerEmailFromSession(session),
                 stripeCustomerId,
-                currency: session.currency,
-                amount: session.amount_total,
                 stripeCheckoutSessionId: session.id,
                 stripePaymentIntentId: getStripeResourceId(session.payment_intent)
             });
