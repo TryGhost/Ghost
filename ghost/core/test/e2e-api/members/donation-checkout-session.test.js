@@ -65,6 +65,7 @@ describe('Create Stripe Checkout Session for Donations', function () {
       data: {
         object: {
           mode: 'payment',
+          payment_status: 'paid',
           amount_total: 1200,
           currency: 'usd',
           customer: stripeMocker.checkoutSessions[0].customer,
@@ -120,6 +121,65 @@ describe('Create Stripe Checkout Session for Donations', function () {
     assert.equal(lastDonation.get('attribution_url'), url);
   });
 
+  it('Waits for async payment success before recording a donation', async function () {
+    const email = 'async-donation@example.com';
+
+    await membersAgent
+      .post('/api/create-stripe-checkout-session/')
+      .body({
+        customerEmail: email,
+        type: 'donation',
+        successUrl: 'https://example.com/?type=success',
+        cancelUrl: 'https://example.com/?type=cancel',
+      })
+      .expectStatus(200);
+
+    const checkoutSession = stripeMocker.checkoutSessions[stripeMocker.checkoutSessions.length - 1];
+    const session = {
+      id: checkoutSession.id,
+      mode: 'payment',
+      payment_status: 'unpaid',
+      amount_total: 1200,
+      currency: 'usd',
+      customer: checkoutSession.customer,
+      customer_details: {
+        name: 'Async Donation',
+        email,
+      },
+      metadata: {
+        ...(checkoutSession.metadata ?? {}),
+        ghost_donation: true,
+      },
+    };
+
+    await stripeMocker.sendWebhook({
+      type: 'checkout.session.completed',
+      data: { object: session },
+    });
+    await DomainEvents.allSettled();
+
+    let donations = await models.DonationPaymentEvent.findAll({
+      filter: `email:'${email}'`,
+    });
+    assert.equal(donations.length, 0, 'Should not record a donation before payment succeeds');
+
+    await stripeMocker.sendWebhook({
+      type: 'checkout.session.async_payment_succeeded',
+      data: {
+        object: {
+          ...session,
+          payment_status: 'paid',
+        },
+      },
+    });
+    await DomainEvents.allSettled();
+
+    donations = await models.DonationPaymentEvent.findAll({
+      filter: `email:'${email}'`,
+    });
+    assert.equal(donations.length, 1, 'Should record exactly one donation after payment succeeds');
+  });
+
   it('Strips reserved gift metadata from donation checkout sessions', async function () {
     const post = await getPost(fixtureManager.get('posts', 0).id);
     const url = urlServiceUtils.urlFor(post, 'posts', { absolute: false });
@@ -171,6 +231,7 @@ describe('Create Stripe Checkout Session for Donations', function () {
         object: {
           id: checkoutSession.id,
           mode: 'payment',
+          payment_status: 'paid',
           amount_total: 100,
           currency: 'usd',
           customer: checkoutSession.customer,
@@ -256,6 +317,7 @@ describe('Create Stripe Checkout Session for Donations', function () {
       data: {
         object: {
           mode: 'payment',
+          payment_status: 'paid',
           amount_total: 1220,
           currency: 'eur',
           customer: stripeMocker.checkoutSessions[0].customer,
@@ -355,6 +417,7 @@ describe('Create Stripe Checkout Session for Donations', function () {
       data: {
         object: {
           mode: 'payment',
+          payment_status: 'paid',
           amount_total: 1200,
           currency: 'usd',
           customer: stripeMocker.checkoutSessions[0].customer,
@@ -509,6 +572,7 @@ describe('Create Stripe Checkout Session for Donations', function () {
       data: {
         object: {
           mode: 'payment',
+          payment_status: 'paid',
           amount_total: 2500,
           currency: 'usd',
           customer: checkoutSession.customer,
