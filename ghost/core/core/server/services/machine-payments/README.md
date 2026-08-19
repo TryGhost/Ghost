@@ -23,6 +23,14 @@ Accept pay-per-request access to paid-members markdown (`.md`) URLs from AI agen
 
 Defaults target **Base mainnet** (`eip155:8453`) with real USDC settlement via the public [xpay facilitator](https://facilitator.xpay.sh) (no account or API key). Override `machinePayments.x402.facilitatorUrl` for a different provider — e.g. [Coinbase CDP](https://docs.cdp.coinbase.com/x402/docs/quickstart-sellers) for managed compliance screening (requires API keys; not wired in Ghost yet).
 
+Supported values are validated at boot:
+
+- `network`: `eip155:8453` (Base mainnet) or `eip155:84532` (Base Sepolia)
+- `stripeNetwork`: `base`
+- `facilitatorUrl`: HTTPS URL; mainnet cannot use the x402.org testnet facilitator
+
+Invalid x402 config disables the rail at boot (MPP continues to work).
+
 For local development against the x402.org testnet facilitator, override in `config.local.json`:
 
 ```json

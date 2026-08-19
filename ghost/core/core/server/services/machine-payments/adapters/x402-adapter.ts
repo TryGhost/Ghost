@@ -8,6 +8,37 @@ import type {PaymentAmountTerms} from '../pricing';
 
 const X402_ROUTE_CACHE_LIMIT = 128;
 const BASE_MAINNET = 'eip155:8453';
+const BASE_SEPOLIA = 'eip155:84532';
+const X402_ORG_FACILITATOR = 'https://x402.org/facilitator';
+const DEFAULT_FACILITATOR_URL = 'https://facilitator.xpay.sh';
+
+const x402ConfigSchema = z.object({
+    network: z.string().regex(/^eip155:\d+$/, {
+        message: 'machinePayments.x402.network must be a CAIP-2 EVM network (eip155:<chainId>)'
+    }),
+    stripeNetwork: z.enum(['base'], {
+        message: 'machinePayments.x402.stripeNetwork must be "base"'
+    }),
+    facilitatorUrl: z.string().url({
+        message: 'machinePayments.x402.facilitatorUrl must be a valid URL'
+    })
+}).superRefine((value, ctx) => {
+    if (![BASE_MAINNET, BASE_SEPOLIA].includes(value.network)) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `machinePayments.x402.network must be ${BASE_MAINNET} or ${BASE_SEPOLIA}`
+        });
+    }
+
+    if (value.network === BASE_MAINNET && value.facilitatorUrl.replace(/\/+$/, '') === X402_ORG_FACILITATOR) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'machinePayments.x402.facilitatorUrl cannot be the x402.org testnet facilitator on Base mainnet'
+        });
+    }
+});
+
+export type X402Config = z.infer<typeof x402ConfigSchema>;
 
 const settlementResponseSchema = z.object({
     transaction: z.string().optional(),
@@ -54,6 +85,11 @@ type X402AdapterDeps = {
     facilitatorClient?: FacilitatorClientLike;
     maxCachedApps?: number;
     runtimeFactory?: () => X402RuntimeModules;
+    configProvider?: () => {
+        network?: unknown;
+        stripeNetwork?: unknown;
+        facilitatorUrl?: unknown;
+    };
 };
 
 /**
@@ -97,6 +133,25 @@ export class BoundedRouteCache<V> {
     }
 }
 
+export function parseX402Config(raw: {
+    network?: unknown;
+    stripeNetwork?: unknown;
+    facilitatorUrl?: unknown;
+}): X402Config | null {
+    const parsed = x402ConfigSchema.safeParse({
+        network: raw.network ?? BASE_MAINNET,
+        stripeNetwork: raw.stripeNetwork ?? 'base',
+        facilitatorUrl: raw.facilitatorUrl ?? DEFAULT_FACILITATOR_URL
+    });
+
+    if (!parsed.success) {
+        logging.warn(`Invalid machinePayments.x402 config: ${parsed.error.issues.map(issue => issue.message).join('; ')}`);
+        return null;
+    }
+
+    return parsed.data;
+}
+
 /**
  * x402 adapter (Base USDC). Second rail behind the same canHandle/challenge/fulfill boundary.
  * Reuses facilitator and ExactEvmScheme; caches per-route Hono apps keyed by payTo + price.
@@ -106,22 +161,79 @@ export class X402Adapter implements PaymentAdapter {
     facilitatorClient?: FacilitatorClientLike;
     name: string;
 
+    #config: X402Config | null = null;
     #facilitator: FacilitatorClientLike | null = null;
     #scheme: unknown = null;
+    #runtime: X402RuntimeModules | null = null;
     #apps: BoundedRouteCache<CachedApp>;
     #runtimeFactory?: () => X402RuntimeModules;
+    #configProvider?: X402AdapterDeps['configProvider'];
+    #ready = false;
+    #initAttempted = false;
 
     constructor({
         depositAddressStore,
         facilitatorClient,
         maxCachedApps = X402_ROUTE_CACHE_LIMIT,
-        runtimeFactory
+        runtimeFactory,
+        configProvider
     }: X402AdapterDeps) {
         this.depositAddressStore = depositAddressStore;
         this.facilitatorClient = facilitatorClient;
         this.#apps = new BoundedRouteCache(maxCachedApps);
         this.#runtimeFactory = runtimeFactory;
+        this.#configProvider = configProvider;
         this.name = 'x402';
+    }
+
+    get isReady(): boolean {
+        return this.#ready;
+    }
+
+    /**
+     * Boot-owned initialization: validate config, load x402 runtime modules, and
+     * construct the shared facilitator/scheme before the first paid markdown request.
+     */
+    async init(): Promise<boolean> {
+        if (this.#initAttempted) {
+            return this.#ready;
+        }
+
+        this.#initAttempted = true;
+
+        const rawConfig = this.#configProvider
+            ? this.#configProvider()
+            : {
+                network: config.get('machinePayments:x402:network'),
+                stripeNetwork: config.get('machinePayments:x402:stripeNetwork'),
+                facilitatorUrl: config.get('machinePayments:x402:facilitatorUrl')
+            };
+
+        const parsedConfig = parseX402Config(rawConfig);
+        if (!parsedConfig) {
+            return false;
+        }
+
+        try {
+            const runtime = this.#loadRuntimeModules();
+            const {HTTPFacilitatorClient, ExactEvmScheme} = runtime;
+
+            this.#config = parsedConfig;
+            this.#runtime = runtime;
+            this.#facilitator = this.facilitatorClient
+                || new HTTPFacilitatorClient({url: parsedConfig.facilitatorUrl});
+            this.#scheme = new ExactEvmScheme();
+            this.#ready = true;
+            return true;
+        } catch (err) {
+            logging.warn(err);
+            this.#config = null;
+            this.#runtime = null;
+            this.#facilitator = null;
+            this.#scheme = null;
+            this.#ready = false;
+            return false;
+        }
     }
 
     canHandle(request: Request): boolean {
@@ -129,6 +241,10 @@ export class X402Adapter implements PaymentAdapter {
     }
 
     async challenge(request: Request, terms: PaymentTerms): Promise<Response | null> {
+        if (!this.#ready) {
+            return null;
+        }
+
         try {
             const response = await this.#dispatch(request, terms, {body: ''});
             if (response.status === 402) {
@@ -144,6 +260,12 @@ export class X402Adapter implements PaymentAdapter {
     }
 
     async fulfill(request: Request, terms: PaymentTerms): Promise<Fulfillment> {
+        if (!this.#ready || !this.#config) {
+            throw new errors.NoPermissionError({
+                message: 'x402 payment credential rejected'
+            });
+        }
+
         const response = await this.#dispatch(request, terms, {body: 'ok'});
         if (response.status === 402) {
             throw new errors.NoPermissionError({
@@ -165,11 +287,9 @@ export class X402Adapter implements PaymentAdapter {
             });
         }
 
-        const stripeNetwork = config.get('machinePayments:x402:stripeNetwork') || 'base';
-
         return {
             protocol: 'x402',
-            method: stripeNetwork,
+            method: this.#config.stripeNetwork,
             reference: settlementReference(paymentResponse),
             amount: terms.amount,
             currency: terms.currency,
@@ -179,8 +299,13 @@ export class X402Adapter implements PaymentAdapter {
     }
 
     async #dispatch(request: Request, terms: PaymentTerms, responseData: DispatchOptions): Promise<Response> {
-        const network = config.get('machinePayments:x402:network') || BASE_MAINNET;
-        const stripeNetwork = config.get('machinePayments:x402:stripeNetwork') || 'base';
+        if (!this.#config || !this.#runtime || !this.#facilitator || !this.#scheme) {
+            throw new errors.InternalServerError({
+                message: 'x402 adapter used before boot initialization'
+            });
+        }
+
+        const {network, stripeNetwork} = this.#config;
         const method = (terms.method || 'GET').toUpperCase();
         const route = `${method} ${new URL(terms.url).pathname}`;
         const payTo = await this.depositAddressStore.getOrCreateAddress({network: stripeNetwork});
@@ -242,24 +367,13 @@ export class X402Adapter implements PaymentAdapter {
         terms: PaymentTerms;
         responseData: DispatchOptions;
     }): CachedApp {
-        const {
-            paymentMiddlewareFromConfig,
-            HTTPFacilitatorClient,
-            ExactEvmScheme,
-            Hono
-        } = this.#loadRuntimeModules();
-
-        if (!this.#facilitator) {
-            const facilitatorUrl = config.get('machinePayments:x402:facilitatorUrl');
-            this.#facilitator = this.facilitatorClient
-                || (facilitatorUrl
-                    ? new HTTPFacilitatorClient({url: facilitatorUrl})
-                    : new HTTPFacilitatorClient());
+        if (!this.#runtime || !this.#facilitator || !this.#scheme) {
+            throw new errors.InternalServerError({
+                message: 'x402 adapter used before boot initialization'
+            });
         }
 
-        if (!this.#scheme) {
-            this.#scheme = new ExactEvmScheme();
-        }
+        const {paymentMiddlewareFromConfig, Hono} = this.#runtime;
 
         const app = new Hono();
         app.use(paymentMiddlewareFromConfig({

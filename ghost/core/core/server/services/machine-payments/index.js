@@ -19,12 +19,22 @@ class MachinePaymentsServiceWrapper {
     service = null;
 
     #initialized = false;
+    /** @type {Promise<MachinePaymentsService>|null} */
+    #initPromise = null;
 
     init() {
         if (this.#initialized) {
-            return this.service;
+            return Promise.resolve(this.service);
         }
 
+        if (!this.#initPromise) {
+            this.#initPromise = this.#doInit();
+        }
+
+        return this.#initPromise;
+    }
+
+    async #doInit() {
         const depositAddressStore = new DepositAddressStore();
         const paymentRecorder = new PaymentRecorder();
         const eventRepository = new MachinePaymentEventRepository({
@@ -45,8 +55,10 @@ class MachinePaymentsServiceWrapper {
             new MppAdapter({depositAddressStore, settingsCache, pricing})
         ];
 
-        // x402 is registered as a second rail; agents that don't speak it ignore it.
-        adapters.push(new X402Adapter({depositAddressStore}));
+        const x402Adapter = new X402Adapter({depositAddressStore});
+        if (await x402Adapter.init()) {
+            adapters.push(x402Adapter);
+        }
 
         this.service = new MachinePaymentsService({
             settingsCache,
@@ -60,29 +72,22 @@ class MachinePaymentsServiceWrapper {
             defaultCurrencyProvider: getDefaultTiersCurrency
         });
 
-        // Mint Tempo deposit addresses off the request path (Stripe guidance).
+        // Mint deposit addresses off the request path (Stripe guidance).
         // Only when machine payments is enabled — otherwise every Stripe-connected
         // boot (incl. E2E) would call Stripe. Failures leave SPT-only challenges.
         if (this.service.isEnabled()) {
             const tempoNetwork = config.get('machinePayments:mpp:stripeNetwork') || 'tempo';
-            depositAddressStore.getOrCreateAddress({network: tempoNetwork}).catch((err) => {
-                logging.warn(err);
-            });
-
             const x402Network = config.get('machinePayments:x402:stripeNetwork') || 'base';
-            depositAddressStore.getOrCreateAddress({network: x402Network}).catch((err) => {
-                logging.warn(err);
-            });
 
-            const x402CaipNetwork = config.get('machinePayments:x402:network') || 'eip155:8453';
-            const x402FacilitatorUrl = config.get('machinePayments:x402:facilitatorUrl');
-            const x402OrgFacilitator = 'https://x402.org/facilitator';
-            if (x402CaipNetwork === 'eip155:8453' && (!x402FacilitatorUrl || x402FacilitatorUrl === x402OrgFacilitator)) {
-                logging.warn(
-                    'x402 is configured for Base mainnet but the facilitator URL is missing or set to the x402.org '
-                    + 'testnet facilitator. Use the default xpay facilitator or another mainnet provider. '
-                    + 'For local testing, override machinePayments.x402.network to eip155:84532 in config.'
-                );
+            const prewarmResults = await Promise.allSettled([
+                depositAddressStore.getOrCreateAddress({network: tempoNetwork}),
+                depositAddressStore.getOrCreateAddress({network: x402Network})
+            ]);
+
+            for (const result of prewarmResults) {
+                if (result.status === 'rejected') {
+                    logging.warn(result.reason);
+                }
             }
         }
 
@@ -91,15 +96,24 @@ class MachinePaymentsServiceWrapper {
     }
 
     isEnabled() {
-        return this.init().isEnabled();
+        if (!this.#initialized || !this.service) {
+            return false;
+        }
+
+        return this.service.isEnabled();
     }
 
     isPurchasable(entry) {
-        return this.init().isPurchasable(entry);
+        if (!this.#initialized || !this.service) {
+            return false;
+        }
+
+        return this.service.isPurchasable(entry);
     }
 
     async challengeOrFulfill(request, options) {
-        return await this.init().challengeOrFulfill(request, options);
+        const service = await this.init();
+        return await service.challengeOrFulfill(request, options);
     }
 }
 

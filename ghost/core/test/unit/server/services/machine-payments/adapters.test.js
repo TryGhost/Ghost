@@ -5,6 +5,7 @@ const {
     BoundedRouteCache,
     X402Adapter,
     formatPrice,
+    parseX402Config,
     settlementReference
 } = require('../../../../../core/server/services/machine-payments/adapters/x402-adapter');
 const {
@@ -17,6 +18,27 @@ const {
 
 function encodeReceipt(receipt) {
     return Buffer.from(JSON.stringify(receipt)).toString('base64url');
+}
+
+function createX402Adapter(overrides = {}) {
+    return new X402Adapter({
+        depositAddressStore: {
+            getOrCreateAddress: async () => '0xrecipient'
+        },
+        facilitatorClient: {},
+        configProvider: () => ({
+            network: 'eip155:8453',
+            stripeNetwork: 'base',
+            facilitatorUrl: 'https://facilitator.xpay.sh'
+        }),
+        ...overrides
+    });
+}
+
+async function initX402Adapter(overrides = {}) {
+    const adapter = createX402Adapter(overrides);
+    await adapter.init();
+    return adapter;
 }
 
 function createX402RuntimeFactory({onHonoCreate} = {}) {
@@ -171,6 +193,37 @@ describe('Unit: server/services/machine-payments/adapters', function () {
         assert.notEqual(settlementReference(malformed), '12345');
     });
 
+    it('accepts supported x402 config values', function () {
+        assert.deepEqual(parseX402Config({
+            network: 'eip155:8453',
+            stripeNetwork: 'base',
+            facilitatorUrl: 'https://facilitator.xpay.sh'
+        }), {
+            network: 'eip155:8453',
+            stripeNetwork: 'base',
+            facilitatorUrl: 'https://facilitator.xpay.sh'
+        });
+    });
+
+    it('rejects unsupported x402 network and mainnet x402.org facilitator pairings', function () {
+        sinon.stub(logging, 'warn');
+
+        assert.equal(parseX402Config({
+            network: 'eip155:1',
+            stripeNetwork: 'base',
+            facilitatorUrl: 'https://facilitator.xpay.sh'
+        }), null);
+
+        assert.equal(parseX402Config({
+            network: 'eip155:8453',
+            stripeNetwork: 'base',
+            facilitatorUrl: 'https://x402.org/facilitator'
+        }), null);
+
+        assert.match(String(logging.warn.firstCall.args[0]), /must be eip155:8453 or eip155:84532/);
+        assert.match(String(logging.warn.secondCall.args[0]), /testnet facilitator on Base mainnet/);
+    });
+
     it('evicts the oldest cached route when the bounded cache is full', function () {
         const cache = new BoundedRouteCache(2);
 
@@ -213,14 +266,47 @@ describe('Unit: server/services/machine-payments/adapters', function () {
             })), true);
         });
 
-        it('reuses cached route apps and evicts stale routes when the cache is full', async function () {
-            const runtime = createX402RuntimeFactory();
+        it('initializes runtime modules and facilitator at boot', async function () {
+            let runtimeLoads = 0;
+            const adapter = createX402Adapter({
+                runtimeFactory: () => {
+                    runtimeLoads += 1;
+                    return createX402RuntimeFactory().factory();
+                }
+            });
+
+            assert.equal(await adapter.init(), true);
+            assert.equal(adapter.isReady, true);
+            assert.equal(runtimeLoads, 1);
+
+            await adapter.challenge(new Request('http://example.com/a.md'), terms);
+            assert.equal(runtimeLoads, 1);
+        });
+
+        it('skips registration when x402 config is invalid', async function () {
+            sinon.stub(logging, 'warn');
             const adapter = new X402Adapter({
                 depositAddressStore: {
                     getOrCreateAddress: async () => '0xrecipient'
                 },
-                maxCachedApps: 2,
                 facilitatorClient: {},
+                configProvider: () => ({
+                    network: 'eip155:8453',
+                    stripeNetwork: 'tempo',
+                    facilitatorUrl: 'https://facilitator.xpay.sh'
+                }),
+                runtimeFactory: createX402RuntimeFactory().factory
+            });
+
+            assert.equal(await adapter.init(), false);
+            assert.equal(adapter.isReady, false);
+            assert.equal(await adapter.challenge(new Request('http://example.com/paid.md'), terms), null);
+        });
+
+        it('reuses cached route apps and evicts stale routes when the cache is full', async function () {
+            const runtime = createX402RuntimeFactory();
+            const adapter = await initX402Adapter({
+                maxCachedApps: 2,
                 runtimeFactory: runtime.factory
             });
 
@@ -240,11 +326,7 @@ describe('Unit: server/services/machine-payments/adapters', function () {
 
         it('logs and returns null when the x402 middleware does not produce a 402', async function () {
             sinon.stub(logging, 'warn');
-            const adapter = new X402Adapter({
-                depositAddressStore: {
-                    getOrCreateAddress: async () => '0xrecipient'
-                },
-                facilitatorClient: {},
+            const adapter = await initX402Adapter({
                 runtimeFactory: () => ({
                     paymentMiddlewareFromConfig: () => () => {},
                     HTTPFacilitatorClient: class {},
@@ -274,11 +356,7 @@ describe('Unit: server/services/machine-payments/adapters', function () {
                 transaction: '0xfulfilled'
             })).toString('base64');
 
-            const adapter = new X402Adapter({
-                depositAddressStore: {
-                    getOrCreateAddress: async () => '0xrecipient'
-                },
-                facilitatorClient: {},
+            const adapter = await initX402Adapter({
                 runtimeFactory: () => ({
                     paymentMiddlewareFromConfig: () => () => {},
                     HTTPFacilitatorClient: class {},
@@ -308,6 +386,68 @@ describe('Unit: server/services/machine-payments/adapters', function () {
             assert.equal(fulfillment.method, 'base');
             assert.equal(fulfillment.reference, '0xfulfilled');
             assert.equal(fulfillment.receiptHeaders['payment-response'], paymentResponse);
+        });
+
+        it('accepts any successful 2xx fulfill response', async function () {
+            const paymentResponse = Buffer.from(JSON.stringify({
+                transaction: '0xfulfilled'
+            })).toString('base64');
+
+            const adapter = await initX402Adapter({
+                runtimeFactory: () => ({
+                    paymentMiddlewareFromConfig: () => () => {},
+                    HTTPFacilitatorClient: class {},
+                    ExactEvmScheme: class {},
+                    Hono: class {
+                        use() {}
+
+                        get() {}
+
+                        on() {}
+
+                        fetch() {
+                            return Promise.resolve(new Response(null, {
+                                status: 204,
+                                headers: {'payment-response': paymentResponse}
+                            }));
+                        }
+                    }
+                })
+            });
+
+            const fulfillment = await adapter.fulfill(new Request('http://example.com/paid.md', {
+                headers: {'x-payment': 'abc'}
+            }), terms);
+
+            assert.equal(fulfillment.reference, '0xfulfilled');
+        });
+
+        it('rejects non-2xx fulfill responses', async function () {
+            const adapter = await initX402Adapter({
+                runtimeFactory: () => ({
+                    paymentMiddlewareFromConfig: () => () => {},
+                    HTTPFacilitatorClient: class {},
+                    ExactEvmScheme: class {},
+                    Hono: class {
+                        use() {}
+
+                        get() {}
+
+                        on() {}
+
+                        fetch() {
+                            return Promise.resolve(new Response('', {status: 401}));
+                        }
+                    }
+                })
+            });
+
+            await assert.rejects(
+                () => adapter.fulfill(new Request('http://example.com/paid.md', {
+                    headers: {'x-payment': 'abc'}
+                }), terms),
+                /credential rejected/
+            );
         });
     });
 
