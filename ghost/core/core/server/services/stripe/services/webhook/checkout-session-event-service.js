@@ -18,6 +18,12 @@ function isGiftCheckoutSession(session) {
     return isStripeMetadataTrue(session.metadata?.ghost_gift);
 }
 
+function isDonationCheckoutSession(session) {
+    return isStripeMetadataTrue(session.metadata?.ghost_donation);
+}
+
+// Matches the donation marker on key presence, not truthiness, so an ill-formed
+// donation marker alongside a true gift marker still counts as a conflict.
 function hasConflictingCheckoutFlowMetadata(session) {
     return hasStripeMetadataKey(session.metadata, 'ghost_donation') && isGiftCheckoutSession(session);
 }
@@ -77,8 +83,8 @@ module.exports = class CheckoutSessionEventService {
         }
 
         if (eventType === 'checkout.session.async_payment_succeeded') {
-            if (session.mode === 'payment') {
-                await this.handlePaymentEvent(session, {giftOnly: true});
+            if (session.mode === 'payment' && isGiftCheckoutSession(session)) {
+                await this.handlePaymentEvent(session);
             }
             return;
         }
@@ -92,7 +98,7 @@ module.exports = class CheckoutSessionEventService {
         }
 
         if (session.mode === 'payment') {
-            await this.handlePaymentEvent(session, {giftOnly: false});
+            await this.handlePaymentEvent(session);
         }
     }
 
@@ -102,9 +108,8 @@ module.exports = class CheckoutSessionEventService {
      * session as paid, whichever event carried it.
      *
      * @param {import('stripe').Stripe.Checkout.Session} session
-     * @param {{giftOnly: boolean}} options
      */
-    async handlePaymentEvent(session, {giftOnly}) {
+    async handlePaymentEvent(session) {
         if (hasConflictingCheckoutFlowMetadata(session)) {
             logging.warn('Ignoring checkout session with conflicting payment flow metadata');
             return;
@@ -118,7 +123,7 @@ module.exports = class CheckoutSessionEventService {
             return;
         }
 
-        if (!giftOnly && isStripeMetadataTrue(session.metadata?.ghost_donation)) {
+        if (isDonationCheckoutSession(session)) {
             await this.handleDonationEvent(session);
         }
     }
