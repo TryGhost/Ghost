@@ -255,6 +255,18 @@ pnpm preflight:build
 # Debug failed tests (keeps containers)
 PRESERVE_ENV=true pnpm test
 
+# Check the fake Stripe server against captured Stripe responses (no infra, ~1s)
+pnpm test:fixtures
+
+# Put a Stripe test account into the state fixtures are captured from
+pnpm stripe:provision
+
+# Re-capture Stripe fixtures from test mode (needs STRIPE_SECRET_KEY)
+pnpm stripe:fixtures
+
+# Re-measure the checkout limits the fake server enforces
+pnpm stripe:probe
+
 # Run TypeScript type checking
 pnpm test:types
 
@@ -265,6 +277,65 @@ pnpm lint
 pnpm build
 pnpm dev           # Watch mode for TypeScript compilation
 ```
+
+## Stripe fixtures
+
+The fake Stripe server in `helpers/services/stripe/` hand-builds the objects Stripe
+would return. Those shapes were originally written from the docs rather than from
+Stripe, so nothing checked them against the real API.
+
+`helpers/services/stripe/fixtures/` holds responses captured from Stripe test mode at
+API version `2020-08-27`, the version `ghost/core` pins. `pnpm test:fixtures` asserts
+the builders against them, and needs no Ghost, no Docker and no browser.
+
+Two failures are worth catching. A builder emitting a key Stripe does not return means
+the fake describes an API that does not exist. A builder omitting a key Ghost reads is
+worse, because it is silent: the property access yields `undefined`, the branch behind
+it never runs, and the suite stays green.
+
+The same suite checks that the fake refuses requests Stripe refuses. Those constraints
+were measured, not read from the docs, because the docs and Stripe's published OpenAPI
+spec each disagree with the API on at least one of them.
+
+### Re-capturing
+
+```bash
+STRIPE_SECRET_KEY=sk_test_... pnpm stripe:provision   # once per account
+STRIPE_SECRET_KEY=sk_test_... pnpm stripe:fixtures
+```
+
+Test-mode keys only; a live key is refused.
+
+`stripe:provision` puts the account into the state fixtures are captured from: a tier
+product, its Monthly, Yearly and Complimentary prices, and a coupon. The nicknames are
+the point, because Ghost's own code matches on them. Capturing runs it first, so the
+two commands are only separate when you want to inspect what an account holds.
+
+Both are idempotent and reuse what is already there, since Stripe cannot delete a
+product that has prices.
+
+### Capturing a completed checkout
+
+A completed checkout cannot be captured with the above, because Stripe blocks automating
+its hosted payment page. `pnpm stripe:fixtures:checkout` does everything either side of
+the payment and asks for one card entry:
+
+```bash
+STRIPE_SECRET_KEY=sk_test_... pnpm stripe:fixtures:checkout
+```
+
+It prints a Checkout URL, waits, then captures the completed session once you have paid
+with `4242 4242 4242 4242`. Shipping address, tax ID and custom field collection are all
+requested on the same session, so one payment captures every shape the API cannot give
+us. Fill all of them in, or the fields come back null and the fixture answers nothing.
+
+The event envelope is deliberately not captured. An Event is an immutable snapshot
+rendered at the account's default API version when it was created, and fetching it with a
+pinned client does not re-render it. Ghost pins its webhook endpoint to the same version
+its client uses, so what Ghost receives and what the API can hand back are different
+renderings: at Stripe's current default the shipping address moves to
+`collected_information.shipping_details`, which Ghost never sees. Ghost reads only
+`event.type` and `event.data.object`, so the envelope carries nothing worth pinning.
 
 ## Resolving issues
 
