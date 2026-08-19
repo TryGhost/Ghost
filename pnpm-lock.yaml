@@ -256,7 +256,7 @@ catalogs:
       specifier: 3.0.1
       version: 3.0.1
     archiver:
-      specifier: ^8.0.0
+      specifier: 8.0.0
       version: 8.0.0
     better-sqlite3:
       specifier: 12.11.1
