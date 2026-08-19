@@ -2188,6 +2188,9 @@ importers:
       stripe:
         specifier: 8.222.0
         version: 8.222.0
+      tsx:
+        specifier: 'catalog:'
+        version: 4.23.12
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
