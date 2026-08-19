@@ -6,7 +6,7 @@ import Emails from '@/settings/email/emails';
 import GeneralSettings from '@/settings/general/general-settings';
 import GrowthSettings from '@/settings/growth/growth-settings';
 import MembershipSettings from '@/settings/membership/membership-settings';
-import SiteSettings from './settings/site/site-settings';
+import SiteSettings from '@/settings/site/site-settings';
 import useFeatureFlag from '@/settings/app/hooks/use-feature-flag';
 
 const Settings: React.FC = () => {

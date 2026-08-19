@@ -263,7 +263,7 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
     const dialogRequestRef = useRef<ThemeEditorDialogRequest | null>(null);
     const [saveErrors, setSaveErrors] = useState<FatalErrors | null>(null);
     const [installedModal, setInstalledModal] = useState<ThemeInstalledModalProps | null>(null);
-    const [editorExtensions, setEditorExtensions] = useState<Array<ReturnType<typeof search> | typeof oneDark | typeof editorSelectionTheme | typeof EditorView.lineWrapping | Awaited<ReturnType<typeof getLanguageExtension>>>>([]);
+    const [editorExtensions, setEditorExtensions] = useState<Array<ReturnType<typeof search> | Awaited<ReturnType<typeof getLanguageExtension>>>>([]);
 
     useEffect(() => {
         let isMounted = true;
@@ -323,7 +323,7 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
             }
         };
 
-        loadTheme();
+        void loadTheme();
 
         return () => {
             isMounted = false;
@@ -444,7 +444,7 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
     // the freshest version without re-registering on every render. handleSave
     // captures state (currentFiles, changes, isSaving, ...) and is recreated
     // each render — using a ref decouples that churn from the global listener.
-    const handleSaveRef = useRef<() => void>(() => {});
+    const handleSaveRef = useRef<() => Promise<void>>(async () => {});
 
     const hasOpenDialog = Boolean(dialogRequest || saveErrors || installedModal);
 
@@ -810,7 +810,7 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
 
             if (!response.ok) {
                 if (response.status === 422 && data?.errors) {
-                    setSaveErrors(data.errors as FatalErrors);
+                    setSaveErrors(data.errors);
                     return;
                 }
 
@@ -873,7 +873,7 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
             role='dialog'
             onClick={(event) => {
                 if (event.target === event.currentTarget) {
-                    closeEditor();
+                    void closeEditor();
                 }
             }}
         >
@@ -882,7 +882,7 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
                     changes={changes}
                     currentThemeName={currentThemeName}
                     isSaving={isSaving}
-                    onClose={closeEditor}
+                    onClose={() => void closeEditor()}
                     onSave={() => void handleSave()}
                 />
 
@@ -901,10 +901,10 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
                         selectedNode={selectedNode}
                         setExpandedDirectories={setExpandedDirectories}
                         setSelectedNode={setSelectedNode}
-                        onCreateFile={handleCreateFile}
-                        onDeleteSelected={handleDeleteSelected}
+                        onCreateFile={() => void handleCreateFile()}
+                        onDeleteSelected={() => void handleDeleteSelected()}
                         onOpenFile={openFile}
-                        onRenameSelected={handleRenameSelected}
+                        onRenameSelected={() => void handleRenameSelected()}
                     />
 
                     <section className='flex min-w-0 flex-1 flex-col bg-[#16181c]'>

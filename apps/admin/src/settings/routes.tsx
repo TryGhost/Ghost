@@ -9,15 +9,15 @@ import {type RouteObject, Navigate, lazyComponent} from '@tryghost/admin-x-frame
 export const settingsRouteChildren: RouteObject[] = [
     // Design and theme share one container across four entry paths; it reads
     // the path to pick its internal view.
-    {path: 'design/change-theme', lazy: lazyComponent(() => import('./app/components/settings/site/design-and-theme-modal'))},
-    {path: 'design/edit', lazy: lazyComponent(() => import('./app/components/settings/site/design-and-theme-modal'))},
-    {path: 'theme/install', lazy: lazyComponent(() => import('./app/components/settings/site/design-and-theme-modal'))},
-    {path: 'theme/edit/:themeName', lazy: lazyComponent(() => import('./app/components/settings/site/design-and-theme-modal'))},
+    {path: 'design/change-theme', lazy: lazyComponent(() => import('./site/design-and-theme-modal'))},
+    {path: 'design/edit', lazy: lazyComponent(() => import('./site/design-and-theme-modal'))},
+    {path: 'theme/install', lazy: lazyComponent(() => import('./site/design-and-theme-modal'))},
+    {path: 'theme/edit/:themeName', lazy: lazyComponent(() => import('./site/design-and-theme-modal'))},
     // Theme names may contain %2F; anything deeper than one segment is not a
     // valid editor URL.
     {path: 'theme/edit/*', element: <Navigate to="/settings/theme" replace />},
-    {path: 'navigation/edit', lazy: lazyComponent(() => import('./app/components/settings/site/navigation-modal'))},
-    {path: 'announcement-bar/edit', lazy: lazyComponent(() => import('./app/components/settings/site/announcement-bar-modal'))},
+    {path: 'navigation/edit', lazy: lazyComponent(() => import('./site/navigation-modal'))},
+    {path: 'announcement-bar/edit', lazy: lazyComponent(() => import('./site/announcement-bar-modal'))},
     {path: 'staff/invite', lazy: lazyComponent(() => import('./general/invite-user-modal'))},
     {path: 'staff/:slug', lazy: lazyComponent(() => import('./general/user-detail-modal'))},
     {path: 'staff/:slug/edit', lazy: lazyComponent(() => import('./general/user-detail-modal'))},

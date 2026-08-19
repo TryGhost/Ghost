@@ -75,7 +75,7 @@ const ThemePreview: React.FC<{
 
     const handleInstall = () => {
         // The parent component handles all limit checks and confirmation modals
-        onInstall?.();
+        void onInstall?.();
     };
 
     const left =

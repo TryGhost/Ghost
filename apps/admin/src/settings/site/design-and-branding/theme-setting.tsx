@@ -98,7 +98,7 @@ const ThemeSetting: React.FC<ThemeSettingProps> = ({setting, setSetting}) => {
                         </ImageUploadActions>
                     </ImageUploadPreview>
                 ) : (
-                    <ImageUploadDropzone inputId={`custom-${setting.key}`} onDropAccepted={files => handleImageUpload(files[0])}>
+                    <ImageUploadDropzone inputId={`custom-${setting.key}`} onDropAccepted={files => void handleImageUpload(files[0])}>
                         Upload image
                     </ImageUploadDropzone>
                 )}

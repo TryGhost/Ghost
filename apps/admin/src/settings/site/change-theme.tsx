@@ -30,10 +30,10 @@ const ChangeTheme: React.FC<{ keywords: string[] }> = ({keywords}) => {
             setIsCheckingLimit(false);
         };
 
-        checkIfThemeChangeAllowed();
+        void checkIfThemeChangeAllowed();
     }, [checkThemeLimitError]);
 
-    const openPreviewModal = async () => {
+    const openPreviewModal = () => {
         // Wait for limit check if still in progress
         if (isCheckingLimit) {
             return;
@@ -88,7 +88,7 @@ const ChangeTheme: React.FC<{ keywords: string[] }> = ({keywords}) => {
                                 <Button aria-label='Menu' disabled={!activeTheme} size='icon' type='button' variant='ghost'><LucideIcon.Ellipsis /></Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align='end'>
-                                <DropdownMenuItem onSelect={openThemeEditor}>Edit code</DropdownMenuItem>
+                                <DropdownMenuItem onSelect={() => void openThemeEditor()}>Edit code</DropdownMenuItem>
                                 <DropdownMenuItem onSelect={downloadTheme}>Download</DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
