@@ -19,6 +19,14 @@ export interface InstanceConfigScrape {
     portalUrl?: string;
     /** Sodo-search script URL + styles (data-sodo-search is search-specific) */
     sodoSearch?: {url: string; styles: string};
+    /**
+     * Comments-ui script URL (data-ghost-comments is comments-specific). Only
+     * present when the scraped page carries the tag — i.e. a POST page with
+     * comments enabled; deliberately NOT in `missing`, since most pages
+     * legitimately lack it. Without it `{{comments}}` renders nothing
+     * (deltas.md row 13).
+     */
+    commentsUrl?: string;
     /** Names of scrapes that found nothing — non-empty means degraded config */
     missing: string[];
     /** Ready-to-pass `createRenderer({config})` shape for whatever was found */
@@ -30,6 +38,7 @@ export function scrapeInstanceConfig(liveHomeHtml: string): InstanceConfigScrape
     const portalUrl = liveHomeHtml.match(/<script defer src="([^"]+)" data-i18n=/)?.[1];
     const sodoSearchMatch = liveHomeHtml.match(/<script defer src="([^"]+)" data-key="[^"]*" data-styles="([^"]*)" data-sodo-search=/);
     const sodoSearch = sodoSearchMatch ? {url: sodoSearchMatch[1]!, styles: sodoSearchMatch[2]!} : undefined;
+    const commentsUrl = liveHomeHtml.match(/<script defer src="([^"]+)" data-locale="[^"]*" data-ghost-comments=/)?.[1];
 
     const missing: string[] = [];
     if (!assetHash) {
@@ -46,6 +55,7 @@ export function scrapeInstanceConfig(liveHomeHtml: string): InstanceConfigScrape
         assetHash,
         portalUrl,
         sodoSearch,
+        commentsUrl,
         missing,
         config: {
             // deltas.md #1 — the live per-boot hash (upstream: config assetHash
@@ -54,7 +64,8 @@ export function scrapeInstanceConfig(liveHomeHtml: string): InstanceConfigScrape
             // deltas.md #3 — frontend-app instance config (Ghost server
             // config keys, extraction-map §6)
             ...(portalUrl && {portal: {url: portalUrl}}),
-            ...(sodoSearch && {sodoSearch})
+            ...(sodoSearch && {sodoSearch}),
+            ...(commentsUrl && {comments: {url: commentsUrl}})
         }
     };
 }

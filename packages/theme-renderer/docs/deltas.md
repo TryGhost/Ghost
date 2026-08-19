@@ -29,7 +29,8 @@ comparison. The rendered/live pairs land in `test/integration/__output__/`
 
 | # | Route | Delta | Cause | Expected fix (slice) |
 | --- | --- | --- | --- | --- |
-| 6 | post | `{{comments}}` renders nothing (Casper guards with `{{#if comments}}`; comments are off on the dev instance so live matches) | `comments` helper not registered (needs members/comments config) | 2/5 — port when an instance with comments enabled breaks parity |
+| 6 | post | ~~`{{comments}}` renders nothing~~ — RESOLVED: the helper is ported (helpers/comments.ts) and byte-parity holds with comments enabled. It became visible (and broke parity as designed) the day the dev instance turned comments on; what remains is row 13 below | — | done |
+| 13 | post | `{{comments}}` renders nothing when the instance config has no comments script URL (seam guard in helpers/comments.ts) | The comments-ui URL is per-instance (`config comments:url`) and only scrapeable from a page that carries the tag — a post page with comments enabled. Entering edit mode from such a page supplies it; from other pages the preview omits the comments box | accept, or scrape a post page during editor boot |
 | 9 | all | `@custom` values come from the theme's package.json defaults | Custom theme settings are Admin-API-only; dev instance uses defaults, so no visible diff | 4/5 — Admin API session in the editor slices |
 | 10 | all | Analytics/tinybird script absent on both sides today; would diverge if enabled | `isWebAnalyticsEnabled()` stub → false (non-public settings + config) | 2 — injectable |
 
@@ -37,7 +38,7 @@ comparison. The rendered/live pairs land in `test/integration/__output__/`
 
 | # | Route | Delta | Cause | Expected fix (slice) |
 | --- | --- | --- | --- | --- |
-| 11 | subresources | `/rss/` (incl. taxonomy `/tag/:slug/rss/`), sitemap, robots, static assets are not served — only HTML routes render. `ghost_head` still advertises the `<link rel="alternate" type="text/markdown">` while the `.md` route 404s (accepted with the llms_enabled default-on) | Out of package scope (extraction-map §(a) exclusions) | 5 — stays in core |
+| 11 | subresources | `/rss/` (incl. taxonomy `/tag/:slug/rss/`), sitemap, robots, static assets are not served — only HTML routes render. `ghost_head` still advertises the `<link rel="alternate" type="text/markdown">` while the `.md` route 404s (accepted with the llms_enabled default-on). `llms_enabled` itself is a non-public setting, so a site that turned AI access OFF drops the link while the renderer keeps it — the parity suite excludes the link on BOTH sides (`bothSides` normalization) | Out of package scope (extraction-map §(a) exclusions) | 5 — stays in core |
 | 12 | any `.md`/`.txt` path | 404s instead of serving the markdown (llms) representation. Matching origin pretty-urls, these extensions are the ONLY ones skipping the trailing-slash 301 | The llms markdown route is out of scope; the skip-extension behavior matches server/web/shared/middleware/pretty-urls.js | 5 — stays in core |
 
 Slice-1 rows 7/8 (`<script>`/`<meta>` count summaries) are retired — the byte

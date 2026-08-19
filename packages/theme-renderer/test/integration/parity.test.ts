@@ -25,13 +25,26 @@ const probe = await probeLive();
 // ---- instance config scraped from the live page (kills deltas 1 + 3) ----
 const scrape = scrapeInstanceConfig(probe.liveHomeHtml);
 
+// The comments-ui script URL only appears on post pages with comments
+// enabled, so the home scrape can't see it — fetch the first post up front
+// and merge its scrape (the post parity test reuses this HTML).
+const firstPost = probe.unavailableReason ? null : await fetchFirstPost(probe.contentApiKey);
+const livePostHtml = firstPost ? await (await fetch(firstPost.url)).text() : '';
+const postScrape = livePostHtml ? scrapeInstanceConfig(livePostHtml) : null;
+const rendererConfig = {
+    ...scrape.config,
+    ...(postScrape?.commentsUrl ? {comments: {url: postScrape.commentsUrl}} : {})
+};
+
 /**
  * The documented-stub normalization list — ONE entry per surviving deltas.md
  * row. Each `apply` rewrites the live HTML into the renderer's expected
  * output; deleting a deltas.md row means deleting its entry here (and the
- * byte comparison then enforces the fix).
+ * byte comparison then enforces the fix). An entry with `bothSides` applies
+ * to the RENDERED html too — for stubs whose live value is unknowable through
+ * the seam, where the divergence can point in either direction.
  */
-const NORMALIZATIONS: Array<{delta: string; apply: (html: string) => string}> = [
+const NORMALIZATIONS: Array<{delta: string; bothSides?: boolean; apply: (html: string) => string}> = [
     {
         // createImageSizeCache stub resolves null → ghost_head omits the
         // og:image dimension meta tags
@@ -48,11 +61,25 @@ const NORMALIZATIONS: Array<{delta: string; apply: (html: string) => string}> = 
         // Content API → the member-attribution script is never emitted
         delta: 'deltas.md #4 — member-attribution script (non-public setting)',
         apply: html => html.replace(/\n\s*<script defer src="\/public\/member-attribution\.min\.js[^"]*"><\/script>/g, '')
+    },
+    {
+        // llms_enabled is a non-public setting → undefined via the Content
+        // API → the renderer assumes Ghost's shipped default (true) and
+        // emits the markdown alternate link; a site that toggled AI access
+        // OFF drops it. Unknowable through the seam, so the link is excluded
+        // from the comparison on BOTH sides.
+        delta: 'deltas.md #11 — markdown alternate link (llms_enabled non-public)',
+        bothSides: true,
+        apply: html => html.replace(/\n\s*<link rel="alternate" type="text\/markdown" href="[^"]*">/g, '')
     }
 ];
 
 function normalizeLive(html: string): string {
     return NORMALIZATIONS.reduce((acc, {apply}) => apply(acc), html);
+}
+
+function normalizeRendered(html: string): string {
+    return NORMALIZATIONS.reduce((acc, {apply, bothSides}) => (bothSides ? apply(acc) : acc), html);
 }
 
 /** Byte-equality with first-divergence context in the failure message. */
@@ -66,7 +93,7 @@ function getRenderer(): Promise<ThemeRenderer> {
         siteUrl: `${GHOST_URL}/`,
         contentApiKey: probe.contentApiKey,
         theme: loadCasperTheme(),
-        config: scrape.config
+        config: rendererConfig
     });
     return rendererPromise;
 }
@@ -83,7 +110,7 @@ describe.skipIf(Boolean(probe.unavailableReason))(`byte parity (${probe.unavaila
         const renderer = await getRenderer();
         const response = await renderer.render(new Request(`${GHOST_URL}/`));
         assert.equal(response.status, 200);
-        const rendered = await response.text();
+        const rendered = normalizeRendered(await response.text());
         const expected = normalizeLive(probe.liveHomeHtml);
 
         writeOutput('parity-home', rendered, expected);
@@ -91,17 +118,13 @@ describe.skipIf(Boolean(probe.unavailableReason))(`byte parity (${probe.unavaila
     });
 
     it('renders the post route byte-identical to live modulo documented stubs', async function () {
-        const post = await fetchFirstPost(probe.contentApiKey);
-        assert.ok(post, 'dev instance has at least one post');
-        const {slug, url} = post;
-
-        const liveResponse = await fetch(url);
-        const livePostHtml = await liveResponse.text();
+        assert.ok(firstPost, 'dev instance has at least one post');
+        const {slug, url} = firstPost;
 
         const renderer = await getRenderer();
         const response = await renderer.render(new Request(url));
         assert.equal(response.status, 200);
-        const rendered = await response.text();
+        const rendered = normalizeRendered(await response.text());
         const expected = normalizeLive(livePostHtml);
 
         writeOutput(`parity-post-${slug}`, rendered, expected);
@@ -121,7 +144,7 @@ describe.skipIf(Boolean(probe.unavailableReason))(`byte parity (${probe.unavaila
         const renderer = await getRenderer();
         const response = await renderer.render(new Request(url));
         assert.equal(response.status, 200);
-        const rendered = await response.text();
+        const rendered = normalizeRendered(await response.text());
         const expected = normalizeLive(liveTagHtml);
 
         writeOutput(`parity-tag-${slug}`, rendered, expected);

@@ -9,6 +9,7 @@ export {coreHelperPartials, registerCoreHelperPartials} from './tpl/partials.ts'
 export {default as asset} from './asset.ts';
 export {default as authors} from './authors.ts';
 export {default as bodyClass} from './body-class.ts';
+export {default as comments} from './comments.ts';
 export {default as concat} from './concat.ts';
 export {default as content} from './content.ts';
 export {default as date} from './date.ts';
