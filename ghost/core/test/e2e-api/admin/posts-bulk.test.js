@@ -321,6 +321,9 @@ describe('Posts Bulk API', function () {
             const validTag = await models.Tag.findOne({slug: fixtureManager.get('tags', 0).slug});
             const invalidTags = [
                 [null],
+                ['a-tag-id'],
+                [1],
+                [true],
                 [{id: 1}],
                 [{name: 1}],
                 [{name: {}}],
