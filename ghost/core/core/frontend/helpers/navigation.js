@@ -157,11 +157,13 @@ module.exports = function navigation(options) {
             out.current = isCurrentNavigationUrl(e.url, currentUrl);
             out.icon = icon || null;
             out.iconAlt = hasLabel ? '' : iconName;
-            out.label = e.label;
+            out.label = hasLabel ? e.label : null;
             out.slug = slugify(hasLabel ? e.label : iconName);
             out.url = e.url;
             return out;
-        });
+        })
+        // Nothing to render: an icon-only item with the icons flag off would be an empty link
+        .filter(item => item.icon || item.label);
 
     if (output.length === 0) {
         return new SafeString('');
