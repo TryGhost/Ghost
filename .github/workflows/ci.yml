@@ -1031,39 +1031,59 @@ jobs:
       - name: Setup Playwright
         uses: ./.github/actions/setup-playwright
 
-      # The Koenig editor suite is the only one that needs apt packages on top
-      # of the runner image (setup-playwright deliberately avoids apt-get, see
-      # its README note about hangs — scoping this to one matrix leg contains
-      # that risk):
-      #  - MS core fonts: caret-position assertions depend on where text wraps,
-      #    which depends on Arial's font metrics
-      #  - playwright firefox deps: system media codecs so firefox can decode
-      #    the H.264 fixtures in the video card tests
-      # msttcorefonts downloads the font files from SourceForge at install time;
-      # mirror-redirect roulette there can hang indefinitely. timeout-minutes is
-      # the backstop, and each network op is bounded + retried so a stuck fetch
-      # fails fast and re-rolls onto a different mirror instead of sitting.
-      - name: Install Koenig editor test dependencies (fonts + media codecs)
+      # Cache the msttcorefonts .ttf files so only a cache miss hits the
+      # SourceForge download that regularly hangs the koenig-lexical job. Save
+      # is a separate step right after the fonts are in place, so a later codec
+      # or test failure on a cache-miss run still populates the cache.
+      - name: Restore MS core fonts cache
+        if: matrix.app == '@tryghost/koenig-lexical'
+        id: mscorefonts-cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: ~/.cache/msttcorefonts
+          key: msttcorefonts-ttf-v1
+      - name: Install Koenig editor test fonts
         if: matrix.app == '@tryghost/koenig-lexical'
         timeout-minutes: 10
         env:
           DEBIAN_FRONTEND: noninteractive
           DEBCONF_NONINTERACTIVE_SEEN: "true"
         run: |
-          sudo sh -c "echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | debconf-set-selections"
-          sudo apt-get update -yq -o Acquire::Retries=3 -o Acquire::http::Timeout=30
-          installed=
-          for i in 1 2 3; do
-            if sudo timeout -k 5 120 apt-get install -yq \
-                 -o Acquire::Retries=3 -o Acquire::http::Timeout=30 msttcorefonts; then
-              installed=1; break
+          FONT_CACHE="$HOME/.cache/msttcorefonts"
+          FONT_DIR=/usr/share/fonts/truetype/msttcorefonts
+          sudo mkdir -p "$FONT_DIR"
+          if ls "$FONT_CACHE"/*.ttf >/dev/null 2>&1; then
+            echo "Restoring MS core fonts from cache"
+            sudo cp "$FONT_CACHE"/*.ttf "$FONT_DIR"/
+          else
+            echo "Cache miss — installing msttcorefonts from apt"
+            sudo sh -c "echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | debconf-set-selections"
+            sudo apt-get update -yq -o Acquire::Retries=3 -o Acquire::http::Timeout=30
+            installed=
+            for i in 1 2 3; do
+              if sudo timeout -k 5 120 apt-get install -yq \
+                   -o Acquire::Retries=3 -o Acquire::http::Timeout=30 msttcorefonts; then
+                installed=1; break
+              fi
+              echo "msttcorefonts attempt $i failed/stuck, retrying..."; sleep 5
+            done
+            if [ -z "$installed" ]; then
+              echo "msttcorefonts failed after 3 attempts"; exit 1
             fi
-            echo "msttcorefonts attempt $i failed/stuck, retrying..."; sleep 5
-          done
-          if [ -z "$installed" ]; then
-            echo "msttcorefonts failed after 3 attempts"; exit 1
+            mkdir -p "$FONT_CACHE"
+            cp "$FONT_DIR"/*.ttf "$FONT_CACHE"/
           fi
-          pnpm exec playwright install-deps firefox
+          sudo fc-cache -f
+      - name: Save MS core fonts cache
+        if: matrix.app == '@tryghost/koenig-lexical' && steps.mscorefonts-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: ~/.cache/msttcorefonts
+          key: msttcorefonts-ttf-v1
+      - name: Install Koenig editor test media codecs
+        if: matrix.app == '@tryghost/koenig-lexical'
+        timeout-minutes: 10
+        run: pnpm exec playwright install-deps firefox
 
       - name: Run Playwright tests
         run: pnpm nx run ${{ matrix.app }}:test:acceptance
