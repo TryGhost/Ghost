@@ -97,35 +97,24 @@ module.exports = function navigation(options) {
         const isFreeMember = isMember && member.status === 'free';
         const isPaidMember = isMember && member.status !== 'free';
 
-        if (visibility === 'members') {
-            return isMember;
+        switch (visibility) {
+            case 'members':
+                return isMember;
+            case 'paid':
+                return isPaidMember;
+            case 'public_free':
+                return !isMember || isFreeMember;
+            case 'public_paid':
+                return !isMember || isPaidMember;
+            case 'public_only':
+                return !isMember;
+            case 'free_members':
+                return isFreeMember;
+            case 'none':
+                return false;
+            default:
+                return true;
         }
-
-        if (visibility === 'paid') {
-            return isPaidMember;
-        }
-
-        if (visibility === 'public_free') {
-            return !isMember || isFreeMember;
-        }
-
-        if (visibility === 'public_paid') {
-            return !isMember || isPaidMember;
-        }
-
-        if (visibility === 'public_only') {
-            return !isMember;
-        }
-
-        if (visibility === 'free_members') {
-            return isFreeMember;
-        }
-
-        if (visibility === 'none') {
-            return false;
-        }
-
-        return true;
     }
 
     output = navigationData.filter(_isVisible).map(function (e) {
