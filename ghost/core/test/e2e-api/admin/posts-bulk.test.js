@@ -279,6 +279,28 @@ describe('Posts Bulk API', function () {
             assert.equal(duplicates.length, 0, `Expect no duplicate posts_tags rows, got ${JSON.stringify(duplicates)}`);
         });
 
+        it('Only creates one tag when the same new tag name is passed twice', async function () {
+            const filter = 'status:[draft]';
+            const name = 'Repeated new tag';
+
+            await agent
+                .put('/posts/bulk/?filter=' + encodeURIComponent(filter))
+                .body({bulk: {action: 'addTag', meta: {tags: [{name}, {name}]}}})
+                .expectStatus(200);
+
+            const tags = await models.Tag.findAll({filter: `name:'${name}'`});
+            assert.equal(tags.length, 1, `Expect a single tag to be created, got ${JSON.stringify(tags.models.map(t => t.get('slug')))}`);
+
+            const duplicates = await models.Base.knex('posts_tags')
+                .where('tag_id', tags.models[0].id)
+                .select('post_id')
+                .count('* as rows')
+                .groupBy('post_id')
+                .having('rows', '>', 1);
+
+            assert.equal(duplicates.length, 0, `Expect no duplicate posts_tags rows, got ${JSON.stringify(duplicates)}`);
+        });
+
         it('Can add multiple tags to posts and create new tags', async function () {
             const filter = 'status:[draft]';
             const tag = await models.Tag.findOne({id: fixtureManager.get('tags', 1).id});

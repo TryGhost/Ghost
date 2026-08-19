@@ -217,8 +217,22 @@ class PostsService {
             });
         }
 
+        // The same tag can be passed more than once in a single request. Dedupe
+        // before creating, otherwise a repeated name-only tag is created twice
+        const seen = new Set();
+        const tags = data.tags.filter((tag) => {
+            const key = tag.id || tag.name.toLocaleLowerCase();
+
+            if (seen.has(key)) {
+                return false;
+            }
+
+            seen.add(key);
+            return true;
+        });
+
         // Create tags that don't exist
-        for (const tag of data.tags) {
+        for (const tag of tags) {
             if (!tag.id) {
                 const createdTag = await this.models.Tag.add(tag, {transacting: options.transacting, context: options.context});
                 tag.id = createdTag.id;
@@ -228,8 +242,7 @@ class PostsService {
         const postRows = await this.#getFilteredBulkPostQuery(options).select('posts.id');
         const postIds = postRows.map(post => post.id);
 
-        // The same tag can be passed more than once in a single request
-        const tagIds = [...new Set(data.tags.map(tag => tag.id))];
+        const tagIds = [...new Set(tags.map(tag => tag.id))];
 
         // Posts in the selection may already carry the tag, filter those pairs out
         const existingRows = tagIds.length && postIds.length ?
