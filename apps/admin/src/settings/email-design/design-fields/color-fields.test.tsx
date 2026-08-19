@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
-import {BackgroundColorField} from '@/settings/app/components/settings/email-design/design-fields/background-color-field';
-import {ButtonColorField} from '@/settings/app/components/settings/email-design/design-fields/button-color-field';
-import {DEFAULT_EMAIL_DESIGN} from '@/settings/app/components/settings/email-design/types';
-import {DividerColorField} from '@/settings/app/components/settings/email-design/design-fields/divider-color-field';
-import {EmailDesignProvider} from '@/settings/app/components/settings/email-design/email-design-context';
-import {HeaderBackgroundField} from '@/settings/app/components/settings/email-design/design-fields/header-background-field';
-import {LinkColorField} from '@/settings/app/components/settings/email-design/design-fields/link-color-field';
+import {BackgroundColorField} from '@/settings/email-design/design-fields/background-color-field';
+import {ButtonColorField} from '@/settings/email-design/design-fields/button-color-field';
+import {DEFAULT_EMAIL_DESIGN} from '@/settings/email-design/types';
+import {DividerColorField} from '@/settings/email-design/design-fields/divider-color-field';
+import {EmailDesignProvider} from '@/settings/email-design/email-design-provider';
+import {HeaderBackgroundField} from '@/settings/email-design/design-fields/header-background-field';
+import {LinkColorField} from '@/settings/email-design/design-fields/link-color-field';
 import {type ReactNode} from 'react';
-import {SectionTitleColorField} from '@/settings/app/components/settings/email-design/design-fields/section-title-color-field';
+import {SectionTitleColorField} from '@/settings/email-design/design-fields/section-title-color-field';
 import {act, fireEvent, render, screen} from '@testing-library/react';
 
 type EmailDesignUpdate = Partial<typeof DEFAULT_EMAIL_DESIGN>;

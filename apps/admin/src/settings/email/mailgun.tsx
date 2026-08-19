@@ -120,7 +120,7 @@ const MailGun: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         return;
                     }
                 }
-                handleSave();
+                void handleSave();
             }}
         >
             {isEditing ? inputs : values}

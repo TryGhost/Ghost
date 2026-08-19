@@ -1,5 +1,5 @@
 import ColorPickerField from '@/settings/app/components/color-picker-field';
-import HeaderImageField from '@/settings/app/components/settings/email-design/header-image-field';
+import HeaderImageField from '@/settings/email-design/header-image-field';
 import HtmlField from '@/settings/app/components/html-field';
 import NewsletterPreview from './newsletter-preview';
 import React, {useCallback, useEffect, useState} from 'react';
@@ -299,7 +299,7 @@ const Sidebar: React.FC<{
                     </FieldGroup>
                 </FieldSet>
                 <div className='mt-10 mb-5'>
-                    {newsletter.status === 'active' ? (!onlyOne && <Button className='text-destructive hover:text-destructive' disabled={activeNewsletters.length === 1} type='button' variant='ghost' onClick={confirmStatusChange}>Archive newsletter</Button>) : <Button className='text-green hover:text-green' type='button' variant='ghost' onClick={confirmStatusChange}>Reactivate newsletter</Button>}
+                    {newsletter.status === 'active' ? (!onlyOne && <Button className='text-destructive hover:text-destructive' disabled={activeNewsletters.length === 1} type='button' variant='ghost' onClick={() => void confirmStatusChange()}>Archive newsletter</Button>) : <Button className='text-green hover:text-green' type='button' variant='ghost' onClick={() => void confirmStatusChange()}>Reactivate newsletter</Button>}
                 </div>
             </>
         },
@@ -768,7 +768,7 @@ const NewsletterDetailModal: React.FC = () => {
 
     useEffect(() => {
         if (!newsletter && !isEnd) {
-            fetchNextPage();
+            void fetchNextPage();
         }
     }, [fetchNextPage, isEnd, newsletter]);
 

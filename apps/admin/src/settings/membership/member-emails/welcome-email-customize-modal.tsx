@@ -1,8 +1,8 @@
-import EmailDesignModal from '@/settings/app/components/settings/email-design/email-design-modal';
-import EmailPreview from '@/settings/app/components/settings/email-design/email-preview';
-import HeaderImageField from '@/settings/app/components/settings/email-design/header-image-field';
-import ShowBadgeField from '@/settings/app/components/settings/email-design/show-badge-field';
-import WelcomeEmailPreviewContent from '@/settings/app/components/settings/email-design/welcome-email-preview-content';
+import EmailDesignModal from '@/settings/email-design/email-design-modal';
+import EmailPreview from '@/settings/email-design/email-preview';
+import HeaderImageField from '@/settings/email-design/header-image-field';
+import ShowBadgeField from '@/settings/email-design/show-badge-field';
+import WelcomeEmailPreviewContent from '@/settings/email-design/welcome-email-preview-content';
 import useFeatureFlag from '@/settings/app/hooks/use-feature-flag';
 import validator from 'validator';
 import {useEditAutomatedEmailDesign, useReadAutomatedEmailDesign} from '@tryghost/admin-x-framework/api/automated-email-design';
@@ -20,9 +20,9 @@ import {
     LinkColorField,
     LinkStyleField,
     SectionTitleColorField
-} from '@/settings/app/components/settings/email-design/design-fields';
-import {DEFAULT_EMAIL_DESIGN, type EmailDesignSettings} from '@/settings/app/components/settings/email-design/types';
-import {EmailDesignProvider} from '@/settings/app/components/settings/email-design/email-design-context';
+} from '@/settings/email-design/design-fields';
+import {DEFAULT_EMAIL_DESIGN, type EmailDesignSettings} from '@/settings/email-design/types';
+import {EmailDesignProvider} from '@/settings/email-design/email-design-provider';
 import {Input, LoadingIndicator, Separator, Switch, Tabs, TabsContent, TabsList, TabsTrigger, Textarea} from '@tryghost/shade/components';
 import {WELCOME_EMAIL_SLUGS, type WelcomeEmailType, getDefaultWelcomeEmailValues} from './default-welcome-email-values';
 import {type GeneralSettings, type WelcomeEmailCustomizeFormState, buildAutomatedEmailDesignPayload, mapApiToDesignSettings, mapApiToGeneralSettings} from './design-payload';

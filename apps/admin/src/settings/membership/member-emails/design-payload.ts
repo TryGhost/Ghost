@@ -1,5 +1,5 @@
 import {type AutomatedEmailDesign, type EditAutomatedEmailDesign} from '@tryghost/admin-x-framework/api/automated-email-design';
-import {DEFAULT_EMAIL_DESIGN, type EmailDesignSettings} from '@/settings/app/components/settings/email-design/types';
+import {DEFAULT_EMAIL_DESIGN, type EmailDesignSettings} from '@/settings/email-design/types';
 
 export interface GeneralSettings {
     senderName: string;

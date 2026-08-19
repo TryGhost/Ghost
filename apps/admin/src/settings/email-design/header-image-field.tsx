@@ -46,7 +46,7 @@ const HeaderImageField: React.FC<HeaderImageFieldProps> = ({inputId = 'welcome-e
                     <ImageUploadDropzone
                         accept={{'image/*': ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg']}}
                         inputId={inputId}
-                        onDropAccepted={files => files[0] && handleUpload(files[0])}
+                        onDropAccepted={files => files[0] && void handleUpload(files[0])}
                     >
                         <span className="text-control font-medium">Upload header image</span>
                     </ImageUploadDropzone>

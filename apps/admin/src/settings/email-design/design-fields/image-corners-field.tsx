@@ -1,15 +1,14 @@
 import {ToggleGroup, ToggleGroupItem} from '@tryghost/shade/components';
-import {useEmailDesign} from '@/settings/app/components/settings/email-design/email-design-context';
+import {useEmailDesign} from '@/settings/email-design/email-design-context';
 
-export const ButtonCornersField = () => {
+export const ImageCornersField = () => {
     const {settings, onSettingsChange} = useEmailDesign();
     return (
         <div className="flex items-center justify-between">
-            <span>Button corners</span>
-            <ToggleGroup type="single" value={settings.button_corners || 'rounded'} onValueChange={(value: string) => value && onSettingsChange({button_corners: value})}>
+            <span>Image corners</span>
+            <ToggleGroup type="single" value={settings.image_corners || 'square'} onValueChange={(value: string) => value && onSettingsChange({image_corners: value})}>
                 <ToggleGroupItem aria-label="Square" value="square"><span className="inline-block size-4 border-[1.5px] border-current" /></ToggleGroupItem>
                 <ToggleGroupItem aria-label="Rounded" value="rounded"><span className="inline-block size-4 rounded-sm border-[1.5px] border-current" /></ToggleGroupItem>
-                <ToggleGroupItem aria-label="Pill" value="pill"><span className="inline-block size-4 rounded-full border-[1.5px] border-current" /></ToggleGroupItem>
             </ToggleGroup>
         </div>
     );

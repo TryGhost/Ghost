@@ -1,8 +1,9 @@
-import NewslettersList from './newsletters-list';
+import NewslettersList from './newsletters/newsletters-list';
 import React, {type ReactNode, useEffect, useState} from 'react';
+import TopLevelGroup from '@/settings/app/components/top-level-group';
 import useQueryParams from '@/settings/app/hooks/use-query-params';
 import {APIError} from '@tryghost/admin-x-framework/errors';
-import {Button} from '@tryghost/shade/components';
+import {Button, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {type InfiniteData, useQueryClient} from '@tryghost/admin-x-framework';
 import {type Newsletter, type NewslettersResponseType, newslettersDataType, useBrowseNewsletters, useEditNewsletter, useVerifyNewsletterEmail} from '@tryghost/admin-x-framework/api/newsletters';
 import {arrayMove} from '@dnd-kit/sortable';
@@ -21,20 +22,12 @@ const NavigateToNewsletter = ({id, onNavigate, children}: {id: string; onNavigat
     }}>{children}</Button>;
 };
 
-const isNewsletterVerificationRoute = () => {
-    const hash = window.location.hash.slice(1);
-    const pathname = new URL(hash || '/', window.location.origin).pathname;
-
-    return pathname.startsWith('/settings/emails') || pathname.startsWith('/settings/newsletters');
-};
-
-export type NewslettersFilter = 'active' | 'archived';
-
-interface NewslettersTabContentProps extends Record<string, unknown> {
-    filter: NewslettersFilter;
-}
-
-const NewslettersTabContent: React.FC<NewslettersTabContentProps> = ({filter}) => {
+const Newsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
+    const {updateRoute} = useSettingsNavigation();
+    const openNewsletterModal = () => {
+        updateRoute('newsletters/new');
+    };
+    const [selectedTab, setSelectedTab] = useState('active-newsletters');
     const {data: {newsletters: apiNewsletters, meta, isEnd} = {}, isLoading, fetchNextPage} = useBrowseNewsletters();
     const {mutateAsync: editNewsletter} = useEditNewsletter();
     const queryClient = useQueryClient();
@@ -51,7 +44,7 @@ const NewslettersTabContent: React.FC<NewslettersTabContentProps> = ({filter}) =
     }, [apiNewsletters]);
 
     useEffect(() => {
-        if (!verifyEmailToken || !isNewsletterVerificationRoute()) {
+        if (!verifyEmailToken || !window.location.href.includes('newsletters')) {
             return;
         }
 
@@ -97,8 +90,14 @@ const NewslettersTabContent: React.FC<NewslettersTabContentProps> = ({filter}) =
                 handleError(e, {withToast: false});
             }
         };
-        verify();
+        void verify();
     }, [verifyEmailToken, handleError, verifyEmail, confirm]);
+
+    const buttons = (
+        <Button className='mt-[-5px]' size='sm' type='button' variant='ghost' onClick={() => {
+            openNewsletterModal();
+        }}>Add newsletter</Button>
+    );
 
     const sortedActiveNewsletters = newsletters.filter(n => n.status === 'active').sort((a, b) => a.sort_order - b.sort_order) || [];
     const archivedNewsletters = newsletters.filter(newsletter => newsletter.status !== 'active');
@@ -118,6 +117,7 @@ const NewslettersTabContent: React.FC<NewslettersTabContentProps> = ({filter}) =
 
         const orderUpdatedNewsletters = [...updatedActiveNewsletters, ...updatedArchivedNewsletters].sort((a, b) => a.sort_order - b.sort_order);
 
+        // Set the new order in local state and cache first so that the UI updates immediately
         setNewsletters(newsletters.map(newsletter => orderUpdatedNewsletters.find(n => n.id === newsletter.id) || newsletter));
         queryClient.setQueriesData<InfiniteData<NewslettersResponseType>>({queryKey: [newslettersDataType]}, (currentData) => {
             if (!currentData) {
@@ -138,20 +138,28 @@ const NewslettersTabContent: React.FC<NewslettersTabContentProps> = ({filter}) =
         }
     };
 
-    const showingActive = filter === 'active';
-
     return (
-        <>
-            {showingActive ? (
-                <NewslettersList isLoading={isLoading} isSortable={true} newsletters={sortedActiveNewsletters} onSort={onSort} />
-            ) : (
-                <NewslettersList isLoading={isLoading} newsletters={archivedNewsletters} />
-            )}
-            {isEnd === false && <Button type='button' variant='link' onClick={() => fetchNextPage()}>
+        <TopLevelGroup
+            customButtons={buttons}
+            description="Edit details and customize your design"
+            keywords={keywords}
+            navid='newsletters'
+            testId='newsletters'
+            title='Newsletters'
+        >
+            <Tabs value={selectedTab} variant='underline' onValueChange={setSelectedTab}>
+                <TabsList>
+                    <TabsTrigger value='active-newsletters'>Active</TabsTrigger>
+                    <TabsTrigger value='archived-newsletters'>Archived</TabsTrigger>
+                </TabsList>
+                <TabsContent value='active-newsletters'><NewslettersList isLoading={isLoading} newsletters={sortedActiveNewsletters} isSortable onSort={(id, overId) => void onSort(id, overId)} /></TabsContent>
+                <TabsContent value='archived-newsletters'><NewslettersList isLoading={isLoading} newsletters={archivedNewsletters} /></TabsContent>
+            </Tabs>
+            {isEnd === false && <Button type='button' variant='link' onClick={() => void fetchNextPage()}>
                 Load more (showing {formatNumber(newsletters?.length || 0)}/{formatNumber(meta?.pagination.total || 0)} newsletters)
             </Button>}
-        </>
+        </TopLevelGroup>
     );
 };
 
-export default withErrorBoundary(NewslettersTabContent, 'Newsletters');
+export default withErrorBoundary(Newsletters, 'Newsletters');

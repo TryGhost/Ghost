@@ -1,5 +1,5 @@
 import ColorPickerField from '@/settings/app/components/color-picker-field';
-import {useEmailDesign} from '@/settings/app/components/settings/email-design/email-design-context';
+import {useEmailDesign} from '@/settings/email-design/email-design-context';
 
 export const HeaderBackgroundField = () => {
     const {settings, onSettingsChange} = useEmailDesign();
