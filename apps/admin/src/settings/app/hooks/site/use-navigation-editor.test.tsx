@@ -1,5 +1,5 @@
 import * as assert from 'node:assert/strict';
-import useNavigationEditor, {type NavigationItem} from '@src/hooks/site/use-navigation-editor';
+import useNavigationEditor, {type NavigationItem} from '@/settings/app/hooks/site/use-navigation-editor';
 import {act, renderHook, waitFor} from '@testing-library/react';
 
 describe('useNavigationEditor', function () {
