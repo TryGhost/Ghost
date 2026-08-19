@@ -1,6 +1,100 @@
+import type {Stripe} from 'stripe';
+
 const {DataImportError} = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
+
+type ImportOptions = Record<string, unknown>;
+
+interface StripeSubscriptionItem {
+    id: string;
+    price: Pick<Stripe.Price, 'id' | 'currency' | 'unit_amount' | 'type' | 'recurring'>;
+}
+
+interface StripeCustomer {
+    subscriptions: {
+        data: Array<{
+            id: string;
+            items: {
+                data: StripeSubscriptionItem[];
+            };
+        }>;
+    };
+}
+
+interface StripeAPIService {
+    configured: boolean;
+    getCustomer(customerId: string): Promise<StripeCustomer | null>;
+    createPrice(options: {
+        product: string;
+        active: true;
+        nickname: 'Monthly' | 'Yearly';
+        currency: string;
+        amount: number | null;
+        type: Stripe.Price.Type;
+        interval: Stripe.Price.Recurring.Interval;
+    }): Promise<{id: string}>;
+    updateSubscriptionItemPrice(
+        subscriptionId: string,
+        subscriptionItemId: string,
+        priceId: string,
+        options: {prorationBehavior: 'none'}
+    ): Promise<unknown>;
+    updatePrice(priceId: string, options: {active: false}): Promise<unknown>;
+}
+
+interface StripePriceModel {
+    get(key: 'currency'): string;
+    get(key: 'amount'): number | null;
+    get(key: 'type'): Stripe.Price.Type;
+    get(key: 'interval'): Stripe.Price.Recurring.Interval | null;
+    get(key: 'stripe_price_id'): string;
+}
+
+interface StripeProductModel {
+    get(key: 'stripe_product_id'): string;
+}
+
+interface GhostProductModel<TStripeProduct extends StripeProductModel | null = StripeProductModel | null> {
+    get(key: 'name' | 'currency'): string;
+    get(key: 'monthly_price' | 'yearly_price'): number;
+    related(name: 'stripePrices'): {
+        find(predicate: (price: StripePriceModel) => boolean): StripePriceModel | undefined;
+    };
+    related(name: 'stripeProducts'): {
+        first(): TStripeProduct;
+    };
+}
+
+type GhostProductWithStripeProduct = GhostProductModel<StripeProductModel>;
+
+interface ProductRepository {
+    get(data: {id: string}, options: ImportOptions & {withRelated: string[]}): Promise<GhostProductModel | null>;
+    update(data: {
+        id: string;
+        name: string;
+        monthly_price: {amount: number; currency: string};
+        yearly_price: {amount: number; currency: string};
+    }, options: ImportOptions): Promise<GhostProductWithStripeProduct>;
+}
+
+interface MembersCSVImporterStripeUtilsDeps {
+    stripeAPIService: StripeAPIService;
+    productRepository: ProductRepository;
+}
+
+interface ForceSubscriptionData {
+    customer_id: string;
+    product_id: string;
+}
+
+function getErrorMessage(error: unknown): string {
+    if (typeof error === 'object' && error !== null && 'message' in error && typeof error.message === 'string') {
+        return error.message;
+    }
+
+    return String(error);
+}
 
 const messages = {
     productNotFound: 'Cannot find Product {id}',
@@ -13,14 +107,13 @@ const messages = {
 };
 
 module.exports = class MembersCSVImporterStripeUtils {
-    /**
-     * @param {Object} stripeAPIService
-     * @param {Object} productRepository
-     */
+    private readonly _stripeAPIService: StripeAPIService;
+    private readonly _productRepository: ProductRepository;
+
     constructor({
         stripeAPIService,
         productRepository
-    }) {
+    }: MembersCSVImporterStripeUtilsDeps) {
         this._stripeAPIService = stripeAPIService;
         this._productRepository = productRepository;
     }
@@ -45,13 +138,8 @@ module.exports = class MembersCSVImporterStripeUtils {
      * that the changes made in Stripe are reflected in Ghost - This is not executed as part of this to allow for
      * flexibility and reduce duplication
      *
-     * @param {Object} data
-     * @param {string} data.customer_id - Stripe customer ID
-     * @param {string} data.product_id - Ghost product ID
-     * @param {Object} options
-     * @returns {Promise<Object>}
      */
-    async forceStripeSubscriptionToProduct(data, options) {
+    async forceStripeSubscriptionToProduct(data: ForceSubscriptionData, options: ImportOptions): Promise<{stripePriceId: string; isNewStripePrice: boolean}> {
         if (!this._stripeAPIService.configured) {
             throw new DataImportError({
                 message: tpl(messages.noStripeConnection, {action: 'force subscription to product'})
@@ -106,10 +194,12 @@ module.exports = class MembersCSVImporterStripeUtils {
         }
 
         // If there is not a Stripe product associated with the Ghost product, ensure one is created before continuing
-        if (!ghostProduct.related('stripeProducts').first()) {
+        let stripeProduct = ghostProduct.related('stripeProducts').first();
+
+        if (!stripeProduct) {
             // Even though we are not updating any information on the product, calling `ProductRepository.update`
             // will ensure that the product gets created in Stripe
-            ghostProduct = await this._productRepository.update({
+            const updatedGhostProduct = await this._productRepository.update({
                 id: data.product_id,
                 name: ghostProduct.get('name'),
                 // Providing the pricing details will ensure the relevant prices for the Ghost product are created
@@ -123,6 +213,8 @@ module.exports = class MembersCSVImporterStripeUtils {
                     currency: ghostProduct.get('currency')
                 }
             }, options);
+            ghostProduct = updatedGhostProduct;
+            stripeProduct = updatedGhostProduct.related('stripeProducts').first();
         }
 
         // Find price on Ghost product matching stripe subscription item price details
@@ -139,8 +231,6 @@ module.exports = class MembersCSVImporterStripeUtils {
         if (!ghostProductPrice) {
             // If there is not a matching price, create one on the associated Stripe product using the existing
             // subscription item price details and update the stripe subscription to use it
-            const stripeProduct = ghostProduct.related('stripeProducts').first();
-
             const newStripePrice = await this._stripeAPIService.createPrice({
                 product: stripeProduct.get('stripe_product_id'),
                 active: true,
@@ -166,7 +256,7 @@ module.exports = class MembersCSVImporterStripeUtils {
                 try {
                     await this.archivePrice(newStripePrice.id);
                 } catch (archiveErr) {
-                    logging.warn(`Failed to archive orphaned Stripe price ${newStripePrice.id} after a failed subscription update: ${archiveErr.message}`);
+                    logging.warn(`Failed to archive orphaned Stripe price ${newStripePrice.id} after a failed subscription update: ${getErrorMessage(archiveErr)}`);
                 }
                 throw err;
             }
@@ -199,10 +289,8 @@ module.exports = class MembersCSVImporterStripeUtils {
     /**
      * Archive a price in Stripe
      *
-     * @param {number} stripePriceId
-     * @returns {Promise<void>}
      */
-    async archivePrice(stripePriceId) {
+    async archivePrice(stripePriceId: string): Promise<void> {
         await this._stripeAPIService.updatePrice(stripePriceId, {active: false});
     }
 };
