@@ -1,6 +1,6 @@
 import {createRenderer} from '@tryghost/theme-renderer';
 
-import type {ThemeRendererInitialization, ThemeRendererWorkerRequest, ThemeRendererWorkerResponse, ThemeRenderResult} from './preview-bridge';
+import type {ThemeRendererCandidateSettings, ThemeRendererInitialization, ThemeRendererWorkerRequest, ThemeRendererWorkerResponse, ThemeRenderResult} from './preview-bridge';
 
 type RendererFactory = typeof createRenderer;
 type Renderer = Awaited<ReturnType<RendererFactory>>;
@@ -18,14 +18,16 @@ export function createThemeRendererWorkerHandler({
     let latestMutationId = 0;
     const cancelled = new Set<number>();
 
-    const setTheme = async (theme: Record<string, string>, revision: string, requestId: number): Promise<void> => {
+    const setTheme = async (theme: Record<string, string>, revision: string, requestId: number, settings: ThemeRendererCandidateSettings = {}): Promise<void> => {
         if (!initialization) {
             throw new Error('theme_renderer_worker_not_initialized');
         }
-        const candidate = await rendererFactory({...initialization, theme});
+        const candidateInitialization = {...initialization, ...settings};
+        const candidate = await rendererFactory({...candidateInitialization, theme});
         if (cancelled.has(requestId) || requestId !== latestMutationId) {
             throw new DOMException('Aborted', 'AbortError');
         }
+        initialization = candidateInitialization;
         renderer = candidate;
         activeRevision = revision;
     };
@@ -60,15 +62,13 @@ export function createThemeRendererWorkerHandler({
             let result: ThemeRenderResult | undefined;
             if (request.type === 'initialize') {
                 latestMutationId = request.id;
-                initialization = {
-                    siteUrl: request.payload.siteUrl,
-                    contentApiKey: request.payload.contentApiKey,
-                    config: request.payload.config
-                };
-                await setTheme(request.payload.theme, request.revision, request.id);
+                const {theme, ...candidateInitialization} = request.payload;
+                initialization = candidateInitialization;
+                await setTheme(theme, request.revision, request.id);
             } else if (request.type === 'set-theme') {
                 latestMutationId = request.id;
-                await setTheme(request.payload.theme, request.revision, request.id);
+                const {theme, ...settings} = request.payload;
+                await setTheme(theme, request.revision, request.id, settings);
             } else {
                 if (request.revision !== activeRevision) {
                     throw new Error(`theme_renderer_stale_revision:${request.revision}`);

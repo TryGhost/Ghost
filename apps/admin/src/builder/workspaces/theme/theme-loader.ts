@@ -298,6 +298,10 @@ function globalSettings(settings: ThemeLoadInput['settings']): ThemeGlobalSettin
     };
 }
 
+function settingsPayload(settings: ThemeLoadInput['settings']): Record<string, SettingValue> {
+    return Object.fromEntries(settings.map(setting => [setting.key, setting.value]));
+}
+
 function customSettings(settings: ThemeLoadCustomSetting[]): Record<string, ThemeCustomSetting> {
     return Object.fromEntries(settings.map(setting => [setting.key, structuredClone(setting)]));
 }
@@ -344,7 +348,8 @@ export async function loadThemeDraft(input: ThemeLoadInput, signal?: AbortSignal
             siteUrl: input.site.url,
             contentApiKey: input.site.contentApiKey,
             config: instanceConfig.config,
-            missing: instanceConfig.missing
+            missing: instanceConfig.missing,
+            settingsPayload: settingsPayload(input.settings)
         },
         virtualUrl: input.virtualUrl ?? input.site.url,
         selection: input.selection ? structuredClone(input.selection) : null

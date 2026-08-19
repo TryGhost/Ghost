@@ -132,6 +132,12 @@ describe('loadThemeDraft', () => {
         expect(draft.renderer).toMatchObject({
             siteUrl: 'https://example.com/',
             contentApiKey: '0123456789abcdef',
+            settingsPayload: {
+                accent_color: '#15171A',
+                heading_font: 'Inter',
+                body_font: 'Georgia',
+                logo: 'https://example.com/logo.png'
+            },
             config: {
                 assetHash: 'abc123',
                 portal: {url: 'https://cdn.example.com/portal.js'},

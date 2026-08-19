@@ -37,6 +37,7 @@ export interface BuilderWorkspace {
     readonly title: string;
     load(signal: AbortSignal): Promise<void>;
     snapshot(): WorkspaceSnapshot;
+    checkpointSnapshot?(): WorkspaceSnapshot;
     restore(snapshot: WorkspaceSnapshot): Promise<ValidationResult>;
     promoteCandidate(signal: AbortSignal): Promise<ValidationResult>;
     getTools(): BuilderToolDefinition[];

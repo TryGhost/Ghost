@@ -1,4 +1,4 @@
-import type {BuilderToolDefinition} from '@/builder/core/tool-types';
+import type {BuilderToolDefinition, BuilderToolResult} from '@/builder/core/tool-types';
 import type {
     BuilderPreviewAdapter,
     BuilderSelectionContext,
@@ -9,8 +9,18 @@ import type {
     WorkspaceSnapshot
 } from '@/builder/core/workspace';
 import {cloneThemeDraft, themePublishRevision, withThemeRevision} from './theme-state';
+import {listDesignSettings, updateDesignSettings} from './design-setting-tools';
+import {
+    deleteThemeFile,
+    listThemeFiles,
+    readThemeFile,
+    replaceInThemeFile,
+    searchThemeFiles,
+    writeThemeFile
+} from './theme-tools';
 
 import type {ThemeDraft} from './theme-state';
+import type {ThemeCandidateResult} from './theme-tools';
 
 type ThemePublishAdapterResult = PublishResult & {draft?: ThemeDraft};
 
@@ -18,8 +28,25 @@ type ThemeWorkspaceOptions = {
     id: string;
     title: string;
     load: (signal: AbortSignal) => Promise<ThemeDraft>;
-    preview: BuilderPreviewAdapter;
+    preview: ThemeMutationPreview;
     publish?: (draft: ThemeDraft, signal: AbortSignal) => Promise<ThemePublishAdapterResult>;
+};
+
+type ThemeMutationPreview = BuilderPreviewAdapter & {
+    renderCandidate?: (draft: ThemeDraft, signal: AbortSignal) => Promise<ValidationResult>;
+    restoreDraft?: (draft: ThemeDraft, signal: AbortSignal) => Promise<ValidationResult>;
+    rebaseDraft?: (draft: ThemeDraft) => void;
+    readonly draft?: ThemeDraft;
+    readonly state?: {url?: string};
+};
+
+type MutationRenderData = {
+    render: {valid: true; url?: string};
+};
+
+type ThemeCheckpointPayload = {
+    promoted: ThemeDraft;
+    candidate: ThemeDraft | null;
 };
 
 const unloadedState: BuilderWorkspaceState = {
@@ -40,6 +67,50 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function isUint8Array(value: unknown): value is Uint8Array {
     return ArrayBuffer.isView(value) && Object.prototype.toString.call(value) === '[object Uint8Array]';
+}
+
+function valuesEqual(left: unknown, right: unknown): boolean {
+    if (Object.is(left, right)) {
+        return true;
+    }
+    if (isUint8Array(left) || isUint8Array(right)) {
+        return isUint8Array(left)
+            && isUint8Array(right)
+            && left.byteLength === right.byteLength
+            && left.every((byte, index) => byte === right[index]);
+    }
+    if (Array.isArray(left) || Array.isArray(right)) {
+        return Array.isArray(left)
+            && Array.isArray(right)
+            && left.length === right.length
+            && left.every((value, index) => valuesEqual(value, right[index]));
+    }
+    if (!isRecord(left) || !isRecord(right)) {
+        return false;
+    }
+    const leftKeys = Object.keys(left).sort();
+    const rightKeys = Object.keys(right).sort();
+    return leftKeys.length === rightKeys.length
+        && leftKeys.every((key, index) => key === rightKeys[index] && valuesEqual(left[key], right[key]));
+}
+
+function hasOnlyPreviewStateChanges(left: ThemeDraft, right: ThemeDraft): boolean {
+    return valuesEqual(
+        {
+            theme: left.theme,
+            files: left.files,
+            globalSettings: left.globalSettings,
+            customSettings: left.customSettings,
+            renderer: left.renderer
+        },
+        {
+            theme: right.theme,
+            files: right.files,
+            globalSettings: right.globalSettings,
+            customSettings: right.customSettings,
+            renderer: right.renderer
+        }
+    );
 }
 
 function isThemeDraft(value: unknown): value is ThemeDraft {
@@ -66,9 +137,16 @@ function isThemeDraft(value: unknown): value is ThemeDraft {
         && typeof value.renderer.siteUrl === 'string'
         && typeof value.renderer.contentApiKey === 'string'
         && isRecord(value.renderer.config)
+        && (value.renderer.settingsPayload === undefined || isRecord(value.renderer.settingsPayload))
         && Array.isArray(value.renderer.missing)
         && value.renderer.missing.every(item => typeof item === 'string')
         && typeof value.virtualUrl === 'string';
+}
+
+function isThemeCheckpointPayload(value: unknown): value is ThemeCheckpointPayload {
+    return isRecord(value)
+        && isThemeDraft(value.promoted)
+        && (value.candidate === null || isThemeDraft(value.candidate));
 }
 
 export class ThemeWorkspace implements BuilderWorkspace {
@@ -77,12 +155,15 @@ export class ThemeWorkspace implements BuilderWorkspace {
     readonly title: string;
 
     private readonly loadDraft: ThemeWorkspaceOptions['load'];
-    private readonly preview: BuilderPreviewAdapter;
+    private readonly preview: ThemeMutationPreview;
     private readonly publishDraft?: ThemeWorkspaceOptions['publish'];
     private readonly listeners = new Set<(state: BuilderWorkspaceState) => void>();
     private currentDraft: ThemeDraft | null = null;
+    private lastValidCandidate: ThemeDraft | null = null;
+    private baselineDraft: ThemeDraft | null = null;
     private baselinePublishRevision = '';
     private currentState = unloadedState;
+    private mutationTail: Promise<void> = Promise.resolve();
 
     constructor({id, title, load, preview, publish}: ThemeWorkspaceOptions) {
         this.id = id;
@@ -99,11 +180,17 @@ export class ThemeWorkspace implements BuilderWorkspace {
         return cloneThemeDraft(this.currentDraft);
     }
 
+    get candidateDraft(): ThemeDraft | null {
+        return this.lastValidCandidate ? cloneThemeDraft(this.lastValidCandidate) : null;
+    }
+
     async load(signal: AbortSignal): Promise<void> {
         abortIfNeeded(signal);
         const draft = await this.loadDraft(signal);
         abortIfNeeded(signal);
         this.currentDraft = cloneThemeDraft(draft);
+        this.lastValidCandidate = null;
+        this.baselineDraft = cloneThemeDraft(draft);
         this.baselinePublishRevision = await themePublishRevision(draft);
         this.setState({
             revision: draft.revision,
@@ -113,35 +200,167 @@ export class ThemeWorkspace implements BuilderWorkspace {
     }
 
     snapshot(): WorkspaceSnapshot {
+        this.syncPreviewOnlyDraft();
         const draft = this.requireDraft();
         return {revision: draft.revision, payload: cloneThemeDraft(draft)};
     }
 
+    checkpointSnapshot(): WorkspaceSnapshot {
+        this.syncPreviewOnlyDraft();
+        const promoted = this.requireDraft();
+        const candidate = this.lastValidCandidate;
+        return {
+            revision: candidate?.revision ?? promoted.revision,
+            payload: {
+                promoted: cloneThemeDraft(promoted),
+                candidate: candidate ? cloneThemeDraft(candidate) : null
+            } satisfies ThemeCheckpointPayload
+        };
+    }
+
     async restore(snapshot: WorkspaceSnapshot): Promise<ValidationResult> {
-        if (!isThemeDraft(snapshot.payload)) {
+        await this.mutationTail;
+        this.syncPreviewOnlyDraft();
+        const checkpoint = isThemeCheckpointPayload(snapshot.payload) ? snapshot.payload : null;
+        const promotedPayload = checkpoint?.promoted ?? snapshot.payload;
+        const activePayload = checkpoint?.candidate ?? promotedPayload;
+        if (!isThemeDraft(promotedPayload) || !isThemeDraft(activePayload)) {
             return this.invalidSnapshot('snapshot_invalid', 'The Builder checkpoint is not a theme draft.');
         }
-        const revised = await withThemeRevision(snapshot.payload);
-        if (revised.revision !== snapshot.revision || snapshot.payload.revision !== snapshot.revision) {
+        const promoted = await withThemeRevision(promotedPayload);
+        const revised = checkpoint?.candidate ? await withThemeRevision(checkpoint.candidate) : promoted;
+        const revisionsMatch = promoted.revision === promotedPayload.revision
+            && revised.revision === snapshot.revision
+            && activePayload.revision === snapshot.revision;
+        if (!revisionsMatch) {
             return this.invalidSnapshot('snapshot_revision_mismatch', 'The Builder checkpoint revision does not match its contents.');
         }
-        this.currentDraft = cloneThemeDraft(revised);
-        const publishRevision = await themePublishRevision(revised);
-        const validation = {valid: true, diagnostics: [], revision: revised.revision};
-        this.setState({revision: revised.revision, dirty: publishRevision !== this.baselinePublishRevision, validation});
+        let adopted = revised;
+        let validation: ValidationResult = {valid: true, diagnostics: [], revision: revised.revision};
+        const restorePreview = this.preview.restoreDraft ?? this.preview.renderCandidate;
+        if (restorePreview) {
+            try {
+                validation = await restorePreview.call(this.preview, cloneThemeDraft(revised), new AbortController().signal);
+            } catch (error) {
+                return this.invalidSnapshot('snapshot_preview_failed', error instanceof Error ? error.message : String(error));
+            }
+            if (!validation.valid) {
+                this.setState({...this.currentState, validation: {...validation, revision: this.requireActiveDraft().revision}});
+                return {...validation, revision: this.requireActiveDraft().revision};
+            }
+            if (validation.revision !== snapshot.revision) {
+                return this.invalidSnapshot('snapshot_preview_revision_mismatch', 'The preview could not restore the exact checkpoint revision.');
+            }
+            const previewDraft = this.preview.draft;
+            adopted = previewDraft?.revision === validation.revision ? previewDraft : revised;
+            if (adopted.revision !== validation.revision) {
+                return this.invalidSnapshot('snapshot_preview_revision_mismatch', 'The preview restored a different theme revision.');
+            }
+        }
+        this.currentDraft = cloneThemeDraft(checkpoint?.candidate ? promoted : adopted);
+        this.lastValidCandidate = checkpoint?.candidate ? cloneThemeDraft(adopted) : null;
+        const publishRevision = await themePublishRevision(adopted);
+        validation = {...validation, revision: adopted.revision};
+        this.setState({revision: adopted.revision, dirty: publishRevision !== this.baselinePublishRevision, validation});
         return validation;
     }
 
     promoteCandidate(signal: AbortSignal): Promise<ValidationResult> {
-        return Promise.resolve().then(() => {
+        return this.mutationTail.then(() => {
             abortIfNeeded(signal);
+            this.syncPreviewOnlyDraft();
+            if (this.lastValidCandidate) {
+                this.currentDraft = cloneThemeDraft(this.lastValidCandidate);
+                this.lastValidCandidate = null;
+            }
             const draft = this.requireDraft();
-            return {valid: true, diagnostics: [], revision: draft.revision};
+            const validation = {valid: true, diagnostics: [], revision: draft.revision};
+            this.setState({...this.currentState, revision: draft.revision, validation});
+            return validation;
         });
     }
 
     getTools(): BuilderToolDefinition[] {
-        return [];
+        return [
+            {
+                name: 'list_files',
+                description: 'List all files in the current theme with text or binary classification and byte size.',
+                inputSchema: {type: 'object', properties: {}, additionalProperties: false},
+                execute: () => Promise.resolve(listThemeFiles(this.activeDraftForRead()))
+            },
+            {
+                name: 'search_files',
+                description: 'Search text theme files with a literal or regular-expression query.',
+                inputSchema: {
+                    type: 'object',
+                    properties: {query: {type: 'string'}, regex: {type: 'boolean'}},
+                    required: ['query'],
+                    additionalProperties: false
+                },
+                execute: input => Promise.resolve(searchThemeFiles(this.activeDraftForRead(), input))
+            },
+            {
+                name: 'read_file',
+                description: 'Read a bounded line range from one text theme file.',
+                inputSchema: {
+                    type: 'object',
+                    properties: {path: {type: 'string'}, startLine: {type: 'integer', minimum: 1}, startColumn: {type: 'integer', minimum: 1}, endLine: {type: 'integer', minimum: 1}},
+                    required: ['path'],
+                    additionalProperties: false
+                },
+                execute: input => Promise.resolve(readThemeFile(this.activeDraftForRead(), input))
+            },
+            {
+                name: 'replace_in_file',
+                description: 'Replace one exact, unambiguous text occurrence in a revision-checked theme file.',
+                inputSchema: mutationSchema({oldText: {type: 'string'}, newText: {type: 'string'}}, ['oldText', 'newText']),
+                execute: (input, signal) => this.enqueueMutation(signal, draft => replaceInThemeFile(draft, {
+                    revision: input.revision as string,
+                    path: input.path as string,
+                    oldText: input.oldText,
+                    newText: input.newText
+                }))
+            },
+            {
+                name: 'write_file',
+                description: 'Create or replace one text theme file at a safe revision-checked path.',
+                inputSchema: mutationSchema({content: {type: 'string'}}, ['content']),
+                execute: (input, signal) => this.enqueueMutation(signal, draft => writeThemeFile(draft, {
+                    revision: input.revision as string,
+                    path: input.path as string,
+                    content: input.content
+                }))
+            },
+            {
+                name: 'delete_file',
+                description: 'Delete one file from the revision-checked theme candidate.',
+                inputSchema: mutationSchema(),
+                execute: (input, signal) => this.enqueueMutation(signal, draft => deleteThemeFile(draft, {
+                    revision: input.revision as string,
+                    path: input.path as string
+                }))
+            },
+            {
+                name: 'list_design_settings',
+                description: 'List readable global and visible theme settings, including staged values and writability.',
+                inputSchema: {type: 'object', properties: {}, additionalProperties: false},
+                execute: () => Promise.resolve(listDesignSettings(this.activeDraftForRead(), this.baselineDraft ?? this.requireDraft()))
+            },
+            {
+                name: 'update_design_settings',
+                description: 'Stage one or more writable global or visible theme settings against the current revision.',
+                inputSchema: {
+                    type: 'object',
+                    properties: {
+                        revision: {type: 'string'},
+                        values: {type: 'object', minProperties: 1, additionalProperties: {type: ['string', 'boolean', 'null']}}
+                    },
+                    required: ['revision', 'values'],
+                    additionalProperties: false
+                },
+                execute: (input, signal) => this.enqueueMutation(signal, draft => updateDesignSettings(draft, {revision: input.revision, values: input.values}))
+            }
+        ];
     }
 
     getPreview(): BuilderPreviewAdapter {
@@ -149,11 +368,14 @@ export class ThemeWorkspace implements BuilderWorkspace {
     }
 
     getSelectionContext(): BuilderSelectionContext | null {
-        return this.currentDraft?.selection ? structuredClone(this.currentDraft.selection) : null;
+        this.syncPreviewOnlyDraft();
+        const draft = this.lastValidCandidate ?? this.currentDraft;
+        return draft?.selection ? structuredClone(draft.selection) : null;
     }
 
     async publish(signal: AbortSignal): Promise<PublishResult> {
         abortIfNeeded(signal);
+        this.syncPreviewOnlyDraft();
         const draft = this.requireDraft();
         if (!this.publishDraft) {
             return {
@@ -177,9 +399,22 @@ export class ThemeWorkspace implements BuilderWorkspace {
                 };
             }
             this.currentDraft = cloneThemeDraft(publishedDraft);
+            this.baselineDraft = cloneThemeDraft(publishedDraft);
             this.baselinePublishRevision = await themePublishRevision(publishedDraft);
-            const validation = {valid: true, diagnostics: [], revision: publishedDraft.revision};
-            this.setState({revision: publishedDraft.revision, dirty: false, validation});
+            if (this.lastValidCandidate) {
+                this.lastValidCandidate = await withThemeRevision({
+                    ...this.lastValidCandidate,
+                    theme: structuredClone(publishedDraft.theme)
+                });
+                this.preview.rebaseDraft?.(cloneThemeDraft(this.lastValidCandidate));
+            }
+            const activeDraft = this.lastValidCandidate ?? publishedDraft;
+            const activePublishRevision = await themePublishRevision(activeDraft);
+            const previousValidation = this.lastValidCandidate
+                ? this.currentState.validation ?? {valid: true, diagnostics: [], revision: activeDraft.revision}
+                : {valid: true, diagnostics: [], revision: publishedDraft.revision};
+            const validation = {...previousValidation, revision: activeDraft.revision};
+            this.setState({revision: activeDraft.revision, dirty: activePublishRevision !== this.baselinePublishRevision, validation});
             return {ok: true, revision: publishedDraft.revision};
         }
         return result;
@@ -198,8 +433,143 @@ export class ThemeWorkspace implements BuilderWorkspace {
         return this.currentDraft;
     }
 
+    private requireActiveDraft(): ThemeDraft {
+        return this.lastValidCandidate ?? this.requireDraft();
+    }
+
+    private activeDraftForRead(): ThemeDraft {
+        this.syncPreviewOnlyDraft();
+        return this.requireActiveDraft();
+    }
+
+    private syncPreviewOnlyDraft(): void {
+        let previewDraft: ThemeDraft;
+        try {
+            const available = this.preview.draft;
+            if (!available) {
+                return;
+            }
+            previewDraft = available;
+        } catch {
+            return;
+        }
+        const active = this.lastValidCandidate ?? this.currentDraft;
+        if (!active || previewDraft.revision === active.revision) {
+            return;
+        }
+        if (!hasOnlyPreviewStateChanges(previewDraft, active)) {
+            return;
+        }
+        if (this.lastValidCandidate) {
+            this.lastValidCandidate = cloneThemeDraft(previewDraft);
+        } else {
+            this.currentDraft = cloneThemeDraft(previewDraft);
+        }
+        const validation = this.currentState.validation
+            ? {...this.currentState.validation, revision: previewDraft.revision}
+            : {valid: true, diagnostics: [], revision: previewDraft.revision};
+        this.setState({...this.currentState, revision: previewDraft.revision, validation});
+    }
+
+    private enqueueMutation<T extends Record<string, unknown>>(
+        signal: AbortSignal,
+        operation: (draft: ThemeDraft) => Promise<ThemeCandidateResult<T>>
+    ): Promise<BuilderToolResult<T & MutationRenderData>> {
+        const queued = this.mutationTail.then(async () => {
+            abortIfNeeded(signal);
+            this.syncPreviewOnlyDraft();
+            const source = this.requireActiveDraft();
+            const result = await operation(source);
+            if (!result.ok) {
+                return result;
+            }
+            abortIfNeeded(signal);
+            if (!this.preview.renderCandidate) {
+                return {
+                    ok: false as const,
+                    revision: source.revision,
+                    error: {
+                        code: 'preview_unavailable',
+                        message: 'The preview is not ready to validate theme changes. Reopen Builder and retry.',
+                        retryable: true
+                    }
+                };
+            }
+            let validation: ValidationResult;
+            try {
+                validation = await this.preview.renderCandidate(cloneThemeDraft(result.candidate), signal);
+            } catch (error) {
+                if (error instanceof DOMException && error.name === 'AbortError') {
+                    throw error;
+                }
+                return {
+                    ok: false as const,
+                    revision: source.revision,
+                    error: {
+                        code: 'preview_failed',
+                        message: 'The preview could not validate this change. Retry after the preview reconnects.',
+                        retryable: true,
+                        details: {message: error instanceof Error ? error.message : String(error)}
+                    }
+                };
+            }
+            if (!validation.valid) {
+                const rejectedValidation = {...validation, revision: source.revision};
+                this.setState({...this.currentState, validation: rejectedValidation});
+                return {
+                    ok: false as const,
+                    revision: source.revision,
+                    error: {
+                        code: 'render_invalid',
+                        message: 'The change did not produce a valid preview. Repair the reported diagnostics and retry.',
+                        retryable: true,
+                        details: {diagnostics: validation.diagnostics}
+                    }
+                };
+            }
+            if (this.requireActiveDraft().revision !== source.revision) {
+                return {
+                    ok: false as const,
+                    revision: this.requireActiveDraft().revision,
+                    error: {
+                        code: 'stale_revision',
+                        message: 'The theme changed while the candidate was rendering. Read the latest revision and retry.',
+                        retryable: true,
+                        details: {currentRevision: this.requireActiveDraft().revision}
+                    }
+                };
+            }
+            const previewDraft = this.preview.draft;
+            const adopted = previewDraft?.revision === validation.revision ? previewDraft : result.candidate;
+            if (adopted.revision !== validation.revision) {
+                return {
+                    ok: false as const,
+                    revision: source.revision,
+                    error: {
+                        code: 'render_revision_mismatch',
+                        message: 'The preview validated a different theme revision. Reload Builder before continuing.',
+                        retryable: true
+                    }
+                };
+            }
+            this.lastValidCandidate = cloneThemeDraft(adopted);
+            const publishRevision = await themePublishRevision(adopted);
+            const adoptedValidation = {...validation, revision: adopted.revision};
+            this.setState({revision: adopted.revision, dirty: publishRevision !== this.baselinePublishRevision, validation: adoptedValidation});
+            const url = this.preview.state?.url;
+            return {
+                ok: true as const,
+                revision: adopted.revision,
+                data: {...result.data, render: {valid: true as const, ...(url ? {url} : {})}},
+                ...(validation.diagnostics.length ? {diagnostics: validation.diagnostics} : {})
+            };
+        });
+        this.mutationTail = queued.then(() => {}, () => {});
+        return queued;
+    }
+
     private invalidSnapshot(code: string, message: string): ValidationResult {
-        const revision = this.currentDraft?.revision ?? '';
+        const revision = this.lastValidCandidate?.revision ?? this.currentDraft?.revision ?? '';
         const validation: ValidationResult = {
             valid: false,
             diagnostics: [{code, message, severity: 'error'}],
@@ -213,4 +583,17 @@ export class ThemeWorkspace implements BuilderWorkspace {
         this.currentState = state;
         this.listeners.forEach(listener => listener(state));
     }
+}
+
+function mutationSchema(properties: Record<string, unknown> = {}, required: string[] = []): Record<string, unknown> {
+    return {
+        type: 'object',
+        properties: {
+            revision: {type: 'string'},
+            path: {type: 'string'},
+            ...properties
+        },
+        required: ['revision', 'path', ...required],
+        additionalProperties: false
+    };
 }

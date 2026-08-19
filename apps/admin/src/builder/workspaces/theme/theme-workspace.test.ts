@@ -42,7 +42,17 @@ describe('ThemeWorkspace', () => {
         (snapshot.payload as ThemeDraft).files['index.hbs'].content = 'mutated outside';
 
         expect(workspace.draft.files['index.hbs'].content).toBe('<main>Initial</main>');
-        expect(workspace.getTools()).toEqual([]);
+        expect(workspace.getTools().map(tool => tool.name)).toEqual([
+            'list_files',
+            'search_files',
+            'read_file',
+            'replace_in_file',
+            'write_file',
+            'delete_file',
+            'list_design_settings',
+            'update_design_settings'
+        ]);
+        expect(workspace.getTools().map(tool => tool.name)).not.toEqual(expect.arrayContaining(['preview', 'apply', 'commit']));
         expect(workspace.getPreview()).toEqual({kind: 'theme'});
         expect(workspace.getSelectionContext()).toBeNull();
         expect(states.at(-1)).toMatch(/^theme-[a-f0-9]{64}:false$/);
@@ -73,6 +83,42 @@ describe('ThemeWorkspace', () => {
         expect(result).toMatchObject({ok: true, revision: publishedDraft.revision});
         expect(workspace.draft.theme).toMatchObject({name: 'demo-edited', builtIn: false});
         expect(workspace.snapshot().revision).toBe(publishedDraft.revision);
+    });
+
+    it('does not replace a normalized published draft with the stale preview', async () => {
+        const source = await loadInput();
+        const loaded = await loadThemeDraft(source);
+        const stalePreview = structuredClone(loaded);
+        const publishedDraft = await withThemeRevision({
+            ...loaded,
+            files: {
+                ...loaded.files,
+                'index.hbs': {
+                    ...loaded.files['index.hbs'],
+                    content: '<main>Server normalized</main>'
+                }
+            }
+        });
+        const workspace = new ThemeWorkspace({
+            id: 'theme:demo',
+            title: 'Demo',
+            load: () => Promise.resolve(loaded),
+            preview: {
+                kind: 'theme',
+                get draft() {
+                    return structuredClone(stalePreview);
+                }
+            },
+            publish: () => Promise.resolve({ok: true as const, revision: publishedDraft.revision, draft: publishedDraft})
+        });
+        await workspace.load(new AbortController().signal);
+
+        await workspace.publish(new AbortController().signal);
+        const snapshot = workspace.snapshot();
+
+        expect(snapshot.revision).toBe(publishedDraft.revision);
+        expect((snapshot.payload as ThemeDraft).files['index.hbs'].content).toBe('<main>Server normalized</main>');
+        expect(workspace.draft.revision).toBe(publishedDraft.revision);
     });
 
     it('restores files, settings, virtual URL, and selection from an opaque snapshot', async () => {
@@ -182,5 +228,315 @@ describe('ThemeWorkspace', () => {
         const promoteController = new AbortController();
         promoteController.abort();
         await expect(workspace.promoteCandidate(promoteController.signal)).rejects.toMatchObject({name: 'AbortError'});
+    });
+
+    it('adopts a file mutation only after the preview validates it', async () => {
+        const source = await loadInput();
+        const renderCandidate = vi.fn((candidate: ThemeDraft) => Promise.resolve({valid: true, diagnostics: [], revision: candidate.revision}));
+        const workspace = new ThemeWorkspace({
+            id: 'theme:demo',
+            title: 'Demo',
+            load: signal => loadThemeDraft(source, signal),
+            preview: {kind: 'theme', renderCandidate}
+        });
+        await workspace.load(new AbortController().signal);
+        const before = workspace.draft;
+        const write = workspace.getTools().find(tool => tool.name === 'write_file');
+
+        const result = await write?.execute({revision: before.revision, path: 'partials/card.hbs', content: '<article>Card</article>'}, new AbortController().signal);
+
+        expect(result).toMatchObject({ok: true, data: {path: 'partials/card.hbs', created: true, render: {valid: true}}});
+        expect(renderCandidate).toHaveBeenCalledOnce();
+        expect(workspace.draft.files['partials/card.hbs']).toBeUndefined();
+        expect(workspace.candidateDraft?.files['partials/card.hbs'].content).toBe('<article>Card</article>');
+        await workspace.promoteCandidate(new AbortController().signal);
+        expect(workspace.draft.files['partials/card.hbs'].content).toBe('<article>Card</article>');
+        expect(workspace.draft.revision).toBe(result?.revision);
+    });
+
+    it('keeps the last valid draft when rendering a file mutation fails', async () => {
+        const source = await loadInput();
+        const renderCandidate = vi.fn((candidate: ThemeDraft) => Promise.resolve({
+            valid: false,
+            diagnostics: [{code: 'parse_error', message: 'Invalid template', severity: 'error' as const}],
+            revision: candidate.revision
+        }));
+        const workspace = new ThemeWorkspace({
+            id: 'theme:demo',
+            title: 'Demo',
+            load: signal => loadThemeDraft(source, signal),
+            preview: {kind: 'theme', renderCandidate}
+        });
+        await workspace.load(new AbortController().signal);
+        const before = workspace.snapshot();
+        const replace = workspace.getTools().find(tool => tool.name === 'replace_in_file');
+
+        const result = await replace?.execute({revision: before.revision, path: 'index.hbs', oldText: 'Initial', newText: '{{#if}}'}, new AbortController().signal);
+
+        expect(result).toMatchObject({ok: false, revision: before.revision, error: {code: 'render_invalid', details: {diagnostics: [{code: 'parse_error'}]}}});
+        expect(workspace.snapshot()).toEqual(before);
+    });
+
+    it('validates design-setting mutations through the same candidate path', async () => {
+        const source = await loadInput();
+        const renderCandidate = vi.fn((candidate: ThemeDraft) => Promise.resolve({valid: true, diagnostics: [], revision: candidate.revision}));
+        const workspace = new ThemeWorkspace({
+            id: 'theme:demo',
+            title: 'Demo',
+            load: signal => loadThemeDraft(source, signal),
+            preview: {kind: 'theme', renderCandidate}
+        });
+        await workspace.load(new AbortController().signal);
+        const before = workspace.draft;
+        const update = workspace.getTools().find(tool => tool.name === 'update_design_settings');
+
+        const result = await update?.execute({revision: before.revision, values: {'global.accent_color': '#AABBCC', 'theme.layout': 'Grid'}}, new AbortController().signal);
+
+        expect(result).toMatchObject({ok: true, data: {updated: ['global.accent_color', 'theme.layout'], render: {valid: true}}});
+        expect(workspace.draft.globalSettings.accent_color).toBe('#000000');
+        expect(workspace.candidateDraft?.globalSettings.accent_color).toBe('#AABBCC');
+        expect(workspace.candidateDraft?.customSettings.layout.value).toBe('Grid');
+        expect(renderCandidate).toHaveBeenCalledOnce();
+    });
+
+    it('rejects mutations when preview validation is unavailable', async () => {
+        const source = await loadInput();
+        const workspace = new ThemeWorkspace({
+            id: 'theme:demo',
+            title: 'Demo',
+            load: signal => loadThemeDraft(source, signal),
+            preview: {kind: 'theme'}
+        });
+        await workspace.load(new AbortController().signal);
+        const before = workspace.draft;
+        const remove = workspace.getTools().find(tool => tool.name === 'delete_file');
+
+        const result = await remove?.execute({revision: before.revision, path: 'index.hbs'}, new AbortController().signal);
+
+        expect(result).toMatchObject({ok: false, revision: before.revision, error: {code: 'preview_unavailable'}});
+        expect(workspace.draft).toEqual(before);
+    });
+
+    it('returns a typed preview failure without adopting the candidate', async () => {
+        const source = await loadInput();
+        const workspace = new ThemeWorkspace({
+            id: 'theme:demo',
+            title: 'Demo',
+            load: signal => loadThemeDraft(source, signal),
+            preview: {kind: 'theme', renderCandidate: () => Promise.reject(new Error('worker disconnected'))}
+        });
+        await workspace.load(new AbortController().signal);
+        const before = workspace.snapshot();
+        const write = workspace.getTools().find(tool => tool.name === 'write_file');
+
+        const result = await write?.execute({revision: before.revision, path: 'new.hbs', content: 'New'}, new AbortController().signal);
+
+        expect(result).toMatchObject({ok: false, revision: before.revision, error: {code: 'preview_failed', retryable: true}});
+        expect(workspace.snapshot()).toEqual(before);
+    });
+
+    it('retains a candidate validated just before the caller stops', async () => {
+        const source = await loadInput();
+        const controller = new AbortController();
+        const workspace = new ThemeWorkspace({
+            id: 'theme:demo',
+            title: 'Demo',
+            load: signal => loadThemeDraft(source, signal),
+            preview: {
+                kind: 'theme',
+                renderCandidate: (candidate: ThemeDraft) => {
+                    controller.abort();
+                    return Promise.resolve({valid: true, diagnostics: [], revision: candidate.revision});
+                }
+            }
+        });
+        await workspace.load(new AbortController().signal);
+        const before = workspace.draft;
+        const write = workspace.getTools().find(tool => tool.name === 'write_file');
+
+        const result = await write?.execute({revision: before.revision, path: 'new.hbs', content: 'New'}, controller.signal);
+
+        expect(result).toMatchObject({ok: true});
+        expect(workspace.draft.files['new.hbs']).toBeUndefined();
+        expect(workspace.candidateDraft?.files['new.hbs'].content).toBe('New');
+    });
+
+    it('publishes only the promoted draft while retaining an interrupted candidate', async () => {
+        const source = await loadInput();
+        const publish = vi.fn((draft: ThemeDraft) => Promise.resolve({ok: true as const, revision: draft.revision}));
+        const workspace = new ThemeWorkspace({
+            id: 'theme:demo',
+            title: 'Demo',
+            load: signal => loadThemeDraft(source, signal),
+            preview: {kind: 'theme', renderCandidate: candidate => Promise.resolve({valid: true, diagnostics: [], revision: candidate.revision})},
+            publish
+        });
+        await workspace.load(new AbortController().signal);
+        const promoted = workspace.draft;
+        const write = workspace.getTools().find(tool => tool.name === 'write_file');
+        await write?.execute({revision: promoted.revision, path: 'new.hbs', content: 'New'}, new AbortController().signal);
+
+        const result = await workspace.publish(new AbortController().signal);
+
+        expect(result).toEqual({ok: true, revision: promoted.revision});
+        expect(publish).toHaveBeenCalledWith(expect.objectContaining({revision: promoted.revision}), expect.any(AbortSignal));
+        expect(workspace.draft.files['new.hbs']).toBeUndefined();
+        expect(workspace.candidateDraft?.files['new.hbs'].content).toBe('New');
+    });
+
+    it('restores the visible preview before atomically adopting a checkpoint', async () => {
+        const source = await loadInput();
+        const renderCandidate = vi.fn((candidate: ThemeDraft) => Promise.resolve({valid: true, diagnostics: [], revision: candidate.revision}));
+        const restoreDraft = vi.fn((candidate: ThemeDraft) => Promise.resolve({valid: true, diagnostics: [], revision: candidate.revision}));
+        const workspace = new ThemeWorkspace({
+            id: 'theme:demo',
+            title: 'Demo',
+            load: signal => loadThemeDraft(source, signal),
+            preview: {kind: 'theme', renderCandidate, restoreDraft}
+        });
+        await workspace.load(new AbortController().signal);
+        const checkpoint = workspace.snapshot();
+        const write = workspace.getTools().find(tool => tool.name === 'write_file');
+        await write?.execute({revision: checkpoint.revision, path: 'new.hbs', content: 'New'}, new AbortController().signal);
+        await workspace.promoteCandidate(new AbortController().signal);
+        restoreDraft.mockClear();
+
+        const validation = await workspace.restore(checkpoint);
+
+        expect(validation).toMatchObject({valid: true, revision: checkpoint.revision});
+        expect(restoreDraft).toHaveBeenCalledWith(expect.objectContaining({revision: checkpoint.revision, virtualUrl: 'https://example.com/'}), expect.any(AbortSignal));
+        expect(workspace.draft.files['new.hbs']).toBeUndefined();
+        expect(workspace.candidateDraft).toBeNull();
+    });
+
+    it('rebases an interrupted candidate onto a copied theme after publishing', async () => {
+        const source = await loadInput();
+        source.theme.builtIn = true;
+        let previewDraft: ThemeDraft | null = null;
+        const rebaseDraft = vi.fn((draft: ThemeDraft) => {
+            if (previewDraft && (draft.virtualUrl !== previewDraft.virtualUrl || draft.selection?.id !== previewDraft.selection?.id)) {
+                throw new Error('Preview-only state was not synchronized');
+            }
+            previewDraft = structuredClone(draft);
+        });
+        const workspace = new ThemeWorkspace({
+            id: 'theme:demo',
+            title: 'Demo',
+            load: signal => loadThemeDraft(source, signal),
+            preview: {
+                kind: 'theme',
+                get draft() {
+                    if (!previewDraft) {
+                        throw new Error('Preview not started');
+                    }
+                    return structuredClone(previewDraft);
+                },
+                renderCandidate: (candidate) => {
+                    previewDraft = structuredClone(candidate);
+                    return Promise.resolve({valid: true, diagnostics: [], revision: candidate.revision});
+                },
+                rebaseDraft
+            },
+            publish: async (draft) => {
+                const published = await withThemeRevision({...draft, theme: {...draft.theme, name: 'demo-edited', builtIn: false}});
+                return {ok: true, revision: published.revision, draft: published};
+            }
+        });
+        await workspace.load(new AbortController().signal);
+        const before = workspace.draft;
+        const write = workspace.getTools().find(tool => tool.name === 'write_file');
+        await write?.execute({revision: before.revision, path: 'new.hbs', content: 'New'}, new AbortController().signal);
+        const renderedCandidate = workspace.candidateDraft;
+        if (!renderedCandidate) {
+            throw new Error('Expected the candidate preview');
+        }
+        previewDraft = await withThemeRevision({
+            ...renderedCandidate,
+            virtualUrl: 'https://example.com/about/',
+            selection: {id: 'index.hbs:1:1', label: 'Main heading'}
+        });
+
+        await workspace.publish(new AbortController().signal);
+
+        expect(workspace.draft.theme).toMatchObject({name: 'demo-edited', builtIn: false});
+        expect(workspace.candidateDraft?.theme).toMatchObject({name: 'demo-edited', builtIn: false});
+        expect(workspace.candidateDraft).toMatchObject({virtualUrl: 'https://example.com/about/', selection: {id: 'index.hbs:1:1'}});
+        expect(rebaseDraft).toHaveBeenCalledWith(expect.objectContaining({revision: workspace.candidateDraft?.revision}));
+        let stateRevision = '';
+        let validationRevision = '';
+        workspace.subscribe((state) => {
+            stateRevision = state.revision;
+            validationRevision = state.validation?.revision ?? '';
+        })();
+        expect(validationRevision).toBe(stateRevision);
+        await workspace.promoteCandidate(new AbortController().signal);
+        expect(workspace.draft.theme).toMatchObject({name: 'demo-edited', builtIn: false});
+        expect(workspace.draft.files['new.hbs'].content).toBe('New');
+    });
+
+    it('checkpoints and restores the visible candidate at the start of a continuation turn', async () => {
+        const source = await loadInput();
+        const restoreDraft = vi.fn((candidate: ThemeDraft) => Promise.resolve({valid: true, diagnostics: [], revision: candidate.revision}));
+        const workspace = new ThemeWorkspace({
+            id: 'theme:demo',
+            title: 'Demo',
+            load: signal => loadThemeDraft(source, signal),
+            preview: {
+                kind: 'theme',
+                renderCandidate: candidate => Promise.resolve({valid: true, diagnostics: [], revision: candidate.revision}),
+                restoreDraft
+            }
+        });
+        await workspace.load(new AbortController().signal);
+        const promoted = workspace.draft;
+        const write = workspace.getTools().find(tool => tool.name === 'write_file');
+        await write?.execute({revision: promoted.revision, path: 'interrupted.hbs', content: 'Keep me'}, new AbortController().signal);
+        const checkpoint = workspace.checkpointSnapshot();
+        await workspace.promoteCandidate(new AbortController().signal);
+        await write?.execute({revision: workspace.draft.revision, path: 'later.hbs', content: 'Discard me'}, new AbortController().signal);
+        await workspace.promoteCandidate(new AbortController().signal);
+
+        await workspace.restore(checkpoint);
+
+        expect(workspace.draft.files['interrupted.hbs']).toBeUndefined();
+        expect(workspace.candidateDraft?.files['interrupted.hbs'].content).toBe('Keep me');
+        expect(workspace.candidateDraft?.files['later.hbs']).toBeUndefined();
+        expect(restoreDraft).toHaveBeenCalledWith(expect.objectContaining({revision: checkpoint.revision}), expect.any(AbortSignal));
+    });
+
+    it('synchronizes preview-only navigation and selection into the next checkpoint', async () => {
+        const source = await loadInput();
+        let previewDraft: ThemeDraft | null = null;
+        const preview = {
+            kind: 'theme',
+            get draft() {
+                if (!previewDraft) {
+                    throw new Error('Preview not started');
+                }
+                return structuredClone(previewDraft);
+            }
+        };
+        const workspace = new ThemeWorkspace({
+            id: 'theme:demo',
+            title: 'Demo',
+            load: signal => loadThemeDraft(source, signal),
+            preview
+        });
+        await workspace.load(new AbortController().signal);
+        previewDraft = await withThemeRevision({
+            ...workspace.draft,
+            virtualUrl: 'https://example.com/about/',
+            selection: {id: 'index.hbs:1:1', label: 'Main heading'}
+        });
+
+        const checkpoint = workspace.checkpointSnapshot();
+        const payload = checkpoint.payload as {promoted: ThemeDraft; candidate: ThemeDraft | null};
+
+        expect(checkpoint.revision).toBe(previewDraft.revision);
+        expect(payload.promoted).toMatchObject({
+            virtualUrl: 'https://example.com/about/',
+            selection: {id: 'index.hbs:1:1'}
+        });
+        expect(payload.candidate).toBeNull();
     });
 });

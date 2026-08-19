@@ -6,7 +6,11 @@ export type ThemeRendererInitialization = {
     config: Record<string, unknown>;
     theme: Record<string, string>;
     revision: string;
+    settingsPayload?: Record<string, string | boolean | null>;
+    customThemeSettings?: Record<string, string | boolean | null>;
 };
+
+export type ThemeRendererCandidateSettings = Pick<ThemeRendererInitialization, 'settingsPayload' | 'customThemeSettings'>;
 
 export type ThemeRenderResult = {
     status: number;
@@ -17,7 +21,7 @@ export type ThemeRenderResult = {
 
 export interface ThemeRendererClient {
     initialize(input: ThemeRendererInitialization, signal: AbortSignal): Promise<void>;
-    setTheme(theme: Record<string, string>, revision: string, signal: AbortSignal): Promise<void>;
+    setTheme(theme: Record<string, string>, revision: string, signal: AbortSignal, settings?: ThemeRendererCandidateSettings): Promise<void>;
     render(url: string, revision: string, signal: AbortSignal): Promise<ThemeRenderResult>;
     destroy(): void;
 }
@@ -26,7 +30,7 @@ export type ThemeRendererClientFactory = () => Promise<ThemeRendererClient>;
 
 export type ThemeRendererWorkerRequest =
     | {id: number; type: 'initialize'; revision: string; payload: Omit<ThemeRendererInitialization, 'revision'>}
-    | {id: number; type: 'set-theme'; revision: string; payload: {theme: Record<string, string>}}
+    | {id: number; type: 'set-theme'; revision: string; payload: {theme: Record<string, string>} & ThemeRendererCandidateSettings}
     | {id: number; type: 'render'; revision: string; payload: {url: string; markers: true}}
     | {id: number; type: 'cancel'; revision: string; payload: {requestId: number}};
 
@@ -157,8 +161,8 @@ export function createThemeRendererClient({
         async initialize({revision, ...payload}, signal) {
             await call({type: 'initialize', revision, payload}, signal);
         },
-        async setTheme(theme, revision, signal) {
-            await call({type: 'set-theme', revision, payload: {theme}}, signal);
+        async setTheme(theme, revision, signal, settings = {}) {
+            await call({type: 'set-theme', revision, payload: {theme, ...settings}}, signal);
         },
         async render(url, revision, signal) {
             const result = await call({type: 'render', revision, payload: {url, markers: true}}, signal);

@@ -125,7 +125,7 @@ export class BuilderSession {
             turnId,
             userMessageId,
             conversationCursor,
-            snapshot: this.workspace.snapshot()
+            snapshot: this.workspace.checkpointSnapshot?.() ?? this.workspace.snapshot()
         });
 
         const userMessage: BuilderConversationMessage = {id: userMessageId, role: 'user', text, status: 'complete'};

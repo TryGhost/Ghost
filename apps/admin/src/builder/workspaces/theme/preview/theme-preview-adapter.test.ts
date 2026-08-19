@@ -21,8 +21,10 @@ async function draft(content = '<main>Initial</main>', virtualUrl = 'https://exa
             'assets/logo.png': {path: 'assets/logo.png', kind: 'binary', content: null, binary: new Uint8Array([1, 2, 3]), unixPermissions: null, dosPermissions: 0}
         },
         globalSettings: {accent_color: '#15171A', heading_font: null, body_font: null, icon: null, logo: null, cover_image: null},
-        customSettings: {},
-        renderer: {siteUrl: 'https://example.com/', contentApiKey: 'content-key', config: {}, missing: []},
+        customSettings: {
+            layout: {id: 'layout', key: 'layout', type: 'select', value: 'List', default: 'List', options: ['List', 'Grid']}
+        },
+        renderer: {siteUrl: 'https://example.com/', contentApiKey: 'content-key', config: {}, missing: [], settingsPayload: {title: 'Demo', accent_color: '#000000'}},
         virtualUrl,
         selection: null
     });
@@ -116,7 +118,13 @@ describe('ThemePreviewAdapter', () => {
         const validation = await adapter.start(initial, new AbortController().signal);
 
         expect(validation).toEqual({valid: true, diagnostics: [], revision: initial.revision});
-        expect(renderer.initialize).toHaveBeenCalledWith(expect.objectContaining({revision: initial.revision, theme: {'package.json': '{"name":"demo"}', 'index.hbs': '<main>Initial</main>'}}), expect.any(AbortSignal));
+        const initialization = renderer.initialize.mock.calls[0]?.[0];
+        expect(initialization).toMatchObject({
+            revision: initial.revision,
+            theme: {'package.json': '{"name":"demo"}', 'index.hbs': '<main>Initial</main>'},
+            customThemeSettings: {layout: 'List'}
+        });
+        expect(initialization?.settingsPayload).toMatchObject({title: 'Demo', accent_color: '#15171A'});
         expect(renderer.render).toHaveBeenCalledWith(initial.virtualUrl, initial.revision, expect.any(AbortSignal));
         expect(surface.documents).toHaveLength(1);
         expect(surface.documents[0]?.html).toContain('data-edit');
@@ -133,8 +141,50 @@ describe('ThemePreviewAdapter', () => {
         const validation = await adapter.renderCandidate(candidate, new AbortController().signal);
 
         expect(validation.valid).toBe(true);
-        expect(renderer.setTheme).toHaveBeenCalledWith(expect.objectContaining({'index.hbs': '<main>Changed</main>'}), candidate.revision, expect.any(AbortSignal));
+        const candidateCall = renderer.setTheme.mock.calls[0];
+        expect(candidateCall?.[0]).toMatchObject({'index.hbs': '<main>Changed</main>'});
+        expect(candidateCall?.[1]).toBe(candidate.revision);
+        expect(candidateCall?.[3]?.settingsPayload).toMatchObject({accent_color: '#15171A'});
+        expect(candidateCall?.[3]?.customThemeSettings).toEqual({layout: 'List'});
         expect(surface.documents.at(-1)).toMatchObject({html: '<html>Changed</html>', revision: candidate.revision});
+    });
+
+    it('renders staged global and custom settings as part of the candidate revision', async () => {
+        const initial = await draft();
+        const changed = structuredClone(initial);
+        changed.globalSettings.accent_color = '#AABBCC';
+        changed.customSettings.layout.value = 'Grid';
+        const candidate = await withThemeRevision(changed);
+        const {adapter, renderer} = setup();
+        renderer.render.mockResolvedValueOnce(rendered('<html>Initial</html>')).mockResolvedValueOnce(rendered('<html>Changed</html>'));
+        await adapter.start(initial, new AbortController().signal);
+
+        await adapter.renderCandidate(candidate, new AbortController().signal);
+
+        const candidateCall = renderer.setTheme.mock.calls[0];
+        expect(candidateCall?.[1]).toBe(candidate.revision);
+        expect(candidateCall?.[3]?.settingsPayload).toMatchObject({accent_color: '#AABBCC'});
+        expect(candidateCall?.[3]?.customThemeSettings).toEqual({layout: 'Grid'});
+    });
+
+    it('restores a checkpoint at its own virtual URL', async () => {
+        const currentSource = await draft('<main>Current</main>', 'https://example.com/about/');
+        const initial = await withThemeRevision({...currentSource, selection: {id: 'index.hbs:1:1', label: 'Current selection'}});
+        const checkpointSource = await draft('<main>Checkpoint</main>', 'https://example.com/');
+        const checkpoint = await withThemeRevision({...checkpointSource, selection: {id: 'index.hbs:2:1', label: 'Checkpoint selection'}});
+        const {adapter, renderer, surface} = setup();
+        surface.remappedSelection = initial.selection;
+        renderer.render.mockResolvedValueOnce(rendered('<html>Current</html>', initial.virtualUrl)).mockResolvedValueOnce(rendered('<html>Checkpoint</html>', checkpoint.virtualUrl));
+        await adapter.start(initial, new AbortController().signal);
+        surface.remappedSelection = checkpoint.selection;
+
+        const validation = await adapter.restoreDraft(checkpoint, new AbortController().signal);
+
+        expect(validation).toMatchObject({valid: true, revision: checkpoint.revision});
+        expect(renderer.render).toHaveBeenLastCalledWith(checkpoint.virtualUrl, checkpoint.revision, expect.any(AbortSignal));
+        expect(adapter.state.url).toBe(checkpoint.virtualUrl);
+        expect(surface.selections.at(-1)).toEqual(checkpoint.selection);
+        expect(adapter.state.selection).toEqual(checkpoint.selection);
     });
 
     it('retains the last valid document and renderer theme when a candidate render fails', async () => {
@@ -148,7 +198,11 @@ describe('ThemePreviewAdapter', () => {
 
         expect(validation).toMatchObject({valid: false, revision: initial.revision, diagnostics: [{code: 'theme_render_failed'}]});
         expect(surface.documents).toHaveLength(1);
-        expect(renderer.setTheme).toHaveBeenLastCalledWith(expect.objectContaining({'index.hbs': '<main>Initial</main>'}), initial.revision, expect.any(AbortSignal));
+        const restoreCall = renderer.setTheme.mock.calls.at(-1);
+        expect(restoreCall?.[0]).toMatchObject({'index.hbs': '<main>Initial</main>'});
+        expect(restoreCall?.[1]).toBe(initial.revision);
+        expect(restoreCall?.[3]?.settingsPayload).toMatchObject({accent_color: '#15171A'});
+        expect(restoreCall?.[3]?.customThemeSettings).toEqual({layout: 'List'});
     });
 
     it.each([400, 500])('rejects a resolved HTTP %s theme failure without replacing the last valid document', async (status) => {
@@ -463,7 +517,16 @@ describe('theme renderer worker', () => {
         });
         await handle({id: 1, type: 'initialize', revision: 'rev-1', payload: {siteUrl: 'https://example.com/', contentApiKey: 'key', config: {}, theme: {'index.hbs': 'Initial'}}});
         const olderRequest = handle({id: 2, type: 'set-theme', revision: 'rev-2', payload: {theme: {'index.hbs': 'Older'}}});
-        const newerRequest = handle({id: 3, type: 'set-theme', revision: 'rev-3', payload: {theme: {'index.hbs': 'Newer'}}});
+        const newerRequest = handle({
+            id: 3,
+            type: 'set-theme',
+            revision: 'rev-3',
+            payload: {
+                theme: {'index.hbs': 'Newer'},
+                settingsPayload: {accent_color: '#AABBCC'},
+                customThemeSettings: {layout: 'Grid'}
+            }
+        });
 
         newer.resolve(newerRenderer);
         await newerRequest;
@@ -473,6 +536,9 @@ describe('theme renderer worker', () => {
 
         expect(newerRenderer.render).toHaveBeenCalledOnce();
         expect(olderRenderer.render).not.toHaveBeenCalled();
+        const newestFactoryCall = rendererFactory.mock.calls.at(-1) as unknown as [{settingsPayload?: Record<string, unknown>; customThemeSettings?: Record<string, unknown>}];
+        expect(newestFactoryCall[0].settingsPayload).toEqual({accent_color: '#AABBCC'});
+        expect(newestFactoryCall[0].customThemeSettings).toEqual({layout: 'Grid'});
         expect(responses).toContainEqual(expect.objectContaining({id: 2, ok: false}));
         expect(responses).toContainEqual(expect.objectContaining({id: 4, revision: 'rev-3', ok: true}));
     });

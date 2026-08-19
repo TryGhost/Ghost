@@ -1,10 +1,11 @@
 import {ThemeRendererTransportError} from './preview-bridge';
-import {withThemeRevision} from '@/builder/workspaces/theme/theme-state';
+import {cloneThemeDraft, withThemeRevision} from '@/builder/workspaces/theme/theme-state';
+import {visibleThemeCustomSettings} from '@/builder/workspaces/theme/theme-loader';
 
 import type {WorkspaceDiagnostic} from '@/builder/core/tool-types';
 import type {BuilderPreviewAdapter, BuilderSelectionContext, ValidationResult} from '@/builder/core/workspace';
 import type {PreviewDocumentSurface} from './preview-document';
-import type {ThemeRendererClient, ThemeRendererClientFactory, ThemeRenderResult} from './preview-bridge';
+import type {ThemeRendererCandidateSettings, ThemeRendererClient, ThemeRendererClientFactory, ThemeRenderResult} from './preview-bridge';
 import type {ThemeDraft} from '@/builder/workspaces/theme/theme-state';
 
 export type ThemePreviewState = {
@@ -22,6 +23,22 @@ export type ThemeNavigationResult =
 
 function textTheme(draft: ThemeDraft): Record<string, string> {
     return Object.fromEntries(Object.entries(draft.files).flatMap(([path, file]) => file.kind === 'text' && file.content !== null ? [[path, file.content]] : []));
+}
+
+function rendererSettings(draft: ThemeDraft): ThemeRendererCandidateSettings {
+    const visible = visibleThemeCustomSettings(draft.customSettings);
+    return {
+        settingsPayload: {
+            ...draft.renderer.settingsPayload,
+            accent_color: draft.globalSettings.accent_color,
+            heading_font: draft.globalSettings.heading_font,
+            body_font: draft.globalSettings.body_font,
+            icon: draft.globalSettings.icon,
+            logo: draft.globalSettings.logo,
+            cover_image: draft.globalSettings.cover_image
+        },
+        customThemeSettings: Object.fromEntries(Object.entries(draft.customSettings).map(([key, setting]) => [key, visible[key] ? setting.value : null]))
+    };
 }
 
 function diagnostic(error: unknown): WorkspaceDiagnostic {
@@ -80,6 +97,10 @@ export class ThemePreviewAdapter implements BuilderPreviewAdapter {
         return structuredClone(this.currentState);
     }
 
+    get draft(): ThemeDraft {
+        return cloneThemeDraft(this.requireDraft());
+    }
+
     subscribe(listener: (state: ThemePreviewState) => void): () => void {
         this.listeners.add(listener);
         listener(this.state);
@@ -92,6 +113,25 @@ export class ThemePreviewAdapter implements BuilderPreviewAdapter {
 
     async renderCandidate(draft: ThemeDraft, signal: AbortSignal): Promise<ValidationResult> {
         return this.enqueue(signal, operationSignal => this.renderCandidateNow(draft, operationSignal));
+    }
+
+    async restoreDraft(draft: ThemeDraft, signal: AbortSignal): Promise<ValidationResult> {
+        return this.enqueue(signal, operationSignal => this.renderCandidateNow(
+            draft,
+            operationSignal,
+            draft.virtualUrl,
+            draft.selection,
+            draft.revision
+        ));
+    }
+
+    rebaseDraft(draft: ThemeDraft): void {
+        const previous = this.requireDraft();
+        if (previous.virtualUrl !== draft.virtualUrl || previous.selection?.id !== draft.selection?.id) {
+            throw new Error('A preview rebase cannot change navigation or selection state.');
+        }
+        this.lastValidDraft = cloneThemeDraft(draft);
+        this.setState({...this.currentState, revision: draft.revision});
     }
 
     async navigate(target: string, signal: AbortSignal): Promise<ThemeNavigationResult> {
@@ -142,20 +182,26 @@ export class ThemePreviewAdapter implements BuilderPreviewAdapter {
         throw new ThemeRendererTransportError('Theme renderer failed to start.');
     }
 
-    private async renderCandidateNow(draft: ThemeDraft, signal: AbortSignal): Promise<ValidationResult> {
+    private async renderCandidateNow(
+        draft: ThemeDraft,
+        signal: AbortSignal,
+        targetUrl?: string,
+        targetSelection = this.currentState.selection,
+        expectedRevision?: string
+    ): Promise<ValidationResult> {
         const previous = this.requireDraft();
         let documentReplacementAttempted = false;
         try {
             const result = await this.withRestart(async (client) => {
-                await client.setTheme(textTheme(draft), draft.revision, signal);
+                await client.setTheme(textTheme(draft), draft.revision, signal, rendererSettings(draft));
                 this.throwIfUnavailable(signal);
                 this.rendererRevision = draft.revision;
-                return client.render(previous.virtualUrl, this.rendererRevision, signal);
+                return client.render(targetUrl ?? previous.virtualUrl, this.rendererRevision, signal);
             }, signal);
             this.assertRenderable(result);
-            const renderedDraft = {...draft, virtualUrl: result.url, selection: this.currentState.selection};
+            const renderedDraft = {...draft, virtualUrl: result.url, selection: targetSelection};
             documentReplacementAttempted = true;
-            await this.commit(renderedDraft, result, signal);
+            await this.commit(renderedDraft, result, signal, {preserveSelection: expectedRevision !== undefined, expectedRevision});
             return {valid: true, diagnostics: result.diagnostics, revision: this.currentState.revision};
         } catch (error) {
             if (this.destroyed) {
@@ -246,7 +292,8 @@ export class ThemePreviewAdapter implements BuilderPreviewAdapter {
             contentApiKey: draft.renderer.contentApiKey,
             config: draft.renderer.config,
             theme: textTheme(draft),
-            revision: draft.revision
+            revision: draft.revision,
+            ...rendererSettings(draft)
         }, signal);
         this.throwIfUnavailable(signal);
         this.rendererRevision = draft.revision;
@@ -260,7 +307,7 @@ export class ThemePreviewAdapter implements BuilderPreviewAdapter {
             if (forceRestart) {
                 throw new ThemeRendererTransportError('Restarting after an aborted renderer mutation.');
             }
-            await this.requireRenderer().setTheme(textTheme(draft), draft.revision, signal);
+            await this.requireRenderer().setTheme(textTheme(draft), draft.revision, signal, rendererSettings(draft));
             this.rendererRevision = draft.revision;
         } catch {
             this.renderer?.destroy();
@@ -274,12 +321,21 @@ export class ThemePreviewAdapter implements BuilderPreviewAdapter {
         }
     }
 
-    private async commit(draft: ThemeDraft, result: ThemeRenderResult, signal: AbortSignal): Promise<void> {
+    private async commit(
+        draft: ThemeDraft,
+        result: ThemeRenderResult,
+        signal: AbortSignal,
+        {preserveSelection = false, expectedRevision}: {preserveSelection?: boolean; expectedRevision?: string} = {}
+    ): Promise<void> {
         this.throwIfUnavailable(signal);
-        const selection = await this.surface.replaceDocument({html: result.html, url: result.url, revision: draft.revision}, this.currentState.selection, signal);
+        const remappedSelection = await this.surface.replaceDocument({html: result.html, url: result.url, revision: draft.revision}, draft.selection, signal);
         this.throwIfUnavailable(signal);
+        const selection = preserveSelection && remappedSelection?.id === draft.selection?.id ? draft.selection : remappedSelection;
         const revised = await withThemeRevision({...draft, virtualUrl: result.url, selection});
         this.throwIfUnavailable(signal);
+        if (expectedRevision && revised.revision !== expectedRevision) {
+            throw new Error('The preview could not restore the checkpoint selection and URL exactly.');
+        }
         this.selectionSequence += 1;
         this.lastValidDraft = revised;
         this.lastValidResult = structuredClone(result);
