@@ -38,9 +38,12 @@ const FooterMetric: React.FC<{label: string; tracked: boolean; children: React.R
 );
 
 export const EmailStatsFooter: React.FC<StatsProps & {divider?: boolean}> = ({stats, opensTracked = true, clicksTracked = true, divider = true}) => (
-    // divider (read canvas): border-t separating stats from the header above. Without it
-    // (email preview) we drop the border and hold a 24px gap to the element above.
-    <div className={cn('grid w-full grid-cols-3 gap-3', divider ? 'mt-3 border-t border-border-default pt-3' : 'mt-[24px]')}>
+    // divider (read canvas): border-t separating stats from the header above. Without
+    // it (email preview) the border goes and the spacing belongs to the wrapping
+    // analytics button instead — it pads evenly so its hover fill clears the stats
+    // on every side, then pulls the padding back with negative margins so the grid
+    // sits exactly where a bare mt-[24px] used to put it.
+    <div className={cn('grid w-full grid-cols-3 gap-3', divider && 'mt-3 border-t border-border-default pt-3')}>
         <FooterMetric label="Sent" tracked={true}>{formatNumber(stats.email_sent_count)}</FooterMetric>
         <FooterMetric label="Opened" tracked={opensTracked}>{formatRate(stats.opened_rate)}</FooterMetric>
         <FooterMetric label="Clicked" tracked={clicksTracked}>{formatRate(stats.clicked_rate)}</FooterMetric>
@@ -149,6 +152,12 @@ const Kpi: React.FC<{label: string; color: string; tracked?: boolean; children: 
 // here.
 const displayUrl = (url: string) => url.replace(/^https?:\/\//i, '');
 
+// CSS can only ellipsize at the end of a line, so middle truncation is two
+// spans: the head truncates and the tail (the URL's last characters) never
+// shrinks — the ellipsis lands mid-URL and the end stays visible, which is the
+// part that actually distinguishes one long link from another.
+const MIDDLE_TRUNCATE_TAIL = 14;
+
 const TopClickedLinksContent: React.FC<{
     clickedCount: number;
     links: ProtoActionLink[];
@@ -168,6 +177,9 @@ const TopClickedLinksContent: React.FC<{
                 <DataListBody>
                     {links.map((link) => {
                         const percentage = clickedCount > 0 ? Math.min(link.clicked_count / clickedCount, 1) : 0;
+                        const display = displayUrl(link.url);
+                        const head = display.slice(0, Math.max(display.length - MIDDLE_TRUNCATE_TAIL, 0));
+                        const tail = display.slice(Math.max(display.length - MIDDLE_TRUNCATE_TAIL, 0));
                         return (
                             <DataListRow key={link.url}>
                                 <DataListBar style={{width: `${Math.round(percentage * 100)}%`}} />
@@ -177,7 +189,10 @@ const TopClickedLinksContent: React.FC<{
                                             <a className="block min-w-0 hover:underline" href={link.url} rel="noreferrer" target="_blank">
                                                 <Inline as="span" className="min-w-0" gap="sm">
                                                     <LucideIcon.Link className="shrink-0 text-muted-foreground" size={16} strokeWidth={1.5} />
-                                                    <Text as="span" className="font-medium" truncate>{displayUrl(link.url)}</Text>
+                                                    <span className="flex min-w-0">
+                                                        <Text as="span" className="font-medium" truncate>{head}</Text>
+                                                        <Text as="span" className="shrink-0 font-medium whitespace-nowrap">{tail}</Text>
+                                                    </span>
                                                 </Inline>
                                             </a>
                                         </TooltipTrigger>
@@ -207,40 +222,48 @@ export const EmailPerformance: React.FC<StatsProps & {actionId?: string}> = ({st
     const clickRate = (stats.clicked_rate ?? 0) / 100;
     const links = actionId ? actionLinks(actionId, stats.email_clicked_count) : [];
     return (
-        <Stack gap="md">
-            {/* No section heading — the sheet's own title names this. Chart first, then
-                the two rates it plots; Sent is inside the rings. */}
-            <Box className="rounded-lg border border-border-default px-4 py-3">
-                <Stack gap="lg">
-                    <PerformanceChart
-                        clickRate={clickRate}
-                        clicksTracked={clicksTracked}
-                        openRate={openRate}
-                        opensTracked={opensTracked}
-                        sentCount={stats.email_sent_count}
-                    />
-                    <div className="grid grid-cols-2 gap-4">
-                        <Kpi color="var(--chart-blue)" label="Opened" tracked={opensTracked}>{formatPercentage(openRate)}</Kpi>
-                        <Kpi color="var(--chart-teal)" label="Clicked" tracked={clicksTracked}>{formatPercentage(clickRate)}</Kpi>
-                    </div>
-                </Stack>
-            </Box>
+        // xl between the two sections — the links list is a new subject and needs
+        // more air than the legend does from its own chart.
+        <Stack gap="xl">
+            {/* The sheet's title is the email subject now, so this section names
+                itself — same label style as Top clicked links below. Chart first, then
+                the two rates it plots; Sent is inside the rings. Chart and each KPI in
+                a card of its own (the pane's card recipe), all at the same 12px gap so
+                the three read as one group. */}
+            <Stack gap="md">
+                <Text size="sm" tone="secondary" weight="medium">Performance</Text>
+                <Box className="rounded-lg border border-border-default px-4 py-3">
+                    {/* sm to the legend — the 240px chart square already carries
+                        ~10px of slack below the rings. */}
+                    <Stack gap="sm">
+                        <PerformanceChart
+                            clickRate={clickRate}
+                            clicksTracked={clicksTracked}
+                            openRate={openRate}
+                            opensTracked={opensTracked}
+                            sentCount={stats.email_sent_count}
+                        />
+                        <div className="grid grid-cols-2 gap-4">
+                            <Kpi color="var(--chart-blue)" label="Opened" tracked={opensTracked}>{formatPercentage(openRate)}</Kpi>
+                            <Kpi color="var(--chart-teal)" label="Clicked" tracked={clicksTracked}>{formatPercentage(clickRate)}</Kpi>
+                        </div>
+                    </Stack>
+                </Box>
+            </Stack>
             {/* Hidden entirely when click tracking is off — the Clicked KPI and ring
                 already convey that state (matches the shipped section). */}
             {actionId && clicksTracked && (
-                <Box className="rounded-lg border border-border-default px-4 py-3">
-                    <Stack gap="md">
-                        <Inline justify="between">
-                            <Text size="sm" tone="secondary" weight="medium">Top clicked links</Text>
-                            <Text size="sm" tone="tertiary" weight="medium">Members</Text>
-                        </Inline>
-                        <TopClickedLinksContent
-                            clickedCount={stats.email_clicked_count}
-                            links={links}
-                            sentCount={stats.email_sent_count}
-                        />
-                    </Stack>
-                </Box>
+                <Stack gap="md">
+                    <Inline justify="between">
+                        <Text size="sm" tone="secondary" weight="medium">Top clicked links</Text>
+                        <Text size="sm" tone="tertiary" weight="medium">Members</Text>
+                    </Inline>
+                    <TopClickedLinksContent
+                        clickedCount={stats.email_clicked_count}
+                        links={links}
+                        sentCount={stats.email_sent_count}
+                    />
+                </Stack>
             )}
         </Stack>
     );

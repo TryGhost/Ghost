@@ -17,8 +17,9 @@ import type {ProtoSlot} from '@/automations/proto/shared/proto-variants';
 export const EDITING_MODEL_SLOT: ProtoSlot = {
     id: 'editing-model',
     label: 'Editing',
+    // First entry is the default for fresh visitors.
     variants: [
-        {id: 'explicit', label: 'Explicit edit mode'},
-        {id: 'always', label: 'Always editable'}
+        {id: 'always', label: 'Always editable'},
+        {id: 'explicit', label: 'Explicit edit mode'}
     ]
 };

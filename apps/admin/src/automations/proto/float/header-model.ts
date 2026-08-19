@@ -22,8 +22,9 @@ import type {ProtoSlot} from '@/automations/proto/shared/proto-variants';
 export const HEADER_SLOT: ProtoSlot = {
     id: 'header',
     label: 'Header',
+    // First entry is the default for fresh visitors.
     variants: [
-        {id: 'floating', label: 'Floating chrome'},
-        {id: 'bar', label: 'Docked bar'}
+        {id: 'bar', label: 'Docked bar'},
+        {id: 'floating', label: 'Floating chrome'}
     ]
 };

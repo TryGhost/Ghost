@@ -4,7 +4,7 @@ import type {StepPickerType} from '@/automations/components/canvas/step-picker';
 import {Background, BackgroundVariant, BaseEdge, type Edge, EdgeLabelRenderer, type EdgeProps, Handle, type Node, type NodeProps, Position, ReactFlow, getSmoothStepPath} from '@xyflow/react';
 import type {AutomationDetail, AutomationEmailStats, InsertActionAnchor} from '@tryghost/admin-x-framework/api/automations';
 import {insertSendEmailAction, insertWaitAction, removeAction, updateSendEmailAction, updateWaitAction} from '@tryghost/admin-x-framework/api/automations';
-import {Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
+import {Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Input, Popover, PopoverContent, PopoverTrigger, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
 import {OptionPicker, type PickerOption} from '@/automations/proto/shared/option-picker';
 import {DEFAULT_TRIGGER_CONFIG, type TriggerConfig, availableCriteria, triggerSummary} from '@/automations/proto/shared/trigger-config';
@@ -38,7 +38,12 @@ const WAIT_FORM_HEIGHT = 112;
 // third (and longest) criterion.
 const TRIGGER_FIELD_BLOCK = 84;
 const TRIGGER_CHIP_ROW = 34;
-const triggerFormHeight = (config: TriggerConfig): number => {
+const triggerFormHeight = (config: TriggerConfig, locked: boolean): number => {
+    // Locked, everything below the select goes — the card is the header and the
+    // disabled select, the same single-row shape as the wait form.
+    if (locked) {
+        return WAIT_FORM_HEIGHT;
+    }
     const paid = config.type === 'paid_subscription_starts';
     const extraCriteriaRows = availableCriteria(config).length > 2 ? 1 : 0;
     return WAIT_FORM_HEIGHT
@@ -88,6 +93,8 @@ type StepNodeData = {
     // surface concept, which doesn't own trigger state).
     triggerConfig?: TriggerConfig;
     onTriggerConfigChange?: (next: TriggerConfig) => void;
+    // Phase-1 concept: trigger fixed after creation (see float/trigger-card-model).
+    triggerLocked?: boolean;
     // Always-visible inline edit form (non-trigger nodes).
     subject?: string;
     stats?: AutomationEmailStats;
@@ -112,8 +119,26 @@ const StepNode: React.FC<NodeProps> = ({data}) => {
             d.onWaitChange?.(hours);
         }
     };
+    const triggerLocked = isTrigger && Boolean(d.triggerLocked);
+    // Locked trigger: a lock where other cards put their overflow menu. A button,
+    // not a static glyph — clicking it answers "why can't I change this?" in a
+    // popover instead of leaving the disabled select to explain itself.
+    const lockAction = triggerLocked ? (
+        <Popover modal={false}>
+            <PopoverTrigger asChild>
+                <Button aria-label="Why the trigger is locked" size="icon" variant="ghost">
+                    <LucideIcon.Lock />
+                </Button>
+            </PopoverTrigger>
+            {/* "always" so the popover tracks its card when the canvas pans — same
+                reason as the overflow menu below. */}
+            <PopoverContent align="end" className="w-72" updatePositionStrategy="always">
+                <p className="text-sm">Triggers can&apos;t be changed yet.</p>
+            </PopoverContent>
+        </Popover>
+    ) : undefined;
     // Header action slot: overflow menu for editable steps. The trigger has no
-    // action — its fields are in the card and its exitCriteria row opens the popover.
+    // action unless locked — its fields are in the card.
     const action = clickable ? (
         // modal={false} — the default wraps the menu in RemoveScroll and kills
         // outside pointer events, which freezes the canvas underneath it. The
@@ -134,7 +159,7 @@ const StepNode: React.FC<NodeProps> = ({data}) => {
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
-    ) : undefined;
+    ) : lockAction;
     return (
         <NodeCard border={d.selected ? 'selected' : 'default'}>
             <NodeHeader action={action} icon={stepKindIcon[d.kind]} title={d.title} />
@@ -144,7 +169,7 @@ const StepNode: React.FC<NodeProps> = ({data}) => {
                 // nodrag/nopan + stopPropagation so using them doesn't pan the canvas.
                 <div className={cn('nodrag nopan cursor-default', NODE_BODY_PADDING)} onClick={e => e.stopPropagation()}>
                     {configurable && d.onTriggerConfigChange ? (
-                        <TriggerFieldsForm config={triggerConfig} onChange={d.onTriggerConfigChange} />
+                        <TriggerFieldsForm config={triggerConfig} locked={triggerLocked} onChange={d.onTriggerConfigChange} />
                     ) : (
                         <div className="text-sm text-muted-foreground">{triggerSummary(triggerConfig)}</div>
                     )}
@@ -164,7 +189,7 @@ const StepNode: React.FC<NodeProps> = ({data}) => {
                                     // the deeper read in the right-hand sheet.
                                     <button
                                         aria-label="View email analytics"
-                                        className="w-full rounded-lg text-left transition-colors hover:bg-muted/40 focus-visible:bg-muted/40 focus-visible:outline-none"
+                                        className="-mx-3 mt-3 -mb-3 w-[calc(100%+1.5rem)] rounded-lg p-3 text-left transition-colors hover:bg-muted/40 focus-visible:bg-muted/40 focus-visible:outline-none"
                                         type="button"
                                         onClick={d.onOpenAnalytics}
                                     >
@@ -276,9 +301,10 @@ interface SurfaceEditCanvasProps {
     // Without a change handler the trigger renders as a read-only summary.
     triggerConfig?: TriggerConfig;
     onTriggerConfigChange?: (next: TriggerConfig) => void;
+    triggerLocked?: boolean;
 }
 
-export const SurfaceEditCanvas: React.FC<SurfaceEditCanvasProps> = ({draft, onChange, triggerConfig, onTriggerConfigChange}) => {
+export const SurfaceEditCanvas: React.FC<SurfaceEditCanvasProps> = ({draft, onChange, triggerConfig, onTriggerConfigChange, triggerLocked = false}) => {
     const {canvasRef, onInit, size} = useCenteredColumn();
     const [selectedId, setSelectedId] = useState<string | null>(null);
     // Which email the right-hand analytics sheet is reporting on.
@@ -295,13 +321,13 @@ export const SurfaceEditCanvas: React.FC<SurfaceEditCanvasProps> = ({draft, onCh
     // so edits to its subject show through while the sheet is open.
     const analyticsAction = ordered.find(a => a.id === analyticsActionId);
     const sheetEmail: SheetEmail | null = analyticsAction?.type === 'send_email' && analyticsAction.stats
-        ? {actionId: analyticsAction.id, stats: analyticsAction.stats}
+        ? {actionId: analyticsAction.id, subject: analyticsAction.data.email_subject || 'Untitled', stats: analyticsAction.stats}
         : null;
 
     const {nodes, edges, contentBottom} = useMemo(() => {
         // Height-aware layout: trigger, then each action (email nodes carry a stats
         // footer), then the tail button. Even visible gaps regardless of node height.
-        const heights = [REGULAR_NODE_HEIGHT + (onTriggerConfigChange ? triggerFormHeight(triggerConfig ?? DEFAULT_TRIGGER_CONFIG) : TRIGGER_SUMMARY_HEIGHT)];
+        const heights = [REGULAR_NODE_HEIGHT + (onTriggerConfigChange ? triggerFormHeight(triggerConfig ?? DEFAULT_TRIGGER_CONFIG, triggerLocked) : TRIGGER_SUMMARY_HEIGHT)];
         ordered.forEach((action) => {
             // Every editable node shows its inline form, so all carry the form height.
             heights.push(REGULAR_NODE_HEIGHT + (action.type === 'send_email' ? EMAIL_FORM_HEIGHT : WAIT_FORM_HEIGHT));
@@ -320,7 +346,8 @@ export const SurfaceEditCanvas: React.FC<SurfaceEditCanvasProps> = ({draft, onCh
                 subtitle: '',
                 selected: false,
                 triggerConfig,
-                onTriggerConfigChange
+                onTriggerConfigChange,
+                triggerLocked
             },
             draggable: false,
             connectable: false,
@@ -392,7 +419,7 @@ export const SurfaceEditCanvas: React.FC<SurfaceEditCanvasProps> = ({draft, onCh
         const bottom = ys.length ? ys[ys.length - 1] + heights[heights.length - 1] : 0;
 
         return {nodes: built, edges: builtEdges, contentBottom: bottom};
-    }, [draft, ordered, selectedId, analyticsActionId, triggerConfig, onTriggerConfigChange]);
+    }, [draft, ordered, selectedId, analyticsActionId, triggerConfig, onTriggerConfigChange, triggerLocked]);
 
     const translateExtent = useMemo(
         () => panTranslateExtent(contentBottom, size),

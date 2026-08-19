@@ -8,8 +8,15 @@ import type {ProtoSlot, ProtoVariantSelections} from './proto-variants';
 // the slot/selection model): the provider that holds selections and the small
 // flask button that flips them.
 
+// Hidden while the proto link is being shared out — one canonical view, not a
+// combinatorial demo. While hidden, stored selections are ignored too: the
+// preview URL is stable across redeploys, so a visitor who flipped variants
+// earlier would otherwise keep their old combination with no control left to
+// change it back. Flip to false to bring the flask (and stored choices) back.
+const SWITCHER_HIDDEN: boolean = true;
+
 export const ProtoVariantsProvider: React.FC<{slots: ProtoSlot[]; children: React.ReactNode}> = ({slots, children}) => {
-    const [selections, setSelections] = useState<ProtoVariantSelections>(readStoredSelections);
+    const [selections, setSelections] = useState<ProtoVariantSelections>(() => (SWITCHER_HIDDEN ? {} : readStoredSelections()));
 
     const select = useCallback((slotId: string, variantId: string) => {
         setSelections((prev) => {
@@ -31,7 +38,7 @@ export const ProtoVariantsProvider: React.FC<{slots: ProtoSlot[]; children: Reac
 export const ProtoVariantSwitcher: React.FC<{className?: string}> = ({className}) => {
     const [open, setOpen] = useState(false);
     const ctx = useContext(ProtoVariantsContext);
-    if (!ctx) {
+    if (SWITCHER_HIDDEN || !ctx) {
         return null;
     }
     return (

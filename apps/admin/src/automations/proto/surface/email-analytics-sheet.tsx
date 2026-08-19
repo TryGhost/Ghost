@@ -20,6 +20,9 @@ import {NodeHeader} from './flow-node-shell';
 
 export interface SheetEmail {
     actionId: string;
+    // Which email this is — shown in the sheet header so the report is
+    // unmistakably about one card's email.
+    subject: string;
     stats: AutomationEmailStats;
 }
 
@@ -95,7 +98,7 @@ export const EmailAnalyticsSheet: React.FC<EmailAnalyticsSheetProps> = ({email, 
                                 </Button>
                             }
                             icon={LucideIcon.MailOpen}
-                            title="Email analytics"
+                            title={email.subject}
                         />
                     </div>
                     <div className="px-6 pb-6">

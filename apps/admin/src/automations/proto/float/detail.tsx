@@ -10,6 +10,7 @@ import {getScenario, mockAutomations} from '@/automations/proto/shared/mock';
 import {type ChangeEntry, changeSummary} from './change-summary';
 import {EDITING_MODEL_SLOT} from './editing-model';
 import {HEADER_SLOT} from './header-model';
+import {TRIGGER_CARD_SLOT} from './trigger-card-model';
 import {HeaderBar} from './header-bar';
 import {LEFT_PANEL_SLOT, leftPanelComponent} from './panel-variants';
 import {ProtoVariantSwitcher, ProtoVariantsProvider} from '@/automations/proto/shared/proto-variant-switcher';
@@ -260,6 +261,8 @@ const AutomationFloat: React.FC = () => {
     const alwaysEditable = useProtoVariant(EDITING_MODEL_SLOT) === 'always';
     // Floating chrome over the canvas, or a docked full-width header above it.
     const dockedHeader = useProtoVariant(HEADER_SLOT) === 'bar';
+    // Phase-1 concept: the trigger card renders locked (see trigger-card-model).
+    const triggerLocked = useProtoVariant(TRIGGER_CARD_SLOT) === 'locked';
     // Only meaningful when there's no edit mode to hide the pane for you.
     const [paneCollapsed, setPaneCollapsed] = useState(false);
 
@@ -339,9 +342,9 @@ const AutomationFloat: React.FC = () => {
         setStartOpen(false);
         promoteDraft();
         setLiveStatus('active');
-        toast.success('Automation is on', {
-            description: 'It’ll start enrolling members who match the trigger.'
-        });
+        // Title only — the start-confirmation dialog already explained what
+        // turning it on means, so the toast just confirms it happened.
+        toast.success('Automation is on');
     };
 
     const publishChanges = () => {
@@ -570,7 +573,7 @@ const AutomationFloat: React.FC = () => {
                 )}
 
                 <div className={cn('absolute inset-0 transition-opacity duration-150', showEditCanvas ? 'opacity-100' : 'pointer-events-none opacity-0')}>
-                    <FloatEditCanvas draft={activeDraft} triggerConfig={triggerConfig} onChange={handleDraftChange} onTriggerConfigChange={handleTriggerConfigChange} />
+                    <FloatEditCanvas draft={activeDraft} triggerConfig={triggerConfig} triggerLocked={triggerLocked} onChange={handleDraftChange} onTriggerConfigChange={handleTriggerConfigChange} />
                 </div>
 
                 {/* Top-right — autosave indicator (while editing), the
@@ -718,7 +721,7 @@ const AutomationFloat: React.FC = () => {
 // Provider wraps the whole screen (not just the panel) so future slots — node
 // styles, header treatments — can register without moving anything.
 const AutomationFloatScreen: React.FC = () => (
-    <ProtoVariantsProvider slots={[LEFT_PANEL_SLOT, EDITING_MODEL_SLOT, HEADER_SLOT]}>
+    <ProtoVariantsProvider slots={[LEFT_PANEL_SLOT, EDITING_MODEL_SLOT, HEADER_SLOT, TRIGGER_CARD_SLOT]}>
         <AutomationFloat />
     </ProtoVariantsProvider>
 );

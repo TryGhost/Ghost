@@ -55,9 +55,13 @@ const TRIGGER_PICKER_OPTIONS: PickerOption<TriggerType>[] = TRIGGER_OPTIONS.map(
 interface TriggerConfigFormProps {
     config: TriggerConfig;
     onChange: (next: TriggerConfig) => void;
+    // Phase-1 lock (see float/trigger-card-model): the select stays visible but
+    // disabled — the card still says what starts the flow — and the disclosed
+    // tier fields don't render at all rather than stacking disabled controls.
+    locked?: boolean;
 }
 
-export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({config, onChange}) => {
+export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({config, onChange, locked = false}) => {
     const isPaid = config.type === 'paid_subscription_starts';
     const criteria = availableCriteria(config);
     const [triggerPickerOpen, setTriggerPickerOpen] = useState(false);
@@ -103,20 +107,21 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({config, onC
                 a beat apart in meaning with nothing to tell them apart. */}
             <OptionPicker
                 align="start"
-                open={triggerPickerOpen}
+                open={!locked && triggerPickerOpen}
                 options={TRIGGER_PICKER_OPTIONS}
                 value={config.type}
                 onOpenChange={setTriggerPickerOpen}
                 onSelect={changeType}
             >
-                <Button className="h-9 w-full justify-between px-3 font-normal" type="button" variant="outline">
+                <Button className="h-9 w-full justify-between px-3 font-normal" disabled={locked} type="button" variant="outline">
                     {triggerLabel(config)}
                     <LucideIcon.ChevronDown className="opacity-50" />
                 </Button>
             </OptionPicker>
 
-            {/* Only the paid trigger watches tiers at all. */}
-            {isPaid && (
+            {/* Only the paid trigger watches tiers at all — and locked, the
+                disclosed fields go entirely rather than rendering disabled. */}
+            {isPaid && !locked && (
                 <Stack gap="sm">
                     {/* Paired with the exit label below: enters/exits, each a stem its
                         own chips finish. */}
@@ -139,7 +144,7 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({config, onC
                 </Stack>
             )}
 
-            <Stack gap="sm">
+            {!locked && <Stack gap="sm">
                 {/* The label opens a sentence the chips finish, so each chip can be a
                     bare verb phrase instead of repeating "Member" three times. */}
                 <Label className="text-muted-foreground">Member exits when they</Label>
@@ -154,7 +159,7 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({config, onC
                         />
                     ))}
                 </Inline>
-            </Stack>
+            </Stack>}
         </Stack>
     );
 };

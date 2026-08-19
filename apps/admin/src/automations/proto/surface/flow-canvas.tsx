@@ -156,7 +156,7 @@ const FlowStepNode: React.FC<NodeProps> = ({data}) => {
                             // right-hand analytics sheet.
                             <button
                                 aria-label="View email analytics"
-                                className="nodrag nopan w-full rounded-lg text-left transition-colors hover:bg-muted/40 focus-visible:bg-muted/40 focus-visible:outline-none"
+                                className="nodrag nopan -mx-3 mt-3 -mb-3 w-[calc(100%+1.5rem)] rounded-lg p-3 text-left transition-colors hover:bg-muted/40 focus-visible:bg-muted/40 focus-visible:outline-none"
                                 type="button"
                                 onClick={(e) => {
                                     e.stopPropagation();
@@ -202,7 +202,7 @@ export const SurfaceFlowCanvas: React.FC<SurfaceFlowCanvasProps> = ({automation,
     const [analyticsActionId, setAnalyticsActionId] = useState<string | null>(null);
     const analyticsAction = analyticsActionId ? orderActions(automation).find(a => a.id === analyticsActionId) : undefined;
     const sheetEmail: SheetEmail | null = analyticsAction?.type === 'send_email' && analyticsAction.stats
-        ? {actionId: analyticsAction.id, stats: analyticsAction.stats}
+        ? {actionId: analyticsAction.id, subject: analyticsAction.data.email_subject || 'Untitled', stats: analyticsAction.stats}
         : null;
 
     const {nodes, edges, contentBottom} = useMemo(() => {

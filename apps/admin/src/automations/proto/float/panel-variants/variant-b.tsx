@@ -1,5 +1,5 @@
 import React, {useEffect, useMemo, useState} from 'react';
-import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger, InputGroup, InputGroupAddon, InputGroupInput, MetricValue, Table, TableBody, TableCell, TableHeader, TableRow} from '@tryghost/shade/components';
+import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger, InputGroup, InputGroupAddon, InputGroupInput, MetricValue, Table, TableBody, TableCell, TableHeader, TableRow} from '@tryghost/shade/components';
 import {Box, Inline, Stack, Text} from '@tryghost/shade/primitives';
 import {FilterBar, GhAreaChart} from '@tryghost/shade/patterns';
 import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
@@ -256,12 +256,17 @@ export const LeftPanelBase: React.FC<LeftPanelProps & {statusLeads?: boolean}> =
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Entered</DropdownMenuLabel>
-                            <DropdownMenuRadioGroup value={range} onValueChange={setRange}>
-                                {RANGE_OPTIONS.map(option => (
-                                    <DropdownMenuRadioItem key={option.value} value={option.value}>{option.label}</DropdownMenuRadioItem>
-                                ))}
-                            </DropdownMenuRadioGroup>
+                            <DropdownMenuLabel>Entries</DropdownMenuLabel>
+                            {/* Trailing check, not the radio bullet: Shade's active-option
+                                convention (the Filters pattern's option rows, SelectItem) puts
+                                a check at the end of the row. Opacity rather than conditional
+                                render so rows keep a stable width. */}
+                            {RANGE_OPTIONS.map(option => (
+                                <DropdownMenuItem key={option.value} onSelect={() => setRange(option.value)}>
+                                    {option.label}
+                                    <LucideIcon.Check className={cn('ms-auto text-primary', range === option.value ? 'opacity-100' : 'opacity-0')} />
+                                </DropdownMenuItem>
+                            ))}
                         </DropdownMenuContent>
                     </DropdownMenu>
                     {/* Last in the row, past the filter. It hides this pane, so it lives
@@ -365,10 +370,11 @@ export const LeftPanelBase: React.FC<LeftPanelProps & {statusLeads?: boolean}> =
                     stacking this bar's own top padding on top of that read as a gap
                     between the chips and the header rather than as the chips sitting
                     under it. */}
-                {/* No border-b when stuck: the table header directly beneath draws
-                    its own bottom rule, and a rule above it as well boxed the header
-                    in between two lines. */}
-                <div ref={stickyBarRef} className={cn('sticky top-0 z-20 bg-surface-elevated px-6', stuck && 'pb-4')}>
+                {/* Border only while stuck: collapsed, the bar has no height, and
+                    an unconditional rule would hang above the table as a stray line.
+                    Stuck, it marks where the pinned chrome ends and the scrolling
+                    rows begin. */}
+                <div ref={stickyBarRef} className={cn('sticky top-0 z-20 bg-surface-elevated px-6', stuck && 'border-b border-border-default pb-4')}>
                     <div className={cn('grid transition-[grid-template-rows,opacity] duration-200 ease-out', stuck ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0')}>
                         <div className="overflow-hidden">
                             <div className="flex gap-2">
