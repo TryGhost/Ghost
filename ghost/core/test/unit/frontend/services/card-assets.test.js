@@ -23,6 +23,61 @@ const MANIFEST = {
 
 const expectedHash = content => crypto.createHash('sha256').update(content).digest('base64url').substring(0, 16);
 
+describe('Card Asset Manifest Builder', function () {
+    let testDir,
+        manifestPath,
+        manifest;
+
+    beforeAll(async function () {
+        testDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ghost-card-assets-builder-tests-'));
+        manifestPath = path.join(testDir, 'cards.manifest.json');
+
+        const cssDir = path.join(testDir, 'css');
+        await fs.mkdir(cssDir);
+        await Promise.all([
+            fs.writeFile(path.join(cssDir, 'gallery.css'), '.gallery { color: red; }'),
+            fs.writeFile(path.join(cssDir, 'header.css'), '.kg-header-card { color: blue; }'),
+            fs.writeFile(path.join(cssDir, 'header_v2.css'), '.kg-header-card.kg-v2 { color: green; }')
+        ]);
+
+        const {buildType} = await import('../../../../scripts/build-card-assets.mjs');
+        manifest = {css: await buildType('css', testDir)};
+        await fs.writeFile(manifestPath, JSON.stringify(manifest));
+    });
+
+    afterAll(async function () {
+        await fs.rm(testDir, {recursive: true});
+    });
+
+    it('groups every source file for a card under its public card name', function () {
+        assert.deepEqual(Object.keys(manifest.css), ['gallery', 'header']);
+        assert.match(manifest.css.header, /\.kg-header-card\{/);
+        assert.match(manifest.css.header, /\.kg-header-card\.kg-v2\{/);
+        assert.ok(manifest.css.header.indexOf('.kg-header-card{') < manifest.css.header.indexOf('.kg-header-card.kg-v2{'));
+    });
+
+    it('excludes every grouped chunk by the public card name', function () {
+        const cardAssets = new CardAssetService({
+            manifest: manifestPath,
+            config: {exclude: ['header']}
+        });
+
+        assert.deepEqual(cardAssets.getCardNames('css'), ['gallery']);
+        assert.doesNotMatch(cardAssets.getBundle('css').content, /\.kg-header-card/);
+    });
+
+    it('includes every grouped chunk by the public card name', function () {
+        const cardAssets = new CardAssetService({
+            manifest: manifestPath,
+            config: {include: ['header']}
+        });
+
+        assert.deepEqual(cardAssets.getCardNames('css'), ['header']);
+        assert.match(cardAssets.getBundle('css').content, /\.kg-header-card\{/);
+        assert.match(cardAssets.getBundle('css').content, /\.kg-header-card\.kg-v2\{/);
+    });
+});
+
 describe('Card Asset Service', function () {
     let testDir,
         manifestPath;
