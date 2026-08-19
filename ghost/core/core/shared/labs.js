@@ -52,6 +52,10 @@ const PRIVATE_FEATURES = [
     'pictureImageFormats',
 <<<<<<< HEAD
     'getHelperDeduplication',
+<<<<<<< HEAD
+=======
+    'navigationIcons',
+>>>>>>> 7d06e8d6ec (Remove unrelated code)
     'membersCustomFields',
     'paywallImprovements',
     'giftSubCustomization',
