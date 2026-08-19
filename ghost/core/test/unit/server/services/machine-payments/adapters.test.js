@@ -2,6 +2,10 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
 const {
+    formatPrice,
+    settlementReference
+} = require('../../../../../core/server/services/machine-payments/adapters/x402-adapter');
+const {
     MppAdapter,
     TEMPO_USDC,
     TEMPO_DECIMALS,
@@ -86,9 +90,35 @@ describe('Unit: server/services/machine-payments/adapters', function () {
         sinon.restore();
     });
 
+    it('formats USD x402 prices with a dollar prefix', function () {
+        assert.equal(formatPrice({amount: 100, currency: 'USD'}), '$1.00');
+    });
+
+    it('rejects non-USD x402 prices', function () {
+        assert.throws(
+            () => formatPrice({amount: 250, currency: 'EUR'}),
+            /USD only/
+        );
+    });
+
     it('exports the Tempo USDC contract address and 6-decimal precision', function () {
         assert.equal(TEMPO_USDC, '0x20c000000000000000000000b9537d11c60e8b50');
         assert.equal(TEMPO_DECIMALS, 6);
+    });
+
+    it('extracts an x402 settlement hash instead of storing the whole header', function () {
+        const header = Buffer.from(JSON.stringify({
+            success: true,
+            transaction: '0xabc123',
+            network: 'base',
+            payer: '0xpayer'
+        })).toString('base64');
+
+        assert.equal(settlementReference(header), '0xabc123');
+        assert.equal(
+            settlementReference('x'.repeat(300)).length,
+            64
+        );
     });
 
     it('parses a Payment-Receipt header from withReceipt', function () {

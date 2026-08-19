@@ -9,6 +9,7 @@ const {MachinePaymentsService, getDefaultTiersCurrency} = require('./service');
 const {DepositAddressStore} = require('./stripe/deposit-address-store');
 const {PaymentRecorder} = require('./stripe/payment-recorder');
 const {MppAdapter} = require('./adapters/mpp-adapter');
+const {X402Adapter} = require('./adapters/x402-adapter');
 const {MachinePaymentEventRepository} = require('./events/machine-payment-event-repository');
 const {ContentLoader} = require('./content-loader');
 const {Pricing} = require('./pricing');
@@ -44,6 +45,9 @@ class MachinePaymentsServiceWrapper {
             new MppAdapter({depositAddressStore, settingsCache, pricing})
         ];
 
+        // x402 is registered as a second rail; agents that don't speak it ignore it.
+        adapters.push(new X402Adapter({depositAddressStore}));
+
         this.service = new MachinePaymentsService({
             settingsCache,
             labsService: labs,
@@ -60,8 +64,13 @@ class MachinePaymentsServiceWrapper {
         // Only when machine payments is enabled — otherwise every Stripe-connected
         // boot (incl. E2E) would call Stripe. Failures leave SPT-only challenges.
         if (this.service.isEnabled()) {
-            const network = config.get('machinePayments:mpp:stripeNetwork') || 'tempo';
-            depositAddressStore.getOrCreateAddress({network}).catch((err) => {
+            const tempoNetwork = config.get('machinePayments:mpp:stripeNetwork') || 'tempo';
+            depositAddressStore.getOrCreateAddress({network: tempoNetwork}).catch((err) => {
+                logging.warn(err);
+            });
+
+            const x402Network = config.get('machinePayments:x402:stripeNetwork') || 'base';
+            depositAddressStore.getOrCreateAddress({network: x402Network}).catch((err) => {
                 logging.warn(err);
             });
         }

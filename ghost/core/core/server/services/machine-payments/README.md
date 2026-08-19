@@ -4,7 +4,7 @@ Accept pay-per-request access to paid-members markdown (`.md`) URLs from AI agen
 
 ## Product fences (v1)
 
-- **Protocol:** Machine Payments Protocol (MPP) only in v1 — Tempo USDC + Shared Payment Tokens (card / Link Agent Wallet). Additional adapters (e.g. x402) may land later behind the same payment-authorization boundary; they are not shipping here and do not change membership.
+- **Protocol:** Machine Payments Protocol (MPP) — Tempo USDC + Shared Payment Tokens (card / Link Agent Wallet). x402 (Base USDC via ExactEvmScheme) is a second adapter behind the same payment-authorization boundary; agents that don't speak it ignore it. Neither rail changes membership.
 - **Access model:** One-shot unlock of markdown bytes for that request. No member session, tier grant, or change to `content-gating` / Portal.
 - **Surface:** Explicit `.md` URLs only. Accept-header markdown stays public-only. HTML theme views and the Content API stay membership-gated.
 - **Pricing:** Site-wide amount. SPT charges use the configured fiat currency (Stripe card minimum applies). Tempo charges USDC using the same minor-unit amount; publishers should treat the crypto rail as USDC, not as on-chain publisher currency.

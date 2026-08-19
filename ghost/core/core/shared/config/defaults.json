@@ -280,6 +280,11 @@
     "sendWelcomeEmail": true,
     "stripeDirect": false,
     "machinePayments": {
+        "x402": {
+            "network": "eip155:8453",
+            "stripeNetwork": "base",
+            "facilitatorUrl": null
+        },
         "mpp": {
             "secretKey": null,
             "stripeNetwork": "tempo",
