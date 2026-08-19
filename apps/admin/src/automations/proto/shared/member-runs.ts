@@ -1,11 +1,10 @@
 import type {BadgeProps} from '@tryghost/shade/components';
 import type {AutomationRun, RunStatus} from './mock';
 
-// Shared member-run presentation data, so the dashboard and surface concepts
-// describe a run's status + progress identically. The surface concept aligned
-// these to Shade first; this lifts them into one place. The StatusPill component
-// lives in ./status-pill (kept separate so this stays a pure, non-component
-// module — the react-refresh/only-export-components rule).
+// Shared member-run presentation data, so everything describing a run's status +
+// progress says it identically. Deliberately a pure, non-component module (the
+// react-refresh/only-export-components rule), which is why the glyphs live
+// separately in ./run-glyphs.
 //
 // Each run status maps to a Shade Badge variant straight from Storybook for
 // shape + tint (completed = `success`, exited_early = `warning`); in_progress

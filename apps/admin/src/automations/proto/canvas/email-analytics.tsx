@@ -7,7 +7,7 @@ import {type ProtoActionLink, actionLinks} from '@/automations/proto/shared/emai
 import {formatRate} from '@/automations/components/canvas/format-stats';
 import {OffValue} from '@/automations/components/canvas/off-value';
 
-// Email analytics for the surface concept — hybrid with the real editor.
+// Email analytics for the proto's canvas — hybrid with the real editor.
 //
 // Reuses the shipped editor's shared, presentational bits verbatim (OffValue,
 // formatRate) and the same Shade chart/recharts building blocks, but is

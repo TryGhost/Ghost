@@ -185,7 +185,7 @@ const nodeTypes = {flowStep: FlowStepNode};
 // 'skipped' and 'upcoming' fade.
 const reachedStates: ReadonlySet<RunStepState> = new Set(['done', 'current']);
 
-interface SurfaceFlowCanvasProps {
+interface FlowCanvasProps {
     automation: AutomationDetail;
     selectedRun: AutomationRun | null;
     // Space to reserve on the left for a floating overlay (the performance card), so
@@ -195,7 +195,7 @@ interface SurfaceFlowCanvasProps {
     triggerConfig?: TriggerConfig;
 }
 
-export const SurfaceFlowCanvas: React.FC<SurfaceFlowCanvasProps> = ({automation, selectedRun, leftInset = 0, triggerConfig = DEFAULT_TRIGGER_CONFIG}) => {
+export const FlowCanvas: React.FC<FlowCanvasProps> = ({automation, selectedRun, leftInset = 0, triggerConfig = DEFAULT_TRIGGER_CONFIG}) => {
     const {canvasRef, onInit, size} = useCenteredColumn(leftInset);
     const focused = Boolean(selectedRun);
     // Which email the right-hand analytics sheet is reporting on.
@@ -393,4 +393,4 @@ export const SurfaceFlowCanvas: React.FC<SurfaceFlowCanvasProps> = ({automation,
     );
 };
 
-export default SurfaceFlowCanvas;
+export default FlowCanvas;

@@ -1,6 +1,6 @@
 import type {AutomationAction, AutomationDetail} from '@tryghost/admin-x-framework/api/automations';
 import {type TriggerConfig, exitCriterion, tierNames, triggerLabel} from '@/automations/proto/shared/trigger-config';
-import {type StepKind, formatWait, orderActions} from '@/automations/proto/surface/flow-utils';
+import {type StepKind, formatWait, orderActions} from '@/automations/proto/canvas/flow-utils';
 
 // What's in the draft that isn't live yet, as a plain list.
 //

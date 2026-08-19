@@ -3,7 +3,7 @@ import {Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHe
 import {Inline, Stack, Text} from '@tryghost/shade/primitives';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import type {ChangeEntry} from './change-summary';
-import {stepKindIcon} from '@/automations/proto/surface/flow-utils';
+import {stepKindIcon} from '@/automations/proto/canvas/flow-utils';
 
 // The unpublished-changes state for the 'banner' header variant (see
 // header-model.ts), as a control beside the header's Publish rather than

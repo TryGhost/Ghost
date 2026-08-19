@@ -89,8 +89,9 @@ type StepNodeData = {
     selected: boolean;
     // Email only: opens the right-hand analytics sheet.
     onOpenAnalytics?: () => void;
-    // Trigger node. Without onTriggerConfigChange the summary is read-only (the
-    // surface concept, which doesn't own trigger state).
+    // Trigger node. Without onTriggerConfigChange the summary is read-only — the
+    // read canvas passes no handler, since it shows what's running rather than
+    // what's being edited.
     triggerConfig?: TriggerConfig;
     onTriggerConfigChange?: (next: TriggerConfig) => void;
     // Phase-1 concept: trigger fixed after creation (see float/trigger-card-model).
@@ -294,7 +295,7 @@ const PlusEdge: React.FC<EdgeProps> = ({id, sourceX, sourceY, targetX, targetY, 
 
 const edgeTypes = {plus: PlusEdge};
 
-interface SurfaceEditCanvasProps {
+interface EditCanvasProps {
     draft: AutomationDetail;
     onChange: (next: AutomationDetail) => void;
     // Trigger config lives with the screen (it isn't part of AutomationDetail yet).
@@ -304,7 +305,7 @@ interface SurfaceEditCanvasProps {
     triggerLocked?: boolean;
 }
 
-export const SurfaceEditCanvas: React.FC<SurfaceEditCanvasProps> = ({draft, onChange, triggerConfig, onTriggerConfigChange, triggerLocked = false}) => {
+export const EditCanvas: React.FC<EditCanvasProps> = ({draft, onChange, triggerConfig, onTriggerConfigChange, triggerLocked = false}) => {
     const {canvasRef, onInit, size} = useCenteredColumn();
     const [selectedId, setSelectedId] = useState<string | null>(null);
     // Which email the right-hand analytics sheet is reporting on.
@@ -483,4 +484,4 @@ export const SurfaceEditCanvas: React.FC<SurfaceEditCanvasProps> = ({draft, onCh
     );
 };
 
-export default SurfaceEditCanvas;
+export default EditCanvas;

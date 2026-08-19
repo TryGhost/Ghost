@@ -14,9 +14,9 @@ import {LeftPanel} from './left-panel';
 import {ProtoVariantSwitcher, ProtoVariantsProvider} from '@/automations/proto/shared/proto-variant-switcher';
 import {DEFAULT_TRIGGER_CONFIG, type TriggerConfig} from '@/automations/proto/shared/trigger-config';
 import {useProtoVariant} from '@/automations/proto/shared/proto-variants';
-import {CANVAS_SURFACE} from '@/automations/proto/surface/flow-utils';
-import {SurfaceEditCanvas as FloatEditCanvas} from '@/automations/proto/surface/edit-canvas';
-import {SurfaceFlowCanvas as FloatFlowCanvas} from '@/automations/proto/surface/flow-canvas';
+import {CANVAS_SURFACE} from '@/automations/proto/canvas/flow-utils';
+import {EditCanvas} from '@/automations/proto/canvas/edit-canvas';
+import {FlowCanvas} from '@/automations/proto/canvas/flow-canvas';
 import {useVersionLink} from '@/automations/proto/shared/use-version-link';
 
 type LiveStatus = 'active' | 'inactive';
@@ -151,8 +151,9 @@ const PublishChangesDialog: React.FC<{
  * Stop to unlock editing — the product VP wasn't bought into forcing that, so
  * the draft/published split does that job instead.)
  *
- * Reuses the surface concept's canvases directly (SurfaceEditCanvas /
- * SurfaceFlowCanvas) — the canvas itself isn't part of what "float" changes.
+ * The canvases live in proto/canvas/ — they were shared with a second concept
+ * before it was cut, and stayed separate because the flow itself isn't part of
+ * what this screen decides.
  */
 const AutomationFloat: React.FC = () => {
     const {id} = useParams<{id: string}>();
@@ -439,7 +440,7 @@ const AutomationFloat: React.FC = () => {
                     The inactive one is opacity-0 + pointer-events-none so clicks fall to
                     the active canvas beneath/above it. */}
                 <div className={cn('absolute inset-0 transition-opacity duration-150', showEditCanvas ? 'pointer-events-none opacity-0' : 'opacity-100')}>
-                    <FloatFlowCanvas automation={publishedAutomation} selectedRun={selectedRun} triggerConfig={publishedTriggerConfig} />
+                    <FlowCanvas automation={publishedAutomation} selectedRun={selectedRun} triggerConfig={publishedTriggerConfig} />
                 </div>
                 {/* Reviewing a member: the whole canvas takes an inset frame, stating
                     "you're inside this member's run" once at region scale instead of
@@ -481,7 +482,7 @@ const AutomationFloat: React.FC = () => {
                 )}
 
                 <div className={cn('absolute inset-0 transition-opacity duration-150', showEditCanvas ? 'opacity-100' : 'pointer-events-none opacity-0')}>
-                    <FloatEditCanvas draft={activeDraft} triggerConfig={triggerConfig} triggerLocked={triggerLocked} onChange={handleDraftChange} onTriggerConfigChange={handleTriggerConfigChange} />
+                    <EditCanvas draft={activeDraft} triggerConfig={triggerConfig} triggerLocked={triggerLocked} onChange={handleDraftChange} onTriggerConfigChange={handleTriggerConfigChange} />
                 </div>
 
             </div>
