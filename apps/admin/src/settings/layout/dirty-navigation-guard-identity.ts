@@ -5,7 +5,7 @@ import {type SettingsRouteHandle, settingsRouteChildren} from '@/settings/routes
 // dialog instance (tabs/steps) for the same record, any other leaf route is its own,
 // and section roots or anything outside settings count as leaving every dialog.
 export const dialogIdentity = (pathname: string): string => {
-    if (!pathname.startsWith('/settings')) {
+    if (pathname !== '/settings' && !pathname.startsWith('/settings/')) {
         return 'outside';
     }
     const match = matchRoutes(settingsRouteChildren, pathname.slice('/settings'.length) || '/')?.at(-1);
