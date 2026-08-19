@@ -12,6 +12,16 @@ export type Automation = {
     status: AutomationStatus;
 }
 
+export type AutomationStats = {
+    last_run_created_at: string | null;
+    total_run_count: number;
+    in_progress_run_count: number;
+}
+
+export type AutomationBrowseItem = Automation & {
+    stats: AutomationStats;
+}
+
 export type AutomationWaitAction = {
     id: string;
     type: 'wait';
@@ -62,7 +72,7 @@ export type EditAutomationPayload = {
 
 export interface AutomationsResponseType {
     meta?: Meta;
-    automations: Automation[];
+    automations: AutomationBrowseItem[];
 }
 
 export interface AutomationDetailResponseType {
