@@ -641,4 +641,19 @@ describe('Import members custom fields', () => {
         await expect.element(fieldSelect('email')).not.toBeInTheDocument();
     });
 
+    // Fire both DOM events in one task to cover Escape arriving before React commits the edit.
+    // userEvent adds task boundaries that let React settle and hide this race.
+    it('asks even when the dismissal lands before React has settled', async () => {
+        fakeCustomFieldsWorld();
+        await renderAdminApp('/members', FLAGS);
+        await openMappingStep();
+        await expect.element(fieldSelect('email')).toBeVisible();
+
+        const toggle = importToggle('nickname').element() as HTMLElement;
+        toggle.click();
+        document.dispatchEvent(new KeyboardEvent('keydown', {key: 'Escape', bubbles: true}));
+
+        await expect.element(page.getByText('Leave without importing?')).toBeVisible();
+    });
+
 });
