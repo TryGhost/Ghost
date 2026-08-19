@@ -48,7 +48,7 @@ describe("Migration tools export", () => {
         await dialog.getByRole("button", {name: "Export", exact: true}).click();
 
         // The dialog reaches a real done state once the download completes
-        await expect.element(dialog.getByText("Export downloaded", {exact: false})).toBeVisible();
+        await expect.element(dialog.getByText("Export complete", {exact: false})).toBeVisible();
         expect(download.lastRequest?.url).toContain("/exports/download/?components=content,members,analytics,themes,routes");
     });
 
@@ -64,7 +64,7 @@ describe("Migration tools export", () => {
         await dialog.getByRole("checkbox", {name: "Members"}).click();
         await dialog.getByRole("button", {name: "Export", exact: true}).click();
 
-        await expect.element(dialog.getByText("Export downloaded", {exact: false})).toBeVisible();
+        await expect.element(dialog.getByText("Export complete", {exact: false})).toBeVisible();
         expect(download.lastRequest?.url).toContain("/exports/download/?components=content,analytics,themes,routes");
     });
 
@@ -82,7 +82,7 @@ describe("Migration tools export", () => {
         // The error is surfaced, and we're back on the selection for a retry
         await expect.element(page.getByText("Something went wrong, please try again.")).toBeVisible();
         await expect.element(dialog.getByRole("button", {name: "Export", exact: true})).toBeVisible();
-        await expect.element(dialog.getByText("Export downloaded", {exact: false})).not.toBeInTheDocument();
+        await expect.element(dialog.getByText("Export complete", {exact: false})).not.toBeInTheDocument();
     });
 
     it("offers media and email delivery when an archive host is configured", async () => {

@@ -193,11 +193,11 @@ const ExportAllModal: React.FC<{open: boolean; onOpenChange: (open: boolean) => 
                     <>
                         <DialogHeader>
                             <DialogTitle className='flex items-center gap-2'>
-                                <LucideIcon.CircleCheck className='size-5 text-green-600' /> Export downloaded
+                                <LucideIcon.CircleCheck className='size-5 text-green-600' /> Export complete
                             </DialogTitle>
                         </DialogHeader>
                         <DialogDescription>
-                            Your export has been downloaded as a zip file.
+                            The data has been exported as a zip file. You can now close this window.
                         </DialogDescription>
                         <DialogFooter className='sm:justify-end'>
                             <Button onClick={() => handleOpenChange(false)}>Close</Button>
