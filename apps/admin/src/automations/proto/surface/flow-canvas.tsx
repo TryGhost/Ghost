@@ -4,8 +4,8 @@ import {Background, BackgroundVariant, type Edge, Handle, type Node, type NodePr
 import type {AutomationDetail, AutomationEmailStats} from '@tryghost/admin-x-framework/api/automations';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
 import type {AutomationRun, RunStepState} from '@/automations/proto/shared/mock';
-import {DEFAULT_TRIGGER_CONFIG, type TriggerConfig, triggerLabel, triggerSummary} from '@/automations/proto/shared/trigger-config';
-import {DETAIL_FOOTER_HEIGHT, EDGE_STROKE, REACT_FLOW_THEME, REGULAR_NODE_HEIGHT, STATS_FOOTER_HEIGHT, TERMINAL_NODE_HEIGHT, TRIGGER_SUMMARY_HEIGHT, type StepKind, formatWait, orderActions, panTranslateExtent, stackNodeY, stepKindIcon, useCenteredColumn} from './flow-utils';
+import {DEFAULT_TRIGGER_CONFIG, type TriggerConfig, triggerLabel, triggerReviewLabel, triggerSummary} from '@/automations/proto/shared/trigger-config';
+import {EDGE_STROKE, HIDDEN_HANDLE_STYLE, REACT_FLOW_THEME, REGULAR_NODE_HEIGHT, STATS_FOOTER_HEIGHT, TERMINAL_NODE_HEIGHT, TRIGGER_SUMMARY_HEIGHT, type StepKind, formatWait, orderActions, panTranslateExtent, stackNodeY, stepKindIcon, useCenteredColumn} from './flow-utils';
 import {EmailAnalyticsSheet, type SheetEmail} from './email-analytics-sheet';
 import {EmailStatsFooter} from './email-analytics';
 import {NODE_BODY_PADDING, NODE_CARD_SURFACE, NodeCard, NodeHeader, type NodeBorder} from './flow-node-shell';
@@ -19,95 +19,91 @@ const EMAIL_PREVIEW_HEIGHT = 260;
 
 const fmtDateTime = (iso: string): string => new Date(iso).toLocaleString(undefined, {month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'});
 
-type NodeKind = StepKind | 'terminal';
+type NodeKind = StepKind | 'terminal' | 'event';
 
 type FlowNodeData = {
     kind: NodeKind;
     title: string;
     subtitle: string;
     focused: boolean;
-    // 'exited' and 'failed' are synthetic — the step a member left the flow at,
-    // and one that ran but broke. Both arrive from the run as plain 'done' steps,
-    // which gave them the completed treatment on the two cards that mean the
-    // opposite.
-    state?: RunStepState | 'exited' | 'failed';
+    state?: RunStepState;
+    // Event nodes only: what kind of between-steps event this card is.
+    eventVariant?: 'exited' | 'failed';
+    // Email only, review mode: the send went out but delivery failed, so the
+    // title says "Sent email" rather than claiming the member received it.
+    sentOnly?: boolean;
     // Supporting text ("Opened (1 link)"), the timestamp, and an optional override
     // for the badge's word. Kept as three fields rather than one pre-joined string
     // so the line can style each part differently.
+    // stateDetail only surfaces for current steps now (the header's trailing
+    // "Resumes Jul 24"); done steps surface stateAt instead. Kept as data for
+    // both, since which one the header wants is presentation.
     stateDetail?: string | null;
     stateAt?: string | null;
-    stateLabel?: string;
     stats?: AutomationEmailStats;
     // Trigger node: the one-line config summary (read-only here — configuring
-    // happens on the edit canvas).
+    // happens on the edit canvas), and the member-voice title for review mode.
     summary?: string;
+    reviewLabel?: string;
     // Email node: opens the right-hand analytics sheet, and goes blue while that
     // sheet is reporting on it.
     onOpenAnalytics?: () => void;
     analyticsOpen?: boolean;
 };
 
-// The line at the foot of a card while a run is in focus: what happened to this
-// member here, and when.
+// Review state lives in the header now, not a footer. The leading chip swaps
+// its step-kind icon for the run-state glyph in the badge treatment — pastel
+// colour/20 fill, the darker -600 foreground in light (plain alias in dark) —
+// and the step's timestamp sits at the header's far right.
 //
-// Format is `Outcome · When`, with exactly one separator. The outcome leads
-// because it's the part that varies — read down a column of cards the timestamps
-// all look alike, so putting them second gives the eye a stable left edge to scan
-// and a stable gutter to ignore. Qualifiers ride in parentheses rather than after
-// a dash, so a line never carries two marks at two levels of meaning.
-//
-// The state glyph leads the line: same green check and blue in-progress arc the
-// runs table uses, so the step a member is sitting at is marked the way their row
-// is. States with nothing to mark (not reached, skipped) run text-only rather
-// than inventing a glyph for an absence.
-// The badge version tried here read as too busy — a coloured pill on every card
-// competed with the cards themselves rather than sitting quietly at their foot.
-// Back to one muted text style, with only the leading icon carrying colour. The
-// three custom glyphs are drawn on the same circle at the same weight
-// specifically so this row keeps a rhythm even without the badge doing it —
-// same shape, four things happening to it.
-const STATE_ICON: Partial<Record<NonNullable<FlowNodeData['state']>, {className: string; glyph: React.ReactNode}>> = {
-    done: {className: 'text-green-600 dark:text-green', glyph: <CompletedGlyph />},
-    current: {className: 'text-blue-600 dark:text-blue', glyph: <InProgressGlyph />},
-    exited: {className: 'text-muted-foreground', glyph: <ExitedGlyph />},
-    failed: {className: 'text-red-600 dark:text-red', glyph: <LucideIcon.CircleAlert className="size-4 shrink-0" strokeWidth={2} />}
+// Only the two states a step can actually BE in. Exits and failures aren't step
+// states any more — the step itself completed (the email was received; the send
+// went out) — they're events between steps, rendered as their own card below.
+// Skipped/upcoming cards keep the neutral chip: nothing happened, so there's no
+// state to paint.
+const STATE_CHIP: Partial<Record<RunStepState, {className: string; glyph: React.ElementType}>> = {
+    done: {className: 'bg-green/20 text-green-600 dark:text-green', glyph: CompletedGlyph},
+    current: {className: 'bg-blue/20 text-blue-600 dark:text-blue', glyph: InProgressGlyph}
 };
 
-const RunDetailLine: React.FC<{
-    state?: FlowNodeData['state'];
-    label?: string;
-    detail?: string | null;
-    at?: string | null;
-}> = ({state, label, detail, at}) => {
-    const icon = state ? STATE_ICON[state] : undefined;
-    // The visible phrase leads with what happened; label only fills in where
-    // there's no detail to lead with (the trigger's "Entered" — enrolling isn't a
-    // step outcome the way "Opened" or "Unsubscribed" is). Timestamp trails behind
-    // the same single separator the format uses everywhere else.
-    const text = [detail ?? label, at].filter(Boolean).join(' · ');
-    return (
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            {icon && <span className={cn('shrink-0', icon.className)}>{icon.glyph}</span>}
-            {text && <span className="min-w-0 truncate">{text}</span>}
-        </div>
-    );
-};
+// CircleAlert wrapped to the ElementType shape the chip slot takes.
+function FailedGlyph({className}: {className?: string}) {
+    return <LucideIcon.CircleAlert className={cn('size-4 shrink-0', className)} strokeWidth={2} />;
+}
 
 const FlowStepNode: React.FC<NodeProps> = ({data}) => {
     const d = data as FlowNodeData;
     const done = d.focused && d.state === 'done';
     const current = d.focused && d.state === 'current';
-    const exited = d.focused && d.state === 'exited';
-    const failed = d.focused && d.state === 'failed';
     const muted = d.focused && (d.state === 'skipped' || d.state === 'upcoming');
     const isEmail = d.kind === 'email';
+
+    // The between-steps event: where the run ended, as its own card in the flow
+    // rather than a recolouring of the step before it. Shaped like the wait card
+    // (header only), because it narrates one fact. A member event (unsubscribed,
+    // upgraded) reads in the exit treatment; a system fault (a bounce coming back
+    // from the mail provider after a successful send) reads in the failure one —
+    // the step above keeps its completed state either way, because it did happen.
+    if (d.kind === 'event') {
+        const failedEvent = d.eventVariant === 'failed';
+        return (
+            <NodeCard border={failedEvent ? 'failed' : 'exited'}>
+                <NodeHeader
+                    chipClassName={failedEvent ? 'bg-red/20 text-red-600 dark:text-red' : 'bg-muted text-muted-foreground'}
+                    icon={failedEvent ? FailedGlyph : ExitedGlyph}
+                    meta={d.stateAt}
+                    title={d.title}
+                />
+            </NodeCard>
+        );
+    }
 
     if (d.kind === 'terminal') {
         const terminalBorder = current ? 'border-blue' : done ? 'border-green' : 'border-border-default';
         // (Terminal already renders muted for an exited run — see terminalState.)
         return (
             <div className={cn('flex w-[400px] items-center justify-center gap-2 rounded-full border px-4 py-2 text-sm font-medium', NODE_CARD_SURFACE, terminalBorder, muted && 'opacity-60')}>
-                <Handle position={Position.Top} style={{opacity: 0}} type="target" />
+                <Handle position={Position.Top} style={HIDDEN_HANDLE_STYLE} type="target" />
                 {done && <CompletedGlyph className="text-green-600 dark:text-green" />}
                 <span className={cn(done && 'text-green-600 dark:text-green', muted && 'text-muted-foreground')}>{d.title}</span>
             </div>
@@ -116,56 +112,66 @@ const FlowStepNode: React.FC<NodeProps> = ({data}) => {
 
     // Analytics wins the border: it only ever opens with no run in focus, so it
     // can't be masking a run state here.
-    const border: NodeBorder = d.analyticsOpen ? 'selected' : failed ? 'failed' : current ? 'current' : exited ? 'exited' : done ? 'done' : 'default';
+    const border: NodeBorder = d.analyticsOpen ? 'selected' : current ? 'current' : done ? 'done' : 'default';
     // The chip stays the step-kind icon in every state. Run state was tried here
     // and moved: it took the position that identifies a card at a distance, and
     // the flow stopped being scannable by shape. It now leads the detail line at
     // the foot of the card, next to the words it qualifies.
 
-    // Single-line header (no overline) matching edit mode's one-line title. Email flips
-    // perspective: "Send email" when previewing the flow you built (read), "Receive
-    // email" once a member's run is in focus. Trigger/wait read the same either way.
+    // Single-line header (no overline) matching edit mode's one-line title.
+    //
+    // Reviewing a run, every title narrates what this member did, with the tense
+    // tracking their position: past above where they are ("Received email",
+    // "Waited 7 days"), present at it ("Waiting 7 days"), and the plain
+    // member-perspective form below it ("Receive email" — cards the run hasn't
+    // reached describe the flow, not events). A failed delivery says "Sent
+    // email": the send did complete, and the failure event card below carries
+    // what came back. Without a run in focus the titles describe the flow you
+    // built ("Send email").
     const label = isEmail
-        ? (d.focused ? 'Receive email' : 'Send email')
-        : d.kind === 'wait' ? `Wait ${d.subtitle}` : d.subtitle;
+        ? (!d.focused ? 'Send email'
+            : done ? (d.sentOnly ? 'Sent email' : 'Received email')
+                : current ? 'Receiving email' : 'Receive email')
+        : d.kind === 'wait'
+            ? `${done ? 'Waited' : current ? 'Waiting' : 'Wait'} ${d.subtitle}`
+            : d.focused ? (d.reviewLabel ?? d.subtitle) : d.subtitle;
 
+    const chip = d.focused && d.state ? STATE_CHIP[d.state] : undefined;
+    // Far right of the header: when the step happened, when it will ("Resumes
+    // Jul 24" on a current step), or nothing for steps with no time to name.
+    const meta = d.focused ? (d.stateAt ?? (current ? d.stateDetail : null)) : null;
     return (
         <NodeCard border={border} muted={muted}>
-                <NodeHeader icon={stepKindIcon[d.kind]} title={label} />
-                {isEmail ? (
+                <NodeHeader
+                    chipClassName={chip?.className}
+                    icon={chip?.glyph ?? stepKindIcon[d.kind]}
+                    meta={meta}
+                    title={label}
+                />
+                {isEmail && (
                     <div className={NODE_BODY_PADDING}>
                         <EmailPreview subject={d.subtitle || 'Untitled'} />
-                        {d.focused
-                            ? (d.focused && <div className="mt-[24px]"><RunDetailLine at={d.stateAt} detail={d.stateDetail} label={d.stateLabel} state={d.state} /></div>)
-                            : (d.stats && (
-                                // Clicking the summary opens the deeper read in the
-                                // right-hand analytics sheet.
-                                <button
-                                    aria-label="View email analytics"
-                                    className="nodrag nopan w-full rounded-lg text-left transition-colors hover:bg-muted/40 focus-visible:bg-muted/40 focus-visible:outline-none"
-                                    type="button"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        d.onOpenAnalytics?.();
-                                    }}
-                                >
-                                    <EmailStatsFooter divider={false} stats={d.stats} />
-                                </button>
-                            ))}
+                        {!d.focused && d.stats && (
+                            // Clicking the summary opens the deeper read in the
+                            // right-hand analytics sheet.
+                            <button
+                                aria-label="View email analytics"
+                                className="nodrag nopan w-full rounded-lg text-left transition-colors hover:bg-muted/40 focus-visible:bg-muted/40 focus-visible:outline-none"
+                                type="button"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    d.onOpenAnalytics?.();
+                                }}
+                            >
+                                <EmailStatsFooter divider={false} stats={d.stats} />
+                            </button>
+                        )}
                     </div>
-                ) : (
-                    <>
-                        {/* Trigger: what this automation listens for, and how many criteria
-                            end it. Read-only on this canvas. */}
-                        {d.kind === 'trigger' && !d.focused && d.summary && (
-                            <div className={cn(NODE_BODY_PADDING, 'text-sm text-muted-foreground')}>{d.summary}</div>
-                        )}
-                        {d.focused && (
-                            <div className={NODE_BODY_PADDING}>
-                                <RunDetailLine at={d.stateAt} detail={d.stateDetail} label={d.stateLabel} state={d.state} />
-                            </div>
-                        )}
-                    </>
+                )}
+                {/* Trigger: what this automation listens for, and how many criteria
+                    end it. Read-only on this canvas. */}
+                {d.kind === 'trigger' && !d.focused && d.summary && (
+                    <div className={cn(NODE_BODY_PADDING, 'text-sm text-muted-foreground')}>{d.summary}</div>
                 )}
         </NodeCard>
     );
@@ -177,7 +183,7 @@ const nodeTypes = {flowStep: FlowStepNode};
 // and 'failed' belong with them: the step is one the member travelled to, so the
 // line into it is a path taken — a different outcome, not a shorter journey. Only
 // 'skipped' and 'upcoming' fade.
-const reachedStates: ReadonlySet<RunStepState | 'exited' | 'failed'> = new Set(['done', 'current', 'exited', 'failed']);
+const reachedStates: ReadonlySet<RunStepState> = new Set(['done', 'current']);
 
 interface SurfaceFlowCanvasProps {
     automation: AutomationDetail;
@@ -219,11 +225,9 @@ export const SurfaceFlowCanvas: React.FC<SurfaceFlowCanvasProps> = ({automation,
             title: 'Trigger',
             subtitle: triggerLabel(triggerConfig),
             summary: triggerSummary(triggerConfig),
+            reviewLabel: triggerReviewLabel(triggerConfig ?? DEFAULT_TRIGGER_CONFIG),
             focused,
             state: focused ? 'done' : undefined,
-            // The trigger's badge names what the member did, not the step's state —
-            // "Completed" for the moment someone joined would be nonsense.
-            stateLabel: 'Entered',
             stateDetail: null,
             stateAt: selectedRun ? fmtDateTime(selectedRun.enrolled_at) : null
         }});
@@ -243,27 +247,43 @@ export const SurfaceFlowCanvas: React.FC<SurfaceFlowCanvasProps> = ({automation,
                 if (step?.state === 'done' && step.occurred_at) {
                     stateAt = fmtDateTime(step.occurred_at);
                 }
-                // No badge for these, so the words carry it alone.
-                if (!stateDetail && step?.state === 'upcoming') {
-                    stateDetail = 'Not reached';
-                } else if (!stateDetail && step?.state === 'skipped') {
-                    stateDetail = 'Skipped';
-                }
             }
             descriptors.push({id: action.id, data: {
                 kind: isEmail ? 'email' : 'wait',
                 title: isEmail ? 'Send email' : 'Wait',
                 subtitle: isEmail ? (action.data.email_subject || 'Untitled') : formatWait(action.data.wait_hours),
                 focused,
-                // Failure wins over exit: when the send broke, that's what the card
-                // has to say, even though it's also where the run ended.
-                state: step?.failed ? 'failed' : action.id === exitedAtActionId ? 'exited' : step?.state,
+                // The step keeps its own (raw) state even where the run ended —
+                // the email WAS received, the send DID go out. What ended the run
+                // is the event node inserted after it, not a repaint of this card.
+                state: step?.state,
+                sentOnly: Boolean(step?.failed),
                 stateDetail,
                 stateAt,
                 stats,
                 onOpenAnalytics: () => setAnalyticsActionId(action.id),
                 analyticsOpen: analyticsActionId === action.id
             }});
+
+            // The between-steps event card, after the step the run ended at. A
+            // failed step's event names what the provider reported (the step's
+            // detail); a member exit names the exit reason. Timestamped with the
+            // step it follows — the closest moment the data has for it.
+            if (action.id === exitedAtActionId && selectedRun) {
+                const failedExit = Boolean(step?.failed);
+                descriptors.push({id: '__exit__', data: {
+                    kind: 'event',
+                    title: failedExit
+                        ? (step?.detail ?? 'Delivery failed')
+                        : (selectedRun.exit_reason ?? 'Exited early'),
+                    subtitle: '',
+                    focused,
+                    // 'done' so the edge INTO this card reads as path travelled.
+                    state: 'done',
+                    eventVariant: failedExit ? 'failed' : 'exited',
+                    stateAt: step?.occurred_at ? fmtDateTime(step.occurred_at) : null
+                }});
+            }
         });
 
         // Terminal marker.
@@ -281,20 +301,17 @@ export const SurfaceFlowCanvas: React.FC<SurfaceFlowCanvasProps> = ({automation,
             state: terminalState
         }});
 
-        // Height of a node = base + email preview (email only) + whichever footer it
-        // renders. When focused, a step shows its single-line run detail; unfocused, an
-        // email shows its stats.
+        // Height of a node = base + email preview (email only) + footer. Focused
+        // cards carry no footer any more — run state lives in the header — so the
+        // only footer left is the unfocused email's stats row.
         const nodeHeight = (data: FlowNodeData): number => {
             if (data.kind === 'terminal') {
                 return TERMINAL_NODE_HEIGHT;
             }
             const preview = data.kind === 'email' ? EMAIL_PREVIEW_HEIGHT : 0;
-            // The trigger's config summary only shows while no run is in focus (a
-            // focused run shows its enrolment time in that slot instead).
+            // The trigger's config summary only shows while no run is in focus.
             const summary = (!focused && data.kind === 'trigger' && data.summary) ? TRIGGER_SUMMARY_HEIGHT : 0;
-            const footer = focused
-                ? (data.stateDetail ? DETAIL_FOOTER_HEIGHT : 0)
-                : (data.stats ? STATS_FOOTER_HEIGHT : 0);
+            const footer = !focused && data.stats ? STATS_FOOTER_HEIGHT : 0;
             return REGULAR_NODE_HEIGHT + preview + summary + footer;
         };
         const ys = stackNodeY(descriptors.map(d => nodeHeight(d.data)));

@@ -1,7 +1,7 @@
 import React from 'react';
 import {Button} from '@tryghost/shade/components';
 import {Inline} from '@tryghost/shade/primitives';
-import {LucideIcon} from '@tryghost/shade/utils';
+import {LucideIcon, cn} from '@tryghost/shade/utils';
 import {StatusBadge} from '@/automations/proto/shared/status-badge';
 
 // The docked header for the 'bar' variant of HEADER_SLOT.
@@ -19,8 +19,7 @@ interface HeaderBarProps {
     title: string;
     status: 'active' | 'inactive';
     onBack: () => void;
-    // Absent when the editing model can't hide the pane, same contract the pane
-    // itself uses.
+    // Toggles the Performance pane; absent when the editing model can't hide it.
     onTogglePane?: () => void;
     paneCollapsed?: boolean;
     // The screen's chrome actions, passed as a node rather than rebuilt here so
@@ -38,23 +37,28 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
     actions
 }) => (
     <header className="relative z-30 flex h-16 shrink-0 items-center justify-between border-b border-border-default bg-surface-elevated px-4">
-        {/* Flush icon buttons, as in the floating variant's title cluster — each
-            carries its own padding, so a gap would space them twice. */}
         <Inline align="center" gap="none">
             <Button aria-label="Back to automations" size="icon" type="button" variant="ghost" onClick={onBack}>
                 <LucideIcon.ArrowLeft strokeWidth={2} />
             </Button>
+            {/* One chart-glyph toggle for both states, beside the back arrow — it
+                names what it summons (the Performance pane), and a single stable
+                control beats an X that moves into the pane and back out. The
+                label carries the state for screen readers. */}
             {onTogglePane && (
                 <Button
-                    // One icon for both states — it names the thing being toggled
-                    // rather than animating a direction. The label carries the state.
                     aria-label={paneCollapsed ? 'Show performance' : 'Hide performance'}
+                    aria-pressed={!paneCollapsed}
+                    // Filled while the pane is open — the same bg-muted the rail
+                    // buttons use for their active flyouts — so the button reads as
+                    // a toggle that's currently on, not just a repeat-action.
+                    className={cn(!paneCollapsed && 'bg-muted')}
                     size="icon"
                     type="button"
                     variant="ghost"
                     onClick={onTogglePane}
                 >
-                    <LucideIcon.PanelLeft strokeWidth={2} />
+                    <LucideIcon.ChartNoAxesColumn strokeWidth={2} />
                 </Button>
             )}
         </Inline>

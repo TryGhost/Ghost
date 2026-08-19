@@ -121,6 +121,13 @@ export const reconcileCriteria = (config: TriggerConfig, previous: TriggerConfig
 
 export const triggerLabel = (config: TriggerConfig): string => TRIGGER_OPTIONS.find(option => option.value === config.type)?.label ?? TRIGGER_OPTIONS[0].label;
 
+// The trigger's title while reviewing a member's run, where every card narrates
+// what THIS member did — "Subscribed", not the configuration-voice "Member
+// subscribes" the edit and read canvases use.
+export const triggerReviewLabel = (config: TriggerConfig): string => (
+    config.type === 'paid_subscription_starts' ? 'Started paid subscription' : 'Subscribed'
+);
+
 export const tierNames = (tierIds: string[]): string[] => TIER_OPTIONS.filter(tier => tierIds.includes(tier.id)).map(tier => tier.name);
 
 // The one-line summary shown wherever the trigger isn't editable (the read canvas).

@@ -27,12 +27,12 @@ interface SortHeadProps<K extends string> {
 export function SortHead<K extends string>({label, sortKey, sort, onSort, className}: SortHeadProps<K>): React.ReactElement {
     const active = sort.key === sortKey;
     return (
-        // Sticky-pinned below the search/chip bar (top: --stick-top, measured by
-        // useStickyList). An opaque fill matching the pane makes rows scroll under
-        // it; the border-collapse table means the row's own border-b won't stick, so
-        // the bottom divider is drawn as an inset box-shadow instead. z-10 sits under
-        // the bar's z-20.
-        <TableHead className={cn('sticky top-[var(--stick-top,80px)] z-10 bg-surface-elevated px-4 shadow-[inset_0_-1px_0_var(--border-default)]', className)}>
+        // Not sticky — only the chip bar pins; the column headers scroll away with
+        // their table (they used to pin beneath the bar, which stacked two rows of
+        // chrome over the list). The bottom rule stays an inset box-shadow from the
+        // sticky era: it doubles as the header's single divider now that the row's
+        // own borders are off (see the border-b-0 notes at the call sites).
+        <TableHead className={cn('px-4 shadow-[inset_0_-1px_0_var(--border-default)]', className)}>
             <TableHeadButton
                 className="font-medium text-muted-foreground normal-case"
                 // type="button" is required: Shade's Button sets no default type, so

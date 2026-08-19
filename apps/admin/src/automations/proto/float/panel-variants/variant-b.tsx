@@ -56,6 +56,20 @@ const STATUS_FACETS: {key: StatusKey; color: string; glyph: React.ReactNode}[] =
 const facetColor = (status: StatusKey): string => STATUS_FACETS.find(facet => facet.key === status)?.color ?? '';
 const facetGlyph = (status: StatusKey): React.ReactNode => STATUS_FACETS.find(facet => facet.key === status)?.glyph ?? null;
 
+// A run that ended on a system fault (a failed delivery) escalates its row icon
+// to a red alert — the one list state that's the publisher's to fix, so the one
+// allowed to call attention. It still counts and filters as Exited early; the
+// facet cards stay aggregate, only the member's own row raises its hand.
+const runFailed = (run: AutomationRun): boolean => run.steps.some(step => step.failed);
+
+const rowGlyph = (status: StatusKey, run: AutomationRun): React.ReactNode => (
+    runFailed(run) ? <LucideIcon.CircleAlert className="size-4 shrink-0" strokeWidth={2} /> : facetGlyph(status)
+);
+
+const rowColor = (status: StatusKey, run: AutomationRun): string => (
+    runFailed(run) ? 'text-red-600 dark:text-red' : facetColor(status)
+);
+
 const RANGE_OPTIONS: {value: string; label: string}[] = [
     {value: 'all', label: 'All time'},
     {value: '7', label: 'Last 7 days'},
@@ -186,7 +200,7 @@ export const LeftPanelBase: React.FC<LeftPanelProps & {statusLeads?: boolean}> =
                     chrome the automation's title is the only title on screen, and a
                     second one competing with it made the strip read as two headers. */}
                 {headerDocked && !searchOpen && (
-                    <Text size="lg" weight="semibold">Members</Text>
+                    <Text size="lg" weight="semibold">Performance</Text>
                 )}
                 {/* flex-1 + min-w-0, NOT w-full: w-full resolves against the whole
                     strip, overflows it once the gap and buttons are counted, and flex
@@ -251,12 +265,12 @@ export const LeftPanelBase: React.FC<LeftPanelProps & {statusLeads?: boolean}> =
                         </DropdownMenuContent>
                     </DropdownMenu>
                     {/* Last in the row, past the filter. It hides this pane, so it lives
-                        in it — a control on the thing it acts on. Collapsed, the screen
-                        puts it back beside the automation title, which is the only way
-                        back. */}
+                        in it — a control on the thing it acts on. X, not a panel glyph:
+                        open, the button's job is dismissal, and the chart icon it
+                        reopens with already names what comes back. */}
                     {onCollapse && (
                         <Button aria-label="Hide performance" size="icon" type="button" variant="ghost" onClick={onCollapse}>
-                            <LucideIcon.PanelLeft strokeWidth={2} />
+                            <LucideIcon.X strokeWidth={2} />
                         </Button>
                     )}
                 </Inline>
@@ -268,7 +282,7 @@ export const LeftPanelBase: React.FC<LeftPanelProps & {statusLeads?: boolean}> =
                 default, so it isn't a filter and doesn't earn a row. */}
             {range !== 'all' && (
                 <FilterBar className="shrink-0 px-6 pb-3">
-                    <Button className="rounded-full" size="sm" type="button" variant="outline" onClick={() => setRange('all')}>
+                    <Button size="sm" type="button" variant="outline" onClick={() => setRange('all')}>
                         Entered: {rangeLabel}
                         <LucideIcon.X className="size-3.5" strokeWidth={2} />
                     </Button>
@@ -281,7 +295,9 @@ export const LeftPanelBase: React.FC<LeftPanelProps & {statusLeads?: boolean}> =
                 pb-4 holds the count cards off the table header: with search moved to
                 the top strip, the sticky bar below collapses to nothing until it
                 sticks, so there's no chrome left in between to separate them. */}
-            <div className="flex flex-col gap-4 px-6 pt-2 pb-4">
+            {/* pt-0: the strip above already ends in pb-3, and its own top padding
+                on top of that held the chart too far off the Performance label. */}
+            <div className="flex flex-col gap-4 px-6 pt-0 pb-4">
                 <Box className="rounded-lg border border-border-default px-4 py-3">
                     <Stack gap="sm">
                         <MetricValue
@@ -349,7 +365,10 @@ export const LeftPanelBase: React.FC<LeftPanelProps & {statusLeads?: boolean}> =
                     stacking this bar's own top padding on top of that read as a gap
                     between the chips and the header rather than as the chips sitting
                     under it. */}
-                <div ref={stickyBarRef} className={cn('sticky top-0 z-20 bg-surface-elevated px-6', stuck && 'border-b border-border-default pb-4')}>
+                {/* No border-b when stuck: the table header directly beneath draws
+                    its own bottom rule, and a rule above it as well boxed the header
+                    in between two lines. */}
+                <div ref={stickyBarRef} className={cn('sticky top-0 z-20 bg-surface-elevated px-6', stuck && 'pb-4')}>
                     <div className={cn('grid transition-[grid-template-rows,opacity] duration-200 ease-out', stuck ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0')}>
                         <div className="overflow-hidden">
                             <div className="flex gap-2">
@@ -360,7 +379,11 @@ export const LeftPanelBase: React.FC<LeftPanelProps & {statusLeads?: boolean}> =
                                             key={facet.key}
                                             aria-pressed={active}
                                             className={cn(
-                                                'flex h-8 flex-1 items-center justify-center gap-1.5 rounded-full border px-3 text-sm transition-colors',
+                                                // rounded-md, not a pill — Shade's Filters
+                                                // pattern (the members page's chips) defaults
+                                                // to md, so filter-shaped controls share one
+                                                // radius everywhere.
+                                                'flex h-9 flex-1 items-center justify-center gap-1.5 rounded-md border px-3 text-sm transition-colors',
                                                 active ? 'border-foreground bg-muted-foreground/10' : 'border-border-default hover:bg-muted-foreground/5'
                                             )}
                                             title={facet.key}
@@ -368,7 +391,10 @@ export const LeftPanelBase: React.FC<LeftPanelProps & {statusLeads?: boolean}> =
                                             onClick={() => setStatusFilter(active ? null : facet.key)}
                                         >
                                             <span className={facet.color}>{facet.glyph}</span>
-                                            <span className="text-muted-foreground tabular-nums">{formatNumber(counts[facet.key] ?? 0)}</span>
+                                            {/* Selected lifts the count to full text colour — the border and
+                                                fill mark the chip, but keeping its number muted made the
+                                                active filter look no more current than the idle ones. */}
+                                            <span className={cn('tabular-nums', active ? 'text-foreground' : 'text-muted-foreground')}>{formatNumber(counts[facet.key] ?? 0)}</span>
                                         </button>
                                     );
                                 })}
@@ -380,8 +406,12 @@ export const LeftPanelBase: React.FC<LeftPanelProps & {statusLeads?: boolean}> =
                 {/* Member table. table-fixed keeps the Entered/Status widths steady. */}
                 <div className="px-6 pb-6">
                     <Table className="table-fixed" data-testid="float-entries-table">
-                        <TableHeader>
-                            <TableRow className="hover:bg-transparent">
+                        {/* border-b-0 on both: Shade gives thead and its row a bottom
+                            border, but this header's single rule is the SortHead cells'
+                            inset shadow (a border wouldn't travel when they stick) — left
+                            on, the two lines doubled up at rest. */}
+                        <TableHeader className="border-b-0">
+                            <TableRow className="border-b-0 hover:bg-transparent">
                                 {/* Status leading: the icon is the first thing in every
                                     row, so grouping rows by it is what clicking this
                                     header visibly does — the Member header sorts by
@@ -403,6 +433,11 @@ export const LeftPanelBase: React.FC<LeftPanelProps & {statusLeads?: boolean}> =
                                     <TableRow
                                         key={run.id}
                                         aria-selected={isSelected}
+                                        // Plain grey selection. A rounded blue ring was tried via a
+                                        // tr::before overlay (radius doesn't work on collapsed table
+                                        // rows directly) and broke row layout — positioned table rows
+                                        // aren't dependable. The canvas's blue review ring carries the
+                                        // "you're in this member's run" signal on its own.
                                         className={`cursor-pointer transition-colors ${isSelected ? 'bg-muted-foreground/10' : 'hover:bg-muted-foreground/5'}`}
                                         // Toggle: clicking the selected row again de-selects it.
                                         onClick={() => onSelectMember(isSelected ? null : run.id)}
@@ -410,7 +445,7 @@ export const LeftPanelBase: React.FC<LeftPanelProps & {statusLeads?: boolean}> =
                                         <TableCell className="min-w-0 px-4 py-4 group-hover:bg-transparent">
                                             {statusLeads ? (
                                                 <div className="flex min-w-0 items-center gap-2.5">
-                                                    <span className={cn('shrink-0', facetColor(status))} title={status}>{facetGlyph(status)}</span>
+                                                    <span className={cn('shrink-0', rowColor(status, run))} title={status}>{rowGlyph(status, run)}</span>
                                                     {/* One truncating span so a long name + reason
                                                         clips as a unit. The reason drops to muted —
                                                         with most rows bare, the few that speak don't
@@ -435,8 +470,8 @@ export const LeftPanelBase: React.FC<LeftPanelProps & {statusLeads?: boolean}> =
                                         {!statusLeads && (
                                             <TableCell className="w-20 px-4 py-4 text-center align-middle group-hover:bg-transparent">
                                                 {/* Icon only — the cards above name each state. */}
-                                                <div className={cn('flex justify-center', facetColor(status))} title={status}>
-                                                    {facetGlyph(status)}
+                                                <div className={cn('flex justify-center', rowColor(status, run))} title={status}>
+                                                    {rowGlyph(status, run)}
                                                 </div>
                                             </TableCell>
                                         )}

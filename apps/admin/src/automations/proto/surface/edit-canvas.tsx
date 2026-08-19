@@ -8,7 +8,7 @@ import {Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTi
 import {LucideIcon, cn} from '@tryghost/shade/utils';
 import {OptionPicker, type PickerOption} from '@/automations/proto/shared/option-picker';
 import {DEFAULT_TRIGGER_CONFIG, type TriggerConfig, availableCriteria, triggerSummary} from '@/automations/proto/shared/trigger-config';
-import {CANVAS_SURFACE, EDGE_STROKE, REACT_FLOW_THEME, REGULAR_NODE_HEIGHT, TAIL_NODE_HEIGHT, TRIGGER_SUMMARY_HEIGHT, type StepKind, formatWait, orderActions, panTranslateExtent, stackNodeY, stepKindIcon, useCenteredColumn} from './flow-utils';
+import {CANVAS_SURFACE, EDGE_STROKE, HIDDEN_HANDLE_STYLE, REACT_FLOW_THEME, REGULAR_NODE_HEIGHT, TAIL_NODE_HEIGHT, TRIGGER_SUMMARY_HEIGHT, type StepKind, formatWait, orderActions, panTranslateExtent, stackNodeY, stepKindIcon, useCenteredColumn} from './flow-utils';
 import {EmailAnalyticsSheet, type SheetEmail} from './email-analytics-sheet';
 import {EmailStatsFooter} from './email-analytics';
 import {NODE_BODY_PADDING, NodeCard, NodeHeader} from './flow-node-shell';
@@ -210,7 +210,7 @@ const TailNode: React.FC<NodeProps> = ({data}) => {
     const [open, setOpen] = useState(false);
     return (
         <div className="flex w-[400px]">
-            <Handle position={Position.Top} style={{opacity: 0}} type="target" />
+            <Handle position={Position.Top} style={HIDDEN_HANDLE_STYLE} type="target" />
             <AddStepPopover open={open} onOpenChange={setOpen} onPick={onPick}>
                 <button aria-label="Add step" className={`flex h-12 w-[400px] items-center justify-center rounded-lg border border-dashed border-border-default ${CANVAS_SURFACE} text-text-secondary transition-colors hover:border-border-strong focus-visible:border-border-strong focus-visible:outline-none`} type="button">
                     <LucideIcon.Plus className="size-5" strokeWidth={1.5} />

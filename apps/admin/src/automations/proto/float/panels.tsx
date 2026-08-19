@@ -290,12 +290,14 @@ export const CanvasSidePanel: React.FC<CanvasSidePanelProps> = ({scenario, selec
                 {/* Sticky control bar — search always; once stuck (the 2x2 cards have
                     scrolled off) a one-line chip row expands here in their place, via the
                     grid-rows 0fr→1fr height trick so the collapse animates. */}
-                <div ref={stickyBarRef} className={cn('sticky top-0 z-20 bg-surface-elevated px-6 py-4', stuck && 'border-b border-border-default')}>
+                {/* No border-b when stuck — see variant-b: the table header below
+                    draws the rule. */}
+                <div ref={stickyBarRef} className="sticky top-0 z-20 bg-surface-elevated px-6 py-4">
                 {/* Named only when the pane is a region of its own — under floating
                     chrome the automation's title is the only title on screen, and a
                     second one competing with it made the top read as two headers. */}
                 {headerDocked && (
-                    <Text className="pb-3" size="lg" weight="semibold">Members</Text>
+                    <Text className="pb-3" size="lg" weight="semibold">Performance</Text>
                 )}
                 {/* min-w-0 flex-1 on the input, not w-full: w-full resolves against the
                     whole bar and overflows it once the gap and the toggle are counted,
@@ -315,7 +317,7 @@ export const CanvasSidePanel: React.FC<CanvasSidePanelProps> = ({scenario, selec
                         collapsed, the screen puts it back beside the automation title. */}
                     {onCollapse && (
                         <Button aria-label="Hide performance" className="shrink-0" size="icon" type="button" variant="ghost" onClick={onCollapse}>
-                            <LucideIcon.PanelLeft strokeWidth={2} />
+                            <LucideIcon.X strokeWidth={2} />
                         </Button>
                     )}
                 </Inline>
@@ -334,7 +336,9 @@ export const CanvasSidePanel: React.FC<CanvasSidePanelProps> = ({scenario, selec
                                         aria-label={facet.label}
                                         aria-pressed={active}
                                         className={cn(
-                                            'flex h-8 flex-1 items-center justify-center gap-1.5 rounded-full border px-3 text-sm transition-colors [&_svg]:size-4',
+                                            // rounded-md to match the members page's filter
+                                            // chips (Shade Filters' default radius).
+                                            'flex h-9 flex-1 items-center justify-center gap-1.5 rounded-md border px-3 text-sm transition-colors [&_svg]:size-4',
                                             active ? 'border-foreground bg-muted-foreground/10' : 'border-border-default hover:bg-muted-foreground/5'
                                         )}
                                         title={facet.label}
@@ -342,7 +346,10 @@ export const CanvasSidePanel: React.FC<CanvasSidePanelProps> = ({scenario, selec
                                         onClick={() => setStatusFilter(active ? null : facet.label)}
                                     >
                                         <span className={facet.color}>{facet.glyph}</span>
-                                        <span className="text-muted-foreground tabular-nums">{formatNumber(counts[facet.label] ?? 0)}</span>
+                                        {/* Selected lifts the count to full text colour — the border and
+                                                fill mark the chip, but keeping its number muted made the
+                                                active filter look no more current than the idle ones. */}
+                                            <span className={cn('tabular-nums', active ? 'text-foreground' : 'text-muted-foreground')}>{formatNumber(counts[facet.label] ?? 0)}</span>
                                     </button>
                                 );
                             })}
@@ -356,8 +363,10 @@ export const CanvasSidePanel: React.FC<CanvasSidePanelProps> = ({scenario, selec
                 the Started/Status column widths steady no matter how the labels change. */}
             <div className="px-6 pb-6">
                 <Table className="table-fixed" data-testid="float-runs-table">
-                <TableHeader>
-                    <TableRow className="hover:bg-transparent">
+                {/* border-b-0 on both — see variant-b: the SortHead inset shadow is
+                    the single rule; Shade's defaults doubled it at rest. */}
+                <TableHeader className="border-b-0">
+                    <TableRow className="border-b-0 hover:bg-transparent">
                         <SortHead label="Member" onSort={onSort} sort={sort} sortKey="member" />
                         <SortHead className="w-24" label="Started" onSort={onSort} sort={sort} sortKey="started" />
                         <SortHead className="w-24" label="Status" onSort={onSort} sort={sort} sortKey="status" />

@@ -490,7 +490,7 @@ const AutomationFloat: React.FC = () => {
             {dockedHeader && (
                 <HeaderBar
                     actions={chromeActions}
-                    paneCollapsed={paneHidden}
+                    paneCollapsed={paneCollapsed}
                     status={liveStatus}
                     title={automation.name}
                     onBack={goBack}
@@ -513,7 +513,6 @@ const AutomationFloat: React.FC = () => {
                     headerDocked={dockedHeader}
                     scenario={scenario}
                     selectedMemberId={selectedMemberId}
-                    onCollapse={alwaysEditable && !dockedHeader ? () => setPaneCollapsed(true) : undefined}
                     onSearchOpenChange={setPaneSearchOpen}
                     onSelectMember={setSelectedMemberId}
                 />
@@ -531,6 +530,45 @@ const AutomationFloat: React.FC = () => {
                 <div className={cn('absolute inset-0 transition-opacity duration-150', showEditCanvas ? 'pointer-events-none opacity-0' : 'opacity-100')}>
                     <FloatFlowCanvas automation={publishedAutomation} selectedRun={selectedRun} triggerConfig={publishedTriggerConfig} />
                 </div>
+                {/* Reviewing a member: the whole canvas takes an inset frame, stating
+                    "you're inside this member's run" once at region scale instead of
+                    leaving it to card states. grey-800 rather than a colour — the
+                    frame marks a mode, not a status, and the blues/greens inside it
+                    keep their meanings. (No semantic token this dark exists: muted
+                    tops out at gray-100 and the next semantic stop is surface-inverse,
+                    i.e. black — so the frame and its tab sit on the palette grey,
+                    which stays near L53% in both modes.) An overlay rather than a
+                    border on the region itself, so entering review doesn't shift the
+                    canvas by the frame width (2px — 4px was tried and read heavy). */}
+                {selectedRun && !showEditCanvas && (
+                    <div className="pointer-events-none absolute inset-0 z-10 border-2 border-grey-800" />
+                )}
+
+                {/* Reviewing a member: their profile chip floats over the canvas, with
+                    the way out built in. Selection was previously only reversible from
+                    the list (click the row again) — nothing on the canvas said whose
+                    run this was or offered an exit, so the mode read as sticky.
+
+                    A profile (avatar + name + email), not a caption like "Ada's
+                    progress": a caption narrates the mode in system voice, while
+                    showing the member makes the canvas self-evidently their journey —
+                    and it's the exact shape Ghost renders a member in everywhere else,
+                    so it reads as a member pinned to the canvas rather than new
+                    chrome. Same initials-avatar recipe as the newsletter feedback
+                    list (stringToHslColor + initials fallback). */}
+                {/* The way out of the run — a bare close floating in the canvas's
+                    top-right. The frame plus the highlighted row carry "whose run
+                    this is" on their own; a labelled tab was tried here (Figma's
+                    following indicator, in miniature) and read as too much chrome
+                    for the job. Docked header only: under floating chrome this
+                    corner belongs to the lifecycle cluster, which appends the same
+                    close instead. */}
+                {dockedHeader && selectedRun && !showEditCanvas && (
+                    <div className="absolute top-4 right-4 z-20">
+                        <RailButton icon={LucideIcon.X} label="Close member view" onClick={() => setSelectedMemberId(null)} />
+                    </div>
+                )}
+
                 <div className={cn('absolute inset-0 transition-opacity duration-150', showEditCanvas ? 'opacity-100' : 'pointer-events-none opacity-0')}>
                     <FloatEditCanvas draft={activeDraft} triggerConfig={triggerConfig} onChange={handleDraftChange} onTriggerConfigChange={handleTriggerConfigChange} />
                 </div>
@@ -544,6 +582,11 @@ const AutomationFloat: React.FC = () => {
                     <div className="absolute top-4 right-4 z-10 flex items-center gap-3">
                         {showEditCanvas && indicatorText && <span className="text-xs text-muted-foreground">{indicatorText}</span>}
                         {chromeActions}
+                        {/* Reviewing a run: the way out, last so it sits at the
+                            canvas's outer edge. */}
+                        {selectedRun && !showEditCanvas && (
+                            <RailButton icon={LucideIcon.X} label="Close member view" onClick={() => setSelectedMemberId(null)} />
+                        )}
                     </div>
                 )}
             </div>
@@ -563,6 +606,17 @@ const AutomationFloat: React.FC = () => {
                         covering it, so there's never a moment with no way out. Only the
                         title yields the space. */}
                     <RailButton icon={LucideIcon.ArrowLeft} label="Back to automations" onClick={goBack} />
+                    {/* Mirrors the docked bar: one chart-glyph toggle beside the back
+                        arrow, for both states — it names what it summons rather than
+                        the mechanism of a sidebar. */}
+                    {alwaysEditable && (
+                        <RailButton
+                            active={!paneCollapsed}
+                            icon={LucideIcon.ChartNoAxesColumn}
+                            label={paneCollapsed ? 'Show performance' : 'Hide performance'}
+                            onClick={() => setPaneCollapsed(!paneCollapsed)}
+                        />
+                    )}
                     <HoverCard closeDelay={150} open={switcherOpen} openDelay={150} onOpenChange={setSwitcherOpen}>
                         <HoverCardTrigger asChild>
                             <Button
@@ -618,21 +672,6 @@ const AutomationFloat: React.FC = () => {
                             ))}
                         </HoverCardContent>
                     </HoverCard>
-                    {/* Collapsed, the pane that holds this toggle isn't there to hold
-                        it, so it falls back to the title cluster — otherwise collapsing
-                        would be a one-way door. It lands to the right of the title,
-                        which is the position it occupies in the pane's own header. */}
-                    {alwaysEditable && paneCollapsed && (
-                        <RailButton
-                            // One icon for both states — it names the thing being
-                            // toggled rather than animating a direction, which is how
-                            // sidebar toggles read everywhere else. The label carries
-                            // the state for screen readers.
-                            icon={LucideIcon.PanelLeft}
-                            label="Show performance"
-                            onClick={() => setPaneCollapsed(false)}
-                        />
-                    )}
                 </Inline>
             </div>
             )}

@@ -215,7 +215,7 @@ const winbackRunsBase: AutomationRun[] = [
         status: 'exited_early', enrolled_at: '2026-07-14T09:00:00Z', completed_at: null,
         current_action_id: null, exit_reason: 'Delivery failed',
         steps: [
-            {action_id: 'act_wb_hey', state: 'done', occurred_at: '2026-07-14T09:00:00Z', detail: 'Email not delivered', failed: true},
+            {action_id: 'act_wb_hey', state: 'done', occurred_at: '2026-07-14T09:00:00Z', detail: 'Member inbox is full', failed: true},
             {action_id: 'act_wb_wait', state: 'skipped', occurred_at: null, detail: null},
             {action_id: 'act_wb_offer', state: 'skipped', occurred_at: null, detail: null}
         ]

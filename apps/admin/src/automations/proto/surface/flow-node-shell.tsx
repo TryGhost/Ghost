@@ -1,6 +1,7 @@
 import React from 'react';
 import {Handle, Position} from '@xyflow/react';
 import {cn} from '@tryghost/shade/utils';
+import {HIDDEN_HANDLE_STYLE} from './flow-utils';
 
 // Shared node-card shell tokens — one source of truth so surface / radius / elevation /
 // padding updates apply to every card state (read step, edit step, terminal pill).
@@ -38,9 +39,9 @@ const NODE_BORDER: Record<NodeBorder, string> = {
 // (header, fields, preview, stats) is composed by each canvas as children.
 export const NodeCard: React.FC<{border?: NodeBorder; muted?: boolean; children: React.ReactNode}> = ({border = 'default', muted = false, children}) => (
     <div className={cn('transition-colors', NODE_CARD_SHELL, NODE_BORDER[border], muted && 'opacity-60')}>
-        <Handle position={Position.Top} style={{opacity: 0}} type="target" />
+        <Handle position={Position.Top} style={HIDDEN_HANDLE_STYLE} type="target" />
         {children}
-        <Handle position={Position.Bottom} style={{opacity: 0}} type="source" />
+        <Handle position={Position.Bottom} style={HIDDEN_HANDLE_STYLE} type="source" />
     </div>
 );
 
@@ -48,16 +49,21 @@ interface StepNodeHeaderProps {
     icon: React.ElementType;
     title: string;
     subtitle?: string;
+    // Recolours the chip (fill + foreground). The review canvas tints it with a
+    // run state's badge colours; unset, it's the neutral secondary fill.
+    chipClassName?: string;
 }
 
 // Icon chip + label. With a subtitle it stacks a muted label over the bold value;
 // without one it shows just the action label in that same bold style. The chip is a
 // filled 36x36 box (size-4 icon + p-2.5) so it matches the size-9 action slot on the
-// header's far right; muted fill instead of a hairline border so it reads as a
-// deliberate container at this size.
-export const StepNodeHeader: React.FC<StepNodeHeaderProps> = ({icon: Icon, title, subtitle}) => (
+// header's far right; a filled box instead of a hairline border so it reads as a
+// deliberate container at this size. bg-secondary, not bg-muted: muted is gray-100,
+// L~97% — invisible on a white card no matter the alpha (40 vs 60 made no visible
+// difference). Secondary is the next real stop (gray-200 light, same gray-900 dark).
+export const StepNodeHeader: React.FC<StepNodeHeaderProps> = ({icon: Icon, title, subtitle, chipClassName}) => (
     <div className="flex min-w-0 items-center gap-3">
-        <span className="flex shrink-0 items-center justify-center rounded-md bg-muted/40 p-2.5 text-foreground">
+        <span className={cn('flex shrink-0 items-center justify-center rounded-md p-2.5', chipClassName ?? 'bg-secondary text-foreground')}>
             <Icon className="size-4" />
         </span>
         {subtitle ? (
@@ -76,11 +82,14 @@ export const StepNodeHeader: React.FC<StepNodeHeaderProps> = ({icon: Icon, title
 // controls, read passes the run-state icon (Check/Clock) — so they align by
 // construction. The slot is nodrag/nopan and swallows clicks so acting on it never
 // pans the canvas or re-fires node selection.
-export const NodeHeader: React.FC<StepNodeHeaderProps & {action?: React.ReactNode}> = ({icon, title, subtitle, action}) => (
+export const NodeHeader: React.FC<StepNodeHeaderProps & {action?: React.ReactNode; meta?: React.ReactNode}> = ({icon, title, subtitle, chipClassName, action, meta}) => (
     <div className={cn('flex items-center gap-2', NODE_CARD_PADDING)}>
         <div className="min-w-0 flex-1">
-            <StepNodeHeader icon={icon} subtitle={subtitle} title={title} />
+            <StepNodeHeader chipClassName={chipClassName} icon={icon} subtitle={subtitle} title={title} />
         </div>
+        {/* Plain trailing text (the review canvas's timestamp) — sized by its
+            content, unlike the square action slot. */}
+        {meta && <span className="shrink-0 text-sm text-muted-foreground">{meta}</span>}
         {action && (
             <div className="nodrag nopan flex size-9 shrink-0 items-center justify-center" onClick={e => e.stopPropagation()}>
                 {action}

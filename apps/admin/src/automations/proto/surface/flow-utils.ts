@@ -1,4 +1,4 @@
-import {type ElementType, useCallback, useEffect, useRef, useState} from 'react';
+import {type CSSProperties, type ElementType, useCallback, useEffect, useRef, useState} from 'react';
 import type {AutomationAction, AutomationDetail} from '@tryghost/admin-x-framework/api/automations';
 import type {ReactFlowInstance} from '@xyflow/react';
 import {LucideIcon} from '@tryghost/shade/utils';
@@ -10,6 +10,21 @@ import {LucideIcon} from '@tryghost/shade/utils';
 // Edge stroke + canvas theme vars, shared here (rather than defined per-canvas)
 // so the two canvases can't drift back apart the way flow-canvas's did before.
 export const EDGE_STROKE = 'var(--xy-edge-stroke)';
+
+// Invisible AND zero-size, matching the production canvas's HiddenHandle
+// (components/canvas/nodes.tsx). opacity alone left the default 6px handle in
+// place, and React Flow anchors an edge at the handle's outer face — 3px past
+// the card either way, which read as a small gap between every connector and
+// its card. At zero size the anchor is the card edge itself.
+export const HIDDEN_HANDLE_STYLE: CSSProperties = {
+    background: 'transparent',
+    border: 'none',
+    height: 0,
+    minHeight: 0,
+    minWidth: 0,
+    opacity: 0,
+    width: 0
+};
 // Canvas fill, taken verbatim from the shipping automation-canvas
 // (automations/components/canvas/automation-canvas.tsx): grey-50 in light, and
 // --background in dark, which is the stop below the cards' --surface-elevated.
@@ -22,9 +37,15 @@ export const EDGE_STROKE = 'var(--xy-edge-stroke)';
 // insert buttons that cut out of it.
 export const CANVAS_SURFACE = 'bg-grey-50 dark:bg-background';
 
-// Dots + edges, also verbatim from the shipping canvas — same greys, same pair of
-// modes. This replaces a hardcoded #ffffff1a the proto had picked up for dark.
-export const REACT_FLOW_THEME = '[--xy-background-color:var(--color-grey-50)] [--xy-background-pattern-color:var(--color-grey-500)] [--xy-edge-stroke:var(--color-grey-300)] dark:[--xy-background-color:var(--background)] dark:[--xy-background-pattern-color:var(--color-grey-900)] dark:[--xy-edge-stroke:var(--color-grey-800)]';
+// Dots + edges from the shipping canvas (this replaced a hardcoded #ffffff1a the
+// proto had picked up for dark), with one deliberate divergence: light-mode edges
+// at grey-500 rather than production's grey-300. At 300 (L~91% on a grey-50
+// canvas) the connectors were fainter than the dot texture behind them — the
+// decoration outranked the structure. 400 was tried first and still read faint;
+// 500 puts the lines at the dots' own stop, which in practice reads stronger
+// than the dots because a continuous stroke carries colour that 1px pattern
+// circles can't. If it proves out it's a fix the real canvas wants too.
+export const REACT_FLOW_THEME = '[--xy-background-color:var(--color-grey-50)] [--xy-background-pattern-color:var(--color-grey-500)] [--xy-edge-stroke:var(--color-grey-500)] dark:[--xy-background-color:var(--background)] dark:[--xy-background-pattern-color:var(--color-grey-900)] dark:[--xy-edge-stroke:var(--color-grey-800)]';
 
 // Column layout — a single vertical stack of fixed-width nodes. Node y-positions
 // are derived from each node's *rendered height* plus a constant visible gap, so
