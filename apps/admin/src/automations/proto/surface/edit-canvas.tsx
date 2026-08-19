@@ -133,7 +133,7 @@ const StepNode: React.FC<NodeProps> = ({data}) => {
             {/* "always" so the popover tracks its card when the canvas pans — same
                 reason as the overflow menu below. */}
             <PopoverContent align="end" className="w-72" updatePositionStrategy="always">
-                <p className="text-sm">Triggers can&apos;t be changed yet.</p>
+                <p className="text-sm">This trigger is set for now, with more options on the way.</p>
             </PopoverContent>
         </Popover>
     ) : undefined;

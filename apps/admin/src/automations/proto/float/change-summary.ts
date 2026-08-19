@@ -1,6 +1,6 @@
 import type {AutomationAction, AutomationDetail} from '@tryghost/admin-x-framework/api/automations';
 import {type TriggerConfig, exitCriterion, tierNames, triggerLabel} from '@/automations/proto/shared/trigger-config';
-import {formatWait, orderActions} from '@/automations/proto/surface/flow-utils';
+import {type StepKind, formatWait, orderActions} from '@/automations/proto/surface/flow-utils';
 
 // What's in the draft that isn't live yet, as a plain list.
 //
@@ -15,6 +15,11 @@ import {formatWait, orderActions} from '@/automations/proto/surface/flow-utils';
 export interface ChangeEntry {
     id: string;
     label: string;
+    // Which part of the flow the change is about, so a reader can pick their
+    // change out of the list by its icon before reading a word of it. Same
+    // vocabulary the canvas labels its nodes with (stepKindIcon), so the entry
+    // and the card it refers to carry the same mark.
+    kind: StepKind;
 }
 
 interface ChangeSummaryInput {
@@ -25,6 +30,8 @@ interface ChangeSummaryInput {
 }
 
 const emailLabel = (subject: string): string => (subject.trim() ? `“${subject.trim()}”` : 'an untitled email');
+
+const actionKind = (action: AutomationAction): StepKind => (action.type === 'send_email' ? 'email' : 'wait');
 
 const describe = (action: AutomationAction): string => (
     action.type === 'send_email'
@@ -43,13 +50,13 @@ export function changeSummary({published, draft, publishedTrigger, draftTrigger}
     const changes: ChangeEntry[] = [];
 
     if (publishedTrigger.type !== draftTrigger.type) {
-        changes.push({id: 'trigger-type', label: `Trigger changed to ${triggerLabel(draftTrigger)}`});
+        changes.push({id: 'trigger-type', kind: 'trigger', label: `Trigger changed to ${triggerLabel(draftTrigger)}`});
     }
 
     // Only meaningful while the trigger is the paid one — otherwise tiers aren't
     // part of what's running.
     if (draftTrigger.type === 'paid_subscription_starts' && tierText(publishedTrigger) !== tierText(draftTrigger)) {
-        changes.push({id: 'trigger-tiers', label: `Paid tiers changed to ${tierText(draftTrigger)}`});
+        changes.push({id: 'trigger-tiers', kind: 'trigger', label: `Paid tiers changed to ${tierText(draftTrigger)}`});
     }
 
     const publishedCriteria = new Set(publishedTrigger.exitCriteria);
@@ -58,10 +65,10 @@ export function changeSummary({published, draft, publishedTrigger, draftTrigger}
     // section supplies the subject, so they need one here too.
     draftTrigger.exitCriteria
         .filter(criterion => !publishedCriteria.has(criterion))
-        .forEach(criterion => changes.push({id: `criterion-add-${criterion}`, label: `Members now exit when they ${exitCriterion(criterion).label.toLowerCase()}`}));
+        .forEach(criterion => changes.push({id: `criterion-add-${criterion}`, kind: 'trigger', label: `Members now exit when they ${exitCriterion(criterion).label.toLowerCase()}`}));
     publishedTrigger.exitCriteria
         .filter(criterion => !draftCriteria.has(criterion))
-        .forEach(criterion => changes.push({id: `criterion-remove-${criterion}`, label: `Members no longer exit when they ${exitCriterion(criterion).label.toLowerCase()}`}));
+        .forEach(criterion => changes.push({id: `criterion-remove-${criterion}`, kind: 'trigger', label: `Members no longer exit when they ${exitCriterion(criterion).label.toLowerCase()}`}));
 
     const publishedActions = orderActions(published);
     const draftActions = orderActions(draft);
@@ -70,10 +77,10 @@ export function changeSummary({published, draft, publishedTrigger, draftTrigger}
 
     draftActions
         .filter(action => !publishedById.has(action.id))
-        .forEach(action => changes.push({id: `add-${action.id}`, label: `Added ${describe(action)}`}));
+        .forEach(action => changes.push({id: `add-${action.id}`, kind: actionKind(action), label: `Added ${describe(action)}`}));
     publishedActions
         .filter(action => !draftById.has(action.id))
-        .forEach(action => changes.push({id: `remove-${action.id}`, label: `Removed ${describe(action)}`}));
+        .forEach(action => changes.push({id: `remove-${action.id}`, kind: actionKind(action), label: `Removed ${describe(action)}`}));
 
     // Steps that exist on both sides, changed in place.
     draftActions.forEach((action) => {
@@ -82,10 +89,10 @@ export function changeSummary({published, draft, publishedTrigger, draftTrigger}
             return;
         }
         if (action.type === 'send_email' && before.type === 'send_email' && before.data.email_subject !== action.data.email_subject) {
-            changes.push({id: `subject-${action.id}`, label: `Subject changed to ${emailLabel(action.data.email_subject)}`});
+            changes.push({id: `subject-${action.id}`, kind: 'email', label: `Subject changed to ${emailLabel(action.data.email_subject)}`});
         }
         if (action.type === 'wait' && before.type === 'wait' && before.data.wait_hours !== action.data.wait_hours) {
-            changes.push({id: `wait-${action.id}`, label: `Wait changed from ${formatWait(before.data.wait_hours)} to ${formatWait(action.data.wait_hours)}`});
+            changes.push({id: `wait-${action.id}`, kind: 'wait', label: `Wait changed from ${formatWait(before.data.wait_hours)} to ${formatWait(action.data.wait_hours)}`});
         }
     });
 

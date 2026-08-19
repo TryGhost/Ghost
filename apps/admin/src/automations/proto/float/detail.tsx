@@ -11,6 +11,7 @@ import {type ChangeEntry, changeSummary} from './change-summary';
 import {EDITING_MODEL_SLOT} from './editing-model';
 import {HEADER_SLOT} from './header-model';
 import {TRIGGER_CARD_SLOT} from './trigger-card-model';
+import {UnpublishedChangesDialog} from './unpublished-changes-dialog';
 import {HeaderBar} from './header-bar';
 import {LEFT_PANEL_SLOT, leftPanelComponent} from './panel-variants';
 import {ProtoVariantSwitcher, ProtoVariantsProvider} from '@/automations/proto/shared/proto-variant-switcher';
@@ -260,7 +261,11 @@ const AutomationFloat: React.FC = () => {
     // Whether editing is a mode you enter, or just how the canvas always behaves.
     const alwaysEditable = useProtoVariant(EDITING_MODEL_SLOT) === 'always';
     // Floating chrome over the canvas, or a docked full-width header above it.
-    const dockedHeader = useProtoVariant(HEADER_SLOT) === 'bar';
+    // 'banner' is the docked bar too — it differs in where the unpublished-changes
+    // state lives, not in the chrome's shape.
+    const headerVariant = useProtoVariant(HEADER_SLOT);
+    const dockedHeader = headerVariant === 'bar' || headerVariant === 'banner';
+    const changesBanner = headerVariant === 'banner';
     // Phase-1 concept: the trigger card renders locked (see trigger-card-model).
     const triggerLocked = useProtoVariant(TRIGGER_CARD_SLOT) === 'locked';
     // Only meaningful when there's no edit mode to hide the pane for you.
@@ -438,13 +443,26 @@ const AutomationFloat: React.FC = () => {
                 also puts it, and the action went back to naming itself. */}
             {alwaysEditable && (
                 <>
-                    {hasUnpublishedChanges && (
+                    {/* The alert opens the review; Publish is the action the state
+                        calls for. Primary without competing: unpublished changes only
+                        exist while the automation is live, so the lifecycle button
+                        beside them is always the outline "Turn off". */}
+                    {hasUnpublishedChanges && (changesBanner ? (
+                        <>
+                            <UnpublishedChangesDialog
+                                changes={changes}
+                                onDiscard={handleDiscard}
+                                onPublish={publishChanges}
+                            />
+                            <Button onClick={handlePublishClick}>Publish changes</Button>
+                        </>
+                    ) : (
                         <UnpublishedChanges
                             changes={changes}
                             onDiscard={handleDiscard}
                             onPublish={handlePublishClick}
                         />
-                    )}
+                    ))}
                     {liveStatus === 'inactive' ? (
                         <Button onClick={() => setStartOpen(true)}>Turn on</Button>
                     ) : (
@@ -453,10 +471,12 @@ const AutomationFloat: React.FC = () => {
                 </>
             )}
 
-            {/* Explicit edit mode keeps the draft actions in the chrome. */}
+            {/* Explicit edit mode keeps the draft actions in the chrome — except
+                under the banner, which takes discard with it so the two editing
+                models resolve a draft the same way. */}
             {!alwaysEditable && hasUnpublishedChanges && (
                 <>
-                    <Button className={outlineOnCanvas} variant="outline" onClick={handleDiscard}>Discard changes</Button>
+                    {!changesBanner && <Button className={outlineOnCanvas} variant="outline" onClick={handleDiscard}>Discard changes</Button>}
                     <Button onClick={handlePublishClick}>Publish changes</Button>
                 </>
             )}
