@@ -1,20 +1,12 @@
 import NavigationItemEditor from './navigation-item-editor';
 import React from 'react';
-<<<<<<< HEAD:apps/admin/src/settings/app/components/settings/site/navigation/navigation-edit-form.tsx
 import {Button, SortableList} from '@tryghost/shade/components';
 import {Inline} from '@tryghost/shade/primitives';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {type NavigationEditor} from '@/settings/app/hooks/site/use-navigation-editor';
-=======
-import {Button, SortableList} from '@tryghost/admin-x-design-system';
-import {type NavigationEditor} from '../../../../hooks/site/use-navigation-editor';
-import {Plus} from 'lucide-react';
 import {navigationColumnClasses, navigationDragHandleSpacerClasses, navigationRowClasses} from './navigation-layout';
 
-const columnLabelClasses = 'text-xs font-semibold text-grey-700 dark:text-grey-500';
-const actionButtonClasses = 'flex size-6 items-center justify-center rounded';
-const addButtonClasses = 'flex size-[38px] cursor-pointer items-center justify-center rounded-lg bg-black text-white transition hover:bg-grey-900';
->>>>>>> 8df92567a7 (✨ Added icons and visibility controls to navigation):apps/admin-x-settings/src/components/settings/site/navigation/navigation-edit-form.tsx
+const columnLabelClasses = 'text-xs font-semibold text-muted-foreground';
 
 const NavigationEditForm: React.FC<{
     baseUrl: string;
@@ -25,33 +17,27 @@ const NavigationEditForm: React.FC<{
     showVisibility: boolean;
     uploadIcon?: (file: File) => Promise<string | undefined>;
 }> = ({baseUrl, idPrefix, navigation, showIcon, showPaidVisibility, showVisibility, uploadIcon}) => {
-    return <div className="w-full pt-4">
-        <div className='-mb-1 flex w-full items-center gap-3'>
-            <div className={navigationDragHandleSpacerClasses} />
-            <div className={navigationRowClasses}>
-                {showIcon && <div className={`${navigationColumnClasses.icon} ${columnLabelClasses}`}>Icon</div>}
-                <div className={`${navigationColumnClasses.label} ${columnLabelClasses}`}>Label</div>
-                <div className={`${navigationColumnClasses.url} ${columnLabelClasses}`}>URL</div>
-                {showVisibility && <div className={`${navigationColumnClasses.visibility} ${columnLabelClasses}`}>Visibility</div>}
-                <div className={navigationColumnClasses.action} />
+    return <div className="w-full pt-2">
+        {(showIcon || showVisibility) && (
+            <div className='-mb-1 flex w-full items-center gap-3'>
+                <div className={navigationDragHandleSpacerClasses} />
+                <div className={navigationRowClasses}>
+                    {showIcon && <div className={`${navigationColumnClasses.icon} ${columnLabelClasses}`}>Icon</div>}
+                    <div className={`${navigationColumnClasses.label} ${columnLabelClasses}`}>Label</div>
+                    <div className={`${navigationColumnClasses.url} ${columnLabelClasses}`}>URL</div>
+                    {showVisibility && <div className={`${navigationColumnClasses.visibility} ${columnLabelClasses}`}>Visibility</div>}
+                    <div className={navigationColumnClasses.action} />
+                </div>
             </div>
-        </div>
+        )}
         <SortableList
-<<<<<<< HEAD:apps/admin/src/settings/app/components/settings/site/navigation/navigation-edit-form.tsx
             dragHandleClass='translate-y-0.5'
             getDragHandleLabel={item => `Reorder ${item.label || 'navigation item'}`}
-=======
-            dragHandleClass='opacity-100'
->>>>>>> 8df92567a7 (✨ Added icons and visibility controls to navigation):apps/admin-x-settings/src/components/settings/site/navigation/navigation-edit-form.tsx
             items={navigation.items}
             itemSeparator={false}
             renderItem={item => (
                 <NavigationItemEditor
-<<<<<<< HEAD:apps/admin/src/settings/app/components/settings/site/navigation/navigation-edit-form.tsx
                     action={<Button aria-label='Delete navigation item' size='icon' type='button' variant='ghost' onClick={() => navigation.removeItem(item.id)}><LucideIcon.Trash2 /></Button>}
-=======
-                    action={<Button className={`${actionButtonClasses} text-grey-900 hover:bg-grey-200 hover:text-black dark:text-white dark:hover:bg-grey-900`} icon="trash" iconColorClass='dark:text-white' iconSize='sm' unstyled onClick={() => navigation.removeItem(item.id)} />}
->>>>>>> 8df92567a7 (✨ Added icons and visibility controls to navigation):apps/admin-x-settings/src/components/settings/site/navigation/navigation-edit-form.tsx
                     baseUrl={baseUrl}
                     clearError={key => navigation.clearError(item.id, key)}
                     idPrefix={idPrefix}
@@ -65,21 +51,15 @@ const NavigationEditForm: React.FC<{
             )}
             onMove={navigation.moveItem}
         />
-<<<<<<< HEAD:apps/admin/src/settings/app/components/settings/site/navigation/navigation-edit-form.tsx
-        <Inline align='start' gap='md'>
+        <Inline align='start' className='mt-5 border-t pt-5' gap='md'>
             <Inline align='center' className='h-[calc(var(--control-height)+0.5rem)] shrink-0 translate-y-0.5 pt-2'>
                 <LucideIcon.Plus className='size-4 text-muted-foreground' />
             </Inline>
             <NavigationItemEditor
                 action={<Button aria-label='Add navigation item' data-testid="add-button" size='icon' type='button' variant='ghost' onClick={navigation.addItem}><LucideIcon.Plus /></Button>}
-=======
-        <div className='mt-5 flex items-center gap-3 border-t border-grey-200 pt-5 dark:border-grey-800'>
-            <div className={navigationDragHandleSpacerClasses} />
-            <NavigationItemEditor
-                action={<button aria-label='Add navigation item' className={addButtonClasses} data-testid="add-button" type='button' onClick={navigation.addItem}><Plus aria-hidden='true' className='size-4' /></button>}
->>>>>>> 8df92567a7 (✨ Added icons and visibility controls to navigation):apps/admin-x-settings/src/components/settings/site/navigation/navigation-edit-form.tsx
                 addItem={navigation.addItem}
                 baseUrl={baseUrl}
+                className="mt-1"
                 clearError={key => navigation.clearError(navigation.newItem.id, key)}
                 data-testid="new-navigation-item"
                 idPrefix={idPrefix}

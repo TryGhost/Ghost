@@ -15,7 +15,8 @@ export type NavigationItem = {
 export type NavigationItemErrors = { [key in keyof NavigationItem]?: string }
 export type EditableItem = NavigationItem & { id: string; errors: NavigationItemErrors }
 
-const hasNewItem = (newItem: NavigationItem) => Boolean((newItem.label && !newItem.label.match(/^\s*$/)) || newItem.url !== '/');
+const hasTextValue = (value?: string) => Boolean(value && !value.match(/^\s*$/));
+const hasNewItem = (newItem: NavigationItem) => Boolean(hasTextValue(newItem.label) || newItem.url !== '/' || hasTextValue(newItem.icon));
 
 export type NavigationEditor = {
     items: EditableItem[]
@@ -29,41 +30,33 @@ export type NavigationEditor = {
     validate: () => boolean
 }
 
+const normalizeItem = (item: NavigationItem) => ({
+    ...item,
+    icon: item.icon || '',
+    visibility: item.visibility || 'public',
+    errors: {}
+});
+
+const serializeItem = ({url, label, icon, visibility}: NavigationItem): NavigationItem => ({
+    url: url.trim(),
+    label: label.trim(),
+    ...(icon?.trim() ? {icon: icon.trim()} : {}),
+    ...(visibility && visibility !== 'public' ? {visibility} : {})
+});
+
 const useNavigationEditor = ({items, setItems}: {
     items: NavigationItem[];
     setItems: (newItems: NavigationItem[]) => void;
 }): NavigationEditor => {
-<<<<<<< HEAD:apps/admin/src/settings/app/hooks/site/use-navigation-editor.tsx
-    const editableItems = useMemo(() => items.map(item => ({...item, errors: {}})), [items]);
+    const editableItems = useMemo(() => items.map(normalizeItem), [items]);
     const setNavigationItems = useCallback((newItems: Omit<EditableItem, 'id'>[]) => {
-        setItems(newItems.map(({url, label}) => ({url, label})));
+        setItems(newItems.map(serializeItem));
     }, [setItems]);
 
     const list = useSortableIndexedList<Omit<EditableItem, 'id'>>({
         items: editableItems,
         setItems: setNavigationItems,
-        blank: {url: '/',label: '', errors: {}},
-=======
-    const hasTextValue = (value?: string) => Boolean(value && !value.match(/^\s*$/));
-    const hasNewItem = (newItem: NavigationItem) => Boolean(hasTextValue(newItem.label) || newItem.url !== '/' || hasTextValue(newItem.icon));
-    const normalizeItem = (item: NavigationItem) => ({
-        ...item,
-        icon: item.icon || '',
-        visibility: item.visibility || 'public',
-        errors: {}
-    });
-    const serializeItem = ({url, label, icon, visibility}: NavigationItem): NavigationItem => ({
-        url: url.trim(),
-        label: label.trim(),
-        ...(icon?.trim() ? {icon: icon.trim()} : {}),
-        ...(visibility && visibility !== 'public' ? {visibility} : {})
-    });
-
-    const list = useSortableIndexedList<Omit<EditableItem, 'id'>>({
-        items: items.map(normalizeItem),
-        setItems: newItems => setItems(newItems.map(serializeItem)),
         blank: {url: '/', label: '', icon: '', visibility: 'public', errors: {}},
->>>>>>> 8df92567a7 (✨ Added icons and visibility controls to navigation):apps/admin-x-settings/src/hooks/site/use-navigation-editor.tsx
         canAddNewItem: hasNewItem
     });
 

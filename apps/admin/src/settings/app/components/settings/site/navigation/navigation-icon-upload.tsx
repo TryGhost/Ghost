@@ -1,7 +1,7 @@
 import React from 'react';
-import {type EditableItem, type NavigationItem, type NavigationItemErrors} from '../../../../hooks/site/use-navigation-editor';
-import {ImageUpload} from '@tryghost/admin-x-design-system';
-import {Upload} from 'lucide-react';
+import {Trash2, Upload} from 'lucide-react';
+import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
+import {type EditableItem, type NavigationItem, type NavigationItemErrors} from '@/settings/app/hooks/site/use-navigation-editor';
 
 type NavigationIconUploadProps = {
     idPrefix: string;
@@ -12,36 +12,6 @@ type NavigationIconUploadProps = {
 }
 
 const NavigationIconUpload: React.FC<NavigationIconUploadProps> = ({idPrefix, item, clearError, updateItem, uploadIcon}) => (
-<<<<<<< HEAD
-    <ImageUpload
-        buttonContainerClassName='size-[38px]'
-        deleteButtonClassName='invisible absolute inset-0! flex size-full! cursor-pointer items-center justify-center rounded-lg! bg-[rgba(0,0,0,0.75)] text-white group-hover/nav-icon:visible! hover:bg-black [@media(hover:none)]:visible!'
-        fileUploadClassName='size-[38px] rounded-lg! border-0! bg-grey-100 p-0! text-grey-600 hover:text-black dark:bg-grey-900 dark:text-grey-400 dark:hover:text-white'
-        fileUploadProps={{accept: 'image/*'}}
-        height='38px'
-        id={`${idPrefix}-icon-${item.id}`}
-        imageClassName='size-[38px]! rounded-lg bg-grey-100 p-2.5 dark:bg-grey-900'
-        imageContainerClassName='group/nav-icon size-[38px] items-center overflow-hidden rounded-lg'
-        imageFit='contain'
-        imageURL={item.icon || ''}
-        width='38px'
-        deleteButtonUnstyled
-        onDelete={() => {
-            clearError?.('icon');
-            updateItem?.({icon: ''});
-        }}
-        onUpload={async (file) => {
-            const icon = await uploadIcon?.(file);
-            if (icon) {
-                updateItem?.({icon});
-            }
-        }}
-    >
-        <>
-            <Upload aria-hidden='true' className='size-4' />
-            <span className='sr-only'>Upload icon</span>
-        </>
-=======
     <ImageUpload className='size-[38px]'>
         {item.icon ? (
             <ImageUploadPreview>
@@ -76,7 +46,6 @@ const NavigationIconUpload: React.FC<NavigationIconUploadProps> = ({idPrefix, it
                 <Upload aria-hidden='true' className='size-4' />
             </ImageUploadDropzone>
         )}
->>>>>>> d58c21c507 (Fixed navigation icon remove button to use hover overlay)
     </ImageUpload>
 );
 

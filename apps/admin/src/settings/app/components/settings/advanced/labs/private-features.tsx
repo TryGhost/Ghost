@@ -56,14 +56,10 @@ const features: Feature[] = [{
     description: 'Deduplicate identical {{#get}} helper queries within a single request to avoid redundant database calls',
     flag: 'getHelperDeduplication'
 }, {
-<<<<<<< HEAD
-<<<<<<< HEAD:apps/admin/src/settings/app/components/settings/advanced/labs/private-features.tsx
-=======
     title: 'Navigation icons & visibility',
     description: 'Add icons and member-visibility controls to navigation menu items. Requires theme support to render icons.',
     flag: 'navigationIcons'
 }, {
->>>>>>> 7d06e8d6ec (Remove unrelated code)
     title: 'React tag details',
     description: 'Renders the tag detail screen (/tags/:slug) from the React app instead of the Ember screen. Gates the migration behind a runtime toggle so we can compare both implementations.',
     flag: 'tagDetailsReact'
@@ -87,11 +83,6 @@ const features: Feature[] = [{
     title: 'Machine payments',
     description: 'Let AI agents pay for access to paid-members markdown (.md) URLs via Stripe Machine Payments Protocol',
     flag: 'machinePayments'
-=======
-    title: 'Navigation icons & visibility',
-    description: 'Add icons and member-visibility controls to navigation menu items. Requires theme support to render icons.',
-    flag: 'navigationIcons'
->>>>>>> 136a54bc7f (Added navigationIcons labs flag to gate icon/visibility controls):apps/admin-x-settings/src/components/settings/advanced/labs/private-features.tsx
 }];
 
 const AlphaFeatures: React.FC = () => {
