@@ -66,6 +66,10 @@ describe('{{navigation}} helper', function () {
         // Test 4: invalid url
         optionsData.data.site.navigation = [{label: 'foo', url: 1}];
         assert.throws(runHelperThunk(optionsData), {message: 'Invalid value, Url and Label must be strings'});
+
+        // Test 5: null url
+        optionsData.data.site.navigation = [{label: 'foo', url: null}];
+        assert.throws(runHelperThunk(optionsData), {message: 'Invalid value, Url and Label must be strings'});
     });
 
     it('coerces a non-string icon to no icon instead of throwing', function () {

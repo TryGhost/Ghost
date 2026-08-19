@@ -64,7 +64,7 @@ module.exports = function navigation(options) {
     // check for non-null string values
     if (navigationData.filter(function (e) {
         return ((!_.isUndefined(e.label) && !_.isNull(e.label) && !_.isString(e.label)) ||
-            (!_.isNull(e.url) && !_.isString(e.url)));
+            (_.isNull(e.url) || !_.isString(e.url)));
     }).length > 0) {
         throw new errors.IncorrectUsageError({
             message: tpl(messages.valuesMustBeString)
