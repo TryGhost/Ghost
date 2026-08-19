@@ -13,10 +13,13 @@ import React from 'react';
  * back to the caller to confirm. Links rendered by react-router (marked with
  * `data-discover`) are left alone — the router's own blocker guards those.
  */
-export function useHashLinkNavigationGuard(when: boolean) {
+export function useHashLinkNavigationGuard(when: boolean, onBlocked?: () => void) {
     const [blockedHref, setBlockedHref] = React.useState<string | null>(null);
+    const blockedHrefRef = React.useRef<string | null>(null);
     const whenRef = React.useRef(when);
     whenRef.current = when;
+    const onBlockedRef = React.useRef(onBlocked);
+    onBlockedRef.current = onBlocked;
 
     React.useEffect(() => {
         const onClick = (event: MouseEvent) => {
@@ -34,7 +37,10 @@ export function useHashLinkNavigationGuard(when: boolean) {
             }
             event.preventDefault();
             event.stopPropagation();
-            setBlockedHref(anchor.getAttribute('href'));
+            const href = anchor.getAttribute('href');
+            blockedHrefRef.current = href;
+            onBlockedRef.current?.();
+            setBlockedHref(href);
         };
 
         document.addEventListener('click', onClick, true);
@@ -46,12 +52,17 @@ export function useHashLinkNavigationGuard(when: boolean) {
         isBlocked: blockedHref !== null,
         /** Confirm leaving: performs the intercepted navigation for real. */
         proceed: () => {
-            if (blockedHref) {
+            const href = blockedHrefRef.current;
+            if (href) {
+                blockedHrefRef.current = null;
                 setBlockedHref(null);
-                window.location.hash = blockedHref;
+                window.location.hash = href;
             }
         },
         /** Cancel leaving: drops the intercepted navigation. */
-        reset: () => setBlockedHref(null)
+        reset: () => {
+            blockedHrefRef.current = null;
+            setBlockedHref(null);
+        }
     };
 }
