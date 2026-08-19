@@ -171,28 +171,62 @@ const isPartRecord = (value: unknown): value is Record<string, unknown> =>
     typeof value === 'object' && value !== null && !Array.isArray(value);
 
 /**
- * How each composite type reads as one line. Written per type rather than walked from
- * `subFieldsOf`, because where a part sits in the sentence is a fact about how the value
- * reads, not one the value schema can supply — an address fuses state and postal code the
- * way people write them. A part added upstream stays out of the line until someone decides
- * where it belongs.
+ * Parts that read as one run rather than as separate items — "NY 00001", not "NY, 00001".
  *
- * Total over the field types, the way the presentation catalog above is: a type added
- * upstream fails to compile here until someone has decided how its value reads, rather
- * than reaching every surface as a blank cell. A scalar declares `undefined`, which is
- * how "its value is already a line" is said.
+ * This is the whole of what a composite's one-line form needs stated. Everything else
+ * comes from the value schema's declaration order, so a part added to a type upstream
+ * appears in the line on its own, without anyone knowing to come here. That was the point:
+ * the previous version wrote each type's line out by hand, and a part left out of it was
+ * collected, stored, exported and filtered on while being invisible in every summary —
+ * a silent omission, which is the worst way for this to fail.
+ *
+ * Typed against the parts each type declares, so renaming or removing one upstream fails
+ * the build here. Deliberately not exhaustive: a part nobody mentions is one that reads
+ * perfectly well on its own, and requiring an entry for each would put the omission
+ * problem straight back.
  */
-const compositeValueFormatters: {
-    [T in FieldType]: [PartsOf<T>] extends [never] ? undefined : (value: Record<string, unknown>) => string
-} = {
-    short_text: undefined,
-    long_text: undefined,
-    address: (value) => {
-        const {line1, line2, city, state, postal_code: postalCode, country} = value;
-        const statePostal = [state, postalCode].filter(Boolean).join(' ');
-        return [line1, line2, city, statePostal, country].filter(Boolean).join(', ');
-    }
+export type CompositePartRuns = {[T in FieldType]?: ReadonlyArray<readonly PartsOf<T>[]>};
+
+const fusedParts: CompositePartRuns = {
+    address: [['state', 'postal_code']]
 };
+
+/**
+ * A composite type's parts grouped into the runs its line is built from: declaration
+ * order, with anything fused above kept together.
+ *
+ * A fused pair that is not adjacent in declaration order simply reads as two runs, so
+ * reordering a type upstream costs a comma rather than a wrong sentence.
+ */
+function partRunsFor(type: FieldType): string[][] {
+    const parts: string[] | null = subFieldsOf(type);
+    if (!parts) {
+        return [];
+    }
+
+    const runOf = new Map<string, number>();
+    ((fusedParts[type] ?? []) as ReadonlyArray<readonly string[]>).forEach((group, index) => {
+        group.forEach(part => runOf.set(part, index));
+    });
+
+    const runs: string[][] = [];
+    let openRun: number | undefined;
+    for (const part of parts) {
+        const run = runOf.get(part);
+        if (run !== undefined && run === openRun) {
+            runs[runs.length - 1].push(part);
+            continue;
+        }
+        runs.push([part]);
+        openRun = run;
+    }
+    return runs;
+}
+
+// Resolved once: the catalog is static, and this is read for every row of a member list.
+const partRuns = Object.fromEntries(
+    FIELD_TYPE_IDS.map(type => [type, partRunsFor(type)])
+) as Record<FieldType, string[][]>;
 
 /**
  * A member's value for one field as a single readable line: the string itself for a
@@ -206,13 +240,23 @@ const compositeValueFormatters: {
  * table cell than in a detail row.
  */
 export const formatMemberCustomFieldValue = (type: FieldType, value: unknown): string => {
-    const formatComposite = compositeValueFormatters[type];
-
-    if (formatComposite) {
-        return isPartRecord(value) ? formatComposite(value) : '';
+    // Null for a scalar, and for a type this build has never heard of — both of which read
+    // as text or as nothing.
+    if (subFieldsOf(type) === null) {
+        return typeof value === 'string' ? value : '';
     }
 
-    return typeof value === 'string' ? value : '';
+    if (!isPartRecord(value)) {
+        return '';
+    }
+
+    return (partRuns[type] ?? [])
+        .map(run => run
+            .map(part => value[part])
+            .filter((part): part is string => typeof part === 'string' && part !== '')
+            .join(' '))
+        .filter(Boolean)
+        .join(', ');
 };
 
 export interface MemberCustomFieldsResponseType {
