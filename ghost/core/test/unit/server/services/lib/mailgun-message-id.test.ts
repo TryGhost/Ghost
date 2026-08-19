@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 
-import {getMailgunMessageId, normalizeMailgunMessageId} from '../../../../../core/server/services/automations/mailgun-message-id';
+import {getMailgunMessageId, normalizeMailgunMessageId} from '../../../../../core/server/services/lib/mailgun-message-id';
 
 describe('Mailgun message ID handling', function () {
     describe('normalizeMailgunMessageId', function () {
