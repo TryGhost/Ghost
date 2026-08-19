@@ -7,6 +7,7 @@ import { postImportRowSchema } from '../../../../../../core/server/services/cont
 // A stand-in converter that shows what it was given, so the test can assert both the
 // wiring (called with the row's html) and the stringification.
 const htmlToLexical = (html: string) => ({ converted: html });
+const markdownToHtml = (markdown: string) => `<h1>${markdown.slice(2)}</h1>`;
 
 const row = (cells: Record<string, string>) => postImportRowSchema.parse(cells);
 
@@ -45,6 +46,50 @@ describe('buildPostData', function () {
     const data = buildPostData(row({ title: 'T' }), htmlToLexical, TAGS);
 
     assert.equal('lexical' in data, false);
+  });
+
+  it('renders markdown to html before converting it to lexical', function () {
+    const data = buildPostData(
+      row({ title: 'T', markdown: '# Hello' }),
+      htmlToLexical,
+      TAGS,
+      markdownToHtml,
+    );
+
+    assert.equal(data.lexical, JSON.stringify({ converted: '<h1>Hello</h1>' }));
+  });
+
+  it('skips a row that supplies both html and markdown', function () {
+    assert.throws(
+      () =>
+        buildPostData(
+          row({ title: 'T', html: '<p>HTML</p>', markdown: 'Markdown' }),
+          htmlToLexical,
+          TAGS,
+          markdownToHtml,
+        ),
+      (error: unknown) => {
+        assert.ok(error instanceof RowSkipped);
+        assert.equal(error.message, 'html and markdown cannot both be provided');
+        return true;
+      },
+    );
+  });
+
+  it('skips a row when markdown rendering fails', function () {
+    const throwingRenderer = () => {
+      throw new Error('renderer exploded');
+    };
+
+    assert.throws(
+      () =>
+        buildPostData(row({ title: 'T', markdown: 'bad' }), htmlToLexical, TAGS, throwingRenderer),
+      (error: unknown) => {
+        assert.ok(error instanceof RowSkipped);
+        assert.equal(error.message, 'markdown could not be converted');
+        return true;
+      },
+    );
   });
 
   it('dates the whole post from the CSV date: published_at, created_at and updated_at', function () {

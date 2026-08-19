@@ -16,11 +16,18 @@ describe('ContentFieldMapping', () => {
   });
 
   it('detects exact field-name headers', () => {
-    const mapping = ContentFieldMapping.detect(['title', 'html', 'published_at', 'Something else']);
+    const mapping = ContentFieldMapping.detect([
+      'title',
+      'html',
+      'markdown',
+      'published_at',
+      'Something else',
+    ]);
 
     expect(mapping.toJSON()).toEqual({
       title: 'title',
       html: 'html',
+      markdown: 'markdown',
       published_at: 'published_at',
       'Something else': '',
     });
@@ -52,6 +59,7 @@ describe('ContentFieldMapping', () => {
     expect(CONTENT_FIELD_MAPPINGS.map((field) => field.value)).toEqual([
       'title',
       'html',
+      'markdown',
       'slug',
       'custom_excerpt',
       'type',

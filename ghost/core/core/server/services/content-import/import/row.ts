@@ -4,6 +4,7 @@ import { Temporal } from 'temporal-polyfill';
 export const EDITORIAL_POST_FIELDS = [
   'title',
   'html',
+  'markdown',
   'slug',
   'custom_excerpt',
   'type',
@@ -47,6 +48,7 @@ export const postImportRowSchema = z
       .default('')
       .transform((cell) => cell.trim()),
     html: z.string().default(''),
+    markdown: z.string().default(''),
     slug: optionalCell,
     custom_excerpt: optionalCell,
     type: optionalCell,

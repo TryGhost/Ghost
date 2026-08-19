@@ -1,5 +1,10 @@
 import moment from 'moment-timezone';
-import buildPostData, { RowSkipped, type HtmlToLexical, type PostData } from './post-data';
+import buildPostData, {
+  RowSkipped,
+  type HtmlToLexical,
+  type MarkdownToHtml,
+  type PostData,
+} from './post-data';
 import type { PostImportRow } from './row';
 import type { Clock, ImportRunStore, RowOutcome } from './store';
 
@@ -59,6 +64,7 @@ interface ImporterDeps {
   posts: PostsRepository;
   // A getter so the heavy html->lexical require resolves once per run
   getHtmlToLexical: () => HtmlToLexical;
+  getMarkdownToHtml: () => MarkdownToHtml;
   addJob: (job: { job: () => Promise<void>; offloaded: boolean; name: string }) => void;
   report: FailureReporter;
   store: ImportRunStore;
@@ -79,6 +85,7 @@ class ContentCSVImporter {
   private _readRows: ReadRows;
   private _posts: PostsRepository;
   private _getHtmlToLexical: () => HtmlToLexical;
+  private _getMarkdownToHtml: () => MarkdownToHtml;
   private _addJob: ImporterDeps['addJob'];
   private _report: FailureReporter;
   private _store: ImportRunStore;
@@ -91,6 +98,7 @@ class ContentCSVImporter {
     readRows,
     posts,
     getHtmlToLexical,
+    getMarkdownToHtml,
     addJob,
     report,
     store,
@@ -102,6 +110,7 @@ class ContentCSVImporter {
     this._readRows = readRows;
     this._posts = posts;
     this._getHtmlToLexical = getHtmlToLexical;
+    this._getMarkdownToHtml = getMarkdownToHtml;
     this._addJob = addJob;
     this._report = report;
     this._store = store;
@@ -159,6 +168,7 @@ class ContentCSVImporter {
 
     try {
       const htmlToLexical = this._getHtmlToLexical();
+      const markdownToHtml = this._getMarkdownToHtml();
       let attemptedWrites = 0;
       let successfulWrites = 0;
       let failedWrites = 0;
@@ -169,7 +179,7 @@ class ContentCSVImporter {
         let data: PostData;
 
         try {
-          data = buildPostData(row, htmlToLexical, importTagNames);
+          data = buildPostData(row, htmlToLexical, importTagNames, markdownToHtml);
         } catch (error) {
           if (error instanceof RowSkipped) {
             this._store.record(runId, {

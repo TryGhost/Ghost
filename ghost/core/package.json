@@ -113,6 +113,7 @@
     "@tryghost/kg-default-nodes": "workspace:*",
     "@tryghost/kg-html-to-lexical": "workspace:*",
     "@tryghost/kg-lexical-html-renderer": "workspace:*",
+    "@tryghost/kg-markdown-html-renderer": "workspace:*",
     "@tryghost/limit-service": "catalog:",
     "@tryghost/logging": "catalog:",
     "@tryghost/metrics": "catalog:",

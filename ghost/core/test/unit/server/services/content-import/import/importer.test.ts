@@ -9,6 +9,7 @@ import type { PostData } from '../../../../../../core/server/services/content-im
 const row = (title: string, html = `<p>${title}</p>`): PostImportRow => ({
   title,
   html,
+  markdown: '',
   published_at: '2025-01-01T00:00:00.000Z',
 });
 
@@ -21,10 +22,15 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
   const urlFailures = new Map<string, unknown>();
   const store = new ImportRunStore();
   let converterResolutions = 0;
+  let markdownRendererResolutions = 0;
   // Late-bound: the importer captures deps at construction.
   let htmlToLexicalFactory: () => (html: string) => unknown = () => {
     converterResolutions += 1;
     return (html: string) => ({ converted: html });
+  };
+  let markdownToHtmlFactory: () => (markdown: string) => string = () => {
+    markdownRendererResolutions += 1;
+    return (markdown: string) => `<p>${markdown}</p>`;
   };
 
   const deps = {
@@ -41,6 +47,7 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
       },
     },
     getHtmlToLexical: () => htmlToLexicalFactory(),
+    getMarkdownToHtml: () => markdownToHtmlFactory(),
     addJob: (job: { name: string; offloaded: boolean; job: () => Promise<void> }) => {
       jobs.push(job);
     },
@@ -74,6 +81,9 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
   const setHtmlToLexicalFactory = (factory: () => (html: string) => unknown) => {
     htmlToLexicalFactory = factory;
   };
+  const setMarkdownToHtmlFactory = (factory: () => (markdown: string) => string) => {
+    markdownToHtmlFactory = factory;
+  };
 
   return {
     importer,
@@ -86,7 +96,9 @@ function harness(rows: PostImportRow[] = [row('First'), row('Second')]) {
     urlFailures,
     store,
     setHtmlToLexicalFactory,
+    setMarkdownToHtmlFactory,
     converterResolutions: () => converterResolutions,
+    markdownRendererResolutions: () => markdownRendererResolutions,
   };
 }
 
@@ -217,6 +229,14 @@ describe('ContentCSVImporter', function () {
     assert.equal(h.converterResolutions(), 1);
   });
 
+  it('resolves the markdown renderer once per run, not per row', async function () {
+    const h = harness();
+
+    await h.run();
+
+    assert.equal(h.markdownRendererResolutions(), 1);
+  });
+
   it('rejects a file over the cap without scheduling any work', async function () {
     const h = harness(Array.from({ length: 101 }, (_, i) => row(`Post ${i + 1}`)));
 
@@ -295,7 +315,7 @@ describe('ContentCSVImporter', function () {
   it('skips a malformed row on its own and imports the rest', async function () {
     const h = harness([
       row('First'),
-      { title: '', html: '<p>No title</p>', published_at: undefined },
+      { title: '', html: '<p>No title</p>', markdown: '', published_at: undefined },
       row('Third'),
     ]);
 
@@ -320,10 +340,34 @@ describe('ContentCSVImporter', function () {
     );
   });
 
+  it('isolates a markdown conversion failure to its row', async function () {
+    const badMarkdown = { ...row('Bad markdown', ''), markdown: 'bad' };
+    const h = harness([row('First'), badMarkdown, row('Third')]);
+    h.setMarkdownToHtmlFactory(() => (markdown: string) => {
+      if (markdown === 'bad') {
+        throw new Error('bad markdown');
+      }
+      return `<p>${markdown}</p>`;
+    });
+
+    await h.run();
+
+    assert.deepEqual(
+      h.created.map((call) => call.data.title),
+      ['First', 'Third'],
+    );
+    assert.deepEqual(h.store.get('run_test')?.rows[1], {
+      line: 3,
+      title: 'Bad markdown',
+      status: 'skipped',
+      reason: 'markdown could not be converted',
+    });
+  });
+
   it('completes without reporting when every row is skipped before a write', async function () {
     const h = harness([
-      { title: '', html: '<p>No title</p>', published_at: undefined },
-      { title: '', html: '<p>Still no title</p>', published_at: undefined },
+      { title: '', html: '<p>No title</p>', markdown: '', published_at: undefined },
+      { title: '', html: '<p>Still no title</p>', markdown: '', published_at: undefined },
     ]);
 
     await h.run();

@@ -2311,6 +2311,9 @@ importers:
       '@tryghost/kg-lexical-html-renderer':
         specifier: workspace:*
         version: link:../../koenig/kg-lexical-html-renderer
+      '@tryghost/kg-markdown-html-renderer':
+        specifier: workspace:*
+        version: link:../../koenig/kg-markdown-html-renderer
       '@tryghost/limit-service':
         specifier: 'catalog:'
         version: 1.5.6

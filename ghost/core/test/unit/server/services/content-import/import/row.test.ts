@@ -19,6 +19,11 @@ describe('post import row schema', function () {
     assert.equal(postImportRowSchema.parse({ html: '<p>Hi</p>' }).html, '<p>Hi</p>');
   });
 
+  it('defaults a missing markdown cell to the empty string', function () {
+    assert.equal(postImportRowSchema.parse({}).markdown, '');
+    assert.equal(postImportRowSchema.parse({ markdown: '# Hi' }).markdown, '# Hi');
+  });
+
   it('reads an empty (or literally "undefined") published_at cell as absent', function () {
     assert.equal(postImportRowSchema.parse({ published_at: '' }).published_at, undefined);
     assert.equal(postImportRowSchema.parse({ published_at: 'undefined' }).published_at, undefined);

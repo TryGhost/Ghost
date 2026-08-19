@@ -72,6 +72,7 @@ function makeImporter(): ContentCSVImporter {
       create: (data, options) => models.Post.add(data, options),
     },
     getHtmlToLexical: () => lexicalLib.htmlToLexicalConverter,
+    getMarkdownToHtml: () => require('@tryghost/kg-markdown-html-renderer').render,
     addJob: jobsService.addJob.bind(jobsService),
     report,
     store: new ImportRunStore(),

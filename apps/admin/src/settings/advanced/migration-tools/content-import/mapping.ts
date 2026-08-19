@@ -15,6 +15,7 @@ export const CONTENT_FIELD_GROUPS: readonly ContentFieldGroup[] = [
     fields: [
       { label: 'Title', value: 'title', required: true },
       { label: 'HTML', value: 'html', required: false },
+      { label: 'Markdown', value: 'markdown', required: false },
       { label: 'Slug', value: 'slug', required: false },
       { label: 'Custom excerpt', value: 'custom_excerpt', required: false },
     ],

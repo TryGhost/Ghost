@@ -25,7 +25,7 @@ describe('content import reader', function () {
       'Ignore me': '',
     });
 
-    assert.deepEqual(rows, [{ title: 'Hello', html: '<p>World</p>' }]);
+    assert.deepEqual(rows, [{ title: 'Hello', html: '<p>World</p>', markdown: '' }]);
   });
 
   it('keeps the existing identity headers when no mapping is supplied', async function () {
@@ -34,7 +34,9 @@ describe('content import reader', function () {
 
     const rows = await readPostRows(file);
 
-    assert.deepEqual(rows, [{ title: 'Hello', html: '<p>World</p>', published_at: '2025-01-01' }]);
+    assert.deepEqual(rows, [
+      { title: 'Hello', html: '<p>World</p>', markdown: '', published_at: '2025-01-01' },
+    ]);
   });
 
   it('keeps full editorial identity headers for direct API clients', async function () {
@@ -44,7 +46,14 @@ describe('content import reader', function () {
     const rows = await readPostRows(file);
 
     assert.deepEqual(rows, [
-      { title: 'Hello', slug: 'custom', featured: '1', meta_title: 'Search title', html: '' },
+      {
+        title: 'Hello',
+        slug: 'custom',
+        featured: '1',
+        meta_title: 'Search title',
+        html: '',
+        markdown: '',
+      },
     ]);
   });
 });

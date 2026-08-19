@@ -3,6 +3,7 @@ import { importableRowSchema, type PostImportRow } from './row';
 const { slugify } = require('@tryghost/string');
 
 export type HtmlToLexical = (html: string) => unknown;
+export type MarkdownToHtml = (markdown: string) => string;
 
 // A malformed row, refused before any write was attempted; distinct from a write
 // that failed, which the importer records separately.
@@ -80,6 +81,7 @@ export default function buildPostData(
   row: PostImportRow,
   htmlToLexical: HtmlToLexical,
   importTagNames: string[],
+  markdownToHtml?: MarkdownToHtml,
 ): PostData {
   const check = importableRowSchema.safeParse(row);
   if (!check.success) {
@@ -102,7 +104,20 @@ export default function buildPostData(
     tags: importTagNames.map((name) => ({ name })),
   };
 
-  if (row.html) {
+  if (row.html && row.markdown) {
+    throw new RowSkipped('html and markdown cannot both be provided');
+  }
+
+  if (row.markdown) {
+    if (!markdownToHtml) {
+      throw new RowSkipped('markdown could not be converted');
+    }
+    try {
+      data.lexical = JSON.stringify(htmlToLexical(markdownToHtml(row.markdown)));
+    } catch {
+      throw new RowSkipped('markdown could not be converted');
+    }
+  } else if (row.html) {
     try {
       data.lexical = JSON.stringify(htmlToLexical(row.html));
     } catch {

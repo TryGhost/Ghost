@@ -320,6 +320,32 @@ describe('Posts Importer API', function () {
     assert.match(post.get('html'), /Mapped body/);
   });
 
+  it('Renders a mapped Markdown column through the post content converter', async function () {
+    await agent.loginAsOwner();
+
+    const markdownCsvPath = await csvFile(
+      'posts-import-markdown.csv',
+      'Headline,Source\n' + 'Markdown field post,"## Imported heading with **strong text**"\n',
+    );
+    const form = new FormData();
+    form.append('mapping[Headline]', 'title');
+    form.append('mapping[Source]', 'markdown');
+    form.append('postsfile', await fs.readFile(markdownCsvPath), {
+      filename: path.basename(markdownCsvPath),
+      contentType: 'text/csv',
+    });
+
+    await agent.post('posts/upload/').body(form).expectStatus(202);
+    await jobsService.allSettled();
+
+    const post = await models.Post.findOne({ title: 'Markdown field post', status: 'all' });
+    assert.ok(post);
+    assert.match(
+      post.get('html'),
+      /<h2[^>]*>Imported heading with <strong>strong text<\/strong><\/h2>/,
+    );
+  });
+
   it('Skips a malformed row on its own and imports the rest', async function () {
     await agent.loginAsOwner();
 
@@ -333,6 +359,7 @@ describe('Posts Importer API', function () {
         `${'x'.repeat(256)},<p>This title is too long</p>,,2024-03-02T00:00:00.000Z,published,false\n` +
         'Bad rows check status,<p>This row has a bad status</p>,,2024-03-02T00:00:00.000Z,scheduled,false\n' +
         'Bad rows check featured,<p>This row has a bad featured value</p>,,2024-03-02T00:00:00.000Z,published,yes\n' +
+        'Bad rows check content,<p>This row has HTML</p>,This row also has Markdown,2024-03-02T00:00:00.000Z,published,false\n' +
         'Bad rows check two,<p>After the bad rows</p>,,2024-03-04T00:00:00.000Z,published,false\n' +
         'Bad rows check three,<p>A loose date format</p>,,01 May 2024 00:00:00 GMT,published,false\n',
     );
