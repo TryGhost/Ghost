@@ -28,7 +28,7 @@ function SettingsLocationSync() {
 export function App({upgradeStatus}: AppProps) {
     return (
         <SettingsAppProvider upgradeStatus={upgradeStatus}>
-            <div className='admin-x-base admin-x-settings [--color-focus-ring:var(--color-green-500)] [--focus-ring:var(--color-green-500)]'>
+            <div className='settings-app [--color-focus-ring:var(--color-green-500)] [--focus-ring:var(--color-green-500)]'>
                 <ConfirmationProvider>
                     <DialogPortalProvider>
                         <SettingsLocationSync />

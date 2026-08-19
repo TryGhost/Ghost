@@ -20,12 +20,13 @@
     height: 100%;
 }
 
-/* Keep admin-x heading line-height consistent with pre-migration settings render. */
-.admin-x-base h1,
-.admin-x-base h2,
-.admin-x-base h3,
-.admin-x-base h4,
-.admin-x-base h5 {
+/* Settings' raw h1-h5 still expect the 1.25em admin-x heading line-height; Shade's base gives 1.5.
+   Remove once those headings carry an explicit leading. */
+.settings-app h1,
+.settings-app h2,
+.settings-app h3,
+.settings-app h4,
+.settings-app h5 {
     line-height: 1.25em;
 }
 

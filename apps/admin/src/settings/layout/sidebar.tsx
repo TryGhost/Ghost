@@ -207,7 +207,7 @@ const Sidebar: React.FC = () => {
         setFilter(e.target.value);
 
         if (e.target.value) {
-            document.querySelector('.admin-x-settings')?.scrollTo({top: 0, left: 0});
+            document.querySelector('.settings-app')?.scrollTo({top: 0, left: 0});
         }
     };
 
@@ -243,7 +243,7 @@ const Sidebar: React.FC = () => {
                     </InputGroupAddon>
                 </InputGroup>
             </div>
-            <nav className={navClasses} id='admin-x-settings-sidebar'>
+            <nav className={navClasses} id='settings-sidebar'>
                 {noResult &&
                 <div className='ml-2 text-base text-grey-700'>
                     <h2 className='mb-2 text-base font-semibold tracking-normal text-black dark:text-white'>No result</h2>
