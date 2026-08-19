@@ -29,8 +29,6 @@ import {AutomationEmailAnalyticsBatchProcessor} from './automation-email-analyti
 import {GiftEmailAnalyticsBatchProcessor} from './gift-email-analytics-batch-processor';
 import {StartGiftEmailAnalyticsJobEvent} from './events/start-gift-email-analytics-job-event';
 import {deliveryService as giftDeliveryService} from '../gifts';
-// @ts-expect-error This CommonJS service lacks type declarations.
-import labs from '../../../shared/labs';
 
 export const newsletters = new EmailAnalyticsServiceWrapper({
     logName: 'newsletters'
@@ -165,35 +163,33 @@ export const init = ({
         )
     });
 
-    if (labs.isSet('giftSubCustomization')) {
-        gifts.init({
-            config,
-            domainEvents,
-            event: StartGiftEmailAnalyticsJobEvent,
-            queries,
-            mailgunTags: ['gift-delivery'],
-            jobNames: {
-                latestNonOpened: 'email-analytics-gifts-latest-others',
-                missing: 'email-analytics-gifts-missing',
-                latestOpened: 'email-analytics-gifts-latest-opened',
-                scheduled: 'email-analytics-gifts-scheduled'
-            },
-            cursorSeed: {
-                tableName: 'gift_deliveries',
-                eventColumns: {
-                    delivered: 'outcome_at',
-                    failed: 'outcome_at'
+    gifts.init({
+        config,
+        domainEvents,
+        event: StartGiftEmailAnalyticsJobEvent,
+        queries,
+        mailgunTags: ['gift-delivery'],
+        jobNames: {
+            latestNonOpened: 'email-analytics-gifts-latest-others',
+            missing: 'email-analytics-gifts-missing',
+            latestOpened: 'email-analytics-gifts-latest-opened',
+            scheduled: 'email-analytics-gifts-scheduled'
+        },
+        cursorSeed: {
+            tableName: 'gift_deliveries',
+            eventColumns: {
+                delivered: 'outcome_at',
+                failed: 'outcome_at'
+            }
+        },
+        metrics,
+        settingsCache,
+        createEventProcessor: () => (
+            new GiftEmailAnalyticsBatchProcessor({
+                giftDeliveryService: {
+                    recordOutcome: data => giftDeliveryService!.recordOutcome(data)
                 }
-            },
-            metrics,
-            settingsCache,
-            createEventProcessor: () => (
-                new GiftEmailAnalyticsBatchProcessor({
-                    giftDeliveryService: {
-                        recordOutcome: data => giftDeliveryService!.recordOutcome(data)
-                    }
-                })
-            )
-        });
-    }
+            })
+        )
+    });
 };

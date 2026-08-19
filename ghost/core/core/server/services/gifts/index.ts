@@ -134,7 +134,7 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
     DomainEvents.subscribe(SendGiftDeliveryEvent, async (event: {data: {deliveryId: string}}) => {
         const start = Date.now();
         try {
-            const result = await deliveryService!.send(event.data.deliveryId);
+            const result = await giftDeliveryService.send(event.data.deliveryId);
             logging.info(`Gift delivery ${event.data.deliveryId} ${result} in ${Date.now() - start}ms`);
         } catch (err) {
             logging.error(err, `Failed to process gift delivery ${event.data.deliveryId}`);

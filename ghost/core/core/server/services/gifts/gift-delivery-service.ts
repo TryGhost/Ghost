@@ -297,11 +297,22 @@ export class GiftDeliveryService {
         try {
             const delivery = await this.deps.giftDeliveryRepository.getByProviderMessageId(providerMessageId);
             if (!delivery) {
+                logging.warn({
+                    event: {name: 'gift_delivery.failure_notification.skipped'},
+                    reason: 'delivery_missing',
+                    providerMessageId
+                }, 'Skipped gift delivery failure notification');
                 return;
             }
 
             const gift = await this.deps.giftRepository.getById(delivery.giftId);
             if (!gift || gift.status !== 'purchased' || !gift.expiresAt || !gift.buyerEmail || gift.expiresAt.getTime() <= Date.now()) {
+                logging.warn({
+                    event: {name: 'gift_delivery.failure_notification.skipped'},
+                    reason: gift ? 'gift_not_redeemable' : 'gift_missing',
+                    giftId: delivery.giftId,
+                    deliveryId: delivery.id
+                }, 'Skipped gift delivery failure notification');
                 return;
             }
 

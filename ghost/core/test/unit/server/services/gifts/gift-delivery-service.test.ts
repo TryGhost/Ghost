@@ -379,11 +379,17 @@ describe('GiftDeliveryService', function () {
                 status: 'refunded',
                 refundedAt: new Date()
             }));
+            const warn = sinon.stub(logging, 'warn');
             const service = createService();
 
             await service.recordOutcome(permanentFailure);
 
             sinon.assert.notCalled(giftEmailService.sendDeliveryFailureNotification);
+            sinon.assert.calledOnce(warn);
+            sinon.assert.match(warn.firstCall.firstArg, {
+                event: {name: 'gift_delivery.failure_notification.skipped'},
+                reason: 'gift_not_redeemable'
+            });
         });
 
         it('logs and ignores a buyer notification failure', async function () {
